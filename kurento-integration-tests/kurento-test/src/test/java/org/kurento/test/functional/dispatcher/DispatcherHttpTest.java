@@ -61,7 +61,7 @@ public class DispatcherHttpTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
 				.terminateOnEOS().build();

@@ -61,7 +61,7 @@ public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
 		WebRtcEndpoint webRtcEPRed = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEPGreen = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEPBlue = new WebRtcEndpoint.Builder(mp).build();

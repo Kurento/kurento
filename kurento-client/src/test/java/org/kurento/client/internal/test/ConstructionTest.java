@@ -24,8 +24,8 @@ public class ConstructionTest {
 	@Test
 	public void initObject() {
 
-		Sample2 obj = Sample2.with("XXX", 33, manager).withAtt3(0.5f).att4()
-				.create();
+		Sample2 obj = new Sample2.Builder("XXX", 33, manager).withAtt3(0.5f).att4()
+				.build();
 
 		String att1 = obj.getAtt1();
 		int att2 = obj.getAtt2();

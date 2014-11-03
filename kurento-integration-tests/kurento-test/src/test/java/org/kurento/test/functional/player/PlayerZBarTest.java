@@ -70,11 +70,11 @@ public class PlayerZBarTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/barcodes.webm").create();
-		WebRtcEndpoint webRtcEP = WebRtcEndpoint.with(mp).create();
-		ZBarFilter zBarFilter = ZBarFilter.with(mp).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/barcodes.webm").build();
+		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		ZBarFilter zBarFilter = new ZBarFilter.Builder(mp).build();
 		playerEP.connect(zBarFilter);
 		zBarFilter.connect(webRtcEP);
 

@@ -56,8 +56,8 @@ public abstract class AbstractRomTest {
 
 		RomManager manager = new RomManager(new RomClientJsonRpcClient(client));
 
-		SampleClass obj = SampleClass.with("XXX", false, manager)
-				.withAtt3(0.5f).withAtt4(22).create();
+		SampleClass obj = new SampleClass.Builder("XXX", false, manager)
+				.withAtt3(0.5f).withAtt4(22).build();
 
 		for (int i = 0; i < 5; i++) {
 

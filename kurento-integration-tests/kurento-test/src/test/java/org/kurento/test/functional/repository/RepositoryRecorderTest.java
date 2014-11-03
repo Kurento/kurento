@@ -71,17 +71,17 @@ public class RepositoryRecorderTest extends RepositoryKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/10sec/ball.webm").create();
-		WebRtcEndpoint webRtcEP1 = WebRtcEndpoint.with(mp).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/ball.webm").build();
+		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
 		RepositoryItem repositoryItem = repository.createRepositoryItem();
 		RepositoryHttpRecorder recorder = repositoryItem
 				.createRepositoryHttpRecorder();
 
-		RecorderEndpoint recorderEP = RecorderEndpoint.with(mp,
-				recorder.getURL()).create();
+		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
+				recorder.getURL()).build();
 		playerEP.connect(webRtcEP1);
 		playerEP.connect(recorderEP);
 

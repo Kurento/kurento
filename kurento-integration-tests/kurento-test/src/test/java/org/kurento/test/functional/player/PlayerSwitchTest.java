@@ -58,20 +58,20 @@ public class PlayerSwitchTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint playerRed = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/10sec/red.webm").create();
-		PlayerEndpoint playerGreen = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/10sec/green.webm").create();
-		PlayerEndpoint playerBlue = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/10sec/blue.webm").create();
-		PlayerEndpoint playerBall = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/10sec/ball.webm").create();
-		PlayerEndpoint playerRtsp = PlayerEndpoint
-				.with(mp,
-						"rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp")
-				.create();
-		WebRtcEndpoint webRtcEndpoint = WebRtcEndpoint.with(mp).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
+		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/red.webm").build();
+		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/green.webm").build();
+		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/blue.webm").build();
+		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/ball.webm").build();
+		PlayerEndpoint playerRtsp = new PlayerEndpoint.Builder(
+				mp,
+				"rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp")
+				.build();
+		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()

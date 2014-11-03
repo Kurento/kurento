@@ -66,7 +66,7 @@ public class WebRtcQualityTest extends BrowserKurentoClientTest {
 	public void doTest(Browser browserType, String videoPath, String audioUrl,
 			Color color) throws InterruptedException {
 		// Media Pipeline
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 

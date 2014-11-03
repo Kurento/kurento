@@ -64,7 +64,7 @@ public class CompositePlayerTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
 
 		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/30sec/red.webm").build();

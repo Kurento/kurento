@@ -28,11 +28,11 @@ public class ReturnReferencesTest {
 	@Test
 	public void objectRefTest() {
 
-		SampleClass obj = SampleClass.with("AAA", false, manager)
-				.withAtt3(0.5f).withAtt4(22).create();
+		SampleClass obj = new SampleClass.Builder("AAA", false, manager)
+				.withAtt3(0.5f).withAtt4(22).build();
 
-		SampleClass obj2 = SampleClass.with("BBB", false, manager)
-				.withAtt3(0.5f).withAtt4(22).create();
+		SampleClass obj2 = new SampleClass.Builder("BBB", false, manager)
+				.withAtt3(0.5f).withAtt4(22).build();
 
 		SampleClass obj3 = obj.echoObjectRef(obj2);
 
@@ -43,11 +43,11 @@ public class ReturnReferencesTest {
 	@Test
 	public void objectRefTestAsync() throws InterruptedException {
 
-		SampleClass obj = SampleClass.with("AAA", false, manager)
-				.withAtt3(0.5f).withAtt4(22).create();
+		SampleClass obj = new SampleClass.Builder("AAA", false, manager)
+				.withAtt3(0.5f).withAtt4(22).build();
 
-		final SampleClass obj2 = SampleClass.with("BBB", false, manager)
-				.withAtt3(0.5f).withAtt4(22).create();
+		final SampleClass obj2 = new SampleClass.Builder("BBB", false, manager)
+				.withAtt3(0.5f).withAtt4(22).build();
 
 		SampleClass obj3 = obj.echoObjectRef(obj2);
 

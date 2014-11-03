@@ -88,7 +88,7 @@ public class RetryTest {
 
 		long initTime = System.nanoTime();
 
-		MediaPipeline.with(kurento).create();
+		new MediaPipeline.Builder(kurento).build();
 
 		double duration = (System.nanoTime() - initTime) / (double) 1000000;
 
@@ -120,7 +120,7 @@ public class RetryTest {
 
 		long initTime = System.nanoTime();
 
-		MediaPipeline.with(kurento).create();
+		new MediaPipeline.Builder(kurento).build();
 
 		double duration = (System.nanoTime() - initTime) / (double) 1000000;
 

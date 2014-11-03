@@ -48,7 +48,7 @@ public abstract class AbstractBuilder<T extends KurentoObject> {
 	 * @return <T> The type of object
 	 *
 	 **/
-	public T create() {
+	public T build() {
 
 		KurentoObject constObject = obtainConstructorObject();
 
@@ -62,7 +62,7 @@ public abstract class AbstractBuilder<T extends KurentoObject> {
 		return createMediaObjectConst(constObject, remoteObject, null);
 	}
 
-	public T create(Transaction transaction) {
+	public T build(Transaction transaction) {
 
 		TransactionImpl tx = (TransactionImpl) transaction;
 
@@ -106,11 +106,6 @@ public abstract class AbstractBuilder<T extends KurentoObject> {
 			}
 		}
 		return rootObject;
-	}
-
-	@Deprecated
-	public T build() {
-		return create();
 	}
 
 	protected abstract T createMediaObject(RemoteObjectFacade remoteObject,

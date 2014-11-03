@@ -71,7 +71,7 @@ public class KeepAliveTest {
 
 		KurentoClient kurento = KurentoClient.createFromJsonRpcClient(client);
 
-		MediaPipeline.with(kurento).create();
+		new MediaPipeline.Builder(kurento).build();
 
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000,
 				(NUM_KEEP_ALIVES + 1) * 1000);
@@ -81,7 +81,7 @@ public class KeepAliveTest {
 		initTime = System.nanoTime();
 		latch = new CountDownLatch(NUM_KEEP_ALIVES);
 
-		MediaPipeline.with(kurento).create();
+		new MediaPipeline.Builder(kurento).build();
 
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000 / 2,
 				(NUM_KEEP_ALIVES + 2) * 1000 / 2);

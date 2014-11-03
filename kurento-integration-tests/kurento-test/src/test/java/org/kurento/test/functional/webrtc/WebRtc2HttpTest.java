@@ -61,7 +61,7 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 	@Test
 	public void testWebRtc2HttpChrome() throws Exception {
 		// Media Pipeline
-		final MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		final MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
 		final WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp)
 				.build();
 

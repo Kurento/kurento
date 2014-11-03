@@ -42,14 +42,15 @@ public class TransactionTest extends KurentoClientTest {
 			ExecutionException {
 
 		// Pipeline creation (no transaction)
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build();
 
-		PlayerEndpoint player = PlayerEndpoint
-				.with(pipeline, "http://files.kurento.org/video/small.webm")
-				.useEncodedMedia().create();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").useEncodedMedia()
+				.build();
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create();
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build();
 
 		player.connect(httpGetEndpoint);
 
@@ -73,18 +74,20 @@ public class TransactionTest extends KurentoClientTest {
 
 		// Pipeline creation (transaction)
 		Transaction tx1 = kurentoClient.beginTransaction();
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create(tx1);
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx1);
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build(tx1);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx1);
 		Future<String> url1 = httpGetEndpoint.getUrl(tx1);
 		tx1.commit();
 		// End pipeline creation
 
 		// Pipeline creation (transaction)
 		Transaction tx2 = kurentoClient.beginTransaction();
-		MediaPipeline pipeline2 = MediaPipeline.with(kurentoClient).create(tx2);
-		HttpGetEndpoint httpGetEndpoint2 = HttpGetEndpoint.with(pipeline2)
-				.create(tx2);
+		MediaPipeline pipeline2 = new MediaPipeline.Builder(kurentoClient)
+				.build(tx2);
+		HttpGetEndpoint httpGetEndpoint2 = new HttpGetEndpoint.Builder(
+				pipeline2).build(tx2);
 		Future<String> url2 = httpGetEndpoint2.getUrl(tx2);
 		tx2.commit();
 		// End pipeline creation
@@ -99,14 +102,15 @@ public class TransactionTest extends KurentoClientTest {
 		// Pipeline creation (transaction)
 		Transaction tx1 = kurentoClient.beginTransaction();
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create(tx1);
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build(tx1);
 
-		PlayerEndpoint player = PlayerEndpoint
-				.with(pipeline, "http://files.kurento.org/video/small.webm")
-				.useEncodedMedia().create(tx1);
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").useEncodedMedia()
+				.build(tx1);
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx1);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx1);
 
 		player.connect(tx1, httpGetEndpoint);
 		Future<String> url1 = httpGetEndpoint.getUrl(tx1);
@@ -129,14 +133,15 @@ public class TransactionTest extends KurentoClientTest {
 			throws InterruptedException, ExecutionException {
 
 		// Pipeline creation (no transaction)
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create();
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build();
 
 		// Creation in explicit transaction
 		Transaction tx = pipeline.beginTransaction();
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx);
 
 		// TransactionNotExecutedExcetion should be thrown
 		httpGetEndpoint.connect(player);
@@ -148,14 +153,15 @@ public class TransactionTest extends KurentoClientTest {
 			throws InterruptedException, ExecutionException {
 
 		// Pipeline creation (no transaction)
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create();
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build();
 
 		// Creation in explicit transaction
 		Transaction tx = pipeline.beginTransaction();
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx);
 
 		// TransactionNotExecutedExcetion should be thrown
 		player.connect(httpGetEndpoint);
@@ -168,13 +174,14 @@ public class TransactionTest extends KurentoClientTest {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create(tx);
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build(tx);
 
-		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create(tx);
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build(tx);
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx);
 
 		player.connect(tx, httpGetEndpoint);
 
@@ -191,13 +198,14 @@ public class TransactionTest extends KurentoClientTest {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build();
 
-		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build();
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create();
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build();
 
 		player.connect(httpGetEndpoint);
 
@@ -218,13 +226,14 @@ public class TransactionTest extends KurentoClientTest {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create(tx);
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build(tx);
 
-		final PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create(tx);
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build(tx);
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx);
 
 		player.connect(tx, httpGetEndpoint);
 
@@ -258,13 +267,14 @@ public class TransactionTest extends KurentoClientTest {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create(tx);
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build(tx);
 
-		final PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create(tx);
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build(tx);
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx);
 
 		player.connect(tx, httpGetEndpoint);
 
@@ -285,13 +295,14 @@ public class TransactionTest extends KurentoClientTest {
 
 		// Pipeline creation (no transaction)
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create();
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build();
 
-		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build();
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create();
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build();
 
 		player.connect(httpGetEndpoint);
 
@@ -329,13 +340,14 @@ public class TransactionTest extends KurentoClientTest {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
-		MediaPipeline pipeline = MediaPipeline.with(kurentoClient).create(tx);
+		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient)
+				.build(tx);
 
-		final PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				"http://files.kurento.org/video/small.webm").create(tx);
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build(tx);
 
-		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
-				.create(tx);
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build(tx);
 
 		player.connect(tx, httpGetEndpoint);
 
