@@ -404,7 +404,8 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   gst_element_sync_state_with_parent (data->queue);
 
   g_object_set (data->videorate, "average-period", 200 * GST_MSECOND, NULL);
-  g_object_set (data->queue, "flush-on-eos", TRUE, NULL);
+  g_object_set (data->queue, "flush-on-eos", TRUE, "max-size-buffers", 60,
+      NULL);
 
   gst_element_link_many (data->videorate, data->queue, data->videoscale,
       data->capsfilter, NULL);
