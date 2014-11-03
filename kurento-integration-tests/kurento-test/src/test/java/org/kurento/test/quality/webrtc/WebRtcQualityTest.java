@@ -49,7 +49,7 @@ import org.kurento.test.services.Recorder;
  * @since 4.2.3
  */
 
-public class QualityWebRtcTest extends BrowserKurentoClientTest {
+public class WebRtcQualityTest extends BrowserKurentoClientTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second

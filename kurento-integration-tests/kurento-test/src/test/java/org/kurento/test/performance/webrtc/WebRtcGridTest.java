@@ -54,13 +54,13 @@ import org.kurento.test.services.Recorder;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class GridWebRtcTest extends GridBrowserKurentoClientTest {
+public class WebRtcGridTest extends GridBrowserKurentoClientTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
 	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
-	public GridWebRtcTest() {
+	public WebRtcGridTest() {
 		nodes = new ArrayList<Node>();
 
 		nodes.addAll(getRandomNodes(5, Browser.CHROME));
@@ -80,7 +80,7 @@ public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 
 	@Ignore
 	@Test
-	public void tesGridWebRtcChrome() throws InterruptedException,
+	public void tesWebRtcGridChrome() throws InterruptedException,
 			ExecutionException {
 		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
 		List<Future<?>> results = new ArrayList<>();
