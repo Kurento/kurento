@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
@@ -34,7 +33,6 @@ import org.kurento.client.TransactionNotExecutedException;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.test.base.KurentoClientTest;
 
-@Ignore
 public class TransactionTest extends KurentoClientTest {
 
 	@Test
