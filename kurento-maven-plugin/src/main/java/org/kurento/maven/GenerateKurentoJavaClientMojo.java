@@ -2,6 +2,7 @@ package org.kurento.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,6 +41,12 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 @Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate-kurento-client", requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
 public class GenerateKurentoJavaClientMojo extends AbstractMojo {
+
+	private static final String KURENTO_CLIENT_GROUP_ID = "org.kurento";
+
+	private static final String KURENTO_CLIENT_ARTIFACT_ID = "kurento-client";
+
+	private static final String TEMPLATES_FOLDER = "templates";
 
 	/**
 	 * The directory where the Kurento Media Element Definition files (
@@ -198,6 +206,52 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 		}
 	}
 
+	private Path loadTemplatesPath(MavenProject project)
+			throws MojoExecutionException, IOException {
+
+		log.info("Searching for kurento dependencies:");
+
+		if (KURENTO_CLIENT_ARTIFACT_ID.equals(project.getArtifactId())
+				&& KURENTO_CLIENT_GROUP_ID.equals(project.getGroupId())) {
+			return loadTemplatesPathFromKurentoClient(project.getFile());
+		}
+
+		for (Object artObj : project.getArtifacts()) {
+
+			Artifact artifact = (Artifact) artObj;
+
+			log.debug("Exploring dependency: " + artifact);
+
+			if (KURENTO_CLIENT_ARTIFACT_ID.equals(artifact.getArtifactId())
+					&& KURENTO_CLIENT_GROUP_ID.equals(artifact.getGroupId())) {
+
+				return loadTemplatesPathFromKurentoClient(artifact.getFile());
+			}
+		}
+
+		return null;
+	}
+
+	private Path loadTemplatesPathFromKurentoClient(File artifactFile)
+			throws IOException {
+
+		if ("pom.xml".equals(artifactFile.getName())) {
+
+			return artifactFile.toPath().getParent().resolve("src")
+					.resolve("main").resolve("resources")
+					.resolve(TEMPLATES_FOLDER);
+
+		} else if (artifactFile.isFile()) {
+
+			return FileSystems.newFileSystem(artifactFile.toPath(), null)
+					.getPath("/" + TEMPLATES_FOLDER);
+
+		} else {
+
+			return artifactFile.toPath().resolve(TEMPLATES_FOLDER);
+		}
+	}
+
 	protected void executeKurentoMavenPlugin(File sourceDirectory,
 			File generatedSourceOutputFolder, File kmdOutputFolder)
 			throws MojoFailureException, MojoExecutionException {
@@ -220,8 +274,11 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 
 				krp.setDeleteGenDir(true);
 				krp.setVerbose(false);
-				krp.setTemplatesDir(PathUtils.getPathInClasspath(this
-						.getClass().getResource("/templates")));
+				Path templatesPath = loadTemplatesPath(project);
+
+				log.info("Templates path: " + templatesPath);
+
+				krp.setTemplatesDir(templatesPath);
 				krp.setCodeGenDir(generatedSourceOutputFolder.toPath());
 				krp.setListGeneratedFiles(false);
 

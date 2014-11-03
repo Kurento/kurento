@@ -129,7 +129,6 @@ public class ${remoteClass.name} extends <#if remoteClass.extends??>${remoteClas
 
 		<#assign doc="Creates a Builder for ${remoteClass.name}" />
 		<@comment doc param />
-		@Deprecated
 		public Builder(<#rt>
         	<#assign first=true>
         	<#lt><#list remoteClass.constructor.params as param>
