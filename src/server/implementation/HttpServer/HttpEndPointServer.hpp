@@ -29,7 +29,6 @@ namespace kurento
 class HttpEndPointServer
 {
 public:
-  static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer();
   static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer (
     const uint port, const std::string &iface, const std::string &addr);
   void start ();

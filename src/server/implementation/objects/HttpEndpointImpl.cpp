@@ -124,8 +124,8 @@ HttpEndpointImpl::unregister_end_point ()
     mutex.unlock ();
   };
 
-  HttpEndPointServer::getHttpEndPointServer()->unregisterEndPoint (uri,
-      unregister_end_point_adaptor_function, &aux, NULL);
+  server->unregisterEndPoint (uri, unregister_end_point_adaptor_function,
+                              &aux, NULL);
 
   mutex.lock ();
 
@@ -155,20 +155,20 @@ HttpEndpointImpl::register_end_point ()
     }
 
     actionRequestedHandlerId =
-      HttpEndPointServer::getHttpEndPointServer()->connectSignal ("action-requested",
-          G_CALLBACK (action_requested_adaptor_function),
-          &actionRequestedLambda);
+      server->connectSignal ("action-requested",
+                             G_CALLBACK (action_requested_adaptor_function),
+                             &actionRequestedLambda);
     urlRemovedHandlerId =
-      HttpEndPointServer::getHttpEndPointServer()->connectSignal ("url-removed",
-          G_CALLBACK (session_terminated_adaptor_function),
-          &sessionTerminatedLambda);
+      server->connectSignal ("url-removed",
+                             G_CALLBACK (session_terminated_adaptor_function),
+                             &sessionTerminatedLambda);
     urlExpiredHandlerId =
-      HttpEndPointServer::getHttpEndPointServer()->connectSignal ("url-expired",
-          G_CALLBACK (session_terminated_adaptor_function),
-          &sessionTerminatedLambda);
+      server->connectSignal ("url-expired",
+                             G_CALLBACK (session_terminated_adaptor_function),
+                             &sessionTerminatedLambda);
 
-    addr = HttpEndPointServer::getHttpEndPointServer()->getAnnouncedAddress();
-    port = HttpEndPointServer::getHttpEndPointServer()->getPort();
+    addr = server->getAnnouncedAddress();
+    port = server->getPort();
 
     url_tmp = g_strdup_printf ("http://%s:%d%s", addr.c_str (), port, uri);
     url = std::string (url_tmp);
@@ -182,9 +182,9 @@ do_signal:
     mutex.unlock ();
   };
 
-  HttpEndPointServer::getHttpEndPointServer()->registerEndPoint (element,
-      disconnectionTimeout, register_end_point_adaptor_function,
-      &aux, NULL);
+  server->registerEndPoint (element,
+                            disconnectionTimeout, register_end_point_adaptor_function,
+                            &aux, NULL);
   mutex.lock ();
 
   while (!done) {
@@ -268,19 +268,19 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
     GST_DEBUG ("Session terminated URI %s", uriStr.c_str() );
 
     if (actionRequestedHandlerId > 0) {
-      HttpEndPointServer::getHttpEndPointServer()->disconnectSignal (
+      server->disconnectSignal (
         actionRequestedHandlerId);
       actionRequestedHandlerId = 0;
     }
 
     if (urlExpiredHandlerId > 0) {
-      HttpEndPointServer::getHttpEndPointServer()->disconnectSignal (
+      server->disconnectSignal (
         urlExpiredHandlerId);
       urlExpiredHandlerId = 0;
     }
 
     if (urlRemovedHandlerId > 0) {
-      HttpEndPointServer::getHttpEndPointServer()->disconnectSignal (
+      server->disconnectSignal (
         urlRemovedHandlerId);
       urlRemovedHandlerId = 0;
     }
@@ -300,13 +300,12 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
     }
   };
 
-  std::shared_ptr<HttpEndPointServer> server =
-    HttpEndPointServer::getHttpEndPointServer (
-      getConfigValue<int, HttpEndpoint> (HTTP_SERVICE_PORT,
-                                         HttpEndPointServer::DEFAULT_PORT),
-      getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ADDRESS, ""),
-      getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ANNOUNCED_ADDRESS,
-          "") );
+  server = HttpEndPointServer::getHttpEndPointServer (
+             getConfigValue<int, HttpEndpoint> (HTTP_SERVICE_PORT,
+                 HttpEndPointServer::DEFAULT_PORT),
+             getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ADDRESS, ""),
+             getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ANNOUNCED_ADDRESS,
+                 "") );
 
   if (server == NULL) {
     throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR ,
@@ -317,17 +316,17 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
 HttpEndpointImpl::~HttpEndpointImpl()
 {
   if (actionRequestedHandlerId > 0) {
-    HttpEndPointServer::getHttpEndPointServer()->disconnectSignal (
+    server->disconnectSignal (
       actionRequestedHandlerId);
   }
 
   if (urlExpiredHandlerId > 0) {
-    HttpEndPointServer::getHttpEndPointServer()->disconnectSignal (
+    server->disconnectSignal (
       urlExpiredHandlerId);
   }
 
   if (urlRemovedHandlerId > 0) {
-    HttpEndPointServer::getHttpEndPointServer()->disconnectSignal (
+    server->disconnectSignal (
       urlRemovedHandlerId);
   }
 

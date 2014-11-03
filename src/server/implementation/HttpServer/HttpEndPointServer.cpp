@@ -40,19 +40,6 @@ check_port (int port)
 }
 
 std::shared_ptr<HttpEndPointServer>
-HttpEndPointServer::getHttpEndPointServer()
-{
-  RecMutex::Lock lock (mutex);
-
-  if (!instance) {
-    GST_DEBUG ("b");
-    throw std::runtime_error ("HttpServer not created");
-  }
-
-  return instance;
-}
-
-std::shared_ptr<HttpEndPointServer>
 HttpEndPointServer::getHttpEndPointServer (const uint port,
     const std::string &iface, const std::string &addr)
 {

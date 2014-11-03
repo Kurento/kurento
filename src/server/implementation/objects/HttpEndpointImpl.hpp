@@ -4,7 +4,7 @@
 #include "SessionEndpointImpl.hpp"
 #include "HttpEndpoint.hpp"
 #include <EventHandler.hpp>
-#include "HttpServer/KmsHttpEPServer.h"
+#include "HttpServer/HttpEndPointServer.hpp"
 
 namespace kurento
 {
@@ -43,6 +43,7 @@ protected:
   bool is_registered();
 
 private:
+  std::shared_ptr<HttpEndPointServer> server;
 
   std::string url;
   bool urlSet = false;
