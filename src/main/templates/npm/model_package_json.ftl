@@ -15,19 +15,21 @@ package.json
     "url": "${module.code.api.js.npmGit}"
   },
 </#if>
-  "scripts": {
-    "prepublish": "grunt"
-  },
-  "dependencies": {
-    "inherits": "^2.0.1"
-  },
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
+  "scripts": {
+    "prepublish": "if [ ! -d node_modules ]; then if [ ! -d lib ]; then npm install; fi; else grunt; fi"
+  },
   "peerDependencies": {
     "kurento-client": "${module.kurentoVersion}"
   },
 </#if>
+  "dependencies": {
+    "es6-promise": "^2.0.0",
+    "inherits": "^2.0.1",
+    "promisecallback": "^0.0.2"
+  },
   "devDependencies": {
 <#list module.imports as import>
   <#assign api_js=import.module.code.api.js>
@@ -44,7 +46,11 @@ package.json
 </#if>
     "grunt-path-check": "^0.9.3",
     "grunt-shell": "^1.1.1",
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
     "kurento-client": "${module.kurentoVersion}",
+</#if>
     "minifyify": "^4.4.0"
   }
 }

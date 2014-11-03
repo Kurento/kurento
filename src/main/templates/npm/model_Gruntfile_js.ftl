@@ -1,4 +1,12 @@
 <#assign api_js=module.code.api.js>
+<#assign node_name=api_js.nodeName>
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
+  <#assign kurentoClient_path="node_modules/kurento-client">
+<#else>
+  <#assign kurentoClient_path="../..">
+</#if>
 Gruntfile.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -74,7 +82,7 @@ module.exports = function(grunt)
         command: [
           'mkdir -p ./lib',
           'kurento-module-creator --delete'
-          +' --templates node_modules/kurento-client/templates'
+          +' --templates ${kurentoClient_path}/templates'
 <#list module.imports as import>
           +' --deprom node_modules/${import.module.code.api.js.nodeName}/src'
 </#list>
@@ -89,8 +97,7 @@ module.exports = function(grunt)
           'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
           'node_modules/.bin/bower cache clean'
         ].join('&&')
-      }
-</#if>
+      }</#if>
     },
 
     // Generate browser versions and mapping debug file
@@ -194,9 +201,9 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-shell');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'path-check:generate-txt',
-                                 'browserify'<#if api_js.npmGit??>, 'sync:bower'</#if>]);
+  grunt.registerTask('generate', ['path-check:generate plugin', 'browserify']);
+  grunt.registerTask('default',  ['clean', 'jsdoc', 'generate'<#if api_js.npmGit??>, 'sync:bower'</#if>]);
 <#if api_js.npmGit??>
-  grunt.registerTask('bower',   ['shell:bower']);
+  grunt.registerTask('bower',    ['shell:bower']);
 </#if>
 };
