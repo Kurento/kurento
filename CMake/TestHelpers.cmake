@@ -62,19 +62,46 @@ function(add_test_program test_name sources)
     add_custom_target (${test_name}.valgrind
       DEPENDS ${test_name})
 
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
+"
+execute_process(COMMAND valgrind -q
+  ${SUPPS}
+  --tool=memcheck --leak-check=full --trace-children=yes
+  --leak-resolution=high --show-possibly-lost=yes
+  --num-callers=20 --leak-check-heuristics=all
+  ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
+  RESULT_VARIABLE res
+  OUTPUT_VARIABLE out
+  ERROR_VARIABLE err
+)
+
+if (NOT \"\${out}\" STREQUAL \"\")
+  message (\"Std out:\")
+  message (\"\${out}\")
+endif()
+if (NOT \"\${err}\" STREQUAL \"\")
+  message (\"Std err:\")
+  message (\"\${err}\")
+endif()
+
+if (NOT \${res} EQUAL 0)
+  message(FATAL_ERROR \"Test failed\")
+endif()
+
+string(REGEX MATCH \"^==\" valgrind_out \"\${err}\")
+
+if (NOT \${valgrind_out} STREQUAL \"\")
+  message(FATAL_ERROR \"There are valgrind errors on test\")
+endif ()
+"
+    )
+
     add_custom_command (TARGET ${test_name}.valgrind
       COMMENT "Running valgrind for ${test_name}"
-      COMMAND ${TEST_PROPERTIES} CK_DEFAULT_TIMEOUT=360
-        G_SLICE=always-malloc ${VALGRIND} -q
-        ${SUPPS}
-        --tool=memcheck --leak-check=yes --trace-children=yes
-        --leak-resolution=high --show-possibly-lost=no
-        --num-callers=20
-        ${CMAKE_CURRENT_BINARY_DIR}/${test_name} 2>&1 |
-          tee ${test_name}.valgrind.log
-        )
+      COMMAND G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_PROPERTIES} ${VALGRING_TEST_PROPERTIES} ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
+    )
 
-     create_valgrind_target()
-     add_dependencies(valgrind ${test_name}.valgrind)
+    create_valgrind_target()
+    add_dependencies(valgrind ${test_name}.valgrind)
   endif ()
 endfunction()
