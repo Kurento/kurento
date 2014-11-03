@@ -69,7 +69,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
 		} catch (KurentoException e) {
 			assertThat(e.getMessage(),
-					containsString("connecting to webSocket"));
+					containsString("Exception connecting to"));
 		}
 
 		client.close();
