@@ -10,6 +10,7 @@
 	</parent>
 
 	<artifactId>kurento-maven-plugin</artifactId>
+	<version>${version.kurento-maven-plugin}</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>kurento-maven-plugin</name>
