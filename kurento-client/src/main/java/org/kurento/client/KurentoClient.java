@@ -77,4 +77,12 @@ public class KurentoClient {
 	public Transaction beginTransaction() {
 		return new TransactionImpl(manager);
 	}
+
+	public MediaPipeline createMediaPipeline() {
+		return new MediaPipeline.Builder(this).build();
+	}
+
+	public MediaPipeline createMediaPipeline(Transaction tx) {
+		return new MediaPipeline.Builder(this).build(tx);
+	}
 }

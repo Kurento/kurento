@@ -59,7 +59,7 @@ public class WebRtcFaceOverlayTest extends BrowserKurentoClientTest {
 	public void doTest(Browser browserType, int playTime)
 			throws InterruptedException {
 		// Media Pipeline
-		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(mp)
 				.build();

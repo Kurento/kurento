@@ -23,7 +23,7 @@ import org.kurento.test.base.KurentoClientTest;
 
 /**
  * Sanity test of a Media Pipeline creation and release.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -32,8 +32,7 @@ public class PipelineTest extends KurentoClientTest {
 
 	@Test
 	public void basicPipelineTest() {
-		MediaPipeline mediaPipeline = new MediaPipeline.Builder(kurentoClient)
-				.build();
+		MediaPipeline mediaPipeline = kurentoClient.createMediaPipeline();
 		Assert.assertNotNull("Error: MediaPipeline is null", mediaPipeline);
 		mediaPipeline.release();
 	}

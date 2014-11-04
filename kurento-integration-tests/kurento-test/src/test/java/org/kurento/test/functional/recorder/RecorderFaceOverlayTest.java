@@ -77,7 +77,7 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/fiwarecut.mp4").build();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
@@ -109,7 +109,7 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 				recordingPostProcess);
 
 		// Media Pipeline #2
-		MediaPipeline mp2 = new MediaPipeline.Builder(kurentoClient).build();
+		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
 				recordingPostProcess).build();
 		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();

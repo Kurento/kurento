@@ -30,10 +30,6 @@ public class MediaPipeline extends MediaObject {
 		}
 	}
 
-	public static Builder with(KurentoClient client) {
-		return new Builder(client);
-	}
-
 	synchronized void setRemoteObject(RemoteObjectFacade remoteObject) {
 		super.setRemoteObject(remoteObject);
 		if (!(remoteObject instanceof NonCommitedRemoteObject)) {

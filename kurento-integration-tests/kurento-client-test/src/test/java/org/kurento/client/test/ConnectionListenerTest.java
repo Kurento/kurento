@@ -73,7 +73,7 @@ public class ConnectionListenerTest {
 					}
 				});
 
-		MediaPipeline pipeline = new MediaPipeline.Builder(kurentoClient).build();
+		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
 		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
 				"http://files.kurento.org/video/small.webm").build();
