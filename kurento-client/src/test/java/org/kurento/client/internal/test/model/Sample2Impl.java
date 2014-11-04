@@ -34,5 +34,4 @@ public class Sample2Impl {
 	public boolean getAtt4() {
 		return att4;
 	}
-
 }

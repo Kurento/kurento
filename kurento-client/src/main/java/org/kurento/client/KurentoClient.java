@@ -21,17 +21,17 @@ import javax.annotation.PreDestroy;
 import org.kurento.client.internal.TransactionImpl;
 import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Client of Kurento Server
+ * Factory to create {@link MediaPipeline} in the media server.
  *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 2.0.0
  */
 public class KurentoClient {
@@ -40,7 +40,7 @@ public class KurentoClient {
 
 	protected RomManager manager;
 
-	public static KurentoClient create(String websocketUrl) throws IOException {
+	public static KurentoClient create(String websocketUrl) {
 		log.debug("Connecting to kms in uri " + websocketUrl);
 		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl));
 	}
@@ -51,26 +51,49 @@ public class KurentoClient {
 				JsonRpcConnectionListenerKurento.create(listener)));
 	}
 
+	KurentoClient(JsonRpcClient client) {
+		this.manager = new RomManager(new RomClientJsonRpcClient(client));
+	}
+
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 *
+	 * @return The media pipeline
+	 */
+	public MediaPipeline createMediaPipeline() {
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+				.build();
+	}
+
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 *
+	 * @param cont
+	 *            An asynchronous callback handler. If the element was
+	 *            successfully created, the {@code onSuccess} method from the
+	 *            handler will receive a {@link MediaPipeline} stub from the
+	 *            media server.
+	 * @throws KurentoException
+	 *
+	 */
+	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
+			throws KurentoException {
+		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+				.buildAsync(cont);
+	}
+
+	public MediaPipeline createMediaPipeline(Transaction tx) {
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+				.build(tx);
+	}
+
 	@PreDestroy
 	public void destroy() {
 		manager.destroy();
 	}
 
-	KurentoClient(JsonRpcClient client) throws IOException {
-		client.connect();
-		this.manager = new RomManager(new RomClientJsonRpcClient(client));
-	}
-
-	KurentoClient(RomManager manager) {
-		this.manager = manager;
-	}
-
-	RomManager getRomManager() {
-		return manager;
-	}
-
 	public static KurentoClient createFromJsonRpcClient(
-			JsonRpcClient jsonRpcClient) throws IOException {
+			JsonRpcClient jsonRpcClient) {
 		return new KurentoClient(jsonRpcClient);
 	}
 
@@ -78,11 +101,4 @@ public class KurentoClient {
 		return new TransactionImpl(manager);
 	}
 
-	public MediaPipeline createMediaPipeline() {
-		return new MediaPipeline.Builder(this).build();
-	}
-
-	public MediaPipeline createMediaPipeline(Transaction tx) {
-		return new MediaPipeline.Builder(this).build(tx);
-	}
 }

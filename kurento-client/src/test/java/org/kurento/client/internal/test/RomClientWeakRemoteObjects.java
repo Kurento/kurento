@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.internal.client.RemoteObject;
-import org.kurento.client.internal.client.RemoteObjectFacade;
+import org.kurento.client.internal.client.RemoteObject;
 import org.kurento.client.internal.client.RomManager;
 
 import com.google.common.collect.MapMaker;
@@ -89,7 +89,7 @@ public class RomClientWeakRemoteObjects {
 
 		RomManager manager = new RomManager(null);
 
-		RemoteObjectFacade obj = new RemoteObject("xxx", null, manager);
+		RemoteObject obj = new RemoteObject("xxx", null, manager);
 
 		if (obj != manager.getObjectManager().getRemoteObject("xxx")) {
 			Assert.fail("Reference should be equals to inserted remote object");

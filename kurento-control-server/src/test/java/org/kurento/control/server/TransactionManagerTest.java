@@ -24,7 +24,7 @@ public class TransactionManagerTest {
 		String mediaPipelineRef = "MPR";
 
 		RequestAndResponseType createMediaPipelineRequest = rom
-				.createCreateRequest("MediaPipeline", null);
+				.createCreateRequest("MediaPipeline", null, false);
 		txManager.updateRequest(createMediaPipelineRequest.request);
 
 		Response<JsonElement> response = new Response<JsonElement>(null,
@@ -33,7 +33,7 @@ public class TransactionManagerTest {
 
 		RequestAndResponseType createMediaElementRequest = rom
 				.createCreateRequest("PlayerEndpoint", new Props(
-						"mediaPipeline", "newref:0").add("uri", "http://xxxxx"));
+						"mediaPipeline", "newref:0").add("uri", "http://xxxxx"), false);
 		txManager.updateRequest(createMediaElementRequest.request);
 
 		assertThat(

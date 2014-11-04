@@ -98,5 +98,4 @@ public abstract class AbstractRomTest {
 
 		}
 	}
-
 }

@@ -4,6 +4,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import org.kurento.client.Continuation;
+import org.kurento.client.Transaction;
+import org.kurento.client.internal.TransactionImpl;
+import org.kurento.client.internal.client.operation.MediaObjectCreationOperation;
 import org.kurento.client.internal.client.operation.Operation;
 import org.kurento.client.internal.transport.serialization.ObjectRefsManager;
 import org.kurento.jsonrpc.Props;
@@ -19,7 +22,7 @@ public class RomManager implements ObjectRefsManager {
 
 	public RomManager(RomClient client) {
 		this.client = client;
-		this.manager = new RomClientObjectManager(this);
+		this.manager = new RomClientObjectManager(client);
 		if (client != null) {
 			this.client.addRomEventHandler(manager);
 		}
@@ -27,7 +30,25 @@ public class RomManager implements ObjectRefsManager {
 
 	public RemoteObject create(String remoteClassName, Props constructorParams) {
 		String objectRef = client.create(remoteClassName, constructorParams);
+
 		return new RemoteObject(objectRef, remoteClassName, this);
+	}
+
+	public RemoteObject create(String remoteClassName, Props constructorParams,
+			Transaction tx) {
+
+		TransactionImpl txImpl = (TransactionImpl) tx;
+
+		RemoteObject remoteObject = new RemoteObject(txImpl.nextObjectRef(),
+				remoteClassName, false, this);
+
+		MediaObjectCreationOperation op = new MediaObjectCreationOperation(
+				remoteClassName, constructorParams, remoteObject);
+
+		txImpl.addOperation(op);
+
+		return remoteObject;
+
 	}
 
 	public RemoteObject create(String remoteClassName) {
@@ -35,8 +56,7 @@ public class RomManager implements ObjectRefsManager {
 	}
 
 	public void create(final String remoteClassName,
-			final Props constructorParams,
-			final Continuation<RemoteObjectFacade> cont) {
+			final Props constructorParams, final Continuation<RemoteObject> cont) {
 
 		client.create(remoteClassName, constructorParams,
 				new Continuation<String>() {
@@ -65,8 +85,7 @@ public class RomManager implements ObjectRefsManager {
 				});
 	}
 
-	public void create(String remoteClassName,
-			Continuation<RemoteObjectFacade> cont) {
+	public void create(String remoteClassName, Continuation<RemoteObject> cont) {
 		create(remoteClassName, null, cont);
 	}
 

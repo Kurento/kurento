@@ -14,10 +14,6 @@
  */
 package org.kurento.client.factory;
 
-import java.io.IOException;
-
-import javax.annotation.PreDestroy;
-
 import org.kurento.client.MediaPipeline;
 
 /**
@@ -37,15 +33,11 @@ public class KurentoClient {
 	}
 
 	public static KurentoClient create(String websocketUrl) {
-		try {
-			return new KurentoClient(
-					org.kurento.client.KurentoClient.create(websocketUrl));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		return new KurentoClient(
+				org.kurento.client.KurentoClient.create(websocketUrl));
 	}
 
-	@PreDestroy
+	@Deprecated
 	public void destroy() {
 		kurentoClient.destroy();
 	}

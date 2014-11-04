@@ -3,130 +3,73 @@ package org.kurento.client.internal.test.model.client;
 import java.util.List;
 
 import org.kurento.client.AbstractBuilder;
+import org.kurento.client.Continuation;
 import org.kurento.client.EventListener;
 import org.kurento.client.KurentoObject;
 import org.kurento.client.ListenerSubscription;
-import org.kurento.client.Transaction;
 import org.kurento.client.internal.RemoteClass;
-import org.kurento.client.internal.client.RemoteObjectFacade;
 import org.kurento.client.internal.client.RomManager;
+import org.kurento.client.internal.server.Param;
 import org.kurento.client.internal.test.model.client.events.SampleEvent;
-import org.kurento.jsonrpc.Props;
-
-import com.google.common.reflect.TypeToken;
 
 @RemoteClass
-public class SampleClass extends KurentoObject {
+public interface SampleClass extends KurentoObject {
 
-	public SampleClass(RemoteObjectFacade remoteObject) {
-		super(remoteObject, null);
-	}
+	String getAtt1();
 
-	public String getAtt1() {
-		return (String) remoteObject.invoke("getAtt1", null, String.class);
-	}
+	void getAtt1(Continuation<String> cont);
 
-	public boolean getAtt2() {
-		return (boolean) remoteObject.invoke("getAtt2", null, boolean.class);
-	}
+	boolean getAtt2();
 
-	public float getAtt3() {
-		return (float) remoteObject.invoke("getAtt3", null, float.class);
-	}
+	void getAtt2(Continuation<Boolean> cont);
 
-	public int getAtt4() {
-		return (int) remoteObject.invoke("getAtt4", null, int.class);
-	}
+	float getAtt3();
 
-	public void startTestEvents(int numEvents) {
-		Props props = new Props();
-		props.add("numEvents", numEvents);
-		remoteObject.invoke("startTestEvents", props, Void.class);
-	}
+	void getAtt3(Continuation<Float> cont);
 
-	public SampleEnum echoEnum(SampleEnum param) {
-		Props props = new Props();
-		props.add("param", param);
-		return (SampleEnum) remoteObject.invoke("echoEnum", props,
-				SampleEnum.class);
-	}
+	int getAtt4();
 
-	public ComplexParam echoRegister(ComplexParam param) {
-		Props props = new Props();
-		props.add("param", param);
-		return (ComplexParam) remoteObject.invoke("echoRegister", props,
-				ComplexParam.class);
-	}
+	void getAtt4(Continuation<Integer> cont);
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<SampleEnum> echoListEnum(List<SampleEnum> param) {
-		Props props = new Props();
-		props.add("param", param);
-		return (List<SampleEnum>) remoteObject.invoke("echoListEnum", props,
-				new TypeToken<List<SampleEnum>>() {
-				}.getType());
-	}
+	void startTestEvents(@Param("numEvents") int numEvents);
 
-	// @SuppressWarnings({ "serial" })
-	// public void echoListEnum(List<SampleEnum> param,
-	// Continuation<List<SampleEnum>> cont) {
-	// Props props = new Props();
-	// props.add("param", param);
-	// remoteObject.invoke("echoListEnum", props,
-	// new TypeToken<List<SampleEnum>>() {
-	// }.getType(), cont);
-	// }
+	void startTestEvents(@Param("numEvents") int numEvents,
+			Continuation<Void> cont);
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<ComplexParam> echoListRegister(List<ComplexParam> param) {
-		Props props = new Props();
-		props.add("param", param);
-		return (List<ComplexParam>) remoteObject.invoke("echoListRegister",
-				props, new TypeToken<List<ComplexParam>>() {
-				}.getType());
-	}
+	SampleEnum echoEnum(@Param("param") SampleEnum param);
 
-	// @SuppressWarnings({ "serial" })
-	// public void echoListRegister(List<ComplexParam> param,
-	// Continuation<List<ComplexParam>> cont) {
-	// Props props = new Props();
-	// props.add("param", param);
-	// remoteObject.invoke("echoListRegister", props,
-	// new TypeToken<List<ComplexParam>>() {
-	// }.getType(), cont);
-	// }
+	void echoEnum(@Param("param") SampleEnum param,
+			Continuation<SampleEnum> cont);
 
-	public SampleClass echoObjectRef(SampleClass param) {
-		Props props = new Props();
-		props.add("param", param);
-		return (SampleClass) remoteObject.invoke("echoObjectRef", props,
-				SampleClass.class);
-	}
+	ComplexParam echoRegister(@Param("param") ComplexParam param);
 
-	// public void echoObjectRef(SampleClass param, Continuation<SampleClass>
-	// cont) {
-	// Props props = new Props();
-	// props.add("param", param);
-	// remoteObject.invoke("echoObjectRef", props, SampleClass.class, cont);
-	// }
+	void echoRegister(@Param("param") ComplexParam param,
+			Continuation<ComplexParam> cont);
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<SampleClass> echoObjectRefList(List<SampleClass> param) {
-		Props props = new Props();
-		props.add("param", param);
-		return (List<SampleClass>) remoteObject.invoke("echoObjectRefList",
-				props, new TypeToken<List<SampleClass>>() {
-				}.getType());
-	}
+	List<SampleEnum> echoListEnum(@Param("param") List<SampleEnum> param);
 
-	public ListenerSubscription addSampleListener(
-			EventListener<SampleEvent> listener) {
-		return subscribeEventListener(listener, SampleEvent.class);
-	}
+	void echoListEnum(@Param("param") List<SampleEnum> param,
+			Continuation<List<SampleEnum>> cont);
 
-	public static Builder with(String att1, boolean att2, RomManager manager) {
-		return new Builder(att1, att2, manager);
-	}
+	List<ComplexParam> echoListRegister(@Param("param") List<ComplexParam> param);
+
+	void echoListRegister(@Param("param") List<ComplexParam> param,
+			Continuation<List<ComplexParam>> cont);
+
+	SampleClass echoObjectRef(@Param("param") SampleClass param);
+
+	void echoObjectRef(@Param("param") SampleClass param,
+			Continuation<SampleClass> cont);
+
+	List<SampleClass> echoObjectRefList(@Param("param") List<SampleClass> param);
+
+	void echoObjectRefList(@Param("param") List<SampleClass> param,
+			Continuation<List<SampleClass>> cont);
+
+	ListenerSubscription addSampleListener(EventListener<SampleEvent> listener);
+
+	void addSampleListener(EventListener<SampleEvent> listener,
+			Continuation<ListenerSubscription> cont);
 
 	public static class Builder extends AbstractBuilder<SampleClass> {
 
@@ -144,12 +87,6 @@ public class SampleClass extends KurentoObject {
 		public Builder withAtt4(int att4) {
 			props.add("att4", att4);
 			return this;
-		}
-
-		@Override
-		protected SampleClass createMediaObject(
-				RemoteObjectFacade remoteObject, Transaction tx) {
-			return new SampleClass(remoteObject);
 		}
 	}
 }

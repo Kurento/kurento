@@ -1,121 +1,46 @@
 package org.kurento.client.internal.test.model;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.kurento.client.AbstractBuilder;
 import org.kurento.client.KurentoObject;
-import org.kurento.client.Transaction;
 import org.kurento.client.internal.RemoteClass;
-import org.kurento.client.internal.TransactionImpl;
-import org.kurento.client.internal.client.RemoteObjectFacade;
 import org.kurento.client.internal.client.RomManager;
-import org.kurento.client.internal.client.operation.InvokeOperation;
-import org.kurento.jsonrpc.Props;
-
-import com.google.common.reflect.TypeToken;
+import org.kurento.client.internal.server.Param;
 
 @RemoteClass
-public class SampleRemoteClass extends KurentoObject {
+public interface SampleRemoteClass extends KurentoObject {
 
-	public SampleRemoteClass(RemoteObjectFacade remoteObject) {
-		super(remoteObject, null);
-	}
+	public void methodReturnVoid();
 
-	public void methodReturnVoid() {
-		remoteObject.invoke("methodReturnVoid", null, Void.class);
-	}
+	public String methodReturnsString();
 
-	public Future<Void> methodReturnVoid(Transaction t) {
-		return (Future<Void>) ((TransactionImpl) t)
-				.<Void> addOperation(new InvokeOperation(this,
-						"methodReturnVoid", null, Void.class));
-	}
+	public boolean methodReturnsBoolean();
 
-	public String methodReturnsString() {
-		return remoteObject.invoke("methodReturnsString", null, String.class);
-	}
+	public float methodReturnsFloat();
 
-	public Future<String> methodReturnsString(Transaction t) {
-		return (Future<String>) ((TransactionImpl) t)
-				.<String> addOperation(new InvokeOperation(this,
-						"methodReturnsString", null, Void.class));
-	}
+	public int methodReturnsInt();
 
-	public boolean methodReturnsBoolean() {
-		return remoteObject.invoke("methodReturnsBoolean", null, boolean.class);
-	}
+	public List<String> methodReturnsStringList();
 
-	public float methodReturnsFloat() {
-		return remoteObject.invoke("methodReturnsFloat", null, float.class);
-	}
+	public List<Boolean> methodReturnsBooleanList();
 
-	public int methodReturnsInt() {
-		return remoteObject.invoke("methodReturnsInt", null, int.class);
-	}
+	public List<Float> methodReturnsFloatList();
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<String> methodReturnsStringList() {
-		return (List<String>) remoteObject.invoke("methodReturnsStringList",
-				null, new TypeToken<List<String>>() {
-				}.getType());
-	}
+	public List<Integer> methodReturnsIntList();
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<Boolean> methodReturnsBooleanList() {
-		return (List<Boolean>) remoteObject.invoke("methodReturnsBooleanList",
-				null, new TypeToken<List<Boolean>>() {
-				}.getType());
-	}
+	public String methodParamString(@Param("param") String param);
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<Float> methodReturnsFloatList() {
-		return (List<Float>) remoteObject.invoke("methodReturnsFloatList",
-				null, new TypeToken<List<Float>>() {
-				}.getType());
-	}
+	public boolean methodParamBoolean(@Param("param") boolean param);
 
-	@SuppressWarnings({ "unchecked", "serial" })
-	public List<Integer> methodReturnsIntList() {
-		return (List<Integer>) remoteObject.invoke("methodReturnsIntList",
-				null, new TypeToken<List<Integer>>() {
-				}.getType());
-	}
+	public float methodParamFloat(@Param("param") float param);
 
-	public String methodParamString(String param) {
-		return remoteObject.invoke("methodParamString",
-				new Props().add("param", param), String.class);
-	}
-
-	public boolean methodParamBoolean(boolean param) {
-		return remoteObject.invoke("methodParamBoolean",
-				new Props().add("param", param), boolean.class);
-	}
-
-	public float methodParamFloat(float param) {
-		return remoteObject.invoke("methodParamFloat",
-				new Props().add("param", param), float.class);
-	}
-
-	public int methodParamInt(int param) {
-		return remoteObject.invoke("methodParamInt",
-				new Props().add("param", param), int.class);
-	}
-
-	public static Builder with(RomManager manager) {
-		return new Builder(manager);
-	}
+	public int methodParamInt(@Param("param") int param);
 
 	public static class Builder extends AbstractBuilder<SampleRemoteClass> {
 
 		public Builder(RomManager manager) {
 			super(SampleRemoteClass.class, manager);
-		}
-
-		@Override
-		protected SampleRemoteClass createMediaObject(
-				RemoteObjectFacade remoteObject, Transaction tx) {
-			return new SampleRemoteClass(remoteObject);
 		}
 	}
 }

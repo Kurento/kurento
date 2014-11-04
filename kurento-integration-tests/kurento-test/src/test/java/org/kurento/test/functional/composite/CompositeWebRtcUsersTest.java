@@ -30,7 +30,7 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Four synthetic videos are played by four
  * WebRtcEndpoint and mixed by a Composite. The resulting video is played in an
  * WebRtcEndpoint. At the end, a B&N filter is connected in one of the WebRTC's.<br/>
@@ -47,7 +47,7 @@ import org.kurento.test.client.WebRtcMode;
  * <li>Finally color of the video should be the expected (red, , blue, green,
  * and white)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 4.2.3
@@ -63,7 +63,7 @@ public class CompositeWebRtcUsersTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = new MediaPipeline.Builder(kurentoClient).build();
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEPRed = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEPGreen = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEPBlue = new WebRtcEndpoint.Builder(mp).build();

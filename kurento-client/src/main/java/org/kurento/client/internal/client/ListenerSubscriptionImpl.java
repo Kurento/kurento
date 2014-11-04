@@ -1,7 +1,6 @@
 package org.kurento.client.internal.client;
 
 import org.kurento.client.ListenerSubscription;
-import org.kurento.client.internal.client.RemoteObject.RemoteObjectEventListener;
 
 public class ListenerSubscriptionImpl implements ListenerSubscription {
 

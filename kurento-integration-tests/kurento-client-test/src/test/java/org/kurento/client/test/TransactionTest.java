@@ -143,6 +143,9 @@ public class TransactionTest extends KurentoClientTest {
 
 	}
 
+	// In the current KMS impl, the error is MediaElementImpl not found and
+	// should be another error to control non-commited objects
+	// @Ignore
 	@Test(expected = TransactionNotExecutedException.class)
 	public void usePlainMethodsWithNewObjectsAsParamsInsideTx()
 			throws InterruptedException, ExecutionException {

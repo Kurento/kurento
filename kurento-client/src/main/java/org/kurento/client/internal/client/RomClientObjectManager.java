@@ -18,21 +18,21 @@ public class RomClientObjectManager implements RomEventHandler,
 	private final ConcurrentMap<String, RemoteObject> objects = new MapMaker()
 			.weakValues().makeMap();
 
-	private final RomManager manager;
+	private final RomClient client;
 
-	public RomClientObjectManager(RomManager manager) {
-		this.manager = manager;
+	public RomClientObjectManager(RomClient client) {
+		this.client = client;
 	}
 
-	public RomManager getManager() {
-		return manager;
+	public RomClient getClient() {
+		return client;
 	}
 
 	@Override
 	public void processEvent(String objectRef, String subscription,
 			String type, Props data) {
 
-		RemoteObjectFacade object = objects.get(objectRef);
+		RemoteObject object = objects.get(objectRef);
 
 		if (object == null) {
 			LOG.error("Trying to propagate an event to an object that doesn't exist in the client");
@@ -50,7 +50,7 @@ public class RomClientObjectManager implements RomEventHandler,
 		this.objects.remove(objectRef);
 	}
 
-	public RemoteObjectFacade getRemoteObject(String objectRef) {
+	public RemoteObject getRemoteObject(String objectRef) {
 		return this.objects.get(objectRef);
 	}
 

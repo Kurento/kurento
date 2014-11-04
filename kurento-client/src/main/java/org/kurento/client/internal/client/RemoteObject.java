@@ -1,13 +1,19 @@
 package org.kurento.client.internal.client;
 
 import java.lang.reflect.Type;
-import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 
 import org.kurento.client.Continuation;
 import org.kurento.client.KurentoObject;
+import org.kurento.client.Transaction;
 import org.kurento.client.TransactionNotExecutedException;
+import org.kurento.client.internal.TransactionImpl;
+import org.kurento.client.internal.client.operation.InvokeOperation;
+import org.kurento.client.internal.client.operation.ReleaseOperation;
+import org.kurento.client.internal.client.operation.SubscriptionOperation;
 import org.kurento.client.internal.transport.serialization.ParamsFlattener;
-import org.kurento.jsonrpc.Prop;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,127 +22,236 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-public class RemoteObject implements RemoteObjectFacade {
+public class RemoteObject {
 
 	private static Logger LOG = LoggerFactory.getLogger(RemoteObject.class);
 
 	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
-	public interface RemoteObjectEventListener {
-		public void onEvent(String eventType, Props data);
-	}
-
+	private String objectRef;
+	private final String type;
+	private boolean created;
 	private final RomManager manager;
 
-	private final String objectRef;
-	private final String type;
+	private KurentoObject kurentoObject;
 
-	// This object is used in the process of unflatten. It is common that
-	// RemoteObject is used with a Typed wrapper (with reflexion, with code
-	// generation or by hand). In this cases, the object reference is unflatten
-	// to this value instead of RemoteObject itself.
-	private KurentoObject publicObject;
+	private volatile CountDownLatch readyLatch;
+	private Continuation<Object> whenContinuation;
+	private Executor executor;
 
 	private final Multimap<String, RemoteObjectEventListener> listeners = Multimaps
 			.synchronizedMultimap(ArrayListMultimap
 					.<String, RemoteObjectEventListener> create());
 
 	public RemoteObject(String objectRef, String type, RomManager manager) {
-		this.manager = manager;
+		this(objectRef, type, true, manager);
+	}
 
+	public RemoteObject(String objectRef, String type, boolean created,
+			RomManager manager) {
 		this.objectRef = objectRef;
+		this.manager = manager;
 		this.type = type;
+		this.created = created;
 
 		this.manager.registerObject(objectRef, this);
 	}
 
-	@Override
-	public KurentoObject getPublicObject() {
-		return publicObject;
+	public boolean isCommited() {
+		return created;
 	}
 
-	@Override
-	public void setPublicObject(KurentoObject wrapperForUnflatten) {
-		this.publicObject = wrapperForUnflatten;
+	public void waitCommited() throws InterruptedException {
+		createReadyLatchIfNecessary();
+		readyLatch.await();
 	}
 
-	@Override
+	private void createReadyLatchIfNecessary() {
+		if (readyLatch == null) {
+			synchronized (this) {
+				if (readyLatch == null) {
+					readyLatch = new CountDownLatch(1);
+				}
+			}
+		}
+	}
+
+	public synchronized void whenCommited(Continuation<?> continuation) {
+		whenCommited(continuation, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public synchronized void whenCommited(Continuation<?> continuation,
+			Executor executor) {
+		this.whenContinuation = (Continuation<Object>) continuation;
+		this.executor = executor;
+		if (isCommited()) {
+			execWhenCommited();
+		}
+	}
+
+	private void execWhenCommited() {
+		if (executor == null) {
+			// TODO Propagate error if object is not ready for error
+			try {
+				whenContinuation.onSuccess(this.getKurentoObject());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			executor.execute(new Runnable() {
+				public void run() {
+					try {
+						whenContinuation.onSuccess(RemoteObject.this
+								.getKurentoObject());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});
+		}
+	}
+
+	public KurentoObject getKurentoObject() {
+		return kurentoObject;
+	}
+
+	public void setKurentoObject(KurentoObject kurentoObject) {
+		this.kurentoObject = kurentoObject;
+	}
+
+	public String getObjectRef() {
+		return objectRef;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public RomManager getRomManager() {
+		return manager;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <E> E invoke(String method, Props params, Class<E> clazz) {
-		return (E) invoke(method, params, (Type) clazz);
+
+		checkCreated();
+
+		Type flattenType = FLATTENER.calculateFlattenType(clazz);
+
+		Object obj = invoke(method, params, flattenType);
+
+		return (E) FLATTENER.unflattenValue("return", clazz, obj, manager);
 	}
 
-	@Override
 	public Object invoke(String method, Props params, Type type) {
 
-		Type flattenType = FLATTENER.calculateFlattenType(type);
+		checkCreated();
 
-		checkForNonReadyObjects(params);
+		Type flattenType = FLATTENER.calculateFlattenType(type);
 
 		Object obj = manager.invoke(objectRef, method, params, flattenType);
 
 		return FLATTENER.unflattenValue("return", type, obj, manager);
 	}
 
-	// TODO Can we optimize this without processing always all invoke params?
-	private void checkForNonReadyObjects(Props params) {
-		if (params != null) {
-			for (Prop prop : params) {
-				checkParam(prop.getValue());
-			}
-		}
+	public Future<Object> invoke(String method, Props params, Type type,
+			Transaction tx) {
+
+		TransactionImpl txImpl = (TransactionImpl) tx;
+		return txImpl.addOperation(new InvokeOperation(getKurentoObject(),
+				method, params, type));
 	}
 
-	private void checkParam(Object param) {
-		if (param instanceof KurentoObject) {
-			checkMediaObject((KurentoObject) param);
-		} else if (param instanceof List) {
-			for (Object elem : ((List<?>) param)) {
-				checkParam(elem);
-			}
-		} else if (param instanceof Props) {
-			for (Prop prop : ((Props) param)) {
-				checkParam(prop.getValue());
-			}
-		}
+	@SuppressWarnings("rawtypes")
+	public void invoke(String method, Props params, final Type type,
+			final Continuation cont) {
+
+		checkCreated();
+
+		Type flattenType = FLATTENER.calculateFlattenType(type);
+
+		manager.invoke(objectRef, method, params, flattenType,
+				new DefaultContinuation<Object>(cont) {
+					@SuppressWarnings("unchecked")
+					@Override
+					public void onSuccess(Object result) {
+						try {
+							cont.onSuccess(FLATTENER.unflattenValue("return",
+									type, result, manager));
+						} catch (Exception e) {
+							log.warn(
+									"[Continuation] error invoking onSuccess implemented by client",
+									e);
+						}
+					}
+				});
 	}
 
-	private void checkMediaObject(KurentoObject mediaObject) {
-		if (!mediaObject.isCommited()) {
-			throw new TransactionNotExecutedException();
-		}
-	}
-
-	@Override
 	public void release() {
+
+		checkCreated();
+
 		manager.release(objectRef);
 	}
 
-	@Override
+	public void release(Transaction tx) {
+		TransactionImpl txImpl = (TransactionImpl) tx;
+		txImpl.addOperation(new ReleaseOperation(getKurentoObject()));
+	}
+
+	public void release(final Continuation<Void> cont) {
+
+		checkCreated();
+
+		manager.release(objectRef, new DefaultContinuation<Void>(cont) {
+			@Override
+			public void onSuccess(Void result) {
+				try {
+					cont.onSuccess(null);
+				} catch (Exception e) {
+					log.warn(
+							"[Continuation] error invoking onSuccess implemented by client",
+							e);
+				}
+			}
+		});
+	}
+
 	public ListenerSubscriptionImpl addEventListener(String eventType,
 			RemoteObjectEventListener listener) {
 
+		checkCreated();
+
 		String subscription = manager.subscribe(objectRef, eventType);
 
-		addListener(eventType, listener);
+		listeners.put(eventType, listener);
 
 		return new ListenerSubscriptionImpl(subscription, eventType, listener);
 	}
 
-	public void addListener(String eventType, RemoteObjectEventListener listener) {
-		listeners.put(eventType, listener);
+	public ListenerSubscriptionImpl addEventListener(String eventType,
+			RemoteObjectEventListener listener, Transaction tx) {
+		TransactionImpl txImpl = (TransactionImpl) tx;
+		SubscriptionOperation op = new SubscriptionOperation(
+				getKurentoObject(), eventType, listener);
+		txImpl.addOperation(op);
+		return op.getListenerSubscription();
 	}
 
-	@Override
 	public void addEventListener(final String eventType,
 			final RemoteObjectEventListener listener,
 			final Continuation<ListenerSubscriptionImpl> cont) {
+
+		checkCreated();
 
 		manager.subscribe(objectRef, eventType,
 				new DefaultContinuation<String>(cont) {
 					@Override
 					public void onSuccess(String subscription) {
-						addListener(eventType, listener);
+						listeners.put(eventType, listener);
 						try {
 							cont.onSuccess(new ListenerSubscriptionImpl(
 									subscription, eventType, listener));
@@ -149,12 +264,6 @@ public class RemoteObject implements RemoteObjectFacade {
 				});
 	}
 
-	@Override
-	public String getObjectRef() {
-		return objectRef;
-	}
-
-	@Override
 	public void fireEvent(String type, Props data) {
 		for (RemoteObjectEventListener eventListener : this.listeners.get(type)) {
 			try {
@@ -165,9 +274,14 @@ public class RemoteObject implements RemoteObjectFacade {
 		}
 	}
 
-	@Override
-	public String getType() {
-		return type;
+	public Transaction beginTransaction() {
+		return new TransactionImpl(manager);
+	}
+
+	private void checkCreated() {
+		if (!created) {
+			throw new TransactionNotExecutedException();
+		}
 	}
 
 	@Override
@@ -201,14 +315,13 @@ public class RemoteObject implements RemoteObjectFacade {
 		return true;
 	}
 
-	@Override
-	public RomManager getRomManager() {
-		return manager;
+	public void setCreatedObjectRef(String objectRef) {
+		this.objectRef = objectRef;
+		this.created = true;
+		createReadyLatchIfNecessary();
+		readyLatch.countDown();
+		if (whenContinuation != null) {
+			execWhenCommited();
+		}
 	}
-
-	@Override
-	public void release(Continuation<Void> continuation) {
-		manager.release(objectRef, continuation);
-	}
-
 }

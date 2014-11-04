@@ -12,7 +12,7 @@ import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 
 public class ConstructionTest {
 
-	private static RomManager manager;
+	protected static RomManager manager;
 
 	@BeforeClass
 	public static void initFactory() {
@@ -24,8 +24,8 @@ public class ConstructionTest {
 	@Test
 	public void initObject() {
 
-		Sample2 obj = new Sample2.Builder("XXX", 33, manager).withAtt3(0.5f).att4()
-				.build();
+		Sample2 obj = new Sample2.Builder("XXX", 33, manager).withAtt3(0.5f)
+				.att4().build();
 
 		String att1 = obj.getAtt1();
 		int att2 = obj.getAtt2();

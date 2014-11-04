@@ -103,7 +103,7 @@ public class RomClientJsonRpcClient implements RomClient {
 			Continuation<String> cont) {
 
 		RequestAndResponseType reqres = createCreateRequest(remoteClassName,
-				constructorParams);
+				constructorParams, false);
 
 		return this.<String, String> sendRequest(reqres.request,
 				reqres.responseType, null, cont);
@@ -123,7 +123,7 @@ public class RomClientJsonRpcClient implements RomClient {
 			Props operationParams, Type type, Continuation<?> cont) {
 
 		RequestAndResponseType reqres = createInvokeRequest(objectRef,
-				operationName, operationParams, type);
+				operationName, operationParams, type, false);
 
 		return sendRequest(reqres.request, reqres.responseType, null, cont);
 	}
@@ -267,7 +267,7 @@ public class RomClientJsonRpcClient implements RomClient {
 	// Create JsonRpc requests
 
 	public RequestAndResponseType createInvokeRequest(String objectRef,
-			String operationName, Props operationParams, Type type) {
+			String operationName, Props operationParams, Type type, boolean inTx) {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(INVOKE_OBJECT, objectRef);
@@ -276,7 +276,7 @@ public class RomClientJsonRpcClient implements RomClient {
 		if (operationParams != null) {
 
 			Props flatParams = ParamsFlattener.getInstance().flattenParams(
-					operationParams);
+					operationParams, inTx);
 
 			params.add(INVOKE_OPERATION_PARAMS,
 					JsonUtils.toJsonObject(flatParams));
@@ -296,14 +296,14 @@ public class RomClientJsonRpcClient implements RomClient {
 	}
 
 	public RequestAndResponseType createCreateRequest(String remoteClassName,
-			Props constructorParams) {
+			Props constructorParams, boolean inTx) {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(CREATE_TYPE, remoteClassName);
 
 		if (constructorParams != null) {
 			Props flatParams = ParamsFlattener.getInstance().flattenParams(
-					constructorParams);
+					constructorParams, inTx);
 
 			params.add(CREATE_CONSTRUCTOR_PARAMS,
 					JsonUtils.toJsonObject(flatParams));

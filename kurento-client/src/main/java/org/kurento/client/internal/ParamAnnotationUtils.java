@@ -12,9 +12,20 @@ import org.kurento.jsonrpc.Props;
 
 public class ParamAnnotationUtils {
 
-	public static Props extractProps(Annotation[][] annotations, Object[] args)
-			throws ProtocolException {
+	public static Props extractProps(List<String> paramNames, Object[] args) {
+		Props props = null;
 
+		if (!paramNames.isEmpty()) {
+			props = new Props();
+			for (int i = 0; i < args.length; i++) {
+				props.add(paramNames.get(i), args[i]);
+			}
+		}
+		return props;
+	}
+
+	public static Props extractProps(Annotation[][] annotations, Object[] args,
+			int argsOffset) {
 		Props props = null;
 
 		if (args != null && args.length > 0) {
@@ -22,12 +33,17 @@ public class ParamAnnotationUtils {
 			props = new Props();
 			for (int i = 0; i < args.length; i++) {
 
-				Param param = getParamAnnotation(annotations[i]);
+				Param param = getParamAnnotation(annotations[i + argsOffset]);
 				props.add(param.value(), args[i]);
 			}
 		}
 
 		return props;
+	}
+
+	public static Props extractProps(Annotation[][] annotations, Object[] args)
+			throws ProtocolException {
+		return extractProps(annotations, args, 0);
 	}
 
 	public static List<String> getParamNames(Method method)
@@ -47,7 +63,12 @@ public class ParamAnnotationUtils {
 
 		for (int x = 0; x < annotationsParams.length; x++) {
 			Annotation[] annotationsParam = annotationsParams[x];
-			paramNames.add(getParamAnnotation(annotationsParam).value());
+			Param paramAnnotation = getParamAnnotation(annotationsParam);
+			if (paramAnnotation == null) {
+				paramNames.add(null);
+			} else {
+				paramNames.add(paramAnnotation.value());
+			}
 		}
 
 		return paramNames;
@@ -63,11 +84,6 @@ public class ParamAnnotationUtils {
 				param = (Param) annotationsParam[j];
 				break;
 			}
-		}
-
-		if (param == null) {
-			throw new ProtocolException("@Param annotation must be specified"
-					+ " in all methods and constructor params");
 		}
 
 		return param;
@@ -88,4 +104,5 @@ public class ParamAnnotationUtils {
 
 		return params;
 	}
+
 }
