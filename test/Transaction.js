@@ -113,9 +113,9 @@ QUnit.asyncTest('Transaction object on pseudo-sync API', function()
 
     QUnit.notStrictEqual(player.id, undefined, 'player.id: '+player.id);
 
-    promiseUrl.then(function(value){
-      QUnit.notStrictEqual(value, undefined, 'httpGet.url: '+url);
-    });
+//    promiseUrl.then(function(value){
+//      QUnit.notStrictEqual(value, undefined, 'httpGet.url: '+url);
+//    });
 
     pipeline.release(function(error)
     {
