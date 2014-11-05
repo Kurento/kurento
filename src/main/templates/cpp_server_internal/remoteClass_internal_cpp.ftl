@@ -160,7 +160,7 @@ Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remo
   } else {
     try {
       std::shared_ptr<kurento::MediaObjectImpl> aux;
-      aux = ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory::getObject (serializer.JsonValue.asString () );
+      aux = ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory::getObject (JsonFixes::getString(serializer.JsonValue) );
       object = std::dynamic_pointer_cast<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> (aux);
       return;
     } catch (KurentoException &ex) {
