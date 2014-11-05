@@ -28,6 +28,7 @@
 #include <boost/type_traits.hpp>
 #include <string>
 #include <memory>
+#include "JsonFixes.hpp"
 
 namespace kurento
 {
@@ -275,7 +276,7 @@ private:
 
   template<typename TKey>
   void Read (TKey key, std::string &value) {
-    value = JsonValue[key].asString();
+    value = JsonFixes::getString (JsonValue[key]);
   }
 };
 
