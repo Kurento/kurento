@@ -16,7 +16,7 @@ namespace kurento
 {
 namespace module
 {
-namespace armarkerdetector
+namespace markerdetector
 {
 
 ArMarkerdetectorImpl::ArMarkerdetectorImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline) : OpenCVFilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
@@ -78,6 +78,6 @@ ArMarkerdetectorImpl::StaticConstructor::StaticConstructor()
                            GST_DEFAULT_NAME);
 }
 
-} /* armarkerdetector */
+} /* markerdetector */
 } /* module */
 } /* kurento */

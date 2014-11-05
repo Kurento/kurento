@@ -13,16 +13,16 @@ namespace kurento
 {
 namespace module
 {
-namespace armarkerdetector
+namespace markerdetector
 {
 class ArMarkerdetectorImpl;
-} /* armarkerdetector */
+} /* markerdetector */
 } /* module */
 } /* kurento */
 
 namespace kurento
 {
-void Serialize (std::shared_ptr<kurento::module::armarkerdetector::ArMarkerdetectorImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<kurento::module::markerdetector::ArMarkerdetectorImpl> &object, JsonSerializer &serializer);
 } /* kurento */
 
 namespace kurento
@@ -34,7 +34,7 @@ namespace kurento
 {
 namespace module
 {
-namespace armarkerdetector
+namespace markerdetector
 {
 
 class ArMarkerdetectorImpl : public OpenCVFilterImpl, public virtual ArMarkerdetector, public virtual ArMarkerdetectorOpenCVImpl
@@ -78,7 +78,7 @@ private:
 
 };
 
-} /* armarkerdetector */
+} /* markerdetector */
 } /* module */
 } /* kurento */
 

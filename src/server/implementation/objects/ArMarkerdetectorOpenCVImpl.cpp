@@ -7,7 +7,7 @@ namespace kurento
 {
 namespace module
 {
-namespace armarkerdetector
+namespace markerdetector
 {
 
 ArMarkerdetectorOpenCVImpl::ArMarkerdetectorOpenCVImpl ()
@@ -78,6 +78,6 @@ float ArMarkerdetectorOpenCVImpl::getOverlayScale ()
   return ar.get_overlay_scale();
 }
 
-} /* armarkerdetector */
+} /* markerdetector */
 } /* module */
 } /* kurento */

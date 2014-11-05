@@ -12,7 +12,7 @@ namespace kurento
 {
 namespace module
 {
-namespace armarkerdetector
+namespace markerdetector
 {
 
 class ArMarkerdetectorOpenCVImpl : public virtual OpenCVProcess
@@ -44,7 +44,7 @@ public:
 
 };
 
-} /* armarkerdetector */
+} /* markerdetector */
 } /* module */
 } /* kurento */
 
