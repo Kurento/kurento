@@ -45,7 +45,7 @@ pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
 
 set (VERSION ${PROJECT_VERSION})
 set (PACKAGE ${PROJECT_NAME})
-set (GETTEXT_PACKAGE "ar-markerdetector")
+set (GETTEXT_PACKAGE "kms-markerdetector")
 
 include(GNUInstallDirs)
 
