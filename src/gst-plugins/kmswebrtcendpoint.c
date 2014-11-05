@@ -63,7 +63,7 @@ enum
 #define IPV4 4
 #define IPV6 6
 
-#define NICE_N_COMPONENTS 2
+#define KMS_NICE_N_COMPONENTS 2
 
 #define AUDIO_STREAM_NAME "audio"
 #define VIDEO_STREAM_NAME "video"
@@ -205,7 +205,7 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 /* WebRTCConnection */
 
 static void
-nice_agent_recv (NiceAgent * agent, guint stream_id, guint component_id,
+kms_nice_agent_recv_cb (NiceAgent * agent, guint stream_id, guint component_id,
     guint len, gchar * buf, gpointer user_data)
 {
   /* Nothing to do, this callback is only for negotiation */
@@ -255,7 +255,7 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
   conn = g_slice_new0 (KmsWebRTCConnection);
 
   conn->agent = g_object_ref (agent);
-  conn->stream_id = nice_agent_add_stream (agent, NICE_N_COMPONENTS);
+  conn->stream_id = nice_agent_add_stream (agent, KMS_NICE_N_COMPONENTS);
   if (conn->stream_id == 0) {
     GST_ERROR ("Cannot add nice stream for %s.", name);
     kms_webrtc_connection_destroy (conn);
@@ -264,9 +264,9 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
 
   nice_agent_set_stream_name (agent, conn->stream_id, name);
   nice_agent_attach_recv (agent, conn->stream_id,
-      NICE_COMPONENT_TYPE_RTP, context, nice_agent_recv, NULL);
+      NICE_COMPONENT_TYPE_RTP, context, kms_nice_agent_recv_cb, NULL);
   nice_agent_attach_recv (agent, conn->stream_id,
-      NICE_COMPONENT_TYPE_RTCP, context, nice_agent_recv, NULL);
+      NICE_COMPONENT_TYPE_RTCP, context, kms_nice_agent_recv_cb, NULL);
 
   conn->rtp_transport =
       kms_webrtc_transport_create (agent, conn->stream_id,
