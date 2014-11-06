@@ -40,4 +40,4 @@ install -o root -g root $KCS_HOME/config/kurento.conf.json /etc/kurento/control-
 update-rc.d kurento-control-server defaults
 
 # start media connector
-/etc/init.d/kurento-control-server start
+/etc/init.d/kurento-control-server restart

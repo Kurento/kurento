@@ -40,4 +40,4 @@ install -o root -g root $KTS_HOME/config/kurento-tree.conf.json /etc/kurento/kur
 update-rc.d kurento-tree-server defaults
 
 # start media connector
-/etc/init.d/kurento-tree-server start
+/etc/init.d/kurento-tree-server restart
