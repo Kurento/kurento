@@ -17,6 +17,8 @@ Hub.prototype.createHubPort = function(callback){
 
   var mediaObject = new HubPort()
 
+  mediaObject.on('_rpc', this.emit.bind(this, '_rpc'));
+
   var params =
   {
     type: 'HubPort',
