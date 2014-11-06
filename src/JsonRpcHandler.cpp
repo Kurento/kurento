@@ -23,6 +23,8 @@ namespace kurento
 namespace JsonRpc
 {
 
+using namespace ErrorCode;
+
 void
 Handler::addMethod (const std::string &name, Method method)
 {
