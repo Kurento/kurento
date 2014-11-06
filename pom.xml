@@ -106,9 +106,9 @@
 							<keepScriptFile>true</keepScriptFile>
 							<script>
 								cd ${basedir}
-								npm install
-								node_modules/.bin/grunt
-								node_modules/.bin/grunt sync:bower
+								npm --no-color install
+								node_modules/.bin/grunt --no-color
+								node_modules/.bin/grunt --no-color sync:bower
 								mkdir -p \
 								src/main/resources/META-INF/resources/js/
 								cp dist/* \

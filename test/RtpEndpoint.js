@@ -63,10 +63,12 @@ var offer = "v=0\r\n"
 
 QUnit.asyncTest('Get local session descriptor', function()
 {
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     rtpEndpoint.generateOffer(function(error)
@@ -77,6 +79,8 @@ QUnit.asyncTest('Get local session descriptor', function()
 
       rtpEndpoint.getLocalSessionDescriptor(function(error, sdp)
       {
+        QUnit.equal(error, undefined, 'getLocalSessionDescriptor');
+
         if(error) return onerror(error);
 
         QUnit.notEqual(sdp, undefined, 'SDP: '+sdp);
@@ -89,10 +93,12 @@ QUnit.asyncTest('Get local session descriptor', function()
 
 QUnit.asyncTest('Get remote session descriptor', function()
 {
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     rtpEndpoint.processOffer(offer, function(error)
@@ -103,6 +109,8 @@ QUnit.asyncTest('Get remote session descriptor', function()
 
       rtpEndpoint.getRemoteSessionDescriptor(function(error, sdp)
       {
+        QUnit.equal(error, undefined, 'getRemoteSessionDescriptor');
+
         if(error) return onerror(error);
 
         QUnit.notEqual(sdp, undefined, 'SDP: '+sdp);
@@ -115,14 +123,18 @@ QUnit.asyncTest('Get remote session descriptor', function()
 
 QUnit.asyncTest('Generate offer', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(3);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     rtpEndpoint.generateOffer(function(error, offer)
     {
+      QUnit.equal(error, undefined, 'generateOffer');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(offer, undefined, 'Offer: '+offer);
@@ -134,14 +146,18 @@ QUnit.asyncTest('Generate offer', function()
 
 QUnit.asyncTest('Process offer', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(3);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     rtpEndpoint.processOffer(offer, function(error, answer)
     {
+      QUnit.equal(error, undefined, 'processOffer');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(answer, undefined, 'Answer: '+answer);
@@ -155,30 +171,40 @@ QUnit.asyncTest('Process answer', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(8);
 
   self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     rtpEndpoint.generateOffer(function(error, offer)
     {
+      QUnit.equal(error, undefined, 'generateOffer');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(offer, undefined, 'Offer: '+offer);
 
       self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint2)
       {
+        QUnit.equal(error, undefined, 'RtpEndpoint 2');
+
         if(error) return onerror(error);
 
         rtpEndpoint2.processOffer(offer, function(error, answer)
         {
+          QUnit.equal(error, undefined, 'processOffer');
+
           if(error) return onerror(error);
 
           QUnit.notEqual(answer, undefined, 'Answer: '+answer);
 
           rtpEndpoint.processAnswer(answer, function(error, sdp)
           {
+            QUnit.equal(error, undefined, 'processAnswer');
+
             if(error) return onerror(error);
 
             QUnit.notEqual(sdp, undefined, 'SDP: '+sdp);
@@ -195,17 +221,21 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
 {
   var self = this;
 
-  QUnit.expect(5);
+  QUnit.expect(7);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES},
   function(error, player)
   {
+    QUnit.equal(error, undefined, 'PlayerEndpoint');
+
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
     self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
     {
+      QUnit.equal(error, undefined, 'RtpEndpoint');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(rtpEndpoint, undefined, 'rtpEndpoint');
@@ -240,10 +270,12 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 {
   var self = this;
 
-  QUnit.expect(5);
+  QUnit.expect(9);
 
   self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     var offer = "v=0\r\n"
@@ -264,6 +296,8 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
       rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
       {
+        QUnit.equal(error, undefined, 'getMediaSrcs');
+
         if(error) return onerror(error);
 
         QUnit.notEqual(mediaSources, [], 'MediaSources: '+mediaSources);
@@ -272,6 +306,8 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
         rtpEndpoint.getMediaSinks('VIDEO', function(error, mediaSinks)
         {
+          QUnit.equal(error, undefined, 'getMediaSinks');
+
           if(error) return onerror(error);
 
           QUnit.notEqual(mediaSinks, [], 'MediaSinks: '+mediaSinks);
@@ -287,6 +323,8 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
             self.pipeline.create('HttpGetEndpoint',
             function(error, httpGetEndpoint)
             {
+              QUnit.equal(error, undefined, 'HttpGetEndpoint');
+
               if(error) return onerror(error);
 
               rtpEndpoint.connect(httpGetEndpoint, 'VIDEO', function(error)
@@ -307,32 +345,42 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
 QUnit.asyncTest('Source sinks', function()
 {
-  QUnit.expect(5);
+  QUnit.expect(10);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
+    QUnit.equal(error, undefined, 'RtpEndpoint');
+
     if(error) return onerror(error);
 
     rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
     {
+      QUnit.equal(error, undefined, 'getMediaSrcs');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(mediaSources, [], 'MediaSources video: '+mediaSources);
 
       rtpEndpoint.getMediaSinks('VIDEO', function(error, mediaSinks)
       {
+        QUnit.equal(error, undefined, 'getMediaSinks');
+
         if(error) return onerror(error);
 
         QUnit.notEqual(mediaSinks, [], 'MediaSinks video: '+mediaSinks);
 
         rtpEndpoint.getMediaSrcs('AUDIO', function(error, mediaSources)
         {
+          QUnit.equal(error, undefined, 'getMediaSrcs');
+
           if(error) return onerror(error);
 
           QUnit.notEqual(mediaSources, [], 'MediaSources audio: '+mediaSources);
 
           rtpEndpoint.getMediaSinks('AUDIO', function(error, mediaSinks)
           {
+            QUnit.equal(error, undefined, 'getMediaSinks');
+
             if(error) return onerror(error);
 
             QUnit.notEqual(mediaSinks, [], 'MediaSinks audio: '+mediaSinks);

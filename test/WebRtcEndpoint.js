@@ -63,10 +63,12 @@ var offer = "v=0\r\n"
 
 QUnit.asyncTest('Get local session descriptor', function()
 {
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   this.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
+    QUnit.equal(error, undefined, 'WebRtcEndpoint');
+
     if(error) return onerror(error);
 
     webRtcEndpoint.generateOffer(function(error)
@@ -77,6 +79,8 @@ QUnit.asyncTest('Get local session descriptor', function()
 
       webRtcEndpoint.getLocalSessionDescriptor(function(error, sdp)
       {
+        QUnit.equal(error, undefined, 'getLocalSessionDescriptor');
+
         if(error) return onerror(error);
 
         QUnit.notEqual(sdp, undefined, 'SDP: '+sdp);
@@ -89,10 +93,12 @@ QUnit.asyncTest('Get local session descriptor', function()
 
 QUnit.asyncTest('Get remote session descriptor', function()
 {
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   this.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
+    QUnit.equal(error, undefined, 'WebRtcEndpoint');
+
     if(error) return onerror(error);
 
     webRtcEndpoint.processOffer(offer, function(error)
@@ -103,6 +109,8 @@ QUnit.asyncTest('Get remote session descriptor', function()
 
       webRtcEndpoint.getRemoteSessionDescriptor(function(error, sdp)
       {
+        QUnit.equal(error, undefined, 'getRemoteSessionDescriptor');
+
         if(error) return onerror(error);
 
         QUnit.notEqual(sdp, undefined, 'SDP: '+sdp);
@@ -115,14 +123,18 @@ QUnit.asyncTest('Get remote session descriptor', function()
 
 QUnit.asyncTest('Generate offer', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(3);
 
   this.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
+    QUnit.equal(error, undefined, 'WebRtcEndpoint');
+
     if(error) return onerror(error);
 
     webRtcEndpoint.generateOffer(function(error, offer)
     {
+      QUnit.equal(error, undefined, 'generateOffer');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(offer, undefined, 'Offer: '+offer);
@@ -134,14 +146,18 @@ QUnit.asyncTest('Generate offer', function()
 
 QUnit.asyncTest('Process offer', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(3);
 
   this.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
+    QUnit.equal(error, undefined, 'WebRtcEndpoint');
+
     if(error) return onerror(error);
 
     webRtcEndpoint.processOffer(offer, function(error, answer)
     {
+      QUnit.equal(error, undefined, 'processOffer');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(answer, undefined, 'Answer: '+answer);
@@ -155,30 +171,40 @@ QUnit.asyncTest('Process answer', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(8);
 
   self.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
+    QUnit.equal(error, undefined, 'WebRtcEndpoint');
+
     if(error) return onerror(error);
 
     webRtcEndpoint.generateOffer(function(error, offer)
     {
+      QUnit.equal(error, undefined, 'generateOffer');
+
       if(error) return onerror(error);
 
       QUnit.notEqual(offer, undefined, 'Offer: '+offer);
 
       self.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint2)
       {
+        QUnit.equal(error, undefined, 'WebRtcEndpoint 2');
+
         if(error) return onerror(error);
 
         webRtcEndpoint2.processOffer(offer, function(error, answer)
         {
+          QUnit.equal(error, undefined, 'processOffer');
+
           if(error) return onerror(error);
 
           QUnit.notEqual(answer, undefined, 'Answer: '+answer);
 
           webRtcEndpoint.processAnswer(answer, function(error, sdp)
           {
+            QUnit.equal(error, undefined, 'processAnswer');
+
             if(error) return onerror(error);
 
             QUnit.notEqual(sdp, undefined, 'SDP: '+sdp);
@@ -195,15 +221,19 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(5);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES},
   function(error, player)
   {
+    QUnit.equal(error, undefined, 'PlayerEndpoint');
+
     if(error) return onerror(error);
 
     self.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
     {
+      QUnit.equal(error, undefined, 'WebRtcEndpoint');
+
       if(error) return onerror(error);
 
       player.connect(webRtcEndpoint, 'VIDEO', function(error)
