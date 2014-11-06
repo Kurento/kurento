@@ -1,0 +1,29 @@
+README
+
+How to install the demo?
+
+- Install kurento media server.
+    sudo apt-get install kurento-media-server
+- Install the facesegmentator module for the media server and restart the server.
+	sudo apt-get install kms-face-segmentator
+	sudo service kurento-media-server restart
+
+- Add kurento bower repository:
+  · Create ~/.bowerrc file.
+  · Add:
+  
+  { 
+   "registry": "http://bower.kurento.org:5678" ,
+   "strict-ssl": false
+  }
+
+- Update the bower dependencies. 
+    bower install (from the root directory of the tutorial)
+
+-Install an http server:
+	sudo npm install http-server -g
+
+- Run the http-server:
+	http-server
+
+- And now the demo is available in the indicated url by http-server.
