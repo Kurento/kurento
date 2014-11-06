@@ -77,7 +77,10 @@ Timeout = function Timeout(id, delay, ontimeout)
 
   this.start = function()
   {
-    timeout = setTimeout(_ontimeout.bind(this), delay, 'Time out '+id+' ('+delay+'ms)');
+    var delay_factor = delay * Timeout.factor;
+
+    timeout = setTimeout(_ontimeout.bind(this), delay_factor,
+                         'Time out '+id+' ('+delay_factor+'ms)');
   };
 
   this.stop = function()
@@ -108,12 +111,24 @@ QUnit.jUnitReport = function(report)
 };
 
 
-QUnit.config.testTimeout = 60000;
-
-
 // Tell QUnit what WebSocket servers to use
 
 QUnit.config.urlConfig.push(
+{
+  id: "timeout_factor",
+  label: "Timeout factor",
+  value:
+  {
+    '0.5' : '0.5x',
+    '0.75': '0.75x',
+    '1'   : '1x',
+    '2'   : '2x',
+    '3'   : '3x',
+    '5'   : '5x',
+    '10'  : '10x'
+  },
+  tooltip: "Multiply the timeouts window by this factor. Default is 1x"
+},
 {
   id: "ws_uri",
   label: "WebSocket server",
@@ -141,7 +156,14 @@ lifecycle =
       ws_uri = 'ws://127.0.0.1:8888/kurento';
     };
 
-    this.kurento = new kurentoClient(ws_uri);
+    Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
+
+    QUnit.config.testTimeout = 30000 * Timeout.factor;
+
+    var options = {request_timeout: 5000 * Timeout.factor};
+
+
+    this.kurento = new kurentoClient(ws_uri, options);
 
     this.kurento.then(function()
     {
