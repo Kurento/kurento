@@ -1,7 +1,6 @@
 {
    "mediaServer":{
     "net":{
-      // Uncomment just one of them
       "websocket": {
         "port": 8888,
         "path": "kurento",
@@ -14,7 +13,7 @@
       //   "pass":"guest",
       //   "vhost" : "/"
       // }
-      }
+    }
   },
   "controlServer" : {
     "net" : {
