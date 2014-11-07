@@ -50,6 +50,10 @@ GST_DEBUG_CATEGORY_STATIC (kms_alpha_blending_debug_category);
 #define AUDIO_SRC_PAD_NAME_COMP AUDIO_SRC_PAD_PREFIX_COMP "%u"
 #define VIDEO_SRC_PAD_NAME_COMP VIDEO_SRC_PAD_PREFIX_COMP "%u"
 
+#define AUDIO_FAKESINK "audio_fakesink_%u"
+
+#define AUDIO FALSE
+
 static GstStaticPadTemplate audio_sink_factory =
 GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD_NAME_COMP,
     GST_PAD_SINK,
@@ -436,8 +440,11 @@ kms_alpha_blending_port_data_destroy (gpointer data)
 {
   KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) data;
   KmsAlphaBlending *self = port_data->mixer;
+
+#if AUDIO
   GstPad *audiosink;
   gchar *padname;
+#endif
 
   if (!KMS_IS_ALPHA_BLENDING (self)) {
     destroy_port_data (port_data);
@@ -493,6 +500,7 @@ kms_alpha_blending_port_data_destroy (gpointer data)
     gst_bin_remove (GST_BIN (self), port_data->videoconvert);
   }
 
+#if AUDIO
   padname = g_strdup_printf (AUDIO_SINK_PAD, port_data->id);
   audiosink = gst_element_get_static_pad (self->priv->audiomixer, padname);
 
@@ -500,6 +508,19 @@ kms_alpha_blending_port_data_destroy (gpointer data)
 
   gst_object_unref (audiosink);
   g_free (padname);
+#else
+  {
+    gchar *name = g_strdup_printf (AUDIO_FAKESINK, port_data->id);
+    GstElement *fakesink =
+        gst_bin_get_by_name (GST_BIN (port_data->mixer), name);
+
+    gst_bin_remove (GST_BIN (port_data->mixer), fakesink);
+
+    gst_element_set_state (fakesink, GST_STATE_NULL);
+    g_object_unref (fakesink);
+    g_free (name);
+  }
+#endif
 
 }
 
@@ -660,7 +681,10 @@ static KmsAlphaBlendingPortData *
 kms_alpha_blending_port_data_create (KmsAlphaBlending * mixer, gint id)
 {
   KmsAlphaBlendingPortData *data = g_slice_new0 (KmsAlphaBlendingPortData);
+
+#if AUDIO
   gchar *padname;
+#endif
 
   data->mixer = mixer;
   data->videoconvert = gst_element_factory_make ("videoconvert", NULL);
@@ -676,10 +700,26 @@ kms_alpha_blending_port_data_create (KmsAlphaBlending * mixer, gint id)
   kms_base_hub_link_video_sink (KMS_BASE_HUB (mixer), id,
       data->videoconvert, "sink", FALSE);
 
+#if AUDIO
   padname = g_strdup_printf (AUDIO_SINK_PAD, id);
   kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
       mixer->priv->audiomixer, padname, FALSE);
   g_free (padname);
+#else
+  {
+    GstElement *fakesink;
+    gchar *name = g_strdup_printf (AUDIO_FAKESINK, id);
+
+    fakesink = gst_element_factory_make ("fakesink", name);
+    g_free (name);
+    g_object_set (fakesink, "async", FALSE, NULL);
+    gst_bin_add (GST_BIN (mixer), fakesink);
+    gst_element_sync_state_with_parent (fakesink);
+
+    kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
+        fakesink, "sink", FALSE);
+  }
+#endif
 
   data->videoconvert_sink_pad =
       gst_element_get_static_pad (data->videoconvert, "sink");
@@ -691,6 +731,7 @@ kms_alpha_blending_port_data_create (KmsAlphaBlending * mixer, gint id)
   return data;
 }
 
+#if AUDIO
 static gint
 get_stream_id_from_padname (const gchar * name)
 {
@@ -728,12 +769,15 @@ pad_added_cb (GstElement * element, GstPad * pad, gpointer data)
   kms_base_hub_link_audio_src (KMS_BASE_HUB (self), id,
       self->priv->audiomixer, GST_OBJECT_NAME (pad), TRUE);
 }
+#endif
 
+#if AUDIO
 static void
 pad_removed_cb (GstElement * element, GstPad * pad, gpointer data)
 {
   GST_DEBUG ("Removed pad %" GST_PTR_FORMAT, pad);
 }
+#endif
 
 static gint
 kms_alpha_blending_handle_port (KmsBaseHub * mixer,
@@ -771,7 +815,7 @@ kms_alpha_blending_handle_port (KmsBaseHub * mixer,
     gst_element_link_many (self->priv->videomixer, videorate_mixer,
         self->priv->mixer_video_agnostic, NULL);
   }
-
+#if AUDIO
   if (self->priv->audiomixer == NULL) {
     self->priv->audiomixer = gst_element_factory_make ("kmsaudiomixer", NULL);
 
@@ -783,6 +827,8 @@ kms_alpha_blending_handle_port (KmsBaseHub * mixer,
     g_signal_connect (self->priv->audiomixer, "pad-removed",
         G_CALLBACK (pad_removed_cb), self);
   }
+#endif
+
   kms_base_hub_link_video_src (KMS_BASE_HUB (self), port_id,
       self->priv->mixer_video_agnostic, "src_%u", TRUE);
 
