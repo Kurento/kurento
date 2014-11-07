@@ -1,4 +1,4 @@
 usr/include/kurento/modules/*/*.hpp
-usr/lib/*/*.so
+usr/lib/*/libkmsmarkerdetectorimpl.so
 usr/lib/*/pkgconfig/*.pc
 usr/share/kurento/modules/*.kmd.json
