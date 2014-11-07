@@ -341,6 +341,7 @@ remove_elements_from_pipeline (gpointer data)
 {
   KmsAlphaBlendingPortData *port_data = KMS_ALPHA_BLENDING_PORT_DATA (data);
   KmsAlphaBlending *self = port_data->mixer;
+  GstElement *videoconvert, *videoscale, *videorate, *capsfilter, *queue;
 
   KMS_ALPHA_BLENDING_LOCK (self);
 
@@ -354,32 +355,37 @@ remove_elements_from_pipeline (gpointer data)
     port_data->video_mixer_pad = NULL;
   }
 
-  g_object_ref (port_data->videoconvert);
-  g_object_ref (port_data->videorate);
-  g_object_ref (port_data->queue);
-  g_object_ref (port_data->videoscale);
-  g_object_ref (port_data->capsfilter);
+  videoconvert = g_object_ref (port_data->videoconvert);
+  videorate = g_object_ref (port_data->videorate);
+  queue = g_object_ref (port_data->queue);
+  videoscale = g_object_ref (port_data->videoscale);
+  capsfilter = g_object_ref (port_data->capsfilter);
 
-  gst_bin_remove_many (GST_BIN (self),
-      port_data->videoconvert, port_data->videoscale, port_data->capsfilter,
-      port_data->videorate, port_data->queue, NULL);
+  g_clear_object (&port_data->videoconvert_sink_pad);
+  port_data->videoconvert = NULL;
+  port_data->videorate = NULL;
+  port_data->queue = NULL;
+  port_data->videoscale = NULL;
+  port_data->capsfilter = NULL;
+
+  gst_bin_remove_many (GST_BIN (self), videoconvert, videoscale, capsfilter,
+      videorate, queue, NULL);
 
   kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
 
   KMS_ALPHA_BLENDING_UNLOCK (self);
 
-  gst_element_set_state (port_data->videoconvert, GST_STATE_NULL);
-  gst_element_set_state (port_data->videoscale, GST_STATE_NULL);
-  gst_element_set_state (port_data->videorate, GST_STATE_NULL);
-  gst_element_set_state (port_data->capsfilter, GST_STATE_NULL);
-  gst_element_set_state (port_data->queue, GST_STATE_NULL);
+  gst_element_set_state (videoconvert, GST_STATE_NULL);
+  gst_element_set_state (videoscale, GST_STATE_NULL);
+  gst_element_set_state (videorate, GST_STATE_NULL);
+  gst_element_set_state (capsfilter, GST_STATE_NULL);
+  gst_element_set_state (queue, GST_STATE_NULL);
 
-  g_clear_object (&port_data->videoconvert_sink_pad);
-  g_clear_object (&port_data->videoconvert);
-  g_clear_object (&port_data->videoscale);
-  g_clear_object (&port_data->videorate);
-  g_clear_object (&port_data->capsfilter);
-  g_clear_object (&port_data->queue);
+  g_object_unref (videoconvert);
+  g_object_unref (videoscale);
+  g_object_unref (videorate);
+  g_object_unref (capsfilter);
+  g_object_unref (queue);
 
   return G_SOURCE_REMOVE;
 }
@@ -430,14 +436,18 @@ kms_alpha_blending_port_data_destroy (gpointer data)
   kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
   kms_base_hub_unlink_audio_sink (KMS_BASE_HUB (self), port_data->id);
 
-  KMS_ALPHA_BLENDING_UNLOCK (self);
-
   if (port_data->input) {
     GstEvent *event;
     gboolean result;
     GstPad *pad;
 
+    if (port_data->videorate == NULL) {
+      KMS_ALPHA_BLENDING_UNLOCK (self);
+      return;
+    }
+
     pad = gst_element_get_static_pad (port_data->videorate, "sink");
+    KMS_ALPHA_BLENDING_UNLOCK (self);
 
     if (pad == NULL)
       return;
@@ -460,9 +470,15 @@ kms_alpha_blending_port_data_destroy (gpointer data)
     } else {
       GST_WARNING ("EOS event already sent");
     }
+
     gst_element_unlink (port_data->videoconvert, port_data->videorate);
     g_object_unref (pad);
   } else {
+    GstElement *videoconvert;
+
+    videoconvert = g_object_ref (port_data->videoconvert);
+    port_data->videoconvert = NULL;
+
     if (port_data->probe_id > 0) {
       gst_pad_remove_probe (port_data->video_mixer_pad, port_data->probe_id);
     }
@@ -470,8 +486,9 @@ kms_alpha_blending_port_data_destroy (gpointer data)
       gst_pad_remove_probe (port_data->videoconvert_sink_pad,
           port_data->link_probe_id);
     }
-    g_object_ref (port_data->videoconvert);
-    gst_bin_remove (GST_BIN (self), port_data->videoconvert);
+    KMS_ALPHA_BLENDING_UNLOCK (self);
+
+    gst_bin_remove (GST_BIN (self), videoconvert);
   }
 
 #if AUDIO
