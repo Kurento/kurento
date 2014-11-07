@@ -489,6 +489,8 @@ kms_alpha_blending_port_data_destroy (gpointer data)
     KMS_ALPHA_BLENDING_UNLOCK (self);
 
     gst_bin_remove (GST_BIN (self), videoconvert);
+    gst_element_set_state (videoconvert, GST_STATE_NULL);
+    g_object_unref (videoconvert);
   }
 
 #if AUDIO
