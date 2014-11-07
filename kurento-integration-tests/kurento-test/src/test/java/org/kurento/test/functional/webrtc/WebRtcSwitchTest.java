@@ -20,7 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -47,7 +47,7 @@ import org.kurento.test.client.WebRtcMode;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class WebRtcSwitchTest extends BrowserKurentoClientTest {
+public class WebRtcSwitchTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 5; // seconds
 

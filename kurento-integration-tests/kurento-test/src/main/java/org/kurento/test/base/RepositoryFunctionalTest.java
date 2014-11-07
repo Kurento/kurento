@@ -16,7 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.kurento.commons.testing.SystemKurentoClientTests;
+import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
@@ -40,17 +40,16 @@ import com.google.common.io.Files;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { BrowserKurentoClientTest.class,
-		RepositoryKurentoClientTest.class })
+		RepositoryFunctionalTest.class })
 @WebAppConfiguration
 @IntegrationTest("server.port:"
 		+ KurentoServicesTestHelper.APP_HTTP_PORT_DEFAULT)
 @ComponentScan(basePackages = { "org.kurento.repository" })
 @EnableAutoConfiguration
-@Category(SystemKurentoClientTests.class)
-public class RepositoryKurentoClientTest extends KurentoClientTest {
+@Category(SystemFunctionalTests.class)
+public class RepositoryFunctionalTest extends KurentoClientTest {
 
 	@Autowired
 	public Repository repository;

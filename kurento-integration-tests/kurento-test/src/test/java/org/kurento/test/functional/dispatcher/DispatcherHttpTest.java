@@ -24,7 +24,7 @@ import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -49,7 +49,7 @@ import org.kurento.test.client.WebRtcMode;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class DispatcherHttpTest extends BrowserKurentoClientTest {
+public class DispatcherHttpTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5; // seconds to play in WebRTC
 

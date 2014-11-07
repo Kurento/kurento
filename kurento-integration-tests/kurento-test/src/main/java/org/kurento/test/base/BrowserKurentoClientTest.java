@@ -14,9 +14,7 @@
  */
 package org.kurento.test.base;
 
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.kurento.commons.testing.SystemKurentoClientTests;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,13 +33,12 @@ import org.springframework.test.context.web.WebAppConfiguration;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { BrowserKurentoClientTest.class,
-		RepositoryKurentoClientTest.class })
+		RepositoryFunctionalTest.class })
 @WebAppConfiguration
 @IntegrationTest("server.port:"
 		+ KurentoServicesTestHelper.APP_HTTP_PORT_DEFAULT)
 @ComponentScan
 @EnableAutoConfiguration
-@Category(SystemKurentoClientTests.class)
 public class BrowserKurentoClientTest extends KurentoClientTest {
 
 	public static void main(String[] args) throws Exception {

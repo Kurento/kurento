@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SystemUtils;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.GridBrowserKurentoClientTest;
+import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
@@ -116,7 +116,7 @@ public class BrowserClient implements Closeable {
 	private void initDriver(String hostAddress) {
 		Class<? extends WebDriver> driverClass = browser.getDriverClass();
 		int hubPort = getProperty("test.hub.port",
-				GridBrowserKurentoClientTest.DEFAULT_HUB_PORT);
+				PerformanceTest.DEFAULT_HUB_PORT);
 
 		try {
 			if (driverClass.equals(FirefoxDriver.class)) {

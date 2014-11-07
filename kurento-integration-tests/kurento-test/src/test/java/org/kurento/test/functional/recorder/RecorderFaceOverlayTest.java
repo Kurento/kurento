@@ -28,7 +28,7 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.Shell;
-import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -57,7 +57,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
+public class RecorderFaceOverlayTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 30; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds

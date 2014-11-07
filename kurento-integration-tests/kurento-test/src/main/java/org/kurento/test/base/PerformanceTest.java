@@ -42,7 +42,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.SystemKurentoClientTests;
+import org.kurento.commons.testing.SystemPerformanceTests;
 import org.kurento.test.Shell;
 import org.kurento.test.client.Browser;
 import org.kurento.test.services.Node;
@@ -62,8 +62,8 @@ import freemarker.template.Template;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-@Category(SystemKurentoClientTests.class)
-public class GridBrowserKurentoClientTest extends BrowserKurentoClientTest {
+@Category(SystemPerformanceTests.class)
+public class PerformanceTest extends BrowserKurentoClientTest {
 
 	public static final int DEFAULT_HUB_PORT = 4444;
 
@@ -184,8 +184,7 @@ public class GridBrowserKurentoClientTest extends BrowserKurentoClientTest {
 		data.put("pidFile", node.REMOTE_PID_FILE);
 		data.put("browser", browser);
 
-		cfg.setClassForTemplateLoading(GridBrowserKurentoClientTest.class,
-				"/templates/");
+		cfg.setClassForTemplateLoading(PerformanceTest.class, "/templates/");
 
 		String tmpScript = node.getTmpFolder() + LAUNCH_SH;
 		try {
@@ -246,8 +245,8 @@ public class GridBrowserKurentoClientTest extends BrowserKurentoClientTest {
 			String video, String audio) {
 		List<Node> nodes = new ArrayList<Node>();
 
-		InputStream inputStream = GridBrowserKurentoClientTest.class
-				.getClassLoader().getResourceAsStream("node-list.txt");
+		InputStream inputStream = PerformanceTest.class.getClassLoader()
+				.getResourceAsStream("node-list.txt");
 		List<String> nodeList = null;
 		try {
 			nodeList = CharStreams.readLines(new InputStreamReader(inputStream,

@@ -15,12 +15,12 @@
 package org.kurento.commons.testing;
 
 /**
- * Category for system tests that test kurento-client capabilities
+ * Category for system tests that test functional capabilities.
  * 
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.3.0
  *
  */
-public interface SystemKurentoClientTests extends SystemTests {
+public interface SystemFunctionalTests extends SystemTests {
 
 }

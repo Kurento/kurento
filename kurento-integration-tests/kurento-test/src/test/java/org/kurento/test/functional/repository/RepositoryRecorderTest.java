@@ -28,7 +28,7 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.test.base.RepositoryKurentoClientTest;
+import org.kurento.test.base.RepositoryFunctionalTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -54,7 +54,7 @@ import org.kurento.test.client.WebRtcMode;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
-public class RepositoryRecorderTest extends RepositoryKurentoClientTest {
+public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds

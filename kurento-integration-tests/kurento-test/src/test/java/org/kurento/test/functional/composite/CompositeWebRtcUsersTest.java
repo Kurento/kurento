@@ -22,7 +22,7 @@ import org.kurento.client.Composite;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -52,7 +52,7 @@ import org.kurento.test.client.WebRtcMode;
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 4.2.3
  */
-public class CompositeWebRtcUsersTest extends BrowserKurentoClientTest {
+public class CompositeWebRtcUsersTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5;
 

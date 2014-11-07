@@ -27,7 +27,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.GridBrowserKurentoClientTest;
+import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -54,7 +54,7 @@ import org.kurento.test.services.Recorder;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class WebRtcGridTest extends GridBrowserKurentoClientTest {
+public class WebRtcGridTest extends PerformanceTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
