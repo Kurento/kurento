@@ -251,7 +251,8 @@ kms_alpha_blending_set_master_port (KmsAlphaBlending * alpha_blending)
 
   //get the element with id == master_port
   key = create_gint (alpha_blending->priv->master_port);
-  port_data = KMS_ALPHA_BLENDING_PORT_DATA (g_hash_table_lookup (alpha_blending->priv->
+  port_data =
+      KMS_ALPHA_BLENDING_PORT_DATA (g_hash_table_lookup (alpha_blending->priv->
           ports, key));
 
   release_gint (key);
@@ -410,7 +411,7 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
       remove_elements_from_pipeline, kms_alpha_blending_port_data_ref (data),
       (GDestroyNotify) kms_alpha_blending_port_data_unref);
 
-  return GST_PAD_PROBE_OK;
+  return GST_PAD_PROBE_DROP;
 }
 
 static void
