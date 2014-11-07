@@ -651,7 +651,7 @@ kms_alpha_blending_unhandle_port (KmsBaseHub * mixer, gint id)
   KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
       (kms_alpha_blending_parent_class))->unhandle_port (mixer, id);
 
-  GST_DEBUG ("end unhandle port id %id", id);
+  GST_DEBUG ("end unhandle port id %d", id);
 }
 
 static KmsAlphaBlendingPortData *
