@@ -79,11 +79,11 @@ fi
 # Find out installation type
 KTS_HOME=$(cd $DIRNAME/..;pwd)
 KTS_BINARY=$KTS_HOME/lib/kurento-tree-server.jar
-KTS_CONFIG=$KTS_HOME/config/kurento-tree.conf.json
+KTS_CONFIG=$KTS_HOME/config/tree-server.conf.json
 if [ ! -f $KTS_BINARY ]; then
     KTS_HOME=/var/lib/kurento
     KTS_BINARY=$KTS_HOME/kurento-tree-server.jar
-    KTS_CONFIG="/etc/kurento/kurento-tree.conf.json"
+    KTS_CONFIG="/etc/kurento/tree-server.conf.json"
     KTS_OPTS="-DconfigFilePath=$KTS_CONFIG"
 fi
 

@@ -34,7 +34,7 @@ install -o root -g root -m 755 $KTS_HOME/support-files/kurento-tree-server.sh /e
 mkdir -p /var/lib/kurento
 install -o root -g root $KTS_HOME/lib/kurento-tree-server.jar /var/lib/kurento/
 mkdir -p /etc/kurento/
-install -o root -g root $KTS_HOME/config/kurento-tree.conf.json /etc/kurento/kurento-tree.conf.json
+install -o root -g root $KTS_HOME/config/tree-server.conf.json /etc/kurento/tree-server.conf.json
 
 # enable media connector
 update-rc.d kurento-tree-server defaults
