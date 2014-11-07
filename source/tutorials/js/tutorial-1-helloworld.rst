@@ -21,12 +21,11 @@ an Ubuntu machine, you can install both as follows:
 
 .. sourcecode:: sh
 
-   sudo add-apt-repository ppa:chris-lea/node.js
-   sudo apt-get update
-   sudo apt-get install nodejs
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
    sudo npm install -g bower
 
-Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
+Due to `Same-origin policy`:term:, this demo has to be served by a HTTP server.
 A very simple way of doing this is by means of a HTTP Node.js server which can
 be installed using `npm`:term: :
 
@@ -101,8 +100,8 @@ application, the dependencies, and how to run the demo. The complete source
 code can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-hello-world>`_.
 
-Client-Side Logic
-=================
+JavaScript Logic
+================
 
 The Kurento *hello-world* demo follows a *Single Page Application* architecture
 (`SPA`:term:). The interface is the following HTML page:
