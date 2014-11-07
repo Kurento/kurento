@@ -23,6 +23,7 @@ const window_uri = "http://files.kurento.org/imgs/Brown_Monsters_40-01.png";
 
 const hover_window_uri = "http://files.kurento.org/imgs/Brown_Monsters_25-01.png";
 
+
 window.addEventListener('load', function(event) {
   kurentoClient.register(kurentoModulePointerdetector);
 

@@ -7,7 +7,7 @@ Kurento JavaScript Tutorial
 Kurento Client JavaScript demos
 
 This project contains a set of simple applications built with JavaScript
-Kurento Client APIs (kurento-client-js and kurento-utils-js).
+Kurento Client APIs ([kurento-client-js] and [kurento-utils-js]).
 
 The source code of this project can be cloned from the [GitHub repository].
 
@@ -21,22 +21,24 @@ sudo add-apt-repository ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get install nodejs
 ```
+
 Also be sure to have installed [Bower] in your system:
 
 ```bash
 sudo npm install -g bower
 ```
 
-Each demo is located in a single folder (e.g. kurento-hello-world, kurento-magic-mirror,
-and so on). For example, to launch the kurento-hello-world demo, run:
+Each demo is located in a single folder (e.g. kurento-hello-world,
+kurento-magic-mirror, and so on). For example, to launch the kurento-hello-world
+demo, run:
 
 ```bash
 cd kurento-hello-world
 bower install
 ```
 
-An HTTP server is required for these demos. A very simple way of doing this is by
-means of a NodeJS server. This server can be installed as follows:
+An HTTP server is required for these demos. A very simple way of doing this is
+by means of a NodeJS server. This server can be installed as follows:
 
 ```bash
 sudo npm install http-server -g
@@ -50,8 +52,8 @@ http-server
 
 Finally, open this URL in your browser: http://localhost:8080/
 
-Take into account that demos with Generators (FaceOverlayGenerator,
-RecorderFilterGenerator, and so on) require [co] (generator based
+Take into account that demos with Generators (kurento-faceoverlay-generator,
+kurento-recorder-filter-generator, and so on) require [co] (generator based
 flow-control for nodejs). In these demos, the experimental JavaScript
 support must be enabled. In Chrome, this can done in this configuration page:
 
@@ -92,6 +94,8 @@ Follow us on Twitter @[kurentoms].
 [GitHub repository]: https://github.com/Kurento/kurento-tutorial-js
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
+[kurento-client-js]: https://github.com/Kurento/kurento-client-js
+[kurento-utils-js]: https://github.com/Kurento/kurento-utils-js
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [Node.js]: http://nodejs.org/
 [website]: http://kurento.org
