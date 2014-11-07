@@ -403,6 +403,11 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   KMS_ALPHA_BLENDING_LOCK (self);
 
+  if (!port_data->removing) {
+    KMS_ALPHA_BLENDING_UNLOCK (self);
+    return GST_PAD_PROBE_OK;
+  }
+
   if (port_data->probe_id > 0) {
     gst_pad_remove_probe (pad, port_data->probe_id);
     port_data->probe_id = 0;
@@ -432,6 +437,8 @@ kms_alpha_blending_port_data_destroy (gpointer data)
 #endif
 
   KMS_ALPHA_BLENDING_LOCK (self);
+
+  port_data->removing = TRUE;
 
   kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
   kms_base_hub_unlink_audio_sink (KMS_BASE_HUB (self), port_data->id);
