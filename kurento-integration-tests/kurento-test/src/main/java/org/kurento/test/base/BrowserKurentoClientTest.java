@@ -34,8 +34,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @since 4.2.3
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { BrowserKurentoClientTest.class,
-		RepositoryFunctionalTest.class })
+@SpringApplicationConfiguration(classes = { BrowserKurentoClientTest.class })
 @WebAppConfiguration
 @IntegrationTest("server.port:"
 		+ KurentoServicesTestHelper.APP_HTTP_PORT_DEFAULT)
