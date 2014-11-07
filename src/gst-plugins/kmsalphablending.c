@@ -17,6 +17,7 @@
 #endif
 
 #include "kmsalphablending.h"
+#include "kmsalphablendingportdata.h"
 #include <commons/kmsagnosticcaps.h>
 #include <commons/kms-core-marshal.h>
 #include <commons/kmshubport.h>
@@ -114,25 +115,6 @@ struct _KmsAlphaBlendingPrivate
   int z_master;
 };
 
-typedef struct _KmsAlphaBlendingPortData KmsAlphaBlendingPortData;
-
-struct _KmsAlphaBlendingPortData
-{
-  KmsAlphaBlending *mixer;
-  gint id;
-  GstElement *videoconvert;
-  GstElement *capsfilter;
-  GstElement *videoscale;
-  GstElement *videorate;
-  GstElement *queue;
-  GstPad *video_mixer_pad, *videoconvert_sink_pad;
-  gboolean input;
-  gboolean configurated;
-  gint probe_id, link_probe_id;
-  gfloat relative_x, relative_y, relative_width, relative_height;
-  gint z_order;
-};
-
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsAlphaBlending, kms_alpha_blending,
@@ -143,8 +125,8 @@ G_DEFINE_TYPE_WITH_CODE (KmsAlphaBlending, kms_alpha_blending,
 static gint
 compare_port_data (gconstpointer a, gconstpointer b)
 {
-  KmsAlphaBlendingPortData *port_data_a = (KmsAlphaBlendingPortData *) a;
-  KmsAlphaBlendingPortData *port_data_b = (KmsAlphaBlendingPortData *) b;
+  KmsAlphaBlendingPortData *port_data_a = KMS_ALPHA_BLENDING_PORT_DATA (a);
+  KmsAlphaBlendingPortData *port_data_b = KMS_ALPHA_BLENDING_PORT_DATA (b);
 
   return port_data_a->id - port_data_b->id;
 }
@@ -218,7 +200,8 @@ kms_alpha_blending_reconfigure_ports (gpointer data)
   values = g_list_sort (values, compare_port_data);
 
   for (l = values; l != NULL; l = l->next) {
-    KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) l->data;
+    KmsAlphaBlendingPortData *port_data =
+        KMS_ALPHA_BLENDING_PORT_DATA (l->data);
 
     if (port_data->input == FALSE) {
       continue;
@@ -268,9 +251,9 @@ kms_alpha_blending_set_master_port (KmsAlphaBlending * alpha_blending)
 
   //get the element with id == master_port
   key = create_gint (alpha_blending->priv->master_port);
-  port_data =
-      (KmsAlphaBlendingPortData *) g_hash_table_lookup (alpha_blending->
-      priv->ports, key);
+  port_data = KMS_ALPHA_BLENDING_PORT_DATA (g_hash_table_lookup (alpha_blending->priv->
+          ports, key));
+
   release_gint (key);
 
   if (port_data == NULL) {
@@ -355,7 +338,7 @@ kms_alpha_blending_get_property (GObject * object, guint property_id,
 static gboolean
 remove_elements_from_pipeline (gpointer data)
 {
-  KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) data;
+  KmsAlphaBlendingPortData *port_data = KMS_ALPHA_BLENDING_PORT_DATA (data);
   KmsAlphaBlending *self = port_data->mixer;
 
   KMS_ALPHA_BLENDING_LOCK (self);
@@ -400,16 +383,10 @@ remove_elements_from_pipeline (gpointer data)
   return G_SOURCE_REMOVE;
 }
 
-static void
-destroy_port_data (gpointer data)
-{
-  g_slice_free (KmsAlphaBlendingPortData, data);
-}
-
 static GstPadProbeReturn
 cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
-  KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) data;
+  KmsAlphaBlendingPortData *port_data = KMS_ALPHA_BLENDING_PORT_DATA (data);
   KmsAlphaBlending *self = port_data->mixer;
   GstEvent *event;
 
@@ -430,7 +407,8 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   gst_pad_send_event (pad, event);
 
   kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
-      remove_elements_from_pipeline, data, destroy_port_data);
+      remove_elements_from_pipeline, kms_alpha_blending_port_data_ref (data),
+      (GDestroyNotify) kms_alpha_blending_port_data_unref);
 
   return GST_PAD_PROBE_OK;
 }
@@ -438,18 +416,13 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 static void
 kms_alpha_blending_port_data_destroy (gpointer data)
 {
-  KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) data;
+  KmsAlphaBlendingPortData *port_data = KMS_ALPHA_BLENDING_PORT_DATA (data);
   KmsAlphaBlending *self = port_data->mixer;
 
 #if AUDIO
   GstPad *audiosink;
   gchar *padname;
 #endif
-
-  if (!KMS_IS_ALPHA_BLENDING (self)) {
-    destroy_port_data (port_data);
-    return;
-  }
 
   KMS_ALPHA_BLENDING_LOCK (self);
 
@@ -528,7 +501,7 @@ static GstPadProbeReturn
 link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
   GstPadTemplate *sink_pad_template;
-  KmsAlphaBlendingPortData *data = user_data;
+  KmsAlphaBlendingPortData *data = KMS_ALPHA_BLENDING_PORT_DATA (user_data);
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_CAPS) {
     return GST_PAD_PROBE_PASS;
@@ -642,7 +615,9 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 
   data->probe_id = gst_pad_add_probe (data->video_mixer_pad,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      (GstPadProbeCallback) cb_EOS_received, data, NULL);
+      (GstPadProbeCallback) cb_EOS_received,
+      kms_alpha_blending_port_data_ref (data),
+      (GDestroyNotify) kms_alpha_blending_port_data_unref);
 
   /* configure videomixer pad */
   data->mixer->priv->n_elems++;
@@ -680,12 +655,13 @@ kms_alpha_blending_unhandle_port (KmsBaseHub * mixer, gint id)
 static KmsAlphaBlendingPortData *
 kms_alpha_blending_port_data_create (KmsAlphaBlending * mixer, gint id)
 {
-  KmsAlphaBlendingPortData *data = g_slice_new0 (KmsAlphaBlendingPortData);
+  KmsAlphaBlendingPortData *data;
 
 #if AUDIO
   gchar *padname;
 #endif
 
+  data = kms_alpha_blending_port_data_new (mixer, id);
   data->mixer = mixer;
   data->videoconvert = gst_element_factory_make ("videoconvert", NULL);
 
@@ -726,7 +702,9 @@ kms_alpha_blending_port_data_create (KmsAlphaBlending * mixer, gint id)
 
   data->link_probe_id = gst_pad_add_probe (data->videoconvert_sink_pad,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_BLOCK,
-      (GstPadProbeCallback) link_to_videomixer, data, NULL);
+      (GstPadProbeCallback) link_to_videomixer,
+      kms_alpha_blending_port_data_ref (data),
+      (GDestroyNotify) kms_alpha_blending_port_data_unref);
 
   return data;
 }
@@ -877,7 +855,8 @@ kms_alpha_blending_set_port_properties (KmsAlphaBlending * self,
   KMS_ALPHA_BLENDING_LOCK (self);
   key = create_gint (port);
   port_data =
-      (KmsAlphaBlendingPortData *) g_hash_table_lookup (self->priv->ports, key);
+      KMS_ALPHA_BLENDING_PORT_DATA (g_hash_table_lookup (self->priv->ports,
+          key));
   release_gint (key);
 
   if (port_data == NULL) {
