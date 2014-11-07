@@ -496,6 +496,7 @@ kms_alpha_blending_port_data_destroy (gpointer data)
   }
 #endif
 
+  kms_alpha_blending_port_data_unref (port_data);
 }
 
 static GstPadProbeReturn
