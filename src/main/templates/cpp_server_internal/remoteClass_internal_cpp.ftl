@@ -15,6 +15,8 @@ ${remoteClass.name}ImplInternal.cpp
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 
+using kurento::KurentoException;
+
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
 {
@@ -96,9 +98,14 @@ ${remoteClass.name}Impl::invoke (std::shared_ptr<MediaObjectImpl> obj, const std
 <#if (remoteClass.extends)??>
   ${remoteClass.extends.name}Impl::invoke (obj, methodName, params, response);
 <#else>
-  JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
-                            "Method '" + methodName + "' with " + std::to_string (params.size() ) + " parameters not found");
-  throw e;
+  Json::Value data;
+
+  KurentoException ke (MALFORMED_TRANSACTION,
+                       "Method '" + methodName + "' with " + std::to_string (params.size() ) + " parameters not found");
+
+  data["type"] = ke.getType();
+
+  throw JsonRpc::CallException (ke.getCode (), ke.getMessage (), data);
 </#if>
 }
 
