@@ -288,8 +288,8 @@ kms_alpha_blending_set_master_port (KmsAlphaBlending * alpha_blending)
       port_data->mixer->priv->output_width = width;
       kms_alpha_blending_reconfigure_ports (alpha_blending);
     }
+    gst_caps_unref (caps);
   }
-  gst_caps_unref (caps);
   g_object_unref (pad);
 }
 
