@@ -368,7 +368,14 @@ public class BrowserClient implements Closeable {
 				+ (blue - expectedColor.getBlue())
 				* (blue - expectedColor.getBlue()));
 
-		return distance <= getMaxDistance();
+		boolean out = distance <= getMaxDistance();
+		if (!out) {
+			log.error(
+					"Difference in color comparision. Expected: {}, Real: {} (distance={})",
+					expectedColor, realColor, distance);
+		}
+
+		return out;
 	}
 
 	public double getMaxDistance() {
