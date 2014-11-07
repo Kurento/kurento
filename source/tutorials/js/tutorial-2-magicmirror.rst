@@ -17,9 +17,8 @@ an Ubuntu machine, you can install both as follows:
 
 .. sourcecode:: sh
 
-   sudo add-apt-repository ppa:chris-lea/node.js
-   sudo apt-get update
-   sudo apt-get install nodejs
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
    sudo npm install -g bower
 
 Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
@@ -96,7 +95,7 @@ This web page links two Kurento JavaScript libraries:
 
 * **kurento-client.js** : Implementation of the Kurento JavaScript Client.
 
-* **kurento-utils.js** : Kurento utily library aimed to simplify the WebRTC
+* **kurento-utils.js** : Kurento utility library aimed to simplify the WebRTC
   management in the browser.
 
 In addition, these two JavaScript libraries are also required:
@@ -139,7 +138,7 @@ need to provide the URI of its WebSocket endpoint:
 
    const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
 
-   kurentoClient(ws_uri, function(error, kurentoClient) {
+   kurentoClient(ws_uri, function(error, client) {
      ...
    };
 
@@ -148,7 +147,7 @@ Once we have an instance of ``kurentoClient``, the following step is to create a
 
 .. sourcecode:: js
 
-   kurentoClient.create("MediaPipeline", function(error, pipeline) {
+   client.create("MediaPipeline", function(error, pipeline) {
       ...
    });
 
@@ -165,21 +164,34 @@ If everything works correctly, we have an instance of a media pipeline (variable
       pipeline.create('FaceOverlayFilter', function(error, filter) {
          if (error) return onError(error);
 
+         console.log("Got FaceOverlayFilter");
+
          var offsetXPercent = -0.4;
          var offsetYPercent = -1;
          var widthPercent = 1.5;
          var heightPercent = 1.5;
+
+         console.log("Setting overlay image");
+
          filter.setOverlayedImage(hat_uri, offsetXPercent,
             offsetYPercent, widthPercent,
             heightPercent, function(error) {
                if (error) return onError(error);
+
+               console.log("Set overlay image");
             });
+
+         console.log("Connecting ...");
 
          webRtc.connect(filter, function(error) {
             if (error) return onError(error);
 
+            console.log("WebRtcEndpoint --> filter");
+
             filter.connect(webRtc, function(error) {
                if (error) return onError(error);
+
+               console.log("Filter --> WebRtcEndpoint");
             });
          });
 
@@ -199,6 +211,8 @@ returned by *WebRtcEndpoint*.
 
    webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
       if (error) return onError(error);
+
+      console.log("SDP answer obtained. Processing ...");
 
       webRtcPeer.processSdpAnswer(sdpAnswer);
    });

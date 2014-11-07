@@ -85,7 +85,7 @@ page:
 `demo.html <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/demo.html>`_.
 As you can see, this page uses several JavaScript libraries:
 
-- `adpater.js <https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js>`_:
+- `adapter.js <https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js>`_:
   JavaScript library by Google to provide WebRTC interoperation between
   different browsers.
 
@@ -102,7 +102,7 @@ As you can see, this page uses several JavaScript libraries:
 
 .. todo:: Update dependencies (KWS cannot be present anymore) in the entire document
 
-The most relevant part of this demo can be foun on
+The most relevant part of this demo can be found on
 `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_.
 In this library we can found the PubNub publish/subscribe procedure
 (``SoftphonePubnub`` class), the incoming call logic (``onIncomingCall``
@@ -111,9 +111,10 @@ method), and the media pipeline connection (``connectEndpoints`` method).
 
 .. sourcecode:: javascript
 
+   const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+
    var startSendRecv = kwsUtils.WebRtcPeer.startSendRecv;
    var JsonRPC = RpcBuilder.packers.JsonRPC;
-   const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket';
    
    function onIncomingCall(request) {
      ...
@@ -235,7 +236,7 @@ Then, you should change the following line of
 
 .. sourcecode:: javascript
 
-   const ws_uri = 'ws://localhost:8888/thrift/ws/websocket';
+   const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
 
 Dependencies
 ============
@@ -266,9 +267,8 @@ installing `Node.js`:term: package) and Bower in an Ubuntu machine:
 
 .. sourcecode:: sh
 
-   sudo add-apt-repository ppa:chris-lea/node.js
-   sudo apt-get update
-   sudo apt-get install nodejs
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
    sudo npm install -g bower
 
 Once Bower is installed, you need to clone the GitHub project where this demo is
