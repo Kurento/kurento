@@ -14,8 +14,6 @@
  */
 package org.kurento.test.functional.dispatcher;
 
-import java.awt.Color;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -94,7 +92,7 @@ public class DispatcherHttpTest extends FunctionalTest {
 					browser2.waitForEvent("playing"));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser2.similarColor(new Color(0, 135, 0)));
+					browser2.similarColor(CHROME_VIDEOTEST_COLOR));
 
 			Thread.sleep(PLAYTIME * 1000);
 		}

@@ -65,7 +65,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 
 	@Test
 	public void testRecorderWebRtcChrome() throws InterruptedException {
-		doTest(Browser.CHROME, null, new Color(0, 135, 0));
+		doTest(Browser.CHROME, null, CHROME_VIDEOTEST_COLOR);
 	}
 
 	public void doTest(Browser browserType, String video, Color color)

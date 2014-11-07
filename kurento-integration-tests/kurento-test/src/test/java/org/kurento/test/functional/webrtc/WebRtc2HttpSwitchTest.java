@@ -14,8 +14,6 @@
  */
 package org.kurento.test.functional.webrtc;
 
-import java.awt.Color;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -92,7 +90,7 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 					browser3.waitForEvent("playing"));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser3.similarColor(new Color(0, 135, 0)));
+					browser3.similarColor(CHROME_VIDEOTEST_COLOR));
 
 			// Guard time to see stream from WebRTC #1
 			Thread.sleep(PLAYTIME * 1000);
@@ -107,7 +105,7 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser3.similarColor(new Color(0, 135, 0)));
+					browser3.similarColor(CHROME_VIDEOTEST_COLOR));
 		}
 
 		// Release Media Pipeline

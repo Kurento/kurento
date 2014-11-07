@@ -14,6 +14,8 @@
  */
 package org.kurento.test.base;
 
+import java.awt.Color;
+
 import org.junit.runner.RunWith;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.SpringApplication;
@@ -40,6 +42,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ComponentScan
 @EnableAutoConfiguration
 public class BrowserKurentoClientTest extends KurentoClientTest {
+
+	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
 	public static void main(String[] args) throws Exception {
 		new SpringApplication(BrowserKurentoClientTest.class).run(args);

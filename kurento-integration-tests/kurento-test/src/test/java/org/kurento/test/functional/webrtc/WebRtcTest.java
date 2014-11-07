@@ -14,8 +14,6 @@
  */
 package org.kurento.test.functional.webrtc;
 
-import java.awt.Color;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
@@ -76,7 +74,7 @@ public class WebRtcTest extends FunctionalTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser.similarColor(new Color(0, 135, 0)));
+					browser.similarColor(CHROME_VIDEOTEST_COLOR));
 			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 					+ " sec, real: " + currentTime + " sec)",

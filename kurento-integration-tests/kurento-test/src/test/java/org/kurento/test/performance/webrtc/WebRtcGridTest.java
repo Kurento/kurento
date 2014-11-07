@@ -87,7 +87,7 @@ public class WebRtcGridTest extends PerformanceTest {
 		for (final Node node : nodes) {
 			results.add(exec.submit(new Runnable() {
 				public void run() {
-					doTest(node, new Color(0, 135, 0));
+					doTest(node, CHROME_VIDEOTEST_COLOR);
 
 					// Uncomment this line to assess custom color video
 					// doTest(node, Color.RED);

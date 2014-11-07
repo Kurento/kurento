@@ -14,7 +14,6 @@
  */
 package org.kurento.test.functional.webrtc;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -120,7 +119,7 @@ public class WebRtc2HttpTest extends FunctionalTest {
 					compare(PLAYTIME, currentTime));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser.similarColor(new Color(0, 135, 0)));
+					browser.similarColor(CHROME_VIDEOTEST_COLOR));
 
 			browser.stop();
 		}
