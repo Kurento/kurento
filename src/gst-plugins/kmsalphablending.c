@@ -517,6 +517,12 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
       gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (data->mixer->
           priv->videomixer), "sink_%u");
 
+  if (G_UNLIKELY (sink_pad_template == NULL)) {
+    GST_ERROR_OBJECT (data->mixer, "Error taking a new pad from videomixer");
+    KMS_ALPHA_BLENDING_UNLOCK (data->mixer);
+    return GST_PAD_PROBE_DROP;
+  }
+
   if (data->mixer->priv->master_port == data->id) {
     //master_port, reconfigurate the output_width and heigth_width
     //and all the ports already created
@@ -541,6 +547,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 
   if (data->mixer->priv->videotestsrc == NULL) {
     GstCaps *filtercaps;
+    GstPad *pad;
 
     data->mixer->priv->videotestsrc =
         gst_element_factory_make ("videotestsrc", NULL);
@@ -564,21 +571,17 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 
     gst_element_link (data->mixer->priv->videotestsrc,
         data->mixer->priv->videotestsrc_capsfilter);
-    gst_element_sync_state_with_parent (data->mixer->
-        priv->videotestsrc_capsfilter);
 
     /*link capsfilter -> videomixer */
-    if (sink_pad_template != NULL) {
-      GstPad *pad = gst_element_request_pad (data->mixer->priv->videomixer,
-          sink_pad_template, NULL, NULL);
+    pad = gst_element_request_pad (data->mixer->priv->videomixer,
+        sink_pad_template, NULL, NULL);
+    gst_element_link_pads (data->mixer->priv->videotestsrc_capsfilter, NULL,
+        data->mixer->priv->videomixer, GST_OBJECT_NAME (pad));
+    g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, "zorder", 0, NULL);
+    g_object_unref (pad);
 
-      gst_element_link_pads (data->mixer->priv->videotestsrc_capsfilter, NULL,
-          data->mixer->priv->videomixer, GST_OBJECT_NAME (pad));
-      g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, "zorder", 0, NULL);
-
-      g_object_unref (pad);
-    }
-
+    gst_element_sync_state_with_parent (data->mixer->
+        priv->videotestsrc_capsfilter);
     gst_element_sync_state_with_parent (data->mixer->priv->videotestsrc);
   }
 
@@ -591,11 +594,6 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   gst_bin_add_many (GST_BIN (data->mixer), data->queue, data->videorate,
       data->videoscale, data->capsfilter, NULL);
 
-  gst_element_sync_state_with_parent (data->videoscale);
-  gst_element_sync_state_with_parent (data->capsfilter);
-  gst_element_sync_state_with_parent (data->videorate);
-  gst_element_sync_state_with_parent (data->queue);
-
   g_object_set (data->videorate, "average-period", 200 * GST_MSECOND, NULL);
   g_object_set (data->queue, "flush-on-eos", TRUE, NULL);
 
@@ -603,15 +601,11 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
       data->capsfilter, NULL);
 
   /*link capsfilter -> videomixer */
-  if (sink_pad_template != NULL) {
-    data->video_mixer_pad =
-        gst_element_request_pad (data->mixer->priv->videomixer,
-        sink_pad_template, NULL, NULL);
-    gst_element_link_pads (data->capsfilter, NULL,
-        data->mixer->priv->videomixer, GST_OBJECT_NAME (data->video_mixer_pad));
-  } else {
-    GST_ERROR ("Error taking a new pad from videomixer");
-  }
+  data->video_mixer_pad =
+      gst_element_request_pad (data->mixer->priv->videomixer,
+      sink_pad_template, NULL, NULL);
+  gst_element_link_pads (data->capsfilter, NULL,
+      data->mixer->priv->videomixer, GST_OBJECT_NAME (data->video_mixer_pad));
 
   gst_element_link (data->videoconvert, data->videorate);
 
@@ -620,6 +614,11 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
       (GstPadProbeCallback) cb_EOS_received,
       kms_alpha_blending_port_data_ref (data),
       (GDestroyNotify) kms_alpha_blending_port_data_unref);
+
+  gst_element_sync_state_with_parent (data->videoscale);
+  gst_element_sync_state_with_parent (data->capsfilter);
+  gst_element_sync_state_with_parent (data->videorate);
+  gst_element_sync_state_with_parent (data->queue);
 
   /* configure videomixer pad */
   data->mixer->priv->n_elems++;
