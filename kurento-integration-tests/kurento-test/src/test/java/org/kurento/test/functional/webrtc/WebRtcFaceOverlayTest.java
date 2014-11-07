@@ -50,7 +50,8 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
 	@Test
 	public void testWebRtcFaceOverlayChrome() throws InterruptedException {
 		final int playTime = Integer.parseInt(System.getProperty(
-				"test.play.time", String.valueOf(DEFAULT_PLAYTIME)));
+				"test.webrtcfaceoverlay.playtime",
+				String.valueOf(DEFAULT_PLAYTIME)));
 		doTest(Browser.CHROME, playTime);
 	}
 
