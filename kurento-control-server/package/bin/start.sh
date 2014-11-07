@@ -79,11 +79,11 @@ fi
 # Find out installation type
 KCS_HOME=$(cd $DIRNAME/..;pwd)
 KCS_BINARY=$KCS_HOME/lib/kurento-control-server.jar
-KCS_CONFIG=$KCS_HOME/config/kurento.conf.json
+KCS_CONFIG=$KCS_HOME/config/control-server.conf.json
 if [ ! -f $KCS_BINARY ]; then
     KCS_HOME=/var/lib/kurento
     KCS_BINARY=$KCS_HOME/kurento-control-server.jar
-    KCS_CONFIG="/etc/kurento/kurento.conf.json"
+    KCS_CONFIG="/etc/kurento/control-server.conf.json"
     KCS_OPTS="-DconfigFilePath=$KCS_CONFIG"
 fi
 
