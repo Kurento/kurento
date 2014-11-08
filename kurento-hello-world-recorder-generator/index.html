@@ -24,13 +24,14 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 <script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
 
 <script src="external/adapter.js"></script>
+<script src="bower_components/co/co.js"></script>
 
 <script src="bower_components/kurento-client/js/kurento-client.js"></script>
 <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
 
 <script src="js/console.js"></script>
 <script src="js/index.js"></script>
-<title>Kurento Tutorial 1: Hello World</title>
+<title>Kurento Tutorial: Loopback with recording using generators</title>
 </head>
 
 <body>
@@ -46,7 +47,7 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav navbar-right">
 						<li><a
-							href="https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-hello-world"><span
+							href="https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-hello-world-recorder-generator"><span
 								class="glyphicon glyphicon-file"></span> Source Code</a></li>
 					</ul>
 				</div>
@@ -55,10 +56,10 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 	</header>
 	<div class="container">
 		<div class="page-header">
-			<h1>Tutorial 1: Hello World (WebRTC in loopback)</h1>
+			<h1>Kurento Tutorial: Loopback with recording using generators</h1>
 			<p>
 				This application shows a <i>WebRtcEndpoint</i> connected to itself
-				(loopback). Take a look to the <a href="img/pipeline.png"
+				(loopback) and to a RecorderEndpoint. Take a look to the <a href="img/pipeline.png"
 					data-toggle="lightbox" data-title="Hello World Media Pipeline"
 					data-footer="WebRtcEnpoint in loopback">Media Pipeline</a>. To run
 				this demo follow these steps:
@@ -85,7 +86,10 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 					class="glyphicon glyphicon-play"></span> Start</a><br /> <br /> <a
 					id="stop" href="#" class="btn btn-danger"
 					onclick="stop(); return false;"><span
-					class="glyphicon glyphicon-stop"></span> Stop</a>
+					class="glyphicon glyphicon-stop"></span> Stop</a><br /> <br /><a
+				        id="play" href="#" class="btn btn-warning"
+					onclick="play(); return false;"><span
+					class="glyphicon glyphicon-play"></span> Play</a>
 			</div>
 			<div class="col-md-5">
 				<h3>Remote stream</h3>

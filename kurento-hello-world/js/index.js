@@ -18,6 +18,7 @@ const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
 var videoInput;
 var videoOutput;
 var webRtcPeer;
+var pipeline;
 
 window.onload = function() {
 	console = new Console('console', console);
@@ -31,6 +32,10 @@ function start() {
 }
 
 function stop() {
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
+	}
 	if (webRtcPeer) {
 		webRtcPeer.dispose();
 	}
@@ -43,8 +48,10 @@ function onOffer(sdpOffer){
 	kurentoClient(ws_uri, function(error, kurentoClient) {
 		if(error) return onError(error);
 
-		kurentoClient.create("MediaPipeline", function(error, pipeline) {
+		kurentoClient.create("MediaPipeline", function(error, p) {
 			if(error) return onError(error);
+
+			pipeline = p;
 
 			pipeline.create("WebRtcEndpoint", function(error, webRtc){
 				if(error) return onError(error);
@@ -67,6 +74,7 @@ function onOffer(sdpOffer){
 
 function onError(error){
 	console.error(error);
+	stop();
 }
 
 function showSpinner() {
