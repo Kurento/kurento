@@ -29,11 +29,11 @@ window.addEventListener("load", function(event)
 	var videoInput = document.getElementById('videoInput');
 	var videoOutput = document.getElementById('videoOutput');
 
-	var start = document.getElementById("start");
-	var stop = document.getElementById("stop");
-	stop.addEventListener("click", stop);
+	var startButton = document.getElementById("start");
+	var stopButton = document.getElementById("stop");
+	stopButton.addEventListener("click", stop);
 
-	start.addEventListener("click", function start()
+	startButton.addEventListener("click", function start()
 	{
 		console.log("WebRTC loopback starting");
 
