@@ -41,6 +41,7 @@ struct _KmsAlphaBlendingPortData
   gfloat relative_x, relative_y, relative_width, relative_height;
   gint z_order;
   gboolean removing;
+  gboolean eos_managed;
 };
 
 #define KMS_TYPE_ALPHA_BLENDING_PORT_DATA	(kms_alpha_blending_port_data_get_type())
