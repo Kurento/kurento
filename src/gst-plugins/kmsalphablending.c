@@ -405,6 +405,7 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   if (!port_data->removing) {
     KMS_ALPHA_BLENDING_UNLOCK (self);
+    port_data->eos_managed = TRUE;
     return GST_PAD_PROBE_OK;
   }
 
@@ -475,7 +476,23 @@ kms_alpha_blending_port_data_destroy (gpointer data)
         GST_WARNING ("EOS event did not send");
       }
     } else {
-      GST_WARNING ("EOS event already sent");
+      gboolean remove = FALSE;
+
+      KMS_ALPHA_BLENDING_LOCK (self);
+      if (port_data->eos_managed) {
+        /* EOS callback was triggered before we could remove the port data */
+        /* so we have to remove elements to avoid memory leaks. */
+        remove = TRUE;
+      }
+      KMS_ALPHA_BLENDING_UNLOCK (self);
+
+      if (remove) {
+        /* Remove pipeline without helding the mutex */
+        kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
+            remove_elements_from_pipeline,
+            kms_alpha_blending_port_data_ref (data),
+            (GDestroyNotify) kms_alpha_blending_port_data_unref);
+      }
     }
 
     gst_element_unlink (port_data->videoconvert, port_data->videorate);
