@@ -398,7 +398,7 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   GstEvent *event;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_EOS) {
-    return GST_PAD_PROBE_PASS;
+    return GST_PAD_PROBE_OK;
   }
 
   KMS_ALPHA_BLENDING_LOCK (self);
