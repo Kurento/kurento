@@ -65,4 +65,10 @@ public class Pipeline extends KurentoObj {
 		this.webRtcs.remove(element);
 		this.plumbers.remove(element);
 	}
+
+	@Override
+	public String toString() {
+		return "[webRtcs=" + webRtcs.size() + ", plumbers=" + plumbers.size()
+				+ "]";
+	}
 }

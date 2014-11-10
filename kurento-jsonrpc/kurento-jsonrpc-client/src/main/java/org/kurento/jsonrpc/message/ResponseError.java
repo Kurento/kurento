@@ -14,9 +14,6 @@
  */
 package org.kurento.jsonrpc.message;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.kurento.jsonrpc.JsonRpcErrorException;
 
 import com.google.gson.JsonElement;
@@ -61,10 +58,12 @@ public class ResponseError {
 
 		} else {
 
-			StringWriter writer = new StringWriter();
-			e.printStackTrace(new PrintWriter(writer));
+			// StringWriter writer = new StringWriter();
+			// e.printStackTrace(new PrintWriter(writer));
+			// return new ResponseError(requestId, e.getClass().getSimpleName()
+			// + ":" + e.getMessage(), writer.toString());
 			return new ResponseError(requestId, e.getClass().getSimpleName()
-					+ ":" + e.getMessage(), writer.toString());
+					+ ":" + e.getMessage());
 		}
 	}
 

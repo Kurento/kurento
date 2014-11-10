@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.kurento.tree.protocol.TreeEndpoint;
+import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.Plumber;
@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author micael.gallego@gmail.com
  */
-public class AotFixedClientsNoRootTreeManager implements TreeManager {
-
-	private static final String TREE_ID = "TreeId";
+public class AotFixedClientsNoRootTreeManager extends AbstractOneTreeManager {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(AotFixedClientsNoRootTreeManager.class);
@@ -43,8 +41,6 @@ public class AotFixedClientsNoRootTreeManager implements TreeManager {
 	private List<Pipeline> leafPipelines = new ArrayList<>();
 	private List<Plumber> leafPlumbers = new ArrayList<>();
 	private Map<String, WebRtc> sinks = new ConcurrentHashMap<>();
-
-	private boolean createdTree = false;
 
 	public AotFixedClientsNoRootTreeManager(KmsManager kmsManager) {
 		this(kmsManager, 5);
@@ -86,16 +82,6 @@ public class AotFixedClientsNoRootTreeManager implements TreeManager {
 	@Override
 	public KmsManager getKmsManager() {
 		return kmsManager;
-	}
-
-	@Override
-	public synchronized String createTree() throws TreeException {
-		if (createdTree) {
-			throw new TreeException(
-					"AotOneTreeManager "
-							+ " can only create one tree and this tree was previously created");
-		}
-		return TREE_ID;
 	}
 
 	@Override
@@ -204,11 +190,4 @@ public class AotFixedClientsNoRootTreeManager implements TreeManager {
 					.disconnect();
 		}
 	}
-
-	private void checkTreeId(String treeId) throws TreeException {
-		if (!TREE_ID.equals(treeId)) {
-			throw new TreeException("Unknown tree '" + treeId + "'");
-		}
-	}
-
 }

@@ -2,7 +2,7 @@ package org.kurento.tree.sandbox.experiment;
 
 import org.kurento.tree.sandbox.OneSourceAddRemoveSinks;
 import org.kurento.tree.server.kmsmanager.KmsManager;
-import org.kurento.tree.server.treemanager.LessLoadedElasticTreeManager;
+import org.kurento.tree.server.treemanager.LessLoadedOneElasticTreeManager;
 import org.kurento.tree.server.treemanager.TreeManager;
 
 public class Experiment1 extends Experiment {
@@ -17,7 +17,7 @@ public class Experiment1 extends Experiment {
 		addTreeManagerCreator(new TreeManagerCreator() {
 			@Override
 			public TreeManager createTreeManager(KmsManager kmsManager) {
-				return new LessLoadedElasticTreeManager(kmsManager);
+				return new LessLoadedOneElasticTreeManager(kmsManager);
 			}
 		});
 	}

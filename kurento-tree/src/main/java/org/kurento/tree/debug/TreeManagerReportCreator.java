@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import org.kurento.tree.protocol.TreeEndpoint;
+import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.server.kmsmanager.KmsManager;
 import org.kurento.tree.server.treemanager.TreeException;
 import org.kurento.tree.server.treemanager.TreeManager;
@@ -80,6 +80,7 @@ public class TreeManagerReportCreator implements TreeManager {
 
 	private void includeOperation(String operation) {
 		writer.println("<p>" + operation + "</p>");
+		System.out.println(operation);
 	}
 
 	private void includeTreeManagerSnapshot() {
@@ -147,6 +148,13 @@ public class TreeManagerReportCreator implements TreeManager {
 
 	public void addText(String text) {
 		writer.println("<p>" + text + "</p>");
+	}
+
+	@Override
+	public void createTree(String treeId) throws TreeException {
+		treeManager.createTree(treeId);
+		includeOperation("createTree(" + treeId + ")");
+		includeTreeManagerSnapshot();
 	}
 
 }

@@ -1,11 +1,13 @@
 package org.kurento.tree.server.treemanager;
 
-import org.kurento.tree.protocol.TreeEndpoint;
+import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.server.kmsmanager.KmsManager;
 
 public interface TreeManager {
 
 	public String createTree() throws TreeException;
+
+	public void createTree(String treeId) throws TreeException;
 
 	public void releaseTree(String treeId) throws TreeException;
 

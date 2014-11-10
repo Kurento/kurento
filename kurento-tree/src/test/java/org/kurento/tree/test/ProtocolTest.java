@@ -1,7 +1,10 @@
 package org.kurento.tree.test;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 import org.kurento.tree.client.KurentoTreeClient;
-import org.kurento.tree.protocol.TreeEndpoint;
+import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.server.app.ClientsJsonRpcHandler;
 import org.kurento.tree.server.treemanager.TreeException;
 import org.kurento.tree.server.treemanager.TreeManager;
@@ -35,6 +38,26 @@ public class ProtocolTest {
 
 		when(treeMgr.createTree()).thenReturn("TreeId");
 		assertThat(client.createTree(), is("TreeId"));
+	}
+
+	@Test
+	public void testCreateTreeWithId() throws IOException, TreeException {
+		client.createTree("TreeId");
+		verify(treeMgr).createTree("TreeId");
+	}
+
+	@Test
+	public void testCreateTreeWithCollision() throws IOException, TreeException {
+
+		doThrow(new TreeException("message")).when(treeMgr)
+				.createTree("TreeId");
+
+		try {
+			client.createTree("TreeId");
+			fail("TreeException should be thrown");
+		} catch (TreeException e) {
+			assertThat(e.getMessage(), containsString("message"));
+		}
 	}
 
 	@Test

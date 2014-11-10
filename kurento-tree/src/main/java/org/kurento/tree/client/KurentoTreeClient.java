@@ -18,7 +18,6 @@ import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
-import org.kurento.tree.protocol.TreeEndpoint;
 import org.kurento.tree.server.treemanager.TreeException;
 
 import com.google.gson.JsonElement;
@@ -39,6 +38,16 @@ public class KurentoTreeClient {
 	public String createTree() throws IOException {
 		JsonElement response = client.sendRequest(CREATE_TREE_METHOD);
 		return JsonUtils.extractJavaValueFromResult(response, String.class);
+	}
+
+	public void createTree(String treeId) throws IOException {
+		JsonObject params = new JsonObject();
+		params.addProperty(TREE_ID, treeId);
+		try {
+			client.sendRequest(CREATE_TREE_METHOD, params);
+		} catch (JsonRpcErrorException e) {
+			processException(e);
+		}
 	}
 
 	public void releaseTree(String treeId) throws TreeException, IOException {

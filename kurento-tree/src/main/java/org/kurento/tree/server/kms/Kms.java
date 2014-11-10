@@ -6,7 +6,7 @@ import java.util.List;
 public class Kms extends KurentoObj {
 
 	protected List<Pipeline> pipelines = new ArrayList<>();
-	private LoadManager loadManager = new MaxWebRtcLoadManager(3);
+	private LoadManager loadManager = new MaxWebRtcLoadManager(10000);
 
 	public Kms() {
 

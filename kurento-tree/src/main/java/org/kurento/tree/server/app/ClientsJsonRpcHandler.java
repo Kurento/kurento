@@ -13,7 +13,7 @@ import org.kurento.jsonrpc.JsonRpcErrorException;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
-import org.kurento.tree.protocol.TreeEndpoint;
+import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.server.treemanager.TreeException;
 import org.kurento.tree.server.treemanager.TreeManager;
 import org.slf4j.Logger;
@@ -74,8 +74,19 @@ public class ClientsJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	public Response<JsonElement> createTree(Request<JsonObject> request)
 			throws TreeException {
-		String treeId = treeManager.createTree();
-		return new Response<JsonElement>(null, new JsonPrimitive(treeId));
+
+		String treeId = getParam(request, TREE_ID, String.class, true);
+		if (treeId == null) {
+			String newTreeId = treeManager.createTree();
+			return new Response<JsonElement>(null, new JsonPrimitive(newTreeId));
+		} else {
+			try {
+				treeManager.createTree(treeId);
+				return null;
+			} catch (TreeException e) {
+				throw new JsonRpcErrorException(2, e.getMessage());
+			}
+		}
 	}
 
 	public void releaseTree(Request<JsonObject> request) {
@@ -143,10 +154,31 @@ public class ClientsJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@SuppressWarnings("unchecked")
 	public <T> T getParam(Request<JsonObject> request, String paramName,
 			Class<T> type) {
-		JsonElement paramValue = request.getParams().get(paramName);
+		return getParam(request, paramName, type, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getParam(Request<JsonObject> request, String paramName,
+			Class<T> type, boolean allowNull) {
+
+		JsonObject params = request.getParams();
+		if (params == null) {
+			if (!allowNull) {
+				throw new JsonRpcErrorException(1,
+						"Invalid request lacking parameter '" + paramName + "'");
+			} else {
+				return null;
+			}
+		}
+
+		JsonElement paramValue = params.get(paramName);
 		if (paramValue == null) {
-			throw new JsonRpcErrorException(1,
-					"Invalid request lacking parameter '" + paramName + "'");
+			if (allowNull) {
+				return null;
+			} else {
+				throw new JsonRpcErrorException(1,
+						"Invalid request lacking parameter '" + paramName + "'");
+			}
 		}
 
 		if (type == String.class) {
@@ -158,5 +190,4 @@ public class ClientsJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		throw new JsonRpcErrorException(2, "Param '" + paramName
 				+ " with value '" + paramValue + "' is not a String");
 	}
-
 }

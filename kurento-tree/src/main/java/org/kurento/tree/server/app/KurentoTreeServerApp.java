@@ -14,7 +14,7 @@ import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
 import org.kurento.tree.server.kmsmanager.FixedNRealKmsManager;
 import org.kurento.tree.server.kmsmanager.KmsManager;
-import org.kurento.tree.server.treemanager.AotFixedClientsNoRootTreeManager;
+import org.kurento.tree.server.treemanager.LessLoadedNElasticTreeManager;
 import org.kurento.tree.server.treemanager.TreeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,7 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 			KmsManager kmsManager;
 			try {
 				kmsManager = new FixedNRealKmsManager(kmsWsUris);
-				treeManager = new AotFixedClientsNoRootTreeManager(kmsManager);
+				treeManager = new LessLoadedNElasticTreeManager(kmsManager);
 			} catch (IOException e) {
 				log.error("Exception connecting to KMS", e);
 				System.exit(1);

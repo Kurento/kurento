@@ -1,4 +1,4 @@
-package org.kurento.tree.protocol;
+package org.kurento.tree.client;
 
 public class TreeEndpoint {
 

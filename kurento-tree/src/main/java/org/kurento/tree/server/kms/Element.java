@@ -59,7 +59,10 @@ public abstract class Element extends KurentoObj {
 
 	public void release() {
 		disconnect();
-		for (Element element : getSinks()) {
+		for (Element element : new ArrayList<>(getSinks())) { // To avoid
+																// concurrent
+																// modification
+																// exception
 			element.disconnect();
 		}
 		pipeline.removeElement(this);

@@ -1,6 +1,6 @@
 package org.kurento.tree.server.treemanager;
 
-import org.kurento.tree.protocol.TreeEndpoint;
+import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.server.kmsmanager.KmsManager;
 
 public class FakeTreeManager implements TreeManager {
@@ -38,5 +38,9 @@ public class FakeTreeManager implements TreeManager {
 	@Override
 	public KmsManager getKmsManager() {
 		return null;
+	}
+
+	@Override
+	public void createTree(String treeId) throws TreeException {
 	}
 }
