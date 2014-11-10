@@ -16,12 +16,17 @@ public class ReleaseOperation extends Operation {
 	public RequestAndResponseType createRequest(
 			RomClientJsonRpcClient romClientJsonRpcClient) {
 
-		return romClientJsonRpcClient.createReleaseRequest(
-				getObjectRef(kurentoObject));
+		return romClientJsonRpcClient
+				.createReleaseRequest(getObjectRef(kurentoObject));
 	}
 
 	@Override
 	public void processResponse(Object response) {
 		manager.release(getObjectRef(kurentoObject));
+	}
+
+	@Override
+	public String getDescription() {
+		return "Release object '" + getObjectRef(kurentoObject) + "'";
 	}
 }

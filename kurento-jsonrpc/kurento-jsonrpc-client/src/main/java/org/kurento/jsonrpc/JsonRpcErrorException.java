@@ -55,4 +55,8 @@ public class JsonRpcErrorException extends JsonRpcException {
 		return error.getCode();
 	}
 
+	public String getServerMessage() {
+		return error.getMessage();
+	}
+
 }

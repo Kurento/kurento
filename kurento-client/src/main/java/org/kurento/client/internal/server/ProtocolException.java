@@ -14,15 +14,17 @@
  */
 package org.kurento.client.internal.server;
 
+import org.kurento.commons.exception.KurentoException;
+
 /**
  * Exception that represents an error in the JSON RPC protocol (i.e. malformed
  * commands and so on)
- * 
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.1
- * 
+ *
  */
-public class ProtocolException extends KurentoServerException {
+public class ProtocolException extends KurentoException {
 
 	private static final long serialVersionUID = -4925041543188451274L;
 

@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 
 import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.transport.serialization.ParamsFlattener;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.Props;
 
 public class RomServer {
@@ -66,7 +67,7 @@ public class RomServer {
 		Object remoteObject = manager.getObject(objectRef);
 
 		if (remoteObject == null) {
-			throw new KurentoServerException("No object found with reference "
+			throw new KurentoException("No object found with reference "
 					+ objectRef);
 		}
 

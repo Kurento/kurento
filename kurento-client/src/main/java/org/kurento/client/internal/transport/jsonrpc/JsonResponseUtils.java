@@ -9,6 +9,7 @@ import org.kurento.jsonrpc.JsonUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
@@ -29,6 +30,10 @@ public class JsonResponseUtils {
 			Type type) {
 
 		if (result == null) {
+			return null;
+		}
+
+		if (result instanceof JsonNull) {
 			return null;
 		}
 

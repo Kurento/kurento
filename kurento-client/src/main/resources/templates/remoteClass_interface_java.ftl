@@ -19,7 +19,7 @@ public interface ${remoteClass.name} extends <#if remoteClass.extends??>${remote
 
      void get${property.name?cap_first}(Continuation<${getJavaObjectType(property.type,true)}> cont);
 
-     java.util.concurrent.Future<${getJavaObjectType(property.type,true)}> get${property.name?cap_first}(Transaction tx);
+     TFuture<${getJavaObjectType(property.type,true)}> get${property.name?cap_first}(Transaction tx);
 
      <#if !property.readOnly>
      void set${property.name?cap_first}(@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name});
@@ -49,7 +49,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
 
     <@comment method.doc method.params method.return />
     <#assign type = getJavaObjectType(method.return,true)>
-    <#if type == "Void">void<#else>java.util.concurrent.Future<${type}></#if> ${method.name}(Transaction tx<#rt>
+    <#if type == "Void">void<#else>TFuture<${type}></#if> ${method.name}(Transaction tx<#rt>
     <#lt><#list method.params as param>, @org.kurento.client.internal.server.Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}</#list>);
 
     </#list>

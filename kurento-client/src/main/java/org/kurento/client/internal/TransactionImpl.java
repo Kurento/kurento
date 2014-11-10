@@ -2,7 +2,6 @@ package org.kurento.client.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.kurento.client.Continuation;
 import org.kurento.client.Transaction;
@@ -19,10 +18,8 @@ public class TransactionImpl implements Transaction {
 		this.manager = manager;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <E> Future<E> addOperation(Operation op) {
+	public void addOperation(Operation op) {
 		this.operations.add(op);
-		return (Future<E>) op.getFuture();
 	}
 
 	public void commit() {
@@ -39,6 +36,8 @@ public class TransactionImpl implements Transaction {
 
 	@Override
 	public void rollback() {
-		throw new Error("Not yet implemented");
+		for (Operation op : operations) {
+			op.rollback(null);
+		}
 	}
 }

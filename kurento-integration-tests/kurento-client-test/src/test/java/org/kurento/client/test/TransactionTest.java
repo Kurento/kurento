@@ -14,22 +14,28 @@
  */
 package org.kurento.client.test;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
+import org.kurento.client.TFuture;
 import org.kurento.client.Transaction;
-import org.kurento.client.TransactionNotExecutedException;
+import org.kurento.client.TransactionExecutionException;
+import org.kurento.client.TransactionNotCommitedException;
+import org.kurento.client.TransactionRollbackException;
+import org.kurento.client.ZBarFilter;
+import org.kurento.client.internal.server.KurentoServerException;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.test.base.KurentoClientTest;
 
@@ -57,7 +63,7 @@ public class TransactionTest extends KurentoClientTest {
 		// Explicit transaction
 		Transaction tx = pipeline.beginTransaction();
 		player.play(tx);
-		Future<String> fUrl = httpGetEndpoint.getUrl(tx);
+		TFuture<String> fUrl = httpGetEndpoint.getUrl(tx);
 		pipeline.release(tx);
 		tx.commit();
 		// End explicit transaction
@@ -75,7 +81,7 @@ public class TransactionTest extends KurentoClientTest {
 
 		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
 				.build(tx1);
-		Future<String> url1 = httpGetEndpoint.getUrl(tx1);
+		TFuture<String> url1 = httpGetEndpoint.getUrl(tx1);
 		tx1.commit();
 		// End pipeline creation
 
@@ -85,7 +91,7 @@ public class TransactionTest extends KurentoClientTest {
 
 		HttpGetEndpoint httpGetEndpoint2 = new HttpGetEndpoint.Builder(
 				pipeline2).build(tx2);
-		Future<String> url2 = httpGetEndpoint2.getUrl(tx2);
+		TFuture<String> url2 = httpGetEndpoint2.getUrl(tx2);
 		tx2.commit();
 		// End pipeline creation
 
@@ -109,14 +115,14 @@ public class TransactionTest extends KurentoClientTest {
 				.build(tx1);
 
 		player.connect(tx1, httpGetEndpoint);
-		Future<String> url1 = httpGetEndpoint.getUrl(tx1);
+		TFuture<String> url1 = httpGetEndpoint.getUrl(tx1);
 		tx1.commit();
 		// End pipeline creation
 
 		// Explicit transaction
 		Transaction tx2 = pipeline.beginTransaction();
 		player.play(tx2);
-		Future<String> url2 = httpGetEndpoint.getUrl(tx2);
+		TFuture<String> url2 = httpGetEndpoint.getUrl(tx2);
 		pipeline.release(tx2);
 		tx2.commit();
 		// End explicit transaction
@@ -124,7 +130,7 @@ public class TransactionTest extends KurentoClientTest {
 		assertThat(url1.get(), is(url2.get()));
 	}
 
-	@Test(expected = TransactionNotExecutedException.class)
+	@Test(expected = TransactionNotCommitedException.class)
 	public void usePlainMethodsInNewObjectsInsideTx()
 			throws InterruptedException, ExecutionException {
 
@@ -146,7 +152,7 @@ public class TransactionTest extends KurentoClientTest {
 	// In the current KMS impl, the error is MediaElementImpl not found and
 	// should be another error to control non-commited objects
 	// @Ignore
-	@Test(expected = TransactionNotExecutedException.class)
+	@Test(expected = TransactionNotCommitedException.class)
 	public void usePlainMethodsWithNewObjectsAsParamsInsideTx()
 			throws InterruptedException, ExecutionException {
 
@@ -308,9 +314,10 @@ public class TransactionTest extends KurentoClientTest {
 
 		// Explicit transaction
 		Transaction tx = pipeline.beginTransaction();
-		Future<String> fUrl = httpGetEndpoint.getUrl(tx);
-		Future<MediaPipeline> fRPipeline = httpGetEndpoint.getMediaPipeline(tx);
-		Future<String> fUri = player.getUri(tx);
+		TFuture<String> fUrl = httpGetEndpoint.getUrl(tx);
+		TFuture<MediaPipeline> fRPipeline = httpGetEndpoint
+				.getMediaPipeline(tx);
+		TFuture<String> fUri = player.getUri(tx);
 		tx.commit();
 		// End explicit transaction
 
@@ -323,6 +330,91 @@ public class TransactionTest extends KurentoClientTest {
 		System.out.println(fRPipelineGet);
 
 		assertThat(rPipeline, is(fRPipelineGet));
+	}
+
+	@Test
+	public void userRollbackTest() throws InterruptedException {
+
+		Transaction tx = kurentoClient.beginTransaction();
+
+		MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
+
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build(tx);
+
+		TFuture<String> uri = player.getUri(tx);
+
+		tx.rollback();
+
+		try {
+			player.release();
+		} catch (TransactionRollbackException e) {
+			log.info("Captured exception of class " + e.getClass()
+					+ " with message '" + e.getMessage() + "'");
+			assertThat(e.isUserRollback(), is(true));
+		}
+
+		try {
+			uri.get();
+		} catch (TransactionRollbackException e) {
+			log.info("Captured exception of class " + e.getClass()
+					+ " with message '" + e.getMessage() + "'");
+			assertThat(e.isUserRollback(), is(true));
+		}
+	}
+
+	@Test
+	public void transactionErrorTest() throws InterruptedException {
+
+		// Pipeline creation (no transaction)
+
+		Transaction tx = kurentoClient.beginTransaction();
+
+		MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
+
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				"http://files.kurento.org/video/small.webm").build(tx);
+
+		tx.commit();
+
+		player.release();
+
+		try {
+			player.play();
+		} catch (KurentoServerException e) {
+			log.info("Captured exception of class " + e.getClass()
+					+ " with message '" + e.getMessage() + "'");
+			assertThat(e.getCode(), is(-32000));
+			assertThat(e.getServerMessage(), containsString(" not found"));
+		}
+
+		tx = pipeline.beginTransaction();
+
+		ZBarFilter filter = new ZBarFilter.Builder(pipeline).build(tx);
+		player.play(tx);
+
+		try {
+			tx.commit();
+			fail("Exception 'TransactionExecutionException' should be thrown");
+		} catch (TransactionExecutionException e) {
+			log.info("Captured exception of class " + e.getClass()
+					+ " with message '" + e.getMessage() + "'");
+			assertThat(e.getCode(), is(-32000));
+			assertThat(e.getServerMessage(), containsString(" not found"));
+		}
+
+		try {
+			filter.connect(player);
+			fail("Exception 'TransactionExecutionException' should be thrown");
+		} catch (TransactionRollbackException e) {
+			log.info("Captured exception of class " + e.getClass()
+					+ " with message '" + e.getMessage() + "'");
+
+			KurentoServerException kse = e.getKurentoServerException();
+			assertThat(kse, is(not(nullValue())));
+			assertThat(kse.getCode(), is(-32000));
+			assertThat(kse.getServerMessage(), containsString(" not found"));
+		}
 	}
 
 	@Test

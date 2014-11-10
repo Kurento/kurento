@@ -3,12 +3,14 @@ package org.kurento.client.internal.client;
 import java.lang.reflect.Type;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 
 import org.kurento.client.Continuation;
 import org.kurento.client.KurentoObject;
+import org.kurento.client.TFuture;
 import org.kurento.client.Transaction;
-import org.kurento.client.TransactionNotExecutedException;
+import org.kurento.client.TransactionExecutionException;
+import org.kurento.client.TransactionNotCommitedException;
+import org.kurento.client.TransactionRollbackException;
 import org.kurento.client.internal.TransactionImpl;
 import org.kurento.client.internal.client.operation.InvokeOperation;
 import org.kurento.client.internal.client.operation.ReleaseOperation;
@@ -24,13 +26,17 @@ import com.google.common.collect.Multimaps;
 
 public class RemoteObject {
 
+	public enum ObjectStatus {
+		NOT_COMMITED, ROLLBACK, CREATED
+	}
+
 	private static Logger LOG = LoggerFactory.getLogger(RemoteObject.class);
 
 	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
 	private String objectRef;
 	private final String type;
-	private boolean created;
+	private ObjectStatus objectStatus;
 	private final RomManager manager;
 
 	private KurentoObject kurentoObject;
@@ -43,6 +49,8 @@ public class RemoteObject {
 			.synchronizedMultimap(ArrayListMultimap
 					.<String, RemoteObjectEventListener> create());
 
+	private TransactionExecutionException transactionException;
+
 	public RemoteObject(String objectRef, String type, RomManager manager) {
 		this(objectRef, type, true, manager);
 	}
@@ -52,13 +60,14 @@ public class RemoteObject {
 		this.objectRef = objectRef;
 		this.manager = manager;
 		this.type = type;
-		this.created = created;
+		this.objectStatus = created ? ObjectStatus.CREATED
+				: ObjectStatus.NOT_COMMITED;
 
 		this.manager.registerObject(objectRef, this);
 	}
 
 	public boolean isCommited() {
-		return created;
+		return objectStatus == ObjectStatus.CREATED;
 	}
 
 	public void waitCommited() throws InterruptedException {
@@ -157,12 +166,14 @@ public class RemoteObject {
 		return FLATTENER.unflattenValue("return", type, obj, manager);
 	}
 
-	public Future<Object> invoke(String method, Props params, Type type,
+	public TFuture<Object> invoke(String method, Props params, Type type,
 			Transaction tx) {
 
 		TransactionImpl txImpl = (TransactionImpl) tx;
-		return txImpl.addOperation(new InvokeOperation(getKurentoObject(),
-				method, params, type));
+		InvokeOperation op = new InvokeOperation(getKurentoObject(), method,
+				params, type);
+		txImpl.addOperation(op);
+		return op.getFuture();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -279,8 +290,10 @@ public class RemoteObject {
 	}
 
 	private void checkCreated() {
-		if (!created) {
-			throw new TransactionNotExecutedException();
+		if (objectStatus == ObjectStatus.NOT_COMMITED) {
+			throw new TransactionNotCommitedException();
+		} else if (objectStatus == ObjectStatus.ROLLBACK) {
+			throw new TransactionRollbackException(transactionException);
 		}
 	}
 
@@ -317,11 +330,17 @@ public class RemoteObject {
 
 	public void setCreatedObjectRef(String objectRef) {
 		this.objectRef = objectRef;
-		this.created = true;
+		this.objectStatus = ObjectStatus.CREATED;
 		createReadyLatchIfNecessary();
 		readyLatch.countDown();
 		if (whenContinuation != null) {
 			execWhenCommited();
 		}
+	}
+
+	public void rollbackTransaction(
+			TransactionExecutionException transactionException) {
+		this.objectStatus = ObjectStatus.ROLLBACK;
+		this.transactionException = transactionException;
 	}
 }

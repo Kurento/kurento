@@ -547,7 +547,10 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 
 		} else {
 
-			return new Response<>(id);
+			throw new JsonParseException(
+					"Invalid JsonRpc response. It lacks a valid '"
+							+ RESULT_PROPERTY + "' or '" + ERROR_PROPERTY
+							+ "' field");
 		}
 
 	}

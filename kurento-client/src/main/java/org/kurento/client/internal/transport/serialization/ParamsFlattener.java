@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.kurento.client.TransactionNotExecutedException;
+import org.kurento.client.TransactionNotCommitedException;
 import org.kurento.client.internal.ParamAnnotationUtils;
 import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.client.RemoteObject;
@@ -171,7 +171,7 @@ public class ParamsFlattener {
 	private Object flattenRemoteObject(RemoteObject remoteObject, boolean inTx) {
 		Object processedParam;
 		if (!remoteObject.isCommited() && !inTx) {
-			throw new TransactionNotExecutedException(
+			throw new TransactionNotCommitedException(
 					"Trying to invoke an operation with a non commited object of type '"
 							+ remoteObject.getType()
 							+ "' outside a transaction");

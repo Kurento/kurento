@@ -41,4 +41,10 @@ public class SubscriptionOperation extends Operation {
 		getRemoteObject(kurentoObject).addEventListener(eventType, listener);
 	}
 
+	@Override
+	public String getDescription() {
+		return "Event subscription of type " + eventType + " in object '"
+				+ getObjectRef(kurentoObject) + "'";
+	}
+
 }

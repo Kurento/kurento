@@ -20,9 +20,12 @@ import java.io.StringWriter;
 import org.kurento.jsonrpc.JsonRpcErrorException;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 public class ResponseError {
+
+	private static final String TYPE_PROPERTY = "type";
 
 	/**
 	 * Error status code.
@@ -38,6 +41,11 @@ public class ResponseError {
 	 * Error data.
 	 */
 	private JsonElement data;
+
+	/**
+	 * Error type.
+	 */
+	private String type;
 
 	public static ResponseError newFromException(Throwable e) {
 		return newFromException(-1, e);
@@ -88,6 +96,7 @@ public class ResponseError {
 		this.code = Integer.valueOf(code);
 		this.message = message;
 		this.data = data;
+		this.type = getErrorType(data);
 	}
 
 	public ResponseError(int code, String message) {
@@ -158,4 +167,25 @@ public class ResponseError {
 		this.data = new JsonPrimitive(data);
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public String getCompleteMessage() {
+		return message + " (Code:" + code + ", Type:" + type + ")";
+	}
+
+	private static String getErrorType(JsonElement data) {
+		if (data != null) {
+			if (data instanceof JsonObject) {
+				JsonObject dataObject = (JsonObject) data;
+				JsonElement typeProp = dataObject.get(TYPE_PROPERTY);
+				if (typeProp instanceof JsonPrimitive) {
+					return ((JsonPrimitive) typeProp).getAsString();
+				}
+			}
+		}
+
+		return null;
+	}
 }

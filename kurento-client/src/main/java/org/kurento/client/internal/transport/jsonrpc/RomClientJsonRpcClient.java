@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kurento.client.Continuation;
+import org.kurento.client.TransactionExecutionException;
 import org.kurento.client.internal.client.DefaultContinuation;
 import org.kurento.client.internal.client.RomClient;
 import org.kurento.client.internal.client.RomEventHandler;
@@ -45,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.reflect.TypeToken;
-import com.google.common.util.concurrent.SettableFuture;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -246,8 +246,7 @@ public class RomClientJsonRpcClient implements RomClient {
 			throw new KurentoServerTransportException(
 					"Error connecting with server", e);
 		} catch (JsonRpcErrorException e) {
-			throw new KurentoServerException(
-					"Exception invoking an operation in KMS", e);
+			throw new KurentoServerException(e.getError());
 		}
 	}
 
@@ -333,10 +332,6 @@ public class RomClientJsonRpcClient implements RomClient {
 	public void transaction(final List<Operation> operations,
 			final Continuation<Void> continuation) {
 
-		// TODO Now this implementation consider Server side support for
-		// transactions. Refactor other code to include here the logic to behave
-		// different when the server doesn't have transaction support
-
 		JsonArray opJsons = new JsonArray();
 		final List<RequestAndResponseType> opReqres = new ArrayList<>();
 
@@ -379,20 +374,36 @@ public class RomClientJsonRpcClient implements RomClient {
 	private void processTransactionResponse(List<Operation> operations,
 			List<RequestAndResponseType> opReqres,
 			List<Response<JsonElement>> responses) {
+
+		TransactionExecutionException e = null;
+
 		for (int i = 0; i < operations.size(); i++) {
 			Operation op = operations.get(i);
 			Response<JsonElement> response = responses.get(i);
-			RequestAndResponseType reqres = opReqres.get(i);
-			SettableFuture<?> future = (SettableFuture<?>) op.getFuture();
-
 			if (response.isError()) {
-				future.setException(new JsonRpcErrorException(response
-						.getError()));
-			} else {
+				e = new TransactionExecutionException(op, response.getError());
+				break;
+			}
+		}
+
+		if (e != null) {
+
+			for (int i = 0; i < operations.size(); i++) {
+				Operation op = operations.get(i);
+				op.rollback(e);
+			}
+
+			throw e;
+
+		} else {
+
+			for (int i = 0; i < operations.size(); i++) {
+				Operation op = operations.get(i);
+				Response<JsonElement> response = responses.get(i);
+				RequestAndResponseType reqres = opReqres.get(i);
 				op.processResponse(processReqResult(reqres.responseType, null,
 						response.getResult()));
 			}
 		}
 	}
-
 }

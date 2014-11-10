@@ -1,5 +1,6 @@
 package org.kurento.client.internal.client.operation;
 
+import org.kurento.client.TransactionExecutionException;
 import org.kurento.client.internal.client.RemoteObject;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient.RequestAndResponseType;
@@ -28,5 +29,17 @@ public class MediaObjectCreationOperation extends Operation {
 	@Override
 	public void processResponse(Object response) {
 		remoteObject.setCreatedObjectRef((String) response);
+	}
+
+	@Override
+	public String getDescription() {
+		return "Object creation of type '" + className + "' with params "
+				+ constructorParams;
+	}
+
+	@Override
+	public void rollback(TransactionExecutionException e) {
+		super.rollback(e);
+		remoteObject.rollbackTransaction(e);
 	}
 }

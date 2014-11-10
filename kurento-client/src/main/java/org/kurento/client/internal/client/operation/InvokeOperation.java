@@ -44,8 +44,15 @@ public class InvokeOperation extends Operation {
 
 		if (returnType != Void.class && returnType != void.class) {
 
-			future.set(FLATTENER.unflattenValue("return", returnType, result,
-					manager));
+			future.getFuture().set(
+					FLATTENER.unflattenValue("return", returnType, result,
+							manager));
 		}
+	}
+
+	@Override
+	public String getDescription() {
+		return "Invoking method '" + method + "' in object "
+				+ getObjectRef(kurentoObject) + "' with params " + params;
 	}
 }
