@@ -30,6 +30,10 @@
 #include <ftw.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
+
+#include <gst/rtp/gstrtcpbuffer.h>
+#include "kmsrtcp.h"
 
 #define PLUGIN_NAME "webrtcendpoint"
 
@@ -81,6 +85,17 @@ enum
 #define TMP_DIR_TEMPLATE "/tmp/kms_webrtc_endpoint_XXXXXX"
 #define CERTTOOL_TEMPLATE "certtool.tmpl"
 #define CERT_KEY_PEM_FILE "certkey.pem"
+
+#define WEBRTC_ENDPOINT "webrtc-endpoint"
+
+#define REMB_SEND_MIN 30000     /* bps */
+#define REMB_SEND_MAX 2000000   /* bps */
+#define REMB_EXPONENTIAL_FACTOR 0.04
+#define REMB_LINEAL_FACTOR_MIN 50       /* bps */
+#define REMB_LINEAL_FACTOR_GRADE ((60 * RTCP_MIN_INTERVAL)/ 1000)       /* Reach last top bitrate in 60secs aprox. */
+#define REMB_DECREMENT_FACTOR 0.5
+#define REMB_THRESHOLD_FACTOR 0.8
+#define REMB_UP_LOSSES 12       /* 4% losses */
 
 typedef struct _KmsWebRTCTransport
 {
@@ -143,6 +158,16 @@ struct _KmsWebrtcEndpointPrivate
   gchar *turn_address;
   guint turn_port;
   NiceRelayType turn_transport;
+
+  /* REMB */
+  guint remb_local;
+  gboolean remb_local_probed;
+  guint remb_local_threshold;
+  guint remb_local_lineal_factor;
+  guint remb_local_max_br;
+  guint remb_local_avg_br;
+  GstClockTime remb_local_last_time;
+  guint64 remb_local_last_octets_received;
 };
 
 /* KmsWebRTCTransport */
@@ -527,6 +552,10 @@ sdp_media_set_rtcp_fb_attrs (GstSDPMedia * media)
       g_free (aux);
 
       aux = g_strconcat (pt, " nack pli", NULL);
+      gst_sdp_media_add_attribute (media, RTCP_FB, aux);
+      g_free (aux);
+
+      aux = g_strconcat (pt, " goog-remb", NULL);
       gst_sdp_media_add_attribute (media, RTCP_FB, aux);
       g_free (aux);
     }
@@ -1355,6 +1384,225 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   KMS_ELEMENT_UNLOCK (webrtc_endpoint);
 }
 
+static gboolean
+get_video_recv_info (KmsWebrtcEndpoint * self, GObject * sess,
+    guint64 * bitrate, guint * fraction_lost)
+{
+  GValueArray *arr;
+  GValue *val;
+  guint i;
+  gboolean ret = TRUE;
+
+  g_object_get (sess, "sources", &arr, NULL);
+
+  for (i = 0; i < arr->n_values; i++) {
+    GObject *source;
+    guint ssrc;
+    GstStructure *s;
+
+    val = g_value_array_get_nth (arr, i);
+    source = g_value_get_object (val);
+    g_object_get (source, "ssrc", &ssrc, NULL);
+    GST_TRACE_OBJECT (source, "source ssrc: %u", ssrc);
+
+    g_object_get (source, "stats", &s, NULL);
+    GST_TRACE_OBJECT (self, "stats: %" GST_PTR_FORMAT, s);
+
+    if (ssrc == self->priv->remote_video_ssrc) {
+      GstClockTime current_time;
+      struct timespec time;
+      guint64 octets_received;
+
+      if (!gst_structure_get_uint64 (s, "bitrate", bitrate)) {
+        ret = FALSE;
+        break;
+      }
+      if (!gst_structure_get_uint64 (s, "octets-received", &octets_received)) {
+        ret = FALSE;
+        break;
+      }
+      if (!gst_structure_get_uint (s, "sent-rb-fractionlost", fraction_lost)) {
+        ret = FALSE;
+        break;
+      }
+
+      clock_gettime (CLOCK_MONOTONIC, &time);
+      current_time = time.tv_sec * GST_SECOND + time.tv_nsec;
+
+      if (self->priv->remb_local_last_time != 0) {
+        GstClockTime elapsed = current_time - self->priv->remb_local_last_time;
+        guint64 bytes_handled =
+            octets_received - self->priv->remb_local_last_octets_received;
+
+        *bitrate =
+            gst_util_uint64_scale (bytes_handled, 8 * GST_SECOND, elapsed);
+        GST_TRACE_OBJECT (self,
+            "Elapsed %" G_GUINT64_FORMAT " bytes %" G_GUINT64_FORMAT ", rate %"
+            G_GUINT64_FORMAT, elapsed, bytes_handled, *bitrate);
+      }
+
+      self->priv->remb_local_last_time = current_time;
+      self->priv->remb_local_last_octets_received = octets_received;
+
+      break;
+    }
+  }
+
+  g_value_array_free (arr);
+
+  return ret;
+}
+
+static gboolean
+remb_local_update (KmsWebrtcEndpoint * self, GObject * sess)
+{
+  guint64 bitrate;
+  guint fraction_lost;
+  KmsWebrtcEndpointPrivate *priv = self->priv;
+
+  if (!get_video_recv_info (self, sess, &bitrate, &fraction_lost)) {
+    return FALSE;
+  }
+
+  if (!priv->remb_local_probed) {
+    if (bitrate == 0) {
+      return FALSE;
+    }
+
+    priv->remb_local = bitrate;
+    priv->remb_local_probed = TRUE;
+  }
+
+  priv->remb_local_max_br = MAX (priv->remb_local_max_br, bitrate);
+
+  if (priv->remb_local_avg_br == 0) {
+    priv->remb_local_avg_br = bitrate;
+  } else {
+    priv->remb_local_avg_br = (priv->remb_local_avg_br * 7 + bitrate) / 8;
+  }
+
+  if (fraction_lost == 0) {
+    gint remb_base, remb_new;
+
+    remb_base = MIN (priv->remb_local, priv->remb_local_max_br);
+
+    if (remb_base < priv->remb_local_threshold) {
+      GST_TRACE_OBJECT (self, "A.1) Exponential (%f)", REMB_EXPONENTIAL_FACTOR);
+      remb_new = remb_base * (1 + REMB_EXPONENTIAL_FACTOR);
+    } else {
+      GST_TRACE_OBJECT (self, "A.2) Lineal (%" G_GUINT32_FORMAT ")",
+          priv->remb_local_lineal_factor);
+      remb_new = remb_base + priv->remb_local_lineal_factor;
+    }
+
+    priv->remb_local = MAX (priv->remb_local, remb_new);
+  } else if (fraction_lost < REMB_UP_LOSSES) {
+    GST_TRACE_OBJECT (self, "B) Assumable losses");
+
+    priv->remb_local = MIN (priv->remb_local, priv->remb_local_max_br);
+    priv->remb_local_threshold = priv->remb_local * REMB_THRESHOLD_FACTOR;
+  } else {
+    gint remb_base, lineal_factor_new;
+
+    GST_TRACE_OBJECT (self, "C) Too losses");
+
+    remb_base = MAX (priv->remb_local, priv->remb_local_avg_br);
+    priv->remb_local = remb_base * REMB_DECREMENT_FACTOR;
+    priv->remb_local_threshold = remb_base * REMB_THRESHOLD_FACTOR;
+    lineal_factor_new =
+        (remb_base - priv->remb_local_threshold) / REMB_LINEAL_FACTOR_GRADE;
+    priv->remb_local_lineal_factor =
+        MAX (REMB_LINEAL_FACTOR_MIN, lineal_factor_new);
+    priv->remb_local_max_br = 0;
+    priv->remb_local_avg_br = 0;
+  }
+
+  priv->remb_local = MAX (priv->remb_local, REMB_SEND_MIN);
+
+  GST_TRACE_OBJECT (self,
+      "REMB: %" G_GUINT32_FORMAT ", TH: %" G_GUINT32_FORMAT
+      ", fraction_lost: %d, bitrate: %" G_GUINT64_FORMAT "," " max_br: %"
+      G_GUINT32_FORMAT ", avg_br: %" G_GUINT32_FORMAT, priv->remb_local,
+      priv->remb_local_threshold, fraction_lost, bitrate,
+      priv->remb_local_max_br, priv->remb_local_avg_br);
+
+  return TRUE;
+}
+
+static void
+remb_local_init (KmsWebrtcEndpoint * self)
+{
+  self->priv->remb_local_probed = FALSE;
+  self->priv->remb_local = REMB_SEND_MAX;
+  self->priv->remb_local_threshold = REMB_SEND_MAX;
+  self->priv->remb_local_lineal_factor = REMB_LINEAL_FACTOR_MIN;
+}
+
+static void
+on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
+    gboolean * do_not_supress)
+{
+  KmsWebrtcEndpoint *self =
+      KMS_WEBRTC_ENDPOINT (g_object_get_data (sess, WEBRTC_ENDPOINT));
+  KmsRTCPPSFBAFBREMBPacket remb_packet;
+  GstRTCPBuffer rtcp = { NULL, };
+  GstRTCPPacket packet;
+  guint packet_ssrc;
+
+  if (is_early) {
+    return;
+  }
+
+  g_object_get (sess, "internal-ssrc", &packet_ssrc, NULL);
+  if (packet_ssrc != self->priv->local_video_ssrc) {
+    GST_TRACE_OBJECT (self, "This is not a video RTCP");
+    return;
+  }
+
+  if (!gst_rtcp_buffer_map (buffer, GST_MAP_READWRITE, &rtcp)) {
+    GST_WARNING_OBJECT (self, "Cannot map buffer to RTCP");
+    return;
+  }
+
+  if (!gst_rtcp_buffer_add_packet (&rtcp, GST_RTCP_TYPE_PSFB, &packet)) {
+    GST_WARNING_OBJECT (self, "Cannot add RTCP packet");
+    return;
+  }
+
+  if (!remb_local_update (self, sess)) {
+    return;
+  }
+
+  remb_packet.bitrate = self->priv->remb_local;
+  remb_packet.n_ssrcs = 1;
+  remb_packet.ssrcs[0] = self->priv->remote_video_ssrc;;
+  if (!kms_rtcp_psfb_afb_remb_marshall_packet (&packet, &remb_packet,
+          packet_ssrc)) {
+    gst_rtcp_packet_remove (&packet);
+  }
+  gst_rtcp_buffer_unmap (&rtcp);
+
+  GST_DEBUG_OBJECT (self, "Sending REMB with bitrate: %d", remb_packet.bitrate);
+}
+
+static void
+rtpbin_on_ssrc_sdes (GstElement * rtpbin, guint session, guint ssrc,
+    gpointer user_data)
+{
+  GObject *rtpsession;
+
+  g_signal_emit_by_name (rtpbin, "get-internal-session", session, &rtpsession);
+  if (rtpsession == NULL) {
+    GST_WARNING_OBJECT (rtpbin,
+        "There is not session with id %" G_GUINT32_FORMAT, session);
+    return;
+  }
+
+  g_object_set_data (rtpsession, WEBRTC_ENDPOINT, GST_ELEMENT_PARENT (rtpbin));
+  g_signal_connect (rtpsession, "on-sending-rtcp",
+      G_CALLBACK (on_sending_rtcp), NULL);
+}
+
 static void
 kms_webrtc_endpoint_parse_turn_url (KmsWebrtcEndpoint * self)
 {
@@ -1636,6 +1884,8 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 
   self->priv->loop = kms_loop_new ();
 
+  remb_local_init (self);
+
   g_object_get (self->priv->loop, "context", &context, NULL);
 
   self->priv->agent = nice_agent_new (context, NICE_COMPATIBILITY_RFC5245);
@@ -1669,6 +1919,8 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 
   g_signal_connect (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
       "pad-added", G_CALLBACK (rtpbin_pad_added), self);
+  g_signal_connect (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
+      "on-ssrc-sdes", G_CALLBACK (rtpbin_on_ssrc_sdes), NULL);
 }
 
 gboolean
