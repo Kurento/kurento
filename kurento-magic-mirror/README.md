@@ -5,7 +5,8 @@ Copyright © 2014 Kurento. Licensed under [LGPL License].
 Kurento one-to-one Node.js tutorial
 ===================================
 
-This project creates a bi-directional videophone.
+This project creates a WebRTC loopback with a filter that detect faces and put
+them an overlayed image of a hat.
 
 The source code of this project can be cloned from the [GitHub repository].
 
@@ -40,6 +41,14 @@ define its value by using the ```ws_uri``` flag:
 
 ```bash
 npm start -- --ws_uri=ws://example.com:8888/kurento
+```
+
+It also accept an optional parameter with the URI of the application server root
+that will serve the overlay image, being by default at http://localhost:8080/.
+You can define its value by using the ```as_uri``` flag:
+
+```bash
+npm start -- --as_uri=http://example.org:8080/
 ```
 
 The double dash separator (```--```) is [on purposse](https://www.npmjs.org/doc/cli/npm-run-script.html#description).

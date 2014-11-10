@@ -13,20 +13,28 @@
  *
  */
 
-var kurento = require('kurento-client');
-var express = require('express');
-var app = express();
 var path = require('path');
-var wsm = require('ws');
 
+var express  = require('express');
+var minimist = require('minimist');
+var ws       = require('ws');
+
+var kurento = require('kurento-client');
+
+
+var argv = minimist(process.argv.slice(2),
+{
+  default:
+  {
+    ws_uri: "ws://localhost:8888/kurento"
+  }
+});
+
+
+var app = express();
 app.set('port', process.env.PORT || 8080);
 
-/*
- * Definition of constants
- */
 
-const
-ws_uri = "ws://localhost:8888/kurento";
 /*
  * Definition of global variables.
  */
@@ -45,7 +53,7 @@ function nextUniqueId() {
 
 /*
  * Definition of helper classes
- * */
+ */
 
 //Represents caller and callee sessions
 function UserSession(id, name, ws){
@@ -171,7 +179,7 @@ var server = app.listen(port, function() {
 	console.log('Connect to http://<host_name>:' + port + '/');
 });
 
-var WebSocketServer = wsm.Server, wss = new WebSocketServer({
+var wss = new ws.Server({
 	server : server,
 	path : '/call'
 });
@@ -379,9 +387,9 @@ function getKurentoClient(callback) {
 		return callback(null, kurentoClient);
 	}
 
-	kurento(ws_uri, function(error, _kurentoClient) {
+	kurento(argv.ws_uri, function(error, _kurentoClient) {
 		if (error) {
-			var message = 'Coult not find media server at address ' + ws_uri;
+			var message = 'Coult not find media server at address ' + argv.ws_uri;
 			console.log(message);
 			return callback(message + ". Exiting with error " + error);
 		}

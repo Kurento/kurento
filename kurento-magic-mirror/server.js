@@ -13,12 +13,27 @@
  *
  */
 
-var kurento = require('kurento-client');
-var express = require('express');
-var app = express();
 var path = require('path');
-var wsm = require('ws');
-var session = require('express-session')
+
+var express  = require('express');
+var session  = require('express-session')
+var minimist = require('minimist');
+var ws       = require('ws');
+
+var kurento = require('kurento-client');
+
+
+var argv = minimist(process.argv.slice(2),
+{
+  default:
+  {
+    as_uri: "http://localhost:8080/",
+    ws_uri: "ws://localhost:8888/kurento"
+  }
+});
+
+
+var app = express();
 
 /*
  * Management of sessions
@@ -36,12 +51,6 @@ app.use(sessionHandler);
 
 app.set('port', process.env.PORT || 8080);
 
-/*
- * Defintion of constants
- */
-
-const
-ws_uri = "ws://localhost:8888/kurento";
 
 /*
  * Definition of global variables.
@@ -60,7 +69,7 @@ var server = app.listen(port, function() {
 	console.log('Connect to http://<host_name>:' + port + '/');
 });
 
-var WebSocketServer = wsm.Server, wss = new WebSocketServer({
+var wss = new ws.Server({
 	server : server,
 	path : '/magicmirror'
 });
@@ -135,10 +144,10 @@ function getKurentoClient(callback) {
 		return callback(null, kurentoClient);
 	}
 
-	kurento(ws_uri, function(error, _kurentoClient) {
+	kurento(argv.ws_uri, function(error, _kurentoClient) {
 		if (error) {
-			console.log("Could not find media server at address " + ws_uri);
-			return callback("Could not find media server at address" + ws_uri
+			console.log("Could not find media server at address " + argv.ws_uri);
+			return callback("Could not find media server at address" + argv.ws_uri
 					+ ". Exiting with error " + error);
 		}
 
@@ -212,7 +221,7 @@ function createMediaElements(pipeline, callback) {
 					}
 
 					faceOverlayFilter.setOverlayedImage(
-							"http://files.kurento.org/imgs/mario-wings.png",
+							argv.as_uri+"img/mario-wings.png",
 							-0.35, -1.2, 1.6, 1.6, function(error) {
 								if (error) {
 									return callback(error);

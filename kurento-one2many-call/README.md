@@ -2,11 +2,11 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-Kurento one to many node tutorial
-============
-Kurento Web SDK demos
+Kurento one-to-many Node.js tutorial
+====================================
 
-This project makes possible one client to upstream to the server a WebRTC stream so that it can be distributed to other clients.
+This project makes possible one client to upstream to the server a WebRTC stream
+so that it can be distributed to other clients.
 
 The source code of this project can be cloned from the [GitHub repository].
 
@@ -16,26 +16,38 @@ Installation instructions
 Be sure to have installed [Node.js] in your system:
 
 ```bash
-sudo add-apt-repository ppa:chris-lea/node.js
-sudo apt-get update
-sudo apt-get install nodejs
-```
-Also be sure to have installed [Bower] in your system:
-
-```bash
-sudo npm install -g bower
+curl -sL https://deb.nodesource.com/setup | sudo bash -
+sudo apt-get install -y nodejs
 ```
 
 Install node modules and bower components
 
 ```bash
 npm install
-cd public
-bower install
 ```
 
 Run the application and have fun ...
 
 ```bash
-node app.js
+npm start
 ```
+
+Parameters
+----------
+
+The Node.js server accept an optional parameter with the URI of the MediaServer
+WebSocket endpoint, being set by default at ws://localhost:8888/kurento. You can
+define its value by using the ```ws_uri``` flag:
+
+```bash
+npm start -- --ws_uri=ws://example.com:8888/kurento
+```
+
+The double dash separator (```--```) is [on purposse](https://www.npmjs.org/doc/cli/npm-run-script.html#description).
+
+
+[GitHub Repository]: https://github.com/Kurento/kurento-tutorial-node
+[KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
+[LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
+[Node.js]: http://nodejs.org
+[website]: http://kurento.org

@@ -2,45 +2,52 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-Kurento-tutorial
-================
-Examples on usage of the Kurento Java Client.
+Kurento "Hello World" Node.js tutorial
+======================================
+
+This project creates a basic WebRTC loopback sending your webcam stream to a
+Kurento MediaServer and back.
+
+The source code of this project can be cloned from the [GitHub repository].
+
+Installation instructions
+-------------------------
+
+Be sure to have installed [Node.js] in your system:
+
+```bash
+curl -sL https://deb.nodesource.com/setup | sudo bash -
+sudo apt-get install -y nodejs
+```
+
+Install node modules and bower components
+
+```bash
+npm install
+```
+
+Run the application and have fun ...
+
+```bash
+npm start
+```
+
+Parameters
+----------
+
+The Node.js server accept an optional parameter with the URI of the MediaServer
+WebSocket endpoint, being set by default at ws://localhost:8888/kurento. You can
+define its value by using the ```ws_uri``` flag:
+
+```bash
+npm start -- --ws_uri=ws://example.com:8888/kurento
+```
+
+The double dash separator (```--```) is [on purposse](https://www.npmjs.org/doc/cli/npm-run-script.html#description).
 
 
-What is Kurento
----------------
-Kurento provides an open platform for video processing and streaming
-based on standards.
-
-This platform has several APIs and components which provide solutions
-to the requirements of multimedia content application developers.
-These include:
-
-  * Kurento Media Server (KMS). A full featured media server providing
-    the capability to create and manage dynamic multimedia pipelines.
-  * Kurento Control Server (KCS). Signaling server for KMS. It provides
-    extra capabilities such as security, load balance, and so on.
-  * Kurento Clients. Libraries to create applications with media
-    capabilities. Kurento provides libraries for Java, browser JavaScript,
-    and Node.js.
-
-Downloads
----------
-To download binary releases of Kurento components visit http://kurento.org
-
-Source
-------
-The source code of this project can be cloned from the [GitHub Repository].
-Code for other Kurento projects can be found in the [GitHub Kurento Group].
-
-News and Website
-----------------
-Information about Kurento can be found on our [website].
-Follow us on Twitter @[kurentoms].
-
+[GitHub Repository]: https://github.com/Kurento/kurento-tutorial-node
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/Kurento/kurento-tutorial-java
-[GitHub Kurento Group]: https://github.com/kurento
+[Node.js]: http://nodejs.org
 [website]: http://kurento.org
-[kurentoms]: http://twitter.com/kurentoms

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * (C) Copyright 2013 Kurento (http://kurento.org/)
  *
@@ -13,21 +14,28 @@
  *
  */
 
+var path = require('path');
+
+var express  = require('express');
+var minimist = require('minimist');
+
 var kurento = require('kurento-client');
-var express = require('express');
+
+
+var argv = minimist(process.argv.slice(2),
+{
+  default:
+  {
+    ws_uri: "ws://localhost:8888/kurento"
+  }
+});
+
+
 var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.text({type : 'application/sdp'}));
-var path = require('path');
 app.set('port', process.env.PORT || 8080);
 
-/*
- * Definition of constants
- */
-
-
-//YOU MUST SET THIS TO THE HOST:PORT WHERE YOUR MEDIA SERVER IS LOCATED
-const ws_uri = "ws://localhost:8888/kurento";
 
 /*
  * Definition of global variables.
@@ -64,7 +72,7 @@ function getPipeline(callback) {
 		return callback(null, pipeline);
 	}
 
-	kurento(ws_uri, function(error, kurentoClient) {
+	kurento(argv.ws_uri, function(error, kurentoClient) {
 		if (error) {
 			return callback(error);
 		}
@@ -86,9 +94,8 @@ function getPipeline(callback) {
 app.post('/helloworld', function(req, res) {
 	var sdpOffer = req.body;
 
-	console.log("Request received from client with sdpOffer = ");
-	console.log(sdpOffer);
-	
+	console.log("Request received from client with sdpOffer =", sdpOffer);
+
 	console.log("Obtaining MediaPipeline");
 	getPipeline(function(error, pipeline) {
 		if (error) {
