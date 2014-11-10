@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
+@Ignore
 public class KeepAliveTest {
 
 	private static final int NUM_KEEP_ALIVES = 5;

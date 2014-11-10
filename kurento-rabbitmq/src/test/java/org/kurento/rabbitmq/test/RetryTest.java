@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
+@Ignore
 public class RetryTest {
 
 	private static final int TIMEOUT_RETRY_TIME = 400;
