@@ -47,8 +47,7 @@ function hideSpinner()
 window.addEventListener('load', function()
 {
   console = new Console('console', console);
-  dragDrop.initElement('videoSmall');
-
+  var drag = new Draggabilly(document.getElementById('videoSmall'));
   var videoInput  = document.getElementById('videoInput');
   var videoOutput = document.getElementById('videoOutput');
 
