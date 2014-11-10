@@ -45,6 +45,9 @@ bool load_from_url(const char *file_name, const char *url) {
   FILE *dst;
   session = soup_session_sync_new ();
   msg = soup_message_new ("GET", url);
+  if (msg == NULL){
+    goto end2;
+  }
   soup_session_send_message (session, msg);
   dst = fopen (file_name, "w+");
   if (dst == NULL) {
@@ -54,6 +57,7 @@ bool load_from_url(const char *file_name, const char *url) {
   fclose (dst);
 end:
   g_object_unref (msg);
+end2:
   g_object_unref (session);
 }
 #endif
