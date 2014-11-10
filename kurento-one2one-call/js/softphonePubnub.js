@@ -193,16 +193,18 @@ function SoftphonePubnub(ws_uri, videoInput, videoOutput, options)
         connectEndpoints(client, src, sinkId);
       });
     });
-  };
 
-  this.close = function()
-  {
-    if(webRtcPeer)
+    self.close = function()
     {
-      rpc.encode('stop', {dest: dest});
+      if(webRtcPeer)
+      {
+        rpc.encode('stop', {dest: dest});
 
-      webRtcPeer.dispose();
-      webRtcPeer = null
-    }
+        webRtcPeer.dispose();
+        webRtcPeer = null
+      }
+    };
   };
+
+
 }

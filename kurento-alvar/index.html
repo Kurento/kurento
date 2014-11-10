@@ -6,31 +6,29 @@
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="./img/kurento.png" type="image/png" />
+<link rel="shortcut icon" href="img/kurento.png" type="image/png" />
 
 <link rel="stylesheet"
-href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+	href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 <link rel="stylesheet"
-href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
+	href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 <link rel="stylesheet" href="css/kurento.css">
-<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-<!--[if lt IE 9]>
-<script src="bower_components/html5shiv/dist/html5shiv.min.js"></script>
-<script src="bower_components/respond/dest/respond.min.js"></script>
-<![endif]-->
+
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
+
+<script src="bower_components/kurento-client/js/kurento-client.js"></script>
+<script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
+<script
+	src="bower_components/kurento-module-markerdetector/js/kurento-module-markerdetector.js"></script>
+
 <script src="external/adapter.js"></script>
 
-<script src="./bower_components/kurento-client/js/kurento-client.js"></script>
-<script src="./bower_components/kurento-utils/js/kurento-utils.js"></script>
-<script src="./bower_components/kurento-module-markerdetector/js/kurento-module-markerdetector.js"></script>
+<script src="js/console.js"></script>
+<script src="js/index.js"></script>
 
-<script src="./js/console.js"></script>
-<script src="./js/index.js"></script>
-
-<title>Kurento Demo: Test your logo card </title>
+<title>Kurento Demo: Test your logo card</title>
 </head>
 
 <body>
@@ -40,20 +38,20 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse"
 						data-target=".navbar-collapse"></button>
-					<a class="navbar-brand" href="./">Kurento Tutorial</a>
+					<a class="navbar-brand" href="">Kurento Tutorial</a>
 				</div>
 			</div>
 		</div>
 	</header>
 	<div class="container">
 		<div class="page-header">
-			<h1>Kurento Demo: Test your logo card</h1>			
+			<h1>Kurento Demo: Test your logo card</h1>
 		</div>
 		<div class="row">
 			<div class="col-md-5">
 				<h3>Local stream</h3>
 				<video id="videoInput" autoplay width="480px" height="360px"
-					poster="./img/webrtc.png"></video>
+					poster="img/webrtc.png"></video>
 			</div>
 			<div class="col-md-2">
 				<a id="start" href="#" class="btn btn-success"
@@ -66,7 +64,7 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 			<div class="col-md-5">
 				<h3>Remote stream</h3>
 				<video id="videoOutput" autoplay width="480px" height="360px"
-					poster="./img/webrtc.png"></video>
+					poster="img/webrtc.png"></video>
 			</div>
 		</div>
 		<div class="row">
@@ -84,16 +82,16 @@ href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
 				<div class="row">&copy; 2014 Kurento</div>
 				<div class="row">
 					<div class="col-md-4">
-						<a href="http://www.urjc.es"><img src="./img/urjc.gif"
+						<a href="http://www.urjc.es"><img src="img/urjc.gif"
 							alt="Universidad Rey Juan Carlos" height="50px" /></a>
 					</div>
 					<div class="col-md-4">
-						<a href="http://www.kurento.org"><img src="./img/kurento.png"
+						<a href="http://www.kurento.org"><img src="img/kurento.png"
 							alt="Kurento" height="50px" /></a>
 					</div>
 					<div class="col-md-4">
-						<a href="http://www.naevatec.com"><img
-							src="./img/naevatec.png" alt="Naevatec" height="50px" /></a>
+						<a href="http://www.naevatec.com"><img src="img/naevatec.png"
+							alt="Naevatec" height="50px" /></a>
 					</div>
 				</div>
 			</div>

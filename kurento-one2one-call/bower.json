@@ -1,21 +1,11 @@
 {
   "name": "kurento-one2one-call",
-  "version": "5.0.0",
+  "version": "5.0.4-dev",
   "description": "Kurento Browser JavaScript Tutorial 3: One to one video call",
   "authors": [
-    "Kurento <info@kurento.org>",
-    "Jesús Leganés Combarro 'piranna' <piranna@gmail.com>"
+    "Kurento <info@kurento.org>"
   ],
   "main": "index.html",
-  "keywords": [
-    "demo",
-    "tutorial",
-    "Kurento",
-    "WebRTC",
-    "Kurento",
-    "Media",
-    "API"
-  ],
   "moduleType": [
     "globals"
   ],
@@ -30,12 +20,11 @@
     "tests"
   ],
   "dependencies": {
+    "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
-    "html5shiv": "~3.7.2",
+    "pubnub": "~3.6.4",
     "kurento-client": "^5.0.0",
     "kurento-jsonrpc": "^5.0.0",
-    "kurento-utils": "^5.0.0",
-    "pubnub": "~3.6.4",
-    "respond": "~1.4.2"
+    "kurento-utils": "^5.0.0"
   }
 }

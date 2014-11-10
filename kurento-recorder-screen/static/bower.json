@@ -1,6 +1,6 @@
 {
   "name": "RecorderScreen",
-  "version": "5.0.0",
+  "version": "5.0.4-dev",
   "description": "Kurento Recorder demo with screen support",
   "authors": [
     "Kurento <info@kurento.org>"

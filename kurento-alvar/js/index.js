@@ -52,10 +52,7 @@ function stop() {
 		pipeline = null;
 	}
 	
-	videoInput.src = '';
-	videoOutput.src = '';
 	hideSpinner(videoInput, videoOutput);
-	
 
 	$('#stop').attr('disabled', true);
 	$('#start').attr('disabled', false);
@@ -113,18 +110,22 @@ function onError(error) {
 
 function showSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'http://files.kurento.org/imgs/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('http://files.kurento.org/imgs/spinner.gif') no-repeat";
+		arguments[i].poster = 'img/transparent-1px.png';
+		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
 	}
 }
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
 		arguments[i].poster = './img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
 
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
 	event.preventDefault();
 	$(this).ekkoLightbox();

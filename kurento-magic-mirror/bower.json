@@ -20,10 +20,9 @@
     "tests"
   ],
   "dependencies": {
+    "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
-    "html5shiv": "~3.7.2",
     "kurento-client": "develop",
-    "kurento-utils": "develop",
-    "respond": "~1.4.2"
+    "kurento-utils": "develop"
   }
 }

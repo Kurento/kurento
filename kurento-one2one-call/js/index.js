@@ -37,6 +37,7 @@ function hideSpinner()
 {
   for(var i = 0; i < arguments.length; i++)
   {
+    arguments[i].src = '';
     arguments[i].poster = 'img/webrtc.png';
     arguments[i].style.background = '';
   }
@@ -67,9 +68,6 @@ window.addEventListener('load', function()
 
   softphone.onStop = function()
   {
-    videoInput.src = '';
-    videoOutput.src = '';
-
     hideSpinner(videoInput, videoOutput);
   }
 
@@ -135,7 +133,9 @@ window.addEventListener('load', function()
   });
 });
 
-
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event)
 {
   event.preventDefault();

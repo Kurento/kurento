@@ -1,6 +1,6 @@
 {
   "name": "kurento-background",
-  "version": "5.0.3",
+  "version": "5.0.4-dev",
   "description": "Kurento Browser JavaScript Demo: Share your environment",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -20,11 +20,10 @@
     "tests"
   ],
   "dependencies": {
+    "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
-    "html5shiv": "~3.7.2",
-    "respond": "~1.4.2",
     "kurento-client": "develop",
-    "kurento-utils": "^5.0.0",
+    "kurento-utils": "develop",
     "kurento-module-backgroundextractor":"develop" 
   }
 }

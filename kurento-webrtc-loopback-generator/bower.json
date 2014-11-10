@@ -1,6 +1,6 @@
 {
   "name": "WebRtcLoopbackGenerator",
-  "version": "5.0.0",
+  "version": "5.0.4-dev",
   "description": "Kurento demo with WebRTC in loopback and Generators",
   "authors": [
     "Kurento <info@kurento.org>"
