@@ -58,13 +58,13 @@
 				<module>kurento-parent-pom</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-control-server</module>
-				<module>kurento-tree</module>
 				<module>kurento-client</module>
 				<module>kurento-repository</module>
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>
 				<module>kurento-rabbitmq</module>
 				<module>kurento-maven-plugin</module>
+				<module>kurento-tree</module>
 			</modules>
 			<build>
 				<plugins>
@@ -96,6 +96,7 @@
 				<module>kurento-repository</module>
 				<module>kurento-rabbitmq</module>
 				<module>kurento-maven-plugin</module>
+				<module>kurento-tree</module>
 			</modules>
 		</profile>
 		<profile>

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -7,117 +8,89 @@
 		<version>5.0.5-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>kurento-test</artifactId>
+	<artifactId>kurento-tree-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Integration tests - Kurento Tests</name>
+	<name>Kurento Integration tests - Kurento Tree</name>
 	<description>
-		This project contains test cases for testing Kurento
-		Java Client and Kurento Media Server.
+			Kurento Tree Tests
+
+			This project contains the tests for the kurento-tree projects
 	</description>
+	<url>http://www.kurento.org/docs/${project.version}</url>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
+	<scm>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
 
 	<properties>
-		<!-- Test Dependencies Versions -->
-		<selenium-java.version>2.43.1</selenium-java.version>
-		<xml-apis.version>1.4.01</xml-apis.version>
-		<jetty-server.vesion>9.1.3.v20140225</jetty-server.vesion>
-		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
-		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
-		<overthere>2.4.3</overthere>
-
 		<!-- Webdrivers versions -->
 		<linux32-webdriver.version>2.9</linux32-webdriver.version>
 		<linux64-webdriver.version>2.9</linux64-webdriver.version>
 		<mac32-webdriver.version>2.9</mac32-webdriver.version>
 		<win32-webdriver.version>2.9</win32-webdriver.version>
-
-		<!-- Kurento Utils Version -->
-		<kurento-utils.version>5.0.5-SNAPSHOT</kurento-utils.version>
-
-		<!-- Main class -->
-		<start-class>org.kurento.test.base.BrowserKurentoClientTest</start-class>
 	</properties>
 
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
 	<dependencies>
-		<!-- Kurento Dependencies -->
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-client</artifactId>
+			<artifactId>kurento-tree-client</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-rabbitmq</artifactId>
+			<artifactId>kurento-tree-server</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-control-server</artifactId>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons-testing</artifactId>
-			<scope>compile</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-repository</artifactId>
+			<artifactId>kurento-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-utils-js</artifactId>
-			<version>${kurento-utils.version}</version>
-		</dependency>
-
-		<!-- JUnit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- Selenium -->
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>${selenium-java.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-server</artifactId>
-			<version>${selenium-java.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>xml-apis</groupId>
-			<artifactId>xml-apis</artifactId>
-			<version>${xml-apis.version}</version>
-		</dependency>
-
-		<!-- JMeter -->
-		<dependency>
-			<groupId>com.lazerycode.jmeter</groupId>
-			<artifactId>jmeter-maven-plugin</artifactId>
-			<version>${jmeter-maven-plugin.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jmeter</groupId>
-			<artifactId>ApacheJMeter_core</artifactId>
-			<version>${ApacheJMeter_core.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-
-		<!-- OverThere -->
-		<dependency>
-			<groupId>com.xebialabs.overthere</groupId>
-			<artifactId>overthere</artifactId>
-			<version>${overthere}</version>
-		</dependency>
-
-		<!-- Spring -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.4</version>
 		</dependency>
 	</dependencies>
 
@@ -334,24 +307,7 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>${spring-boot.version}</version>
-					<configuration>
-						<mainClass>${start-class}</mainClass>
-						<layout>ZIP</layout>
-					</configuration>
-					<executions>
-						<execution>
-							<goals>
-								<goal>repackage</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-
 </project>

@@ -3,43 +3,121 @@
 
 	<parent>
 		<groupId>org.kurento</groupId>
-		<artifactId>kurento-integration-tests</artifactId>
+		<artifactId>kurento-parent-pom</artifactId>
 		<version>5.0.5-SNAPSHOT</version>
+		<relativePath>../../kurento-parent-pom</relativePath>
 	</parent>
 
-	<artifactId>kurento-test</artifactId>
+	<artifactId>kurento-tree-server</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Integration tests - Kurento Tests</name>
+	<name>Kurento Tree Server</name>
 	<description>
-		This project contains test cases for testing Kurento
-		Java Client and Kurento Media Server.
+		Kurento Tree Server
 	</description>
+	<url>http://www.kurento.org/docs/${project.version}</url>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
+	<scm>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
 
 	<properties>
-		<!-- Test Dependencies Versions -->
-		<selenium-java.version>2.43.1</selenium-java.version>
-		<xml-apis.version>1.4.01</xml-apis.version>
-		<jetty-server.vesion>9.1.3.v20140225</jetty-server.vesion>
-		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
-		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
-		<overthere>2.4.3</overthere>
-
 		<!-- Webdrivers versions -->
 		<linux32-webdriver.version>2.9</linux32-webdriver.version>
 		<linux64-webdriver.version>2.9</linux64-webdriver.version>
 		<mac32-webdriver.version>2.9</mac32-webdriver.version>
 		<win32-webdriver.version>2.9</win32-webdriver.version>
-
-		<!-- Kurento Utils Version -->
-		<kurento-utils.version>5.0.5-SNAPSHOT</kurento-utils.version>
-
-		<!-- Main class -->
-		<start-class>org.kurento.test.base.BrowserKurentoClientTest</start-class>
 	</properties>
 
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>org.kurento.tree.server.app.KurentoTreeServerApp</mainClass>
+					<layout>ZIP</layout>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptor>src/assembly/bin.xml</descriptor>
+					<finalName>${project.artifactId}-${project.version}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<tasks>
+								<copy file="${project.build.directory}/target/${project.artifactId}-${project.version}-bin.zip" tofile="${project.build.directory}/target/${project.artifactId}-${project.version}.zip" />
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
 	<dependencies>
-		<!-- Kurento Dependencies -->
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-jsonrpc-server</artifactId>
+		</dependency>
+		<dependency>
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-tree-client</artifactId>
+    </dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-client</artifactId>
@@ -49,75 +127,25 @@
 			<artifactId>kurento-rabbitmq</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-control-server</artifactId>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons-testing</artifactId>
-			<scope>compile</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-repository</artifactId>
+			<artifactId>kurento-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-utils-js</artifactId>
-			<version>${kurento-utils.version}</version>
-		</dependency>
-
-		<!-- JUnit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- Selenium -->
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>${selenium-java.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-server</artifactId>
-			<version>${selenium-java.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>xml-apis</groupId>
-			<artifactId>xml-apis</artifactId>
-			<version>${xml-apis.version}</version>
-		</dependency>
-
-		<!-- JMeter -->
-		<dependency>
-			<groupId>com.lazerycode.jmeter</groupId>
-			<artifactId>jmeter-maven-plugin</artifactId>
-			<version>${jmeter-maven-plugin.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jmeter</groupId>
-			<artifactId>ApacheJMeter_core</artifactId>
-			<version>${ApacheJMeter_core.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-
-		<!-- OverThere -->
-		<dependency>
-			<groupId>com.xebialabs.overthere</groupId>
-			<artifactId>overthere</artifactId>
-			<version>${overthere}</version>
-		</dependency>
-
-		<!-- Spring -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -298,60 +326,5 @@
 		</profile>
 		<!-- /Webdrivers for Chrome (binary dependencies in the repository) -->
 	</profiles>
-
-	<build>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-dependency-plugin
-										</artifactId>
-										<versionRange>
-											[2.8,)
-										</versionRange>
-										<goals>
-											<goal>unpack</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>${spring-boot.version}</version>
-					<configuration>
-						<mainClass>${start-class}</mainClass>
-						<layout>ZIP</layout>
-					</configuration>
-					<executions>
-						<execution>
-							<goals>
-								<goal>repackage</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
 
 </project>

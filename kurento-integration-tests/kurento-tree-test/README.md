@@ -2,12 +2,11 @@
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
-kurento-tree
+kurento-client-test
 ==========
+Tests for Kurento Java Client
 
-Kurento Tree is composed by several modules to offer a broadcasting using
-WebRTC. The modules are: kurento-tree-server, kurento-tree-client and
-kurento-tree-demo.
+This project includes tests for the Kurento Java Client.
 
 What is Kurento
 ---------------

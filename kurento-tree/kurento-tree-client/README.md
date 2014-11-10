@@ -3,11 +3,11 @@
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
 kurento-tree
-==========
+======================
 
-Kurento Tree is composed by several modules to offer a broadcasting using
-WebRTC. The modules are: kurento-tree-server, kurento-tree-client and
-kurento-tree-demo.
+The kurento-tree project contains a service for creation WebRTC broadcasting
+trees. It exports an API based on WebSockets and RPC. kurento-tree is a
+Nubomedia app.
 
 What is Kurento
 ---------------
