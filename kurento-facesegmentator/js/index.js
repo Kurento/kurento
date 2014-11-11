@@ -17,10 +17,10 @@ const MEDIA_SERVER_HOSTNAME = location.hostname;
 const APP_SERVER_HOST = location.host;
 
 const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const ivan = 'http://' + APP_SERVER_HOST + '/img/ivan2.webm';
-const raquel = 'http://' + APP_SERVER_HOST + '/img/raquel.webm';
-const borja = 'http://' + APP_SERVER_HOST + '/img/borja1.webm';
-const clara = 'http://' + APP_SERVER_HOST + '/img/clara.webm';
+const ivan = 'http://' + APP_SERVER_HOST + '/img/ivan_.webm';
+const raquel = 'http://' + APP_SERVER_HOST + '/img/raquel_.webm';
+const borja = 'http://' + APP_SERVER_HOST + '/img/borja_.webm';
+const clara = 'http://' + APP_SERVER_HOST + '/img/clara_.webm';
 
 const raquelImg = './img/Raquel.png';
 const raquelImgDeactivate =  './img/Raquel_deactivate.png';
@@ -59,17 +59,25 @@ var kissing = false;
 // var micaX = 318;
 // var micaY = 113;
 //ivan2
-var ivanX = 582;
-var ivanY = 119;
+// var ivanX = 582;
+// var ivanY = 119;
+var ivanX = 553;
+var ivanY = 180;
 //chica 2
-var raquelX = 478;
-var raquelY = 196;
+// var raquelX = 478;
+// var raquelY = 196;
+var raquelX = 560;
+var raquelY = 186;
 //borja 1
-var borjaX = 500;
-var borjaY = 155;
+// var borjaX = 500;
+// var borjaY = 155;
+var borjaX = 575;
+var borjaY = 224;
 //clara
-var claraX = 524;
-var claraY = 164;
+// var claraX = 524;
+// var claraY = 164;
+var claraX = 588;
+var claraY = 155;
 
 
 window.onload = function() {
