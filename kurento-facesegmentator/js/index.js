@@ -20,6 +20,18 @@ const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 const ivan = 'http://' + APP_SERVER_HOST + '/img/ivan2.webm';
 const raquel = 'http://' + APP_SERVER_HOST + '/img/raquel.webm';
 const borja = 'http://' + APP_SERVER_HOST + '/img/borja1.webm';
+const clara = 'http://' + APP_SERVER_HOST + '/img/clara.webm';
+
+const raquelImg = './img/Raquel.png';
+const raquelImgDeactivate =  './img/Raquel_deactivate.png';
+const borjaImg = './img/borja.png';
+const borjaImgDeactivate = './img/borja_deactivate.png';
+const ivanImg = './img/ivan.png';
+const ivanImgDeactivate = './img/ivan_deactivate.png';
+const userImg = './img/clara.png';
+const userImgDeactivate = './img/clara_deactivate.png';
+
+
 if(typeof kurentoClient == 'undefined')
   kurentoClient = require('kurento-client');
 
@@ -55,7 +67,10 @@ var raquelY = 196;
 //borja 1
 var borjaX = 500;
 var borjaY = 155;
- 
+//clara
+var claraX = 524;
+var claraY = 164;
+
 
 window.onload = function() {
 	console = new Console('console', console);
@@ -91,10 +106,6 @@ function stop() {
 	$('#start').attr('disabled', false);
 
 	kissing = false;
-	reactivateImages (sample1, './img/Raquel.png', sample1click, 
-		sample2, './img/borja.png', sample2click,
-		sample3, './img/ivan.jpg', sample3click, 
-		sample4, './img/user.png', sample4click);
 }
 
 function onOffer(sdpOffer) {
@@ -165,17 +176,17 @@ function onOffer(sdpOffer) {
 		    });
 		});
     });
-	showImages (sample1, './img/Raquel.png', sample2, './img/borja.png', sample3, './img/ivan.jpg');
+	showImages (sample1, raquelImg, sample2, borjaImg, sample3, ivanImg, sample4, userImg);
 }
 
 function kiss( video, xPos, yPos) {
 	if ((leftPointX == 0) && (leftPointX == 0) && (rightPointX == 0) && (rightPointY == 0)) {
 		console.log ("There are not face points");
 		kissing = false;
-		reactivateImages (sample1, './img/Raquel.png', sample1click, 
-			sample2, './img/borja.png', sample2click,
-			sample3, './img/ivan.jpg', sample3click, 
-			sample4, './img/user.png', sample4click);
+		reactivateImages (sample1, raquelImg, sample1click, 
+			sample2, borjaImg, sample2click,
+			sample3, ivanImg, sample3click, 
+			sample4, userImg, sample4click);
 		return;
 	}
 
@@ -262,10 +273,10 @@ function kiss( video, xPos, yPos) {
 												gstreamerFilterBox.release();	
 												gstreamerFilterCrop.release();						
 												kissing = false;
-												reactivateImages (sample1, './img/Raquel.png', sample1click, 
-													sample2, './img/borja.png', sample2click,
-													sample3, './img/ivan.jpg', sample3click, 
-													sample4, './img/user.png', sample4click);
+												reactivateImages (sample1, raquelImg, sample1click, 
+													sample2, borjaImg, sample2click,
+													sample3, ivanImg, sample3click, 
+													sample4, userImg, sample4click);
 										    });
 										});
 								    });
@@ -282,8 +293,8 @@ function kiss( video, xPos, yPos) {
 function sample1click() {
 	if (kissing == false ) { 
 		kissing = true;
-		deactivateImages (sample1, './img/Raquel_deactivate.png', sample2, './img/borja_deactivate.png', 
-			sample3, './img/ivan_deactivate.jpg', sample4, './img/user_deactivate.png');
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (raquel, raquelX, raquelY);
 	}
 }
@@ -291,8 +302,8 @@ function sample1click() {
 function sample2click() {
 	if (kissing == false ) { 
 		kissing = true;
-		deactivateImages (sample1, './img/Raquel_deactivate.png', sample2, './img/borja_deactivate.png', 
-			sample3, './img/ivan_deactivate.jpg', sample4, './img/user_deactivate.png');
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (borja, borjaX, borjaY);
 	}
 	
@@ -301,18 +312,19 @@ function sample2click() {
 function sample3click() {
 	if (kissing == false ) { 
 		kissing = true;
-		deactivateImages (sample1, './img/Raquel_deactivate.png', sample2, './img/borja_deactivate.png', 
-			sample3, './img/ivan_deactivate.jpg', sample4, './img/user_deactivate.png');
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (ivan, ivanX, ivanY);
 	}
 }
 
 function sample4click() {
-	// if (kissing == false ) { 
-	//  deactivateImages (sample1, './img/Raquel_deactivate.png', sample2, './img/borja_deactivate.png', 
-	//	sample3, './img/ivan_deactivate.jpg', sample4, './img/user_deactivate.png');
-	// 	kissing = true;
-	// }
+	if (kissing == false ) { 
+		kissing = true;
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
+		kiss (clara, claraX, claraY);
+	}
 }
 
 function onError(error) {
