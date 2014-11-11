@@ -59,6 +59,8 @@ support must be enabled. In Chrome, this can done in this configuration page:
 
 chrome://flags/#enable-javascript-harmony
 
+After enabling this flag, you'll need to restart your browser.
+
 
 Kurento
 =======
