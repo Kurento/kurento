@@ -19,10 +19,13 @@
  *
  ******************************************************************************/
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const APP_SERVER_HOST = location.host;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+const hat_uri = 'http://' + APP_SERVER_HOST + '/img/santa-hat.png';
 
-const hat_uri =	"http://files.kurento.org/imgs/santa-hat.png"; //requires Internet connectivity
-
+var webRtcPeer;
+var pipeline;
 
 window.addEventListener("load", function(event){
 	console.log("onLoad");
@@ -37,8 +40,7 @@ function startVideo(){
 	var videoOutput = document.getElementById("videoOutput");
 	var stopButton = document.getElementById("stopButton");
 
-	var webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput,
-			videoOutput, onOffer, onError);
+	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
 
 	function onOffer(offer){
 
@@ -47,7 +49,7 @@ function startVideo(){
 		co(function*(){
 			try{
 				var client   = yield kurentoClient(ws_uri);
-				var pipeline = yield client.create("MediaPipeline");
+				pipeline = yield client.create("MediaPipeline");
 				console.log("MediaPipeline created ...");
 
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
@@ -61,7 +63,6 @@ function startVideo(){
 				var heightPercent = 1.4;
 				yield filter.setOverlayedImage(hat_uri, offsetXPercent, offsetYPercent, widthPercent, heightPercent);
 
-
 				var answer = yield webRtc.processOffer(offer);
 				console.log("Got SDP answer ...");
 				webRtcPeer.processSdpAnswer(answer);
@@ -70,11 +71,8 @@ function startVideo(){
 				yield filter.connect(webRtc);
 
 				console.log("loopback established ...");
-
-				stopButton.addEventListener("click", function(event){
-					pipeline.release();
-					webRtcPeer.dispose();
-				});
+				
+				stopButton.addEventListener("click", stop);
 			} catch(e){
 				console.log(e);
 			}
@@ -82,6 +80,18 @@ function startVideo(){
 	}
 }
 
-function onError(error){
-	console.log(error);
+function stop() {
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
+	}
+	if (webRtcPeer) {
+		webRtcPeer.dispose();
+		webRtcPeer = null;
+	}
+}
+
+function onError(error) {
+	console.error(error);
+	stop();
 }

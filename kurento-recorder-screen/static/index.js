@@ -13,13 +13,10 @@
 *
 */
 
-const ws_uri = 'wss://' + location.hostname + ':8433/kurento'; //requires Internet connectivity
-
-const file_name = 'files/recorderScreen.webm';
-
-const file_storage = 'file:///var/www/html/'; //path where to be store media in the server
-const file_uri = file_storage+file_name; //file to be stored in media server
-
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+//const ws_uri = 'wss://' + MEDIA_SERVER_HOSTNAME + ':8433/kurento'; //requires Internet connectivity
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento'; //requires Internet connectivity
+const file_uri = 'file:///tmp/recorderScreen.webm'; //file to be stored in media server
 
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
@@ -145,12 +142,45 @@ function startRecording() {
 
 
 function startPlaying() {
+	kurentoClient(ws_uri, function(error, kurentoClient) {
+		var videoPlayer = document.getElementById('videoPlayer');
 
-	console.log("Start playing");
+		if (error) return onError(error);
 
-	var videoPlayer = document.getElementById('videoPlayer');
+		kurentoClient.create('MediaPipeline', function(error, pipeline) {
+			if (error) return onError(error);
 
-	videoPlayer.src = file_name;
+			function release(event)	{
+				pipeline.release();
+				videoPlayer.src = '';
+			}
+
+			pipeline.create('HttpGetEndpoint', function(error, httpGetEndpoint) {
+				if(error) return onError(error);
+
+				pipeline.create('PlayerEndpoint', {uri : file_uri}, function(error, playerEndpoint) {
+					if(error) return onError(error);
+					playerEndpoint.connect(httpGetEndpoint, function(error) {
+						if(error) return onError(error);
+
+						httpGetEndpoint.getUrl(function(error, url) {
+							if(error) return onError(error);
+							videoPlayer.src = url;
+						});
+
+						playerEndpoint.on('EndOfStream', release);
+
+						playerEndpoint.play(function(error) {
+							if(error) return onError(error);
+
+							console.log('Playing ...');
+						});
+					});
+				});
+			});
+		});
+	});
+
 }
 
 function onError(error) {

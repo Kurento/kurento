@@ -13,16 +13,13 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
-
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const APP_SERVER_HOST = location.host;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 const file_uri = 'file:///tmp/recorder_demo.webm'; //file to be stored in media server
-
-const hat_uri = "http://files.kurento.org/imgs/Hat.png";
-
-const window_uri = "http://files.kurento.org/imgs/Brown_Monsters_40-01.png";
-
-const hover_window_uri = "http://files.kurento.org/imgs/Brown_Monsters_25-01.png";
-
+const hat_uri = 'http://' + APP_SERVER_HOST + '/img/Hat.png';
+const window_uri = 'http://' + APP_SERVER_HOST + '/img/Brown_Monsters_40-01.png';
+const hover_window_uri = 'http://' + APP_SERVER_HOST + '/img/Brown_Monsters_25-01.png';
 
 window.addEventListener('load', function(event) {
   kurentoClient.register(kurentoModulePointerdetector);

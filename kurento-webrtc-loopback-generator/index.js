@@ -20,7 +20,11 @@
  *
  ******************************************************************************/
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+
+var webRtcPeer;
+var pipeline;
 
 window.addEventListener("load", function(event){
 	console.log("onLoad");
@@ -35,7 +39,7 @@ function startVideo(){
 	var videoOutput = document.getElementById("videoOutput");
 	var stopButton = document.getElementById("stopButton");
 
-	var webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput,
+	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput,
 			videoOutput, onOffer, onError);
 
 	function onOffer(offer){
@@ -45,7 +49,7 @@ function startVideo(){
 		co(function*(){
 			try{
 				var client   = yield kurentoClient(ws_uri);
-				var pipeline = yield client.create("MediaPipeline");
+				pipeline = yield client.create("MediaPipeline");
 				console.log("MediaPipeline created ...");
 
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
@@ -58,10 +62,7 @@ function startVideo(){
 				yield webRtc.connect(webRtc);
 				console.log("loopback established ...");
 
-				stopButton.addEventListener("click", function(event){
-					pipeline.release();
-					webRtcPeer.dispose();
-				});
+				stopButton.addEventListener("click", stop);
 
 			} catch(e){
 				console.log(e);
@@ -70,7 +71,18 @@ function startVideo(){
 	}
 }
 
+function stop() {
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
+	}
+	if (webRtcPeer) {
+		webRtcPeer.dispose();
+		webRtcPeer = null;
+	}
+}
 
-function onError(error){
-	console.log(error);
+function onError(error) {
+	console.error(error);
+	stop();
 }
