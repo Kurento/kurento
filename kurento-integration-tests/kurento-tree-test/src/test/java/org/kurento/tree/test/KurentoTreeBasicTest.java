@@ -9,8 +9,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.test.base.FunctionalTest;
+import org.kurento.commons.testing.KurentoTreeTests;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.SdpOfferProcessor;
@@ -24,7 +25,8 @@ import org.kurento.tree.server.app.KurentoTreeServerApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KurentoTreeBasicTest extends FunctionalTest {
+@Category(KurentoTreeTests.class)
+public class KurentoTreeBasicTest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoTreeBasicTest.class);
@@ -62,12 +64,16 @@ public class KurentoTreeBasicTest extends FunctionalTest {
 	@Test
 	public void test() throws Exception {
 
+		String port = System.getProperty("http.port", "8890");
+
+		System.setProperty(KurentoServicesTestHelper.APP_HTTP_PORT_PROP, port);
+
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
 		startKurentoTreeServer();
 
 		final KurentoTreeClient kurentoTree = new KurentoTreeClient(
-				"ws://localhost:8890/kurento-tree");
+				"ws://localhost:" + port + "/kurento-tree");
 
 		final String treeId = kurentoTree.createTree();
 

@@ -8,6 +8,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.kurento.commons.testing.KurentoTreeTests;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.tree.server.app.KmsRegistrar;
 import org.kurento.tree.server.app.KurentoTreeServerApp;
@@ -17,6 +19,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import com.google.gson.JsonObject;
 
+@Category(KurentoTreeTests.class)
 public class RegistrarTest {
 
 	@EnableAutoConfiguration
