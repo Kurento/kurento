@@ -13,7 +13,8 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 const file_uri = 'file:///tmp/kurento-hello-world-recording.webm';
 
 var videoInput;
@@ -21,7 +22,6 @@ var videoOutput;
 var webRtcPeer;
 var client;
 var pipeline;
-
 
 const IDLE = 0;
 const DISABLED = 1;
@@ -54,7 +54,6 @@ function setStatus(nextState){
 			return;
 	}
 }
-
 
 window.onload = function() {
 	console = new Console('console', console);

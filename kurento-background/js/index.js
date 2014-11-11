@@ -15,13 +15,11 @@
 
 const MEDIA_SERVER_HOSTNAME = location.hostname;
 const APP_SERVER_HOST = location.host;
-
 const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 const file_uri_1 = 'http://' + APP_SERVER_HOST + '/img/fiwarecut_30.webm';
 const file_uri_2 = 'http://' + APP_SERVER_HOST + '/img/sintel.webm';
 const file_uri_3 = 'http://' + APP_SERVER_HOST + '/img/Galapagos.webm';
 const file_uri_4 = 'http://' + APP_SERVER_HOST + '/img/kinect.webm';
-var sample1, sample2, sample3, sample4;
 
 kurentoClient.register(kurentoModuleBackgroundextractor)
 
@@ -32,6 +30,7 @@ var playerEndpointSample1, playerEndpointSample2, playerEndpointSample3, playerE
 var pipeline;
 var video_port;
 var alphaBlending;
+var sample1, sample2, sample3, sample4;
 
 window.onload = function() {
 	console = new Console('console', console);

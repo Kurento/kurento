@@ -13,13 +13,13 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 
 var kurentoClient;
 var videoInput;
 var videoOutput;
 var webRtcPeer;
-
 var plumberSrc;
 
 function connect(p1, p2, callback) {
@@ -90,8 +90,6 @@ function stop() {
 		webRtcPeer.dispose();
 		webRtcPeer = null;
 	}
-	videoInput.src = '';
-	videoOutput.src = '';
 	hideSpinner(videoInput, videoOutput);
 }
 
@@ -151,6 +149,7 @@ function showSpinner() {
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
 		arguments[i].poster = './img/webrtc.png';
 		arguments[i].style.background = '';
 	}

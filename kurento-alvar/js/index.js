@@ -15,7 +15,6 @@
 
 const MEDIA_SERVER_HOSTNAME = location.hostname;
 const APP_SERVER_HOST = location.host;
-
 const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 const logo_uri = 'http://' + APP_SERVER_HOST + '/img/kurento-logo.png';
 

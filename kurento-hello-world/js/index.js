@@ -13,7 +13,8 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 
 var videoInput;
 var videoOutput;

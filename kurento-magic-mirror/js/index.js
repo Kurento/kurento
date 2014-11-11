@@ -13,11 +13,10 @@
 *
 */
 
-const MEDIA_SERVER_HOST = location.hostname;
-const APP_SERVER_HOST = location.hostname;
-
-const ws_uri = 'ws://' + MEDIA_SERVER_HOST + ':8888/kurento';
-const hat_uri = 'http://' + APP_SERVER_HOST + ':' + location.port + '/img/mario-wings.png';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const APP_SERVER_HOST = location.host;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+const hat_uri = 'http://' + APP_SERVER_HOST + '/img/mario-wings.png';
 
 var pipeline;
 var webRtcPeer
@@ -129,8 +128,8 @@ function onError(error) {
 
 function showSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'http://files.kurento.org/imgs/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('http://files.kurento.org/imgs/spinner.gif') no-repeat";
+		arguments[i].poster = 'img/transparent-1px.png';
+		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
 	}
 }
 

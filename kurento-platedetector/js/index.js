@@ -13,7 +13,8 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 
 window.addEventListener("load", function(event)
 {
@@ -48,10 +49,10 @@ window.addEventListener("load", function(event)
 					stop.addEventListener("click", function(event)
 					{
 						pipeline.release();
+						pipeline = null;
 
 						webRtcPeer.dispose();
-						videoInput.src="";
-						videoOutput.src="";
+						webRtcPeer = null;
 
 						hideSpinner(videoInput, videoOutput);
 					});
@@ -102,18 +103,22 @@ function onError(error) {
 
 function showSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'http://files.kurento.org/imgs/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('http://files.kurento.org/imgs/spinner.gif') no-repeat";
+		arguments[i].poster = 'img/transparent-1px.png';
+		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
 	}
 }
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
 		arguments[i].poster = 'img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
 
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
 	event.preventDefault();
 	$(this).ekkoLightbox();

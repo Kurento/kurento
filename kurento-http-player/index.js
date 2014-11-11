@@ -13,7 +13,8 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 
 const file_uri = 'http://files.kurento.org/video/fiwarecut.mp4'; //requires Internet connectivity
 const hat_uri = 'http://files.kurento.org/imgs/mario-wings.png'; //requires Internet connectivity

@@ -25,6 +25,6 @@
     "adapter.js": "*",
     "kurento-client": "develop",
     "kurento-utils": "develop",
-    "kurento-module-backgroundextractor":"develop" 
+    "kurento-module-backgroundextractor": "develop"
   }
 }
