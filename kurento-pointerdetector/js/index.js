@@ -13,8 +13,24 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento'
+  }
+});
+
 
 var filter = null;
 var pipeline;
@@ -38,12 +54,13 @@ window.addEventListener("load", function(event)
 
 		showSpinner(videoInput, videoOutput);
 
-		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
+		                                                   onOffer, onError);
 
 		function onOffer(sdpOffer) {
 			console.log("onOffer");
 
-			kurentoClient(ws_uri, function(error, client) {
+			kurentoClient(args.ws_uri, function(error, client) {
 				if (error) return onError(error);
 
 				client.create('MediaPipeline', function(error, p) {
@@ -58,8 +75,19 @@ window.addEventListener("load", function(event)
 
 						console.log("Got WebRtcEndpoint");
 
-						pipeline.create('PointerDetectorFilter', {'calibrationRegion' : {topRightCornerX: 5, topRightCornerY:5, width:30, height: 30}},
-							function(error, _filter) {
+            var options =
+            {
+              calibrationRegion:
+              {
+                topRightCornerX: 5,
+                topRightCornerY:5,
+                width:30,
+                height: 30
+              }
+            };
+
+						pipeline.create('PointerDetectorFilter', options,
+						function(error, _filter) {
 							if (error) return onError(error);
 
 							filter = _filter;
@@ -75,15 +103,27 @@ window.addEventListener("load", function(event)
 
 									console.log("Filter --> WebRtcEndpoint");
 
-									filter.addWindow({id: 'window0', height: 50, width:50, upperRightX: 500, upperRightY: 150}, 
-										function(error) {
-											if (error) return onError(error);									
-									});
+                  var options =
+                  {
+                    id: 'window0',
+                    height: 50,
+                    width:50,
+                    upperRightX: 500,
+                    upperRightY: 150
+                  };
 
-									filter.addWindow({id: 'window1', height: 50, width:50, upperRightX: 500, upperRightY: 250}, 
-										function(error) {
-											if (error) return onError(error);								
-									});
+									filter.addWindow(options, onError);
+
+                  var options =
+                  {
+                    id: 'window1',
+                    height: 50,
+                    width:50,
+                    upperRightX: 500,
+                    upperRightY: 250
+                  };
+
+									filter.addWindow(options, onError);
 
 									filter.on ('WindowIn', function (data){
 										console.log ("Event window in detected in window " + data.windowId);

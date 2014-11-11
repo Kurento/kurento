@@ -13,9 +13,25 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const file_uri = 'file:///tmp/recorder_demo.webm'; //file to be stored in media server
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    file_uri: 'file:///tmp/recorder_demo.webm' //file to be stored in media server
+  }
+});
+
 
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
@@ -36,13 +52,13 @@ function startRecording() {
 
 	function onOffer(offer) {
 		console.log("Offer ...");
-		kurentoClient(ws_uri, function(error, client) {
+		kurentoClient(args.ws_uri, function(error, client) {
 			if (error) return onError(error);
 
 			client.create('MediaPipeline', function(error, pipeline) {
 				if (error) return onError(error);
 				console.log("Got MediaPipeline");
-				pipeline.create('RecorderEndpoint', {uri : file_uri}, function(error, recorder) {
+				pipeline.create('RecorderEndpoint', {uri : args.file_uri}, function(error, recorder) {
 					if (error) return onError(error);
 
 					console.log("Got RecorderEndpoint");
@@ -94,7 +110,7 @@ function startPlaying() {
 			onPlayOffer, onError);
 
 	function onPlayOffer(offer) {
-		kurentoClient(ws_uri, function(error, client) {
+		kurentoClient(args.ws_uri, function(error, client) {
 			if (error) return onError(error);
 			client.create('MediaPipeline', function(error, pipeline) {
 				pipeline.create('WebRtcEndpoint', function(error, webRtc) {
@@ -102,7 +118,7 @@ function startPlaying() {
 						webRtcPeer.processSdpAnswer(answer);
 
 						pipeline.create("PlayerEndpoint", {
-							uri : file_uri
+							uri : args.file_uri
 						}, function(error, player) {
 
 							player.on('EndOfStream', function(event){

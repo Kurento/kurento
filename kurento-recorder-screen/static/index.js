@@ -13,10 +13,27 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-//const ws_uri = 'wss://' + MEDIA_SERVER_HOSTNAME + ':8433/kurento'; //requires Internet connectivity
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento'; //requires Internet connectivity
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'wss://' + location.hostname + ':8433/kurento'
+  }
+});
+
+
 const file_uri = 'file:///tmp/recorderScreen.webm'; //file to be stored in media server
+
 
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
@@ -81,7 +98,7 @@ function startRecording() {
 	function onOffer(offer) {
 		console.log("Offer ...");
 
-		kurentoClient(ws_uri, function(error, client) {
+		kurentoClient(args.ws_uri, function(error, client) {
 			if (error) return onError(error);
 
 			client.create('MediaPipeline', function(error, pipeline) {
@@ -180,7 +197,6 @@ function startPlaying() {
 			});
 		});
 	});
-
 }
 
 function onError(error) {

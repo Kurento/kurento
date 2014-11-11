@@ -13,13 +13,32 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const APP_SERVER_HOST = location.host;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const file_uri = 'file:///tmp/recorder_demo.webm'; //file to be stored in media server
-const hat_uri = 'http://' + APP_SERVER_HOST + '/img/Hat.png';
-const window_uri = 'http://' + APP_SERVER_HOST + '/img/Brown_Monsters_40-01.png';
-const hover_window_uri = 'http://' + APP_SERVER_HOST + '/img/Brown_Monsters_25-01.png';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri:   'ws://' + location.hostname + ':8888/kurento',
+    file_uri: 'file:///tmp/recorder_demo.webm', //file to be stored in media server
+    as_uri:   'http://' + location.host
+  }
+});
+
+
+
+const hat_uri = args.as_uri+"/img/Hat.png";
+const window_uri = args.as_uri+"/img/Brown_Monsters_40-01.png";
+const hover_window_uri = args.as_uri+"/img/Brown_Monsters_25-01.png";
+
 
 window.addEventListener('load', function(event) {
   kurentoClient.register(kurentoModulePointerdetector);
@@ -45,7 +64,7 @@ function startRecording() {
 		console.log("Local SDP received. Start buidling pipeline ...");
 		co(function*(){
 			try {
-				var client = yield new kurentoClient(ws_uri);
+				var client = yield new kurentoClient(args.ws_uri);
 				pipeline   = yield client.create("MediaPipeline");
 				recorder   = yield pipeline.create("RecorderEndpoint", {uri: file_uri});
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
@@ -138,7 +157,7 @@ function startPlaying() {
 
 		co(function*(){
 			try{
-				var client = yield kurentoClient(ws_uri);
+				var client = yield kurentoClient(args.ws_uri);
 				var pipeline = yield client.create("MediaPipeline");
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
 				var answer = yield webRtc.processOffer(offer);

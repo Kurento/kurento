@@ -13,9 +13,25 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const file_uri = 'file:///tmp/recorder_demo.webm'; //file to be stored in media server
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri:   'ws://' + location.hostname + ':8888/kurento',
+    file_uri: 'file:///tmp/recorder_demo.webm' //file to be stored in media server
+  }
+});
+
 
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
@@ -37,9 +53,9 @@ function startRecording() {
 		console.log("Offer ...");
 		co(function*(){
 			try{
-				var client = yield kurentoClient(ws_uri);
+				var client = yield kurentoClient(args.ws_uri);
 				pipeline   = yield client.create("MediaPipeline");
-				recorder   = yield pipeline.create("RecorderEndpoint", {uri: file_uri});
+				recorder   = yield pipeline.create("RecorderEndpoint", {uri: args.file_uri});
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
 
 				yield webRtc.connect(webRtc);
@@ -80,14 +96,14 @@ function startPlaying() {
 
 		co(function*(){
 			try{
-				var client = yield kurentoClient(ws_uri);
+				var client = yield kurentoClient(args.ws_uri);
 				var pipeline = yield client.create("MediaPipeline");
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
 				var answer = yield webRtc.processOffer(offer);
 
 				webRtcPeer.processSdpAnswer(answer);
 
-				var player = yield pipeline.create("PlayerEndpoint", {uri: file_uri});
+				var player = yield pipeline.create("PlayerEndpoint", {uri: args.file_uri});
 
 				yield player.connect(webRtc);
 				yield player.play();

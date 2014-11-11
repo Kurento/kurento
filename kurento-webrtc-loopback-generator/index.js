@@ -20,11 +20,24 @@
  *
  ******************************************************************************/
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
 
-var webRtcPeer;
-var pipeline;
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento'
+  }
+});
+
 
 window.addEventListener("load", function(event){
 	console.log("onLoad");
@@ -35,6 +48,26 @@ window.addEventListener("load", function(event){
 function startVideo(){
 	console.log("Starting WebRTC loopback ...");
 
+  var webRtcPeer;
+  var pipeline;
+
+  function stop() {
+	  if(pipeline){
+		  pipeline.release();
+		  pipeline = null;
+	  }
+
+	  if (webRtcPeer) {
+		  webRtcPeer.dispose();
+		  webRtcPeer = null;
+	  }
+  }
+
+  function onError(error) {
+	  console.error(error);
+	  stop();
+  }
+
 	var videoInput = document.getElementById("videoInput");
 	var videoOutput = document.getElementById("videoOutput");
 	var stopButton = document.getElementById("stopButton");
@@ -42,13 +75,13 @@ function startVideo(){
 	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput,
 			videoOutput, onOffer, onError);
 
-	function onOffer(offer){
-
+	function onOffer(offer)
+	{
 		console.log("Creating Kurento client...");
 
 		co(function*(){
 			try{
-				var client   = yield kurentoClient(ws_uri);
+				var client = yield kurentoClient(args.ws_uri);
 				pipeline = yield client.create("MediaPipeline");
 				console.log("MediaPipeline created ...");
 
@@ -69,20 +102,4 @@ function startVideo(){
 			}
 		})();
 	}
-}
-
-function stop() {
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-}
-
-function onError(error) {
-	console.error(error);
-	stop();
 }

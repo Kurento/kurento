@@ -12,13 +12,42 @@
 * Lesser General Public License for more details.
 *
 */
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const APP_SERVER_HOST = location.host;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const bg_uri = 'http://' + APP_SERVER_HOST + '/img/mario.jpg';
 
-var pipeline;
-var webRtcPeer
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    bg_uri: 'http://' + location.host + '/img/mario.jpg'
+  }
+});
+
+
+function showSpinner() {
+	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].poster = 'img/transparent-1px.png';
+		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+	}
+}
+
+function hideSpinner() {
+	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
+		arguments[i].poster = 'img/webrtc.png';
+		arguments[i].style.background = '';
+	}
+}
+
 
 window.addEventListener("load", function(event)
 {
@@ -30,6 +59,32 @@ window.addEventListener("load", function(event)
 
 	var startButton = document.getElementById("start");
 	var stopButton = document.getElementById("stop");
+
+
+  var pipeline;
+  var webRtcPeer;
+
+
+  function stop(){
+	  if(webRtcPeer){
+		  webRtcPeer.dispose();
+		  webRtcPeer = null;
+	  }
+
+	  if(pipeline){
+		  pipeline.release();
+		  pipeline = null;
+	  }
+
+	  hideSpinner(videoInput, videoOutput);
+  }
+
+  function onError(error) {
+	  if(error) console.error(error);
+	  stop();
+  }
+
+
 	stopButton.addEventListener("click", stop);
 
 	startButton.addEventListener("click", function start()
@@ -43,7 +98,7 @@ window.addEventListener("load", function(event)
 		function onOffer(sdpOffer) {
 			console.log("onOffer");
 
-			kurentoClient(ws_uri, function(error, client) {
+			kurentoClient(args.ws_uri, function(error, client) {
 				if (error) return onError(error);
 
 				client.create('MediaPipeline', function(error, p) {
@@ -94,38 +149,6 @@ window.addEventListener("load", function(event)
 	});
 });
 
-function stop(){
-	if(webRtcPeer){
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-
-	hideSpinner(videoInput, videoOutput);
-}
-
-function onError(error) {
-	if(error) console.error(error);
-	stop();
-}
-
-function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-	}
-}
-
-function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = 'img/webrtc.png';
-		arguments[i].style.background = '';
-	}
-}
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)

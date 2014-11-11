@@ -13,10 +13,25 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const APP_SERVER_HOST = location.host;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const logo_uri = 'http://' + APP_SERVER_HOST + '/img/kurento-logo.png';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    logo_uri: 'http://' + location.host + '/img/kurento-logo.png'
+  }
+});
+
 
 kurentoClient.register(kurentoModuleMarkerdetector)
 
@@ -59,7 +74,7 @@ function stop() {
 }
 
 function onOffer(sdpOffer) {
-    kurentoClient(ws_uri, function(error, client) {
+    kurentoClient(args.ws_uri, function(error, client) {
 		if (error) return onError(error);
 
 		client.create('MediaPipeline', function(error, p) {
@@ -77,7 +92,7 @@ function onOffer(sdpOffer) {
 
 						console.log("WebRtcEndpoint --> filter");
 
-						filter.setOverlayImage(logo_uri, function(error) {
+						filter.setOverlayImage(args.logo_uri, function(error) {
 							if (error) return onError(error);
 
 							console.log("Set Image");

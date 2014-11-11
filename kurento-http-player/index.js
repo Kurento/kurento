@@ -13,11 +13,28 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
 
-const file_uri = 'http://files.kurento.org/video/fiwarecut.mp4'; //requires Internet connectivity
-const hat_uri = 'http://files.kurento.org/imgs/mario-wings.png'; //requires Internet connectivity
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    as_uri: 'http://' + location.host
+  }
+});
+
+
+const file_uri = args.as_uri+'/video/fiwarecut.mp4';
+const hat_uri  = args.as_uri+'/img/mario-wings.png';
 
 
 window.addEventListener("load", function(event)
@@ -31,7 +48,7 @@ window.addEventListener("load", function(event)
 	{
 		console.log("Strarting video playing ...");
 
-		kurentoClient(ws_uri, function(error, kurentoClient)
+		kurentoClient(args.ws_uri, function(error, kurentoClient)
 		{
 			if (error) return onError(error);
 

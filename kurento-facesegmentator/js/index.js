@@ -13,23 +13,39 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const APP_SERVER_HOST = location.host;
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
 
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const ivan = 'http://' + APP_SERVER_HOST + '/img/ivan_.webm';
-const raquel = 'http://' + APP_SERVER_HOST + '/img/raquel_.webm';
-const borja = 'http://' + APP_SERVER_HOST + '/img/borja_.webm';
-const clara = 'http://' + APP_SERVER_HOST + '/img/clara_.webm';
+  return result;
+};
 
-const raquelImg = './img/Raquel.png';
-const raquelImgDeactivate =  './img/Raquel_deactivate.png';
-const borjaImg = './img/borja.png';
-const borjaImgDeactivate = './img/borja_deactivate.png';
-const ivanImg = './img/ivan.png';
-const ivanImgDeactivate = './img/ivan_deactivate.png';
-const userImg = './img/clara.png';
-const userImgDeactivate = './img/clara_deactivate.png';
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    as_uri: 'http://' + location.host
+  }
+});
+
+
+const ivan   = args.as_uri + '/img/ivan_.webm';
+const raquel = args.as_uri + '/img/raquel_.webm';
+const borja  = args.as_uri + '/img/borja_.webm';
+const clara  = args.as_uri + '/img/clara_.webm';
+
+const raquelImg           = args.as_uri+'/img/Raquel.png';
+const raquelImgDeactivate =  args.as_uri+'/img/Raquel_deactivate.png';
+const borjaImg           = args.as_uri+'/img/borja.png';
+const borjaImgDeactivate = args.as_uri+'/img/borja_deactivate.png';
+const ivanImg           = args.as_uri+'/img/ivan.png';
+const ivanImgDeactivate = args.as_uri+'/img/ivan_deactivate.png';
+const userImg           = args.as_uri+'/img/clara.png';
+const userImgDeactivate = args.as_uri+'/img/clara_deactivate.png';
 
 
 if(typeof kurentoClient == 'undefined')
@@ -120,7 +136,7 @@ function stop() {
 }
 
 function onOffer(sdpOffer) {
-    kurentoClient(ws_uri, function(error, kurentoClient) {
+    kurentoClient(args.ws_uri, function(error, kurentoClient) {
 		if (error) return onError(error);
 
 		kurentoClient.create('MediaPipeline', function(error, _pipeline) {
@@ -260,15 +276,15 @@ function kiss( video, xPos, yPos) {
 						    	if (error) return onError(error);
 
 						    	gstreamerFilterBox.connect(gstreamerFilterCrop, function(error) {
-						    	if (error) return onError(error);	
+						    	if (error) return onError(error);
 
 									gstreamerFilterCrop.connect(video_port, function(error) {
-										if (error) return onError(error);						
-																								
+										if (error) return onError(error);
+
 										alphaBlending.setPortProperties (0, 0, 4, 1, 1, video_port, function(error) {
 										 	if (error) return onError(error);
 										 		console.log("Setting port properties");
-									    });		
+									    });
 
 										playerEndpoint.play(function(error){
 										    if(error) return onError(error);
@@ -276,13 +292,13 @@ function kiss( video, xPos, yPos) {
 										    console.log('Playing ...');
 
 											playerEndpoint.on('EndOfStream', function(data)
-										    {		
+										    {
 									    		video_port.release ();
-												video_port = null;	
+												video_port = null;
 												playerEndpoint.release ();
-												gstreamerFilter.release();	
-												gstreamerFilterBox.release();	
-												gstreamerFilterCrop.release();						
+												gstreamerFilter.release();
+												gstreamerFilterBox.release();
+												gstreamerFilterCrop.release();
 												kissing = false;
 												reactivateImages (sample1, raquelImg, sample1click, 
 													sample2, borjaImg, sample2click,
@@ -353,7 +369,7 @@ function showSpinner() {
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
 		arguments[i].src = '';
-		arguments[i].poster = './img/webrtc.png';
+		arguments[i].poster = 'img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
@@ -366,7 +382,7 @@ function showImages() {
 
 function hideImages() {
 	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = './img/user.png';
+		arguments[i].poster = args.as_uri+'/img/user.png';
 	}
 }
 

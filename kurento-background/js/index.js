@@ -13,13 +13,31 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const APP_SERVER_HOST = location.host;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const file_uri_1 = 'http://' + APP_SERVER_HOST + '/img/fiwarecut_30.webm';
-const file_uri_2 = 'http://' + APP_SERVER_HOST + '/img/sintel.webm';
-const file_uri_3 = 'http://' + APP_SERVER_HOST + '/img/Galapagos.webm';
-const file_uri_4 = 'http://' + APP_SERVER_HOST + '/img/kinect.webm';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    as_uri: 'http://' + location.host
+  }
+});
+
+
+const file_uri_1 = args.as_uri + '/img/fiwarecut_30.webm';
+const file_uri_2 = args.as_uri + '/img/sintel.webm';
+const file_uri_3 = args.as_uri + '/img/Galapagos.webm';
+const file_uri_4 = args.as_uri + '/img/kinect.webm';
+
 
 kurentoClient.register(kurentoModuleBackgroundextractor)
 
@@ -104,7 +122,7 @@ function stop() {
 }
 
 function onOffer(sdpOffer) {
-    kurentoClient(ws_uri, function(error, kurentoClient) {
+    kurentoClient(args.ws_uri, function(error, kurentoClient) {
 		if (error) return onError(error);
 
 		kurentoClient.create('MediaPipeline', function(error, _pipeline) {

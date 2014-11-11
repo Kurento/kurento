@@ -13,8 +13,24 @@
 *
 */
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento'
+  }
+});
+
 
 var videoInput;
 var videoOutput;
@@ -45,7 +61,7 @@ function stop() {
 }
 
 function onOffer(sdpOffer){
-	kurentoClient(ws_uri, function(error, kurentoClient) {
+	kurentoClient(args.ws_uri, function(error, kurentoClient) {
 		if(error) return onError(error);
 
 		kurentoClient.create("MediaPipeline", function(error, p) {

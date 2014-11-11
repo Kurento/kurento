@@ -15,14 +15,30 @@
 /*******************************************************************************
  * Activate "Experimental Javascript" in chrome to have this example working
  *
- * //chrome://flags/ flags (#nable-javascript-harmony)
+ * //chrome://flags/ flags (#enable-javascript-harmony)
+ *
+ * and later re-start your browser
  *
  ******************************************************************************/
 
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-const APP_SERVER_HOST = location.host;
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
-const hat_uri = 'http://' + APP_SERVER_HOST + '/img/santa-hat.png';
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    hat_uri: 'http://' + location.host + '/img/santa-hat.png'
+  }
+});
 
 var webRtcPeer;
 var pipeline;
@@ -48,8 +64,8 @@ function startVideo(){
 
 		co(function*(){
 			try{
-				var client   = yield kurentoClient(ws_uri);
-				pipeline = yield client.create("MediaPipeline");
+				var client = yield kurentoClient(args.ws_uri);
+				pipeline   = yield client.create("MediaPipeline");
 				console.log("MediaPipeline created ...");
 
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
@@ -61,7 +77,7 @@ function startVideo(){
 				var offsetYPercent = -0.9;
 				var widthPercent = 1.4;
 				var heightPercent = 1.4;
-				yield filter.setOverlayedImage(hat_uri, offsetXPercent, offsetYPercent, widthPercent, heightPercent);
+				yield filter.setOverlayedImage(args.hat_uri, offsetXPercent, offsetYPercent, widthPercent, heightPercent);
 
 				var answer = yield webRtc.processOffer(offer);
 				console.log("Got SDP answer ...");

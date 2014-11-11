@@ -12,12 +12,29 @@
 * Lesser General Public License for more details.
 *
 */
-const MEDIA_SERVER_HOSTNAME = location.hostname;
-
-const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 
 var pipeline;
 var webRtcPeer
+
+function getopts(args, opts)
+{
+  var result = opts.default || {};
+  args.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function($0, $1, $2, $3) { result[$1] = $3; });
+
+  return result;
+};
+
+var args = getopts(location.search,
+{
+  default:
+  {
+    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+    logo_uri: 'http://' + location.host + '/img/kurento-logo.png'
+  }
+});
+
 
 window.addEventListener("load", function(event)
 {
@@ -29,6 +46,7 @@ window.addEventListener("load", function(event)
 
 	var startButton = document.getElementById("start");
 	var stopButton = document.getElementById("stop");
+
 	stopButton.addEventListener("click", stop);
 
 	startButton.addEventListener("click", function start()
@@ -42,7 +60,7 @@ window.addEventListener("load", function(event)
 		function onOffer(sdpOffer) {
 			console.log("onOffer");
 
-			kurentoClient(ws_uri, function(error, client) {
+			kurentoClient(argsws_uri, function(error, client) {
 				if (error) return onError(error);
 
 				client.create('MediaPipeline', function(error, p) {
@@ -57,24 +75,32 @@ window.addEventListener("load", function(event)
 
 						console.log("Got WebRtcEndpoint");
 
-						var _roi = {		
-									'id' : 'roi1',
-									'points' : [{'x' : 0, 'y' : 0}, {'x' : 0.5, 'y' : 0}, {'x' : 0.5, 'y' : 0.5}, {'x' : 0, 'y' : 0.5}],
-									'regionOfInterestConfig' : {
-																'occupancyLevelMin' : 10,
-																'occupancyLevelMed' : 35,
-																'occupancyLevelMax' : 65,
-																'occupancyNumFramesToEvent' : 5,
-																'fluidityLevelMin' : 10,
-																'fluidityLevelMed' : 35,
-																'fluidityLevelMax' : 65,
-																'fluidityNumFramesToEvent' : 5,
-																'sendOpticalFlowEvent' : false,
-																'opticalFlowNumFramesToEvent' : 3,
-																'opticalFlowNumFramesToReset' : 3,
-																'opticalFlowAngleOffset' : 0
-																}
-									};
+						var _roi =
+						{
+							id: 'roi1',
+							points:
+							[
+							  {x: 0,   y: 0},
+							  {x: 0.5, y: 0},
+							  {x: 0.5, y: 0.5},
+							  {x: 0,   y: 0.5}
+							],
+							regionOfInterestConfig:
+							{
+								occupancyLevelMin: 10,
+								occupancyLevelMed: 35,
+								occupancyLevelMax: 65,
+								occupancyNumFramesToEvent: 5,
+								fluidityLevelMin: 10,
+								fluidityLevelMed: 35,
+								fluidityLevelMax: 65,
+								fluidityNumFramesToEvent: 5,
+								sendOpticalFlowEvent: false,
+								opticalFlowNumFramesToEvent: 3,
+								opticalFlowNumFramesToReset: 3,
+								opticalFlowAngleOffset: 0
+							}
+						};
 
 						pipeline.create('CrowdDetectorFilter', {'rois' : [_roi]},
 						 function(error, filter) {
