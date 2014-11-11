@@ -384,7 +384,7 @@ public class TransactionTest extends KurentoClientTest {
 		} catch (KurentoServerException e) {
 			log.info("Captured exception of class " + e.getClass()
 					+ " with message '" + e.getMessage() + "'");
-			assertThat(e.getCode(), is(-32000));
+			assertThat(e.getCode(), is(40101));
 			assertThat(e.getServerMessage(), containsString(" not found"));
 		}
 
@@ -399,7 +399,7 @@ public class TransactionTest extends KurentoClientTest {
 		} catch (TransactionExecutionException e) {
 			log.info("Captured exception of class " + e.getClass()
 					+ " with message '" + e.getMessage() + "'");
-			assertThat(e.getCode(), is(-32000));
+			assertThat(e.getCode(), is(40101));
 			assertThat(e.getServerMessage(), containsString(" not found"));
 		}
 
@@ -412,7 +412,7 @@ public class TransactionTest extends KurentoClientTest {
 
 			KurentoServerException kse = e.getKurentoServerException();
 			assertThat(kse, is(not(nullValue())));
-			assertThat(kse.getCode(), is(-32000));
+			assertThat(kse.getCode(), is(40101));
 			assertThat(kse.getServerMessage(), containsString(" not found"));
 		}
 	}
