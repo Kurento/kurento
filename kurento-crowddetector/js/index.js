@@ -16,6 +16,9 @@ const MEDIA_SERVER_HOSTNAME = location.hostname;
 
 const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 
+var pipeline;
+var webRtcPeer
+
 window.addEventListener("load", function(event)
 {
 	kurentoClient.register(kurentoModuleCrowddetector)	
@@ -24,16 +27,17 @@ window.addEventListener("load", function(event)
 	var videoInput = document.getElementById('videoInput');
 	var videoOutput = document.getElementById('videoOutput');
 
-	var start = document.getElementById("start");
-	var stop = document.getElementById("stop");
+	var startButton = document.getElementById("start");
+	var stopButton = document.getElementById("stop");
+	stopButton.addEventListener("click", stop);
 
-	start.addEventListener("click", function start()
+	startButton.addEventListener("click", function start()
 	{
 		console.log("WebRTC loopback starting");
 
 		showSpinner(videoInput, videoOutput);
 
-		var webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
 
 		function onOffer(sdpOffer) {
 			console.log("onOffer");
@@ -41,21 +45,12 @@ window.addEventListener("load", function(event)
 			kurentoClient(ws_uri, function(error, client) {
 				if (error) return onError(error);
 
-				client.create('MediaPipeline', function(error, pipeline) {
+				client.create('MediaPipeline', function(error, p) {
 					if (error) return onError(error);
 
+					pipeline = p;
+
 					console.log("Got MediaPipeline");
-
-					stop.addEventListener("click", function(event)
-					{
-						pipeline.release();
-						pipeline = null;
-
-						webRtcPeer.dispose();
-						webRtcPeer = null;
-
-						hideSpinner(videoInput, videoOutput);
-					});
 
 					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
 						if (error) return onError(error);
@@ -131,9 +126,22 @@ window.addEventListener("load", function(event)
 	});
 });
 
+function stop(){
+	if(webRtcPeer){
+		webRtcPeer.dispose();
+		webRtcPeer = null;
+	}
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
+	}
+
+	hideSpinner(videoInput, videoOutput);
+}
 
 function onError(error) {
 	if(error) console.error(error);
+	stop();
 }
 
 function showSpinner() {

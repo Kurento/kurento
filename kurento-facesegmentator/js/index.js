@@ -106,9 +106,12 @@ function stop() {
 		webRtcPeer.dispose();
 		webRtcPeer = null;
 	}
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
+	}
 	hideSpinner(videoOutput);
 	hideImages (sample1, sample2, sample3, sample4);
-	pipeline.release ();
 
 	$('#stop').attr('disabled', true);
 	$('#start').attr('disabled', false);
@@ -336,7 +339,8 @@ function sample4click() {
 }
 
 function onError(error) {
-	console.error(error);
+	if(error) console.error(error);
+	stop();
 }
 
 function showSpinner() {

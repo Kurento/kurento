@@ -33,13 +33,13 @@ function start() {
 }
 
 function stop() {
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
 	if (webRtcPeer) {
 		webRtcPeer.dispose();
 		webRtcPeer = null;
+	}
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
 	}
 	hideSpinner(videoInput, videoOutput);
 }
@@ -72,8 +72,8 @@ function onOffer(sdpOffer){
 	});
 }
 
-function onError(error){
-	console.error(error);
+function onError(error) {
+	if(error) console.error(error);
 	stop();
 }
 

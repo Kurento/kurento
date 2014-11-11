@@ -19,6 +19,8 @@ const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
 var kurentoClient;
 var videoInput;
 var videoOutput;
+var pipeline1;
+var pipeline2;
 var webRtcPeer;
 var plumberSrc;
 
@@ -56,16 +58,18 @@ function start() {
 	showSpinner(videoInput, videoOutput);
 	console.log("Creating sink pipeline");
 
-	kurentoClient.create("MediaPipeline", function(error, pipeline) {
+	kurentoClient.create("MediaPipeline", function(error, p) {
 		if(error) return onError(error);
 
-		pipeline.create("PlumberEndpoint", function(error, plumberEndPoint) {
+		pipeline1 = p;
+
+		pipeline1.create("PlumberEndpoint", function(error, plumberEndPoint) {
 			if(error) return onError(error);
 
 			plumberSrc = plumberEndPoint;
 			console.log("PlumberEndPoint created");
 
-			pipeline.create('HttpGetEndpoint', function(error, httpGetEndpoint) {
+			pipeline1.create('HttpGetEndpoint', function(error, httpGetEndpoint) {
 			  if (error) return onError(error);
 
 				console.log("HttpGetEndPoint created")
@@ -85,21 +89,15 @@ function start() {
 	});
 }
 
-function stop() {
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	hideSpinner(videoInput, videoOutput);
-}
-
 function onOffer(sdpOffer){
     console.log ("Offer received.");
     console.log ("Creating source pipeline...");
-	kurentoClient.create("MediaPipeline", function(error, pipeline) {
+	kurentoClient.create("MediaPipeline", function(error, p) {
 		if(error) return onError(error);
 
-		pipeline.create("WebRtcEndpoint", function(error, webRtc) {
+		pipeline2 = p;
+
+		pipeline2.create("WebRtcEndpoint", function(error, webRtc) {
 			if(error) return onError(error);
 
 			console.log ("Created webRtc");
@@ -110,7 +108,7 @@ function onOffer(sdpOffer){
 				webRtcPeer.processSdpAnswer(sdpAnswer);
 			});
 
-			pipeline.create("PlumberEndpoint", function(error, plumberSink) {
+			pipeline2.create("PlumberEndpoint", function(error, plumberSink) {
 				if(error) return onError(error);
 
 				console.log("PlumberEndPoint created");
@@ -136,8 +134,25 @@ function onOffer(sdpOffer){
 	});
 }
 
-function onError(error){
-	console.error(error);
+function onError(error) {
+	if(error) console.error(error);
+	stop();
+}
+
+function stop() {
+	if (webRtcPeer) {
+		webRtcPeer.dispose();
+		webRtcPeer = null;
+	}
+	if(pipeline1){
+		pipeline1.release();
+		pipeline1 = null;
+	}
+	if(pipeline2){
+		pipeline2.release();
+		pipeline2 = null;
+	}
+	hideSpinner(videoInput, videoOutput);
 }
 
 function showSpinner() {

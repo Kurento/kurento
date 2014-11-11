@@ -43,14 +43,13 @@ function start() {
 }
 
 function stop() {
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	
 	if(pipeline){
 		pipeline.release();
 		pipeline = null;
+	}
+	if (webRtcPeer) {
+		webRtcPeer.dispose();
+		webRtcPeer = null;
 	}
 	
 	hideSpinner(videoInput, videoOutput);

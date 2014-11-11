@@ -108,14 +108,13 @@ window.addEventListener("load", function(event)
 });
 
 function stop(){
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-
 	if(webRtcPeer){
 		webRtcPeer.dispose();
 		webRtcPeer = null;
+	}
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
 	}
 
 	hideSpinner(videoInput, videoOutput);

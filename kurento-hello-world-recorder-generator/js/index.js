@@ -69,13 +69,13 @@ function start() {
 }
 
 function stop() {
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
 	if (webRtcPeer) {
 		webRtcPeer.dispose();
 		webRtcPeer = null;
+	}
+	if(pipeline){
+		pipeline.release();
+		pipeline = null;
 	}
 	hideSpinner(videoInput, videoOutput);
 	setStatus(IDLE);
@@ -143,9 +143,9 @@ function onStartOffer(sdpOffer){
 	})();
 }
 
-function onError(error){
-	console.log(error);
-	stop()
+function onError(error) {
+	if(error) console.error(error);
+	stop();
 }
 
 function showSpinner() {
