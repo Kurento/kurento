@@ -13,9 +13,11 @@
 *
 */
 
+const MEDIA_SERVER_HOSTNAME = location.hostname;
+const APP_SERVER_HOST = location.host;
 
-const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
-const logo_uri = '/var/kurento/img/kurento-logo.png'; //Edit to fill the location of your logo
+const ws_uri = 'ws://' + MEDIA_SERVER_HOSTNAME + ':8888/kurento';
+const logo_uri = 'http://' + APP_SERVER_HOST + '/img/kurento-logo.png';
 
 kurentoClient.register(kurentoModuleMarkerdetector)
 
