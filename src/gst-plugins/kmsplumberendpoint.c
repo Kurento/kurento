@@ -742,6 +742,8 @@ kms_plumber_endpoint_init (KmsPlumberEndpoint * self)
   g_mutex_init (&self->priv->base_time_lock);
   self->priv->base_time = g_slice_new0 (BaseTimeType);
   self->priv->base_time->first = TRUE;
+
+  g_object_set (self, "do-synchronization", TRUE, NULL);
 }
 
 gboolean
