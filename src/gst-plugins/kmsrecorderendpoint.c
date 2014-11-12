@@ -836,7 +836,7 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (element);
   GstCaps *allowed = NULL, *caps = NULL;
-  GstCaps *filter, *result = NULL, *tcaps;
+  GstCaps *filter, *result, *tcaps;
 
   gst_query_parse_caps (query, &filter);
 
@@ -848,6 +848,7 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
       caps =
           kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
+      result = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:{
       allowed =
@@ -856,6 +857,7 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
       caps =
           kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
+      result = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
       break;
     }
     default:
@@ -866,12 +868,18 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
   /* make sure we only return results that intersect our padtemplate */
   tcaps = gst_pad_get_pad_template_caps (pad);
   if (tcaps != NULL) {
+    /* Update result caps */
+    gst_caps_unref (result);
+
     if (allowed == NULL) {
-      result = tcaps;
+      result = gst_caps_ref (tcaps);
     } else {
       result = gst_caps_intersect (allowed, tcaps);
     }
     gst_caps_unref (tcaps);
+  } else {
+    GST_WARNING_OBJECT (pad,
+        "Can not get capabilities from pad's template. Using agnostic's' caps");
   }
 
   if (caps != NULL) {
