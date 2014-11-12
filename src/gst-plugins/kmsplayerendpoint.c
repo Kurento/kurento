@@ -597,6 +597,8 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 
   g_mutex_init (&self->priv->base_time_lock);
 
+  g_object_set (self, "do-synchronization", TRUE, NULL);
+
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("pipeline");
   self->priv->uridecodebin =

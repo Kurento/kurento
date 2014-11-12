@@ -1287,6 +1287,8 @@ kms_http_endpoint_init (KmsHttpEndpoint * self)
 
   g_mutex_init (&self->priv->base_time_lock);
 
+  g_object_set (self, "do-synchronization", TRUE, NULL);
+
   self->priv->loop = kms_loop_new ();
   g_atomic_int_set (&self->priv->method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
   self->priv->pipeline = NULL;
