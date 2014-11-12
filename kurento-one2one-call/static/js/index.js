@@ -78,7 +78,7 @@ function setCallState(nextState){
 window.onload = function() {
 	setRegisterState(NOT_REGISTERED);
 	console = new Console('console', console);
-	dragDrop.initElement('videoSmall');
+	var drag = new Draggabilly(document.getElementById('videoSmall'));
 	videoInput = document.getElementById('videoInput');
 	videoOutput = document.getElementById('videoOutput');
 	document.getElementById('name').focus();
@@ -234,6 +234,7 @@ function stop(message) {
 	setCallState(NO_CALL);
 	if (webRtcPeer) {
 		webRtcPeer.dispose();
+		webRtcPeer = null;
 
 		if (!message) {
 			var message = {
@@ -242,8 +243,6 @@ function stop(message) {
 			sendMessage(message);
 		}
 	}
-	videoInput.src = '';
-	videoOutput.src = '';
 	hideSpinner(videoInput, videoOutput);
 }
 
@@ -262,11 +261,15 @@ function showSpinner() {
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
 		arguments[i].poster = './img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
 
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
 	event.preventDefault();
 	$(this).ekkoLightbox();

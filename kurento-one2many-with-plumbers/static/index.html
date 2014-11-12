@@ -6,30 +6,23 @@
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="./img/kurento.png" type="image/png" />
+<link rel="shortcut icon" href="img/kurento.png" type="image/png" />
 
 <link rel="stylesheet"
-	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 <link rel="stylesheet"
-	href="http://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/3.0.3a/ekko-lightbox.min.css">
-<link rel="stylesheet" href="./css/kurento.css">
-<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-<!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-	  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-  <![endif]-->
+	href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
+<link rel="stylesheet" href="css/kurento.css">
 
-<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script
-	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script
-	src="http://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/3.0.3a/ekko-lightbox.min.js"></script>
-<script
-	src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
+<script src="bower_components/adapter.js/samples/web/js/adapter.js"></script>
 
-<script src="./bower_components/kurento-utils/js/kurento-utils.js"></script>
-<script src="./js/console.js"></script>
-<script src="./js/index.js"></script>
+<script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
+
+<script src="js/console.js"></script>
+<script src="js/index.js"></script>
 <title>Video Call 1 to N with WebRTC and PlumberEndpoints</title>
 </head>
 <body>
@@ -39,7 +32,7 @@
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse"
 						data-target=".navbar-collapse"></button>
-					<a class="navbar-brand" href="./">Kurento Tutorial</a>
+					<a class="navbar-brand" href=".">Kurento Tutorial</a>
 				</div>
 				<div class="collapse navbar-collapse"
 					id="bs-example-navbar-collapse-1">
@@ -57,19 +50,18 @@
 			<h1>Video Call 1 to N with WebRTC and PlumberEndpoints</h1>
 			<p>
 				This web application consists on an one to many video call using <a
-					href="http://www.webrtc.org/">WebRTC</a> and PlumberEndpoints.
-				In other words, this is
-				an implementation of a distributed video broadcasting application.
-				There are two kind of users in this application: 1 peer sending media (let's call
-				it <i>Master</i>) and N peers receiving the media of the <i>Master</i>
-				(let's call them <i>Viewers</i>). Thus, the distributed <a
-					href="./img/pending.jpg" data-toggle="lightbox"
+					href="http://www.webrtc.org/">WebRTC</a> and PlumberEndpoints. In
+				other words, this is an implementation of a distributed video
+				broadcasting application. There are two kind of users in this
+				application: 1 peer sending media (let's call it <i>Master</i>) and
+				N peers receiving the media of the <i>Master</i> (let's call them <i>Viewers</i>).
+				Thus, the distributed <a href="img/pipeline.png"
+					data-toggle="lightbox"
 					data-title="Video Call 1 to N Media Pipeline"
 					data-footer="1 WebRtcEnpoint (Master) is set in SendOnly mode, and its stream is sent to N WebRtcEnpoints (Viewers), whics are set in RecvOnly mode.">Media
 					Pipeline</a> is composed by 1+N interconnected <i>WebRtcEndpoints</i>.
-				Peers will dinamically be distributed in diferent pipelines as they connect to the
-				server.
-				To run this demo follow these steps:
+				Peers will dinamically be distributed in diferent pipelines as they
+				connect to the server. To run this demo follow these steps:
 			</p>
 			<ol>
 				<li>Open this page with a browser compliant with WebRTC
@@ -111,7 +103,7 @@
 			<div class="col-md-7">
 				<div id="videoBig">
 					<video id="video" autoplay width="640px" height="480px"
-						poster="./img/webrtc.png"></video>
+						poster="img/webrtc.png"></video>
 				</div>
 			</div>
 		</div>
@@ -124,16 +116,16 @@
 				<div class="row">&copy; 2014 Kurento</div>
 				<div class="row">
 					<div class="col-md-4">
-						<a href="http://www.urjc.es"><img src="./img/urjc.gif"
+						<a href="http://www.urjc.es"><img src="img/urjc.gif"
 							alt="Universidad Rey Juan Carlos" height="50px" /></a>
 					</div>
 					<div class="col-md-4">
-						<a href="http://www.kurento.org"><img src="./img/kurento.png"
+						<a href="http://www.kurento.org"><img src="img/kurento.png"
 							alt="Kurento" height="50px" /></a>
 					</div>
 					<div class="col-md-4">
-						<a href="http://www.naevatec.com"><img
-							src="./img/naevatec.png" alt="Naevatec" height="50px" /></a>
+						<a href="http://www.naevatec.com"><img src="img/naevatec.png"
+							alt="Naevatec" height="50px" /></a>
 					</div>
 				</div>
 			</div>

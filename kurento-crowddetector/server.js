@@ -13,12 +13,24 @@
  *
  */
 
-var kurento = require('kurento-client');
-var express = require('express');
-var app = express();
 var path = require('path');
-var wsm = require('ws');
+var express = require('express');
 var session = require('express-session')
+var ws = require('ws');
+var minimist = require('minimist');
+var url = require('url');
+var kurento = require('kurento-client');
+
+var argv = minimist(process.argv.slice(2),
+{
+  default:
+  {
+    as_uri: "http://localhost:8080/",
+    ws_uri: "ws://localhost:8888/kurento"
+  }
+});
+
+var app = express();
 
 kurento.register(require('kurento-module-crowddetector'));
 
@@ -36,19 +48,10 @@ var sessionHandler = session({
 
 app.use(sessionHandler);
 
-app.set('port', process.env.PORT || 8080);
-
-/*
- * Defintion of constants
- */
-
-const
-ws_uri = "ws://localhost:8888/kurento";
 
 /*
  * Definition of global variables.
  */
-
 var pipelines = {};
 var kurentoClient = null;
 
@@ -56,13 +59,14 @@ var kurentoClient = null;
  * Server startup
  */
 
-var port = app.get('port');
+var asUrl = url.parse(argv.as_uri);
+var port = asUrl.port;
 var server = app.listen(port, function() {
-	console.log('Express server started ');
-	console.log('Connect to http://<host_name>:' + port + '/');
+	console.log('Kurento Tutorial started');
+	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
-var WebSocketServer = wsm.Server, wss = new WebSocketServer({
+var WebSocketServer = ws.Server, wss = new WebSocketServer({
 	server : server,
 	path : '/crowddetector'
 });
@@ -160,10 +164,10 @@ function getKurentoClient(callback) {
 		return callback(null, kurentoClient);
 	}
 
-	kurento(ws_uri, function(error, _kurentoClient) {
+	kurento(argv.ws_uri, function(error, _kurentoClient) {
 		if (error) {
-			console.log("Could not find media server at address " + ws_uri);
-			return callback("Could not find media server at address" + ws_uri
+			console.log("Could not find media server at address " + argv.ws_uri);
+			return callback("Could not find media server at address" + argv.ws_uri
 					+ ". Exiting with error " + error);
 		}
 

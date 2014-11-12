@@ -1,6 +1,6 @@
 {
   "name": "kurento-pointerdetector",
-  "version": "5.0.3",
+  "version": "5.0.4-dev",
   "description": "Kurento Browser JavaScript Tutorial ",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -20,6 +20,9 @@
     "tests"
   ],
   "dependencies": {
-    "kurento-utils": "^5.0.0"
+    "bootstrap": "~3.3.0",
+    "ekko-lightbox": "~3.1.4",
+    "adapter.js": "*",
+    "kurento-utils": "develop"
   }
 }

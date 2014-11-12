@@ -14,14 +14,12 @@
  */
 
 var path = require('path');
-
-var express  = require('express');
-var session  = require('express-session')
+var express = require('express');
+var session = require('express-session')
+var ws = require('ws');
 var minimist = require('minimist');
-var ws       = require('ws');
-
+var url = require('url');
 var kurento = require('kurento-client');
-
 
 var argv = minimist(process.argv.slice(2),
 {
@@ -31,7 +29,6 @@ var argv = minimist(process.argv.slice(2),
     ws_uri: "ws://localhost:8888/kurento"
   }
 });
-
 
 var app = express();
 
@@ -49,8 +46,6 @@ var sessionHandler = session({
 
 app.use(sessionHandler);
 
-app.set('port', process.env.PORT || 8080);
-
 
 /*
  * Definition of global variables.
@@ -63,10 +58,11 @@ var kurentoClient = null;
  * Server startup
  */
 
-var port = app.get('port');
+var asUrl = url.parse(argv.as_uri);
+var port = asUrl.port;
 var server = app.listen(port, function() {
-	console.log('Express server started ');
-	console.log('Connect to http://<host_name>:' + port + '/');
+	console.log('Kurento Tutorial started');
+	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
 var wss = new ws.Server({
@@ -221,7 +217,7 @@ function createMediaElements(pipeline, callback) {
 					}
 
 					faceOverlayFilter.setOverlayedImage(
-							argv.as_uri+"img/mario-wings.png",
+							url.format(asUrl)+"img/mario-wings.png",
 							-0.35, -1.2, 1.6, 1.6, function(error) {
 								if (error) {
 									return callback(error);

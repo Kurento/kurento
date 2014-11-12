@@ -15,27 +15,23 @@
  */
 
 var path = require('path');
-
 var express  = require('express');
 var minimist = require('minimist');
-
+var url = require('url');
 var kurento = require('kurento-client');
-
 
 var argv = minimist(process.argv.slice(2),
 {
   default:
   {
+    as_uri: "http://localhost:8080/",
     ws_uri: "ws://localhost:8888/kurento"
   }
 });
 
-
 var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.text({type : 'application/sdp'}));
-app.set('port', process.env.PORT || 8080);
-
 
 /*
  * Definition of global variables.
@@ -47,16 +43,16 @@ var pipeline = null;
  * Server startup
  */
 
-var port = app.get('port');
+var asUrl = url.parse(argv.as_uri);
+var port = asUrl.port;
 var server = app.listen(port, function() {
-	console.log('Express server started ');
-	console.log('Connect to http://<host_name>:' + port + '/');
+	console.log('Kurento Tutorial started');
+	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
 /*
  * Definition of functions
  */
-
 function sendError(res, code, error) {
 	console.log("Error " + error);
 	res.type('text/plain');
@@ -66,7 +62,7 @@ function sendError(res, code, error) {
 
 /*
  * Code for recovering a media pipeline.
- * */
+ */
 function getPipeline(callback) {
 	if (pipeline !== null) {
 		return callback(null, pipeline);
@@ -90,7 +86,7 @@ function getPipeline(callback) {
 
 /*
  * Code for processing REST request from client.
- * */
+ */
 app.post('/helloworld', function(req, res) {
 	var sdpOffer = req.body;
 

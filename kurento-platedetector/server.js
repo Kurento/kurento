@@ -13,14 +13,26 @@
  *
  */
 
-var kurento = require('kurento-client');
-var express = require('express');
-var app = express();
 var path = require('path');
-var wsm = require('ws');
+var express = require('express');
 var session = require('express-session')
+var ws = require('ws');
+var minimist = require('minimist');
+var url = require('url');
+var kurento = require('kurento-client');
 
-kurento.register(require('kurento-module-chroma'));
+var argv = minimist(process.argv.slice(2),
+{
+  default:
+  {
+    as_uri: "http://localhost:8080/",
+    ws_uri: "ws://localhost:8888/kurento"
+  }
+});
+
+var app = express();
+
+kurento.register(require('kurento-module-platedetector'));
 
 /*
  * Management of sessions
@@ -36,15 +48,6 @@ var sessionHandler = session({
 
 app.use(sessionHandler);
 
-app.set('port', process.env.PORT || 8080);
-
-/*
- * Defintion of constants
- */
-
-const
-ws_uri = "ws://localhost:8888/kurento";
-
 /*
  * Definition of global variables.
  */
@@ -52,21 +55,20 @@ ws_uri = "ws://localhost:8888/kurento";
 var pipelines = {};
 var kurentoClient = null;
 
-var background_uri = 'http://files.kurento.org/imgs/mario.jpg';
-
 /*
  * Server startup
  */
 
-var port = app.get('port');
+var asUrl = url.parse(argv.as_uri);
+var port = asUrl.port;
 var server = app.listen(port, function() {
-	console.log('Express server started ');
-	console.log('Connect to http://<host_name>:' + port + '/');
+	console.log('Kurento Tutorial started');
+	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
-var WebSocketServer = wsm.Server, wss = new WebSocketServer({
+var WebSocketServer = ws.Server, wss = new WebSocketServer({
 	server : server,
-	path : '/chroma'
+	path : '/platedetector'
 });
 
 /*
@@ -109,12 +111,19 @@ wss.on('connection', function(ws) {
 					}));
 				}
 				switch (type) {
-					case 'sdpAnswer': 
+					case 'sdpAnswer':
 						ws.send(JSON.stringify({
 							id : 'startResponse',
 							sdpAnswer : data
 						}));
-				}				
+						break;
+					case 'plateDetected':
+						ws.send(JSON.stringify({
+							id : 'plateDetected',
+							data : data
+						}));
+						break;
+				}
 			});
 			break;
 
@@ -143,10 +152,10 @@ function getKurentoClient(callback) {
 		return callback(null, kurentoClient);
 	}
 
-	kurento(ws_uri, function(error, _kurentoClient) {
+	kurento(argv.ws_uri, function(error, _kurentoClient) {
 		if (error) {
-			console.log("Could not find media server at address " + ws_uri);
-			return callback("Could not find media server at address" + ws_uri
+			console.log("Could not find media server at address " + argv.ws_uri);
+			return callback("Could not find media server at address" + argv.ws_uri
 					+ ". Exiting with error " + error);
 		}
 
@@ -177,24 +186,21 @@ function start(sessionId, sdpOffer, callback) {
 			}
 
 			createMediaElements(pipeline, function(error, webRtcEndpoint,
-					chromaFilter) {
+					plateDetectorFilter) {
 				if (error) {
 					pipeline.release();
 					return callback(error);
 				}
 
-				connectMediaElements(webRtcEndpoint, chromaFilter,
+				connectMediaElements(webRtcEndpoint, plateDetectorFilter,
 					function(error) {
 						if (error) {
 							pipeline.release();
 							return callback(error);
 						}
 
-						chromaFilter.setBackground (background_uri, function(error) {
-							if (error) {
-								pipeline.release();
-								return callback(error);
-							}
+						plateDetectorFilter.on ('PlateDetected', function (data){
+							return callback(null, 'plateDetected', data);
 						});
 
 						webRtcEndpoint.processOffer(sdpOffer, function(
@@ -218,24 +224,24 @@ function createMediaElements(pipeline, callback) {
 		if (error) {
 			return callback(error);
 		}
-		pipeline.create('ChromaFilter', {window : {topRightCornerX: 5, topRightCornerY:5, width:30, height: 30}},
-				function(error, chromaFilter) {
+		pipeline.create('PlateDetectorFilter',
+				function(error, plateDetectorFilter) {
 					if (error) {
 						return callback(error);
 					}
 					return callback(null, webRtcEndpoint,
-										chromaFilter);
+										plateDetectorFilter);
 				});
 	});
 }
 
-function connectMediaElements(webRtcEndpoint, chromaFilter, callback) {
-	webRtcEndpoint.connect(chromaFilter, function(error) {
+function connectMediaElements(webRtcEndpoint, plateDetectorFilter, callback) {
+	webRtcEndpoint.connect(plateDetectorFilter, function(error) {
 		if (error) {
 			return callback(error);
 		}
 
-		chromaFilter.connect(webRtcEndpoint, function(error) {
+		plateDetectorFilter.connect(webRtcEndpoint, function(error) {
 			if (error) {
 				return callback(error);
 			}
