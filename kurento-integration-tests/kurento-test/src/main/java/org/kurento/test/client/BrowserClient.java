@@ -99,10 +99,21 @@ public class BrowserClient implements Closeable {
 		timeout = 60; // default (60 seconds)
 		maxDistance = 60.0; // default distance (for color comparison)
 
-		String hostAddress = "127.0.0.1";
+		// String hostAddress = "127.0.0.1";
+		// String hostAddress = "193.147.51.46";
 
 		// Setup Selenium
-		initDriver(hostAddress);
+		initDriver();
+
+		String hostAddress;
+
+		if (remoteNode != null) {
+			hostAddress = getProperty(
+					PerformanceTest.SELENIUM_HUB_HOST_PROPERTY,
+					PerformanceTest.SELENIUM_HUB_HOST_DEFAULT);
+		} else {
+			hostAddress = "127.0.0.1";
+		}
 
 		// Launch Browser
 		driver.manage().timeouts();
@@ -113,10 +124,15 @@ public class BrowserClient implements Closeable {
 				+ KurentoServicesTestHelper.getTestName());
 	}
 
-	private void initDriver(String hostAddress) {
+	private void initDriver() {
 		Class<? extends WebDriver> driverClass = browser.getDriverClass();
-		int hubPort = getProperty("test.hub.port",
-				PerformanceTest.DEFAULT_HUB_PORT);
+
+		String hostAddress = getProperty(
+				PerformanceTest.SELENIUM_HUB_HOST_PROPERTY,
+				PerformanceTest.SELENIUM_HUB_HOST_DEFAULT);
+
+		int hubPort = getProperty(PerformanceTest.SELENIUM_HUB_PORT_PROPERTY,
+				PerformanceTest.SELENIUM_HUB_PORT_DEFAULT);
 
 		try {
 			if (driverClass.equals(FirefoxDriver.class)) {

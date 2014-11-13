@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.base;
+package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 
@@ -38,17 +38,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.SystemPerformanceTests;
 import org.kurento.test.Shell;
 import org.kurento.test.client.Browser;
-import org.kurento.test.services.Node;
-import org.kurento.test.services.Randomizer;
-import org.kurento.test.services.RemoteHost;
-import org.kurento.test.services.SeleniumGridHub;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -57,49 +51,44 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 
 /**
- * Base for tests using kurento-client, Jetty Http Server and Selenium Grid.
+ * Class to control Selenium Grid
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.5
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ * @since 5.1.0
  */
-@Category(SystemPerformanceTests.class)
-public class PerformanceTest extends BrowserKurentoClientTest {
+public class SeleniumGridManager {
 
-	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
-	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
+	private static Logger log = LoggerFactory
+			.getLogger(SeleniumGridManager.class);
 
-	public static final String SELENIUM_HUB_HOST_PROPERTY = "selenium.hub.host";
-	public static final String SELENIUM_HUB_HOST_DEFAULT = "127.0.0.1";
-
+	public static final int DEFAULT_HUB_PORT = 4444;
 	private static final int TIMEOUT_NODE = 120; // seconds
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private SeleniumGridHub seleniumGridHub;
 	private String hubAddress;
 	private int hubPort;
-	private CountDownLatch countDownLatch;
 
 	public List<Node> nodes;
 
-	@Before
+	private CountDownLatch countDownLatch;
+
 	public void startGrid() throws Exception {
 		startHub();
 		startNodes();
 	}
 
 	private void startHub() throws Exception {
-
-		hubAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY,
-				SELENIUM_HUB_HOST_DEFAULT);
-
-		hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
-				SELENIUM_HUB_PORT_DEFAULT);
+		hubAddress = "193.147.49.61";
+		hubPort = getProperty("test.hub.port", DEFAULT_HUB_PORT);
 
 		seleniumGridHub = new SeleniumGridHub(hubAddress, hubPort);
 		seleniumGridHub.start();
 	}
 
 	private void startNodes() throws InterruptedException {
+
 		countDownLatch = new CountDownLatch(nodes.size());
 
 		for (final Node n : nodes) {
@@ -122,14 +111,17 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	}
 
 	private void startNode(Node node) throws IOException {
+
 		log.info("Launching node {}", node.getAddress());
 
+		String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
+
 		final String chromeDriverName = "/chromedriver";
-		final String chromeDriverSource = getPathTestFiles()
+		final String chromeDriverSource = testFilesPath
 				+ "/bin/chromedriver/2.9/linux64" + chromeDriverName;
 		final String seleniumJarName = "/selenium-server-standalone-2.42.2.jar";
-		final String seleniumJarSource = getPathTestFiles()
-				+ "/bin/selenium-server" + seleniumJarName;
+		final String seleniumJarSource = KurentoServicesTestHelper
+				.getTestFilesPath() + "/bin/selenium-server" + seleniumJarName;
 
 		// OverThere SCP need absolute path, so home path must be known
 		String remoteHome = node.getHome();
@@ -192,7 +184,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		data.put("pidFile", node.REMOTE_PID_FILE);
 		data.put("browser", browser);
 
-		cfg.setClassForTemplateLoading(PerformanceTest.class, "/templates/");
+		cfg.setClassForTemplateLoading(SeleniumGridManager.class, "/templates/");
 
 		String tmpScript = node.getTmpFolder() + LAUNCH_SH;
 		try {
@@ -253,7 +245,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 			String video, String audio) {
 		List<Node> nodes = new ArrayList<Node>();
 
-		InputStream inputStream = PerformanceTest.class.getClassLoader()
+		InputStream inputStream = SeleniumGridManager.class.getClassLoader()
 				.getResourceAsStream("node-list.txt");
 		List<String> nodeList = null;
 		try {
@@ -305,8 +297,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		return nodes;
 	}
 
-	@After
-	public void stopGrid() throws Exception {
+	public void stop() throws Exception {
 		// Stop Hub
 		seleniumGridHub.stop();
 
@@ -315,9 +306,6 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 			String remotePid = n.getRemoteHost().execAndWaitCommandNoBr("cat",
 					n.getTmpFolder() + "/" + n.REMOTE_PID_FILE);
 			n.getRemoteHost().execCommand("pkill", "-KILL", "-P", remotePid);
-
-			// TODO: Improve to kill only my own chromedrivers (not all)
-			n.getRemoteHost().execCommand("killall", "chromedriver");
 			n.stopRemoteHost();
 		}
 	}

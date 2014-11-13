@@ -23,7 +23,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -50,7 +49,7 @@ import org.kurento.test.services.Recorder;
  * <li>Color received by client should be as expected</li>
  * <li>Perceived audio quality should be fair (PESQMOS)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -63,7 +62,7 @@ public class WebRtcGridTest extends PerformanceTest {
 	public WebRtcGridTest() {
 		nodes = new ArrayList<Node>();
 
-		nodes.addAll(getRandomNodes(5, Browser.CHROME));
+		// nodes.addAll(getRandomNodes(1, Browser.CHROME));
 
 		// Uncomment these lines to use custom video and audio files:
 		// nodes.addAll(getRandomNodes(3, Browser.CHROME, getPathTestFiles()
@@ -75,10 +74,12 @@ public class WebRtcGridTest extends PerformanceTest {
 		// getPathTestFiles() + "/video/10sec/red.y4m",
 		// "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
 
+		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME));
+
 		log.info("Node list {} ", nodes);
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void tesWebRtcGridChrome() throws InterruptedException,
 			ExecutionException {
@@ -94,9 +95,11 @@ public class WebRtcGridTest extends PerformanceTest {
 				}
 			}));
 		}
+
 		for (Future<?> r : results) {
 			r.get();
 		}
+
 	}
 
 	public void doTest(Node node, Color color) {
