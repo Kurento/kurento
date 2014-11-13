@@ -29,6 +29,7 @@ set(KMS_ELEMENTS_SOURCES
   kmsalphablendingportdata.c
   kmsplumberendpoint.c
   kmsmultichannelcontroller.c
+  kmsgenericstructure.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -54,6 +55,7 @@ set(KMS_ELEMENTS_HEADERS
   kmsplumberendpoint.h
   kmsmultichannelcontroller.h
   kmsmccp.h
+  kmsgenericstructure.h
 )
 
 set(ENUM_HEADERS
