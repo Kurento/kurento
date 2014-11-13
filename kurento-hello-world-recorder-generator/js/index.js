@@ -137,7 +137,7 @@ function onStartOffer(sdpOffer){
 	co(function*(){
 			try{
 				if(!client)
-					client = yield kurentoClient(ws_uri);
+					client = yield kurentoClient(args.ws_uri);
 
 				pipeline = yield client.create('MediaPipeline');
 				var webRtc = yield pipeline.create('WebRtcEndpoint');

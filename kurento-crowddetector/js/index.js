@@ -60,7 +60,7 @@ window.addEventListener("load", function(event)
 		function onOffer(sdpOffer) {
 			console.log("onOffer");
 
-			kurentoClient(argsws_uri, function(error, client) {
+			kurentoClient(args.ws_uri, function(error, client) {
 				if (error) return onError(error);
 
 				client.create('MediaPipeline', function(error, p) {

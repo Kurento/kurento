@@ -159,7 +159,7 @@ function startRecording() {
 
 
 function startPlaying() {
-	kurentoClient(ws_uri, function(error, kurentoClient) {
+	kurentoClient(args.ws_uri, function(error, kurentoClient) {
 		var videoPlayer = document.getElementById('videoPlayer');
 
 		if (error) return onError(error);

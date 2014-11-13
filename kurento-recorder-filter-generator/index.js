@@ -66,7 +66,7 @@ function startRecording() {
 			try {
 				var client = yield new kurentoClient(args.ws_uri);
 				pipeline   = yield client.create("MediaPipeline");
-				recorder   = yield pipeline.create("RecorderEndpoint", {uri: file_uri});
+				recorder   = yield pipeline.create("RecorderEndpoint", {uri: args.file_uri});
 				var webRtc = yield pipeline.create("WebRtcEndpoint");
 				var faceOverlay = yield pipeline.create("FaceOverlayFilter");
 				var mirror = yield pipeline.create("GStreamerFilter",
@@ -164,7 +164,7 @@ function startPlaying() {
 
 				webRtcPeer.processSdpAnswer(answer);
 
-				var player = yield pipeline.create("PlayerEndpoint", {uri: file_uri});
+				var player = yield pipeline.create("PlayerEndpoint", {uri: args.file_uri});
 
 				yield player.connect(webRtc);
 				yield player.play();
