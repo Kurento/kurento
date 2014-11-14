@@ -52,9 +52,9 @@ kms_generic_structure_unref (KmsGenericStructure * b)
 
 KmsGenericStructure * kms_generic_structure_new ();
 
-#define kms_generic_structure_add(self, name, value) kms_generic_structure_add_full (self, name, value, NULL)
+#define kms_generic_structure_set(self, name, value) kms_generic_structure_set_full (self, name, value, NULL)
 
-void kms_generic_structure_add_full (KmsGenericStructure *self,
+void kms_generic_structure_set_full (KmsGenericStructure *self,
   const gchar *name, gpointer value, GDestroyNotify notify);
 
 gpointer kms_generic_structure_get (KmsGenericStructure *self, const gchar *name);

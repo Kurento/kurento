@@ -84,7 +84,7 @@ kms_generic_structure_new ()
 }
 
 void
-kms_generic_structure_add_full (KmsGenericStructure * self, const gchar * name,
+kms_generic_structure_set_full (KmsGenericStructure * self, const gchar * name,
     gpointer value, GDestroyNotify notify)
 {
   KmsField *field;
