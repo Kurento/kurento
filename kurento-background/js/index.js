@@ -105,12 +105,19 @@ function getopts(args, opts) {
 var args = getopts(location.search, {
   default: {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    as_uri: 'http://' + location.host
+    as_uri: 'http://' + location.host,
+    ice_servers: undefined
   }
 });
 
-kurentoClient.register(kurentoModuleBackgroundextractor)
+if (args.ice_servers) {
+  console.log("Use ICE servers: " + args.ice_servers);
+  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
+} else {
+  console.log("Use freeice")
+}
 
+kurentoClient.register(kurentoModuleBackgroundextractor)
 var pipeline;
 
 var videoOutput;

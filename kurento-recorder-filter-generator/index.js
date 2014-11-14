@@ -29,10 +29,17 @@ var args = getopts(location.search,
   {
     ws_uri:   'ws://' + location.hostname + ':8888/kurento',
     file_uri: 'file:///tmp/recorder_demo.webm', //file to be stored in media server
-    as_uri:   'http://' + location.host
+    as_uri:   'http://' + location.host,
+    ice_servers: undefined
   }
 });
 
+if (args.ice_servers) {
+  console.log("Use ICE servers: " + args.ice_servers);
+  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
+} else {
+  console.log("Use freeice")
+}
 
 
 const hat_uri = args.as_uri+"/img/Hat.png";

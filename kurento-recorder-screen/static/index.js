@@ -27,10 +27,17 @@ var args = getopts(location.search,
 {
   default:
   {
-    ws_uri: 'wss://' + location.hostname + ':8433/kurento'
+    ws_uri: 'wss://' + location.hostname + ':8433/kurento',
+    ice_servers: undefined
   }
 });
 
+if (args.ice_servers) {
+  console.log("Use ICE servers: " + args.ice_servers);
+  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
+} else {
+  console.log("Use freeice")
+}
 
 const file_uri = 'file:///tmp/recorderScreen.webm'; //file to be stored in media server
 

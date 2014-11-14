@@ -28,10 +28,17 @@ var args = getopts(location.search,
   default:
   {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    file_uri: 'file:///tmp/recorder_demo.webm' //file to be stored in media server
+    file_uri: 'file:///tmp/recorder_demo.webm', //file to be stored in media server
+    ice_servers: undefined
   }
 });
 
+if (args.ice_servers) {
+  console.log("Use ICE servers: " + args.ice_servers);
+  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
+} else {
+  console.log("Use freeice")
+}
 
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
