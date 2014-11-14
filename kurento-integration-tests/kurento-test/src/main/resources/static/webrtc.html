@@ -22,6 +22,9 @@
 			minFrameRate : 15
 		}
 	};
+
+	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
+
 	window.onload = function() {
 		console = new Console("console", console);
 		local = document.getElementById("local");
