@@ -87,8 +87,8 @@ var raquelY = 186;
 //borja 1
 // var borjaX = 500;
 // var borjaY = 155;
-var borjaX = 575;
-var borjaY = 224;
+var borjaX = 579;
+var borjaY = 158;
 //clara
 // var claraX = 524;
 // var claraY = 164;
