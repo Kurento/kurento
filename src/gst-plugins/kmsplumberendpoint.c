@@ -457,6 +457,7 @@ kms_plumber_endpoint_query_caps (KmsElement * self, GstPad * pad,
 {
   GstCaps *allowed = NULL, *caps = NULL;
   GstCaps *filter, *result = NULL, *tcaps;
+  gboolean ret = FALSE;
 
   gst_query_parse_caps (query, &filter);
 
@@ -479,10 +480,13 @@ kms_plumber_endpoint_query_caps (KmsElement * self, GstPad * pad,
 
   /* make sure we only return results that intersect our padtemplate */
   tcaps = gst_pad_get_pad_template_caps (pad);
-  if (tcaps != NULL) {
-    result = gst_caps_intersect (allowed, tcaps);
-    gst_caps_unref (tcaps);
+  if (tcaps == NULL) {
+    GST_WARNING_OBJECT (pad, "Could not get capabilities from template");
+    goto end;
   }
+
+  result = gst_caps_intersect (allowed, tcaps);
+  gst_caps_unref (tcaps);
 
   if (caps != NULL) {
     /* Filter against our caps */
@@ -504,14 +508,16 @@ kms_plumber_endpoint_query_caps (KmsElement * self, GstPad * pad,
 
   gst_query_set_caps_result (query, result);
   gst_caps_unref (result);
+  ret = TRUE;
 
+end:
   if (allowed != NULL)
     gst_caps_unref (allowed);
 
   if (caps != NULL)
     gst_caps_unref (caps);
 
-  return TRUE;
+  return ret;
 }
 
 static gboolean
