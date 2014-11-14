@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,9 +63,12 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 	@Before
 	public void setup() {
 		// ChromeDriver
-		String chromeDriver = KurentoServicesTestHelper.getTestFilesPath()
-				+ "/bin/chromedriver/2.9/linux64/chromedriver";
-		System.setProperty("webdriver.chrome.driver", chromeDriver);
+		String chromedriver = "chromedriver";
+		if (SystemUtils.IS_OS_WINDOWS) {
+			chromedriver += ".exe";
+		}
+		System.setProperty("webdriver.chrome.driver", new File(
+				"target/webdriver/" + chromedriver).getAbsolutePath());
 
 		ChromeOptions options = new ChromeOptions();
 		// This flag avoids warning in Chrome. See:
