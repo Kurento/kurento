@@ -39,23 +39,36 @@ Sample.prototype.start = function () {
 
         self.player = player;
 
-        player.connect(webRtc, function (error) {
+        pipeline.create("GStreamerFilter", {
+          command: "capsfilter caps=video/x-raw,framerate=10/1,width=320,height=240",
+          filterType: "VIDEO"
+        }, function (error, filter) {
           if (error) return onError(error);
 
-          player.play(function (error) {
+          self.filter = filter;
+
+          player.connect(filter, function (error) {
             if (error) return onError(error);
 
-            console.log('Playing ' + self.file_uri);
-          });
+            filter.connect(webRtc, function (error) {
+              if (error) return onError(error);
 
-          player.on('EndOfStream', function (data) {
-            player.play();
-          });
+              player.play(function (error) {
+                if (error) return onError(error);
 
-          webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
-            if (error) return onError(error);
+                console.log('Playing ' + self.file_uri);
+              });
 
-            self.webRtcLocal.processSdpAnswer(sdpAnswer);
+              player.on('EndOfStream', function (data) {
+                player.play();
+              });
+
+              webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
+                if (error) return onError(error);
+
+                self.webRtcLocal.processSdpAnswer(sdpAnswer);
+              });
+            });
           });
         });
       });
@@ -73,6 +86,7 @@ Sample.prototype.finish = function () {
   this.webRtcLocal = null;
   this.player.stop();
   this.player.release();
+  this.filter.release();
   this.webRtcRemote.release();
 };
 /* Sample class end */
