@@ -117,6 +117,8 @@ var videoOutput;
 var webRtcPeer;
 var video_port;
 var alphaBlending;
+var background;
+var processing = false;
 
 var samples = [
   new Sample(args.as_uri + '/img/fiwarecut_30.webm'),
@@ -199,8 +201,11 @@ function onOffer(sdpOffer) {
           alphaBlending.createHubPort(function (error, webRtc_port) {
             if (error) return onError(error);
 
-            pipeline.create('BackgroundExtractorFilter', function (error, background) {
+            pipeline.create('BackgroundExtractorFilter', function (error, _background) {
               if (error) return onError(error);
+
+              background = _background;
+              background.activateProcessing(false);
 
               webRtc.connect(background, function (error) {
                 if (error) return onError(error);
@@ -259,6 +264,10 @@ function sample4click() {
 }
 
 function connect(samplePlayer) {
+  if (!processing) {
+    processing = true;
+    background.activateProcessing(true);
+  }
 
   if (video_port != null) {
     video_port.release();
@@ -278,6 +287,10 @@ function noMore() {
   if (video_port != null) {
     video_port.release();
   }
+
+  background.activateProcessing(false);
+  processing = false;
+
   $('#noMore').attr('disabled', true);
 }
 
