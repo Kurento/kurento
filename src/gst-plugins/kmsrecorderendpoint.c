@@ -301,7 +301,7 @@ kms_recorder_endpoint_state_changed (KmsRecorderEndpoint * self,
   g_mutex_lock (&self->priv->state_manager.mutex);
   self->priv->state_manager.changing = FALSE;
   if (self->priv->state_manager.locked > 0)
-    g_cond_signal (&self->priv->state_manager.cond);
+    g_cond_broadcast (&self->priv->state_manager.cond);
   g_mutex_unlock (&self->priv->state_manager.mutex);
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));

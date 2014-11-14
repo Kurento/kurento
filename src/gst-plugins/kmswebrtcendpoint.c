@@ -840,7 +840,7 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   while (!self->priv->ctx.finalized && !self->priv->ctx.ice_gathering_done)
     g_cond_wait (&self->priv->ctx.gather_cond, &self->priv->ctx.gather_mutex);
   self->priv->ctx.wait_gathering = FALSE;
-  g_cond_signal (&self->priv->ctx.gather_cond);
+  g_cond_broadcast (&self->priv->ctx.gather_cond);
 
   if (self->priv->ctx.finalized) {
     GST_ERROR_OBJECT (self, "WebrtcEndpoint has finalized.");
@@ -1312,7 +1312,7 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
 
   self->priv->ctx.ice_gathering_done = done;
 
-  g_cond_signal (&self->priv->ctx.gather_cond);
+  g_cond_broadcast (&self->priv->ctx.gather_cond);
   g_mutex_unlock (&self->priv->ctx.gather_mutex);
 }
 
@@ -1540,7 +1540,7 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
   g_mutex_lock (&self->priv->ctx.gather_mutex);
   self->priv->ctx.finalized = TRUE;
-  g_cond_signal (&self->priv->ctx.gather_cond);
+  g_cond_broadcast (&self->priv->ctx.gather_cond);
   while (self->priv->ctx.wait_gathering)
     g_cond_wait (&self->priv->ctx.gather_cond, &self->priv->ctx.gather_mutex);
   g_mutex_unlock (&self->priv->ctx.gather_mutex);
