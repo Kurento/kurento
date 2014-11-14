@@ -486,12 +486,20 @@ kms_plumber_endpoint_query_caps (KmsElement * self, GstPad * pad,
 
   if (caps != NULL) {
     /* Filter against our caps */
-    result = gst_caps_intersect (caps, result);
+    GstCaps *aux;
+
+    aux = gst_caps_intersect (caps, result);
+    gst_caps_unref (result);
+    result = aux;
   }
 
   /* filter against the query filter when needed */
   if (filter != NULL) {
-    result = gst_caps_intersect (result, filter);
+    GstCaps *aux;
+
+    aux = gst_caps_intersect (result, filter);
+    gst_caps_unref (result);
+    result = aux;
   }
 
   gst_query_set_caps_result (query, result);
