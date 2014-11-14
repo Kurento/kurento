@@ -524,35 +524,42 @@ kms_alpha_blending_port_data_destroy (gpointer data)
     }
 
     pad = gst_element_get_static_pad (videorate, "sink");
-    KMS_ALPHA_BLENDING_UNLOCK (self);
 
-    if (pad == NULL)
+    if (pad == NULL) {
+      KMS_ALPHA_BLENDING_UNLOCK (self);
       return;
+    }
 
     if (!GST_OBJECT_FLAG_IS_SET (pad, GST_PAD_FLAG_EOS)) {
 
       event = gst_event_new_eos ();
       result = gst_pad_send_event (pad, event);
 
-      KMS_ALPHA_BLENDING_LOCK (self);
       if (input && self->priv->n_elems > 0) {
         kms_generic_structure_set (port_data, "input", GINT_TO_POINTER (FALSE));
         self->priv->n_elems--;
       }
-      KMS_ALPHA_BLENDING_UNLOCK (self);
 
       if (!result) {
         GST_WARNING ("EOS event did not send");
       }
+
+      gst_element_unlink (videoconvert, videorate);
+      g_object_unref (pad);
+
+      KMS_ALPHA_BLENDING_UNLOCK (self);
     } else {
       gboolean remove = FALSE;
 
-      KMS_ALPHA_BLENDING_LOCK (self);
       /* EOS callback was triggered before we could remove the port data */
       /* so we have to remove elements to avoid memory leaks. */
       remove =
           GPOINTER_TO_INT (kms_generic_structure_get (port_data,
               "eos_managed"));
+
+      gst_element_unlink (videoconvert, videorate);
+      g_object_unref (pad);
+
       KMS_ALPHA_BLENDING_UNLOCK (self);
 
       if (remove) {
@@ -563,9 +570,6 @@ kms_alpha_blending_port_data_destroy (gpointer data)
             (GDestroyNotify) kms_generic_structure_unref);
       }
     }
-
-    gst_element_unlink (videoconvert, videorate);
-    g_object_unref (pad);
   } else {
     GstElement *videoconvert;
     GstPad *video_mixer_pad, *videoconvert_sink_pad;
