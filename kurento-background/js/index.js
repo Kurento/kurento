@@ -13,6 +13,70 @@
  *
  */
 
+/* Sample class begin */
+function Sample(file_uri) {
+  this.file_uri = file_uri;
+}
+
+Sample.prototype.start = function () {
+  var self = this;
+
+  self.webRtcLocal = kurentoUtils.WebRtcPeer.startRecvOnly(self.tag, function (sdpOffer) {
+    if (pipeline == null) {
+      console.log("MediaPipeline is still not create")
+      return;
+    }
+
+    pipeline.create('WebRtcEndpoint', function (error, webRtc) {
+      if (error) return onError(error);
+
+      self.webRtcRemote = webRtc;
+
+      pipeline.create('PlayerEndpoint', {
+        uri: self.file_uri
+      }, function (error, player) {
+        if (error) return onError(error);
+
+        self.player = player;
+
+        player.connect(webRtc, function (error) {
+          if (error) return onError(error);
+
+          player.play(function (error) {
+            if (error) return onError(error);
+
+            console.log('Playing ' + self.file_uri);
+          });
+
+          player.on('EndOfStream', function (data) {
+            player.play();
+          });
+
+          webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
+            if (error) return onError(error);
+
+            self.webRtcLocal.processSdpAnswer(sdpAnswer);
+          });
+        });
+      });
+    });
+  }, onError);
+}
+
+Sample.prototype.finish = function () {
+  console.log("Finishing " + this.file_uri);
+  if (!this.webRtcLocal) {
+    return;
+  }
+
+  this.webRtcLocal.dispose();
+  this.webRtcLocal = null;
+  this.player.stop();
+  this.player.release();
+  this.webRtcRemote.release();
+};
+/* Sample class end */
+
 function getopts(args, opts) {
   var result = opts.default || {};
   args.replace(
@@ -31,31 +95,29 @@ var args = getopts(location.search, {
   }
 });
 
-
-const file_uri_1 = args.as_uri + '/img/fiwarecut_30.webm';
-const file_uri_2 = args.as_uri + '/img/sintel.webm';
-const file_uri_3 = args.as_uri + '/img/Galapagos.webm';
-const file_uri_4 = args.as_uri + '/img/kinect.webm';
-
-
 kurentoClient.register(kurentoModuleBackgroundextractor)
 
-var videoOutput;
-var webRtcPeer, webRtcPeerSample1, webRtcPeerSample2, webRtcPeerSample3, webRtcPeerSample4;
-var webRtcSample1, webRtcSample2, webRtcSample3, webRtcSample4;
-var playerEndpointSample1, playerEndpointSample2, playerEndpointSample3, playerEndpointSample4;
 var pipeline;
+
+var videoOutput;
+var webRtcPeer;
 var video_port;
 var alphaBlending;
-var sample1, sample2, sample3, sample4;
+
+var samples = [
+  new Sample(args.as_uri + '/img/fiwarecut_30.webm'),
+  new Sample(args.as_uri + '/img/sintel.webm'),
+  new Sample(args.as_uri + '/img/Galapagos.webm'),
+  new Sample(args.as_uri + '/img/kinect.webm')
+]
 
 window.onload = function () {
   console = new Console('console', console);
   videoOutput = document.getElementById('videoOutput');
-  sample1 = document.getElementById('sample1');
-  sample2 = document.getElementById('sample2');
-  sample3 = document.getElementById('sample3');
-  sample4 = document.getElementById('sample4');
+  samples[0].tag = document.getElementById('sample1');
+  samples[1].tag = document.getElementById('sample2');
+  samples[2].tag = document.getElementById('sample3');
+  samples[3].tag = document.getElementById('sample4');
 
   $('#stop').attr('disabled', true);
   $('#start').attr('disabled', false);
@@ -63,7 +125,11 @@ window.onload = function () {
 }
 
 function start() {
-  showSpinner(videoOutput, sample1, sample2, sample3, sample4);
+  showSpinner(videoOutput);
+  samples.forEach(function (item) {
+    showSpinner(item.tag);
+  });
+
   webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(null, videoOutput, onOffer, onError);
 
   $('#stop').attr('disabled', false);
@@ -77,39 +143,15 @@ function stop() {
     webRtcPeer = null;
   }
 
-  if (webRtcPeerSample1) {
-    webRtcPeerSample1.dispose();
-    webRtcPeerSample1 = null;
-    playerEndpointSample1.stop();
-    playerEndpointSample1.release();
-    webRtcSample1.release();
-  }
+  samples.forEach(function (item) {
+    item.finish();
+  });
 
-  if (webRtcPeerSample2) {
-    webRtcPeerSample2.dispose();
-    webRtcPeerSample2 = null;
-    playerEndpointSample2.stop();
-    playerEndpointSample2.release();
-    webRtcSample2.release();
-  }
+  hideSpinner(videoOutput);
+  samples.forEach(function (item) {
+    hideSpinner(item.tag);
+  });
 
-  if (webRtcPeerSample3) {
-    webRtcPeerSample3.dispose();
-    webRtcPeerSample3 = null;
-    playerEndpointSample3.stop();
-    playerEndpointSample3.release();
-    webRtcSample3.release();
-  }
-
-  if (webRtcPeerSample4) {
-    webRtcPeerSample4.dispose();
-    webRtcPeerSample4 = null;
-    playerEndpointSample4.stop();
-    playerEndpointSample4.release();
-    webRtcSample4.release();
-  }
-
-  hideSpinner(videoOutput, sample1, sample2, sample3, sample4);
   if (pipeline) {
     pipeline.release();
     pipeline = null;
@@ -128,10 +170,11 @@ function onOffer(sdpOffer) {
       if (error) return onError(error);
 
       pipeline = _pipeline;
-      webRtcPeerSample1 = kurentoUtils.WebRtcPeer.startRecvOnly(sample1, onOfferSample1, onError);
-      webRtcPeerSample2 = kurentoUtils.WebRtcPeer.startRecvOnly(sample2, onOfferSample2, onError);
-      webRtcPeerSample3 = kurentoUtils.WebRtcPeer.startRecvOnly(sample3, onOfferSample3, onError);
-      webRtcPeerSample4 = kurentoUtils.WebRtcPeer.startRecvOnly(sample4, onOfferSample4, onError);
+
+      samples.forEach(function (item) {
+        item.start();
+      });
+
       pipeline.create('WebRtcEndpoint', function (error, webRtc) {
         if (error) return onError(error);
 
@@ -176,162 +219,6 @@ function onOffer(sdpOffer) {
   });
 }
 
-function onOfferSample1(sdpOffer) {
-  if (pipeline == null) {
-    console.log("MediaPipeline is still not create")
-    return;
-  }
-
-  pipeline.create('WebRtcEndpoint', function (error, _webRtcSample1) {
-    if (error) return onError(error);
-
-    webRtcSample1 = _webRtcSample1;
-    pipeline.create('PlayerEndpoint', {
-      uri: file_uri_1
-    }, function (error, _playerEndpointSample1) {
-      if (error) return onError(error);
-
-      playerEndpointSample1 = _playerEndpointSample1;
-      playerEndpointSample1.connect(webRtcSample1, function (error) {
-        if (error) return onError(error);
-
-        playerEndpointSample1.play(function (error) {
-          if (error) return onError(error);
-
-          console.log('Playing Sample 1...');
-        });
-
-        playerEndpointSample1.on('EndOfStream', function (data) {
-          playerEndpointSample1.play();
-        });
-
-        webRtcSample1.processOffer(sdpOffer, function (error, sdpAnswer) {
-          if (error) return onError(error);
-
-          webRtcPeerSample1.processSdpAnswer(sdpAnswer);
-        });
-      });
-    });
-  });
-}
-
-function onOfferSample2(sdpOffer) {
-  if (pipeline == null) {
-    console.log("MediaPipeline is still not create")
-    return;
-  }
-
-  pipeline.create('WebRtcEndpoint', function (error, _webRtcSample2) {
-    if (error) return onError(error);
-
-    webRtcSample2 = _webRtcSample2;
-    pipeline.create('PlayerEndpoint', {
-      uri: file_uri_2
-    }, function (error, _playerEndpointSample2) {
-      if (error) return onError(error);
-
-      playerEndpointSample2 = _playerEndpointSample2;
-      playerEndpointSample2.connect(webRtcSample2, function (error) {
-        if (error) return onError(error);
-
-        playerEndpointSample2.play(function (error) {
-          if (error) return onError(error);
-
-          console.log('Playing Sample 2...');
-        });
-
-        playerEndpointSample2.on('EndOfStream', function (data) {
-          playerEndpointSample2.play();
-        });
-
-        webRtcSample2.processOffer(sdpOffer, function (error, sdpAnswer) {
-          if (error) return onError(error);
-
-          webRtcPeerSample2.processSdpAnswer(sdpAnswer);
-        });
-      });
-    });
-  });
-}
-
-function onOfferSample3(sdpOffer) {
-  if (pipeline == null) {
-    console.log("MediaPipeline is still not create")
-    return;
-  }
-
-  pipeline.create('WebRtcEndpoint', function (error, _webRtcSample3) {
-    if (error) return onError(error);
-
-    webRtcSample3 = _webRtcSample3;
-    pipeline.create('PlayerEndpoint', {
-      uri: file_uri_3
-    }, function (error, _playerEndpointSample3) {
-      if (error) return onError(error);
-
-      playerEndpointSample3 = _playerEndpointSample3;
-      playerEndpointSample3.connect(webRtcSample3, function (error) {
-        if (error) return onError(error);
-
-        playerEndpointSample3.play(function (error) {
-          if (error) return onError(error);
-
-          console.log('Playing Sample 3...');
-        });
-
-        playerEndpointSample3.on('EndOfStream', function (data) {
-          playerEndpointSample3.play();
-        });
-
-        webRtcSample3.processOffer(sdpOffer, function (error, sdpAnswer) {
-          if (error) return onError(error);
-
-          webRtcPeerSample3.processSdpAnswer(sdpAnswer);
-        });
-      });
-    });
-  });
-}
-
-function onOfferSample4(sdpOffer) {
-  if (pipeline == null) {
-    console.log("MediaPipeline is still not create")
-    return;
-  }
-
-  pipeline.create('WebRtcEndpoint', function (error, _webRtcSample4) {
-    if (error) return onError(error);
-
-    webRtcSample4 = _webRtcSample4;
-    pipeline.create('PlayerEndpoint', {
-      uri: file_uri_4
-    }, function (error, _playerEndpointSample4) {
-      if (error) return onError(error);
-
-      playerEndpointSample4 = _playerEndpointSample4;
-      playerEndpointSample4.connect(webRtcSample4, function (error) {
-        if (error) return onError(error);
-
-        playerEndpointSample4.play(function (error) {
-          if (error) return onError(error);
-
-          console.log('Playing Sample 4...');
-        });
-
-        playerEndpointSample4.on('EndOfStream', function (data) {
-          playerEndpointSample4.play();
-        });
-
-        webRtcSample4.processOffer(sdpOffer, function (error, sdpAnswer) {
-          if (error) return onError(error);
-
-          webRtcPeerSample4.processSdpAnswer(sdpAnswer);
-        });
-      });
-    });
-  });
-}
-
 function onError(error) {
   console.error(error);
   stop();
@@ -339,22 +226,22 @@ function onError(error) {
 
 function sample1click() {
   $('#noMore').attr('disabled', false);
-  connect(playerEndpointSample1);
+  connect(samples[0].player);
 }
 
 function sample2click() {
   $('#noMore').attr('disabled', false);
-  connect(playerEndpointSample2);
+  connect(samples[1].player);
 }
 
 function sample3click() {
   $('#noMore').attr('disabled', false);
-  connect(playerEndpointSample3);
+  connect(samples[2].player);
 }
 
 function sample4click() {
   $('#noMore').attr('disabled', false);
-  connect(playerEndpointSample4);
+  connect(samples[3].player);
 }
 
 function connect(samplePlayer) {
@@ -380,19 +267,15 @@ function noMore() {
   $('#noMore').attr('disabled', true);
 }
 
-function showSpinner() {
-  for (var i = 0; i < arguments.length; i++) {
-    arguments[i].poster = 'img/transparent-1px.png';
-    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-  }
+function showSpinner(tag) {
+  tag.poster = 'img/transparent-1px.png';
+  tag.style.background = "center transparent url('img/spinner.gif') no-repeat";
 }
 
-function hideSpinner() {
-  for (var i = 0; i < arguments.length; i++) {
-    arguments[i].src = '';
-    arguments[i].poster = './img/webrtc.png';
-    arguments[i].style.background = '';
-  }
+function hideSpinner(tag) {
+  tag.src = '';
+  tag.poster = './img/webrtc.png';
+  tag.style.background = '';
 }
 
 /**
