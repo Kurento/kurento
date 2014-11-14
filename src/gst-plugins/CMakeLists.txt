@@ -26,7 +26,6 @@ set(KMS_ELEMENTS_SOURCES
   kmssctpclientrpc.c
   kmssctpserverrpc.c
   kmsalphablending.c
-  kmsalphablendingportdata.c
   kmsplumberendpoint.c
   kmsmultichannelcontroller.c
   kmsgenericstructure.c
@@ -51,7 +50,6 @@ set(KMS_ELEMENTS_HEADERS
   kmssctpclientrpc.h
   kmssctpserverrpc.h
   kmsalphablending.h
-  kmsalphablendingportdata.h
   kmsplumberendpoint.h
   kmsmultichannelcontroller.h
   kmsmccp.h
