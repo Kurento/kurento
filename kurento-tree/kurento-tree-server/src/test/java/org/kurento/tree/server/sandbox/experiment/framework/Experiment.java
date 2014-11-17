@@ -1,4 +1,4 @@
-package org.kurento.tree.server.sandbox.experiment;
+package org.kurento.tree.server.sandbox.experiment.framework;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,16 +6,16 @@ import java.util.List;
 
 import org.kurento.tree.client.TreeException;
 import org.kurento.tree.server.debug.TreeManagerReportCreator;
-import org.kurento.tree.server.kmsmanager.FakeFixedKmsManager;
+import org.kurento.tree.server.kmsmanager.FakeFixedNKmsManager;
 import org.kurento.tree.server.kmsmanager.KmsManager;
-import org.kurento.tree.server.sandbox.UsageSimulation;
+import org.kurento.tree.server.sandbox.experiment.usage.UsageSimulation;
 import org.kurento.tree.server.treemanager.TreeManager;
 
 public abstract class Experiment {
 
 	private List<UsageSimulation> usageSimulations = new ArrayList<>();
 	private List<TreeManagerCreator> treeManagerCreators = new ArrayList<>();
-	private KmsManager kmsManager = new FakeFixedKmsManager(4);
+	private KmsManager kmsManager = new FakeFixedNKmsManager(4);
 
 	public abstract void configureExperiment();
 
@@ -65,9 +65,9 @@ public abstract class Experiment {
 		}
 
 		try {
-			reportCreator
-					.createReport("/home/mica/Data/Kurento/treereport.html");
-			System.out.println("Report created");
+			String reportPath = "/home/mica/Data/Kurento/treereport.html";
+			reportCreator.createReport(reportPath);
+			System.out.println("Report created in: " + reportPath);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

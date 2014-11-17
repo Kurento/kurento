@@ -8,7 +8,6 @@ public abstract class Element extends KurentoObj {
 	private Pipeline pipeline;
 	private List<Element> sinks = new ArrayList<>();
 	private Element source;
-	private boolean released = false;
 
 	public Element(Pipeline pipeline) {
 		this.pipeline = pipeline;
@@ -66,13 +65,7 @@ public abstract class Element extends KurentoObj {
 			element.disconnect();
 		}
 		pipeline.removeElement(this);
-		released = true;
+		super.release();
 	}
 
-	private void checkReleased() {
-		if (released) {
-			throw new RuntimeException(
-					"Trying to execute an operation in a released element");
-		}
-	}
 }

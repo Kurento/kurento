@@ -18,17 +18,19 @@ import org.slf4j.LoggerFactory;
 /**
  * This TreeManager has the following characteristics:
  * <ul>
+ * <li>It allows only one tree</li>
  * <li>Creates WebRtcEndpoint for sinks (viewers) only in non-root kmss.</li>
- * <li>Fills nodes lexicographically until configured maxViewersPerPipeline.</li>
+ * <li>Fills KMSs lexicographically until reach the configured
+ * maxViewersPerPipeline.</li>
  * <li>It doesn't consider new kmss after start.</li>
  * </ul>
  *
  * @author micael.gallego@gmail.com
  */
-public class AotFixedClientsNoRootTreeManager extends AbstractOneTreeManager {
+public class LexicalFixedTM extends AbstractOneTreeTM {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(AotFixedClientsNoRootTreeManager.class);
+			.getLogger(LexicalFixedTM.class);
 
 	private KmsManager kmsManager;
 	private int maxViewersPerPipeline = 2;
@@ -43,18 +45,17 @@ public class AotFixedClientsNoRootTreeManager extends AbstractOneTreeManager {
 	private List<Plumber> leafPlumbers = new ArrayList<>();
 	private Map<String, WebRtc> sinks = new ConcurrentHashMap<>();
 
-	public AotFixedClientsNoRootTreeManager(KmsManager kmsManager) {
+	public LexicalFixedTM(KmsManager kmsManager) {
 		this(kmsManager, 5);
 	}
 
-	public AotFixedClientsNoRootTreeManager(KmsManager kmsManager,
-			int maxViewersPerPipeline) {
+	public LexicalFixedTM(KmsManager kmsManager, int maxViewersPerPipeline) {
 
 		this.maxViewersPerPipeline = maxViewersPerPipeline;
 		this.kmsManager = kmsManager;
 
 		if (kmsManager.getKmss().isEmpty()) {
-			log.error("AotOneTreeManager cannot be used without initial kmss");
+			log.error("LexicalFixedNoRootTM cannot be used without initial kmss");
 
 		} else if (kmsManager.getKmss().size() == 1) {
 

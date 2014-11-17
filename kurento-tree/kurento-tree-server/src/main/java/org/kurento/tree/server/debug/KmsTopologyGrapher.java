@@ -48,6 +48,8 @@ public class KmsTopologyGrapher {
 
 		GraphViz gv = generateTopologyGraphViz(manager.getKmss());
 
+		// System.out.println(gv.getDotSource());
+
 		String svg = new String(gv.getGraph(gv.getDotSource(), "svg"));
 		if (!xmlHeader) {
 			int titleIndex = svg.indexOf("<!-- Title:");
@@ -116,7 +118,8 @@ public class KmsTopologyGrapher {
 
 		Set<Plumber> connectedPlumbers = new HashSet<>();
 		for (Plumber plumber : plumbers) {
-			if (!connectedPlumbers.contains(plumber)) {
+			if (!connectedPlumbers.contains(plumber)
+					&& plumber.getLinkedTo() != null) {
 				gv.addln("   \"" + labels.get(plumber) + "\" -> \""
 						+ labels.get(plumber.getLinkedTo()) + "\";");
 				connectedPlumbers.add(plumber);

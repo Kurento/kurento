@@ -1,4 +1,6 @@
-package org.kurento.tree.server.kms;
+package org.kurento.tree.server.kms.loadmanager;
+
+import org.kurento.tree.server.kms.Kms;
 
 public interface LoadManager {
 

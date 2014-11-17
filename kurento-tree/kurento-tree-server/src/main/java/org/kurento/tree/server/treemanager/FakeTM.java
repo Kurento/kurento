@@ -4,7 +4,7 @@ import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.client.TreeException;
 import org.kurento.tree.server.kmsmanager.KmsManager;
 
-public class FakeTreeManager implements TreeManager {
+public class FakeTM implements TreeManager {
 
 	@Override
 	public String createTree() {

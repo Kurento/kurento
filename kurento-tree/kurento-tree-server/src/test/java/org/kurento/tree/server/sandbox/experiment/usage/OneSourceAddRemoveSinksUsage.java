@@ -1,4 +1,4 @@
-package org.kurento.tree.server.sandbox;
+package org.kurento.tree.server.sandbox.experiment.usage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 import org.kurento.tree.client.TreeException;
 import org.kurento.tree.server.treemanager.TreeManager;
 
-public class OneSourceAddRemoveSinks extends UsageSimulation {
+public class OneSourceAddRemoveSinksUsage extends UsageSimulation {
 
 	private static final String NUM_TREE_OPERATIONS_REACHED = "NumTreeOperations reached";
 	private int numTreeOperations;
@@ -15,7 +15,7 @@ public class OneSourceAddRemoveSinks extends UsageSimulation {
 
 	private int numCurrentTreeOperations;
 
-	public OneSourceAddRemoveSinks(int numTreeOperations, int numSinksToAdd,
+	public OneSourceAddRemoveSinksUsage(int numTreeOperations, int numSinksToAdd,
 			int numSinksToRemove) {
 		super();
 		this.numTreeOperations = numTreeOperations;
@@ -23,7 +23,7 @@ public class OneSourceAddRemoveSinks extends UsageSimulation {
 		this.numSinksToRemove = numSinksToRemove;
 	}
 
-	public OneSourceAddRemoveSinks() {
+	public OneSourceAddRemoveSinksUsage() {
 		this(100, 5, 2);
 	}
 

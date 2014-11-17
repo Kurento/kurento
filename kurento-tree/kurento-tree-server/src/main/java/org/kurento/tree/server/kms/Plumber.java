@@ -25,4 +25,16 @@ public class Plumber extends Element {
 	public Plumber getLinkedTo() {
 		return linkedTo;
 	}
+
+	@Override
+	public void release() {
+		this.releaseLink();
+		super.release();
+	}
+
+	private void releaseLink() {
+		if (linkedTo != null) {
+			linkedTo.linkedTo = null;
+		}
+	}
 }

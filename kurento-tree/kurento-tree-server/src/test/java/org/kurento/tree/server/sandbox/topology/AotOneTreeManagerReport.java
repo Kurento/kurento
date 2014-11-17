@@ -6,18 +6,18 @@ import java.util.List;
 
 import org.kurento.tree.client.TreeException;
 import org.kurento.tree.server.debug.TreeManagerReportCreator;
-import org.kurento.tree.server.kmsmanager.FakeFixedKmsManager;
+import org.kurento.tree.server.kmsmanager.FakeFixedNKmsManager;
 import org.kurento.tree.server.kmsmanager.KmsManager;
-import org.kurento.tree.server.treemanager.AotFixedTreeManager;
+import org.kurento.tree.server.treemanager.LessLoadedOneTreeFixedTM;
 import org.kurento.tree.server.treemanager.TreeManager;
 
 public class AotOneTreeManagerReport {
 
 	public static void main(String[] args) throws IOException {
 
-		KmsManager kmsManager = new FakeFixedKmsManager(4);
+		KmsManager kmsManager = new FakeFixedNKmsManager(4);
 
-		TreeManager aot = new AotFixedTreeManager(kmsManager);
+		TreeManager aot = new LessLoadedOneTreeFixedTM(kmsManager);
 
 		TreeManagerReportCreator reportCreator = new TreeManagerReportCreator(
 				kmsManager, "Report");

@@ -2,7 +2,7 @@ package org.kurento.tree.server.treemanager;
 
 import org.kurento.tree.client.TreeException;
 
-public abstract class AbstractOneTreeManager implements TreeManager {
+public abstract class AbstractOneTreeTM implements TreeManager {
 
 	private static final String DEFAULT_TREE_ID = "TreeId";
 
@@ -10,7 +10,7 @@ public abstract class AbstractOneTreeManager implements TreeManager {
 
 	protected boolean createdTree = false;
 
-	public AbstractOneTreeManager() {
+	public AbstractOneTreeTM() {
 		// TODO Auto-generated constructor stub
 	}
 

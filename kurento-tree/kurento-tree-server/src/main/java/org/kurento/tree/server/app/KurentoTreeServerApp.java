@@ -13,9 +13,10 @@ import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
-import org.kurento.tree.server.kmsmanager.FixedNRealKmsManager;
 import org.kurento.tree.server.kmsmanager.KmsManager;
-import org.kurento.tree.server.treemanager.LessLoadedNElasticTreeManager;
+import org.kurento.tree.server.kmsmanager.RealElasticKmsManager;
+import org.kurento.tree.server.treemanager.LessLoadedElasticTM;
+import org.kurento.tree.server.treemanager.OneKmsTM;
 import org.kurento.tree.server.treemanager.TreeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,24 +50,44 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 	public static final String KMSS_URIS_DEFAULT = "[ \"ws://localhost:8888/kurento\" ]";
 
 	@Bean
-	public TreeManager treeManager() {
-
-		JsonArray kmsUris = getPropertyJson(KMSS_URIS_PROPERTY,
-				KMSS_URIS_DEFAULT, JsonArray.class);
-		List<String> kmsWsUris = JsonUtils.toStringList(kmsUris);
-
-		log.info("Configuring Kurento Tree Server to use kmss: " + kmsWsUris);
+	public KmsManager kmsManager() {
 
 		try {
-			KmsManager kmsManager = new FixedNRealKmsManager(kmsWsUris);
-			return new LessLoadedNElasticTreeManager(kmsManager);
+
+			JsonArray kmsUris = getPropertyJson(KMSS_URIS_PROPERTY,
+					KMSS_URIS_DEFAULT, JsonArray.class);
+			List<String> kmsWsUris = JsonUtils.toStringList(kmsUris);
+
+			log.info("Configuring Kurento Tree Server to use kmss: "
+					+ kmsWsUris);
+
+			return new RealElasticKmsManager(kmsWsUris);
+
 		} catch (IOException e) {
 			throw new KurentoException(e);
 		}
 	}
 
+	@Bean
+	public TreeManager treeManager() {
+
+		KmsManager kmsManager = kmsManager();
+
+		if (kmsManager.getKmss().size() == 1) {
+			return new OneKmsTM(kmsManager);
+		} else {
+			return new LessLoadedElasticTM(kmsManager);
+		}
+	}
+
 	public KmsRegistrar registrar() {
-		return new DummyRegistrar();
+		KmsManager kmsManager = kmsManager();
+		if (kmsManager instanceof KmsRegistrar) {
+			return (KmsRegistrar) kmsManager;
+		} else {
+			log.warn("Kurento Tree server is using a DummyRegistrar. New KMSs will be ignored");
+			return new DummyRegistrar();
+		}
 	}
 
 	@Override

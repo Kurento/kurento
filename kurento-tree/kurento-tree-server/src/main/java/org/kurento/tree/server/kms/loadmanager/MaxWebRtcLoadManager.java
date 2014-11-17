@@ -1,4 +1,7 @@
-package org.kurento.tree.server.kms;
+package org.kurento.tree.server.kms.loadmanager;
+
+import org.kurento.tree.server.kms.Kms;
+import org.kurento.tree.server.kms.Pipeline;
 
 public class MaxWebRtcLoadManager implements LoadManager {
 

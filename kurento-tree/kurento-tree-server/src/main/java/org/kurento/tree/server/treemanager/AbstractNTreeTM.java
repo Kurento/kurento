@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.kurento.tree.client.TreeEndpoint;
 import org.kurento.tree.client.TreeException;
 
-public abstract class AbstractNTreeManager implements TreeManager {
+public abstract class AbstractNTreeTM implements TreeManager {
 
 	public abstract class TreeInfo {
 
@@ -47,7 +47,7 @@ public abstract class AbstractNTreeManager implements TreeManager {
 
 	private ConcurrentHashMap<String, TreeInfo> trees = new ConcurrentHashMap<>();
 
-	public AbstractNTreeManager() {
+	public AbstractNTreeTM() {
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public abstract class AbstractNTreeManager implements TreeManager {
 	protected abstract TreeInfo createTreeInfo(String treeId);
 
 	@Override
-	public void createTree(String treeId) throws TreeException {
+	public synchronized void createTree(String treeId) throws TreeException {
 
 		TreeInfo prevTreeInfo = trees.putIfAbsent(treeId, DUMMY_TREE_INFO);
 		if (prevTreeInfo != null) {

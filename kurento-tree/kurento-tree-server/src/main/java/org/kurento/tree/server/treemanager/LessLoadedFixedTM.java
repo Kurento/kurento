@@ -21,17 +21,18 @@ import org.slf4j.LoggerFactory;
 /**
  * This TreeManager has the following characteristics:
  * <ul>
- * <li>Creates WebRtcEndpoint for sinks (viewers) only in non-source kmss</li>
+ * <li>It allows N trees</li>
+ * <li>Creates WebRtcEndpoint for sinks (viewers) only in non-source KMSs</li>
  * <li>Fills less loaded node.</li>
  * <li>It doesn't consider new kmss after start.</li>
  * </ul>
  *
  * @author micael.gallego@gmail.com
  */
-public class LessLoadedNElasticTreeManager extends AbstractNTreeManager {
+public class LessLoadedFixedTM extends AbstractNTreeTM {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(LessLoadedNElasticTreeManager.class);
+			.getLogger(LessLoadedFixedTM.class);
 
 	public class LessLoadedTreeInfo extends TreeInfo {
 
@@ -106,10 +107,6 @@ public class LessLoadedNElasticTreeManager extends AbstractNTreeManager {
 				removeTreeSource();
 			}
 
-			if (sourcePipeline == null) {
-				System.out.println("WTF!!!!!!");
-				return "XXXX";
-			}
 			source = sourcePipeline.createWebRtc();
 
 			if (!oneKms) {
@@ -180,7 +177,7 @@ public class LessLoadedNElasticTreeManager extends AbstractNTreeManager {
 
 	private KmsManager kmsManager;
 
-	public LessLoadedNElasticTreeManager(KmsManager kmsManager) {
+	public LessLoadedFixedTM(KmsManager kmsManager) {
 		this.kmsManager = kmsManager;
 	}
 

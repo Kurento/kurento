@@ -3,6 +3,9 @@ package org.kurento.tree.server.kms;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kurento.tree.server.kms.loadmanager.LoadManager;
+import org.kurento.tree.server.kms.loadmanager.MaxWebRtcLoadManager;
+
 public class Kms extends KurentoObj {
 
 	protected List<Pipeline> pipelines = new ArrayList<>();
@@ -40,6 +43,10 @@ public class Kms extends KurentoObj {
 
 	public boolean allowMoreElements() {
 		return loadManager.allowMoreElements(this);
+	}
+
+	void removePipeline(Pipeline pipeline) {
+		this.pipelines.remove(pipeline);
 	}
 
 }

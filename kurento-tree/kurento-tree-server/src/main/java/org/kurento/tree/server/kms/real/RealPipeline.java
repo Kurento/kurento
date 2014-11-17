@@ -26,4 +26,10 @@ public class RealPipeline extends Pipeline {
 		return new RealPlumber(this);
 	}
 
+	@Override
+	public void release() {
+		super.release();
+		mediaPipeline.release();
+	}
+
 }

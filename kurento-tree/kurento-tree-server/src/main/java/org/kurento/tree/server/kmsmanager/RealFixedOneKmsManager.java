@@ -8,11 +8,11 @@ import org.kurento.client.KurentoClient;
 import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.real.RealKms;
 
-public class FixedOneRealKmsManager extends KmsManager {
+public class RealFixedOneKmsManager extends KmsManager {
 
 	public List<Kms> kmss = new ArrayList<>();
 
-	public FixedOneRealKmsManager(String kmsWsUri, int numKmss)
+	public RealFixedOneKmsManager(String kmsWsUri, int numKmss)
 			throws IOException {
 		for (int i = 0; i < numKmss; i++) {
 			KurentoClient client = KurentoClient.create(kmsWsUri);

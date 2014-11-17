@@ -5,27 +5,27 @@ import org.kurento.tree.server.kmsmanager.FakeFixedNKmsManager;
 import org.kurento.tree.server.kmsmanager.KmsManager;
 import org.kurento.tree.server.sandbox.experiment.framework.Experiment;
 import org.kurento.tree.server.sandbox.experiment.framework.TreeManagerCreator;
-import org.kurento.tree.server.sandbox.experiment.usage.OneSourceAddRemoveSinksUsage;
-import org.kurento.tree.server.treemanager.LessLoadedOneTreeFixedTM;
+import org.kurento.tree.server.sandbox.experiment.usage.NSourcesAddRemoveSinksRandomUsage;
+import org.kurento.tree.server.treemanager.OneKmsTM;
 import org.kurento.tree.server.treemanager.TreeManager;
 
-public class Experiment1 extends Experiment {
+public class Experiment0 extends Experiment {
 
 	public void configureExperiment() {
 
-		setKmsManager(new FakeFixedNKmsManager(4, new MaxWebRtcLoadManager(5)));
+		setKmsManager(new FakeFixedNKmsManager(1, new MaxWebRtcLoadManager(15)));
 
-		addUsageSimulation(new OneSourceAddRemoveSinksUsage());
+		addUsageSimulation(new NSourcesAddRemoveSinksRandomUsage());
 
 		addTreeManagerCreator(new TreeManagerCreator() {
 			@Override
 			public TreeManager createTreeManager(KmsManager kmsManager) {
-				return new LessLoadedOneTreeFixedTM(kmsManager);
+				return new OneKmsTM(kmsManager);
 			}
 		});
 	}
 
 	public static void main(String[] args) {
-		new Experiment1().run();
+		new Experiment0().run();
 	}
 }
