@@ -6,3 +6,16 @@ obj-x86_64-linux-gnu
 CMakeLists.txt.user
 kms-elements.json
 manifest.json
+debian/files
+debian/kms-elements-dbg.debhelper.log
+debian/kms-elements-dbg.substvars
+debian/kms-elements-dbg/
+debian/kms-elements-dev.debhelper.log
+debian/kms-elements-dev.substvars
+debian/kms-elements-dev/
+debian/kms-elements.debhelper.log
+debian/kms-elements.postinst.debhelper
+debian/kms-elements.postrm.debhelper
+debian/kms-elements.substvars
+debian/kms-elements/
+debian/tmp/
