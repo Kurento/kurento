@@ -184,7 +184,7 @@ public:
     vec.clear();
     vec.reserve (vec.size() + JsonValue.size() );
 
-    for (int i = 0; i < JsonValue.size(); ++i) {
+    for (unsigned int i = 0; i < JsonValue.size(); ++i) {
       TValue val;
       Serialize (i, val);
       vec.push_back (val);
