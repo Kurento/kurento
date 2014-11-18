@@ -115,7 +115,7 @@ module.exports = function (grunt) {
         // Task-specific options go here.
       },
       all: {
-        'pre-commit': 'clean'
+        'pre-commit': 'jsbeautifier:git-pre-commit'
           // Hook definitions go there
       }
     },
