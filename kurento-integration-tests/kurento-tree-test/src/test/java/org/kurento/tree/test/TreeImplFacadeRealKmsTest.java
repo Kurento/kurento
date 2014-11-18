@@ -12,15 +12,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.client.KurentoClient;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.commons.testing.KurentoTreeTests;
+import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.server.kms.Element;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.WebRtc;
 import org.kurento.tree.server.kms.real.RealKms;
 
-@Category(KurentoTreeTests.class)
-public class RealKmsTest {
+@Category(SystemFunctionalTests.class)
+public class TreeImplFacadeRealKmsTest {
 
 	@Test
 	public void basicTreeTest() throws IOException {

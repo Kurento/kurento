@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.commons.testing.KurentoTreeTests;
+import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.SdpOfferProcessor;
@@ -28,11 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
-@Category(KurentoTreeTests.class)
-public class KurentoTreeBasicTest {
+@Category(SystemFunctionalTests.class)
+public class TreeDistributionConnectSourceToSinksTest {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(KurentoTreeBasicTest.class);
+			.getLogger(TreeDistributionConnectSourceToSinksTest.class);
 
 	private static final int NUM_VIEWERS = 4;
 

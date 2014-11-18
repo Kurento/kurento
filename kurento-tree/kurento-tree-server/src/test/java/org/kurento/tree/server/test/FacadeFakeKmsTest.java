@@ -13,7 +13,7 @@ import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.WebRtc;
 
-public class KmsFacadeTest {
+public class FacadeFakeKmsTest {
 
 	@Test
 	public void basicTreeTest() {

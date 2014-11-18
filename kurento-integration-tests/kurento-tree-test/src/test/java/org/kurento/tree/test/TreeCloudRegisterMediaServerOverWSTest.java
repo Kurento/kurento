@@ -9,7 +9,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.KurentoTreeTests;
+import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.server.app.KmsRegistrar;
@@ -20,8 +20,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import com.google.gson.JsonObject;
 
-@Category(KurentoTreeTests.class)
-public class RegistrarTest {
+@Category(SystemFunctionalTests.class)
+public class TreeCloudRegisterMediaServerOverWSTest {
 
 	@EnableAutoConfiguration
 	static class TestConfiguration extends KurentoTreeServerApp {

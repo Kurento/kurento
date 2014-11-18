@@ -20,7 +20,7 @@ import org.kurento.tree.client.TreeException;
 import org.kurento.tree.server.app.ClientsJsonRpcHandler;
 import org.kurento.tree.server.treemanager.TreeManager;
 
-public class ProtocolTest {
+public class TreeProtocolTest {
 
 	private TreeManager treeMgr;
 	private KurentoTreeClient client;

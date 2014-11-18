@@ -13,7 +13,7 @@ import org.kurento.jsonrpc.JsonUtils;
 
 import com.google.gson.JsonArray;
 
-public class ConfigFileLoaderTest {
+public class TreeApiConfigFileLoaderTest {
 
 	@Test
 	public void basicConfigFile() {
