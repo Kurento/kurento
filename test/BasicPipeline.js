@@ -158,28 +158,35 @@ QUnit.asyncTest('Transactional plain API', function () {
 
   var pipeline = self.pipeline;
 
-  pipeline.beginTransaction();
-  var player = pipeline.create('PlayerEndpoint', {
+  var tx = pipeline.beginTransaction();
+  var player = pipeline.create(tx, 'PlayerEndpoint', {
     uri: URL_SMALL
   });
-  var httpGet = pipeline.create('HttpGetEndpoint');
+  var httpGet = pipeline.create(tx, 'HttpGetEndpoint');
 
-  player.connect(httpGet);
-  pipeline.endTransaction(function (error) {
-    QUnit.equal(error, undefined, 'transaction ended');
+  player.connect(tx, httpGet);
+  tx.commit(function (error)
+    //  pipeline.beginTransaction();
+    //    var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+    //    var httpGet = pipeline.create('HttpGetEndpoint');
+    //
+    //    player.connect(httpGet);
+    //  pipeline.endTransaction(function(error)
+    {
+      QUnit.equal(error, undefined, 'transaction ended');
 
-    if (error) return onerror(error);
-
-    httpGet.getUrl(function (error, url) {
       if (error) return onerror(error);
 
-      player.release();
+      httpGet.getUrl(function (error, url) {
+        if (error) return onerror(error);
 
-      QUnit.notEqual(url, undefined, 'URL: ' + url);
+        player.release();
 
-      QUnit.start();
+        QUnit.notEqual(url, undefined, 'URL: ' + url);
+
+        QUnit.start();
+      });
     });
-  });
 });
 
 /**
