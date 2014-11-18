@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.PropertiesManager;
@@ -24,6 +26,7 @@ import org.kurento.tree.client.TreeException;
 import org.kurento.tree.server.app.KurentoTreeServerApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @Category(KurentoTreeTests.class)
 public class KurentoTreeBasicTest {
@@ -61,14 +64,38 @@ public class KurentoTreeBasicTest {
 		}
 	}
 
+	private ConfigurableApplicationContext treeServer;
+
+	@Before
+	public void startServices() {
+
+		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
+
+		String kmsUri = PropertiesManager.getProperty(
+				KurentoServicesTestHelper.KMS_WS_URI_PROP,
+				KurentoServicesTestHelper.KMS_WS_URI_DEFAULT);
+
+		System.setProperty(KurentoTreeServerApp.KMSS_URIS_PROPERTY, "[\""
+				+ kmsUri + "\",\"" + kmsUri + "\"]");
+
+		System.setProperty(KurentoTreeServerApp.WEBSOCKET_PORT_PROPERTY,
+				Integer.toString(KurentoServicesTestHelper.getAppHttpPort()));
+
+		treeServer = KurentoTreeServerApp.start();
+	}
+
+	@After
+	public void teardownServices() {
+
+		treeServer.close();
+
+		KurentoServicesTestHelper.teardownServices();
+	}
+
 	@Test
 	public void test() throws Exception {
 
 		int port = KurentoServicesTestHelper.getAppHttpPort();
-
-		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
-
-		startKurentoTreeServer();
 
 		final KurentoTreeClient kurentoTree = new KurentoTreeClient(
 				"ws://localhost:" + port + "/kurento-tree");
@@ -131,7 +158,6 @@ public class KurentoTreeBasicTest {
 
 		kurentoTree.releaseTree(treeId);
 
-		KurentoServicesTestHelper.teardownServices();
 	}
 
 	private void startKurentoTreeServer() {
@@ -146,7 +172,8 @@ public class KurentoTreeBasicTest {
 		System.setProperty(KurentoTreeServerApp.WEBSOCKET_PORT_PROPERTY,
 				Integer.toString(KurentoServicesTestHelper.getAppHttpPort()));
 
-		KurentoTreeServerApp.start();
+		ConfigurableApplicationContext treeServer = KurentoTreeServerApp
+				.start();
 	}
 
 	private BrowserClient createMaster(final KurentoTreeClient kurentoTree,
