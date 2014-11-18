@@ -74,46 +74,54 @@ public class KmsTopologyGrapher {
 		int numKms = 0;
 		for (Kms kms : kmss) {
 
-			gv.addln("   subgraph cluster_kms_" + numKms + " {");
-			gv.addln("      label = \"" + labels.get(kms) + "\";");
+			if (kms.getPipelines().isEmpty()) {
+				gv.addln("         \""
+						+ labels.get(kms)
+						+ "\" [shape=rectangle, fillcolor=white, style=filled];");
+			} else {
 
-			int numPipeline = 0;
-			for (Pipeline pipeline : kms.getPipelines()) {
-				gv.addln("      subgraph cluster_pipeline_" + numKms + "_"
-						+ numPipeline + " {");
-				gv.addln("         label = \"" + labels.get(pipeline) + "\";");
-				gv.addln("         style=filled;");
-				gv.addln("         color=lightblue;");
+				gv.addln("   subgraph cluster_kms_" + numKms + " {");
+				gv.addln("      label = \"" + labels.get(kms) + "\";");
 
-				for (WebRtc webRtc : pipeline.getWebRtcs()) {
-					gv.addln("         \"" + labels.get(webRtc) + "\"");
-				}
+				int numPipeline = 0;
+				for (Pipeline pipeline : kms.getPipelines()) {
+					gv.addln("      subgraph cluster_pipeline_" + numKms + "_"
+							+ numPipeline + " {");
+					gv.addln("         label = \"" + labels.get(pipeline)
+							+ "\";");
+					gv.addln("         style=filled;");
+					gv.addln("         color=lightblue;");
 
-				for (Plumber plumber : pipeline.getPlumbers()) {
-					gv.addln("         \"" + labels.get(plumber) + "\"");
-				}
-
-				for (WebRtc webRtc : pipeline.getWebRtcs()) {
-					for (Element sink : webRtc.getSinks()) {
-						gv.addln("         \"" + labels.get(webRtc)
-								+ "\" -> \"" + labels.get(sink) + "\"");
+					for (WebRtc webRtc : pipeline.getWebRtcs()) {
+						gv.addln("         \"" + labels.get(webRtc) + "\"");
 					}
-				}
 
-				plumbers.addAll(pipeline.getPlumbers());
-				for (Plumber plumber : pipeline.getPlumbers()) {
-					gv.addln("         \"" + labels.get(plumber) + "\"");
-					for (Element sink : plumber.getSinks()) {
-						gv.addln("         \"" + labels.get(plumber)
-								+ "\" -> \"" + labels.get(sink) + "\"");
+					for (Plumber plumber : pipeline.getPlumbers()) {
+						gv.addln("         \"" + labels.get(plumber) + "\"");
 					}
-				}
 
-				gv.addln("      }");
-				numPipeline++;
+					for (WebRtc webRtc : pipeline.getWebRtcs()) {
+						for (Element sink : webRtc.getSinks()) {
+							gv.addln("         \"" + labels.get(webRtc)
+									+ "\" -> \"" + labels.get(sink) + "\"");
+						}
+					}
+
+					plumbers.addAll(pipeline.getPlumbers());
+					for (Plumber plumber : pipeline.getPlumbers()) {
+						gv.addln("         \"" + labels.get(plumber) + "\"");
+						for (Element sink : plumber.getSinks()) {
+							gv.addln("         \"" + labels.get(plumber)
+									+ "\" -> \"" + labels.get(sink) + "\"");
+						}
+					}
+
+					gv.addln("      }");
+					numPipeline++;
+				}
+				gv.addln("   }");
+				numKms++;
 			}
-			gv.addln("   }");
-			numKms++;
 		}
 
 		Set<Plumber> connectedPlumbers = new HashSet<>();

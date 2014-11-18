@@ -12,18 +12,19 @@ public class FakeElasticKmsManager extends KmsManager {
 	public List<Kms> kmss = new ArrayList<>();
 	private LoadManager loadManager;
 	private int maxKmss;
-	private int minKmss;
+	private boolean ignoreFirstKmsInLoadMeasure;
 
 	public FakeElasticKmsManager(double meanLoadToGrow, int minKmss, int maxKmss) {
-		this(meanLoadToGrow, minKmss, maxKmss, null);
+		this(meanLoadToGrow, minKmss, maxKmss, null, true);
 	}
 
 	public FakeElasticKmsManager(double meanLoadToGrow, int minKmss,
-			int maxKmss, LoadManager loadManager) {
+			int maxKmss, LoadManager loadManager,
+			boolean ignoreFirstKmsInLoadMeasure) {
 		this.meanLoadToGrow = meanLoadToGrow;
 		this.loadManager = loadManager;
-		this.minKmss = minKmss;
 		this.maxKmss = maxKmss;
+		this.ignoreFirstKmsInLoadMeasure = ignoreFirstKmsInLoadMeasure;
 		for (int i = 0; i < minKmss; i++) {
 			kmss.add(newKms());
 		}
@@ -46,10 +47,21 @@ public class FakeElasticKmsManager extends KmsManager {
 
 		if (kmss.size() < maxKmss) {
 			double totalLoad = 0;
+
+			int numKms = 0;
 			for (Kms kms : kmss) {
-				totalLoad += kms.getLoad();
+				if (!ignoreFirstKmsInLoadMeasure || numKms > 0) {
+					totalLoad += kms.getLoad();
+				}
+				numKms++;
 			}
-			if (totalLoad / this.kmss.size() > meanLoadToGrow) {
+
+			int kmssToMean = ignoreFirstKmsInLoadMeasure ? this.kmss.size() - 1
+					: this.kmss.size();
+
+			double meanLoad = totalLoad / kmssToMean;
+			System.out.println("Mean load: " + meanLoad);
+			if (meanLoad > meanLoadToGrow) {
 				this.kmss.add(newKms());
 			}
 		}

@@ -60,6 +60,8 @@ public abstract class Experiment {
 									+ treeManager.getClass().getName()
 									+ " and UsageSimulation: "
 									+ simulation.getClass().getName());
+					System.out.println(e.getClass().getName() + ":"
+							+ e.getMessage());
 				}
 			}
 		}

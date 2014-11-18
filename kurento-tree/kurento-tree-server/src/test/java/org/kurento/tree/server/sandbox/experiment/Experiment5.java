@@ -5,18 +5,18 @@ import org.kurento.tree.server.kmsmanager.FakeElasticKmsManager;
 import org.kurento.tree.server.kmsmanager.KmsManager;
 import org.kurento.tree.server.sandbox.experiment.framework.Experiment;
 import org.kurento.tree.server.sandbox.experiment.framework.TreeManagerCreator;
-import org.kurento.tree.server.sandbox.experiment.usage.NSourcesAddRemoveSinksRandomUsage;
+import org.kurento.tree.server.sandbox.experiment.usage.CyclicAddRemoveSinksUsage;
 import org.kurento.tree.server.treemanager.LessLoadedElasticTM;
 import org.kurento.tree.server.treemanager.TreeManager;
 
-public class Experiment4 extends Experiment {
+public class Experiment5 extends Experiment {
 
 	public void configureExperiment() {
 
-		setKmsManager(new FakeElasticKmsManager(0.9, 2, 5,
-				new MaxWebRtcLoadManager(4), true));
+		setKmsManager(new FakeElasticKmsManager(0.8, 2, 10,
+				new MaxWebRtcLoadManager(5), true));
 
-		addUsageSimulation(new NSourcesAddRemoveSinksRandomUsage(4, 0.8, 0));
+		addUsageSimulation(new CyclicAddRemoveSinksUsage(3, 5, 2, -1));
 
 		addTreeManagerCreator(new TreeManagerCreator() {
 			@Override
@@ -27,6 +27,6 @@ public class Experiment4 extends Experiment {
 	}
 
 	public static void main(String[] args) {
-		new Experiment4().run();
+		new Experiment5().run();
 	}
 }

@@ -75,6 +75,7 @@ public abstract class AbstractNTreeTM implements TreeManager {
 	@Override
 	public synchronized void releaseTree(String treeId) throws TreeException {
 		getTreeInfo(treeId).release();
+		trees.remove(treeId);
 	}
 
 	@Override
