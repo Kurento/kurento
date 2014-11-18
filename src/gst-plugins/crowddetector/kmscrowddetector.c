@@ -1293,6 +1293,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
 
       cvResetImageROI (crowddetector->priv->actual_image);
       cvResetImageROI (crowddetector->priv->previous_image);
+      cvResetImageROI (actual_motion);
     }
   }
 
