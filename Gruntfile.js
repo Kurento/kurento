@@ -144,6 +144,63 @@ module.exports = function(grunt)
         'pre-commit': 'clean'
         // Hook definitions go there
       }
+    },
+
+    jsbeautifier:
+    {
+      "default": {
+        src : ["lib/**/*.js"],
+        options :
+        {
+          js :
+          {
+            braceStyle: "collapse",
+            breakChainedMethods: false,
+            e4x: false,
+            evalCode: false,
+            indentChar: " ",
+            indentLevel: 0,
+            indentSize: 2,
+            indentWithTabs: false,
+            jslintHappy: true,
+            keepArrayIndentation: false,
+            keepFunctionIndentation: false,
+            maxPreserveNewlines: 2,
+            preserveNewlines: true,
+            spaceBeforeConditional: true,
+            spaceInParen: false,
+            unescapeStrings: false,
+            wrapLineLength: 80
+          }
+        }
+      },
+      "git-pre-commit": {
+        src : ["lib/**/*.js"],
+        options :
+        {
+          mode: "VERIFY_ONLY",
+          js :
+          {
+            braceStyle: "collapse",
+            breakChainedMethods: false,
+            e4x: false,
+            evalCode: false,
+            indentChar: " ",
+            indentLevel: 0,
+            indentSize: 2,
+            indentWithTabs: false,
+            jslintHappy: true,
+            keepArrayIndentation: false,
+            keepFunctionIndentation: false,
+            maxPreserveNewlines: 2,
+            preserveNewlines: true,
+            spaceBeforeConditional: true,
+            spaceInParen: false,
+            unescapeStrings: false,
+            wrapLineLength: 80
+          }
+        }
+      }
     }
   });
 
@@ -154,6 +211,7 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-githooks');
+  grunt.loadNpmTasks('grunt-jsbeautifier');
 
   // Alias tasks
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
