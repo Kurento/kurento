@@ -132,6 +132,18 @@ module.exports = function(grunt)
           'node_modules/.bin/bower cache clean'
         ].join('&&')
       }
+    },
+
+    // githooks configuration
+    githooks:
+    {
+      options: {
+        // Task-specific options go here.
+      },
+      all: {
+        'pre-commit': 'clean'
+        // Hook definitions go there
+      }
     }
   });
 
@@ -141,6 +153,7 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-githooks');
 
   // Alias tasks
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
