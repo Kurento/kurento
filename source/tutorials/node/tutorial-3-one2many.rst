@@ -18,9 +18,8 @@ an Ubuntu machine, you can install both as follows:
 
 .. sourcecode:: sh
 
-   sudo add-apt-repository ppa:chris-lea/node.js
-   sudo apt-get update
-   sudo apt-get install nodejs
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
    sudo npm install -g bower
 
 To launch the application you need to clone the GitHub project where this demo
