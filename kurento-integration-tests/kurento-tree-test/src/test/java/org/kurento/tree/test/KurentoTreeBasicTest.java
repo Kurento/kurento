@@ -64,9 +64,7 @@ public class KurentoTreeBasicTest {
 	@Test
 	public void test() throws Exception {
 
-		String port = System.getProperty("http.port", "8890");
-
-		System.setProperty(KurentoServicesTestHelper.APP_HTTP_PORT_PROP, port);
+		int port = KurentoServicesTestHelper.getAppHttpPort();
 
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
@@ -138,15 +136,15 @@ public class KurentoTreeBasicTest {
 
 	private void startKurentoTreeServer() {
 
-		System.setProperty("server.port",
-				System.getProperty("http.port", "8890"));
-
 		String kmsUri = PropertiesManager.getProperty(
 				KurentoServicesTestHelper.KMS_WS_URI_PROP,
 				KurentoServicesTestHelper.KMS_WS_URI_DEFAULT);
 
 		System.setProperty(KurentoTreeServerApp.KMSS_URIS_PROPERTY, "[\""
 				+ kmsUri + "\",\"" + kmsUri + "\"]");
+
+		System.setProperty(KurentoTreeServerApp.WEBSOCKET_PORT_PROPERTY,
+				Integer.toString(KurentoServicesTestHelper.getAppHttpPort()));
 
 		KurentoTreeServerApp.start();
 	}

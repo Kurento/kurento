@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.KurentoTreeTests;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.server.app.KmsRegistrar;
 import org.kurento.tree.server.app.KurentoTreeServerApp;
 import org.springframework.boot.SpringApplication;
@@ -41,7 +42,7 @@ public class RegistrarTest {
 	@Test
 	public void registrarTest() throws IOException, InterruptedException {
 
-		String port = System.getProperty("http.port", "9999");
+		int port = KurentoServicesTestHelper.getAppHttpPort();
 
 		System.setProperty(KurentoTreeServerApp.KMSS_URIS_PROPERTY, "[]");
 
