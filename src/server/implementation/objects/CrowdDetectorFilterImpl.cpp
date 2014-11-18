@@ -199,7 +199,7 @@ CrowdDetectorFilterImpl::CrowdDetectorFilterImpl (const
       }
 
       try {
-        CrowdDetectorOccupancy event (occupancy_level, occupancy_percentage,
+        CrowdDetectorOccupancy event (occupancy_percentage, occupancy_level,
                                       roiIDStr, shared_from_this(),
                                       CrowdDetectorOccupancy::getName() );
         signalCrowdDetectorOccupancy (event);
