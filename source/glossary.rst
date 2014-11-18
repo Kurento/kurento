@@ -196,7 +196,7 @@ or :term:`kurento`.
         media transport, encoding/decoding, and processing, is called
         :index:`Media Plane <single: Plane; Media>`.
 
-        .. seealso:: :term:`Signalling Plane`
+        .. seealso:: :term:`Signaling Plane`
 
     MP4
         MPEG-4 Part 14 or MP4 is a digital multimedia format most commonly
@@ -380,11 +380,11 @@ or :term:`kurento`.
        `Semantic Versioning <http://semver.org/>`_ is a formal convention for specifying
         compatibility using a three-part version number: major version; minor version; and patch.
 
-    Signalling Plane
+    Signaling Plane
         It is the layer of a media system in charge of the information exchanges
         concerning the establishment and control of the different media circuits
         and the management of the network, in contrast to the transfer of media,
-        done by the :index:`Signalling Plane <single: Plane; Signalling>`.
+        done by the :index:`Signaling Plane <single: Plane; Signaling>`.
 
         Functions such as media negotiation, QoS parametrization, call establishment,
         user registration, user presence, etc. as managed in this plane.
@@ -397,7 +397,7 @@ or :term:`kurento`.
 
     SIP
         :wikipedia:`Session Initiation Protocol <en,Session_Initiation_Protocol>`
-        is a `signalling plane`:term: protocol widely used for controlling
+        is a `signaling plane`:term: protocol widely used for controlling
         multimedia communication sessions such as voice and video calls
         over Internet Protocol (IP) networks. SIP works in conjunction with
         several other application layer protocols:

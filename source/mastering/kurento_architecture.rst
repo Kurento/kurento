@@ -8,12 +8,12 @@ Kurento, as most multimedia communication technologies out there, is built using
 two layers (called *planes*) to abstract key functions in all interactive
 communication systems:
 
-    **Signalling Plane**
+    **Signaling Plane**
         The parts of the system in charge of the management of
         communications, that is, the modules that provides functions for media
         negotiation, QoS parametrization, call establishment, user
         registration, user presence, etc. are conceived as forming part of the
-        :term:`Signalling Plane`.
+        :term:`Signaling Plane`.
 
     **Media Plane**
         Functionalities such as media transport, media encoding/decoding
@@ -31,19 +31,19 @@ architecture of kurento.
    :alt:    Kurento Architecture
 
    **Kurento Architecture**. *Kurento architecture follows the traditional separation
-   between signalling and media planes.*
+   between signaling and media planes.*
 
 The **right side** of the picture shows the application, which is in charge of
-the signalling plane and contains the business logic and connectors of the
+the signaling plane and contains the business logic and connectors of the
 particular multimedia application being deployed. It can be build with any
 programming technology like Java, Node.js, PHP, Ruby, .NET, etc. The
 application can use mature technologies such as `HTTP`:term: and `SIP`:term:
 Servlets, Web Services, database connectors, messaging services, etc. Thanks to
-this, this plane provides access to the multimedia signalling protocols
-commonly used by end-clients such as `SIP`:term:, RESTful and raw HTTP based
-formats, SOAP, RMI, CORBA or JMS. These signalling protocols are used by client
-side of applications to command the creation of media sessions and to negotiate
-their desired characteristics on their behalf. Hence, this is the part of the
+this, this plane provides access to the multimedia signaling protocols commonly
+used by end-clients such as `SIP`:term:, RESTful and raw HTTP based formats,
+SOAP, RMI, CORBA or JMS. These signaling protocols are used by client side of
+applications to command the creation of media sessions and to negotiate their
+desired characteristics on their behalf. Hence, this is the part of the
 architecture, which is in contact with application developers and, for this
 reason, it needs to be designed pursuing simplicity and flexibility.
 
@@ -57,7 +57,7 @@ Kurento Media Server must be optimized for efficiency.
 Kurento APIs and interfaces
 ---------------------------
 
-The capabilities of the media plane (Kurento Media Server) and signalling plane
+The capabilities of the media plane (Kurento Media Server) and signaling plane
 (Application) are exposed through a number of APIs, which provide increasing
 abstraction levels.
 
@@ -84,7 +84,7 @@ following way:
    to download the corresponding jar into the application developer CLASSPATH.
    It is important to remark that the Kurento Java Client is a media-plane
    control API. In other words, its objective is to expose the capability of
-   managing media objects, but it does not provide any signalling plane
+   managing media objects, but it does not provide any signaling plane
    capabilities.
 
 -  **Kurento JavaScript Client**: Is a JavaScript layer which consumes the
@@ -209,15 +209,15 @@ reduced to the following conceptual scheme:
    :alt:    Main interactions between architectural modules
 
    **Main interactions between architectural modules**.
-   *Main interactions occur in two fases: negotiation and media exchange.
+   *Main interactions occur in two phases: negotiation and media exchange.
    Remark that the color of the different arrows and boxes is aligned with
    the architectural figures presented above, so that, for example, orange
    arrows show exchanges belonging to the signaling plane, blue arrows show
    exchanges belonging to the Kurento Protocol, red boxes are associated to the
    Kurento Media Server and green boxes with the application.*
 
-1. Media negotiation phase (signalling)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Media negotiation phase (signaling)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As it can be observed, at a first stage, a client (a browser in a computer, a
 mobile application, etc.) issues a message to the application requesting some
@@ -241,7 +241,7 @@ reached.
 During the above mentioned steps no media data is really exchanged. All the
 interactions have the objective of negotiating the whats, hows, wheres and
 whens of the media exchange. For this reason, we call it the negotiation phase.
-Clearly, during this phase only signalling protocols are involved.
+Clearly, during this phase only signaling protocols are involved.
 
 2. Media exchange phase
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -330,8 +330,8 @@ Kurento Design Principles
 
 Kurento is designed based on the following main principles:
 
-    **Separate Media and Signalling Planes**
-        :term:`Signalling <signalling plane>` and
+    **Separate Media and Signaling Planes**
+        :term:`Signaling <signaling plane>` and
         :term:`Media <media plane>` are two separate planes and Kurento is
         designed so that applications can handle separately those facets of
         multimedia processing.
@@ -392,7 +392,3 @@ Kurento is designed based on the following main principles:
         the convergence among different devices having different requirements
         in terms of screen size, power consumption, transmission rate, etc.
         possible.
-
-
-
-
