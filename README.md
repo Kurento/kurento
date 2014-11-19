@@ -40,7 +40,7 @@ An HTTP server is required for these demos. A very simple way of doing this is
 by means of a NodeJS server. This server can be installed as follows:
 
 ```bash
-sudo npm install http-server -g
+sudo npm install -g http-server
 ```
 
 Then, in each demo folder execute this command:
@@ -59,6 +59,21 @@ support must be enabled. In Chrome, this can done in this configuration page:
 chrome://flags/#enable-javascript-harmony
 
 After enabling this flag, you'll need to restart your browser.
+
+Optional parameters
+-------------------
+
+The demos accept some optional GET parameters given on the URL, you only need to
+add them to the query string in the same way you would add them to the Node.js
+executable on your command line:
+
+```
+http://example.com/index.html?ws_url=ws://example.org/kurento
+```
+
+All the demos accept the *ws_url* parameter to set the WebSocket Kurento
+MediaServer endpoint, other parameters specific to each demo can be found at the
+top of their index.js files.
 
 
 Kurento
