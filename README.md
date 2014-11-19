@@ -23,9 +23,8 @@ instructions.
 Be sure to have installed [Node.js] in your system:
 
 ```bash
-sudo add-apt-repository ppa:chris-lea/node.js
-sudo apt-get update
-sudo apt-get install nodejs
+curl -sL https://deb.nodesource.com/setup | sudo bash -
+sudo apt-get install -y nodejs
 ```
 
 To install the library, it's recommended to do that from the [NPM repository] :
