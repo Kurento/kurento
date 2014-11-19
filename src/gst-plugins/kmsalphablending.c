@@ -503,12 +503,12 @@ kms_alpha_blending_port_data_destroy (gpointer data)
   gboolean input;
   gint id;
 
-  self = KMS_ALPHA_BLENDING (kms_generic_structure_get (port_data, MIXER));
-
 #if AUDIO
   GstPad *audiosink;
   gchar *padname;
 #endif
+
+  self = KMS_ALPHA_BLENDING (kms_generic_structure_get (port_data, MIXER));
 
   KMS_ALPHA_BLENDING_LOCK (self);
 
