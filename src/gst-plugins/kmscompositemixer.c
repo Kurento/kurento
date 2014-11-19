@@ -17,7 +17,7 @@
 #endif
 
 #include "kmscompositemixer.h"
-#include "kmsgenericstructure.h"
+#include <commons/kmsgenericstructure.h>
 #include <commons/kmsagnosticcaps.h>
 #include <commons/kmshubport.h>
 #include <commons/kmsloop.h>
