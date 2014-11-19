@@ -17,9 +17,8 @@ Installation instructions
 Be sure to have installed [Node.js] in your system:
 
 ```bash
-sudo add-apt-repository ppa:chris-lea/node.js
-sudo apt-get update
-sudo apt-get install nodejs
+curl -sL https://deb.nodesource.com/setup | sudo bash -
+sudo apt-get install -y nodejs
 ```
 
 Also be sure to have installed [Bower] in your system:
