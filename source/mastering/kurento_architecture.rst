@@ -101,6 +101,30 @@ client), desktop applications (written using the Kurento Java Client),
 distibuted applications (writen using Kurento Protocol, etc.).
 
 
+Kurento Modules
+---------------
+
+Kurento has been designed as a pluggable framework. Kurento Media Server uses
+several modules by default, named ``kms-core``, ``kms-elements`` and
+``kms-filters``. In addition, there are others built-in modules to enhance the
+capabilities provided by the Kurento Media Server. These modules are called
+``kms-crowddetector``, ``kms-pointerdetector``, ``kms-chroma``, and
+``kms-platedetector``. Finally Kurento Media Server can be expanded with new
+custom modules.
+
+.. figure:: ../images/kurento-modules01.png
+   :width:  500px
+   :align:  center
+   :alt:    Kurento modules architecture
+
+   **Kurento modules architecture**.
+   *Kurento Media Server can be extended with built-it modules (crowddetector,
+   pointerdetector, chroma, platedetector) and also with other custom modules.*
+
+For further details please visit the :doc:`Kurento Modules <kurento_modules>`
+page.
+
+
 Creating applications with Kurento
 ----------------------------------
 
