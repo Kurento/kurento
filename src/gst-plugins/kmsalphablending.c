@@ -17,7 +17,7 @@
 #endif
 
 #include "kmsalphablending.h"
-#include "kmsgenericstructure.h"
+#include <commons/kmsgenericstructure.h>
 #include <commons/kmsagnosticcaps.h>
 #include <commons/kms-core-marshal.h>
 #include <commons/kmshubport.h>
