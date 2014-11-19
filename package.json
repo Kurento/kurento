@@ -55,6 +55,7 @@
     "grunt-shell": "^1.1.1",
     "grunt-githooks": "^0.3.1",
     "grunt-jsbeautifier": "^0.2.7",
+    "grunt-contrib-jshint": "^0.10.0",
     "minifyify": "^4.4.0",
     "qunit-cli": "KurentoForks/qunit-cli",
     "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",

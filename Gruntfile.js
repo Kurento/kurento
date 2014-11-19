@@ -170,6 +170,20 @@ module.exports = function (grunt) {
           }
         }
       }
+    },
+
+    jshint: {
+      all: ['lib/**/*.js'],
+      options: {
+        "curly": true,
+        "indent": 2,
+        "unused": true,
+        "undef": true,
+        "camelcase": false,
+        "newcap": true,
+        "node": true,
+        "browser": true
+      }
     }
   });
 
@@ -181,6 +195,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-githooks');
   grunt.loadNpmTasks('grunt-jsbeautifier');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Alias tasks
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
