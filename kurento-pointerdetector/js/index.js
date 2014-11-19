@@ -157,7 +157,7 @@ window.addEventListener("load", function(event)
 	});
 });
 
-function calibrate(sessionId) {
+function calibrate() {
 	if (filter != null) {
 		filter.trackColorFromCalibrationRegion (function(error) {
 			if (error) {
