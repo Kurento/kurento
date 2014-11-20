@@ -1,15 +1,14 @@
 Kurento Tree Server
 ======================
 
-The Kurento Tree Server (KCS) is a Kurento Server component depicted to allow
-clients to connect to a distributed Kurento Media Server (KMS) through RabbitMQ
-message broker.
+The Kurento Tree Server (KTS) is a Kurento Server component that provides a
+service for creating broadcasting trees with WebRTC.
 
 Installation instructions
 -------------------------
 
-KCS is implemented with Java 7 technology and Java 7 is the only
-prerequisite. The KCS is provided as a .zip containing a Java executable archive
+KTS is implemented with Java 7 technology and Java 7 is the only
+prerequisite. The KTS is provided as a .zip containing a Java executable archive
 (.jar).
 
 Assuming that the command 'java' points to a Java 7 JRE executable, KCS
@@ -35,7 +34,7 @@ folder in the place you are executing java command.
 }
 
 Also, the configuration keys can be overridden with Java system properties. For
-example, if you want to override 'controlServer.net.websocket.port', you have to execute
+example, if you want to override 'ws.port', you have to execute
 the following command:
 
     java -Dws.port=8888 -jar kurento-tree-server.jar
@@ -47,11 +46,11 @@ The meaning of general configuration properties are:
 
 **WebSocket interface**
 
-* **ws.port:** The http/websocket port of KCS. This port
+* **ws.port:** The http/websocket port of KTS. This port
   will be used for clients to connect to Kurento Server. If not specified, the
   value 8888 will be used.
-* **ws.path:** The websocket relative path of KCS. If not
-  specified, the relative path will be 'kurento'.
+* **ws.path:** The websocket relative path of KTS. If not
+  specified, the relative path will be 'kurento-tree'.
 * **kms.uris:** The list of URIs where the KMS are available
 
 

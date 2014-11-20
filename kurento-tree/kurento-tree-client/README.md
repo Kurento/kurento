@@ -5,8 +5,8 @@ Copyright © 2013 Kurento. Licensed under [LGPL License].
 kurento-tree
 ======================
 
-The kurento-tree project contains a service for creation WebRTC broadcasting
-trees. It exports an API based on WebSockets and RPC. kurento-tree is a
+The kurento-tree-client project contains the client for the kurento-tree-server,
+a service for creation WebRTC broadcasting trees. kurento-tree is a
 Nubomedia app.
 
 What is Kurento

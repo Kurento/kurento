@@ -2,11 +2,9 @@
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
-kurento-client-test
+kurento-tree-test
 ==========
-Tests for Kurento Java Client
-
-This project includes tests for the Kurento Java Client.
+Tests for Kurento Tree.
 
 What is Kurento
 ---------------

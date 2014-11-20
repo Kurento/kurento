@@ -209,6 +209,16 @@
         <artifactId>kurento-tree-client</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.kurento</groupId>
+        <artifactId>kurento-room-server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kurento</groupId>
+        <artifactId>kurento-room-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-utils-js</artifactId>

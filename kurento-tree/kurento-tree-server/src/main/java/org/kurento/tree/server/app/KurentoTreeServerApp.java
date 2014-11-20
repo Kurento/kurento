@@ -49,6 +49,8 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 	public static final String KMSS_URIS_PROPERTY = "kms.uris";
 	public static final String KMSS_URIS_DEFAULT = "[ \"ws://localhost:8888/kurento\" ]";
 
+	private static ConfigurableApplicationContext context;
+
 	@Bean
 	public KmsManager kmsManager() {
 
@@ -92,7 +94,8 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addHandler(clientsJsonRpcHandler(), "/kurento-tree");
+		registry.addHandler(clientsJsonRpcHandler(),
+				getProperty(WEBSOCKET_PATH_PROPERTY, WEBSOCKET_PATH_DEFAULT));
 		registry.addHandler(registrarJsonRpcHandler(), "/registrar");
 	}
 
@@ -129,6 +132,10 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 
 	public static void main(String[] args) throws Exception {
 		start();
+	}
+
+	public static void stop() {
+
 	}
 
 }
