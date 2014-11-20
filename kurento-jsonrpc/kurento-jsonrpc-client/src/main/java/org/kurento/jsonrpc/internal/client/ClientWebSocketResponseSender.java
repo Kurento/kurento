@@ -16,8 +16,7 @@ package org.kurento.jsonrpc.internal.client;
 
 import java.io.IOException;
 
-import javax.websocket.Session;
-
+import org.eclipse.jetty.websocket.api.Session;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.message.Message;
 import org.slf4j.Logger;
@@ -39,7 +38,7 @@ public final class ClientWebSocketResponseSender implements ResponseSender {
 		String jsonMessage = message.toString();
 		log.debug("<-Res {}", jsonMessage);
 		synchronized (wsSession) {
-			wsSession.getBasicRemote().sendText(jsonMessage);
+			wsSession.getRemote().sendString(jsonMessage);
 		}
 	}
 }

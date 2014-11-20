@@ -14,8 +14,6 @@
  */
 package org.kurento.jsonrpc.client;
 
-import static javax.websocket.CloseReason.CloseCodes.NORMAL_CLOSURE;
-
 import java.io.IOException;
 
 import org.kurento.jsonrpc.JsonRpcHandler;
@@ -191,8 +189,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 	@Override
 	public void close() throws IOException {
-		handlerManager
-				.afterConnectionClosed(session, NORMAL_CLOSURE.toString());
+		handlerManager.afterConnectionClosed(session, "Client close");
 	}
 
 	@Override

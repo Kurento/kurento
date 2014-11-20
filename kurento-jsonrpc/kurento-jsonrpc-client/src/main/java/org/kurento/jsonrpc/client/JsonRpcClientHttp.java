@@ -32,7 +32,6 @@ import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
@@ -46,13 +45,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
 	private HttpResponseSender rs;
 
-	private final HttpHeaders headers = new HttpHeaders();
-
 	public JsonRpcClientHttp(String url) {
-		this(url, new HttpHeaders());
-	}
-
-	public JsonRpcClientHttp(String url, HttpHeaders headers) {
 		this.url = url;
 		this.rs = new HttpResponseSender();
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
@@ -71,8 +64,6 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 						"Async client int local is unavailable");
 			}
 		};
-
-		this.headers.putAll(headers);
 	}
 
 	private void updateSession(Response<?> response) {

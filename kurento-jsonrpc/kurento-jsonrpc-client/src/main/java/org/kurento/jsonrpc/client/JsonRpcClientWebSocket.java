@@ -20,7 +20,6 @@ import static org.kurento.jsonrpc.JsonUtils.fromJsonResponse;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,18 +28,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.ClientEndpointConfig;
-import javax.websocket.CloseReason;
-import javax.websocket.DeploymentException;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.MessageHandler;
-import javax.websocket.OnClose;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.JsonRpcErrorException;
 import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
@@ -62,21 +58,17 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
 
-	@ClientEndpoint
-	public class WebSocketClient extends Endpoint implements
-			MessageHandler.Whole<String> {
+	@WebSocket(maxTextMessageSize = 64 * 1024)
+	public class SimpleEchoSocket {
 
-		@OnClose
-		@Override
-		public void onClose(Session session, CloseReason closeReason) {
-			handleReconnectDisconnection(session, closeReason);
+		@OnWebSocketClose
+		public void onClose(int statusCode, String closeReason) {
+			handleReconnectDisconnection(statusCode, closeReason);
 		}
 
-		@OnOpen
-		@Override
-		public void onOpen(Session session, EndpointConfig config) {
+		@OnWebSocketConnect
+		public void onConnect(Session session) {
 			wsSession = session;
-			wsSession.addMessageHandler(this);
 			rs = new ClientWebSocketResponseSender(wsSession);
 			latch.countDown();
 			if (connectionListener != null) {
@@ -84,7 +76,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			}
 		}
 
-		@Override
+		@OnWebSocketMessage
 		public void onMessage(String message) {
 			try {
 				handleWebSocketTextMessage(message);
@@ -168,21 +160,21 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			try {
 
-				javax.websocket.WebSocketContainer container = javax.websocket.ContainerProvider
-						.getWebSocketContainer();
+				WebSocketClient client = new WebSocketClient();
+				SimpleEchoSocket socket = new SimpleEchoSocket();
 
-				wsSession = container.connectToServer(new WebSocketClient(),
-						ClientEndpointConfig.Builder.create().build(), new URI(
-								url));
+				client.start();
 
-			} catch (DeploymentException | URISyntaxException e) {
+				ClientUpgradeRequest request = new ClientUpgradeRequest();
+				wsSession = client.connect(socket, new URI(url), request).get();
+
+			} catch (Exception e) {
 				throw new KurentoException(
 						"Exception connecting to WebSocket server", e);
 			}
 
 			try {
-				// FIXME: Make this configurable and search a way to detect the
-				// underlying connection timeout
+				// FIXME: Make this configurable
 				if (!latch.await(15, TimeUnit.SECONDS)) {
 					if (connectionListener != null) {
 						connectionListener.connectionTimeout();
@@ -199,11 +191,28 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				} else {
 
-					String result = rsHelper.sendRequest(
-							JsonRpcConstants.METHOD_RECONNECT, String.class);
+					try {
+						String result = rsHelper
+								.sendRequest(JsonRpcConstants.METHOD_RECONNECT,
+										String.class);
 
-					log.info("Reconnection result: {}", result);
+						log.info("Reconnection result: {}", result);
 
+						log.info("Reconnected to the same Kurento server");
+
+					} catch (JsonRpcErrorException e) {
+						if (e.getCode() == 40007) { // Invalid session exception
+
+							rsHelper.setSessionId(null);
+							String result = rsHelper.sendRequest(
+									JsonRpcConstants.METHOD_RECONNECT,
+									String.class);
+
+							log.info("Reconnection result: {}", result);
+
+							log.info("Reconnected to a new Kurento server");
+						}
+					}
 				}
 
 			} catch (InterruptedException e) {
@@ -212,8 +221,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	protected void handleReconnectDisconnection(final Session s,
-			final CloseReason closeReason) {
+	protected void handleReconnectDisconnection(final int statusCode,
+			final String closeReason) {
 
 		if (!clientClose) {
 
@@ -225,7 +234,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					} catch (KurentoException e) {
 
 						handlerManager.afterConnectionClosed(session,
-								closeReason.getReasonPhrase());
+								closeReason);
 
 						log.debug("WebSocket closed due to: {}", closeReason);
 						wsSession = null;
@@ -242,8 +251,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} else {
 
-			handlerManager.afterConnectionClosed(session,
-					closeReason.getReasonPhrase());
+			handlerManager.afterConnectionClosed(session, closeReason);
 
 			if (connectionListener != null) {
 				connectionListener.disconnected();
@@ -268,7 +276,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		// TODO: Think better ways to do this:
 		// handleWebSocketTextMessage seems to be sequential. That is, the
 		// message waits to be processed until previous message is being
-		// processed. This behavior doesn't allow made a new request in the
+		// processed. This behavior doesn't allow making a new request in the
 		// handler of an event. To avoid this problem, we have decided to
 		// process requests from server in a new thread (reused from
 		// ExecutorService).
@@ -309,7 +317,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		String jsonMessage = request.toString();
 		log.debug("Req-> {}", jsonMessage.trim());
 		synchronized (wsSession) {
-			wsSession.getBasicRemote().sendText(jsonMessage);
+			wsSession.getRemote().sendString(jsonMessage);
 		}
 
 		if (responseFuture == null) {
@@ -364,10 +372,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	}
 
 	public void closeNativeSession() {
-		try {
-			wsSession.close();
-		} catch (IOException e) {
-			throw new KurentoException(e);
-		}
+		wsSession.close();
 	}
 }

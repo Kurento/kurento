@@ -72,7 +72,7 @@ public class JsonRpcConnectorBaseTest {
 					+ servicePath, listener);
 		} else if ("http".equals(clientType)) {
 			client = new JsonRpcClientHttp("http://localhost:" + getPort()
-					+ servicePath, null);
+					+ servicePath);
 		} else {
 			throw new RuntimeException(
 					"Unrecognized property value jsonrpcconnector-client-type="

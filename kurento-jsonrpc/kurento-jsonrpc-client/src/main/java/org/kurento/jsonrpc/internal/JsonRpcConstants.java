@@ -15,9 +15,9 @@
 package org.kurento.jsonrpc.internal;
 
 /**
- * 
+ *
  * JSON-based representations for information exchange constant.
- * 
+ *
  * @see <a href="http://www.jsonrpc.org/specification">JSON error codes</a>
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
@@ -50,7 +50,7 @@ public class JsonRpcConstants {
 
 	public static final String METHOD_EXECUTE = "execute";
 
-	public static final String METHOD_RECONNECT = "reconnect";
+	public static final String METHOD_RECONNECT = "connect";
 
 	public static final String EVENT_SESSION_TERMINATED = "sessionTerminated";
 
