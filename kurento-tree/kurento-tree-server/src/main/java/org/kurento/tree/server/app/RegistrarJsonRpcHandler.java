@@ -31,11 +31,11 @@ public class RegistrarJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			if (REGISTER_METHOD.equals(request.getMethod())) {
 
-				String wsUri = getStringParam(request, "wsUri");
+				String ws = getStringParam(request, "ws");
 
-				log.debug("Registered new kms with wsUri: '" + wsUri + "'");
+				log.debug("Registered new kms with wsUri: '" + ws + "'");
 
-				registrar.register(wsUri);
+				registrar.register(ws);
 
 				transaction.sendVoidResponse();
 			} else {

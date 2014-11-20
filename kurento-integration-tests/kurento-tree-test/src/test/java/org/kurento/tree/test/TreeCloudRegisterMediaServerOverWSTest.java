@@ -56,7 +56,7 @@ public class TreeCloudRegisterMediaServerOverWSTest {
 		String wsUri = "ws://localhost:8888/kurento";
 
 		JsonObject params = new JsonObject();
-		params.addProperty("wsUri", wsUri);
+		params.addProperty("ws", wsUri);
 
 		client.sendRequest("register", params);
 
