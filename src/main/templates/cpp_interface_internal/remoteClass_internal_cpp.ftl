@@ -53,6 +53,27 @@ void ${remoteClass.name}Method${method.name?cap_first}::Serialize (kurento::Json
     </#if>
   </#list>
   } else {
+  <#assign requiredParams = false>
+  <#list method.params as param>
+    <#if !param.optional>
+    <#assign requiredParams = true>
+    </#if>
+  </#list>
+  <#if requiredParams>
+    if (s.JsonValue.isNull ()) {
+      throw KurentoException (MARSHALL_ERROR,
+                              "'operationParams' is required");
+    } else if (!s.JsonValue.isObject ()){
+      throw KurentoException (MARSHALL_ERROR,
+                              "'operationParams' should be an object");
+    }
+  <#else>
+    if (!s.JsonValue.isNull () && !s.JsonValue.isObject ()) {
+      throw KurentoException (MARSHALL_ERROR,
+                              "'operationParams' should be an object");
+    }
+  </#if>
+
   <#list method.params as param>
     <#assign jsonData = getJsonCppTypeData(param.type)>
     <#if param.optional>
