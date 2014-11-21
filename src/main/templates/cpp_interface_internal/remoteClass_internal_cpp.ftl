@@ -123,6 +123,27 @@ void ${remoteClass.name}Constructor::Serialize (kurento::JsonSerializer &s)
     </#if>
   </#list>
   } else {
+  <#assign requiredParams = false>
+  <#list remoteClass.constructor.params as param>
+    <#if !param.optional>
+    <#assign requiredParams = true>
+    </#if>
+  </#list>
+  <#if requiredParams>
+    if (s.JsonValue.isNull ()) {
+      throw KurentoException (MARSHALL_ERROR,
+                              "'constructorParams' is required");
+    } else if (!s.JsonValue.isObject ()){
+      throw KurentoException (MARSHALL_ERROR,
+                              "'constructorParams' should be an object");
+    }
+  <#else>
+    if (!s.JsonValue.isNull () && !s.JsonValue.isObject ()) {
+      throw KurentoException (MARSHALL_ERROR,
+                              "'constructorParams' should be an object");
+    }
+  </#if>
+
   <#list remoteClass.constructor.params as param>
     <#assign jsonData = getJsonCppTypeData(param.type)>
     <#if param.optional>
