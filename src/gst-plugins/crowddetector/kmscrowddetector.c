@@ -882,10 +882,13 @@ kms_crowd_detector_process_edges_image (KmsCrowdDetector * crowddetector,
   uint8_t *speed_map_pointer_aux;
   uint8_t *speed_map_pointer = (uint8_t *) speed_map->imageData;
 
+  speed_map_pointer =
+      speed_map_pointer + (speed_map->widthStep * (window_margin));
+
   for (h2 = window_margin;
       h2 < crowddetector->priv->acumulated_edges->height - window_margin - 1;
       h2++) {
-    speed_map_pointer_aux = speed_map_pointer;
+    speed_map_pointer_aux = speed_map_pointer + window_margin;
     for (w2 = window_margin;
         w2 < crowddetector->priv->acumulated_edges->width - window_margin - 1;
         w2++) {
