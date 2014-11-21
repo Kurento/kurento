@@ -16,6 +16,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoCrowdDetectorFilterImpl"
 
 #define ROIS_PARAM "rois"
+#define PROCESSING_WIDTH "processing-width"
 
 namespace kurento
 {
@@ -243,6 +244,21 @@ CrowdDetectorFilterImpl::~CrowdDetectorFilterImpl()
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
   g_signal_handler_disconnect (bus, bus_handler_id);
   g_object_unref (bus);
+}
+
+int CrowdDetectorFilterImpl::getProcessingWidth ()
+{
+  int ret;
+
+  g_object_get (G_OBJECT (crowdDetector), PROCESSING_WIDTH, &ret, NULL);
+
+  return ret;
+}
+
+void CrowdDetectorFilterImpl::setProcessingWidth (int processingWidth)
+{
+  g_object_set (G_OBJECT (crowdDetector), PROCESSING_WIDTH, processingWidth,
+                NULL);
 }
 
 MediaObjectImpl *

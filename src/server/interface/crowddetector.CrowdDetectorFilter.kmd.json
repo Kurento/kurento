@@ -19,6 +19,15 @@
           }
         ]
       },
+      "properties": [
+        {
+          "name": "processingWidth",
+          "doc": "The processing image will be resized to this width (in pixels)",
+          "type": "int",
+          "readOnly": false,
+          "defaultValue": "320"
+        }
+      ],
       "events": [
         "CrowdDetectorFluidity",
         "CrowdDetectorOccupancy",

@@ -42,7 +42,7 @@
 #define HYPOTENUSE_THRESHOLD ((float) 3.0)
 #define RADIAN_TO_DEGREE ((float) 57.3)
 
-#define MAX_WIDTH 320
+#define DEFAULT_MAX_WIDTH 320
 
 GST_DEBUG_CATEGORY_STATIC (kms_crowd_detector_debug_category);
 #define GST_CAT_DEFAULT kms_crowd_detector_debug_category
@@ -53,6 +53,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_crowd_detector_debug_category);
     KMS_TYPE_CROWD_DETECTOR,                    \
     KmsCrowdDetectorPrivate                     \
   )                                             \
+)
+
+#define KMS_CROWD_DETECTOR_LOCK(obj) (                           \
+  g_rec_mutex_lock (&KMS_CROWD_DETECTOR (obj)->priv->mutex)   \
+)
+
+#define KMS_CROWD_DETECTOR_UNLOCK(obj) (                         \
+  g_rec_mutex_unlock (&KMS_CROWD_DETECTOR (obj)->priv->mutex) \
 )
 
 typedef struct _RoiData
@@ -91,6 +99,7 @@ struct _KmsCrowdDetectorPrivate
   int num_rois;
   CvPoint **curves;
   CvPoint **curves_original;
+  CvPoint2D32f **curves_percentages;
   int *n_points;
   RoiData *rois_data;
   GstStructure *rois;
@@ -100,6 +109,8 @@ struct _KmsCrowdDetectorPrivate
   gdouble resize_factor;
   int original_image_width;
   int original_image_height;
+  int processing_width;
+  GRecMutex mutex;
 };
 
 enum
@@ -107,6 +118,7 @@ enum
   PROP_0,
   PROP_SHOW_DEBUG_INFO,
   PROP_ROIS,
+  PROP_PROCESSING_WIDTH,
   N_PROPERTIES
 };
 
@@ -358,6 +370,12 @@ kms_crowd_detector_release_data (KmsCrowdDetector * crowddetector)
     }
     g_free (crowddetector->priv->curves_original);
     crowddetector->priv->curves_original = NULL;
+
+    for (it = 0; it < crowddetector->priv->num_rois; it++) {
+      g_free (crowddetector->priv->curves_percentages[it]);
+    }
+    g_free (crowddetector->priv->curves_percentages);
+    crowddetector->priv->curves_percentages = NULL;
   }
 
   if (crowddetector->priv->rois != NULL) {
@@ -411,6 +429,8 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
     self->priv->curves = g_malloc0 (sizeof (CvPoint *) * self->priv->num_rois);
     self->priv->curves_original =
         g_malloc0 (sizeof (CvPoint *) * self->priv->num_rois);
+    self->priv->curves_percentages =
+        g_malloc0 (sizeof (CvPoint2D32f *) * self->priv->num_rois);
     self->priv->n_points = g_malloc (sizeof (int) * self->priv->num_rois);
     self->priv->rois_data = g_malloc0 (sizeof (RoiData) * self->priv->num_rois);
   }
@@ -435,6 +455,8 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
     } else {
       self->priv->curves[it] = g_malloc (sizeof (CvPoint) * len);
       self->priv->curves_original[it] = g_malloc (sizeof (CvPoint) * len);
+      self->priv->curves_percentages[it] =
+          g_malloc (sizeof (CvPoint2D32f) * len);
     }
 
     for (it2 = 0; it2 < len; it2++) {
@@ -458,6 +480,9 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             percentageX * self->priv->original_image_width;
         self->priv->curves_original[it][it2].y =
             percentageY * self->priv->original_image_height;
+
+        self->priv->curves_percentages[it][it2].x = percentageX;
+        self->priv->curves_percentages[it][it2].y = percentageY;
       }
       gst_structure_free (point);
     }
@@ -542,6 +567,13 @@ kms_crowd_detector_set_property (GObject * object, guint property_id,
       kms_crowd_detector_release_data (crowddetector);
       crowddetector->priv->rois = g_value_dup_boxed (value);
       break;
+    case PROP_PROCESSING_WIDTH:
+      KMS_CROWD_DETECTOR_LOCK (crowddetector);
+      crowddetector->priv->processing_width = g_value_get_int (value);
+      GST_DEBUG_OBJECT (crowddetector, "New proccesing width = %d",
+          crowddetector->priv->processing_width);
+      KMS_CROWD_DETECTOR_UNLOCK (crowddetector);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -565,6 +597,11 @@ kms_crowd_detector_get_property (GObject * object, guint property_id,
         crowddetector->priv->rois = gst_structure_new_empty ("rois");
       }
       g_value_set_boxed (value, crowddetector->priv->rois);
+      break;
+    case PROP_PROCESSING_WIDTH:
+      KMS_CROWD_DETECTOR_LOCK (crowddetector);
+      g_value_set_int (value, crowddetector->priv->processing_width);
+      KMS_CROWD_DETECTOR_UNLOCK (crowddetector);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -604,6 +641,7 @@ kms_crowd_detector_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (crowddetector, "finalize");
 
+  g_rec_mutex_clear (&crowddetector->priv->mutex);
   kms_crowd_detector_release_images (crowddetector);
   kms_crowd_detector_release_data (crowddetector);
 
@@ -643,11 +681,8 @@ kms_crowd_detector_set_info (GstVideoFilter * filter, GstCaps * incaps,
 
 static void
 kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
-    GstVideoFrame * frame)
+    GstVideoFrame * frame, int target_width)
 {
-  int target_width =
-      frame->info.width <= MAX_WIDTH ? frame->info.width : MAX_WIDTH;
-
   crowddetector->priv->resize_factor = frame->info.width / target_width;
 
   crowddetector->priv->image_width = target_width;
@@ -698,15 +733,43 @@ kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
 }
 
 static void
+kms_crowd_detector_update_rois_size (KmsCrowdDetector * crowddetector)
+{
+  int it = 0, it2;
+
+  if (crowddetector->priv->curves != NULL) {
+    for (it = 0; it < crowddetector->priv->num_rois; it++) {
+      for (it2 = 0; it2 < crowddetector->priv->n_points[it]; it2++) {
+        crowddetector->priv->curves[it][it2].x =
+            crowddetector->priv->curves_percentages[it][it2].x
+            * crowddetector->priv->image_width;
+        crowddetector->priv->curves[it][it2].y =
+            crowddetector->priv->curves_percentages[it][it2].y
+            * crowddetector->priv->image_height;
+      }
+    }
+  }
+}
+
+static void
 kms_crowd_detector_initialize_images (KmsCrowdDetector * crowddetector,
     GstVideoFrame * frame)
 {
+  KMS_CROWD_DETECTOR_LOCK (crowddetector);
+  int target_width =
+      frame->info.width <= crowddetector->priv->processing_width ?
+      frame->info.width : crowddetector->priv->processing_width;
+  KMS_CROWD_DETECTOR_UNLOCK (crowddetector);
+
   if (crowddetector->priv->actual_image == NULL) {
-    kms_crowd_detector_create_images (crowddetector, frame);
+    kms_crowd_detector_create_images (crowddetector, frame, target_width);
   } else if ((crowddetector->priv->original_image->width != frame->info.width)
-      || (crowddetector->priv->original_image->height != frame->info.height)) {
+      || (crowddetector->priv->original_image->height != frame->info.height)
+      || (crowddetector->priv->image_width != target_width)) {
+    GST_DEBUG_OBJECT (crowddetector, "Changing processing image size");
     kms_crowd_detector_release_images (crowddetector);
-    kms_crowd_detector_create_images (crowddetector, frame);
+    kms_crowd_detector_create_images (crowddetector, frame, target_width);
+    kms_crowd_detector_update_rois_size (crowddetector);
   }
 }
 
@@ -1404,6 +1467,11 @@ kms_crowd_detector_class_init (KmsCrowdDetectorClass * klass)
           "set regions of interest to analize",
           GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (gobject_class, PROP_PROCESSING_WIDTH,
+      g_param_spec_int ("processing-width", "processing width",
+          "The processing image will be resized to this width (in pixels)", 160,
+          1280, 320, G_PARAM_READWRITE));
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsCrowdDetectorPrivate));
 }
@@ -1418,10 +1486,14 @@ kms_crowd_detector_init (KmsCrowdDetector * crowddetector)
   crowddetector->priv->num_rois = 0;
   crowddetector->priv->curves = NULL;
   crowddetector->priv->curves_original = NULL;
+  crowddetector->priv->curves_percentages = NULL;
   crowddetector->priv->n_points = NULL;
   crowddetector->priv->rois = NULL;
   crowddetector->priv->rois_data = NULL;
   crowddetector->priv->pixels_rois_counted = FALSE;
+  crowddetector->priv->processing_width = DEFAULT_MAX_WIDTH;
+
+  g_rec_mutex_init (&crowddetector->priv->mutex);
 }
 
 gboolean
