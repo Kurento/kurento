@@ -32,39 +32,39 @@
 static gboolean
 kurento_init (GstPlugin * kurento)
 {
-  if (!kms_http_endpoint_plugin_init(kurento)) {
+  if (!kms_http_endpoint_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_player_endpoint_plugin_init(kurento)) {
+  if (!kms_player_endpoint_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_recorder_endpoint_plugin_init(kurento)) {
+  if (!kms_recorder_endpoint_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_rtp_endpoint_plugin_init(kurento)) {
+  if (!kms_rtp_endpoint_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_webrtc_endpoint_plugin_init(kurento)) {
+  if (!kms_webrtc_endpoint_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_dispatcher_plugin_init(kurento)) {
+  if (!kms_dispatcher_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_dispatcher_one_to_many_plugin_init(kurento)) {
+  if (!kms_dispatcher_one_to_many_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_selectable_mixer_plugin_init(kurento)) {
+  if (!kms_selectable_mixer_plugin_init (kurento)) {
     return FALSE;
   }
 
-  if (!kms_composite_mixer_plugin_init(kurento)) {
+  if (!kms_composite_mixer_plugin_init (kurento)) {
     return FALSE;
   }
 
