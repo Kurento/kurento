@@ -1322,13 +1322,9 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
       if (*high_speed_pointer_aux == 0) {
         actual_motion_pointer_aux[0] = 255;
         binary_actual_motion_pointer_aux[0] = 255;
-      }
-      if (*low_speed_pointer_aux == 255) {
-        *actual_motion_pointer_aux = 0;
+      } else if (*low_speed_pointer_aux == 255) {
         actual_motion_pointer_aux[2] = 255;
         binary_actual_motion_pointer_aux[0] = 255;
-      } else if (*high_speed_pointer_aux == 0) {
-        actual_motion_pointer_aux[0] = 255;
       }
       low_speed_pointer_aux++;
       high_speed_pointer_aux++;
