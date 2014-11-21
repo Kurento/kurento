@@ -8,6 +8,7 @@ set(KMS_ELEMENTS_SOURCES
   kmselements.c
   kmsconfcontroller.c
   kmshttpendpoint.c
+  kmshttpgetendpoint.c
   kmsplayerendpoint.c
   kmsrecorderendpoint.c
   kmsrtpendpoint.c
@@ -33,6 +34,7 @@ set(KMS_ELEMENTS_HEADERS
   kmsconfcontroller.h
   kmshttpendpoint.h
   kmshttpendpointmethod.h
+  kmshttpgetendpoint.h
   kmsplayerendpoint.h
   kmsrecorderendpoint.h
   kmsrtpendpoint.h
