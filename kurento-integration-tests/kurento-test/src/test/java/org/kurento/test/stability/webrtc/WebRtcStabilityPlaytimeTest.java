@@ -14,7 +14,8 @@
  */
 package org.kurento.test.stability.webrtc;
 
-import org.junit.Assert;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -24,6 +25,8 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.color.LatencyController;
+import org.kurento.test.color.VideoTag;
 
 /**
  * <strong>Description</strong>: Stability test for WebRTC in loopback during a
@@ -34,28 +37,27 @@ import org.kurento.test.client.WebRtcMode;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>Color of the video should be the expected</li>
- * <li>Play time should be as expected</li>
+ * <li>No latency problems detected during test time</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 
-public class WebRtcStabilityTest extends StabilityTest {
+public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 
-	private static final int DEFAULT_PLAYTIME = 1; // minutes
+	private static final int DEFAULT_PLAYTIME = 60; // minutes
 
 	@Test
 	public void testWebRtcStabilityChrome() throws InterruptedException {
 		final int playTime = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.playtime",
 				String.valueOf(DEFAULT_PLAYTIME)));
-		doTest(Browser.CHROME, playTime);
+		doTest(Browser.CHROME, getPathTestFiles() + "/video/15sec/rgb.y4m",
+				playTime);
 	}
 
-	public void doTest(Browser browserType, int playTime)
+	public void doTest(Browser browserType, String videoPath, int playTime)
 			throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -64,39 +66,19 @@ public class WebRtcStabilityTest extends StabilityTest {
 
 		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
 				browserType).client(Client.WEBRTC);
+		if (videoPath != null) {
+			builder = builder.video(videoPath);
+		}
 
 		try (BrowserClient browser = builder.build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 
-			// Assertion #1 : receive media
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-
-			// Play the video during playtime
-			long systemPlayTime = System.currentTimeMillis() + playTime * 60000;
-
-			for (int i = 0;; i++) {
-				// Assertion #2 (each second) : received color should be as
-				// expected
-				Assert.assertTrue(
-						"The color of the video should be green. Difference detected at second "
-								+ i,
-						browser.similarColor(CHROME_VIDEOTEST_COLOR));
-
-				Thread.sleep(1000);
-				if (System.currentTimeMillis() > systemPlayTime) {
-					break;
-				}
-			}
-
-			// Assertion #3 : playtime shoudl be as expected
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + playTime
-					+ " minutes, real: " + currentTime + " minutes)",
-					compare(playTime * 60, currentTime));
+			// Latency control
+			LatencyController cs = new LatencyController();
+			browser.addChangeColorEventListener(VideoTag.LOCAL, cs);
+			browser.addChangeColorEventListener(VideoTag.REMOTE, cs);
+			cs.checkLatency(DEFAULT_PLAYTIME, TimeUnit.MINUTES);
 		}
 
 		// Release Media Pipeline

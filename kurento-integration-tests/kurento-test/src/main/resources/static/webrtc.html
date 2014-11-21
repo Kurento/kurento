@@ -22,6 +22,8 @@
 			minFrameRate : 15
 		}
 	};
+	var colorInfo;
+	var initTime;
 
 	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
 
@@ -29,7 +31,36 @@
 		console = new Console("console", console);
 		local = document.getElementById("local");
 		video = document.getElementById("video");
+		initTime = new Date();
+
+		// Initials colors
+		colorInfo = [ {
+			rgba : "0,0,0,0",
+			time : null
+		}, {
+			rgba : "0,0,0,0",
+			time : null
+		} ];
+
 		setInterval(updateCurrentTime, 100);
+		setInterval(function() {
+			watchColorChange('localcolor', 0);
+		}, 100);
+		setInterval(function() {
+			watchColorChange('color', 1);
+		}, 100);
+	}
+
+	function watchColorChange(colorTagId, iColor) {
+		var colorNew = document.getElementById(colorTagId).value;
+
+		if (colorChanged(colorInfo[iColor].rgba, colorNew)) {
+			var log = (iColor == 0) ? "local" : "remote"
+			colorInfo[iColor].time = new Date() - initTime;
+			console.info("Detected color change in " + log + " stream, from "
+					+ colorInfo[iColor].rgba + " to " + colorNew);
+		}
+		colorInfo[iColor].rgba = colorNew;
 	}
 
 	function setAudioUserMediaConstraints() {
@@ -168,9 +199,11 @@
 	</div>
 	<div style="clear: left; margin: 5px;">
 		<label for="output">Status</label> <input id="status" name="status"
-			style="width: 300px;" /> <label for="currentTime">Current
+			style="width: 200px;" /> <label for="currentTime">Current
 			Time</label> <input id="currentTime" name="currentTime" /> <label
-			for="color">Color</label> <input id="color"></input> <label for="x">x</label>
+			for="color">Local color</label> <input id="localcolor"
+			style="width: 97px;"></input> <label for="color">Remote color</label>
+		<input id="color" style="width: 97px;"></input> <label for="x">x</label>
 		<input id="x" style="width: 30px;" value="0" /> <label for="y">y</label>
 		<input id="y" style="width: 30px;" value="0" /> <br />
 		<audio id="audioTest" loop="loop"></audio>

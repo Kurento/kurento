@@ -32,6 +32,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SystemUtils;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
+import org.kurento.test.color.LatencyController;
+import org.kurento.test.color.VideoTag;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
@@ -98,9 +100,6 @@ public class BrowserClient implements Closeable {
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
 		maxDistance = 60.0; // default distance (for color comparison)
-
-		// String hostAddress = "127.0.0.1";
-		// String hostAddress = "193.147.51.46";
 
 		// Setup Selenium
 		initDriver();
@@ -520,4 +519,9 @@ public class BrowserClient implements Closeable {
 			return new BrowserClient(this);
 		}
 	}
+
+	public void addChangeColorEventListener(VideoTag type, LatencyController cs) {
+		cs.addChangeColorEventListener(type, js);
+	}
+
 }

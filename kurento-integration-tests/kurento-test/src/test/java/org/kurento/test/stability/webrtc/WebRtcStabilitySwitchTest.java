@@ -14,7 +14,8 @@
  */
 package org.kurento.test.stability.webrtc;
 
-import org.junit.Assert;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -24,6 +25,8 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.color.LatencyController;
+import org.kurento.test.color.VideoTag;
 
 /**
  * <strong>Description</strong>: Stability test for switching 2 WebRTC (looback
@@ -36,27 +39,27 @@ import org.kurento.test.client.WebRtcMode;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>Color of the video should be the expected</li>
+ * <li>No latency problems detected during test time</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 
-public class WebRtcSwitchStabilityTest extends StabilityTest {
+public class WebRtcStabilitySwitchTest extends StabilityTest {
 
-	private static final int DEFAULT_NUM_SWITCH = 10;
+	private static final int DEFAULT_NUM_SWITCH = 60; // 1 switch = 1 minute
 
 	@Test
 	public void testWebRtcSwitchChrome() throws InterruptedException {
 		final int numSwitch = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.switch",
 				String.valueOf(DEFAULT_NUM_SWITCH)));
-		doTest(Browser.CHROME, numSwitch);
+		doTest(Browser.CHROME, getPathTestFiles() + "/video/15sec/rgb.y4m",
+				numSwitch);
 	}
 
-	public void doTest(Browser browserType, int numSwitch)
+	public void doTest(Browser browserType, String videoPath, int numSwitch)
 			throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -67,45 +70,53 @@ public class WebRtcSwitchStabilityTest extends StabilityTest {
 
 		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
 				browserType).client(Client.WEBRTC);
+		if (videoPath != null) {
+			builder = builder.video(videoPath);
+		}
 
 		try (BrowserClient browser1 = builder.build();
 				BrowserClient browser2 = builder.build()) {
-			browser1.subscribeEvents("playing");
-			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.AUDIO_AND_VIDEO,
+			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
-			browser2.subscribeEvents("playing");
-			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.AUDIO_AND_VIDEO,
+			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
-
-			// Assertion #1 : receive media
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser1.waitForEvent("playing"));
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser2.waitForEvent("playing"));
 
 			for (int i = 0; i < numSwitch; i++) {
-				// Assertion #2 (each switch) : received color should be as
-				// expected
-				Assert.assertTrue(
-						"The color of the video in browser #1 should be green."
-								+ " Difference detected at switch #" + (i + 1),
-						browser1.similarColor(CHROME_VIDEOTEST_COLOR));
-				Assert.assertTrue(
-						"The color of the video in browser #2 should be green."
-								+ " Difference detected at switch #" + (i + 1),
-						browser2.similarColor(CHROME_VIDEOTEST_COLOR));
-
-				Thread.sleep(1000);
 				if (i % 2 == 0) {
-					log.debug("Switch #" + (i + 1) + ": B2B");
-					webRtcEndpoint1.connect(webRtcEndpoint2);
-					webRtcEndpoint2.connect(webRtcEndpoint1);
-				} else {
-					log.debug("Switch #" + (i + 1) + ": loopback");
+					log.debug("Switch #" + i + ": loopback");
 					webRtcEndpoint1.connect(webRtcEndpoint1);
 					webRtcEndpoint2.connect(webRtcEndpoint2);
+
+					// Latency control (loopback)
+					log.debug("[1] Latency control of browser1 to browser1");
+					LatencyController cs1 = new LatencyController();
+					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1);
+					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs1);
+					cs1.checkLatency(30, TimeUnit.SECONDS);
+
+					log.debug("[2] Latency control of browser2 to browser2");
+					LatencyController cs2 = new LatencyController();
+					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs2);
+					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2);
+					cs2.checkLatency(30, TimeUnit.SECONDS);
+
+				} else {
+					log.debug("Switch #" + i + ": B2B");
+					webRtcEndpoint1.connect(webRtcEndpoint2);
+					webRtcEndpoint2.connect(webRtcEndpoint1);
+
+					// Latency control (B2B)
+					log.debug("[3] Latency control of browser1 to browser2");
+					LatencyController cs1 = new LatencyController();
+					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1);
+					browser2.addChangeColorEventListener(VideoTag.REMOTE, cs1);
+					cs1.checkLatency(30, TimeUnit.SECONDS);
+
+					log.debug("[4] Latency control of browser2 to browser1");
+					LatencyController cs2 = new LatencyController();
+					browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2);
+					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2);
+					cs2.checkLatency(30, TimeUnit.SECONDS);
 				}
 			}
 		}
