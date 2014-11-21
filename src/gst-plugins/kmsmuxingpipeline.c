@@ -256,3 +256,11 @@ kms_muxing_pipeline_new (const char *optname1, ...)
 
   return obj;
 }
+
+GstStateChangeReturn
+kms_muxing_pipeline_set_state (KmsMuxingPipeline * obj, GstState state)
+{
+  g_return_val_if_fail (obj != NULL, GST_STATE_CHANGE_FAILURE);
+
+  return gst_element_set_state (obj->priv->pipeline, state);
+}
