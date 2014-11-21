@@ -13,7 +13,7 @@
  *
  */
 #ifndef _KMS_HTTP_ENDPOINT_H_
-#define _KMS_HTTP_ENDPOINT_H
+#define _KMS_HTTP_ENDPOINT_H_
 
 #include <commons/kmselement.h>
 
