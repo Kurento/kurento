@@ -101,6 +101,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final long TIMEOUT = 60000;
 
+	private WebSocketClient client;
+
 	public JsonRpcClientWebSocket(String url) {
 		this(url, null);
 	}
@@ -160,7 +162,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			try {
 
-				WebSocketClient client = new WebSocketClient();
+				client = new WebSocketClient();
 				SimpleEchoSocket socket = new SimpleEchoSocket();
 
 				client.start();
@@ -359,6 +361,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		if (wsSession != null) {
 			clientClose = true;
 			wsSession.close();
+			client.destroy();
 		}
 	}
 
