@@ -95,7 +95,6 @@ enum
   PROP_METHOD,
   PROP_START,
   PROP_PROFILE,
-  PROP_USE_ENCODED_MEDIA,
   N_PROPERTIES
 };
 
@@ -241,9 +240,6 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
         g_object_set (G_OBJECT (self->priv->get->controller), "profile",
             self->profile, NULL);
       break;
-    case PROP_USE_ENCODED_MEDIA:
-      self->priv->use_encoded_media = g_value_get_boolean (value);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -270,9 +266,6 @@ kms_http_endpoint_get_property (GObject * object, guint property_id,
       break;
     case PROP_PROFILE:
       g_value_set_enum (value, self->profile);
-      break;
-    case PROP_USE_ENCODED_MEDIA:
-      g_value_set_boolean (value, self->priv->use_encoded_media);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -326,12 +319,6 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
       "Recording profile",
       "The profile used for encapsulating the media",
       KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
-
-  obj_properties[PROP_USE_ENCODED_MEDIA] = g_param_spec_boolean
-      ("use-encoded-media", "use encoded media",
-      "The element uses encoded media instead of raw media. This mode "
-      "could have an unexpected behaviour if key frames are lost",
-      FALSE, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY);
 
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
