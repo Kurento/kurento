@@ -19,6 +19,8 @@
 
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
+#include <commons/kmsrecordingprofile.h>
+#include <commons/kms-core-enumtypes.h>
 #include <commons/kms-core-marshal.h>
 #include <commons/kmsagnosticcaps.h>
 #include <commons/kmsutils.h>
@@ -53,6 +55,8 @@ struct _KmsHttpGetEndpointPrivate
 {
   GstElement *appsink;
   KmsConfController *controller;
+  KmsRecordingProfile profile;
+  gboolean use_dvr;
 };
 
 typedef struct _BaseTimeType
@@ -60,6 +64,19 @@ typedef struct _BaseTimeType
   GstClockTime pts;
   GstClockTime dts;
 } BaseTimeType;
+
+/* Object properties */
+enum
+{
+  PROP_0,
+  PROP_DVR,
+  PROP_PROFILE,
+  N_PROPERTIES
+};
+
+#define HTTP_GET_ENDPOINT_RECORDING_PROFILE_DEFAULT KMS_RECORDING_PROFILE_WEBM
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 /* Object signals */
 enum
@@ -313,9 +330,9 @@ kms_http_get_endpoint_init_get_pipeline (KmsHttpGetEndpoint * self)
   self->priv->controller =
       kms_conf_controller_new (KMS_CONF_CONTROLLER_KMS_ELEMENT, self,
       KMS_CONF_CONTROLLER_PIPELINE, KMS_HTTP_ENDPOINT (self)->pipeline,
-      KMS_CONF_CONTROLLER_PROFILE, KMS_HTTP_ENDPOINT (self)->profile, NULL);
+      KMS_CONF_CONTROLLER_PROFILE, self->priv->profile, NULL);
   g_object_set (G_OBJECT (self->priv->controller), "live-DVR",
-      KMS_HTTP_ENDPOINT (self)->use_dvr, NULL);
+      self->priv->use_dvr, NULL);
 
   g_signal_connect (self->priv->controller, "matched-elements",
       G_CALLBACK (matched_elements_cb), self);
@@ -412,13 +429,13 @@ kms_http_get_endpoint_get_caps_from_profile (KmsHttpGetEndpoint * self,
   switch (type) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
       cprof =
-          kms_recording_profile_create_profile (KMS_HTTP_ENDPOINT
-          (self)->profile, FALSE, TRUE);
+          kms_recording_profile_create_profile (self->priv->profile, FALSE,
+          TRUE);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
       cprof =
-          kms_recording_profile_create_profile (KMS_HTTP_ENDPOINT
-          (self)->profile, TRUE, FALSE);
+          kms_recording_profile_create_profile (self->priv->profile, TRUE,
+          FALSE);
       break;
     default:
       return NULL;
@@ -659,6 +676,56 @@ kms_http_get_endpoint_pull_sample_action (KmsHttpGetEndpoint * self)
 }
 
 static void
+kms_http_get_endpoint_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsHttpGetEndpoint *self = KMS_HTTP_GET_ENDPOINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_DVR:
+      self->priv->use_dvr = g_value_get_boolean (value);
+      if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) ==
+          KMS_HTTP_ENDPOINT_METHOD_GET)
+        g_object_set (G_OBJECT (self->priv->controller), "live-DVR",
+            self->priv->use_dvr, NULL);
+      break;
+    case PROP_PROFILE:
+      self->priv->profile = g_value_get_enum (value);
+      if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) ==
+          KMS_HTTP_ENDPOINT_METHOD_GET)
+        g_object_set (G_OBJECT (self->priv->controller), "profile",
+            self->priv->profile, NULL);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
+kms_http_get_endpoint_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsHttpGetEndpoint *self = KMS_HTTP_GET_ENDPOINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_DVR:
+      g_value_set_boolean (value, self->priv->use_dvr);
+      break;
+    case PROP_PROFILE:
+      g_value_set_enum (value, self->priv->profile);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
 kms_http_get_endpoint_class_init (KmsHttpGetEndpointClass * klass)
 {
   KmsHttpEndpointClass *kms_httpendpoint_class =
@@ -670,6 +737,8 @@ kms_http_get_endpoint_class_init (KmsHttpGetEndpointClass * klass)
       "HttpGetEndpoint", "Generic", "Kurento http get end point plugin",
       "Santiago Carot-Nemesio <sancane.kurento@gmail.com>");
 
+  gobject_class->set_property = kms_http_get_endpoint_set_property;
+  gobject_class->get_property = kms_http_get_endpoint_get_property;
   gobject_class->dispose = kms_http_get_endpoint_dispose;
   gobject_class->finalize = kms_http_get_endpoint_finalize;
 
@@ -686,6 +755,20 @@ kms_http_get_endpoint_class_init (KmsHttpGetEndpointClass * klass)
       GST_DEBUG_FUNCPTR (kms_http_get_endpoint_video_valve_removed);
   kms_element_class->sink_query =
       GST_DEBUG_FUNCPTR (kms_http_get_endpoint_sink_query);
+
+  /* Install properties */
+  obj_properties[PROP_DVR] = g_param_spec_boolean ("live-DVR",
+      "Live digital video recorder", "Enables or disbles DVR", FALSE,
+      G_PARAM_READWRITE);
+
+  obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
+      "Recording profile",
+      "The profile used for encapsulating the media",
+      KMS_TYPE_RECORDING_PROFILE, HTTP_GET_ENDPOINT_RECORDING_PROFILE_DEFAULT,
+      G_PARAM_READWRITE);
+
+  g_object_class_install_properties (gobject_class,
+      N_PROPERTIES, obj_properties);
 
   /* set signals */
   http_get_ep_signals[SIGNAL_NEW_SAMPLE] =
