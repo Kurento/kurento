@@ -189,7 +189,7 @@ GST_START_TEST (check_push_buffer)
 
   /* Create test pipeline */
   test_pipeline = gst_pipeline_new ("test-pipeline");
-  httpep = gst_element_factory_make ("httpendpoint", NULL);
+  httpep = gst_element_factory_make ("httppostendpoint", NULL);
 
   testbus = gst_pipeline_get_bus (GST_PIPELINE (test_pipeline));
 
@@ -381,7 +381,7 @@ GST_START_TEST (check_emit_encoded_media)
 
   /* Create test pipeline */
   test_pipeline = gst_pipeline_new ("test-pipeline");
-  httpep = gst_element_factory_make ("httpendpoint", NULL);
+  httpep = gst_element_factory_make ("httppostendpoint", NULL);
   g_object_set (httpep, "use-encoded-media", TRUE, NULL);
 
   testbus = gst_pipeline_get_bus (GST_PIPELINE (test_pipeline));

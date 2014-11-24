@@ -61,6 +61,10 @@ struct _KmsHttpPostEndpoint
 struct _KmsHttpPostEndpointClass
 {
   KmsHttpEndpointClass parent_class;
+
+  /* actions */
+  GstFlowReturn (*push_buffer) (KmsHttpPostEndpoint * self, GstBuffer * buffer);
+  GstFlowReturn (*end_of_stream) (KmsHttpPostEndpoint * self);
 };
 
 GType kms_http_post_endpoint_get_type (void);

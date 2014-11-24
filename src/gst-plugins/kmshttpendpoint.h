@@ -61,6 +61,14 @@ typedef struct _KmsHttpEndpoint KmsHttpEndpoint;
 typedef struct _KmsHttpEndpointClass KmsHttpEndpointClass;
 typedef struct _KmsHttpEndpointPrivate KmsHttpEndpointPrivate;
 
+#define BASE_TIME_LOCK(obj) (                            \
+  g_mutex_lock (&KMS_HTTP_ENDPOINT(obj)->base_time_lock) \
+)
+
+#define BASE_TIME_UNLOCK(obj) (                            \
+  g_mutex_unlock (&KMS_HTTP_ENDPOINT(obj)->base_time_lock) \
+)
+
 struct _KmsHttpEndpoint
 {
   KmsElement parent;
@@ -85,10 +93,6 @@ struct _KmsHttpEndpointClass
 
   /* signals */
   void (*eos_signal) (KmsHttpEndpoint * self);
-
-  /* actions */
-  GstFlowReturn (*push_buffer) (KmsHttpEndpoint * self, GstBuffer * buffer);
-  GstFlowReturn (*end_of_stream) (KmsHttpEndpoint * self);
 };
 
 GType kms_http_endpoint_get_type (void);

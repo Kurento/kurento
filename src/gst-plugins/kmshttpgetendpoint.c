@@ -49,14 +49,6 @@ GST_DEBUG_CATEGORY_STATIC (kms_http_get_endpoint_debug_category);
   )                                               \
 )
 
-#define BASE_TIME_LOCK(obj) (                                           \
-  g_mutex_lock (&KMS_HTTP_ENDPOINT(obj)->base_time_lock)          \
-)
-
-#define BASE_TIME_UNLOCK(obj) (                                         \
-  g_mutex_unlock (&KMS_HTTP_ENDPOINT(obj)->base_time_lock)        \
-)
-
 struct _KmsHttpGetEndpointPrivate
 {
   GstElement *appsink;
@@ -633,13 +625,6 @@ kms_http_get_endpoint_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   g_clear_object (&self->priv->controller);
-
-  if (KMS_HTTP_ENDPOINT (self)->pipeline == NULL)
-    return;
-
-  gst_element_set_state (KMS_HTTP_ENDPOINT (self)->pipeline, GST_STATE_NULL);
-  g_object_unref (KMS_HTTP_ENDPOINT (self)->pipeline);
-  KMS_HTTP_ENDPOINT (self)->pipeline = NULL;
 
   /* clean up as possible. May be called multiple times */
 
