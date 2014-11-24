@@ -16,7 +16,6 @@
 #define _KMS_HTTP_ENDPOINT_H_
 
 #include <commons/kmselement.h>
-#include <commons/kmsrecordingprofile.h>
 #include "kmshttpendpointmethod.h"
 
 G_BEGIN_DECLS
@@ -75,9 +74,7 @@ struct _KmsHttpEndpoint
 
   /* <protected> */
   KmsHttpEndpointMethod method;
-  KmsRecordingProfile profile;
   GstElement *pipeline;
-  gboolean use_dvr;
   gboolean start;
   GMutex base_time_lock;
 

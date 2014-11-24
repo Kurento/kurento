@@ -42,8 +42,6 @@
 #define GET_PIPELINE "get-pipeline"
 #define POST_PIPELINE "post-pipeline"
 
-#define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
-
 #define GST_CAT_DEFAULT kms_http_endpoint_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
@@ -91,10 +89,8 @@ struct _KmsHttpEndpointPrivate
 enum
 {
   PROP_0,
-  PROP_DVR,
   PROP_METHOD,
   PROP_START,
-  PROP_PROFILE,
   N_PROPERTIES
 };
 
@@ -219,12 +215,6 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
-    case PROP_DVR:
-      self->use_dvr = g_value_get_boolean (value);
-      if (g_atomic_int_get (&self->method) == KMS_HTTP_ENDPOINT_METHOD_GET)
-        g_object_set (G_OBJECT (self->priv->get->controller), "live-DVR",
-            self->use_dvr, NULL);
-      break;
     case PROP_START:{
 
       if (self->start != g_value_get_boolean (value)) {
@@ -234,12 +224,6 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
       }
       break;
     }
-    case PROP_PROFILE:
-      self->profile = g_value_get_enum (value);
-      if (g_atomic_int_get (&self->method) == KMS_HTTP_ENDPOINT_METHOD_GET)
-        g_object_set (G_OBJECT (self->priv->get->controller), "profile",
-            self->profile, NULL);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -255,17 +239,11 @@ kms_http_endpoint_get_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
-    case PROP_DVR:
-      g_value_set_boolean (value, self->use_dvr);
-      break;
     case PROP_METHOD:
       g_value_set_enum (value, g_atomic_int_get (&self->method));
       break;
     case PROP_START:
       g_value_set_boolean (value, self->start);
-      break;
-    case PROP_PROFILE:
-      g_value_set_enum (value, self->profile);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -301,10 +279,6 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
   klass->start = GST_DEBUG_FUNCPTR (kms_http_endpoint_start);
 
   /* Install properties */
-  obj_properties[PROP_DVR] = g_param_spec_boolean ("live-DVR",
-      "Live digital video recorder", "Enables or disbles DVR", FALSE,
-      G_PARAM_READWRITE);
-
   obj_properties[PROP_METHOD] = g_param_spec_enum ("http-method",
       "Http method",
       "Http method used in requests",
@@ -314,11 +288,6 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
   obj_properties[PROP_START] = g_param_spec_boolean ("start",
       "start media stream",
       "start media stream", DEFAULT_HTTP_ENDPOINT_START, G_PARAM_READWRITE);
-
-  obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
-      "Recording profile",
-      "The profile used for encapsulating the media",
-      KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
