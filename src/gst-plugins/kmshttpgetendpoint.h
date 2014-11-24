@@ -61,6 +61,12 @@ struct _KmsHttpGetEndpoint
 struct _KmsHttpGetEndpointClass
 {
   KmsHttpEndpointClass parent_class;
+
+  /* signals */
+  GstFlowReturn (*new_sample) (KmsHttpGetEndpoint *appsink);
+
+  /* actions */
+  GstSample * (*pull_sample) (KmsHttpGetEndpoint * self);
 };
 
 GType kms_http_get_endpoint_get_type (void);

@@ -289,7 +289,7 @@ GST_START_TEST (check_pull_buffer)
   aencoder = gst_element_factory_make ("vorbisenc", NULL);
   timeoverlay = gst_element_factory_make ("timeoverlay", NULL);
   audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
-  httpep = gst_element_factory_make ("httpendpoint", NULL);
+  httpep = gst_element_factory_make ("httpgetendpoint", NULL);
 
   GST_DEBUG ("Adding watcher to the pipeline");
   srcbus = gst_pipeline_get_bus (GST_PIPELINE (src_pipeline));

@@ -16,6 +16,8 @@
 #define _KMS_HTTP_ENDPOINT_H_
 
 #include <commons/kmselement.h>
+#include <commons/kmsrecordingprofile.h>
+#include "kmshttpendpointmethod.h"
 
 G_BEGIN_DECLS
 #define KMS_TYPE_HTTP_ENDPOINT \
@@ -46,6 +48,15 @@ G_BEGIN_DECLS
     KMS_TYPE_HTTP_ENDPOINT                   \
   )                                          \
 )
+
+#define KMS_HTTP_ENDPOINT_GET_CLASS(obj) ( \
+  G_TYPE_INSTANCE_GET_CLASS (              \
+    (obj),                                 \
+    KMS_TYPE_HTTP_ENDPOINT,                \
+    KmsHttpEndpointClass                   \
+  )                                        \
+)
+
 typedef struct _KmsHttpEndpoint KmsHttpEndpoint;
 typedef struct _KmsHttpEndpointClass KmsHttpEndpointClass;
 typedef struct _KmsHttpEndpointPrivate KmsHttpEndpointPrivate;
@@ -53,6 +64,14 @@ typedef struct _KmsHttpEndpointPrivate KmsHttpEndpointPrivate;
 struct _KmsHttpEndpoint
 {
   KmsElement parent;
+
+  /* <protected> */
+  KmsHttpEndpointMethod method;
+  KmsRecordingProfile profile;
+  GstElement *pipeline;
+  gboolean use_dvr;
+  gboolean start;
+  GMutex base_time_lock;
 
   /*< private > */
   KmsHttpEndpointPrivate *priv;
@@ -62,13 +81,13 @@ struct _KmsHttpEndpointClass
 {
   KmsElementClass parent_class;
 
+  void (*start) (KmsHttpEndpoint *self, gboolean start);
+
   /* signals */
   void (*eos_signal) (KmsHttpEndpoint * self);
-  GstFlowReturn (*new_sample) (KmsHttpEndpoint *appsink);
 
   /* actions */
   GstFlowReturn (*push_buffer) (KmsHttpEndpoint * self, GstBuffer * buffer);
-  GstSample * (*pull_sample) (KmsHttpEndpoint * self);
   GstFlowReturn (*end_of_stream) (KmsHttpEndpoint * self);
 };
 
