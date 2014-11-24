@@ -48,6 +48,16 @@ struct _KmsHttpPostEndpointPrivate
   gboolean use_encoded_media;
 };
 
+/* Object properties */
+enum
+{
+  PROP_0,
+  PROP_USE_ENCODED_MEDIA,
+  N_PROPERTIES
+};
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
 /* Object signals */
 enum
 {
@@ -394,8 +404,59 @@ kms_http_post_endpoint_end_of_stream_action (KmsHttpPostEndpoint * self)
 }
 
 static void
+kms_http_post_endpoint_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsHttpPostEndpoint *self = KMS_HTTP_POST_ENDPOINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_USE_ENCODED_MEDIA:
+      self->priv->use_encoded_media = g_value_get_boolean (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
+kms_http_post_endpoint_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsHttpPostEndpoint *self = KMS_HTTP_POST_ENDPOINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_USE_ENCODED_MEDIA:
+      g_value_set_boolean (value, self->priv->use_encoded_media);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
 kms_http_post_endpoint_class_init (KmsHttpPostEndpointClass * klass)
 {
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+  gobject_class->set_property = kms_http_post_endpoint_set_property;
+  gobject_class->get_property = kms_http_post_endpoint_get_property;
+
+  /* Install properties */
+  obj_properties[PROP_USE_ENCODED_MEDIA] = g_param_spec_boolean
+      ("use-encoded-media", "use encoded media",
+      "The element uses encoded media instead of raw media. This mode "
+      "could have an unexpected behaviour if key frames are lost",
+      FALSE, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY);
+
+  g_object_class_install_properties (gobject_class,
+      N_PROPERTIES, obj_properties);
+
   /* set actions */
   http_post_ep_signals[SIGNAL_PUSH_BUFFER] =
       g_signal_new ("push-buffer", G_TYPE_FROM_CLASS (klass),
