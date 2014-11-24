@@ -17,73 +17,18 @@
 #endif
 
 #include <gst/gst.h>
-#include <gst/pbutils/encoding-profile.h>
-
-#include <commons/kms-core-marshal.h>
-#include "kmshttpendpoint.h"
-#include <commons/kmsagnosticcaps.h>
-#include "kms-elements-enumtypes.h"
-#include <commons/kms-core-enumtypes.h>
-#include "kmsconfcontroller.h"
-#include "commons/kmsutils.h"
+#include <commons/kmsutils.h>
 #include <commons/kmsloop.h>
+
+#include "kmshttpendpoint.h"
+#include "kms-elements-enumtypes.h"
 
 #define PLUGIN_NAME "httpendpoint"
 
-#define AUDIO_APPSINK "audio_appsink"
-#define AUDIO_APPSRC "audio_appsrc"
-#define VIDEO_APPSINK "video_appsink"
-#define VIDEO_APPSRC "video_appsrc"
-
-#define APPSRC_DATA "appsrc_data"
-#define APPSINK_DATA "appsink_data"
 #define BASE_TIME_DATA "base_time_data"
-
-#define GET_PIPELINE "get-pipeline"
-#define POST_PIPELINE "post-pipeline"
 
 #define GST_CAT_DEFAULT kms_http_endpoint_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
-
-#define KMS_HTTP_ENDPOINT_GET_PRIVATE(obj) (  \
-  G_TYPE_INSTANCE_GET_PRIVATE (               \
-    (obj),                                    \
-    KMS_TYPE_HTTP_ENDPOINT,                   \
-    KmsHttpEndpointPrivate                    \
-  )                                           \
-)
-typedef void (*KmsActionFunc) (gpointer user_data);
-
-typedef struct _GetData GetData;
-typedef struct _PostData PostData;
-
-struct remove_data
-{
-  KmsHttpEndpoint *httpep;
-  GstElement *element;
-};
-
-struct _PostData
-{
-  GstElement *appsrc;
-};
-
-struct _GetData
-{
-  GstElement *appsink;
-  KmsConfController *controller;
-};
-
-struct _KmsHttpEndpointPrivate
-{
-  gboolean use_encoded_media;
-  KmsLoop *loop;
-  union
-  {
-    GetData *get;
-    PostData *post;
-  };
-};
 
 /* Object properties */
 enum
@@ -95,23 +40,8 @@ enum
 };
 
 #define DEFAULT_HTTP_ENDPOINT_START FALSE
-#define DEFAULT_HTTP_ENDPOINT_LIVE TRUE
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
-
-struct config_valve
-{
-  GstElement *valve;
-  const gchar *sinkname;
-  const gchar *srcname;
-  const gchar *destpadname;
-};
-
-struct cb_data
-{
-  KmsHttpEndpoint *self;
-  gboolean start;
-};
 
 /* Object signals */
 enum
@@ -138,8 +68,6 @@ kms_http_endpoint_dispose (GObject * object)
   KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (object);
 
   GST_DEBUG_OBJECT (self, "dispose");
-
-  g_clear_object (&self->priv->loop);
 
   if (self->pipeline == NULL)
     return;
@@ -216,11 +144,12 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_START:{
+      gboolean start;
+
+      start = g_value_get_boolean (value);
 
       if (self->start != g_value_get_boolean (value)) {
-//        kms_change_internal_pipeline_state (self, g_value_get_boolean (value));
-        KMS_HTTP_ENDPOINT_GET_CLASS (self)->start (self,
-            g_value_get_boolean (value));
+        KMS_HTTP_ENDPOINT_GET_CLASS (self)->start (self, start);
       }
       break;
     }
@@ -257,9 +186,7 @@ kms_http_endpoint_start (KmsHttpEndpoint * self, gboolean start)
 {
   GST_WARNING_OBJECT (self, "Not implemented method");
 
-  if (FALSE) {
-    kms_change_internal_pipeline_state (self, start);
-  }
+  kms_change_internal_pipeline_state (self, start);
 }
 
 static void
@@ -299,21 +226,15 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsHttpEndpointClass, eos_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
-
-  /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (KmsHttpEndpointPrivate));
 }
 
 static void
 kms_http_endpoint_init (KmsHttpEndpoint * self)
 {
-  self->priv = KMS_HTTP_ENDPOINT_GET_PRIVATE (self);
-
   g_mutex_init (&self->base_time_lock);
 
   g_object_set (self, "do-synchronization", TRUE, NULL);
 
-  self->priv->loop = kms_loop_new ();
   g_atomic_int_set (&self->method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
   self->pipeline = NULL;
   self->start = FALSE;

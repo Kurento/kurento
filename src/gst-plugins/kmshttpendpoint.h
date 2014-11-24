@@ -58,7 +58,6 @@ G_BEGIN_DECLS
 
 typedef struct _KmsHttpEndpoint KmsHttpEndpoint;
 typedef struct _KmsHttpEndpointClass KmsHttpEndpointClass;
-typedef struct _KmsHttpEndpointPrivate KmsHttpEndpointPrivate;
 
 #define BASE_TIME_LOCK(obj) (                            \
   g_mutex_lock (&KMS_HTTP_ENDPOINT(obj)->base_time_lock) \
@@ -77,9 +76,6 @@ struct _KmsHttpEndpoint
   GstElement *pipeline;
   gboolean start;
   GMutex base_time_lock;
-
-  /*< private > */
-  KmsHttpEndpointPrivate *priv;
 };
 
 struct _KmsHttpEndpointClass
