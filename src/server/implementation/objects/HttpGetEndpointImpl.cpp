@@ -11,6 +11,8 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoHttpGetEndpointImpl"
 
+#define FACTORY_NAME "httpgetendpoint"
+
 namespace kurento
 {
 
@@ -20,7 +22,7 @@ HttpGetEndpointImpl::HttpGetEndpointImpl (
   std::shared_ptr<MediaProfileSpecType> mediaProfile,
   int disconnectionTimeout) : HttpEndpointImpl (conf,
         std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline),
-        disconnectionTimeout)
+        disconnectionTimeout, FACTORY_NAME)
 {
   g_object_set ( G_OBJECT (element), "accept-eos", terminateOnEOS,
                  NULL);

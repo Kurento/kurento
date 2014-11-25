@@ -21,7 +21,7 @@ public:
 
   HttpEndpointImpl (const boost::property_tree::ptree &conf,
                     std::shared_ptr< MediaObjectImpl > parent,
-                    int disconnectionTimeout);
+                    int disconnectionTimeout, const std::string &factoryName);
 
   virtual ~HttpEndpointImpl ();
 

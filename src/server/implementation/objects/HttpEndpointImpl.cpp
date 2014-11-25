@@ -9,8 +9,6 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoHttpEndpointImpl"
 
-#define FACTORY_NAME "httpendpoint"
-
 static const std::string HTTP_SERVICE_ADDRESS = "serverAddress";
 static const std::string HTTP_SERVICE_PORT = "serverPort";
 static const std::string HTTP_SERVICE_ANNOUNCED_ADDRESS = "announcedAddress";
@@ -202,7 +200,9 @@ HttpEndpointImpl::is_registered()
 
 HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
                                     std::shared_ptr< MediaObjectImpl > parent,
-                                    int disconnectionTimeout) : SessionEndpointImpl (conf, parent, FACTORY_NAME)
+                                    int disconnectionTimeout,
+                                    const std::string &factoryName) : SessionEndpointImpl (conf, parent,
+                                          factoryName)
 {
   this->disconnectionTimeout = disconnectionTimeout;
   actionRequestedLambda = [&] (const gchar * uri,
