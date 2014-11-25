@@ -65,17 +65,21 @@ module.exports = function(grunt)
           tasks: ['shell:kmd']
         }
       }
-    }.
+    },
 
     shell:
     {
       // Generate the Kurento Javascript client
       kmd: {
         command: [
-          'kurento-module-creator --delete',
-          '--templates node_modules/kurento-client/templates',
-          '--codegen ./lib'
-        ].join(' ')
+          'mkdir -p ./lib',
+          'kurento-module-creator --delete'
+          +' --templates node_modules/kurento-client/templates'
+<#list module.imports as import>
+          +' --deprom node_modules/${import.module.code.api.js.nodeName}/src'
+</#list>
+          +' --rom ./src --codegen ./lib'
+        ].join('&&')
       }<#if api_js.npmGit??>,
 
       // Publish / update package info in Bower

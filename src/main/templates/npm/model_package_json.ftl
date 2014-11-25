@@ -29,6 +29,10 @@ package.json
   },
 </#if>
   "devDependencies": {
+<#list module.imports as import>
+  <#assign api_js=import.module.code.api.js>
+    "${api_js.nodeName}": "${api_js.npmVersion}",
+</#list>
     "bower": "~1.3.12",
     "grunt": "~0.4.5",
     "grunt-browserify": "^3.1.0",
