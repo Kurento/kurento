@@ -26,6 +26,8 @@
 #define OBJECT_NAME "muxingpipeline"
 #define KMS_MUXING_PIPELINE_NAME OBJECT_NAME
 
+#define parent_class kms_muxing_pipeline_parent_class
+
 GST_DEBUG_CATEGORY_STATIC (kms_muxing_pipeline_debug_category);
 #define GST_CAT_DEFAULT kms_muxing_pipeline_debug_category
 
@@ -111,10 +113,24 @@ kms_muxing_pipeline_get_property (GObject * object, guint property_id,
 }
 
 static void
+kms_muxing_pipeline_finalize (GObject * object)
+{
+  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
+
+  gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+  g_clear_object (&self->priv->pipeline);
+
+  G_OBJECT_CLASS (parent_class)->finalize (object);
+}
+
+static void
 kms_muxing_pipeline_class_init (KmsMuxingPipelineClass * klass)
 {
   GObjectClass *objclass = G_OBJECT_CLASS (klass);
 
+  objclass->finalize = kms_muxing_pipeline_finalize;
   objclass->set_property = kms_muxing_pipeline_set_property;
   objclass->get_property = kms_muxing_pipeline_get_property;
 
