@@ -150,34 +150,11 @@ recv_sample (GstElement * appsink, gpointer user_data)
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
-  GstCaps *caps;
   BaseTimeType *base_time;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
     return GST_FLOW_OK;
-
-  g_object_get (G_OBJECT (appsrc), "caps", &caps, NULL);
-  if (caps == NULL) {
-    /* Appsrc has not yet caps defined */
-    GstPad *sink_pad = gst_element_get_static_pad (appsink, "sink");
-
-    if (sink_pad != NULL) {
-      caps = gst_pad_get_current_caps (sink_pad);
-      g_object_unref (sink_pad);
-    }
-
-    if (caps == NULL) {
-      GST_ELEMENT_ERROR (self, CORE, CAPS, ("No caps found for %s",
-              GST_ELEMENT_NAME (appsrc)), GST_ERROR_SYSTEM);
-      ret = GST_FLOW_ERROR;
-      goto end;
-    }
-
-    g_object_set (appsrc, "caps", caps, NULL);
-  }
-
-  gst_caps_unref (caps);
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
