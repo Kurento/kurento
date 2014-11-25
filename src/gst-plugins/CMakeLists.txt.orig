@@ -72,7 +72,12 @@ target_link_libraries(${LIBRARY_NAME}plugins
   ${gstreamer-pbutils-1.0_LIBRARIES}
   ${libsoup-2.4_LIBRARIES}
   ${nice_LIBRARIES}
+<<<<<<< HEAD
+  ${SCTP_LIBRARIES}
+  ${GstMarshal_LIBRARIES}
   ${gstreamer-rtp-1.0_LIBRARIES}
+=======
+>>>>>>> PlumberEndpoint: Remove element from kms-elements
 )
 
 install(
