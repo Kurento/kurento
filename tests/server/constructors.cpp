@@ -191,10 +191,17 @@ main (int argc, char **argv)
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
 
-  testHttpGetEndPoint (moduleManager, mediaPipeline);
-  testHttpPostEndPoint (moduleManager, mediaPipeline);
+  if (false) {
+    testHttpGetEndPoint (moduleManager, mediaPipeline);
+    testHttpPostEndPoint (moduleManager, mediaPipeline);
+  }
+
   testPlayerEndPoint (moduleManager, mediaPipeline);
-  testRecorderEndPoint (moduleManager, mediaPipeline);
+
+  if (false) {
+    testRecorderEndPoint (moduleManager, mediaPipeline);
+  }
+
   testRtpEndpoint (moduleManager, mediaPipeline);
   testWebRTCEndpoint (moduleManager, mediaPipeline);
   testMixer (moduleManager, mediaPipeline);

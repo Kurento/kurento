@@ -95,6 +95,77 @@ fakesink_hand_off (GstElement * fakesink, GstBuffer * buf, GstPad * pad,
   g_idle_add (quit_main_loop_idle, hod->loop);
 }
 
+typedef struct _KmsConnectData
+{
+  GstElement *src;
+  GstElement *enc;
+  GstElement *caps;
+  GstBin *pipe;
+  const gchar *pad_prefix;
+  gulong id;
+} KmsConnectData;
+
+static void
+connect_sink (GstElement * element, GstPad * pad, gpointer user_data)
+{
+  KmsConnectData *data = user_data;
+
+  GST_DEBUG_OBJECT (pad, "New pad %" GST_PTR_FORMAT, element);
+
+  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), data->pad_prefix)) {
+    return;
+  }
+
+  gst_bin_add_many (GST_BIN (data->pipe), data->src, data->enc, NULL);
+
+  if (data->caps != NULL) {
+    gst_bin_add (GST_BIN (data->pipe), data->caps);
+    gst_element_link_many (data->src, data->caps, data->enc, NULL);
+  } else {
+    gst_element_link_many (data->src, data->enc, NULL);
+  }
+
+  gst_element_link_pads (data->enc, NULL, element, GST_OBJECT_NAME (pad));
+  gst_element_sync_state_with_parent (data->enc);
+
+  if (data->caps != NULL) {
+    gst_element_sync_state_with_parent (data->caps);
+  }
+
+  gst_element_sync_state_with_parent (data->src);
+
+  GST_INFO_OBJECT (pad, "Linking %s", data->pad_prefix);
+
+  if (data->id != 0) {
+    g_signal_handler_disconnect (element, data->id);
+  }
+}
+
+static void
+kms_connect_data_destroy (gpointer data)
+{
+  g_slice_free (KmsConnectData, data);
+}
+
+static void
+connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
+    GstElement * enc, GstElement * caps, GstElement * pipe,
+    const gchar * pad_prefix)
+{
+  KmsConnectData *data = g_slice_new (KmsConnectData);
+
+  data->src = src;
+  data->enc = enc;
+  data->caps = caps;
+  data->pipe = GST_BIN (pipe);
+  data->pad_prefix = pad_prefix;
+
+  data->id =
+      g_signal_connect_data (webrtcendpoint, "pad-added",
+      G_CALLBACK (connect_sink), data,
+      (GClosureNotify) kms_connect_data_destroy, 0);
+}
+
 static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     const gchar * pattern_sdp_sendonly_str,
@@ -138,9 +209,10 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
       G_CALLBACK (fakesink_hand_off), hod);
 
   /* Add elements */
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, video_enc, sender, NULL);
-  gst_element_link (videotestsrc, video_enc);
-  gst_element_link_pads (video_enc, NULL, sender, "video_sink");
+  gst_bin_add (GST_BIN (pipeline), sender);
+
+  connect_sink_async (sender, videotestsrc, video_enc, NULL, pipeline,
+      "sink_video");
 
   gst_bin_add (GST_BIN (pipeline), receiver);
 
@@ -292,15 +364,13 @@ test_video_sendrecv (const gchar * video_enc_name,
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
   /* Add elements */
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc_offerer, video_enc_offerer,
-      offerer, NULL);
-  gst_element_link (videotestsrc_offerer, video_enc_offerer);
-  gst_element_link_pads (video_enc_offerer, NULL, offerer, "video_sink");
+  gst_bin_add (GST_BIN (pipeline), offerer);
+  connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
+      pipeline, "sink_video");
 
-  gst_bin_add_many (GST_BIN (pipeline)
-      , videotestsrc_answerer, video_enc_answerer, answerer, NULL);
-  gst_element_link (videotestsrc_answerer, video_enc_answerer);
-  gst_element_link_pads (video_enc_answerer, NULL, answerer, "video_sink");
+  gst_bin_add (GST_BIN (pipeline), answerer);
+  connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
+      pipeline, "sink_video");
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -409,18 +479,13 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gst_caps_unref (caps);
 
   /* Add elements */
-  gst_bin_add_many (GST_BIN (pipeline), audiotestsrc_offerer, audio_enc_offerer,
-      capsfilter_offerer, offerer, NULL);
-  gst_element_link_many (audiotestsrc_offerer, capsfilter_offerer,
-      audio_enc_offerer, NULL);
-  gst_element_link_pads (audio_enc_offerer, NULL, offerer, "audio_sink");
+  gst_bin_add (GST_BIN (pipeline), offerer);
+  connect_sink_async (offerer, audiotestsrc_offerer, audio_enc_offerer,
+      capsfilter_offerer, pipeline, "sink_audio");
 
-  gst_bin_add_many (GST_BIN (pipeline)
-      , audiotestsrc_answerer, audio_enc_answerer, capsfilter_answerer,
-      answerer, NULL);
-  gst_element_link_many (audiotestsrc_answerer, capsfilter_answerer,
-      audio_enc_answerer, NULL);
-  gst_element_link_pads (audio_enc_answerer, NULL, answerer, "audio_sink");
+  gst_bin_add (GST_BIN (pipeline), answerer);
+  connect_sink_async (answerer, audiotestsrc_answerer, audio_enc_answerer,
+      capsfilter_answerer, pipeline, "sink_audio");
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -587,14 +652,10 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
 
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), sender);
-  gst_bin_add_many (GST_BIN (pipeline), audiotestsrc, audio_enc,
-      capsfilter, NULL);
-  gst_element_link_many (audiotestsrc, capsfilter, audio_enc, NULL);
-  gst_element_link_pads (audio_enc, NULL, sender, "audio_sink");
-
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, video_enc, NULL);
-  gst_element_link (videotestsrc, video_enc);
-  gst_element_link_pads (video_enc, NULL, sender, "video_sink");
+  connect_sink_async (sender, audiotestsrc, audio_enc, capsfilter, pipeline,
+      "sink_audio");
+  connect_sink_async (sender, videotestsrc, video_enc, NULL, pipeline,
+      "sink_video");
 
   gst_bin_add (GST_BIN (pipeline), receiver);
 
@@ -754,28 +815,16 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
 
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
-  gst_bin_add_many (GST_BIN (pipeline), audiotestsrc_offerer, audio_enc_offerer,
-      capsfilter_offerer, NULL);
-  gst_element_link_many (audiotestsrc_offerer, capsfilter_offerer,
-      audio_enc_offerer, NULL);
-  gst_element_link_pads (audio_enc_offerer, NULL, offerer, "audio_sink");
-
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc_offerer, video_enc_offerer,
-      NULL);
-  gst_element_link (videotestsrc_offerer, video_enc_offerer);
-  gst_element_link_pads (video_enc_offerer, NULL, offerer, "video_sink");
+  connect_sink_async (offerer, audiotestsrc_offerer, audio_enc_offerer,
+      capsfilter_offerer, pipeline, "sink_audio");
+  connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
+      pipeline, "sink_video");
 
   gst_bin_add (GST_BIN (pipeline), answerer);
-  gst_bin_add_many (GST_BIN (pipeline)
-      , audiotestsrc_answerer, audio_enc_answerer, capsfilter_answerer, NULL);
-  gst_element_link_many (audiotestsrc_answerer, capsfilter_answerer,
-      audio_enc_answerer, NULL);
-  gst_element_link_pads (audio_enc_answerer, NULL, answerer, "audio_sink");
-
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc_answerer,
-      video_enc_answerer, NULL);
-  gst_element_link (videotestsrc_answerer, video_enc_answerer);
-  gst_element_link_pads (video_enc_answerer, NULL, answerer, "video_sink");
+  connect_sink_async (answerer, audiotestsrc_answerer, audio_enc_answerer,
+      capsfilter_answerer, pipeline, "sink_audio");
+  connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
+      pipeline, "sink_video");
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
