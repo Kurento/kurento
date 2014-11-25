@@ -280,3 +280,34 @@ kms_muxing_pipeline_set_state (KmsMuxingPipeline * obj, GstState state)
 
   return gst_element_set_state (obj->priv->pipeline, state);
 }
+
+GstState
+kms_muxing_pipeline_get_state (KmsMuxingPipeline * obj)
+{
+  return GST_STATE (obj->priv->pipeline);
+}
+
+GstClock *
+kms_muxing_pipeline_get_clock (KmsMuxingPipeline * obj)
+{
+  g_return_val_if_fail (obj != NULL, GST_CLOCK_TIME_NONE);
+
+  return GST_ELEMENT (obj->priv->pipeline)->clock;
+}
+
+GstBus *
+kms_muxing_pipeline_get_bus (KmsMuxingPipeline * obj)
+{
+  g_return_val_if_fail (obj != NULL, NULL);
+
+  return gst_pipeline_get_bus (GST_PIPELINE (obj->priv->pipeline));
+}
+
+void
+kms_muxing_pipeline_dot_file (KmsMuxingPipeline * obj)
+{
+  g_return_if_fail (obj != NULL);
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (obj->priv->pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (obj->priv->pipeline));
+}

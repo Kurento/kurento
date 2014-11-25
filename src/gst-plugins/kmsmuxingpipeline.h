@@ -59,6 +59,10 @@ struct _KmsMuxingPipelineClass
 KmsMuxingPipeline * kms_muxing_pipeline_new (const char *optname1, ...);
 GstStateChangeReturn kms_muxing_pipeline_set_state (KmsMuxingPipeline *obj,
   GstState state);
+GstState kms_muxing_pipeline_get_state (KmsMuxingPipeline *obj);
+GstClock * kms_muxing_pipeline_get_clock (KmsMuxingPipeline *obj);
+GstBus * kms_muxing_pipeline_get_bus (KmsMuxingPipeline *obj);
+void kms_muxing_pipeline_dot_file (KmsMuxingPipeline *obj);
 
 G_END_DECLS
 #endif
