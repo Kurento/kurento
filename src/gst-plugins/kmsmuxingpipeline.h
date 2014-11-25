@@ -56,8 +56,6 @@ struct _KmsMuxingPipelineClass
   GObjectClass parent_class;
 };
 
-GType kms_muxing_pipeline_get_type (void);
-
 KmsMuxingPipeline * kms_muxing_pipeline_new (const char *optname1, ...);
 GstStateChangeReturn kms_muxing_pipeline_set_state (KmsMuxingPipeline *obj,
   GstState state);
