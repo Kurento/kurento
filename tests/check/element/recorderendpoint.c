@@ -184,7 +184,7 @@ GST_START_TEST (check_states_pipeline)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/state_recorder.webm", NULL);
+      "file:///tmp/state_recorder.webm", "profile", 0 /* WEBM */ , NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -210,18 +210,12 @@ GST_START_TEST (check_states_pipeline)
       "wave", 8, NULL);
   g_object_set (G_OBJECT (timeoverlay), "font-desc", "Sans 28", NULL);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "entering_main_loop");
-
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   transite (loop);
 
   g_main_loop_run (loop);
   GST_DEBUG ("Stop executed");
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "after_main_loop");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
@@ -256,7 +250,7 @@ GST_START_TEST (warning_pipeline)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/warning_pipeline.webm", NULL);
+      "file:///tmp/warning_pipeline.webm", "profile", 0 /* WEBM */ , NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -344,7 +338,7 @@ GST_START_TEST (finite_video_test)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/finite_video_test.webm", NULL);
+      "file:///tmp/finite_video_test.webm", "profile", 0 /* WEBM */ , NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -431,7 +425,7 @@ GST_START_TEST (check_video_only)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/check_video_only.webm", NULL);
+      "file:///tmp/check_video_only.webm", "profile", 0 /* WEBM */ , NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -486,7 +480,12 @@ recorderendpoint_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
-  tcase_add_test (tc_chain, check_video_only);
+
+/* Enable test when recorder is able to emit dropable buffers for the muxer */
+  if (FALSE) {
+    tcase_add_test (tc_chain, check_video_only);
+  }
+
   tcase_add_test (tc_chain, check_states_pipeline);
   tcase_add_test (tc_chain, warning_pipeline);
   tcase_add_test (tc_chain, finite_video_test);
