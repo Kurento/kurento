@@ -6,11 +6,9 @@ Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
  kms-core-dev (>= 5.0.4),
- kms-gstmarshal-dev (>= 1.0.1),
  libboost-filesystem-dev,
  libsoup2.4-dev,
  libgnutls28-dev,
- libsctp-dev,
  libnice-dev,
  uuid-dev
 Standards-Version: 3.9.4
@@ -25,7 +23,6 @@ Depends:
   ${misc:Depends},
   gstreamer1.0-nice,
   gnutls-bin,
-  kms-gstmarshal (>= 1.0.1),
   kms-core (>= 5.0.4)
 Description: Kurento elements module
  Kurento elements implementation
