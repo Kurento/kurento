@@ -1,5 +1,5 @@
 set (TEST_PROPERTIES
-  GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}
+  GST_PLUGIN_PATH=$ENV{GST_PLUGIN_PATH}:${CMAKE_PREFIX_PATH}:${CMAKE_BINARY_DIR}
 )
 
 add_test_program (test_constructors constructors.cpp)
