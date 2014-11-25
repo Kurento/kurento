@@ -12,6 +12,8 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoHttpPostEndpointImpl"
 
+#define FACTORY_NAME "httppostendpoint"
+
 namespace kurento
 {
 
@@ -28,7 +30,7 @@ HttpPostEndpointImpl::HttpPostEndpointImpl (const boost::property_tree::ptree
     mediaPipeline, int disconnectionTimeout,
     bool useEncodedMedia) : HttpEndpointImpl (conf,
           std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline),
-          disconnectionTimeout)
+          disconnectionTimeout, FACTORY_NAME)
 {
   g_object_set (G_OBJECT (element), USE_ENCODED_MEDIA, useEncodedMedia, NULL);
 
