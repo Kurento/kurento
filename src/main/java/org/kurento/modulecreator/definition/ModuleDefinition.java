@@ -228,6 +228,11 @@ public class ModuleDefinition {
 
 	public void validateModule() {
 
+		if (name == null) {
+			throw new KurentoModuleCreatorException(
+					"Name is mandatory at least in one of the files");
+		}
+
 		if (kurentoVersion == null) {
 			if (AUTO_IMPORTED_MODULES.contains(name)) {
 				kurentoVersion = version;
@@ -236,11 +241,6 @@ public class ModuleDefinition {
 						"Kurento version is mandatory at least in one of the files describing: "
 								+ name);
 			}
-		}
-
-		if (name == null) {
-			throw new KurentoModuleCreatorException(
-					"Name is mandatory at least in one of the files");
 		}
 
 		if (version == null) {
