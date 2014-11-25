@@ -18,8 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.openqa.selenium.JavascriptExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Latency controller.
@@ -30,6 +31,8 @@ import org.openqa.selenium.JavascriptExecutor;
  */
 public class LatencyController implements
 		ChangeColorEventListener<ChangeColorEvent> {
+
+	public Logger log = LoggerFactory.getLogger(LatencyController.class);
 
 	private long latency;
 	private TimeUnit latencyTimeUnit;
@@ -76,7 +79,7 @@ public class LatencyController implements
 
 	public void checkLatency(final long testTime, final TimeUnit testTimeUnit) {
 		if (localChangeColor == null || remoteChangeColor == null) {
-			Assert.fail("Bad setup in latency controller "
+			throw new RuntimeException("Bad setup in latency controller "
 					+ " (local and remote tag of browser(s) needed");
 		}
 
@@ -102,28 +105,26 @@ public class LatencyController implements
 					t.interrupt();
 					String parsedtime = new SimpleDateFormat("mm:ss.SSS")
 							.format(lastLocalColorChangeTime);
-					Assert.fail("Change color not detected in LOCAL steam after "
-							+ timeout
-							+ " "
-							+ timeoutTimeUnit
-							+ ". Last color change was detected at "
-							+ parsedtime
-							+ " and the last detected color was "
-							+ lastLocalColor);
+					throw new RuntimeException(
+							"Change color not detected in LOCAL steam after "
+									+ timeout + " " + timeoutTimeUnit
+									+ ". Last color change was detected at "
+									+ parsedtime
+									+ " and the last detected color was "
+									+ lastLocalColor);
 				}
 
 				if (!remoteEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
 					t.interrupt();
 					String parsedtime = new SimpleDateFormat("mm:ss.SSS")
 							.format(lastRemoteColorChangeTime);
-					Assert.fail("Change color not detected in REMOTE steam after "
-							+ timeout
-							+ " "
-							+ timeoutTimeUnit
-							+ ". Last color change was detected at "
-							+ parsedtime
-							+ " and the last detected color was "
-							+ lastRemoteColor);
+					throw new RuntimeException(
+							"Change color not detected in REMOTE steam after "
+									+ timeout + " " + timeoutTimeUnit
+									+ ". Last color change was detected at "
+									+ parsedtime
+									+ " and the last detected color was "
+									+ lastRemoteColor);
 				}
 
 				if (firstTime) {
@@ -137,31 +138,37 @@ public class LatencyController implements
 					String parsedRemotetime = new SimpleDateFormat("mm:ss.SSS")
 							.format(lastRemoteColorChangeTime);
 
-					if (latencyMilis > getLatency(TimeUnit.MILLISECONDS)) {
+					if (latencyMilis > getLatency(TimeUnit.MILLISECONDS)
+							&& lastLocalColor.equals(lastRemoteColor)) {
+
 						t.interrupt();
 
-						Assert.fail("Latency error detected: "
-								+ latencyMilis
-								+ " "
-								+ latencyTimeUnit
-								+ " between last color change in remote tag (color="
-								+ lastRemoteColor
-								+ " at minute "
-								+ parsedRemotetime
-								+ ") and last color change in local tag (color="
-								+ lastLocalColor + " at minute "
-								+ parsedLocaltime + ")");
+						throw new RuntimeException(
+								"Latency error detected: "
+										+ latencyMilis
+										+ " "
+										+ latencyTimeUnit
+										+ " between last color change in remote tag (color="
+										+ lastRemoteColor
+										+ " at minute "
+										+ parsedRemotetime
+										+ ") and last color change in local tag (color="
+										+ lastLocalColor + " at minute "
+										+ parsedLocaltime + ")");
+
 					}
 				}
 			}
 
 		} catch (InterruptedException e) {
+			log.info("Finished LatencyController thread due to InterruptedException");
 		}
 		localColorTrigger.interrupt();
 		remoteColorTrigger.interrupt();
 	}
 
-	public void addChangeColorEventListener(VideoTag type, JavascriptExecutor js) {
+	public void addChangeColorEventListener(VideoTag type,
+			JavascriptExecutor js, String name) {
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
 				timeoutTimeUnit);
 
@@ -170,12 +177,18 @@ public class LatencyController implements
 			localChangeColor.addListener(this);
 			localColorTrigger = new Thread(new ColorTrigger(type, js,
 					localChangeColor, timeoutSeconds));
+			if (name != null) {
+				localColorTrigger.setName(name);
+			}
 			localColorTrigger.start();
 		} else {
 			remoteChangeColor = new ChangeColorObservable();
 			remoteChangeColor.addListener(this);
 			remoteColorTrigger = new Thread(new ColorTrigger(type, js,
 					remoteChangeColor, timeoutSeconds));
+			if (name != null) {
+				remoteColorTrigger.setName(name);
+			}
 			remoteColorTrigger.start();
 		}
 	}

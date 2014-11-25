@@ -521,7 +521,12 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void addChangeColorEventListener(VideoTag type, LatencyController cs) {
-		cs.addChangeColorEventListener(type, js);
+		cs.addChangeColorEventListener(type, js, null);
+	}
+
+	public void addChangeColorEventListener(VideoTag type,
+			LatencyController cs, String name) {
+		cs.addChangeColorEventListener(type, js, name);
 	}
 
 }

@@ -88,16 +88,22 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					webRtcEndpoint2.connect(webRtcEndpoint2);
 
 					// Latency control (loopback)
-					log.debug("[1] Latency control of browser1 to browser1");
+					log.debug("[{}.1] Latency control of browser1 to browser1",
+							i);
 					LatencyController cs1 = new LatencyController();
-					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1);
-					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs1);
+					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1,
+							"1to1_loc" + i);
+					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs1,
+							"1to1_rem" + i);
 					cs1.checkLatency(30, TimeUnit.SECONDS);
 
-					log.debug("[2] Latency control of browser2 to browser2");
+					log.debug("[{}.2] Latency control of browser2 to browser2",
+							i);
 					LatencyController cs2 = new LatencyController();
-					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs2);
-					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2);
+					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs2,
+							"2to2_loc" + i);
+					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2,
+							"2to2_loc" + i);
 					cs2.checkLatency(30, TimeUnit.SECONDS);
 
 				} else {
@@ -106,16 +112,22 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					webRtcEndpoint2.connect(webRtcEndpoint1);
 
 					// Latency control (B2B)
-					log.debug("[3] Latency control of browser1 to browser2");
+					log.debug("[{}.3] Latency control of browser1 to browser2",
+							i);
 					LatencyController cs1 = new LatencyController();
-					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1);
-					browser2.addChangeColorEventListener(VideoTag.REMOTE, cs1);
+					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1,
+							"1to2_loc" + i);
+					browser2.addChangeColorEventListener(VideoTag.REMOTE, cs1,
+							"1to2_rem" + i);
 					cs1.checkLatency(30, TimeUnit.SECONDS);
 
-					log.debug("[4] Latency control of browser2 to browser1");
+					log.debug("[{}.4] Latency control of browser2 to browser1",
+							i);
 					LatencyController cs2 = new LatencyController();
-					browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2);
-					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2);
+					browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2,
+							"2to1_loc" + i);
+					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2,
+							"2to1_rem" + i);
 					cs2.checkLatency(30, TimeUnit.SECONDS);
 				}
 			}
