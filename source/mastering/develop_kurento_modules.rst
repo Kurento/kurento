@@ -158,41 +158,43 @@ the client-side.
 
 * For JavaScript, you should to execute
   ``cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE``. This command generates a
-  ``js`` folder with client code.
+  ``js`` folder with client code. Now you can add the JavaScript library to use
+  your module in your application manually. Alternatively, you can use
+  `Bower`:term: (for JavaScript for browser) or `NPM`:term: (for JavaScript for
+  Node.js). To do that, you should add your JavaScript module as a dependency
+  in your ``bower.json`` or ``package.json`` file respectively, as follows:
 
-      TODO: ADD INFORMATION TO USE THE JS CODE.
+.. sourcecode:: js
+
+   "dependencies": {
+      "modulename": "moduleversion"
+   }
 
 Examples
 ========
 
 Simple examples for both kind of modules are available in GitHub:
 
-* OpenCV module
-  https://github.com/Kurento/kms-opencv-plugin-sample/tree/develop
+* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample/tree/master>`_
 
-* GStreamer module https://github.com/Kurento/kms-plugin-sample
+* `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`_
 
 There are a lot of examples of how to define methods, parameters or events in
-all our public modules:
+all our public built-in modules:
 
-* kms-pointerdetector
-  https://github.com/Kurento/kms-pointerdetector/tree/develop/src/server/interface
+* `kms-pointerdetector <https://github.com/Kurento/kms-pointerdetector/tree/master/src/server/interface>`_
 
-* kms-crowddetector
-  https://github.com/Kurento/kms-crowddetector/tree/develop/src/server/interface
+* `kms-crowddetector <https://github.com/Kurento/kms-crowddetector/tree/master/src/server/interface>`_
 
-* kms-chroma
-  https://github.com/Kurento/kms-chroma/tree/develop/src/server/interface
+* `kms-chroma <https://github.com/Kurento/kms-chroma/tree/master/src/server/interface>`_
 
-* kms-platedetector
-  https://github.com/Kurento/kms-platedetector/tree/develop/src/server/interface
+* `kms-platedetector <https://github.com/Kurento/kms-platedetector/tree/master/src/server/interface>`_
 
 Moreover, all our modules are developed using this methodology, for that reason
 you can take a look to our main modules:
 
-* kms-core: https://github.com/Kurento/kms-core
+* `kms-core <https://github.com/Kurento/kms-core>`_
 
-* kms-elements: https://github.com/Kurento/kms-elements
+* `kms-elements <https://github.com/Kurento/kms-elements>`_
 
-* kms-filters: https://github.com/Kurento/kms-filters
-
+* `kms-filters <https://github.com/Kurento/kms-filters>`_
