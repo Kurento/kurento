@@ -213,7 +213,8 @@ public class KurentoModuleCreator {
 				if (generateNpmPackage) {
 					codeGen.setTemplatesDir(getInternalTemplatesDir("npm"));
 					codeGen.generateNpmPackage(module,
-							searchFiles(this.kmdFilesToGen, "package.json"));
+							searchFiles(this.kmdFilesToGen, "package.json"),
+							searchFiles(this.kmdFilesToGen, "bower.json"));
 				}
 			}
 
