@@ -26,7 +26,7 @@
 #include <commons/kmsutils.h>
 
 #include "kmshttpgetendpoint.h"
-#include "kmsconfcontroller.h"
+#include "kmsmuxingpipeline.h"
 
 #define PLUGIN_NAME "httpgetendpoint"
 #define parent_class kms_http_get_endpoint_parent_class
@@ -54,8 +54,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_http_get_endpoint_debug_category);
 struct _KmsHttpGetEndpointPrivate
 {
   GstElement *appsink;
-  KmsConfController *controller;
   KmsRecordingProfile profile;
+  KmsMuxingPipeline *mux;
   gboolean use_dvr;
 };
 
@@ -74,7 +74,7 @@ enum
   N_PROPERTIES
 };
 
-#define HTTP_GET_ENDPOINT_RECORDING_PROFILE_DEFAULT KMS_RECORDING_PROFILE_WEBM
+#define HTTP_GET_ENDPOINT_RECORDING_PROFILE_DEFAULT KMS_RECORDING_PROFILE_NONE
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
@@ -103,15 +103,15 @@ release_base_time_type (gpointer data)
 }
 
 static void
-kms_http_get_endpoint_change_internal_pipeline_state (KmsHttpEndpoint * self,
+kms_http_get_endpoint_change_internal_pipeline_state (KmsHttpEndpoint * httpep,
     gboolean start)
 {
+  KmsHttpGetEndpoint *self = KMS_HTTP_GET_ENDPOINT (httpep);
   GstElement *audio_v, *video_v;
 
-  if (KMS_HTTP_ENDPOINT (self)->pipeline == NULL) {
-    GST_WARNING ("Element %s is not initialized", GST_ELEMENT_NAME (self));
-    KMS_HTTP_ENDPOINT (self)->start = start;
-    return;
+  if (self->priv->mux == NULL) {
+    GST_WARNING_OBJECT (self, "Not initialized");
+    goto end;
   }
 
   audio_v = kms_element_get_audio_valve (KMS_ELEMENT (self));
@@ -125,13 +125,13 @@ kms_http_get_endpoint_change_internal_pipeline_state (KmsHttpEndpoint * self,
   if (start) {
     /* Set pipeline to PLAYING */
     GST_DEBUG ("Setting pipeline to PLAYING");
-    if (gst_element_set_state (KMS_HTTP_ENDPOINT (self)->pipeline,
+    if (kms_muxing_pipeline_set_state (self->priv->mux,
             GST_STATE_PLAYING) == GST_STATE_CHANGE_ASYNC)
       GST_DEBUG ("Change to PLAYING will be asynchronous");
   } else {
     /* Set pipeline to READY */
     GST_DEBUG ("Setting pipeline to READY.");
-    if (gst_element_set_state (KMS_HTTP_ENDPOINT (self)->pipeline,
+    if (kms_muxing_pipeline_set_state (self->priv->mux,
             GST_STATE_READY) == GST_STATE_CHANGE_ASYNC)
       GST_DEBUG ("Change to READY will be asynchronous");
 
@@ -141,7 +141,8 @@ kms_http_get_endpoint_change_internal_pipeline_state (KmsHttpEndpoint * self,
     BASE_TIME_UNLOCK (self);
   }
 
-  KMS_HTTP_ENDPOINT (self)->start = start;
+end:
+  httpep->start = start;
 }
 
 static GstFlowReturn
@@ -229,13 +230,6 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
 
   BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
 
-  // TODO: Think about a way to remove this lock
-  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsink));
-
-  g_object_set (self->priv->controller, "has_data", TRUE, NULL);
-
-  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsink));
-
   GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
 
   if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
@@ -279,15 +273,6 @@ eos_handler (GstElement * appsink, gpointer user_data)
   }
 }
 
-static void
-matched_elements_cb (KmsConfController * controller, GstElement * appsink,
-    GstElement * appsrc, gpointer httpep)
-{
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_get_handler),
-      appsrc);
-  g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), appsrc);
-}
-
 static GstFlowReturn
 new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 {
@@ -301,90 +286,106 @@ new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 }
 
 static void
-sink_required_cb (KmsConfController * controller, gpointer httpep)
+kms_http_get_endpoint_update_state_on_valve_added (KmsHttpGetEndpoint * self,
+    GstElement * valve)
 {
-  KmsHttpGetEndpoint *self = KMS_HTTP_GET_ENDPOINT (httpep);
-
-  self->priv->appsink = gst_element_factory_make ("appsink", NULL);
-
-  g_object_set (self->priv->appsink, "emit-signals", TRUE, "qos", TRUE,
-      "max-buffers", 1, "async", FALSE, NULL);
-  g_signal_connect (self->priv->appsink, "new-sample",
-      G_CALLBACK (new_sample_emit_signal_handler), self);
-  g_signal_connect (self->priv->appsink, "eos", G_CALLBACK (eos_handler), self);
-
-  g_object_set (self->priv->controller, "sink", self->priv->appsink, NULL);
-}
-
-static void
-kms_http_get_endpoint_init_get_pipeline (KmsHttpGetEndpoint * self)
-{
-  g_atomic_int_set (&KMS_HTTP_ENDPOINT (self)->method,
-      KMS_HTTP_ENDPOINT_METHOD_GET);
-
-  KMS_HTTP_ENDPOINT (self)->pipeline =
-      gst_pipeline_new (KMS_HTTP_GET_ENDPOINT_PIPELINE);
-  g_object_set (KMS_HTTP_ENDPOINT (self)->pipeline, "async-handling", TRUE,
-      NULL);
-
-  self->priv->controller =
-      kms_conf_controller_new (KMS_CONF_CONTROLLER_KMS_ELEMENT, self,
-      KMS_CONF_CONTROLLER_PIPELINE, KMS_HTTP_ENDPOINT (self)->pipeline,
-      KMS_CONF_CONTROLLER_PROFILE, self->priv->profile, NULL);
-  g_object_set (G_OBJECT (self->priv->controller), "live-DVR",
-      self->priv->use_dvr, NULL);
-
-  g_signal_connect (self->priv->controller, "matched-elements",
-      G_CALLBACK (matched_elements_cb), self);
-  g_signal_connect (self->priv->controller, "sink-required",
-      G_CALLBACK (sink_required_cb), self);
-}
-
-static void
-kms_http_get_endpoint_valve_added (KmsHttpGetEndpoint * self,
-    GstElement * valve, const gchar * sinkname,
-    const gchar * srcname, const gchar * destpadname)
-{
-  gboolean initialized = FALSE;
-
-  if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) !=
-      KMS_HTTP_ENDPOINT_METHOD_UNDEFINED
-      && g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) !=
-      KMS_HTTP_ENDPOINT_METHOD_GET) {
-    GST_ERROR ("Trying to get data from a non-GET HttpEndpoint");
-    return;
-  }
-
-  if (KMS_HTTP_ENDPOINT (self)->pipeline == NULL) {
-    kms_http_get_endpoint_init_get_pipeline (self);
-    initialized = TRUE;
-  }
-
-  kms_conf_controller_link_valve (self->priv->controller, valve, sinkname,
-      srcname, destpadname);
-
   if (KMS_HTTP_ENDPOINT (self)->start) {
-    if (initialized) {
-      /* Force pipeline to change to Playing state */
-      KMS_HTTP_ENDPOINT (self)->start = FALSE;
-      kms_http_get_endpoint_change_internal_pipeline_state (KMS_HTTP_ENDPOINT
-          (self), TRUE);
-    } else {
-      GST_DEBUG ("Setting %" GST_PTR_FORMAT " drop to FALSE", valve);
-      kms_utils_set_valve_drop (valve, FALSE);
-    }
+    /* Force pipeline to change to Playing state */
+    kms_http_get_endpoint_change_internal_pipeline_state (KMS_HTTP_ENDPOINT
+        (self), TRUE);
   }
 
-  /* TODO: Improve this logic */
   /* Drop buffers only if it isn't started */
   kms_utils_set_valve_drop (valve, !KMS_HTTP_ENDPOINT (self)->start);
+}
+
+static GstPadProbeReturn
+set_audio_caps (GstPad * pad, GstPadProbeInfo * info, gpointer httpep)
+{
+  KmsHttpGetEndpoint *self = KMS_HTTP_GET_ENDPOINT (httpep);
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+  GstElement *audioappsrc;
+  GstCaps *caps;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
+    return GST_PAD_PROBE_OK;
+
+  g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
+      &audioappsrc, NULL);
+
+  gst_event_parse_caps (event, &caps);
+
+  GST_DEBUG_OBJECT (audioappsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
+
+  g_object_set (audioappsrc, "caps", caps, NULL);
+
+  g_object_unref (audioappsrc);
+
+  return GST_PAD_PROBE_OK;
+}
+
+static GstPadProbeReturn
+set_video_caps (GstPad * pad, GstPadProbeInfo * info, gpointer httpep)
+{
+  KmsHttpGetEndpoint *self = KMS_HTTP_GET_ENDPOINT (httpep);
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+  GstElement *videoappsrc;
+  GstCaps *caps;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
+    return GST_PAD_PROBE_OK;
+
+  g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
+      &videoappsrc, NULL);
+
+  gst_event_parse_caps (event, &caps);
+
+  GST_DEBUG_OBJECT (videoappsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
+
+  g_object_set (videoappsrc, "caps", caps, NULL);
+
+  g_object_unref (videoappsrc);
+
+  return GST_PAD_PROBE_OK;
 }
 
 static void
 kms_http_get_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
 {
-  kms_http_get_endpoint_valve_added (KMS_HTTP_GET_ENDPOINT (self), valve,
-      AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
+  KmsHttpGetEndpoint *httpep = KMS_HTTP_GET_ENDPOINT (self);
+  GstElement *audioappsink, *audioappsrc;
+  GstPad *sinkpad;
+
+  if (httpep->priv->mux == NULL) {
+    GST_ERROR_OBJECT (httpep, "No recorder profile");
+    return;
+  }
+
+  audioappsink = gst_element_factory_make ("appsink", AUDIO_APPSINK);
+  g_object_set (audioappsink, "emit-signals", TRUE, "async", FALSE,
+      "sync", FALSE, "qos", TRUE, NULL);
+
+  gst_bin_add (GST_BIN (self), audioappsink);
+
+  gst_element_link (valve, audioappsink);
+
+  g_object_get (httpep->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
+      &audioappsrc, NULL);
+
+  g_signal_connect (audioappsink, "new-sample",
+      G_CALLBACK (new_sample_get_handler), audioappsrc);
+  g_signal_connect (audioappsink, "eos", G_CALLBACK (eos_handler), audioappsrc);
+
+  sinkpad = gst_element_get_static_pad (audioappsink, "sink");
+  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      set_audio_caps, httpep, NULL);
+  g_object_unref (sinkpad);
+
+  kms_http_get_endpoint_update_state_on_valve_added (httpep, valve);
+
+  gst_element_sync_state_with_parent (audioappsink);
+
+  g_object_unref (audioappsrc);
 }
 
 static void
@@ -402,8 +403,39 @@ kms_http_get_endpoint_audio_valve_removed (KmsElement * self,
 static void
 kms_http_get_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
 {
-  kms_http_get_endpoint_valve_added (KMS_HTTP_GET_ENDPOINT (self), valve,
-      VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
+  KmsHttpGetEndpoint *httpep = KMS_HTTP_GET_ENDPOINT (self);
+  GstElement *videoappsink, *videoappsrc;
+  GstPad *sinkpad;
+
+  if (httpep->priv->mux == NULL) {
+    GST_ERROR_OBJECT (httpep, "No recorder profile");
+    return;
+  }
+
+  videoappsink = gst_element_factory_make ("appsink", VIDEO_APPSINK);
+  g_object_set (videoappsink, "emit-signals", TRUE, "async", FALSE,
+      "sync", FALSE, "qos", TRUE, NULL);
+
+  gst_bin_add (GST_BIN (self), videoappsink);
+
+  gst_element_link (valve, videoappsink);
+
+  g_object_get (httpep->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
+      &videoappsrc, NULL);
+
+  g_signal_connect (videoappsink, "new-sample",
+      G_CALLBACK (new_sample_get_handler), videoappsrc);
+  g_signal_connect (videoappsink, "eos", G_CALLBACK (eos_handler), videoappsrc);
+
+  sinkpad = gst_element_get_static_pad (videoappsink, "sink");
+  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      set_video_caps, httpep, NULL);
+  g_object_unref (sinkpad);
+
+  kms_http_get_endpoint_update_state_on_valve_added (httpep, valve);
+
+  gst_element_sync_state_with_parent (videoappsink);
+  g_object_unref (videoappsrc);
 }
 
 static void
@@ -641,7 +673,8 @@ kms_http_get_endpoint_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
-  g_clear_object (&self->priv->controller);
+  g_clear_object (&self->priv->appsink);
+  g_clear_object (&self->priv->mux);
 
   /* clean up as possible. May be called multiple times */
 
@@ -676,6 +709,18 @@ kms_http_get_endpoint_pull_sample_action (KmsHttpGetEndpoint * self)
 }
 
 static void
+kms_http_get_endpoint_create_sink (KmsHttpGetEndpoint * self)
+{
+  self->priv->appsink = gst_element_factory_make ("appsink", NULL);
+
+  g_object_set (self->priv->appsink, "emit-signals", TRUE, "qos", TRUE,
+      "max-buffers", 1, "async", FALSE, NULL);
+  g_signal_connect (self->priv->appsink, "new-sample",
+      G_CALLBACK (new_sample_emit_signal_handler), self);
+  g_signal_connect (self->priv->appsink, "eos", G_CALLBACK (eos_handler), self);
+}
+
+static void
 kms_http_get_endpoint_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -685,17 +730,20 @@ kms_http_get_endpoint_set_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_DVR:
       self->priv->use_dvr = g_value_get_boolean (value);
-      if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) ==
-          KMS_HTTP_ENDPOINT_METHOD_GET)
-        g_object_set (G_OBJECT (self->priv->controller), "live-DVR",
-            self->priv->use_dvr, NULL);
       break;
     case PROP_PROFILE:
-      self->priv->profile = g_value_get_enum (value);
-      if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) ==
-          KMS_HTTP_ENDPOINT_METHOD_GET)
-        g_object_set (G_OBJECT (self->priv->controller), "profile",
-            self->priv->profile, NULL);
+      if (self->priv->profile != KMS_RECORDING_PROFILE_NONE) {
+        GST_WARNING_OBJECT (self, "Already configured");
+        break;
+      }
+
+      if ((self->priv->profile =
+              g_value_get_enum (value)) != KMS_RECORDING_PROFILE_NONE) {
+        kms_http_get_endpoint_create_sink (self);
+        self->priv->mux = kms_muxing_pipeline_new (KMS_MUXING_PIPELINE_PROFILE,
+            self->priv->profile, KMS_MUXING_PIPELINE_SINK, self->priv->appsink,
+            NULL);
+      }
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -765,7 +813,7 @@ kms_http_get_endpoint_class_init (KmsHttpGetEndpointClass * klass)
       "Recording profile",
       "The profile used for encapsulating the media",
       KMS_TYPE_RECORDING_PROFILE, HTTP_GET_ENDPOINT_RECORDING_PROFILE_DEFAULT,
-      G_PARAM_READWRITE);
+      (G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
@@ -794,8 +842,10 @@ kms_http_get_endpoint_class_init (KmsHttpGetEndpointClass * klass)
 static void
 kms_http_get_endpoint_init (KmsHttpGetEndpoint * self)
 {
-
   self->priv = KMS_HTTP_GET_ENDPOINT_GET_PRIVATE (self);
+  KMS_HTTP_ENDPOINT (self)->method = KMS_HTTP_ENDPOINT_METHOD_GET;
+
+  self->priv->profile = KMS_RECORDING_PROFILE_NONE;
 }
 
 gboolean

@@ -291,6 +291,9 @@ GST_START_TEST (check_pull_buffer)
   audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
   httpep = gst_element_factory_make ("httpgetendpoint", NULL);
 
+  /* Profile 0 stands for WEBM */
+  g_object_set (httpep, "profile", 0, NULL);
+
   GST_DEBUG ("Adding watcher to the pipeline");
   srcbus = gst_pipeline_get_bus (GST_PIPELINE (src_pipeline));
 
