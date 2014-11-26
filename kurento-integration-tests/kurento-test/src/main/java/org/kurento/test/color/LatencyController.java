@@ -34,6 +34,8 @@ public class LatencyController implements
 
 	public Logger log = LoggerFactory.getLogger(LatencyController.class);
 
+	private String name;
+
 	private long latency;
 	private TimeUnit latencyTimeUnit;
 
@@ -54,6 +56,11 @@ public class LatencyController implements
 
 	private Semaphore localEventLatch = new Semaphore(0);
 	private Semaphore remoteEventLatch = new Semaphore(0);
+
+	public LatencyController(String name) {
+		this();
+		this.name = name;
+	}
 
 	public LatencyController() {
 		// Defaults
@@ -78,8 +85,11 @@ public class LatencyController implements
 	}
 
 	public void checkLatency(final long testTime, final TimeUnit testTimeUnit) {
+		String msgName = (name != null) ? "[" + name + "] " : "";
+
 		if (localChangeColor == null || remoteChangeColor == null) {
-			throw new RuntimeException("Bad setup in latency controller "
+			throw new RuntimeException(msgName
+					+ "Bad setup in latency controller "
 					+ " (local and remote tag of browser(s) needed");
 		}
 
@@ -103,28 +113,18 @@ public class LatencyController implements
 			while (true) {
 				if (!localEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
 					t.interrupt();
-					String parsedtime = new SimpleDateFormat("mm:ss.SSS")
-							.format(lastLocalColorChangeTime);
-					throw new RuntimeException(
-							"Change color not detected in LOCAL steam after "
-									+ timeout + " " + timeoutTimeUnit
-									+ ". Last color change was detected at "
-									+ parsedtime
-									+ " and the last detected color was "
-									+ lastLocalColor);
+
+					throw new RuntimeException(msgName
+							+ "Change color not detected in LOCAL steam after "
+							+ timeout + " " + timeoutTimeUnit);
 				}
 
 				if (!remoteEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
 					t.interrupt();
-					String parsedtime = new SimpleDateFormat("mm:ss.SSS")
-							.format(lastRemoteColorChangeTime);
 					throw new RuntimeException(
-							"Change color not detected in REMOTE steam after "
-									+ timeout + " " + timeoutTimeUnit
-									+ ". Last color change was detected at "
-									+ parsedtime
-									+ " and the last detected color was "
-									+ lastRemoteColor);
+							msgName
+									+ "Change color not detected in REMOTE steam after "
+									+ timeout + " " + timeoutTimeUnit);
 				}
 
 				if (firstTime) {
@@ -144,7 +144,8 @@ public class LatencyController implements
 						t.interrupt();
 
 						throw new RuntimeException(
-								"Latency error detected: "
+								msgName
+										+ "Latency error detected: "
 										+ latencyMilis
 										+ " "
 										+ latencyTimeUnit
@@ -161,7 +162,7 @@ public class LatencyController implements
 			}
 
 		} catch (InterruptedException e) {
-			log.info("Finished LatencyController thread due to InterruptedException");
+			log.debug("Finished LatencyController thread due to Interrupted Exception");
 		}
 		localColorTrigger.interrupt();
 		remoteColorTrigger.interrupt();
