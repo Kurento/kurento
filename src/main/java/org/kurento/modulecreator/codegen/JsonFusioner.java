@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -21,6 +24,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 public class JsonFusioner {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(JsonFusioner.class);
 
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting()
 			.disableHtmlEscaping().create();
@@ -51,12 +57,17 @@ public class JsonFusioner {
 
 	public void fusionJsons() throws IOException {
 
-		JsonObject generatedJsonDoc = loadJson(generatedJson);
-		JsonObject customizedJsonDoc = loadJson(customizerJson);
+		try {
+			JsonObject generatedJsonDoc = loadJson(generatedJson);
+			JsonObject customizedJsonDoc = loadJson(customizerJson);
 
-		merge(generatedJsonDoc, customizedJsonDoc, new ArrayList<String>());
+			merge(generatedJsonDoc, customizedJsonDoc, new ArrayList<String>());
 
-		writeJson(generatedJsonDoc);
+			writeJson(generatedJsonDoc);
+		} catch (IOException e) {
+			log.warn("Error while merging '" + generatedJson + "' with '"
+					+ customizerJson + "': " + e.getMessage());
+		}
 	}
 
 	private void merge(JsonObject genNode, JsonObject custNode,
