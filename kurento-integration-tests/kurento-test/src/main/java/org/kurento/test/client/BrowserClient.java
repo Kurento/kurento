@@ -182,11 +182,16 @@ public class BrowserClient implements Closeable {
 					options.addArguments("--use-fake-device-for-media-stream");
 
 					if (video != null) {
-						options.addArguments("--use-file-for-fake-video-capture="
-								+ video);
+						if (remoteNode != null) {
+							options.addArguments("--use-file-for-fake-video-capture="
+									+ remoteNode.getRemoteVideo());
+						} else {
+							options.addArguments("--use-file-for-fake-video-capture="
+									+ video);
 
-						// Alternative: lauch fake cam also in Chrome
-						// launchFakeCam();
+							// Alternative: lauch fake cam also in Chrome
+							// launchFakeCam();
+						}
 					}
 				}
 
