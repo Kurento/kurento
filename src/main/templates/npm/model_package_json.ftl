@@ -19,7 +19,7 @@ package.json
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
   "scripts": {
-    "prepublish": "if [ ! -d node_modules ]; then if [ ! -d lib ]; then npm install; fi; else grunt; fi"
+    "prepublish": "node scripts/prepublish"
   },
   "peerDependencies": {
     "kurento-client": "${module.kurentoVersion}"
