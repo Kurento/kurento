@@ -369,12 +369,7 @@ static void
 kms_http_get_endpoint_audio_valve_removed (KmsElement * self,
     GstElement * valve)
 {
-  KmsHttpEndpoint *httpep = KMS_HTTP_ENDPOINT (self);
-
-  if (g_atomic_int_get (&httpep->method) != KMS_HTTP_ENDPOINT_METHOD_GET)
-    return;
-
-  GST_INFO ("TODO: Implement this");
+  GST_DEBUG_OBJECT (self, "Removed %" GST_PTR_FORMAT, valve);
 }
 
 static void
@@ -419,12 +414,7 @@ static void
 kms_http_get_endpoint_video_valve_removed (KmsElement * self,
     GstElement * valve)
 {
-  KmsHttpEndpoint *httpep = KMS_HTTP_ENDPOINT (self);
-
-  if (g_atomic_int_get (&httpep->method) != KMS_HTTP_ENDPOINT_METHOD_GET)
-    return;
-
-  GST_INFO ("TODO: Implement this");
+  GST_DEBUG_OBJECT (self, "Removed %" GST_PTR_FORMAT, valve);
 }
 
 static GstCaps *
@@ -704,13 +694,6 @@ static GstSample *
 kms_http_get_endpoint_pull_sample_action (KmsHttpGetEndpoint * self)
 {
   GstSample *sample;
-
-  if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) !=
-      KMS_HTTP_ENDPOINT_METHOD_GET) {
-    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
-        ("Trying to get data from a non-GET HttpEndpoint"), GST_ERROR_SYSTEM);
-    return NULL;
-  }
 
   g_signal_emit_by_name (self->priv->appsink, "pull-sample", &sample);
 

@@ -313,9 +313,6 @@ kms_http_post_endpoint_init_pipeline (KmsHttpPostEndpoint * self)
   GstBus *bus;
   GstCaps *deco_caps;
 
-  g_atomic_int_set (&KMS_HTTP_ENDPOINT (self)->method,
-      KMS_HTTP_ENDPOINT_METHOD_POST);
-
   KMS_HTTP_ENDPOINT (self)->pipeline = gst_pipeline_new (POST_PIPELINE);
   g_object_set (KMS_HTTP_ENDPOINT (self)->pipeline, "async-handling", TRUE,
       NULL);
@@ -360,15 +357,6 @@ kms_http_post_endpoint_push_buffer_action (KmsHttpPostEndpoint * self,
     GstBuffer * buffer)
 {
   GstFlowReturn ret;
-
-  if (g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) !=
-      KMS_HTTP_ENDPOINT_METHOD_UNDEFINED
-      && g_atomic_int_get (&KMS_HTTP_ENDPOINT (self)->method) !=
-      KMS_HTTP_ENDPOINT_METHOD_POST) {
-    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
-        ("Trying to push data in a non-POST HttpEndpoint"), GST_ERROR_SYSTEM);
-    return GST_FLOW_ERROR;
-  }
 
   KMS_ELEMENT_LOCK (self);
 
@@ -482,6 +470,7 @@ static void
 kms_http_post_endpoint_init (KmsHttpPostEndpoint * self)
 {
   self->priv = KMS_HTTP_POST_ENDPOINT_GET_PRIVATE (self);
+  KMS_HTTP_ENDPOINT (self)->method = KMS_HTTP_ENDPOINT_METHOD_POST;
 }
 
 gboolean
