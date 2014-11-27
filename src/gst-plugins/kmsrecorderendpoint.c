@@ -962,11 +962,14 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (element);
   GstCaps *allowed = NULL, *caps = NULL;
   GstCaps *filter, *result, *tcaps;
+  GstElement *appsrc;
 
   gst_query_parse_caps (query, &filter);
 
   switch (kms_element_get_pad_type (element, pad)) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
+          &appsrc, NULL);
       allowed =
           kms_recorder_endpoint_allowed_caps (element,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
@@ -975,7 +978,9 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
       result = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
       break;
-    case KMS_ELEMENT_PAD_TYPE_AUDIO:{
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
+          &appsrc, NULL);
       allowed =
           kms_recorder_endpoint_allowed_caps (element,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
@@ -984,9 +989,8 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
       result = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
       break;
-    }
     default:
-      GST_DEBUG ("unknown pad");
+      GST_ERROR_OBJECT (pad, "unknown pad");
       return FALSE;
   }
 
@@ -1007,14 +1011,35 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
         "Can not get capabilities from pad's template. Using agnostic's' caps");
   }
 
-  if (caps != NULL) {
-    /* Filter against profile */
-    GstCaps *aux;
+  if (caps == NULL) {
+    GST_ERROR_OBJECT (self, "No caps from profile");
+  } else {
+    GstPad *srcpad;
 
-    aux = gst_caps_intersect (caps, result);
-    gst_caps_unref (result);
-    result = aux;
+    /* Get encodebin's caps filtering by profile */
+    srcpad = gst_element_get_static_pad (appsrc, "src");
+    tcaps = gst_pad_peer_query_caps (srcpad, caps);
+    if (tcaps != NULL) {
+      /* Filter against filtered encodebin's caps */
+      GstCaps *aux;
+
+      aux = gst_caps_intersect (tcaps, result);
+      gst_caps_unref (result);
+      gst_caps_unref (tcaps);
+      result = aux;
+    } else if (caps != NULL) {
+      /* Filter against profile */
+      GstCaps *aux;
+
+      GST_WARNING_OBJECT (appsrc, "Using generic profile's caps");
+      aux = gst_caps_intersect (caps, result);
+      gst_caps_unref (result);
+      result = aux;
+    }
+    g_object_unref (srcpad);
   }
+
+  g_object_unref (appsrc);
 
   /* filter against the query filter when needed */
   if (filter != NULL) {
@@ -1043,30 +1068,32 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (element);
   GstCaps *caps, *accept;
-  GstElement *valve;
-  gboolean ret = TRUE;;
+  GstElement *appsrc;
+  gboolean ret = TRUE;
 
   switch (kms_element_get_pad_type (element, pad)) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      valve = kms_element_get_video_valve (element);
+      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
+          &appsrc, NULL);
       caps = kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
       break;
-    case KMS_ELEMENT_PAD_TYPE_AUDIO:{
-      valve = kms_element_get_audio_valve (element);
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
+          &appsrc, NULL);
       caps = kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
       break;
-    }
     default:
-      GST_DEBUG ("unknown pad");
+      GST_ERROR_OBJECT (pad, "unknown pad");
       return FALSE;
   }
 
   if (caps == NULL) {
-    return
-        KMS_ELEMENT_CLASS (kms_recorder_endpoint_parent_class)->sink_query
-        (element, pad, query);
+    GST_ERROR_OBJECT (self, "Can not accept caps without profile");
+    gst_query_set_accept_caps_result (query, FALSE);
+    g_object_unref (appsrc);
+    return TRUE;
   }
 
   gst_query_parse_accept_caps (query, &accept);
@@ -1076,12 +1103,15 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
   if (ret) {
     GstPad *srcpad;
 
-    srcpad = gst_element_get_static_pad (valve, "src");
-    ret = gst_pad_peer_query_accept_caps (srcpad, caps);
+    srcpad = gst_element_get_static_pad (appsrc, "src");
+    ret = gst_pad_peer_query_accept_caps (srcpad, accept);
     gst_object_unref (srcpad);
+  } else {
+    GST_ERROR_OBJECT (self, "Incompatbile caps %" GST_PTR_FORMAT, caps);
   }
 
   gst_caps_unref (caps);
+  g_object_unref (appsrc);
 
   gst_query_set_accept_caps_result (query, ret);
 
