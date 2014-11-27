@@ -205,8 +205,6 @@ GST_START_TEST (check_push_buffer)
 
   g_object_get (G_OBJECT (httpep), "http-method", &method, NULL);
   GST_INFO ("Http end point configured as %d", method);
-  /* Http end point is not configured yet */
-  ck_assert_int_eq (method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (test_pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_entering_main_loop");
@@ -401,8 +399,6 @@ GST_START_TEST (check_emit_encoded_media)
 
   g_object_get (G_OBJECT (httpep), "http-method", &method, NULL);
   GST_INFO ("Http end point configured as %d", method);
-  /* Http end point is not configured yet */
-  ck_assert_int_eq (method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (test_pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_entering_main_loop");
