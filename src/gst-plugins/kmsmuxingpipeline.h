@@ -20,6 +20,8 @@
 G_BEGIN_DECLS
 #define KMS_TYPE_MUXING_PIPELINE               \
   (kms_muxing_pipeline_get_type())
+#define KMS_MUXING_PIPELINE_CAST(obj)          \
+  ((KmsMuxingPipeline *)(obj))
 #define KMS_MUXING_PIPELINE(obj)               \
   (G_TYPE_CHECK_INSTANCE_CAST((obj),           \
   KMS_TYPE_MUXING_PIPELINE,KmsMuxingPipeline))
