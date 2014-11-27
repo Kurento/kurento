@@ -21,7 +21,7 @@ public interface ${remoteClass.name} extends <#if remoteClass.extends??>${remote
 
      TFuture<${getJavaObjectType(property.type,true)}> get${property.name?cap_first}(Transaction tx);
 
-     <#if !property.readOnly>
+     <#if !property.readOnly && !property.final>
      void set${property.name?cap_first}(@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name});
 
      void set${property.name?cap_first}(@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}, Continuation<Void> cont);
