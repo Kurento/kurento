@@ -733,6 +733,13 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
       gst_structure_free (sdes);
       gst_sdp_media_add_attribute (media, "ssrc", value);
       g_free (value);
+
+      if (g_strcmp0 (AUDIO_STREAM_NAME, *media_str) == 0) {
+        webrtc_endpoint->priv->local_audio_ssrc = ssrc;
+      } else if (g_strcmp0 (VIDEO_STREAM_NAME, *media_str) == 0) {
+        /* TODO: improve this assignament. ¿Get from GstRtpSession? */
+        webrtc_endpoint->priv->local_video_ssrc = ssrc;
+      }
     }
   }
 
@@ -900,7 +907,6 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
     const gchar *media_str = NULL;
-    guint ssrc;
 
     if (!update_sdp_media (self, (GstSDPMedia *) media,
             fingerprint, base_sdp_endpoint->use_ipv6, &media_str)) {
@@ -910,13 +916,6 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
 
     if (media_str == NULL) {
       continue;
-    }
-
-    ssrc = sdp_media_get_ssrc (media);
-    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
-      self->priv->local_audio_ssrc = ssrc;
-    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
-      self->priv->local_video_ssrc = ssrc;
     }
 
     if (self->priv->is_bundle) {
