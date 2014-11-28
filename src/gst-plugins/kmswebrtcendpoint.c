@@ -30,7 +30,6 @@
 #include <ftw.h>
 #include <string.h>
 #include <errno.h>
-#include <time.h>
 
 #include <gst/rtp/gstrtcpbuffer.h>
 #include "kmsrtcp.h"
@@ -1411,7 +1410,6 @@ get_video_recv_info (KmsWebrtcEndpoint * self, GObject * sess,
 
     if (ssrc == self->priv->remote_video_ssrc) {
       GstClockTime current_time;
-      struct timespec time;
       guint64 octets_received;
 
       if (!gst_structure_get_uint64 (s, "bitrate", bitrate)) {
@@ -1424,8 +1422,7 @@ get_video_recv_info (KmsWebrtcEndpoint * self, GObject * sess,
         break;
       }
 
-      clock_gettime (CLOCK_MONOTONIC, &time);
-      current_time = time.tv_sec * GST_SECOND + time.tv_nsec;
+      current_time = kms_utils_get_time_nsecs ();
 
       if (self->priv->remb_local_last_time != 0) {
         GstClockTime elapsed = current_time - self->priv->remb_local_last_time;
