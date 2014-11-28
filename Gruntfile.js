@@ -32,9 +32,9 @@ module.exports = function (grunt) {
 
     // Plugins configuration
     clean: {
-      generated_code: DIST_DIR,
+      'code': DIST_DIR,
 
-      generated_doc: '<%= jsdoc.all.dest %>'
+      'doc': '<%= jsdoc.all.dest %>'
     },
 
     // Generate documentation
@@ -111,63 +111,41 @@ module.exports = function (grunt) {
 
     // githooks configuration
     githooks: {
-      options: {
-        // Task-specific options go here.
-      },
       all: {
         'pre-commit': 'jsbeautifier:git-pre-commit'
-          // Hook definitions go there
       }
     },
 
     jsbeautifier: {
-      "default": {
-        src: ["lib/**/*.js", "*.js"],
-        options: {
-          js: {
-            braceStyle: "collapse",
-            breakChainedMethods: false,
-            e4x: false,
-            evalCode: false,
-            indentChar: " ",
-            indentLevel: 0,
-            indentSize: 2,
-            indentWithTabs: false,
-            jslintHappy: true,
-            keepArrayIndentation: false,
-            keepFunctionIndentation: false,
-            maxPreserveNewlines: 2,
-            preserveNewlines: true,
-            spaceBeforeConditional: true,
-            spaceInParen: false,
-            unescapeStrings: false,
-            wrapLineLength: 80
-          }
+      options: {
+        js: {
+          braceStyle: "collapse",
+          breakChainedMethods: false,
+          e4x: false,
+          evalCode: false,
+          indentChar: " ",
+          indentLevel: 0,
+          indentSize: 2,
+          indentWithTabs: false,
+          jslintHappy: true,
+          keepArrayIndentation: false,
+          keepFunctionIndentation: false,
+          maxPreserveNewlines: 2,
+          preserveNewlines: true,
+          spaceBeforeConditional: true,
+          spaceInParen: false,
+          unescapeStrings: false,
+          wrapLineLength: 80
         }
+      },
+
+      "default": {
+        src: ["lib/**/*.js", "*.js"]
       },
       "git-pre-commit": {
         src: ["lib/**/*.js", "*.js"],
         options: {
-          mode: "VERIFY_ONLY",
-          js: {
-            braceStyle: "collapse",
-            breakChainedMethods: false,
-            e4x: false,
-            evalCode: false,
-            indentChar: " ",
-            indentLevel: 0,
-            indentSize: 2,
-            indentWithTabs: false,
-            jslintHappy: true,
-            keepArrayIndentation: false,
-            keepFunctionIndentation: false,
-            maxPreserveNewlines: 2,
-            preserveNewlines: true,
-            spaceBeforeConditional: true,
-            spaceInParen: false,
-            unescapeStrings: false,
-            wrapLineLength: 80
-          }
+          mode: "VERIFY_ONLY"
         }
       }
     },

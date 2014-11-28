@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "async": "~0.9.0",
-    "checktype": "^0.0.4",
+    "checktype": "^0.0.5",
     "es6-promise": "2.0.0",
     "extend": "^2.0.0",
     "inherits": "~2.0.1",
