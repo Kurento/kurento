@@ -15,12 +15,12 @@ package.json
     "url": "${module.code.api.js.npmGit}"
   },
 </#if>
-<#if node_name != "kurento-client-core"
-  && node_name != "kurento-client-elements"
-  && node_name != "kurento-client-filters">
   "scripts": {
     "prepublish": "node scripts/prepublish"
   },
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
   "peerDependencies": {
     "kurento-client": "${module.kurentoVersion}"
   },
@@ -35,22 +35,22 @@ package.json
   <#assign api_js=import.module.code.api.js>
     "${api_js.nodeName}": "${api_js.npmVersion}",
 </#list>
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
     "bower": "~1.3.12",
     "grunt": "~0.4.5",
     "grunt-browserify": "^3.1.0",
     "grunt-cli": "~0.1.13",
-    "grunt-contrib-clean": "~0.6.0",
     "grunt-jsdoc": "~0.5.7",
-<#if api_js.npmGit??>
+  <#if api_js.npmGit??>
     "grunt-npm2bower-sync": "^0.4.0",
-</#if>
-    "grunt-path-check": "^0.9.3",
-    "grunt-shell": "^1.1.1",
-<#if node_name != "kurento-client-core"
-  && node_name != "kurento-client-elements"
-  && node_name != "kurento-client-filters">
+  </#if>
     "kurento-client": "${module.kurentoVersion}",
+    "minifyify": "^4.4.0",
 </#if>
-    "minifyify": "^4.4.0"
+    "grunt-contrib-clean": "~0.6.0",
+    "grunt-path-check": "^0.9.3",
+    "grunt-shell": "^1.1.1"
   }
 }

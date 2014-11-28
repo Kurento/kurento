@@ -33,7 +33,10 @@ module.exports = function(grunt)
   // Project configuration.
   grunt.initConfig({
     pkg: pkg,
-<#if api_js.npmGit??>
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters"
+  && api_js.npmGit??>
     bower:
     {
       TOKEN:      process.env.TOKEN,
@@ -44,12 +47,19 @@ module.exports = function(grunt)
     // Plugins configuration
     clean:
     {
-      'code': 'lib',
-      'browser': DIST_DIR,
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
+      'doc': '<%= jsdoc.all.dest %>',
 
-      'doc': '<%= jsdoc.all.dest %>'
+      'browser': DIST_DIR,
+</#if>
+      'code': 'lib'
     },
 
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
     // Generate documentation
     jsdoc:
     {
@@ -64,6 +74,7 @@ module.exports = function(grunt)
       }
     },
 
+</#if>
     // Check if Kurento Module Creator exists
     'path-check':
     {
@@ -88,7 +99,10 @@ module.exports = function(grunt)
 </#list>
           +' --rom ./src --codegen ./lib'
         ].join('&&')
-      }<#if api_js.npmGit??>,
+      }<#if node_name != "kurento-client-core"
+         && node_name != "kurento-client-elements"
+         && node_name != "kurento-client-filters"
+         && api_js.npmGit??>,
 
       // Publish / update package info in Bower
       bower: {
@@ -98,7 +112,9 @@ module.exports = function(grunt)
           'node_modules/.bin/bower cache clean'
         ].join('&&')
       }</#if>
-    },
+    }<#if node_name != "kurento-client-core"
+       && node_name != "kurento-client-elements"
+       && node_name != "kurento-client-filters">,
 
     // Generate browser versions and mapping debug file
     browserify:
@@ -187,23 +203,35 @@ module.exports = function(grunt)
         }
       }
     }
+  </#if>
 </#if>
   });
 
   // Load plugins
-  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-jsdoc');
-<#if api_js.npmGit??>
-  grunt.loadNpmTasks('grunt-npm2bower-sync');
-</#if>
   grunt.loadNpmTasks('grunt-path-check');
   grunt.loadNpmTasks('grunt-shell');
 
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
+  grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-jsdoc');
+  <#if api_js.npmGit??>
+  grunt.loadNpmTasks('grunt-npm2bower-sync');
+  </#if>
+</#if>
+
   // Alias tasks
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
   grunt.registerTask('generate', ['path-check:generate plugin', 'browserify']);
   grunt.registerTask('default',  ['clean', 'jsdoc', 'generate'<#if api_js.npmGit??>, 'sync:bower'</#if>]);
-<#if api_js.npmGit??>
+  <#if api_js.npmGit??>
   grunt.registerTask('bower',    ['shell:bower']);
+  </#if>
+<#else>
+  grunt.registerTask('default', ['clean', 'path-check:generate plugin']);
 </#if>
 };
