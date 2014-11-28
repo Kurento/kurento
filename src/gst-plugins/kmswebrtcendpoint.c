@@ -1581,6 +1581,65 @@ on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
 }
 
 static void
+remb_remote_update (GObject * sess, KmsRTCPPSFBAFBREMBPacket * remb_packet)
+{
+  /* TODO: implement */
+}
+
+static void
+process_psfb_afb (GObject * sess, GstBuffer * fci_buffer)
+{
+  KmsRTCPPSFBAFBBuffer afb_buffer = { NULL, };
+  KmsRTCPPSFBAFBPacket afb_packet;
+  KmsRTCPPSFBAFBREMBPacket remb_packet;
+  KmsRTCPPSFBAFBType type;
+
+  if (!kms_rtcp_psfb_afb_buffer_map (fci_buffer, GST_MAP_READ, &afb_buffer)) {
+    GST_WARNING_OBJECT (fci_buffer, "Buffer cannot be mapped");
+    return;
+  }
+
+  if (!kms_rtcp_psfb_afb_get_packet (&afb_buffer, &afb_packet)) {
+    GST_WARNING_OBJECT (fci_buffer, "Cannot get RTCP PSFB AFB packet");
+    goto end;
+  }
+
+  type = kms_rtcp_psfb_afb_packet_get_type (&afb_packet);
+  switch (type) {
+    case KMS_RTCP_PSFB_AFB_TYPE_REMB:
+      kms_rtcp_psfb_afb_remb_get_packet (&afb_packet, &remb_packet);
+      remb_remote_update (sess, &remb_packet);
+      break;
+    default:
+      break;
+  }
+
+end:
+  kms_rtcp_psfb_afb_buffer_unmap (&afb_buffer);
+}
+
+static void
+on_feedback_rtcp (GObject * sess, guint type, guint fbtype,
+    guint sender_ssrc, guint media_ssrc, GstBuffer * fci)
+{
+  switch (type) {
+    case GST_RTCP_TYPE_RTPFB:
+      break;
+    case GST_RTCP_TYPE_PSFB:
+      switch (fbtype) {
+        case GST_RTCP_PSFB_TYPE_AFB:
+          process_psfb_afb (sess, fci);
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+static void
 rtpbin_on_new_ssrc (GstElement * rtpbin, guint session, guint ssrc,
     gpointer user_data)
 {
@@ -1597,6 +1656,8 @@ rtpbin_on_new_ssrc (GstElement * rtpbin, guint session, guint ssrc,
   g_object_set_data (rtpsession, WEBRTC_ENDPOINT, ep);
   g_signal_connect (rtpsession, "on-sending-rtcp",
       G_CALLBACK (on_sending_rtcp), NULL);
+  g_signal_connect (rtpsession, "on-feedback-rtcp",
+      G_CALLBACK (on_feedback_rtcp), NULL);
 }
 
 static void
