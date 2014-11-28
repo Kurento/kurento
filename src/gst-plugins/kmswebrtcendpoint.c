@@ -88,8 +88,9 @@ enum
 
 #define WEBRTC_ENDPOINT "webrtc-endpoint"
 
-#define REMB_SEND_MIN 30000     /* bps */
-#define REMB_SEND_MAX 2000000   /* bps */
+#define REMB_MIN 30000          /* bps */
+#define REMB_MAX 2000000        /* bps */
+
 #define REMB_EXPONENTIAL_FACTOR 0.04
 #define REMB_LINEAL_FACTOR_MIN 50       /* bps */
 #define REMB_LINEAL_FACTOR_GRADE ((60 * RTCP_MIN_INTERVAL)/ 1000)       /* Reach last top bitrate in 60secs aprox. */
@@ -1515,7 +1516,7 @@ remb_local_update (KmsWebrtcEndpoint * self, GObject * sess)
     priv->remb_local_avg_br = 0;
   }
 
-  priv->remb_local = MAX (priv->remb_local, REMB_SEND_MIN);
+  priv->remb_local = MAX (priv->remb_local, REMB_MIN);
 
   GST_TRACE_OBJECT (self,
       "REMB: %" G_GUINT32_FORMAT ", TH: %" G_GUINT32_FORMAT
@@ -1531,8 +1532,8 @@ static void
 remb_local_init (KmsWebrtcEndpoint * self)
 {
   self->priv->remb_local_probed = FALSE;
-  self->priv->remb_local = REMB_SEND_MAX;
-  self->priv->remb_local_threshold = REMB_SEND_MAX;
+  self->priv->remb_local = REMB_MAX;
+  self->priv->remb_local_threshold = REMB_MAX;
   self->priv->remb_local_lineal_factor = REMB_LINEAL_FACTOR_MIN;
 }
 
