@@ -76,8 +76,8 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 
 			// Latency control
 			LatencyController cs = new LatencyController();
-			browser.addChangeColorEventListener(VideoTag.LOCAL, cs);
-			browser.addChangeColorEventListener(VideoTag.REMOTE, cs);
+			browser.addChangeColorEventListener(VideoTag.LOCAL, cs, "local");
+			browser.addChangeColorEventListener(VideoTag.REMOTE, cs, "remote");
 			cs.checkLatency(playTime, TimeUnit.MINUTES);
 		}
 
