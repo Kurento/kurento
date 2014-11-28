@@ -270,35 +270,18 @@ eos_cb (GstElement * appsink, gpointer user_data)
   g_object_unref (srcpad);
 }
 
-static GstPadProbeReturn
-set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer playerep)
+static GstElement *
+kms_player_end_point_get_appsrc_for_pad (KmsPlayerEndpoint * self, GstPad * pad)
 {
-  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (playerep);
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
-  GstCaps *audio_caps = NULL, *video_caps = NULL;
-  GstElement *appsrc, *appsink, *agnosticbin;
-  GstCaps *caps;
-  gpointer data;
+  GstCaps *caps, *audio_caps = NULL, *video_caps = NULL;
+  GstElement *agnosticbin, *appsrc = NULL;
 
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
-    return GST_PAD_PROBE_OK;
-  }
-
-  gst_event_parse_caps (event, &caps);
+  caps = gst_pad_query_caps (pad, NULL);
   if (caps == NULL) {
-    GST_ERROR_OBJECT (pad, "Invalid caps received");
-    return GST_PAD_PROBE_OK;
+    GST_WARNING_OBJECT (pad, "Can not get caps");
+    return NULL;
   }
 
-  GST_TRACE ("caps are %" GST_PTR_FORMAT, caps);
-
-  data = g_object_get_data (G_OBJECT (pad), APPSRC_DATA);
-  if (data != NULL) {
-    g_object_set_data (G_OBJECT (data), "caps", caps);
-    goto end;
-  }
-
-  /* Get the proper agnosticbin */
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
   video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
 
@@ -326,60 +309,82 @@ set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer playerep)
         GST_ELEMENT_NAME (agnosticbin));
   }
 
-  /* Connect new-sample signal to callback */
-  appsink = gst_pad_get_parent_element (pad);
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
-  g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
-  g_object_unref (appsink);
-
-  g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   gst_element_sync_state_with_parent (appsrc);
 
 end:
-  if (audio_caps != NULL)
+
+  if (caps != NULL) {
+    gst_caps_unref (caps);
+  }
+
+  if (audio_caps != NULL) {
     gst_caps_unref (audio_caps);
+  }
 
-  if (video_caps != NULL)
+  if (video_caps != NULL) {
     gst_caps_unref (video_caps);
+  }
 
-  return GST_PAD_PROBE_OK;
+  return appsrc;
 }
 
 static void
 pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
-  GstElement *appsink;
+  GstElement *appsink, *appsrc;
   GstPad *sinkpad;
 
   GST_DEBUG_OBJECT (pad, "Pad added");
 
-  /* Create appsink and link to pad */
-  appsink = gst_element_factory_make ("appsink", NULL);
-  g_object_set (appsink, "sync", TRUE, "enable-last-sample",
-      FALSE, "emit-signals", TRUE, "qos", TRUE, "max-buffers", 1,
-      "async", FALSE, NULL);
+  appsrc = kms_player_end_point_get_appsrc_for_pad (self, pad);
+  if (appsrc != NULL) {
+    /* Create appsink */
+    appsink = gst_element_factory_make ("appsink", NULL);
+    g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", TRUE,
+        "qos", TRUE, "max-buffers", 1, NULL);
+
+    /* Connect new-sample signal to callback */
+    g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb),
+        appsrc);
+    g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
+
+    g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
+    g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
+  } else {
+    GST_WARNING_OBJECT (self, "No supported pad: %" GST_PTR_FORMAT
+        ". Connecting it to a fakesink", pad);
+    appsink = gst_element_factory_make ("fakesink", NULL);
+  }
+
+  g_object_set (appsink, "sync", TRUE, "async", FALSE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_link (pad, sinkpad);
-  GST_DEBUG_OBJECT (self, "Linked %s---%s", GST_ELEMENT_NAME (element),
-      GST_ELEMENT_NAME (appsink));
-
-  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      set_appsrc_caps, self, NULL);
 
   g_object_unref (sinkpad);
 
-  g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
-
   gst_element_sync_state_with_parent (appsink);
+}
+
+static void
+kms_remove_element_from_bin (GstBin * bin, GstElement * element)
+{
+  GST_DEBUG ("Removing %" GST_PTR_FORMAT " from %" GST_PTR_FORMAT, element,
+      bin);
+
+  if (!gst_element_set_locked_state (element, TRUE)) {
+    GST_ERROR ("Could not block element %" GST_PTR_FORMAT, element);
+  }
+
+  gst_element_set_state (element, GST_STATE_NULL);
+  gst_bin_remove (bin, element);
 }
 
 static void
 pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
   GstElement *appsink, *appsrc;
-  GstPad *sinkpad;
 
   GST_DEBUG_OBJECT (pad, "Pad removed");
 
@@ -389,38 +394,14 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   GST_DEBUG ("pad %" GST_PTR_FORMAT " removed", pad);
 
   appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
+  appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
 
-  if (appsink == NULL) {
-    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
-    return;
-  }
-
-  sinkpad = gst_element_get_static_pad (appsink, "sink");
-  appsrc = g_object_get_data (G_OBJECT (sinkpad), APPSRC_DATA);
-  g_object_unref (sinkpad);
-
-  if (!gst_element_set_locked_state (appsink, TRUE))
-    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (appsink));
-
-  GST_DEBUG ("Removing appsink %s from %s", GST_ELEMENT_NAME (appsink),
-      GST_ELEMENT_NAME (self->priv->pipeline));
-
-  gst_element_set_state (appsink, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self->priv->pipeline), appsink);
-
-  if (appsrc == NULL) {
-    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
-    return;
+  if (appsink != NULL) {
+    kms_remove_element_from_bin (GST_BIN (self->priv->pipeline), appsink);
   }
 
   if (appsrc != NULL) {
-    GST_INFO ("Removing %" GST_PTR_FORMAT " from its parent", appsrc);
-    if (GST_OBJECT_PARENT (appsrc) != NULL) {
-      g_object_ref (appsrc);
-      gst_bin_remove (GST_BIN (GST_OBJECT_PARENT (appsrc)), appsrc);
-      gst_element_set_state (appsrc, GST_STATE_NULL);
-      g_object_unref (appsrc);
-    }
+    kms_remove_element_from_bin (GST_BIN (self), appsrc);
   }
 }
 
