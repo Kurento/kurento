@@ -31,8 +31,8 @@ module.exports = function(grunt)
   var pkg = grunt.file.readJSON('package.json');
 
   // Project configuration.
-  grunt.initConfig(pkg,
-  {
+  grunt.initConfig({
+    pkg: pkg,
 <#if api_js.npmGit??>
     bower:
     {

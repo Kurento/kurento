@@ -1,3 +1,7 @@
+<#assign node_name=module.code.api.js.nodeName>
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
 scripts/prepublish
 #!/usr/bin/env node
 
@@ -20,8 +24,6 @@ exists('node_modules', function(found)
           npm.commands.install(function(error, data)
           {
             if(error) return console.error(error)
-
-            console.log(data)
           })
         })
       }
@@ -29,3 +31,4 @@ exists('node_modules', function(found)
   else
     require('grunt').tasks()
 });
+</#if>
