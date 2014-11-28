@@ -73,8 +73,27 @@ done. If an error occurs, {@link Continuation#onError} is called.
      **/
     @org.kurento.client.internal.server.EventSubscription(${event.name}Event.class)
     void add${event.name}Listener(EventListener<${event.name}Event> listener, Continuation<ListenerSubscription> cont);
+    
+	/**
+     * Remove a {@link ListenerSubscription} for event {@link ${event.name}Event}. Synchronous call.
+     *
+     * @param listenerSubscription Listener subscription to be removed
+     *
+     **/
+    @org.kurento.client.internal.server.EventSubscription(${event.name}Event.class)
+    void remove${event.name}Listener(ListenerSubscription listenerSubscription);
+    /**
+     * Remove a {@link ListenerSubscription} for event {@link ${event.name}Event}. Asynchronous call.
+     * Calls Continuation&lt;Void&gt; when it has been removed.
+     *
+     * @param listenerSubscription Listener subscription to be removed
+     * @param cont                 Continuation to be called when the listener is removed
+     *
+     **/
+    @org.kurento.client.internal.server.EventSubscription(${event.name}Event.class)
+    void remove${event.name}Listener(ListenerSubscription listenerSubscription, Continuation<Void> cont);
     </#list>
-
+    
     <#if remoteClass.name == "MediaPipeline">
     Transaction beginTransaction();
     </#if>
