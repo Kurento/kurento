@@ -60,8 +60,7 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
-			<!-- <version>${selenium-java.version}</version> -->
-			<version>2.41.0</version>
+			<version>${selenium-java.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.seleniumhq.selenium</groupId>
@@ -100,13 +99,20 @@
 		<dependency>
 			<groupId>com.xebialabs.overthere</groupId>
 			<artifactId>overthere</artifactId>
-			<version>${overthere}</version>
+			<version>${overthere.version}</version>
 		</dependency>
 
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
+		</dependency>
+
+		<!-- JFreeChart -->
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>${jfreechart.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -291,7 +297,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -343,7 +349,7 @@
 		</pluginManagement>
 	</build>
 
-<!-- 	<dependencyManagement>
+	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
@@ -351,30 +357,5 @@
 				<version>9.2.5.v20141112</version>
 			</dependency>
 		</dependencies>
-	</dependencyManagement> -->
-
-<!--  	<dependencyManagement>
-    <dependencies>
-      <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-java</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.seleniumhq.selenium</groupId>
-          <artifactId>selenium-htmlunit-driver</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    </dependencies>
-  </dependencyManagement> -->
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-util</artifactId>
-        <version>9.2.5.v20141112</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+	</dependencyManagement>
 </project>

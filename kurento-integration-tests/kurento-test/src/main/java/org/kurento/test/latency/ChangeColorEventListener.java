@@ -12,49 +12,17 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.color;
+package org.kurento.test.latency;
 
 /**
- * Events for color change detection.
+ * Change color event listener.
  *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-public class ChangeColorEvent {
+public interface ChangeColorEventListener<E extends ChangeColorEvent> {
 
-	private VideoTag videoTag;
-	private long time;
-	private String color;
-
-	public ChangeColorEvent(VideoTag videoTag, long time, String color) {
-		this.videoTag = videoTag;
-		this.time = time;
-		this.color = color;
-	}
-
-	public VideoTag getVideoTag() {
-		return videoTag;
-	}
-
-	public long getTime() {
-		return time;
-	}
-
-	public void setVideoTag(VideoTag videoTag) {
-		this.videoTag = videoTag;
-	}
-
-	public void setTime(long time) {
-		this.time = time;
-	}
-
-	public String getColor() {
-		return color;
-	}
-
-	public void setColor(String color) {
-		this.color = color;
-	}
+	public void onEvent(E e);
 
 }

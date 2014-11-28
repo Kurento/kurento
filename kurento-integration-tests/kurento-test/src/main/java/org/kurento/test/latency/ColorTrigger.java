@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.color;
+package org.kurento.test.latency;
 
 import java.text.SimpleDateFormat;
 

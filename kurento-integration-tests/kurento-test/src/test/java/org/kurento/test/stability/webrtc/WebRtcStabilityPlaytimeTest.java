@@ -14,6 +14,7 @@
  */
 package org.kurento.test.stability.webrtc;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -25,8 +26,8 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.color.LatencyController;
-import org.kurento.test.color.VideoTag;
+import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTag;
 
 /**
  * <strong>Description</strong>: Stability test for WebRTC in loopback during a
@@ -46,10 +47,11 @@ import org.kurento.test.color.VideoTag;
 
 public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 
-	private static final int DEFAULT_PLAYTIME = 60; // minutes
+	private static final int DEFAULT_PLAYTIME = 30; // minutes
 
 	@Test
-	public void testWebRtcStabilityChrome() throws InterruptedException {
+	public void testWebRtcStabilityChrome() throws InterruptedException,
+			IOException {
 		final int playTime = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.playtime",
 				String.valueOf(DEFAULT_PLAYTIME)));
@@ -58,7 +60,7 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 	}
 
 	public void doTest(Browser browserType, String videoPath, int playTime)
-			throws InterruptedException {
+			throws InterruptedException, IOException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -70,16 +72,22 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 			builder = builder.video(videoPath);
 		}
 
+		LatencyController cs = new LatencyController("WebRTC in loopback");
+
 		try (BrowserClient browser = builder.build()) {
 			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 
 			// Latency control
-			LatencyController cs = new LatencyController();
-			browser.addChangeColorEventListener(VideoTag.LOCAL, cs, "local");
-			browser.addChangeColorEventListener(VideoTag.REMOTE, cs, "remote");
+			browser.addChangeColorEventListener(VideoTag.LOCAL, cs);
+			browser.addChangeColorEventListener(VideoTag.REMOTE, cs);
 			cs.checkLatency(playTime, TimeUnit.MINUTES);
 		}
+
+		// Draw latency results (PNG chart and CSV file)
+		cs.drawChart(getDefaultOutputFile(".png"), 500, 270);
+		cs.writeCsv(getDefaultOutputFile(".csv"));
+		cs.logLatencyErrorrs();
 
 		// Release Media Pipeline
 		mp.release();

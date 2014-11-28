@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.color;
+package org.kurento.test.latency;
 
 /**
  * Video tag (local, remote).
@@ -50,6 +50,16 @@ public enum VideoTag {
 		case REMOTE:
 		default:
 			return "remote stream";
+		}
+	}
+
+	public String getName() {
+		switch (this) {
+		case LOCAL:
+			return "local";
+		case REMOTE:
+		default:
+			return "remote";
 		}
 	}
 }

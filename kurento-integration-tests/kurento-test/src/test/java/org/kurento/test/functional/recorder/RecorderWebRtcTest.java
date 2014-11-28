@@ -75,7 +75,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
 		final String recordingPreProcess = FILE_SCHEMA
-				+ getDefaultFileForRecording(PRE_PROCESS_SUFIX);
+				+ getDefaultOutputFile(PRE_PROCESS_SUFIX);
 		final String recordingPostProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording();
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
@@ -163,7 +163,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 					+ " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
 			AssertMedia.assertCodecs(
-					getDefaultFileForRecording(PRE_PROCESS_SUFIX),
+					getDefaultOutputFile(PRE_PROCESS_SUFIX),
 					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
 

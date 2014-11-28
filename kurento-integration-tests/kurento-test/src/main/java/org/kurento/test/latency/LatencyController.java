@@ -12,9 +12,15 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.color;
+package org.kurento.test.latency;
 
+import java.awt.Color;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +39,8 @@ public class LatencyController implements
 		ChangeColorEventListener<ChangeColorEvent> {
 
 	public Logger log = LoggerFactory.getLogger(LatencyController.class);
+
+	private Map<Long, LatencyRegistry> latencyMap;
 
 	private String name;
 
@@ -57,6 +65,8 @@ public class LatencyController implements
 	private Semaphore localEventLatch = new Semaphore(0);
 	private Semaphore remoteEventLatch = new Semaphore(0);
 
+	private boolean failIfLatencyProblem;
+
 	public LatencyController(String name) {
 		this();
 		this.name = name;
@@ -69,6 +79,11 @@ public class LatencyController implements
 
 		timeout = 30;
 		timeoutTimeUnit = TimeUnit.SECONDS;
+
+		failIfLatencyProblem = false;
+
+		// Latency map (registry)
+		latencyMap = new HashMap<Long, LatencyRegistry>();
 	}
 
 	@Override
@@ -138,25 +153,27 @@ public class LatencyController implements
 					String parsedRemotetime = new SimpleDateFormat("mm:ss.SSS")
 							.format(lastRemoteColorChangeTime);
 
-					if (latencyMilis > getLatency(TimeUnit.MILLISECONDS)
-							&& lastLocalColor.equals(lastRemoteColor)) {
+					if (lastLocalColor.equals(lastRemoteColor)) {
+						LatencyRegistry LatencyRegistry = new LatencyRegistry(
+								rgba2Color(lastRemoteColor), latencyMilis);
 
-						t.interrupt();
+						if (latencyMilis > getLatency(TimeUnit.MILLISECONDS)) {
+							LatencyException latencyException = new LatencyException(
+									latencyMilis, testTimeUnit,
+									parsedLocaltime, parsedRemotetime,
+									testTime, latencyMilis);
+							LatencyRegistry
+									.setLatencyException(latencyException);
+							if (failIfLatencyProblem) {
+								t.interrupt();
+								throw latencyException;
+							} else {
+								log.warn(latencyException.getMessage());
+							}
+						}
 
-						throw new RuntimeException(
-								msgName
-										+ "Latency error detected: "
-										+ latencyMilis
-										+ " "
-										+ latencyTimeUnit
-										+ " between last color change in remote tag (color="
-										+ lastRemoteColor
-										+ " at minute "
-										+ parsedRemotetime
-										+ ") and last color change in local tag (color="
-										+ lastLocalColor + " at minute "
-										+ parsedLocaltime + ")");
-
+						latencyMap.put(lastRemoteColorChangeTime,
+								LatencyRegistry);
 					}
 				}
 			}
@@ -164,8 +181,8 @@ public class LatencyController implements
 		} catch (InterruptedException e) {
 			log.debug("Finished LatencyController thread due to Interrupted Exception");
 		}
-		localColorTrigger.interrupt();
-		remoteColorTrigger.interrupt();
+		// localColorTrigger.interrupt();
+		// remoteColorTrigger.interrupt();
 	}
 
 	public void addChangeColorEventListener(VideoTag type,
@@ -192,6 +209,37 @@ public class LatencyController implements
 			}
 			remoteColorTrigger.start();
 		}
+	}
+
+	public void drawChart(String filename, int width, int height)
+			throws IOException {
+		ChartWriter chartWriter = new ChartWriter(latencyMap, getName());
+		chartWriter.drawChart(filename, width, height);
+	}
+
+	public void writeCsv(String csvTitle) throws IOException {
+		PrintWriter pw = new PrintWriter(new FileWriter(csvTitle));
+		for (long time : latencyMap.keySet()) {
+			pw.println(time + "," + latencyMap.get(time).getLatency());
+		}
+		pw.close();
+	}
+
+	public void logLatencyErrorrs() throws IOException {
+		log.debug("---------------------------------------------");
+		log.debug("LATENCY ERRORS " + getName());
+		log.debug("---------------------------------------------");
+		int nErrors = 0;
+		for (LatencyRegistry registry : latencyMap.values()) {
+			if (registry.isLatencyError()) {
+				nErrors++;
+				log.debug(registry.getLatencyException().getMessage());
+			}
+		}
+
+		log.debug("{} errors of latency detected (threshold: {} {})", nErrors,
+				latency, latencyTimeUnit);
+		log.debug("---------------------------------------------");
 	}
 
 	public long getLatency(TimeUnit timeUnit) {
@@ -222,6 +270,20 @@ public class LatencyController implements
 
 	public TimeUnit getTimeoutTimeUnit() {
 		return timeoutTimeUnit;
+	}
+
+	private Color rgba2Color(String rgba) {
+		String[] rgbaArr = rgba.split(",");
+		return new Color(Integer.parseInt(rgbaArr[0]),
+				Integer.parseInt(rgbaArr[1]), Integer.parseInt(rgbaArr[2]));
+	}
+
+	public void setFailIfLatencyProblem(boolean failIfLatencyProblem) {
+		this.failIfLatencyProblem = failIfLatencyProblem;
+	}
+
+	public String getName() {
+		return name != null ? name : "";
 	}
 
 }

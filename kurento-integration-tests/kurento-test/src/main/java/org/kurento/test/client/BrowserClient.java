@@ -32,8 +32,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SystemUtils;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.color.LatencyController;
-import org.kurento.test.color.VideoTag;
+import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTag;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
@@ -526,7 +526,7 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void addChangeColorEventListener(VideoTag type, LatencyController cs) {
-		cs.addChangeColorEventListener(type, js, null);
+		cs.addChangeColorEventListener(type, js, type.getName());
 	}
 
 	public void addChangeColorEventListener(VideoTag type,

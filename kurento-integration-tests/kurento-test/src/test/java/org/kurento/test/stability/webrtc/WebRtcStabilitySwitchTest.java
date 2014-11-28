@@ -14,6 +14,7 @@
  */
 package org.kurento.test.stability.webrtc;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -25,8 +26,8 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.color.LatencyController;
-import org.kurento.test.color.VideoTag;
+import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTag;
 
 /**
  * <strong>Description</strong>: Stability test for switching 2 WebRTC (looback
@@ -48,10 +49,18 @@ import org.kurento.test.color.VideoTag;
 
 public class WebRtcStabilitySwitchTest extends StabilityTest {
 
-	private static final int DEFAULT_NUM_SWITCH = 60; // 1 switch = 1 minute
+	/**
+	 * test time = PLAYTIME_PER_SWITCH * 2 * DEFAULT_NUM_SWITCH
+	 * 
+	 * DEFAULT_NUM_SWITCH = 2 --> test time = 1 minute <br/>
+	 * DEFAULT_NUM_SWITCH = 120 --> test time = 1 hour
+	 */
+	private static final int DEFAULT_NUM_SWITCH = 60;
+	private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
 	@Test
-	public void testWebRtcSwitchChrome() throws InterruptedException {
+	public void testWebRtcSwitchChrome() throws InterruptedException,
+			IOException {
 		final int numSwitch = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.switch",
 				String.valueOf(DEFAULT_NUM_SWITCH)));
@@ -60,7 +69,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 	}
 
 	public void doTest(Browser browserType, String videoPath, int numSwitch)
-			throws InterruptedException {
+			throws InterruptedException, IOException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint1 = new WebRtcEndpoint.Builder(mp).build();
@@ -81,6 +90,16 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 
+			LatencyController cs1 = new LatencyController(
+					"Latency in Browser 1");
+			browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1, "b1-loc");
+			browser1.addChangeColorEventListener(VideoTag.REMOTE, cs1, "b1-rem");
+
+			LatencyController cs2 = new LatencyController(
+					"Latency in Browser 2");
+			browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2, "b2-loc");
+			browser2.addChangeColorEventListener(VideoTag.REMOTE, cs2, "b2-rem");
+
 			for (int i = 0; i < numSwitch; i++) {
 				if (i % 2 == 0) {
 					log.debug("Switch #" + i + ": loopback");
@@ -90,21 +109,11 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					// Latency control (loopback)
 					log.debug("[{}.1] Latency control of browser1 to browser1",
 							i);
-					LatencyController cs1 = new LatencyController();
-					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1,
-							"1to1_loc" + i);
-					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs1,
-							"1to1_rem" + i);
-					cs1.checkLatency(30, TimeUnit.SECONDS);
+					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 					log.debug("[{}.2] Latency control of browser2 to browser2",
 							i);
-					LatencyController cs2 = new LatencyController();
-					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs2,
-							"2to2_loc" + i);
-					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2,
-							"2to2_loc" + i);
-					cs2.checkLatency(30, TimeUnit.SECONDS);
+					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 				} else {
 					log.debug("Switch #" + i + ": B2B");
@@ -114,23 +123,23 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					// Latency control (B2B)
 					log.debug("[{}.3] Latency control of browser1 to browser2",
 							i);
-					LatencyController cs1 = new LatencyController();
-					browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1,
-							"1to2_loc" + i);
-					browser2.addChangeColorEventListener(VideoTag.REMOTE, cs1,
-							"1to2_rem" + i);
-					cs1.checkLatency(30, TimeUnit.SECONDS);
+					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 					log.debug("[{}.4] Latency control of browser2 to browser1",
 							i);
-					LatencyController cs2 = new LatencyController();
-					browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2,
-							"2to1_loc" + i);
-					browser1.addChangeColorEventListener(VideoTag.REMOTE, cs2,
-							"2to1_rem" + i);
-					cs2.checkLatency(30, TimeUnit.SECONDS);
+					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 				}
 			}
+
+			// Draw latency results (PNG chart and CSV file)
+			cs1.drawChart(getDefaultOutputFile("-browser1.png"), 500, 270);
+			cs1.writeCsv(getDefaultOutputFile("-browser1.csv"));
+			cs1.logLatencyErrorrs();
+
+			cs2.drawChart(getDefaultOutputFile("-browser2.png"), 500, 270);
+			cs2.writeCsv(getDefaultOutputFile("-browser2.csv"));
+			cs2.logLatencyErrorrs();
+
 		}
 
 		// Release Media Pipeline

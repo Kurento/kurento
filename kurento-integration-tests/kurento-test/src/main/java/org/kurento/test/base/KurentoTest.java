@@ -101,10 +101,10 @@ public class KurentoTest {
 	 * extension.
 	 */
 	public String getDefaultFileForRecording() {
-		return getDefaultFileForRecording(".webm");
+		return getDefaultOutputFile(".webm");
 	}
 
-	public String getDefaultFileForRecording(String preffix) {
+	public String getDefaultOutputFile(String preffix) {
 		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
 				+ "/" + KurentoServicesTestHelper.getTestCaseName());
 		return fileForRecording.getAbsolutePath() + "/"

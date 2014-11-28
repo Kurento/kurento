@@ -83,7 +83,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
 		final String recordingPreProcess = FILE_SCHEMA
-				+ getDefaultFileForRecording(PRE_PROCESS_SUFIX);
+				+ getDefaultOutputFile(PRE_PROCESS_SUFIX);
 		final String recordingPostProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording();
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
@@ -158,7 +158,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 
 			if (recorderEP != null) {
 				AssertMedia.assertCodecs(
-						getDefaultFileForRecording(PRE_PROCESS_SUFIX),
+						getDefaultOutputFile(PRE_PROCESS_SUFIX),
 						EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 			}
 		}
