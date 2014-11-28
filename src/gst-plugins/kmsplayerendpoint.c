@@ -299,9 +299,8 @@ kms_player_end_point_get_appsrc_for_pad (KmsPlayerEndpoint * self, GstPad * pad)
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
-      "min-latency", G_GUINT64_CONSTANT (0),
-      "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
-      "caps", caps, NULL);
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
 
   gst_bin_add (GST_BIN (self), appsrc);
   if (!gst_element_link (appsrc, agnosticbin)) {
@@ -328,16 +327,42 @@ end:
   return appsrc;
 }
 
+static GstPadProbeReturn
+set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+{
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstElement *appsrc = GST_ELEMENT (element);
+  GstCaps *caps;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  gst_event_parse_caps (event, &caps);
+  if (caps == NULL) {
+    GST_ERROR_OBJECT (pad, "Invalid caps received");
+    return GST_PAD_PROBE_OK;
+  }
+
+  GST_DEBUG_OBJECT (appsrc, "Setting caps %" GST_PTR_FORMAT, caps);
+
+  g_object_set (G_OBJECT (appsrc), "caps", caps, NULL);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
   GstElement *appsink, *appsrc;
+  gboolean supported = FALSE;
   GstPad *sinkpad;
 
   GST_DEBUG_OBJECT (pad, "Pad added");
 
   appsrc = kms_player_end_point_get_appsrc_for_pad (self, pad);
-  if (appsrc != NULL) {
+  supported = appsrc != NULL;
+  if (supported) {
     /* Create appsink */
     appsink = gst_element_factory_make ("appsink", NULL);
     g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", TRUE,
@@ -361,6 +386,11 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_link (pad, sinkpad);
+
+  if (supported) {
+    gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        set_appsrc_caps, appsrc, NULL);
+  }
 
   g_object_unref (sinkpad);
 
