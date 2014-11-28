@@ -51,7 +51,7 @@ import org.kurento.test.client.WebRtcMode;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class PlayerTest extends FunctionalTest {
+public class PlayerWebRtcTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds

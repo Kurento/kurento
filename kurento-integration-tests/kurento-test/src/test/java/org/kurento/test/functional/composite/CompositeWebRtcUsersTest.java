@@ -33,7 +33,7 @@ import org.kurento.test.client.WebRtcMode;
  *
  * <strong>Description</strong>: Four synthetic videos are played by four
  * WebRtcEndpoint and mixed by a Composite. The resulting video is played in an
- * WebRtcEndpoint. At the end, a B&N filter is connected in one of the WebRTC's.<br/>
+ * WebRtcEndpoint.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>4xWebRtcEndpoint -> Composite -> WebRtcEndpoint</li>
@@ -41,23 +41,23 @@ import org.kurento.test.client.WebRtcMode;
  * <strong>Pass criteria</strong>:
  * <ul>
  * <li>Browser starts before default timeout</li>
- * <li>First composite mixes a red and a green videos.</li>
- * <li>In the second stage, composite only shows a red video.</li>
- * <li>In the third stage, composite mixes a red and a white videos.</li>
- * <li>Finally color of the video should be the expected (red, , blue, green,
- * and white)</li>
+ * <li>First, composite mixes a red and a green videos</li>
+ * <li>In the second stage, composite only shows a red video</li>
+ * <li>In the third stage, composite mixes a red and a white videos</li>
+ * <li>Finally color of the video should be the expected (red, blue, green, and
+ * white)</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
- * @since 4.2.3
+ * @since 5.0.5
  */
 public class CompositeWebRtcUsersTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5;
 
 	@Test
-	public void testCompositeWebRtcChrome() throws Exception {
+	public void testCompositeWebRtcUsersChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 

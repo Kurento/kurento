@@ -53,13 +53,13 @@ import org.kurento.test.services.Recorder;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class WebRtcGridTest extends PerformanceTest {
+public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
 	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
-	public WebRtcGridTest() {
+	public WebRtcPerformanceLoopbackTest() {
 		nodes = new ArrayList<Node>();
 
 		// nodes.addAll(getRandomNodes(1, Browser.CHROME));

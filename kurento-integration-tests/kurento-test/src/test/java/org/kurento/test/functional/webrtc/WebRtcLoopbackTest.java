@@ -42,7 +42,7 @@ import org.kurento.test.client.WebRtcMode;
  * @since 4.2.3
  */
 
-public class WebRtcTest extends FunctionalTest {
+public class WebRtcLoopbackTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds to play in WebRTC
 
