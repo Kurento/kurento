@@ -28,7 +28,7 @@ var args = getopts(location.search,
   default:
   {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    as_uri: 'http://' + location.host,
+    as_uri: location.href,
     ice_servers: undefined
   }
 });
