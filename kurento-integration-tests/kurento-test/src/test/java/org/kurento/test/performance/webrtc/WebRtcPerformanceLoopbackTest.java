@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -79,7 +80,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 		log.info("Node list {} ", nodes);
 	}
 
-	// @Ignore
+	@Ignore
 	@Test
 	public void tesWebRtcGridChrome() throws InterruptedException,
 			ExecutionException {
