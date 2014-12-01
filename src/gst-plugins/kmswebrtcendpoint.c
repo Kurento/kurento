@@ -1466,6 +1466,7 @@ remb_local_update (KmsWebrtcEndpoint * self, GObject * sess)
   guint64 bitrate;
   guint fraction_lost;
   KmsWebrtcEndpointPrivate *priv = self->priv;
+  int max_video_recv_bw;
 
   if (!get_video_recv_info (self, sess, &bitrate, &fraction_lost)) {
     return FALSE;
@@ -1522,6 +1523,11 @@ remb_local_update (KmsWebrtcEndpoint * self, GObject * sess)
         MAX (REMB_LINEAL_FACTOR_MIN, lineal_factor_new);
     priv->remb_local_max_br = 0;
     priv->remb_local_avg_br = 0;
+  }
+
+  g_object_get (self, "max-video-recv-bandwidth", &max_video_recv_bw, NULL);
+  if (max_video_recv_bw > 0) {
+    priv->remb_local = MIN (priv->remb_local, max_video_recv_bw * 1000);
   }
 
   GST_TRACE_OBJECT (self,
