@@ -17,6 +17,7 @@ package org.kurento.test.stability.webrtc;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -79,9 +80,14 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 					WebRtcMode.SEND_RCV);
 
 			// Latency control
-			browser.addChangeColorEventListener(VideoTag.LOCAL, cs);
-			browser.addChangeColorEventListener(VideoTag.REMOTE, cs);
-			cs.checkLatency(playTime, TimeUnit.MINUTES);
+			try {
+				browser.addChangeColorEventListener(VideoTag.LOCAL, cs);
+				browser.addChangeColorEventListener(VideoTag.REMOTE, cs);
+				cs.checkLatency(playTime, TimeUnit.MINUTES);
+			} catch (RuntimeException re) {
+				browser.takeScreeshot(getDefaultOutputFile("-error-screenshot.png"));
+				Assert.fail(re.getMessage());
+			}
 		}
 
 		// Draw latency results (PNG chart and CSV file)

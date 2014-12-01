@@ -19,6 +19,7 @@ import static org.kurento.commons.PropertiesManager.getProperty;
 import java.awt.Color;
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
@@ -40,6 +42,8 @@ import org.kurento.test.services.Node;
 import org.kurento.test.services.Recorder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -532,6 +536,12 @@ public class BrowserClient implements Closeable {
 	public void addChangeColorEventListener(VideoTag type,
 			LatencyController cs, String name) {
 		cs.addChangeColorEventListener(type, js, name);
+	}
+
+	public void takeScreeshot(String file) throws IOException {
+		File scrFile = ((TakesScreenshot) driver)
+				.getScreenshotAs(OutputType.FILE);
+		FileUtils.copyFile(scrFile, new File(file));
 	}
 
 }

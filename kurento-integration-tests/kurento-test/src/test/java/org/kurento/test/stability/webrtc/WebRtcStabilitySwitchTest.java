@@ -17,6 +17,7 @@ package org.kurento.test.stability.webrtc;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -100,35 +101,46 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 			browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2, "b2-loc");
 			browser2.addChangeColorEventListener(VideoTag.REMOTE, cs2, "b2-rem");
 
-			for (int i = 0; i < numSwitch; i++) {
-				if (i % 2 == 0) {
-					log.debug("Switch #" + i + ": loopback");
-					webRtcEndpoint1.connect(webRtcEndpoint1);
-					webRtcEndpoint2.connect(webRtcEndpoint2);
+			try {
+				for (int i = 0; i < numSwitch; i++) {
 
-					// Latency control (loopback)
-					log.debug("[{}.1] Latency control of browser1 to browser1",
-							i);
-					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					if (i % 2 == 0) {
+						log.debug("Switch #" + i + ": loopback");
+						webRtcEndpoint1.connect(webRtcEndpoint1);
+						webRtcEndpoint2.connect(webRtcEndpoint2);
 
-					log.debug("[{}.2] Latency control of browser2 to browser2",
-							i);
-					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+						// Latency control (loopback)
+						log.debug(
+								"[{}.1] Latency control of browser1 to browser1",
+								i);
+						cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
-				} else {
-					log.debug("Switch #" + i + ": B2B");
-					webRtcEndpoint1.connect(webRtcEndpoint2);
-					webRtcEndpoint2.connect(webRtcEndpoint1);
+						log.debug(
+								"[{}.2] Latency control of browser2 to browser2",
+								i);
+						cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
-					// Latency control (B2B)
-					log.debug("[{}.3] Latency control of browser1 to browser2",
-							i);
-					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					} else {
+						log.debug("Switch #" + i + ": B2B");
+						webRtcEndpoint1.connect(webRtcEndpoint2);
+						webRtcEndpoint2.connect(webRtcEndpoint1);
 
-					log.debug("[{}.4] Latency control of browser2 to browser1",
-							i);
-					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+						// Latency control (B2B)
+						log.debug(
+								"[{}.3] Latency control of browser1 to browser2",
+								i);
+						cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+
+						log.debug(
+								"[{}.4] Latency control of browser2 to browser1",
+								i);
+						cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					}
 				}
+			} catch (RuntimeException re) {
+				browser1.takeScreeshot(getDefaultOutputFile("-browser1-error-screenshot.png"));
+				browser2.takeScreeshot(getDefaultOutputFile("-browser2-error-screenshot.png"));
+				Assert.fail(re.getMessage());
 			}
 
 			// Draw latency results (PNG chart and CSV file)
@@ -139,7 +151,6 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 			cs2.drawChart(getDefaultOutputFile("-browser2.png"), 500, 270);
 			cs2.writeCsv(getDefaultOutputFile("-browser2.csv"));
 			cs2.logLatencyErrorrs();
-
 		}
 
 		// Release Media Pipeline
