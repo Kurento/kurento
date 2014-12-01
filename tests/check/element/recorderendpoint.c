@@ -101,6 +101,9 @@ bus_msg (GstBus * bus, GstMessage * msg, gpointer pipe)
 
       err_str = g_strdup_printf ("Error received on bus: %s: %s", err->message,
           dbg_info);
+
+      GST_ERROR ("%s", err_str);
+
       g_error_free (err);
       g_free (dbg_info);
 
@@ -444,9 +447,68 @@ GST_START_TEST (check_video_only)
       loop);
 
   g_object_set (G_OBJECT (videotestsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "pattern", 18, "num-buffers", 50, NULL);
+      "pattern", 18, NULL);
 
   g_object_set (G_OBJECT (timeoverlay), "font-desc", "Sans 28", NULL);
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "entering_main_loop");
+
+  g_object_set (G_OBJECT (recorder), "state",
+      KMS_URI_ENDPOINT_STATE_START, NULL);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  g_main_loop_run (loop);
+  GST_DEBUG ("Stop executed");
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "after_main_loop");
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (GST_OBJECT (pipeline));
+  GST_DEBUG ("Pipe released");
+
+  g_source_remove (bus_watch_id);
+  g_main_loop_unref (loop);
+}
+
+GST_END_TEST;
+
+GST_START_TEST (check_audio_only)
+{
+  GstElement *pipeline, *audiotestsrc, *encoder;
+  guint bus_watch_id;
+  GstBus *bus;
+
+  GMainLoop *loop = g_main_loop_new (NULL, FALSE);
+
+  expected_warnings = FALSE;
+
+  /* Create gstreamer elements */
+  pipeline = gst_pipeline_new ("recorderendpoint0-test");
+  audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
+  encoder = gst_element_factory_make ("vorbisenc", NULL);
+  recorder = gst_element_factory_make ("recorderendpoint", NULL);
+
+  g_object_set (G_OBJECT (recorder), "uri",
+      "file:///tmp/check_audio_only.webm", "profile", 0 /* WEBM */ , NULL);
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+
+  bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+  g_object_unref (bus);
+
+  gst_bin_add_many (GST_BIN (pipeline), audiotestsrc, encoder, recorder, NULL);
+  gst_element_link (audiotestsrc, encoder);
+
+  gst_element_link_pads (encoder, NULL, recorder, "audio_sink");
+
+  g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb3),
+      loop);
+
+  g_object_set (G_OBJECT (audiotestsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      NULL);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "entering_main_loop");
@@ -482,10 +544,8 @@ recorderendpoint_suite (void)
   suite_add_tcase (s, tc_chain);
 
 /* Enable test when recorder is able to emit dropable buffers for the muxer */
-  if (FALSE) {
-    tcase_add_test (tc_chain, check_video_only);
-  }
-
+  tcase_add_test (tc_chain, check_video_only);
+  tcase_add_test (tc_chain, check_audio_only);
   tcase_add_test (tc_chain, check_states_pipeline);
   tcase_add_test (tc_chain, warning_pipeline);
   tcase_add_test (tc_chain, finite_video_test);
