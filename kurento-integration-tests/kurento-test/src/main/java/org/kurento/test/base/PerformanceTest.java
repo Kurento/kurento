@@ -71,7 +71,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	public static final String SELENIUM_HUB_HOST_PROPERTY = "selenium.hub.host";
 	public static final String SELENIUM_HUB_HOST_DEFAULT = "127.0.0.1";
 
-	private static final int TIMEOUT_NODE = 120; // seconds
+	private static final int TIMEOUT_NODE = 300; // seconds
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private SeleniumGridHub seleniumGridHub;
@@ -213,7 +213,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		Shell.run("rm", tmpScript);
 	}
 
-	private synchronized void waitForNode(String node, String port) {
+	private void waitForNode(String node, String port) {
 		log.info("Waiting for node {} to be ready...", node);
 		int responseStatusCode = 0;
 		HttpClient client = HttpClientBuilder.create().build();
@@ -245,12 +245,13 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		}
 	}
 
-	protected static List<Node> getRandomNodes(int numNodes, Browser browser) {
-		return getRandomNodes(numNodes, browser, null, null);
+	protected static List<Node> getRandomNodes(int numNodes, Browser browser,
+			int maxInstances) {
+		return getRandomNodes(numNodes, browser, null, null, maxInstances);
 	}
 
 	protected static List<Node> getRandomNodes(int numNodes, Browser browser,
-			String video, String audio) {
+			String video, String audio, int maxInstances) {
 		List<Node> nodes = new ArrayList<Node>();
 
 		InputStream inputStream = PerformanceTest.class.getClassLoader()
@@ -281,7 +282,10 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 					if (xvfb != 2) {
 						log.debug("Node {} has no Xvfb", nodeCandidate);
 					} else {
-						nodes.add(new Node(nodeCandidate, browser, video, audio));
+						Node node = new Node(nodeCandidate, browser, video,
+								audio);
+						node.setMaxInstances(maxInstances);
+						nodes.add(node);
 					}
 				} catch (Exception e) {
 					log.debug("Invalid credentials to access node {} ",
@@ -312,12 +316,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 		// Stop Nodes
 		for (Node n : nodes) {
-			String remotePid = n.getRemoteHost().execAndWaitCommandNoBr("cat",
-					n.getTmpFolder() + "/" + n.REMOTE_PID_FILE);
-			n.getRemoteHost().execCommand("pkill", "-KILL", "-P", remotePid);
-
-			// TODO: Improve to kill only my own chromedrivers (not all)
-			n.getRemoteHost().execCommand("killall", "chromedriver");
+			n.getRemoteHost().execCommand("kill", "-9", "-1");
 			n.stopRemoteHost();
 		}
 	}
