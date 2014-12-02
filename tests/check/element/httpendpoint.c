@@ -31,6 +31,14 @@ static KmsHttpEndpointMethod method;
 GstElement *src_pipeline, *souphttpsrc, *appsink, *uridecodebin;
 GstElement *test_pipeline, *httpep, *fakesink;
 
+typedef struct _KmsConnectData
+{
+  GstElement *src;
+  GstBin *pipe;
+  const gchar *pad_prefix;
+  gulong id;
+} KmsConnectData;
+
 static gboolean
 print_timedout_pipeline (gpointer data)
 {
@@ -50,6 +58,46 @@ print_timedout_pipeline (gpointer data)
   g_free (pipeline_name);
 
   return FALSE;
+}
+
+static void
+kms_connect_data_destroy (gpointer data)
+{
+  g_slice_free (KmsConnectData, data);
+}
+
+static void
+connect_sink (GstElement * element, GstPad * pad, gpointer user_data)
+{
+  KmsConnectData *data = user_data;
+
+  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), data->pad_prefix)) {
+    return;
+  }
+
+  GST_INFO_OBJECT (pad, "Linking to %" GST_PTR_FORMAT, data->src);
+
+  gst_element_link_pads (data->src, "src", element, GST_OBJECT_NAME (pad));
+
+  if (data->id != 0) {
+    g_signal_handler_disconnect (element, data->id);
+  }
+}
+
+static void
+connect_sink_async (GstElement * httpendpoint, GstElement * src,
+    GstElement * pipe, const gchar * pad_prefix)
+{
+  KmsConnectData *data = g_slice_new (KmsConnectData);
+
+  data->src = src;
+  data->pipe = GST_BIN (pipe);
+  data->pad_prefix = pad_prefix;
+
+  data->id =
+      g_signal_connect_data (httpendpoint, "pad-added",
+      G_CALLBACK (connect_sink), data,
+      (GClosureNotify) kms_connect_data_destroy, 0);
 }
 
 static void
@@ -307,9 +355,6 @@ GST_START_TEST (check_pull_buffer)
   audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
   httpep = gst_element_factory_make ("httpgetendpoint", NULL);
 
-  /* Profile 0 stands for WEBM */
-  g_object_set (httpep, "profile", 0, NULL);
-
   GST_DEBUG ("Adding watcher to the pipeline");
   srcbus = gst_pipeline_get_bus (GST_PIPELINE (src_pipeline));
 
@@ -323,8 +368,11 @@ GST_START_TEST (check_pull_buffer)
   gst_element_link (videotestsrc, timeoverlay);
   gst_element_link (timeoverlay, encoder);
   gst_element_link (audiotestsrc, aencoder);
-  gst_element_link_pads (encoder, NULL, httpep, "video_sink");
-  gst_element_link_pads (aencoder, NULL, httpep, "audio_sink");
+  connect_sink_async (httpep, encoder, src_pipeline, "sink_video");
+  connect_sink_async (httpep, aencoder, src_pipeline, "sink_audio");
+
+  /* Profile 0 stands for WEBM */
+  g_object_set (httpep, "profile", 0, NULL);
 
   GST_DEBUG ("Configuring elements");
   g_object_set (G_OBJECT (videotestsrc), "is-live", TRUE, "do-timestamp", TRUE,

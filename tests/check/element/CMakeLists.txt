@@ -1,16 +1,16 @@
 set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
 
-#add_test_program (test_httpendpoint httpendpoint.c)
-#add_dependencies(test_httpendpoint kmscore ${LIBRARY_NAME}plugins)
-#target_include_directories(test_httpendpoint PRIVATE
-#                           ${KmsGstCommons_INCLUDE_DIRS}
-#                           ${gstreamer-1.0_INCLUDE_DIRS}
-#                           ${gstreamer-check-1.0_INCLUDE_DIRS}
-#                           "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
-#target_link_libraries(test_httpendpoint
-#                      ${gstreamer-1.0_LIBRARIES}
-#                      ${gstreamer-check-1.0_LIBRARIES}
-#                      ${KmsGstCommons_LIBRARIES})
+add_test_program (test_httpendpoint httpendpoint.c)
+add_dependencies(test_httpendpoint kmscore ${LIBRARY_NAME}plugins)
+target_include_directories(test_httpendpoint PRIVATE
+                           ${KmsGstCommons_INCLUDE_DIRS}
+                           ${gstreamer-1.0_INCLUDE_DIRS}
+                           ${gstreamer-check-1.0_INCLUDE_DIRS}
+                           "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
+target_link_libraries(test_httpendpoint
+                      ${gstreamer-1.0_LIBRARIES}
+                      ${gstreamer-check-1.0_LIBRARIES}
+                      ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_recorderendpoint recorderendpoint.c)
 add_dependencies(test_recorderendpoint kmscore ${LIBRARY_NAME}plugins)
