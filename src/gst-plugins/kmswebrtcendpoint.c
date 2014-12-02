@@ -1358,12 +1358,44 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
   g_mutex_unlock (&self->priv->ctx.gather_mutex);
 }
 
+static void
+send_remb_event (KmsWebrtcEndpoint * self, guint bitrate, guint ssrc)
+{
+  GstEvent *event;
+  guint br, min, max;
+
+  if (self->priv->remb_remote_event_pad == NULL) {
+    return;
+  }
+
+  br = bitrate;
+
+  g_object_get (self, "min-video-send-bandwidth", &min, NULL);
+  if (min > 0) {
+    min *= 1000;
+    br = MAX (br, min);
+  }
+
+  g_object_get (self, "max-video-send-bandwidth", &max, NULL);
+  if (max > 0) {
+    max *= 1000;
+    br = MIN (br, max);
+  }
+
+  GST_TRACE_OBJECT (self,
+      "bitrate: %" G_GUINT32_FORMAT ", ssrc: %" G_GUINT32_FORMAT
+      ", range [%" G_GUINT32_FORMAT ", %" G_GUINT32_FORMAT
+      "], event bitrate: %" G_GUINT32_FORMAT, bitrate, ssrc, min, max, br);
+
+  event = kms_utils_remb_event_upstream_new (br, ssrc);
+  gst_pad_push_event (self->priv->remb_remote_event_pad, event);
+}
+
 static GstPadProbeReturn
 send_remb_event_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (user_data);
   GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
-  GstEvent *remb_event;
 
   if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
     return GST_PAD_PROBE_OK;
@@ -1373,10 +1405,7 @@ send_remb_event_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
     return GST_PAD_PROBE_OK;
   }
 
-  remb_event =
-      kms_utils_remb_event_upstream_new (REMB_ON_CONNECT,
-      self->priv->local_video_ssrc);
-  gst_pad_push_event (pad, remb_event);
+  send_remb_event (self, REMB_ON_CONNECT, self->priv->local_video_ssrc);
 
   return GST_PAD_PROBE_REMOVE;
 }
@@ -1650,23 +1679,6 @@ on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
   gst_rtcp_buffer_unmap (&rtcp);
 
   GST_TRACE_OBJECT (self, "Sending REMB with bitrate: %d", remb_packet.bitrate);
-}
-
-static void
-send_remb_event (KmsWebrtcEndpoint * self, guint bitrate, guint ssrc)
-{
-  GstEvent *event;
-
-  if (self->priv->remb_remote_event_pad == NULL) {
-    return;
-  }
-
-  GST_TRACE_OBJECT (self,
-      "bitrate: %" G_GUINT32_FORMAT ", ssrc: %" G_GUINT32_FORMAT, bitrate,
-      ssrc);
-
-  event = kms_utils_remb_event_upstream_new (bitrate, ssrc);
-  gst_pad_push_event (self->priv->remb_remote_event_pad, event);
 }
 
 static void
