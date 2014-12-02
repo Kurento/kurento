@@ -89,6 +89,7 @@ enum
 
 #define REMB_MIN 30000          /* bps */
 #define REMB_MAX 2000000        /* bps */
+#define REMB_ON_CONNECT 300000  /* bps */
 
 #define REMB_EXPONENTIAL_FACTOR 0.04
 #define REMB_LINEAL_FACTOR_MIN 50       /* bps */
@@ -1349,6 +1350,29 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
   g_mutex_unlock (&self->priv->ctx.gather_mutex);
 }
 
+static GstPadProbeReturn
+send_remb_event_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (user_data);
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstEvent *remb_event;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  };
+  if (self->priv->local_video_ssrc == 0) {
+    GST_WARNING_OBJECT (self, "Local video SSRC not set");
+    return GST_PAD_PROBE_OK;
+  }
+
+  remb_event =
+      kms_utils_remb_event_upstream_new (REMB_ON_CONNECT,
+      self->priv->local_video_ssrc);
+  gst_pad_push_event (pad, remb_event);
+
+  return GST_PAD_PROBE_REMOVE;
+}
+
 static void
 rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     KmsWebrtcEndpoint * webrtc_endpoint)
@@ -1387,6 +1411,8 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_RTPBIN_SEND_RTP_SINK)) {
     webrtc_endpoint->priv->remb_remote_event_pad = g_object_ref (pad);
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        send_remb_event_probe, webrtc_endpoint, NULL);
   } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_")) {
     webrtc_endpoint->priv->remb_local_event_manager =
         kms_utils_remb_event_manager_create (pad);
@@ -1650,7 +1676,8 @@ remb_remote_update (GObject * sess, KmsRTCPPSFBAFBREMBPacket * remb_packet)
   }
 
   if (!self->priv->remb_remote_probed) {
-    if (remb_packet->bitrate >= self->priv->remb_remote) {
+    if ((remb_packet->bitrate < REMB_ON_CONNECT)
+        && (remb_packet->bitrate >= self->priv->remb_remote)) {
       self->priv->remb_remote = remb_packet->bitrate;
       return;
     }
