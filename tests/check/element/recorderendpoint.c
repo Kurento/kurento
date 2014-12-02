@@ -163,6 +163,95 @@ state_changed_cb (GstElement * recorder, KmsUriEndpointState newState,
   g_timeout_add (seconds * 1000, transite_cb, loop);
 }
 
+static void
+remove_on_unlinked (GstPad * pad, GstPad * peer, gpointer data)
+{
+  GstElement *parent = gst_pad_get_parent_element (pad);
+
+  if (parent != NULL) {
+    gst_element_release_request_pad (parent, pad);
+    g_object_unref (parent);
+  }
+}
+
+static void
+connect_pads_and_remove_on_unlinked (GstElement * agnosticbin,
+    GstElement * elem, const gchar * sink_name)
+{
+  GstPad *src;
+
+  src = gst_element_get_request_pad (agnosticbin, "src_%u");
+  g_assert (src != NULL);
+  g_signal_connect (src, "unlinked", G_CALLBACK (remove_on_unlinked), NULL);
+  gst_element_link_pads (agnosticbin, GST_OBJECT_NAME (src), elem, sink_name);
+  g_object_unref (src);
+}
+
+typedef struct _KmsConnectData
+{
+  GstElement *src;
+  const gchar *pad_name;
+  gulong id;
+} KmsConnectData;
+
+static void
+connect_sink (GstElement * element, GstPad * pad, gpointer user_data)
+{
+  KmsConnectData *data = user_data;
+
+  GST_DEBUG_OBJECT (pad, "New pad %" GST_PTR_FORMAT, element);
+
+  if (g_strcmp0 (GST_OBJECT_NAME (pad), data->pad_name)) {
+    return;
+  }
+
+  connect_pads_and_remove_on_unlinked (data->src, element, data->pad_name);
+
+  GST_INFO_OBJECT (pad, "Linking %s", data->pad_name);
+}
+
+static void
+kms_connect_data_destroy (gpointer data)
+{
+  g_slice_free (KmsConnectData, data);
+}
+
+static void
+connect_sink_async (GstElement * recorder, GstElement * src,
+    const gchar * pad_name)
+{
+  KmsConnectData *data = g_slice_new (KmsConnectData);
+
+  data->src = src;
+  data->pad_name = pad_name;
+
+  data->id =
+      g_signal_connect_data (recorder, "pad-added",
+      G_CALLBACK (connect_sink), data,
+      (GClosureNotify) kms_connect_data_destroy, 0);
+}
+
+static void
+link_to_recorder (GstElement * recorder, GstElement * src, GstElement * pipe,
+    const gchar * pad_name)
+{
+  GstPad *sink;
+  GstElement *agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+
+  gst_bin_add (GST_BIN (pipe), agnosticbin);
+  gst_element_link (src, agnosticbin);
+  gst_element_sync_state_with_parent (agnosticbin);
+
+  connect_sink_async (recorder, agnosticbin, pad_name);
+
+  sink = gst_element_get_static_pad (recorder, pad_name);
+
+  if (sink != NULL) {
+    connect_pads_and_remove_on_unlinked (agnosticbin, recorder, pad_name);
+    g_object_unref (sink);
+  }
+}
+
 GST_START_TEST (check_states_pipeline)
 {
   GstElement *pipeline, *videotestsrc, *vencoder, *aencoder, *audiotestsrc,
@@ -201,8 +290,8 @@ GST_START_TEST (check_states_pipeline)
   gst_element_link (timeoverlay, vencoder);
   gst_element_link (audiotestsrc, aencoder);
 
-  gst_element_link_pads (vencoder, NULL, recorder, "video_sink");
-  gst_element_link_pads (aencoder, NULL, recorder, "audio_sink");
+  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
+  link_to_recorder (recorder, aencoder, pipeline, "sink_audio");
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb),
       loop);
@@ -267,8 +356,8 @@ GST_START_TEST (warning_pipeline)
   gst_element_link (timeoverlay, vencoder);
   gst_element_link (audiotestsrc, aencoder);
 
-  gst_element_link_pads (vencoder, NULL, recorder, "video_sink");
-  gst_element_link_pads (aencoder, NULL, recorder, "audio_sink");
+  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
+  link_to_recorder (recorder, aencoder, pipeline, "sink_audio");
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb),
       loop);
@@ -355,8 +444,8 @@ GST_START_TEST (finite_video_test)
   gst_element_link (timeoverlay, vencoder);
   gst_element_link (audiotestsrc, aencoder);
 
-  gst_element_link_pads (vencoder, NULL, recorder, "video_sink");
-  gst_element_link_pads (aencoder, NULL, recorder, "audio_sink");
+  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
+  link_to_recorder (recorder, aencoder, pipeline, "sink_audio");
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb2),
       loop);
@@ -441,7 +530,7 @@ GST_START_TEST (check_video_only)
   gst_element_link (videotestsrc, timeoverlay);
   gst_element_link (timeoverlay, vencoder);
 
-  gst_element_link_pads (vencoder, NULL, recorder, "video_sink");
+  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb3),
       loop);
@@ -502,7 +591,7 @@ GST_START_TEST (check_audio_only)
   gst_bin_add_many (GST_BIN (pipeline), audiotestsrc, encoder, recorder, NULL);
   gst_element_link (audiotestsrc, encoder);
 
-  gst_element_link_pads (encoder, NULL, recorder, "audio_sink");
+  link_to_recorder (recorder, encoder, pipeline, "sink_audio");
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb3),
       loop);
