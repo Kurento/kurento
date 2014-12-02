@@ -31,6 +31,27 @@ static KmsHttpEndpointMethod method;
 GstElement *src_pipeline, *souphttpsrc, *appsink, *uridecodebin;
 GstElement *test_pipeline, *httpep, *fakesink;
 
+static gboolean
+print_timedout_pipeline (gpointer data)
+{
+  GstElement *pipeline;
+  gchar *pipeline_name;
+  gchar *name;
+
+  pipeline = GST_ELEMENT (data);
+
+  pipeline_name = gst_element_get_name (pipeline);
+  name = g_strdup_printf ("%s_timedout", pipeline_name);
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, name);
+
+  g_free (name);
+  g_free (pipeline_name);
+
+  return FALSE;
+}
+
 static void
 bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 {
@@ -206,9 +227,6 @@ GST_START_TEST (check_push_buffer)
   g_object_get (G_OBJECT (httpep), "http-method", &method, NULL);
   GST_INFO ("Http end point configured as %d", method);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (test_pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_entering_main_loop");
-
   mark_point ();
 
   g_timeout_add_seconds (WAIT_TIMEOUT, timer_cb, NULL);
@@ -318,9 +336,6 @@ GST_START_TEST (check_pull_buffer)
   g_signal_connect (httpep, "new-sample", G_CALLBACK (get_recv_sample), NULL);
   g_signal_connect (httpep, "eos", G_CALLBACK (get_recv_eos), NULL);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (src_pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "entering_main_loop");
-
   GST_DEBUG ("Starting pipeline");
   gst_element_set_state (src_pipeline, GST_STATE_PLAYING);
 
@@ -330,6 +345,8 @@ GST_START_TEST (check_pull_buffer)
 
   /* allow media stream to flow */
   g_object_set (G_OBJECT (httpep), "start", TRUE, NULL);
+
+  g_timeout_add_seconds (4, print_timedout_pipeline, src_pipeline);
 
   g_main_loop_run (loop);
 
@@ -400,14 +417,9 @@ GST_START_TEST (check_emit_encoded_media)
   g_object_get (G_OBJECT (httpep), "http-method", &method, NULL);
   GST_INFO ("Http end point configured as %d", method);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (test_pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_entering_main_loop");
-
   mark_point ();
 
   g_timeout_add_seconds (WAIT_TIMEOUT, timer_cb, NULL);
-  GST_INFO ("Waitig %d second for Agnosticbin to be ready to go to "
-      "PLAYING state", WAIT_TIMEOUT);
 
   g_main_loop_run (loop);
 
