@@ -1582,7 +1582,7 @@ on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
   }
   gst_rtcp_buffer_unmap (&rtcp);
 
-  GST_DEBUG_OBJECT (self, "Sending REMB with bitrate: %d", remb_packet.bitrate);
+  GST_TRACE_OBJECT (self, "Sending REMB with bitrate: %d", remb_packet.bitrate);
 }
 
 static void
