@@ -858,6 +858,9 @@ GST_START_TEST (negotiation)
   gchar *remote_offer_str, *remote_answer_str;
   gchar *sdp_str = NULL;
 
+  g_object_set (offerer, "max-video-recv-bandwidth", 0, NULL);
+  g_object_set (answerer, "max-video-recv-bandwidth", 0, NULL);
+
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
           pattern_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
