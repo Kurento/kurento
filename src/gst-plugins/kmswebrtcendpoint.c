@@ -168,6 +168,7 @@ struct _KmsWebrtcEndpointPrivate
   guint remb_local_avg_br;
   GstClockTime remb_local_last_time;
   guint64 remb_local_last_octets_received;
+  RembEventManager *remb_local_event_manager;
 
   guint remb_remote;
   gboolean remb_remote_probed;
@@ -1386,6 +1387,9 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_RTPBIN_SEND_RTP_SINK)) {
     webrtc_endpoint->priv->remb_remote_event_pad = g_object_ref (pad);
+  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_")) {
+    webrtc_endpoint->priv->remb_local_event_manager =
+        kms_utils_remb_event_manager_create (pad);
   }
 
   KMS_ELEMENT_UNLOCK (webrtc_endpoint);
@@ -1520,8 +1524,6 @@ remb_local_update (KmsWebrtcEndpoint * self, GObject * sess)
     priv->remb_local_avg_br = 0;
   }
 
-  priv->remb_local = MAX (priv->remb_local, REMB_MIN);
-
   GST_TRACE_OBJECT (self,
       "REMB: %" G_GUINT32_FORMAT ", TH: %" G_GUINT32_FORMAT
       ", fraction_lost: %d, bitrate: %" G_GUINT64_FORMAT "," " max_br: %"
@@ -1539,6 +1541,14 @@ remb_local_init (KmsWebrtcEndpoint * self)
   self->priv->remb_local = REMB_MAX;
   self->priv->remb_local_threshold = REMB_MAX;
   self->priv->remb_local_lineal_factor = REMB_LINEAL_FACTOR_MIN;
+}
+
+static void
+remb_local_destroy (KmsWebrtcEndpoint * self)
+{
+  if (self->priv->remb_local_event_manager != NULL) {
+    kms_utils_remb_event_manager_destroy (self->priv->remb_local_event_manager);
+  }
 }
 
 static void
@@ -1577,6 +1587,20 @@ on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
   }
 
   remb_packet.bitrate = self->priv->remb_local;
+  if (self->priv->remb_local_event_manager != NULL) {
+    guint remb_local_max;
+
+    remb_local_max =
+        kms_utils_remb_event_manager_get_min (self->
+        priv->remb_local_event_manager);
+    if (remb_local_max > 0) {
+      GST_TRACE_OBJECT (self, "REMB local max: %" G_GUINT32_FORMAT,
+          remb_local_max);
+      remb_packet.bitrate = MIN (remb_local_max, self->priv->remb_local);
+    }
+  }
+
+  remb_packet.bitrate = MAX (remb_packet.bitrate, REMB_MIN);
   remb_packet.n_ssrcs = 1;
   remb_packet.ssrcs[0] = self->priv->remote_video_ssrc;;
   if (!kms_rtcp_psfb_afb_remb_marshall_packet (&packet, &remb_packet,
@@ -1885,6 +1909,8 @@ kms_webrtc_endpoint_finalize (GObject * object)
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
+
+  remb_local_destroy (self);
 
   if (self->priv->remb_remote_event_pad != NULL) {
     g_object_unref (self->priv->remb_remote_event_pad);
