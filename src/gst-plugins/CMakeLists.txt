@@ -6,7 +6,6 @@ add_subdirectory(dtls-plugins)
 
 set(KMS_ELEMENTS_SOURCES
   kmselements.c
-  kmsconfcontroller.c
   kmshttpendpoint.c
   kmshttpgetendpoint.c
   kmshttppostendpoint.c
@@ -33,7 +32,6 @@ set(KMS_ELEMENTS_SOURCES
 )
 
 set(KMS_ELEMENTS_HEADERS
-  kmsconfcontroller.h
   kmshttpendpoint.h
   kmshttpendpointmethod.h
   kmshttpgetendpoint.h
