@@ -1584,10 +1584,11 @@ on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
 }
 
 static void
-rtpbin_on_ssrc_sdes (GstElement * rtpbin, guint session, guint ssrc,
+rtpbin_on_new_ssrc (GstElement * rtpbin, guint session, guint ssrc,
     gpointer user_data)
 {
   GObject *rtpsession;
+  KmsWebrtcEndpoint *ep = KMS_WEBRTC_ENDPOINT (user_data);
 
   g_signal_emit_by_name (rtpbin, "get-internal-session", session, &rtpsession);
   if (rtpsession == NULL) {
@@ -1596,7 +1597,7 @@ rtpbin_on_ssrc_sdes (GstElement * rtpbin, guint session, guint ssrc,
     return;
   }
 
-  g_object_set_data (rtpsession, WEBRTC_ENDPOINT, GST_ELEMENT_PARENT (rtpbin));
+  g_object_set_data (rtpsession, WEBRTC_ENDPOINT, ep);
   g_signal_connect (rtpsession, "on-sending-rtcp",
       G_CALLBACK (on_sending_rtcp), NULL);
 }
@@ -1918,7 +1919,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   g_signal_connect (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
       "pad-added", G_CALLBACK (rtpbin_pad_added), self);
   g_signal_connect (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
-      "on-ssrc-sdes", G_CALLBACK (rtpbin_on_ssrc_sdes), NULL);
+      "on-new-ssrc", G_CALLBACK (rtpbin_on_new_ssrc), self);
 }
 
 gboolean
