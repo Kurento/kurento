@@ -197,11 +197,7 @@ main (int argc, char **argv)
   }
 
   testPlayerEndPoint (moduleManager, mediaPipeline);
-
-  if (false) {
-    testRecorderEndPoint (moduleManager, mediaPipeline);
-  }
-
+  testRecorderEndPoint (moduleManager, mediaPipeline);
   testRtpEndpoint (moduleManager, mediaPipeline);
   testWebRTCEndpoint (moduleManager, mediaPipeline);
   testMixer (moduleManager, mediaPipeline);

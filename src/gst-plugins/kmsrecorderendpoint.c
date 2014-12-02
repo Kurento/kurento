@@ -95,6 +95,9 @@ struct _KmsRecorderEndpointPrivate
   KmsLoop *loop;
   KmsMuxingPipeline *mux;
   GMutex base_time_lock;
+
+  GstPad *audio_target;
+  GstPad *video_target;
 };
 
 /* class initialization */
@@ -517,48 +520,23 @@ stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
 }
 
 static void
-kms_recorder_endpoint_send_force_key_unit_event (GstElement * valve)
+kms_recorder_generate_pads (KmsRecorderEndpoint * self)
 {
-  GstStructure *s;
-  GstEvent *force_key_unit_event;
+  KmsElement *elem = KMS_ELEMENT (self);
 
-  GST_DEBUG ("Sending key ");
-  s = gst_structure_new ("GstForceKeyUnit",
-      "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
-  force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
-  gst_element_send_event (valve, force_key_unit_event);
+  kms_element_connect_sink_target (elem, self->priv->audio_target,
+      KMS_ELEMENT_PAD_TYPE_AUDIO);
+  kms_element_connect_sink_target (elem, self->priv->video_target,
+      KMS_ELEMENT_PAD_TYPE_VIDEO);
 }
 
 static void
-kms_recorder_endpoint_open_valves (KmsRecorderEndpoint * self)
+kms_recorder_endpoint_remove_pads (KmsRecorderEndpoint * self)
 {
-  GstElement *valve;
+  KmsElement *elem = KMS_ELEMENT (self);
 
-  valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
-  if (valve != NULL) {
-    kms_utils_set_valve_drop (valve, FALSE);
-    kms_recorder_endpoint_send_force_key_unit_event (valve);
-  }
-
-  valve = kms_element_get_video_valve (KMS_ELEMENT (self));
-  if (valve != NULL) {
-    kms_utils_set_valve_drop (valve, FALSE);
-    kms_recorder_endpoint_send_force_key_unit_event (valve);
-  }
-}
-
-static void
-kms_recorder_endpoint_close_valves (KmsRecorderEndpoint * self)
-{
-  GstElement *valve;
-
-  valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
-  if (valve != NULL)
-    kms_utils_set_valve_drop (valve, TRUE);
-
-  valve = kms_element_get_video_valve (KMS_ELEMENT (self));
-  if (valve != NULL)
-    kms_utils_set_valve_drop (valve, TRUE);
+  kms_element_remove_sink_by_type (elem, KMS_ELEMENT_PAD_TYPE_AUDIO);
+  kms_element_remove_sink_by_type (elem, KMS_ELEMENT_PAD_TYPE_VIDEO);
 }
 
 static void
@@ -569,7 +547,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   kms_recorder_endpoint_change_state (self);
 
   /* Close valves */
-  kms_recorder_endpoint_close_valves (self);
+  kms_recorder_endpoint_remove_pads (self);
 
   // Reset base time data
   BASE_TIME_LOCK (self);
@@ -611,7 +589,7 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
   BASE_TIME_UNLOCK (self);
 
   /* Open valves */
-  kms_recorder_endpoint_open_valves (self);
+  kms_recorder_generate_pads (self);
 
   kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_START);
 }
@@ -624,7 +602,7 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
   kms_recorder_endpoint_change_state (self);
 
   /* Close valves */
-  kms_recorder_endpoint_close_valves (self);
+  kms_recorder_endpoint_remove_pads (self);
 
   /* Set internal pipeline to GST_STATE_PAUSED */
   kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_PAUSED);
@@ -639,159 +617,71 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
   kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_PAUSE);
 }
 
-static void
-kms_recorder_endpoint_update_state_on_valve_added (KmsRecorderEndpoint * self,
-    GstElement * valve)
-{
-  KmsUriEndpointState state;
-
-  g_object_get (self, "state", &state, NULL);
-  if (state == KMS_URI_ENDPOINT_STATE_START) {
-    GST_DEBUG ("Setting %" GST_PTR_FORMAT " drop to FALSE", valve);
-    kms_utils_set_valve_drop (valve, FALSE);
-  }
-}
-
 static GstPadProbeReturn
-set_video_caps (GstPad * pad, GstPadProbeInfo * info, gpointer recorder)
+set_caps (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
-  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (recorder);
   GstEvent *event = gst_pad_probe_info_get_event (info);
-  GstElement *videoappsrc;
+  GstElement *appsrc = data;
   GstCaps *caps;
 
   if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
     return GST_PAD_PROBE_OK;
 
-  g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
-      &videoappsrc, NULL);
-
   gst_event_parse_caps (event, &caps);
 
-  GST_DEBUG_OBJECT (videoappsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
+  GST_DEBUG_OBJECT (appsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
 
-  g_object_set (videoappsrc, "caps", caps, NULL);
-
-  g_object_unref (videoappsrc);
-
-  return GST_PAD_PROBE_OK;
-}
-
-static GstPadProbeReturn
-set_audio_caps (GstPad * pad, GstPadProbeInfo * info, gpointer recorder)
-{
-  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (recorder);
-  GstEvent *event = gst_pad_probe_info_get_event (info);
-  GstElement *audioappsrc;
-  GstCaps *caps;
-
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
-    return GST_PAD_PROBE_OK;
-
-  g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
-      &audioappsrc, NULL);
-
-  gst_event_parse_caps (event, &caps);
-
-  GST_DEBUG_OBJECT (audioappsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
-
-  g_object_set (audioappsrc, "caps", caps, NULL);
-
-  g_object_unref (audioappsrc);
+  g_object_set (appsrc, "caps", caps, NULL);
 
   return GST_PAD_PROBE_OK;
 }
 
 static void
-kms_recorder_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
+kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
+    KmsElementPadType type)
 {
-  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (self);
-  GstElement *audioappsink, *audioappsrc;
+  GstElement *appsink, *appsrc;
   GstPad *sinkpad;
+  const gchar *appsink_name, *appsrc_name;
+  GstPad **target_pad;
 
-  if (recorder->priv->profile == KMS_RECORDING_PROFILE_NONE) {
-    GST_WARNING_OBJECT (recorder, "Recorder is not configured yet");
-    return;
+  switch (type) {
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      appsink_name = AUDIO_APPSINK;
+      appsrc_name = KMS_MUXING_PIPELINE_AUDIO_APPSRC;
+      target_pad = &self->priv->audio_target;
+      break;
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      appsink_name = VIDEO_APPSINK;
+      appsrc_name = KMS_MUXING_PIPELINE_VIDEO_APPSRC;
+      target_pad = &self->priv->video_target;
+      break;
+    default:
+      return;
   }
 
-  audioappsink = gst_element_factory_make ("appsink", AUDIO_APPSINK);
+  appsink = gst_element_factory_make ("appsink", appsink_name);
 
-  g_object_set (audioappsink, "emit-signals", TRUE, "async", FALSE,
+  g_object_set (appsink, "emit-signals", TRUE, "async", FALSE,
       "sync", FALSE, "qos", TRUE, NULL);
 
-  gst_bin_add (GST_BIN (self), audioappsink);
+  gst_bin_add (GST_BIN (self), appsink);
 
-  gst_element_link (valve, audioappsink);
+  g_object_get (self->priv->mux, appsrc_name, &appsrc, NULL);
 
-  g_object_get (recorder->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
-      &audioappsrc, NULL);
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
 
-  g_signal_connect (audioappsink, "new-sample", G_CALLBACK (recv_sample),
-      audioappsrc);
-  g_signal_connect (audioappsink, "eos", G_CALLBACK (recv_eos), audioappsrc);
-
-  sinkpad = gst_element_get_static_pad (audioappsink, "sink");
+  sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      set_audio_caps, recorder, NULL);
+      set_caps, g_object_ref (appsrc), g_object_unref);
+
+  gst_element_sync_state_with_parent (appsink);
+
+  *target_pad = sinkpad;
+
   g_object_unref (sinkpad);
-
-  kms_recorder_endpoint_update_state_on_valve_added (recorder, valve);
-
-  gst_element_sync_state_with_parent (audioappsink);
-  g_object_unref (audioappsrc);
-}
-
-static void
-kms_recorder_endpoint_audio_valve_removed (KmsElement * self,
-    GstElement * valve)
-{
-  GST_INFO ("TODO: Implement this");
-}
-
-static void
-kms_recorder_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
-{
-  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (self);
-  GstElement *videoappsink, *videoappsrc;
-  GstPad *sinkpad;
-
-  if (recorder->priv->profile == KMS_RECORDING_PROFILE_NONE) {
-    GST_WARNING_OBJECT (recorder, "Recorder is not congured yet");
-    return;
-  }
-
-  videoappsink = gst_element_factory_make ("appsink", VIDEO_APPSINK);
-
-  g_object_set (videoappsink, "emit-signals", TRUE, "async", FALSE,
-      "sync", FALSE, "qos", TRUE, NULL);
-
-  gst_bin_add (GST_BIN (self), videoappsink);
-
-  gst_element_link (valve, videoappsink);
-
-  g_object_get (recorder->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
-      &videoappsrc, NULL);
-
-  g_signal_connect (videoappsink, "new-sample", G_CALLBACK (recv_sample),
-      videoappsrc);
-  g_signal_connect (videoappsink, "eos", G_CALLBACK (recv_eos), videoappsrc);
-
-  sinkpad = gst_element_get_static_pad (videoappsink, "sink");
-  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      set_video_caps, recorder, NULL);
-  g_object_unref (sinkpad);
-
-  kms_recorder_endpoint_update_state_on_valve_added (recorder, valve);
-
-  gst_element_sync_state_with_parent (videoappsink);
-  g_object_unref (videoappsrc);
-}
-
-static void
-kms_recorder_endpoint_video_valve_removed (KmsElement * self,
-    GstElement * valve)
-{
-  GST_INFO ("TODO: Implement this");
+  g_object_unref (appsrc);
 }
 
 static GstElement *
@@ -853,6 +743,9 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
           bus = kms_muxing_pipeline_get_bus (self->priv->mux);
           gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
           g_object_unref (bus);
+
+          kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_AUDIO);
+          kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_VIDEO);
         }
       } else {
         GST_ERROR_OBJECT (self, "Profile can only be configured once");
@@ -931,26 +824,29 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
 }
 
 static GstCaps *
-kms_recorder_endpoint_allowed_caps (KmsElement * self, KmsElementPadType type)
+kms_recorder_endpoint_allowed_caps (KmsElement * kmselement,
+    KmsElementPadType type)
 {
-  GstElement *valve;
-  GstPad *srcpad;
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (kmselement);
+  GstPad *target_pad;
   GstCaps *caps;
 
   switch (type) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      valve = kms_element_get_video_valve (self);
+      target_pad = self->priv->video_target;
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
-      valve = kms_element_get_audio_valve (self);
+      target_pad = self->priv->audio_target;
       break;
     default:
       return NULL;
   }
 
-  srcpad = gst_element_get_static_pad (valve, "src");
-  caps = gst_pad_get_allowed_caps (srcpad);
-  gst_object_unref (srcpad);
+  if (target_pad == NULL) {
+    return NULL;
+  }
+
+  caps = gst_pad_get_allowed_caps (target_pad);
 
   return caps;
 }
@@ -1159,15 +1055,6 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
   urienpoint_class->paused = kms_recorder_endpoint_paused;
 
   kms_element_class = KMS_ELEMENT_CLASS (klass);
-
-  kms_element_class->audio_valve_added =
-      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_audio_valve_added);
-  kms_element_class->video_valve_added =
-      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_video_valve_added);
-  kms_element_class->audio_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_audio_valve_removed);
-  kms_element_class->video_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_video_valve_removed);
   kms_element_class->sink_query =
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_sink_query);
 
@@ -1244,6 +1131,9 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
+
+  self->priv->video_target = NULL;
+  self->priv->audio_target = NULL;
 
   g_cond_init (&self->priv->state_manager.cond);
 }
