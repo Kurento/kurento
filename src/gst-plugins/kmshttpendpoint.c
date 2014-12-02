@@ -60,8 +60,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndpoint, kms_http_endpoint,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME,
         0, "debug category for httpendpoint element"));
 
-static void kms_change_internal_pipeline_state (KmsHttpEndpoint *, gboolean);
-
 static void
 kms_http_endpoint_dispose (GObject * object)
 {
@@ -92,47 +90,6 @@ kms_http_endpoint_finalize (GObject * object)
   g_mutex_clear (&self->base_time_lock);
 
   G_OBJECT_CLASS (kms_http_endpoint_parent_class)->finalize (object);
-}
-
-static void
-kms_change_internal_pipeline_state (KmsHttpEndpoint * self, gboolean start)
-{
-  GstElement *audio_v, *video_v;
-
-  if (self->pipeline == NULL) {
-    GST_WARNING ("Element %s is not initialized", GST_ELEMENT_NAME (self));
-    self->start = start;
-    return;
-  }
-
-  audio_v = kms_element_get_audio_valve (KMS_ELEMENT (self));
-  if (audio_v != NULL)
-    kms_utils_set_valve_drop (audio_v, !start);
-
-  video_v = kms_element_get_video_valve (KMS_ELEMENT (self));
-  if (video_v != NULL)
-    kms_utils_set_valve_drop (video_v, !start);
-
-  if (start) {
-    /* Set pipeline to PLAYING */
-    GST_DEBUG ("Setting pipeline to PLAYING");
-    if (gst_element_set_state (self->pipeline, GST_STATE_PLAYING) ==
-        GST_STATE_CHANGE_ASYNC)
-      GST_DEBUG ("Change to PLAYING will be asynchronous");
-  } else {
-    /* Set pipeline to READY */
-    GST_DEBUG ("Setting pipeline to READY.");
-    if (gst_element_set_state (self->pipeline, GST_STATE_READY) ==
-        GST_STATE_CHANGE_ASYNC)
-      GST_DEBUG ("Change to READY will be asynchronous");
-
-    // Reset base time data
-    BASE_TIME_LOCK (self);
-    g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
-    BASE_TIME_UNLOCK (self);
-  }
-
-  self->start = start;
 }
 
 static void
@@ -185,8 +142,6 @@ static void
 kms_http_endpoint_start (KmsHttpEndpoint * self, gboolean start)
 {
   GST_WARNING_OBJECT (self, "Not implemented method");
-
-  kms_change_internal_pipeline_state (self, start);
 }
 
 static void
