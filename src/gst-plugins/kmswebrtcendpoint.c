@@ -1391,7 +1391,7 @@ get_video_recv_info (KmsWebrtcEndpoint * self, GObject * sess,
   GValueArray *arr;
   GValue *val;
   guint i;
-  gboolean ret = TRUE;
+  gboolean ret = FALSE;
 
   g_object_get (sess, "sources", &arr, NULL);
 
@@ -1414,15 +1414,12 @@ get_video_recv_info (KmsWebrtcEndpoint * self, GObject * sess,
       guint64 octets_received;
 
       if (!gst_structure_get_uint64 (s, "bitrate", bitrate)) {
-        ret = FALSE;
         break;
       }
       if (!gst_structure_get_uint64 (s, "octets-received", &octets_received)) {
-        ret = FALSE;
         break;
       }
       if (!gst_structure_get_uint (s, "sent-rb-fractionlost", fraction_lost)) {
-        ret = FALSE;
         break;
       }
 
@@ -1444,6 +1441,7 @@ get_video_recv_info (KmsWebrtcEndpoint * self, GObject * sess,
       self->priv->remb_local_last_time = current_time;
       self->priv->remb_local_last_octets_received = octets_received;
 
+      ret = TRUE;
       break;
     }
   }
