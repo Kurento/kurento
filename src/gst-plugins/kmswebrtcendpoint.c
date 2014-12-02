@@ -168,6 +168,10 @@ struct _KmsWebrtcEndpointPrivate
   guint remb_local_avg_br;
   GstClockTime remb_local_last_time;
   guint64 remb_local_last_octets_received;
+
+  guint remb_remote;
+  gboolean remb_remote_probed;
+  GstPad *remb_remote_event_pad;
 };
 
 /* KmsWebRTCTransport */
@@ -1380,6 +1384,10 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     }
   }
 
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_RTPBIN_SEND_RTP_SINK)) {
+    webrtc_endpoint->priv->remb_remote_event_pad = g_object_ref (pad);
+  }
+
   KMS_ELEMENT_UNLOCK (webrtc_endpoint);
 }
 
@@ -1581,9 +1589,47 @@ on_sending_rtcp (GObject * sess, GstBuffer * buffer, gboolean is_early,
 }
 
 static void
+send_remb_event (KmsWebrtcEndpoint * self, guint bitrate, guint ssrc)
+{
+  GstEvent *event;
+
+  if (self->priv->remb_remote_event_pad == NULL) {
+    return;
+  }
+
+  GST_TRACE_OBJECT (self,
+      "bitrate: %" G_GUINT32_FORMAT ", ssrc: %" G_GUINT32_FORMAT, bitrate,
+      ssrc);
+
+  event = kms_utils_remb_event_upstream_new (bitrate, ssrc);
+  gst_pad_push_event (self->priv->remb_remote_event_pad, event);
+}
+
+static void
 remb_remote_update (GObject * sess, KmsRTCPPSFBAFBREMBPacket * remb_packet)
 {
-  /* TODO: implement */
+  KmsWebrtcEndpoint *self =
+      KMS_WEBRTC_ENDPOINT (g_object_get_data (sess, WEBRTC_ENDPOINT));
+
+  if (remb_packet->n_ssrcs == 0) {
+    GST_WARNING_OBJECT (self, "REMB packet without any SSRC");
+    return;
+  } else if (remb_packet->n_ssrcs > 1) {
+    GST_WARNING_OBJECT (self, "REMB packet with %" G_GUINT32_FORMAT " SSRCs."
+        " A inconsistent management could take place", remb_packet->n_ssrcs);
+  }
+
+  if (!self->priv->remb_remote_probed) {
+    if (remb_packet->bitrate >= self->priv->remb_remote) {
+      self->priv->remb_remote = remb_packet->bitrate;
+      return;
+    }
+
+    self->priv->remb_remote_probed = TRUE;
+  }
+
+  send_remb_event (self, remb_packet->bitrate, remb_packet->ssrcs[0]);
+  self->priv->remb_remote = remb_packet->bitrate;
 }
 
 static void
@@ -1839,6 +1885,10 @@ kms_webrtc_endpoint_finalize (GObject * object)
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
+
+  if (self->priv->remb_remote_event_pad != NULL) {
+    g_object_unref (self->priv->remb_remote_event_pad);
+  }
 
   kms_webrtc_connection_destroy (self->priv->audio_connection);
   kms_webrtc_connection_destroy (self->priv->video_connection);
