@@ -273,7 +273,7 @@ public class CodeGen {
 		if (templatePackJson != null) {
 
 			String[] addTags = { "/keywords", "/dependencies",
-					"/peerDependencies" };
+					"/devDependencies", "/peerDependencies" };
 			String[] replaceTags = { "/repository", "/bugs" };
 
 			Path outputPackJson = outputFolder.resolve("package.json");
