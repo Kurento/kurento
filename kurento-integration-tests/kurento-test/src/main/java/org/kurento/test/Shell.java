@@ -57,7 +57,10 @@ public class Shell {
 
 	public static String runAndWait(final String... command) {
 		log.debug("Running command on the shell: {}", Arrays.toString(command));
+		return runAndWaitNoLog(command);
+	}
 
+	public static String runAndWaitNoLog(final String... command) {
 		Process p;
 		try {
 			p = new ProcessBuilder(command).redirectErrorStream(true).start();

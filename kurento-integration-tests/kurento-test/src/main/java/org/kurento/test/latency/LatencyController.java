@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.kurento.test.monitor.SystemMonitor;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,8 @@ public class LatencyController implements
 
 	private String name;
 
-	private long latency;
-	private TimeUnit latencyTimeUnit;
+	private long latencyThreshold;
+	private TimeUnit latencyThresholdTimeUnit;
 
 	private long timeout;
 	private TimeUnit timeoutTimeUnit;
@@ -67,15 +68,22 @@ public class LatencyController implements
 
 	private boolean failIfLatencyProblem;
 
+	private SystemMonitor monitor;
+
 	public LatencyController(String name) {
 		this();
 		this.name = name;
 	}
 
+	public LatencyController(String name, SystemMonitor monitor) {
+		this(name);
+		this.monitor = monitor;
+	}
+
 	public LatencyController() {
 		// Defaults
-		latency = 3000;
-		latencyTimeUnit = TimeUnit.MILLISECONDS;
+		latencyThreshold = 3000;
+		latencyThresholdTimeUnit = TimeUnit.MILLISECONDS;
 
 		timeout = 30;
 		timeoutTimeUnit = TimeUnit.SECONDS;
@@ -154,6 +162,10 @@ public class LatencyController implements
 							.format(lastRemoteColorChangeTime);
 
 					if (lastLocalColor.equals(lastRemoteColor)) {
+						if (monitor != null) {
+							monitor.setCurrentLatency(latencyMilis);
+						}
+
 						LatencyRegistry LatencyRegistry = new LatencyRegistry(
 								rgba2Color(lastRemoteColor), latencyMilis);
 
@@ -181,8 +193,8 @@ public class LatencyController implements
 		} catch (InterruptedException e) {
 			log.debug("Finished LatencyController thread due to Interrupted Exception");
 		}
-		// localColorTrigger.interrupt();
-		// remoteColorTrigger.interrupt();
+		localColorTrigger.interrupt();
+		remoteColorTrigger.interrupt();
 	}
 
 	public void addChangeColorEventListener(VideoTag type,
@@ -238,25 +250,26 @@ public class LatencyController implements
 		}
 
 		log.debug("{} errors of latency detected (threshold: {} {})", nErrors,
-				latency, latencyTimeUnit);
+				latencyThreshold, latencyThresholdTimeUnit);
 		log.debug("---------------------------------------------");
 	}
 
 	public long getLatency(TimeUnit timeUnit) {
-		return timeUnit.convert(latency, latencyTimeUnit);
+		return timeUnit.convert(latencyThreshold, latencyThresholdTimeUnit);
 	}
 
-	public long getLatency() {
-		return latency;
+	public long getLatencyThreshold() {
+		return latencyThreshold;
 	}
 
-	public void setLatency(long latency, TimeUnit latencyTimeUnit) {
-		this.latency = latency;
-		this.latencyTimeUnit = latencyTimeUnit;
+	public void setLatencyThreshold(long latencyThreshold,
+			TimeUnit latencyThresholdTimeUnit) {
+		this.latencyThreshold = latencyThreshold;
+		this.latencyThresholdTimeUnit = latencyThresholdTimeUnit;
 	}
 
 	public TimeUnit getLatencyTimeUnit() {
-		return latencyTimeUnit;
+		return latencyThresholdTimeUnit;
 	}
 
 	public long getTimeout() {

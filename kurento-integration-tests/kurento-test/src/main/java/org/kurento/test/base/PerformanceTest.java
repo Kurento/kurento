@@ -162,7 +162,9 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 				node.getMaxInstances());
 
 		// Copy video in remote host if necessary
-		if (node.getVideo() != null) {
+		if (node.getVideo() != null
+				&& (!node.getRemoteHost().exists(node.getRemoteVideo()) || node
+						.isOverwrite())) {
 			node.getRemoteHost().scp(node.getVideo(), node.getRemoteVideo());
 		}
 
