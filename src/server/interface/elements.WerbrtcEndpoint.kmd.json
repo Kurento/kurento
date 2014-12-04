@@ -14,7 +14,19 @@
               "type": "MediaPipeline"
             }
           ]
+        },
+      "properties": [
+        {
+          "name": "minVideoSendBandwidth",
+          "doc": "Minimum video bandwidth for sending.\n  Unit: kbps(kilobits per second).\n   0: unlimited.\n  Default value: 100",
+          "type": "int"
+        },
+        {
+          "name": "maxVideoSendBandwidth",
+          "doc": "Maximum video bandwidth for sending.\n  Unit: kbps(kilobits per second).\n   0: unlimited.\n  Default value: 500",
+          "type": "int"
         }
+      ]
     }
   ]
 }

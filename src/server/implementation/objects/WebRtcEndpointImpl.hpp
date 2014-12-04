@@ -24,6 +24,11 @@ public:
 
   virtual ~WebRtcEndpointImpl () {};
 
+  int getMinVideoSendBandwidth ();
+  void setMinVideoSendBandwidth (int minVideoSendBandwidth);
+  int getMaxVideoSendBandwidth ();
+  void setMaxVideoSendBandwidth (int maxVideoSendBandwidth);
+
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);
