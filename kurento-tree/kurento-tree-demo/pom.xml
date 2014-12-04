@@ -49,22 +49,9 @@
 	<properties>
 		<demo.port>8083</demo.port>
 
-		<!-- Cross plugins settings -->
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<!-- maven-compiler-plugin -->
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
-
 		<!-- Main class -->
 		<start-class>org.kurento.tree.demo.TreeDemoApp</start-class>
 
-		<!-- Plugins -->
-		<spring-boot.version>1.1.8.RELEASE</spring-boot.version>
-		<exec-maven.version>1.3.2</exec-maven.version>
-		<assembly.plugin.version>2.5</assembly.plugin.version>
-		<antrun.plugin.version>1.7</antrun.plugin.version>
 	</properties>
 
 	<build>
@@ -72,7 +59,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${spring-boot.version}</version>
 				<configuration>
 					<mainClass>${start-class}</mainClass>
 					<layout>ZIP</layout>
@@ -88,7 +74,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>${exec-maven.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -103,7 +88,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>${assembly.plugin.version}</version>
 				<configuration>
 					<descriptor>src/assembly/bin.xml</descriptor>
 					<finalName>${project.artifactId}-${project.version}</finalName>
@@ -121,7 +105,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>${antrun.plugin.version}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>

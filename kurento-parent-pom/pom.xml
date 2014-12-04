@@ -68,6 +68,7 @@
 		<version.kms-api-core>[5.0.0,6.0.0)</version.kms-api-core>
 		<version.kms-api-elements>[5.0.0,6.0.0)</version.kms-api-elements>
 		<version.kms-api-filters>[5.0.0,6.0.0)</version.kms-api-filters>
+		<version.kms-plumber-endpoint>0.0.1-SNAPSHOT</version.kms-plumber-endpoint>
 		<version.kurento-maven-plugin>1.0.3-SNAPSHOT</version.kurento-maven-plugin>
 		<version.kurento-utils-js>[5.0.0,6.0.0)</version.kurento-utils-js>
 
@@ -83,6 +84,7 @@
 		<version.apache.httpcore>4.3.2</version.apache.httpcore>
 		<version.cglib>2.2.2</version.cglib>
 		<version.cors-filter>1.7.1</version.cors-filter>
+		<version.exec.maven.plugin>1.3.2</version.exec.maven.plugin>
 		<version.google.gson>2.3</version.google.gson>
 		<version.google.guava>17.0</version.google.guava>
 		<version.junit>4.11</version.junit>
@@ -176,8 +178,8 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 
-		<!-- Options to override the compiler arguments directly on the compiler
-			arument line to separate between what the IDE understands as the source level
+		<!-- Options to override the compiler arguments directly on the compiler 
+			arument line to separate between what the IDE understands as the source level 
 			and what the Maven compiler actually use. -->
 		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
 		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
@@ -213,7 +215,11 @@
 		<dependencies>
 
 			<!-- Kurento dependencies -->
-
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>kmsplumberendpoint</artifactId>
+				<version>${version.kms-plumber-endpoint}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-test</artifactId>
@@ -475,10 +481,10 @@
 				<version>${version.apache.fluent-hc}</version>
 			</dependency>
 			<dependency>
-      <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-client</artifactId>
-      <version>${version.jetty}</version>
-    </dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-client</artifactId>
+				<version>${version.jetty}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
@@ -493,6 +499,11 @@
 		<pluginManagement>
 			<!-- All plugins ordered by shortname (antrun, assembly ...) -->
 			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>${version.exec.maven.plugin}</version>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
@@ -830,7 +841,7 @@
 					<version>${version.war.plugin}</version>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -839,7 +850,7 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<!-- Configure m2e to execute the manifest goal of the bundle plugin,
+								<!-- Configure m2e to execute the manifest goal of the bundle plugin, 
 									if present. -->
 								<pluginExecution>
 									<pluginExecutionFilter>
@@ -894,7 +905,7 @@
 
 		<plugins>
 
-			<!-- Check for the minimum version of Java and Maven. Runs during the
+			<!-- Check for the minimum version of Java and Maven. Runs during the 
 				validate phase. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -993,16 +1004,16 @@
 
 	<profiles>
 
-		<!-- The profile kurento-release must be active when a project is released.
-			The configuration in this POM will automatically call this profile if using
-			the maven-release-plugin. If the maven-release-plugin is not used during
+		<!-- The profile kurento-release must be active when a project is released. 
+			The configuration in this POM will automatically call this profile if using 
+			the maven-release-plugin. If the maven-release-plugin is not used during 
 			the release, this profile must be manually activated. -->
 		<profile>
 			<id>kurento-release</id>
 			<build>
 				<plugins>
-					<!-- Create a source-release artifact that contains the fully buildable
-						project directory source structure. This should be released to the Maven
+					<!-- Create a source-release artifact that contains the fully buildable 
+						project directory source structure. This should be released to the Maven 
 						repository for each JBoss project release. -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -1054,8 +1065,8 @@
 			</build>
 		</profile>
 
-		<!-- This profile can be activated to generate gpg signatures for all build
-			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase"
+		<!-- This profile can be activated to generate gpg signatures for all build 
+			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase" 
 			are available to the current build. -->
 		<profile>
 			<id>gpg-sign</id>

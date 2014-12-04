@@ -1,30 +1,31 @@
 package org.kurento.tree.server.kms.real;
 
-import org.kurento.client.PlumberEndpoint;
+import org.kurento.module.kmsplumberendpoint.PlumberEndpoint;
 import org.kurento.tree.server.kms.Element;
 import org.kurento.tree.server.kms.Plumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RealPlumber extends Plumber implements RealElement {
-
+	
 	private static Logger log = LoggerFactory.getLogger(RealPlumber.class);
-
+	
 	private PlumberEndpoint plumberEndpoint;
-
+	
 	public RealPlumber(RealPipeline pipeline) {
 		super(pipeline);
-		plumberEndpoint = new PlumberEndpoint.Builder(
-				pipeline.getMediaPipeline()).build();
+		plumberEndpoint =
+				new PlumberEndpoint.Builder(pipeline.getMediaPipeline())
+						.build();
 	}
-
+	
 	@Override
 	public void link(Plumber plumber) {
 		if (!(plumber instanceof RealPlumber)) {
 			throw new RuntimeException(
 					"A real plumber can not be linked to non real one");
 		}
-
+		
 		super.link(plumber);
 		RealPlumber realPlumber = (RealPlumber) plumber;
 		String address = realPlumber.plumberEndpoint.getAddress();
@@ -32,18 +33,18 @@ public class RealPlumber extends Plumber implements RealElement {
 		log.debug("Connecting plumber to adress:" + address + " port:" + port);
 		this.plumberEndpoint.link(address, port);
 	}
-
+	
 	@Override
 	public void release() {
 		super.release();
 		plumberEndpoint.release();
 	}
-
+	
 	@Override
 	public PlumberEndpoint getMediaElement() {
 		return plumberEndpoint;
 	}
-
+	
 	@Override
 	public void connect(Element element) {
 		if (!(element instanceof RealElement)) {
