@@ -9,7 +9,8 @@
     "express": "~3.2.6",
     "ws": "~0.4.32",
     "minimist": "^1.1.0",
-    "kurento-client": "Kurento/kurento-client-js#develop"
+    "kurento-client": "Kurento/kurento-client-js#develop",
+    "kurento-module-plumberendpoint": "Kurento/kurento-module-plumberendpoint-js#develop"
   },
   "devDependencies": {
     "bower": "^1.3.12"

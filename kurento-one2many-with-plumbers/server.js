@@ -19,6 +19,7 @@ var ws = require('ws');
 var minimist = require('minimist');
 var url = require('url');
 var kurento = require('kurento-client');
+kurento.register(require('kurento-module-plumberendpoint'));
 
 var argv = minimist(process.argv.slice(2),
 {
