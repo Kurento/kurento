@@ -817,9 +817,6 @@ sdp_message_is_bundle (GstSDPMessage * msg)
   gboolean is_bundle = FALSE;
   guint i;
 
-  if (msg == NULL)
-    return FALSE;
-
   for (i = 0;; i++) {
     const gchar *val;
     GRegex *regex;
@@ -857,6 +854,7 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
     base_sdp_endpoint, GstSDPMessage * msg)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
+  GstSDPMessage *remote_offer_sdp;
   gchar *fingerprint;
   guint len, i;
   gchar *bundle_mids = NULL;
@@ -901,8 +899,11 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   g_mutex_unlock (&self->priv->ctx.gather_mutex);
 
   KMS_ELEMENT_LOCK (self);
-  self->priv->is_bundle =
-      sdp_message_is_bundle (base_sdp_endpoint->remote_offer_sdp);
+  g_object_get (base_sdp_endpoint, "remote-offer-sdp", &remote_offer_sdp, NULL);
+  if (remote_offer_sdp != NULL) {
+    self->priv->is_bundle = sdp_message_is_bundle (remote_offer_sdp);
+    gst_sdp_message_free (remote_offer_sdp);
+  }
 
   GST_INFO ("BUNDLE: %" G_GUINT32_FORMAT, self->priv->is_bundle);
 
@@ -921,9 +922,11 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
     const gchar *media_str = NULL;
+    gboolean use_ipv6;
 
+    g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
     if (!update_sdp_media (self, (GstSDPMedia *) media,
-            fingerprint, base_sdp_endpoint->use_ipv6, &media_str)) {
+            fingerprint, use_ipv6, &media_str)) {
       ret = FALSE;
       goto end;
     }
