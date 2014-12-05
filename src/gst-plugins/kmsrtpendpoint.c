@@ -193,15 +193,13 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
       case G_SOCKET_FAMILY_IPV4:
       {
         gchar *name;
+        gboolean use_ipv6;
 
-        KMS_ELEMENT_LOCK (base_sdp_endpoint);
-        if (is_ipv6 != base_sdp_endpoint->use_ipv6) {
+        g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
+        if (is_ipv6 != use_ipv6) {
           GST_DEBUG ("No valid address type: %d", is_ipv6);
-          KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
           break;
         }
-        KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
-
         // TODO: Un comment this once lookup does not leak memory
 //         name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
         name = NULL;
@@ -371,7 +369,8 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
         g_object_set (rtp_endpoint->priv->audio_rtp_udpsink, "host",
             media_con->address, "port", gst_sdp_media_get_port (media), NULL);
         g_object_set (rtp_endpoint->priv->audio_rtcp_udpsink, "host",
-            media_con->address, "port", gst_sdp_media_get_port (media) + 1, NULL);
+            media_con->address, "port", gst_sdp_media_get_port (media) + 1,
+            NULL);
 
         gst_element_sync_state_with_parent (rtp_endpoint->
             priv->audio_rtp_udpsink);
