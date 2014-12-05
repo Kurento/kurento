@@ -115,7 +115,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
-			<artifactId>kmsplumberendpoint</artifactId>
+			<artifactId>plumberendpoint</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
