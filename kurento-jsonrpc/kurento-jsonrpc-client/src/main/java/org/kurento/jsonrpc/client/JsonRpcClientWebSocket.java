@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.jsonrpc.client;
 
@@ -55,9 +54,6 @@ import com.google.gson.JsonObject;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(JsonRpcClientWebSocket.class);
-
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
 
@@ -85,6 +81,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			}
 		}
 	}
+
+	private static final Logger log = LoggerFactory
+			.getLogger(JsonRpcClientWebSocket.class);
 
 	private CountDownLatch latch = new CountDownLatch(1);
 
@@ -115,13 +114,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
-			public <P, R> Response<R> internalSendRequest(Request<P> request,
-					Class<R> resultClass) throws IOException {
-
-				return internalSendRequestWebSocket(request, resultClass);
-			}
-
-			@Override
 			protected void internalSendRequest(
 					Request<? extends Object> request,
 					Class<JsonElement> resultClass,
@@ -129,36 +121,37 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				internalSendRequestWebSocket(request, resultClass, continuation);
 			}
+
+			@Override
+			public <P, R> Response<R> internalSendRequest(Request<P> request,
+					Class<R> resultClass) throws IOException {
+
+				return internalSendRequestWebSocket(request, resultClass);
+			}
 		};
 	}
 
-	protected void internalSendRequestWebSocket(
-			final Request<? extends Object> request,
-			final Class<JsonElement> resultClass,
-			final Continuation<Response<JsonElement>> continuation) {
+	@Override
+	public void close() throws IOException {
+		if (wsSession != null) {
+			clientClose = true;
+			wsSession.close();
+			client.destroy();
+		}
+	}
 
-		// FIXME: Poor man async implementation.
-		execService.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Response<JsonElement> result = internalSendRequestWebSocket(
-							request, resultClass);
-					try {
-						continuation.onSuccess(result);
-					} catch (Exception e) {
-						log.error("Exception while processing response", e);
-					}
-				} catch (Exception e) {
-					continuation.onError(e);
-				}
-			}
-		});
+	public void closeNativeSession() {
+		wsSession.close();
+	}
+
+	@Override
+	public void connect() throws IOException {
+		connectIfNecessary();
 	}
 
 	public synchronized void connectIfNecessary() throws IOException {
 
-		if (wsSession == null || !wsSession.isOpen()) {
+		if ((wsSession == null) || !wsSession.isOpen()) {
 
 			try {
 
@@ -168,6 +161,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				client.start();
 
 				ClientUpgradeRequest request = new ClientUpgradeRequest();
+				// FIXME Give the client some time, otherwise the exception is
+				// not thrown if the server is down.
+				Thread.sleep(100);
 				wsSession = client.connect(socket, new URI(url), request).get();
 
 			} catch (Exception e) {
@@ -187,15 +183,17 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				if (session == null) {
 
-					session = new ClientSession(null, null,
-							JsonRpcClientWebSocket.this);
+					session =
+							new ClientSession(null, null,
+									JsonRpcClientWebSocket.this);
 					handlerManager.afterConnectionEstablished(session);
 
 				} else {
 
 					try {
-						String result = rsHelper
-								.sendRequest(JsonRpcConstants.METHOD_RECONNECT,
+						String result =
+								rsHelper.sendRequest(
+										JsonRpcConstants.METHOD_RECONNECT,
 										String.class);
 
 						log.info("Reconnection result: {}", result);
@@ -206,9 +204,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						if (e.getCode() == 40007) { // Invalid session exception
 
 							rsHelper.setSessionId(null);
-							String result = rsHelper.sendRequest(
-									JsonRpcConstants.METHOD_RECONNECT,
-									String.class);
+							String result =
+									rsHelper.sendRequest(
+											JsonRpcConstants.METHOD_RECONNECT,
+											String.class);
 
 							log.info("Reconnection result: {}", result);
 
@@ -221,6 +220,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				Thread.currentThread().interrupt();
 			}
 		}
+	}
+
+	public Session getWebSocketSession() {
+		return wsSession;
 	}
 
 	protected void handleReconnectDisconnection(final int statusCode,
@@ -261,17 +264,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	private void handleWebSocketTextMessage(String message) throws IOException {
-
-		JsonObject jsonMessage = fromJson(message, JsonObject.class);
-
-		if (jsonMessage.has(JsonRpcConstants.METHOD_PROPERTY)) {
-			handleRequestFromServer(jsonMessage);
-		} else {
-			handleResponseFromServer(jsonMessage);
-		}
-	}
-
 	private void handleRequestFromServer(final JsonObject message)
 			throws IOException {
 
@@ -297,12 +289,47 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private void handleResponseFromServer(JsonObject message) {
 
-		Response<JsonElement> response = fromJsonResponse(message,
-				JsonElement.class);
+		Response<JsonElement> response =
+				fromJsonResponse(message, JsonElement.class);
 
 		setSessionId(response.getSessionId());
 
 		pendingRequests.handleResponse(response);
+	}
+
+	private void handleWebSocketTextMessage(String message) throws IOException {
+
+		JsonObject jsonMessage = fromJson(message, JsonObject.class);
+
+		if (jsonMessage.has(JsonRpcConstants.METHOD_PROPERTY)) {
+			handleRequestFromServer(jsonMessage);
+		} else {
+			handleResponseFromServer(jsonMessage);
+		}
+	}
+
+	protected void internalSendRequestWebSocket(
+			final Request<? extends Object> request,
+			final Class<JsonElement> resultClass,
+			final Continuation<Response<JsonElement>> continuation) {
+
+		// FIXME: Poor man async implementation.
+		execService.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Response<JsonElement> result =
+							internalSendRequestWebSocket(request, resultClass);
+					try {
+						continuation.onSuccess(result);
+					} catch (Exception e) {
+						log.error("Exception while processing response", e);
+					}
+				} catch (Exception e) {
+					continuation.onError(e);
+				}
+			}
+		});
 	}
 
 	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request,
@@ -333,8 +360,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			log.debug("<-Res {}", responseJson.toString());
 
-			Response<R> response = MessageUtils.convertResponse(responseJson,
-					resultClass);
+			Response<R> response =
+					MessageUtils.convertResponse(responseJson, resultClass);
 
 			if (response.getSessionId() != null) {
 				session.setSessionId(response.getSessionId());
@@ -354,27 +381,5 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					+ " milliseconds waiting from response to request with id:"
 					+ request.getId(), e);
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		if (wsSession != null) {
-			clientClose = true;
-			wsSession.close();
-			client.destroy();
-		}
-	}
-
-	public Session getWebSocketSession() {
-		return wsSession;
-	}
-
-	@Override
-	public void connect() throws IOException {
-		connectIfNecessary();
-	}
-
-	public void closeNativeSession() {
-		wsSession.close();
 	}
 }
