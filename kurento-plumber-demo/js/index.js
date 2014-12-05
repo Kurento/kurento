@@ -75,6 +75,8 @@ window.onload = function() {
 
 	  kurentoClient = client;
 	});
+
+    kurentoClient.register(kurentoModulePlumberendpoint);
 }
 
 function start() {
