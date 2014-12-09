@@ -43,9 +43,7 @@ package.json
     "grunt-browserify": "^3.1.0",
     "grunt-cli": "~0.1.13",
     "grunt-jsdoc": "~0.5.7",
-  <#if api_js.npmGit??>
     "grunt-npm2bower-sync": "^0.4.0",
-  </#if>
     "kurento-client": "${module.kurentoVersion}",
     "minifyify": "^4.4.0",
 </#if>

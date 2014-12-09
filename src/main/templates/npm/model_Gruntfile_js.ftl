@@ -213,9 +213,7 @@ module.exports = function(grunt)
   && node_name != "kurento-client-filters">
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
-  <#if api_js.npmGit??>
   grunt.loadNpmTasks('grunt-npm2bower-sync');
-  </#if>
 
 </#if>
   // Alias tasks
@@ -223,7 +221,7 @@ module.exports = function(grunt)
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
   grunt.registerTask('generate', ['path-check:generate plugin', 'browserify']);
-  grunt.registerTask('default',  ['clean', 'jsdoc', 'generate'<#if api_js.npmGit??>, 'sync:bower'</#if>]);
+  grunt.registerTask('default',  ['clean', 'jsdoc', 'generate', 'sync:bower']);
   <#if api_js.npmGit??>
   grunt.registerTask('bower',    ['shell:bower']);
   </#if>
