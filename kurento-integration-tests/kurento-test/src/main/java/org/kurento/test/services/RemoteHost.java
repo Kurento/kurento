@@ -18,9 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,16 +158,36 @@ public class RemoteHost {
 		return ping(ipAddress, RemoteHost.PING_TIMEOUT);
 	}
 
-	public static boolean ping(String ipAddress, int timeout) {
-		boolean result = false;
-		InetAddress inet;
+	public static boolean ping(final String ipAddress, int timeout) {
+		final CountDownLatch latch = new CountDownLatch(1);
+
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					String[] command = { "ping", "-c", "1", ipAddress };
+					Process p = new ProcessBuilder(command)
+							.redirectErrorStream(true).start();
+					CharStreams.toString(new InputStreamReader(p
+							.getInputStream(), "UTF-8"));
+					latch.countDown();
+				} catch (Exception e) {
+				}
+			}
+		};
+		t.setDaemon(true);
+		t.start();
+
+		boolean ping = false;
 		try {
-			inet = InetAddress.getByName(ipAddress);
-			result = inet.isReachable(timeout * 1000);
-		} catch (Exception e) {
+			ping = latch.await(timeout, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
 			log.error("Exception making ping to {} : {}", ipAddress,
 					e.getClass());
 		}
-		return result;
+		if (!ping) {
+			t.interrupt();
+		}
+
+		return ping;
 	}
 }

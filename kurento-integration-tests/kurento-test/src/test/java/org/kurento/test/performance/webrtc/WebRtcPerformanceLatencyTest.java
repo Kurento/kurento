@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,8 +35,6 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.latency.LatencyController;
-import org.kurento.test.latency.VideoTag;
 import org.kurento.test.monitor.SystemMonitor;
 import org.kurento.test.services.Node;
 
@@ -57,14 +55,17 @@ import org.kurento.test.services.Node;
 public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 
 	private static final int DEFAULT_NODES = 10; // Number of nodes
-	private static final int DEFAULT_NBROWSERS = 2; // Browser per node
-	private static final int DEFAULT_CLIENT_RATE = 1000; // milliseconds
+	private static final int DEFAULT_NBROWSERS = 5; // Browser per node
+	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
 	private static final int DEFAULT_MONITOR_RATE = 1000; // milliseconds
-	private static final int DEFAULT_MAX_LATENCY = 1; // seconds
+	private static final int DEFAULT_HOLD_TIME = 30000; // milliseconds
 
+	private SystemMonitor monitor;
 	public int numBrowsers;
 	public int numNodes;
 	public int clientRate;
+	public int holdTime;
+	public int monitorRate;
 
 	public WebRtcPerformanceLatencyTest() {
 		nodes = new ArrayList<Node>();
@@ -77,16 +78,19 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 		clientRate = Integer.parseInt(System.getProperty(
 				"test.webrtcgrid.clientrate",
 				String.valueOf(DEFAULT_CLIENT_RATE)));
+		holdTime = Integer.parseInt(System.getProperty(
+				"test.webrtcgrid.holdtime", String.valueOf(DEFAULT_HOLD_TIME)));
+		monitorRate = Integer
+				.parseInt(System.getProperty("test.webrtcgrid.monitor",
+						String.valueOf(DEFAULT_MONITOR_RATE)));
 
 		nodes = getRandomNodes(numNodes, Browser.CHROME, getPathTestFiles()
-				+ "/video/15sec/rgb.y4m", null, numBrowsers);
+				+ "/video/15sec/rgbHD.y4m", null, numBrowsers);
 	}
-
-	private SystemMonitor monitor;
 
 	@Before
 	public void setup() {
-		monitor = new SystemMonitor(DEFAULT_MONITOR_RATE);
+		monitor = new SystemMonitor(monitorRate);
 		monitor.start();
 	}
 
@@ -100,21 +104,25 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 	public void tesWebRtcGridChrome() throws InterruptedException,
 			ExecutionException, IOException {
 
-		final int playTime = numNodes * numBrowsers * clientRate;
+		final int playTime = (numNodes * numBrowsers * clientRate) + holdTime;
 
 		ExecutorService internalExec = Executors.newFixedThreadPool(numNodes
 				* numBrowsers);
 		CompletionService<Void> exec = new ExecutorCompletionService<>(
 				internalExec);
 
+		int numNode = 1;
 		for (final Node node : nodes) {
 			for (int i = 0; i < numBrowsers; i++) {
 				final String name = node.getAddress() + "-browser" + i;
 				monitor.incrementNumClients();
+				log.debug("*** Starting node #{} ({}) ***", numNode, name);
+				numNode++;
 				exec.submit(new Callable<Void>() {
-					public Void call() throws IOException {
+					public Void call() {
 						doTest(node, playTime, name);
 						monitor.decrementNumClients();
+						log.debug("+++ Ending browser #{} +++", name);
 						return null;
 					}
 				});
@@ -122,18 +130,21 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 			}
 		}
 
-		for (int i = 0; i < numNodes * numBrowsers; i++) {
+		for (int i = 1; i <= nodes.size() * numBrowsers; i++) {
 			try {
-				exec.take().get();
+				Future<Void> taskFuture = exec.take();
+				taskFuture.get();
 			} catch (ExecutionException e) {
 				internalExec.shutdownNow();
 				monitor.incrementLatencyErrors();
 				log.error(e.getCause().getMessage());
+			} finally {
+				log.debug("+++ Ending browser #{} +++", i);
 			}
 		}
 	}
 
-	public void doTest(Node node, int playTime, String name) throws IOException {
+	public void doTest(Node node, int playTime, String name) {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -151,17 +162,18 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 
-			// Latency control
-			LatencyController cs = new LatencyController(name, monitor);
-			cs.setLatencyThreshold(DEFAULT_MAX_LATENCY, TimeUnit.SECONDS);
-			browser.addChangeColorEventListener(VideoTag.LOCAL, cs, name
-					+ "-loc");
-			browser.addChangeColorEventListener(VideoTag.REMOTE, cs, name
-					+ "-rem");
-			cs.checkLatency(playTime, TimeUnit.MILLISECONDS);
-
-			// Draw latency log
-			cs.logLatencyErrorrs();
+			try {
+				long endTimeMillis = System.currentTimeMillis() + playTime;
+				while (true) {
+					if (System.currentTimeMillis() > endTimeMillis) {
+						break;
+					}
+					Thread.sleep(100);
+					monitor.addCurrentLatency(browser.getLatency());
+				}
+			} catch (InterruptedException e) {
+				log.error(e.getMessage());
+			}
 		}
 
 		// Release Media Pipeline

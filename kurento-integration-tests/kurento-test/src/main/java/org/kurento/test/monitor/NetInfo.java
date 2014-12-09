@@ -56,8 +56,8 @@ public class NetInfo {
 	public String parseHeaderEntry() {
 		String out = "";
 		for (String key : netInfoMap.keySet()) {
-			out += ", Interface " + key + " [bytes rx]" + " , Interface " + key
-					+ " [bytes tx]";
+			out += ", interface_" + key + "_rx_bytes" + " , interface_" + key
+					+ "_tx_bytes";
 		}
 		return out;
 	}
@@ -95,6 +95,18 @@ public class NetInfo {
 		public void decrementTxBytes(long txBytes) {
 			this.txBytes = this.txBytes - txBytes;
 		}
+
+		@Override
+		public String toString() {
+			return "NetInfoEntry [rxBytes=" + rxBytes + ", txBytes=" + txBytes
+					+ "]";
+		}
+
+	}
+
+	@Override
+	public String toString() {
+		return "NetInfo [netInfoMap=" + netInfoMap + "]";
 	}
 
 }

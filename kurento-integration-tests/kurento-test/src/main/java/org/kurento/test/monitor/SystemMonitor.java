@@ -39,7 +39,8 @@ public class SystemMonitor {
 	private double prevTotal = 0;
 	private double prevIdle = 0;
 	private int numClients = 0;
-	private long currentLatency = 0;
+	private double currentLatency = 0;
+	private int latencyHints = 0;
 	private int latencyErrors = 0;
 
 	public SystemMonitor() {
@@ -59,11 +60,14 @@ public class SystemMonitor {
 		thread = new Thread() {
 			@Override
 			public void run() {
+				// NetInfo lastNetInfo = null;
 				while (true) {
 					SystemInfo info = new SystemInfo();
 
 					// Bandwidth (bytes tx and rx)
-					info.setNetInfo(getNetInfo(initNetInfo));
+					NetInfo newNetInfo = getNetInfo(initNetInfo);
+					info.setNetInfo(newNetInfo);
+					// lastNetInfo = newNetInfo;
 
 					// CPU usage (%)
 					info.setCpuPercent(getCpuUsage());
@@ -79,7 +83,7 @@ public class SystemMonitor {
 					info.setNumClients(numClients);
 
 					// Latency
-					info.setLatency(currentLatency);
+					info.setLatency(getLatency());
 					info.setLatencyErrors(latencyErrors);
 
 					// Number of threads
@@ -104,7 +108,7 @@ public class SystemMonitor {
 		thread.stop();
 	}
 
-	public NetInfo getNetInfo(NetInfo initNetInfo) {
+	public NetInfo getNetInfo(NetInfo initNetInfo, NetInfo lastNetInfo) {
 		NetInfo netInfo = new NetInfo();
 		String out = Shell.runAndWaitNoLog("/bin/sh", "-c",
 				"cat /proc/net/dev | awk 'NR > 2'");
@@ -113,17 +117,24 @@ public class SystemMonitor {
 			String[] split = line.trim().replaceAll(" +", " ").split(" ");
 			String iface = split[0].replace(":", "");
 			long rxBytes = Long.parseLong(split[1]);
-			long txBytes = Long.parseLong(split[10]);
+			long txBytes = Long.parseLong(split[9]);
 			netInfo.putNetInfo(iface, rxBytes, txBytes);
 		}
 		if (initNetInfo != null) {
 			netInfo.decrementInitInfo(initNetInfo);
 		}
+		if (lastNetInfo != null) {
+			netInfo.decrementInitInfo(lastNetInfo);
+		}
 		return netInfo;
 	}
 
+	public NetInfo getNetInfo(NetInfo initNetInfo) {
+		return getNetInfo(initNetInfo, null);
+	}
+
 	public NetInfo getInitNetInfo() {
-		return getNetInfo(null);
+		return getNetInfo(null, null);
 	}
 
 	public void writeResults(String csvTitle) throws IOException {
@@ -131,7 +142,7 @@ public class SystemMonitor {
 		boolean header = false;
 		for (long time : infoMap.keySet()) {
 			if (!header) {
-				pw.println("time [mm:ss.SSS], cpu [%], mem [bytes], mem [%], swap [bytes], swap [%], number of clients, number of thread in KMS process, latency [ms], number of latency errors"
+				pw.println("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number, latency_ms, latency_errors_number"
 						+ infoMap.get(time).getNetInfo().parseHeaderEntry());
 				header = true;
 			}
@@ -222,16 +233,20 @@ public class SystemMonitor {
 		return latencyErrors;
 	}
 
-	public void incrementLatencyErrors() {
+	public synchronized void incrementLatencyErrors() {
 		this.latencyErrors++;
 	}
 
-	public long getCurrentLatency() {
-		return currentLatency;
+	public double getLatency() {
+		double latency = (latencyHints > 0) ? currentLatency / latencyHints : 0;
+		this.currentLatency = 0;
+		this.latencyHints = 0;
+		return latency;
 	}
 
-	public void setCurrentLatency(long currentLatency) {
-		this.currentLatency = currentLatency;
+	public synchronized void addCurrentLatency(double currentLatency) {
+		this.currentLatency += currentLatency;
+		this.latencyHints++;
 	}
 
 }

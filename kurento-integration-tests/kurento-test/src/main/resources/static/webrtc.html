@@ -24,6 +24,7 @@
 	};
 	var colorInfo;
 	var initTime;
+	var latency = 0;
 
 	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
 
@@ -43,12 +44,15 @@
 		} ];
 
 		setInterval(updateCurrentTime, 100);
-		setInterval(function() {
-			watchColorChange('localcolor', 0);
-		}, 10);
-		setInterval(function() {
-			watchColorChange('color', 1);
-		}, 10);
+	}
+
+	function watchColors() {
+		watchColorChange('localcolor', 0);
+		watchColorChange('color', 1);
+
+		if (!colorChanged(colorInfo[1].rgba, colorInfo[0].rgba)) {
+			latency = colorInfo[1].time - colorInfo[0].time;
+		}
 	}
 
 	function watchColorChange(colorTagId, iColor) {
@@ -154,6 +158,7 @@
 		}
 		if (e.type == "playing") {
 			audioTest.play();
+			setInterval(watchColors, 10);
 		}
 		log(e.type);
 	}

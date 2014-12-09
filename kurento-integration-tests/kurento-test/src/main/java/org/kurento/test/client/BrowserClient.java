@@ -544,4 +544,8 @@ public class BrowserClient implements Closeable {
 		FileUtils.copyFile(scrFile, new File(file));
 	}
 
+	public long getLatency() {
+		return (Long) js.executeScript("return latency;");
+	}
+
 }

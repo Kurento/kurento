@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.monitor.SystemMonitor;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,16 +67,9 @@ public class LatencyController implements
 
 	private boolean failIfLatencyProblem;
 
-	private SystemMonitor monitor;
-
 	public LatencyController(String name) {
 		this();
 		this.name = name;
-	}
-
-	public LatencyController(String name, SystemMonitor monitor) {
-		this(name);
-		this.monitor = monitor;
 	}
 
 	public LatencyController() {
@@ -162,10 +154,6 @@ public class LatencyController implements
 							.format(lastRemoteColorChangeTime);
 
 					if (lastLocalColor.equals(lastRemoteColor)) {
-						if (monitor != null) {
-							monitor.setCurrentLatency(latencyMilis);
-						}
-
 						LatencyRegistry LatencyRegistry = new LatencyRegistry(
 								rgba2Color(lastRemoteColor), latencyMilis);
 

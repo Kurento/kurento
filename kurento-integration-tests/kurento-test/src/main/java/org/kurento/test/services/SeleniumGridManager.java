@@ -80,7 +80,7 @@ public class SeleniumGridManager {
 	}
 
 	private void startHub() throws Exception {
-		hubAddress = "193.147.49.61";
+		hubAddress = "127.0.0.1";
 		hubPort = getProperty("test.hub.port", DEFAULT_HUB_PORT);
 
 		seleniumGridHub = new SeleniumGridHub(hubAddress, hubPort);

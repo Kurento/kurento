@@ -27,7 +27,7 @@ public class SystemInfo {
 	private double memPercent;
 	private double swapPercent;
 	private int numClients;
-	private long latency;
+	private double latency;
 	private int latencyErrors;
 	private NetInfo netInfo;
 	private int numThreadsKms;
@@ -96,11 +96,11 @@ public class SystemInfo {
 		this.latencyErrors = latencyErrors;
 	}
 
-	public long getLatency() {
+	public double getLatency() {
 		return latency;
 	}
 
-	public void setLatency(long latency) {
+	public void setLatency(double latency) {
 		this.latency = latency;
 	}
 

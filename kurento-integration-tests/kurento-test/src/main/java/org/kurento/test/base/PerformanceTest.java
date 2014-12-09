@@ -271,7 +271,13 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 				* 1000;
 
 		do {
-			nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
+			try {
+				nodeCandidate = nodeList.get(Randomizer.getInt(0,
+						nodeList.size()));
+			} catch (IllegalArgumentException e) {
+				throw new RuntimeException(
+						"No valid available node(s) to perform Selenim Grid test");
+			}
 			log.debug("Node candidate {}", nodeCandidate);
 
 			if (RemoteHost.ping(nodeCandidate)) {
