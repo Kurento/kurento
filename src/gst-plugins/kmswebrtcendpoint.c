@@ -935,6 +935,8 @@ end:
 
 /* Set Transport end */
 
+/* Start Transport begin */
+
 static void
 add_webrtc_transport_src (KmsWebrtcEndpoint * webrtc_endpoint,
     KmsWebRTCTransport * tr, gboolean is_client, const gchar * sink_pad_name)
@@ -1087,7 +1089,6 @@ add_webrtc_bundle_connection_src (KmsWebrtcEndpoint * webrtc_endpoint,
   gst_element_link_pads (tr->dtlssrtpdec, "src", rtcpdemux, "sink");
   gst_element_link_pads (rtcpdemux, "rtp_src", ssrcdemux, "sink");
   gst_element_link_pads (rtcpdemux, "rtcp_src", ssrcdemux, "rtcp_sink");
-  /* TODO: link rtcp_sink pad when dtlssrtpdec provides rtcp packets */
 
   gst_element_sync_state_with_parent_target_state (ssrcdemux);
   gst_element_sync_state_with_parent_target_state (rtcpdemux);
@@ -1201,6 +1202,8 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 
   KMS_ELEMENT_UNLOCK (self);
 }
+
+/* Start Transport end */
 
 static void
 gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
