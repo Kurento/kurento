@@ -71,7 +71,7 @@ enum
 #define IPV4 4
 #define IPV6 6
 
-#define NICE_N_COMPONENTS 2
+#define KMS_NICE_N_COMPONENTS 2
 
 #define AUDIO_STREAM_NAME "audio"
 #define VIDEO_STREAM_NAME "video"
@@ -239,7 +239,115 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 /* WebRTCConnection */
 
 static void
-nice_agent_recv (NiceAgent * agent, guint stream_id, guint component_id,
+kms_webrtc_connection_add_remote_candidates (KmsWebRTCConnection * conn,
+    const GstSDPMedia * media, const gchar * msg_ufrag, const gchar * msg_pwd)
+{
+  NiceAgent *agent = conn->agent;
+  guint stream_id = conn->stream_id;
+  const gchar *ufrag, *pwd;
+  GRegex *regex;
+  guint len, i;
+
+  ufrag = gst_sdp_media_get_attribute_val (media, SDP_ICE_UFRAG_ATTR);
+  pwd = gst_sdp_media_get_attribute_val (media, SDP_ICE_PWD_ATTR);
+  if (!nice_agent_set_remote_credentials (agent, stream_id, ufrag, pwd)) {
+    GST_WARNING ("Cannot set remote media credentials.");
+    if (!nice_agent_set_remote_credentials (agent, stream_id, msg_ufrag,
+            msg_pwd)) {
+      GST_WARNING ("Cannot set remote message credentials.");
+      return;
+    }
+  }
+
+  regex = g_regex_new ("^(?<foundation>[0-9]+) (?<cid>[0-9]+)"
+      " (udp|UDP) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
+      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
+      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( generation [0-9]+)?$",
+      0, 0, NULL);
+
+  len = gst_sdp_media_attributes_len (media);
+  for (i = 0; i < len; i++) {
+    const GstSDPAttribute *attr;
+    GMatchInfo *match_info = NULL;
+
+    attr = gst_sdp_media_get_attribute (media, i);
+    if (g_strcmp0 (SDP_CANDIDATE_ATTR, attr->key) != 0) {
+      continue;
+    }
+
+    g_regex_match (regex, attr->value, 0, &match_info);
+
+    while (g_match_info_matches (match_info)) {
+      NiceCandidateType type;
+      NiceCandidate *cand = NULL;
+      GSList *candidates;
+
+      gchar *foundation = g_match_info_fetch_named (match_info, "foundation");
+      gchar *cid_str = g_match_info_fetch_named (match_info, "cid");
+      gchar *prio_str = g_match_info_fetch_named (match_info, "prio");
+      gchar *addr = g_match_info_fetch_named (match_info, "addr");
+      gchar *port_str = g_match_info_fetch_named (match_info, "port");
+      gchar *type_str = g_match_info_fetch_named (match_info, "type");
+
+      /* rfc5245-15.1 */
+      if (g_strcmp0 ("host", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_HOST;
+      } else if (g_strcmp0 ("srflx", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_SERVER_REFLEXIVE;
+      } else if (g_strcmp0 ("prflx", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_PEER_REFLEXIVE;
+      } else if (g_strcmp0 ("relay", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_RELAYED;
+      } else {
+        GST_WARNING ("Candidate type '%s' not supported", type_str);
+        goto next;
+      }
+
+      cand = nice_candidate_new (type);
+      cand->component_id = g_ascii_strtoll (cid_str, NULL, 10);
+      cand->priority = g_ascii_strtoll (prio_str, NULL, 10);
+      g_strlcpy (cand->foundation, foundation, NICE_CANDIDATE_MAX_FOUNDATION);
+
+      if (!nice_address_set_from_string (&cand->addr, addr)) {
+        GST_WARNING ("Cannot set address '%s' to candidate", addr);
+        goto next;
+      }
+      nice_address_set_port (&cand->addr, g_ascii_strtoll (port_str, NULL, 10));
+
+      candidates = g_slist_append (NULL, cand);
+      if (nice_agent_set_remote_candidates (agent, stream_id,
+              cand->component_id, candidates) < 0) {
+        GST_WARNING ("Cannot add candidate: '%s'in stream_id: %d.", attr->value,
+            stream_id);
+      } else {
+        GST_TRACE ("Candidate added: '%s' in stream_id: %d.", attr->value,
+            stream_id);
+      }
+      g_slist_free (candidates);
+
+    next:
+      g_free (addr);
+      g_free (foundation);
+      g_free (cid_str);
+      g_free (prio_str);
+      g_free (port_str);
+      g_free (type_str);
+
+      if (cand != NULL) {
+        nice_candidate_free (cand);
+      }
+
+      g_match_info_next (match_info, NULL);
+    }
+
+    g_match_info_free (match_info);
+  }
+
+  g_regex_unref (regex);
+}
+
+static void
+kms_nice_agent_recv_cb (NiceAgent * agent, guint stream_id, guint component_id,
     guint len, gchar * buf, gpointer user_data)
 {
   /* Nothing to do, this callback is only for negotiation */
@@ -289,7 +397,7 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
   conn = g_slice_new0 (KmsWebRTCConnection);
 
   conn->agent = g_object_ref (agent);
-  conn->stream_id = nice_agent_add_stream (agent, NICE_N_COMPONENTS);
+  conn->stream_id = nice_agent_add_stream (agent, KMS_NICE_N_COMPONENTS);
   if (conn->stream_id == 0) {
     GST_ERROR ("Cannot add nice stream for %s.", name);
     kms_webrtc_connection_destroy (conn);
@@ -298,9 +406,9 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
 
   nice_agent_set_stream_name (agent, conn->stream_id, name);
   nice_agent_attach_recv (agent, conn->stream_id,
-      NICE_COMPONENT_TYPE_RTP, context, nice_agent_recv, NULL);
+      NICE_COMPONENT_TYPE_RTP, context, kms_nice_agent_recv_cb, NULL);
   nice_agent_attach_recv (agent, conn->stream_id,
-      NICE_COMPONENT_TYPE_RTCP, context, nice_agent_recv, NULL);
+      NICE_COMPONENT_TYPE_RTCP, context, kms_nice_agent_recv_cb, NULL);
 
   conn->rtp_transport =
       kms_webrtc_transport_create (agent, conn->stream_id,
@@ -1026,117 +1134,6 @@ connect_bundle_rtcp_funel (KmsWebrtcEndpoint * webrtc_endpoint,
 }
 
 static void
-process_sdp_media (const GstSDPMedia * media, NiceAgent * agent,
-    guint stream_id, const gchar * msg_ufrag, const gchar * msg_pwd)
-{
-  const gchar *proto_str;
-  const gchar *ufrag, *pwd;
-  GRegex *regex;
-  guint len, i;
-
-  proto_str = gst_sdp_media_get_proto (media);
-  if (g_ascii_strcasecmp (SDP_MEDIA_RTP_SAVPF_PROTO, proto_str) != 0) {
-    GST_WARNING ("Proto \"%s\" not supported", proto_str);
-    return;
-  }
-
-  ufrag = gst_sdp_media_get_attribute_val (media, SDP_ICE_UFRAG_ATTR);
-  pwd = gst_sdp_media_get_attribute_val (media, SDP_ICE_PWD_ATTR);
-  if (!nice_agent_set_remote_credentials (agent, stream_id, ufrag, pwd)) {
-    GST_WARNING ("Cannot set remote media credentials.");
-    if (!nice_agent_set_remote_credentials (agent, stream_id, msg_ufrag,
-            msg_pwd)) {
-      GST_WARNING ("Cannot set remote message credentials.");
-      return;
-    }
-  }
-
-  regex = g_regex_new ("^(?<foundation>[0-9]+) (?<cid>[0-9]+)"
-      " (udp|UDP) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
-      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
-      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( generation [0-9]+)?$",
-      0, 0, NULL);
-
-  len = gst_sdp_media_attributes_len (media);
-  for (i = 0; i < len; i++) {
-    const GstSDPAttribute *attr;
-    GMatchInfo *match_info = NULL;
-
-    attr = gst_sdp_media_get_attribute (media, i);
-    if (g_strcmp0 (SDP_CANDIDATE_ATTR, attr->key) != 0)
-      continue;
-
-    g_regex_match (regex, attr->value, 0, &match_info);
-
-    while (g_match_info_matches (match_info)) {
-      NiceCandidateType type;
-      NiceCandidate *cand = NULL;
-      GSList *candidates;
-
-      gchar *foundation = g_match_info_fetch_named (match_info, "foundation");
-      gchar *cid_str = g_match_info_fetch_named (match_info, "cid");
-      gchar *prio_str = g_match_info_fetch_named (match_info, "prio");
-      gchar *addr = g_match_info_fetch_named (match_info, "addr");
-      gchar *port_str = g_match_info_fetch_named (match_info, "port");
-      gchar *type_str = g_match_info_fetch_named (match_info, "type");
-
-      /* rfc5245-15.1 */
-      if (g_strcmp0 ("host", type_str) == 0) {
-        type = NICE_CANDIDATE_TYPE_HOST;
-      } else if (g_strcmp0 ("srflx", type_str) == 0) {
-        type = NICE_CANDIDATE_TYPE_SERVER_REFLEXIVE;
-      } else if (g_strcmp0 ("prflx", type_str) == 0) {
-        type = NICE_CANDIDATE_TYPE_PEER_REFLEXIVE;
-      } else if (g_strcmp0 ("relay", type_str) == 0) {
-        type = NICE_CANDIDATE_TYPE_RELAYED;
-      } else {
-        GST_WARNING ("Candidate type '%s' not supported", type_str);
-        goto next;
-      }
-
-      cand = nice_candidate_new (type);
-      cand->component_id = g_ascii_strtoll (cid_str, NULL, 10);
-      cand->priority = g_ascii_strtoll (prio_str, NULL, 10);
-      g_strlcpy (cand->foundation, foundation, NICE_CANDIDATE_MAX_FOUNDATION);
-
-      if (!nice_address_set_from_string (&cand->addr, addr)) {
-        GST_WARNING ("Cannot set address '%s' to candidate", addr);
-        goto next;
-      }
-      nice_address_set_port (&cand->addr, g_ascii_strtoll (port_str, NULL, 10));
-
-      candidates = g_slist_append (NULL, cand);
-      if (nice_agent_set_remote_candidates (agent, stream_id,
-              cand->component_id, candidates) < 0) {
-        GST_WARNING ("Cannot add candidate: '%s'in stream_id: %d.", attr->value,
-            stream_id);
-      } else {
-        GST_TRACE ("Candidate added: '%s' in stream_id: %d.", attr->value,
-            stream_id);
-      }
-      g_slist_free (candidates);
-
-    next:
-      g_free (addr);
-      g_free (foundation);
-      g_free (cid_str);
-      g_free (prio_str);
-      g_free (port_str);
-      g_free (type_str);
-
-      if (cand != NULL)
-        nice_candidate_free (cand);
-
-      g_match_info_next (match_info, NULL);
-    }
-
-    g_match_info_free (match_info);
-  }
-
-  g_regex_unref (regex);
-}
-
-static void
 kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     base_sdp_endpoint, const GstSDPMessage * offer,
     const GstSDPMessage * answer, gboolean local_offer)
@@ -1192,11 +1189,11 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     }
 
     if (bundle) {
-      process_sdp_media (media, self->priv->agent,
-          self->priv->bundle_connection->stream_id, ufrag, pwd);
+      kms_webrtc_connection_add_remote_candidates (self->
+          priv->bundle_connection, media, ufrag, pwd);
       connect_bundle_rtcp_funel (self, media_str);
     } else {
-      process_sdp_media (media, self->priv->agent, conn->stream_id, ufrag, pwd);
+      kms_webrtc_connection_add_remote_candidates (conn, media, ufrag, pwd);
       add_webrtc_connection_src (self, conn, !local_offer);
       add_webrtc_connection_sink (self, conn);
     }
