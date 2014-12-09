@@ -1193,9 +1193,9 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
           priv->bundle_connection, media, ufrag, pwd);
       connect_bundle_rtcp_funel (self, media_str);
     } else {
-      kms_webrtc_connection_add_remote_candidates (conn, media, ufrag, pwd);
       add_webrtc_connection_src (self, conn, !local_offer);
       add_webrtc_connection_sink (self, conn);
+      kms_webrtc_connection_add_remote_candidates (conn, media, ufrag, pwd);
     }
   }
 
