@@ -1,15 +1,28 @@
 scripts/prepublish
 #!/usr/bin/env node
 
-var npm = require('npm')
+var jsonfile = require('jsonfile')
+var npm      = require('npm')
 
 var exists = require('fs').exists
+
+var recursive = require('merge').recursive
 
 
 function onerror(error, code)
 {
   console.trace(error)
   process.exit(code)
+}
+
+function updateFile(file, obj, callback)
+{
+  jsonfile.readFile(file, function(error, orig)
+  {
+    if(error) return callback(error)
+
+    jsonfile.writeFile(file, recursive(orig, obj), callback)
+  })
 }
 
 
@@ -45,6 +58,19 @@ exists('node_modules/grunt', function(found)
 
           process.exit()
         })
+      })
+
+      var obj =
+      {
+        peerDependencies:
+        {
+          "kurento-client": "${module.kurentoVersion}"
+        }
+      }
+
+      updateFile('package.json', obj, function(error)
+      {
+        if(error) throw error;
       })
     })
 });

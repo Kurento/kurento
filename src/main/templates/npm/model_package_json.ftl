@@ -21,9 +21,6 @@ package.json
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
-  "peerDependencies": {
-    "kurento-client": "${module.kurentoVersion}"
-  },
   "dependencies": {
     "es6-promise": "^2.0.0",
     "inherits": "^2.0.1",
@@ -44,7 +41,9 @@ package.json
     "grunt-cli": "~0.1.13",
     "grunt-jsdoc": "~0.5.7",
     "grunt-npm2bower-sync": "^0.4.0",
+    "jsonfile": "^2.0.0",
     "kurento-client": "${module.kurentoVersion}",
+    "merge": "^1.2.0",
     "minifyify": "^4.4.0",
 </#if>
     "grunt-contrib-clean": "~0.6.0",
