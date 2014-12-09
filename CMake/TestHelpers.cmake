@@ -49,7 +49,7 @@ function(add_test_program test_name sources)
   endif ()
 
   add_custom_target (${test_name}.check
-    COMMAND ${TEST_PROPERTIES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
+    COMMAND ${TEST_PROPERTIES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
     DEPENDS ${test_name})
 
   if (EXISTS ${VALGRIND})
@@ -69,7 +69,7 @@ execute_process(COMMAND valgrind -q
   --tool=memcheck --leak-check=full --trace-children=yes
   --leak-resolution=high --show-possibly-lost=yes
   --num-callers=20 --leak-check-heuristics=all
-  ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
+  ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
   RESULT_VARIABLE res
   OUTPUT_VARIABLE out
   ERROR_VARIABLE err
@@ -98,7 +98,7 @@ endif ()
 
     add_custom_command (TARGET ${test_name}.valgrind
       COMMENT "Running valgrind for ${test_name}"
-      COMMAND G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_PROPERTIES} ${VALGRING_TEST_PROPERTIES} ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
+      COMMAND G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_PROPERTIES} ${VALGRING_TEST_PROPERTIES} ${CMAKE_COMMAND} -DARGS=\${ARGS} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
     )
 
     create_valgrind_target()
