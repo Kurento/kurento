@@ -7,6 +7,9 @@
 <#else>
   <#assign kurentoClient_path="../..">
 </#if>
+<#if api_js.npmGit??>
+  <#assign bowerGit=api_js.npmGit>
+</#if>
 Gruntfile.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -61,11 +64,11 @@ module.exports = function(grunt)
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
-  <#if api_js.npmGit??>
+  <#if bowerGit??>
     bower:
     {
       TOKEN:      process.env.TOKEN,
-      repository: '${api_js.npmGit}'
+      repository: '${bowerGit}'
     },
 
   </#if>
@@ -177,7 +180,7 @@ module.exports = function(grunt)
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters"
-  && api_js.npmGit??>
+  && bowerGit??>
       // Publish / update package info in Bower
       bower: {
         command: [
@@ -222,7 +225,7 @@ module.exports = function(grunt)
   && node_name != "kurento-client-filters">
   grunt.registerTask('generate', ['path-check:generate plugin', 'browserify']);
   grunt.registerTask('default',  ['clean', 'jsdoc', 'generate', 'sync:bower']);
-  <#if api_js.npmGit??>
+  <#if bowerGit??>
   grunt.registerTask('bower',    ['shell:bower']);
   </#if>
 <#else>
