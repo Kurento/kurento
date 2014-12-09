@@ -33,17 +33,7 @@ module.exports = function(grunt)
   // Project configuration.
   grunt.initConfig({
     pkg: pkg,
-<#if node_name != "kurento-client-core"
-  && node_name != "kurento-client-elements"
-  && node_name != "kurento-client-filters"
-  && api_js.npmGit??>
-    bower:
-    {
-      TOKEN:      process.env.TOKEN,
-      repository: '${api_js.npmGit}'
-    },
 
-</#if>
     // Plugins configuration
     clean:
     {
@@ -57,9 +47,28 @@ module.exports = function(grunt)
       'code': 'lib'
     },
 
+    // Check if Kurento Module Creator exists
+    'path-check':
+    {
+      'generate plugin': {
+        src: 'kurento-module-creator',
+        options: {
+          tasks: ['shell:kmd']
+        }
+      }
+    },
+
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
+  <#if api_js.npmGit??>
+    bower:
+    {
+      TOKEN:      process.env.TOKEN,
+      repository: '${api_js.npmGit}'
+    },
+
+  </#if>
     // Generate documentation
     jsdoc:
     {
@@ -73,48 +82,6 @@ module.exports = function(grunt)
         dest: 'doc/jsdoc'
       }
     },
-
-</#if>
-    // Check if Kurento Module Creator exists
-    'path-check':
-    {
-      'generate plugin': {
-        src: 'kurento-module-creator',
-        options: {
-          tasks: ['shell:kmd']
-        }
-      }
-    },
-
-    shell:
-    {
-      // Generate the Kurento Javascript client
-      kmd: {
-        command: [
-          'mkdir -p ./lib',
-          'kurento-module-creator --delete'
-          +' --templates ${kurentoClient_path}/templates'
-<#list module.imports as import>
-          +' --deprom node_modules/${import.module.code.api.js.nodeName}/src'
-</#list>
-          +' --rom ./src --codegen ./lib'
-        ].join('&&')
-      }<#if node_name != "kurento-client-core"
-         && node_name != "kurento-client-elements"
-         && node_name != "kurento-client-filters"
-         && api_js.npmGit??>,
-
-      // Publish / update package info in Bower
-      bower: {
-        command: [
-          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
-          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
-          'node_modules/.bin/bower cache clean'
-        ].join('&&')
-      }</#if>
-    }<#if node_name != "kurento-client-core"
-       && node_name != "kurento-client-elements"
-       && node_name != "kurento-client-filters">,
 
     // Generate browser versions and mapping debug file
     browserify:
@@ -182,7 +149,7 @@ module.exports = function(grunt)
           ]
         }
       }
-    }<#if api_js.npmGit??>,
+    },
 
     // Generate bower.json file from package.json data
     sync:
@@ -202,9 +169,38 @@ module.exports = function(grunt)
           }
         }
       }
-    }
-  </#if>
+    },
+
 </#if>
+    shell:
+    {
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters"
+  && api_js.npmGit??>
+      // Publish / update package info in Bower
+      bower: {
+        command: [
+          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
+          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
+          'node_modules/.bin/bower cache clean'
+        ].join('&&')
+      },
+
+</#if>
+      // Generate the Kurento Javascript client
+      kmd: {
+        command: [
+          'mkdir -p ./lib',
+          'kurento-module-creator --delete'
+          +' --templates ${kurentoClient_path}/templates'
+<#list module.imports as import>
+          +' --deprom node_modules/${import.module.code.api.js.nodeName}/src'
+</#list>
+          +' --rom ./src --codegen ./lib'
+        ].join('&&')
+      }
+    }
   });
 
   // Load plugins
@@ -220,8 +216,8 @@ module.exports = function(grunt)
   <#if api_js.npmGit??>
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   </#if>
-</#if>
 
+</#if>
   // Alias tasks
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"

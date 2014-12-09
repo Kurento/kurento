@@ -4,7 +4,7 @@ package.json
 {
   "name": "${node_name}",
   "version": "${module.version}",
-  "description": "${module.code.api.js.npmDescription}",
+  "description": "${api_js.npmDescription}",
   "main": "lib/index.js",
   "keywords": [
     "Kurento"
@@ -12,7 +12,7 @@ package.json
 <#if api_js.npmGit??>
   "repository": {
     "type": "git",
-    "url": "${module.code.api.js.npmGit}"
+    "url": "${api_js.npmGit}"
   },
 </#if>
   "scripts": {
@@ -24,16 +24,16 @@ package.json
   "peerDependencies": {
     "kurento-client": "${module.kurentoVersion}"
   },
-</#if>
   "dependencies": {
     "es6-promise": "^2.0.0",
     "inherits": "^2.0.1",
     "promisecallback": "^0.0.2"
   },
+</#if>
   "devDependencies": {
 <#list module.imports as import>
-  <#assign api_js=import.module.code.api.js>
-    "${api_js.nodeName}": "${api_js.npmVersion}",
+  <#assign api_js2=import.module.code.api.js>
+    "${api_js2.nodeName}": "${api_js2.npmVersion}",
 </#list>
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
