@@ -574,55 +574,6 @@ add_bundle_funnels (KmsWebrtcEndpoint * webrtc_endpoint)
       bundle_rtcp_funnel);
 }
 
-static gchar *
-sdp_media_get_ssrc_str (const GstSDPMedia * media)
-{
-  gchar *ssrc = NULL;
-  const gchar *val;
-  GRegex *regex;
-  GMatchInfo *match_info = NULL;
-
-  val = gst_sdp_media_get_attribute_val (media, "ssrc");
-
-  if (val == NULL)
-    return NULL;
-
-  regex = g_regex_new ("^(?<ssrc>[0-9]+)(.*)?$", 0, 0, NULL);
-  g_regex_match (regex, val, 0, &match_info);
-  g_regex_unref (regex);
-
-  if (g_match_info_matches (match_info)) {
-    ssrc = g_match_info_fetch_named (match_info, "ssrc");
-  }
-  g_match_info_free (match_info);
-
-  return ssrc;
-}
-
-static guint
-sdp_media_get_ssrc (const GstSDPMedia * media)
-{
-  gchar *ssrc_str;
-  guint ssrc = 0;
-  gint64 val;
-
-  ssrc_str = sdp_media_get_ssrc_str (media);
-  if (ssrc_str == NULL) {
-    return 0;
-  }
-
-  val = g_ascii_strtoll (ssrc_str, NULL, 10);
-  if (val > G_MAXUINT32) {
-    GST_ERROR ("SSRC %" G_GINT64_FORMAT " not valid", val);
-  } else {
-    ssrc = val;
-  }
-
-  g_free (ssrc_str);
-
-  return ssrc;
-}
-
 /* Set Transport begin */
 static gboolean
 sdp_media_set_ice_info (KmsWebrtcEndpoint * webrtc_endpoint,
@@ -1146,7 +1097,7 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     KmsWebRTCConnection *conn;
     guint ssrc;
 
-    ssrc = sdp_media_get_ssrc (media);
+    ssrc = sdp_utils_media_get_ssrc (media);
     media_str = gst_sdp_media_get_media (media);
 
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
