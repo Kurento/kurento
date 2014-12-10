@@ -52,9 +52,6 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
   )                                             \
 )
 
-#define MIN_VIDEO_SEND_BW_DEFAULT 100
-#define MAX_VIDEO_SEND_BW_DEFAULT 500
-
 enum
 {
   PROP_0,
@@ -62,8 +59,6 @@ enum
   PROP_STUN_SERVER_IP,
   PROP_STUN_SERVER_PORT,
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
-  PROP_MIN_VIDEO_SEND_BW,
-  PROP_MAX_VIDEO_SEND_BW,
   N_PROPERTIES
 };
 
@@ -153,9 +148,6 @@ struct _KmsWebrtcEndpointPrivate
   /* REMB */
   KmsRembLocal *rl;
   KmsRembRemote *rm;
-
-  guint min_video_send_bw;
-  guint max_video_send_bw;
 };
 
 /* KmsWebRTCTransport */
@@ -1405,30 +1397,6 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       self->priv->turn_url = g_value_dup_string (value);
       kms_webrtc_endpoint_parse_turn_url (self);
       break;
-    case PROP_MIN_VIDEO_SEND_BW:{
-      guint v = g_value_get_uint (value);
-
-      if (v > self->priv->max_video_send_bw) {
-        v = self->priv->max_video_send_bw;
-        GST_WARNING_OBJECT (object,
-            "Trying to set min > max. Setting %" G_GUINT32_FORMAT, v);
-      }
-
-      self->priv->min_video_send_bw = v;
-      break;
-    }
-    case PROP_MAX_VIDEO_SEND_BW:{
-      guint v = g_value_get_uint (value);
-
-      if (v < self->priv->min_video_send_bw) {
-        v = self->priv->min_video_send_bw;
-        GST_WARNING_OBJECT (object,
-            "Trying to set max < min. Setting %" G_GUINT32_FORMAT, v);
-      }
-
-      self->priv->max_video_send_bw = v;
-      break;
-    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1469,12 +1437,6 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
       break;
     case PROP_TURN_URL:
       g_value_set_string (value, self->priv->turn_url);
-      break;
-    case PROP_MIN_VIDEO_SEND_BW:
-      g_value_set_uint (value, self->priv->min_video_send_bw);
-      break;
-    case PROP_MAX_VIDEO_SEND_BW:
-      g_value_set_uint (value, self->priv->max_video_send_bw);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1593,20 +1555,6 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "'transport' is optional (UDP by default).",
           NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_property (gobject_class, PROP_MIN_VIDEO_SEND_BW,
-      g_param_spec_uint ("min-video-send-bandwidth",
-          "Minimum video bandwidth for sending",
-          "Minimum video bandwidth for sending. Unit: kbps(kilobits per second). 0: unlimited",
-          0, G_MAXUINT32, MIN_VIDEO_SEND_BW_DEFAULT,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  g_object_class_install_property (gobject_class, PROP_MAX_VIDEO_SEND_BW,
-      g_param_spec_uint ("max-video-send-bandwidth",
-          "Maximum video bandwidth for sending",
-          "Maximum video bandwidth for sending. Unit: kbps(kilobits per second). 0: unlimited",
-          0, G_MAXUINT32, MAX_VIDEO_SEND_BW_DEFAULT,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
 }
 
@@ -1628,9 +1576,6 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->ctx.finalized = FALSE;
 
   self->priv->loop = kms_loop_new ();
-
-  self->priv->min_video_send_bw = MIN_VIDEO_SEND_BW_DEFAULT;
-  self->priv->max_video_send_bw = MAX_VIDEO_SEND_BW_DEFAULT;
 
   g_object_get (self->priv->loop, "context", &context, NULL);
 

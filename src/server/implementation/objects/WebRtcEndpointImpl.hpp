@@ -1,7 +1,7 @@
 #ifndef __WEB_RTC_ENDPOINT_IMPL_HPP__
 #define __WEB_RTC_ENDPOINT_IMPL_HPP__
 
-#include "SdpEndpointImpl.hpp"
+#include "BaseRtpEndpointImpl.hpp"
 #include "WebRtcEndpoint.hpp"
 #include <EventHandler.hpp>
 
@@ -14,7 +14,8 @@ class WebRtcEndpointImpl;
 void Serialize (std::shared_ptr<WebRtcEndpointImpl> &object,
                 JsonSerializer &serializer);
 
-class WebRtcEndpointImpl : public SdpEndpointImpl, public virtual WebRtcEndpoint
+class WebRtcEndpointImpl : public BaseRtpEndpointImpl,
+  public virtual WebRtcEndpoint
 {
 
 public:
@@ -23,11 +24,6 @@ public:
                       std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~WebRtcEndpointImpl () {};
-
-  int getMinVideoSendBandwidth ();
-  void setMinVideoSendBandwidth (int minVideoSendBandwidth);
-  int getMaxVideoSendBandwidth ();
-  void setMaxVideoSendBandwidth (int maxVideoSendBandwidth);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,

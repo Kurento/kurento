@@ -112,7 +112,7 @@ WebRtcEndpointImpl::getPemCertificate ()
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
-                                        mediaPipeline) : SdpEndpointImpl (conf,
+                                        mediaPipeline) : BaseRtpEndpointImpl (conf,
                                               std::dynamic_pointer_cast<MediaObjectImpl>
                                               (mediaPipeline), FACTORY_NAME)
 {
@@ -169,37 +169,6 @@ WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
 {
   return new WebRtcEndpointImpl (conf, mediaPipeline);
 }
-
-int WebRtcEndpointImpl::getMinVideoSendBandwidth ()
-{
-  int minVideoSendBandwidth;
-
-  g_object_get (element, "min-video-send-bandwidth", &minVideoSendBandwidth,
-                NULL);
-
-  return minVideoSendBandwidth;
-}
-
-void WebRtcEndpointImpl::setMinVideoSendBandwidth (int minVideoSendBandwidth)
-{
-  g_object_set (element, "min-video-send-bandwidth", minVideoSendBandwidth, NULL);
-}
-
-int WebRtcEndpointImpl::getMaxVideoSendBandwidth ()
-{
-  int maxVideoSendBandwidth;
-
-  g_object_get (element, "max-video-send-bandwidth", &maxVideoSendBandwidth,
-                NULL);
-
-  return maxVideoSendBandwidth;
-}
-
-void WebRtcEndpointImpl::setMaxVideoSendBandwidth (int maxVideoSendBandwidth)
-{
-  g_object_set (element, "max-video-send-bandwidth", maxVideoSendBandwidth, NULL);
-}
-
 
 WebRtcEndpointImpl::StaticConstructor WebRtcEndpointImpl::staticConstructor;
 
