@@ -1,19 +1,17 @@
+<#assign node_name=module.code.api.js.nodeName>
 scripts/prepublish
 #!/usr/bin/env node
 
-var jsonfile = require('jsonfile')
-var npm      = require('npm')
+var npm = require('npm')
 
 var exists = require('fs').exists
 
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
+var jsonfile  = require('jsonfile')
 var recursive = require('merge').recursive
 
-
-function onerror(error, code)
-{
-  console.trace(error)
-  process.exit(code)
-}
 
 function updateFile(file, obj, callback)
 {
@@ -23,6 +21,13 @@ function updateFile(file, obj, callback)
 
     jsonfile.writeFile(file, recursive(orig, obj), callback)
   })
+}
+</#if>
+
+function onerror(error, code)
+{
+  console.trace(error)
+  process.exit(code)
 }
 
 
@@ -59,6 +64,9 @@ exists('node_modules/grunt', function(found)
           process.exit()
         })
       })
+<#if node_name != "kurento-client-core"
+  && node_name != "kurento-client-elements"
+  && node_name != "kurento-client-filters">
 
       var obj =
       {
@@ -72,5 +80,6 @@ exists('node_modules/grunt', function(found)
       {
         if(error) throw error;
       })
+</#if>
     })
 });
