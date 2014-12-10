@@ -26,24 +26,28 @@
 #define VIDEO_PATH2 BINARY_LOCATION "/video/sintel.webm"
 #define VIDEO_PATH3 BINARY_LOCATION "/video/small.webm"
 
+#define KMS_ELEMENT_PAD_TYPE_DATA 0
+#define KMS_ELEMENT_PAD_TYPE_AUDIO 1
+#define KMS_ELEMENT_PAD_TYPE_VIDEO 2
+
+#define KMS_VIDEO_PREFIX "video_src_"
+#define KMS_AUDIO_PREFIX "audio_src_"
+
 static GMainLoop *loop = NULL;
 static GstElement *player = NULL;
 static GstElement *fakesink = NULL;
+static GstElement *pipeline = NULL;
 
 static guint state = 0;
+
+G_LOCK_DEFINE (handoff_lock);
 static gboolean start_buffer = FALSE;
 
-struct state_controller
-{
-  KmsUriEndpointState state;
-  guint seconds;
-};
-
-static const struct state_controller trasnsitions[] = {
-  {KMS_URI_ENDPOINT_STATE_START, 4},
-  {KMS_URI_ENDPOINT_STATE_PAUSE, 1},
-  {KMS_URI_ENDPOINT_STATE_START, 4},
-  {KMS_URI_ENDPOINT_STATE_STOP, 1}
+static const KmsUriEndpointState trasnsitions[] = {
+  KMS_URI_ENDPOINT_STATE_START,
+  KMS_URI_ENDPOINT_STATE_PAUSE,
+  KMS_URI_ENDPOINT_STATE_START,
+  KMS_URI_ENDPOINT_STATE_STOP
 };
 
 static gchar *
@@ -62,28 +66,28 @@ state2string (KmsUriEndpointState state)
 }
 
 static void
-handoff (GstElement * object, GstBuffer * arg0,
-    GstPad * arg1, gpointer user_data)
-{
-  switch (trasnsitions[state].state) {
-    case KMS_URI_ENDPOINT_STATE_STOP:
-      GST_DEBUG ("handoff in STOP state");
-      break;
-    case KMS_URI_ENDPOINT_STATE_START:
-      start_buffer = TRUE;
-      break;
-    case KMS_URI_ENDPOINT_STATE_PAUSE:
-      break;
-    default:
-      break;
-  }
-}
-
-static void
 change_state (KmsUriEndpointState state)
 {
   GST_DEBUG ("Setting player to state %s", state2string (state));
   g_object_set (G_OBJECT (player), "state", state, NULL);
+}
+
+static gboolean
+print_timedout_pipeline (gpointer data)
+{
+  gchar *pipeline_name;
+  gchar *name;
+
+  pipeline_name = gst_element_get_name (pipeline);
+  name = g_strdup_printf ("%s_timedout", pipeline_name);
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, name);
+
+  g_free (name);
+  g_free (pipeline_name);
+
+  return FALSE;
 }
 
 static void
@@ -115,7 +119,7 @@ static void
 transite ()
 {
   if (state < G_N_ELEMENTS (trasnsitions)) {
-    change_state (trasnsitions[state].state);
+    change_state (trasnsitions[state]);
   } else {
     GST_DEBUG ("All transitions done. Finishing player check states suit");
     g_main_loop_quit (loop);
@@ -130,26 +134,91 @@ transite_cb (gpointer data)
   return FALSE;
 }
 
-static void
-state_changed_cb (GstElement * recorder, KmsUriEndpointState newState,
-    gpointer loop)
+static GstPadProbeReturn
+data_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
-  guint seconds = trasnsitions[state].seconds;
+  GST_DEBUG_OBJECT (pad, "buffer received");
 
-  GST_DEBUG ("State changed %s. Time %d seconds.", state2string (newState),
-      seconds);
-  g_timeout_add (seconds * 1000, transite_cb, loop);
+  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
+
+  g_idle_add (transite_cb, NULL);
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+state_changed_cb (GstElement * player, KmsUriEndpointState newState,
+    gpointer user_data)
+{
+  GST_DEBUG_OBJECT (player, "State changed %s.", state2string (newState));
+
+  switch (trasnsitions[state]) {
+    case KMS_URI_ENDPOINT_STATE_START:{
+      gchar *padname = *(gchar **) user_data;
+      GstPad *srcpad;
+
+      srcpad = gst_element_get_static_pad (player, padname);
+      if (srcpad == NULL) {
+        /* Source pad is not yet created */
+        return;
+      }
+
+      gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BUFFER,
+          (GstPadProbeCallback) data_probe_cb, NULL, NULL);
+      g_object_unref (srcpad);
+      break;
+    }
+    case KMS_URI_ENDPOINT_STATE_PAUSE:
+    case KMS_URI_ENDPOINT_STATE_STOP:
+      g_idle_add (transite_cb, loop);
+      break;
+  }
+}
+
+static void
+handoff (GstElement * object, GstBuffer * arg0,
+    GstPad * arg1, gpointer user_data)
+{
+  G_LOCK (handoff_lock);
+
+  if (!start_buffer) {
+    start_buffer = TRUE;
+    /* First buffer received, start transitions */
+    g_idle_add (transite_cb, NULL);
+  }
+
+  G_UNLOCK (handoff_lock);
+}
+
+static void
+srcpad_added (GstElement * playerep, GstPad * new_pad, gpointer user_data)
+{
+  gchar *padname, *expected_name;
+  GstPad *sinkpad;
+
+  GST_INFO_OBJECT (playerep, "Pad added %" GST_PTR_FORMAT, new_pad);
+  padname = gst_pad_get_name (new_pad);
+  fail_if (padname == NULL);
+
+  expected_name = *(gchar **) user_data;
+  fail_if (g_strcmp0 (padname, expected_name) != 0);
+
+  sinkpad = gst_element_get_static_pad (fakesink, "sink");
+
+  fail_if (gst_pad_link (new_pad, sinkpad) != GST_PAD_LINK_OK);
+
+  g_object_unref (sinkpad);
+  g_free (padname);
 }
 
 GST_START_TEST (check_states)
 {
-  GstElement *pipeline;
   guint bus_watch_id;
+  gchar *padname;
   GstBus *bus;
 
   loop = g_main_loop_new (NULL, FALSE);
-  pipeline = gst_pipeline_new ("pipeline_live_stream");
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
+  pipeline = gst_pipeline_new (__FUNCTION__);
   player = gst_element_factory_make ("playerendpoint", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -159,36 +228,38 @@ GST_START_TEST (check_states)
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH, NULL);
-  g_object_set (G_OBJECT (fakesink), "signal-handoffs", TRUE, NULL);
-  g_signal_connect (fakesink, "handoff", G_CALLBACK (handoff), loop);
+  g_object_set (G_OBJECT (fakesink), "async", FALSE, "sync", FALSE,
+      "signal-handoffs", TRUE, NULL);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "before_entering_main_loop_check_states");
+  g_signal_connect (fakesink, "handoff", G_CALLBACK (handoff), loop);
+  g_signal_connect (player, "pad-added", G_CALLBACK (srcpad_added), &padname);
 
   g_signal_connect (player, "state-changed", G_CALLBACK (state_changed_cb),
-      loop);
+      &padname);
+
+  gst_bin_add_many (GST_BIN (pipeline), player, fakesink, NULL);
+
+  /* request src pad using action */
+  g_signal_emit_by_name (player, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Requested pad %s", padname);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
-  gst_bin_add (GST_BIN (pipeline), fakesink);
-  gst_element_set_state (fakesink, GST_STATE_PLAYING);
-  gst_bin_add (GST_BIN (pipeline), player);
-  gst_element_set_state (player, GST_STATE_PLAYING);
-
-  kms_element_link_pads (player, "video_src_%u", fakesink, "sink");
 
   transite ();
 
+  g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
 
   fail_unless (start_buffer == TRUE);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "after_entering_main_loop_check_states");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_source_remove (bus_watch_id);
   g_main_loop_unref (loop);
+  g_free (padname);
 }
 
 GST_END_TEST
@@ -246,20 +317,55 @@ handoff_video (GstElement * object, GstBuffer * arg0,
   g_idle_add ((GSourceFunc) check_handoff_video, loop);
 }
 
+static void
+connect_sink_on_srcpad_added (GstElement * playerep, GstPad * new_pad,
+    gpointer user_data)
+{
+  GstElement *sink;
+  gchar *padname;
+  GCallback func;
+  GstPad *sinkpad;
+
+  GST_INFO_OBJECT (playerep, "Pad added %" GST_PTR_FORMAT, new_pad);
+  padname = gst_pad_get_name (new_pad);
+  fail_if (padname == NULL);
+
+  if (g_str_has_prefix (padname, KMS_VIDEO_PREFIX)) {
+    GST_DEBUG_OBJECT (playerep, "Connecting video stream");
+    func = G_CALLBACK (handoff_video);
+  } else if (g_str_has_prefix (padname, KMS_AUDIO_PREFIX)) {
+    GST_DEBUG_OBJECT (playerep, "Connecting audio stream");
+    func = G_CALLBACK (handoff_audio);
+  } else {
+    GST_ERROR_OBJECT (playerep, "Not supported pad type");
+    return;
+  }
+
+  sink = gst_element_factory_make ("fakesink", NULL);
+  g_object_set (G_OBJECT (sink), "async", FALSE, "sync", FALSE,
+      "signal-handoffs", TRUE, NULL);
+  g_signal_connect (sink, "handoff", func, loop);
+
+  gst_bin_add (GST_BIN (pipeline), sink);
+
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  fail_if (gst_pad_link (new_pad, sinkpad) != GST_PAD_LINK_OK);
+
+  gst_element_sync_state_with_parent (sink);
+
+  g_object_unref (sinkpad);
+  g_free (padname);
+}
+
 GST_START_TEST (check_live_stream)
 {
-  GstElement *player, *pipeline;
-  GstElement *fakesink_audio, *fakesink_video;
   guint bus_watch_id;
-  GMainLoop *loop;
+  gchar *padname;
   GstBus *bus;
 
   loop = g_main_loop_new (NULL, FALSE);
-  pipeline = gst_pipeline_new ("pipeline_live_stream");
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
+  pipeline = gst_pipeline_new (__FUNCTION__);
   player = gst_element_factory_make ("playerendpoint", NULL);
-  fakesink_audio = gst_element_factory_make ("fakesink", NULL);
-  fakesink_video = gst_element_factory_make ("fakesink", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   bus_watch_id = gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
@@ -267,35 +373,33 @@ GST_START_TEST (check_live_stream)
   g_object_unref (bus);
 
   g_object_set (G_OBJECT (player), "uri", VIDEO_PATH2, NULL);
+  g_signal_connect (player, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), loop);
 
-  g_object_set (G_OBJECT (fakesink_audio), "signal-handoffs", TRUE, NULL);
-  g_signal_connect (fakesink_audio, "handoff", G_CALLBACK (handoff_audio),
-      loop);
-  g_object_set (G_OBJECT (fakesink_video), "signal-handoffs", TRUE, NULL);
-  g_signal_connect (fakesink_video, "handoff", G_CALLBACK (handoff_video),
-      loop);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "before_entering_main_loop_live_stream");
-
-  gst_element_set_state (pipeline, GST_STATE_PLAYING);
-  gst_bin_add (GST_BIN (pipeline), fakesink_audio);
-  gst_element_set_state (fakesink_audio, GST_STATE_PLAYING);
-  gst_bin_add (GST_BIN (pipeline), fakesink_video);
-  gst_element_set_state (fakesink_video, GST_STATE_PLAYING);
   gst_bin_add (GST_BIN (pipeline), player);
-  gst_element_set_state (player, GST_STATE_PLAYING);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  kms_element_link_pads (player, "audio_src_%u", fakesink_audio, "sink");
-  kms_element_link_pads (player, "video_src_%u", fakesink_video, "sink");
+  /* request audio src pad using action */
+  g_signal_emit_by_name (player, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Requested pad %s", padname);
+  g_free (padname);
+
+  /* request video src pad using action */
+  g_signal_emit_by_name (player, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Requested pad %s", padname);
+  g_free (padname);
 
   /* Set player to start state */
   g_object_set (G_OBJECT (player), "state", KMS_URI_ENDPOINT_STATE_START, NULL);
 
+  g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "after_entering_main_loop_live_stream");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
@@ -326,13 +430,11 @@ player_eos (GstElement * player, GMainLoop * loop)
 /* EOS test */
 GST_START_TEST (check_eos)
 {
-  GstElement *player, *pipeline;
   guint bus_watch_id;
-  GMainLoop *loop;
   GstBus *bus;
 
   loop = g_main_loop_new (NULL, FALSE);
-  pipeline = gst_pipeline_new ("pipeline_live_stream");
+  pipeline = gst_pipeline_new (__FUNCTION__);
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -352,13 +454,8 @@ GST_START_TEST (check_eos)
   /* Set player to start state */
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "before_entering_main_loop_live_stream");
-
+  g_timeout_add_seconds (4, print_timedout_pipeline, NULL);
   g_main_loop_run (loop);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "after_entering_main_loop_live_stream");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
@@ -427,12 +524,11 @@ playerendpoint_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
+
   tcase_add_test (tc_chain, check_states);
   tcase_add_test (tc_chain, check_live_stream);
   tcase_add_test (tc_chain, check_eos);
-#ifdef ENABLE_DEBUGGING_TESTS
-  tcase_add_test (tc_chain, check_set_encoded_media);
-#endif
+
   return s;
 }
 
