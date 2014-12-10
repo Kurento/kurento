@@ -8,7 +8,7 @@ ${packageToFolder(module.code.api.java.packageName)}/${complexType.name}.java
 package ${module.code.api.java.packageName};
 
 <#if complexType.typeFormat == "REGISTER">
-<@comment complexType.doc />
+<@comment complexType.doc!"" />
 public class ${complexType.name} <#if complexType.extends??>extends ${complexType.extends.name}</#if> {
 
    <#list complexType.properties as property>
