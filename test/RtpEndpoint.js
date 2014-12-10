@@ -266,136 +266,136 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
   });
 });
 
-QUnit.asyncTest('CampusParty simulated pipeline', function()
-{
-  var self = this;
+// QUnit.asyncTest('CampusParty simulated pipeline', function()
+// {
+//   var self = this;
+//
+//   QUnit.expect(9);
+//
+//   self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
+//   {
+//     QUnit.equal(error, undefined, 'RtpEndpoint');
+//
+//     if(error) return onerror(error);
+//
+//     var offer = "v=0\r\n"
+//               + "o=- 12345 12345 IN IP4 192.168.1.18\r\n"
+//               + "s=-\r\n"
+//               + "c=IN IP4 192.168.1.18\r\n"
+//               + "t=0 0\r\n"
+//               + "m=video 45936 RTP/AVP 96\r\n"
+//               + "a=rtpmap:96 H263-1998/90000\r\n"
+//               + "a=sendrecv\r\n"
+//               + "b=AS:3000\r\n";
+//
+//     rtpEndpoint.processOffer(offer, function(error)
+//     {
+//       QUnit.equal(error, undefined, 'processOffer');
+//
+//       if(error) return onerror(error);
+//
+//       rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
+//       {
+//         QUnit.equal(error, undefined, 'getMediaSrcs');
+//
+//         if(error) return onerror(error);
+//
+//         QUnit.notEqual(mediaSources, [], 'MediaSources: '+mediaSources);
+//
+//         var mediaSource = mediaSources[0];
+//
+//         rtpEndpoint.getMediaSinks('VIDEO', function(error, mediaSinks)
+//         {
+//           QUnit.equal(error, undefined, 'getMediaSinks');
+//
+//           if(error) return onerror(error);
+//
+//           QUnit.notEqual(mediaSinks, [], 'MediaSinks: '+mediaSinks);
+//
+//           var mediaSink = mediaSinks[0];
+//
+//           mediaSource.connect(mediaSink, function(error)
+//           {
+//             QUnit.equal(error, undefined, 'connect');
+//
+//             if(error) return onerror(error);
+//
+//             self.pipeline.create('HttpGetEndpoint',
+//             function(error, httpGetEndpoint)
+//             {
+//               QUnit.equal(error, undefined, 'HttpGetEndpoint');
+//
+//               if(error) return onerror(error);
+//
+//               rtpEndpoint.connect(httpGetEndpoint, 'VIDEO', function(error)
+//               {
+//                 QUnit.equal(error, undefined, 'connect VIDEO');
+//
+//                 if(error) return onerror(error);
+//
+//                 QUnit.start();
+//               });
+//             });
+//           });
+//         });
+//       });
+//     });
+//   });
+// });
 
-  QUnit.expect(9);
-
-  self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
-  {
-    QUnit.equal(error, undefined, 'RtpEndpoint');
-
-    if(error) return onerror(error);
-
-    var offer = "v=0\r\n"
-              + "o=- 12345 12345 IN IP4 192.168.1.18\r\n"
-              + "s=-\r\n"
-              + "c=IN IP4 192.168.1.18\r\n"
-              + "t=0 0\r\n"
-              + "m=video 45936 RTP/AVP 96\r\n"
-              + "a=rtpmap:96 H263-1998/90000\r\n"
-              + "a=sendrecv\r\n"
-              + "b=AS:3000\r\n";
-
-    rtpEndpoint.processOffer(offer, function(error)
-    {
-      QUnit.equal(error, undefined, 'processOffer');
-
-      if(error) return onerror(error);
-
-      rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
-      {
-        QUnit.equal(error, undefined, 'getMediaSrcs');
-
-        if(error) return onerror(error);
-
-        QUnit.notEqual(mediaSources, [], 'MediaSources: '+mediaSources);
-
-        var mediaSource = mediaSources[0];
-
-        rtpEndpoint.getMediaSinks('VIDEO', function(error, mediaSinks)
-        {
-          QUnit.equal(error, undefined, 'getMediaSinks');
-
-          if(error) return onerror(error);
-
-          QUnit.notEqual(mediaSinks, [], 'MediaSinks: '+mediaSinks);
-
-          var mediaSink = mediaSinks[0];
-
-          mediaSource.connect(mediaSink, function(error)
-          {
-            QUnit.equal(error, undefined, 'connect');
-
-            if(error) return onerror(error);
-
-            self.pipeline.create('HttpGetEndpoint',
-            function(error, httpGetEndpoint)
-            {
-              QUnit.equal(error, undefined, 'HttpGetEndpoint');
-
-              if(error) return onerror(error);
-
-              rtpEndpoint.connect(httpGetEndpoint, 'VIDEO', function(error)
-              {
-                QUnit.equal(error, undefined, 'connect VIDEO');
-
-                if(error) return onerror(error);
-
-                QUnit.start();
-              });
-            });
-          });
-        });
-      });
-    });
-  });
-});
-
-QUnit.asyncTest('Source sinks', function()
-{
-  QUnit.expect(10);
-
-  this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
-  {
-    QUnit.equal(error, undefined, 'RtpEndpoint');
-
-    if(error) return onerror(error);
-
-    rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
-    {
-      QUnit.equal(error, undefined, 'getMediaSrcs');
-
-      if(error) return onerror(error);
-
-      QUnit.notEqual(mediaSources, [], 'MediaSources video: '+mediaSources);
-
-      rtpEndpoint.getMediaSinks('VIDEO', function(error, mediaSinks)
-      {
-        QUnit.equal(error, undefined, 'getMediaSinks');
-
-        if(error) return onerror(error);
-
-        QUnit.notEqual(mediaSinks, [], 'MediaSinks video: '+mediaSinks);
-
-        rtpEndpoint.getMediaSrcs('AUDIO', function(error, mediaSources)
-        {
-          QUnit.equal(error, undefined, 'getMediaSrcs');
-
-          if(error) return onerror(error);
-
-          QUnit.notEqual(mediaSources, [], 'MediaSources audio: '+mediaSources);
-
-          rtpEndpoint.getMediaSinks('AUDIO', function(error, mediaSinks)
-          {
-            QUnit.equal(error, undefined, 'getMediaSinks');
-
-            if(error) return onerror(error);
-
-            QUnit.notEqual(mediaSinks, [], 'MediaSinks audio: '+mediaSinks);
-
-            rtpEndpoint.release(function(error)
-            {
-              QUnit.equal(error, undefined, 'release');
-
-              if(error) return onerror(error);
-
-              QUnit.start();
-            });
-          });
-        });
-      });
-    });
-  });
-});
+// QUnit.asyncTest('Source sinks', function()
+// {
+//   QUnit.expect(10);
+//
+//   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
+//   {
+//     QUnit.equal(error, undefined, 'RtpEndpoint');
+//
+//     if(error) return onerror(error);
+//
+//     rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
+//     {
+//       QUnit.equal(error, undefined, 'getMediaSrcs');
+//
+//       if(error) return onerror(error);
+//
+//       QUnit.notEqual(mediaSources, [], 'MediaSources video: '+mediaSources);
+//
+//       rtpEndpoint.getMediaSinks('VIDEO', function(error, mediaSinks)
+//       {
+//         QUnit.equal(error, undefined, 'getMediaSinks');
+//
+//         if(error) return onerror(error);
+//
+//         QUnit.notEqual(mediaSinks, [], 'MediaSinks video: '+mediaSinks);
+//
+//         rtpEndpoint.getMediaSrcs('AUDIO', function(error, mediaSources)
+//         {
+//           QUnit.equal(error, undefined, 'getMediaSrcs');
+//
+//           if(error) return onerror(error);
+//
+//           QUnit.notEqual(mediaSources, [], 'MediaSources audio: '+mediaSources);
+//
+//           rtpEndpoint.getMediaSinks('AUDIO', function(error, mediaSinks)
+//           {
+//             QUnit.equal(error, undefined, 'getMediaSinks');
+//
+//             if(error) return onerror(error);
+//
+//             QUnit.notEqual(mediaSinks, [], 'MediaSinks audio: '+mediaSinks);
+//
+//             rtpEndpoint.release(function(error)
+//             {
+//               QUnit.equal(error, undefined, 'release');
+//
+//               if(error) return onerror(error);
+//
+//               QUnit.start();
+//             });
+//           });
+//         });
+//       });
+//     });
+//   });
+// });
