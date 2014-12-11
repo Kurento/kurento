@@ -13,8 +13,6 @@ set(KMS_ELEMENTS_SOURCES
   kmsrecorderendpoint.c
   kmsrtpendpoint.c
   kmswebrtcendpoint.c
-  kmsrtcp.c
-  kmsremb.c
   kmsselectablemixer.c
   kmsdispatcher.c
   kmsdispatcheronetomany.c
@@ -32,8 +30,6 @@ set(KMS_ELEMENTS_HEADERS
   kmsrecorderendpoint.h
   kmsrtpendpoint.h
   kmswebrtcendpoint.h
-  kmsrtcp.h
-  kmsremb.h
   kmsselectablemixer.h
   kmsdispatcher.h
   kmsdispatcheronetomany.h
@@ -74,7 +70,6 @@ target_link_libraries(${LIBRARY_NAME}plugins
   ${gstreamer-pbutils-1.0_LIBRARIES}
   ${libsoup-2.4_LIBRARIES}
   ${nice_LIBRARIES}
-  ${gstreamer-rtp-1.0_LIBRARIES}
 )
 
 install(

@@ -32,8 +32,6 @@
 #include <errno.h>
 
 #include <gst/rtp/gstrtcpbuffer.h>
-#include "kmsrtcp.h"
-#include "kmsremb.h"
 
 #define PLUGIN_NAME "webrtcendpoint"
 
@@ -144,10 +142,6 @@ struct _KmsWebrtcEndpointPrivate
   gchar *turn_address;
   guint turn_port;
   NiceRelayType turn_transport;
-
-  /* REMB */
-  KmsRembLocal *rl;
-  KmsRembRemote *rm;
 };
 
 /* KmsWebRTCTransport */
@@ -1067,9 +1061,12 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   gboolean bundle;
   guint len, i;
 
-  if (gst_sdp_message_medias_len (answer) != gst_sdp_message_medias_len (offer)) {
-    GST_WARNING ("Incompatible offer and answer, possible errors in media");
-  }
+  KMS_ELEMENT_LOCK (self);
+
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_webrtc_endpoint_parent_class)->start_transport_send
+      (base_sdp_endpoint, offer, answer, local_offer);
 
   if (local_offer) {
     sdp = answer;
@@ -1080,17 +1077,13 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
   pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
 
-  len = gst_sdp_message_medias_len (sdp);
-
-  KMS_ELEMENT_LOCK (self);
-
   g_object_get (self, "bundle", &bundle, NULL);
-
   if (bundle) {
     add_webrtc_bundle_connection_src (self, !local_offer);
     add_webrtc_bundle_connection_sink (self);
   }
 
+  len = gst_sdp_message_medias_len (sdp);
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (sdp, i);
     const gchar *media_str;
@@ -1197,49 +1190,7 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     }
   }
 
-  if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_RTPBIN_RECV_RTP_SRC)) {
-    webrtc_endpoint->priv->rl->event_manager =
-        kms_utils_remb_event_manager_create (pad);
-  }
-
   KMS_ELEMENT_UNLOCK (webrtc_endpoint);
-}
-
-static void
-rtpbin_on_new_ssrc (GstElement * rtpbin, guint session, guint ssrc,
-    gpointer user_data)
-{
-  GObject *rtpsession;
-  KmsWebrtcEndpoint *ep = KMS_WEBRTC_ENDPOINT (user_data);
-
-  g_signal_emit_by_name (rtpbin, "get-internal-session", session, &rtpsession);
-  if (rtpsession == NULL) {
-    GST_WARNING_OBJECT (rtpbin,
-        "There is not session with id %" G_GUINT32_FORMAT, session);
-    return;
-  }
-
-  if (session == VIDEO_RTP_SESSION && ep->priv->rl == NULL) {
-    KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (ep);
-    GstPad *pad;
-    guint local_video_ssrc;
-    int max_recv_bw, min_send_bw, max_send_bw;
-
-    g_object_get (ep, "max-video-recv-bandwidth", &max_recv_bw, NULL);
-    ep->priv->rl =
-        kms_remb_local_create (rtpsession, ep->priv->remote_video_ssrc,
-        max_recv_bw);
-    g_object_unref (rtpsession);
-
-    g_object_get (ep, "min-video-send-bandwidth", &min_send_bw, NULL);
-    g_object_get (ep, "max-video-send-bandwidth", &max_send_bw, NULL);
-    local_video_ssrc = kms_base_rtp_endpoint_get_local_video_ssrc (base_rtp);
-    pad = gst_element_get_static_pad (rtpbin, VIDEO_RTPBIN_SEND_RTP_SINK);
-    ep->priv->rm =
-        kms_remb_remote_create (rtpsession, local_video_ssrc, min_send_bw,
-        max_send_bw, pad);
-    g_object_unref (pad);
-  }
 }
 
 static void
@@ -1422,9 +1373,6 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  kms_remb_local_destroy (self->priv->rl);
-  kms_remb_remote_destroy (self->priv->rm);
-
   kms_webrtc_connection_destroy (self->priv->audio_connection);
   kms_webrtc_connection_destroy (self->priv->video_connection);
 
@@ -1561,8 +1509,6 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 
   g_signal_connect (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
       "pad-added", G_CALLBACK (rtpbin_pad_added), self);
-  g_signal_connect (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
-      "on-new-ssrc", G_CALLBACK (rtpbin_on_new_ssrc), self);
 }
 
 gboolean
