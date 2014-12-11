@@ -14,6 +14,7 @@ set(KMS_ELEMENTS_SOURCES
   kmsrtpendpoint.c
   kmswebrtcendpoint.c
   kmsrtcp.c
+  kmsremb.c
   kmsselectablemixer.c
   kmsdispatcher.c
   kmsdispatcheronetomany.c
@@ -32,6 +33,7 @@ set(KMS_ELEMENTS_HEADERS
   kmsrtpendpoint.h
   kmswebrtcendpoint.h
   kmsrtcp.h
+  kmsremb.h
   kmsselectablemixer.h
   kmsdispatcher.h
   kmsdispatcheronetomany.h
