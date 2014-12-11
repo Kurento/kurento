@@ -16,7 +16,13 @@
 #include <gst/check/gstcheck.h>
 #include <gst/sdp/gstsdpmessage.h>
 
-#include <kmstestutils.h>
+#include <commons/kmselementpadtype.h>
+
+#define KMS_VIDEO_PREFIX "video_src_"
+#define KMS_AUDIO_PREFIX "audio_src_"
+
+#define AUDIO_SINK "audio-sink"
+#define VIDEO_SINK "video-sink"
 
 static gboolean
 quit_main_loop_idle (gpointer data)
@@ -148,6 +154,46 @@ kms_connect_data_destroy (gpointer data)
 }
 
 static void
+connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
+    gpointer user_data)
+{
+  GstElement *sink;
+  GstPad *sinkpad;
+
+  if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
+    GST_DEBUG_OBJECT (element, "Connecting video stream");
+    sink = g_object_get_data (G_OBJECT (element), AUDIO_SINK);
+  } else if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_VIDEO_PREFIX)) {
+    GST_DEBUG_OBJECT (element, "Connecting audio stream");
+    sink = g_object_get_data (G_OBJECT (element), VIDEO_SINK);
+  } else {
+    GST_ERROR_OBJECT (element, "Not supported pad type");
+    return;
+  }
+
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  gst_pad_link (pad, sinkpad);
+  g_object_unref (sinkpad);
+  gst_element_sync_state_with_parent (sink);
+}
+
+static gboolean
+kms_element_request_srcpad (GstElement * src, KmsElementPadType pad_type)
+{
+  gchar *padname;
+
+  g_signal_emit_by_name (src, "request-new-srcpad", pad_type, NULL, &padname);
+  if (padname == NULL) {
+    return FALSE;
+  }
+
+  GST_DEBUG_OBJECT (src, "Requested pad %s", padname);
+  g_free (padname);
+
+  return TRUE;
+}
+
+static void
 connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
     GstElement * enc, GstElement * caps, GstElement * pipe,
     const gchar * pad_prefix)
@@ -239,8 +285,11 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   gst_sdp_message_free (answer);
 
   gst_bin_add (GST_BIN (pipeline), outputfakesink);
-  kms_element_link_pads (receiver, "video_src_%u", outputfakesink, "sink");
-  gst_element_sync_state_with_parent (outputfakesink);
+  g_object_set_data (G_OBJECT (receiver), VIDEO_SINK, outputfakesink);
+  g_signal_connect (receiver, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (receiver,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_sendonly_before_entering_loop");
@@ -397,10 +446,17 @@ test_video_sendrecv (const gchar * video_enc_name,
   gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
       NULL);
 
-  kms_element_link_pads (offerer, "video_src_%u", fakesink_offerer, "sink");
-  kms_element_link_pads (answerer, "video_src_%u", fakesink_answerer, "sink");
-  gst_element_sync_state_with_parent (fakesink_offerer);
-  gst_element_sync_state_with_parent (fakesink_answerer);
+  g_object_set_data (G_OBJECT (offerer), VIDEO_SINK, fakesink_offerer);
+  g_signal_connect (offerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (offerer,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
+
+  g_object_set_data (G_OBJECT (answerer), VIDEO_SINK, fakesink_answerer);
+  g_signal_connect (answerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (answerer,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_before_entering_loop");
@@ -512,10 +568,17 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
       NULL);
 
-  kms_element_link_pads (offerer, "audio_src_%u", fakesink_offerer, "sink");
-  kms_element_link_pads (answerer, "audio_src_%u", fakesink_answerer, "sink");
-  gst_element_sync_state_with_parent (fakesink_offerer);
-  gst_element_sync_state_with_parent (fakesink_answerer);
+  g_object_set_data (G_OBJECT (offerer), AUDIO_SINK, fakesink_offerer);
+  g_signal_connect (offerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (offerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
+
+  g_object_set_data (G_OBJECT (answerer), AUDIO_SINK, fakesink_answerer);
+  g_signal_connect (answerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (answerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_before_entering_loop");
@@ -682,12 +745,16 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   gst_sdp_message_free (answer);
 
   gst_bin_add (GST_BIN (pipeline), audio_fakesink);
-  kms_element_link_pads (receiver, "audio_src_%u", audio_fakesink, "sink");
-  gst_element_sync_state_with_parent (audio_fakesink);
+  g_object_set_data (G_OBJECT (receiver), AUDIO_SINK, audio_fakesink);
+  g_signal_connect (receiver, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (receiver,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   gst_bin_add (GST_BIN (pipeline), video_fakesink);
-  kms_element_link_pads (receiver, "video_src_%u", video_fakesink, "sink");
-  gst_element_sync_state_with_parent (video_fakesink);
+  g_object_set_data (G_OBJECT (receiver), VIDEO_SINK, video_fakesink);
+  fail_unless (kms_element_request_srcpad (receiver,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL,
@@ -850,21 +917,28 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
 
   gst_bin_add_many (GST_BIN (pipeline), audio_fakesink_offerer,
       audio_fakesink_answerer, NULL);
-  kms_element_link_pads (offerer, "audio_src_%u", audio_fakesink_offerer,
-      "sink");
-  kms_element_link_pads (answerer, "audio_src_%u", audio_fakesink_answerer,
-      "sink");
-  gst_element_sync_state_with_parent (audio_fakesink_offerer);
-  gst_element_sync_state_with_parent (audio_fakesink_answerer);
+
+  g_signal_connect (offerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  g_signal_connect (answerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+
+  g_object_set_data (G_OBJECT (offerer), AUDIO_SINK, audio_fakesink_offerer);
+  fail_unless (kms_element_request_srcpad (offerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
+  g_object_set_data (G_OBJECT (answerer), AUDIO_SINK, audio_fakesink_answerer);
+  fail_unless (kms_element_request_srcpad (answerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   gst_bin_add_many (GST_BIN (pipeline), video_fakesink_offerer,
       video_fakesink_answerer, NULL);
-  kms_element_link_pads (offerer, "video_src_%u", video_fakesink_offerer,
-      "sink");
-  kms_element_link_pads (answerer, "video_src_%u", video_fakesink_answerer,
-      "sink");
-  gst_element_sync_state_with_parent (video_fakesink_offerer);
-  gst_element_sync_state_with_parent (video_fakesink_answerer);
+
+  g_object_set_data (G_OBJECT (offerer), VIDEO_SINK, video_fakesink_offerer);
+  fail_unless (kms_element_request_srcpad (offerer,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
+  g_object_set_data (G_OBJECT (answerer), VIDEO_SINK, video_fakesink_answerer);
+  fail_unless (kms_element_request_srcpad (answerer,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_before_entering_loop");
