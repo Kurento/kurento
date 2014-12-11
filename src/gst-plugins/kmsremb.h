@@ -44,5 +44,25 @@ KmsRembLocal * kms_remb_local_create (GObject *rtpsess, guint remote_ssrc, guint
 void kms_remb_local_destroy (KmsRembLocal *rl);
 /* KmsRembLocal end */
 
+/* KmsRembRemote begin */
+typedef struct _KmsRembRemote KmsRembRemote;
+
+struct _KmsRembRemote
+{
+  GObject *rtpsess;
+  guint local_ssrc;
+  guint min_bw;
+  guint max_bw;
+
+  guint remb;
+  gboolean probed;
+  GstPad *pad_event;
+};
+
+KmsRembRemote * kms_remb_remote_create (GObject *rtpsess, guint local_ssrc,
+    guint min_bw, guint max_bw, GstPad * pad);
+void kms_remb_remote_destroy (KmsRembRemote *rm);
+/* KmsRembRemote end */
+
 G_END_DECLS
 #endif /* __KMS_REMB_H__ */

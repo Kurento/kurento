@@ -263,6 +263,178 @@ kms_remb_local_create (GObject * rtpsess, guint remote_ssrc, guint max_bw)
 
 /* KmsRembLocal end */
 
+/* KmsRembRemote begin */
+
+#define KMS_REMB_REMOTE "kms-remb-remote"
+
+#define REMB_ON_CONNECT 300000  /* bps */
+
+static void
+send_remb_event (KmsRembRemote * rm, guint bitrate, guint ssrc)
+{
+  GstEvent *event;
+  guint br, min = 0, max = 0;
+
+  /* TODO: use g_atomic */
+  if (rm->pad_event == NULL) {
+    return;
+  }
+
+  br = bitrate;
+
+  if (rm->min_bw > 0) {
+    min = rm->min_bw * 1000;
+    br = MAX (br, min);
+  }
+
+  if (rm->max_bw > 0) {
+    max = rm->max_bw * 1000;
+    br = MIN (br, max);
+  }
+
+  GST_TRACE_OBJECT (rm->rtpsess,
+      "bitrate: %" G_GUINT32_FORMAT ", ssrc: %" G_GUINT32_FORMAT
+      ", range [%" G_GUINT32_FORMAT ", %" G_GUINT32_FORMAT
+      "], event bitrate: %" G_GUINT32_FORMAT, bitrate, ssrc, min, max, br);
+
+  event = kms_utils_remb_event_upstream_new (br, ssrc);
+  gst_pad_push_event (rm->pad_event, event);
+}
+
+static GstPadProbeReturn
+send_remb_event_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  KmsRembRemote *rm = user_data;
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  };
+
+  send_remb_event (rm, REMB_ON_CONNECT, rm->local_ssrc);
+
+  return GST_PAD_PROBE_REMOVE;
+}
+
+static void
+kms_remb_remote_update (KmsRembRemote * rm,
+    KmsRTCPPSFBAFBREMBPacket * remb_packet)
+{
+  if (remb_packet->n_ssrcs == 0) {
+    GST_WARNING_OBJECT (rm->rtpsess, "REMB packet without any SSRC");
+    return;
+  } else if (remb_packet->n_ssrcs > 1) {
+    GST_WARNING_OBJECT (rm->rtpsess,
+        "REMB packet with %" G_GUINT32_FORMAT " SSRCs."
+        " A inconsistent management could take place", remb_packet->n_ssrcs);
+  }
+
+  if (!rm->probed) {
+    if ((remb_packet->bitrate < REMB_ON_CONNECT)
+        && (remb_packet->bitrate >= rm->remb)) {
+      rm->remb = remb_packet->bitrate;
+      return;
+    }
+
+    rm->probed = TRUE;
+  }
+
+  send_remb_event (rm, remb_packet->bitrate, remb_packet->ssrcs[0]);
+  rm->remb = remb_packet->bitrate;
+}
+
+static void
+process_psfb_afb (GObject * sess, GstBuffer * fci_buffer)
+{
+  KmsRembRemote *rm = g_object_get_data (sess, KMS_REMB_REMOTE);
+  KmsRTCPPSFBAFBBuffer afb_buffer = { NULL, };
+  KmsRTCPPSFBAFBPacket afb_packet;
+  KmsRTCPPSFBAFBREMBPacket remb_packet;
+  KmsRTCPPSFBAFBType type;
+
+  if (!kms_rtcp_psfb_afb_buffer_map (fci_buffer, GST_MAP_READ, &afb_buffer)) {
+    GST_WARNING_OBJECT (fci_buffer, "Buffer cannot be mapped");
+    return;
+  }
+
+  if (!kms_rtcp_psfb_afb_get_packet (&afb_buffer, &afb_packet)) {
+    GST_WARNING_OBJECT (fci_buffer, "Cannot get RTCP PSFB AFB packet");
+    goto end;
+  }
+
+  type = kms_rtcp_psfb_afb_packet_get_type (&afb_packet);
+  switch (type) {
+    case KMS_RTCP_PSFB_AFB_TYPE_REMB:
+      kms_rtcp_psfb_afb_remb_get_packet (&afb_packet, &remb_packet);
+      kms_remb_remote_update (rm, &remb_packet);
+      break;
+    default:
+      break;
+  }
+
+end:
+  kms_rtcp_psfb_afb_buffer_unmap (&afb_buffer);
+}
+
+static void
+on_feedback_rtcp (GObject * sess, guint type, guint fbtype,
+    guint sender_ssrc, guint media_ssrc, GstBuffer * fci)
+{
+  switch (type) {
+    case GST_RTCP_TYPE_RTPFB:
+      break;
+    case GST_RTCP_TYPE_PSFB:
+      switch (fbtype) {
+        case GST_RTCP_PSFB_TYPE_AFB:
+          process_psfb_afb (sess, fci);
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+void
+kms_remb_remote_destroy (KmsRembRemote * rm)
+{
+  if (rm == NULL) {
+    return;
+  }
+
+  if (rm->pad_event != NULL) {
+    g_object_unref (rm->pad_event);
+  }
+
+  g_object_unref (rm->rtpsess);
+  g_slice_free (KmsRembRemote, rm);
+}
+
+KmsRembRemote *
+kms_remb_remote_create (GObject * rtpsess, guint local_ssrc, guint min_bw,
+    guint max_bw, GstPad * pad)
+{
+  KmsRembRemote *rm = g_slice_new0 (KmsRembRemote);
+
+  g_object_set_data (rtpsess, KMS_REMB_REMOTE, rm);
+  g_signal_connect (rtpsess, "on-feedback-rtcp",
+      G_CALLBACK (on_feedback_rtcp), NULL);
+  rm->rtpsess = g_object_ref (rtpsess);
+  rm->local_ssrc = local_ssrc;
+  rm->min_bw = min_bw;
+  rm->max_bw = max_bw;
+
+  rm->pad_event = g_object_ref (pad);
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      send_remb_event_probe, rm, NULL);
+
+  return rm;
+}
+
+/* KmsRembRemote end */
+
 static void init_debug (void) __attribute__ ((constructor));
 
 static void
