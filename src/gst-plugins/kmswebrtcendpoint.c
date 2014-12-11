@@ -91,8 +91,6 @@ enum
 
 #define WEBRTC_ENDPOINT "webrtc-endpoint"
 
-#define REMB_ON_CONNECT 300000  /* bps */
-
 typedef struct _KmsWebRTCTransport
 {
   guint component_id;
@@ -154,10 +152,7 @@ struct _KmsWebrtcEndpointPrivate
 
   /* REMB */
   KmsRembLocal *rl;
-
-  guint remb_remote;
-  gboolean remb_remote_probed;
-  GstPad *remb_remote_event_pad;
+  KmsRembRemote *rm;
 
   guint min_video_send_bw;
   guint max_video_send_bw;
@@ -1221,62 +1216,6 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
 }
 
 static void
-send_remb_event (KmsWebrtcEndpoint * self, guint bitrate, guint ssrc)
-{
-  GstEvent *event;
-  guint br, min, max;
-
-  if (self->priv->remb_remote_event_pad == NULL) {
-    return;
-  }
-
-  br = bitrate;
-
-  g_object_get (self, "min-video-send-bandwidth", &min, NULL);
-  if (min > 0) {
-    min *= 1000;
-    br = MAX (br, min);
-  }
-
-  g_object_get (self, "max-video-send-bandwidth", &max, NULL);
-  if (max > 0) {
-    max *= 1000;
-    br = MIN (br, max);
-  }
-
-  GST_TRACE_OBJECT (self,
-      "bitrate: %" G_GUINT32_FORMAT ", ssrc: %" G_GUINT32_FORMAT
-      ", range [%" G_GUINT32_FORMAT ", %" G_GUINT32_FORMAT
-      "], event bitrate: %" G_GUINT32_FORMAT, bitrate, ssrc, min, max, br);
-
-  event = kms_utils_remb_event_upstream_new (br, ssrc);
-  gst_pad_push_event (self->priv->remb_remote_event_pad, event);
-}
-
-static GstPadProbeReturn
-send_remb_event_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
-{
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (user_data);
-  KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
-  guint local_video_ssrc;
-
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
-    return GST_PAD_PROBE_OK;
-  };
-
-  local_video_ssrc = kms_base_rtp_endpoint_get_local_video_ssrc (base_rtp);
-  if (local_video_ssrc == 0) {
-    GST_WARNING_OBJECT (self, "Local video SSRC not set");
-    return GST_PAD_PROBE_OK;
-  }
-
-  send_remb_event (self, REMB_ON_CONNECT, local_video_ssrc);
-
-  return GST_PAD_PROBE_REMOVE;
-}
-
-static void
 rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     KmsWebrtcEndpoint * webrtc_endpoint)
 {
@@ -1315,98 +1254,12 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     }
   }
 
-  if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_RTPBIN_SEND_RTP_SINK)) {
-    webrtc_endpoint->priv->remb_remote_event_pad = g_object_ref (pad);
-    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-        send_remb_event_probe, webrtc_endpoint, NULL);
-  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad),
-          VIDEO_RTPBIN_RECV_RTP_SRC)) {
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_RTPBIN_RECV_RTP_SRC)) {
     webrtc_endpoint->priv->rl->event_manager =
         kms_utils_remb_event_manager_create (pad);
   }
 
   KMS_ELEMENT_UNLOCK (webrtc_endpoint);
-}
-
-static void
-remb_remote_update (GObject * sess, KmsRTCPPSFBAFBREMBPacket * remb_packet)
-{
-  KmsWebrtcEndpoint *self =
-      KMS_WEBRTC_ENDPOINT (g_object_get_data (sess, WEBRTC_ENDPOINT));
-
-  if (remb_packet->n_ssrcs == 0) {
-    GST_WARNING_OBJECT (self, "REMB packet without any SSRC");
-    return;
-  } else if (remb_packet->n_ssrcs > 1) {
-    GST_WARNING_OBJECT (self, "REMB packet with %" G_GUINT32_FORMAT " SSRCs."
-        " A inconsistent management could take place", remb_packet->n_ssrcs);
-  }
-
-  if (!self->priv->remb_remote_probed) {
-    if ((remb_packet->bitrate < REMB_ON_CONNECT)
-        && (remb_packet->bitrate >= self->priv->remb_remote)) {
-      self->priv->remb_remote = remb_packet->bitrate;
-      return;
-    }
-
-    self->priv->remb_remote_probed = TRUE;
-  }
-
-  send_remb_event (self, remb_packet->bitrate, remb_packet->ssrcs[0]);
-  self->priv->remb_remote = remb_packet->bitrate;
-}
-
-static void
-process_psfb_afb (GObject * sess, GstBuffer * fci_buffer)
-{
-  KmsRTCPPSFBAFBBuffer afb_buffer = { NULL, };
-  KmsRTCPPSFBAFBPacket afb_packet;
-  KmsRTCPPSFBAFBREMBPacket remb_packet;
-  KmsRTCPPSFBAFBType type;
-
-  if (!kms_rtcp_psfb_afb_buffer_map (fci_buffer, GST_MAP_READ, &afb_buffer)) {
-    GST_WARNING_OBJECT (fci_buffer, "Buffer cannot be mapped");
-    return;
-  }
-
-  if (!kms_rtcp_psfb_afb_get_packet (&afb_buffer, &afb_packet)) {
-    GST_WARNING_OBJECT (fci_buffer, "Cannot get RTCP PSFB AFB packet");
-    goto end;
-  }
-
-  type = kms_rtcp_psfb_afb_packet_get_type (&afb_packet);
-  switch (type) {
-    case KMS_RTCP_PSFB_AFB_TYPE_REMB:
-      kms_rtcp_psfb_afb_remb_get_packet (&afb_packet, &remb_packet);
-      remb_remote_update (sess, &remb_packet);
-      break;
-    default:
-      break;
-  }
-
-end:
-  kms_rtcp_psfb_afb_buffer_unmap (&afb_buffer);
-}
-
-static void
-on_feedback_rtcp (GObject * sess, guint type, guint fbtype,
-    guint sender_ssrc, guint media_ssrc, GstBuffer * fci)
-{
-  switch (type) {
-    case GST_RTCP_TYPE_RTPFB:
-      break;
-    case GST_RTCP_TYPE_PSFB:
-      switch (fbtype) {
-        case GST_RTCP_PSFB_TYPE_AFB:
-          process_psfb_afb (sess, fci);
-          break;
-        default:
-          break;
-      }
-      break;
-    default:
-      break;
-  }
 }
 
 static void
@@ -1423,17 +1276,26 @@ rtpbin_on_new_ssrc (GstElement * rtpbin, guint session, guint ssrc,
     return;
   }
 
-  g_object_set_data (rtpsession, WEBRTC_ENDPOINT, ep);
-  g_signal_connect (rtpsession, "on-feedback-rtcp",
-      G_CALLBACK (on_feedback_rtcp), NULL);
-
   if (session == VIDEO_RTP_SESSION && ep->priv->rl == NULL) {
-    int max_bw;
+    KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (ep);
+    GstPad *pad;
+    guint local_video_ssrc;
+    int max_recv_bw, min_send_bw, max_send_bw;
 
-    g_object_get (ep, "max-video-recv-bandwidth", &max_bw, NULL);
+    g_object_get (ep, "max-video-recv-bandwidth", &max_recv_bw, NULL);
     ep->priv->rl =
-        kms_remb_local_create (rtpsession, ep->priv->remote_video_ssrc, max_bw);
+        kms_remb_local_create (rtpsession, ep->priv->remote_video_ssrc,
+        max_recv_bw);
     g_object_unref (rtpsession);
+
+    g_object_get (ep, "min-video-send-bandwidth", &min_send_bw, NULL);
+    g_object_get (ep, "max-video-send-bandwidth", &max_send_bw, NULL);
+    local_video_ssrc = kms_base_rtp_endpoint_get_local_video_ssrc (base_rtp);
+    pad = gst_element_get_static_pad (rtpbin, VIDEO_RTPBIN_SEND_RTP_SINK);
+    ep->priv->rm =
+        kms_remb_remote_create (rtpsession, local_video_ssrc, min_send_bw,
+        max_send_bw, pad);
+    g_object_unref (pad);
   }
 }
 
@@ -1648,10 +1510,7 @@ kms_webrtc_endpoint_finalize (GObject * object)
   GST_DEBUG_OBJECT (self, "finalize");
 
   kms_remb_local_destroy (self->priv->rl);
-
-  if (self->priv->remb_remote_event_pad != NULL) {
-    g_object_unref (self->priv->remb_remote_event_pad);
-  }
+  kms_remb_remote_destroy (self->priv->rm);
 
   kms_webrtc_connection_destroy (self->priv->audio_connection);
   kms_webrtc_connection_destroy (self->priv->video_connection);
