@@ -73,17 +73,17 @@ target_link_libraries(test_playerendpoint
 #                       ${KmsGstCommons_LIBRARIES}
 #                       kmstestutils)
 
-#add_test_program (test_webrtcendpoint webrtcendpoint.c)
-#add_dependencies(test_webrtcendpoint kmstestutils kmscore kmsdtls ${LIBRARY_NAME}plugins)
-#target_include_directories(test_webrtcendpoint PRIVATE
-#                           ${KmsGstCommons_INCLUDE_DIRS}
-#                           ${gstreamer-1.0_INCLUDE_DIRS}
-#                           ${gstreamer-check-1.0_INCLUDE_DIRS})
-#target_link_libraries(test_webrtcendpoint
-#                      ${gstreamer-1.0_LIBRARIES}
-#                      ${gstreamer-check-1.0_LIBRARIES}
-#                      ${KmsGstCommons_LIBRARIES}
-#                      kmstestutils)
+add_test_program (test_webrtcendpoint webrtcendpoint.c)
+add_dependencies(test_webrtcendpoint kmstestutils kmscore kmsdtls ${LIBRARY_NAME}plugins)
+target_include_directories(test_webrtcendpoint PRIVATE
+                           ${KmsGstCommons_INCLUDE_DIRS}
+                           ${gstreamer-1.0_INCLUDE_DIRS}
+                           ${gstreamer-check-1.0_INCLUDE_DIRS})
+target_link_libraries(test_webrtcendpoint
+                      ${gstreamer-1.0_LIBRARIES}
+                      ${gstreamer-check-1.0_LIBRARIES}
+                      ${KmsGstCommons_LIBRARIES}
+                      kmstestutils)
 
 #add_test_program (test_compositemixer compositemixer.c)
 #add_dependencies(test_compositemixer kmstestutils kmscore kmselements)
