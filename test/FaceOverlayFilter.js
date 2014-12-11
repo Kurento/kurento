@@ -35,8 +35,7 @@
  *
  */
 
-if(typeof QUnit == 'undefined')
-{
+if (typeof QUnit == 'undefined') {
   QUnit = require('qunit-cli');
   QUnit.load();
 
@@ -46,62 +45,56 @@ if(typeof QUnit == 'undefined')
   require('./_proxy');
 };
 
-
 QUnit.module('FaceOverlayFilter', lifecycle);
 
-QUnit.asyncTest('Detect face in a video', function()
-{
+QUnit.asyncTest('Detect face in a video', function () {
   var self = this;
 
   QUnit.expect(5);
 
   var timeout = new Timeout('"FaceOverlayFilter:Detect face in a video"',
-                            20 * 1000, onerror);
+    20 * 1000, onerror);
 
-  function onerror(error)
-  {
+  function onerror(error) {
     timeout.stop();
     _onerror(error);
   };
 
+  self.pipeline.create('PlayerEndpoint', {
+      uri: URL_POINTER_DETECTOR
+    },
+    function (error, player) {
+      if (error) return onerror(error);
 
-  self.pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR},
-  function(error, player)
-  {
-    if(error) return onerror(error);
+      QUnit.notEqual(player, undefined, 'player');
 
-    QUnit.notEqual(player, undefined, 'player');
+      self.pipeline.create('FaceOverlayFilter', function (error,
+        faceOverlay) {
+        if (error) return onerror(error);
 
-    self.pipeline.create('FaceOverlayFilter', function(error, faceOverlay)
-    {
-      if(error) return onerror(error);
+        QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
 
-      QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
+        player.connect(faceOverlay, function (error) {
+          QUnit.equal(error, undefined, 'connect');
 
-      player.connect(faceOverlay, function(error)
-      {
-        QUnit.equal(error, undefined, 'connect');
+          if (error) return onerror(error);
 
-        if(error) return onerror(error);
+          player.play(function (error) {
+            QUnit.equal(error, undefined, 'playing');
 
-        player.play(function(error)
-        {
-          QUnit.equal(error, undefined, 'playing');
+            if (error) return onerror(error);
 
-          if(error) return onerror(error);
-
-          timeout.start();
+            timeout.start();
+          });
         });
       });
+
+      player.on('EndOfStream', function (data) {
+        QUnit.ok(true, 'EndOfStream');
+
+        timeout.stop();
+
+        QUnit.start();
+      });
     });
-
-    player.on('EndOfStream', function(data)
-    {
-      QUnit.ok(true, 'EndOfStream');
-
-      timeout.stop();
-
-      QUnit.start();
-    });
-  });
 });

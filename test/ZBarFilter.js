@@ -35,8 +35,7 @@
  *
  */
 
-if(typeof QUnit == 'undefined')
-{
+if (typeof QUnit == 'undefined') {
   QUnit = require('qunit-cli');
   QUnit.load();
 
@@ -46,38 +45,34 @@ if(typeof QUnit == 'undefined')
   require('./_proxy');
 };
 
-
 QUnit.module('ZBarFilter', lifecycle);
 
-QUnit.asyncTest('Create pipeline and play video', function()
-{
+QUnit.asyncTest('Create pipeline and play video', function () {
   var self = this;
 
   QUnit.expect(4);
 
-  self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
-  {
-    if(error) return onerror(error);
+  self.pipeline.create('PlayerEndpoint', {
+    uri: URL_BARCODES
+  }, function (error, player) {
+    if (error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    self.pipeline.create('ZBarFilter', function(error, zbar)
-    {
-      if(error) return onerror(error);
+    self.pipeline.create('ZBarFilter', function (error, zbar) {
+      if (error) return onerror(error);
 
       QUnit.notEqual(zbar, undefined, 'zbar');
 
-      player.connect(zbar, function(error)
-      {
+      player.connect(zbar, function (error) {
         QUnit.equal(error, undefined, 'connect');
 
-        if(error) return onerror(error);
+        if (error) return onerror(error);
 
-        player.play(function(error)
-        {
+        player.play(function (error) {
           QUnit.equal(error, undefined, 'play');
 
-          if(error) return onerror(error);
+          if (error) return onerror(error);
 
           QUnit.start();
         });
@@ -86,49 +81,43 @@ QUnit.asyncTest('Create pipeline and play video', function()
   });
 });
 
-QUnit.asyncTest('Detect bar-code in a video', function()
-{
+QUnit.asyncTest('Detect bar-code in a video', function () {
   var self = this;
 
   QUnit.expect(3);
 
   var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
-                            10 * 1000, onerror);
+    10 * 1000, onerror);
 
-  function onerror(error)
-  {
+  function onerror(error) {
     timeout.stop();
     _onerror(error);
   };
 
+  self.pipeline.create('PlayerEndpoint', {
+    uri: URL_BARCODES
+  }, function (error, player) {
+    if (error) return onerror(error);
 
-  self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
-  {
-    if(error) return onerror(error);
+    self.pipeline.create('ZBarFilter', function (error, zbar) {
+      if (error) return onerror(error);
 
-    self.pipeline.create('ZBarFilter', function(error, zbar)
-    {
-      if(error) return onerror(error);
-
-      player.connect(zbar, function(error)
-      {
+      player.connect(zbar, function (error) {
         QUnit.equal(error, undefined, 'connect');
 
-        if(error) return onerror(error);
+        if (error) return onerror(error);
 
-        player.play(function(error)
-        {
+        player.play(function (error) {
           QUnit.equal(error, undefined, 'play');
 
-          if(error) return onerror(error);
+          if (error) return onerror(error);
 
           timeout.start();
         });
       });
 
-      zbar.on('CodeFound', function(data)
-      {
-        QUnit.ok(true, 'CodeFound:'+data.value);
+      zbar.on('CodeFound', function (data) {
+        QUnit.ok(true, 'CodeFound:' + data.value);
 
         timeout.stop();
 

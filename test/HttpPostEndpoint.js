@@ -35,8 +35,7 @@
  *
  */
 
-if(typeof QUnit == 'undefined')
-{
+if (typeof QUnit == 'undefined') {
   QUnit = require('qunit-cli');
   QUnit.load();
 
@@ -46,26 +45,22 @@ if(typeof QUnit == 'undefined')
   require('./_proxy');
 };
 
-
 QUnit.module('HttpPostEndpoint', lifecycle);
 
-QUnit.asyncTest('Method GetUrl', function()
-{
+QUnit.asyncTest('Method GetUrl', function () {
   var self = this;
 
   QUnit.expect(2);
 
-  self.pipeline.create('HttpPostEndpoint', function(error, httpPost)
-  {
-    if(error) return onerror(error);
+  self.pipeline.create('HttpPostEndpoint', function (error, httpPost) {
+    if (error) return onerror(error);
 
     QUnit.notEqual(httpPost, undefined, 'httpPost');
 
-    httpPost.getUrl(function(error, url)
-    {
-      if(error) return onerror(error);
+    httpPost.getUrl(function (error, url) {
+      if (error) return onerror(error);
 
-      QUnit.notEqual(url, undefined, 'URL: '+url);
+      QUnit.notEqual(url, undefined, 'URL: ' + url);
 
       QUnit.start();
     })
@@ -78,7 +73,6 @@ QUnit.asyncTest('Method GetUrl', function()
 
 //  QUnit.expect(3);
 
-
 //  var timeout = new Timeout('"HttpPostEndpoint:Media session terminated"',
 //                            50 * 1000, onerror);
 
@@ -87,7 +81,6 @@ QUnit.asyncTest('Method GetUrl', function()
 //    timeout.stop();
 //    _onerror(error);
 //  };
-
 
 //  self.pipeline.create('HttpPostEndpoint', function(error, httpPost)
 //  {

@@ -13,125 +13,129 @@
  *
  */
 
-
 var objects = {};
 
-function proxy(data)
-{
-  console.log('< '+data);
+function proxy(data) {
+  console.log('< ' + data);
 
   var message = JSON.parse(data);
 
   var method = message.method;
-  var id     = message.id;
+  var id = message.id;
   var params = message.params;
 
   var result = undefined;
-  var error  = undefined;
+  var error = undefined;
 
-  function method_create()
-  {
+  function method_create() {
     var type = params.type;
 
-    switch(type)
-    {
-      case 'PlayerEndpoint':
-      case 'ZBarFilter':
+    switch (type) {
+    case 'PlayerEndpoint':
+    case 'ZBarFilter':
       {
         var constructorParams = params.constructorParams;
         var pipeline_id = constructorParams.mediaPipeline;
 
         var pipeline = objects[pipeline_id];
-        if(pipeline == undefined)
-        {
-          error = {message: "Unknown pipeline: "+pipeline_id};
+        if (pipeline == undefined) {
+          error = {
+            message: "Unknown pipeline: " + pipeline_id
+          };
           break;
         };
       };
 
-      case 'MediaPipeline':
+    case 'MediaPipeline':
       {
         objects[id] = type;
-        result = {value: id};
+        result = {
+          value: id
+        };
       }
       break;
 
-      default:
-        error = {message: "Unknown type: "+type};
+    default:
+      error = {
+        message: "Unknown type: " + type
+      };
     }
   };
 
-  if(method == 'create')
+  if (method == 'create')
     method_create();
 
-  else
-  {
+  else {
     var id = params.id;
 
     var object = objects[id];
-    if(object == undefined)
-      error = {message: "Unknown object: "+id};
+    if (object == undefined)
+      error = {
+        message: "Unknown object: " + id
+      };
 
     else
-      switch(method)
-      {
-        case 'invoke':
+      switch (method) {
+      case 'invoke':
         {
           var operation = params.operation;
 
-          switch(operation)
-          {
-            case 'connect':
-            case 'play':
-              result = {};
+          switch (operation) {
+          case 'connect':
+          case 'play':
+            result = {};
 
-            default:
-              error = {message: "Unknown operation: "+operation};
+          default:
+            error = {
+              message: "Unknown operation: " + operation
+            };
           };
         };
         break;
 
-        case 'release':
+      case 'release':
         {
           result = {};
         };
         break;
 
-        case 'subscribe':
+      case 'subscribe':
         {
           var type = params.type;
 
-          switch(type)
-          {
-            case 'CodeFound':
-              result = {};
+          switch (type) {
+          case 'CodeFound':
+            result = {};
 
-            default:
-              error = {message: "Unknown event type: "+type};
+          default:
+            error = {
+              message: "Unknown event type: " + type
+            };
           };
         };
         break;
 
-        case 'unsubscribe':
+      case 'unsubscribe':
         {
           result = {};
         };
         break;
 
-        default:
-          error = {message: "Unknown method: "+method};
+      default:
+        error = {
+          message: "Unknown method: " + method
+        };
       };
   }
 
-  data = JSON.stringify(
-  {
+  data = JSON.stringify({
     jsonrpc: "2.0",
     id: message.id,
     result: result,
     error: error
   });
 
-  console.log('> '+data);
+  console.log('> ' + data);
 
   this.emit('message', data, {});
 };

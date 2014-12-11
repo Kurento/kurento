@@ -35,8 +35,7 @@
  *
  */
 
-if(typeof QUnit == 'undefined')
-{
+if (typeof QUnit == 'undefined') {
   QUnit = require('qunit-cli');
   QUnit.load();
 
@@ -46,26 +45,22 @@ if(typeof QUnit == 'undefined')
   require('./_proxy');
 };
 
-
 QUnit.module('Composite', lifecycle);
 
-QUnit.asyncTest('create', function()
-{
+QUnit.asyncTest('create', function () {
   QUnit.expect(4);
 
-  this.pipeline.create('Composite', function(error, composite)
-  {
+  this.pipeline.create('Composite', function (error, composite) {
     QUnit.equal(error, undefined, 'create composite');
 
-    if(error) return onerror(error);
+    if (error) return onerror(error);
 
     QUnit.notEqual(composite, undefined, 'composite');
 
-    composite.createHubPort(function(error, hubPort)
-    {
+    composite.createHubPort(function (error, hubPort) {
       QUnit.equal(error, undefined, 'createHubPort');
 
-      if(error) return onerror(error);
+      if (error) return onerror(error);
 
       QUnit.notEqual(hubPort, undefined, 'hubPort');
 

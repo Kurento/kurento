@@ -13,18 +13,16 @@
  *
  */
 
-URL_BARCODES         = "http://files.kurento.org/video/barcodes.webm";
-URL_FIWARECUT        = "http://files.kurento.org/video/fiwarecut.webm";
-URL_PLATES           = "http://files.kurento.org/video/plates.webm";
+URL_BARCODES = "http://files.kurento.org/video/barcodes.webm";
+URL_FIWARECUT = "http://files.kurento.org/video/fiwarecut.webm";
+URL_PLATES = "http://files.kurento.org/video/plates.webm";
 URL_POINTER_DETECTOR = "http://files.kurento.org/video/pointerDetector.mp4";
-URL_SMALL            = "http://files.kurento.org/video/small.webm";
-
+URL_SMALL = "http://files.kurento.org/video/small.webm";
 
 /**
  * Set an assert error and re-start the test so it can fail
  */
-function onerror(error)
-{
+function onerror(error) {
   QUnit.pushFailure(error.message || error, error.stack);
 
   QUnit.start();
@@ -35,73 +33,61 @@ _onerror = onerror;
 /**
  * Do an asynchronous HTTP GET request both on Node.js & browser
  */
-doGet = function doGet(url, onsuccess, onerror)
-{
+doGet = function doGet(url, onsuccess, onerror) {
   // Node.js
-  if(typeof XMLHttpRequest == 'undefined')
+  if (typeof XMLHttpRequest == 'undefined')
     require('http').get(url, onsuccess).on('error', onerror);
 
   // browser
-  else
-  {
+  else {
     var xhr = new XMLHttpRequest();
 
     xhr.open("get", url);
     xhr.send();
 
-    xhr.addEventListener('load', function(event)
-    {
+    xhr.addEventListener('load', function (event) {
       onsuccess(xhr.response);
     });
     xhr.addEventListener('error', onerror);
   };
 };
 
-
 /**
  * Manage timeouts in an object-oriented style
  */
-Timeout = function Timeout(id, delay, ontimeout)
-{
-  if(!(this instanceof Timeout))
+Timeout = function Timeout(id, delay, ontimeout) {
+  if (!(this instanceof Timeout))
     return new Timeout(id, delay, ontimeout);
 
   var timeout;
 
-  function _ontimeout(message)
-  {
+  function _ontimeout(message) {
     this.stop();
 
     ontimeout(message);
   };
 
-  this.start = function()
-  {
+  this.start = function () {
     var delay_factor = delay * Timeout.factor;
 
     timeout = setTimeout(_ontimeout.bind(this), delay_factor,
-                         'Time out '+id+' ('+delay_factor+'ms)');
+      'Time out ' + id + ' (' + delay_factor + 'ms)');
   };
 
-  this.stop = function()
-  {
+  this.stop = function () {
     clearTimeout(timeout);
   };
 };
 
-
-QUnit.jUnitReport = function(report)
-{
+QUnit.jUnitReport = function (report) {
   // Node.js - write report to file
-  if(typeof window === 'undefined')
-  {
+  if (typeof window === 'undefined') {
     var path = './junitResult.xml';
 
-    require('fs').writeFile(path, report.xml, function(error)
-    {
-      if(error) return console.error(error);
+    require('fs').writeFile(path, report.xml, function (error) {
+      if (error) return console.error(error);
 
-      console.log('XML report saved at '+path);
+      console.log('XML report saved at ' + path);
     });
   }
 
@@ -110,49 +96,40 @@ QUnit.jUnitReport = function(report)
     console.log(report.xml);
 };
 
-
 // Tell QUnit what WebSocket servers to use
 
-QUnit.config.urlConfig.push(
-{
+QUnit.config.urlConfig.push({
   id: "timeout_factor",
   label: "Timeout factor",
-  value:
-  {
-    '0.5' : '0.5x',
+  value: {
+    '0.5': '0.5x',
     '0.75': '0.75x',
-    '1'   : '1x',
-    '2'   : '2x',
-    '3'   : '3x',
-    '5'   : '5x',
-    '10'  : '10x'
+    '1': '1x',
+    '2': '2x',
+    '3': '3x',
+    '5': '5x',
+    '10': '10x'
   },
   tooltip: "Multiply the timeouts window by this factor. Default is 1x"
-},
-{
+}, {
   id: "ws_uri",
   label: "WebSocket server",
-  value:
-  {
+  value: {
     'ws://127.0.0.1:8888/kurento': 'localhost (port 8888)'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
 
-
 // Tests lifecycle
 
-lifecycle =
-{
-  setup: function()
-  {
+lifecycle = {
+  setup: function () {
     var self = this;
 
     var ws_uri = QUnit.config.ws_uri;
-    if(ws_uri == undefined)
-    {
-    //  var WebSocket = wock(proxy);
-    //  ws_uri = new WebSocket();
+    if (ws_uri == undefined) {
+      //  var WebSocket = wock(proxy);
+      //  ws_uri = new WebSocket();
       ws_uri = 'ws://127.0.0.1:8888/kurento';
     };
 
@@ -160,33 +137,30 @@ lifecycle =
 
     QUnit.config.testTimeout = 30000 * Timeout.factor;
 
-    var options = {request_timeout: 5000 * Timeout.factor};
-
+    var options = {
+      request_timeout: 5000 * Timeout.factor
+    };
 
     this.kurento = new kurentoClient(ws_uri, options);
 
-    this.kurento.then(function()
-    {
-      this.create('MediaPipeline', function(error, pipeline)
-      {
-        if(error) return onerror(error);
+    this.kurento.then(function () {
+        this.create('MediaPipeline', function (error, pipeline) {
+          if (error) return onerror(error);
 
-        self.pipeline = pipeline;
+          self.pipeline = pipeline;
 
-        QUnit.start();
-      });
-    },
-    onerror);
+          QUnit.start();
+        });
+      },
+      onerror);
 
     QUnit.stop();
   },
 
-  teardown: function()
-  {
-    if(this.pipeline)
-      this.pipeline.release(function(error)
-      {
-        if(error) console.error(error);
+  teardown: function () {
+    if (this.pipeline)
+      this.pipeline.release(function (error) {
+        if (error) console.error(error);
       });
 
     this.kurento.close();

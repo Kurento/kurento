@@ -140,10 +140,10 @@ module.exports = function (grunt) {
       },
 
       "default": {
-        src: ["lib/**/*.js", "*.js"]
+        src: ["lib/**/*.js", "*.js", "test/*.js"]
       },
       "git-pre-commit": {
-        src: ["lib/**/*.js", "*.js"],
+        src: ["lib/**/*.js", "*.js", "test/*.js"],
         options: {
           mode: "VERIFY_ONLY"
         }
@@ -151,7 +151,7 @@ module.exports = function (grunt) {
     },
 
     jshint: {
-      all: ['lib/**/*.js'],
+      all: ['lib/**/*.js', "test/*.js"],
       options: {
         "curly": true,
         "indent": 2,

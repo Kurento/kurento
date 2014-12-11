@@ -35,8 +35,7 @@
  *
  */
 
-if(typeof QUnit == 'undefined')
-{
+if (typeof QUnit == 'undefined') {
   QUnit = require('qunit-cli');
   QUnit.load();
 
@@ -46,65 +45,60 @@ if(typeof QUnit == 'undefined')
   require('./_proxy');
 };
 
-
 QUnit.module('RecorderEndpoint', lifecycle);
 
-QUnit.asyncTest('Record, Pause & Stop', function()
-{
+QUnit.asyncTest('Record, Pause & Stop', function () {
   var self = this;
 
   QUnit.expect(4);
 
-  self.pipeline.create('RecorderEndpoint', {uri: URL_SMALL},
-  function(error, recorder)
-  {
-    if(error) return onerror(error);
+  self.pipeline.create('RecorderEndpoint', {
+      uri: URL_SMALL
+    },
+    function (error, recorder) {
+      if (error) return onerror(error);
 
-    QUnit.notEqual(recorder, undefined, 'recorder');
+      QUnit.notEqual(recorder, undefined, 'recorder');
 
-    recorder.record(function(error)
-    {
-      QUnit.equal(error, undefined, 'record');
+      recorder.record(function (error) {
+        QUnit.equal(error, undefined, 'record');
 
-      if(error) return onerror(error);
+        if (error) return onerror(error);
 
-      recorder.pause(function(error)
-      {
-        QUnit.equal(error, undefined, 'pause');
+        recorder.pause(function (error) {
+          QUnit.equal(error, undefined, 'pause');
 
-        if(error) return onerror(error);
+          if (error) return onerror(error);
 
-        recorder.stop(function(error)
-        {
-          QUnit.equal(error, undefined, 'stop');
+          recorder.stop(function (error) {
+            QUnit.equal(error, undefined, 'stop');
 
-          if(error) return onerror(error);
+            if (error) return onerror(error);
 
-          QUnit.start();
+            QUnit.start();
+          });
         });
       });
     });
-  });
 });
 
-QUnit.asyncTest('GetUrl', function()
-{
+QUnit.asyncTest('GetUrl', function () {
   var self = this;
 
   QUnit.expect(1);
 
-  self.pipeline.create('RecorderEndpoint', {uri: URL_SMALL},
-  function(error, recorder)
-  {
-    if(error) return onerror(error);
+  self.pipeline.create('RecorderEndpoint', {
+      uri: URL_SMALL
+    },
+    function (error, recorder) {
+      if (error) return onerror(error);
 
-    recorder.getUri(function(error, uri)
-    {
-      if(error) return onerror(error);
+      recorder.getUri(function (error, uri) {
+        if (error) return onerror(error);
 
-      QUnit.equal(uri, URL_SMALL, 'URI: '+uri);
+        QUnit.equal(uri, URL_SMALL, 'URI: ' + uri);
 
-      QUnit.start();
+        QUnit.start();
+      });
     });
-  });
 });
