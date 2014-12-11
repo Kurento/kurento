@@ -40,7 +40,6 @@ generic_find (LIBNAME libsoup-2.4 VERSION ${SOUP_REQUIRED} REQUIRED)
 generic_find (LIBNAME nice VERSION ${NICE_REQUIRED} REQUIRED)
 generic_find (LIBNAME gnutls VERSION ${GNUTLS_REQUIRED} GNUTLS REQUIRED)
 generic_find (LIBNAME gio-2.0 VERSION ${GLIB_REQUIRED} REQUIRED)
-generic_find (LIBNAME gstreamer-rtp-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find (LIBNAME uuid REQUIRED)
 
 set (VERSION ${PROJECT_VERSION})
@@ -58,7 +57,7 @@ set (BINARY_LOCATION "http://files.kurento.org/" CACHE STRING "Local binary dire
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -DHAVE_CONFIG_H -Werror -Wall -Werror=declaration-after-statement -Werror=strict-aliasing -Wno-deprecated-declarations")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -DHAVE_CONFIG_H -Werror -Wall -Werror=declaration-after-statement -Werror=strict-aliasing")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -DHAVE_CONFIG_H -Wall -Werror -std=c++11")
 
 enable_testing()
