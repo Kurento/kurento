@@ -5,7 +5,7 @@
 
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%10.10t{9}] %-5level - %-40.40logger{39} - %msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%20.20t{9}] %-5level - %-40.40logger{39} - %msg%n</pattern>
 		</encoder>
 	</appender>
 
@@ -18,5 +18,5 @@
 	<logger name="org.springframework" level="WARN" />
 	<logger name="org.eclipse.jetty" level="WARN" />
 	<logger name="org.kurento" level="DEBUG" />
-		
+
 </configuration>
