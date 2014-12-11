@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -90,7 +91,9 @@
 						<phase>package</phase>
 						<configuration>
 							<tasks>
-								<copy file="${project.build.directory}/target/${project.artifactId}-${project.version}-bin.zip" tofile="${project.build.directory}/target/${project.artifactId}-${project.version}.zip" />
+								<copy
+									file="${project.build.directory}/target/${project.artifactId}-${project.version}-bin.zip"
+									tofile="${project.build.directory}/target/${project.artifactId}-${project.version}.zip" />
 							</tasks>
 						</configuration>
 					</execution>
@@ -102,40 +105,51 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-jsonrpc-server</artifactId>
-		</dependency>
-		<dependency>
-      <groupId>org.kurento</groupId>
-      <artifactId>kurento-room-client</artifactId>
-    </dependency>
+
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-commons-testing</artifactId>
-			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>1.9.5</version>
-			<scope>test</scope>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j</artifactId>
 		</dependency>
 	</dependencies>
+
+	<!-- <dependencies> <dependency> <groupId>org.kurento</groupId> <artifactId>kurento-jsonrpc-server</artifactId>
+		</dependency> <dependency> <groupId>org.kurento</groupId> <artifactId>kurento-room-client</artifactId>
+		</dependency> <dependency> <groupId>org.kurento</groupId> <artifactId>kurento-client</artifactId>
+		</dependency> <dependency> <groupId>junit</groupId> <artifactId>junit</artifactId>
+		<scope>test</scope> </dependency> <dependency> <groupId>org.kurento</groupId>
+		<artifactId>kurento-commons-testing</artifactId> <scope>test</scope> </dependency>
+		<dependency> <groupId>org.kurento</groupId> <artifactId>kurento-test</artifactId>
+		<scope>test</scope> </dependency> <dependency> <groupId>org.mockito</groupId>
+		<artifactId>mockito-core</artifactId> <scope>test</scope> </dependency> </dependencies> -->
 
 	<profiles>
 		<profile>

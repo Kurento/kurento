@@ -1,0 +1,305 @@
+const PARTICIPANT_MAIN_CLASS = 'participant main';
+const PARTICIPANT_CLASS = 'participant';
+
+// Room --------------------------------
+
+function Room(kurento, options){
+
+	var that = this;
+
+	var ee = new EventEmitter();
+	var streams = {};
+
+	this.addEventListener = function(eventName, listener){
+		ee.addListener(eventName, listener);
+	}
+
+	this.connect = function(){
+
+		kurento.sendMessage({
+			id : 'joinRoom',
+			name : options.userName, // FIXME: User name should go in stream attributes
+			room : options.name,
+		});
+	}
+
+	// Request response
+	this.onExistingParticipants = function(msg){
+
+		var roomEvent = {
+			streams = []
+		}
+
+		for(var userName : msg.data){
+			var stream = new Stream(kurento, false, { name: userName });
+			roomEvent.streams.push(stream);
+			streams[userName] = stream;
+		}
+
+		ee.emitEvent('room-connected', roomEvent);
+	}
+
+	this.subscribe = function(stream){
+		stream.subscribe();
+	}
+
+	this.publish = function(localStream){
+		localStream.publish();
+	}
+
+	this.onNewParticipant = function(msg){
+		var stream = new Stream(kurento, false, { name: msg.name });
+		streams[msg.name] = stream;
+		ee.emitEvent('stream-added', stream);
+	}
+
+	this.onParticipanLeft = function(msg){
+		var stream = streams[msg.name];
+		delete streams[request.name];
+		ee.emitEvent('stream-removed', stream);
+		streams.dispose();
+	}
+
+	this.receiveVideoResponse = function(msg){
+		var stream = streams[msg.name];
+		if(stream !== undefined){
+			stream.processSdpAnswer(msg.sdpAnswer);
+		} else {
+			console.warn("Receiving video response from an unexisting user");
+		}
+	}
+}
+
+// Stream --------------------------------
+
+function Stream(kurento, local, options){
+
+	var that = this;
+
+	var ee = new EventEmitter();
+	var sdpOffer;
+	var wp;
+	var id = options.name;
+
+	function initWebRtcPeer(){
+
+		var constraints = {
+			audio : true,
+			video : {
+				mandatory : {
+					maxWidth : 320,
+					maxFrameRate : 15,
+					minFrameRate : 15
+				}
+			}
+		};
+
+		var startVideoCallback;
+
+		if(local){
+			startVideoCallback = function(sdpOfferParam){
+				sdpOffer = sdpOfferParam;
+				ee.emitEvent('access-accepted', null);
+			}
+		} else {
+			startVideoCallback = function(sdpOfferParam){
+				sdpOffer = sdpOfferParam;
+				ee.emitEvent('stream-subscribed', that);
+			}
+		}
+
+		var onerror = function(error){
+			console.error(error);
+		}
+
+		var mode = local ? "send" : "recv";
+
+		var wp = new WebRtcPeer(mode, null, null, startVideoCallback, onerror,
+				null, null);
+
+		getUserMedia(constraints, function(userStream) {
+			wp.stream = userStream;
+		}, wp.onerror);
+
+		wp.start();
+
+		console.log(name + " waiting for SDP offer");
+	}
+
+	this.addEventListener = function(eventName, listener){
+		ee.addListener(eventName, listener);
+	}
+
+	this.play = function(elementId){
+
+		var container = document.createElement('div');
+		container.className = isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS;
+		container.id = id;
+		var span = document.createElement('span');
+		var video = document.createElement('video');
+
+		container.appendChild(video);
+		container.appendChild(span);
+		container.onclick = switchContainerClass;
+
+		document.getElementById(elementId).appendChild(container);
+
+		span.appendChild(document.createTextNode(id));
+
+		video.id = 'video-' + name;
+		video.autoplay = true;
+		video.controls = false;
+		video.src = URL.createObjectURL(wp.stream);
+		video.muter = true;
+	}
+
+	this.getID = function(){
+		return id;
+	}
+
+	this.init = function(){
+		initWebRtcPeer();
+	}
+
+	this.publish = function(){
+
+		// FIXME: Throw error when stream is not local
+
+		// FIXME: Now we have coupled connecting to a room and adding a
+		// stream to this room. But in the new API, there are two steps.
+		// This is the second step. For now, it do nothing.
+
+		// var msg = { id : "receiveVideoFrom",
+		// sender : name,
+		// sdpOffer : offerSdp
+		// };
+		// kurento.sendMessage(msg);
+	}
+
+	this.subscribe = function(){
+		initWebRtcPeer();
+	}
+
+	this.processSdpAnswer = function(sdpAnswer){
+		wp.processSdpAnswer(sdpAnswer);
+	}
+}
+
+// KurentoRoom --------------------------------
+
+function KurentoRoom(wsUri, callback) {
+
+	if (!(this instanceof KurentoRoomClient))
+	    return new KurentoRoom(wsUri, callback);
+
+	// Enable and disable iceServers from code
+	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
+
+	var that = this;
+
+	var room;
+	var userName;
+	var ws = new WebSocket(wsUri);
+
+	ws.onopen = function(){
+	    callback(null, that);
+	}
+
+	ws.onerror = function(evt){
+	    callback(evt.data);
+	}
+
+	ws.onclose = function(){
+	    console.log("Connection Closed");
+	}
+
+	ws.onmessage = function(message) {
+
+		var parsedMessage = JSON.parse(message.data);
+		console.info('Received message: ' + message.data);
+
+		switch (parsedMessage.id) {
+		case 'existingParticipants':
+			onExistingParticipants(parsedMessage);
+			break;
+		case 'newParticipantArrived':
+			onNewParticipant(parsedMessage);
+			break;
+		case 'participantLeft':
+			onParticipantLeft(parsedMessage);
+			break;
+		case 'receiveVideoAnswer':
+			receiveVideoResponse(parsedMessage);
+			break;
+		default:
+			console.error('Unrecognized message', parsedMessage);
+		}
+	}
+
+	function onNewParticipant(msg) {
+		if(room !== undefined){
+			room.onNewParticipant(msg);
+		}
+	}
+
+	function onParticipantLeft(msg) {
+		if(room !== undefined){
+			room.onParticipantLeft(msg);
+		}
+	}
+
+	function onExistingParticipants(msg) {
+		if(room !== undefined){
+			room.onExistingParticipants(msg);
+		}
+	}
+
+	this.sendMessage = function(message) {
+		var jsonMessage = JSON.stringify(message);
+		console.log('Sending message: ' + jsonMessage);
+		ws.send(jsonMessage);
+		console.log('Sent message: ' + jsonMessage);
+	}
+
+	this.leaveRoom = function() {
+
+		that.sendMessage({
+			id : 'leaveRoom'
+		});
+
+		for (var key in participants) {
+			participants[key].dispose();
+		}
+
+		document.getElementById('join').style.display = 'block';
+		document.getElementById('room').style.display = 'none';
+
+		ws.close();
+	}
+
+	function receiveVideoResponse(result) {
+		if(room !== undefined){
+			room.receiveVideoResponse(msg);
+		}
+	}
+
+	this.close = function(){
+		if(name !== undefined){
+			leaveRoom();
+		}
+	}
+
+	this.Stream = function(options){
+		options.name = userName; // FIXME: Include name in Stream, not in
+									// room.
+		return new Stream(that, true, options);
+	}
+
+	this.Room = function(options){
+		// FIXME Support more than one room
+		room = new Room(that, options);
+		// FIXME Include name in stream, not in room
+		usarName = options.userName;
+		return room;
+	}
+}
