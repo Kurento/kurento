@@ -83,8 +83,6 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 				cs.activateLocalLatencyAssessmentIn(browser);
 				cs.checkLatency(playTime, TimeUnit.MINUTES);
 			} catch (RuntimeException re) {
-				re.printStackTrace();
-				browser.takeScreeshot(getDefaultOutputFile("-error-screenshot.png"));
 				Assert.fail(re.getMessage());
 			}
 		}

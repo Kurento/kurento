@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.client.BrowserClient;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
@@ -109,28 +110,47 @@ public class LatencyController implements
 	}
 
 	public void checkLatency(long testTime, TimeUnit testTimeUnit)
-			throws InterruptedException {
+			throws InterruptedException, IOException {
 		if (local) {
-			long playTime = TimeUnit.MILLISECONDS.convert(testTime,
-					testTimeUnit);
-			long endTimeMillis = System.currentTimeMillis() + playTime;
-			while (true) {
-				if (System.currentTimeMillis() > endTimeMillis) {
-					break;
-				}
-				Thread.sleep(latencyRate);
-
-				long latency = localBrowser.getLatency();
-				long latencyTime = localBrowser.getLatencyTime();
-				LatencyRegistry LatencyRegistry = new LatencyRegistry(latency);
-				latencyMap.put(latencyTime, LatencyRegistry);
-
-			}
+			checkLocalLatency(testTime, testTimeUnit);
 		} else {
 			// FIXME
 			checkRemoteLatency(testTime, testTimeUnit);
 		}
+	}
 
+	public void checkLocalLatency(final long testTime,
+			final TimeUnit testTimeUnit) throws InterruptedException,
+			IOException {
+		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
+		long endTimeMillis = System.currentTimeMillis() + playTime;
+		while (true) {
+			if (System.currentTimeMillis() > endTimeMillis) {
+				break;
+			}
+			Thread.sleep(latencyRate);
+
+			long latency = localBrowser.getLatency();
+			long latencyTime = localBrowser.getRemoteTime();
+			LatencyRegistry latencyRegistry = new LatencyRegistry(latency);
+
+			if (latency > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
+
+				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
+						.format(latencyTime);
+				localBrowser.takeScreeshot(KurentoTest.getDefaultOutputFile("-"
+						+ parsedtime + "-error-screenshot.png"));
+
+				LatencyException latencyException = new LatencyException(
+						latency, TimeUnit.MILLISECONDS);
+
+				latencyRegistry.setLatencyException(latencyException);
+				if (failIfLatencyProblem) {
+					throw latencyException;
+				}
+			}
+			latencyMap.put(latencyTime, latencyRegistry);
+		}
 	}
 
 	@Deprecated
@@ -193,7 +213,7 @@ public class LatencyController implements
 						LatencyRegistry LatencyRegistry = new LatencyRegistry(
 								rgba2Color(lastRemoteColor), latencyMilis);
 
-						if (latencyMilis > getLatency(TimeUnit.MILLISECONDS)) {
+						if (latencyMilis > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
 							LatencyException latencyException = new LatencyException(
 									latencyMilis, testTimeUnit,
 									parsedLocaltime, parsedRemotetime,
@@ -279,7 +299,7 @@ public class LatencyController implements
 		log.debug("---------------------------------------------");
 	}
 
-	public long getLatency(TimeUnit timeUnit) {
+	public long getLatencyThreshold(TimeUnit timeUnit) {
 		return timeUnit.convert(latencyThreshold, latencyThresholdTimeUnit);
 	}
 

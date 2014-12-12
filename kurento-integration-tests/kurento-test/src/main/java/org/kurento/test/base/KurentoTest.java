@@ -104,7 +104,7 @@ public class KurentoTest {
 		return getDefaultOutputFile(".webm");
 	}
 
-	public String getDefaultOutputFile(String preffix) {
+	public static String getDefaultOutputFile(String preffix) {
 		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
 				+ "/" + KurentoServicesTestHelper.getTestCaseName());
 		return fileForRecording.getAbsolutePath() + "/"

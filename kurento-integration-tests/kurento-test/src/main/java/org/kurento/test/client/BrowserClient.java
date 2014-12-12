@@ -556,7 +556,7 @@ public class BrowserClient implements Closeable {
 		this.subscribeEvents("playing");
 	}
 
-	public long getLatencyTime() {
+	public long getRemoteTime() {
 		Object time = js.executeScript(VideoTag.REMOTE.getTime());
 		return (time == null) ? 0 : (Long) time;
 	}
