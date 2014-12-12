@@ -67,9 +67,6 @@ enum
 
 #define KMS_NICE_N_COMPONENTS 2
 
-#define AUDIO_STREAM_NAME "audio"
-#define VIDEO_STREAM_NAME "video"
-
 #define SDP_ICE_UFRAG_ATTR "ice-ufrag"
 #define SDP_ICE_PWD_ATTR "ice-pwd"
 #define SDP_CANDIDATE_ATTR "candidate"
