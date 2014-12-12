@@ -28,7 +28,6 @@ import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.latency.LatencyController;
-import org.kurento.test.latency.VideoTag;
 
 /**
  * <strong>Description</strong>: Stability test for WebRTC in loopback during a
@@ -73,18 +72,18 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 			builder = builder.video(videoPath);
 		}
 
+		// Latency control
 		LatencyController cs = new LatencyController("WebRTC in loopback");
 
 		try (BrowserClient browser = builder.build()) {
 			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 
-			// Latency control
 			try {
-				browser.addChangeColorEventListener(VideoTag.LOCAL, cs);
-				browser.addChangeColorEventListener(VideoTag.REMOTE, cs);
+				cs.activateLocalLatencyAssessmentIn(browser);
 				cs.checkLatency(playTime, TimeUnit.MINUTES);
 			} catch (RuntimeException re) {
+				re.printStackTrace();
 				browser.takeScreeshot(getDefaultOutputFile("-error-screenshot.png"));
 				Assert.fail(re.getMessage());
 			}

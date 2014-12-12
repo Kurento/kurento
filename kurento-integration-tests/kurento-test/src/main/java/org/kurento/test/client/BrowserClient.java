@@ -529,10 +529,12 @@ public class BrowserClient implements Closeable {
 		}
 	}
 
+	@Deprecated
 	public void addChangeColorEventListener(VideoTag type, LatencyController cs) {
 		cs.addChangeColorEventListener(type, js, type.getName());
 	}
 
+	@Deprecated
 	public void addChangeColorEventListener(VideoTag type,
 			LatencyController cs, String name) {
 		cs.addChangeColorEventListener(type, js, name);
@@ -545,7 +547,18 @@ public class BrowserClient implements Closeable {
 	}
 
 	public long getLatency() {
+		// ((WebDriver) js).manage().timeouts()
+		// .setScriptTimeout(5, TimeUnit.SECONDS);
 		return (Long) js.executeScript("return latency;");
+	}
+
+	public void activateLatencyControl() {
+		this.subscribeEvents("playing");
+	}
+
+	public long getLatencyTime() {
+		Object time = js.executeScript(VideoTag.REMOTE.getTime());
+		return (time == null) ? 0 : (Long) time;
 	}
 
 }

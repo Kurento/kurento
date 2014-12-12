@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.kurento.test.client.BrowserClient;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,11 @@ public class LatencyController implements
 	private Semaphore remoteEventLatch = new Semaphore(0);
 
 	private boolean failIfLatencyProblem;
+	private boolean local;
+
+	private BrowserClient localBrowser;
+
+	private long latencyRate;
 
 	public LatencyController(String name) {
 		this();
@@ -81,6 +87,9 @@ public class LatencyController implements
 		timeoutTimeUnit = TimeUnit.SECONDS;
 
 		failIfLatencyProblem = false;
+		local = true;
+
+		latencyRate = 100; // milliseconds
 
 		// Latency map (registry)
 		latencyMap = new HashMap<Long, LatencyRegistry>();
@@ -99,7 +108,34 @@ public class LatencyController implements
 		}
 	}
 
-	public void checkLatency(final long testTime, final TimeUnit testTimeUnit) {
+	public void checkLatency(long testTime, TimeUnit testTimeUnit)
+			throws InterruptedException {
+		if (local) {
+			long playTime = TimeUnit.MILLISECONDS.convert(testTime,
+					testTimeUnit);
+			long endTimeMillis = System.currentTimeMillis() + playTime;
+			while (true) {
+				if (System.currentTimeMillis() > endTimeMillis) {
+					break;
+				}
+				Thread.sleep(latencyRate);
+
+				long latency = localBrowser.getLatency();
+				long latencyTime = localBrowser.getLatencyTime();
+				LatencyRegistry LatencyRegistry = new LatencyRegistry(latency);
+				latencyMap.put(latencyTime, LatencyRegistry);
+
+			}
+		} else {
+			// FIXME
+			checkRemoteLatency(testTime, testTimeUnit);
+		}
+
+	}
+
+	@Deprecated
+	public void checkRemoteLatency(final long testTime,
+			final TimeUnit testTimeUnit) {
 		String msgName = (name != null) ? "[" + name + "] " : "";
 
 		if (localChangeColor == null || remoteChangeColor == null) {
@@ -185,6 +221,7 @@ public class LatencyController implements
 		remoteColorTrigger.interrupt();
 	}
 
+	@Deprecated
 	public void addChangeColorEventListener(VideoTag type,
 			JavascriptExecutor js, String name) {
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
@@ -285,6 +322,22 @@ public class LatencyController implements
 
 	public String getName() {
 		return name != null ? name : "";
+	}
+
+	public void activateLocalLatencyAssessmentIn(BrowserClient browser) {
+		local = true;
+		localBrowser = browser;
+		browser.activateLatencyControl();
+	}
+
+	// TODO implement
+	public void activateRemoteLatencyAssessmentIn(BrowserClient browser1,
+			BrowserClient browser2) {
+		local = false;
+	}
+
+	public void setLatencyRate(long latencyRate) {
+		this.latencyRate = latencyRate;
 	}
 
 }

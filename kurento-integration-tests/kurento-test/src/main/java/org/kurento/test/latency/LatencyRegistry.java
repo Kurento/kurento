@@ -30,6 +30,10 @@ public class LatencyRegistry {
 	private boolean latencyError;
 	private LatencyException latencyException;
 
+	public LatencyRegistry(long latency) {
+		this(null, latency);
+	}
+
 	public LatencyRegistry(Color color, long latency) {
 		this.color = color;
 		this.latency = latency;

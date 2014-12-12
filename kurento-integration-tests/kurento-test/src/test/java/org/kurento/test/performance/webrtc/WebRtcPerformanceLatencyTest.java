@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -100,6 +101,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 		monitor.writeResults(getDefaultOutputFile("-kms-monitor.csv"));
 	}
 
+	@Ignore
 	@Test
 	public void tesWebRtcGridChrome() throws InterruptedException,
 			ExecutionException, IOException {

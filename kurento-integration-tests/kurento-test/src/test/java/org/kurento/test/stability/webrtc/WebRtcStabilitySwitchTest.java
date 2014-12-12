@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -28,7 +29,6 @@ import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.latency.LatencyController;
-import org.kurento.test.latency.VideoTag;
 
 /**
  * <strong>Description</strong>: Stability test for switching 2 WebRTC (looback
@@ -59,6 +59,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 	private static final int DEFAULT_NUM_SWITCH = 60;
 	private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
+	@Ignore
 	@Test
 	public void testWebRtcSwitchChrome() throws InterruptedException,
 			IOException {
@@ -93,13 +94,8 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 
 			LatencyController cs1 = new LatencyController(
 					"Latency in Browser 1");
-			browser1.addChangeColorEventListener(VideoTag.LOCAL, cs1, "b1-loc");
-			browser1.addChangeColorEventListener(VideoTag.REMOTE, cs1, "b1-rem");
-
 			LatencyController cs2 = new LatencyController(
 					"Latency in Browser 2");
-			browser2.addChangeColorEventListener(VideoTag.LOCAL, cs2, "b2-loc");
-			browser2.addChangeColorEventListener(VideoTag.REMOTE, cs2, "b2-rem");
 
 			try {
 				for (int i = 0; i < numSwitch; i++) {
@@ -113,11 +109,13 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 						log.debug(
 								"[{}.1] Latency control of browser1 to browser1",
 								i);
+						cs1.activateLocalLatencyAssessmentIn(browser1);
 						cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 						log.debug(
 								"[{}.2] Latency control of browser2 to browser2",
 								i);
+						cs2.activateLocalLatencyAssessmentIn(browser2);
 						cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 					} else {
@@ -129,11 +127,15 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 						log.debug(
 								"[{}.3] Latency control of browser1 to browser2",
 								i);
+						cs1.activateRemoteLatencyAssessmentIn(browser1,
+								browser2);
 						cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 						log.debug(
 								"[{}.4] Latency control of browser2 to browser1",
 								i);
+						cs2.activateRemoteLatencyAssessmentIn(browser2,
+								browser1);
 						cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 					}
 				}
