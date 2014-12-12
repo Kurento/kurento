@@ -18,11 +18,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -55,11 +55,12 @@ import org.kurento.test.services.Node;
  */
 public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 
-	private static final int DEFAULT_NODES = 10; // Number of nodes
-	private static final int DEFAULT_NBROWSERS = 5; // Browser per node
-	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
+	private static final int DEFAULT_NODES = 3; // Number of nodes
+	private static final int DEFAULT_NBROWSERS = 1; // Browser per node
+	private static final int DEFAULT_CLIENT_RATE = 2000; // milliseconds
 	private static final int DEFAULT_MONITOR_RATE = 1000; // milliseconds
-	private static final int DEFAULT_HOLD_TIME = 30000; // milliseconds
+	private static final int DEFAULT_HOLD_TIME = 10000; // milliseconds
+	private static final int DEFAULT_TIMEOUT = 60; // milliseconds
 
 	private SystemMonitor monitor;
 	public int numBrowsers;
@@ -103,28 +104,29 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 
 	@Ignore
 	@Test
-	public void tesWebRtcGridChrome() throws InterruptedException,
-			ExecutionException, IOException {
-
+	public void tesWebRtcGridChrome() throws InterruptedException {
 		final int playTime = (numNodes * numBrowsers * clientRate) + holdTime;
-
-		ExecutorService internalExec = Executors.newFixedThreadPool(numNodes
-				* numBrowsers);
+		final ExecutorService internalExec = Executors
+				.newFixedThreadPool(numNodes * numBrowsers);
 		CompletionService<Void> exec = new ExecutorCompletionService<>(
 				internalExec);
 
 		int numNode = 1;
 		for (final Node node : nodes) {
-			for (int i = 0; i < numBrowsers; i++) {
-				final String name = node.getAddress() + "-browser" + i;
+			for (int i = 1; i <= numBrowsers; i++) {
+				final String name = node.getAddress() + "-browser" + i
+						+ "-count" + numNode;
 				monitor.incrementNumClients();
 				log.debug("*** Starting node #{} ({}) ***", numNode, name);
 				numNode++;
 				exec.submit(new Callable<Void>() {
-					public Void call() {
-						doTest(node, playTime, name);
-						monitor.decrementNumClients();
-						log.debug("+++ Ending browser #{} +++", name);
+					public Void call() throws InterruptedException {
+						try {
+							doTest(node, playTime, name);
+						} finally {
+							monitor.decrementNumClients();
+							log.debug("--- Ending client {} ---", name);
+						}
 						return null;
 					}
 				});
@@ -133,20 +135,26 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 		}
 
 		for (int i = 1; i <= nodes.size() * numBrowsers; i++) {
+			Future<Void> taskFuture = null;
 			try {
-				Future<Void> taskFuture = exec.take();
-				taskFuture.get();
-			} catch (ExecutionException e) {
-				internalExec.shutdownNow();
-				monitor.incrementLatencyErrors();
-				log.error(e.getCause().getMessage());
+				taskFuture = exec.take();
+				taskFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+			} catch (Throwable e) {
+				log.error(">>> {} <<<", e.getCause().getMessage());
+				if (taskFuture != null) {
+					taskFuture.cancel(true);
+				}
 			} finally {
 				log.debug("+++ Ending browser #{} +++", i);
 			}
 		}
 	}
 
-	public void doTest(Node node, int playTime, String name) {
+	public void doTest(Node node, int playTime, String name)
+			throws InterruptedException {
+
+		long endTimeMillis = System.currentTimeMillis() + playTime;
+
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -164,22 +172,17 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 
-			try {
-				long endTimeMillis = System.currentTimeMillis() + playTime;
-				while (true) {
-					if (System.currentTimeMillis() > endTimeMillis) {
-						break;
-					}
-					Thread.sleep(100);
-					monitor.addCurrentLatency(browser.getLatency());
+			while (true) {
+				if (System.currentTimeMillis() > endTimeMillis) {
+					break;
 				}
-			} catch (InterruptedException e) {
-				log.error(e.getMessage());
+				Thread.sleep(100);
+				monitor.addCurrentLatency(browser.getLatency());
 			}
+		} finally {
+			// Release Media Pipeline
+			mp.release();
 		}
-
-		// Release Media Pipeline
-		mp.release();
 	}
 
 }

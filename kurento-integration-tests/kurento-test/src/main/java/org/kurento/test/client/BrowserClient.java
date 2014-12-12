@@ -547,8 +547,8 @@ public class BrowserClient implements Closeable {
 	}
 
 	public long getLatency() {
-		// ((WebDriver) js).manage().timeouts()
-		// .setScriptTimeout(5, TimeUnit.SECONDS);
+		((WebDriver) js).manage().timeouts()
+				.setScriptTimeout(timeout, TimeUnit.SECONDS);
 		return (Long) js.executeScript("return latency;");
 	}
 

@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
@@ -44,7 +45,8 @@ public class SystemMonitor {
 	private int latencyErrors = 0;
 
 	public SystemMonitor() {
-		infoMap = new TreeMap<>();
+		infoMap = Collections
+				.synchronizedSortedMap(new TreeMap<Long, SystemInfo>());
 	}
 
 	public SystemMonitor(long samplingTime) {
@@ -221,11 +223,11 @@ public class SystemMonitor {
 		return numClients;
 	}
 
-	public void incrementNumClients() {
+	public synchronized void incrementNumClients() {
 		this.numClients++;
 	}
 
-	public void decrementNumClients() {
+	public synchronized void decrementNumClients() {
 		this.numClients--;
 	}
 

@@ -314,6 +314,12 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 		} while (nodes.size() < numNodes);
 
+		String nodeListStr = "";
+		for (Node node : nodes) {
+			nodeListStr += node.getAddress() + " ";
+		}
+		log.debug("Node list: {}", nodeListStr);
+
 		return nodes;
 	}
 
