@@ -114,6 +114,9 @@ public class BrowserClient implements Closeable {
 			hostAddress = getProperty(
 					PerformanceTest.SELENIUM_HUB_HOST_PROPERTY,
 					PerformanceTest.SELENIUM_HUB_HOST_DEFAULT);
+			hostAddress = getProperty(
+					PerformanceTest.SELENIUM_HUB_PUBLIC_PROPERTY, hostAddress);
+
 		} else {
 			hostAddress = "127.0.0.1";
 		}

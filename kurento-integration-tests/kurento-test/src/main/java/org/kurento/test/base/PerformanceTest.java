@@ -68,6 +68,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
 	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
 
+	public static final String SELENIUM_HUB_PUBLIC_PROPERTY = "selenium.hub.public";
 	public static final String SELENIUM_HUB_HOST_PROPERTY = "selenium.hub.host";
 	public static final String SELENIUM_HUB_HOST_DEFAULT = "127.0.0.1";
 
@@ -76,6 +77,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 	private SeleniumGridHub seleniumGridHub;
 	private String hubAddress;
+	private String hubPublicAddress;
 	private int hubPort;
 	private CountDownLatch countDownLatch;
 
@@ -88,10 +90,9 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	}
 
 	private void startHub() throws Exception {
-
 		hubAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY,
 				SELENIUM_HUB_HOST_DEFAULT);
-
+		hubPublicAddress = getProperty(SELENIUM_HUB_PUBLIC_PROPERTY, hubAddress);
 		hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 				SELENIUM_HUB_PORT_DEFAULT);
 
@@ -186,7 +187,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("remotePort", String.valueOf(remotePort));
 		data.put("maxInstances", String.valueOf(maxInstances));
-		data.put("hubIp", hubAddress);
+		data.put("hubIp", hubPublicAddress);
 		data.put("hubPort", String.valueOf(hubPort));
 		data.put("tmpFolder", node.getTmpFolder());
 		data.put("remoteChromeDriver", remoteChromeDriver);
