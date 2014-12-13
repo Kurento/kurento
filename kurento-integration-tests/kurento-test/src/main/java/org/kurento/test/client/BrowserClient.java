@@ -286,6 +286,7 @@ public class BrowserClient implements Closeable {
 		return result;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void addEventListener(final String eventType,
 			final BrowserEventListener eventListener) {
 		Thread t = new Thread() {
@@ -306,6 +307,7 @@ public class BrowserClient implements Closeable {
 					log.error("~~~ Exception in addEventListener {}",
 							t.getMessage());
 					this.interrupt();
+					this.stop();
 				}
 			}
 		};
@@ -460,15 +462,28 @@ public class BrowserClient implements Closeable {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
-			WebRtcChannel channel, WebRtcMode mode) {
+			final WebRtcChannel channel, final WebRtcMode mode)
+			throws InterruptedException {
 
-		initWebRtcSdpProcessor(new SdpOfferProcessor() {
-			@Override
-			public String processSdpOffer(String sdpOffer) {
-				return webRtcEndpoint.processOffer(sdpOffer);
+		final CountDownLatch latch = new CountDownLatch(1);
+		Thread t = new Thread() {
+			public void run() {
+				initWebRtcSdpProcessor(new SdpOfferProcessor() {
+					@Override
+					public String processSdpOffer(String sdpOffer) {
+						return webRtcEndpoint.processOffer(sdpOffer);
+					}
+				}, channel, mode);
+				latch.countDown();
 			}
-		}, channel, mode);
+		};
+		t.start();
+		if (!latch.await(this.getTimeout(), TimeUnit.SECONDS)) {
+			t.interrupt();
+			t.stop();
+		}
 	}
 
 	public static class Builder {
@@ -557,8 +572,22 @@ public class BrowserClient implements Closeable {
 		FileUtils.copyFile(scrFile, new File(file));
 	}
 
-	public long getLatency() {
-		return (Long) js.executeScript("return latency;");
+	@SuppressWarnings("deprecation")
+	public long getLatency() throws InterruptedException {
+		final CountDownLatch latch = new CountDownLatch(1);
+		final long[] out = new long[1];
+		Thread t = new Thread() {
+			public void run() {
+				out[0] = (Long) js.executeScript("return latency;");
+				latch.countDown();
+			}
+		};
+		t.start();
+		if (!latch.await(this.getTimeout(), TimeUnit.SECONDS)) {
+			t.interrupt();
+			t.stop();
+		}
+		return out[0];
 	}
 
 	public void activateLatencyControl() {
