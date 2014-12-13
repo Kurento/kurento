@@ -121,8 +121,12 @@ public class BrowserClient implements Closeable {
 			hostAddress = "127.0.0.1";
 		}
 
+		// Selenium timeouts
+		driver.manage().timeouts().implicitlyWait(timeout, TimeUnit.SECONDS);
+		driver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.SECONDS);
+		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
+
 		// Launch Browser
-		driver.manage().timeouts();
 		driver.get("http://" + hostAddress + ":" + serverPort
 				+ client.toString());
 
@@ -217,8 +221,6 @@ public class BrowserClient implements Closeable {
 				}
 
 			}
-			driver.manage().timeouts()
-					.setScriptTimeout(timeout, TimeUnit.SECONDS);
 			js = ((JavascriptExecutor) driver);
 
 		} catch (MalformedURLException e) {
@@ -290,15 +292,21 @@ public class BrowserClient implements Closeable {
 			public void run() {
 				js.executeScript("video.addEventListener('" + eventType
 						+ "', videoEvent, false);");
-				(new WebDriverWait(driver, timeout))
-						.until(new ExpectedCondition<Boolean>() {
-							public Boolean apply(WebDriver d) {
-								return d.findElement(By.id("status"))
-										.getAttribute("value")
-										.equalsIgnoreCase(eventType);
-							}
-						});
-				eventListener.onEvent(eventType);
+				try {
+					(new WebDriverWait(driver, timeout))
+							.until(new ExpectedCondition<Boolean>() {
+								public Boolean apply(WebDriver d) {
+									return d.findElement(By.id("status"))
+											.getAttribute("value")
+											.equalsIgnoreCase(eventType);
+								}
+							});
+					eventListener.onEvent(eventType);
+				} catch (Throwable t) {
+					log.error("~~~ Exception in addEventListener {}",
+							t.getMessage());
+					this.interrupt();
+				}
 			}
 		};
 		callbackThreads.add(t);
@@ -550,8 +558,6 @@ public class BrowserClient implements Closeable {
 	}
 
 	public long getLatency() {
-		((WebDriver) js).manage().timeouts()
-				.setScriptTimeout(timeout, TimeUnit.SECONDS);
 		return (Long) js.executeScript("return latency;");
 	}
 

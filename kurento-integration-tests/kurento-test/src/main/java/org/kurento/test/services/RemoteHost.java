@@ -49,7 +49,7 @@ public class RemoteHost {
 	public static final String DEFAULT_TMP_FOLDER = "/tmp";
 
 	private static final int NODE_INITIAL_PORT = 5555;
-	private static final int PING_TIMEOUT = 1; // seconds
+	private static final int PING_TIMEOUT = 2; // seconds
 
 	private String host;
 	private String login;
