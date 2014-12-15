@@ -28,13 +28,12 @@ var args = getopts(location.search,
   default:
   {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    ice_servers: undefined
+    ice_servers: []
   }
 });
 
 if (args.ice_servers) {
   console.log("Use ICE servers: " + args.ice_servers);
-  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
 } else {
   console.log("Use freeice")
 }
@@ -50,9 +49,21 @@ window.onload = function() {
 	videoOutput = document.getElementById('videoOutput');
 }
 
+var WebRtcPeerSendrecv = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv;
+
 function start() {
 	showSpinner(videoInput, videoOutput);
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+
+  var options =
+  {
+    localVideo: videoInput,
+    remoteVideo: videoOutput,
+    onsdpoffer: onOffer,
+    configuration: {iceServers: args.ice_servers}
+  }
+
+	webRtcPeer = new WebRtcPeerSendrecv(options);
+//  webRtcPeer.start(onError)
 }
 
 function stop() {
