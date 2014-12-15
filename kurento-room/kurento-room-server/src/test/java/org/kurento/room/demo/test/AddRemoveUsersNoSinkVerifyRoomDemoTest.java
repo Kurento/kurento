@@ -45,18 +45,13 @@ public class AddRemoveUsersNoSinkVerifyRoomDemoTest extends BaseRoomDemoTest {
 
 	private static final int PLAY_TIME = 5; // seconds
 
-	private static final int NUM_USERS = 6;
+	private static final int NUM_USERS = 4;
 	private static final String ROOM_NAME = "room";
 
-	protected static final int ITERATIONS = 3;
+	protected static final int ITERATIONS = 2;
 
 	@Test
 	public void test() throws Exception {
-
-		final boolean[] activeUsers = new boolean[NUM_USERS];
-		final Object browsersLock = new Object();
-
-		// parallelUsers(NUM_USERS, (numUser, browser) -> {
 
 		parallelUsers(NUM_USERS, new UserLifecycle() {
 			public void run(int numUser, final WebDriver browser)
@@ -68,26 +63,18 @@ public class AddRemoveUsersNoSinkVerifyRoomDemoTest extends BaseRoomDemoTest {
 
 					sleep(numUser * 1000);
 
-					synchronized (browsersLock) {
-						joinToRoom(browser, userName, ROOM_NAME);
-						log.info("User '{}' joined to room '{}'", userName,
-								ROOM_NAME);
-						activeUsers[numUser] = true;
-						// verify(browsers, activeUsers);
-					}
+					joinToRoom(browser, userName, ROOM_NAME);
+					log.info("User '{}' joined to room '{}'", userName,
+							ROOM_NAME);
 
 					sleep(PLAY_TIME * 1000);
 
-					synchronized (browsersLock) {
+					log.info("User '{}' exiting from room '{}'", userName,
+							ROOM_NAME);
+					exitFromRoom(browser);
+					log.info("User '{}' exited from room '{}'", userName,
+							ROOM_NAME);
 
-						log.info("User '{}' exiting from room '{}'", userName,
-								ROOM_NAME);
-						exitFromRoom(browser);
-						log.info("User '{}' exited from room '{}'", userName,
-								ROOM_NAME);
-						activeUsers[numUser] = false;
-						// verify(browsers, activeUsers);
-					}
 				}
 			}
 		});

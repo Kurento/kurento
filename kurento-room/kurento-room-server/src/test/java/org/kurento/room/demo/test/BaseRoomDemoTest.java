@@ -31,8 +31,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.kurento.room.demo.KurentoRoomServerApp;
 import org.kurento.test.base.KurentoTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
@@ -46,10 +44,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.google.common.base.Function;
 
@@ -59,10 +53,6 @@ import com.google.common.base.Function;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 5.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = KurentoRoomServerApp.class)
-@WebAppConfiguration
-@IntegrationTest({ "spring.main.headless=false" })
 public class BaseRoomDemoTest extends KurentoTest {
 
 	public interface UserLifecycle {
@@ -142,7 +132,8 @@ public class BaseRoomDemoTest extends KurentoTest {
 		int i = 0;
 		for (; i < TEST_TIMEOUT; i++) {
 			WebElement video = findElement(driver, videoTagId);
-			if (video.getAttribute("src").startsWith("blob")) {
+			String srcAtt = video.getAttribute("src");
+			if (srcAtt != null && srcAtt.startsWith("blob")) {
 				break;
 			}
 			try {

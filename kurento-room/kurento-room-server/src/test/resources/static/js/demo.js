@@ -83,7 +83,12 @@ function register() {
 
 			room.connect();
 
-			localStream.play("myVideo");
+			var element = document.getElementById("myVideo");
+			var video = document.createElement('div');
+			video.id = "video-"+name;
+			element.appendChild(video);
+
+			localStream.play(video.id);
 		});
 
 		localStream.init();

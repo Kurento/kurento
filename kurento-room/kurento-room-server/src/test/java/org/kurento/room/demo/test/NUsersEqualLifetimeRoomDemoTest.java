@@ -45,9 +45,9 @@ public class NUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
 	private Logger log = LoggerFactory
 			.getLogger(NUsersEqualLifetimeRoomDemoTest.class);
 
-	private static final int PLAY_TIME = 10; // seconds
+	private static final int PLAY_TIME = 5; // seconds
 
-	private static final int NUM_USERS = 10;
+	private static final int NUM_USERS = 4;
 	private static final String ROOM_NAME = "room";
 
 	@Test
@@ -67,7 +67,7 @@ public class NUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
 				parallelTask(NUM_USERS, new Function<Integer, Void>() {
 					public Void apply(Integer num) {
 						String videoUserName = "user" + num;
-						waitForStream(browser, "video-user" + num);
+						waitForStream(browser, "native-video-user" + num);
 						long duration = System.currentTimeMillis() - start;
 						log.info(
 								"Video received in browser of user {} for user '{}' in {} millis",

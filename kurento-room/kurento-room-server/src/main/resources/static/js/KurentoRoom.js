@@ -141,7 +141,7 @@ function Stream(kurento, local, options) {
 
 		span.appendChild(document.createTextNode(id));
 
-		video.id = 'video-' + id;
+		video.id = 'native-video-' + id;
 		video.autoplay = true;
 		video.controls = false;
 		video.src = URL.createObjectURL(wrStream);

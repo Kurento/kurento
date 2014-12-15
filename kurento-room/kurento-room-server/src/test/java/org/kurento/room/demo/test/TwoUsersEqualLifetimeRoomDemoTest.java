@@ -59,8 +59,8 @@ public class TwoUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
 		joinToRoom(user1Browser, USER1_NAME, ROOM_NAME);
 		joinToRoom(user2Browser, USER2_NAME, ROOM_NAME);
 
-		waitForStream(user1Browser, "video-" + USER1_NAME);
-		waitForStream(user2Browser, "video-" + USER2_NAME);
+		waitForStream(user1Browser, "native-video-" + USER1_NAME);
+		waitForStream(user2Browser, "native-video-" + USER2_NAME);
 
 		// Guard time to see application in action
 		Thread.sleep(PLAY_TIME * 1000);

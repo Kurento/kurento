@@ -45,10 +45,10 @@ public class AddRemoveUsersRoomDemoTest extends BaseRoomDemoTest {
 
 	private static final int PLAY_TIME = 5; // seconds
 
-	private static final int NUM_USERS = 6;
+	private static final int NUM_USERS = 4;
 	private static final String ROOM_NAME = "room";
 
-	protected static final int ITERATIONS = 3;
+	protected static final int ITERATIONS = 2;
 
 	@Test
 	public void test() throws Exception {

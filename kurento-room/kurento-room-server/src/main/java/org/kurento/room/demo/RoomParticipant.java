@@ -54,6 +54,8 @@ public class RoomParticipant implements Closeable {
 	private BlockingQueue<String> messages = new ArrayBlockingQueue<>(10);
 	private Thread senderThread;
 
+	private volatile boolean closed;
+
 	public RoomParticipant(String name, Room room, WebSocketSession session,
 			MediaPipeline pipeline) {
 
@@ -157,13 +159,6 @@ public class RoomParticipant implements Closeable {
 
 		log.debug("PARTICIPANT {}: Creating a sending endpoint to user {}",
 				this.name, sender.getName());
-
-		// try {
-		// Thread.sleep(5000);
-		// } catch (InterruptedException e1) {
-		// // TODO Auto-generated catch block
-		// e1.printStackTrace();
-		// }
 
 		WebRtcEndpoint sendingEndpoint = new WebRtcEndpoint.Builder(pipeline)
 				.build();
@@ -274,6 +269,9 @@ public class RoomParticipant implements Closeable {
 	@Override
 	public void close() {
 		log.debug("PARTICIPANT {}: Closing user", this.name);
+
+		this.closed = true;
+
 		for (final String remoteParticipantName : sendingEndpoints.keySet()) {
 
 			log.debug("PARTICIPANT {}: Released incoming EP for {}", this.name,
@@ -318,6 +316,10 @@ public class RoomParticipant implements Closeable {
 						+ RoomParticipant.this.name + "'", e);
 			}
 		}
+	}
+
+	public boolean isClosed() {
+		return closed;
 	}
 
 	@Override

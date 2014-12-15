@@ -195,7 +195,13 @@ public class RoomHandler extends TextWebSocketHandler {
 	@Override
 	public void handleTransportError(WebSocketSession session,
 			Throwable exception) throws Exception {
-		log.warn("Transport error", exception);
+
+		RoomParticipant user = (RoomParticipant) session.getAttributes().get(
+				USER);
+
+		if (!user.isClosed()) {
+			log.warn("Transport error", exception);
+		}
 	}
 
 	private void updateThreadName(final String name) {

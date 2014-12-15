@@ -76,7 +76,7 @@ public class SeqAddRemoveUserRoomTest extends BaseRoomDemoTest {
 
 				for (int i = 0; i < NUM_USERS; i++) {
 					for (int j = 0; j < NUM_USERS; j++) {
-						waitForStream(browsers.get(i), "video-user" + j);
+						waitForStream(browsers.get(i), "native-video-user" + j);
 						log.debug("Received media from user" + j + " in user"
 								+ i);
 					}

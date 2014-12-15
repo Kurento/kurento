@@ -61,10 +61,10 @@ public class SeqNUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
 			joinToRoom(browsers.get(0), USER1_NAME, ROOM_NAME);
 			joinToRoom(browsers.get(1), USER2_NAME, ROOM_NAME);
 
-			waitForStream(browsers.get(0), "video-" + USER2_NAME);
+			waitForStream(browsers.get(0), "native-video-" + USER2_NAME);
 			log.debug("Received media from " + USER2_NAME + " in " + USER1_NAME);
 
-			waitForStream(browsers.get(1), "video-" + USER1_NAME);
+			waitForStream(browsers.get(1), "native-video-" + USER1_NAME);
 			log.debug("Received media from " + USER1_NAME + " in " + USER2_NAME);
 
 			// Guard time to see application in action
