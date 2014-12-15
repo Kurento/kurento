@@ -160,22 +160,6 @@ public class TreeDistributionConnectSourceToSinksTest {
 
 	}
 
-	private void startKurentoTreeServer() {
-
-		String kmsUri = PropertiesManager.getProperty(
-				KurentoServicesTestHelper.KMS_WS_URI_PROP,
-				KurentoServicesTestHelper.KMS_WS_URI_DEFAULT);
-
-		System.setProperty(KurentoTreeServerApp.KMSS_URIS_PROPERTY, "[\""
-				+ kmsUri + "\",\"" + kmsUri + "\"]");
-
-		System.setProperty(KurentoTreeServerApp.WEBSOCKET_PORT_PROPERTY,
-				Integer.toString(KurentoServicesTestHelper.getAppHttpPort()));
-
-		ConfigurableApplicationContext treeServer = KurentoTreeServerApp
-				.start();
-	}
-
 	private BrowserClient createMaster(final KurentoTreeClient kurentoTree,
 			final String treeId) {
 
