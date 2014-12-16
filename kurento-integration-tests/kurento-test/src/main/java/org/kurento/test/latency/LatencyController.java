@@ -130,9 +130,19 @@ public class LatencyController implements
 			}
 			Thread.sleep(latencyRate);
 
-			long latency = localBrowser.getLatency();
+			long latency = 0;
+			LatencyRegistry latencyRegistry = new LatencyRegistry();
+			try {
+				latency = localBrowser.getLatency();
+			} catch (LatencyException le) {
+				latencyRegistry.setLatencyException(le);
+				if (failIfLatencyProblem) {
+					throw le;
+				}
+			}
+
 			long latencyTime = localBrowser.getRemoteTime();
-			LatencyRegistry latencyRegistry = new LatencyRegistry(latency);
+			latencyRegistry.setLatency(latency);
 
 			if (latency > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
 

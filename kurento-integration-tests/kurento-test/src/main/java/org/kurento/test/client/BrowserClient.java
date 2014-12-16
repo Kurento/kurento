@@ -35,6 +35,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTag;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
@@ -586,6 +587,11 @@ public class BrowserClient implements Closeable {
 		if (!latch.await(this.getTimeout(), TimeUnit.SECONDS)) {
 			t.interrupt();
 			t.stop();
+			throw new LatencyException("Timeout getting latency ("
+					+ this.getTimeout() + "  seconds)");
+		}
+		if (out[0] < 0) {
+			throw new LatencyException("Error taking latency in the browser");
 		}
 		return out[0];
 	}

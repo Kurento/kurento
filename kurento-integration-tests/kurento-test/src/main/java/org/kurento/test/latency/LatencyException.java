@@ -33,6 +33,11 @@ public class LatencyException extends RuntimeException {
 	private String lastRemoteColor;
 	private long lastLocalColorChangeTime;
 	private long lastRemoteColorChangeTime;
+	private String message;
+
+	public LatencyException(String message) {
+		this.message = message;
+	}
 
 	public LatencyException(long latency, TimeUnit latencyTimeUnit) {
 		this.latency = latency;
@@ -51,19 +56,24 @@ public class LatencyException extends RuntimeException {
 
 	@Override
 	public String getMessage() {
-		String message = "Latency error detected: " + latency + " "
-				+ latencyTimeUnit;
-		if (lastLocalColor != null) {
-			String parsedLocaltime = new SimpleDateFormat("mm:ss.SSS")
-					.format(lastLocalColorChangeTime);
-			String parsedRemotetime = new SimpleDateFormat("mm:ss.SSS")
-					.format(lastRemoteColorChangeTime);
-			message += " between last color change in remote tag (color="
-					+ lastRemoteColor + " at minute " + parsedRemotetime
-					+ ") and last color change in local tag (color="
-					+ lastLocalColor + " at minute " + parsedLocaltime + ")";
+		String out;
+		if (message != null) {
+			out = message;
+		} else {
+			out = "Latency error detected: " + latency + " " + latencyTimeUnit;
+			if (lastLocalColor != null) {
+				String parsedLocaltime = new SimpleDateFormat("mm:ss.SSS")
+						.format(lastLocalColorChangeTime);
+				String parsedRemotetime = new SimpleDateFormat("mm:ss.SSS")
+						.format(lastRemoteColorChangeTime);
+				out += " between last color change in remote tag (color="
+						+ lastRemoteColor + " at minute " + parsedRemotetime
+						+ ") and last color change in local tag (color="
+						+ lastLocalColor + " at minute " + parsedLocaltime
+						+ ")";
+			}
 		}
-		return message;
+		return out;
 	}
 
 }
