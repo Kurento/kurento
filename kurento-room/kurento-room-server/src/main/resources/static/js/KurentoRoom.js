@@ -131,15 +131,29 @@ function Stream(kurento, local, options) {
 
 		that.element = container;
 
-		var span = document.createElement('span');
-		var video = document.createElement('video');
+		var name = document.createElement('div');
+		container.appendChild(name);
+		name.appendChild(document.createTextNode(id));
+		name.id = "name-"+id;
+		name.className = "name";
 
+		var video = document.createElement('video');
 		container.appendChild(video);
-		container.appendChild(span);
 
 		document.getElementById(elementId).appendChild(container);
 
-		span.appendChild(document.createTextNode(id));
+		video.id = 'native-video-' + id;
+		video.autoplay = true;
+		video.controls = false;
+		video.src = URL.createObjectURL(wrStream);
+		video.muter = true;
+	}
+
+	this.playOnlyVideo = function(elementId) {
+
+		var video = document.createElement('video');
+
+		document.getElementById(elementId).appendChild(video);
 
 		video.id = 'native-video-' + id;
 		video.autoplay = true;
@@ -158,7 +172,7 @@ function Stream(kurento, local, options) {
 			audio : true,
 			video : {
 				mandatory : {
-					maxWidth : 320,
+					maxWidth : 640,
 					maxFrameRate : 15,
 					minFrameRate : 15
 				}
