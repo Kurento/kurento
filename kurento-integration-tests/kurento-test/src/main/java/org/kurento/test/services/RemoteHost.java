@@ -121,7 +121,9 @@ public class RemoteHost {
 	}
 
 	public void execCommand(String... command) throws IOException {
-		connection.startProcess(CmdLine.build(command));
+		if (connection.canStartProcess()) {
+			connection.startProcess(CmdLine.build(command));
+		}
 	}
 
 	public int runAndWaitCommand(String... command) throws IOException {
