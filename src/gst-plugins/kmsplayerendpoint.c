@@ -270,37 +270,44 @@ eos_cb (GstElement * appsink, gpointer user_data)
   g_object_unref (srcpad);
 }
 
-static GstElement *
-kms_player_end_point_get_appsrc_for_pad (KmsPlayerEndpoint * self, GstPad * pad)
+static GstPadProbeReturn
+main_pipeline_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
-  GstCaps *caps, *audio_caps = NULL, *video_caps = NULL;
-  GstElement *agnosticbin, *appsrc = NULL;
+  GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstElement *appsink = GST_ELEMENT (element);
 
-  caps = gst_pad_query_caps (pad, NULL);
-  if (caps == NULL) {
-    GST_WARNING_OBJECT (pad, "Can not get caps");
-    return NULL;
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+    case GST_QUERY_ACCEPT_CAPS:
+      break;
+    default:
+      return GST_PAD_PROBE_OK;
   }
 
-  audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
-  video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
+  query = gst_query_make_writable (query);
+  gst_element_query (appsink, query);
+  GST_PAD_PROBE_INFO_DATA (info) = query;
 
-  if (gst_caps_can_intersect (audio_caps, caps))
-    agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
-  else if (gst_caps_can_intersect (video_caps, caps))
-    agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
-  else {
-    GST_ELEMENT_WARNING (self, CORE, CAPS,
-        ("Unsupported media received: %" GST_PTR_FORMAT, caps),
-        ("Unsupported media received: %" GST_PTR_FORMAT, caps));
-    goto end;
-  }
+  return GST_PAD_PROBE_OK;
+}
+
+static GstElement *
+kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
+    GstElement * agnosticbin, GstElement * appsink)
+{
+  GstElement *appsrc = NULL;
+  GstPad *srcpad;
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
       G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+
+  srcpad = gst_element_get_static_pad (appsrc, "src");
+  gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_QUERY_UPSTREAM,
+      main_pipeline_probe, appsink, NULL);
+  g_object_unref (srcpad);
 
   gst_bin_add (GST_BIN (self), appsrc);
   if (!gst_element_link (appsrc, agnosticbin)) {
@@ -309,20 +316,6 @@ kms_player_end_point_get_appsrc_for_pad (KmsPlayerEndpoint * self, GstPad * pad)
   }
 
   gst_element_sync_state_with_parent (appsrc);
-
-end:
-
-  if (caps != NULL) {
-    gst_caps_unref (caps);
-  }
-
-  if (audio_caps != NULL) {
-    gst_caps_unref (audio_caps);
-  }
-
-  if (video_caps != NULL) {
-    gst_caps_unref (video_caps);
-  }
 
   return appsrc;
 }
@@ -351,20 +344,86 @@ set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
   return GST_PAD_PROBE_OK;
 }
 
+static GstElement *
+kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
+    GstPad * pad)
+{
+  GstCaps *caps, *audio_caps = NULL, *video_caps = NULL;
+  GstElement *agnosticbin = NULL;
+
+  caps = gst_pad_query_caps (pad, NULL);
+
+  if (caps == NULL) {
+    return NULL;
+  }
+
+  audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
+  video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
+
+  if (gst_caps_can_intersect (audio_caps, caps)) {
+    agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+  } else if (gst_caps_can_intersect (video_caps, caps)) {
+    agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
+  }
+
+  gst_caps_unref (caps);
+  gst_caps_unref (audio_caps);
+  gst_caps_unref (video_caps);
+
+  return agnosticbin;
+}
+
+static GstPadProbeReturn
+negotiate_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+{
+  GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+  GstElement *appsrc = GST_ELEMENT (element);
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+    case GST_QUERY_ACCEPT_CAPS:
+      break;
+    default:
+      return GST_PAD_PROBE_OK;
+  }
+
+  query = gst_query_make_writable (query);
+  gst_element_query (appsrc, query);
+  GST_PAD_PROBE_INFO_DATA (info) = query;
+
+  return GST_PAD_PROBE_OK;
+}
+
+static GstPadProbeReturn
+internal_pipeline_probe (GstPad * pad, GstPadProbeInfo * info, gpointer element)
+{
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    return set_appsrc_caps (pad, info, element);
+  } else if (GST_PAD_PROBE_INFO_TYPE (info) &
+      GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM) {
+    return negotiate_appsrc_caps (pad, info, element);
+  } else {
+    GST_WARNING_OBJECT (pad, "Probe does nothing");
+    return GST_PAD_PROBE_OK;
+  }
+}
+
 static void
 pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
   GstElement *appsink, *appsrc;
-  gboolean supported = FALSE;
+  GstElement *agnosticbin;
   GstPad *sinkpad;
 
   GST_DEBUG_OBJECT (pad, "Pad added");
 
-  appsrc = kms_player_end_point_get_appsrc_for_pad (self, pad);
-  supported = appsrc != NULL;
-  if (supported) {
+  agnosticbin = kms_player_end_point_get_agnostic_for_pad (self, pad);
+
+  if (agnosticbin != NULL) {
     /* Create appsink */
     appsink = gst_element_factory_make ("appsink", NULL);
+    appsrc = kms_player_end_point_add_appsrc (self, agnosticbin, appsink);
+
     g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", TRUE,
         "qos", TRUE, "max-buffers", 1, NULL);
 
@@ -382,15 +441,18 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   }
 
   g_object_set (appsink, "sync", TRUE, "async", FALSE, NULL);
-  gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
-  gst_pad_link (pad, sinkpad);
 
-  if (supported) {
-    gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-        set_appsrc_caps, appsrc, NULL);
+  if (agnosticbin != NULL) {
+    gst_pad_add_probe (sinkpad,
+        (GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM |
+            GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM), internal_pipeline_probe,
+        appsrc, NULL);
   }
+
+  gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
+  gst_pad_link (pad, sinkpad);
 
   g_object_unref (sinkpad);
 
