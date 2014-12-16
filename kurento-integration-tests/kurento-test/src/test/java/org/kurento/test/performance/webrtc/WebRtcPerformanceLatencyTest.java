@@ -36,6 +36,7 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.latency.LatencyException;
 import org.kurento.test.monitor.SystemMonitor;
 import org.kurento.test.services.Node;
 
@@ -111,17 +112,19 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 		CompletionService<Void> exec = new ExecutorCompletionService<>(
 				internalExec);
 
-		int numNode = 1;
+		int numBrowser = 0;
 		for (final Node node : nodes) {
 			for (int i = 1; i <= numBrowsers; i++) {
 				final String name = node.getAddress() + "-browser" + i
-						+ "-count" + numNode;
-				monitor.incrementNumClients();
-				log.debug("*** Starting node #{} ({}) ***", numNode, name);
-				numNode++;
+						+ "-count" + (numBrowser + 1);
+				final int sleepNum = numBrowser;
 				exec.submit(new Callable<Void>() {
 					public Void call() throws InterruptedException {
 						try {
+							Thread.currentThread().setName(name);
+							Thread.sleep(clientRate * sleepNum);
+							log.debug("*** Starting node {} ***", name);
+							monitor.incrementNumClients();
 							doTest(node, playTime, name);
 						} finally {
 							monitor.decrementNumClients();
@@ -130,7 +133,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 						return null;
 					}
 				});
-				Thread.sleep(clientRate);
+				numBrowser++;
 			}
 		}
 
@@ -185,10 +188,15 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 					break;
 				}
 				Thread.sleep(100);
-				monitor.addCurrentLatency(browser.getLatency());
+				try {
+					monitor.addCurrentLatency(browser.getLatency());
+				} catch (LatencyException le) {
+					// log.error("$$$ " + le.getMessage());
+					monitor.incrementLatencyErrors();
+				}
 			}
 		} catch (Throwable t) {
-			log.error("[[[[ " + t.getMessage() + "]]]]");
+			log.error("[[[ " + t.getMessage() + "]]]");
 			throw t;
 		} finally {
 			log.debug("<<< finally {}", name);
