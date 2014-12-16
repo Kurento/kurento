@@ -67,7 +67,7 @@ public class TreeDistributionConnectSourceToSinksTest {
 	private ConfigurableApplicationContext treeServer;
 
 	@Before
-	public void startServices() {
+	public void startServices() throws IOException {
 
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
@@ -85,7 +85,7 @@ public class TreeDistributionConnectSourceToSinksTest {
 	}
 
 	@After
-	public void teardownServices() {
+	public void teardownServices() throws IOException {
 
 		treeServer.close();
 

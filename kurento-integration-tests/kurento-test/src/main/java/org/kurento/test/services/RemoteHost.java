@@ -54,6 +54,7 @@ public class RemoteHost {
 	private String host;
 	private String login;
 	private String passwd;
+	private String tmpFolder;
 
 	private OverthereConnection connection;
 
@@ -64,19 +65,18 @@ public class RemoteHost {
 	}
 
 	public String createTmpFolder() {
-		String remoteFolder;
 		try {
 			do {
-				remoteFolder = DEFAULT_TMP_FOLDER + "/" + System.nanoTime();
-			} while (exists(remoteFolder));
-			execAndWaitCommand("mkdir", remoteFolder);
+				tmpFolder = DEFAULT_TMP_FOLDER + "/" + System.nanoTime();
+			} while (exists(tmpFolder));
+			execAndWaitCommand("mkdir", tmpFolder);
 		} catch (IOException e) {
-			remoteFolder = DEFAULT_TMP_FOLDER;
+			tmpFolder = DEFAULT_TMP_FOLDER;
 		}
 
 		log.debug("Remote folder to store temporal files in node {}: {} ",
-				host, remoteFolder);
-		return remoteFolder;
+				host, tmpFolder);
+		return tmpFolder;
 	}
 
 	public void getFile(String targetFile, String origFile) {
@@ -192,4 +192,9 @@ public class RemoteHost {
 
 		return ping;
 	}
+
+	public String getTmpFolder() {
+		return tmpFolder;
+	}
+
 }

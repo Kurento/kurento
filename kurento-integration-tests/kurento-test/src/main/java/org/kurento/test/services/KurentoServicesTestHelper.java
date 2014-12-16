@@ -17,6 +17,7 @@ package org.kurento.test.services;
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -96,7 +97,7 @@ public class KurentoServicesTestHelper {
 	private static String kmsPrintLog;
 	private static File logFile;
 
-	public static void startKurentoServicesIfNeccessary() {
+	public static void startKurentoServicesIfNeccessary() throws IOException {
 
 		startKurentoMediaServerIfNecessary();
 		startKurentoControlServerIfNecessary();
@@ -123,7 +124,7 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	private static void startKurentoMediaServerIfNecessary() {
+	private static void startKurentoMediaServerIfNecessary() throws IOException {
 		kmsAutostart = getProperty(KMS_AUTOSTART_PROP, KMS_AUTOSTART_DEFAULT);
 		kmsPrintLog = getProperty(KMS_PRINT_LOG_PROP, KMS_PRINT_LOG_DEFAULT);
 		testDir = getProperty(PROJECT_PATH_PROP, PROJECT_PATH_DEFAULT)
@@ -149,7 +150,8 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	public static KurentoMediaServerManager startKurentoMediaServer() {
+	public static KurentoMediaServerManager startKurentoMediaServer()
+			throws IOException {
 
 		String transport = PropertiesManager.getProperty(KMS_TRANSPORT_PROP,
 				KMS_TRANSPORT_DEFAULT);
@@ -207,7 +209,7 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	public static void teardownServices() {
+	public static void teardownServices() throws IOException {
 		teardownKurentoMediaServer();
 		teardownKurentoControlServer();
 	}
@@ -219,7 +221,7 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	public static void teardownKurentoMediaServer() {
+	public static void teardownKurentoMediaServer() throws IOException {
 		if (kms != null && kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			kms.destroy();
 			kms = null;

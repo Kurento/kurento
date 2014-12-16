@@ -93,7 +93,7 @@ public class ConnectionListenerTest {
 	}
 
 	@Test
-	public void reconnectTest() throws InterruptedException {
+	public void reconnectTest() throws InterruptedException, IOException {
 
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
 				.startKurentoMediaServer();
