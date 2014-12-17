@@ -215,7 +215,7 @@ connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
 static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     const gchar * pattern_sdp_sendonly_str,
-    const gchar * pattern_sdp_recvonly_str)
+    const gchar * pattern_sdp_recvonly_str, gboolean bundle)
 {
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -237,7 +237,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
           pattern_sdp_sendonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (sender, "pattern-sdp", pattern_sdp, NULL);
+  g_object_set (sender, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
@@ -368,7 +368,8 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_video_sendrecv (const gchar * video_enc_name,
-    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str)
+    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str,
+    gboolean bundle)
 {
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -397,7 +398,7 @@ test_video_sendrecv (const gchar * video_enc_name,
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
           pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, NULL);
+  g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
@@ -476,7 +477,8 @@ test_video_sendrecv (const gchar * video_enc_name,
 
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str)
+    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str,
+    gboolean bundle)
 {
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -511,7 +513,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
           pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, NULL);
+  g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
@@ -642,7 +644,7 @@ static void
 test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
     GstStaticCaps audio_expected_caps, const gchar * video_enc_name,
     GstStaticCaps video_expected_caps, const gchar * pattern_sdp_sendonly_str,
-    const gchar * pattern_sdp_recvonly_str)
+    const gchar * pattern_sdp_recvonly_str, gboolean bundle)
 {
   HandOffData *hod_audio, *hod_video;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -675,7 +677,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
           pattern_sdp_sendonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (sender, "pattern-sdp", pattern_sdp, NULL);
+  g_object_set (sender, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
@@ -777,7 +779,8 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
 static void
 test_audio_video_sendrecv (const gchar * audio_enc_name,
     GstStaticCaps audio_expected_caps, const gchar * video_enc_name,
-    GstStaticCaps video_expected_caps, const gchar * pattern_sdp_sendrcv_str)
+    GstStaticCaps video_expected_caps, const gchar * pattern_sdp_sendrcv_str,
+    gboolean bundle)
 {
   HandOffData *hod_audio_offerer, *hod_video_offerer, *hod_audio_answerer,
       *hod_video_answerer;
@@ -832,7 +835,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
           pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, NULL);
+  g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
@@ -1085,21 +1088,27 @@ static const gchar *pattern_sdp_vp8_sendrecv_str = "v=0\r\n"
 GST_START_TEST (test_vp8_sendonly_recvonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str);
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, FALSE);
+  test_video_sendonly ("vp8enc", vp8_expected_caps,
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE);
 }
 
 GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv)
 {
   test_video_sendrecv ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str);
+      pattern_sdp_vp8_sendrecv_str, FALSE);
+  test_video_sendrecv ("vp8enc", vp8_expected_caps,
+      pattern_sdp_vp8_sendrecv_str, TRUE);
 }
 
 GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv_but_sendonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str);
+      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, TRUE);
+  test_video_sendonly ("vp8enc", vp8_expected_caps,
+      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, FALSE);
 }
 
 GST_END_TEST
@@ -1114,7 +1123,9 @@ static const gchar *pattern_sdp_pcmu_sendrecv_str = "v=0\r\n"
 GST_START_TEST (test_pcmu_sendrecv)
 {
   test_audio_sendrecv ("mulawenc", pcmu_expected_caps,
-      pattern_sdp_pcmu_sendrecv_str);
+      pattern_sdp_pcmu_sendrecv_str, FALSE);
+  test_audio_sendrecv ("mulawenc", pcmu_expected_caps,
+      pattern_sdp_pcmu_sendrecv_str, TRUE);
 }
 
 /* Audio and video tests */
@@ -1147,14 +1158,19 @@ GST_START_TEST (test_pcmu_vp8_sendonly_recvonly)
 {
   test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
       vp8_expected_caps, pattern_sdp_pcmu_vp8_sendonly_str,
-      pattern_sdp_pcmu_vp8_recvonly_str);
+      pattern_sdp_pcmu_vp8_recvonly_str, FALSE);
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
+      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendonly_str,
+      pattern_sdp_pcmu_vp8_recvonly_str, TRUE);
 }
 
 GST_END_TEST
 GST_START_TEST (test_pcmu_vp8_sendrecv)
 {
   test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str);
+      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str, FALSE);
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "vp8enc",
+      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str, TRUE);
 }
 
 GST_END_TEST
@@ -1162,7 +1178,10 @@ GST_START_TEST (test_pcmu_vp8_sendrecv_but_sendonly)
 {
   test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
       vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str,
-      pattern_sdp_pcmu_vp8_sendrecv_str);
+      pattern_sdp_pcmu_vp8_sendrecv_str, FALSE);
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
+      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str,
+      pattern_sdp_pcmu_vp8_sendrecv_str, TRUE);
 }
 
 GST_END_TEST
