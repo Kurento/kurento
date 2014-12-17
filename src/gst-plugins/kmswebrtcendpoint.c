@@ -1102,7 +1102,9 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 {
   gchar t[] = TMP_DIR_TEMPLATE;
 
-  g_object_set (G_OBJECT (self), "proto", SDP_MEDIA_RTP_SAVPF_PROTO, NULL);
+  g_object_set (G_OBJECT (self), "proto", SDP_MEDIA_RTP_SAVPF_PROTO, "bundle",
+      TRUE, "rtcp-fir", TRUE, "rtcp-nack", TRUE, "rtcp-pli", TRUE, "rtcp-remb",
+      TRUE, NULL);
 
   self->priv = KMS_WEBRTC_ENDPOINT_GET_PRIVATE (self);
 
