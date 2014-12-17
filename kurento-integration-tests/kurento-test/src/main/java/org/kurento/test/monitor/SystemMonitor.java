@@ -14,16 +14,20 @@
  */
 package org.kurento.test.monitor;
 
+import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.kurento.test.Shell;
 
 /**
  * System monitor class, used to check the CPU usage, memory, swap, and network
@@ -44,6 +48,13 @@ public class SystemMonitor {
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
 
+	private final static String OK = "ok";
+	private final static String ERR = "error: ";
+
+	public static final String MONITOR_PORT_PROP = "monitor.port";
+	public static final int MONITOR_PORT_DEFAULT = 12345;
+	public static final String OUTPUT_CSV = "/kms-monitor.csv";
+
 	public SystemMonitor() {
 		infoMap = Collections
 				.synchronizedSortedMap(new TreeMap<Long, SystemInfo>());
@@ -52,6 +63,83 @@ public class SystemMonitor {
 	public SystemMonitor(long samplingTime) {
 		this();
 		this.samplingTime = samplingTime;
+	}
+
+	public static void main(String[] args) throws InterruptedException,
+			IOException {
+
+		int monitorPort = args.length > 0 ? Integer.parseInt(args[0])
+				: MONITOR_PORT_DEFAULT;
+		final SystemMonitor monitor = new SystemMonitor();
+
+		ServerSocket server = new ServerSocket(monitorPort);
+		System.out.println("Waiting for incoming messages...");
+		boolean run = true;
+
+		while (run) {
+			final Socket socket = server.accept();
+
+			String result = OK;
+
+			PrintWriter output = null;
+			BufferedReader input = null;
+			try {
+				output = new PrintWriter(socket.getOutputStream(), true);
+				input = new BufferedReader(new InputStreamReader(
+						socket.getInputStream()));
+
+				String message = input.readLine();
+				System.out.println("Message received " + message);
+
+				if (message != null) {
+					String[] commands = message.split(" ");
+					switch (commands[0]) {
+					case "start":
+						monitor.start();
+						break;
+					case "stop":
+						monitor.stop();
+						break;
+					case "destroy":
+						run = false;
+						break;
+					case "writeResults":
+						monitor.writeResults(commands[1] + OUTPUT_CSV);
+						break;
+					case "incrementNumClients":
+						monitor.incrementNumClients();
+						break;
+					case "decrementNumClients":
+						monitor.decrementNumClients();
+						break;
+					case "addCurrentLatency":
+						monitor.addCurrentLatency(Double
+								.parseDouble(commands[1]));
+						break;
+					case "setSamplingTime":
+						monitor.setSamplingTime(Long.parseLong(commands[1]));
+						break;
+					case "incrementLatencyErrors":
+						monitor.incrementLatencyErrors();
+						break;
+					default:
+						result = ERR + "Invalid command: " + message;
+						break;
+					}
+					System.out.println("Sending back message " + result);
+					output.println(result);
+				}
+				output.close();
+				input.close();
+				socket.close();
+
+			} catch (IOException e) {
+				result = ERR + e.getMessage();
+				e.printStackTrace();
+			}
+		}
+		server.close();
+
 	}
 
 	public void start() {
@@ -112,8 +200,9 @@ public class SystemMonitor {
 
 	public NetInfo getNetInfo(NetInfo initNetInfo, NetInfo lastNetInfo) {
 		NetInfo netInfo = new NetInfo();
-		String out = Shell.runAndWaitNoLog("/bin/sh", "-c",
+		String out = runAndWait("/bin/sh", "-c",
 				"cat /proc/net/dev | awk 'NR > 2'");
+
 		String[] lines = out.split("\n");
 		for (String line : lines) {
 			String[] split = line.trim().replaceAll(" +", " ").split(" ");
@@ -167,9 +256,8 @@ public class SystemMonitor {
 	}
 
 	public double getCpuUsage() {
-		String[] cpu = Shell
-				.runAndWaitNoLog("/bin/sh", "-c",
-						"cat /proc/stat | grep '^cpu ' | awk '{print substr($0, index($0, $2))}'")
+		String[] cpu = runAndWait("/bin/sh", "-c",
+				"cat /proc/stat | grep '^cpu ' | awk '{print substr($0, index($0, $2))}'")
 				.replaceAll("\n", "").split(" ");
 
 		double idle = Double.parseDouble(cpu[3]);
@@ -188,13 +276,13 @@ public class SystemMonitor {
 	}
 
 	public double[] getMemSwap() {
-		String[] mem = Shell.runAndWaitNoLog("free").replaceAll("\n", " ")
+		String[] mem = runAndWait("free").replaceAll("\n", ",")
 				.replaceAll(" +", " ").split(" ");
 
-		long usedMem = Long.parseLong(mem[16]);
-		long usedSwap = Long.parseLong(mem[20]);
-		long totalMem = Long.parseLong(mem[8]);
-		long totalSwap = Long.parseLong(mem[21]);
+		long usedMem = Long.parseLong(mem[15]);
+		long usedSwap = Long.parseLong(mem[19]);
+		long totalMem = Long.parseLong(mem[7]);
+		long totalSwap = Long.parseLong(mem[20]);
 
 		double percetageMem = ((double) usedMem / (double) totalMem) * 100;
 		double percetageSwap = ((double) usedSwap / (double) totalSwap) * 100;
@@ -204,19 +292,53 @@ public class SystemMonitor {
 	}
 
 	private int getKmsPid() {
-		// TODO improve this
-		// Shell.runAndWait("sh", "-c", "kill `cat " + workspace + "kms-pid`");
-		return Integer
-				.parseInt(Shell
-						.runAndWaitNoLog("/bin/sh", "-c",
-								"ps axf | grep kurento-media-server | grep -v grep | awk '{print $1}'")
-						.replaceAll("\n", ""));
+		String kmsPid = runAndWait("/bin/sh", "-c",
+				"ps axf | grep kurento-media-server | grep -v grep | awk '{print $1}'")
+				.replaceAll("\n", "");
+		if (kmsPid.equals("")) {
+			throw new RuntimeException("KMS is not started");
+		} else if (kmsPid.contains(" ")) {
+			throw new RuntimeException(
+					"More than one KMS process are started (PIDs:" + kmsPid
+							+ ")");
+		}
+		return Integer.parseInt(kmsPid);
 	}
 
 	private int getNumThreads(int kmsPid) {
-		return Integer.parseInt(Shell.runAndWaitNoLog("/bin/sh", "-c",
+		return Integer.parseInt(runAndWait("/bin/sh", "-c",
 				"cat /proc/" + kmsPid + "/stat | awk '{print $20}'")
 				.replaceAll("\n", ""));
+	}
+
+	private String runAndWait(final String... command) {
+		Process p;
+		try {
+			p = new ProcessBuilder(command).redirectErrorStream(true).start();
+
+			return inputStreamToString(p.getInputStream());
+
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"Exception executing command on the shell: "
+							+ Arrays.toString(command), e);
+		}
+	}
+
+	private String inputStreamToString(InputStream in) throws IOException {
+		InputStreamReader is = new InputStreamReader(in);
+		StringBuilder sb = new StringBuilder();
+		BufferedReader br = new BufferedReader(is);
+		String read = br.readLine();
+
+		while (read != null) {
+			sb.append(read);
+			read = br.readLine();
+			sb.append('\n');
+			sb.append(' ');
+		}
+
+		return sb.toString().trim();
 	}
 
 	public int getNumClients() {
@@ -249,6 +371,10 @@ public class SystemMonitor {
 	public synchronized void addCurrentLatency(double currentLatency) {
 		this.currentLatency += currentLatency;
 		this.latencyHints++;
+	}
+
+	public void setSamplingTime(long samplingTime) {
+		this.samplingTime = samplingTime;
 	}
 
 }

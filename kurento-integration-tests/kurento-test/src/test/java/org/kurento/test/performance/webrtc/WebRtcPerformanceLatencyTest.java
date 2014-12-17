@@ -15,6 +15,7 @@
 package org.kurento.test.performance.webrtc;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -37,7 +38,7 @@ import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.latency.LatencyException;
-import org.kurento.test.monitor.SystemMonitor;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.Node;
 
 /**
@@ -63,7 +64,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 	private static final int DEFAULT_HOLD_TIME = 30000; // milliseconds
 	private static final int DEFAULT_TIMEOUT = 60; // milliseconds
 
-	private SystemMonitor monitor;
+	private SystemMonitorManager monitor;
 	public int numBrowsers;
 	public int numNodes;
 	public int clientRate;
@@ -92,8 +93,9 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 	}
 
 	@Before
-	public void setup() {
-		monitor = new SystemMonitor(monitorRate);
+	public void setup() throws IOException, URISyntaxException {
+		monitor = new SystemMonitorManager();
+		monitor.setSamplingTime(monitorRate);
 		monitor.start();
 	}
 
@@ -101,6 +103,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 	public void teardown() throws IOException {
 		monitor.stop();
 		monitor.writeResults(getDefaultOutputFile("-kms-monitor.csv"));
+		monitor.destroy();
 	}
 
 	@Ignore
@@ -119,7 +122,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 						+ "-count" + (numBrowser + 1);
 				final int sleepNum = numBrowser;
 				exec.submit(new Callable<Void>() {
-					public Void call() throws InterruptedException {
+					public Void call() throws InterruptedException, IOException {
 						try {
 							Thread.currentThread().setName(name);
 							Thread.sleep(clientRate * sleepNum);
@@ -143,7 +146,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 				taskFuture = exec.take();
 				taskFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
 			} catch (Throwable e) {
-				log.error(">>> {} <<<", e.getCause().getMessage());
+				log.error("[[[ {} ]]]", e.getCause().getMessage());
 				if (taskFuture != null) {
 					taskFuture.cancel(true);
 				}
@@ -154,7 +157,7 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 	}
 
 	public void doTest(Node node, int playTime, String name)
-			throws InterruptedException {
+			throws IOException, InterruptedException {
 
 		long endTimeMillis = System.currentTimeMillis() + playTime;
 		MediaPipeline mp = null;
@@ -195,16 +198,8 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 					monitor.incrementLatencyErrors();
 				}
 			}
-		} catch (Throwable t) {
-			log.error("[[[ " + t.getMessage() + "]]]");
-			throw t;
 		} finally {
 			log.debug("<<< finally {}", name);
-
-			// Release browser
-			if (browser != null) {
-				browser.close();
-			}
 
 			// Release Media Pipeline
 			if (mp != null) {
@@ -212,5 +207,4 @@ public class WebRtcPerformanceLatencyTest extends PerformanceTest {
 			}
 		}
 	}
-
 }

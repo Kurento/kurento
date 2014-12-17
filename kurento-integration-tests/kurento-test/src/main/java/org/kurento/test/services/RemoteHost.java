@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -64,6 +65,10 @@ public class RemoteHost {
 		this.passwd = passwd;
 	}
 
+	public void mkdirs(String dir) throws IOException {
+		execAndWaitCommand("mkdir", "-p", dir);
+	}
+
 	public String createTmpFolder() {
 		try {
 			do {
@@ -83,10 +88,11 @@ public class RemoteHost {
 		OverthereFile motd = connection.getFile(origFile);
 		InputStream is = motd.getInputStream();
 		try {
-			Files.copy(is, Paths.get(targetFile));
+			Files.copy(is, Paths.get(targetFile),
+					StandardCopyOption.REPLACE_EXISTING);
 			is.close();
 		} catch (IOException e) {
-			log.error("Exception getting file: {} to {} ()", origFile,
+			log.error("Exception getting file: {} to {} ({})", origFile,
 					targetFile, e.getMessage());
 		}
 	}
@@ -195,6 +201,10 @@ public class RemoteHost {
 
 	public String getTmpFolder() {
 		return tmpFolder;
+	}
+
+	public String getHost() {
+		return host;
 	}
 
 }

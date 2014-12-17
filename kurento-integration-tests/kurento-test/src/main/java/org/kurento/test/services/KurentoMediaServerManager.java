@@ -71,8 +71,8 @@ public class KurentoMediaServerManager {
 	private static final String KURENTO_SERVER_DEBUG_PROP = "kms.debug";
 	private static final String KURENTO_SERVER_DEBUG_DEFAULT = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
 
-	private static final String KURENTO_KMS_LOGIN_PROP = "kms.login";
-	private static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
+	public static final String KURENTO_KMS_LOGIN_PROP = "kms.login";
+	public static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
 
 	public static RemoteHost remoteKms = null;
 
