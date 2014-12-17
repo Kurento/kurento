@@ -378,6 +378,7 @@ negotiate_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
 {
   GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
   GstElement *appsrc = GST_ELEMENT (element);
+  GstPad *srcpad;
 
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:
@@ -388,7 +389,10 @@ negotiate_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
   }
 
   query = gst_query_make_writable (query);
-  gst_element_query (appsrc, query);
+  srcpad = gst_element_get_static_pad (appsrc, "src");
+  /* Send query to the agnosticbin */
+  gst_pad_peer_query (srcpad, query);
+  g_object_unref (srcpad);
   GST_PAD_PROBE_INFO_DATA (info) = query;
 
   return GST_PAD_PROBE_OK;
