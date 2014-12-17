@@ -12,6 +12,7 @@ set(KMS_ELEMENTS_SOURCES
   kmsplayerendpoint.c
   kmsrecorderendpoint.c
   kmsrtpendpoint.c
+  kmswebrtcconnection.c
   kmswebrtcendpoint.c
   kmsselectablemixer.c
   kmsdispatcher.c
