@@ -59,11 +59,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-room-client</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
 			<artifactId>kurento-room-server</artifactId>
 			<scope>test</scope>
 		</dependency>

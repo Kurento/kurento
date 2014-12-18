@@ -48,7 +48,6 @@
 
 	<modules>
 		<module>kurento-room-server</module>
-		<module>kurento-room-client</module>
 	</modules>
 
 </project>
