@@ -199,7 +199,7 @@ public class RoomHandler extends TextWebSocketHandler {
 		RoomParticipant user = (RoomParticipant) session.getAttributes().get(
 				USER);
 
-		if (!user.isClosed()) {
+		if (user != null && !user.isClosed()) {
 			log.warn("Transport error", exception);
 		}
 	}
