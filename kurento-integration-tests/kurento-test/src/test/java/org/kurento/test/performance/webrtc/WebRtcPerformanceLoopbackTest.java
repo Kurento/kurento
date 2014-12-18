@@ -14,15 +14,19 @@
  */
 package org.kurento.test.performance.webrtc;
 
-import java.awt.Color;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
@@ -33,9 +37,9 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.services.AudioChannel;
+import org.kurento.test.latency.LatencyException;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.Node;
-import org.kurento.test.services.Recorder;
 
 /**
  * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.<br/>
@@ -45,121 +49,165 @@ import org.kurento.test.services.Recorder;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser should start before default timeout</li>
- * <li>Play time should be as expected</li>
- * <li>Color received by client should be as expected</li>
- * <li>Perceived audio quality should be fair (PESQMOS)</li>
+ * <li>No assertion, just data gathering.</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.5
+ * @since 5.0.5
  */
 public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
-	private static int PLAYTIME = 10; // seconds to play in WebRTC
-	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
-	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
+	private static final int DEFAULT_NODES = 10; // Number of nodes
+	private static final int DEFAULT_NBROWSERS = 2; // Browser per node
+	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
+	private static final int DEFAULT_MONITOR_RATE = 1000; // milliseconds
+	private static final int DEFAULT_HOLD_TIME = 30000; // milliseconds
+	private static final int DEFAULT_TIMEOUT = 60; // milliseconds
+
+	private SystemMonitorManager monitor;
+	private int numBrowsers;
+	private int numNodes;
+	private int clientRate;
+	private int holdTime;
+	private int monitorRate;
 
 	public WebRtcPerformanceLoopbackTest() {
 		nodes = new ArrayList<Node>();
 
-		// nodes.addAll(getRandomNodes(1, Browser.CHROME));
+		numNodes = Integer.parseInt(System.getProperty(
+				"test.webrtcgrid.numnodes", String.valueOf(DEFAULT_NODES)));
+		numBrowsers = Integer.parseInt(System.getProperty(
+				"test.webrtcgrid.numbrowsers",
+				String.valueOf(DEFAULT_NBROWSERS)));
+		clientRate = Integer.parseInt(System.getProperty(
+				"test.webrtcgrid.clientrate",
+				String.valueOf(DEFAULT_CLIENT_RATE)));
+		holdTime = Integer.parseInt(System.getProperty(
+				"test.webrtcgrid.holdtime", String.valueOf(DEFAULT_HOLD_TIME)));
+		monitorRate = Integer
+				.parseInt(System.getProperty("test.webrtcgrid.monitor",
+						String.valueOf(DEFAULT_MONITOR_RATE)));
 
-		// Uncomment these lines to use custom video and audio files:
-		// nodes.addAll(getRandomNodes(3, Browser.CHROME, getPathTestFiles()
-		// + "/video/10sec/red.y4m",
-		// "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
+		nodes = getRandomNodes(numNodes, Browser.CHROME, getPathTestFiles()
+				+ "/video/15sec/rgbHD.y4m", null, numBrowsers);
+	}
 
-		// ... or specifying a given node:
-		// nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME,
-		// getPathTestFiles() + "/video/10sec/red.y4m",
-		// "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
+	@Before
+	public void setup() throws IOException, URISyntaxException {
+		monitor = new SystemMonitorManager();
+		monitor.setSamplingTime(monitorRate);
+		monitor.start();
+	}
 
-		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME));
-
-		log.info("Node list {} ", nodes);
+	@After
+	public void teardown() throws IOException {
+		monitor.stop();
+		monitor.writeResults(getDefaultOutputFile("-kms-monitor.csv"));
+		monitor.destroy();
 	}
 
 	@Ignore
 	@Test
-	public void tesWebRtcGridChrome() throws InterruptedException,
-			ExecutionException {
-		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
-		List<Future<?>> results = new ArrayList<>();
+	public void tesWebRtcGridChrome() throws InterruptedException {
+		final int playTime = (numNodes * numBrowsers * clientRate) + holdTime;
+		final ExecutorService internalExec = Executors
+				.newFixedThreadPool(numNodes * numBrowsers);
+		CompletionService<Void> exec = new ExecutorCompletionService<>(
+				internalExec);
+
+		int numBrowser = 0;
 		for (final Node node : nodes) {
-			results.add(exec.submit(new Runnable() {
-				public void run() {
-					doTest(node, CHROME_VIDEOTEST_COLOR);
-
-					// Uncomment this line to assess custom color video
-					// doTest(node, Color.RED);
-				}
-			}));
-		}
-
-		for (Future<?> r : results) {
-			r.get();
-		}
-
-	}
-
-	public void doTest(Node node, Color color) {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
-		webRtcEndpoint.connect(webRtcEndpoint);
-
-		BrowserClient.Builder builder = new BrowserClient.Builder()
-				.browser(node.getBrowser()).client(Client.WEBRTC)
-				.remoteNode(node);
-		if (node.getVideo() != null) {
-			builder = builder.video(node.getVideo());
-		}
-		if (node.getAudio() != null) {
-			builder = builder.audio(node.getAudio(), PLAYTIME,
-					AUDIO_SAMPLE_RATE, AudioChannel.MONO);
-		}
-
-		try (BrowserClient browser = builder.build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
-
-			// Wait until event playing in the remote stream
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-
-			// Guard time to play the video
-			Thread.sleep(PLAYTIME * 1000);
-
-			// Assert play time
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time of player (expected: "
-					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
-					currentTime >= PLAYTIME);
-
-			// Assert color
-			if (color != null) {
-				Assert.assertTrue("The color of the video should be " + color,
-						browser.similarColor(color));
+			for (int i = 1; i <= numBrowsers; i++) {
+				final String name = node.getAddress() + "-browser" + i
+						+ "-count" + (numBrowser + 1);
+				final int sleepNum = numBrowser;
+				exec.submit(new Callable<Void>() {
+					public Void call() throws InterruptedException, IOException {
+						try {
+							Thread.currentThread().setName(name);
+							Thread.sleep(clientRate * sleepNum);
+							log.debug("*** Starting node {} ***", name);
+							monitor.incrementNumClients();
+							doTest(node, playTime, name);
+						} finally {
+							monitor.decrementNumClients();
+							log.debug("--- Ending client {} ---", name);
+						}
+						return null;
+					}
+				});
+				numBrowser++;
 			}
-		} catch (InterruptedException e) {
-			Assert.fail("InterruptedException " + e.getMessage());
 		}
 
-		// Assert audio quality
-		if (node.getAudio() != null) {
-			float realPesqMos = Recorder.getRemotePesqMos(node,
-					AUDIO_SAMPLE_RATE);
-			Assert.assertTrue(
-					"Bad perceived audio quality: PESQ MOS too low (expected="
-							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
-					realPesqMos >= MIN_PESQ_MOS);
+		for (int i = 1; i <= nodes.size() * numBrowsers; i++) {
+			Future<Void> taskFuture = null;
+			try {
+				taskFuture = exec.take();
+				taskFuture.get(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+			} catch (Throwable e) {
+				log.error("$$$ {} $$$", e.getCause().getMessage());
+				if (taskFuture != null) {
+					taskFuture.cancel(true);
+				}
+			} finally {
+				log.debug("+++ Ending browser #{} +++", i);
+			}
 		}
-
-		// Release Media Pipeline
-		mp.release();
 	}
 
+	public void doTest(Node node, int playTime, String name)
+			throws IOException, InterruptedException {
+
+		long endTimeMillis = System.currentTimeMillis() + playTime;
+		MediaPipeline mp = null;
+		BrowserClient browser = null;
+
+		try {
+			// Media Pipeline
+			mp = kurentoClient.createMediaPipeline();
+			WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp)
+					.build();
+			webRtcEndpoint.connect(webRtcEndpoint);
+
+			// Browser
+			BrowserClient.Builder builder = new BrowserClient.Builder()
+					.browser(node.getBrowser()).client(Client.WEBRTC)
+					.remoteNode(node);
+			if (node.getVideo() != null) {
+				builder = builder.video(node.getVideo());
+			}
+			browser = builder.build();
+
+			log.debug("*** start#1 {}", name);
+			browser.subscribeEvents("playing");
+			log.debug("### start#2 {}", name);
+			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+					WebRtcMode.SEND_RCV);
+			log.debug(">>> start#3 {}", name);
+
+			while (true) {
+				if (System.currentTimeMillis() > endTimeMillis) {
+					break;
+				}
+				Thread.sleep(100);
+				try {
+					monitor.addCurrentLatency(browser.getLatency());
+				} catch (LatencyException le) {
+					// log.error("$$$ " + le.getMessage());
+					monitor.incrementLatencyErrors();
+				}
+			}
+		} catch (Throwable e) {
+			log.error("[[[ {} ]]]", e.getCause().getMessage());
+			throw e;
+		} finally {
+			log.debug("<<< finally {}", name);
+
+			// Release Media Pipeline
+			if (mp != null) {
+				mp.release();
+			}
+		}
+	}
 }

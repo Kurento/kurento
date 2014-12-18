@@ -123,6 +123,7 @@ public class BrowserClient implements Closeable {
 		}
 
 		// Selenium timeouts
+		driver.manage().timeouts();
 		driver.manage().timeouts().implicitlyWait(timeout, TimeUnit.SECONDS);
 		driver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.SECONDS);
 		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
