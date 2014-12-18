@@ -26,22 +26,10 @@
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-rabbitmq</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
@@ -127,11 +115,6 @@
 			<version>${jfreechart.version}</version>
 		</dependency>
 
-		<!-- Log4j -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-log4j</artifactId>
-		</dependency>
 	</dependencies>
 
 	<profiles>
@@ -315,7 +298,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
