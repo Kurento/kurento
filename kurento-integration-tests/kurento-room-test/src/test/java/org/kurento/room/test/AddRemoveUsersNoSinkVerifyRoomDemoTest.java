@@ -1,4 +1,4 @@
-package org.kurento.room.demo.test;
+package org.kurento.room.test;
 
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)

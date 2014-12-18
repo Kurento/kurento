@@ -1,4 +1,4 @@
-package org.kurento.room.demo.test;
+package org.kurento.room.test;
 
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -39,64 +39,44 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @SpringApplicationConfiguration(classes = KurentoRoomServerApp.class)
 @WebAppConfiguration
 @IntegrationTest
-public class SeqAddRemoveUserRoomTest extends BaseRoomDemoTest {
-
-	private static final int WAIT_TIME = 500;
+public class SeqNUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
 
 	private Logger log = LoggerFactory
-			.getLogger(SeqAddRemoveUserRoomTest.class);
+			.getLogger(SeqNUsersEqualLifetimeRoomDemoTest.class);
 
 	private static final int PLAY_TIME = 5; // seconds
 
+	private static final String USER1_NAME = "user1";
+	private static final String USER2_NAME = "user2";
 	private static final String ROOM_NAME = "room";
 
-	private static final int NUM_USERS = 4;
-
-	private static final int NUM_ITERATIONS = 2;
-
 	@Test
-	public void nUsersRoomTest() throws InterruptedException,
+	public void twoUsersRoomTest() throws InterruptedException,
 			ExecutionException {
 
-		boolean[] activeUsers = new boolean[NUM_USERS];
-
-		List<WebDriver> browsers = createBrowsers(NUM_USERS);
+		List<WebDriver> browsers = createBrowsers(2);
 
 		try {
 
-			for (int cycle = 0; cycle < NUM_ITERATIONS; cycle++) {
+			joinToRoom(browsers.get(0), USER1_NAME, ROOM_NAME);
+			joinToRoom(browsers.get(1), USER2_NAME, ROOM_NAME);
 
-				for (int i = 0; i < NUM_USERS; i++) {
-					String userName = "user" + i;
-					joinToRoom(browsers.get(i), userName, ROOM_NAME);
-					activeUsers[i] = true;
-					sleep(WAIT_TIME);
-					verify(browsers, activeUsers);
-				}
+			waitForStream(browsers.get(0), "native-video-" + USER2_NAME);
+			log.debug("Received media from " + USER2_NAME + " in " + USER1_NAME);
 
-				for (int i = 0; i < NUM_USERS; i++) {
-					for (int j = 0; j < NUM_USERS; j++) {
-						waitForStream(browsers.get(i), "native-video-user" + j);
-						log.debug("Received media from user" + j + " in user"
-								+ i);
-					}
-				}
+			waitForStream(browsers.get(1), "native-video-" + USER1_NAME);
+			log.debug("Received media from " + USER1_NAME + " in " + USER2_NAME);
 
-				// Guard time to see application in action
-				Thread.sleep(PLAY_TIME * 1000);
+			// Guard time to see application in action
+			Thread.sleep(PLAY_TIME * 1000);
 
-				// Stop application by caller
-				for (int i = 0; i < NUM_USERS; i++) {
-					exitFromRoom(browsers.get(i));
-					activeUsers[i] = false;
-					sleep(WAIT_TIME);
-					verify(browsers, activeUsers);
-				}
-			}
+			// Stop application by caller
+			exitFromRoom(browsers.get(0));
+			exitFromRoom(browsers.get(1));
 
 		} finally {
+
 			closeBrowsers(browsers);
 		}
 	}
-
 }

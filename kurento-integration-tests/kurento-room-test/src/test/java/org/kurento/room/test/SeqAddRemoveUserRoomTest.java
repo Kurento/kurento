@@ -1,4 +1,4 @@
-package org.kurento.room.demo.test;
+package org.kurento.room.test;
 
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -15,6 +15,7 @@ package org.kurento.room.demo.test;
  *
  */
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
@@ -28,8 +29,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.google.common.base.Function;
-
 /**
  * Room demo integration test.
  *
@@ -40,51 +39,64 @@ import com.google.common.base.Function;
 @SpringApplicationConfiguration(classes = KurentoRoomServerApp.class)
 @WebAppConfiguration
 @IntegrationTest
-public class NUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
+public class SeqAddRemoveUserRoomTest extends BaseRoomDemoTest {
+
+	private static final int WAIT_TIME = 500;
 
 	private Logger log = LoggerFactory
-			.getLogger(NUsersEqualLifetimeRoomDemoTest.class);
+			.getLogger(SeqAddRemoveUserRoomTest.class);
 
 	private static final int PLAY_TIME = 5; // seconds
 
-	private static final int NUM_USERS = 4;
 	private static final String ROOM_NAME = "room";
 
+	private static final int NUM_USERS = 4;
+
+	private static final int NUM_ITERATIONS = 2;
+
 	@Test
-	public void test() throws Exception {
+	public void nUsersRoomTest() throws InterruptedException,
+			ExecutionException {
 
-		parallelUsers(NUM_USERS, new UserLifecycle() {
-			public void run(int numUser, final WebDriver browser)
-					throws InterruptedException, ExecutionException {
+		boolean[] activeUsers = new boolean[NUM_USERS];
 
-				final String userName = "user" + numUser;
+		List<WebDriver> browsers = createBrowsers(NUM_USERS);
 
-				joinToRoom(browser, userName, ROOM_NAME);
-				log.info("User '{}' joined to room '{}'", userName, ROOM_NAME);
+		try {
 
-				final long start = System.currentTimeMillis();
+			for (int cycle = 0; cycle < NUM_ITERATIONS; cycle++) {
 
-				parallelTask(NUM_USERS, new Function<Integer, Void>() {
-					public Void apply(Integer num) {
-						String videoUserName = "user" + num;
-						waitForStream(browser, "native-video-user" + num);
-						long duration = System.currentTimeMillis() - start;
-						log.info(
-								"Video received in browser of user {} for user '{}' in {} millis",
-								userName, videoUserName, duration);
-						return null;
+				for (int i = 0; i < NUM_USERS; i++) {
+					String userName = "user" + i;
+					joinToRoom(browsers.get(i), userName, ROOM_NAME);
+					activeUsers[i] = true;
+					sleep(WAIT_TIME);
+					verify(browsers, activeUsers);
+				}
+
+				for (int i = 0; i < NUM_USERS; i++) {
+					for (int j = 0; j < NUM_USERS; j++) {
+						waitForStream(browsers.get(i), "native-video-user" + j);
+						log.debug("Received media from user" + j + " in user"
+								+ i);
 					}
-				});
+				}
 
+				// Guard time to see application in action
 				Thread.sleep(PLAY_TIME * 1000);
 
-				log.info("User '{}' exiting from room '{}'", userName,
-						ROOM_NAME);
-				exitFromRoom(browser);
-				log.info("User '{}' exited from room '{}'", userName, ROOM_NAME);
-
+				// Stop application by caller
+				for (int i = 0; i < NUM_USERS; i++) {
+					exitFromRoom(browsers.get(i));
+					activeUsers[i] = false;
+					sleep(WAIT_TIME);
+					verify(browsers, activeUsers);
+				}
 			}
-		});
+
+		} finally {
+			closeBrowsers(browsers);
+		}
 	}
 
 }

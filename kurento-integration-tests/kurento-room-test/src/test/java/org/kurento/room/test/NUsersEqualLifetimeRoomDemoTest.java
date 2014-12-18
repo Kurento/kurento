@@ -1,4 +1,4 @@
-package org.kurento.room.demo.test;
+package org.kurento.room.test;
 
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -15,7 +15,6 @@ package org.kurento.room.demo.test;
  *
  */
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
@@ -29,6 +28,8 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.google.common.base.Function;
+
 /**
  * Room demo integration test.
  *
@@ -39,44 +40,51 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @SpringApplicationConfiguration(classes = KurentoRoomServerApp.class)
 @WebAppConfiguration
 @IntegrationTest
-public class SeqNUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
+public class NUsersEqualLifetimeRoomDemoTest extends BaseRoomDemoTest {
 
 	private Logger log = LoggerFactory
-			.getLogger(SeqNUsersEqualLifetimeRoomDemoTest.class);
+			.getLogger(NUsersEqualLifetimeRoomDemoTest.class);
 
 	private static final int PLAY_TIME = 5; // seconds
 
-	private static final String USER1_NAME = "user1";
-	private static final String USER2_NAME = "user2";
+	private static final int NUM_USERS = 4;
 	private static final String ROOM_NAME = "room";
 
 	@Test
-	public void twoUsersRoomTest() throws InterruptedException,
-			ExecutionException {
+	public void test() throws Exception {
 
-		List<WebDriver> browsers = createBrowsers(2);
+		parallelUsers(NUM_USERS, new UserLifecycle() {
+			public void run(int numUser, final WebDriver browser)
+					throws InterruptedException, ExecutionException {
 
-		try {
+				final String userName = "user" + numUser;
 
-			joinToRoom(browsers.get(0), USER1_NAME, ROOM_NAME);
-			joinToRoom(browsers.get(1), USER2_NAME, ROOM_NAME);
+				joinToRoom(browser, userName, ROOM_NAME);
+				log.info("User '{}' joined to room '{}'", userName, ROOM_NAME);
 
-			waitForStream(browsers.get(0), "native-video-" + USER2_NAME);
-			log.debug("Received media from " + USER2_NAME + " in " + USER1_NAME);
+				final long start = System.currentTimeMillis();
 
-			waitForStream(browsers.get(1), "native-video-" + USER1_NAME);
-			log.debug("Received media from " + USER1_NAME + " in " + USER2_NAME);
+				parallelTask(NUM_USERS, new Function<Integer, Void>() {
+					public Void apply(Integer num) {
+						String videoUserName = "user" + num;
+						waitForStream(browser, "native-video-user" + num);
+						long duration = System.currentTimeMillis() - start;
+						log.info(
+								"Video received in browser of user {} for user '{}' in {} millis",
+								userName, videoUserName, duration);
+						return null;
+					}
+				});
 
-			// Guard time to see application in action
-			Thread.sleep(PLAY_TIME * 1000);
+				Thread.sleep(PLAY_TIME * 1000);
 
-			// Stop application by caller
-			exitFromRoom(browsers.get(0));
-			exitFromRoom(browsers.get(1));
+				log.info("User '{}' exiting from room '{}'", userName,
+						ROOM_NAME);
+				exitFromRoom(browser);
+				log.info("User '{}' exited from room '{}'", userName, ROOM_NAME);
 
-		} finally {
-
-			closeBrowsers(browsers);
-		}
+			}
+		});
 	}
+
 }
