@@ -284,9 +284,8 @@ configure_port (KmsAlphaBlendingData * port_data)
 }
 
 static void
-kms_alpha_blending_reconfigure_ports (gpointer data)
+kms_alpha_blending_reconfigure_ports (KmsAlphaBlending * self)
 {
-  KmsAlphaBlending *self = KMS_ALPHA_BLENDING (data);
   GstCaps *filtercaps;
   GList *l;
   GList *values = g_hash_table_get_values (self->priv->ports);
@@ -430,9 +429,8 @@ kms_alpha_blending_get_property (GObject * object, guint property_id,
 }
 
 static gboolean
-remove_elements_from_pipeline (gpointer data)
+remove_elements_from_pipeline (KmsAlphaBlendingData * port_data)
 {
-  KmsAlphaBlendingData *port_data = data;
   KmsAlphaBlending *self = port_data->mixer;
   GstElement *videoconvert, *videoscale, *videorate, *capsfilter, *queue,
       *videobox;
@@ -491,9 +489,9 @@ remove_elements_from_pipeline (gpointer data)
 }
 
 static GstPadProbeReturn
-cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+cb_EOS_received (GstPad * pad, GstPadProbeInfo * info,
+    KmsAlphaBlendingData * port_data)
 {
-  KmsAlphaBlendingData *port_data = data;
   KmsAlphaBlending *self = port_data->mixer;
   GstEvent *event;
 
@@ -520,7 +518,8 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   gst_pad_send_event (pad, event);
 
   kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
-      remove_elements_from_pipeline, KMS_ALPHA_BLENDING_REF (port_data),
+      (GSourceFunc) remove_elements_from_pipeline,
+      KMS_ALPHA_BLENDING_REF (port_data),
       (GDestroyNotify) kms_ref_struct_unref);
 
   return GST_PAD_PROBE_DROP;
@@ -590,7 +589,7 @@ kms_alpha_blending_port_data_destroy (KmsAlphaBlendingData * port_data)
       if (remove) {
         /* Remove pipeline without helding the mutex */
         kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
-            remove_elements_from_pipeline,
+            (GSourceFunc) remove_elements_from_pipeline,
             KMS_ALPHA_BLENDING_REF (port_data),
             (GDestroyNotify) kms_ref_struct_unref);
       }
@@ -628,10 +627,10 @@ kms_alpha_blending_port_data_destroy (KmsAlphaBlendingData * port_data)
 }
 
 static GstPadProbeReturn
-link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
+    KmsAlphaBlendingData * data)
 {
   GstPadTemplate *sink_pad_template;
-  KmsAlphaBlendingData *data = user_data;
   KmsAlphaBlending *mixer = data->mixer;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_CAPS) {
@@ -645,8 +644,8 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   data->link_probe_id = 0;
 
   sink_pad_template =
-      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (mixer->priv->
-          videomixer), "sink_%u");
+      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (mixer->
+          priv->videomixer), "sink_%u");
 
   if (G_UNLIKELY (sink_pad_template == NULL)) {
     GST_ERROR_OBJECT (mixer, "Error taking a new pad from videomixer");
