@@ -37,6 +37,7 @@ import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTag;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
@@ -88,6 +89,7 @@ public class BrowserClient implements Closeable {
 	private int recordAudio;
 	private int audioSampleRate;
 	private AudioChannel audioChannel;
+	private SystemMonitorManager monitor;
 
 	private BrowserClient(Builder builder) {
 
@@ -134,6 +136,7 @@ public class BrowserClient implements Closeable {
 
 		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
 				+ KurentoServicesTestHelper.getTestName());
+
 	}
 
 	private void initDriver() {
@@ -604,6 +607,26 @@ public class BrowserClient implements Closeable {
 	public long getRemoteTime() {
 		Object time = js.executeScript(VideoTag.REMOTE.getTime());
 		return (time == null) ? 0 : (Long) time;
+	}
+
+	public void checkLatencyUntil(long endTimeMillis)
+			throws InterruptedException, IOException {
+		while (true) {
+			if (System.currentTimeMillis() > endTimeMillis) {
+				break;
+			}
+			Thread.sleep(100);
+			try {
+				monitor.addCurrentLatency(this.getLatency());
+			} catch (LatencyException le) {
+				// log.error("$$$ " + le.getMessage());
+				monitor.incrementLatencyErrors();
+			}
+		}
+	}
+
+	public void setMonitor(SystemMonitorManager monitor) {
+		this.monitor = monitor;
 	}
 
 }

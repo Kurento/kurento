@@ -22,12 +22,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -45,6 +49,10 @@ import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemPerformanceTests;
 import org.kurento.test.Shell;
 import org.kurento.test.client.Browser;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.BrowserRunner;
+import org.kurento.test.client.Client;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.Node;
 import org.kurento.test.services.Randomizer;
 import org.kurento.test.services.RemoteHost;
@@ -81,7 +89,24 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	private int hubPort;
 	private CountDownLatch countDownLatch;
 
-	public List<Node> nodes;
+	private List<Node> nodes;
+
+	public PerformanceTest() {
+
+		// Monitor -----------------------
+		monitorRate = Integer
+				.parseInt(System.getProperty("test.webrtcgrid.monitor",
+						String.valueOf(DEFAULT_MONITOR_RATE)));
+
+	}
+
+	protected void setNodes(List<Node> nodes) {
+		this.nodes = nodes;
+	}
+
+	public List<Node> getNodes() {
+		return nodes;
+	}
 
 	@Before
 	public void startGrid() throws Exception {
@@ -345,6 +370,124 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		}
 		for (Future<?> r : results) {
 			r.get();
+		}
+	}
+
+	// ------------------ Monitor -----------------
+
+	private static final int DEFAULT_MONITOR_RATE = 1000; // milliseconds
+	private static final int DEFAULT_NBROWSERS = 2; // Browser per node
+	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
+	private static final int DEFAULT_TIMEOUT = 60; // milliseconds
+
+	private SystemMonitorManager monitor;
+
+	private int monitorRate = DEFAULT_MONITOR_RATE;
+	private int browserCreationTime = DEFAULT_CLIENT_RATE;
+	private int numBrowsersPerNode = DEFAULT_NBROWSERS;
+	private int timeout = DEFAULT_TIMEOUT;
+
+	@Before
+	public void setup() throws IOException, URISyntaxException {
+		monitor = new SystemMonitorManager();
+		monitor.setSamplingTime(monitorRate);
+		monitor.start();
+	}
+
+	@After
+	public void teardown() throws IOException {
+		monitor.stop();
+		monitor.writeResults(getDefaultOutputFile("-kms-monitor.csv"));
+		monitor.destroy();
+	}
+
+	protected void incrementNumClients() throws IOException {
+		monitor.incrementNumClients();
+	}
+
+	protected void decrementNumClients() throws IOException {
+		monitor.decrementNumClients();
+	}
+
+	// ----------------------------------------------
+
+	protected int getAllBrowsersStartedTime() {
+		return nodes.size() * numBrowsersPerNode * browserCreationTime;
+	}
+
+	protected void setBrowserCreationRate(int browserCreationTime) {
+		this.browserCreationTime = browserCreationTime;
+	}
+
+	protected void setNumBrowsersPerNode(int numBrowserPerNode) {
+		this.numBrowsersPerNode = numBrowserPerNode;
+	}
+
+	protected void parallelBrowsers(final BrowserRunner browserRunner) {
+
+		final ExecutorService internalExec = Executors.newFixedThreadPool(nodes
+				.size() * numBrowsersPerNode);
+
+		CompletionService<Void> exec = new ExecutorCompletionService<>(
+				internalExec);
+
+		int numBrowser = 0;
+		for (final Node node : getNodes()) {
+			for (int i = 1; i <= numBrowsersPerNode; i++) {
+
+				final String name = node.getAddress() + "-browser" + i
+						+ "-count" + (numBrowser + 1);
+
+				final int numBrowserFinal = numBrowser;
+
+				exec.submit(new Callable<Void>() {
+					public Void call() throws Exception {
+						try {
+							Thread.currentThread().setName(name);
+							Thread.sleep(browserCreationTime * numBrowserFinal);
+							log.debug("*** Starting node {} ***", name);
+							incrementNumClients();
+
+							BrowserClient browser = null;
+
+							// Browser
+							BrowserClient.Builder builder = new BrowserClient.Builder()
+									.browser(node.getBrowser())
+									.client(Client.WEBRTC).remoteNode(node);
+
+							if (node.getVideo() != null) {
+								builder = builder.video(node.getVideo());
+							}
+
+							browser = builder.build();
+
+							browser.setMonitor(monitor);
+
+							browserRunner.run(browser, numBrowserFinal, name);
+						} finally {
+							decrementNumClients();
+							log.debug("--- Ending client {} ---", name);
+						}
+						return null;
+					}
+				});
+				numBrowser++;
+			}
+		}
+
+		for (int i = 1; i <= getNodes().size() * numBrowsersPerNode; i++) {
+			Future<Void> taskFuture = null;
+			try {
+				taskFuture = exec.take();
+				taskFuture.get(timeout, TimeUnit.SECONDS);
+			} catch (Throwable e) {
+				log.error("$$$ {} $$$", e.getCause().getMessage());
+				if (taskFuture != null) {
+					taskFuture.cancel(true);
+				}
+			} finally {
+				log.debug("+++ Ending browser #{} +++", i);
+			}
 		}
 	}
 }
