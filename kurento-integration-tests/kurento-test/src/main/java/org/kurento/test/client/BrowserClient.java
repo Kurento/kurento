@@ -47,6 +47,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -330,11 +331,19 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void addTestName(String testName) {
-		js.executeScript("addTestName('" + testName + "');");
+		try {
+			js.executeScript("addTestName('" + testName + "');");
+		} catch (WebDriverException we) {
+			log.warn(we.getCause().getMessage());
+		}
 	}
 
 	public void appendStringToTitle(String webRtcMode) {
-		js.executeScript("appendStringToTitle('" + webRtcMode + "');");
+		try {
+			js.executeScript("appendStringToTitle('" + webRtcMode + "');");
+		} catch (WebDriverException we) {
+			log.warn(we.getCause().getMessage());
+		}
 	}
 
 	public void consoleLog(ConsoleLogLevel level, String message) {
@@ -504,7 +513,11 @@ public class BrowserClient implements Closeable {
 		private AudioChannel audioChannel; // stereo, mono
 
 		public Builder() {
-			this.serverPort = KurentoServicesTestHelper.getAppHttpPort();
+			this(KurentoServicesTestHelper.getAppHttpPort());
+		}
+
+		public Builder(int serverPort) {
+			this.serverPort = serverPort;
 
 			// By default physical camera will not be used; instead synthetic
 			// videos will be used for testing
@@ -515,10 +528,6 @@ public class BrowserClient implements Closeable {
 
 			// By default, not recording audio (0 seconds)
 			this.recordAudio = 0;
-		}
-
-		public Builder(int serverPort) {
-			this.serverPort = serverPort;
 		}
 
 		public Builder video(String video) {
@@ -627,6 +636,10 @@ public class BrowserClient implements Closeable {
 
 	public void setMonitor(SystemMonitorManager monitor) {
 		this.monitor = monitor;
+	}
+
+	public WebDriver getWebDriver() {
+		return driver;
 	}
 
 }

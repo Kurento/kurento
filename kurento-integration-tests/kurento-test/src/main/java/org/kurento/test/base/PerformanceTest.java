@@ -53,6 +53,7 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserRunner;
 import org.kurento.test.client.Client;
 import org.kurento.test.monitor.SystemMonitorManager;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
 import org.kurento.test.services.Randomizer;
 import org.kurento.test.services.RemoteHost;
@@ -423,8 +424,8 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		this.numBrowsersPerNode = numBrowserPerNode;
 	}
 
-	protected void parallelBrowsers(final BrowserRunner browserRunner) {
-
+	protected void parallelBrowsers(final BrowserRunner browserRunner,
+			final Client client) {
 		final ExecutorService internalExec = Executors.newFixedThreadPool(nodes
 				.size() * numBrowsersPerNode);
 
@@ -452,8 +453,8 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 							// Browser
 							BrowserClient.Builder builder = new BrowserClient.Builder()
-									.browser(node.getBrowser())
-									.client(Client.WEBRTC).remoteNode(node);
+									.browser(node.getBrowser()).client(client)
+									.remoteNode(node);
 
 							if (node.getVideo() != null) {
 								builder = builder.video(node.getVideo());
@@ -489,5 +490,9 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 				log.debug("+++ Ending browser #{} +++", i);
 			}
 		}
+	}
+
+	protected void parallelBrowsers(final BrowserRunner browserRunner) {
+		parallelBrowsers(browserRunner, Client.WEBRTC);
 	}
 }
