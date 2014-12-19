@@ -177,21 +177,6 @@ compare_port_data (KmsAlphaBlendingData * a, KmsAlphaBlendingData * b)
 }
 
 static void
-release_gint (gpointer data)
-{
-  g_slice_free (gint, data);
-}
-
-static gint *
-create_gint (gint value)
-{
-  gint *p = g_slice_new (gint);
-
-  *p = value;
-  return p;
-}
-
-static void
 configure_port (KmsAlphaBlendingData * port_data)
 {
   KmsAlphaBlending *mixer = port_data->mixer;
@@ -336,7 +321,6 @@ kms_alpha_blending_set_master_port (KmsAlphaBlending * alpha_blending)
 {
   GstPad *pad;
   KmsAlphaBlendingData *port_data;
-  gint *key;
   GstCaps *caps;
   gint width, height;
   const GstStructure *str;
@@ -344,10 +328,8 @@ kms_alpha_blending_set_master_port (KmsAlphaBlending * alpha_blending)
   GST_DEBUG ("set master");
 
   //get the element with id == master_port
-  key = create_gint (alpha_blending->priv->master_port);
-  port_data = g_hash_table_lookup (alpha_blending->priv->ports, key);
-
-  release_gint (key);
+  port_data = g_hash_table_lookup (alpha_blending->priv->ports,
+      GINT_TO_POINTER (alpha_blending->priv->master_port));
 
   if (port_data == NULL) {
     return;
@@ -773,7 +755,7 @@ kms_alpha_blending_unhandle_port (KmsBaseHub * mixer, gint id)
 
   KMS_ALPHA_BLENDING_LOCK (self);
 
-  g_hash_table_remove (self->priv->ports, &id);
+  g_hash_table_remove (self->priv->ports, GINT_TO_POINTER (id));
 
   KMS_ALPHA_BLENDING_UNLOCK (self);
 
@@ -916,7 +898,7 @@ kms_alpha_blending_handle_port (KmsBaseHub * mixer,
 
   port_data = kms_alpha_blending_port_data_create (self, port_id);
 
-  g_hash_table_insert (self->priv->ports, create_gint (port_id), port_data);
+  g_hash_table_insert (self->priv->ports, GINT_TO_POINTER (port_id), port_data);
 
   KMS_ALPHA_BLENDING_UNLOCK (self);
 
@@ -928,7 +910,6 @@ kms_alpha_blending_set_port_properties (KmsAlphaBlending * self,
     GstStructure * properties)
 {
   gint port, z_order;
-  gint *key;
   gfloat relative_x, relative_y, relative_width, relative_height;
   KmsAlphaBlendingData *port_data;
   gboolean fields_ok = TRUE;
@@ -956,10 +937,10 @@ kms_alpha_blending_set_port_properties (KmsAlphaBlending * self,
     GST_WARNING_OBJECT (self, "Invalid properties structure received");
     return;
   }
+
   KMS_ALPHA_BLENDING_LOCK (self);
-  key = create_gint (port);
-  port_data = g_hash_table_lookup (self->priv->ports, key);
-  release_gint (key);
+
+  port_data = g_hash_table_lookup (self->priv->ports, GINT_TO_POINTER (port));
 
   if (port_data == NULL) {
     KMS_ALPHA_BLENDING_UNLOCK (self);
@@ -1063,8 +1044,8 @@ kms_alpha_blending_init (KmsAlphaBlending * self)
 
   g_rec_mutex_init (&self->priv->mutex);
 
-  self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
-      release_gint, (GDestroyNotify) kms_alpha_blending_port_data_destroy);
+  self->priv->ports = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+      NULL, (GDestroyNotify) kms_alpha_blending_port_data_destroy);
   self->priv->n_elems = 0;
   self->priv->master_port = 0;
   self->priv->z_master = 5;
