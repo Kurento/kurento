@@ -149,7 +149,7 @@ public class RoomHandler extends TextWebSocketHandler {
 			});
 
 		} else {
-			log.warn("Trying to leave from room {} but it is closed",
+			log.warn("Trying to join from room {} but it is closed",
 					room.getName());
 		}
 	}

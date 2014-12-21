@@ -69,6 +69,7 @@ public class Room implements Closeable {
 		checkClosed();
 
 		if (pipeline == null) {
+			log.info("ROOM {}: Creating MediaPipeline", userName);
 			pipeline = kurento.createMediaPipeline();
 		}
 
