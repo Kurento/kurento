@@ -123,11 +123,31 @@ function Stream(kurento, local, options) {
 		ee.addListener(eventName, listener);
 	}
 
+	this.playOnlyVideo = function(element) {
+
+		var video = document.createElement('video');
+
+		if(typeof element === "string"){
+			document.getElementById(element).appendChild(video);
+		} else {
+			element.appendChild(video);
+		}
+
+		video.id = 'native-video-' + id;
+		video.autoplay = true;
+		video.controls = false;
+		video.src = URL.createObjectURL(wrStream);
+		if(local){
+			video.setAttribute("muted","muted");
+		}
+	}
+
 	this.play = function(elementId) {
 
 		var container = document.createElement('div');
 		container.className = "participant";
 		container.id = id;
+		document.getElementById(elementId).appendChild(container);
 
 		that.element = container;
 
@@ -137,29 +157,8 @@ function Stream(kurento, local, options) {
 		name.id = "name-"+id;
 		name.className = "name";
 
-		var video = document.createElement('video');
-		container.appendChild(video);
+		that.playOnlyVideo(container);
 
-		document.getElementById(elementId).appendChild(container);
-
-		video.id = 'native-video-' + id;
-		video.autoplay = true;
-		video.controls = false;
-		video.src = URL.createObjectURL(wrStream);
-		video.muter = true;
-	}
-
-	this.playOnlyVideo = function(elementId) {
-
-		var video = document.createElement('video');
-
-		document.getElementById(elementId).appendChild(video);
-
-		video.id = 'native-video-' + id;
-		video.autoplay = true;
-		video.controls = false;
-		video.src = URL.createObjectURL(wrStream);
-		video.muter = true;
 	}
 
 	this.getID = function() {
