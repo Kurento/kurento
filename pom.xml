@@ -2,9 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>org.kurento</groupId>
+		<artifactId>kurento-parent-pom</artifactId>
+		<version>5.0.5-SNAPSHOT</version>
+    </parent>
+
 	<groupId>org.kurento.tutorial</groupId>
 	<artifactId>kurento-tutorial-test</artifactId>
-	<version>5.0.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kurento Java Client Tutorial Test Suite</name>
@@ -60,22 +65,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<version.dependency.plugin>2.8</version.dependency.plugin>
-
-		<!-- maven-compiler-plugin -->
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
-
 		<!-- Kurento -->
 		<kurento.version>[5.0.0,6.0.0)</kurento.version>
 
-		<!-- Plugins -->
-		<failsafe.version>2.17</failsafe.version>
-
 		<!-- Test dependencies versions -->
-		<junit.version>4.11</junit.version>
 		<selenium-java.version>2.43.1</selenium-java.version>
-		<spring-test.version>4.1.0.RELEASE</spring-test.version>
 
 		<!-- Webdrivers versions -->
 		<linux32-webdriver.version>2.9</linux32-webdriver.version>
@@ -89,12 +83,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>${version.dependency.plugin}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>${failsafe.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -112,7 +104,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -124,7 +115,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${spring-test.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

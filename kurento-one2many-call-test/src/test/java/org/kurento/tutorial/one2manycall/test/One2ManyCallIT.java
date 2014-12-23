@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.tutorial.one2manycall.test;
 
@@ -37,7 +36,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * One to many call integration test.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.0
  */
@@ -67,7 +66,7 @@ public class One2ManyCallIT {
 		}
 	}
 
-	private WebDriver newWebDriver() {
+	private static WebDriver newWebDriver() {
 		ChromeOptions options = new ChromeOptions();
 		// This flag avoids a warning in Chrome. See:
 		// https://code.google.com/p/chromedriver/issues/detail?id=799
@@ -77,7 +76,7 @@ public class One2ManyCallIT {
 		// This flag makes using a synthetic video (green with spinner) in
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
-		
+
 		// Path to chrome driver binary
 		String chromedriver = null;
 		if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
@@ -122,19 +121,22 @@ public class One2ManyCallIT {
 		master.findElement(By.id("terminate")).click();
 	}
 
-	private void waitForStream(WebDriver driver, String videoTagId)
+	private static void waitForStream(WebDriver driver, String videoTagId)
 			throws InterruptedException {
 		WebElement video = driver.findElement(By.id(videoTagId));
 		int i = 0;
 		for (; i < TEST_TIMEOUT; i++) {
 			if (video.getAttribute("src").startsWith("blob")) {
 				break;
-			} else {
-				Thread.sleep(1000);
 			}
+
+			Thread.sleep(1000);
+
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
+			Assert.fail("Video tag '" + videoTagId
+					+ "' is not playing media after " + TEST_TIMEOUT
+					+ " seconds");
 		}
 	}
 
