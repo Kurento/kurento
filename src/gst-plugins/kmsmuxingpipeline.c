@@ -84,8 +84,6 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 #define KMS_MUXING_PIPELINE_DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 
-static GstClockTime MAX_DELAY = 300 * GST_MSECOND;
-
 static void
 kms_muxing_pipeline_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -258,187 +256,46 @@ kms_muxing_pipeline_configure (KmsMuxingPipeline * self)
   }
 }
 
-static GstFlowReturn
-kms_muxing_pipeline_inject_raw_audio (GstElement * source, GstClockTime pts)
-{
-  GstBuffer *buffer;
-  GstFlowReturn ret;
-  GstCaps *dummy_caps;
-
-  dummy_caps =
-      gst_caps_from_string
-      ("audio/x-raw,format=S16LE,rate=9000,layout=interleaved,channels=1");
-  g_object_set (source, "caps", dummy_caps, NULL);
-  gst_caps_unref (dummy_caps);
-
-  buffer = gst_buffer_new_and_alloc (sizeof (gint16));
-
-  GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_GAP);
-  GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DROPPABLE);
-  gst_buffer_memset (buffer, 0, 0, sizeof (gint16));
-  GST_BUFFER_PTS (buffer) = pts;
-  GST_BUFFER_DTS (buffer) = GST_CLOCK_TIME_NONE;
-
-  g_signal_emit_by_name (source, "push-buffer", buffer, &ret);
-
-  gst_buffer_unref (buffer);
-
-  return ret;
-}
-
-static GstFlowReturn
-kms_muxing_pipeline_inject_raw_video (GstElement * source, GstClockTime pts)
-{
-  GstBuffer *buffer;
-  GstFlowReturn ret;
-  GstCaps *dummy_caps;
-  gsize size;
-
-  dummy_caps =
-      gst_caps_from_string
-      ("video/x-raw,format=RGB,framerate=15/1,width=20,height=20");
-  g_object_set (source, "caps", dummy_caps, NULL);
-  gst_caps_unref (dummy_caps);
-
-  size = 20 * 20 * sizeof (guint8) * 3;
-
-  buffer = gst_buffer_new_and_alloc (size);
-
-  GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_GAP);
-  GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DROPPABLE);
-  gst_buffer_memset (buffer, 0, 0, size);
-  GST_BUFFER_PTS (buffer) = pts;
-  GST_BUFFER_DTS (buffer) = GST_CLOCK_TIME_NONE;
-
-  g_signal_emit_by_name (source, "push-buffer", buffer, &ret);
-
-  gst_buffer_unref (buffer);
-
-  return ret;
-}
-
 static gboolean
-is_raw_caps (GstCaps * caps)
-{
-  gboolean ret;
-  GstCaps *raw_caps = gst_caps_from_string (KMS_AGNOSTIC_RAW_CAPS);
-
-  ret = gst_caps_is_always_compatible (caps, raw_caps);
-
-  gst_caps_unref (raw_caps);
-  return ret;
-}
-
-static void
-kms_muxing_pipeline_inject_buffer (KmsMuxingPipeline * self,
-    GstElement * source, GstClockTime pts)
-{
-  GstBuffer *buffer;
-  GstFlowReturn ret;
-  GstCaps *caps;
-
-  g_object_get (source, "caps", &caps, NULL);
-
-  GST_TRACE_OBJECT (source, "Caps are: %" GST_PTR_FORMAT, caps);
-
-  if (caps == NULL || is_raw_caps (caps)) {
-    GST_TRACE_OBJECT (source, "Creating dummy raw buffer");
-
-    if (self->priv->audiosrc == source) {
-      ret = kms_muxing_pipeline_inject_raw_audio (source, pts);
-    } else if (self->priv->videosrc == source) {
-      ret = kms_muxing_pipeline_inject_raw_video (source, pts);
-    } else {
-      GST_WARNING_OBJECT (self,
-          "Invalid source detected while injecting buffer");
-      return;
-    }
-  } else {
-    gst_caps_unref (caps);
-
-    buffer = gst_buffer_new ();
-    GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DROPPABLE);
-    GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_GAP);
-    GST_BUFFER_PTS (buffer) = pts;
-    GST_BUFFER_DTS (buffer) = GST_CLOCK_TIME_NONE;
-    g_signal_emit_by_name (source, "push-buffer", buffer, &ret);
-
-    gst_buffer_unref (buffer);
-  }
-
-  if (ret != GST_FLOW_OK) {
-    if (ret != GST_FLOW_EOS) {
-      GST_ERROR ("Could not send buffer to appsrc %s. Cause: %s",
-          GST_ELEMENT_NAME (source), gst_flow_get_name (ret));
-    } else {
-      GST_TRACE ("Could not send buffer to appsrc %s. Cause: %s",
-          GST_ELEMENT_NAME (source), gst_flow_get_name (ret));
-    }
-  } else {
-    GST_TRACE_OBJECT (source, "Inject buffer with pts %" G_GUINT64_FORMAT, pts);
-  }
-}
-
-static gboolean
-kms_muxing_pipeline_check_pts (GstBuffer ** buffer, GstClockTime * lastPts,
-    GstClockTime otherPts)
+kms_muxing_pipeline_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
 {
   if (G_UNLIKELY (!GST_BUFFER_PTS_IS_VALID ((*buffer)))) {
-    return FALSE;
+    return TRUE;
   } else if (G_LIKELY (*lastPts <= (*buffer)->pts)) {
     *lastPts = (*buffer)->pts;
 
-    if (otherPts < *lastPts) {
-      return (*lastPts - otherPts) > MAX_DELAY;
-    }
-
-    return FALSE;
+    return TRUE;
   } else {
-    GST_WARNING ("Changing buffer pts from: %" G_GUINT64_FORMAT " to %"
+    GST_WARNING ("Buffer pts %" G_GUINT64_FORMAT " is older than last pts %"
         G_GUINT64_FORMAT, GST_BUFFER_PTS (*buffer), *lastPts);
-    (*buffer) = gst_buffer_make_writable (*buffer);
-    (*buffer)->pts = *lastPts;
-    (*buffer)->dts = *lastPts;
 
     return FALSE;
   }
 }
 
-static void
+static gboolean
 kms_muxing_pipeline_injector (KmsMuxingPipeline * self, GstElement * elem,
     GstBuffer ** buffer)
 {
+  GstClockTime *lastPts = NULL;
+
   if (elem == self->priv->videosrc) {
-    gboolean ret;
-
-    KMS_MUXING_PIPELINE_LOCK (self);
-    ret =
-        kms_muxing_pipeline_check_pts (buffer, &self->priv->lastVideoPts,
-        self->priv->lastAudioPts);
-    if (G_UNLIKELY (ret)) {
-      GstClockTime injectPts = self->priv->lastVideoPts - MAX_DELAY;
-
-      KMS_MUXING_PIPELINE_UNLOCK (self);
-      kms_muxing_pipeline_inject_buffer (self, self->priv->audiosrc, injectPts);
-    } else {
-      KMS_MUXING_PIPELINE_UNLOCK (self);
-    }
+    lastPts = &self->priv->lastVideoPts;
   } else if (elem == self->priv->audiosrc) {
+    lastPts = &self->priv->lastAudioPts;
+  }
+
+  if (G_LIKELY (lastPts)) {
     gboolean ret;
 
     KMS_MUXING_PIPELINE_LOCK (self);
-    ret =
-        kms_muxing_pipeline_check_pts (buffer, &self->priv->lastAudioPts,
-        self->priv->lastVideoPts);
-    if (G_UNLIKELY (ret)) {
-      GstClockTime injectPts = self->priv->lastAudioPts - MAX_DELAY;
+    ret = kms_muxing_pipeline_check_pts (buffer, lastPts);
+    KMS_MUXING_PIPELINE_UNLOCK (self);
 
-      KMS_MUXING_PIPELINE_UNLOCK (self);
-      kms_muxing_pipeline_inject_buffer (self, self->priv->videosrc, injectPts);
-    } else {
-      KMS_MUXING_PIPELINE_UNLOCK (self);
-    }
+    return ret;
   }
+
+  return FALSE;
 }
 
 static gboolean
@@ -447,9 +304,7 @@ kms_muxing_pipeline_injector_probe_it (GstBuffer ** buffer, guint idx,
 {
   BufferListItData *data = user_data;
 
-  kms_muxing_pipeline_injector (data->self, data->elem, buffer);
-
-  return TRUE;
+  return kms_muxing_pipeline_injector (data->self, data->elem, buffer);
 }
 
 static GstPadProbeReturn
@@ -457,6 +312,7 @@ kms_muxing_pipeline_injector_probe (GstPad * pad, GstPadProbeInfo * info,
     gpointer self)
 {
   GstElement *elem;
+  GstPadProbeReturn ret = GST_PAD_PROBE_OK;
 
   if (info->type & GST_PAD_PROBE_TYPE_BLOCK) {
     return GST_PAD_PROBE_PASS;
@@ -473,18 +329,21 @@ kms_muxing_pipeline_injector_probe (GstPad * pad, GstPadProbeInfo * info,
     itData.self = self;
     itData.elem = elem;
 
-    gst_buffer_list_foreach (list, kms_muxing_pipeline_injector_probe_it,
-        &itData);
-
+    if (G_UNLIKELY (!gst_buffer_list_foreach (list,
+                kms_muxing_pipeline_injector_probe_it, &itData))) {
+      ret = GST_PAD_PROBE_DROP;
+    }
   } else if (info->type & GST_PAD_PROBE_TYPE_BUFFER) {
     GstBuffer **buffer = (GstBuffer **) & info->data;
 
-    kms_muxing_pipeline_injector (self, elem, buffer);
+    if (G_UNLIKELY (!kms_muxing_pipeline_injector (self, elem, buffer))) {
+      ret = GST_PAD_PROBE_DROP;
+    }
   }
 
   g_object_unref (elem);
 
-  return GST_PAD_PROBE_OK;
+  return ret;
 }
 
 static void
