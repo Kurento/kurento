@@ -6,7 +6,11 @@
       "typeFormat": "ENUM",
       "values": [
         "WEBM",
-        "MP4"
+        "MP4",
+        "WEBM_VIDEO_ONLY",
+        "WEBM_AUDIO_ONLY",
+        "MP4_VIDEO_ONLY",
+        "MP4_AUDIO_ONLY"
       ]
     }
   ]
