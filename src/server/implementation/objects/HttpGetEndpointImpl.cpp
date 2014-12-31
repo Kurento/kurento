@@ -6,6 +6,7 @@
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
+#include "commons/kmsrecordingprofile.h"
 
 #define GST_CAT_DEFAULT kurento_http_get_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -30,12 +31,36 @@ HttpGetEndpointImpl::HttpGetEndpointImpl (
   switch (mediaProfile->getValue() ) {
   case MediaProfileSpecType::WEBM:
     GST_INFO ("Set WEBM profile");
-    g_object_set ( G_OBJECT (element), "profile", 0, NULL);
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_WEBM, NULL);
     break;
 
   case MediaProfileSpecType::MP4:
     GST_INFO ("Set MP4 profile");
-    g_object_set ( G_OBJECT (element), "profile", 1, NULL);
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_MP4, NULL);
+    break;
+
+  case MediaProfileSpecType::WEBM_VIDEO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::WEBM_AUDIO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::MP4_VIDEO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::MP4_AUDIO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
     break;
   }
 

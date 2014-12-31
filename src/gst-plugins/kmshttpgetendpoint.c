@@ -127,10 +127,18 @@ kms_http_get_endpoint_change_internal_pipeline_state (KmsHttpEndpoint * httpep,
             GST_STATE_PLAYING) == GST_STATE_CHANGE_ASYNC) {
       GST_DEBUG ("Change to PLAYING will be asynchronous");
     }
-    kms_http_get_endpoint_add_sinkpad (self, AUDIO_APPSINK,
-        KMS_ELEMENT_PAD_TYPE_AUDIO);
-    kms_http_get_endpoint_add_sinkpad (self, VIDEO_APPSINK,
-        KMS_ELEMENT_PAD_TYPE_VIDEO);
+
+    if (kms_recording_profile_supports_type (self->priv->profile,
+            KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+      kms_http_get_endpoint_add_sinkpad (self, AUDIO_APPSINK,
+          KMS_ELEMENT_PAD_TYPE_AUDIO);
+    }
+
+    if (kms_recording_profile_supports_type (self->priv->profile,
+            KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+      kms_http_get_endpoint_add_sinkpad (self, VIDEO_APPSINK,
+          KMS_ELEMENT_PAD_TYPE_VIDEO);
+    }
   } else {
     kms_element_remove_sink_by_type (KMS_ELEMENT (self),
         KMS_ELEMENT_PAD_TYPE_AUDIO);

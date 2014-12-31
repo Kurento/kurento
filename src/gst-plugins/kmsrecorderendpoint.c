@@ -524,10 +524,17 @@ kms_recorder_generate_pads (KmsRecorderEndpoint * self)
 {
   KmsElement *elem = KMS_ELEMENT (self);
 
-  kms_element_connect_sink_target (elem, self->priv->audio_target,
-      KMS_ELEMENT_PAD_TYPE_AUDIO);
-  kms_element_connect_sink_target (elem, self->priv->video_target,
-      KMS_ELEMENT_PAD_TYPE_VIDEO);
+  if (kms_recording_profile_supports_type (self->priv->profile,
+          KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+    kms_element_connect_sink_target (elem, self->priv->audio_target,
+        KMS_ELEMENT_PAD_TYPE_AUDIO);
+  }
+
+  if (kms_recording_profile_supports_type (self->priv->profile,
+          KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+    kms_element_connect_sink_target (elem, self->priv->video_target,
+        KMS_ELEMENT_PAD_TYPE_VIDEO);
+  }
 }
 
 static void
@@ -744,8 +751,17 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
           gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
           g_object_unref (bus);
 
-          kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_AUDIO);
-          kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_VIDEO);
+          if (kms_recording_profile_supports_type (self->priv->profile,
+                  KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+            kms_recorder_endpoint_add_appsink (self,
+                KMS_ELEMENT_PAD_TYPE_AUDIO);
+          }
+
+          if (kms_recording_profile_supports_type (self->priv->profile,
+                  KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+            kms_recorder_endpoint_add_appsink (self,
+                KMS_ELEMENT_PAD_TYPE_VIDEO);
+          }
         }
       } else {
         GST_ERROR_OBJECT (self, "Profile can only be configured once");

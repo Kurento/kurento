@@ -6,6 +6,7 @@
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
+#include <commons/kmsrecordingprofile.h>
 
 #define GST_CAT_DEFAULT kurento_recorder_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -15,11 +16,6 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 namespace kurento
 {
-
-enum {
-  WEBM = 0,
-  MP4 = 1
-};
 
 RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     &conf,
@@ -35,13 +31,37 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
 
   switch (mediaProfile->getValue() ) {
   case MediaProfileSpecType::WEBM:
-    g_object_set ( G_OBJECT (element), "profile", WEBM, NULL);
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_WEBM, NULL);
     GST_INFO ("Set WEBM profile");
     break;
 
   case MediaProfileSpecType::MP4:
-    g_object_set ( G_OBJECT (element), "profile", MP4, NULL);
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_MP4, NULL);
     GST_INFO ("Set MP4 profile");
+    break;
+
+  case MediaProfileSpecType::WEBM_VIDEO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::WEBM_AUDIO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::MP4_VIDEO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::MP4_AUDIO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY, NULL);
+    GST_INFO ("Set WEBM profile");
     break;
   }
 }

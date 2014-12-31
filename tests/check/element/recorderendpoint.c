@@ -517,7 +517,8 @@ GST_START_TEST (check_video_only)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/check_video_only.webm", "profile", 0 /* WEBM */ , NULL);
+      "file:///tmp/check_video_only.webm", "profile", 2 /* WEBM_VIDEO_ONLY */ ,
+      NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -580,7 +581,8 @@ GST_START_TEST (check_audio_only)
   recorder = gst_element_factory_make ("recorderendpoint", NULL);
 
   g_object_set (G_OBJECT (recorder), "uri",
-      "file:///tmp/check_audio_only.webm", "profile", 0 /* WEBM */ , NULL);
+      "file:///tmp/check_audio_only.webm", "profile", 3 /* WEBM_AUDIO_ONLY */ ,
+      NULL);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
