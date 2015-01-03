@@ -20,6 +20,14 @@
 
 #include <kmstestutils.h>
 
+#include <commons/kmselementpadtype.h>
+
+#define KMS_VIDEO_PREFIX "video_src_"
+#define KMS_AUDIO_PREFIX "audio_src_"
+
+#define AUDIO_SINK "audio-sink"
+#define VIDEO_SINK "video-sink"
+
 static const gchar *pattern_offer_sdp_str = "v=0\r\n"
     "o=- 0 0 IN IP4 0.0.0.0\r\n"
     "s=TestSession\r\n"
@@ -106,36 +114,95 @@ timeout_check (gpointer pipeline)
   return FALSE;
 }
 
-static gboolean
-connect_output_sink (gpointer data)
+static void
+connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
+    gpointer user_data)
 {
-  GstElement *pipeline = data;
-  GstElement *rtpendpointreceiver = gst_bin_get_by_name (GST_BIN (pipeline),
-      "receiver");
-  GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
-  GMainLoop *loop = g_object_get_data (G_OBJECT (pipeline), "loop");
-  GstElement *agnosticbin = gst_bin_get_by_name (GST_BIN (pipeline),
-      "agnosticbin");
-  GstElement *rtpendpointsender = gst_bin_get_by_name (GST_BIN (pipeline),
-      "sender");
+  GstElement *sink;
+  GstPad *sinkpad;
 
-  gst_element_link_pads (agnosticbin, NULL, rtpendpointsender, "video_sink");
-  g_object_unref (agnosticbin);
-  g_object_unref (rtpendpointsender);
+  if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
+    GST_DEBUG_OBJECT (pad, "Connecting video stream");
+    sink = g_object_get_data (G_OBJECT (element), AUDIO_SINK);
+  } else if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_VIDEO_PREFIX)) {
+    GST_DEBUG_OBJECT (pad, "Connecting audio stream");
+    sink = g_object_get_data (G_OBJECT (element), VIDEO_SINK);
+  } else {
+    GST_TRACE_OBJECT (pad, "Not src pad type");
+    return;
+  }
 
-  g_object_set (G_OBJECT (outputfakesink), "signal-handoffs", TRUE, NULL);
-  g_signal_connect (G_OBJECT (outputfakesink), "handoff",
-      G_CALLBACK (fakesink_hand_off), loop);
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  gst_pad_link (pad, sinkpad);
+  g_object_unref (sinkpad);
+  gst_element_sync_state_with_parent (sink);
+}
 
-  gst_bin_add (GST_BIN (pipeline), outputfakesink);
-  gst_element_sync_state_with_parent (outputfakesink);
+static gboolean
+kms_element_request_srcpad (GstElement * src, KmsElementPadType pad_type)
+{
+  gchar *padname;
 
-  kms_element_link_pads (rtpendpointreceiver, "video_src_%u", outputfakesink,
-      "sink");
+  g_signal_emit_by_name (src, "request-new-srcpad", pad_type, NULL, &padname);
+  if (padname == NULL) {
+    return FALSE;
+  }
 
-  g_object_unref (rtpendpointreceiver);
+  GST_DEBUG_OBJECT (src, "Requested pad %s", padname);
+  g_free (padname);
 
-  return FALSE;
+  return TRUE;
+}
+
+typedef struct _KmsConnectData
+{
+  GstElement *agnostic;
+  GstBin *pipe;
+  const gchar *pad_prefix;
+  gulong id;
+} KmsConnectData;
+
+static void
+connect_sink (GstElement * element, GstPad * pad, gpointer user_data)
+{
+  KmsConnectData *data = user_data;
+
+  GST_DEBUG_OBJECT (pad, "New pad %" GST_PTR_FORMAT, element);
+
+  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), data->pad_prefix)) {
+    return;
+  }
+
+  gst_element_link_pads (data->agnostic, NULL, element, GST_OBJECT_NAME (pad));
+  gst_element_sync_state_with_parent (data->agnostic);
+
+  GST_INFO_OBJECT (pad, "Linking %s", data->pad_prefix);
+
+  if (data->id != 0) {
+    g_signal_handler_disconnect (element, data->id);
+  }
+}
+
+static void
+kms_connect_data_destroy (gpointer data)
+{
+  g_slice_free (KmsConnectData, data);
+}
+
+static void
+connect_sink_async (GstElement * rtpendpoint, GstElement * agnostic,
+    GstElement * pipe, const gchar * pad_prefix)
+{
+  KmsConnectData *data = g_slice_new (KmsConnectData);
+
+  data->agnostic = agnostic;
+  data->pipe = GST_BIN (pipe);
+  data->pad_prefix = pad_prefix;
+
+  data->id =
+      g_signal_connect_data (rtpendpoint, "pad-added",
+      G_CALLBACK (connect_sink), data,
+      (GClosureNotify) kms_connect_data_destroy, 0);
 }
 
 GST_START_TEST (loopback)
@@ -144,13 +211,13 @@ GST_START_TEST (loopback)
   GstSDPMessage *pattern_sdp, *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (__FUNCTION__);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
-  GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
   GstElement *agnosticbin =
       gst_element_factory_make ("agnosticbin", "agnosticbin");
   GstElement *rtpendpointsender =
       gst_element_factory_make ("rtpendpoint", "sender");
   GstElement *rtpendpointreceiver =
       gst_element_factory_make ("rtpendpoint", "receiver");
+  GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -170,14 +237,23 @@ GST_START_TEST (loopback)
   g_object_set (rtpendpointreceiver, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
-  g_object_set (G_OBJECT (fakesink), "sync", TRUE, NULL);
+  g_object_set (G_OBJECT (outputfakesink), "signal-handoffs", TRUE, "async",
+      FALSE, NULL);
+  g_signal_connect (G_OBJECT (outputfakesink), "handoff",
+      G_CALLBACK (fakesink_hand_off), loop);
 
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, agnosticbin, fakesink,
-      NULL);
-  gst_element_link_many (videotestsrc, agnosticbin, fakesink, NULL);
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, agnosticbin,
+      rtpendpointsender, rtpendpointreceiver, outputfakesink, NULL);
 
-  gst_bin_add_many (GST_BIN (pipeline), rtpendpointreceiver, rtpendpointsender,
-      NULL);
+  gst_element_link (videotestsrc, agnosticbin);
+  connect_sink_async (rtpendpointsender, agnosticbin, pipeline, "sink_video");
+
+  g_object_set_data (G_OBJECT (rtpendpointreceiver), VIDEO_SINK,
+      outputfakesink);
+  g_signal_connect (rtpendpointreceiver, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (rtpendpointreceiver,
+          KMS_ELEMENT_PAD_TYPE_VIDEO));
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -197,7 +273,6 @@ GST_START_TEST (loopback)
   gst_element_set_state (rtpendpointsender, GST_STATE_PLAYING);
   gst_element_set_state (rtpendpointreceiver, GST_STATE_PLAYING);
 
-  g_timeout_add (500, connect_output_sink, pipeline);
   g_timeout_add_seconds (10, timeout_check, pipeline);
 
   mark_point ();
@@ -420,8 +495,11 @@ sdp_suite (void)
   suite_add_tcase (s, tc_chain);
   tcase_add_test (tc_chain, negotiation_offerer);
   tcase_add_test (tc_chain, loopback);
-  tcase_add_test (tc_chain, process_webrtc_offer);
 
+  /* TODO: enable when bundle is available */
+  if (FALSE) {
+    tcase_add_test (tc_chain, process_webrtc_offer);
+  }
   return s;
 }
 
