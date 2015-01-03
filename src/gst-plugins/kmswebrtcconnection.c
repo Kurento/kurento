@@ -325,7 +325,7 @@ kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
       NICE_COMPONENT_TYPE_RTCP);
 
   if (priv->rtp_tr == NULL || priv->rtcp_tr == NULL) {
-    GST_ERROR ("Cannot create KmsWebRTCConnection.");
+    GST_ERROR_OBJECT (obj, "Cannot create KmsWebRTCConnection.");
     g_object_unref (obj);
     return NULL;
   }
