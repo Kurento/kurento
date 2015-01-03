@@ -443,17 +443,17 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
   KmsWebRtcBundleConnectionPrivate *priv = self->priv;
   KmsWebRtcTransport *tr = priv->tr;
 
-  {
-    g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", !local_offer, NULL);
-    g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", !local_offer, NULL);
-    gst_bin_add_many (bin,
-        g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
-    gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
+  /* srcs */
+  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", !local_offer, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", !local_offer, NULL);
+  gst_bin_add_many (bin,
+      g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
+  gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
 
-    gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
-    gst_element_sync_state_with_parent_target_state (tr->nicesrc);
-  }
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
+  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
 
+  /* sinks */
   gst_bin_add_many (bin, g_object_ref (priv->rtp_funnel),
       g_object_ref (priv->rtcp_funnel),
       g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
