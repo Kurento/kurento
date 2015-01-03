@@ -18,6 +18,14 @@
 
 #include <kmstestutils.h>
 
+#include <commons/kmselementpadtype.h>
+
+#define KMS_VIDEO_PREFIX "video_src_"
+#define KMS_AUDIO_PREFIX "audio_src_"
+
+#define AUDIO_SINK "audio-sink"
+#define VIDEO_SINK "video-sink"
+
 static gboolean
 quit_main_loop_idle (gpointer data)
 {
@@ -48,6 +56,117 @@ bus_msg (GstBus * bus, GstMessage * msg, gpointer pipe)
     default:
       break;
   }
+}
+
+typedef struct _KmsConnectData
+{
+  GstElement *src;
+  GstElement *enc;
+  GstElement *caps;
+  GstBin *pipe;
+  const gchar *pad_prefix;
+  gulong id;
+} KmsConnectData;
+
+static void
+connect_sink (GstElement * element, GstPad * pad, gpointer user_data)
+{
+  KmsConnectData *data = user_data;
+
+  GST_DEBUG_OBJECT (pad, "New pad %" GST_PTR_FORMAT, element);
+
+  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), data->pad_prefix)) {
+    return;
+  }
+
+  gst_bin_add_many (GST_BIN (data->pipe), data->src, data->enc, NULL);
+
+  if (data->caps != NULL) {
+    gst_bin_add (GST_BIN (data->pipe), data->caps);
+    gst_element_link_many (data->src, data->caps, data->enc, NULL);
+  } else {
+    gst_element_link_many (data->src, data->enc, NULL);
+  }
+
+  gst_element_link_pads (data->enc, NULL, element, GST_OBJECT_NAME (pad));
+  gst_element_sync_state_with_parent (data->enc);
+
+  if (data->caps != NULL) {
+    gst_element_sync_state_with_parent (data->caps);
+  }
+
+  gst_element_sync_state_with_parent (data->src);
+
+  GST_INFO_OBJECT (pad, "Linking %s", data->pad_prefix);
+
+  if (data->id != 0) {
+    g_signal_handler_disconnect (element, data->id);
+  }
+}
+
+static void
+kms_connect_data_destroy (gpointer data)
+{
+  g_slice_free (KmsConnectData, data);
+}
+
+static void
+connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
+    gpointer user_data)
+{
+  GstElement *sink;
+  GstPad *sinkpad;
+
+  if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
+    GST_DEBUG_OBJECT (pad, "Connecting video stream");
+    sink = g_object_get_data (G_OBJECT (element), AUDIO_SINK);
+  } else if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_VIDEO_PREFIX)) {
+    GST_DEBUG_OBJECT (pad, "Connecting audio stream");
+    sink = g_object_get_data (G_OBJECT (element), VIDEO_SINK);
+  } else {
+    GST_TRACE_OBJECT (pad, "Not src pad type");
+    return;
+  }
+
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  gst_pad_link (pad, sinkpad);
+  g_object_unref (sinkpad);
+  gst_element_sync_state_with_parent (sink);
+}
+
+static gboolean
+kms_element_request_srcpad (GstElement * src, KmsElementPadType pad_type)
+{
+  gchar *padname;
+
+  g_signal_emit_by_name (src, "request-new-srcpad", pad_type, NULL, &padname);
+  if (padname == NULL) {
+    return FALSE;
+  }
+
+  GST_DEBUG_OBJECT (src, "Requested pad %s", padname);
+  g_free (padname);
+
+  return TRUE;
+}
+
+static void
+connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
+    GstElement * enc, GstElement * caps, GstElement * pipe,
+    const gchar * pad_prefix)
+{
+  KmsConnectData *data = g_slice_new (KmsConnectData);
+
+  data->src = src;
+  data->enc = enc;
+  data->caps = caps;
+  data->pipe = GST_BIN (pipe);
+  data->pad_prefix = pad_prefix;
+
+  data->id =
+      g_signal_connect_data (webrtcendpoint, "pad-added",
+      G_CALLBACK (connect_sink), data,
+      (GClosureNotify) kms_connect_data_destroy, 0);
 }
 
 typedef struct HandOffData
@@ -136,16 +255,11 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
       G_CALLBACK (fakesink_hand_off), hod);
 
   /* Add elements */
-  gst_bin_add_many (GST_BIN (pipeline), audiotestsrc, audio_enc,
-      rtpendpointsender, NULL);
-  gst_element_link (audiotestsrc, audio_enc);
-  gst_element_link_pads (audio_enc, NULL, rtpendpointsender, "audio_sink");
+  gst_bin_add (GST_BIN (pipeline), rtpendpointsender);
+  connect_sink_async (rtpendpointsender, audiotestsrc, audio_enc,
+      NULL, pipeline, "sink_audio");
 
-  gst_bin_add_many (GST_BIN (pipeline), rtpendpointreceiver, outputfakesink,
-      NULL);
-
-  kms_element_link_pads (rtpendpointreceiver, "audio_src_%u", outputfakesink,
-      "sink");
+  gst_bin_add (GST_BIN (pipeline), rtpendpointreceiver);
 
   if (!play_after_negotiation)
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
@@ -163,6 +277,14 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   g_signal_emit_by_name (rtpendpointsender, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  gst_bin_add (GST_BIN (pipeline), outputfakesink);
+  g_object_set_data (G_OBJECT (rtpendpointreceiver), AUDIO_SINK,
+      outputfakesink);
+  g_signal_connect (rtpendpointreceiver, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (rtpendpointreceiver,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   if (play_after_negotiation)
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
@@ -288,22 +410,13 @@ test_audio_sendrecv (const gchar * audio_enc_name,
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
   /* Add elements */
-  gst_bin_add_many (GST_BIN (pipeline), audiotestsrc_offerer, audio_enc_offerer,
-      rtpendpoint_offerer, fakesink_offerer, NULL);
-  gst_element_link (audiotestsrc_offerer, audio_enc_offerer);
-  gst_element_link_pads (audio_enc_offerer, NULL, rtpendpoint_offerer,
-      "audio_sink");
-  kms_element_link_pads (rtpendpoint_offerer, "audio_src_%u", fakesink_offerer,
-      "sink");
+  gst_bin_add (GST_BIN (pipeline), rtpendpoint_offerer);
+  connect_sink_async (rtpendpoint_offerer, audiotestsrc_offerer,
+      audio_enc_offerer, NULL, pipeline, "sink_audio");
 
-  gst_bin_add_many (GST_BIN (pipeline)
-      , audiotestsrc_answerer, audio_enc_answerer, rtpendpoint_answerer,
-      fakesink_answerer, NULL);
-  gst_element_link (audiotestsrc_answerer, audio_enc_answerer);
-  gst_element_link_pads (audio_enc_answerer, NULL, rtpendpoint_answerer,
-      "audio_sink");
-  kms_element_link_pads (rtpendpoint_answerer, "audio_src_%u",
-      fakesink_answerer, "sink");
+  gst_bin_add (GST_BIN (pipeline), rtpendpoint_answerer);
+  connect_sink_async (rtpendpoint_answerer, audiotestsrc_answerer,
+      audio_enc_answerer, NULL, pipeline, "sink_audio");
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -320,6 +433,22 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_signal_emit_by_name (rtpendpoint_offerer, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  gst_bin_add (GST_BIN (pipeline), fakesink_offerer);
+  g_object_set_data (G_OBJECT (rtpendpoint_offerer), AUDIO_SINK,
+      fakesink_offerer);
+  g_signal_connect (rtpendpoint_offerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (rtpendpoint_offerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
+
+  gst_bin_add (GST_BIN (pipeline), fakesink_answerer);
+  g_object_set_data (G_OBJECT (rtpendpoint_answerer), AUDIO_SINK,
+      fakesink_answerer);
+  g_signal_connect (rtpendpoint_answerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (rtpendpoint_answerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_before_entering_loop");
