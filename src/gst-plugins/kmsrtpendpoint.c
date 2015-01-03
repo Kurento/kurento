@@ -133,6 +133,7 @@ kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
 
 /* Connection management end */
 
+/* Set Transport begin */
 static guint64
 get_ntp_time ()
 {
@@ -199,15 +200,15 @@ kms_rtp_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint * base_sdp_endpoint,
   gboolean ret;
   guint len, i;
 
-  g_return_val_if_fail (msg != NULL, FALSE);
-
+  /* Chain up */
   ret =
       KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_rtp_endpoint_parent_class)->set_transport_to_sdp (base_sdp_endpoint,
       msg);
 
-  if (!ret)
+  if (ret == FALSE) {
     return FALSE;
+  }
 
   gst_udp_set_connection (base_sdp_endpoint, msg);
 
@@ -250,6 +251,8 @@ kms_rtp_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint * base_sdp_endpoint,
   return TRUE;
 }
 
+/* Set Transport end */
+
 static void
 kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
     const GstSDPMessage * offer, const GstSDPMessage * answer,
@@ -264,16 +267,11 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
       (kms_rtp_endpoint_parent_class)->start_transport_send
       (base_rtp_endpoint, answer, offer, local_offer);
 
-  GST_DEBUG_OBJECT (self, "Start transport send");
-
-  if (gst_sdp_message_medias_len (answer) != gst_sdp_message_medias_len (offer))
-    GST_WARNING_OBJECT (self,
-        "Incompatible offer and answer, possible errors in media");
-
-  if (local_offer)
+  if (local_offer) {
     sdp = answer;
-  else
+  } else {
     sdp = offer;
+  }
 
   msg_conn = gst_sdp_message_get_connection (sdp);
 
@@ -283,6 +281,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
     const GstSDPMedia *offer_media = gst_sdp_message_get_media (offer, i);
     const GstSDPMedia *answer_media = gst_sdp_message_get_media (answer, i);
     const GstSDPMedia *media;
+    const gchar *media_str;
     KmsRtpBaseConnection *conn;
     guint port;
 
@@ -295,23 +294,27 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
       continue;
     }
 
-    if (answer_media->port == 0)
+    if (answer_media->port == 0) {
       continue;
+    }
 
-    if (local_offer)
+    if (local_offer) {
       media = answer_media;
-    else
+    } else {
       media = offer_media;
+    }
+    media_str = gst_sdp_media_get_media (media);
 
-    if (gst_sdp_media_connections_len (media) != 0)
+    if (gst_sdp_media_connections_len (media) != 0) {
       media_con = gst_sdp_media_get_connection (media, 0);
-    else
+    } else {
       media_con = msg_conn;
+    }
 
     if (media_con == NULL || media_con->address == NULL
         || media_con->address[0] == '\0') {
-      g_warning ("Missing connection information for %s",
-          gst_sdp_media_get_media (media));
+      GST_WARNING_OBJECT (self, "Missing connection information for '%s'",
+          media_str);
       continue;
     }
 
