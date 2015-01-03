@@ -243,15 +243,16 @@ kms_rtp_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
+    guint conn_len, c;
 
     if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0) {
       ((GstSDPMedia *) media)->port = 0;
       continue;
     }
 
-    if (gst_sdp_media_connections_len (media) != 0) {
-      // TODO: If a remove api is added to gstreamer, remove all c= lines
-      g_warning ("Pattern should not have connection lines");
+    conn_len = gst_sdp_media_connections_len (media);
+    for (c = 0; c < conn_len; c++) {
+      gst_sdp_media_remove_connection ((GstSDPMedia *) media, c);
     }
 
     if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0)
