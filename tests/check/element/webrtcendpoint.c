@@ -161,13 +161,13 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
   GstPad *sinkpad;
 
   if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
-    GST_DEBUG_OBJECT (element, "Connecting video stream");
+    GST_DEBUG_OBJECT (pad, "Connecting video stream");
     sink = g_object_get_data (G_OBJECT (element), AUDIO_SINK);
   } else if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_VIDEO_PREFIX)) {
-    GST_DEBUG_OBJECT (element, "Connecting audio stream");
+    GST_DEBUG_OBJECT (pad, "Connecting audio stream");
     sink = g_object_get_data (G_OBJECT (element), VIDEO_SINK);
   } else {
-    GST_ERROR_OBJECT (element, "Not supported pad type");
+    GST_TRACE_OBJECT (pad, "Not src pad type");
     return;
   }
 
