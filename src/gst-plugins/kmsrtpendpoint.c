@@ -172,12 +172,9 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
     GstSDPMessage * msg)
 {
   GList *ips, *l;
-  GResolver *resolver;
   gboolean done = FALSE;
 
   ips = nice_interfaces_get_local_ips (FALSE);
-
-  resolver = g_resolver_get_default ();
   for (l = ips; l != NULL && !done; l = l->next) {
     GInetAddress *addr;
     gboolean is_ipv6 = FALSE;
@@ -192,7 +189,7 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
         is_ipv6 = TRUE;
       case G_SOCKET_FAMILY_IPV4:
       {
-        gchar *name;
+        gchar *addr_str;
         gboolean use_ipv6;
 
         g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
@@ -200,26 +197,17 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
           GST_DEBUG ("No valid address type: %d", is_ipv6);
           break;
         }
-        // TODO: Un comment this once lookup does not leak memory
-//         name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
-        name = NULL;
 
-        if (name == NULL) {
-          GST_WARNING_OBJECT (base_sdp_endpoint,
-              "Cannot resolve name, using IP as name");
-          name = g_strdup (l->data);
-        }
-
-        if (name != NULL) {
+        addr_str = g_inet_address_to_string (addr);
+        if (addr_str != NULL) {
           const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
           gchar *ntp = g_strdup_printf ("%" G_GUINT64_FORMAT, get_ntp_time ());
 
-          // GET for public address?
           gst_sdp_message_set_connection (msg, "IN", addr_type, l->data, 0, 0);
           gst_sdp_message_set_origin (msg, "-", ntp, ntp, "IN",
-              addr_type, name);
+              addr_type, addr_str);
           g_free (ntp);
-          g_free (name);
+          g_free (addr_str);
           done = TRUE;
         }
         break;
@@ -227,7 +215,6 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
     }
     g_object_unref (addr);
   }
-  g_object_unref (resolver);
 
   g_list_free_full (ips, g_free);
 }
