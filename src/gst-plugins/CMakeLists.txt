@@ -11,6 +11,7 @@ set(KMS_ELEMENTS_SOURCES
   kmshttppostendpoint.c
   kmsplayerendpoint.c
   kmsrecorderendpoint.c
+  kmsrtpconnection.c
   kmsrtpendpoint.c
   kmswebrtcconnection.c
   kmswebrtcendpoint.c
