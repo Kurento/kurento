@@ -7,7 +7,8 @@ Build-Depends: debhelper (>= 8.0.0),
                pkg-config,
                kms-cmake-utils (>= 1.0.1),
                libjsoncpp-dev,
-               libboost-dev
+               libboost-dev,
+               libboost-test-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-jsonrpc.git

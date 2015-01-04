@@ -11,7 +11,7 @@ install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
 find_package(PkgConfig)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 pkg_check_modules(JSONCPP REQUIRED jsoncpp>=0.6.0)
 
 include(GNUInstallDirs)
@@ -51,4 +51,7 @@ install(FILES
   DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
 )
 
+enable_testing()
+
 add_subdirectory (src)
+add_subdirectory (tests)
