@@ -23,6 +23,8 @@
 
 #include <json/json.h>
 
+#include "JsonRpcHandler.hpp"
+
 namespace kurento
 {
 namespace JsonRpc
@@ -60,6 +62,8 @@ class Client
 public:
 
   Client (std::shared_ptr<Transport> transport);
+  Client (std::shared_ptr<Transport> transport,
+          std::shared_ptr<Handler> eventHandler);
   virtual ~Client() {}
 
   typedef std::function<void (const Json::Value &result, bool isError) >
@@ -77,6 +81,7 @@ private:
 
   std::map <std::string, Continuation> responseHandlers;
   std::shared_ptr <Transport> transport;
+  std::shared_ptr <Handler> eventHandler;
 };
 
 } /* JsonRpc */

@@ -48,6 +48,22 @@ private:
   JsonRpc::Handler &handler;
 };
 
+class TestEchoTransport : public kurento::JsonRpc::Transport
+{
+public:
+  TestEchoTransport ()
+  {
+
+  }
+
+  virtual ~TestEchoTransport () {}
+
+  void sendMessage (const std::string &data)
+  {
+    messageReceived (data);
+  }
+};
+
 void
 echo (const Json::Value &params, Json::Value &response)
 {
@@ -78,6 +94,35 @@ BOOST_AUTO_TEST_CASE (rpc_echo)
     cond.notify_all ();
     lock.unlock();
   });
+
+  lock.lock();
+
+  if (!answered) {
+    BOOST_CHECK (cond.wait_for (lock,
+                                std::chrono::seconds (2) ) == std::cv_status::no_timeout);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (rpc_get_event)
+{
+  std::shared_ptr<JsonRpc::Handler> handler (new JsonRpc::Handler () );
+  std::shared_ptr<TestEchoTransport> transport (new TestEchoTransport () );
+  JsonRpc::Client client (transport, handler);
+  Json::Value params;
+  std::mutex mutex;
+  std::condition_variable cond;
+  std::unique_lock <std::mutex> lock (mutex, std::defer_lock);
+  bool answered = false;
+
+  handler->addMethod ("event", [&lock, &answered,
+  &cond] (const Json::Value & params, Json::Value & response) {
+    lock.lock();
+    answered = true;
+    cond.notify_all ();
+    lock.unlock();
+  });
+
+  client.sendNotification ("event", params);
 
   lock.lock();
 

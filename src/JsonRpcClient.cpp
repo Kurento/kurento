@@ -30,6 +30,12 @@ Client::Client (std::shared_ptr<Transport> transport) : transport (transport)
                                      std::placeholders::_1) );
 }
 
+Client::Client (std::shared_ptr<Transport> transport,
+                std::shared_ptr<Handler> eventHandler) : Client (transport)
+{
+  this->eventHandler = eventHandler;
+}
+
 void
 Client::sendRequest (const std::string &method, Json::Value &params,
                      Continuation cont)
@@ -126,8 +132,15 @@ Client::onMessageReceived (const std::string &msg)
     }
   } else {
     // Message is request
+    std::string response;
 
-    // TODO: allow a to have a handler for event notifications
+    if (eventHandler) {
+      eventHandler->process (msg, response);
+
+      if (!response.empty () ) {
+        transport->sendMessage (response);
+      }
+    }
   }
 }
 
