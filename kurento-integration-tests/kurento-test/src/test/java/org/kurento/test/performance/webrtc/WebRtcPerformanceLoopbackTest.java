@@ -18,6 +18,7 @@ import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -69,6 +70,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 				+ "/video/15sec/rgbHD.y4m", null, numBrowsers));
 	}
 
+	@Ignore
 	@Test
 	public void tesWebRtcGridChrome() throws InterruptedException, IOException {
 

@@ -53,7 +53,6 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserRunner;
 import org.kurento.test.client.Client;
 import org.kurento.test.monitor.SystemMonitorManager;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
 import org.kurento.test.services.Randomizer;
 import org.kurento.test.services.RemoteHost;

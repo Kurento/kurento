@@ -17,6 +17,7 @@ package org.kurento.test.performance.webrtc;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -87,6 +88,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 	}
 
+	@Ignore
 	@Test
 	public void test() throws InterruptedException {
 
