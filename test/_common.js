@@ -92,8 +92,12 @@ QUnit.jUnitReport = function (report) {
   }
 
   // browser - write report to console
-  else
-    console.log(report.xml);
+  else {
+    var textarea = document.getElementById('report');
+
+    textarea.value = report.xml;
+    textarea.style.height = textarea.scrollHeight + "px";
+  }
 };
 
 // Tell QUnit what WebSocket servers to use
