@@ -230,7 +230,7 @@ public class SystemMonitorManager {
 		if (remoteKms != null) {
 			sendMessage("setSamplingTime " + samplingTime);
 		} else {
-			monitor.incrementLatencyErrors();
+			monitor.setSamplingTime(samplingTime);
 		}
 	}
 
