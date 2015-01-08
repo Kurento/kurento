@@ -8,7 +8,8 @@ Build-Depends: debhelper (>= 8.0.0),
  kms-core-dev,
  kms-elements-dev,
  kms-filters-dev,
- libopencv-dev
+ libopencv-dev,
+ libsoup2.4-dev
 Standards-Version: 3.9.4
 
 Package: kms-markerdetector
