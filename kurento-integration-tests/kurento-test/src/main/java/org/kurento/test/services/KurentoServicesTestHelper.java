@@ -26,6 +26,8 @@ import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.test.Shell;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 public class KurentoServicesTestHelper {
 
@@ -96,6 +98,7 @@ public class KurentoServicesTestHelper {
 	private static String kcsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kmsPrintLog;
 	private static File logFile;
+	private static ConfigurableApplicationContext appContext;
 
 	public static void startKurentoServicesIfNeccessary() throws IOException {
 
@@ -209,9 +212,24 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
+	public static ConfigurableApplicationContext startHttpServer(
+			Object... sources) {
+		appContext = new SpringApplication(sources).run("--server.port="
+				+ getAppHttpPort());
+		return appContext;
+	}
+
 	public static void teardownServices() throws IOException {
+		teardownHttpServer();
 		teardownKurentoMediaServer();
 		teardownKurentoControlServer();
+	}
+
+	public static void teardownHttpServer() {
+		if (appContext != null) {
+			appContext.stop();
+			appContext.close();
+		}
 	}
 
 	public static void teardownKurentoControlServer() {
@@ -314,4 +332,5 @@ public class KurentoServicesTestHelper {
 		}
 		Shell.run("chmod", "a+w", folder);
 	}
+
 }

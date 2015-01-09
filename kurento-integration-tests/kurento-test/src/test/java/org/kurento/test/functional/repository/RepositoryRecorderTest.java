@@ -103,6 +103,8 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		// Release Media Pipeline #1
 		recorderEP.stop();
 		mp.release();
+
+		Thread.sleep(500);
 	}
 
 	private void launchBrowser(Browser browserType, WebRtcEndpoint webRtcEP,
