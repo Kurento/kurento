@@ -34,6 +34,7 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	@Override
 	public void handleTransportError(Session session, Throwable exception)
 			throws Exception {
+		log.warn("Transport error", exception);
 	}
 
 	@Override

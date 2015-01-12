@@ -277,4 +277,10 @@ public class ProtocolManager {
 			session.getCloseTimerTask().cancel(false);
 		}
 	}
+
+	public void processTransportError(String transportId, Throwable exception) {
+		final ServerSession session = sessionsManager
+				.getByTransportId(transportId);
+		handlerManager.handleTransportError(session, exception);
+	}
 }

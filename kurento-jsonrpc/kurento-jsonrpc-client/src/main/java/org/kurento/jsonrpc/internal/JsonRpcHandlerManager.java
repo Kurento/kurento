@@ -18,11 +18,6 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonElement;
-
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonRpcHandler;
@@ -33,6 +28,10 @@ import org.kurento.jsonrpc.message.MessageUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonElement;
 
 public class JsonRpcHandlerManager {
 
@@ -51,7 +50,7 @@ public class JsonRpcHandlerManager {
 	/**
 	 * Sets the handler. This method will also set the handlerClass, based on
 	 * the {@link #getClass()} method from the handler passed as parameter
-	 * 
+	 *
 	 * @param handler
 	 */
 	public void setJsonRpcHandler(JsonRpcHandler<?> handler) {
@@ -191,5 +190,21 @@ public class JsonRpcHandlerManager {
 
 		throw new JsonRpcException(
 				"Unable to obtain the type paramter of JsonRpcHandler");
+	}
+
+	public void handleTransportError(Session session, Throwable exception) {
+		if (handler != null) {
+			try {
+				handler.handleTransportError(session, exception);
+			} catch (Exception e) {
+				try {
+					handler.handleUncaughtException(session, e);
+				} catch (Exception e2) {
+					log.error(
+							"Exception while executing handleUncaughtException",
+							e2);
+				}
+			}
+		}
 	}
 }

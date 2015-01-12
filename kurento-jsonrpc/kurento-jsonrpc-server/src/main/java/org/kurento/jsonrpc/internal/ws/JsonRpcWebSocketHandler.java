@@ -14,17 +14,16 @@
  */
 package org.kurento.jsonrpc.internal.ws;
 
+import org.kurento.jsonrpc.internal.server.ProtocolManager;
+import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
+import org.kurento.jsonrpc.internal.server.ServerSession;
+import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.kurento.jsonrpc.internal.server.ProtocolManager;
-import org.kurento.jsonrpc.internal.server.ServerSession;
-import org.kurento.jsonrpc.internal.server.SessionsManager;
-import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
-import org.kurento.jsonrpc.internal.ws.WebSocketResponseSender;
 
 public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
@@ -52,8 +51,10 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
 		log.info("Connection closed because: " + status);
-		if (!status.equals(CloseStatus.NORMAL)) {
-			log.error("Abnormal termination");
+		if (status.equals(CloseStatus.GOING_AWAY)) {
+			log.info("Client is going away (normal termination)");
+		} else if (!status.equals(CloseStatus.NORMAL)) {
+			log.error("Abnormal termination: " + status.getCode());
 		} else {
 			log.info("Normal termination");
 		}
@@ -65,7 +66,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	@Override
 	public void handleTransportError(WebSocketSession session,
 			Throwable exception) throws Exception {
-		log.warn("Transport error", exception);
+		protocolManager.processTransportError(session.getId(), exception);
 	}
 
 	@Override
