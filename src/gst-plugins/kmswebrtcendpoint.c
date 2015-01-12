@@ -143,6 +143,30 @@ kms_webrtc_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
   return KMS_I_RTP_CONNECTION (conn);
 }
 
+static KmsIRtcpMuxConnection *
+kms_webrtc_endpoint_create_rtcp_mux_connection (KmsBaseRtpEndpoint *
+    base_rtp_endpoint, const gchar * name)
+{
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
+  KmsWebRtcRtcpMuxConnection *conn;
+
+  KMS_ELEMENT_LOCK (self);
+  conn = g_hash_table_lookup (self->priv->conns, name);
+  if (conn == NULL) {
+    conn =
+        kms_webrtc_rtcp_mux_connection_new (self->priv->agent,
+        self->priv->context, name);
+    kms_webrtc_base_connection_set_certificate_pem_file
+        (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
+    g_hash_table_insert (self->priv->conns, g_strdup (name), conn);
+  } else {
+    GST_WARNING_OBJECT (self, "Connection '%s' already created", name);
+  }
+  KMS_ELEMENT_UNLOCK (self);
+
+  return KMS_I_RTCP_MUX_CONNECTION (conn);
+}
+
 static KmsIBundleConnection *
 kms_webrtc_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
     base_rtp_endpoint, const gchar * name)
@@ -1063,6 +1087,8 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   base_rtp_endpoint_class->get_connection = kms_webrtc_endpoint_get_connection;
   base_rtp_endpoint_class->create_connection =
       kms_webrtc_endpoint_create_connection;
+  base_rtp_endpoint_class->create_rtcp_mux_connection =
+      kms_webrtc_endpoint_create_rtcp_mux_connection;
   base_rtp_endpoint_class->create_bundle_connection =
       kms_webrtc_endpoint_create_bundle_connection;
 
