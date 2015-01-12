@@ -39,6 +39,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -99,7 +100,12 @@ public class SystemMonitorManager {
 
 		for (String className : classesName) {
 			Path sourceClass = getPathInClasspath(folder + className);
-			remoteKms.scp(sourceClass.toString(), targetFolder + className);
+
+			Path classFileInDisk = Files.createTempFile("", ".class");
+			Files.copy(sourceClass, classFileInDisk,
+					StandardCopyOption.REPLACE_EXISTING);
+			remoteKms.scp(classFileInDisk.toString(), targetFolder + className);
+			Files.delete(classFileInDisk);
 		}
 	}
 
