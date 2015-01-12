@@ -25,7 +25,6 @@ G_BEGIN_DECLS
 #define SDP_ICE_PWD_ATTR "ice-pwd"
 #define SDP_CANDIDATE_ATTR "candidate"
 #define SDP_CANDIDATE_ATTR_LEN 12
-
 /* KmsWebRtcBaseConnection begin */
 #define KMS_TYPE_WEBRTC_BASE_CONNECTION \
   (kms_webrtc_base_connection_get_type())
@@ -38,7 +37,6 @@ G_BEGIN_DECLS
 #define KMS_IS_WEBRTC_BASE_CONNECTION_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_WEBRTC_BASE_CONNECTION))
 #define KMS_WEBRTC_BASE_CONNECTION_CAST(obj) ((KmsWebRtcBaseConnection*)(obj))
-
 typedef struct _KmsWebRtcBaseConnection KmsWebRtcBaseConnection;
 typedef struct _KmsWebRtcBaseConnectionClass KmsWebRtcBaseConnectionClass;
 
@@ -106,6 +104,43 @@ KmsWebRtcConnection *kms_webrtc_connection_new (NiceAgent * agent,
     GMainContext * context, const gchar * name);
 
 /* KmsWebRtcConnection end */
+
+/* KmsWebRtcRtcpMuxConnection begin */
+#define KMS_TYPE_WEBRTC_RTCP_MUX_CONNECTION \
+  (kms_webrtc_rtcp_mux_connection_get_type())
+#define KMS_WEBRTC_RTCP_MUX_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_WEBRTC_RTCP_MUX_CONNECTION,KmsWebRtcRtcpMuxConnection))
+#define KMS_WEBRTC_RTCP_MUX_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_WEBRTC_RTCP_MUX_CONNECTION,KmsWebRtcRtcpMuxConnectionClass))
+#define KMS_IS_WEBRTC_RTCP_MUX_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_WEBRTC_RTCP_MUX_CONNECTION))
+#define KMS_IS_WEBRTC_RTCP_MUX_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_WEBRTC_RTCP_MUX_CONNECTION))
+#define KMS_WEBRTC_RTCP_MUX_CONNECTION_CAST(obj) ((KmsWebRtcRtcpMuxConnection*)(obj))
+
+typedef struct _KmsWebRtcRtcpMuxConnectionPrivate
+    KmsWebRtcRtcpMuxConnectionPrivate;
+typedef struct _KmsWebRtcRtcpMuxConnection KmsWebRtcRtcpMuxConnection;
+typedef struct _KmsWebRtcRtcpMuxConnectionClass KmsWebRtcRtcpMuxConnectionClass;
+
+struct _KmsWebRtcRtcpMuxConnection
+{
+  KmsWebRtcBaseConnection parent;
+
+  KmsWebRtcRtcpMuxConnectionPrivate *priv;
+};
+
+struct _KmsWebRtcRtcpMuxConnectionClass
+{
+  KmsWebRtcBaseConnectionClass parent_class;
+};
+
+GType kms_webrtc_rtcp_mux_connection_get_type (void);
+
+KmsWebRtcRtcpMuxConnection *kms_webrtc_rtcp_mux_connection_new (NiceAgent *
+    agent, GMainContext * context, const gchar * name);
+
+/* KmsWebRtcRtcpMuxConnection end */
 
 /* KmsWebRtcBundleConnection begin */
 #define KMS_TYPE_WEBRTC_BUNDLE_CONNECTION \
