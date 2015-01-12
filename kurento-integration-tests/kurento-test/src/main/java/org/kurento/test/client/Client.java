@@ -21,7 +21,7 @@ package org.kurento.test.client;
  * @since 4.2.3
  */
 public enum Client {
-	PLAYER, WEBRTC, ROOM;
+	PLAYER, WEBRTC, ROOM, SCREEN;
 
 	public String toString() {
 		switch (this) {
@@ -29,6 +29,8 @@ public enum Client {
 			return "/player.html";
 		case ROOM:
 			return "/room.html";
+		case SCREEN:
+			return "/index.html";
 		case WEBRTC:
 		default:
 			return "/webrtc.html";

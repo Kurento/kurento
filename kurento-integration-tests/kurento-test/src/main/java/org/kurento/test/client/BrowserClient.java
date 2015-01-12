@@ -86,6 +86,8 @@ public class BrowserClient implements Closeable {
 	private Client client;
 	private Browser browser;
 	private boolean usePhysicalCam;
+	private boolean useHttps;
+	private boolean enableScreenCapture;
 	private Node remoteNode;
 	private int recordAudio;
 	private int audioSampleRate;
@@ -100,6 +102,8 @@ public class BrowserClient implements Closeable {
 		this.client = builder.client;
 		this.browser = builder.browser;
 		this.usePhysicalCam = builder.usePhysicalCam;
+		this.enableScreenCapture = builder.enableScreenCapture;
+		this.useHttps = builder.useHttps;
 		this.remoteNode = builder.remoteNode;
 		this.recordAudio = builder.recordAudio;
 		this.audioSampleRate = builder.audioSampleRate;
@@ -132,7 +136,8 @@ public class BrowserClient implements Closeable {
 		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
 
 		// Launch Browser
-		driver.get("http://" + hostAddress + ":" + serverPort
+		String protocol = useHttps ? "https" : "http";
+		driver.get(protocol + "://" + hostAddress + ":" + serverPort
 				+ client.toString());
 
 		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
@@ -184,8 +189,13 @@ public class BrowserClient implements Closeable {
 						"target/webdriver/" + chromedriver).getAbsolutePath());
 				ChromeOptions options = new ChromeOptions();
 
-				// This flag avoids grant the camera
-				options.addArguments("--use-fake-ui-for-media-stream");
+				if (enableScreenCapture) {
+					// This flag enables the screen sharing
+					options.addArguments("--enable-usermedia-screen-capturing");
+				} else {
+					// This flag avoids grant the camera
+					options.addArguments("--use-fake-ui-for-media-stream");
+				}
 
 				// This flag avoids warning in chrome. See:
 				// https://code.google.com/p/chromedriver/issues/detail?id=799
@@ -334,7 +344,7 @@ public class BrowserClient implements Closeable {
 		try {
 			js.executeScript("addTestName('" + testName + "');");
 		} catch (WebDriverException we) {
-			log.warn(we.getCause().getMessage());
+			log.warn(we.getMessage());
 		}
 	}
 
@@ -342,7 +352,7 @@ public class BrowserClient implements Closeable {
 		try {
 			js.executeScript("appendStringToTitle('" + webRtcMode + "');");
 		} catch (WebDriverException we) {
-			log.warn(we.getCause().getMessage());
+			log.warn(we.getMessage());
 		}
 	}
 
@@ -507,6 +517,8 @@ public class BrowserClient implements Closeable {
 		private Client client;
 		private Browser browser = Browser.CHROME;
 		private boolean usePhysicalCam;
+		private boolean enableScreenCapture;
+		private boolean useHttps;
 		private Node remoteNode;
 		private int recordAudio; // seconds
 		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
@@ -528,6 +540,12 @@ public class BrowserClient implements Closeable {
 
 			// By default, not recording audio (0 seconds)
 			this.recordAudio = 0;
+
+			// By default, not enabling the screen capture
+			this.enableScreenCapture = false;
+
+			// By default HTTPS is not used
+			this.useHttps = false;
 		}
 
 		public Builder video(String video) {
@@ -547,6 +565,16 @@ public class BrowserClient implements Closeable {
 
 		public Builder usePhysicalCam() {
 			this.usePhysicalCam = true;
+			return this;
+		}
+
+		public Builder enableScreenCapture() {
+			this.enableScreenCapture = true;
+			return this;
+		}
+
+		public Builder useHttps() {
+			this.useHttps = true;
 			return this;
 		}
 
