@@ -34,7 +34,7 @@ import org.kurento.test.services.Node;
  * <strong>Description</strong>: WebRTC (one to many) test with Selenium Grid.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>WebRtcEndpoint -> NxWebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> N x WebRtcEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
@@ -46,10 +46,10 @@ import org.kurento.test.services.Node;
  */
 public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
-	private static final int DEFAULT_VIEWERS = 1; // Number of viewers
-	private static final int DEFAULT_NBROWSERS = 4; // Browser per node
-	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
-	private static final int DEFAULT_HOLD_TIME = 30000; // milliseconds
+	private static final int DEFAULT_VIEWERS = 2; // Number of viewers
+	private static final int DEFAULT_NBROWSERS = 3; // Browser per node
+	private static final int DEFAULT_CLIENT_RATE = 2000; // milliseconds
+	private static final int DEFAULT_HOLD_TIME = 10000; // milliseconds
 
 	private int holdTime;
 	private Node master;
@@ -82,9 +82,11 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				getPathTestFiles() + "/video/15sec/rgbHD.y4m", null, 1).get(0);
 
 		nodes.addAll(viewers);
-		nodes.add(master);
+
+		System.out.println(nodes.size());
 
 		setNodes(nodes);
+		setMasterNode(master);
 
 	}
 
@@ -100,10 +102,11 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 		try (BrowserClient masterBrowser = new BrowserClient.Builder()
 				.browser(master.getBrowser()).client(Client.WEBRTC)
-				.video(master.getVideo()).build()) {
+				.video(master.getVideo()).remoteNode(master).build()) {
 
 			masterBrowser.initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_ONLY);
+			masterBrowser.subscribeEvents("playing");
 
 			final int playTime = getAllBrowsersStartedTime() + holdTime;
 
@@ -111,9 +114,12 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				public void run(BrowserClient browser, int num, String name)
 						throws Exception {
 
-					long endTimeMillis = System.currentTimeMillis() + playTime;
+					// long endTimeMillis = System.currentTimeMillis() +
+					// playTime;
 
 					try {
+
+						browser.subscribeEvents("playing");
 
 						// Media Pipeline
 						WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
@@ -128,7 +134,8 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 						log.debug(">>> start#3 {}", name);
 
-						browser.checkLatencyUntil(endTimeMillis);
+						// browser.checkLatencyUntil(endTimeMillis);
+						browser.checkRemoteLatency(playTime, masterBrowser);
 
 					} catch (Throwable e) {
 						log.error("[[[ {} ]]]", e.getCause().getMessage());

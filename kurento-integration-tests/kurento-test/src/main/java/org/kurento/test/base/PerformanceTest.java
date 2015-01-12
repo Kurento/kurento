@@ -90,6 +90,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	private CountDownLatch countDownLatch;
 
 	private List<Node> nodes;
+	private Node masterNode;
 
 	public PerformanceTest() {
 
@@ -112,6 +113,12 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	public void startGrid() throws Exception {
 		startHub();
 		startNodes();
+
+		if (masterNode != null) {
+			List<Node> list = new ArrayList<>();
+			list.add(masterNode);
+			startNodes(list);
+		}
 	}
 
 	private void startHub() throws Exception {
@@ -126,6 +133,10 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	}
 
 	private void startNodes() throws InterruptedException {
+		startNodes(nodes);
+	}
+
+	private void startNodes(List<Node> nodes) throws InterruptedException {
 		countDownLatch = new CountDownLatch(nodes.size());
 
 		for (final Node n : nodes) {
@@ -355,10 +366,19 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		seleniumGridHub.stop();
 
 		// Stop Nodes
-		for (Node n : nodes) {
-			n.getRemoteHost().execCommand("kill", "-9", "-1");
-			n.stopRemoteHost();
+		for (Node node : nodes) {
+			stopNode(node);
 		}
+
+		// Stop master node (if any)
+		if (masterNode != null) {
+			stopNode(masterNode);
+		}
+	}
+
+	private void stopNode(Node node) throws IOException {
+		node.getRemoteHost().execCommand("kill", "-9", "-1");
+		node.stopRemoteHost();
 	}
 
 	public void runParallel(List<Node> nodeList, Runnable myFunc)
@@ -407,6 +427,10 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 	protected void decrementNumClients() throws IOException {
 		monitor.decrementNumClients();
+	}
+
+	public void setMasterNode(Node masterNode) {
+		this.masterNode = masterNode;
 	}
 
 	// ----------------------------------------------
@@ -494,4 +518,5 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	protected void parallelBrowsers(final BrowserRunner browserRunner) {
 		parallelBrowsers(browserRunner, Client.WEBRTC);
 	}
+
 }

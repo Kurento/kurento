@@ -634,6 +634,16 @@ public class BrowserClient implements Closeable {
 		}
 	}
 
+	public void checkRemoteLatency(long endTimeMillis,
+			BrowserClient remoteBrowser) throws InterruptedException,
+			IOException {
+
+		LatencyController cs = new LatencyController();
+		cs.activateRemoteLatencyAssessmentIn(this, remoteBrowser);
+		cs.checkLatency(endTimeMillis, TimeUnit.MILLISECONDS, monitor);
+
+	}
+
 	public void setMonitor(SystemMonitorManager monitor) {
 		this.monitor = monitor;
 	}
