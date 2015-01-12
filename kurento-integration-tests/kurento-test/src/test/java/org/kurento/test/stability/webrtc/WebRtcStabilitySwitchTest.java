@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
@@ -59,7 +58,6 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 	private static final int DEFAULT_NUM_SWITCH = 60;
 	private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
-	@Ignore
 	@Test
 	public void testWebRtcSwitchChrome() throws InterruptedException,
 			IOException {
@@ -106,16 +104,17 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 						webRtcEndpoint2.connect(webRtcEndpoint2);
 
 						// Latency control (loopback)
+						cs1.activateLocalLatencyAssessmentIn(browser1);
+						cs2.activateLocalLatencyAssessmentIn(browser2);
+
 						log.debug(
 								"[{}.1] Latency control of browser1 to browser1",
 								i);
-						cs1.activateLocalLatencyAssessmentIn(browser1);
 						cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 						log.debug(
 								"[{}.2] Latency control of browser2 to browser2",
 								i);
-						cs2.activateLocalLatencyAssessmentIn(browser2);
 						cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
 
 					} else {

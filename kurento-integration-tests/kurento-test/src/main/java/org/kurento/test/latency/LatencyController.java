@@ -19,13 +19,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +94,7 @@ public class LatencyController implements
 		latencyRate = 100; // milliseconds
 
 		// Latency map (registry)
-		latencyMap = new HashMap<Long, LatencyRegistry>();
+		latencyMap = new TreeMap<Long, LatencyRegistry>();
 	}
 
 	@Override
@@ -109,13 +110,18 @@ public class LatencyController implements
 		}
 	}
 
+	public void checkLatency(long testTime, TimeUnit testTimeUnit,
+			SystemMonitorManager monitor) throws InterruptedException,
+			IOException {
+		checkRemoteLatency(testTime, testTimeUnit, monitor);
+	}
+
 	public void checkLatency(long testTime, TimeUnit testTimeUnit)
 			throws InterruptedException, IOException {
 		if (local) {
 			checkLocalLatency(testTime, testTimeUnit);
 		} else {
-			// FIXME
-			checkRemoteLatency(testTime, testTimeUnit);
+			checkRemoteLatency(testTime, testTimeUnit, null);
 		}
 	}
 
@@ -134,6 +140,7 @@ public class LatencyController implements
 			LatencyRegistry latencyRegistry = new LatencyRegistry();
 			try {
 				latency = localBrowser.getLatency();
+
 			} catch (LatencyException le) {
 				latencyRegistry.setLatencyException(le);
 				if (failIfLatencyProblem) {
@@ -163,9 +170,8 @@ public class LatencyController implements
 		}
 	}
 
-	@Deprecated
 	public void checkRemoteLatency(final long testTime,
-			final TimeUnit testTimeUnit) {
+			final TimeUnit testTimeUnit, SystemMonitorManager monitor) {
 		String msgName = (name != null) ? "[" + name + "] " : "";
 
 		if (localChangeColor == null || remoteChangeColor == null) {
@@ -214,6 +220,10 @@ public class LatencyController implements
 					long latencyMilis = lastRemoteColorChangeTime
 							- lastLocalColorChangeTime;
 
+					if (monitor != null) {
+						monitor.addCurrentLatency(latencyMilis);
+					}
+
 					String parsedLocaltime = new SimpleDateFormat("mm:ss.SSS")
 							.format(lastLocalColorChangeTime);
 					String parsedRemotetime = new SimpleDateFormat("mm:ss.SSS")
@@ -236,6 +246,9 @@ public class LatencyController implements
 							} else {
 								log.warn(latencyException.getMessage());
 							}
+							if (monitor != null) {
+								monitor.incrementLatencyErrors();
+							}
 						}
 
 						latencyMap.put(lastRemoteColorChangeTime,
@@ -244,6 +257,8 @@ public class LatencyController implements
 				}
 			}
 
+		} catch (IOException e) {
+			log.debug("Finished LatencyController thread due to IO Exception");
 		} catch (InterruptedException e) {
 			log.debug("Finished LatencyController thread due to Interrupted Exception");
 		}
@@ -251,7 +266,6 @@ public class LatencyController implements
 		remoteColorTrigger.interrupt();
 	}
 
-	@Deprecated
 	public void addChangeColorEventListener(VideoTag type,
 			JavascriptExecutor js, String name) {
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
@@ -360,10 +374,16 @@ public class LatencyController implements
 		browser.activateLatencyControl();
 	}
 
-	// TODO implement
 	public void activateRemoteLatencyAssessmentIn(BrowserClient browser1,
 			BrowserClient browser2) {
 		local = false;
+
+		addChangeColorEventListener(VideoTag.LOCAL,
+				(JavascriptExecutor) browser1.getWebDriver(), getName() + " "
+						+ VideoTag.LOCAL);
+		addChangeColorEventListener(VideoTag.REMOTE,
+				(JavascriptExecutor) browser2.getWebDriver(), getName() + " "
+						+ VideoTag.REMOTE);
 	}
 
 	public void setLatencyRate(long latencyRate) {
