@@ -619,8 +619,6 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   gboolean rtcp_mux, bundle;
   gboolean ret = TRUE;
 
-  KMS_ELEMENT_LOCK (self);
-
   /* Chain up */
   ret = KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->set_transport_to_sdp
@@ -645,8 +643,6 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   ret = kms_webrtc_endpoint_set_ice_candidates (self, msg, rtcp_mux, bundle);
 
 end:
-  KMS_ELEMENT_UNLOCK (self);
-
   g_free (fingerprint);
 
   return ret;
@@ -775,8 +771,6 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   gboolean bundle;
   guint len, i;
 
-  KMS_ELEMENT_LOCK (self);
-
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->start_transport_send
@@ -805,8 +799,6 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 
     gst_media_add_remote_candidates (media, conn, ufrag, pwd);
   }
-
-  KMS_ELEMENT_UNLOCK (self);
 }
 
 /* Start Transport end */
@@ -821,7 +813,9 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
   GST_DEBUG_OBJECT (self, "ICE gathering done for %s stream.",
       nice_agent_get_stream_name (agent, stream_id));
 
-  KMS_ELEMENT_LOCK (self);
+  /* FIXME: improve candidate managament using trickle ICE */
+  /* Element is locked from set_ice_candidates
+     (where nice_agent_gather_candidates is called) */
   g_hash_table_iter_init (&iter, self->priv->conns);
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
@@ -834,7 +828,6 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
       done = FALSE;
     }
   }
-  KMS_ELEMENT_UNLOCK (self);
 
   g_mutex_lock (&self->priv->ctx.gather_mutex);
 
