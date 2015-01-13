@@ -434,7 +434,7 @@ kms_webrtc_endpoint_set_ice_info (KmsWebrtcEndpoint * self, GstSDPMessage * msg,
 
 static gboolean
 kms_webrtc_endpoint_sdp_media_set_ice_candidates (KmsWebrtcEndpoint * self,
-    GstSDPMedia * media, gboolean bundle, gboolean use_ipv6)
+    GstSDPMedia * media, gboolean rtcp_mux, gboolean bundle, gboolean use_ipv6)
 {
   NiceAgent *agent = self->priv->agent;
   guint stream_id;
@@ -459,7 +459,7 @@ kms_webrtc_endpoint_sdp_media_set_ice_candidates (KmsWebrtcEndpoint * self,
       nice_agent_get_default_local_candidate (agent, stream_id,
       NICE_COMPONENT_TYPE_RTP);
 
-  if (bundle) {
+  if (rtcp_mux || bundle) {
     rtcp_default_candidate =
         nice_agent_get_default_local_candidate (agent, stream_id,
         NICE_COMPONENT_TYPE_RTP);
@@ -518,7 +518,7 @@ kms_webrtc_endpoint_sdp_media_set_ice_candidates (KmsWebrtcEndpoint * self,
       nice_agent_get_local_candidates (agent, stream_id,
       NICE_COMPONENT_TYPE_RTP);
 
-  if (!bundle) {
+  if (!rtcp_mux && !bundle) {
     candidates =
         g_slist_concat (candidates,
         nice_agent_get_local_candidates (agent, stream_id,
@@ -560,7 +560,7 @@ kms_webrtc_endpoint_set_relay_info (KmsWebrtcEndpoint * self,
 /* TODO: improve */
 static gboolean
 kms_webrtc_endpoint_set_ice_candidates (KmsWebrtcEndpoint * self,
-    GstSDPMessage * msg, gboolean bundle)
+    GstSDPMessage * msg, gboolean rtcp_mux, gboolean bundle)
 {
   KmsBaseSdpEndpoint *base_sdp_endpoint = KMS_BASE_SDP_ENDPOINT (self);
   guint len, i;
@@ -602,7 +602,7 @@ kms_webrtc_endpoint_set_ice_candidates (KmsWebrtcEndpoint * self,
 
     g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
     if (!kms_webrtc_endpoint_sdp_media_set_ice_candidates (self,
-            (GstSDPMedia *) media, bundle, use_ipv6)) {
+            (GstSDPMedia *) media, rtcp_mux, bundle, use_ipv6)) {
       return FALSE;
     }
   }
@@ -616,7 +616,7 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
   gchar *fingerprint = NULL;
-  gboolean bundle;
+  gboolean rtcp_mux, bundle;
   gboolean ret = TRUE;
 
   KMS_ELEMENT_LOCK (self);
@@ -636,13 +636,13 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
     goto end;
   }
 
-  g_object_get (self, "bundle", &bundle, NULL);
+  g_object_get (self, "bundle", &bundle, "rtcp-mux", &rtcp_mux, NULL);
   ret = kms_webrtc_endpoint_set_ice_info (self, msg, bundle, fingerprint);
   if (ret == FALSE) {
     goto end;
   }
 
-  ret = kms_webrtc_endpoint_set_ice_candidates (self, msg, bundle);
+  ret = kms_webrtc_endpoint_set_ice_candidates (self, msg, rtcp_mux, bundle);
 
 end:
   KMS_ELEMENT_UNLOCK (self);
