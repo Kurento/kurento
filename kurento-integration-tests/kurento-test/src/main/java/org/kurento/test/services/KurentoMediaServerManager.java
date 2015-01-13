@@ -296,8 +296,8 @@ public class KurentoMediaServerManager {
 	}
 
 	private void createKurentoConf(boolean isKmsRemote) {
-
-		Configuration cfg = new Configuration();
+		Configuration cfg = new Configuration(
+				Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 
 		// TODO Create new format config file
 

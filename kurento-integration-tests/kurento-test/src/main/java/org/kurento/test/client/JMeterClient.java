@@ -76,7 +76,8 @@ public class JMeterClient {
 	}
 
 	private void setup() throws TemplateException, IOException {
-		Configuration cfg = new Configuration();
+		Configuration cfg = new Configuration(
+				Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		// Load template from source folder
 		Template template = cfg.getTemplate(ROOT + JMXFILE + ".ftl");
 

@@ -218,7 +218,8 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 			Browser browser, int maxInstances) throws IOException {
 
 		// Create script for Node
-		Configuration cfg = new Configuration();
+		Configuration cfg = new Configuration(
+				Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("remotePort", String.valueOf(remotePort));
