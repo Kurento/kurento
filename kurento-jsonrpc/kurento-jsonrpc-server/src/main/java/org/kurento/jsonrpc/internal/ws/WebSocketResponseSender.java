@@ -39,7 +39,11 @@ public final class WebSocketResponseSender implements ResponseSender {
 		String jsonMessage = message.toString();
 		log.debug("<-Res {}", jsonMessage);
 		synchronized (wsSession) {
-			wsSession.sendMessage(new TextMessage(jsonMessage));
+			if (wsSession.isOpen()) {
+				wsSession.sendMessage(new TextMessage(jsonMessage));
+			} else {
+				log.error("Trying to send a message to a closed session");
+			}
 		}
 	}
 }
