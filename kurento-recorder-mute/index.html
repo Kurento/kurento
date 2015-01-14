@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="US-ASCII">
+    <title>Recorder</title>
+
+    <script type="text/javascript" src="bower_components/adapter.js/samples/web/js/adapter.js"></script>
+    <script type="text/javascript" src="bower_components/kurento-client/js/kurento-client.js"></script>
+    <script type="text/javascript" src="bower_components/kurento-utils/js/kurento-utils.js"></script>
+
+    <script type="text/javascript" src="index.js"></script>
+  </head>
+  <body>
+
+    <button id="startRecordButton">Click to start recording</button>
+    <button id="stopRecordButton">Click to stop recording</button>
+
+    <div style="clear: both;"></div>
+
+    <div style="float: left; border: 2px solid black; margin: 5px;">
+      <h1>Local stream</h1>
+      <video id="videoInput" autoplay></video>
+    </div>
+    <div style="float: left; border: 2px solid black; margin: 5px;">
+      <h1>Remote stream</h1>
+      <video id="videoOutput" autoplay></video>
+    </div>
+
+    <div style="clear: both;"></div>
+
+    <button id="disableButton">Disable tracks</button>
+    <button id="enableButton">Enable tracks</button>
+    <button id="disableAudioButton">Disable audio tracks</button>
+    <button id="enableAudioButton">Enable audio tracks</button>
+    <button id="disableVideoButton">Disable video tracks</button>
+    <button id="enableVideoButton">Enable video tracks</button>
+
+    <div style="clear: both;"></div>
+
+    <br>
+    <hr>
+    <br>
+
+    <button id="startPlayButton">Click start playing</button>
+    <button id="stopPlayButton">Click to stop playing</button>
+
+    <div style="clear: both;"></div>
+
+    <div style="float: left; border: 2px solid black; margin: 5px;">
+      <h1>Remote stream video player</h1>
+      <video id="videoPlayer" autoplay></video>
+    </div>
+
+  </body>
+</html>

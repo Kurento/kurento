@@ -1,0 +1,27 @@
+{
+  "name": "Recorder",
+  "version": "5.0.4-dev",
+  "description": "Kurento demo with Recorder",
+  "authors": [
+    "Kurento <info@kurento.org>"
+  ],
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "LGPL",
+  "homepage": "http://www.kurento.org/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "kurento-utils": "^5.0.5-dev",
+    "kurento-client": "^5.0.0",
+    "adapter.js": "*"
+  }
+}
