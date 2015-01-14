@@ -85,6 +85,8 @@ window.addEventListener('load', function()
       showSpinner(videoInput, videoOutput);
 
       callback()
+
+      console.info("Call from user '" + from + "'");
     }
   }
 

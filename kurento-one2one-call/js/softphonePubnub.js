@@ -205,6 +205,4 @@ function SoftphonePubnub(ws_uri, videoInput, videoOutput, options)
       }
     };
   };
-
-
 }
