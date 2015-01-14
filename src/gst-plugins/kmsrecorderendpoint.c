@@ -670,7 +670,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   appsink = gst_element_factory_make ("appsink", appsink_name);
 
   g_object_set (appsink, "emit-signals", TRUE, "async", FALSE,
-      "sync", FALSE, "qos", TRUE, NULL);
+      "sync", FALSE, "qos", FALSE, NULL);
 
   gst_bin_add (GST_BIN (self), appsink);
 
