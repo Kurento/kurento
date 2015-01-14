@@ -207,7 +207,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
         buffer->pts -= base_time->pts + self->priv->paused_time;
       }
     }
-  } else {
+  } else if (GST_BUFFER_PTS_IS_VALID (buffer)) {
     buffer->pts = G_GUINT64_CONSTANT (0);
   }
 
