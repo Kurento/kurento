@@ -93,8 +93,6 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 	@Ignore
 	@Test
 	public void test() throws InterruptedException {
-
-		// MASTER
 		// Media Pipeline
 		final MediaPipeline mp = kurentoClient.createMediaPipeline();
 		final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp)
@@ -104,9 +102,11 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				.browser(master.getBrowser()).client(Client.WEBRTC)
 				.video(master.getVideo()).remoteNode(master).build()) {
 
+			// Master
+			masterBrowser.subscribeLocalEvents("playing");
 			masterBrowser.initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_ONLY);
-			masterBrowser.subscribeEvents("playing");
+			masterBrowser.setMonitor(monitor);
 
 			final int playTime = getAllBrowsersStartedTime() + holdTime;
 
@@ -114,17 +114,10 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				public void run(BrowserClient browser, int num, String name)
 						throws Exception {
 
-					// long endTimeMillis = System.currentTimeMillis() +
-					// playTime;
-
 					try {
-
-						browser.subscribeEvents("playing");
-
-						// Media Pipeline
+						// Viewer
 						WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
 								mp).build();
-
 						masterWebRtcEP.connect(viewerWebRtcEP);
 
 						log.debug("*** start#1 {}", name);
@@ -134,8 +127,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 						log.debug(">>> start#3 {}", name);
 
-						// browser.checkLatencyUntil(endTimeMillis);
-						browser.checkRemoteLatency(playTime, masterBrowser);
+						masterBrowser.checkRemoteLatency(playTime, browser);
 
 					} catch (Throwable e) {
 						log.error("[[[ {} ]]]", e.getCause().getMessage());

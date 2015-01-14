@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
@@ -41,6 +42,8 @@ import org.slf4j.LoggerFactory;
 public class LatencyController implements
 		ChangeColorEventListener<ChangeColorEvent> {
 
+	private static final int MAX_DISTANCE = 60;
+
 	public Logger log = LoggerFactory.getLogger(LatencyController.class);
 
 	private Map<Long, LatencyRegistry> latencyMap;
@@ -58,6 +61,8 @@ public class LatencyController implements
 
 	private long lastLocalColorChangeTime = -1;
 	private long lastRemoteColorChangeTime = -1;
+	private long lastLocalColorChangeTimeAbsolute = -1;
+	private long lastRemoteColorChangeTimeAbsolute = -1;
 
 	private String lastLocalColor;
 	private String lastRemoteColor;
@@ -100,10 +105,12 @@ public class LatencyController implements
 	@Override
 	public synchronized void onEvent(ChangeColorEvent e) {
 		if (e.getVideoTag() == VideoTag.LOCAL) {
+			lastLocalColorChangeTimeAbsolute = new Date().getTime();
 			lastLocalColorChangeTime = e.getTime();
 			lastLocalColor = e.getColor();
 			localEventLatch.release();
 		} else if (e.getVideoTag() == VideoTag.REMOTE) {
+			lastRemoteColorChangeTimeAbsolute = new Date().getTime();
 			lastRemoteColorChangeTime = e.getTime();
 			lastRemoteColor = e.getColor();
 			remoteEventLatch.release();
@@ -195,66 +202,66 @@ public class LatencyController implements
 			t.setDaemon(true);
 			t.start();
 
-			boolean firstTime = true;
+			// Synchronization with the green color
+			do {
+				waitForLocalColor(msgName, t);
+			} while (!similarColor(lastLocalColor, "0,255,0,0"));
+			do {
+				waitForRemoteColor(msgName, t);
+			} while (!similarColor(lastLocalColor, "0,255,0,0"));
 
 			while (true) {
-				if (!localEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
-					t.interrupt();
 
-					throw new RuntimeException(msgName
-							+ "Change color not detected in LOCAL steam after "
-							+ timeout + " " + timeoutTimeUnit);
+				waitForLocalColor(msgName, t);
+				waitForRemoteColor(msgName, t);
+
+				long latencyMilis = Math.abs(lastRemoteColorChangeTimeAbsolute
+						- lastLocalColorChangeTimeAbsolute);
+
+				if (monitor != null) {
+					monitor.addCurrentLatency(latencyMilis);
 				}
 
-				if (!remoteEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
-					t.interrupt();
-					throw new RuntimeException(
-							msgName
-									+ "Change color not detected in REMOTE steam after "
-									+ timeout + " " + timeoutTimeUnit);
-				}
+				SimpleDateFormat formater = new SimpleDateFormat("mm:ss.SSS");
+				String parsedLocaltime = formater
+						.format(lastLocalColorChangeTimeAbsolute);
+				String parsedRemotetime = formater
+						.format(lastRemoteColorChangeTimeAbsolute);
 
-				if (firstTime) {
-					firstTime = false;
-				} else {
-					long latencyMilis = lastRemoteColorChangeTime
-							- lastLocalColorChangeTime;
+				log.info(
+						"latencyMilis={} -- lastLocalColor={} -- lastRemoteColor={} -- "
+								+ "lastLocalColorChangeTime={} -- lastRemoteColorChangeTime={} -- "
+								+ "lastLocalColorChangeTimeAbsolute={} -- lastRemoteColorChangeTimeAbsolute={}",
+						latencyMilis, lastLocalColor, lastRemoteColor,
+						formater.format(lastLocalColorChangeTime),
+						formater.format(lastRemoteColorChangeTime),
+						parsedLocaltime, parsedRemotetime);
 
-					if (monitor != null) {
-						monitor.addCurrentLatency(latencyMilis);
-					}
+				if (similarColor(lastLocalColor, lastRemoteColor)) {
+					log.info("--> Latency adquired ({} ms)", latencyMilis);
 
-					String parsedLocaltime = new SimpleDateFormat("mm:ss.SSS")
-							.format(lastLocalColorChangeTime);
-					String parsedRemotetime = new SimpleDateFormat("mm:ss.SSS")
-							.format(lastRemoteColorChangeTime);
+					LatencyRegistry LatencyRegistry = new LatencyRegistry(
+							rgba2Color(lastRemoteColor), latencyMilis);
 
-					if (lastLocalColor.equals(lastRemoteColor)) {
-						LatencyRegistry LatencyRegistry = new LatencyRegistry(
-								rgba2Color(lastRemoteColor), latencyMilis);
-
-						if (latencyMilis > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
-							LatencyException latencyException = new LatencyException(
-									latencyMilis, testTimeUnit,
-									parsedLocaltime, parsedRemotetime,
-									testTime, latencyMilis);
-							LatencyRegistry
-									.setLatencyException(latencyException);
-							if (failIfLatencyProblem) {
-								t.interrupt();
-								throw latencyException;
-							} else {
-								log.warn(latencyException.getMessage());
-							}
-							if (monitor != null) {
-								monitor.incrementLatencyErrors();
-							}
+					if (latencyMilis > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
+						LatencyException latencyException = new LatencyException(
+								latencyMilis, testTimeUnit, parsedLocaltime,
+								parsedRemotetime, testTime, latencyMilis);
+						LatencyRegistry.setLatencyException(latencyException);
+						if (failIfLatencyProblem) {
+							t.interrupt();
+							throw latencyException;
+						} else {
+							log.warn(latencyException.getMessage());
 						}
-
-						latencyMap.put(lastRemoteColorChangeTime,
-								LatencyRegistry);
+						if (monitor != null) {
+							monitor.incrementLatencyErrors();
+						}
 					}
+
+					latencyMap.put(lastRemoteColorChangeTime, LatencyRegistry);
 				}
+
 			}
 
 		} catch (IOException e) {
@@ -264,6 +271,45 @@ public class LatencyController implements
 		}
 		localColorTrigger.interrupt();
 		remoteColorTrigger.interrupt();
+	}
+
+	private void waitForRemoteColor(String msgName, Thread t)
+			throws InterruptedException {
+		if (!remoteEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
+			t.interrupt();
+			throw new RuntimeException(msgName
+					+ "Change color not detected in REMOTE steam after "
+					+ timeout + " " + timeoutTimeUnit);
+		}
+	}
+
+	private void waitForLocalColor(String msgName, Thread t)
+			throws InterruptedException {
+		if (!localEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
+			t.interrupt();
+
+			throw new RuntimeException(msgName
+					+ "Change color not detected in LOCAL steam after "
+					+ timeout + " " + timeoutTimeUnit);
+		}
+	}
+
+	private boolean similarColor(String expectedColorStr, String realColorStr) {
+		String[] realColor = realColorStr.split(",");
+		int realRed = Integer.parseInt(realColor[0]);
+		int realGreen = Integer.parseInt(realColor[1]);
+		int realBlue = Integer.parseInt(realColor[2]);
+
+		String[] expectedColor = expectedColorStr.split(",");
+		int expectedRed = Integer.parseInt(expectedColor[0]);
+		int expectedGreen = Integer.parseInt(expectedColor[1]);
+		int expectedBlue = Integer.parseInt(expectedColor[2]);
+
+		double distance = Math.sqrt((realRed - expectedRed)
+				* (realRed - expectedRed) + (realGreen - expectedGreen)
+				* (realGreen - expectedGreen) + (realBlue - expectedBlue)
+				* (realBlue - expectedBlue));
+		return distance <= MAX_DISTANCE;
 	}
 
 	public void addChangeColorEventListener(VideoTag type,

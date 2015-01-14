@@ -63,8 +63,8 @@
 			colorInfo[iColor].time = new Date() - initTime;
 			console.info("Detected color change in " + log + " stream, from "
 					+ colorInfo[iColor].rgba + " to " + colorNew);
+			colorInfo[iColor].rgba = colorNew;
 		}
-		colorInfo[iColor].rgba = colorNew;
 	}
 
 	function setAudioUserMediaConstraints() {

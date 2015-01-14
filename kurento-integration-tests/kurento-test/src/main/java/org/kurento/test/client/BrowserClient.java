@@ -264,14 +264,23 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void subscribeEvents(String... eventType) {
+		subscribeEventsToVideoTag("video", eventType);
+	}
+
+	public void subscribeLocalEvents(String... eventType) {
+		subscribeEventsToVideoTag("local", eventType);
+	}
+
+	public void subscribeEventsToVideoTag(final String videoTag,
+			String... eventType) {
 		for (final String e : eventType) {
 			CountDownLatch latch = new CountDownLatch(1);
 			countDownLatchEvents.put(e, latch);
-			this.addEventListener(e, new BrowserEventListener() {
+			this.addEventListener(videoTag, e, new BrowserEventListener() {
 				@Override
 				public void onEvent(String event) {
-					consoleLog(ConsoleLogLevel.info, "Event in video tag: "
-							+ event);
+					consoleLog(ConsoleLogLevel.info, "Event in " + videoTag
+							+ " tag: " + event);
 					countDownLatchEvents.get(e).countDown();
 				}
 			});
@@ -303,11 +312,11 @@ public class BrowserClient implements Closeable {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void addEventListener(final String eventType,
+	public void addEventListener(final String videoTag, final String eventType,
 			final BrowserEventListener eventListener) {
 		Thread t = new Thread() {
 			public void run() {
-				js.executeScript("video.addEventListener('" + eventType
+				js.executeScript(videoTag + ".addEventListener('" + eventType
 						+ "', videoEvent, false);");
 				try {
 					(new WebDriverWait(driver, timeout))

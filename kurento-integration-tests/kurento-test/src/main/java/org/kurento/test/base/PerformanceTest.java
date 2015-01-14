@@ -401,7 +401,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
 	private static final int DEFAULT_TIMEOUT = 60; // milliseconds
 
-	private SystemMonitorManager monitor;
+	public SystemMonitorManager monitor;
 
 	private int monitorRate = DEFAULT_MONITOR_RATE;
 	private int browserCreationTime = DEFAULT_CLIENT_RATE;
