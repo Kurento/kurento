@@ -615,7 +615,7 @@ kms_http_get_endpoint_create_sink (KmsHttpGetEndpoint * self)
 {
   self->priv->appsink = gst_element_factory_make ("appsink", NULL);
 
-  g_object_set (self->priv->appsink, "emit-signals", TRUE, "qos", TRUE,
+  g_object_set (self->priv->appsink, "emit-signals", TRUE, "qos", FALSE,
       "max-buffers", 1, "async", FALSE, NULL);
   g_signal_connect (self->priv->appsink, "new-sample",
       G_CALLBACK (new_sample_emit_signal_handler), self);
