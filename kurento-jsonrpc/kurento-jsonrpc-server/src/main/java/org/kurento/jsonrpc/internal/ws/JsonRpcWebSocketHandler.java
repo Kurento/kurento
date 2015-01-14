@@ -51,7 +51,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
 		log.info("Connection closed because: " + status);
-		if (status.equals(CloseStatus.GOING_AWAY)) {
+		if (status.getCode() == CloseStatus.GOING_AWAY.getCode()) {
 			log.info("Client is going away (normal termination)");
 		} else if (!status.equals(CloseStatus.NORMAL)) {
 			log.error("Abnormal termination: " + status.getCode());
