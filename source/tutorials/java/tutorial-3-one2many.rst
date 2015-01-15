@@ -38,7 +38,6 @@ the Master's web GUI:
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
    :align:   center
    :alt:     One to many video call screenshot
-   :width: 600px
 
    *One to many video call screenshot*
 
@@ -50,7 +49,6 @@ media pipeline is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-pipeline.png
    :align:   center
    :alt:     One to many video call Media Pipeline
-   :width: 400px
 
    *One to many video call Media Pipeline*
 
@@ -88,7 +86,6 @@ clients and server:
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-signaling.png
    :align:   center
    :alt:     One to many video call signaling protocol
-   :width: 600px
 
    *One to many video call signaling protocol*
 
@@ -199,7 +196,8 @@ treated in the *switch* clause, taking the proper steps in each case.
             .getLogger(CallHandler.class);
       private static final Gson gson = new GsonBuilder().create();
 
-      private ConcurrentHashMap<String, UserSession> viewers = new ConcurrentHashMap<String, UserSession>();
+      private ConcurrentHashMap<String, UserSession> viewers =
+            new ConcurrentHashMap<String, UserSession>();
 
       @Autowired
       private KurentoClient kurento;
@@ -329,7 +327,8 @@ back to the client.
             response.addProperty("id", "viewerResponse");
             response.addProperty("response", "rejected");
             response.addProperty("message",
-                  "You are already viewing in this session. Use a different browser to add additional viewers.");
+                  "You are already viewing in this session. " + 
+                  "Use a different browser to add additional viewers.");
             session.sendMessage(new TextMessage(response.toString()));
             return;
          }
@@ -435,13 +434,14 @@ used in the ``viewer`` function.
       if (!webRtcPeer) {
          showSpinner(videoInput, videoOutput);
 
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
-            var message = {
-               id : 'master',
-               sdpOffer : offerSdp
-            };
-            sendMessage(message);
-         });
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
+            function(offerSdp) {
+               var message = {
+                  id : 'master',
+                  sdpOffer : offerSdp
+               };
+               sendMessage(message);
+            });
       }
    }
 

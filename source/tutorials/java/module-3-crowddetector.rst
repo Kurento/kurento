@@ -48,7 +48,6 @@ composed by the following `Media Element`:term: s:
 .. figure:: ../../images/kurento-module-tutorial-crowddetector-pipeline.png
    :align:   center
    :alt:     WebRTC with crowdDetector filter Media Pipeline
-   :width: 400px
 
    *WebRTC with crowdDetector filter Media Pipeline*
 
@@ -79,7 +78,6 @@ detected crowds moving fast.
 .. figure:: ../../images/kurento-module-tutorial-crowd-screenshot-01.png
    :align:   center
    :alt:     Crowd detection sample
-   :width: 400px
 
    *Crowd detection sample*
 

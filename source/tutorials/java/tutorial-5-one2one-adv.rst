@@ -38,7 +38,6 @@ web browser:
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-screenshot.png
    :align:   center
    :alt:     Advanced one to one video call screenshot
-   :width: 600px
 
    *Advanced one to one video call screenshot*
 
@@ -61,7 +60,6 @@ the following picture:
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_1.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (1)
-   :width: 500px
 
    *Advanced one to one video call media pipeline (1)*
 
@@ -74,7 +72,6 @@ in the browser:
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_2.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (2)
-   :width: 400px
 
    *Advanced one to one video call media pipeline (2)*
 
@@ -119,7 +116,6 @@ of the recorded file is carried out.
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-signaling.png
    :align:   center
    :alt:     Advanced one to one video call signaling protocol
-   :width: 600px
 
    *Advanced one to one video call signaling protocol*
 

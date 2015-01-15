@@ -19,7 +19,6 @@ media server.
 .. figure:: ./images/media-server-intro.png
    :align:   center
    :alt:     Peer-to-peer WebRTC approach vs. WebRTC through a media server
-   :width: 500px
 
    *Peer-to-peer WebRTC approach vs. WebRTC through a media server*
 
@@ -36,7 +35,6 @@ in a persistent way the media exchanged among peers), etc.
 .. figure:: ./images/media-server-capabilities.png
    :align:  center
    :alt:    Typical WebRTC Media Server capabilities
-   :width: 500px
 
    *Typical WebRTC Media Server capabilities*
 
@@ -58,7 +56,6 @@ alpha blending and much more.
 .. figure:: ./images/kurento-media-server-intro.png
    :align:  center
    :alt:    Kurento Media Server capabilities
-   :width: 500px
 
    *Kurento Media Server capabilities*
 
@@ -84,7 +81,6 @@ Kurento Clients in three scenarios:
 .. figure:: ./images/kurento-clients-connection.png
    :align:  center
    :alt:    Connection of Kurento Clients (Java and JavaScript) to Kuento Media Server
-   :width: 500px
 
    *Connection of Kurento Clients (Java and JavaScript) to Kuento Media Server*
 
@@ -103,7 +99,6 @@ media elements as part of its APIs.
 .. figure:: ./images/kurento-basic-toolbox.png
    :align:  center
    :alt:    Some Media Elements provided out of the box by Kurento
-   :width: 500px
 
    *Some Media Elements provided out of the box by Kurento*
 
@@ -163,6 +158,5 @@ an utility called *WebRtcPeer*. Nevertheless, the standard WebRTC API
 .. figure:: ./images/media-pipeline-sample.png
    :align:  center
    :alt:    Simple Example of a Media Pipeline
-   :width: 500px
 
    *Simple Example of a Media Pipeline*

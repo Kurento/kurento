@@ -63,7 +63,6 @@ composed by the following `Media Element`:term: s:
 .. figure:: ../../images/kurento-module-tutorial-chroma-pipeline.png
    :align:   center
    :alt:     WebRTC with Chroma filter Media Pipeline
-   :width: 400px
 
    *WebRTC with Chroma filter Media Pipeline*
 
@@ -81,7 +80,6 @@ in upper left of the video, as follows:
 .. figure:: ../../images/kurento-module-tutorial-chroma-screenshot-01.png
    :align:   center
    :alt:     Chroma calibration stage
-   :width: 400px
 
    *Chroma calibration stage*
 
@@ -95,7 +93,6 @@ corner of the following screenshot:
 .. figure:: ../../images/kurento-module-tutorial-chroma-screenshot-02.png
    :align:   center
    :alt:     Chroma filter in action
-   :width: 400px
 
    *Chroma filter in action*
 
