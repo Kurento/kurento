@@ -16,14 +16,9 @@ package org.kurento.jsonrpc.internal.ws;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-
-import com.google.gson.JsonElement;
 
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
@@ -31,10 +26,15 @@ import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.server.ServerSession;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
-import org.kurento.jsonrpc.internal.ws.PendingRequests;
 import org.kurento.jsonrpc.message.MessageUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import com.google.gson.JsonElement;
 
 public class WebSocketServerSession extends ServerSession {
 
@@ -42,7 +42,10 @@ public class WebSocketServerSession extends ServerSession {
 			.getLogger(WebSocketServerSession.class);
 
 	private WebSocketSession wsSession;
+
 	private final PendingRequests pendingRequests = new PendingRequests();
+
+	private ExecutorService execService = Executors.newFixedThreadPool(10);
 
 	public WebSocketServerSession(String sessionId, Object registerInfo,
 			SessionsManager sessionsManager, WebSocketSession wsSession) {
@@ -61,10 +64,33 @@ public class WebSocketServerSession extends ServerSession {
 			@Override
 			protected void internalSendRequest(
 					Request<? extends Object> request,
-					Class<JsonElement> class1,
+					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
-				throw new UnsupportedOperationException(
-						"Async client is unavailable");
+				sendRequestWebSocket(request, resultClass, continuation);
+			}
+		});
+	}
+
+	protected void sendRequestWebSocket(
+			final Request<? extends Object> request,
+			final Class<JsonElement> resultClass,
+			final Continuation<Response<JsonElement>> continuation) {
+
+		// FIXME: Poor man async implementation.
+		execService.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Response<JsonElement> result = sendRequestWebSocket(
+							request, resultClass);
+					try {
+						continuation.onSuccess(result);
+					} catch (Exception e) {
+						LOG.error("Exception while processing response", e);
+					}
+				} catch (Exception e) {
+					continuation.onError(e);
+				}
 			}
 		});
 	}
@@ -104,8 +130,7 @@ public class WebSocketServerSession extends ServerSession {
 					"Interrupted while waiting for a response", e);
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
-			throw new JsonRpcException(
-					"This exception shouldn't be thrown", e);
+			throw new JsonRpcException("This exception shouldn't be thrown", e);
 		}
 
 		return MessageUtils.convertResponse(responseJsonObject, resultClass);
@@ -119,6 +144,7 @@ public class WebSocketServerSession extends ServerSession {
 	@Override
 	public void close() throws IOException {
 		try {
+			execService.shutdown();
 			wsSession.close();
 		} finally {
 			super.close();

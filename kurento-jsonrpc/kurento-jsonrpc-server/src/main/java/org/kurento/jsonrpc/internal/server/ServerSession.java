@@ -15,10 +15,10 @@
 package org.kurento.jsonrpc.internal.server;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
@@ -26,12 +26,17 @@ import org.kurento.jsonrpc.internal.client.AbstractSession;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 public abstract class ServerSession extends AbstractSession {
 
 	private final SessionsManager sessionsManager;
 	private JsonRpcRequestSenderHelper rsHelper;
 	private String transportId;
 	private ScheduledFuture<?> closeTimerTask;
+
+	private volatile ConcurrentMap<String, Object> attributes;
 
 	// TODO Make this configurable
 	private long reconnectionTimeoutInMillis = 10000;
@@ -136,5 +141,18 @@ public abstract class ServerSession extends AbstractSession {
 
 	public long getReconnectionTimeoutInMillis() {
 		return reconnectionTimeoutInMillis;
+	}
+
+	@Override
+	public Map<String, Object> getAttributes() {
+		if (attributes == null) {
+			synchronized (this) {
+				if (attributes == null) {
+					attributes = new ConcurrentHashMap<>();
+				}
+			}
+		}
+
+		return attributes;
 	}
 }

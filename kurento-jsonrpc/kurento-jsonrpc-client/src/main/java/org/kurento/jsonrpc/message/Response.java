@@ -15,9 +15,9 @@
 package org.kurento.jsonrpc.message;
 
 /**
- * 
+ *
  * Java representation for JSON media connector request.
- * 
+ *
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  * @param <R>
@@ -43,6 +43,14 @@ public class Response<R> extends Message {
 	 * Default constructor.
 	 */
 	public Response() {
+	}
+
+	public Response(R result) {
+		this(null, null, result);
+	}
+
+	public Response(ResponseError error) {
+		this(null, null, error);
 	}
 
 	public Response(Integer id, R result) {

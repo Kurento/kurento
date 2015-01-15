@@ -15,6 +15,7 @@
 package org.kurento.jsonrpc;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.kurento.jsonrpc.internal.JsonRpcRequestSender;
 
@@ -29,5 +30,7 @@ public interface Session extends JsonRpcRequestSender {
 	public void close() throws IOException;
 
 	void setReconnectionTimeout(long millis);
+
+	public Map<String, Object> getAttributes();
 
 }

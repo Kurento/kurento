@@ -15,9 +15,9 @@
 package org.kurento.jsonrpc.internal.client;
 
 import java.io.IOException;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.client.Continuation;
@@ -26,9 +26,13 @@ import org.kurento.jsonrpc.internal.JsonRpcRequestSender;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 public class ClientSession extends AbstractSession {
 
 	private final JsonRpcRequestSender requestSender;
+	private volatile ConcurrentMap<String, Object> attributes;
 
 	public ClientSession(String sessionId, Object registerInfo,
 			JsonRpcRequestSender jsonRpcRequestSender) {
@@ -104,5 +108,18 @@ public class ClientSession extends AbstractSession {
 	public void setReconnectionTimeout(long millis) {
 		throw new JsonRpcException(
 				"Reconnection timeout can't be configured in the client");
+	}
+
+	@Override
+	public Map<String, Object> getAttributes() {
+		if (attributes == null) {
+			synchronized (this) {
+				if (attributes == null) {
+					attributes = new ConcurrentHashMap<>();
+				}
+			}
+		}
+
+		return attributes;
 	}
 }

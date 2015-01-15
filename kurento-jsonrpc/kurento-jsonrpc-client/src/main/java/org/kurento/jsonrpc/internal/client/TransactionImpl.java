@@ -109,6 +109,10 @@ public class TransactionImpl implements Transaction {
 				response.setSessionId(session.getSessionId());
 			}
 
+			if (response.getId() == null) {
+				response.setId(request.getId());
+			}
+
 			responseSender.sendResponse(response);
 
 		} else {
