@@ -43,7 +43,6 @@ with Kurento. The following picture shows an screenshot of this demo running:
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
    :align:   center
    :alt:     Kurento Hello World Screenshot: WebRTC in loopback
-   :width: 600px
 
    *Kurento Hello World Screenshot: WebRTC in loopback*
 
@@ -64,7 +63,6 @@ media pipeline is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
    :alt:     Kurento Hello World Media Pipeline in context
-   :width: 600px
 
    *Kurento Hello World Media Pipeline in context*
 
@@ -90,7 +88,6 @@ the application interface to: i) JavaScript logic; ii) Application server logic
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-signaling.png
    :align:   center
    :alt:     Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo
-   :width: 600px
 
    *Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo*
 
@@ -259,7 +256,8 @@ the remote stream provided by the Kurento Media Server.
    function start() {
       console.log("Starting video call ...");
       showSpinner(videoInput, videoOutput);
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+      webRtcPeer = 
+         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
    function onOffer(sdpOffer) {

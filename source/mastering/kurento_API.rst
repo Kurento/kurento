@@ -60,7 +60,6 @@ developers:
    “machine” capable of performing a sequence of operations over a stream.
 
 .. figure:: ../images/kurento-java-tutorial-2-magicmirror-pipeline.png
-   :width:  400px
    :align:  center
    :alt:    Media Pipeline Example
 
@@ -144,12 +143,14 @@ HttpGetEndpoint
 .. image:: ../images/toolbox/HttpGetEndpoint.png
    :align:  center
 
+
 HttpPostEndpoint
     An ''HttpPostEndpoint'' is an input endpoint that accepts media using
     http POST requests like HTTP file upload function.
 
 .. image:: ../images/toolbox/HttpPostEndpoint.png
    :align:  center
+
 
 PlayerEndpoint
     A ''PlayerEndpoint'' is an input endpoint that retrieves content from
@@ -158,6 +159,7 @@ PlayerEndpoint
 .. image:: ../images/toolbox/PlayerEndpoint.png
    :align:  center
 
+
 RecorderEndpoint
     A ''RecorderEndpoint'' is an output endpoint that  provides function to
     store contents in reliable mode (doesn't discard data). It contains ''Media
@@ -165,6 +167,7 @@ RecorderEndpoint
 
 .. image:: ../images/toolbox/RecorderEndpoint.png
    :align:  center
+
 
 RtpEndpoint
     A ''RtpEndpoint'' is an output and input endpoint. That is, provides
@@ -176,10 +179,12 @@ RtpEndpoint
 .. image:: ../images/toolbox/RtpEndpoint.png
    :align:  center
 
+
 WebRtcEndpoint
     A ''WebRtcEndpoint'' is an output and input endpoint that provides media
     streaming for Real Time Communications (RTC) through the web. It implements
     :term:`WebRTC` technology to communicate with browsers.
+
 
 .. image:: ../images/toolbox/WebRtcEndpoint.png
    :align:  center
@@ -238,6 +243,7 @@ ZBarFilter
 .. image:: ../images/toolbox/ZBarFilter.png
    :align:  center
 
+
 FaceOverlayFilter
     This type of filter detects faces in a video stream and overlaid it with
     a configurable image.
@@ -245,12 +251,14 @@ FaceOverlayFilter
 .. image:: ../images/toolbox/FaceOverlayFilter.png
    :align:  center
 
+
 GStreamerFilter
     This is a generic filter interface that allow use GStreamer filter in
     Kurento Media Pipelines.
 
 .. image:: ../images/toolbox/GStreamerFilter.png
    :align:  center
+
 
 The following class diagram shows the relationships of the main filter classes.
 
@@ -294,11 +302,13 @@ Composite
 .. image:: ../images/toolbox/Composite.png
    :align:  center
 
+
 DispatcherOneToMany
     A Hub that sends a given input to all the connected output HubPorts.
 
 .. image:: ../images/toolbox/DispatcherOneToMany.png
    :align:  center
+
 
 Dispatcher
     A Hub that allows routing between arbitrary input-output HubPort pairs.

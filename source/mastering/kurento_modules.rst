@@ -57,7 +57,6 @@ The following picture shows an schematic view of the Kurento Media Server as
 described before:
 
 .. figure:: ../images/kurento-modules02.png
-   :width:  500px
    :align:  center
    :alt:    Kurento modules architecture
 
@@ -69,7 +68,6 @@ Taking into account the built-in modules, the Kurento toolbox is extended as
 follows:
 
 .. figure:: ../images/kurento-extended-toolbox.png
-   :width:  700px
    :align:  center
    :alt:    Extended Kurento Toolbox
 

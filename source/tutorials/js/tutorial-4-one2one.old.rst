@@ -14,7 +14,6 @@ web browser:
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
-   :width: 600px
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local stream) and other for
@@ -66,7 +65,6 @@ server:
 .. figure:: ../../images/kurento-js-tutorial-4-one2one-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
-   :width: 600px
 
 .. todo:: Review this diagram. What about SDP negotiation?
 

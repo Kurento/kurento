@@ -52,7 +52,6 @@ running in a web browser:
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png
    :align:   center
    :alt:     Kurento Magic Mirror Screenshot: WebRTC with filter in loopback
-   :width: 600px
 
    *Kurento Magic Mirror Screenshot: WebRTC with filter in loopback*
 
@@ -78,7 +77,6 @@ The media pipeline implemented is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
    :alt:     WebRTC with filter in loopback Media Pipeline
-   :width: 400px
 
    *WebRTC with filter in loopback Media Pipeline*
 
@@ -115,7 +113,8 @@ button labeled as *Start* in the GUI is clicked.
 
    function start() {
       showSpinner(videoInput, videoOutput);
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+      webRtcPeer = 
+         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
 As you can see, the function *WebRtcPeer.startSendRecv* of *kurento-utils* is

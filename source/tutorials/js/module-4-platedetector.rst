@@ -63,7 +63,6 @@ composed by the following `Media Element`:term: s:
 .. figure:: ../../images/kurento-module-tutorial-platedetector-pipeline.png
    :align:   center
    :alt:     WebRTC with plateDetector filter Media Pipeline
-   :width: 400px
 
    *WebRTC with plateDetector filter Media Pipeline*
 
@@ -78,7 +77,6 @@ of the running example is shown in the following picture:
 .. figure:: ../../images/kurento-module-tutorial-plate-screenshot-01.png
    :align:   center
    :alt:     Plate detector demo in action
-   :width: 400px
 
    *Plate detector demo in action*
 

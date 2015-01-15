@@ -50,7 +50,6 @@ the Master's web GUI:
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
    :align:   center
    :alt:     One to many video call screenshot
-   :width: 600px
 
    *One to many video call screenshot*
 
@@ -62,7 +61,6 @@ media pipeline is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-pipeline.png
    :align:   center
    :alt:     One to many video call Media Pipeline
-   :width: 400px
 
    *One to many video call Media Pipeline*
 
@@ -100,7 +98,6 @@ clients and server:
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-signaling.png
    :align:   center
    :alt:     One to many video call signaling protocol
-   :width: 600px
 
    *One to many video call signaling protocol*
 

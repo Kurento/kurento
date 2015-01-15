@@ -3,7 +3,6 @@
 .. image:: images/kurento-rect-logo3.png
    :alt:    Creating client applications through Kurento APIs
    :align:  center
-   :width: 350px
 
 %%%%%%%%%%%%%%%
 What's Kurento?
@@ -39,18 +38,18 @@ It provides the following features:
 There are available :term:`Kurento Client` libraries in
 `Java <http://www.java.com/>`__ and
 `Javascript <http://www.w3.org/standards/webdesign/script>`__ to control
-Kurento Media Server from applications. If you prefer another programming language,
-you can use the :term:`Kurento Protocol`, based on :term:`WebSocket` and
-:term:`JSON-RPC`.
+Kurento Media Server from applications. If you prefer another programming
+language, you can use the :term:`Kurento Protocol`, based on :term:`WebSocket`
+and :term:`JSON-RPC`.
 
 Kurento is open source, released under the terms of
 `LGPL version 2.1 <http://www.gnu.org/licenses/lgpl-2.1.html>`__ license. Its
 source code is hosted on `GitHub <https://github.com/Kurento>`__.
 
 If you want to put your hands on quickly, the best way is
-:doc:`installing the Kurento Media Server<installation_guide>` and take a look to our
-:doc:`tutorials<tutorials>` in form of working demo applications. You can
-choose your favorite technology to build multimedia applications: **Java**,
+:doc:`installing the Kurento Media Server<installation_guide>` and take a look
+to our :doc:`tutorials<tutorials>` in form of working demo applications. You
+can choose your favorite technology to build multimedia applications: **Java**,
 **Browser JavaScript** or **Node.js**.
 
 If you want to make the most of Kurento, please take a look to the

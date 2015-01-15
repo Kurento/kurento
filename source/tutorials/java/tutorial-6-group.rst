@@ -9,7 +9,6 @@ following picture shows an screenshot of this demo running in a web browser:
 .. figure:: ../../images/kurento-java-tutorial-6-group-screenshot.png
    :align:   center
    :alt:     Many to many video call screenshot
-   :width: 600px
 
 This web application follows *Single Page Application* architecture
 (`SPA`:term:). The interface of the application is composed by two parts. In
@@ -36,7 +35,6 @@ that room. The following sequence diagram illustrates the interchange of
 .. figure:: ../../images/kurento-java-tutorial-6-group-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
-   :width: 600px
 
 As you can see in the diagram, `SDP`:term: needs to be interchanged between
 client and server to establish the `WebRTC`:term: connection between the

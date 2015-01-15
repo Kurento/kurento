@@ -47,7 +47,6 @@ running in a web browser:
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png 
    :align:   center
    :alt:     Kurento Magic Mirror Screenshot: WebRTC with filter in loopback
-   :width: 600px
 
    *Kurento Magic Mirror Screenshot: WebRTC with filter in loopback*
 
@@ -69,7 +68,6 @@ composed by the following `Media Element`:term: s:
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
    :alt:     WebRTC with filter in loopback Media Pipeline
-   :width: 400px
 
    *WebRTC with filter in loopback Media Pipeline*
 
@@ -98,7 +96,6 @@ the following picture:
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
-   :width: 600px
 
    *One to one video call signaling protocol*
 
@@ -276,7 +273,8 @@ communication.
       showSpinner(videoInput, videoOutput);
    
       console.log("Creating WebRtcPeer and generating local sdp offer ...");
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+      webRtcPeer = 
+         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
    function onOffer(offerSdp) {

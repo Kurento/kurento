@@ -27,7 +27,6 @@ architecture of kurento.
 
 .. figure:: ../images/Architecture.png
    :align:  center
-   :width:  670px
    :alt:    Kurento Architecture
 
    **Kurento Architecture**. *Kurento architecture follows the traditional separation
@@ -113,7 +112,6 @@ capabilities provided by the Kurento Media Server. These modules are called
 custom modules.
 
 .. figure:: ../images/kurento-modules01.png
-   :width:  500px
    :align:  center
    :alt:    Kurento modules architecture
 
@@ -175,7 +173,6 @@ Logic layer, in both cases, can be located at either of the sides or even
 distributed between them. This idea is represented in the following picture:
 
 .. figure:: ../images/Applications_Layered_Architecture.png
-   :width:  500px
    :align:  center
    :alt:    Layered architecture of web and multimedia applications
 
@@ -228,7 +225,6 @@ each application. However, in general, for most applications they can be
 reduced to the following conceptual scheme:
 
 .. figure:: ../images/Generic_interactions.png
-   :width:  670px
    :align:  center
    :alt:    Main interactions between architectural modules
 
@@ -313,7 +309,6 @@ and the media exchange can be started. The interactions among the different
 modules are summarized in the following picture
 
 .. figure:: ../images/RTC_session.png
-   :width: 670px
    :align: center
    :alt:   Main interactions in a RTC session
 
@@ -334,7 +329,6 @@ assume that the Filter element is capable of detecting the face and adding the
 hat to it.
 
 .. figure:: ../images/RTC_session_pipeline.png
-   :width: 670px
    :align: center
    :alt:   Example pipeline for a WebRTC session
 

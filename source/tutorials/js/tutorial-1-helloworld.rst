@@ -59,7 +59,6 @@ with Kurento. The following picture shows an screenshot of this demo running:
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
    :align:   center
    :alt:     Kurento Hello World Screenshot: WebRTC in loopback
-   :width: 600px
 
    *Kurento Hello World Screenshot: WebRTC in loopback*
 
@@ -79,7 +78,6 @@ media pipeline is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
    :alt:     Kurento Hello World Media Pipeline in context
-   :width: 600px
 
    *Kurento Hello World Media Pipeline in context*
 
@@ -93,7 +91,6 @@ connection:
 .. figure:: ../../images/kurento-js-tutorial-1-helloworld-signaling.png
    :align:   center
    :alt:     Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo
-   :width: 400px
 
 The following sections analyze in deep the client-side (JavaScript) code of this
 application, the dependencies, and how to run the demo. The complete source
@@ -131,7 +128,8 @@ button labeled as *Start* in the GUI is clicked.
 
    function start() {
       [...]
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+      webRtcPeer = 
+         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
 The function *WebRtcPeer.startSendRecv* abstracts the WebRTC internal details

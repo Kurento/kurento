@@ -47,7 +47,6 @@ composed by the following `Media Element`:term: s:
 .. figure:: ../../images/kurento-module-tutorial-pointerdetector-pipeline.png
    :align:   center
    :alt:     WebRTC with PointerDetector filter in loopback Media Pipeline
-   :width: 400px
 
    *WebRTC with PointerDetector filter in loopback Media Pipeline*
 
@@ -66,7 +65,6 @@ video, as follows:
 .. figure:: ../../images/kurento-module-tutorial-pointerdetector-screenshot-01.png
    :align:   center
    :alt:     Pointer calibration stage
-   :width: 400px
 
    *Pointer calibration stage*
 
@@ -138,7 +136,6 @@ windows:
 .. figure:: ../../images/kurento-module-tutorial-pointerdetector-screenshot-02.png
    :align:   center
    :alt:     Pointer tracking over a window
-   :width: 400px
 
    *Pointer tracking over a window*
 

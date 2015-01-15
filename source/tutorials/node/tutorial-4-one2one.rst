@@ -46,7 +46,6 @@ The following picture shows an screenshot of this demo running in a web browser:
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
-   :width: 600px
 
    *One to one video call screenshot*
 
@@ -65,7 +64,6 @@ illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-pipeline.png
    :align:   center
    :alt:     One to one video call media pipeline
-   :width: 400px
 
    *One to one video call Media Pipeline*
 
@@ -91,7 +89,6 @@ The detailed message flow in a call are shown in the picture below:
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
-   :width: 600px
 
    *One to many one call signaling protocol*
 

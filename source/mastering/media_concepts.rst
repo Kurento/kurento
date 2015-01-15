@@ -99,8 +99,6 @@ to raw, to H.264 to raw again) will lead to very poor performance of
 applications.
 
 .. figure:: ../images/AgnosticMediaAdaptor.png
-   :height: 215px
-   :width:  599px
    :align:  center
    :alt:    Media Adaptor
    :figwidth: 600px
