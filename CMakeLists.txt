@@ -23,7 +23,7 @@ include (GenericFind)
 set (GST_REQUIRED ~1.4)
 set (GLIB_REQUIRED ^2.38)
 set (SOUP_REQUIRED ^2.40)
-set (NICE_REQUIRED ^0.1.4)
+set (NICE_REQUIRED ^0.1.7)
 set (GNUTLS_REQUIRED ^3.2.0)
 set (GLIBMM_REQUIRED ^2.37)
 
