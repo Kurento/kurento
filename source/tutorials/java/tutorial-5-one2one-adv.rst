@@ -661,7 +661,8 @@ is used to start a WebRTC communication. On the other hand in the function
       if (confirm('User ' + message.from
             + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
+           function(offerSdp) {
             var response = {
                id : 'incomingCallResponse',
                from : message.from,
@@ -692,7 +693,8 @@ is used to start a WebRTC communication. On the other hand in the function
       setCallState(PROCESSING_CALL);
       showSpinner(videoInput, videoOutput);
 
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
+      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
+        function(offerSdp) {
          console.log('Invoking SDP offer callback function');
          var message = {
             id : 'call',

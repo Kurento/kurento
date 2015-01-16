@@ -1,5 +1,3 @@
-.. _architecture:
-
 %%%%%%%%%%%%%%%%%%%%
 Kurento Architecture
 %%%%%%%%%%%%%%%%%%%%
@@ -8,29 +6,27 @@ Kurento, as most multimedia communication technologies out there, is built using
 two layers (called *planes*) to abstract key functions in all interactive
 communication systems:
 
-    **Signaling Plane**
-        The parts of the system in charge of the management of
-        communications, that is, the modules that provides functions for media
-        negotiation, QoS parametrization, call establishment, user
-        registration, user presence, etc. are conceived as forming part of the
-        :term:`Signaling Plane`.
+- **Signaling Plane**. The parts of the system in charge of the management of
+  communications, that is, the modules that provides functions for media
+  negotiation, QoS parametrization, call establishment, user registration, user
+  presence, etc. are conceived as forming part of the :term:`Signaling Plane`.
 
-    **Media Plane**
-        Functionalities such as media transport, media encoding/decoding
-        and media processing make the :term:`Media Plane`, which takes care of
-        the handling of media. The distinction comes from the telephony
-        differentiation between the handling of voice and the handling of
-        meta-information such as tone, billing, etc.
+- **Media Plane** Functionalities such as media transport, media
+  encoding/decoding and media processing make the :term:`Media Plane`, which
+  takes care of the handling of media. The distinction comes from the telephony
+  differentiation between the handling of voice and the handling of
+  meta-information such as tone, billing, etc.
 
 The following figure shows a conceptual representation of the high level
-architecture of kurento.
+architecture of Kurento.
 
 .. figure:: ../images/Architecture.png
-   :align:  center
-   :alt:    Kurento Architecture
-
-   **Kurento Architecture**. *Kurento architecture follows the traditional separation
+   :alt: Kurento Architecture
+   :align: center
+   
+   *Kurento Architecture. Kurento architecture follows the traditional separation
    between signaling and media planes.*
+
 
 The **right side** of the picture shows the application, which is in charge of
 the signaling plane and contains the business logic and connectors of the
@@ -115,9 +111,8 @@ custom modules.
    :align:  center
    :alt:    Kurento modules architecture
 
-   **Kurento modules architecture**.
-   *Kurento Media Server can be extended with built-it modules (crowddetector,
-   pointerdetector, chroma, platedetector) and also with other custom modules.*
+*Kurento modules architecture. Kurento Media Server can be extended with built-it modules (crowddetector, pointerdetector, chroma, platedetector) and also with other custom modules.*
+
 
 For further details please visit the :doc:`Kurento Modules <kurento_modules>`
 page.
@@ -176,11 +171,7 @@ distributed between them. This idea is represented in the following picture:
    :align:  center
    :alt:    Layered architecture of web and multimedia applications
 
-   **Layered architecture of web and multimedia applications**.
-   *Applications created using Kurento (right) can be similar
-   to standard WWW applications (left). Both types
-   of applications may choose to place the application logic at the client
-   or at the server code.*
+*Layered architecture of web and multimedia applications. Applications created using Kurento (right) can be similar to standard WWW applications (left). Both types of applications may choose to place the application logic at the client or at the server code.*
 
 This means that Kurento developers can choose to include the code creating the
 specific media pipeline required by their applications at the client side
@@ -228,13 +219,8 @@ reduced to the following conceptual scheme:
    :align:  center
    :alt:    Main interactions between architectural modules
 
-   **Main interactions between architectural modules**.
-   *Main interactions occur in two phases: negotiation and media exchange.
-   Remark that the color of the different arrows and boxes is aligned with
-   the architectural figures presented above, so that, for example, orange
-   arrows show exchanges belonging to the signaling plane, blue arrows show
-   exchanges belonging to the Kurento Protocol, red boxes are associated to the
-   Kurento Media Server and green boxes with the application.*
+*Main interactions between architectural modules. Main interactions occur in two phases: negotiation and media exchange. Remark that the color of the different arrows and boxes is aligned with the architectural figures presented above, so that, for example, orange arrows show exchanges belonging to the signaling plane, blue arrows show exchanges belonging to the Kurento Protocol, red boxes are associated to the Kurento Media Server and green boxes with the application.*
+
 
 1. Media negotiation phase (signaling)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,6 +249,7 @@ interactions have the objective of negotiating the whats, hows, wheres and
 whens of the media exchange. For this reason, we call it the negotiation phase.
 Clearly, during this phase only signaling protocols are involved.
 
+
 2. Media exchange phase
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -289,6 +276,7 @@ appropriate pipeline holding the desired media element during the negotiation
 phase. After that, from the client perspective, the processed clip will be
 received as any other video.
 
+
 Real time WebRTC applications with Kurento
 ------------------------------------------
 
@@ -312,12 +300,7 @@ modules are summarized in the following picture
    :align: center
    :alt:   Main interactions in a RTC session
 
-   **Main interactions in a WebRTC session**.
-   *Interactions taking place in a Real Time Communications (RTC)
-   session. During the negotiation phase, a Session Description Protocol
-   (SDP) message is exchanged offering the capabilities of the client. As a
-   result, Kurento Media Server generates an SDP answer that can be used by the
-   client for extablishing the media exchange.*
+*Main interactions in a WebRTC session. Interactions taking place in a Real Time Communications (RTC) session. During the negotiation phase, a Session Description Protocol (SDP) message is exchanged offering the capabilities of the client. As a result, Kurento Media Server generates an SDP answer that can be used by the client for extablishing the media exchange.*
 
 The application developer is able to create the desired pipeline during the
 negotiation phase, so that the real time multimedia stream is processed
@@ -332,16 +315,8 @@ hat to it.
    :align: center
    :alt:   Example pipeline for a WebRTC session
 
-   **Example pipeline for a WebRTC session**.
-   *During the negotiation phase, the application developer can create a
-   pipeline providing the desired specific functionality. For example, this
-   pipeline uses a WebRtcEndpoint for communicating with the client, which
-   is connected to a RecorderEndpoint storing the received media streamd
-   and to an augmented reality filter, which feeds its output media stream
-   back to the client. As a result, the end user will receive its own image
-   filtered (e.g. with a hat added onto her head) and the stream will be
-   recorded and made available for further recovery into a repository (e.g.
-   a file).*
+*Example pipeline for a WebRTC session. During the negotiation phase, the application developer can create a pipeline providing the desired specific functionality. For example, this pipeline uses a WebRtcEndpoint for communicating with the client, which is connected to a RecorderEndpoint storing the received media streamd and to an augmented reality filter, which feeds its output media stream back to the client. As a result, the end user will receive its own image filtered (e.g. with a hat added onto her head) and the stream will be recorded and made available for further recovery into a repository (e.g. a file).*
+
 
 Kurento Design Principles
 -------------------------

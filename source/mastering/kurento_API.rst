@@ -59,7 +59,7 @@ developers:
    other elements input streams (sinks). Hence, the pipeline represents a
    “machine” capable of performing a sequence of operations over a stream.
 
-.. figure:: ../images/kurento-java-tutorial-2-magicmirror-pipeline.png
+.. image:: ../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:  center
    :alt:    Media Pipeline Example
 
@@ -134,60 +134,49 @@ in the Kurento API.
 Endpoints
 =========
 
-Let us discuss briefly the different Endpoints offered by kurento:
+Let us discuss briefly the different Endpoints offered by kurento.
 
-HttpGetEndpoint
-    An ''HttpGetEndpoint'' is an output endpoint that delivers media using
-    HTML5 pseudo-streaming mechanism by means of http GET requests.
+An **HttpGetEndpoint** is an output endpoint that delivers media using HTML5
+pseudo-streaming mechanism by means of http GET requests.
 
 .. image:: ../images/toolbox/HttpGetEndpoint.png
    :align:  center
 
-
-HttpPostEndpoint
-    An ''HttpPostEndpoint'' is an input endpoint that accepts media using
-    http POST requests like HTTP file upload function.
+An **HttpPostEndpoint** is an input endpoint that accepts media using http POST
+requests like HTTP file upload function.
 
 .. image:: ../images/toolbox/HttpPostEndpoint.png
    :align:  center
 
-
-PlayerEndpoint
-    A ''PlayerEndpoint'' is an input endpoint that retrieves content from
-    file system, http URL or RTSP url and inject it into the media pipeline.
+A **PlayerEndpoint** is an input endpoint that retrieves content from file
+system, http URL or RTSP url and inject it into the media pipeline.
 
 .. image:: ../images/toolbox/PlayerEndpoint.png
    :align:  center
 
-
-RecorderEndpoint
-    A ''RecorderEndpoint'' is an output endpoint that  provides function to
-    store contents in reliable mode (doesn't discard data). It contains ''Media
-    Sink'' pads for audio and video.
+A **RecorderEndpoint** is an output endpoint that provides function to store
+contents in reliable mode (doesn't discard data). It contains ``Media Sink``
+pads for audio and video.
 
 .. image:: ../images/toolbox/RecorderEndpoint.png
    :align:  center
 
 
-RtpEndpoint
-    A ''RtpEndpoint'' is an output and input endpoint. That is, provides
-    bidirectional content delivery capabilities with remote networked peers
-    through RTP protocol. As you can imagine, to send and receive media through
-    the network it uses :term:`RTP` protocol and :term:`SDP` for media
-    negotiation.
+A **RtpEndpoint** is an output and input endpoint. That is, provides
+bidirectional content delivery capabilities with remote networked peers through
+RTP protocol. As you can imagine, to send and receive media through the network
+it uses :term:`RTP` protocol and :term:`SDP` for media negotiation.
 
 .. image:: ../images/toolbox/RtpEndpoint.png
    :align:  center
 
-
-WebRtcEndpoint
-    A ''WebRtcEndpoint'' is an output and input endpoint that provides media
-    streaming for Real Time Communications (RTC) through the web. It implements
-    :term:`WebRTC` technology to communicate with browsers.
-
+A **WebRtcEndpoint** is an output and input endpoint that provides media
+streaming for Real Time Communications (RTC) through the web. It implements
+:term:`WebRTC` technology to communicate with browsers.
 
 .. image:: ../images/toolbox/WebRtcEndpoint.png
    :align:  center
+
 
 The following class diagram shows the relationships of the main endpoint classes.
 
@@ -229,32 +218,29 @@ The following class diagram shows the relationships of the main endpoint classes
    UriEndpoint -> PlayerEndpoint;
    UriEndpoint -> RecorderEndpoint;
 
+
 Filters
 =======
 
 Filters are MediaElements that perform media processing, computer vision,
 augmented reality, and so on. Let see the available filters in Kurento:
 
-ZBarFilter
-    This filter detects QR and bar codes in a video stream. When a code is
-    found, the filter raises a ``CodeFoundEvent``. Clients can add a listener
-    to this event to execute some action.
+The **ZBarFilter** filter detects QR and bar codes in a video stream. When a
+code is found, the filter raises a ``CodeFoundEvent``. Clients can add a
+listener to this event to execute some action.
 
 .. image:: ../images/toolbox/ZBarFilter.png
    :align:  center
 
-
-FaceOverlayFilter
-    This type of filter detects faces in a video stream and overlaid it with
-    a configurable image.
+The **FaceOverlayFilter** filter detects faces in a video stream and overlaid it
+with a configurable image.
 
 .. image:: ../images/toolbox/FaceOverlayFilter.png
    :align:  center
 
 
-GStreamerFilter
-    This is a generic filter interface that allow use GStreamer filter in
-    Kurento Media Pipelines.
+**GStreamerFilter** is a generic filter interface that allow use GStreamer
+filter in Kurento Media Pipelines.
 
 .. image:: ../images/toolbox/GStreamerFilter.png
    :align:  center
@@ -289,32 +275,32 @@ The following class diagram shows the relationships of the main filter classes.
     "Filter" -> "FaceOverlayFilter";
     "Filter" -> "GStreamerFilter";
 
+
 Hubs
 ====
 Hubs are media objects in charge of managing multiple media flows in a pipeline.
 A Hub has several hub ports where other media elements are connected. Let's see
 the available hubs in Kurento:
 
-Composite
-    A Hub that mixes the audio stream of its connected inputs and constructs
-    a grid with the video streams of them.
+**Composite** is a hub that mixes the audio stream of its connected inputs and
+constructs a grid with the video streams of them.
 
 .. image:: ../images/toolbox/Composite.png
    :align:  center
 
-
-DispatcherOneToMany
-    A Hub that sends a given input to all the connected output HubPorts.
+**DispatcherOneToMany** is a Hub that sends a given input to all the connected
+output HubPorts.
 
 .. image:: ../images/toolbox/DispatcherOneToMany.png
    :align:  center
 
-
-Dispatcher
-    A Hub that allows routing between arbitrary input-output HubPort pairs.
+**Dispatcher** is a hub that allows routing between arbitrary input-output
+HubPort pairs.
 
 .. image:: ../images/toolbox/Dispatcher.png
    :align:  center
+
+The following class diagram shows the relationships of the hubs.
 
 .. digraph:: Hubs
    :caption: Class diagram of Hubs in Kurento API

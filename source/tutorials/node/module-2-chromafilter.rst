@@ -116,7 +116,8 @@ follows:
                      return callback(error);
                   }
 
-                  chromaFilter.setBackground (url.format(asUrl) + 'img/mario.jpg', function(error) {
+                  chromaFilter.setBackground (url.format(asUrl) + 'img/mario.jpg',
+                    function(error) {
                      if (error) {
                         pipeline.release();
                         return callback(error);

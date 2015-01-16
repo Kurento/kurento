@@ -92,6 +92,8 @@ connection:
    :align:   center
    :alt:     Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo
 
+   *Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo*
+
 The following sections analyze in deep the client-side (JavaScript) code of this
 application, the dependencies, and how to run the demo. The complete source
 code can be found in

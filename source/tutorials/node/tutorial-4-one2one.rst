@@ -277,41 +277,43 @@ WebRtcEndpoints when invoking ``generateSdpAnswerForCallee`` and
             var pipeline = new CallMediaPipeline(); 
 
             pipeline.createPipeline(function(error){                     
-               pipeline.generateSdpAnswerForCaller(caller.sdpOffer, function(error, callerSdpAnswer){
-               if(error){
-                  return onError(error, error);
-               }
+               pipeline.generateSdpAnswerForCaller(caller.sdpOffer,
+                  function(error, callerSdpAnswer){
+                     if(error) {
+                        return onError(error, error);
+                     }
 
-               pipeline.generateSdpAnswerForCallee(calleeSdp, function(error, calleeSdpAnswer){
-                                        
-                  pipelines[caller.id] = pipeline;
-                  pipelines[callee.id] = pipeline;
-                                        
-                  var message = {
-                     id: 'startCommunication',
-                     sdpAnswer: calleeSdpAnswer
-                  };
+                     pipeline.generateSdpAnswerForCallee(calleeSdp,
+                        function(error, calleeSdpAnswer) {
 
-                  callee.sendMessage(message);
+                        pipelines[caller.id] = pipeline;
+                        pipelines[callee.id] = pipeline;
 
-                  message = {
-                     id: 'callResponse',
-                     response : 'accepted',
-                     sdpAnswer: callerSdpAnswer
-                  };
+                        var message = {
+                           id: 'startCommunication',
+                           sdpAnswer: calleeSdpAnswer
+                        };
 
-                  caller.sendMessage(message);                                    
-               });                             
-            });                     
-         });
-      } else {
-         var decline = {
-            id: 'callResponse',
-            response: 'rejected',
-            message: 'user declined'
-         };
+                        callee.sendMessage(message);
 
-         caller.sendMessage(decline);
+                        message = {
+                           id: 'callResponse',
+                           response : 'accepted',
+                           sdpAnswer: callerSdpAnswer
+                        };
+
+                        caller.sendMessage(message);
+                     });
+                  });
+             });
+         } else {
+            var decline = {
+               id: 'callResponse',
+               response: 'rejected',
+               message: 'user declined'
+            };
+
+            caller.sendMessage(decline);
         }
    }
 
@@ -360,9 +362,6 @@ above are implemented.
       if(this._pipeline) this._pipeline.release();
       this._pipeline = null;
    }
-
-
-
 
 
 Client-Side
@@ -436,7 +435,8 @@ start a WebRTC communication.
       setCallState(PROCESSING_CALL);
       if (confirm('User ' + message.from  + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(sdp, wp) {
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
+           function(sdp, wp) {
             var response = {
                id : 'incomingCallResponse',
                from : message.from,

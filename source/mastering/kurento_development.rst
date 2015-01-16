@@ -167,4 +167,5 @@ libraries from HTML resources, then, you have to change to development URLs:
 
 .. sourcecode:: html
 
-   <script type="text/javascript" src="http://builds.kurento.org/dev/latest/js/kurento-client.min.js"></script>
+   <script type="text/javascript"
+       src="http://builds.kurento.org/dev/latest/js/kurento-client.min.js"></script>

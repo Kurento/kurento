@@ -153,7 +153,8 @@ All in all, the media pipeline of this demo is is implemented as follows:
    
       // Check if session is already transmitting
       if (pipelines[sessionId]) {
-         return callback("Close current session before starting a new one or use another browser to open a tutorial.")
+         return callback("Close current session before starting a new one or use " +
+            "another browser to open a tutorial.")
       }
    
       getKurentoClient(function(error, kurentoClient) {
@@ -216,7 +217,8 @@ All in all, the media pipeline of this demo is is implemented as follows:
    
          var _roi = {      
                   'id' : 'roi1',
-                  'points' : [{'x' : 0, 'y' : 0}, {'x' : 0.5, 'y' : 0}, {'x' : 0.5, 'y' : 0.5}, {'x' : 0, 'y' : 0.5}],
+                  'points' : [{'x' : 0, 'y' : 0}, {'x' : 0.5, 'y' : 0},
+                        {'x' : 0.5, 'y' : 0.5}, {'x' : 0, 'y' : 0.5}],
                   'regionOfInterestConfig' : {
                         'occupancyLevelMin' : 10,
                         'occupancyLevelMed' : 35,

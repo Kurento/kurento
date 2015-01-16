@@ -35,7 +35,8 @@ How do I...
         with the long-term credentials user and password (``kurento:kurento`` in
         this case, but could be different), realm and some other options::
 
-             DAEMON_ARGS="-c /etc/turnserver.conf -f -o -a -v -r kurento.org -u kurento:kurento --no-stdout-log --external-ip $EXTERNAL_IP/$LOCAL_IP"
+             DAEMON_ARGS="-c /etc/turnserver.conf -f -o -a -v -r kurento.org
+             -u kurento:kurento --no-stdout-log --external-ip $EXTERNAL_IP/$LOCAL_IP"
 
    4. Then let's enable the turnserver to run as an automatic service daemon. For this,
    open the file ``/etc/defaults/coturn`` and uncomment the key::
@@ -99,17 +100,21 @@ How do I...
 
       certtool --generate-privkey --outfile defaultCertificate.pem
       echo 'organization = your organization name' > certtool.tmpl
-      certtool --generate-self-signed --load-privkey defaultCertificate.pem --template certtool.tmpl >> defaultCertificate.pem
+      certtool --generate-self-signed --load-privkey defaultCertificate.pem \
+         --template certtool.tmpl >> defaultCertificate.pem
       sudo chown nobody defaultCertificate.pem
 
-   Due to the fact that the certificate is self-signed, applications will
-   reject it by default. For this reason, you have to trust it.
-   Regarding browser applications, it can be ignored by done via HTTPS in your browser
-   to the WSS port (https://localhost:8433/ with the above configuration) and accepting
-   the certificate permanently. Regarding Java applications, follow the instructions
-   of this `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_
-   (get ``InstallCert.java`` from `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_).
-   Regarding Node applications, please take a look to this `link <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_. 
+   Due to the fact that the certificate is self-signed, applications will reject it
+   by default. For this reason, you have to trust it. Regarding browser
+   applications, it can be ignored by done via HTTPS in your browser to the WSS
+   port (https://localhost:8433/ with the above configuration) and accepting the
+   certificate permanently. Regarding Java applications, follow the instructions
+   of this
+   `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_
+   (get ``InstallCert.java`` from
+   `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_).
+   Regarding Node applications, please take a look to this
+   `link <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_. 
 
 
 **...know how many Media Pipelines do I need for my Application?**

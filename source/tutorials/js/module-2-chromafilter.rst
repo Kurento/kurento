@@ -109,7 +109,8 @@ follows:
       pipeline.create('WebRtcEndpoint', function(error, webRtc) {
          if (error) return onError(error);
 
-         pipeline.create('ChromaFilter', {window: {topRightCornerX:5 , topRightCornerY:5 , width:30 , height:30 }}, function(error, filter) {
+         pipeline.create('ChromaFilter', {window: {topRightCornerX:5 ,
+            topRightCornerY:5 , width:30 , height:30 }}, function(error, filter) {
             if (error) return onError(error);
             
             webRtc.connect(filter, function(error) {
