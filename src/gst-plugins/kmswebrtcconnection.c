@@ -90,6 +90,15 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 
 /* KmsWebRtcTransport end */
 
+static void
+kms_nice_agent_recv_cb (NiceAgent * agent, guint stream_id, guint component_id,
+    guint len, gchar * buf, gpointer user_data)
+{
+  /* Nothing to do, this callback is only for negotiation */
+  GST_TRACE ("ICE data received on stream_id: '%" G_GUINT32_FORMAT
+      "' component_id: '%" G_GUINT32_FORMAT "'", stream_id, component_id);
+}
+
 /* KmsWebRtcBaseConnection begin */
 
 G_DEFINE_TYPE (KmsWebRtcBaseConnection, kms_webrtc_base_connection,
@@ -322,6 +331,10 @@ kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
   }
 
   nice_agent_set_stream_name (agent, base_conn->stream_id, name);
+  nice_agent_attach_recv (agent, base_conn->stream_id,
+      NICE_COMPONENT_TYPE_RTP, context, kms_nice_agent_recv_cb, NULL);
+  nice_agent_attach_recv (agent, base_conn->stream_id,
+      NICE_COMPONENT_TYPE_RTCP, context, kms_nice_agent_recv_cb, NULL);
 
   return conn;
 }
@@ -512,6 +525,8 @@ kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
   }
 
   nice_agent_set_stream_name (agent, base_conn->stream_id, name);
+  nice_agent_attach_recv (agent, base_conn->stream_id,
+      NICE_COMPONENT_TYPE_RTP, context, kms_nice_agent_recv_cb, NULL);
 
   return conn;
 }
@@ -723,6 +738,8 @@ kms_webrtc_bundle_connection_new (NiceAgent * agent, GMainContext * context,
   }
 
   nice_agent_set_stream_name (agent, base_conn->stream_id, name);
+  nice_agent_attach_recv (agent, base_conn->stream_id,
+      NICE_COMPONENT_TYPE_RTP, context, kms_nice_agent_recv_cb, NULL);
 
   priv->rtp_funnel = gst_element_factory_make ("funnel", NULL);
   priv->rtcp_funnel = gst_element_factory_make ("funnel", NULL);
