@@ -183,8 +183,8 @@ All in all, the media pipeline of this demo is is implemented as follows:
          crowdDetectorFilter.connect(webRtcEndpoint);
 
          // addEventListener to crowddetector
-         crowdDetectorFilter
-               .addCrowdDetectorDirectionListener(new EventListener<CrowdDetectorDirectionEvent>() {
+         crowdDetectorFilter.addCrowdDetectorDirectionListener(
+            new EventListener<CrowdDetectorDirectionEvent>() {
                   @Override
                   public void onEvent(CrowdDetectorDirectionEvent event) {
                      JsonObject response = new JsonObject();
@@ -201,8 +201,8 @@ All in all, the media pipeline of this demo is is implemented as follows:
                   }
                });
 
-         crowdDetectorFilter
-               .addCrowdDetectorFluidityListener(new EventListener<CrowdDetectorFluidityEvent>() {
+         crowdDetectorFilter.addCrowdDetectorFluidityListener(
+            new EventListener<CrowdDetectorFluidityEvent>() {
                   @Override
                   public void onEvent(CrowdDetectorFluidityEvent event) {
                      JsonObject response = new JsonObject();
@@ -221,8 +221,8 @@ All in all, the media pipeline of this demo is is implemented as follows:
                   }
                });
 
-         crowdDetectorFilter
-               .addCrowdDetectorOccupancyListener(new EventListener<CrowdDetectorOccupancyEvent>() {
+         crowdDetectorFilter.addCrowdDetectorOccupancyListener(
+            new EventListener<CrowdDetectorOccupancyEvent>() {
                   @Override
                   public void onEvent(CrowdDetectorOccupancyEvent event) {
                      JsonObject response = new JsonObject();

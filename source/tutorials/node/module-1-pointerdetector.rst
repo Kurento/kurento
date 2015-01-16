@@ -86,8 +86,8 @@ the windows. This is implemented in the JavaScript logic as follows:
 
 .. sourcecode:: javascript
 
-   pipeline.create('PointerDetectorFilter', {'calibrationRegion' : {topRightCornerX: 5, topRightCornerY:5, width:30, height: 30}},
-      function(error, _filter) {
+   pipeline.create('PointerDetectorFilter', {'calibrationRegion' : {topRightCornerX: 5,
+      topRightCornerY:5, width:30, height: 30}}, function(error, _filter) {
       if (error) return onError(error);
 
       filter = _filter;
@@ -98,13 +98,13 @@ the windows. This is implemented in the JavaScript logic as follows:
          filter.connect(webRtc, function(error) {
             if (error) return onError(error);
 
-            filter.addWindow({id: 'window0', height: 50, width:50, upperRightX: 500, upperRightY: 150}, 
-               function(error) {
+            filter.addWindow({id: 'window0', height: 50, width:50,
+               upperRightX: 500, upperRightY: 150}, function(error) {
                   if (error) return onError(error);                           
             });
 
-            filter.addWindow({id: 'window1', height: 50, width:50, upperRightX: 500, upperRightY: 250}, 
-               function(error) {
+            filter.addWindow({id: 'window1', height: 50, width:50,
+               upperRightX: 500, upperRightY: 250}, function(error) {
                   if (error) return onError(error);                        
             });
 

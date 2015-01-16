@@ -88,7 +88,8 @@ this event is printed in the console of the GUI.
    
       // Check if session is already transmitting
       if (pipelines[sessionId]) {
-         return callback("Close current session before starting a new one or use another browser to open a tutorial.")
+         return callback("Close current session before starting a new one or use " +
+            "another browser to open a tutorial.")
       }
    
       getKurentoClient(function(error, kurentoClient) {

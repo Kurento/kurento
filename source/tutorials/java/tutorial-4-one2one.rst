@@ -197,7 +197,8 @@ steps in each case.
             .getLogger(CallHandler.class);
       private static final Gson gson = new GsonBuilder().create();
    
-      private ConcurrentHashMap<String, CallMediaPipeline> pipelines = new ConcurrentHashMap<String, CallMediaPipeline>();
+      private ConcurrentHashMap<String, CallMediaPipeline> pipelines =
+            new ConcurrentHashMap<String, CallMediaPipeline>();
    
       @Autowired
       private KurentoClient kurento;
@@ -572,7 +573,8 @@ start a WebRTC communication.
       setCallState(PROCESSING_CALL);
       if (confirm('User ' + message.from  + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(sdp, wp) {
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
+           function(sdp, wp) {
             var response = {
                id : 'incomingCallResponse',
                from : message.from,

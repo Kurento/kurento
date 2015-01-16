@@ -224,8 +224,8 @@ back to the client.
 
    function startViewer(id, sdp, ws, callback) {
       if (master === null || master.webRtcEndpoint === null) {
-                return callback("No active sender now. Become sender or . Try again later ...");
-       }
+         return callback("No active sender now. Become sender or . Try again later ...");
+      }
 
       //...
 
@@ -329,7 +329,8 @@ used in the ``viewer`` function.
       if (!webRtcPeer) {
          showSpinner(videoInput, videoOutput);
 
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
+           function(offerSdp) {
             var message = {
                id : 'master',
                sdpOffer : offerSdp
