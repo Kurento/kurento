@@ -234,7 +234,6 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
 
   g_object_unref (src);
 
-  // TODO: Do something to fix a possible previous EOS event
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   gst_buffer_unref (buffer);
