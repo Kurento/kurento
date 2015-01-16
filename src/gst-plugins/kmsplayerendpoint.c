@@ -178,8 +178,10 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
-  if (sample == NULL)
+  if (sample == NULL) {
+    GST_ERROR_OBJECT (appsink, "Cannot get sample");
     return GST_FLOW_OK;
+  }
 
   buffer = gst_sample_get_buffer (sample);
 
@@ -506,6 +508,8 @@ kms_player_endpoint_stopped (KmsUriEndpoint * obj)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
 
+  GST_DEBUG_OBJECT (self, "Pipeline stopped");
+
   /* Set internal pipeline to NULL */
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
   BASE_TIME_LOCK (self);
@@ -520,6 +524,8 @@ static void
 kms_player_endpoint_started (KmsUriEndpoint * obj)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
+
+  GST_DEBUG_OBJECT (self, "Pipeline started");
 
   /* Set uri property in uridecodebin */
   g_object_set (G_OBJECT (self->priv->uridecodebin), "uri",
@@ -536,6 +542,8 @@ static void
 kms_player_endpoint_paused (KmsUriEndpoint * obj)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
+
+  GST_DEBUG_OBJECT (self, "Pipeline paused");
 
   /* Set internal pipeline to paused */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
