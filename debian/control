@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 8.0.0),
  libboost-filesystem-dev,
  libsoup2.4-dev,
  libgnutls28-dev,
- libnice-dev,
+ libnice-dev (>= 0.1.7),
  uuid-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
@@ -21,7 +21,7 @@ Architecture: any
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
-  gstreamer1.0-nice,
+  gstreamer1.0-nice (>= 0.1.7),
   gnutls-bin,
   kms-core (>= 5.0.4)
 Description: Kurento elements module
