@@ -45,26 +45,37 @@ import org.kurento.test.client.WebRtcMode;
  */
 public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
-	private static final int DEFAULT_NODES = 1; // Number of nodes
-	private static final int DEFAULT_NBROWSERS = 2; // Browser per node
-	private static final int DEFAULT_CLIENT_RATE = 5000; // milliseconds
-	private static final int DEFAULT_HOLD_TIME = 10000; // milliseconds
+	// Number of nodes
+	private static final String NUM_VIEWERS_PROPERTY = "perf.loopback.numnodes";
+	private static final int NUM_VIEWERS_DEFAULT = 1;
+
+	// Browser per node
+	private static final String NUM_BROWSERS_PROPERTY = "perf.loopback.numbrowsers";
+	private static final int NUM_BROWSERS_DEFAULT = 2;
+
+	// Client rate in milliseconds
+	private static final String CLIENT_RATE_PROPERTY = "perf.loopback.clientrate";
+	private static final int CLIENT_RATE_DEFAULT = 5000;
+
+	// Hold time in milliseconds
+	private static final String HOLD_TIME_PROPERTY = "perf.loopback.holdtime";
+	private static final int HOLD_TIME_DEFAULT = 10000;
 
 	private int holdTime;
 
 	public WebRtcPerformanceLoopbackTest() {
 
-		int numNodes = getProperty("test.webrtcgrid.numnodes", DEFAULT_NODES);
+		int numNodes = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
 
-		int numBrowsers = getProperty("test.webrtcgrid.numbrowsers",
-				DEFAULT_NBROWSERS);
+		int numBrowsers = getProperty(NUM_BROWSERS_PROPERTY,
+				NUM_BROWSERS_DEFAULT);
 
-		holdTime = getProperty("test.webrtcgrid.holdtime", DEFAULT_HOLD_TIME);
+		holdTime = getProperty(HOLD_TIME_PROPERTY, HOLD_TIME_DEFAULT);
 
 		setNumBrowsersPerNode(numBrowsers);
 
-		setBrowserCreationRate(getProperty("test.webrtcgrid.clientrate",
-				DEFAULT_CLIENT_RATE));
+		setBrowserCreationRate(getProperty(CLIENT_RATE_PROPERTY,
+				CLIENT_RATE_DEFAULT));
 
 		setNodes(getRandomNodes(numNodes, Browser.CHROME, getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m", null, numBrowsers));

@@ -46,10 +46,21 @@ import org.kurento.test.services.Node;
  */
 public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
-	private static final int DEFAULT_VIEWERS = 2; // Number of viewers
-	private static final int DEFAULT_NBROWSERS = 3; // Browser per node
-	private static final int DEFAULT_CLIENT_RATE = 2000; // milliseconds
-	private static final int DEFAULT_HOLD_TIME = 10000; // milliseconds
+	// Number of nodes
+	private static final String NUM_VIEWERS_PROPERTY = "perf.one2many.numnodes";
+	private static final int NUM_VIEWERS_DEFAULT = 2;
+
+	// Browser per node
+	private static final String NUM_BROWSERS_PROPERTY = "perf.one2many.numbrowsers";
+	private static final int NUM_BROWSERS_DEFAULT = 3;
+
+	// Client rate in milliseconds
+	private static final String CLIENT_RATE_PROPERTY = "perf.one2many.clientrate";
+	private static final int CLIENT_RATE_DEFAULT = 2000;
+
+	// Hold time in milliseconds
+	private static final String HOLD_TIME_PROPERTY = "perf.one2many.holdtime";
+	private static final int HOLD_TIME_DEFAULT = 10000;
 
 	private int holdTime;
 	private Node master;
@@ -57,18 +68,16 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 	public WebRtcPerformanceOneToManyTest() throws InterruptedException {
 
 		int numViewers = Integer.parseInt(System.getProperty(
-				"test.webrtcgrid.numnodes", String.valueOf(DEFAULT_VIEWERS)));
+				NUM_VIEWERS_PROPERTY, String.valueOf(NUM_VIEWERS_DEFAULT)));
 
 		int numBrowsers = Integer.parseInt(System.getProperty(
-				"test.webrtcgrid.numbrowsers",
-				String.valueOf(DEFAULT_NBROWSERS)));
+				NUM_BROWSERS_PROPERTY, String.valueOf(NUM_BROWSERS_DEFAULT)));
 
 		int clientRate = Integer.parseInt(System.getProperty(
-				"test.webrtcgrid.clientrate",
-				String.valueOf(DEFAULT_CLIENT_RATE)));
+				CLIENT_RATE_PROPERTY, String.valueOf(CLIENT_RATE_DEFAULT)));
 
-		holdTime = Integer.parseInt(System.getProperty(
-				"test.webrtcgrid.holdtime", String.valueOf(DEFAULT_HOLD_TIME)));
+		holdTime = Integer.parseInt(System.getProperty(HOLD_TIME_PROPERTY,
+				String.valueOf(HOLD_TIME_DEFAULT)));
 
 		setBrowserCreationRate(clientRate);
 		setNumBrowsersPerNode(numBrowsers);
