@@ -81,6 +81,8 @@ struct _GstDtlsSrtpEnc
 struct _GstDtlsSrtpEncClass
 {
   GstBinClass parent_class;
+
+  void (*connected_signal) (GstDtlsSrtpEnc * self);
 };
 
 GType gst_dtls_srtp_enc_get_type (void);

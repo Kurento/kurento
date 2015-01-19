@@ -48,6 +48,14 @@ enum
   PROP_SRTP_PROFILES
 };
 
+enum
+{
+  SIGNAL_CONNECTED,
+  LAST_SIGNAL
+};
+
+static guint gst_dtls_srtp_enc_signals[LAST_SIGNAL] = { 0 };
+
 #define DEFAULT_SRTP_PROFILES GST_DTLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80
 
 static GstStaticPadTemplate gst_dtls_srtp_enc_rtp_sink_template =
@@ -146,6 +154,13 @@ gst_dtls_srtp_enc_class_init (GstDtlsSrtpEncClass * klass)
           " a client",
           GST_TYPE_DTLS_SRTP_PROFILE, DEFAULT_SRTP_PROFILES,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  gst_dtls_srtp_enc_signals[SIGNAL_CONNECTED] =
+      g_signal_new ("connected",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (GstDtlsSrtpEncClass, connected_signal), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 static void
@@ -414,6 +429,9 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 
     clear_pad_blocks (self);
   }
+
+  g_signal_emit (G_OBJECT (self), gst_dtls_srtp_enc_signals[SIGNAL_CONNECTED],
+      0);
 }
 
 static GstStateChangeReturn
