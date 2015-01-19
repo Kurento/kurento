@@ -91,8 +91,6 @@ struct _KmsWebrtcEndpointPrivate
   NiceAgent *agent;
   GatherContext ctx;
 
-  GHashTable *conns;
-
   gchar *turn_url;
   gchar *turn_user;
   gchar *turn_password;
@@ -103,42 +101,16 @@ struct _KmsWebrtcEndpointPrivate
 
 /* Connection management begin */
 static KmsIRtpConnection *
-kms_webrtc_endpoint_get_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    const gchar * name)
-{
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
-  gpointer *conn;
-
-  KMS_ELEMENT_LOCK (self);
-  conn = g_hash_table_lookup (self->priv->conns, name);
-  KMS_ELEMENT_UNLOCK (self);
-
-  if (conn == NULL) {
-    return NULL;
-  }
-
-  return KMS_I_RTP_CONNECTION (conn);
-}
-
-static KmsIRtpConnection *
 kms_webrtc_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
     const gchar * name)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
   KmsWebRtcConnection *conn;
 
-  KMS_ELEMENT_LOCK (self);
-  conn = g_hash_table_lookup (self->priv->conns, name);
-  if (conn == NULL) {
-    conn = kms_webrtc_connection_new (self->priv->agent,
-        self->priv->context, name);
-    kms_webrtc_base_connection_set_certificate_pem_file
-        (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
-    g_hash_table_insert (self->priv->conns, g_strdup (name), conn);
-  } else {
-    GST_WARNING_OBJECT (self, "Connection '%s' already created", name);
-  }
-  KMS_ELEMENT_UNLOCK (self);
+  conn =
+      kms_webrtc_connection_new (self->priv->agent, self->priv->context, name);
+  kms_webrtc_base_connection_set_certificate_pem_file
+      (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
 
   return KMS_I_RTP_CONNECTION (conn);
 }
@@ -150,19 +122,11 @@ kms_webrtc_endpoint_create_rtcp_mux_connection (KmsBaseRtpEndpoint *
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
   KmsWebRtcRtcpMuxConnection *conn;
 
-  KMS_ELEMENT_LOCK (self);
-  conn = g_hash_table_lookup (self->priv->conns, name);
-  if (conn == NULL) {
-    conn =
-        kms_webrtc_rtcp_mux_connection_new (self->priv->agent,
-        self->priv->context, name);
-    kms_webrtc_base_connection_set_certificate_pem_file
-        (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
-    g_hash_table_insert (self->priv->conns, g_strdup (name), conn);
-  } else {
-    GST_WARNING_OBJECT (self, "Connection '%s' already created", name);
-  }
-  KMS_ELEMENT_UNLOCK (self);
+  conn =
+      kms_webrtc_rtcp_mux_connection_new (self->priv->agent,
+      self->priv->context, name);
+  kms_webrtc_base_connection_set_certificate_pem_file
+      (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
 
   return KMS_I_RTCP_MUX_CONNECTION (conn);
 }
@@ -174,19 +138,11 @@ kms_webrtc_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
   KmsWebRtcBundleConnection *conn;
 
-  KMS_ELEMENT_LOCK (self);
-  conn = g_hash_table_lookup (self->priv->conns, name);
-  if (conn == NULL) {
-    conn =
-        kms_webrtc_bundle_connection_new (self->priv->agent,
-        self->priv->context, name);
-    kms_webrtc_base_connection_set_certificate_pem_file
-        (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
-    g_hash_table_insert (self->priv->conns, g_strdup (name), conn);
-  } else {
-    GST_WARNING_OBJECT (self, "Connection '%s' already created", name);
-  }
-  KMS_ELEMENT_UNLOCK (self);
+  conn =
+      kms_webrtc_bundle_connection_new (self->priv->agent, self->priv->context,
+      name);
+  kms_webrtc_base_connection_set_certificate_pem_file
+      (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
 
   return KMS_I_BUNDLE_CONNECTION (conn);
 }
@@ -562,12 +518,14 @@ static gboolean
 kms_webrtc_endpoint_set_ice_candidates (KmsWebrtcEndpoint * self,
     GstSDPMessage * msg, gboolean rtcp_mux, gboolean bundle)
 {
+  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
   KmsBaseSdpEndpoint *base_sdp_endpoint = KMS_BASE_SDP_ENDPOINT (self);
   guint len, i;
+  GHashTable *conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
   GHashTableIter iter;
   gpointer key, v;
 
-  g_hash_table_iter_init (&iter, self->priv->conns);
+  g_hash_table_iter_init (&iter, conns);
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
 
@@ -806,6 +764,8 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 static void
 gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
 {
+  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
+  GHashTable *conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
   gboolean done = TRUE;
   GHashTableIter iter;
   gpointer key, v;
@@ -816,7 +776,7 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
   /* FIXME: improve candidate managament using trickle ICE */
   /* Element is locked from set_ice_candidates
      (where nice_agent_gather_candidates is called) */
-  g_hash_table_iter_init (&iter, self->priv->conns);
+  g_hash_table_iter_init (&iter, conns);
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
 
@@ -912,10 +872,13 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       g_free (self->priv->certificate_pem_file);
       self->priv->certificate_pem_file = g_value_dup_string (value);
       {
+        KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
+        GHashTable *conns =
+            kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
         GHashTableIter iter;
         gpointer key, v;
 
-        g_hash_table_iter_init (&iter, self->priv->conns);
+        g_hash_table_iter_init (&iter, conns);
         while (g_hash_table_iter_next (&iter, &key, &v)) {
           KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
 
@@ -1043,7 +1006,6 @@ kms_webrtc_endpoint_finalize (GObject * object)
   g_free (self->priv->turn_address);
 
   g_main_context_unref (self->priv->context);
-  g_hash_table_destroy (self->priv->conns);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_endpoint_parent_class)->finalize (object);
@@ -1077,7 +1039,6 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 
   base_rtp_endpoint_class = KMS_BASE_RTP_ENDPOINT_CLASS (klass);
   /* Connection management */
-  base_rtp_endpoint_class->get_connection = kms_webrtc_endpoint_get_connection;
   base_rtp_endpoint_class->create_connection =
       kms_webrtc_endpoint_create_connection;
   base_rtp_endpoint_class->create_rtcp_mux_connection =
@@ -1128,8 +1089,6 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv = KMS_WEBRTC_ENDPOINT_GET_PRIVATE (self);
 
   self->priv->tmp_dir = g_strdup (g_mkdtemp_full (t, FILE_PERMISIONS));
-  self->priv->conns =
-      g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
   g_mutex_init (&self->priv->ctx.gather_mutex);
   g_cond_init (&self->priv->ctx.gather_cond);
