@@ -34,19 +34,6 @@ G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 
 #define MAX_RETRIES 4
 
-#define KMS_RTP_ENDPOINT_GET_PRIVATE(obj) (  \
-  G_TYPE_INSTANCE_GET_PRIVATE (              \
-    (obj),                                   \
-    KMS_TYPE_RTP_ENDPOINT,                   \
-    KmsRtpEndpointPrivate                    \
-  )                                          \
-)
-
-struct _KmsRtpEndpointPrivate
-{
-  GHashTable *conns;
-};
-
 /* Signals and args */
 enum
 {
@@ -60,39 +47,10 @@ enum
 
 /* Connection management begin */
 static KmsIRtpConnection *
-kms_rtp_endpoint_get_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    const gchar * name)
-{
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_rtp_endpoint);
-  gpointer *conn;
-
-  KMS_ELEMENT_LOCK (self);
-  conn = g_hash_table_lookup (self->priv->conns, name);
-  KMS_ELEMENT_UNLOCK (self);
-
-  if (conn == NULL) {
-    return NULL;
-  }
-
-  return KMS_I_RTP_CONNECTION (conn);
-}
-
-static KmsIRtpConnection *
 kms_rtp_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
     const gchar * name)
 {
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_rtp_endpoint);
-  KmsRtpConnection *conn;
-
-  KMS_ELEMENT_LOCK (self);
-  conn = g_hash_table_lookup (self->priv->conns, name);
-  if (conn == NULL) {
-    conn = kms_rtp_connection_new ();
-    g_hash_table_insert (self->priv->conns, g_strdup (name), conn);
-  } else {
-    GST_WARNING_OBJECT (self, "Connection '%s' already created", name);
-  }
-  KMS_ELEMENT_UNLOCK (self);
+  KmsRtpConnection *conn = kms_rtp_connection_new ();
 
   return KMS_I_RTP_CONNECTION (conn);
 }
@@ -331,24 +289,11 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
 }
 
 static void
-kms_rtp_endpoint_finalize (GObject * object)
-{
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
-
-  GST_DEBUG_OBJECT (self, "finalize");
-
-  g_hash_table_destroy (self->priv->conns);
-
-  G_OBJECT_CLASS (kms_rtp_endpoint_parent_class)->finalize (object);
-}
-
-static void
 kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 {
   KmsBaseSdpEndpointClass *base_sdp_endpoint_class;
   KmsBaseRtpEndpointClass *base_rtp_endpoint_class;
   GstElementClass *gstelement_class;
-  GObjectClass *gobject_class;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
@@ -358,9 +303,6 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
       "José Antonio Santos Cadenas <santoscadenas@kurento.com>");
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
-  gobject_class = G_OBJECT_CLASS (klass);
-  gobject_class->finalize = kms_rtp_endpoint_finalize;
-
   base_sdp_endpoint_class = KMS_BASE_SDP_ENDPOINT_CLASS (klass);
   base_sdp_endpoint_class->set_transport_to_sdp =
       kms_rtp_endpoint_set_transport_to_sdp;
@@ -369,27 +311,19 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 
   base_rtp_endpoint_class = KMS_BASE_RTP_ENDPOINT_CLASS (klass);
   /* Connection management */
-  base_rtp_endpoint_class->get_connection = kms_rtp_endpoint_get_connection;
   base_rtp_endpoint_class->create_connection =
       kms_rtp_endpoint_create_connection;
   base_rtp_endpoint_class->create_bundle_connection =
       kms_rtp_endpoint_create_bundle_connection;
-
-  g_type_class_add_private (klass, sizeof (KmsRtpEndpointPrivate));
 }
 
 static void
 kms_rtp_endpoint_init (KmsRtpEndpoint * self)
 {
-  self->priv = KMS_RTP_ENDPOINT_GET_PRIVATE (self);
-
   g_object_set (G_OBJECT (self), "proto", SDP_MEDIA_RTP_AVP_PROTO, "bundle",
       FALSE, "rtcp-fir", FALSE, "rtcp-nack", FALSE, "rtcp-pli", FALSE,
       "rtcp-remb", FALSE, "max-video-recv-bandwidth", 0, NULL);
   /* FIXME: remove max-video-recv-bandwidth when it b=AS:X is in the SDP offer */
-
-  self->priv->conns =
-      g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 }
 
 gboolean
