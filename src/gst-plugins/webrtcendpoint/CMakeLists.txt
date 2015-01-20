@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(KMS_WEBRTC_SOURCES
+  kmswebrtcbaseconnection.c
   kmswebrtcconnection.c
+  kmswebrtcrtcpmuxconnection.c
+  kmswebrtcbundleconnection.c
+  kmswebrtctransport.c
   kmswebrtcendpoint.c
 )
 
