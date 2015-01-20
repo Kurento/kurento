@@ -29,9 +29,17 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
   )                                                             \
 )
 
+enum
+{
+  PROP_0,
+  PROP_CONNECTED
+};
+
 struct _KmsWebRtcRtcpMuxConnectionPrivate
 {
   KmsWebRtcTransport *tr;
+
+  gboolean connected;
 };
 
 static void
@@ -128,6 +136,39 @@ kms_webrtc_rtcp_mux_connection_request_rtcp_src (KmsIRtpConnection *
   return gst_element_get_static_pad (self->priv->tr->dtlssrtpdec, "src");
 }
 
+static void
+kms_webrtc_rtcp_mux_connection_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsWebRtcRtcpMuxConnection *self = KMS_WEBRTC_RTCP_MUX_CONNECTION (object);
+
+  switch (prop_id) {
+    case PROP_CONNECTED:
+      self->priv->connected = g_value_get_boolean (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+kms_webrtc_rtcp_mux_connection_get_property (GObject * object,
+    guint prop_id, GValue * value, GParamSpec * pspec)
+{
+  KmsWebRtcRtcpMuxConnection *self = KMS_WEBRTC_RTCP_MUX_CONNECTION (object);
+
+  switch (prop_id) {
+    case PROP_CONNECTED:
+      g_value_set_boolean (value, self->priv->connected);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
 KmsWebRtcRtcpMuxConnection *
 kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
     const gchar * name)
@@ -184,6 +225,7 @@ static void
 kms_webrtc_rtcp_mux_connection_init (KmsWebRtcRtcpMuxConnection * self)
 {
   self->priv = KMS_WEBRTC_RTCP_MUX_CONNECTION_GET_PRIVATE (self);
+  self->priv->connected = FALSE;
 }
 
 static void
@@ -195,6 +237,8 @@ kms_webrtc_rtcp_mux_connection_class_init (KmsWebRtcRtcpMuxConnectionClass *
 
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->finalize = kms_webrtc_rtcp_mux_connection_finalize;
+  gobject_class->set_property = kms_webrtc_rtcp_mux_connection_set_property;
+  gobject_class->get_property = kms_webrtc_rtcp_mux_connection_get_property;
 
   base_conn_class = KMS_WEBRTC_BASE_CONNECTION_CLASS (klass);
   base_conn_class->set_certificate_pem_file =
@@ -204,6 +248,8 @@ kms_webrtc_rtcp_mux_connection_class_init (KmsWebRtcRtcpMuxConnectionClass *
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
+
+  g_object_class_override_property (gobject_class, PROP_CONNECTED, "connected");
 }
 
 static void

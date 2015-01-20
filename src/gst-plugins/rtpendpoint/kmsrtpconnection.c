@@ -32,6 +32,12 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
   )                                             \
 )
 
+enum
+{
+  PROP_0,
+  PROP_CONNECTED
+};
+
 struct _KmsRtpConnectionPrivate
 {
   GSocket *rtp_socket;
@@ -41,6 +47,8 @@ struct _KmsRtpConnectionPrivate
   GSocket *rtcp_socket;
   GstElement *rtcp_udpsink;
   GstElement *rtcp_udpsrc;
+
+  gboolean connected;
 };
 
 static void
@@ -229,6 +237,39 @@ kms_rtp_connection_request_rtcp_src (KmsIRtpConnection * base_rtp_conn)
   return gst_element_get_static_pad (self->priv->rtcp_udpsrc, "src");
 }
 
+static void
+kms_rtp_connection_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsRtpConnection *self = KMS_RTP_CONNECTION (object);
+
+  switch (prop_id) {
+    case PROP_CONNECTED:
+      self->priv->connected = g_value_get_boolean (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+kms_rtp_connection_get_property (GObject * object,
+    guint prop_id, GValue * value, GParamSpec * pspec)
+{
+  KmsRtpConnection *self = KMS_RTP_CONNECTION (object);
+
+  switch (prop_id) {
+    case PROP_CONNECTED:
+      g_value_set_boolean (value, self->priv->connected);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
 KmsRtpConnection *
 kms_rtp_connection_new ()
 {
@@ -292,6 +333,7 @@ static void
 kms_rtp_connection_init (KmsRtpConnection * self)
 {
   self->priv = KMS_RTP_CONNECTION_GET_PRIVATE (self);
+  self->priv->connected = FALSE;
 }
 
 static void
@@ -305,6 +347,8 @@ kms_rtp_connection_class_init (KmsRtpConnectionClass * klass)
 
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->finalize = kms_rtp_connection_finalize;
+  gobject_class->get_property = kms_rtp_connection_get_property;
+  gobject_class->set_property = kms_rtp_connection_set_property;
 
   base_conn_class = KMS_RTP_BASE_CONNECTION_CLASS (klass);
   base_conn_class->get_rtp_port = kms_rtp_connection_get_rtp_port;
@@ -312,6 +356,8 @@ kms_rtp_connection_class_init (KmsRtpConnectionClass * klass)
   base_conn_class->set_remote_info = kms_rtp_connection_set_remote_info;
 
   g_type_class_add_private (klass, sizeof (KmsRtpConnectionPrivate));
+
+  g_object_class_override_property (gobject_class, PROP_CONNECTED, "connected");
 }
 
 static void
