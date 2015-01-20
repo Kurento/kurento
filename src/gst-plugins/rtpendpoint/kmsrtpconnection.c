@@ -224,11 +224,11 @@ G_DEFINE_TYPE_WITH_CODE (KmsRtpConnection, kms_rtp_connection,
     KMS_TYPE_RTP_BASE_CONNECTION,
     G_IMPLEMENT_INTERFACE (KMS_TYPE_I_RTP_CONNECTION,
         kms_rtp_connection_interface_init))
-#define KMS_RTP_CONNECTION_GET_PRIVATE(obj) (  \
+#define KMS_RTP_CONNECTION_GET_PRIVATE(obj) (   \
   G_TYPE_INSTANCE_GET_PRIVATE (                 \
     (obj),                                      \
-    KMS_TYPE_RTP_CONNECTION,                   \
-    KmsRtpConnectionPrivate                    \
+    KMS_TYPE_RTP_CONNECTION,                    \
+    KmsRtpConnectionPrivate                     \
   )                                             \
 )
      struct _KmsRtpConnectionPrivate
