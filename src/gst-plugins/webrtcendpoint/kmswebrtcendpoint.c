@@ -20,6 +20,8 @@
 
 #include "kmswebrtcendpoint.h"
 #include "kmswebrtcconnection.h"
+#include "kmswebrtcrtcpmuxconnection.h"
+#include "kmswebrtcbundleconnection.h"
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
