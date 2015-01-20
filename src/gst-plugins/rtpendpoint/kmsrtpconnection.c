@@ -20,11 +20,38 @@
 #define GST_CAT_DEFAULT kmsrtpconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
+#define MAX_RETRIES 4
+
 #define GST_DEFAULT_NAME "kmsrtpconnection"
 
-/* Socket management begin */
+#define KMS_RTP_CONNECTION_GET_PRIVATE(obj) (   \
+  G_TYPE_INSTANCE_GET_PRIVATE (                 \
+    (obj),                                      \
+    KMS_TYPE_RTP_CONNECTION,                    \
+    KmsRtpConnectionPrivate                     \
+  )                                             \
+)
 
-#define MAX_RETRIES 4
+struct _KmsRtpConnectionPrivate
+{
+  GSocket *rtp_socket;
+  GstElement *rtp_udpsink;
+  GstElement *rtp_udpsrc;
+
+  GSocket *rtcp_socket;
+  GstElement *rtcp_udpsink;
+  GstElement *rtcp_udpsrc;
+};
+
+static void
+kms_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface);
+
+G_DEFINE_TYPE_WITH_CODE (KmsRtpConnection, kms_rtp_connection,
+    KMS_TYPE_RTP_BASE_CONNECTION,
+    G_IMPLEMENT_INTERFACE (KMS_TYPE_I_RTP_CONNECTION,
+        kms_rtp_connection_interface_init));
+
+/* Socket management begin */
 
 static void
 kms_socket_finalize (GSocket ** socket)
@@ -125,125 +152,8 @@ kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
 
 /* Socket management end */
 
-/* KmsRtpBaseConnection begin */
-
-G_DEFINE_TYPE (KmsRtpBaseConnection, kms_rtp_base_connection, G_TYPE_OBJECT);
-
 static guint
-kms_rtp_base_connection_get_rtp_port_default (KmsRtpBaseConnection * self)
-{
-  KmsRtpBaseConnectionClass *klass =
-      KMS_RTP_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
-
-  if (klass->get_rtp_port == kms_rtp_base_connection_get_rtp_port_default) {
-    GST_WARNING_OBJECT (self,
-        "%s does not reimplement 'get_rtp_port'", G_OBJECT_CLASS_NAME (klass));
-  }
-
-  return 0;
-}
-
-static guint
-kms_rtp_base_connection_get_rtcp_port_default (KmsRtpBaseConnection * self)
-{
-  KmsRtpBaseConnectionClass *klass =
-      KMS_RTP_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
-
-  if (klass->get_rtcp_port == kms_rtp_base_connection_get_rtcp_port_default) {
-    GST_WARNING_OBJECT (self,
-        "%s does not reimplement 'get_rtcp_port'", G_OBJECT_CLASS_NAME (klass));
-  }
-
-  return 0;
-}
-
-static void
-kms_rtp_base_connection_set_remote_info_default (KmsRtpBaseConnection * self,
-    const gchar * host, gint rtp_port, gint rtcp_port)
-{
-  KmsRtpBaseConnectionClass *klass =
-      KMS_RTP_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
-
-  if (klass->set_remote_info == kms_rtp_base_connection_set_remote_info_default) {
-    GST_WARNING_OBJECT (self,
-        "%s does not reimplement 'set_remote_info'",
-        G_OBJECT_CLASS_NAME (klass));
-  }
-}
-
-static void
-kms_rtp_base_connection_init (KmsRtpBaseConnection * self)
-{
-  /* Nothing to do */
-}
-
-static void
-kms_rtp_base_connection_class_init (KmsRtpBaseConnectionClass * klass)
-{
-  klass->get_rtp_port = kms_rtp_base_connection_get_rtp_port_default;
-  klass->get_rtcp_port = kms_rtp_base_connection_get_rtcp_port_default;
-  klass->set_remote_info = kms_rtp_base_connection_set_remote_info_default;
-}
-
-guint
-kms_rtp_base_connection_get_rtp_port (KmsRtpBaseConnection * self)
-{
-  KmsRtpBaseConnectionClass *klass =
-      KMS_RTP_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
-
-  return klass->get_rtp_port (self);
-}
-
-guint
-kms_rtp_base_connection_get_rtcp_port (KmsRtpBaseConnection * self)
-{
-  KmsRtpBaseConnectionClass *klass =
-      KMS_RTP_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
-
-  return klass->get_rtcp_port (self);
-}
-
-void
-kms_rtp_base_connection_set_remote_info (KmsRtpBaseConnection * self,
-    const gchar * host, gint rtp_port, gint rtcp_port)
-{
-  KmsRtpBaseConnectionClass *klass =
-      KMS_RTP_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
-
-  klass->set_remote_info (self, host, rtp_port, rtcp_port);
-}
-
-/* KmsRtpBaseConnection end */
-
-/* KmsRtpConnection begin */
-
-static void kms_rtp_connection_interface_init (KmsIRtpConnectionInterface
-    * iface);
-
-G_DEFINE_TYPE_WITH_CODE (KmsRtpConnection, kms_rtp_connection,
-    KMS_TYPE_RTP_BASE_CONNECTION,
-    G_IMPLEMENT_INTERFACE (KMS_TYPE_I_RTP_CONNECTION,
-        kms_rtp_connection_interface_init))
-#define KMS_RTP_CONNECTION_GET_PRIVATE(obj) (   \
-  G_TYPE_INSTANCE_GET_PRIVATE (                 \
-    (obj),                                      \
-    KMS_TYPE_RTP_CONNECTION,                    \
-    KmsRtpConnectionPrivate                     \
-  )                                             \
-)
-     struct _KmsRtpConnectionPrivate
-     {
-       GSocket *rtp_socket;
-       GstElement *rtp_udpsink;
-       GstElement *rtp_udpsrc;
-
-       GSocket *rtcp_socket;
-       GstElement *rtcp_udpsink;
-       GstElement *rtcp_udpsrc;
-     };
-
-     static guint
-         kms_rtp_connection_get_rtp_port (KmsRtpBaseConnection * base_conn)
+kms_rtp_connection_get_rtp_port (KmsRtpBaseConnection * base_conn)
 {
   KmsRtpConnection *self = KMS_RTP_CONNECTION (base_conn);
 
@@ -390,6 +300,9 @@ kms_rtp_connection_class_init (KmsRtpConnectionClass * klass)
   GObjectClass *gobject_class;
   KmsRtpBaseConnectionClass *base_conn_class;
 
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
+      GST_DEFAULT_NAME);
+
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->finalize = kms_rtp_connection_finalize;
 
@@ -409,15 +322,4 @@ kms_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
   iface->request_rtp_src = kms_rtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_rtp_connection_request_rtcp_sink;
   iface->request_rtcp_src = kms_rtp_connection_request_rtcp_src;
-}
-
-/* KmsRtpConnection end */
-
-static void init_debug (void) __attribute__ ((constructor));
-
-static void
-init_debug (void)
-{
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
-      GST_DEFAULT_NAME);
 }
