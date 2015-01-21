@@ -306,6 +306,8 @@ kms_rtp_connection_new ()
       "sync", FALSE, "async", FALSE, NULL);
   g_object_set (priv->rtcp_udpsrc, "socket", priv->rtcp_socket, NULL);
 
+  kms_i_rtp_connection_connected_signal (KMS_I_RTP_CONNECTION (conn));
+
   return conn;
 }
 

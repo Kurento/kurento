@@ -169,6 +169,12 @@ kms_webrtc_rtcp_mux_connection_get_property (GObject * object,
   }
 }
 
+static void
+connected_cb (GstElement * dtls, gpointer self)
+{
+  kms_i_rtp_connection_connected_signal (self);
+}
+
 KmsWebRtcRtcpMuxConnection *
 kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
     const gchar * name)
@@ -197,6 +203,9 @@ kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
     g_object_unref (obj);
     return NULL;
   }
+
+  g_signal_connect (priv->tr->dtlssrtpenc, "connected",
+      G_CALLBACK (connected_cb), conn);
 
   nice_agent_set_stream_name (agent, base_conn->stream_id, name);
   nice_agent_attach_recv (agent, base_conn->stream_id,
