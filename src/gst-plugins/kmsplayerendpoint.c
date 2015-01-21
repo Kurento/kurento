@@ -430,7 +430,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
     appsrc = kms_player_end_point_add_appsrc (self, agnosticbin, appsink);
 
     g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", TRUE,
-        "qos", TRUE, "max-buffers", 1, NULL);
+        "qos", FALSE, "max-buffers", 1, NULL);
 
     /* Connect new-sample signal to callback */
     g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb),
