@@ -203,7 +203,7 @@ function Stream(kurento, local, options) {
 
 		var mode = local ? "send" : "recv";
 
-		wp = new kurentoUtils.WebRtcPeer(mode, null, null, startVideoCallback,
+		wp = new WebRtcPeer(mode, null, null, startVideoCallback,
 				onerror, null, null);
 
 		wp.stream = wrStream;
@@ -285,7 +285,7 @@ function KurentoRoom(wsUri, callback) {
 		return new KurentoRoom(wsUri, callback);
 
 	// Enable and disable iceServers from code
-	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
+	WebRtcPeer.prototype.server.iceServers = [];
 
 	var that = this;
 

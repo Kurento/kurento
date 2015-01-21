@@ -65,7 +65,7 @@
 				<module>kurento-rabbitmq</module>
 				<module>kurento-maven-plugin</module>
 				<module>kurento-tree</module>
-				<module>kurento-room</module>
+				<module>kurento-basicroom</module>
 			</modules>
 			<build>
 				<plugins>

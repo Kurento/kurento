@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.room.demo;
+package org.kurento.basicroom;
 
 import java.io.Closeable;
 import java.util.Collection;

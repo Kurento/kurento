@@ -5,6 +5,13 @@ window.onload = function() {
 	console = new Console('console', console);
 }
 
+var kurento;
+var room;
+
+window.onload = function() {
+	console = new Console('console', console);
+}
+
 function register() {
 
 	var name = document.getElementById('name').value;

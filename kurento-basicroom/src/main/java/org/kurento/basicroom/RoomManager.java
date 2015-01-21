@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.room.demo;
+package org.kurento.basicroom;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
