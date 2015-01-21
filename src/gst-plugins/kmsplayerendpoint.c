@@ -255,20 +255,13 @@ static void
 eos_cb (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
-  GstPad *srcpad;
+  GstFlowReturn ret;
 
   GST_DEBUG_OBJECT (appsrc, "Sending eos event to main pipeline");
 
-  srcpad = gst_element_get_static_pad (appsrc, "src");
-  if (srcpad == NULL) {
-    GST_ERROR ("Can not get source pad from %s", GST_ELEMENT_NAME (appsrc));
-    return;
-  }
+  g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
 
-  if (!gst_pad_push_event (srcpad, gst_event_new_eos ()))
-    GST_ERROR ("EOS event could not be sent");
-
-  g_object_unref (srcpad);
+  GST_DEBUG_OBJECT (appsrc, "Returned %s", gst_flow_get_name (ret));
 }
 
 static GstPadProbeReturn
