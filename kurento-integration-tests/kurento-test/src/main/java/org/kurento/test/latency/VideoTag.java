@@ -15,51 +15,62 @@
 package org.kurento.test.latency;
 
 /**
- * Video tag (local, remote).
+ * Video tag for color detection (used in latency control).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.6
  */
-public enum VideoTag {
-	LOCAL, REMOTE;
+public class VideoTag {
+
+	private String color;
+	private String time;
+	private String name;
+	private VideoTagType videoTagType;
+
+	public VideoTag(VideoTagType videoTagType, String mapKey) {
+		this.videoTagType = videoTagType;
+		this.color = "return colorMap['" + mapKey + "'].rgba;";
+		this.time = "return colorMap['" + mapKey + "'].time;";
+		this.name = mapKey;
+	}
+
+	public VideoTag(VideoTagType videoTagType) {
+		this.videoTagType = videoTagType;
+		this.color = videoTagType.getColor();
+		this.time = videoTagType.getTime();
+		this.name = videoTagType.getName();
+	}
 
 	public String getColor() {
-		switch (this) {
-		case LOCAL:
-			return "return colorInfo[0].rgba;";
-		case REMOTE:
-		default:
-			return "return colorInfo[1].rgba;";
-		}
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 
 	public String getTime() {
-		switch (this) {
-		case LOCAL:
-			return "return colorInfo[0].time;";
-		case REMOTE:
-		default:
-			return "return colorInfo[1].time;";
-		}
+		return time;
 	}
 
-	public String toString() {
-		switch (this) {
-		case LOCAL:
-			return "local stream";
-		case REMOTE:
-		default:
-			return "remote stream";
-		}
+	public void setTime(String time) {
+		this.time = time;
 	}
 
 	public String getName() {
-		switch (this) {
-		case LOCAL:
-			return "local";
-		case REMOTE:
-		default:
-			return "remote";
-		}
+		return name;
 	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public VideoTagType getVideoTagType() {
+		return videoTagType;
+	}
+
+	public void setVideoTagType(VideoTagType videoTagType) {
+		this.videoTagType = videoTagType;
+	}
+
 }

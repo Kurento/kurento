@@ -104,12 +104,12 @@ public class LatencyController implements
 
 	@Override
 	public synchronized void onEvent(ChangeColorEvent e) {
-		if (e.getVideoTag() == VideoTag.LOCAL) {
+		if (e.getVideoTag().getVideoTagType() == VideoTagType.LOCAL) {
 			lastLocalColorChangeTimeAbsolute = new Date().getTime();
 			lastLocalColorChangeTime = e.getTime();
 			lastLocalColor = e.getColor();
 			localEventLatch.release();
-		} else if (e.getVideoTag() == VideoTag.REMOTE) {
+		} else if (e.getVideoTag().getVideoTagType() == VideoTagType.REMOTE) {
 			lastRemoteColorChangeTimeAbsolute = new Date().getTime();
 			lastRemoteColorChangeTime = e.getTime();
 			lastRemoteColor = e.getColor();
@@ -177,6 +177,10 @@ public class LatencyController implements
 		}
 	}
 
+	public void checkRemoteLatency(SystemMonitorManager monitor) {
+		checkRemoteLatency(0, null, monitor);
+	}
+
 	public void checkRemoteLatency(final long testTime,
 			final TimeUnit testTimeUnit, SystemMonitorManager monitor) {
 		String msgName = (name != null) ? "[" + name + "] " : "";
@@ -190,17 +194,22 @@ public class LatencyController implements
 		try {
 			final Thread waitingThread = Thread.currentThread();
 
-			Thread t = new Thread() {
-				public void run() {
-					try {
-						testTimeUnit.sleep(testTime);
-						waitingThread.interrupt();
-					} catch (InterruptedException e) {
+			Thread t;
+			if (testTimeUnit != null) {
+				t = new Thread() {
+					public void run() {
+						try {
+							testTimeUnit.sleep(testTime);
+							waitingThread.interrupt();
+						} catch (InterruptedException e) {
+						}
 					}
-				}
-			};
-			t.setDaemon(true);
-			t.start();
+				};
+				t.setDaemon(true);
+				t.start();
+			} else {
+				t = waitingThread;
+			}
 
 			// Synchronization with the green color
 			do {
@@ -208,7 +217,7 @@ public class LatencyController implements
 			} while (!similarColor(lastLocalColor, "0,255,0,0"));
 			do {
 				waitForRemoteColor(msgName, t);
-			} while (!similarColor(lastLocalColor, "0,255,0,0"));
+			} while (!similarColor(lastRemoteColor, "0,255,0,0"));
 
 			while (true) {
 
@@ -217,10 +226,6 @@ public class LatencyController implements
 
 				long latencyMilis = Math.abs(lastRemoteColorChangeTimeAbsolute
 						- lastLocalColorChangeTimeAbsolute);
-
-				if (monitor != null) {
-					monitor.addCurrentLatency(latencyMilis);
-				}
 
 				SimpleDateFormat formater = new SimpleDateFormat("mm:ss.SSS");
 				String parsedLocaltime = formater
@@ -239,6 +244,10 @@ public class LatencyController implements
 
 				if (similarColor(lastLocalColor, lastRemoteColor)) {
 					log.info("--> Latency adquired ({} ms)", latencyMilis);
+
+					if (monitor != null) {
+						monitor.addCurrentLatency(latencyMilis);
+					}
 
 					LatencyRegistry LatencyRegistry = new LatencyRegistry(
 							rgba2Color(lastRemoteColor), latencyMilis);
@@ -317,7 +326,7 @@ public class LatencyController implements
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
 				timeoutTimeUnit);
 
-		if (type == VideoTag.LOCAL) {
+		if (type.getVideoTagType() == VideoTagType.LOCAL) {
 			localChangeColor = new ChangeColorObservable();
 			localChangeColor.addListener(this);
 			localColorTrigger = new Thread(new ColorTrigger(type, js,
@@ -420,16 +429,29 @@ public class LatencyController implements
 		browser.activateLatencyControl();
 	}
 
-	public void activateRemoteLatencyAssessmentIn(BrowserClient browser1,
-			BrowserClient browser2) {
+	public void activateRemoteLatencyAssessmentIn(VideoTag videoTaglocal,
+			BrowserClient browserLocal, VideoTag videoTagRemote,
+			BrowserClient browserRemote) {
 		local = false;
 
-		addChangeColorEventListener(VideoTag.LOCAL,
-				(JavascriptExecutor) browser1.getWebDriver(), getName() + " "
-						+ VideoTag.LOCAL);
-		addChangeColorEventListener(VideoTag.REMOTE,
-				(JavascriptExecutor) browser2.getWebDriver(), getName() + " "
-						+ VideoTag.REMOTE);
+		addChangeColorEventListener(videoTaglocal,
+				(JavascriptExecutor) browserLocal.getWebDriver(), getName()
+						+ " " + videoTaglocal);
+		addChangeColorEventListener(videoTagRemote,
+				(JavascriptExecutor) browserRemote.getWebDriver(), getName()
+						+ " " + videoTagRemote);
+	}
+
+	public void activateRemoteLatencyAssessmentIn(BrowserClient browserLocal,
+			BrowserClient browserRemote) {
+		local = false;
+
+		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL),
+				(JavascriptExecutor) browserLocal.getWebDriver(), getName()
+						+ " " + VideoTagType.LOCAL);
+		addChangeColorEventListener(new VideoTag(VideoTagType.REMOTE),
+				(JavascriptExecutor) browserRemote.getWebDriver(), getName()
+						+ " " + VideoTagType.REMOTE);
 	}
 
 	public void setLatencyRate(long latencyRate) {

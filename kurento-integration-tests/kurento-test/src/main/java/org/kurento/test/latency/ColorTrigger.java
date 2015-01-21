@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -59,6 +60,7 @@ public class ColorTrigger implements Runnable {
 										videoTag.getColor()).equals(color);
 							}
 						});
+
 				String currentColor = (String) js.executeScript(videoTag
 						.getColor());
 
@@ -76,6 +78,9 @@ public class ColorTrigger implements Runnable {
 							changeTimeMilis, color);
 					observable.detectedColorChange(event);
 				}
+			} catch (WebDriverException we) {
+				// This kind of exception can occur but does not matter for the
+				// execution of the test
 			} catch (Exception e) {
 				break;
 			}

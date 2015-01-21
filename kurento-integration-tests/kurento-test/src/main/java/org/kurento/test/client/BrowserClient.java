@@ -37,6 +37,7 @@ import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTag;
+import org.kurento.test.latency.VideoTagType;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
@@ -93,6 +94,7 @@ public class BrowserClient implements Closeable {
 	private int audioSampleRate;
 	private AudioChannel audioChannel;
 	private SystemMonitorManager monitor;
+	private String name;
 
 	private BrowserClient(Builder builder) {
 
@@ -651,7 +653,7 @@ public class BrowserClient implements Closeable {
 	}
 
 	public long getRemoteTime() {
-		Object time = js.executeScript(VideoTag.REMOTE.getTime());
+		Object time = js.executeScript(VideoTagType.REMOTE.getTime());
 		return (time == null) ? 0 : (Long) time;
 	}
 
@@ -687,6 +689,14 @@ public class BrowserClient implements Closeable {
 
 	public WebDriver getWebDriver() {
 		return driver;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }
