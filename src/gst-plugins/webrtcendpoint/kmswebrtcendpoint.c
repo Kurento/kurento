@@ -465,6 +465,7 @@ kms_webrtc_endpoint_sdp_media_set_ice_candidates (KmsWebrtcEndpoint * self,
     if (g_strcmp0 (attr->key, "rtcp") == 0) {
       str =
           g_strdup_printf ("%d IN %s %s", rtcp_port, rtcp_addr_type, rtcp_addr);
+      gst_sdp_attribute_clear ((GstSDPAttribute *) attr);
       gst_sdp_attribute_set ((GstSDPAttribute *) attr, "rtcp", str);
       g_free (str);
     }
