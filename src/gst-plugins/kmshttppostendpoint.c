@@ -241,7 +241,7 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
   g_object_set (appsink, "sync", TRUE, "enable-last-sample",
-      FALSE, "emit-signals", TRUE, "qos", TRUE, "max-buffers", 1,
+      FALSE, "emit-signals", TRUE, "qos", FALSE, "max-buffers", 1,
       "async", FALSE, NULL);
   gst_bin_add (GST_BIN (self->pipeline), appsink);
 
