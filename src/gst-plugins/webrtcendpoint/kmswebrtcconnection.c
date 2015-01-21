@@ -40,6 +40,10 @@ struct _KmsWebRtcConnectionPrivate
   KmsWebRtcTransport *rtp_tr;
   KmsWebRtcTransport *rtcp_tr;
 
+  GMutex mutex;
+  gboolean rtp_tr_connected;
+  gboolean rtcp_tr_connected;
+
   gboolean connected;
 };
 
@@ -166,6 +170,38 @@ kms_webrtc_connection_get_property (GObject * object,
   }
 }
 
+static void
+rtp_connected_cb (GstElement * dtls, gpointer data)
+{
+  KmsWebRtcConnection *self = data;
+  gboolean signal;
+
+  g_mutex_lock (&self->priv->mutex);
+  self->priv->rtp_tr_connected = TRUE;
+  signal = self->priv->rtcp_tr_connected;
+  g_mutex_unlock (&self->priv->mutex);
+
+  if (signal) {
+    kms_i_rtp_connection_connected_signal (KMS_I_RTP_CONNECTION (self));
+  }
+}
+
+static void
+rtcp_connected_cb (GstElement * dtls, gpointer data)
+{
+  KmsWebRtcConnection *self = data;
+  gboolean signal;
+
+  g_mutex_lock (&self->priv->mutex);
+  self->priv->rtcp_tr_connected = TRUE;
+  signal = self->priv->rtp_tr_connected;
+  g_mutex_unlock (&self->priv->mutex);
+
+  if (signal) {
+    kms_i_rtp_connection_connected_signal (KMS_I_RTP_CONNECTION (self));
+  }
+}
+
 KmsWebRtcConnection *
 kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
     const gchar * name)
@@ -198,6 +234,11 @@ kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
     return NULL;
   }
 
+  g_signal_connect (priv->rtp_tr->dtlssrtpenc, "connected",
+      G_CALLBACK (rtp_connected_cb), conn);
+  g_signal_connect (priv->rtcp_tr->dtlssrtpenc, "connected",
+      G_CALLBACK (rtcp_connected_cb), conn);
+
   nice_agent_set_stream_name (agent, base_conn->stream_id, name);
   nice_agent_attach_recv (agent, base_conn->stream_id,
       NICE_COMPONENT_TYPE_RTP, context, kms_webrtc_transport_nice_agent_recv_cb,
@@ -219,6 +260,8 @@ kms_webrtc_connection_finalize (GObject * object)
   kms_webrtc_transport_destroy (priv->rtp_tr);
   kms_webrtc_transport_destroy (priv->rtcp_tr);
 
+  g_mutex_clear (&self->priv->mutex);
+
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_connection_parent_class)->finalize (object);
 }
@@ -228,6 +271,8 @@ kms_webrtc_connection_init (KmsWebRtcConnection * self)
 {
   self->priv = KMS_WEBRTC_CONNECTION_GET_PRIVATE (self);
   self->priv->connected = FALSE;
+
+  g_mutex_init (&self->priv->mutex);
 }
 
 static void
