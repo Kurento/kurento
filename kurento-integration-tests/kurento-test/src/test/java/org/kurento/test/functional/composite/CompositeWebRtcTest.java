@@ -17,6 +17,7 @@ package org.kurento.test.functional.composite;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.Composite;
 import org.kurento.client.GStreamerFilter;
@@ -54,6 +55,7 @@ public class CompositeWebRtcTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5;
 
+	@Ignore
 	@Test
 	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);
