@@ -650,7 +650,7 @@ kms_http_get_endpoint_add_sinkpad (KmsHttpGetEndpoint * self,
     /* First time that appsink is created */
     *appsink = gst_element_factory_make ("appsink", name);
     g_object_set (*appsink, "emit-signals", TRUE, "async", FALSE, "sync", FALSE,
-        "qos", TRUE, NULL);
+        "qos", FALSE, NULL);
     g_signal_connect (*appsink, "new-sample",
         G_CALLBACK (new_sample_get_handler), appsrc);
     g_signal_connect (*appsink, "eos", G_CALLBACK (eos_handler), appsrc);
