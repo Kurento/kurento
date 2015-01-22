@@ -52,6 +52,7 @@ var ChecktypeError = checkType.ChecktypeError;
 var ChecktypeError = kurentoClient.checkType.ChecktypeError;
 </#if>
 <#if remoteClass.methods?has_content
+  || remoteClass.properties?has_content
   || remoteClass.name=="Hub"
   || remoteClass.name=="MediaObject">
 
