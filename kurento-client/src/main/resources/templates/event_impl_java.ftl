@@ -16,7 +16,7 @@ public class ${event.name}Event <#if event.extends??>extends ${event.extends.nam
 
 <#list event.properties as property>
 	<#lt><@comment property.doc />
-	private ${property.type.name} ${property.name};
+	private ${getJavaObjectType(property.type, false)} ${property.name};
 </#list>
 
   <@comment event.doc event.parentProperties + event.properties />
