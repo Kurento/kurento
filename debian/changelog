@@ -1,3 +1,114 @@
+kurento-module-creator (3.0.7) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Set global kurentoClient namespace on browser if it's not defined
+
+  [ David Fernandez ]
+  * Add kurento namespace to json functions
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Get reference directly from external classes on basic modules
+  * fluent API for connect()
+  * Pseudo-syncronous API
+  * Transactional API
+  * TransactionsManager class
+  * MediaObjectCreator class
+  * Explicit transaction as first parameter
+  * Using checkType() from kurento-client for all the modules
+
+  [ Micael Gallego Carrillo ]
+  * Revert "Using checkType() from kurento-client for all the modules"
+  * Revert "Explicit transaction as first parameter"
+  * Revert "MediaObjectCreator class"
+  * Revert "TransactionsManager class"
+  * Revert "Transactional API"
+  * Revert "Pseudo-syncronous API"
+
+  [ David Fernandez ]
+  * Modify template to initialize property setters functions
+
+  [ mgallego ]
+  * [java-templates] Transactional Java API
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Changed README.md template to be used for the .kmd repositories
+
+  [ David Fernandez ]
+  * Revert "Revert "Pseudo-syncronous API""
+  * Revert "Revert "Transactional API""
+  * Revert "Revert "TransactionsManager class""
+  * Revert "Revert "MediaObjectCreator class""
+  * Revert "Revert "Explicit transaction as first parameter""
+  * Revert "Revert "Using checkType() from kurento-client for all the modules""
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Fix 'Transaction is not defined' in Hub
+  * devDependencies for modules
+
+  [ Jose Antonio Santos Cadenas ]
+  * dependencies_cmake: Do not require boost by default
+  * Find_cmake: Allow passing dependencies with custom params for generic_find
+
+  [ mgallego ]
+  * Move java templates to kurento-maven-plugin
+  * Use config.json file in any templates folder (internal or external)
+  * Update kurento-maven-plugin to 1.0.3-SNAPSHOT
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Fix bug of HubPort constructorParams
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp: Fix problem in JsonCpp library while getting string values
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Propagate HubPort '_rpc' events
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp: Use proper error codes in exceptions
+  * cpptemplates: Initialize json before trying to deserialize it
+  * cpp templates: Improve error message when constructor params are not set
+  * cpp templates: Improve error message when invoke params are not set
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate Javascript project (NPM & Bower)
+  * Fully generate the Node.js & Bower code on 'npm install'
+
+  [ Jose Antonio Santos Cadenas ]
+  * Revert "Fully generate the Node.js & Bower code on 'npm install'"
+  * Revert "Generate Javascript project (NPM & Bower)"
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate Javascript project (NPM & Bower)
+  * Capture exception if json file doesn't exists
+  * Module definition: check name is not null before version for better error messages
+  * dependency ROMs as devDependencies
+  * install dependencies on prepublish if they are not available yet
+  * scripts.prepublish as external Node.js script instead of inline bash
+  * Fixed typo in Gruntfile.js, and don't generate prepublish for internal modules
+  * Updated NPM templates to use Javascript ones on kurento-client-js
+
+  [ Jose Antonio Santos Cadenas ]
+  * Keep old devDependencies while fusioning json
+  * cpp: Fix thrown exception when object deserialization fails
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Clean-up of generated Gruntfile.js & removed duplicated dependencies
+  * Always generate bower.json
+  * Bower repo may not be the same of NPM, prepare templates for it
+  * Set peerDependencies after the code has been created (and published)
+  * Don't update package.json for core, elements & filters modules
+
+  [ Jose Antonio Santos Cadenas ]
+  * maven: Fix maven plugin to next release version
+  * Prepare relase 3.0.7
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 14:39:54 +0100
+
 kurento-module-creator (3.0.6) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
