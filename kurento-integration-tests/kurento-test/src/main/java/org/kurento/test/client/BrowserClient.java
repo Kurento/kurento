@@ -699,4 +699,16 @@ public class BrowserClient implements Closeable {
 		this.name = name;
 	}
 
+	public void activateRtcStats() {
+		js.executeScript("activateRtcStats();");
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> getRtcStats() {
+		Map<String, Object> out = (Map<String, Object>) js
+				.executeScript("return rtcStats;");
+		// log.info("getRtcStats from browser {}", out);
+		return out;
+	}
+
 }

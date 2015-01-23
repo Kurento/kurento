@@ -487,6 +487,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 							browser = builder.build();
 
 							browser.setMonitor(monitor);
+							monitor.addRtcStats(browser);
 
 							browserRunner.run(browser, numBrowserFinal, name);
 						} finally {

@@ -24,10 +24,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.kurento.test.client.BrowserClient;
 
 /**
  * System monitor class, used to check the CPU usage, memory, swap, and network
@@ -47,6 +52,7 @@ public class SystemMonitor {
 	private double currentLatency = 0;
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
+	private List<BrowserClient> browserList;
 
 	private final static String OK = "ok";
 	private final static String ERR = "error: ";
@@ -179,6 +185,14 @@ public class SystemMonitor {
 					// Number of threads
 					info.setNumThreadsKms(getNumThreads(kmsPid));
 
+					// Browser Statistics
+					if (browserList != null) {
+						for (BrowserClient bc : browserList) {
+							Map<String, Object> rtc = bc.getRtcStats();
+							info.addRtcStats(rtc);
+						}
+					}
+
 					infoMap.put(new Date().getTime() - start, info);
 
 					try {
@@ -231,10 +245,33 @@ public class SystemMonitor {
 	public void writeResults(String csvTitle) throws IOException {
 		PrintWriter pw = new PrintWriter(new FileWriter(csvTitle));
 		boolean header = false;
+
+		String emptyStats = "";
+
 		for (long time : infoMap.keySet()) {
 			if (!header) {
-				pw.println("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number, latency_ms, latency_errors_number"
+				pw.print("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number, latency_ms_avg, latency_errors_number"
 						+ infoMap.get(time).getNetInfo().parseHeaderEntry());
+
+				// Browser statistics. First entries may be empty, so we have to
+				// iterate to find values in the statistics in order to write
+				// the header in the resulting CSV
+				if (browserList != null) {
+					for (SystemInfo info : infoMap.values()) {
+						if (info.getRtcStats() != null
+								&& !info.getRtcStats().isEmpty()) {
+							for (String rtcStatsKey : info.getRtcStats()
+									.keySet()) {
+								pw.print(", " + rtcStatsKey
+										+ StatsOperation.map().get(rtcStatsKey));
+								emptyStats += ",";
+							}
+							break;
+						}
+					}
+				}
+
+				pw.println("");
 				header = true;
 			}
 			String parsedtime = new SimpleDateFormat("mm:ss.SSS").format(time);
@@ -244,13 +281,29 @@ public class SystemMonitor {
 			long swap = infoMap.get(time).getSwap();
 			double swapPercent = infoMap.get(time).getSwapPercent();
 
-			pw.println(parsedtime + "," + cpu + "," + mem + "," + memPercent
+			pw.print(parsedtime + "," + cpu + "," + mem + "," + memPercent
 					+ "," + swap + "," + swapPercent + ","
 					+ infoMap.get(time).getNumClients() + ","
 					+ infoMap.get(time).getNumThreadsKms() + ","
 					+ infoMap.get(time).getLatency() + ","
 					+ infoMap.get(time).getLatencyErrors()
 					+ infoMap.get(time).getNetInfo().parseNetEntry());
+
+			// Browser statistics
+			if (browserList != null) {
+				if (infoMap.get(time).getRtcStats() != null
+						&& !infoMap.get(time).getRtcStats().isEmpty()) {
+					Collection<Double> rtcStatsValues = infoMap.get(time)
+							.getRtcStats().values();
+					for (Double rtcStatsValue : rtcStatsValues) {
+						pw.print("," + rtcStatsValue);
+					}
+				} else {
+					pw.print(emptyStats);
+				}
+			}
+
+			pw.println("");
 		}
 		pw.close();
 	}
@@ -375,6 +428,13 @@ public class SystemMonitor {
 
 	public void setSamplingTime(long samplingTime) {
 		this.samplingTime = samplingTime;
+	}
+
+	public void addBrowser(BrowserClient browser) {
+		if (browserList == null) {
+			browserList = new CopyOnWriteArrayList<>();
+		}
+		browserList.add(browser);
 	}
 
 }

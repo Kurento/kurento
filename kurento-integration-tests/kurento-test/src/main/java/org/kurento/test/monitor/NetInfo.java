@@ -56,8 +56,8 @@ public class NetInfo {
 	public String parseHeaderEntry() {
 		String out = "";
 		for (String key : netInfoMap.keySet()) {
-			out += ", interface_" + key + "_rx_bytes" + " , interface_" + key
-					+ "_tx_bytes";
+			out += ", interface_" + key + "_rx_bytes_sum" + " , interface_"
+					+ key + "_tx_bytes_sum";
 		}
 		return out;
 	}

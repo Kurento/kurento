@@ -14,6 +14,12 @@
  */
 package org.kurento.test.monitor;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * System information (CPU usage, memory, swap, and network).
  *
@@ -21,6 +27,8 @@ package org.kurento.test.monitor;
  * @since 5.0.5
  */
 public class SystemInfo {
+	public Logger log = LoggerFactory.getLogger(SystemInfo.class);
+
 	private double cpuPercent;
 	private long mem;
 	private long swap;
@@ -31,6 +39,8 @@ public class SystemInfo {
 	private int latencyErrors;
 	private NetInfo netInfo;
 	private int numThreadsKms;
+	private Map<String, Double> rtcStats = new HashMap<>();
+	private int avgHints = 0;
 
 	public double getCpuPercent() {
 		return cpuPercent;
@@ -110,6 +120,52 @@ public class SystemInfo {
 
 	public void setNumThreadsKms(int numThreadsKms) {
 		this.numThreadsKms = numThreadsKms;
+	}
+
+	public void addRtcStats(Map<String, Object> stats) {
+		if (!stats.isEmpty()) {
+			avgHints++;
+		}
+		updateRtcStats(stats);
+	}
+
+	public void updateRtcStats(Map<String, Object> stats) {
+		// log.info("Updating rtcStats={}", rtcStats);
+		for (String key : stats.keySet()) {
+			switch (StatsOperation.map().get(key)) {
+			case AVG:
+			case SUM:
+				double value = 0;
+				if (rtcStats.containsKey(key)) {
+					value = rtcStats.get(key);
+				}
+				rtcStats.put(key,
+						value + Double.parseDouble((String) stats.get(key)));
+				break;
+			default:
+				break;
+			}
+		}
+		// log.info("Done. Now rtcStats={}", rtcStats);
+	}
+
+	public Map<String, Double> getRtcStats() {
+		Map<String, Double> result = new HashMap<>(rtcStats);
+
+		// Making averages
+		for (String key : rtcStats.keySet()) {
+			if (StatsOperation.map().get(key) == StatsOperation.AVG) {
+				Double sum = rtcStats.get(key);
+				Double avg = sum / avgHints;
+				// log.info(
+				// "Performing average on field {}. "
+				// + "Previous value = {} ; avgHints = {} ; New value = {}",
+				// key, sum, avgHints, avg);
+				result.put(key, avg);
+			}
+			// log.info("----------------------------");
+		}
+		return result;
 	}
 
 }

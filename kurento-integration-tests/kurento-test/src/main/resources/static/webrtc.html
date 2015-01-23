@@ -6,6 +6,7 @@
 <script src="./lib/adapter.js"></script>
 <script src="./lib/Console.js"></script>
 <script src="./lib/color.js"></script>
+<script src="./lib/stats.js"></script>
 <script src="./js/kurento-utils.js"></script>
 <script>
 	var local;
@@ -44,6 +45,7 @@
 		} ];
 
 		setInterval(updateCurrentTime, 100);
+
 	}
 
 	function watchColors() {
@@ -139,6 +141,7 @@
 		console.info(sdpAnswer);
 		webRtcPeer.processSdpAnswer(sdpAnswer);
 	}
+
 
 	function updateCurrentTime() {
 		document.getElementById("currentTime").value = video.currentTime;
