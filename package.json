@@ -62,6 +62,7 @@
     "grunt-jsbeautifier": "^0.2.7",
     "grunt-contrib-jshint": "^0.10.0",
     "minifyify": "^4.4.0",
+    "npm": "*",
     "qunit-cli": "KurentoForks/qunit-cli",
     "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",
     "qunitjs": "~1.15.0",

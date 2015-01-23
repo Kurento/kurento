@@ -43,6 +43,9 @@ cd kurento-client-js
 npm install
 ```
 
+In this last case, you will also need to have installed [Kurento Module Creator]
+so you can be able to generate the client libraries code.
+
 ### Browser
 
 To build the browser version of the library, after downloading the development
@@ -84,7 +87,7 @@ all the tests automatically using [QUnit-cli].
 At this moment, the default WebSocket endpoint can not be changed due to limits
 of the current implementation of NPM. If you need to use a different WebSocket
 endpoint from the default one, you can exec the underlying test command and
-append a *ws_uri* parameter pointing the the alternative WebSocket endpoint:
+append a *ws_uri* parameter pointing to the alternative WebSocket endpoint:
 
 ```bash
 node_modules/.bin/qunit-cli -c kurentoClient:. -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js --ws_uri=ws://localhost:8080
@@ -222,6 +225,7 @@ Follow us on Twitter @[kurentoms].
 [GitHub Kurento group]: https://github.com/kurento
 [GitHub repository]: https://github.com/kurento/kurento-client-js
 [grunt]: http://gruntjs.com/
+[Kurento Module Creator]: https://github.com/Kurento/kurento-module-creator
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [JavaScript Kurento Client for Bower]: https://github.com/Kurento/kurento-client-bower
