@@ -3,7 +3,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-maven-plugin</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.4</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>kurento-maven-plugin</name>
@@ -32,7 +32,7 @@
                 <url>https://github.com/Kurento/kurento-maven-plugin</url>
                 <connection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</connection>
                 <developerConnection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
-          <tag>HEAD</tag>
+          <tag>kurento-maven-plugin-1.0.4</tag>
   </scm>
 
         <developers>
