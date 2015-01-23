@@ -40,14 +40,14 @@ public class KurentoDependencyManager {
 
 				Artifact artifact = (Artifact) artObj;
 
-				log.info("Exploring dependency: " + artifact);
+				log.debug("Exploring dependency: " + artifact);
 
 				ModuleMavenArtifact kurentoArtifact = new ModuleMavenArtifact(
 						log, artifact);
 
 				if (kurentoArtifact.isKurentoModule()) {
 
-					log.info("  Found kurento dependency "
+					log.info("  Found kurento dependency in artifact: "
 							+ kurentoArtifact.getArtifactCoordinate());
 
 					addModuleMavenArtifact(kurentoArtifact);
