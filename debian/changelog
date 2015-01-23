@@ -1,3 +1,19 @@
+kms-cmake-utils (1.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * GenericFind: Add support for COMPONENTS on generic_find function
+  * Remove debug trace
+  * VersionHelpers: Try to match Boost versions with standard format version
+  * GenericFind: Improvements to avoid processing multiple times the same require
+  * TestHelpers: Improve valgrind test execution
+  * TestHelpers: Allow passing arguments to test programs
+  * Prepare release 1.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 13:11:51 +0100
+
 kms-cmake-utils (1.0.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
