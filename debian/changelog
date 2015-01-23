@@ -1,3 +1,14 @@
+kurento-module-creator (3.0.8) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * maven: Set kurento-maven-plugin to 1.0.4
+  * Prepare release 3.0.8
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 23 Jan 2015 15:07:42 +0100
+
 kurento-module-creator (3.0.7) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
