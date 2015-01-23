@@ -1,3 +1,307 @@
+kms-elements (5.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * kmshttpendpoint: Configure caps basing on the recorder profile
+  * kmsrecorderendpoint: Configure caps basing on the recording profile
+  * kmsplumberendpoint: Remove useless "if" statement
+  * kmsplumberendpoint: Provide object in debug messages
+  * gstsctpserversrc: Timestamp buffers if do_timestamp is enabled
+  * kmsplumberendpoint: Synchronization of audio and video streams
+  * SCTP: Disable Nagle algorithm to speed up data transmissions
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable temporally tests that are failing due to agnosticbin
+  * CMakeLists.txt: Remove require of Boost, it is inherit from KMSCORE
+  * Update gitignore
+
+  [ David Fernandez ]
+  * httpendpoint: Unref encoding profile
+  * httpendpoint: Use an auxiliary variable to avoid memory leaks
+  * recorderendpoint: Unref encoding profile
+  * recorderendpoint: Use an auxiliary variable to avoid memory leaks
+
+  [ Jose Antonio Santos Cadenas ]
+  * Reenable test now that agnosticbin has been reverted
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplayerendpoint: Synchronize elements after linking them
+  * kmsplayerendpoint: Force caps negotiation in appsrc using the fixed caps set in appsink through event caps
+  * kmsplayerendpoint: Fix pad-removed callback
+  * kmshttpendpoint: Force caps negotiation in appsrc using the fixed caps set in appsink through event caps
+
+  [ David Fernandez ]
+  * composite: Avoid deadlock in unhandle port
+  * composite: Limit queue size
+
+  [ Santiago Carot-Nemesio ]
+  * Http: Fix wrong memory access destroying singleton httpServer class
+
+  [ Philip Withnall ]
+  * kmswebrtcendpoint: Fix symbol names to not use the libnice namespace
+
+  [ David Fernandez ]
+  * alphablending: Improve critical regions
+
+  [ Jose Antonio Santos Cadenas ]
+  * alphablending: Remove audio mixing
+  * alphablending: Fix warning while unreferencing NULL caps
+
+  [ Santiago Carot-Nemesio ]
+  * kmsalphablendingportdata: Add mini object
+  * kmsalphablending: Use mini-object for port data
+
+  [ Jose Antonio Santos Cadenas ]
+  * alphablending: Do not propagate EOS once it is processed.
+  * alphablending: Destroy port data correctly when port is unhandled
+  * alphablending: Remove extra 'd' while printing debug info
+
+  [ Santiago Carot-Nemesio ]
+  * kmsalphablending: Synchronize elements which receive data from any source after linking them
+  * kmsalphablending: Fix race condition accesing to elements in port data when they are deleted
+  * kmsalphablending: Fix memory leak removing videoconvert from pipeline
+
+  [ Jose Antonio Santos Cadenas ]
+  * alphablending: Add flag to remove elements only when port is unhandled
+
+  [ Santiago Carot-Nemesio ]
+  * kmsalphablending: EOS callback is not blocking so we can return GST_PAD_PROBE_OK value
+  * kmsalphablending: Fix memory leak produced when EOS is processed before the destroy port function
+  * Fix wrong management of capabilities in queries
+
+  [ Jose Antonio Santos Cadenas ]
+  * Perform synchronization on elements that emmit media to pipeline
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplumberendpoint: Let parent class manage synchronization
+  * Add generic structure to be passed among callbacks
+  * kmsgenericstructure: Change function name
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change g_cond_signal to g_cond_broadcast when many threads can be waiting
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplumberendpoint: Fix memory leak
+  * kmsplumberendpoint: Make sure we do not intersect against an unitialized caps
+  * kmsalphablending: Replace kmsalphablendingportdata by kmsgenericstructure
+  * kmsalphablending: Fix race condition accessing elements of the structure
+
+  [ David Fernandez ]
+  * Add debian generated files to .gitignore
+  * kmscompositemixer: Replace KmsCompositeMixerPortData for KmsGenericStructure
+  * kmsalphablending: Change literals names for constants
+
+  [ Jose Antonio Santos Cadenas ]
+  * Use kmsgenericstrucutre from kmscommons library
+
+  [ David Fernandez ]
+  * kmsalphablending: Define variables before code
+
+  [ Santiago Carot-Nemesio ]
+  * fix CMakeLists.txt
+  * Add kmsmuxingpipeline object skelleton
+  * kmsmuxingpipeline: Set/Get properties
+  * kmshttpendpoint: Fix macro definition
+  * kmselements: Fix indent
+  * kmsmuxingpipeline: Initialize pipeline
+  * kmsmuxingpipeline: Set function to manipulate the state of the internal pipeline
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix precommit-hook to work with astyle 2.04
+
+  [ Santiago Carot-Nemesio ]
+  * kmshttpgetendpoint: Add skelleton class
+  * Move GET part into httpgetendpoint object
+  * Add kmshttppostendpoint skelleton class
+  * Move POST part into httppostendpoint object
+  * kmshttppostendpoint: Move specific properties of POST end point to this object
+  * kmshttpgetendpoint: Move specific properties of GET end point to this object
+  * kmshttpendpoint: Clean up code
+  * HttpEndpointImpl: Create elements using the proper plugins
+  * kmsmuxingpipeline: Remove unrequired function
+  * kmsmuxingpipeline: Free resources on destroy
+  * kmsmuxingpipeline: Add helpful functions
+
+  [ Miguel París Díaz ]
+  * Add utilities for RTCP management
+  * kmswebrtcendpoint: local REMB support
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrecorderendpoint: Integrate kmsmuxingpipeline
+  * kmsrecorderendpoint: Do not set caps when a buffer is received
+  * kmsrecorderendpoint: Fix caps negotiation
+  * kmshttpgetendpoint: Integrate muxing pipeline
+  * kmshttpgetendpoint: Do not set caps when a buffer is received
+  * kmshttpgetendpoint: Fix caps negotiation
+  * httpendpoints: Remove unneeded checks
+
+  [ Jose Antonio Santos Cadenas ]
+  * muxingpipeline: Detect distance between audio and video preparing for buffer injection
+  * muxingpipeline: Inject buffers when difference excedes the maximum
+  * webrtcendpoint: Fix test disabling bandwidth limitation
+
+  [ Santiago Carot-Nemesio ]
+  * kmsconfcontroller: Remove object
+  * httpendpoint: Dump pipeline if timeout for test expirates
+
+  [ David Fernandez ]
+  * kmswebrtcendpoint: Reduce log level
+  * PlumberEndpoint: Remove element from kms-elements
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change version to 5.1.0
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: fix get_video_recv_info
+  * kmswebrtcendpoint: use on-new-ssrc instead of on-ssrc-sdes
+  * kmswebrtcendpoint: change REMB_SEND_ to REMB_
+  * kmswebrtcendpoint: use kms_utils_get_time_nsecs
+  * kmswebrtcendpoint: get local ssrcs into update_sdp_media
+  * kmswebrtcendpoint: process received REMB packets
+  * kmswebrtcendpoint: manage remote bitrate from received REMB
+  * kmswebrtcendpoint: use RembEventManager to set the max local REMB
+  * kmswebrtcendpoint: use "max-video-recv-bandwidth" to limit local REMB
+  * kmswebrtcendpoint: send REMB event on connect
+  * WebRtcEndpoint: add properties for min and max video send bandwidth
+  * kmswebrtcendpoint: keep bitrate for REMB event between the range
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Removed bower.json since now it's being generated
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplayerendpoint: Create appsrc as soon as a pad is created in uridecodebin
+  * kmsplayerendpoint: Set appsrc caps when a caps event is received in appsink
+
+  [ Jose Antonio Santos Cadenas ]
+  * webrtcendpoint: Fix tests to work with sometimes sink pads
+  * recorderenpoint: Fixes to work with sometimes sink pads
+
+  [ Santiago Carot-Nemesio ]
+  * kmshttpendpoint: Integrate sometimes sink pads
+  * Comment failing tests until SOMETIMES src pads are integrated
+  * Integrate SOMETIMES SRC pads to be used in playerendpoint tests
+
+  [ Miguel París Díaz ]
+  * webrtcenpoint: fix tests using SOMETIMES SRC pads
+
+  [ David Fernandez ]
+  * kmsalphablending: Activate audio inputs
+
+  [ Miguel París Díaz ]
+  * kmsrtpendpoint: use getters instead of access directly BaseSdp attrs
+  * kmswebrtcendpoint: use getters instead of access directly BaseSdp attrs
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplayerendpoint: Improve negotiation of caps
+
+  [ David Fernandez ]
+  * kmsalphableding: Improve port configuration
+
+  [ Santiago Carot-Nemesio ]
+  * kmsalphablending: Replace KmsGenericStructure for KmsRefStruct
+  * kmsalphablending: Cosmetic changes
+  * kmsalphablending: Do not allocate memory to be used as keys in a hashmap
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: use BaseRtpEP set_transport_to_sdp
+  * kmswebrtcendpoint: manage remote candidates into a KmsWebRTCConnection func
+  * kmswebrtcendpoint: add remote candidates after add connection
+  * kmswebrtcendpoint: improve comments
+  * kmswebrtcendpoint: move local REMB management to KmsRembLocal
+  * kmswebrtcendpoint: move remote REMB management to KmsRembRemote
+  * WebRtcEndpoint: extend from BaseRtpEndpoint
+  * kmswebrtcendpoint: use sdp_utils_media_get_ssrc
+  * kmswebrtcendpoint: use BaseRtpEP start_transport_send
+  * kmswebrtcendpoint: connect SEND_RTP_SRC pads in start_transport_send
+  * kmswebrtcendpoint: remove unneeded constants
+  * kmsbasertpendpoint: connect SEND RTP and RTCP srcs at same time
+  * kmswebrtcconnection: implementation for RTP connection interfaces
+  * kmswebrtcendpoint: use WebRtc connections
+  * kmswebrtcendpoint: keep closer related funcs
+  * kmswebrtcendpoint: set RTCP attrs
+  * webrtcendpoint: test bundle and not bundle
+  * CMakeList: add gst-rtp dependency needed to kmsrtcpdemux
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplayerendpoint: Negotiate taking agnosticbin capabilities into account
+
+  [ Miguel París Díaz ]
+  * kmsrtpendpoint: rename rtp_endpoint vars to self
+
+  [ Jose Antonio Santos Cadenas ]
+  * Enable audio only and video only profiles
+  * muxingpipeline: Do not inject buffers
+  * CMakeLists: Reorder dependencies
+
+  [ Miguel París Díaz ]
+  * kmswebrtcconnection: improve logging
+  * kmswebrtcconnection: improve code formating
+  * kmsrtpendpoint: fix getting IP address
+  * kmsrtpendpoint: remove c= lines from SDP media
+  * kmsrtpconnection: implementation for RTP connection interfaces
+  * kmsrtpendpoint: fix BaseRtp inheritance using RTP connections
+  * kmsrtpendpoint: improve code
+  * rtpendpoint: reenable tests
+  * rtpendpoint_audio: reenable tests
+  * webrtcendpoint: improve logging
+
+  [ David Fernandez ]
+  * kmscompositemixer: Replace kmsgenericstructure by kmsrefstruct
+
+  [ Miguel París Díaz ]
+  * kmswebrtconnection: implement rtcp-mux connection
+  * kmswebrtcendpoint: implement create_rtcp_mux_connection
+  * kmswebrtcendpoint: manage ICE candidates correctly when rtcp-mux
+  * kmswebrtcendpoint: fix lock management
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmsrecorderendpoint, httpgetendpoint: Do not emmit qos events
+  * httpgetendpoint: Do not disable sink synchronization
+  * kmsrecorderendpoint: If pts is invalid keep it as invalid
+
+  [ Miguel París Díaz ]
+  * CMakeLists: libnice required >=0.1.7
+  * kmswebrtcconnection: do not use nice_agent_attach_recv
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/control: Force libnice version to 0.1.7
+  * playerendpoint: Add usefull logs
+  * playerendpoint: Remove old TODO
+
+  [ Miguel París Díaz ]
+  * Revert "kmswebrtcconnection: do not use nice_agent_attach_recv"
+  * kmsrtpendpoint, kmswebrtcendpoint: move connections management to kmsbasertpendpoint
+
+  [ Jose Antonio Santos Cadenas ]
+  * dtlssrtpenc: Emit signal when handshake is finished and element is working
+  * Move rtpendpoint and webrtcendpoint to subdirectories
+  * kmsbasertpconnection: Split in two files, one for each class
+  * webrtcconnection: Split each class in a different file
+  * Add "connected" property to all implementations of IRtpConnection
+  * Raise connected callback when connection is ready
+  * playerendpoint: Do not send qos event on the internal pipeline
+
+  [ Sebastian Dröge ]
+  * playerendpoint: Fix emission of eos event
+
+  [ Jose Antonio Santos Cadenas ]
+  * httppostendpoint: Disable qos events on appsink
+
+  [ David Fernandez ]
+  * kmswebrtcendpoint: Avoid illegal memory access releasing a NULL pointer
+  * kmswebrtcendpoint: Clear data structure before update data
+
+  [ Jose Antonio Santos Cadenas ]
+  * httpgetendpoint: Disable qos events on appsink
+  * Update dependencies
+  * Prepare release 5.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 24 Jan 2015 00:35:43 +0100
+
 kms-elements (5.0.4) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
