@@ -1,3 +1,22 @@
+kms-chroma (1.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add Gruntfile.js file
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use templates from kurento-client-js
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update dependencies
+  * Prepare release 1.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sun, 25 Jan 2015 00:27:32 +0100
+
 kms-chroma (1.0.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

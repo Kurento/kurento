@@ -1,6 +1,6 @@
 {
   "name": "chroma",
-  "version": "1.0.2-dev",
+  "version": "1.0.2",
   "kurentoVersion": "^5.0.0",
   "code": {
     "api": {
