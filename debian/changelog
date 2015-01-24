@@ -1,3 +1,20 @@
+kms-filters (5.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Change version to 5.1.0
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Removed bower.json since now it's being generated
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update dependencies
+  * Prepare release 5.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 24 Jan 2015 09:02:33 +0100
+
 kms-filters (5.0.4) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
