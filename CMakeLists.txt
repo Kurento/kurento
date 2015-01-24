@@ -20,7 +20,7 @@ install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
 include (GenericFind)
 
-set (GST_REQUIRED ~1.4)
+set (GST_REQUIRED ~1.4.4)
 set (GLIB_REQUIRED ^2.38)
 set (OPENCV_REQUIRED ^2.0.0)
 set (LIBSOUP_REQUIRED ^2.40)
