@@ -5,7 +5,7 @@ Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev (>= 5.0.4),
+ kms-core-dev (>= 5.1.0),
  kms-elements-dev,
  kms-filters-dev,
  libopencv-dev,
@@ -18,6 +18,9 @@ Vcs-Browser: https://github.com/Kurento/kms-pointerdetector.git
 Package: kms-pointerdetector
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
+  kms-core (>= 5.1.0),
+  kms-elements (>= 5.1.0),
+  kms-filters (>= 5.1.0)
 Description: Kurento Pointer Detector Filter
 
 Package: kms-pointerdetector-dev
