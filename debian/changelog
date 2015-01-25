@@ -1,3 +1,24 @@
+kms-pointerdetector (1.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add Gruntfile.js file
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use explicit Kurento client as devDependency
+  * Removed files being now generated
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable test until it is fixed
+  * Update dependencies
+  * Prepare release 1.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sun, 25 Jan 2015 23:56:31 +0100
+
 kms-pointerdetector (1.0.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
