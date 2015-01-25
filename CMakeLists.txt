@@ -22,7 +22,7 @@ find_package(PkgConfig)
 
 find_package(LibTesseract REQUIRED)
 
-set (GST_REQUIRED 1.3.3)
+set (GST_REQUIRED 1.4.4)
 set (GLIB_REQUIRED 2.38)
 set (OPENCV_REQUIRED 2.0.0)
 
