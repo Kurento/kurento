@@ -142,6 +142,9 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 			}
 			playerEP.play();
 
+			// Increase threshold time in this time (15 seconds)
+			setThresholdTime(15);
+
 			// Assertions
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
