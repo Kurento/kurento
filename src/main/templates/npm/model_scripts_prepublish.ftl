@@ -9,12 +9,12 @@ var exists = require('fs').exists
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
   && node_name != "kurento-client-filters">
-var jsonfile  = require('jsonfile')
-var recursive = require('merge').recursive
-
 
 function updateFile(file, obj, callback)
 {
+  var jsonfile  = require('jsonfile')
+  var recursive = require('merge').recursive
+
   jsonfile.readFile(file, function(error, orig)
   {
     if(error) return callback(error)
