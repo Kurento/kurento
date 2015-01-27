@@ -29,7 +29,7 @@ endif ()
 
 find_package(PkgConfig)
 
-set (GST_REQUIRED 1.3.3)
+set (GST_REQUIRED 1.4.4)
 set (GLIB_REQUIRED 2.38)
 set (OPENCV_REQUIRED 2.0.0)
 set (SOUP_REQUIRED 2.40) # For URL support
