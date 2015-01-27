@@ -1,3 +1,45 @@
+kms-markerdetector (0.0.3) testing; urgency=medium
+
+  [ Petri Honkamaa ]
+  * Initial commit
+  * Trying to make sceleton project
+  * Managed to compile and even make debian package
+  * First time markerdetector works
+  * Added couple of missing files
+  * Now markerdetector arguments are understood
+  * First working version for the new Kurento
+  * wget overlay-image base on URL
+  * Fixed date in changelog
+  * Started 0.0.3
+  * URL loading with SOUP but it does not work?
+  * Regenerated all implementation files.
+  * URL with SOUP works
+  * First time event sending works
+  * Now MarkerCount event is working
+
+  [ David Fernandez ]
+  * Install libalvar200 with debian package
+  * Change project name to kms-markerdetector
+  * Change .gitreview
+  * Add alvar code
+  * Change project name in debian/changelog
+  * Change project name in CMakeLists.txt
+  * Change project name in kmd file
+  * Avoid errors in dev debian package installation
+  * Fix error when overlay_image does not exist
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use templates from kurento-client-js
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian: Add missing build dependency
+  * Update dependencies
+  * Prepare release 0.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Wed, 28 Jan 2015 00:47:51 +0100
+
 kms-markerdetector (0.0.3~rc1) testing; urgency=medium
 
   * Implemented MarkerCount event to show when markers (dis)appear
