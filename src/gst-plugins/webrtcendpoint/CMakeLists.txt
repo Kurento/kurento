@@ -1,5 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
 
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+
+set(CUSTOM_PREFIX "kurento")
+set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/webrtcendpoint")
+
+# icecandidate begin
+set(KMS_ICE_CANDIDATE_SOURCES
+  kmsicecandidate.c
+)
+
+set(KMS_ICE_CANDIDATE_HEADERS
+  kmsicecandidate.h
+)
+
+add_library(icecandidate ${KMS_ICE_CANDIDATE_SOURCES} ${KMS_ICE_CANDIDATE_HEADERS})
+
+set_target_properties(icecandidate PROPERTIES PUBLIC_HEADER "${KMS_ICE_CANDIDATE_HEADERS}")
+set_target_properties(icecandidate PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+install(
+  TARGETS icecandidate
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER DESTINATION ${INCLUDE_PREFIX}
+)
+# icecandidate end
+
 set(KMS_WEBRTC_SOURCES
   kmswebrtcbaseconnection.c
   kmswebrtcconnection.c
@@ -28,6 +56,7 @@ include_directories(
 )
 
 target_link_libraries(webrtcendpoint
+  icecandidate
   ${KmsGstCommons_LIBRARIES}
   ${gstreamer-1.0_LIBRARIES}
   ${gstreamer-base-1.0_LIBRARIES}
