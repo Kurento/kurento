@@ -87,15 +87,6 @@ static guint kms_webrtc_endpoint_signals[LAST_SIGNAL] = { 0 };
 
 #define WEBRTC_ENDPOINT "webrtc-endpoint"
 
-typedef struct _GatherContext
-{
-  GMutex gather_mutex;
-  GCond gather_cond;
-  gboolean wait_gathering;
-  gboolean ice_gathering_done;
-  gboolean finalized;
-} GatherContext;
-
 struct _KmsWebrtcEndpointPrivate
 {
   KmsLoop *loop;
@@ -104,7 +95,6 @@ struct _KmsWebrtcEndpointPrivate
   gchar *certificate_pem_file;
 
   NiceAgent *agent;
-  GatherContext ctx;
 
   gchar *turn_url;
   gchar *turn_user;
@@ -403,13 +393,11 @@ kms_webrtc_endpoint_set_ice_info (KmsWebrtcEndpoint * self, GstSDPMessage * msg,
 }
 
 static gboolean
-kms_webrtc_endpoint_sdp_media_set_ice_candidates (KmsWebrtcEndpoint * self,
+kms_webrtc_endpoint_sdp_media_add_default_info (KmsWebrtcEndpoint * self,
     GstSDPMedia * media, gboolean rtcp_mux, gboolean bundle, gboolean use_ipv6)
 {
   NiceAgent *agent = self->priv->agent;
   guint stream_id;
-  GSList *candidates;
-  GSList *walk;
   NiceCandidate *rtp_default_candidate, *rtcp_default_candidate;
   gchar rtp_addr[NICE_ADDRESS_STRING_LEN + 1];
   gchar rtcp_addr[NICE_ADDRESS_STRING_LEN + 1];
@@ -484,32 +472,6 @@ kms_webrtc_endpoint_sdp_media_set_ice_candidates (KmsWebrtcEndpoint * self,
     }
   }
 
-  /* ICE candidates */
-  candidates =
-      nice_agent_get_local_candidates (agent, stream_id,
-      NICE_COMPONENT_TYPE_RTP);
-
-  if (!rtcp_mux && !bundle) {
-    candidates =
-        g_slist_concat (candidates,
-        nice_agent_get_local_candidates (agent, stream_id,
-            NICE_COMPONENT_TYPE_RTCP));
-  }
-
-  for (walk = candidates; walk; walk = walk->next) {
-    NiceCandidate *cand = walk->data;
-
-    if (nice_address_ip_version (&cand->addr) == IPV6 && !use_ipv6)
-      continue;
-
-    str = nice_agent_generate_local_candidate_sdp (agent, cand);
-    gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
-        str + SDP_CANDIDATE_ATTR_LEN);
-    g_free (str);
-  }
-
-  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
-
   return TRUE;
 }
 
@@ -528,45 +490,16 @@ kms_webrtc_endpoint_set_relay_info (KmsWebrtcEndpoint * self,
       priv->turn_transport);
 }
 
-/* TODO: improve */
 static gboolean
-kms_webrtc_endpoint_set_ice_candidates (KmsWebrtcEndpoint * self,
-    GstSDPMessage * msg, gboolean rtcp_mux, gboolean bundle)
+kms_webrtc_endpoint_local_sdp_add_default_info (KmsWebrtcEndpoint * self)
 {
-  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
   KmsBaseSdpEndpoint *base_sdp_endpoint = KMS_BASE_SDP_ENDPOINT (self);
+  GstSDPMessage *msg;
+  gboolean rtcp_mux, bundle;
   guint len, i;
-  GHashTable *conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
-  GHashTableIter iter;
-  gpointer key, v;
 
-  g_hash_table_iter_init (&iter, conns);
-  while (g_hash_table_iter_next (&iter, &key, &v)) {
-    KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
-
-    kms_webrtc_endpoint_set_relay_info (self, conn);
-    if (!nice_agent_gather_candidates (conn->agent, conn->stream_id)) {
-      GST_ERROR_OBJECT (self, "Failed to start candidate gathering for '%s'.",
-          conn->name);
-      return FALSE;
-    }
-  }
-
-  /* Wait for ICE candidates begin */
-  g_mutex_lock (&self->priv->ctx.gather_mutex);
-  self->priv->ctx.wait_gathering = TRUE;
-  while (!self->priv->ctx.finalized && !self->priv->ctx.ice_gathering_done)
-    g_cond_wait (&self->priv->ctx.gather_cond, &self->priv->ctx.gather_mutex);
-  self->priv->ctx.wait_gathering = FALSE;
-  g_cond_broadcast (&self->priv->ctx.gather_cond);
-
-  if (self->priv->ctx.finalized) {
-    GST_ERROR_OBJECT (self, "WebrtcEndpoint has finalized.");
-    g_mutex_unlock (&self->priv->ctx.gather_mutex);
-    return FALSE;
-  }
-  g_mutex_unlock (&self->priv->ctx.gather_mutex);
-  /* Wait for ICE candidates end */
+  msg = kms_base_sdp_endpoint_get_local_sdp (base_sdp_endpoint);
+  g_object_get (self, "bundle", &bundle, "rtcp-mux", &rtcp_mux, NULL);
 
   len = gst_sdp_message_medias_len (msg);
   for (i = 0; i < len; i++) {
@@ -574,7 +507,7 @@ kms_webrtc_endpoint_set_ice_candidates (KmsWebrtcEndpoint * self,
     gboolean use_ipv6;
 
     g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
-    if (!kms_webrtc_endpoint_sdp_media_set_ice_candidates (self,
+    if (!kms_webrtc_endpoint_sdp_media_add_default_info (self,
             (GstSDPMedia *) media, rtcp_mux, bundle, use_ipv6)) {
       return FALSE;
     }
@@ -612,8 +545,6 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   if (ret == FALSE) {
     goto end;
   }
-
-  ret = kms_webrtc_endpoint_set_ice_candidates (self, msg, rtcp_mux, bundle);
 
 end:
   g_free (fingerprint);
@@ -717,21 +648,23 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 /* Start Transport end */
 
 /* ICE candidates management begin */
+
 static void
-gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
+kms_webrtc_endpoint_gathering_done (NiceAgent * agent, guint stream_id,
+    KmsWebrtcEndpoint * self)
 {
   KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
-  GHashTable *conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
-  gboolean done = TRUE;
+  GHashTable *conns;
   GHashTableIter iter;
   gpointer key, v;
+  gboolean done = TRUE;
 
-  GST_DEBUG_OBJECT (self, "ICE gathering done for %s stream.",
+  GST_DEBUG_OBJECT (self, "ICE gathering done for '%s' stream.",
       nice_agent_get_stream_name (agent, stream_id));
 
-  /* FIXME: improve candidate managament using trickle ICE */
-  /* Element is locked from set_ice_candidates
-     (where nice_agent_gather_candidates is called) */
+  KMS_ELEMENT_LOCK (self);
+  conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
+
   g_hash_table_iter_init (&iter, conns);
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
@@ -745,20 +678,41 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
     }
   }
 
-  g_mutex_lock (&self->priv->ctx.gather_mutex);
+  if (done) {
+    kms_webrtc_endpoint_local_sdp_add_default_info (self);
+  }
+  KMS_ELEMENT_UNLOCK (self);
 
-  self->priv->ctx.ice_gathering_done = done;
-
-  g_cond_broadcast (&self->priv->ctx.gather_cond);
-  g_mutex_unlock (&self->priv->ctx.gather_mutex);
+  if (done) {
+    g_signal_emit (G_OBJECT (self),
+        kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0);
+  }
 }
 
 static gboolean
 kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self)
 {
-  GST_WARNING_OBJECT (self, "TODO: implement");
+  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
+  GHashTable *conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
+  GHashTableIter iter;
+  gpointer key, v;
+  gboolean ret = TRUE;
 
-  return TRUE;
+  KMS_ELEMENT_LOCK (self);
+  g_hash_table_iter_init (&iter, conns);
+  while (g_hash_table_iter_next (&iter, &key, &v)) {
+    KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
+
+    kms_webrtc_endpoint_set_relay_info (self, conn);
+    if (!nice_agent_gather_candidates (conn->agent, conn->stream_id)) {
+      GST_ERROR_OBJECT (self, "Failed to start candidate gathering for '%s'.",
+          conn->name);
+      ret = FALSE;
+    }
+  }
+  KMS_ELEMENT_UNLOCK (self);
+
+  return ret;
 }
 
 static void
@@ -1103,16 +1057,6 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  g_mutex_lock (&self->priv->ctx.gather_mutex);
-  self->priv->ctx.finalized = TRUE;
-  g_cond_broadcast (&self->priv->ctx.gather_cond);
-  while (self->priv->ctx.wait_gathering)
-    g_cond_wait (&self->priv->ctx.gather_cond, &self->priv->ctx.gather_mutex);
-  g_mutex_unlock (&self->priv->ctx.gather_mutex);
-
-  g_cond_clear (&self->priv->ctx.gather_cond);
-  g_mutex_clear (&self->priv->ctx.gather_mutex);
-
   if (self->priv->tmp_dir != NULL) {
     remove_recursive (self->priv->tmp_dir);
     g_free (self->priv->tmp_dir);
@@ -1254,10 +1198,6 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 
   self->priv->tmp_dir = g_strdup (g_mkdtemp_full (t, FILE_PERMISIONS));
 
-  g_mutex_init (&self->priv->ctx.gather_mutex);
-  g_cond_init (&self->priv->ctx.gather_cond);
-  self->priv->ctx.finalized = FALSE;
-
   self->priv->loop = kms_loop_new ();
 
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);
@@ -1272,7 +1212,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   g_object_set (self->priv->agent, "controlling-mode", FALSE, "upnp", FALSE,
       NULL);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
-      G_CALLBACK (gathering_done), self);
+      G_CALLBACK (kms_webrtc_endpoint_gathering_done), self);
   g_signal_connect (self->priv->agent, "new-candidate",
       G_CALLBACK (kms_webrtc_endpoint_new_candidate), self);
 }
