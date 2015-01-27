@@ -180,3 +180,135 @@ kms_ice_candidate_new (const gchar * candidate,
   return g_object_new (KMS_TYPE_ICE_CANDIDATE, "candidate", candidate,
       "sdp-mid", sdp_mid, "sdp-m-line-index", sdp_m_line_index, NULL);
 }
+
+gboolean
+kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand,
+    gboolean bundle)
+{
+  gboolean ret;
+
+  ret = kms_ice_candidate_create_nice_from_str (self->priv->candidate, cand);
+  if (*cand != NULL) {
+    guint stream_id = 1;
+
+    if (!bundle) {
+      stream_id = self->priv->sdp_m_line_index + 1;
+    }
+
+    (*cand)->stream_id = stream_id;
+  }
+
+  return ret;
+}
+
+/* Utils begin */
+
+gboolean
+kms_ice_candidate_create_nice_from_str (const gchar * str,
+    NiceCandidate ** cand)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  NiceCandidateType type;
+  gchar *foundation, *cid_str, *transport, *prio_str, *addr, *port_str,
+      *type_str;
+  gboolean ret = TRUE;
+
+  *cand = NULL;
+
+  regex = g_regex_new ("^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)"
+      " (?<transport>(udp|UDP|tcp|TCP)) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
+      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
+      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?$",
+      0, 0, NULL);
+  g_regex_match (regex, str, 0, &match_info);
+
+  if (!g_match_info_matches (match_info)) {
+    GST_WARNING ("Cannot create nice candidate from '%s'", str);
+    ret = FALSE;
+    goto end;
+  }
+
+  transport = g_match_info_fetch_named (match_info, "transport");
+  if (g_ascii_strcasecmp ("tcp", transport) == 0) {
+    GST_INFO ("TCP transport not supported");
+    g_free (transport);
+    goto end;
+  }
+
+  foundation = g_match_info_fetch_named (match_info, "foundation");
+  cid_str = g_match_info_fetch_named (match_info, "cid");
+  prio_str = g_match_info_fetch_named (match_info, "prio");
+  addr = g_match_info_fetch_named (match_info, "addr");
+  port_str = g_match_info_fetch_named (match_info, "port");
+  type_str = g_match_info_fetch_named (match_info, "type");
+
+  if (foundation == NULL) {
+    GST_WARNING ("Candidate: cannot get 'foundation'");
+    goto free;
+  }
+  if (cid_str == NULL) {
+    GST_WARNING ("Candidate: cannot get 'cid'");
+    goto free;
+  }
+  if (prio_str == NULL) {
+    GST_WARNING ("Candidate: cannot get 'prio'");
+    goto free;
+  }
+  if (addr == NULL) {
+    GST_WARNING ("Candidate: cannot get 'addr'");
+    goto free;
+  }
+  if (port_str == NULL) {
+    GST_WARNING ("Candidate: cannot get 'port'");
+    goto free;
+  }
+  if (type_str == NULL) {
+    GST_WARNING ("Candidate: cannot get 'type'");
+    goto free;
+  }
+
+  /* rfc5245-15.1 */
+  if (g_strcmp0 ("host", type_str) == 0) {
+    type = NICE_CANDIDATE_TYPE_HOST;
+  } else if (g_strcmp0 ("srflx", type_str) == 0) {
+    type = NICE_CANDIDATE_TYPE_SERVER_REFLEXIVE;
+  } else if (g_strcmp0 ("prflx", type_str) == 0) {
+    type = NICE_CANDIDATE_TYPE_PEER_REFLEXIVE;
+  } else if (g_strcmp0 ("relay", type_str) == 0) {
+    type = NICE_CANDIDATE_TYPE_RELAYED;
+  } else {
+    GST_WARNING ("Candidate type '%s' not supported", type_str);
+    goto free;
+  }
+
+  *cand = nice_candidate_new (type);
+  (*cand)->component_id = g_ascii_strtoll (cid_str, NULL, 10);
+  (*cand)->priority = g_ascii_strtoll (prio_str, NULL, 10);
+  g_strlcpy ((*cand)->foundation, foundation, NICE_CANDIDATE_MAX_FOUNDATION);
+
+  if (!nice_address_set_from_string (&(*cand)->addr, addr)) {
+    GST_WARNING ("Cannot set address '%s' to candidate", addr);
+    nice_candidate_free (*cand);
+    *cand = NULL;
+    goto free;
+  }
+  nice_address_set_port (&(*cand)->addr, g_ascii_strtoll (port_str, NULL, 10));
+
+free:
+  g_free (addr);
+  g_free (foundation);
+  g_free (transport);
+  g_free (cid_str);
+  g_free (prio_str);
+  g_free (port_str);
+  g_free (type_str);
+
+end:
+  g_match_info_free (match_info);
+  g_regex_unref (regex);
+
+  return ret;
+}
+
+/* Utils end */

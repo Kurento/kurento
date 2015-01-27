@@ -55,5 +55,12 @@ KmsIceCandidate *kms_ice_candidate_new_from_nice (NiceAgent * agent,
 KmsIceCandidate *kms_ice_candidate_new (const gchar * candidate,
     const gchar * sdp_mid, guint8 sdp_m_line_index);
 
+gboolean kms_ice_candidate_create_nice (KmsIceCandidate * self,
+    NiceCandidate ** cand, gboolean bundle);
+
+/* Utils */
+gboolean kms_ice_candidate_create_nice_from_str (const gchar * str,
+    NiceCandidate ** cand);
+
 G_END_DECLS
 #endif /* __KMS_ICE_ICE_CANDIDATE_H__ */
