@@ -821,13 +821,24 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self)
   return TRUE;
 }
 
+static void
+sdp_media_add_ice_candidate (GstSDPMedia * media, NiceAgent * agent,
+    NiceCandidate * cand)
+{
+  gchar *str;
+
+  str = nice_agent_generate_local_candidate_sdp (agent, cand);
+  gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
+      str + SDP_CANDIDATE_ATTR_LEN);
+  g_free (str);
+}
+
 static gchar *
 kms_webrtc_endpoint_sdp_media_add_ice_candidate (KmsWebrtcEndpoint * self,
     GstSDPMedia * media, gboolean bundle, NiceAgent * agent,
     NiceCandidate * cand)
 {
   guint media_stream_id;
-  gchar *str;
 
   if (!kms_webrtc_endpoint_media_get_stream_id (self, media, bundle,
           &media_stream_id)) {
@@ -838,10 +849,7 @@ kms_webrtc_endpoint_sdp_media_add_ice_candidate (KmsWebrtcEndpoint * self,
     return NULL;
   }
 
-  str = nice_agent_generate_local_candidate_sdp (agent, cand);
-  gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
-      str + SDP_CANDIDATE_ATTR_LEN);
-  g_free (str);
+  sdp_media_add_ice_candidate (media, agent, cand);
 
   return media->media;
 }
@@ -919,9 +927,51 @@ static gboolean
 kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
     KmsIceCandidate * candidate)
 {
-  GST_WARNING_OBJECT (self, "TODO: implement");
+  KmsBaseSdpEndpoint *base_sdp_ep = KMS_BASE_SDP_ENDPOINT (self);
+  NiceCandidate *nice_cand;
+  GstSDPMessage *remote_sdp;
+  guint8 index;
+  GstSDPMedia *media;
+  GSList *candidates;
+  const gchar *cand_str;
+  gboolean bundle;
+  gboolean ret;
 
-  return TRUE;
+  g_object_get (self, "bundle", &bundle, NULL);
+  ret = kms_ice_candidate_create_nice (candidate, &nice_cand, bundle);
+  if (nice_cand == NULL) {
+    return ret;
+  }
+
+  cand_str = kms_ice_candidate_get_candidate (candidate);
+  candidates = g_slist_append (NULL, nice_cand);
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (nice_agent_set_remote_candidates (self->priv->agent, nice_cand->stream_id,
+          nice_cand->component_id, candidates) < 0) {
+    GST_WARNING_OBJECT (self, "Cannot add candidate: '%s'in stream_id: %d.",
+        cand_str, nice_cand->stream_id);
+    ret = FALSE;
+  } else {
+    GST_TRACE_OBJECT (self, "Candidate added: '%s' in stream_id: %d.", cand_str,
+        nice_cand->stream_id);
+    ret = TRUE;
+  }
+
+  remote_sdp = kms_base_sdp_endpoint_get_remote_sdp (base_sdp_ep);
+  index = kms_ice_candidate_get_sdp_m_line_index (candidate);
+  media = (GstSDPMedia *) gst_sdp_message_get_media (remote_sdp, index);
+  if (media != NULL) {
+    sdp_media_add_ice_candidate (media, self->priv->agent, nice_cand);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  g_slist_free (candidates);
+  nice_candidate_free (nice_cand);
+
+  return ret;
 }
 
 /* ICE candidates management end */
