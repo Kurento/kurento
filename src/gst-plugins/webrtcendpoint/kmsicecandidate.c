@@ -181,6 +181,24 @@ kms_ice_candidate_new (const gchar * candidate,
       "sdp-mid", sdp_mid, "sdp-m-line-index", sdp_m_line_index, NULL);
 }
 
+const gchar *
+kms_ice_candidate_get_candidate (KmsIceCandidate * self)
+{
+  return self->priv->candidate;
+}
+
+const gchar *
+kms_ice_candidate_get_sdp_mid (KmsIceCandidate * self)
+{
+  return self->priv->sdp_mid;
+}
+
+guint8
+kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self)
+{
+  return self->priv->sdp_m_line_index;
+}
+
 gboolean
 kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand,
     gboolean bundle)
