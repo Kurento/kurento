@@ -1026,10 +1026,10 @@ GST_START_TEST (negotiation)
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
-  GstSDPMessage *local_offer = NULL, *local_answer = NULL;
-  gchar *local_offer_str, *local_answer_str;
-  GstSDPMessage *remote_offer = NULL, *remote_answer = NULL;
-  gchar *remote_offer_str, *remote_answer_str;
+  GstSDPMessage *offerer_local_sdp = NULL, *offerer_remote_sdp = NULL;
+  gchar *offerer_local_sdp_str, *offerer_remote_sdp_str;
+  GstSDPMessage *answerer_local_sdp = NULL, *answerer_remote_sdp = NULL;
+  gchar *answerer_local_sdp_str, *answerer_remote_sdp_str;
   gchar *sdp_str = NULL;
 
   g_object_set (offerer, "max-video-recv-bandwidth", 0, NULL);
@@ -1070,39 +1070,39 @@ GST_START_TEST (negotiation)
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_object_get (offerer, "local-offer-sdp", &local_offer, NULL);
-  fail_unless (local_offer != NULL);
-  g_object_get (offerer, "remote-answer-sdp", &remote_answer, NULL);
-  fail_unless (remote_answer != NULL);
+  g_object_get (offerer, "local-sdp", &offerer_local_sdp, NULL);
+  fail_unless (offerer_local_sdp != NULL);
+  g_object_get (offerer, "remote-sdp", &offerer_remote_sdp, NULL);
+  fail_unless (offerer_remote_sdp != NULL);
 
-  g_object_get (answerer, "remote-offer-sdp", &remote_offer, NULL);
-  fail_unless (remote_offer != NULL);
-  g_object_get (answerer, "local-answer-sdp", &local_answer, NULL);
-  fail_unless (local_answer != NULL);
+  g_object_get (answerer, "local-sdp", &answerer_local_sdp, NULL);
+  fail_unless (answerer_local_sdp != NULL);
+  g_object_get (answerer, "remote-sdp", &answerer_remote_sdp, NULL);
+  fail_unless (answerer_remote_sdp != NULL);
 
-  local_offer_str = gst_sdp_message_as_text (local_offer);
-  remote_answer_str = gst_sdp_message_as_text (remote_answer);
+  offerer_local_sdp_str = gst_sdp_message_as_text (offerer_local_sdp);
+  offerer_remote_sdp_str = gst_sdp_message_as_text (offerer_remote_sdp);
 
-  remote_offer_str = gst_sdp_message_as_text (remote_offer);
-  local_answer_str = gst_sdp_message_as_text (local_answer);
+  answerer_local_sdp_str = gst_sdp_message_as_text (answerer_local_sdp);
+  answerer_remote_sdp_str = gst_sdp_message_as_text (answerer_remote_sdp);
 
-  GST_DEBUG ("Local offer\n%s", local_offer_str);
-  GST_DEBUG ("Remote answer\n%s", remote_answer_str);
-  GST_DEBUG ("Remote offer\n%s", remote_offer_str);
-  GST_DEBUG ("Local answer\n%s", local_answer_str);
+  GST_DEBUG ("Offerer local SDP\n%s", offerer_local_sdp_str);
+  GST_DEBUG ("Offerer remote SDPr\n%s", offerer_remote_sdp_str);
+  GST_DEBUG ("Answerer local SDP\n%s", answerer_local_sdp_str);
+  GST_DEBUG ("Answerer remote SDP\n%s", answerer_remote_sdp_str);
 
-  fail_unless (g_strcmp0 (local_offer_str, remote_offer_str) == 0);
-  fail_unless (g_strcmp0 (remote_answer_str, local_answer_str) == 0);
+  fail_unless (g_strcmp0 (offerer_local_sdp_str, answerer_remote_sdp_str) == 0);
+  fail_unless (g_strcmp0 (offerer_remote_sdp_str, answerer_local_sdp_str) == 0);
 
-  g_free (local_offer_str);
-  g_free (remote_answer_str);
-  g_free (local_answer_str);
-  g_free (remote_offer_str);
+  g_free (offerer_local_sdp_str);
+  g_free (offerer_remote_sdp_str);
+  g_free (answerer_local_sdp_str);
+  g_free (answerer_remote_sdp_str);
 
-  gst_sdp_message_free (local_offer);
-  gst_sdp_message_free (remote_answer);
-  gst_sdp_message_free (remote_offer);
-  gst_sdp_message_free (local_answer);
+  gst_sdp_message_free (offerer_local_sdp);
+  gst_sdp_message_free (offerer_remote_sdp);
+  gst_sdp_message_free (answerer_local_sdp);
+  gst_sdp_message_free (answerer_remote_sdp);
 
   g_object_unref (offerer);
   g_object_unref (answerer);
