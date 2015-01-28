@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
@@ -26,7 +27,7 @@ var WebSocketServer = require('ws').Server;
 var kurento = require('kurento-client');
 
 
-var argv = minimist(process.argv.slice(2),
+var args = minimist(process.argv.slice(2),
 {
   default:
   {
@@ -35,8 +36,8 @@ var argv = minimist(process.argv.slice(2),
   }
 });
 
-var app = express();
 
+var app = express();
 kurento.register(require('kurento-module-pointerdetector'));
 
 /*
@@ -45,13 +46,16 @@ kurento.register(require('kurento-module-pointerdetector'));
 app.use(cookieParser());
 
 var sessionHandler = session({
-	secret : 'none',
-	rolling : true,
-	resave : true,
-	saveUninitialized : true
+  secret : 'none',
+  rolling : true,
+  resave : true,
+  saveUninitialized : true
 });
 
 app.use(sessionHandler);
+
+app.set('port', process.env.PORT || 8080);
+
 
 /*
  * Definition of global variables.
@@ -65,97 +69,97 @@ var kurentoClient = null;
  * Server startup
  */
 
-var asUrl = url.parse(argv.as_uri);
+var asUrl = url.parse(args.as_uri);
 var port = asUrl.port;
 var server = app.listen(port, function() {
-	console.log('Kurento Tutorial started');
-	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
+  console.log('Kurento Tutorial started');
+  console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
 var wss = new WebSocketServer({
-	server : server,
-	path : '/pointerdetector'
+  server : server,
+  path : '/pointerdetector'
 });
 
 /*
  * Management of WebSocket messages
  */
 wss.on('connection', function(ws) {
-	var sessionId = null;
-	var request = ws.upgradeReq;
-	var response = {
-		writeHead : {}
-	}; // black magic here
+  var sessionId = null;
+  var request = ws.upgradeReq;
+  var response = {
+    writeHead : {}
+  }; // black magic here
 
-	sessionHandler(request, response, function(err) {
-		sessionId = request.session.id;
-		console.log("Connection received with sessionId " + sessionId);
-	});
+  sessionHandler(request, response, function(err) {
+    sessionId = request.session.id;
+    console.log("Connection received with sessionId " + sessionId);
+  });
 
-	ws.on('error', function(error) {
-		console.log('Connection ' + sessionId + ' error');
-		stop(sessionId);
-	});
+  ws.on('error', function(error) {
+    console.log('Connection ' + sessionId + ' error');
+    stop(sessionId);
+  });
 
-	ws.on('close', function() {
-		console.log('Connection ' + sessionId + ' closed');
-		stop(sessionId);
-	});
+  ws.on('close', function() {
+    console.log('Connection ' + sessionId + ' closed');
+    stop(sessionId);
+  });
 
-	ws.on('message', function(_message) {
-		var message = JSON.parse(_message);
-		console.log('Connection ' + sessionId + ' received message ', message);
+  ws.on('message', function(_message) {
+    var message = JSON.parse(_message);
+    console.log('Connection ' + sessionId + ' received message ', message);
 
-		switch (message.id) {
-		case 'start':
-			start(sessionId, message.sdpOffer, function(error, type, data) {
-				if (error) {
-					return ws.send(JSON.stringify({
-						id : 'error',
-						message : error.message || error,
-						data: error
-					}));
-				}
-				switch (type) {
-					case 'sdpAnswer':
-						ws.send(JSON.stringify({
-							id : 'startResponse',
-							sdpAnswer : data
-						}));
-						break;
-					case 'WindowIn':
-						ws.send(JSON.stringify({
-							id : 'WindowIn',
-							roiId : data.windowId
-						}));
-						break;
-					case 'WindowOut':
-						ws.send(JSON.stringify({
-							id : 'WindowOut',
-							roiId : data.windowId
-						}));
-						break;
-				}
-			});
-			break;
+    switch (message.id) {
+    case 'start':
+      start(sessionId, message.sdpOffer, function(error, type, data) {
+        if (error) {
+          return ws.send(JSON.stringify({
+            id : 'error',
+            message : error.message || error,
+            data: error
+          }));
+        }
+        switch (type) {
+          case 'sdpAnswer':
+            ws.send(JSON.stringify({
+              id : 'startResponse',
+              sdpAnswer : data
+            }));
+            break;
+          case 'WindowIn':
+            ws.send(JSON.stringify({
+              id : 'WindowIn',
+              roiId : data.windowId
+            }));
+            break;
+          case 'WindowOut':
+            ws.send(JSON.stringify({
+              id : 'WindowOut',
+              roiId : data.windowId
+            }));
+            break;
+        }
+      });
+      break;
 
-		case 'stop':
-			stop(sessionId);
-			break;
+    case 'stop':
+      stop(sessionId);
+      break;
 
-		case 'calibrate':
-			calibrate(sessionId);
-			break;
+    case 'calibrate':
+      calibrate(sessionId);
+      break;
 
-		default:
-			ws.send(JSON.stringify({
-				id : 'error',
-				message : 'Invalid message ' + message
-			}));
-			break;
-		}
+    default:
+      ws.send(JSON.stringify({
+        id : 'error',
+        message : 'Invalid message ' + message
+      }));
+      break;
+    }
 
-	});
+  });
 });
 
 /*
@@ -164,150 +168,156 @@ wss.on('connection', function(ws) {
 
 // Recover kurentoClient for the first time.
 function getKurentoClient(callback) {
-	if (kurentoClient !== null) {
-		return callback(null, kurentoClient);
-	}
+  if(kurentoClient !== null) return callback(null, kurentoClient);
 
-	kurento(argv.ws_uri, function(error, _kurentoClient) {
-		if (error) {
-			console.log("Could not find media server at address " + argv.ws_uri);
-			return callback("Could not find media server at address" + argv.ws_uri
-					+ ". Exiting with error " + error);
-		}
+  kurento(args.ws_uri, function(error, _kurentoClient) {
+    if (error) {
+      console.log("Could not find media server at address " + args.ws_uri);
+      return callback("Could not find media server at address" + args.ws_uri
+          + ". Exiting with error " + error);
+    }
 
-		kurentoClient = _kurentoClient;
-		callback(null, kurentoClient);
-	});
+    kurentoClient = _kurentoClient;
+    callback(null, kurentoClient);
+  });
 }
 
-function start(sessionId, sdpOffer, callback) {
+function start(sessionId, sdpOffer, callback)
+{
+  if(!sessionId) return callback("Cannot use undefined sessionId");
 
-	if (!sessionId) {
-		return callback("Cannot use undefined sessionId");
-	}
+  // Check if session is already transmitting
+  if(pipelines[sessionId])
+    return callback("Close current session before starting a new one or use another browser to open a tutorial.")
 
-	// Check if session is already transmitting
-	if (pipelines[sessionId]) {
-		return callback("Close current session before starting a new one or use another browser to open a tutorial.")
-	}
+  getKurentoClient(function(error, kurentoClient) {
+    if(error) return callback(error);
 
-	getKurentoClient(function(error, kurentoClient) {
-		if (error) {
-			return callback(error);
-		}
+    kurentoClient.create('MediaPipeline', function(error, pipeline) {
+      if(error) return callback(error);
 
-		kurentoClient.create('MediaPipeline', function(error, pipeline) {
-			if (error) {
-				return callback(error);
-			}
+      createMediaElements(pipeline, function(error, webRtcEndpoint,
+          pointerDetector)
+      {
+        function onerror(error)
+        {
+          if(error)
+          {
+            pipeline.release();
+            callback(error);
+          }
+        }
 
-			createMediaElements(pipeline, function(error, webRtcEndpoint,
-					pointerDetector) {
-				if (error) {
-					pipeline.release();
-					return callback(error);
-				}
+        if(error) return onerror(error);
 
-				connectMediaElements(webRtcEndpoint, pointerDetector,
-					function(error) {
-						if (error) {
-							pipeline.release();
-							return callback(error);
-						}
+        connectMediaElements(webRtcEndpoint, pointerDetector, function(error)
+        {
+          if(error) return onerror(error);
 
-						pointerDetector.on ('WindowIn', function (_data){
-							return callback(null, 'WindowIn', _data);
-						});
+          pointerDetector.on('WindowIn',  callback.bind(undefined, null, 'WindowIn'))
+          pointerDetector.on('WindowOut', callback.bind(undefined, null, 'WindowOut'))
 
-						pointerDetector.on ('WindowOut', function (_data){
-							return callback(null, 'WindowOut', _data);
-						});
+          var options =
+          {
+            id: 'window0',
+            height: 50,
+            width:50,
+            upperRightX: 500,
+            upperRightY: 150
+          };
 
-						pointerDetector.addWindow({id: 'window0', height: 50, width:50, upperRightX: 500, upperRightY: 150},
-							function(error) {
-							if (error) {
-								pipeline.release();
-								return callback(error);
-							}
-						});
+          pointerDetector.addWindow(options, onerror);
 
-						pointerDetector.addWindow({id: 'window1', height: 50, width:50, upperRightX: 500, upperRightY: 250},
-							function(error) {
-							if (error) {
-								pipeline.release();
-								return callback(error);
-							}
-						});
+          var options =
+          {
+            id: 'window1',
+            height: 50,
+            width:50,
+            upperRightX: 500,
+            upperRightY: 250
+          };
 
-						webRtcEndpoint.processOffer(sdpOffer, function(
-								error, sdpAnswer) {
-							if (error) {
-								pipeline.release();
-								return callback(error);
-							}
+          pointerDetector.addWindow(options, onerror);
 
-							pipelines[sessionId] = pipeline;
-							pointerDetectors[sessionId] = pointerDetector;
-							return callback(null, 'sdpAnswer', sdpAnswer);
-						});
-					});
-			});
-		});
-	});
+          webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer)
+          {
+            if(error) return onerror(error);
+
+            pipelines[sessionId] = pipeline;
+            pointerDetectors[sessionId] = pointerDetector;
+
+            callback(null, 'sdpAnswer', sdpAnswer);
+          });
+        });
+      });
+    });
+  });
 }
 
-function createMediaElements(pipeline, callback) {
-	pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
-		if (error) {
-			return callback(error);
-		}
+function createMediaElements(pipeline, callback)
+{
+  pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
+  {
+    if(error) return callback(error);
 
-		pipeline.create('PointerDetectorFilter', {'calibrationRegion' : {topRightCornerX: 5, topRightCornerY:5, width:30, height: 30}},
-				function(error, pointerDetector) {
-					if (error) {
-						return callback(error);
-					}
-					return callback(null, webRtcEndpoint,
-										pointerDetector);
-				});
-	});
+    var options =
+    {
+      calibrationRegion:
+      {
+        topRightCornerX: 5,
+        topRightCornerY:5,
+        width:30,
+        height: 30
+      }
+    };
+
+    pipeline.create('PointerDetectorFilter', options, function(error, pointerDetector)
+    {
+      if(error) return callback(error);
+
+      return callback(null, webRtcEndpoint, pointerDetector);
+    });
+  });
 }
 
-function connectMediaElements(webRtcEndpoint, pointerDetector, callback) {
-	webRtcEndpoint.connect(pointerDetector, function(error) {
-		if (error) {
-			return callback(error);
-		}
+function connectMediaElements(webRtcEndpoint, pointerDetector, callback)
+{
+  webRtcEndpoint.connect(pointerDetector, function(error)
+  {
+    if(error) return callback(error);
 
-		pointerDetector.connect(webRtcEndpoint, function(error) {
-			if (error) {
-				return callback(error);
-			}
+    pointerDetector.connect(webRtcEndpoint, function(error)
+    {
+      if(error) return callback(error);
 
-			return callback(null);
-		});
-	});
+      return callback(null);
+    });
+  });
 }
 
-function stop(sessionId) {
-	if (pipelines[sessionId]) {
-		var pipeline = pipelines[sessionId];
-		pipeline.release();
-		delete pipelines[sessionId];
-	}
+function stop(sessionId)
+{
+  if (pipelines[sessionId])
+  {
+    var pipeline = pipelines[sessionId];
+    pipeline.release();
+    delete pipelines[sessionId];
+  }
 }
 
-function calibrate(sessionId) {
-	if (pointerDetectors[sessionId]) {
-		var pointerDetector = pointerDetectors[sessionId];
-		pointerDetector.trackColorFromCalibrationRegion (function(error) {
-			if (error) {
-				return callback(error);
-			}
+function calibrate(sessionId)
+{
+  if(pointerDetectors[sessionId])
+  {
+    var pointerDetector = pointerDetectors[sessionId];
 
-			return callback(null);
-		});
-	}
+    pointerDetector.trackColorFromCalibrationRegion(function(error)
+    {
+      if(error) return callback(error);
+
+      return callback(null);
+    });
+  }
 }
 
 app.use(express.static(path.join(__dirname, 'static')));

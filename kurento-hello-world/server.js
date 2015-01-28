@@ -27,7 +27,7 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
-var argv = minimist(process.argv.slice(2),
+var args = minimist(process.argv.slice(2),
 {
   default:
   {
@@ -42,7 +42,7 @@ var app = expressWs(express()).app;
  * Server startup
  */
 
-var asUrl = url.parse(argv.as_uri);
+var asUrl = url.parse(args.as_uri);
 var port = asUrl.port;
 
 var server = app.listen(port, function() {

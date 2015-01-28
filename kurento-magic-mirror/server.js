@@ -44,7 +44,7 @@ var app = expressWs(express()).app;
  * Server startup
  */
 
-var asUrl = url.parse(argv.as_uri);
+var asUrl = url.parse(args.as_uri);
 var port = asUrl.port;
 asUrl = url.format(asUrl)
 

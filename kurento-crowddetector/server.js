@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
@@ -27,7 +28,8 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
-var argv = minimist(process.argv.slice(2),
+
+var args = minimist(process.argv.slice(2),
 {
   default:
   {
@@ -45,12 +47,14 @@ const RegionOfInterest       = kurentoClient.register.complexTypes.RegionOfInter
 const RegionOfInterestConfig = kurentoClient.register.complexTypes.RegionOfInterestConfig
 const RelativePoint          = kurentoClient.register.complexTypes.RelativePoint
 
+app.set('port', process.env.PORT || 8080);
+
 
 /*
  * Server startup
  */
 
-var asUrl = url.parse(argv.as_uri);
+var asUrl = url.parse(args.as_uri);
 var port = asUrl.port;
 var server = app.listen(port, function() {
   console.log('Kurento Tutorial started');
