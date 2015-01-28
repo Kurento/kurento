@@ -95,6 +95,7 @@ public class BrowserClient implements Closeable {
 	private AudioChannel audioChannel;
 	private SystemMonitorManager monitor;
 	private String name;
+	private boolean isLocal;
 
 	private BrowserClient(Builder builder) {
 
@@ -110,6 +111,7 @@ public class BrowserClient implements Closeable {
 		this.recordAudio = builder.recordAudio;
 		this.audioSampleRate = builder.audioSampleRate;
 		this.audioChannel = builder.audioChannel;
+		this.isLocal = builder.isLocal;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
@@ -138,9 +140,22 @@ public class BrowserClient implements Closeable {
 		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
 
 		// Launch Browser
-		String protocol = useHttps ? "https" : "http";
-		driver.get(protocol + "://" + hostAddress + ":" + serverPort
-				+ client.toString());
+		if (isLocal) {
+			String clientPage = client.toString();
+			File clientPageFile = new File(this.getClass().getClassLoader()
+					.getResource("static" + clientPage).getFile());
+			String clientAbsolutePath = "file://"
+					+ clientPageFile.getAbsolutePath();
+			log.debug(
+					"Opening client page located in the local file system: {}",
+					clientAbsolutePath);
+			driver.get(clientAbsolutePath);
+
+		} else {
+			String protocol = useHttps ? "https" : "http";
+			driver.get(protocol + "://" + hostAddress + ":" + serverPort
+					+ client.toString());
+		}
 
 		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
 				+ KurentoServicesTestHelper.getTestName());
@@ -202,6 +217,11 @@ public class BrowserClient implements Closeable {
 				// This flag avoids warning in chrome. See:
 				// https://code.google.com/p/chromedriver/issues/detail?id=799
 				options.addArguments("--test-type");
+
+				if (isLocal) {
+					// This flag allows reading local files in video tags
+					options.addArguments("--allow-file-access-from-files");
+				}
 
 				if (!usePhysicalCam) {
 					// This flag makes using a synthetic video (green with
@@ -521,6 +541,13 @@ public class BrowserClient implements Closeable {
 		}
 	}
 
+	public void playUrlInVideoTag(String url, VideoTagType videoTagType) {
+		js.executeScript("document.getElementById('" + videoTagType.getId()
+				+ "').setAttribute('src', '" + url + "');");
+		js.executeScript("document.getElementById('" + videoTagType.getId()
+				+ "').load();");
+	}
+
 	public static class Builder {
 		private String video;
 		private String audio;
@@ -534,6 +561,7 @@ public class BrowserClient implements Closeable {
 		private int recordAudio; // seconds
 		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
 		private AudioChannel audioChannel; // stereo, mono
+		private boolean isLocal;
 
 		public Builder() {
 			this(KurentoServicesTestHelper.getAppHttpPort());
@@ -557,6 +585,10 @@ public class BrowserClient implements Closeable {
 
 			// By default HTTPS is not used
 			this.useHttps = false;
+
+			// By default the client is not local (file://), instead is served
+			// by HTTP
+			this.isLocal = false;
 		}
 
 		public Builder video(String video) {
@@ -605,6 +637,11 @@ public class BrowserClient implements Closeable {
 
 		public BrowserClient build() {
 			return new BrowserClient(this);
+		}
+
+		public Builder local() {
+			this.isLocal = true;
+			return this;
 		}
 	}
 

@@ -15,15 +15,10 @@
 package org.kurento.test.functional.recorder;
 
 import java.awt.Color;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.client.EndOfStreamEvent;
-import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
-import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.Shell;
@@ -50,6 +45,10 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * <li>Browser ends before default timeout</li>
+ * <li>Media should be received in the video tag (in the recording)</li>
+ * <li>Color of the video should be the expected (in the recording)</li>
+ * <li>Ended event should arrive to player (in the recording)</li>
+ * <li>Play time should be the expected (in the recording)</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -58,7 +57,6 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderWebRtcTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
-	private static final int TIMEOUT_EOS = 60; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
@@ -115,6 +113,10 @@ public class RecorderWebRtcTest extends FunctionalTest {
 				Assert.assertTrue("The color of the video should be " + color,
 						browser.similarColor(color));
 			}
+
+			// Assert codecs
+			AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX),
+					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
 
 		// Release Media Pipeline #1
@@ -125,49 +127,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 		Shell.runAndWait("ffmpeg", "-i", recordingPreProcess, "-c", "copy",
 				recordingPostProcess);
 
-		// Media Pipeline #2
-		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp2,
-				recordingPostProcess).build();
-		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
-		playerEP.connect(webRtcEP2);
-
-		final CountDownLatch eosLatch = new CountDownLatch(1);
-		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosLatch.countDown();
-			}
-		});
-
-		// Test execution #2. Play the recorded video
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
-			playerEP.play();
-
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			if (color != null) {
-				Assert.assertTrue("The color of the video should be " + color,
-						browser.similarColor(color));
-			}
-			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-			AssertMedia.assertCodecs(
-					getDefaultOutputFile(PRE_PROCESS_SUFIX),
-					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
-		}
-
-		// Release Media Pipeline #2
-		mp2.release();
+		// Play the recording
+		playRecording(browserType, recordingPostProcess, PLAYTIME, color);
 	}
 }

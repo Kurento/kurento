@@ -62,4 +62,14 @@ public enum VideoTagType {
 			return "remote";
 		}
 	}
+
+	public String getId() {
+		switch (this) {
+		case LOCAL:
+			return "local";
+		case REMOTE:
+		default:
+			return "video";
+		}
+	}
 }
