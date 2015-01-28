@@ -156,14 +156,14 @@ PointerDetectorFilterImpl::PointerDetectorFilterImpl (const
 
     if (typeStr == "window-in") {
       try {
-        WindowIn event (windowIDStr, shared_from_this(), WindowIn::getName() );
+        WindowIn event (shared_from_this(), WindowIn::getName(), windowIDStr );
 
         signalWindowIn (event);
       } catch (std::bad_weak_ptr &e) {
       }
     } else if (typeStr == "window-out") {
       try {
-        WindowOut event (windowIDStr, shared_from_this(), WindowOut::getName() );
+        WindowOut event (shared_from_this(), WindowOut::getName(), windowIDStr );
 
         signalWindowOut (event);
       } catch (std::bad_weak_ptr &e) {
