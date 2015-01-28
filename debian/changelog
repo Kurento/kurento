@@ -1,3 +1,28 @@
+kms-crowddetector (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add Gruntfile.js file
+  * Change parameters order sending CrowdDetectorOccupancy event
+  * Remove image ROI after proccesing
+  * Add property to define the processing width
+  * Fix bug: Drawing into roi limits
+  * Not drawing mixing high and low speed crowded regions
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use templates from kurento-client-js instead of kurento-module-creator
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable test until they are fixed
+  * Update dependencies
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 28 Jan 2015 09:23:08 +0100
+
 kms-crowddetector (1.0.0) testing; urgency=medium
 
   [ Francisco Rivero ]
