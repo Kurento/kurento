@@ -27,7 +27,7 @@ import com.google.common.io.CharStreams;
  * Statistic enumeration.
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.6
+ * @since 5.0.5
  */
 public enum StatsOperation {
 

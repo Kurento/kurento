@@ -18,7 +18,7 @@ package org.kurento.test.latency;
  * Video tag for color detection (used in latency control).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.6
+ * @since 5.0.5
  */
 public class VideoTag {
 
