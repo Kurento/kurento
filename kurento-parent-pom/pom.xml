@@ -68,8 +68,8 @@
 		<version.kms-api-core>[5.0.0,6.0.0)</version.kms-api-core>
 		<version.kms-api-elements>[5.0.0,6.0.0)</version.kms-api-elements>
 		<version.kms-api-filters>[5.0.0,6.0.0)</version.kms-api-filters>
-		<version.plumber-endpoint>0.0.1-SNAPSHOT</version.plumber-endpoint>
-		<version.kurento-maven-plugin>1.0.3-SNAPSHOT</version.kurento-maven-plugin>
+		<version.plumber-endpoint>1.0.0</version.plumber-endpoint>
+		<version.kurento-maven-plugin>1.0.5</version.kurento-maven-plugin>
 		<version.kurento-utils-js>[5.0.0,6.0.0)</version.kurento-utils-js>
 
 		<!-- External versions -->
