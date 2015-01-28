@@ -26,7 +26,13 @@
 #define IMG_PATH BINARY_LOCATION "/imgs/mario-wings.png"
 #define VIDEO_PATH BINARY_LOCATION "/video/small.webm"
 
+#define KMS_VIDEO_PREFIX "video_src_"
+#define KMS_AUDIO_PREFIX "audio_src_"
+#define KMS_ELEMENT_PAD_TYPE_AUDIO 1
+#define KMS_ELEMENT_PAD_TYPE_VIDEO 2
+
 GMainLoop *loop;
+GstElement *player, *pipeline, *filter, *fakesink_audio, *fakesink_video;
 
 static void
 configure_structure (GstStructure * buttonsLayout)
@@ -136,12 +142,52 @@ bus_msg (GstBus * bus, GstMessage * msg, gpointer pipe)
   }
 }
 
+static void
+connect_sink_on_srcpad_added (GstElement * playerep, GstPad * new_pad,
+    gpointer user_data)
+{
+  gchar *padname;
+  gboolean ret;
+
+  GST_INFO_OBJECT (playerep, "Pad added %" GST_PTR_FORMAT, new_pad);
+  padname = gst_pad_get_name (new_pad);
+  fail_if (padname == NULL);
+
+  if (g_str_has_prefix (padname, KMS_VIDEO_PREFIX)) {
+    ret = gst_element_link_pads (playerep, padname, filter, "sink");
+    fail_if (ret == FALSE);
+    ret = gst_element_link (filter, fakesink_video);
+    fail_if (ret == FALSE);
+  } else if (g_str_has_prefix (padname, KMS_AUDIO_PREFIX)) {
+    ret = gst_element_link_pads (playerep, padname, fakesink_audio, "sink");
+    fail_if (ret == FALSE);
+  }
+  g_free (padname);
+}
+
+static gboolean
+quit_main_loop_idle (gpointer data)
+{
+  GMainLoop *loop = data;
+
+  GST_DEBUG ("Test finished exiting main loop");
+  g_main_loop_quit (loop);
+  return FALSE;
+}
+
+static void
+player_eos (GstElement * player, GMainLoop * loop)
+{
+  GST_DEBUG ("Eos received");
+  g_idle_add (quit_main_loop_idle, loop);
+}
+
 GST_START_TEST (player_with_pointer)
 {
-  GstElement *player, *pipeline, *filter, *fakesink_audio, *fakesink_video;
   GstStructure *buttonsLayout, *calibrationArea;
   guint bus_watch_id;
   GstBus *bus;
+  gchar *padname;
 
   loop = g_main_loop_new (NULL, FALSE);
   pipeline = gst_pipeline_new ("pipeline_live_stream");
@@ -182,13 +228,28 @@ GST_START_TEST (player_with_pointer)
   gst_element_set_state (fakesink_video, GST_STATE_PLAYING);
 
   gst_bin_add (GST_BIN (pipeline), player);
+
+  g_signal_connect (G_OBJECT (player), "eos", G_CALLBACK (player_eos), loop);
+  g_signal_connect (player, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), loop);
+
+  /* request audio src pad using action */
+  g_signal_emit_by_name (player, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Requested pad %s", padname);
+  g_free (padname);
+
+  /* request video src pad using action */
+  g_signal_emit_by_name (player, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Requested pad %s", padname);
+  g_free (padname);
+
   gst_element_set_state (player, GST_STATE_PLAYING);
-
-  kms_element_link_pads (player, "audio_src_%u", fakesink_audio, "sink");
-  kms_element_link_pads (player, "video_src_%u", filter, "sink");
-
-  gst_element_link (filter, fakesink_video);
-
   /* Set player to start state */
   g_object_set (G_OBJECT (player), "state", KMS_URI_ENDPOINT_STATE_START, NULL);
 
