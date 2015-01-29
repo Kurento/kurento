@@ -132,6 +132,9 @@ public class SystemInfo {
 	public void updateRtcStats(Map<String, Object> stats) {
 		// log.info("Updating rtcStats={}", rtcStats);
 		for (String key : stats.keySet()) {
+			if (!StatsOperation.map().containsKey(key)) {
+				continue;
+			}
 			switch (StatsOperation.map().get(key)) {
 			case AVG:
 			case SUM:
@@ -139,8 +142,14 @@ public class SystemInfo {
 				if (rtcStats.containsKey(key)) {
 					value = rtcStats.get(key);
 				}
-				rtcStats.put(key,
-						value + Double.parseDouble((String) stats.get(key)));
+
+				if (stats.get(key) instanceof String) {
+					rtcStats.put(key,
+							value + Double.parseDouble((String) stats.get(key)));
+				} else if (stats.get(key) instanceof Long) {
+					rtcStats.put(key, value + (Long) stats.get(key));
+				}
+
 				break;
 			default:
 				break;

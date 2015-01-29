@@ -23,8 +23,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -245,8 +245,8 @@ public class SystemMonitor {
 	public void writeResults(String csvTitle) throws IOException {
 		PrintWriter pw = new PrintWriter(new FileWriter(csvTitle));
 		boolean header = false;
-
 		String emptyStats = "";
+		List<String> rtcHeader = null;
 
 		for (long time : infoMap.keySet()) {
 			if (!header) {
@@ -257,16 +257,21 @@ public class SystemMonitor {
 				// iterate to find values in the statistics in order to write
 				// the header in the resulting CSV
 				if (browserList != null) {
+					rtcHeader = new ArrayList<>();
 					for (SystemInfo info : infoMap.values()) {
 						if (info.getRtcStats() != null
 								&& !info.getRtcStats().isEmpty()) {
 							for (String rtcStatsKey : info.getRtcStats()
 									.keySet()) {
-								pw.print(", " + rtcStatsKey
-										+ StatsOperation.map().get(rtcStatsKey));
-								emptyStats += ",";
+								if (!rtcHeader.contains(rtcStatsKey)) {
+									rtcHeader.add(rtcStatsKey);
+									pw.print(", "
+											+ rtcStatsKey
+											+ StatsOperation.map().get(
+													rtcStatsKey));
+									emptyStats += ",";
+								}
 							}
-							break;
 						}
 					}
 				}
@@ -293,10 +298,11 @@ public class SystemMonitor {
 			if (browserList != null) {
 				if (infoMap.get(time).getRtcStats() != null
 						&& !infoMap.get(time).getRtcStats().isEmpty()) {
-					Collection<Double> rtcStatsValues = infoMap.get(time)
-							.getRtcStats().values();
-					for (Double rtcStatsValue : rtcStatsValues) {
-						pw.print("," + rtcStatsValue);
+					for (String key : rtcHeader) {
+						pw.print(",");
+						if (infoMap.get(time).getRtcStats().containsKey(key)) {
+							pw.print(infoMap.get(time).getRtcStats().get(key));
+						}
 					}
 				} else {
 					pw.print(emptyStats);
