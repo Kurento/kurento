@@ -1,6 +1,6 @@
 {
   "name": "kurento-client",
-  "version": "5.1.0",
+  "version": "5.1.1-dev",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.org",
   "license": "LGPL",
