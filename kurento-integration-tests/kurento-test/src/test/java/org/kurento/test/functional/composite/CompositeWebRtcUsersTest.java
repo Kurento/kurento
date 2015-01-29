@@ -30,7 +30,7 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 
 /**
- *
+ * 
  * <strong>Description</strong>: Four synthetic videos are played by four
  * WebRtcEndpoint and mixed by a Composite. The resulting video is played in an
  * WebRtcEndpoint.<br/>
@@ -47,7 +47,7 @@ import org.kurento.test.client.WebRtcMode;
  * <li>Finally color of the video should be the expected (red, blue, green, and
  * white)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 5.0.5
@@ -104,18 +104,18 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 						.build();) {
 
 			// WebRTC browsers
-			browserRed.initWebRtc(webRtcEPRed, WebRtcChannel.VIDEO_ONLY,
+			browserRed.initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.SEND_ONLY);
-			browserGreen.initWebRtc(webRtcEPGreen, WebRtcChannel.VIDEO_ONLY,
+			browserGreen.initWebRtc(webRtcEPGreen,
+					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+			browserBlue.initWebRtc(webRtcEPBlue, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.SEND_ONLY);
-			browserBlue.initWebRtc(webRtcEPBlue, WebRtcChannel.VIDEO_ONLY,
-					WebRtcMode.SEND_ONLY);
-			browserWhite.initWebRtc(webRtcEPWhite, WebRtcChannel.VIDEO_ONLY,
-					WebRtcMode.SEND_ONLY);
+			browserWhite.initWebRtc(webRtcEPWhite,
+					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
 			browserComposite.subscribeEvents("playing");
 			browserComposite.initWebRtc(webRtcEPComposite,
-					WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 			// Assertions
 			Assert.assertTrue(
