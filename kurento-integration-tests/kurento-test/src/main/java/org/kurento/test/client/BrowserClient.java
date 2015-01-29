@@ -46,6 +46,7 @@ import org.kurento.test.services.Recorder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -96,6 +97,12 @@ public class BrowserClient implements Closeable {
 	private SystemMonitorManager monitor;
 	private String name;
 	private boolean isLocal;
+	private String browserVersion;
+	private Platform platform;
+
+	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
+	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
+	public static final String TEST_PUBLIC_IP_PROPERTY = "test.public.ip";
 
 	private BrowserClient(Builder builder) {
 
@@ -112,6 +119,8 @@ public class BrowserClient implements Closeable {
 		this.audioSampleRate = builder.audioSampleRate;
 		this.audioChannel = builder.audioChannel;
 		this.isLocal = builder.isLocal;
+		this.browserVersion = builder.browserVersion;
+		this.platform = builder.platform;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
@@ -136,7 +145,8 @@ public class BrowserClient implements Closeable {
 		// Selenium timeouts
 		driver.manage().timeouts();
 		driver.manage().timeouts().implicitlyWait(timeout, TimeUnit.SECONDS);
-		driver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.SECONDS);
+		// driver.manage().timeouts().pageLoadTimeout(timeout,
+		// TimeUnit.SECONDS);
 		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
 
 		// Launch Browser
@@ -150,6 +160,12 @@ public class BrowserClient implements Closeable {
 					"Opening client page located in the local file system: {}",
 					clientAbsolutePath);
 			driver.get(clientAbsolutePath);
+
+		} else if (browserVersion != null && platform != null) {
+			String testHost = getProperty(TEST_PUBLIC_IP_PROPERTY);
+			String protocol = useHttps ? "https" : "http";
+			driver.get(protocol + "://" + testHost + ":" + serverPort
+					+ client.toString());
 
 		} else {
 			String protocol = useHttps ? "https" : "http";
@@ -173,12 +189,29 @@ public class BrowserClient implements Closeable {
 				PerformanceTest.SELENIUM_HUB_PORT_DEFAULT);
 
 		try {
+
+			String sauceLabsUser = getProperty(SAUCELAB_USER_PROPERTY);
+			String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
+
 			if (driverClass.equals(FirefoxDriver.class)) {
 				FirefoxProfile profile = new FirefoxProfile();
 				// This flag avoids granting the access to the camera
 				profile.setPreference("media.navigator.permission.disabled",
 						true);
-				if (remoteNode != null) {
+				if (browserVersion != null && platform != null) {
+					DesiredCapabilities capabilities = new DesiredCapabilities();
+					capabilities.setCapability(FirefoxDriver.PROFILE, profile);
+					capabilities.setBrowserName(DesiredCapabilities.firefox()
+							.getBrowserName());
+					capabilities.setCapability("version", browserVersion);
+					capabilities.setCapability("platform", platform);
+
+					driver = new RemoteWebDriver(new URL("http://"
+							+ sauceLabsUser + ":" + sauceLabsKey
+							+ "@ondemand.saucelabs.com:80/wd/hub"),
+							capabilities);
+
+				} else if (remoteNode != null) {
 					DesiredCapabilities capabilities = new DesiredCapabilities();
 					capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 					capabilities.setBrowserName(DesiredCapabilities.firefox()
@@ -244,7 +277,21 @@ public class BrowserClient implements Closeable {
 					}
 				}
 
-				if (remoteNode != null) {
+				if (browserVersion != null && platform != null) {
+					DesiredCapabilities capabilities = new DesiredCapabilities();
+					capabilities.setCapability(ChromeOptions.CAPABILITY,
+							options);
+					capabilities.setBrowserName(DesiredCapabilities.chrome()
+							.getBrowserName());
+					capabilities.setCapability("version", browserVersion);
+					capabilities.setCapability("platform", platform);
+
+					driver = new RemoteWebDriver(new URL("http://"
+							+ sauceLabsUser + ":" + sauceLabsKey
+							+ "@ondemand.saucelabs.com:80/wd/hub"),
+							capabilities);
+
+				} else if (remoteNode != null) {
 					DesiredCapabilities capabilities = new DesiredCapabilities();
 					capabilities.setCapability(ChromeOptions.CAPABILITY,
 							options);
@@ -399,6 +446,7 @@ public class BrowserClient implements Closeable {
 			t.stop();
 		}
 		driver.close();
+		driver.quit();
 		driver = null;
 	}
 
@@ -562,6 +610,8 @@ public class BrowserClient implements Closeable {
 		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
 		private AudioChannel audioChannel; // stereo, mono
 		private boolean isLocal;
+		private String browserVersion;
+		private Platform platform;
 
 		public Builder() {
 			this(KurentoServicesTestHelper.getAppHttpPort());
@@ -641,6 +691,16 @@ public class BrowserClient implements Closeable {
 
 		public Builder local() {
 			this.isLocal = true;
+			return this;
+		}
+
+		public Builder browserVersion(String browserVersion) {
+			this.browserVersion = browserVersion;
+			return this;
+		}
+
+		public Builder platform(Platform platform) {
+			this.platform = platform;
 			return this;
 		}
 	}
