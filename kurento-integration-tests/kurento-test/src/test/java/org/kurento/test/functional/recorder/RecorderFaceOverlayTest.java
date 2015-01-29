@@ -52,10 +52,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>Play time should be the expected</li>
  * <li>Color above the head of the video should be the expected (image overlaid)
  * </li>
- * <li>Media should be received in the video tag (in the recording)</li>
- * <li>Color of the video should be the expected (in the recording)</li>
- * <li>Ended event should arrive to player (in the recording)</li>
- * <li>Play time should be the expected (in the recording)</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -68,9 +64,6 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
-	private static final Color EXPECTED_COLOR = Color.RED;
-	private static final int EXPECTED_COLOR_X = 420;
-	private static final int EXPECTED_COLOR_Y = 45;
 
 	@Test
 	public void testRecorderFaceOverlayChrome() throws Exception {
@@ -115,9 +108,18 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		Shell.runAndWait("ffmpeg", "-i", recordingPreProcess, "-c", "copy",
 				recordingPostProcess);
 
-		// Play the recording
-		playRecording(browserType, recordingPostProcess, PLAYTIME,
-				EXPECTED_COLOR_X, EXPECTED_COLOR_Y, EXPECTED_COLOR);
+		// Media Pipeline #2
+		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
+				recordingPostProcess).build();
+		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
+		playerEP2.connect(webRtcEP2);
+
+		// Test execution #2. Play the recorded video
+		launchBrowser(browserType, webRtcEP2, playerEP2, null);
+
+		// Release Media Pipeline #2
+		mp2.release();
 	}
 
 	private void launchBrowser(Browser browserType, WebRtcEndpoint webRtcEP,
@@ -149,8 +151,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue(
 					"Color above the head must be red (FaceOverlayFilter)",
-					browser.similarColorAt(EXPECTED_COLOR, EXPECTED_COLOR_X,
-							EXPECTED_COLOR_Y));
+					browser.similarColorAt(Color.RED, 420, 45));
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 			double currentTime = browser.getCurrentTime();
