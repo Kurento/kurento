@@ -95,8 +95,6 @@
 				<module>kurento-client</module>
 				<module>kurento-repository</module>
 				<module>kurento-rabbitmq</module>
-				<module>kurento-tree</module>
-				<module>kurento-basicroom</module>
 			</modules>
 		</profile>
 		<profile>
