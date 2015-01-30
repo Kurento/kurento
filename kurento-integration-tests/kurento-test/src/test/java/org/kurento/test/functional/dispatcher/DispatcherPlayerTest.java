@@ -35,7 +35,7 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 
 /**
- * 
+ *
  * <strong>Description</strong>: A PlayerEndpoint is connected to a
  * WebRtcEndpoint through a Dispatcher.<br/>
  * <strong>Pipeline</strong>:
@@ -49,13 +49,13 @@ import org.kurento.test.client.WebRtcMode;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public class DispatcherPlayerTest extends FunctionalTest {
 
-	private static final int PLAYTIME = 20; // seconds
+	private static final int PLAYTIME = 10; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds
 
 	@Test
@@ -74,22 +74,18 @@ public class DispatcherPlayerTest extends FunctionalTest {
 
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/red.webm").build();
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/blue.webm").build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
 		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
 		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
 		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
-		HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
 
 		playerEP.connect(hubPort1);
-		playerEP2.connect(hubPort3);
 		hubPort2.connect(webRtcEP);
 		dispatcher.connect(hubPort1, hubPort2);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);
-		playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
 			@Override
 			public void onEvent(EndOfStreamEvent event) {
 				eosLatch.countDown();
@@ -111,11 +107,6 @@ public class DispatcherPlayerTest extends FunctionalTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("The color of the video should be red",
 					browser.similarColor(Color.RED));
-			Thread.sleep(5000);
-			playerEP2.play();
-			dispatcher.connect(hubPort3, hubPort2);
-			Assert.assertTrue("The color of the video should be blue",
-					browser.similarColor(Color.BLUE));
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 			double currentTime = browser.getCurrentTime();

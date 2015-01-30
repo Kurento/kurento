@@ -14,8 +14,6 @@
  */
 package org.kurento.test.functional.dispatcher;
 
-import java.awt.Color;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.Dispatcher;
@@ -60,33 +58,23 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
 
 		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
 		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
 		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
-		HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
 
 		webRtcEP1.connect(hubPort1);
-		webRtcEP3.connect(hubPort3);
 		hubPort2.connect(webRtcEP2);
 
 		dispatcher.connect(hubPort1, hubPort2);
 
 		// Test execution
 		try (BrowserClient browser1 = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC)
-				.video(getPathTestFiles() + "/video/10sec/green.y4m").build();
+				.browser(browserType).client(Client.WEBRTC).build();
 				BrowserClient browser2 = new BrowserClient.Builder()
-						.browser(browserType).client(Client.WEBRTC).build();
-				BrowserClient browser3 = new BrowserClient.Builder()
-						.browser(browserType).client(Client.WEBRTC)
-						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
-						.build();) {
+						.browser(browserType).client(Client.WEBRTC).build();) {
 
 			browser1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
-			browser3.initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.SEND_ONLY);
 
 			browser2.subscribeEvents("playing");
@@ -99,15 +87,9 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
 					browser2.waitForEvent("playing"));
-			Assert.assertTrue("The color of the video should be green (GREEN)",
-					browser2.similarColorAt(Color.GREEN, 450, 0));
-
-			Thread.sleep(5000);
-			dispatcher.connect(hubPort3, hubPort2);
-			Assert.assertTrue("The color of the video should be green (BLUE)",
-					browser2.similarColorAt(Color.BLUE, 0, 450));
-
-			Thread.sleep(2000);
+			Assert.assertTrue(
+					"The color of the video should be green (RGB #008700)",
+					browser2.similarColor(CHROME_VIDEOTEST_COLOR));
 		}
 
 		// Release Media Pipeline
