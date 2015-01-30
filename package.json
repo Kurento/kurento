@@ -23,6 +23,9 @@
     "Kurento",
     "WebRTC"
   ],
+  "scripts": {
+    "install": "cd test && bower install"
+  },
   "devDependencies": {
     "bower": "~1.3.12",
     "grunt": "^0.4.5",
@@ -32,11 +35,15 @@
     "grunt-jsdoc": "^0.6.1",
     "grunt-npm2bower-sync": "^0.4.0",
     "grunt-shell": "^1.1.1",
-    "minifyify": "~4.4.0"
+    "minifyify": "~4.4.0",
+    "qunit-assert-canvas": "^1.0.2",
+    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",
+    "qunitjs": "^1.17.1"
   },
   "dependencies": {
     "freeice": "^2.1.0",
     "inherits": "^2.0.1",
-    "merge": "^1.2.0"
+    "merge": "^1.2.0",
+    "qunitjs": "^1.17.1"
   }
 }
