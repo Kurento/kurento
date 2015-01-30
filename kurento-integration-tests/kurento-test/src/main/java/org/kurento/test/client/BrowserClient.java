@@ -557,6 +557,10 @@ public class BrowserClient implements Closeable {
 		String sdpOffer = (String) js.executeScript("return sdpOffer;");
 		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
 
+		// Uncomment this line to debug SDP offer and answer
+		// log.debug("**** SDP OFFER: {}", sdpOffer);
+		// log.debug("**** SDP ANSWER: {}", sdpAnswer);
+
 		// Encoding in Base64 to avoid parsing errors in JavaScript
 		sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
 
@@ -808,4 +812,7 @@ public class BrowserClient implements Closeable {
 		return out;
 	}
 
+	public String readConsole() {
+		return driver.findElement(By.id("console")).getText();
+	}
 }
