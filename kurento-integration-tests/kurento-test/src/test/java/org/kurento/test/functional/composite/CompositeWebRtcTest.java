@@ -17,6 +17,7 @@ package org.kurento.test.functional.composite;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.Composite;
 import org.kurento.client.GStreamerFilter;
@@ -54,6 +55,7 @@ public class CompositeWebRtcTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5;
 
+	@Ignore
 	@Test
 	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -104,18 +106,18 @@ public class CompositeWebRtcTest extends FunctionalTest {
 						.build();) {
 
 			// WebRTC browsers
-			browserWhite.initWebRtc(webRtcEPWhite,
-					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-			browserRed.initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO,
+			browserRed.initWebRtc(webRtcEPRed, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_ONLY);
-			browserGreen.initWebRtc(webRtcEPGreen,
-					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-			browserBlue.initWebRtc(webRtcEPBlue, WebRtcChannel.AUDIO_AND_VIDEO,
+			browserGreen.initWebRtc(webRtcEPGreen, WebRtcChannel.VIDEO_ONLY,
+					WebRtcMode.SEND_ONLY);
+			browserBlue.initWebRtc(webRtcEPBlue, WebRtcChannel.VIDEO_ONLY,
+					WebRtcMode.SEND_ONLY);
+			browserWhite.initWebRtc(webRtcEPWhite, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_ONLY);
 
 			browserComposite.subscribeEvents("playing");
 			browserComposite.initWebRtc(webRtcEPComposite,
-					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+					WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
 			// Assertions
 			Assert.assertTrue(
