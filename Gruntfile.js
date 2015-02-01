@@ -35,7 +35,8 @@ module.exports = function(grunt)
     // Plugins configuration
     clean:
     {
-      generated_code: [DIST_DIR, 'src'],
+      generated_code: DIST_DIR,
+      coverage: 'lib-cov',
 
       generated_doc: '<%= jsdoc.all.dest %>'
     },
@@ -45,8 +46,19 @@ module.exports = function(grunt)
     {
       all:
       {
-        src: ['README.md', 'lib/**/*.js', 'test/*.js'], 
+        src: ['README.md', 'lib/**/*.js', 'test/*.js'],
         dest: 'doc/jsdoc'
+      }
+    },
+
+    // Generate instrumented version for coverage analisis
+    jscoverage:
+    {
+      all: {
+        expand: true,
+        cwd: 'lib/',
+        src: ['**/*.js'],
+        dest: 'lib-cov/'
       }
     },
 
@@ -63,6 +75,19 @@ module.exports = function(grunt)
       {
         src:  '<%= pkg.main %>',
         dest: DIST_DIR+'/<%= pkg.name %>.js',
+
+        options:
+        {
+          browserifyOptions: {
+            standalone: '<%= pkg.name %>'
+          }
+        }
+      },
+
+      coverage:
+      {
+        src:  'lib-cov/index.js',
+        dest: DIST_DIR+'/<%= pkg.name %>.cov.js',
 
         options:
         {
@@ -147,11 +172,12 @@ module.exports = function(grunt)
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks("grunt-jscoverage");
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
+  grunt.registerTask('default', ['clean', 'jsdoc', 'jscoverage', 'browserify']);
   grunt.registerTask('bower',   ['sync:bower', 'shell:bower']);
 };

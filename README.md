@@ -4,6 +4,7 @@ Copyright © 2014 Kurento. Licensed under [LGPL License].
 
 Kurento Utils for Node.js and Browsers
 ======================================
+[![Coverage Status](https://coveralls.io/repos/Kurento/kurento-utils-js/badge.svg)](https://coveralls.io/r/Kurento/kurento-utils-js)
 
 The Kurento Utils project contains a set of reusable components that have been
 found useful during the development of the WebRTC applications with Kurento.

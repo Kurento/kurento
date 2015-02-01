@@ -26,7 +26,7 @@ function onerror(error)
 
 _onerror = onerror;
 
-QUnit.jUnitReport = function (report)
+QUnit.jUnitReport = function(report)
 {
   // Node.js - write report to file
   if(typeof window === 'undefined')
@@ -44,9 +44,34 @@ QUnit.jUnitReport = function (report)
   // browser - write report to console
   else
   {
-    var textarea = document.getElementById('report');
+    var textarea = document.getElementById('junit');
 
     textarea.value = report.xml;
+    textarea.style.height = textarea.scrollHeight + "px";
+  }
+};
+
+QUnit.lcovReport = function(report)
+{
+  // Node.js - write report to file
+  if(typeof window === 'undefined')
+  {
+    var path = './lcovResult.xml';
+
+    require('fs').writeFile(path, report.lcov, function(error)
+    {
+      if (error) return console.error(error);
+
+      console.log('lcov report saved at ' + path);
+    });
+  }
+
+  // browser - write report to console
+  else
+  {
+    var textarea = document.getElementById('lcov');
+
+    textarea.value = report.lcov;
     textarea.style.height = textarea.scrollHeight + "px";
   }
 };

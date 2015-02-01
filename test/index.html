@@ -11,8 +11,9 @@
 
     <script src="../node_modules/qunit-assert-canvas/qunit-assert-canvas.js"></script>
     <script src="../node_modules/qunit-reporter-junit/qunit-reporter-junit.js"></script>
+    <script src="../node_modules/qunit-reporter-lcov/qunit-reporter-lcov.js"></script>
 
-    <script src="../dist/kurento-utils.js"></script>
+    <script src="../dist/kurento-utils.cov.js"></script>
   </head>
   <body>
     <div id="qunit"></div>
@@ -20,7 +21,8 @@
       <video id="localVideo" autoplay></video>
       <canvas id="canvas"></canvas>
     </div>
-    <textarea id="report" readonly style="width: 100%;"></textarea>
+    <textarea id="junit" readonly style="width: 100%;"></textarea>
+    <textarea id="lcov"  readonly style="width: 100%;"></textarea>
 
     <script src="_common.js"></script>
 
