@@ -821,6 +821,100 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self)
   return TRUE;
 }
 
+static gchar *
+kms_webrtc_endpoint_sdp_media_add_ice_candidate (KmsWebrtcEndpoint * self,
+    GstSDPMedia * media, gboolean bundle, NiceAgent * agent,
+    NiceCandidate * cand)
+{
+  guint media_stream_id;
+  gchar *str;
+
+  if (!kms_webrtc_endpoint_media_get_stream_id (self, media, bundle,
+          &media_stream_id)) {
+    return NULL;
+  }
+
+  if (media_stream_id != cand->stream_id) {
+    return NULL;
+  }
+
+  str = nice_agent_generate_local_candidate_sdp (agent, cand);
+  gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
+      str + SDP_CANDIDATE_ATTR_LEN);
+  g_free (str);
+
+  return media->media;
+}
+
+static void
+kms_webrtc_endpoint_sdp_msg_add_ice_candidate (KmsWebrtcEndpoint * self,
+    NiceAgent * agent, NiceCandidate * nice_cand)
+{
+  KmsBaseSdpEndpoint *base_sdp_ep = KMS_BASE_SDP_ENDPOINT (self);
+  GstSDPMessage *local_sdp;
+  GList *list = NULL, *iterator = NULL;
+  gboolean bundle;
+  guint m_len, m;
+
+  KMS_ELEMENT_LOCK (self);
+
+  local_sdp = kms_base_sdp_endpoint_get_local_sdp (base_sdp_ep);
+  g_object_get (self, "bundle", &bundle, NULL);
+
+  m_len = gst_sdp_message_medias_len (local_sdp);
+  for (m = 0; m < m_len; m++) {
+    GstSDPMedia *media =
+        (GstSDPMedia *) gst_sdp_message_get_media (local_sdp, m);
+    gchar *media_str;
+
+    media_str =
+        kms_webrtc_endpoint_sdp_media_add_ice_candidate (self, media, bundle,
+        agent, nice_cand);
+    if (media_str != NULL) {
+      KmsIceCandidate *candidate =
+          kms_ice_candidate_new_from_nice (agent, nice_cand, media_str, m);
+
+      list = g_list_append (list, candidate);
+    }
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  for (iterator = list; iterator; iterator = iterator->next) {
+    g_signal_emit (G_OBJECT (self),
+        kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
+        iterator->data);
+  }
+
+  g_list_free_full (list, g_object_unref);
+}
+
+/* TODO: change using "new-candidate-full" of libnice 0.1.8 */
+static void
+kms_webrtc_endpoint_new_candidate (NiceAgent * agent,
+    guint stream_id,
+    guint component_id, gchar * foundation, KmsWebrtcEndpoint * self)
+{
+  GSList *candidates;
+  GSList *walk;
+
+  GST_TRACE_OBJECT (self, "stream_id: %d, component_id: %d, foundation: %s",
+      stream_id, component_id, foundation);
+
+  candidates = nice_agent_get_local_candidates (agent, stream_id, component_id);
+
+  for (walk = candidates; walk; walk = walk->next) {
+    NiceCandidate *cand = walk->data;
+
+    if (cand->stream_id == stream_id &&
+        cand->component_id == component_id &&
+        g_strcmp0 (foundation, cand->foundation) == 0) {
+      kms_webrtc_endpoint_sdp_msg_add_ice_candidate (self, agent, cand);
+    }
+  }
+  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
+}
+
 static gboolean
 kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
     KmsIceCandidate * candidate)
@@ -1189,6 +1283,8 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
       NULL);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (gathering_done), self);
+  g_signal_connect (self->priv->agent, "new-candidate",
+      G_CALLBACK (kms_webrtc_endpoint_new_candidate), self);
 }
 
 gboolean
