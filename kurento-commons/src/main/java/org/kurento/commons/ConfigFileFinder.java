@@ -55,13 +55,13 @@ public class ConfigFileFinder {
 	 * <li>3. A classpath /config package</li>
 	 * <li>4. The classpath root</li>
 	 * </ul>
-	 * 
+	 *
 	 * The list is ordered by precedence (locations higher in the list override
 	 * lower items).
-	 * 
+	 *
 	 * Remember that a property can be set using Java System properties (java
 	 * -Dprop=value -jar file.jar)
-	 * 
+	 *
 	 * @param fileName
 	 * @return
 	 * @throws URISyntaxException
@@ -96,7 +96,7 @@ public class ConfigFileFinder {
 		return null;
 	}
 
-	private static Path getPathInClasspath(String resource) throws IOException {
+	public static Path getPathInClasspath(String resource) throws IOException {
 
 		URL url = ConfigFileFinder.class.getResource(resource);
 
