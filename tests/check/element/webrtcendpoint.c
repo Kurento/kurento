@@ -15,6 +15,7 @@
 
 #include <gst/check/gstcheck.h>
 #include <gst/sdp/gstsdpmessage.h>
+#include "../../../src/gst-plugins/webrtcendpoint/kmsicecandidate.h"
 
 #include <commons/kmselementpadtype.h>
 
@@ -67,6 +68,16 @@ typedef struct HandOffData
   GstElement *webrtcep;
   /* Check KmsBaseRtpEp::request_local_key_frame end */
 } HandOffData;
+
+static void
+on_ice_candidate (GstElement * self, KmsIceCandidate * candidate,
+    GstElement * peer)
+{
+  gboolean ret;
+
+  g_signal_emit_by_name (peer, "add-ice-candidate", candidate, &ret);
+  fail_unless (ret);
+}
 
 static gboolean
 check_caps (GstPad * pad, HandOffData * hod)
@@ -251,6 +262,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   GstElement *receiver = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
   gchar *sdp_str = NULL;
+  gboolean ret;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -269,6 +281,12 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
           pattern_sdp_recvonly_str, -1, pattern_sdp) == GST_SDP_OK);
   g_object_set (receiver, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+
+  /* Trickle ICE management */
+  g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), receiver);
+  g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), sender);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -331,6 +349,11 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_signal_emit_by_name (sender, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (sender, "gather-candidates", &ret);
+  fail_unless (ret);
+  g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+  fail_unless (ret);
 
   gst_bin_add (GST_BIN (pipeline), outputfakesink);
   g_object_set_data (G_OBJECT (receiver), VIDEO_SINK, outputfakesink);
@@ -436,6 +459,7 @@ test_video_sendrecv (const gchar * video_enc_name,
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
   gchar *sdp_str = NULL;
+  gboolean ret;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -449,6 +473,12 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+
+  /* Trickle ICE management */
+  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), answerer);
+  g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), offerer);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -491,6 +521,11 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_signal_emit_by_name (offerer, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  fail_unless (ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  fail_unless (ret);
 
   gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
       NULL);
@@ -550,6 +585,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
   GstCaps *caps;
   gchar *sdp_str = NULL;
+  gboolean ret;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -564,6 +600,12 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+
+  /* Trickle ICE management */
+  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), answerer);
+  g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), offerer);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -614,6 +656,11 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_signal_emit_by_name (offerer, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  fail_unless (ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  fail_unless (ret);
 
   gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
       NULL);
@@ -714,6 +761,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
 
   GstCaps *caps;
   gchar *sdp_str = NULL;
+  gboolean ret;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -733,6 +781,12 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
           pattern_sdp_recvonly_str, -1, pattern_sdp) == GST_SDP_OK);
   g_object_set (receiver, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+
+  /* Trickle ICE management */
+  g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), receiver);
+  g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), sender);
 
   /* Hack to avoid audio and video reception in sender(offerer) */
   g_object_set_data (G_OBJECT (pipeline), OFFERER_RECEIVES_AUDIO,
@@ -793,6 +847,11 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   g_signal_emit_by_name (sender, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (sender, "gather-candidates", &ret);
+  fail_unless (ret);
+  g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+  fail_unless (ret);
 
   gst_bin_add (GST_BIN (pipeline), audio_fakesink);
   g_object_set_data (G_OBJECT (receiver), AUDIO_SINK, audio_fakesink);
@@ -872,6 +931,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
 
   GstCaps *caps;
   gchar *sdp_str = NULL;
+  gboolean ret;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -886,6 +946,12 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+
+  /* Trickle ICE management */
+  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), answerer);
+  g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), offerer);
 
   hod_audio_offerer = g_slice_new0 (HandOffData);
   hod_audio_offerer->type = OFFERER_RECEIVES_AUDIO;
@@ -965,6 +1031,11 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_signal_emit_by_name (offerer, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  fail_unless (ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  fail_unless (ret);
 
   gst_bin_add_many (GST_BIN (pipeline), audio_fakesink_offerer,
       audio_fakesink_answerer, NULL);
