@@ -50,6 +50,10 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>EOS event should arrive to player</li>
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
+ * <li>Media should be received in the video tag (in the recording)</li>
+ * <li>Color of the video should be the expected (in the recording)</li>
+ * <li>Ended event should arrive to player (in the recording)</li>
+ * <li>Play time should be the expected (in the recording)</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -62,13 +66,14 @@ public class RecorderPlayerTest extends FunctionalTest {
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
+	private static final Color EXPECTED_COLOR = Color.GREEN;
 
 	@Test
 	public void testRecorderPlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
-	@Test
+	// @Test
 	public void testRecorderPlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
@@ -114,19 +119,13 @@ public class RecorderPlayerTest extends FunctionalTest {
 		Shell.runAndWait("ffmpeg", "-i", recordingPreProcess, "-c", "copy",
 				recordingPostProcess);
 
-		// Media Pipeline #2
-		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
-				recordingPostProcess).build();
+		// Play the recording
+		playFileAsLocal(browserType, recordingPostProcess, PLAYTIME,
+				EXPECTED_COLOR);
 
-		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
-		playerEP2.connect(webRtcEP2);
-
-		// Test execution #2. Play the recorded video
-		launchBrowser(browserType, webRtcEP2, playerEP2, null);
-
-		// Release Media Pipeline #2
-		mp2.release();
+		// Uncomment this line to play the recording with a new pipeline
+		// playFileWithPipeline(browserType, recordingPostProcess, PLAYTIME,
+		// EXPECTED_COLOR);
 	}
 
 	private void launchBrowser(Browser browserType, WebRtcEndpoint webRtcEP,
@@ -154,8 +153,8 @@ public class RecorderPlayerTest extends FunctionalTest {
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
-			Assert.assertTrue("The color of the video should be green",
-					browser.similarColor(Color.GREEN));
+			Assert.assertTrue("The color of the video should be "
+					+ EXPECTED_COLOR, browser.similarColor(EXPECTED_COLOR));
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 			double currentTime = browser.getCurrentTime();
