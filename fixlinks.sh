@@ -25,7 +25,7 @@ changelink "#kurento-javascript-client-jsdoc" "langdoc/jsdoc/kurento-client-js/i
 changelink "#kurento-javascript-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering_kurento.html"
 
 # ./build/html/mastering/*.html
-files=(kurento_architecture kurento_API kurento_protocol advanced_installation_guide kurento_development kurento_modules)
+files=(kurento_architecture kurento_API kurento_protocol advanced_installation_guide kurento_development kurento_modules develop_kurento_modules)
 for i in ${files[@]}
 do
    changelink "mastering_kurento.html#kurento-architecture" "mastering/kurento_architecture.html" "./build/html/mastering/${i}.html"
