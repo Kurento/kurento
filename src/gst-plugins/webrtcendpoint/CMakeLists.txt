@@ -41,6 +41,8 @@ set(KMS_WEBRTC_HEADERS
   kmswebrtcendpoint.h
 )
 
+add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_webrtc_marshal)
+
 add_library(webrtcendpoint MODULE ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
 
 add_dependencies(webrtcendpoint kmsdtls rtcpdemux)

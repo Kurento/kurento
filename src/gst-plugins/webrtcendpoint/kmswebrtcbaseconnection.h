@@ -21,10 +21,6 @@
 #include <commons/kmsirtpconnection.h>
 
 G_BEGIN_DECLS
-#define SDP_ICE_UFRAG_ATTR "ice-ufrag"
-#define SDP_ICE_PWD_ATTR "ice-pwd"
-#define SDP_CANDIDATE_ATTR "candidate"
-#define SDP_CANDIDATE_ATTR_LEN 12
 
 #define KMS_TYPE_WEBRTC_BASE_CONNECTION \
   (kms_webrtc_base_connection_get_type())

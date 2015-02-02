@@ -25,6 +25,7 @@
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
+#include "kms-webrtc-marshal.h"
 
 #include <gio/gio.h>
 #include <stdlib.h>
@@ -52,6 +53,7 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
   )                                             \
 )
 
+/* TODO: default prop values */
 enum
 {
   PROP_0,
@@ -61,6 +63,17 @@ enum
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
   N_PROPERTIES
 };
+
+enum
+{
+  SIGNAL_ON_ICE_CANDIDATE,
+  SIGNAL_ON_ICE_GATHERING_DONE,
+  SIGNAL_GATHER_CANDIDATES,
+  SIGNAL_ADD_ICE_CANDIDATE,
+  LAST_SIGNAL
+};
+
+static guint kms_webrtc_endpoint_signals[LAST_SIGNAL] = { 0 };
 
 #define IPV4 4
 #define IPV6 6
@@ -763,6 +776,7 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 
 /* Start Transport end */
 
+/* ICE candidates management begin */
 static void
 gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
 {
@@ -798,6 +812,25 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
   g_cond_broadcast (&self->priv->ctx.gather_cond);
   g_mutex_unlock (&self->priv->ctx.gather_mutex);
 }
+
+static gboolean
+kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self)
+{
+  GST_WARNING_OBJECT (self, "TODO: implement");
+
+  return TRUE;
+}
+
+static gboolean
+kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
+    KmsIceCandidate * candidate)
+{
+  GST_WARNING_OBJECT (self, "TODO: implement");
+
+  return TRUE;
+}
+
+/* ICE candidates management end */
 
 static void
 kms_webrtc_endpoint_parse_turn_url (KmsWebrtcEndpoint * self)
@@ -1048,6 +1081,9 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   base_rtp_endpoint_class->create_bundle_connection =
       kms_webrtc_endpoint_create_bundle_connection;
 
+  klass->gather_candidates = kms_webrtc_endpoint_gather_candidates;
+  klass->add_ice_candidate = kms_webrtc_endpoint_add_ice_candidate;
+
   g_object_class_install_property (gobject_class, PROP_CERTIFICATE_PEM_FILE,
       g_param_spec_string ("certificate-pem-file",
           "Certificate PEM File",
@@ -1075,6 +1111,48 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "'address' must be an IP (not a domain)."
           "'transport' is optional (UDP by default).",
           NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  /**
+  * KmsWebrtcEndpoint::on-ice-candidate:
+  * @self: the object which received the signal
+  * @candidate: the local candidate gathered
+  *
+  * Notify of a new gathered local candidate for a #KmsWebrtcEndpoint.
+  */
+  kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE] =
+      g_signal_new ("on-ice-candidate",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, on_ice_candidate), NULL,
+      NULL, g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1,
+      KMS_TYPE_ICE_CANDIDATE);
+
+  /**
+  * KmsWebrtcEndpoint::on-candidate-gathering-done:
+  * @self: the object which received the signal
+  *
+  * Notify that all candidates have been gathered for a #KmsWebrtcEndpoint
+  */
+  kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE] =
+      g_signal_new ("on-ice-gathering-done",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, on_ice_gathering_done), NULL,
+      NULL, NULL, G_TYPE_NONE, 0);
+
+  kms_webrtc_endpoint_signals[SIGNAL_ADD_ICE_CANDIDATE] =
+      g_signal_new ("add-ice-candidate",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, add_ice_candidate), NULL, NULL,
+      __kms_webrtc_marshal_BOOLEAN__OBJECT, G_TYPE_BOOLEAN, 1,
+      KMS_TYPE_ICE_CANDIDATE);
+
+  kms_webrtc_endpoint_signals[SIGNAL_GATHER_CANDIDATES] =
+      g_signal_new ("gather-candidates",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, gather_candidates), NULL, NULL,
+      __kms_webrtc_marshal_BOOLEAN__VOID, G_TYPE_BOOLEAN, 0);
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
 }

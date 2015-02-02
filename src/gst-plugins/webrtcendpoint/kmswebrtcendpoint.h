@@ -17,6 +17,7 @@
 #define __KMS_WEBRTC_ENDPOINT_H__
 
 #include <commons/kmsbasertpendpoint.h>
+#include "kmsicecandidate.h"
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -46,6 +47,15 @@ struct _KmsWebrtcEndpoint
 struct _KmsWebrtcEndpointClass
 {
   KmsBaseRtpEndpointClass parent_class;
+
+    gboolean (*gather_candidates) (KmsWebrtcEndpoint * self);
+    gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self,
+      KmsIceCandidate * candidate);
+
+  /* Signals */
+  void (*on_ice_candidate) (KmsWebrtcEndpoint * self,
+      KmsIceCandidate * candidate);
+  void (*on_ice_gathering_done) (KmsWebrtcEndpoint * self);
 };
 
 GType kms_webrtc_endpoint_get_type (void);
