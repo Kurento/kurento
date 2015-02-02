@@ -35,7 +35,7 @@ QUnit.jUnitReport = function(report)
 
     require('fs').writeFile(path, report.xml, function(error)
     {
-      if (error) return console.error(error);
+      if(error) return console.error(error);
 
       console.log('XML report saved at ' + path);
     });
@@ -48,6 +48,7 @@ QUnit.jUnitReport = function(report)
 
     textarea.value = report.xml;
     textarea.style.height = textarea.scrollHeight + "px";
+    textarea.style.visibility = "visible";
   }
 };
 
@@ -60,7 +61,7 @@ QUnit.lcovReport = function(report)
 
     require('fs').writeFile(path, report.lcov, function(error)
     {
-      if (error) return console.error(error);
+      if(error) return console.error(error);
 
       console.log('lcov report saved at ' + path);
     });
@@ -73,5 +74,6 @@ QUnit.lcovReport = function(report)
 
     textarea.value = report.lcov;
     textarea.style.height = textarea.scrollHeight + "px";
+    textarea.style.visibility = "visible";
   }
 };

@@ -2,9 +2,13 @@
 .project
 .settings/
 *~
-node_modules/
+bower.json
+junitResult.xml
+lcovResult.lcov
 dist/
+doc/
+lib-cov/
+node_modules/
 src/
 target/
-junitResult.xml
-bower.json
+npm-debug.log

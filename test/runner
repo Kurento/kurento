@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+
+var http = require('http')
+
+var writeFile = require('fs').writeFile
+
+var selenium = require('selenium-webdriver')
+var Server   = require('node-static').Server
+
+var all              = selenium.promise.all
+var elementIsVisible = selenium.until.elementIsVisible
+
+var Driver = require('selenium-webdriver/firefox').Driver
+
+
+const PORT = 8080
+
+
+function writeReport(path, type, report)
+{
+  writeFile(path, report, function(error)
+  {
+    if(error) return console.error(error);
+
+    console.log(type + ' report saved at ' + path);
+  });
+}
+
+
+var file = new Server();
+
+var server = http.createServer(function(request, response)
+{
+  request.addListener('end', function()
+  {
+    file.serve(request, response);
+  }).resume();
+}).listen(PORT);
+
+
+var driver = new Driver()
+
+driver.get('http://localhost:'+PORT+'/test/index.html')
+
+var junit = driver.findElement({id: 'junit'})
+var lcov  = driver.findElement({id: 'lcov'})
+
+driver.wait(elementIsVisible(junit), 20000)
+.then(function()
+{
+  junit.getAttribute('value').then(writeReport.bind(undefined, './junitResult.xml', 'XML'))
+})
+driver.wait(elementIsVisible(lcov), 20000)
+.then(function()
+{
+  lcov.getAttribute('value').then(writeReport.bind(undefined, './lcovResult.lcov', 'lcov'))
+})
+
+driver.quit()
+.then(function()
+{
+  server.close()
+})
