@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
@@ -40,7 +41,7 @@ import org.kurento.test.latency.LatencyController;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>No assertion, just data gathering.</li>
+ * <li>Media should be received in the video tag of viewers</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -116,6 +117,11 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 							cs[i].writeCsv(getDefaultOutputFile("-" + name
 									+ "-latency.csv"));
 							cs[i].logLatencyErrorrs();
+
+							// Assertions
+							Assert.assertTrue(
+									"Not received media (timeout waiting playing event)",
+									viewers[i].waitForEvent("playing"));
 						} catch (Exception e) {
 							e.printStackTrace();
 						} finally {
