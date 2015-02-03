@@ -1,6 +1,7 @@
 var startSendRecv = kurentoUtils.WebRtcPeer.startSendRecv;
 var JsonRPC = RpcBuilder.packers.JsonRPC;
 
+var _pipeline;
 
 function onerror(error)
 {
@@ -10,7 +11,7 @@ function onerror(error)
 
 // Private functions
 
-function createPeer(ws_uri, callback)
+function createPeer(ws_uri, callback, pipeline)
 {
   var webRtcPeer = startSendRecv(videoInput, videoOutput, function(offer)
   {
@@ -20,29 +21,52 @@ function createPeer(ws_uri, callback)
     {
       if(error) return callback(error);
 
-      // Create pipeline
-      client.create('MediaPipeline', function(error, pipeline)
-      {
-        if(error) return callback(error);
-
-        // Create pipeline media elements
-        pipeline.create('WebRtcEndpoint', function(error, webRtc)
+      //Create pipeline
+      if (pipeline == undefined) {
+        client.create('MediaPipeline', function(error, pipeline)
         {
           if(error) return callback(error);
 
-          // Connect the pipeline to the WebRtcPeer client
-          webRtc.processOffer(offer, function(error, answer)
+          _pipeline = pipeline;
+          // Create pipeline media elements
+          pipeline.create('WebRtcEndpoint', function(error, webRtc)
           {
             if(error) return callback(error);
 
-            console.log('answer', answer);
+            // Connect the pipeline to the WebRtcPeer client
+            webRtc.processOffer(offer, function(error, answer)
+            {
+              if(error) return callback(error);
 
-            webRtcPeer.processSdpAnswer(answer);
+              console.log('answer', answer);
+
+              webRtcPeer.processSdpAnswer(answer);
+            });
+
+            callback(null, client, webRtc);
           });
-
-          callback(null, client, webRtc);
         });
-      });
+      } else {
+        client.getMediaobjectById(pipeline, function(error, aux)
+        {
+          if(error) return callback(error);
+          aux.create('WebRtcEndpoint', function(error, webRtc)
+          {
+            if(error) return callback(error);
+
+            // Connect the pipeline to the WebRtcPeer client
+            webRtc.processOffer(offer, function(error, answer)
+            {
+              if(error) return callback(error);
+
+              console.log('answer', answer);
+              webRtcPeer.processSdpAnswer(answer);
+            });
+
+            callback(null, client, webRtc);
+          });
+        });
+      }
     },
     onerror);
   });
@@ -92,6 +116,7 @@ function SoftphonePubnub(ws_uri, videoInput, videoOutput, options)
 
     var from   = params.from;
     var sinkId = params.endpoint;
+    var pipeline = params.pipeline;
 
     self.onIncomingCall(from, function()
     {
@@ -109,7 +134,7 @@ function SoftphonePubnub(ws_uri, videoInput, videoOutput, options)
 
         // Send our video to the caller
         connectEndpoints(client, src, sinkId);
-      });
+      }, pipeline);
     })
   };
 
@@ -180,6 +205,7 @@ function SoftphonePubnub(ws_uri, videoInput, videoOutput, options)
       var params =
       {
         dest: dest,
+        pipeline : _pipeline.id,
         endpoint: src.id
       };
 
