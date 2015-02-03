@@ -177,11 +177,13 @@ kms_rtcp_demux_chain (GstPad * chain, GstObject * parent, GstBuffer * buffer)
   KmsRtcpDemux *self = KMS_RTCP_DEMUX (parent);
 
   if (!buffer_is_rtcp (buffer)) {
+    GST_TRACE_OBJECT (self, "Push RTP buffer");
     gst_pad_push (self->priv->rtp_src, buffer);
     return GST_FLOW_OK;
   }
 
   if (refresh_rtcp_rr_ssrcs_map (self, buffer)) {
+    GST_TRACE_OBJECT (self, "Push RTCP buffer");
     gst_pad_push (self->priv->rtcp_src, buffer);
   } else {
     gst_buffer_unref (buffer);
