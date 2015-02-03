@@ -50,19 +50,16 @@ var WebRtcPeerRecvonly = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly;
 var WebRtcPeerSendonly = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly;
 var WebRtcPeerSendrecv = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv;
 
-var mediaConstraints =
+
+function getOscillatorMedia()
 {
-  audio: false,
-  video:
-  {
-    mandatory:
-    {
-      maxWidth: 640,
-      maxFrameRate: 15,
-      minFrameRate: 15
-    }
-  }
-};
+  var ac = new AudioContext();
+  var osc = ac.createOscillator();
+  var dest = ac.createMediaStreamDestination();
+  osc.connect(dest);
+
+  return dest.stream;
+}
 
 
 QUnit.module('WebRtcPeer');
@@ -95,26 +92,24 @@ QUnit.test('WebRtcPeerRecvonly', function(assert)
 
     peerConnection.setRemoteDescription(offer, function()
     {
-      getUserMedia(mediaConstraints, function(stream)
+      var stream = getOscillatorMedia()
+
+      peerConnection.addStream(stream)
+
+      peerConnection.createAnswer(function(answer)
       {
-        peerConnection.addStream(stream)
-
-        peerConnection.createAnswer(function(answer)
+        peerConnection.setLocalDescription(answer, function()
         {
-          peerConnection.setLocalDescription(answer, function()
+          webRtcPeer.processSdpAnswer(answer.sdp, function(error)
           {
-            webRtcPeer.processSdpAnswer(answer.sdp, function(error)
-            {
-              if(error) return onerror(error)
+            if(error) return onerror(error)
 
-              var stream = this.getRemoteStream()
-              assert.notEqual(stream, undefined, 'remote stream')
+            var stream = this.getRemoteStream()
+            assert.notEqual(stream, undefined, 'remote stream')
 
-              this.dispose()
-              done()
-            })
-          },
-          onerror);
+            this.dispose()
+            done()
+          })
         },
         onerror);
       },
@@ -213,28 +208,24 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
       var stream = peerConnection.getRemoteStreams()[0]
       assert.notEqual(stream, undefined, 'peer remote stream')
 
-//      peerConnection.addStream(stream)
+      var stream = getOscillatorMedia();
 
-      getUserMedia(mediaConstraints, function(stream)
+      peerConnection.addStream(stream)
+
+      peerConnection.createAnswer(function(answer)
       {
-        peerConnection.addStream(stream)
-
-        peerConnection.createAnswer(function(answer)
+        peerConnection.setLocalDescription(answer, function()
         {
-          peerConnection.setLocalDescription(answer, function()
+          webRtcPeer.processSdpAnswer(answer.sdp, function(error)
           {
-            webRtcPeer.processSdpAnswer(answer.sdp, function(error)
-            {
-              if(error) return onerror(error)
+            if(error) return onerror(error)
 
-              var stream = this.getRemoteStream()
-              assert.notEqual(stream, undefined, 'remote stream')
+            var stream = this.getRemoteStream()
+            assert.notEqual(stream, undefined, 'remote stream')
 
-              this.dispose()
-              done()
-            })
-          },
-          onerror);
+            this.dispose()
+            done()
+          })
         },
         onerror);
       },
