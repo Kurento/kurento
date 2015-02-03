@@ -23,6 +23,6 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
     "adapter.js": "*",
-    "kurento-utils": "develop"
+    "kurento-utils": "5.1.0"
   }
 }
