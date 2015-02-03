@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemFunctionalTests;
@@ -41,6 +42,7 @@ public class TreeCloudRegisterRealMediaServerTest {
 	private static BlockingQueue<String> registeredKmss = new ArrayBlockingQueue<>(
 			10);
 
+	@Ignore
 	@Test
 	public void registrarTest() throws IOException, InterruptedException {
 

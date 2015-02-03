@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.PropertiesManager;
@@ -92,6 +93,7 @@ public class TreeDistributionConnectSourceToSinksTest {
 		KurentoServicesTestHelper.teardownServices();
 	}
 
+	@Ignore
 	@Test
 	public void test() throws Exception {
 
