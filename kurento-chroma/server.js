@@ -65,7 +65,7 @@ var server = app.listen(port, function() {
 	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
-var WebSocketServer = wsm.Server, wss = new WebSocketServer({
+var WebSocketServer = ws.Server, wss = new WebSocketServer({
 	server : server,
 	path : '/chroma'
 });
