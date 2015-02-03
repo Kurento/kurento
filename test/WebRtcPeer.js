@@ -70,14 +70,15 @@ QUnit.test('WebRtcPeerRecvonly', function(assert)
 
   assert.expect(1);
 
-  var webRtcPeer = new WebRtcPeerRecvonly()
-
   function onerror(error)
   {
-    webRtcPeer.dispose()
+    webRtcPeer && webRtcPeer.dispose()
 
     _onerror(error)
+    done()
   }
+
+  var webRtcPeer = new WebRtcPeerRecvonly()
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -130,14 +131,15 @@ QUnit.test('WebRtcPeerSendonly', function(assert)
     audioStream: getOscillatorMedia()
   }
 
-  var webRtcPeer = new WebRtcPeerSendonly(options)
-
   function onerror(error)
   {
-    webRtcPeer.dispose()
+    webRtcPeer && webRtcPeer.dispose()
 
     _onerror(error)
+    done()
   }
+
+  var webRtcPeer = new WebRtcPeerSendonly(options, onerror)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -167,7 +169,6 @@ QUnit.test('WebRtcPeerSendonly', function(assert)
             if(error) return onerror(error)
 
             this.dispose()
-
             done()
           })
         },
@@ -190,14 +191,15 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
     audioStream: getOscillatorMedia()
   }
 
-  var webRtcPeer = new WebRtcPeerSendrecv(options)
-
   function onerror(error)
   {
-    webRtcPeer.dispose()
+    webRtcPeer && webRtcPeer.dispose()
 
     _onerror(error)
+    done()
   }
+
+  var webRtcPeer = new WebRtcPeerSendrecv(options, onerror)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -262,14 +264,15 @@ QUnit.test('videoEnabled', function(assert)
     mediaConstraints: {audio: false}
   }
 
-  var webRtcPeer = new WebRtcPeerSendonly(options)
-
   function onerror(error)
   {
-    webRtcPeer.dispose()
+    webRtcPeer && webRtcPeer.dispose()
 
     _onerror(error)
+    done()
   }
+
+  var webRtcPeer = new WebRtcPeerSendonly(options, onerror)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpoffer)

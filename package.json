@@ -24,7 +24,7 @@
     "WebRTC"
   ],
   "scripts": {
-    "coveralls": "test/runner && cat ./lcovResult.lcov | coveralls",
+    "coveralls": "scripts/coveralls",
     "install": "cd test && bower install",
     "test": "test/runner"
   },

@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+
+LCOV_FILE=lcovResult.lcov
+REPORTS_DIR=reports
+
+
+#
+# Remove old report
+#
+
+rm -rf $REPORTS_DIR
+
+
+#
+# Exec test and fetch coverage data
+#
+
+test/runner || exit $?
+
+
+#
+# Create and upload new coverage data
+#
+
+#cat $LCOV_FILE | coveralls
+
+mkdir -p  $REPORTS_DIR
+cp -R lib $REPORTS_DIR
+genhtml $LCOV_FILE --output-directory $REPORTS_DIR --show-details --legend

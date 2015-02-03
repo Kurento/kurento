@@ -19,7 +19,8 @@
  */
 function onerror(error)
 {
-  QUnit.pushFailure(error.message || error, error.stack);
+  if(error)
+    QUnit.pushFailure(error.message || error, error.stack);
 
   QUnit.start();
 };

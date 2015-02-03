@@ -12,3 +12,4 @@ node_modules/
 src/
 target/
 npm-debug.log
+reports/
