@@ -1,6 +1,6 @@
 {
   "name": "kurento-one2one-call",
-  "version": "5.0.4-dev",
+  "version": "5.1.0",
   "description": "Kurento Browser JavaScript Tutorial 3: One to one video call",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -24,7 +24,7 @@
     "ekko-lightbox": "~3.1.4",
     "pubnub": "~3.6.4",
     "draggabilly": "~1.1.1",
-    "adapter.js": "*",
+    "adapter.js": "kurento-alvar",
     "kurento-client": "5.1.0",
     "kurento-jsonrpc": "^5.0.0",
     "kurento-utils": "5.1.0"

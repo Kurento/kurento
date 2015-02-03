@@ -1,6 +1,6 @@
 {
   "name": "Recorder",
-  "version": "5.0.4-dev",
+  "version": "5.1.0",
   "description": "Kurento demo with Recorder",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -22,6 +22,6 @@
   "dependencies": {
     "kurento-utils": "5.1.0",
     "kurento-client": "5.1.0",
-    "adapter.js": "*"
+    "adapter.js": "kurento-alvar"
   }
 }

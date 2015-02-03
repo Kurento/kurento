@@ -1,6 +1,6 @@
 {
   "name": "kurento-crowddetector",
-  "version": "5.0.4-dev",
+  "version": "5.1.0",
   "description": "Kurento Browser JavaScript Tutorial: Crowd Detector",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -22,7 +22,7 @@
   "dependencies": {
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
-    "adapter.js": "*",
+    "adapter.js": "kurento-alvar",
     "kurento-client": "5.1.0",
     "kurento-utils": "5.1.0",
     "kurento-module-crowddetector": "1.0.1"
