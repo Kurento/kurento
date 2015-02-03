@@ -25,8 +25,8 @@
     "pubnub": "~3.6.4",
     "draggabilly": "~1.1.1",
     "adapter.js": "*",
-    "kurento-client": "^5.0.0",
+    "kurento-client": "5.1.0",
     "kurento-jsonrpc": "^5.0.0",
-    "kurento-utils": "^5.0.0"
+    "kurento-utils": "5.1.0"
   }
 }

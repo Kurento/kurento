@@ -117,11 +117,11 @@ window.addEventListener("load", function(event)
 
 					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
 						if (error) return onError(error);
-						
+
 						console.log("Got WebRtcEndpoint");
 						pipeline.create('ChromaFilter', {window: {topRightCornerX:5 , topRightCornerY:5 , width:30 , height:30 }}, function(error, filter) {
 							if (error) return onError(error);
-							
+
 							console.log("Got Filter");
 
 							webRtc.connect(filter, function(error) {
@@ -134,7 +134,7 @@ window.addEventListener("load", function(event)
 									console.log("filter --> WebRtcEndpoint");
 								});
 
-								filter.setBackground (bg_uri, function(error) {
+								filter.setBackground (args.bg_uri, function(error) {
 									if (error) return onError(error);
 
 									console.log("Set Image");

@@ -1,6 +1,6 @@
 {
   "name": "kurento-facesegmentator",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "description": "Kurento Browser JavaScript Demo: Get a Kiss!!",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -23,8 +23,8 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
     "adapter.js": "*",
-    "kurento-client": "develop",
-    "kurento-utils": "develop",
-    "kurento-module-facesegmentator":"develop"
+    "kurento-client": "5.1.0",
+    "kurento-utils": "5.1.0",
+    "kurento-module-facesegmentator":"1.0.0"
   }
 }
