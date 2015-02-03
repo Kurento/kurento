@@ -14,16 +14,18 @@
   </#if>
 </#assign>
 <#if remoteClass.extends??>
-  <#assign import_name>
-    <#list module.imports as import>
-      <#list import.module.remoteClasses as remoteClass>
-        <#if remoteClass.name == extends_name>
-          <#lt>${import.name}<#rt>
-          <#break>
-        </#if>
-      </#list>
+  <#assign import_name=''>
+  <#list module.imports as import>
+    <#list import.module.remoteClasses as remoteClass>
+      <#if remoteClass.name == extends_name>
+        <#assign import_name=import.name>
+        <#break>
+      </#if>
     </#list>
-  </#assign>
+    <#if import_name != ''>
+      <#break>
+    </#if>
+  </#list>
   <#if import_name == ''>
     <#list module.remoteClasses as remoteClass>
       <#if remoteClass.name == extends_name>
@@ -246,7 +248,7 @@ ${remoteClass.name}.constructorParams = {<#list (remoteClass.constructor.params?
  * @alias module:${remoteClass_namepath}.events
 <#if remoteClass.extends??>
  *
- * @extend module:${import_namespace}.${extends_name}.events
+ * @extends module:${import_namespace}.${extends_name}.events
 </#if>
  */
 <#assign remoteClassEvents_name=[]>
