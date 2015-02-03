@@ -1,6 +1,6 @@
 {
   "name": "Recorder",
-  "version": "5.1.0",
+  "version": "5.1.1-dev",
   "description": "Kurento demo with Recorder",
   "authors": [
     "Kurento <info@kurento.org>"

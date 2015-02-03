@@ -1,6 +1,6 @@
 {
   "name": "RecorderGenerator",
-  "version": "5.1.0",
+  "version": "5.1.1-dev",
   "description": "Kurento demo with Recorder and Generators",
   "authors": [
     "Kurento <info@kurento.org>"
