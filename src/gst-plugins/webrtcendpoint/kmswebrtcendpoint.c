@@ -175,20 +175,18 @@ kms_webrtc_endpoint_media_get_connection (KmsWebrtcEndpoint * self,
   return KMS_WEBRTC_BASE_CONNECTION (conn);
 }
 
-static gboolean
+static gint
 kms_webrtc_endpoint_media_get_stream_id (KmsWebrtcEndpoint * self,
-    const GstSDPMedia * media, gboolean bundle, guint * stream_id)
+    const GstSDPMedia * media, gboolean bundle)
 {
   KmsWebRtcBaseConnection *conn;
 
   conn = kms_webrtc_endpoint_media_get_connection (self, media, bundle);
   if (conn == NULL) {
-    return FALSE;
+    return -1;
   }
 
-  *stream_id = conn->stream_id;
-
-  return TRUE;
+  return conn->stream_id;
 }
 
 /* Connection management end */
@@ -353,8 +351,8 @@ sdp_media_set_ice_info (KmsWebrtcEndpoint * self,
   guint stream_id;
   gchar *ufrag, *pwd;
 
-  if (!kms_webrtc_endpoint_media_get_stream_id (self, media, bundle,
-          &stream_id)) {
+  stream_id = kms_webrtc_endpoint_media_get_stream_id (self, media, bundle);
+  if (stream_id == -1) {
     return FALSE;
   }
 
@@ -408,8 +406,8 @@ kms_webrtc_endpoint_sdp_media_add_default_info (KmsWebrtcEndpoint * self,
   gchar *str;
   guint attr_len, i;
 
-  if (!kms_webrtc_endpoint_media_get_stream_id (self, media, bundle,
-          &stream_id)) {
+  stream_id = kms_webrtc_endpoint_media_get_stream_id (self, media, bundle);
+  if (stream_id == -1) {
     return FALSE;
   }
 
@@ -734,8 +732,9 @@ kms_webrtc_endpoint_sdp_media_add_ice_candidate (KmsWebrtcEndpoint * self,
 {
   guint media_stream_id;
 
-  if (!kms_webrtc_endpoint_media_get_stream_id (self, media, bundle,
-          &media_stream_id)) {
+  media_stream_id =
+      kms_webrtc_endpoint_media_get_stream_id (self, media, bundle);
+  if (media_stream_id == -1) {
     return NULL;
   }
 
