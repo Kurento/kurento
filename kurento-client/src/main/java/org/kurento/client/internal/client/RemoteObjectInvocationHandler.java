@@ -17,6 +17,7 @@ import org.kurento.client.KurentoObject;
 import org.kurento.client.Transaction;
 import org.kurento.client.internal.ParamAnnotationUtils;
 import org.kurento.client.internal.server.EventSubscription;
+import org.kurento.client.internal.transport.serialization.ParamsFlattener;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,11 +230,11 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 		try {
 			
 			Constructor<?> constructor = eventClass.getConstructors()[0];
-			
-			Object[] params =
-					ParamAnnotationUtils.extractEventParams(
-							constructor.getParameterAnnotations(), data);
-			
+
+			Object[] params = ParamsFlattener.getInstance().unflattenParams(
+					constructor.getParameterAnnotations(),
+					constructor.getGenericParameterTypes(), data, manager);
+
 			params[0] = object;
 			
 			Event e = (Event) constructor.newInstance(params);
