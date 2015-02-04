@@ -396,10 +396,12 @@ public class ParamsFlattener {
 
 		List<Object> list = new ArrayList<>();
 		int counter = 0;
-		for (Object object : value) {
-			list.add(unflattenValue(paramName + "[" + counter + "]", type,
-					object, manager));
-			counter++;
+		if (value != null) {
+			for (Object object : value) {
+				list.add(unflattenValue(paramName + "[" + counter + "]", type,
+						object, manager));
+				counter++;
+			}
 		}
 		return list;
 	}

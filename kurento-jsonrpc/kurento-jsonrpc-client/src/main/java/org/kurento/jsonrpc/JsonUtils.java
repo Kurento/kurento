@@ -638,7 +638,8 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 				result.add(deserialize(element, context));
 			}
 			return result;
-
+		} else if (value instanceof JsonNull) {
+			return null;
 		} else {
 			throw new JsonRpcException("Unrecognized Json element: " + value);
 		}
