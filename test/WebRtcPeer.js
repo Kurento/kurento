@@ -255,6 +255,47 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
 });
 
 
+QUnit.test('audioEnabled', function(assert)
+{
+  var done = assert.async();
+
+  assert.expect(3);
+
+  var options =
+  {
+    audioStream: getOscillatorMedia(),
+    configuration: {iceServers: []}
+  }
+
+  function onerror(error)
+  {
+    webRtcPeer && webRtcPeer.dispose()
+
+    _onerror(error)
+    done()
+  }
+
+  var webRtcPeer = new WebRtcPeerSendonly(options)
+
+  webRtcPeer.on('error', onerror)
+  webRtcPeer.on('sdpoffer', function(sdpoffer)
+  {
+    var stream = this.getLocalStream()
+    var track = stream.getAudioTracks()[0]
+
+    assert.ok(track.enabled, 'enabled')
+
+    this.audioEnabled = false
+    assert.ok(!track.enabled, 'disabled')
+
+    this.audioEnabled = true
+    assert.ok(track.enabled, 'enabled again')
+
+    webRtcPeer.dispose()
+    done()
+  })
+});
+
 QUnit.test('videoEnabled', function(assert)
 {
   var done = assert.async();
