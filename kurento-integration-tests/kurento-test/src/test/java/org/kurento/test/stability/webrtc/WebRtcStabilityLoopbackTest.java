@@ -48,12 +48,12 @@ import org.kurento.test.latency.LatencyController;
  * @since 5.0.5
  */
 
-public class WebRtcStabilityPlaytimeTest extends StabilityTest {
+public class WebRtcStabilityLoopbackTest extends StabilityTest {
 
 	private static final int DEFAULT_PLAYTIME = 30; // minutes
 
 	@Test
-	public void testWebRtcStabilityPlaytimeChrome()
+	public void testWebRtcStabilityLoopbackChrome()
 			throws InterruptedException, IOException {
 		final int playTime = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.playtime",
@@ -89,14 +89,14 @@ public class WebRtcStabilityPlaytimeTest extends StabilityTest {
 			} catch (RuntimeException re) {
 				Assert.fail(re.getMessage());
 			}
+		} finally {
+			// Release Media Pipeline
+			mp.release();
 		}
 
 		// Draw latency results (PNG chart and CSV file)
 		cs.drawChart(getDefaultOutputFile(".png"), 500, 270);
 		cs.writeCsv(getDefaultOutputFile(".csv"));
 		cs.logLatencyErrorrs();
-
-		// Release Media Pipeline
-		mp.release();
 	}
 }
