@@ -70,6 +70,11 @@ QUnit.test('WebRtcPeerRecvonly', function(assert)
 
   assert.expect(1);
 
+  var options =
+  {
+    configuration: {iceServers: []}
+  }
+
   function onerror(error)
   {
     webRtcPeer && webRtcPeer.dispose()
@@ -78,7 +83,7 @@ QUnit.test('WebRtcPeerRecvonly', function(assert)
     done()
   }
 
-  var webRtcPeer = new WebRtcPeerRecvonly()
+  var webRtcPeer = new WebRtcPeerRecvonly(options)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -128,7 +133,8 @@ QUnit.test('WebRtcPeerSendonly', function(assert)
 
   var options =
   {
-    audioStream: getOscillatorMedia()
+    audioStream: getOscillatorMedia(),
+    configuration: {iceServers: []}
   }
 
   function onerror(error)
@@ -188,7 +194,8 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
 
   var options =
   {
-    audioStream: getOscillatorMedia()
+    audioStream: getOscillatorMedia(),
+    configuration: {iceServers: []}
   }
 
   function onerror(error)
@@ -260,6 +267,7 @@ QUnit.test('videoEnabled', function(assert)
 
   var options =
   {
+    configuration: {iceServers: []},
     localVideo: video,
     mediaConstraints: {audio: false}
   }
