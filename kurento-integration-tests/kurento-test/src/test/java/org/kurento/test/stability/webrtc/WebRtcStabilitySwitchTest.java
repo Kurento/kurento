@@ -40,7 +40,9 @@ import org.kurento.test.latency.LatencyController;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>No latency problems detected during test time</li>
+ * <li>Color change should be detected on local/remote video tag of browsers</li>
+ * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected
+ * </li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -59,7 +61,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 	private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
 	@Test
-	public void testWebRtcSwitchChrome() throws InterruptedException,
+	public void testWebRtcStabilitySwitchChrome() throws InterruptedException,
 			IOException {
 		final int numSwitch = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.switch",
@@ -85,8 +87,10 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 
 		try (BrowserClient browser1 = builder.build();
 				BrowserClient browser2 = builder.build()) {
+			browser1.subscribeEvents("playing");
 			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
+			browser2.subscribeEvents("playing");
 			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
 					WebRtcMode.SEND_RCV);
 

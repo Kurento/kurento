@@ -732,7 +732,13 @@ public class BrowserClient implements Closeable {
 		final long[] out = new long[1];
 		Thread t = new Thread() {
 			public void run() {
-				out[0] = (Long) js.executeScript("return latency;");
+				Object latency = js.executeScript("return getLatency();");
+				if (latency != null) {
+					out[0] = (Long) latency;
+				} else {
+					out[0] = Long.MIN_VALUE;
+				}
+
 				latch.countDown();
 			}
 		};
@@ -742,9 +748,6 @@ public class BrowserClient implements Closeable {
 			t.stop();
 			throw new LatencyException("Timeout getting latency ("
 					+ this.getTimeout() + "  seconds)");
-		}
-		if (out[0] < 0) {
-			throw new LatencyException("Error taking latency in the browser");
 		}
 		return out[0];
 	}
@@ -766,7 +769,10 @@ public class BrowserClient implements Closeable {
 			}
 			Thread.sleep(100);
 			try {
-				monitor.addCurrentLatency(this.getLatency());
+				long latency = this.getLatency();
+				if (latency != Long.MIN_VALUE) {
+					monitor.addCurrentLatency(latency);
+				}
 			} catch (LatencyException le) {
 				// log.error("$$$ " + le.getMessage());
 				monitor.incrementLatencyErrors();

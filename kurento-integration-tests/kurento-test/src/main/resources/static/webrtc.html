@@ -26,6 +26,7 @@
 	var colorInfo;
 	var initTime;
 	var latency = 0;
+	var newLatency = true;
 
 	try {
 		kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
@@ -57,9 +58,16 @@
 		watchColorChange('localcolor', 0);
 		watchColorChange('color', 1);
 
-		if (!colorChanged(colorInfo[1].rgba, colorInfo[0].rgba)) {
+		if (!colorChanged(colorInfo[1].rgba, colorInfo[0].rgba) && newLatency) {
 			latency = colorInfo[1].time - colorInfo[0].time;
+			newLatency = false;
 		}
+	}
+
+	function getLatency() {
+		var out = latency;
+		latency = null;
+		return out;
 	}
 
 	function watchColorChange(colorTagId, iColor) {
@@ -71,6 +79,7 @@
 			console.info("Detected color change in " + log + " stream, from "
 					+ colorInfo[iColor].rgba + " to " + colorNew);
 			colorInfo[iColor].rgba = colorNew;
+			newLatency = true;
 		}
 	}
 

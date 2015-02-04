@@ -80,6 +80,8 @@ public class LatencyController implements
 
 	private long latencyRate;
 
+	private int consecutiveFailMax;
+
 	public LatencyController(String name) {
 		this();
 		this.name = name;
@@ -97,6 +99,8 @@ public class LatencyController implements
 		local = true;
 
 		latencyRate = 100; // milliseconds
+
+		consecutiveFailMax = 3;
 
 		// Latency map (registry)
 		latencyMap = new TreeMap<Long, LatencyRegistry>();
@@ -137,6 +141,8 @@ public class LatencyController implements
 			IOException {
 		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
 		long endTimeMillis = System.currentTimeMillis() + playTime;
+		int consecutiveFailCounter = 0;
+		boolean first = true;
 		while (true) {
 			if (System.currentTimeMillis() > endTimeMillis) {
 				break;
@@ -147,9 +153,19 @@ public class LatencyController implements
 			LatencyRegistry latencyRegistry = new LatencyRegistry();
 			try {
 				latency = localBrowser.getLatency();
+				if (latency == Long.MIN_VALUE) {
+					continue;
+				}
+				if (first) {
+					// First latency measurement is discarded
+					first = false;
+					continue;
+				}
+				log.info(">>> Latency adquired: {} ms", latency);
 
 			} catch (LatencyException le) {
 				latencyRegistry.setLatencyException(le);
+
 				if (failIfLatencyProblem) {
 					throw le;
 				}
@@ -172,6 +188,16 @@ public class LatencyController implements
 				if (failIfLatencyProblem) {
 					throw latencyException;
 				}
+
+				consecutiveFailCounter++;
+				if (consecutiveFailCounter >= consecutiveFailMax) {
+					throw new RuntimeException(consecutiveFailMax
+							+ " consecutive latency errors detected. Latest: "
+							+ latencyException.getLocalizedMessage());
+				}
+			} else {
+				// Reset the consecutive fail counter
+				consecutiveFailCounter = 0;
 			}
 			latencyMap.put(latencyTime, latencyRegistry);
 		}
@@ -415,8 +441,8 @@ public class LatencyController implements
 				Integer.parseInt(rgbaArr[1]), Integer.parseInt(rgbaArr[2]));
 	}
 
-	public void setFailIfLatencyProblem(boolean failIfLatencyProblem) {
-		this.failIfLatencyProblem = failIfLatencyProblem;
+	public void failIfLatencyProblem() {
+		this.failIfLatencyProblem = true;
 	}
 
 	public String getName() {
@@ -426,7 +452,6 @@ public class LatencyController implements
 	public void activateLocalLatencyAssessmentIn(BrowserClient browser) {
 		local = true;
 		localBrowser = browser;
-		browser.activateLatencyControl();
 	}
 
 	public void activateRemoteLatencyAssessmentIn(VideoTag videoTaglocal,
@@ -456,6 +481,10 @@ public class LatencyController implements
 
 	public void setLatencyRate(long latencyRate) {
 		this.latencyRate = latencyRate;
+	}
+
+	public void setConsecutiveFailMax(int consecutiveFailMax) {
+		this.consecutiveFailMax = consecutiveFailMax;
 	}
 
 }
