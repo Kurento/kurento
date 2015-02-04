@@ -145,7 +145,7 @@ QUnit.test('WebRtcPeerSendonly', function(assert)
     done()
   }
 
-  var webRtcPeer = new WebRtcPeerSendonly(options, onerror)
+  var webRtcPeer = new WebRtcPeerSendonly(options)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -206,7 +206,7 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
     done()
   }
 
-  var webRtcPeer = new WebRtcPeerSendrecv(options, onerror)
+  var webRtcPeer = new WebRtcPeerSendrecv(options)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -280,7 +280,7 @@ QUnit.test('videoEnabled', function(assert)
     done()
   }
 
-  var webRtcPeer = new WebRtcPeerSendonly(options, onerror)
+  var webRtcPeer = new WebRtcPeerSendonly(options)
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpoffer)
@@ -310,9 +310,10 @@ QUnit.test('videoEnabled', function(assert)
           context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
           assert.notPixelEqual(canvas, x,y, 0,0,0,255, 'enabled again');
 
+          webRtcPeer.dispose()
           done()
         }, 0)
       }, 0)
-    }, 500)
+    }, 1000)
   })
 });
