@@ -15,6 +15,8 @@
 package org.kurento.test.base;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,7 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 	private static final int TIMEOUT_EOS = 60; // seconds
+	private static final String SDP_DELIMITER = "\r\n";
 
 	@Before
 	public void setupHttpServer() throws Exception {
@@ -148,5 +151,33 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 				"Error in play time in the recorded video (expected: "
 						+ playtime + " sec, real: " + currentTime + " sec) "
 						+ messageAppend, compare(playtime, currentTime));
+	}
+
+	protected String mangleSdp(String sdpIn, String[] removeCodes) {
+		String sdpMangled1 = "";
+		List<String> indexList = new ArrayList<>();
+		for (String line : sdpIn.split(SDP_DELIMITER)) {
+			boolean codecFound = false;
+			for (String codec : removeCodes) {
+				codecFound |= line.contains(codec);
+			}
+			if (codecFound) {
+				String index = line.substring(line.indexOf(":") + 1,
+						line.indexOf(" ") + 1);
+				indexList.add(index);
+			} else {
+				sdpMangled1 += line + SDP_DELIMITER;
+			}
+		}
+
+		String sdpMangled2 = "";
+		log.info("indexList " + indexList);
+		for (String line : sdpMangled1.split(SDP_DELIMITER)) {
+			for (String index : indexList) {
+				line = line.replaceAll(index, "");
+			}
+			sdpMangled2 += line + SDP_DELIMITER;
+		}
+		return sdpMangled2;
 	}
 }
