@@ -136,6 +136,24 @@ public class LatencyController implements
 		}
 	}
 
+	public void checkLatencyInBackground(final long testTime,
+			final TimeUnit testTimeUnit) throws InterruptedException,
+			IOException {
+		new Thread() {
+			public void run() {
+				try {
+					checkLatency(testTime, testTimeUnit);
+				} catch (InterruptedException e1) {
+					log.warn(
+							"checkLatencyInBackground InterruptedException: {}",
+							e1.getMessage());
+				} catch (IOException e2) {
+					throw new RuntimeException(e2);
+				}
+			}
+		}.start();
+	}
+
 	public void checkLocalLatency(final long testTime,
 			final TimeUnit testTimeUnit) throws InterruptedException,
 			IOException {
