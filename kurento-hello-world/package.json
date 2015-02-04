@@ -1,6 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "5.0.4-dev",
+  "version": "5.1.0",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
