@@ -1,6 +1,6 @@
 {
   "name": "kurento-magic-mirror",
-  "version": "5.1.0",
+  "version": "5.1.1-dev",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"

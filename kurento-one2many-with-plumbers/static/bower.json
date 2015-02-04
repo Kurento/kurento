@@ -1,6 +1,6 @@
 {
   "name": "kurento-one2many-call",
-  "version": "5.1.0",
+  "version": "5.1.1-dev",
   "description": "Kurento one to many using plumberendpoints",
   "authors": [
     "Kurento <info@kurento.org>"
