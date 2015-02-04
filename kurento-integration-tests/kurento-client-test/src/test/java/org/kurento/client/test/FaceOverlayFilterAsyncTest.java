@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -28,7 +27,7 @@ import org.kurento.client.test.util.AsyncResultManager;
 /**
  * {@link FaceOverlayFilter} test suite.
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @since 2.0.1
  *
  */
@@ -39,7 +38,7 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 	private FaceOverlayFilter overlayFilter;
 
 	@Before
-	public void setupMediaElements() throws InterruptedException {
+	public void setupMediaElements() {
 
 		player = new PlayerEndpoint.Builder(pipeline, URL_POINTER_DETECTOR)
 				.build();

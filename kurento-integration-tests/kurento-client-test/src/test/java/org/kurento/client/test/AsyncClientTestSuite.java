@@ -13,25 +13,16 @@
  */
 package org.kurento.client.test;
 
-import org.junit.Before;
-import org.kurento.client.WebRtcEndpoint;
-import org.kurento.client.test.util.SdpBaseTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-/**
- * {@link WebRtcEndpoint} test suite.
- *
- *
- *
- * @author Ivan Gracia (igracia@kurento.org)
- * @version 1.0.0
- *
- */
-public class WebRtcEndpointTest extends SdpBaseTest<WebRtcEndpoint> {
-
-	@Before
-	public void setupMediaElements() {
-		sdp = new WebRtcEndpoint.Builder(pipeline).build();
-		sdp2 = new WebRtcEndpoint.Builder(pipeline).build();
-	}
+@RunWith(Suite.class)
+@SuiteClasses({ FaceOverlayFilterAsyncTest.class,
+		GStreamerFilterAsyncTest.class, HttpGetEndpointAsyncTest.class,
+		PlayerEndpointAsyncTest.class, RecorderEndpointAsyncTest.class,
+		RtpEndpointAsync2Test.class, RtpEndpointAsyncTest.class,
+		WebRtcEndpointAsyncTest.class })
+public class AsyncClientTestSuite {
 
 }

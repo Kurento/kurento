@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -40,7 +39,7 @@ import org.kurento.client.test.util.SdpBaseTest;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @version 1.0.0
  *
  */
@@ -51,7 +50,6 @@ public class RtpEndpointTest extends SdpBaseTest<RtpEndpoint> {
 		sdp = new RtpEndpoint.Builder(pipeline).build();
 		sdp2 = new RtpEndpoint.Builder(pipeline).build();
 
-		 
 	}
 
 }

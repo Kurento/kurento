@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -45,7 +44,7 @@ import org.kurento.client.test.util.AsyncResultManager;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @version 1.0.0
  *
  */
@@ -54,7 +53,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	private PlayerEndpoint player;
 
 	@Before
-	public void setupMediaElements() throws InterruptedException {
+	public void setupMediaElements() {
 
 		AsyncResultManager<PlayerEndpoint> async = new AsyncResultManager<>(
 				"PlayerEndpoint creation");
@@ -72,7 +71,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	}
 
 	@Test
-	public void testGetUri() throws InterruptedException {
+	public void testGetUri() {
 
 		AsyncResultManager<String> async = new AsyncResultManager<>(
 				"player.getUri() invocation");
@@ -109,7 +108,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	}
 
 	@Test
-	public void testEventEndOfStream() throws InterruptedException {
+	public void testEventEndOfStream() {
 
 		AsyncResultManager<ListenerSubscription> asyncListener = new AsyncResultManager<>(
 				"EndOfStream Listener registration");

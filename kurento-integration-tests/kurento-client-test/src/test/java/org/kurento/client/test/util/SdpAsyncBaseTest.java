@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test.util;
 
@@ -21,7 +20,7 @@ import org.kurento.client.SdpEndpoint;
 import org.kurento.client.test.MediaPipelineAsyncBaseTest;
 
 /**
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @param <T>
  *
  */
@@ -39,14 +38,14 @@ public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
 
 	// TODO connect a local sdp or fails
 	@Test
-	public void testGetLocalSdpMethod() throws InterruptedException {
+	public void testGetLocalSdpMethod() {
 
-		AsyncResultManager<String> async = new AsyncResultManager<String>(
+		AsyncResultManager<String> async = new AsyncResultManager<>(
 				"sdp.generateOffer() invocation");
 		sdp.generateOffer(async.getContinuation());
 		async.waitForResult();
 
-		AsyncResultManager<String> async2 = new AsyncResultManager<String>(
+		AsyncResultManager<String> async2 = new AsyncResultManager<>(
 				"sdp.getLocalSessionDescriptor() invocation");
 		sdp.getLocalSessionDescriptor(async2.getContinuation());
 		async2.waitForResult();
@@ -54,7 +53,7 @@ public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
 
 	// TODO connect a remote sdp or fails
 	@Test
-	public void testGetRemoteSdpMethod() throws InterruptedException {
+	public void testGetRemoteSdpMethod() {
 
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
 				+ "s=-\r\n" + "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
@@ -64,7 +63,7 @@ public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 
-		AsyncResultManager<String> async = new AsyncResultManager<String>(
+		AsyncResultManager<String> async = new AsyncResultManager<>(
 				"sdp.processOffer() invocation");
 
 		sdp.processOffer(offer, async.getContinuation());

@@ -10,10 +10,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
-
 
 public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 

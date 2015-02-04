@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -55,7 +54,7 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @version 1.0.0
  *
  */
@@ -83,8 +82,8 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 	public void testEventMediaSessionStarted() throws InterruptedException,
 			ClientProtocolException, IOException {
 
-		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_SMALL)
-				.build();
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_SMALL).build();
 
 		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(pipeline).build();
 		player.connect(httpEP);
@@ -125,8 +124,8 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 	public void testEventMediaSessionTerminated() throws InterruptedException,
 			ClientProtocolException, IOException {
 
-		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_SMALL)
-				.build();
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_SMALL).build();
 
 		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(pipeline)
 				.terminateOnEOS().build();

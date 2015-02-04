@@ -14,7 +14,7 @@ package org.kurento.client;
  * @param <T>
  *            A class that extends from {@link Event}
  * 
- * @author Luis López (llopez@gsyc.es), Ivan Gracia (igracia@gsyc.es)
+ * @author Luis López (llopez@gsyc.es), Ivan Gracia (igracia@kurento.org)
  * 
  **/
 public interface EventListener<T extends Event> {

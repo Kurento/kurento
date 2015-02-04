@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -23,6 +22,7 @@ import org.kurento.client.EventListener;
 import org.kurento.client.GStreamerFilter;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.test.util.AsyncResultManager;
+import org.kurento.module.platedetector.PlateDetectorFilter;
 
 /**
  * {@link PlateDetectorFilter} test suite.
@@ -33,7 +33,7 @@ import org.kurento.client.test.util.AsyncResultManager;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @version 2.0.1
  *
  */
@@ -56,7 +56,7 @@ public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 	@Test
 	public void testInstantiation() throws InterruptedException {
 
-		AsyncResultManager<GStreamerFilter> async = new AsyncResultManager<GStreamerFilter>(
+		AsyncResultManager<GStreamerFilter> async = new AsyncResultManager<>(
 				"GStreamerFilter creation");
 
 		new GStreamerFilter.Builder(pipeline,

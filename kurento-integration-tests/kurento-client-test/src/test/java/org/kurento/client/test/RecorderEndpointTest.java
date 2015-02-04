@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -35,7 +34,7 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  * <li>{@link RecorderEndpoint#stop()}
  * </ul>
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @version 1.0.0
  *
  */
@@ -47,7 +46,6 @@ public class RecorderEndpointTest extends MediaPipelineBaseTest {
 	public void setupMediaElements() {
 		recorder = new RecorderEndpoint.Builder(pipeline, URL_SMALL).build();
 
-		 
 	}
 
 	@After

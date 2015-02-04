@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -47,14 +46,14 @@ import org.kurento.client.test.util.SdpAsyncBaseTest;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @version 1.0.0
  *
  */
 public class RtpEndpointAsyncTest extends SdpAsyncBaseTest<RtpEndpoint> {
 
 	@Before
-	public void setupMediaElements() throws InterruptedException {
+	public void setupMediaElements() {
 
 		AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>(
 				"RtpEndpoint creation");

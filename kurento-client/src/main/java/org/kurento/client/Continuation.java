@@ -13,7 +13,7 @@ package org.kurento.client;
  *            outcome.
  * 
  * @author Luis López (llopez@gsyc.es)
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@kurento.org)
  * @since 2.0.0
  */
 public interface Continuation<F> {

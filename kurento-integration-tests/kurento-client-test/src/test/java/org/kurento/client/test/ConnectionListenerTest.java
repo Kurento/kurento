@@ -10,7 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
  */
 package org.kurento.client.test;
 
@@ -104,7 +103,7 @@ public class ConnectionListenerTest {
 
 		KurentoClient kurentoClient = KurentoClient.create(kmsUrl);
 
-		MediaPipeline pipeline1 = kurentoClient.createMediaPipeline();
+		kurentoClient.createMediaPipeline();
 
 		kms.destroy();
 
@@ -112,7 +111,7 @@ public class ConnectionListenerTest {
 
 		kms = KurentoServicesTestHelper.startKurentoMediaServer();
 
-		MediaPipeline pipeline2 = kurentoClient.createMediaPipeline();
+		kurentoClient.createMediaPipeline();
 
 		kms.destroy();
 	}
