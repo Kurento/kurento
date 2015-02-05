@@ -193,6 +193,7 @@ public class ProtocolManager {
 				session.setTransportId(transportId);
 				sessionsManager.updateTransportId(session, oldTransportId);
 
+				//FIXME: Possible race condition if session is disposed when reconnect method has arrived
 				cancelCloseTimer(session);
 
 				responseSender.sendResponse(new Response<>(sessionId, request
