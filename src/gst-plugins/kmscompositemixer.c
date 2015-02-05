@@ -107,6 +107,7 @@ typedef struct _KmsCompositeMixerData
   gint id;
   KmsCompositeMixer *mixer;
   GstElement *capsfilter;
+  GstElement *input_capsfilter;
   GstElement *videoconvert;
   GstElement *videorate;
   GstElement *queue;
@@ -222,22 +223,25 @@ remove_elements_from_pipeline (KmsCompositeMixerData * port_data)
 
   g_object_unref (port_data->videoconvert_sink_pad);
 
-  gst_bin_remove_many (GST_BIN (self), g_object_ref (port_data->videoconvert),
+  gst_bin_remove_many (GST_BIN (self),
+      g_object_ref (port_data->input_capsfilter),
+      g_object_ref (port_data->videoconvert),
       g_object_ref (port_data->videoscale),
-      g_object_ref (port_data->capsfilter),
-      g_object_ref (port_data->videorate),
+      g_object_ref (port_data->capsfilter), g_object_ref (port_data->videorate),
       g_object_ref (port_data->queue), NULL);
 
   kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
 
   KMS_COMPOSITE_MIXER_UNLOCK (self);
 
+  gst_element_set_state (port_data->input_capsfilter, GST_STATE_NULL);
   gst_element_set_state (port_data->videoconvert, GST_STATE_NULL);
   gst_element_set_state (port_data->videoscale, GST_STATE_NULL);
   gst_element_set_state (port_data->videorate, GST_STATE_NULL);
   gst_element_set_state (port_data->capsfilter, GST_STATE_NULL);
   gst_element_set_state (port_data->queue, GST_STATE_NULL);
 
+  g_object_unref (port_data->input_capsfilter);
   g_object_unref (port_data->videoconvert);
   g_object_unref (port_data->videoscale);
   g_object_unref (port_data->videorate);
@@ -245,6 +249,7 @@ remove_elements_from_pipeline (KmsCompositeMixerData * port_data)
   g_object_unref (port_data->queue);
 
   port_data->videoconvert_sink_pad = NULL;
+  port_data->input_capsfilter = NULL;
   port_data->videoconvert = NULL;
   port_data->videoscale = NULL;
   port_data->capsfilter = NULL;
@@ -354,6 +359,7 @@ kms_composite_mixer_port_data_destroy (gpointer data)
             (GDestroyNotify) kms_ref_struct_unref);
       }
     }
+    gst_element_unlink (port_data->input_capsfilter, port_data->videoconvert);
     gst_element_unlink (port_data->videoconvert, port_data->videorate);
     g_object_unref (pad);
   } else {
@@ -366,6 +372,13 @@ kms_composite_mixer_port_data_destroy (gpointer data)
           port_data->link_probe_id);
     }
     KMS_COMPOSITE_MIXER_UNLOCK (self);
+
+    gst_element_unlink (port_data->input_capsfilter, port_data->videoconvert);
+
+    gst_bin_remove (GST_BIN (self), g_object_ref (port_data->input_capsfilter));
+    gst_element_set_state (port_data->input_capsfilter, GST_STATE_NULL);
+    g_object_unref (port_data->input_capsfilter);
+    port_data->input_capsfilter = NULL;
 
     gst_bin_remove (GST_BIN (self), g_object_ref (port_data->videoconvert));
     gst_element_set_state (port_data->videoconvert, GST_STATE_NULL);
@@ -526,6 +539,7 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
 {
   KmsCompositeMixerData *data;
   gchar *padname;
+  GstCaps *filtercaps;
 
   data = kms_create_composite_mixer_data ();
   data->mixer = mixer;
@@ -535,14 +549,27 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
   data->eos_managed = FALSE;
 
   data->videoconvert = gst_element_factory_make ("videoconvert", NULL);
+  data->input_capsfilter = gst_element_factory_make ("capsfilter", NULL);
 
-  gst_bin_add_many (GST_BIN (mixer), data->videoconvert, NULL);
+  filtercaps =
+      gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
+      "width", G_TYPE_INT, mixer->priv->output_width,
+      "height", G_TYPE_INT, mixer->priv->output_height,
+      "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
+  g_object_set (G_OBJECT (data->input_capsfilter), "caps", filtercaps, NULL);
+  gst_caps_unref (filtercaps);
+
+  gst_bin_add_many (GST_BIN (mixer), data->input_capsfilter, data->videoconvert,
+      NULL);
 
   gst_element_sync_state_with_parent (data->videoconvert);
+  gst_element_sync_state_with_parent (data->input_capsfilter);
 
   /*link basemixer -> video_agnostic */
   kms_base_hub_link_video_sink (KMS_BASE_HUB (mixer), data->id,
-      data->videoconvert, "sink", FALSE);
+      data->input_capsfilter, "sink", FALSE);
+
+  gst_element_link (data->input_capsfilter, data->videoconvert);
 
   padname = g_strdup_printf (AUDIO_SINK_PAD, id);
   kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
