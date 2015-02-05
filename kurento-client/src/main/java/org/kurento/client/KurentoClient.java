@@ -46,13 +46,19 @@ public class KurentoClient {
 	}
 
 	public static KurentoClient create(String websocketUrl,
-			KurentoConnectionListener listener) throws IOException {
+			KurentoConnectionListener listener) {
 		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl,
 				JsonRpcConnectionListenerKurento.create(listener)));
+
 	}
 
 	KurentoClient(JsonRpcClient client) {
 		this.manager = new RomManager(new RomClientJsonRpcClient(client));
+		try {
+			client.connect();
+		} catch (IOException e){
+			throw new KurentoException("Exception connecting to KMS",e);
+		}
 	}
 
 	/**
