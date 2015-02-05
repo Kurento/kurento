@@ -1,30 +1,60 @@
-#!/usr/bin/env sh
+#!/usr/bin/env node
+
+var child_process = require('child_process')
+
+var fs = require('fs-extra')
 
 
-LCOV_FILE=lcovResult.lcov
-REPORTS_DIR=reports
+const pkg = require('../package.json')
+
+const REPORTS_DIR='reports'
+const LCOV_FILE=REPORTS_DIR+'/'+pkg.name+'.lcov'
 
 
-#
-# Remove old report
-#
+function onexit(code, signal)
+{
+  if(code)   console.error('code:',code)
+  if(signal) console.error('signal:',signal)
+}
 
-rm -rf $REPORTS_DIR
+function spawn()
+{
+  child_process.spawn.apply(child_process, arguments)
+  .on('exit', onexit)
+  .stderr.pipe(process.stderr)
+}
 
 
-#
-# Exec test and fetch coverage data
-#
+// Remove old report
+fs.remove(REPORTS_DIR, function(error)
+{
+  if(error) console.trace(error)
 
-test/runner || exit $?
+  // Exec test and fetch coverage data
+  child_process.execFile(pkg.scripts.test, function(error)
+  {
+    if(error) return console.trace(error)
 
+    // // Create and upload new coverage data
+    // fs.createReadStream(LCOV_FILE).on('open', function(fd)
+    // {
+    //   spawn('coveralls', {stdio: [fd]})
+    // })
 
-#
-# Create and upload new coverage data
-#
+    // Create HTML coverate report
+    fs.copy('lib', REPORTS_DIR+'/lib', function(err)
+    {
+      if(err) return console.trace(err)
 
-#cat $LCOV_FILE | coveralls
+      var args =
+      [
+        LCOV_FILE,
+        '--output-directory', REPORTS_DIR,
+        '--show-details',
+        '--legend'
+      ]
 
-mkdir -p  $REPORTS_DIR
-cp -R lib $REPORTS_DIR
-genhtml $LCOV_FILE --output-directory $REPORTS_DIR --show-details --legend
+      spawn('genhtml', args)
+    })
+  })
+})

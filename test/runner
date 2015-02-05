@@ -1,26 +1,26 @@
 #!/usr/bin/env node
 
-var http = require('http')
+var http       = require('http')
+var outputFile = require('fs-extra').outputFile
 
-var writeFile = require('fs').writeFile
+var elementIsVisible = require('selenium-webdriver').until.elementIsVisible
+var Driver           = require('selenium-webdriver/firefox').Driver
+var Server           = require('node-static').Server
 
-var selenium = require('selenium-webdriver')
-var Server   = require('node-static').Server
 
-var all              = selenium.promise.all
-var elementIsVisible = selenium.until.elementIsVisible
-
-var Driver = require('selenium-webdriver/firefox').Driver
-
+const package_name = require('../package.json').name
 
 const PORT = 8080
+const REPORTS_DIR='reports'
 
 
-function writeReport(path, type, report)
+function writeReport(type, data)
 {
-  writeFile(path, report, function(error)
+  var path = REPORTS_DIR+'/'+package_name+'.'+type
+
+  outputFile(path, data, function(error)
   {
-    if(error) return console.error(error);
+    if(error) return console.trace(error);
 
     console.log(type + ' report saved at ' + path);
   });
@@ -48,12 +48,12 @@ var lcov  = driver.findElement({id: 'lcov'})
 driver.wait(elementIsVisible(junit), 20000)
 .then(function()
 {
-  junit.getAttribute('value').then(writeReport.bind(undefined, './junitResult.xml', 'XML'))
+  junit.getAttribute('value').then(writeReport.bind(undefined, 'xml'))
 })
 driver.wait(elementIsVisible(lcov), 20000)
 .then(function()
 {
-  lcov.getAttribute('value').then(writeReport.bind(undefined, './lcovResult.lcov', 'lcov'))
+  lcov.getAttribute('value').then(writeReport.bind(undefined, 'lcov'))
 })
 
 driver.quit()
