@@ -26,7 +26,7 @@
   "scripts": {
     "coveralls": "scripts/coveralls",
     "install": "cd test && bower install",
-    "test": "test/runner"
+    "test": "scripts/test"
   },
   "devDependencies": {
     "bower": "~1.3.12",
