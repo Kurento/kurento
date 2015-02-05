@@ -153,6 +153,16 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
+	public static KurentoMediaServerManager startKurentoMediaServer(
+			String wsUri, int httpPort) throws IOException {
+
+		kms = KurentoMediaServerManager.createWithWsTransport(wsUri,
+				httpPort);
+		kms.start();
+
+		return kms;
+	}
+
 	public static KurentoMediaServerManager startKurentoMediaServer()
 			throws IOException {
 

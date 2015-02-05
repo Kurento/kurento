@@ -23,9 +23,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +84,8 @@ public class KurentoMediaServerManager {
 	public static Logger log = LoggerFactory
 			.getLogger(KurentoMediaServerManager.class);
 
-	private static String workspace;
+	private static String lastWorkspace;
+	private String workspace;
 
 	private int httpPort;
 	private String testClassName;
@@ -126,7 +132,6 @@ public class KurentoMediaServerManager {
 
 	public void start() throws IOException {
 
-		String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
 		String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
 		String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
 
@@ -159,6 +164,7 @@ public class KurentoMediaServerManager {
 
 		try {
 			workspace = Files.createTempDirectory("kurento-test").toString();
+			lastWorkspace = workspace;
 		} catch (IOException e) {
 			workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
 					KURENTO_WORKSPACE_DEFAULT);
@@ -183,6 +189,10 @@ public class KurentoMediaServerManager {
 			log.info("Starting KMS with Ws uri: '{}'"
 					+ " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'",
 					wsUri, serverCommand, gstPlugins, workspace);
+
+			if(!isFreePort(wsUri)){
+				throw new RuntimeException("KMS cannot be started in URI: "+wsUri+". Port is not free");
+			}
 		}
 
 		if (isKmsRemote) {
@@ -233,6 +243,28 @@ public class KurentoMediaServerManager {
 		}
 
 		waitForKurentoMediaServer(wsUri);
+	}
+
+	private boolean isFreePort(String wsUri) {
+
+		try {
+			URI wsUrl = new URI(wsUri);
+
+			String result = Shell.runAndWait("/bin/bash","-c", "nc -z " + wsUrl.getHost() + " " + wsUrl.getPort()
+					+ "; echo $?");
+
+			if (result.trim().equals("0")) {
+				log.warn("Port "
+						+ wsUrl.getPort()
+						+ " is used. Maybe another KMS instance is running in this port");
+				return false;
+			}
+
+		} catch (URISyntaxException e) {
+			log.warn("WebSocket URI {} is malformed: " + e.getMessage(), wsUri);
+		}
+
+		return true;
 	}
 
 	private void waitForKurentoMediaServer(String wsUri) {
@@ -473,7 +505,7 @@ public class KurentoMediaServerManager {
 	}
 
 	public static String getWorkspace() {
-		return workspace;
+		return lastWorkspace;
 	}
 
 	public String getLocalhostWsUrl() {
