@@ -2,4 +2,4 @@
 host=repository.kurento.com
 port=12345
 project=kms-cmake-utils.git
-defaultbranch=develop
+defaultbranch=master
