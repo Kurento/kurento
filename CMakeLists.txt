@@ -5,7 +5,7 @@ project(kms-cmake-utils)
 list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake")
 
 set (CMAKE_MODULES_INSTALL_DIR
-  share/cmake-2.8/Modules
+  share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules
   CACHE STRING
   "Destination (relative to CMAKE_INSTALL_PREFIX) for cmake modules files"
 )
@@ -28,7 +28,7 @@ set (CMAKE_DIST_FILES
 )
 
 foreach (DIST_FILE ${CMAKE_DIST_FILES})
-  install(FILES CMake/${DIST_FILE} DESTINATION share/cmake-2.8/Modules)
+  install(FILES CMake/${DIST_FILE} DESTINATION ${CMAKE_MODULES_INSTALL_DIR})
 endforeach()
 
 install(
