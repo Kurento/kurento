@@ -73,7 +73,7 @@ public class RecorderPlayerTest extends FunctionalTest {
 		doTest(Browser.CHROME);
 	}
 
-	// @Test
+	@Test
 	public void testRecorderPlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}

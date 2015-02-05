@@ -27,7 +27,12 @@
 	var initTime;
 	var latency = 0;
 
-	kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
+	try {
+		kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
+	}
+	catch (e) {
+		console.warn(e);
+	}
 
 	window.onload = function() {
 		console = new Console("console", console);

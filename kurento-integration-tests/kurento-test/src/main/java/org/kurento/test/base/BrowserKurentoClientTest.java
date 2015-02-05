@@ -102,7 +102,7 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 			throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(browserType).client(Client.WEBRTC).local().build()) {
-			browser.subscribeEvents("playing", "ended");
+			browser.subscribeEvents("playing");
 			browser.playUrlInVideoTag(recordingFile, VideoTagType.REMOTE);
 
 			// Assertions
@@ -140,9 +140,7 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 		} else {
-			Assert.assertTrue(
-					"Not received end of the recording (timeout waiting ended event)",
-					browser.waitForEvent("ended"));
+			Thread.sleep(playtime * 1000);
 		}
 
 		double currentTime = browser.getCurrentTime();
