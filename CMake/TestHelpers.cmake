@@ -62,13 +62,15 @@ function(add_test_program test_name sources)
     add_custom_target (${test_name}.valgrind
       DEPENDS ${test_name})
 
+    set (VALGRIND_NUM_CALLERS 20 CACHE STRING "Number of callers for valgrind")
+
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
 "
 execute_process(COMMAND valgrind -q
   ${SUPPS}
   --tool=memcheck --leak-check=full --trace-children=yes
   --leak-resolution=high --show-possibly-lost=yes
-  --num-callers=20 --leak-check-heuristics=all
+  --num-callers=${VALGRIND_NUM_CALLERS} --leak-check-heuristics=all
   ${CMAKE_CURRENT_BINARY_DIR}/${test_name} \${ARGS}
   RESULT_VARIABLE res
   OUTPUT_VARIABLE out
