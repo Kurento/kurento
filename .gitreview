@@ -2,4 +2,4 @@
 host=code.kurento.org
 port=12345
 project=kurento-module-creator
-defaultbranch=master
+defaultbranch=release-3.0
