@@ -1,3 +1,9 @@
+kurento-module-creator-4.0 (4.0.0~0) testing; urgency=medium
+
+  * Update to version 4.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 12:27:34 +0100
+
 kurento-module-creator (3.0.9) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
