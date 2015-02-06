@@ -1,3 +1,13 @@
+kms-cmake-utils (1.1.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 1.1.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 09:53:59 +0100
+
 kms-cmake-utils (1.1.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
