@@ -6,7 +6,7 @@ find_package(KurentoHelpers REQUIRED)
 
 include (KurentoGitHelpers)
 
-get_git_version (PROJECT_VERSION 0.2.1-dev)
+get_git_version (PROJECT_VERSION 0.2.1)
 install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
 find_package(PkgConfig)

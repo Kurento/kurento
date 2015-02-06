@@ -1,3 +1,14 @@
+kms-jsonrpc (0.2.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare .gitreview to work with new gerrit
+  * Prepare release 0.2.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 10:40:59 +0100
+
 kms-jsonrpc (0.2.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
