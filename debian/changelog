@@ -1,3 +1,14 @@
+kms-jsonrpc (0.2.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix cmake installation directory
+  * Prepare release 0.2.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 11:37:42 +0100
+
 kms-jsonrpc (0.2.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
