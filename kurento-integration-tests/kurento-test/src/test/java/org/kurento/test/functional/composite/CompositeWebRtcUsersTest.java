@@ -151,16 +151,16 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 
 			Assert.assertTrue("Upper left part of the video must be red",
 					browserComposite.similarColorAt(Color.RED, 0, 0));
-			Assert.assertTrue("Upper right part of the video must be green",
+			Assert.assertTrue("Upper right part of the video must be blue",
 					browserComposite.similarColorAt(Color.BLUE, 450, 0));
-			Assert.assertTrue("Lower left part of the video must be blue",
+			Assert.assertTrue("Lower left part of the video must be green",
 					browserComposite.similarColorAt(Color.GREEN, 0, 450));
 			Assert.assertTrue("Lower right part of the video must be white",
 					browserComposite.similarColorAt(Color.WHITE, 450, 450));
+		} finally {
+			// Release Media Pipeline
+			mp.release();
 		}
-
-		// Release Media Pipeline
-		mp.release();
 	}
 
 }
