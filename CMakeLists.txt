@@ -41,7 +41,7 @@ install(FILES
   )
 
 set (CMAKE_MODULES_INSTALL_DIR
-  ${CMAKE_INSTALL_DATAROOTDIR}/cmake-2.8/Modules
+  ${CMAKE_INSTALL_DATAROOTDIR}/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules
   CACHE STRING
   "Destination (relative to CMAKE_INSTALL_PREFIX) for cmake modules files"
 )
