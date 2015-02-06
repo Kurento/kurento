@@ -32,9 +32,10 @@ module.exports = function (grunt) {
 
     // Plugins configuration
     clean: {
-      'code': DIST_DIR,
+      generated_code: DIST_DIR,
+      coverage: 'lib-cov',
 
-      'doc': '<%= jsdoc.all.dest %>'
+      generated_doc: '<%= jsdoc.all.dest %>'
     },
 
     // Generate documentation
@@ -52,10 +53,25 @@ module.exports = function (grunt) {
       }
     },
 
+    // Generate instrumented version for coverage analisis
+    jscoverage: {
+      all: {
+        expand: true,
+        cwd: 'lib/',
+        src: ['**/*.js'],
+        dest: 'lib-cov/'
+      }
+    },
+
     // Generate browser versions and mapping debug file
     browserify: {
       options: {
         alias: ['<%= pkg.main %>:<%= pkg.name %>']
+      },
+
+      coverage: {
+        src: 'lib-cov/browser.js',
+        dest: DIST_DIR + '/<%= pkg.name %>.cov.js'
       },
 
       'standard': {
@@ -168,6 +184,7 @@ module.exports = function (grunt) {
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks("grunt-jscoverage");
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
@@ -176,7 +193,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify',
+  grunt.registerTask('default', ['clean', 'jsdoc', 'jscoverage', 'browserify',
     'jsbeautifier:git-pre-commit'
   ]);
   grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
