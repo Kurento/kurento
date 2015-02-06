@@ -9,6 +9,7 @@
 
     <script src="../node_modules/qunit-assert-canvas/qunit-assert-canvas.js"></script>
     <script src="../node_modules/qunit-reporter-junit/qunit-reporter-junit.js"></script>
+    <script src="../node_modules/qunit-reporter-lcov/qunit-reporter-lcov.js"></script>
 
     <script src="../node_modules/wock/dist/wock.js"></script>
 
@@ -17,7 +18,8 @@
   <body>
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
-    <textarea id="report" readonly style="width: 100%;"></textarea>
+    <textarea id="junit" readonly style="width: 100%;visibility:hidden"></textarea>
+    <textarea id="lcov"  readonly style="width: 100%;visibility:hidden"></textarea>
 
     <script src="_common.js"></script>
     <script src="_proxy.js"></script>

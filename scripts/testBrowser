@@ -1,0 +1,64 @@
+#!/usr/bin/env node
+
+var http       = require('http')
+var outputFile = require('fs-extra').outputFile
+
+var elementIsVisible = require('selenium-webdriver').until.elementIsVisible
+var Driver           = require('selenium-webdriver/firefox').Driver
+var Server           = require('node-static').Server
+
+
+const package_name = require('../package.json').name
+
+const PORT = 8080
+const REPORTS_DIR='reports'
+
+
+function writeReport(type, data)
+{
+  var path = REPORTS_DIR+'/'+package_name+'.'+type
+
+  if(data)
+    outputFile(path, data, function(error)
+    {
+      if(error) return console.trace(error);
+
+      console.log(type + ' report saved at ' + path);
+    });
+}
+
+
+var file = new Server();
+
+var server = http.createServer(function(request, response)
+{
+  request.addListener('end', function()
+  {
+    file.serve(request, response);
+  }).resume();
+}).listen(PORT);
+
+
+var driver = new Driver()
+
+driver.get('http://localhost:'+PORT+'/test/index.html')
+
+var junit = driver.findElement({id: 'junit'})
+var lcov  = driver.findElement({id: 'lcov'})
+
+driver.wait(elementIsVisible(junit), 2000000)
+.then(function()
+{
+  junit.getAttribute('value').then(writeReport.bind(undefined, 'xml'))
+})
+driver.wait(elementIsVisible(lcov), 2000000)
+.then(function()
+{
+  lcov.getAttribute('value').then(writeReport.bind(undefined, 'lcov'))
+})
+
+driver.quit()
+.then(function()
+{
+  server.close()
+})

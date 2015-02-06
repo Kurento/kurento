@@ -9,3 +9,5 @@ target/
 /bower.json
 junitResult.xml
 npm-debug.log
+lib-cov/
+reports/

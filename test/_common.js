@@ -23,7 +23,8 @@ URL_SMALL = "http://files.kurento.org/video/small.webm";
  * Set an assert error and re-start the test so it can fail
  */
 function onerror(error) {
-  QUnit.pushFailure(error.message || error, error.stack);
+  if (error)
+    QUnit.pushFailure(error.message || error, error.stack);
 
   QUnit.start();
 };
@@ -79,26 +80,40 @@ Timeout = function Timeout(id, delay, ontimeout) {
   };
 };
 
-QUnit.jUnitReport = function (report) {
+const REPORTS_DIR = 'reports'
+
+function writeReport(ext, data) {
+  var path = REPORTS_DIR + '/' + require('../package.json').name + '.' + ext
+
+  require('fs-extra').outputFile(path, data, function (error) {
+    if (error) return console.trace(error);
+
+    console.log(ext + ' report saved at ' + path);
+  });
+}
+
+function fetchReport(type, report) {
+  var ext = type
+  if (type == 'junit') ext = 'xml'
+
+  report = report[ext]
+
   // Node.js - write report to file
-  if (typeof window === 'undefined') {
-    var path = './junitResult.xml';
-
-    require('fs').writeFile(path, report.xml, function (error) {
-      if (error) return console.error(error);
-
-      console.log('XML report saved at ' + path);
-    });
-  }
+  if (typeof window === 'undefined')
+    writeReport(ext, report)
 
   // browser - write report to console
   else {
-    var textarea = document.getElementById('report');
+    var textarea = document.getElementById(type);
 
-    textarea.value = report.xml;
+    textarea.value = report;
     textarea.style.height = textarea.scrollHeight + "px";
+    textarea.style.visibility = "visible";
   }
-};
+}
+
+QUnit.jUnitReport = fetchReport.bind(undefined, 'junit')
+QUnit.lcovReport = fetchReport.bind(undefined, 'lcov')
 
 // Tell QUnit what WebSocket servers to use
 

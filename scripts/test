@@ -11,9 +11,11 @@ fs.unlink(LINK_PATH, function(error)
 
   fs.symlinkSync('..', LINK_PATH)
 
+  var kurentoClient = process.env.KURENTOCLIENT_COV ? './lib-cov':'./lib'
+
   var args =
   [
-    '-c', 'kurentoClient:.',
+    '-c', 'kurentoClient:'+kurentoClient,
     '-c', 'node_modules/qunit-reporter-junit',
     '-c', 'wock:node_modules/wock',
     '-c', 'test/_common.js',
@@ -22,7 +24,7 @@ fs.unlink(LINK_PATH, function(error)
   ]
 
   spawn('qunit-cli', args, {stdio: 'inherit'})
-  .on('close', function(code)
+  .on('exit', function(code)
   {
     fs.unlink(LINK_PATH);
   });
