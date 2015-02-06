@@ -1,3 +1,21 @@
+kurento-module-creator (3.0.10) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * [Fix bug] Do require()s only before update package.json file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update .gitreview to work with new repo
+  * Update .gitreview to work with relase-3.0 branch
+  * Add compatibility for cmake 3.0
+  * Prepare release 3.0.10
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 06 Feb 2015 13:14:47 +0100
+
 kurento-module-creator (3.0.9) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
