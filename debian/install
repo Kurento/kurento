@@ -1,3 +1,4 @@
 target/kurento-module-creator-jar-with-dependencies.jar /usr/bin
 scripts/kurento-module-creator /usr/bin
 target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-2.8/Modules/
+target/classes/FindKurentoModuleCreator.cmake /usr/share/cmake-3.0/Modules/
