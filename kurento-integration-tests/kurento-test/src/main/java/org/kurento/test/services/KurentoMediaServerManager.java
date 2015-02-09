@@ -15,7 +15,6 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_PROP;
 
 import java.io.File;
@@ -23,14 +22,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -190,8 +184,9 @@ public class KurentoMediaServerManager {
 					+ " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'",
 					wsUri, serverCommand, gstPlugins, workspace);
 
-			if(!isFreePort(wsUri)){
-				throw new RuntimeException("KMS cannot be started in URI: "+wsUri+". Port is not free");
+			if (!isFreePort(wsUri)) {
+				throw new RuntimeException("KMS cannot be started in URI: "
+						+ wsUri + ". Port is not free");
 			}
 		}
 
@@ -238,7 +233,7 @@ public class KurentoMediaServerManager {
 				remoteKms.runAndWaitCommand("sh", "-c",
 						remoteKms.getTmpFolder() + "/" + "kurento.sh");
 			} else {
-				Shell.run("sh", "-c", workspace + "kurento.sh");
+				Shell.run("sh", "-c", workspace + "kurento.sh > /dev/null 2>&1");
 			}
 		}
 
@@ -250,8 +245,8 @@ public class KurentoMediaServerManager {
 		try {
 			URI wsUrl = new URI(wsUri);
 
-			String result = Shell.runAndWait("/bin/bash","-c", "nc -z " + wsUrl.getHost() + " " + wsUrl.getPort()
-					+ "; echo $?");
+			String result = Shell.runAndWait("/bin/bash", "-c", "nc -z "
+					+ wsUrl.getHost() + " " + wsUrl.getPort() + "; echo $?");
 
 			if (result.trim().equals("0")) {
 				log.warn("Port "
