@@ -1,11 +1,11 @@
-Source: kms-elements
+Source: kms-elements-6.0
 Section: utils
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev (>= 5.1.0),
+ kms-core-6.0-dev,
  libboost-filesystem-dev,
  libsoup2.4-dev,
  libgnutls28-dev,
@@ -16,28 +16,32 @@ Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-elements.git
 Vcs-Browser: https://github.com/Kurento/kms-elements.git
 
-Package: kms-elements
+Package: kms-elements-6.0
 Architecture: any
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
   gstreamer1.0-nice (>= 0.1.7),
   gnutls-bin,
-  kms-core (>= 5.1.0)
+  kms-core-6.0
 Breaks:
-  kms-filters (<< 5.1.0~3)
+  kms-elements
 Description: Kurento elements module
  Kurento elements implementation
 
-Package: kms-elements-dev
+Package: kms-elements-6.0-dev
 Architecture: any
-Depends: kms-elements (= ${binary:Version}),
-  kms-core-dev (>= 5.1.0)
+Depends: kms-elements-6.0 (= ${binary:Version}),
+  kms-core-6.0-dev
+Breaks:
+  kms-elements-dev
 Description: Kurento elements module
  Kurento elements implementation
 
-Package: kms-elements-dbg
+Package: kms-elements-6.0-dbg
 Architecture: any
-Depends: kms-elements (= ${binary:Version})
+Depends: kms-elements-6.0 (= ${binary:Version})
+Breaks:
+  kms-elements-dbg
 Description: Kurento elements module
  Kurento elements implementation
