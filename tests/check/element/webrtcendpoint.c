@@ -60,6 +60,12 @@ typedef struct HandOffData
   const gchar *type;
   GMainLoop *loop;
   GstStaticCaps expected_caps;
+
+  /* Check KmsBaseRtpEp::request_local_key_frame begin */
+  gboolean check_request_local_key_frame;
+  guint count;
+  GstElement *webrtcep;
+  /* Check KmsBaseRtpEp::request_local_key_frame end */
 } HandOffData;
 
 static gboolean
@@ -97,8 +103,25 @@ fakesink_hand_off (GstElement * fakesink, GstBuffer * buf, GstPad * pad,
     return;
   }
 
-  g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
-  g_idle_add (quit_main_loop_idle, hod->loop);
+  if (!hod->check_request_local_key_frame) {
+    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+    g_idle_add (quit_main_loop_idle, hod->loop);
+    return;
+  }
+
+  /* Check KmsBaseRtpEp::request_local_key_frame */
+  if (!GST_BUFFER_FLAG_IS_SET (buf, GST_BUFFER_FLAG_DELTA_UNIT)) {
+    if (hod->count >= 5) {
+      g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+      g_idle_add (quit_main_loop_idle, hod->loop);
+    } else {
+      gboolean ret;
+
+      g_signal_emit_by_name (hod->webrtcep, "request-local-key-frame", &ret);
+      fail_unless (ret);
+      hod->count++;
+    }
+  }
 }
 
 typedef struct _KmsConnectData
@@ -198,7 +221,7 @@ connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
     GstElement * enc, GstElement * caps, GstElement * pipe,
     const gchar * pad_prefix)
 {
-  KmsConnectData *data = g_slice_new (KmsConnectData);
+  KmsConnectData *data = g_slice_new0 (KmsConnectData);
 
   data->src = src;
   data->enc = enc;
@@ -215,7 +238,8 @@ connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
 static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     const gchar * pattern_sdp_sendonly_str,
-    const gchar * pattern_sdp_recvonly_str, gboolean bundle)
+    const gchar * pattern_sdp_recvonly_str, gboolean bundle,
+    gboolean check_request_local_key_frame)
 {
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -250,6 +274,14 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   hod->expected_caps = expected_caps;
   hod->loop = loop;
 
+  if (check_request_local_key_frame) {
+    GST_INFO ("Check request_local_key_frame");
+
+    g_object_set (video_enc, "keyframe-max-dist", 10000, NULL);
+    hod->check_request_local_key_frame = TRUE;
+    hod->webrtcep = sender;
+  }
+
   g_object_set (G_OBJECT (outputfakesink), "signal-handoffs", TRUE, NULL);
   g_signal_connect (G_OBJECT (outputfakesink), "handoff",
       G_CALLBACK (fakesink_hand_off), hod);
@@ -263,6 +295,14 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   gst_bin_add (GST_BIN (pipeline), receiver);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  if (check_request_local_key_frame) {
+    gboolean ret;
+
+    /* WebRtcEp should not be configured yet */
+    g_signal_emit_by_name (hod->webrtcep, "request-local-key-frame", &ret);
+    fail_unless (!ret);
+  }
 
   /* SDP negotiation */
   mark_point ();
@@ -278,6 +318,14 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
+
+  if (check_request_local_key_frame) {
+    gboolean ret;
+
+    /* Request should not be handled */
+    g_signal_emit_by_name (hod->webrtcep, "request-local-key-frame", &ret);
+    fail_unless (!ret);
+  }
 
   mark_point ();
   g_signal_emit_by_name (sender, "process-answer", answer);
@@ -1088,9 +1136,11 @@ static const gchar *pattern_sdp_vp8_sendrecv_str = "v=0\r\n"
 GST_START_TEST (test_vp8_sendonly_recvonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, FALSE);
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, FALSE, FALSE);
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE);
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, FALSE);
+  test_video_sendonly ("vp8enc", vp8_expected_caps,
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, TRUE);
 }
 
 GST_END_TEST
@@ -1106,9 +1156,9 @@ GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv_but_sendonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, TRUE);
+      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, TRUE, FALSE);
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, FALSE);
+      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, FALSE, FALSE);
 }
 
 GST_END_TEST
