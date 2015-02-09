@@ -48,7 +48,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <ul>
  * <li>Media should be received in the video tag</li>
  * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * <li>Media should be received in the video tag (in the recording)</li>
  * <li>Color of the video should be the expected (in the recording)</li>
@@ -62,7 +61,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderPlayerTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
-	private static final int TIMEOUT_EOS = 60; // seconds
+	private static final int TIMEOUT = 120; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
@@ -80,7 +79,6 @@ public class RecorderPlayerTest extends FunctionalTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/green.webm").build();
@@ -109,7 +107,7 @@ public class RecorderPlayerTest extends FunctionalTest {
 
 		// Wait for EOS
 		Assert.assertTrue("No EOS event",
-				eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
+				eosLatch.await(TIMEOUT, TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -133,6 +131,7 @@ public class RecorderPlayerTest extends FunctionalTest {
 			throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(browserType).client(Client.WEBRTC).build()) {
+			browser.setTimeout(TIMEOUT);
 			browser.subscribeEvents("playing");
 			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.RCV_ONLY);
@@ -156,11 +155,7 @@ public class RecorderPlayerTest extends FunctionalTest {
 			Assert.assertTrue("The color of the video should be "
 					+ EXPECTED_COLOR, browser.similarColor(EXPECTED_COLOR));
 			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
+					eosLatch.await(TIMEOUT, TimeUnit.SECONDS));
 			if (recorderEP != null) {
 				AssertMedia.assertCodecs(
 						getDefaultOutputFile(PRE_PROCESS_SUFIX),

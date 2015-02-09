@@ -42,7 +42,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <strong>Pass criteria</strong>:
  * <ul>
  * <li>Browser starts before default timeout</li>
- * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * <li>Browser ends before default timeout</li>
  * <li>Media should be received in the video tag (in the recording)</li>
@@ -57,6 +56,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderWebRtcTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
+	private static final int TIMEOUT = 120; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
@@ -89,6 +89,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 		}
 
 		try (BrowserClient browser = builder.build()) {
+			browser.setTimeout(TIMEOUT);
 			browser.subscribeEvents("playing");
 			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.SEND_RCV);
@@ -101,12 +102,6 @@ public class RecorderWebRtcTest extends FunctionalTest {
 
 			// Guard time to play the video
 			Thread.sleep(PLAYTIME * 1000);
-
-			// Assert play time
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
 
 			// Assert color
 			if (color != null) {

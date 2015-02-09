@@ -44,7 +44,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <ul>
  * <li>Media should be received in the video tag</li>
  * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * <li>Media should be received in the video tag (in the recording)</li>
  * <li>Color of the video should be the expected (in the recording)</li>
@@ -58,6 +57,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderSwitchTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 20; // seconds
+	private static final int TIMEOUT = 120; // seconds
 	private static final int N_PLAYER = 3;
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
@@ -95,6 +95,7 @@ public class RecorderSwitchTest extends FunctionalTest {
 
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(browserType).client(Client.WEBRTC).build()) {
+			browser.setTimeout(TIMEOUT);
 			browser.subscribeEvents("playing");
 			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.RCV_ONLY);
@@ -123,10 +124,6 @@ public class RecorderSwitchTest extends FunctionalTest {
 			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// Assertions
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
 			AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX),
 					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}

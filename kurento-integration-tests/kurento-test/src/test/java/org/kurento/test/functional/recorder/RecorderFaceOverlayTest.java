@@ -49,7 +49,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <ul>
  * <li>Media should be received in the video tag</li>
  * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
  * <li>Color above the head of the video should be the expected (image overlaid)
  * </li>
  * <li>Media should be received in the video tag (in the recording)</li>
@@ -64,7 +63,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderFaceOverlayTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 30; // seconds
-	private static final int TIMEOUT_EOS = 60; // seconds
+	private static final int TIMEOUT = 120; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
@@ -129,6 +128,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 			throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(browserType).client(Client.WEBRTC).build()) {
+			browser.setTimeout(TIMEOUT);
 			browser.subscribeEvents("playing");
 			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.RCV_ONLY);
@@ -144,9 +144,6 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 			}
 			playerEP.play();
 
-			// Increase threshold time in this time (15 seconds)
-			setThresholdTime(15);
-
 			// Assertions
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
@@ -156,11 +153,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 					browser.similarColorAt(EXPECTED_COLOR, EXPECTED_COLOR_X,
 							EXPECTED_COLOR_Y));
 			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
+					eosLatch.await(TIMEOUT, TimeUnit.SECONDS));
 
 			if (recorderEP != null) {
 				AssertMedia.assertCodecs(
