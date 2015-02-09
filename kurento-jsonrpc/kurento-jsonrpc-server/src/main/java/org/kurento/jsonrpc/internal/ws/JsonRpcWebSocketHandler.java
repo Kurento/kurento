@@ -73,22 +73,28 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	public void handleTextMessage(final WebSocketSession wsSession,
 			TextMessage message) throws Exception {
 
-		String messageJson = message.getPayload();
+		try {
 
-		log.debug("Req-> {}", messageJson);
+			String messageJson = message.getPayload();
 
-		// TODO Ensure only one register message per websocket session.
-		ServerSessionFactory factory = new ServerSessionFactory() {
-			@Override
-			public ServerSession createSession(String sessionId,
-					Object registerInfo, SessionsManager sessionsManager) {
-				return new WebSocketServerSession(sessionId, registerInfo,
-						sessionsManager, wsSession);
-			}
-		};
+			log.debug("Req-> {}", messageJson);
 
-		protocolManager.processMessage(messageJson, factory,
-				new WebSocketResponseSender(wsSession), wsSession.getId());
+			// TODO Ensure only one register message per websocket session.
+			ServerSessionFactory factory = new ServerSessionFactory() {
+				@Override
+				public ServerSession createSession(String sessionId,
+						Object registerInfo, SessionsManager sessionsManager) {
+					return new WebSocketServerSession(sessionId, registerInfo,
+							sessionsManager, wsSession);
+				}
+			};
+
+			protocolManager.processMessage(messageJson, factory,
+					new WebSocketResponseSender(wsSession), wsSession.getId());
+
+		} catch (Exception e) {
+			log.error("Exception processing request", e);
+		}
 
 	}
 
