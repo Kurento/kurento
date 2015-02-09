@@ -96,16 +96,16 @@ target_link_libraries(test_webrtcendpoint
 #                      ${gstreamer-check-1.0_LIBRARIES}
 #                      ${KmsGstCommons_LIBRARIES})
 
-#add_test_program (test_dispatcheronetomany dispatcheronetomany.c)
-#add_dependencies(test_dispatcheronetomany kmstestutils kmscore kmselements)
-#target_include_directories(test_dispatcheronetomany PRIVATE
-#                           ${KmsGstCommons_INCLUDE_DIRS}
-#                           ${gstreamer-1.0_INCLUDE_DIRS}
-#                           ${gstreamer-check-1.0_INCLUDE_DIRS})
-#target_link_libraries(test_dispatcheronetomany
-#                      ${gstreamer-1.0_LIBRARIES}
-#                      ${gstreamer-check-1.0_LIBRARIES}
-#                      ${KmsGstCommons_LIBRARIES})
+add_test_program (test_dispatcheronetomany dispatcheronetomany.c)
+add_dependencies(test_dispatcheronetomany kmstestutils kmscore kmselements)
+target_include_directories(test_dispatcheronetomany PRIVATE
+                           ${KmsGstCommons_INCLUDE_DIRS}
+                           ${gstreamer-1.0_INCLUDE_DIRS}
+                           ${gstreamer-check-1.0_INCLUDE_DIRS})
+target_link_libraries(test_dispatcheronetomany
+                      ${gstreamer-1.0_LIBRARIES}
+                      ${gstreamer-check-1.0_LIBRARIES}
+                      ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_dtls dtls.c)
 add_dependencies(test_dtls rtcpdemux kmsdtls)
