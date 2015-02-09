@@ -570,15 +570,16 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 
 		JsonObject jObject = (JsonObject) json;
 
-		if (!jObject.has(JSON_RPC_PROPERTY)) {
-			throw new JsonParseException(
-					"Invalid JsonRpc request lacking version '"
-							+ JSON_RPC_PROPERTY + "' field");
-		}
-
-		if (!jObject.get("jsonrpc").getAsString().equals(JSON_RPC_VERSION)) {
-			throw new JsonParseException("Invalid JsonRpc version");
-		}
+//		FIXME: Enable again when KMS sends jsonrpc field in register message
+//		if (!jObject.has(JSON_RPC_PROPERTY)) {
+//			throw new JsonParseException(
+//					"Invalid JsonRpc request lacking version '"
+//							+ JSON_RPC_PROPERTY + "' field");
+//		}
+//
+//		if (!jObject.get("jsonrpc").getAsString().equals(JSON_RPC_VERSION)) {
+//			throw new JsonParseException("Invalid JsonRpc version");
+//		}
 
 		if (!jObject.has(METHOD_PROPERTY)) {
 			throw new JsonParseException("Invalid JsonRpc request lacking '"
