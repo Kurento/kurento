@@ -246,7 +246,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_object_set (receiver, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
-  hod = g_slice_new (HandOffData);
+  hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
   hod->loop = loop;
 
@@ -402,7 +402,7 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
-  hod = g_slice_new (HandOffData);
+  hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
   hod->loop = loop;
 
@@ -517,7 +517,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
-  hod = g_slice_new (HandOffData);
+  hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
   hod->loop = loop;
 
@@ -692,7 +692,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   g_object_set_data (G_OBJECT (pipeline), OFFERER_RECEIVES_VIDEO,
       GINT_TO_POINTER (TRUE));
 
-  hod_audio = g_slice_new (HandOffData);
+  hod_audio = g_slice_new0 (HandOffData);
   hod_audio->type = ANSWERER_RECEIVES_AUDIO;
   hod_audio->expected_caps = audio_expected_caps;
   hod_audio->loop = loop;
@@ -700,7 +700,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (audio_fakesink), "handoff",
       G_CALLBACK (sendrecv_fakesink_hand_off), hod_audio);
 
-  hod_video = g_slice_new (HandOffData);
+  hod_video = g_slice_new0 (HandOffData);
   hod_video->type = ANSWERER_RECEIVES_VIDEO;
   hod_video->expected_caps = video_expected_caps;
   hod_video->loop = loop;
@@ -839,7 +839,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
   fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
 
-  hod_audio_offerer = g_slice_new (HandOffData);
+  hod_audio_offerer = g_slice_new0 (HandOffData);
   hod_audio_offerer->type = OFFERER_RECEIVES_AUDIO;
   hod_audio_offerer->expected_caps = audio_expected_caps;
   hod_audio_offerer->loop = loop;
@@ -848,7 +848,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (audio_fakesink_offerer), "handoff",
       G_CALLBACK (sendrecv_fakesink_hand_off), hod_audio_offerer);
 
-  hod_video_offerer = g_slice_new (HandOffData);
+  hod_video_offerer = g_slice_new0 (HandOffData);
   hod_video_offerer->type = OFFERER_RECEIVES_VIDEO;
   hod_video_offerer->expected_caps = video_expected_caps;
   hod_video_offerer->loop = loop;
@@ -857,7 +857,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (video_fakesink_offerer), "handoff",
       G_CALLBACK (sendrecv_fakesink_hand_off), hod_video_offerer);
 
-  hod_audio_answerer = g_slice_new (HandOffData);
+  hod_audio_answerer = g_slice_new0 (HandOffData);
   hod_audio_answerer->type = ANSWERER_RECEIVES_AUDIO;
   hod_audio_answerer->expected_caps = audio_expected_caps;
   hod_audio_answerer->loop = loop;
@@ -866,7 +866,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (audio_fakesink_answerer), "handoff",
       G_CALLBACK (sendrecv_fakesink_hand_off), hod_audio_answerer);
 
-  hod_video_answerer = g_slice_new (HandOffData);
+  hod_video_answerer = g_slice_new0 (HandOffData);
   hod_video_answerer->type = ANSWERER_RECEIVES_VIDEO;
   hod_video_answerer->expected_caps = video_expected_caps;
   hod_video_answerer->loop = loop;
