@@ -22,7 +22,6 @@ Depends: default-jre (>=2:1.7),
          ${maven:Depends},
          ${misc:Depends}
 Breaks: kurento-module-creator
-Replaces: kurento-module-creator
 Description: Kurento module creator
  This tools generates stubs in different languages for communication
  with the Kurento Media server using a json-rpc model and
