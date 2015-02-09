@@ -14,7 +14,13 @@
       "websocket": {
         "port": ${wsPort},
         "path": "${wsPath}",
-        "threads": 10
+        "threads": 10,
+        <#if registrar??>
+        "registrar": {
+          "address": "${registrar}",
+          "localAddress": "localhost"
+        }
+        </#if>
       }
       </#if>
     }

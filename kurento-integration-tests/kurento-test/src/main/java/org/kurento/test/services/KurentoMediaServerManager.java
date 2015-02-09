@@ -91,6 +91,7 @@ public class KurentoMediaServerManager {
 
 	private Address rabbitMqAddress;
 	private String wsUri;
+	private String registrarUri;
 
 	public static KurentoMediaServerManager createWithWsTransport(String wsUri,
 			int httpPort) {
@@ -345,6 +346,7 @@ public class KurentoMediaServerManager {
 				data.put("transport", "ws");
 				data.put("wsPort", String.valueOf(port));
 				data.put("wsPath", path.substring(1));
+				data.put("registrar", registrarUri);
 
 			} catch (URISyntaxException e) {
 				throw new KurentoException("Invalid ws uri: " + wsUri);
@@ -505,6 +507,14 @@ public class KurentoMediaServerManager {
 
 	public String getLocalhostWsUrl() {
 		return wsUri;
+	}
+
+	public void setRegistrar(String registrarUri) {
+		this.registrarUri = registrarUri;
+	}
+
+	public String getRegistrarUri() {
+		return registrarUri;
 	}
 
 }
