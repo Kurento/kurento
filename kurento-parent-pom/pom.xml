@@ -97,8 +97,8 @@
 		<version.scribe>1.3.5</version.scribe>
 		<version.servlet-api>3.0.1</version.servlet-api>
 		<version.slf4j>1.7.5</version.slf4j>
-		<version.spring-boot>1.2.0.RELEASE</version.spring-boot>
-		<version.spring>4.1.3.RELEASE</version.spring>
+		<version.spring-boot>1.2.1.RELEASE</version.spring-boot>
+		<version.spring>4.1.4.RELEASE</version.spring>
 		<version.spring-data>1.5.1.RELEASE</version.spring-data>
 		<version.spring-security>3.2.4.RELEASE</version.spring-security>
 		<version.spring-oauth2>2.0.2.RELEASE</version.spring-oauth2>
