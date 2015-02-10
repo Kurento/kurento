@@ -285,17 +285,16 @@ public class VersionManager {
 			return true;
 		}
 
-		if (isReleaseVersion(importVersion)) {
-			return false;
-		} else {
+		if (isDevelopmentVersion(importVersion)) {
 			importVersion = removeDevSuffix(importVersion);
-			if (isDevelopmentVersion(depVersion)) {
-				depVersion = removeDevSuffix(depVersion);
-			}
-			return versionCompare(importVersion, depVersion) <= 0
-					&& versionCompare(depVersion,
-							incMayorVersion(importVersion)) < 0;
+			importVersion = "^" + importVersion;
 		}
+
+		if (isDevelopmentVersion(depVersion)) {
+			depVersion = removeDevSuffix(depVersion);
+		}
+
+		return compatibleVersion(importVersion, depVersion);
 	}
 
 	private static String incMayorVersion(String version) {

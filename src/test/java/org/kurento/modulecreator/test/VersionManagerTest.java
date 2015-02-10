@@ -31,6 +31,7 @@ public class VersionManagerTest {
 		assertTrue(devCompatibleVersion("1.2.3-dev", "1.3.0"));
 		assertTrue(devCompatibleVersion("1.2.3-dev", "1.9.9"));
 		assertFalse(devCompatibleVersion("1.2.3-dev", "2.0.0"));
+		assertTrue(devCompatibleVersion("^6.0.0", "6.0.0-dev"));
 	}
 
 	@Test
