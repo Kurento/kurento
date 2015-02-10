@@ -2,4 +2,4 @@
 host=code.kurento.org
 port=12345
 project=kms-filters.git
-defaultbranch=master
+defaultbranch=release-5.1
