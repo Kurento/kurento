@@ -3,7 +3,15 @@ set (TEST_PROPERTIES
 )
 
 add_test_program (test_constructors constructors.cpp)
-add_dependencies(test_constructors ${LIBRARY_NAME}module ${LIBRARY_NAME}impl ${LIBRARY_NAME}plugins)
+add_dependencies(test_constructors
+  ${LIBRARY_NAME}module
+  ${LIBRARY_NAME}impl
+  facedetector
+  faceoverlay
+  imageoverlay
+  movementdetector
+  opencvfilter
+)
 set_property (TARGET test_constructors
   PROPERTY INCLUDE_DIRECTORIES
     ${CMAKE_BINARY_DIR}
