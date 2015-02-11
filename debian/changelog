@@ -1,3 +1,9 @@
+kms-filters-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Pre release of version 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 11 Feb 2015 12:24:49 +0100
+
 kms-filters (5.1.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

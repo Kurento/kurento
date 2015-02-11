@@ -1,12 +1,12 @@
-Source: kms-filters
+Source: kms-filters-6.0
 Section: utils
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev (>= 5.1.0),
- kms-elements-dev (>= 5.1.0),
+ kms-core-6.0-dev,
+ kms-elements-6.0-dev,
  libsoup2.4-dev,
  libopencv-dev
 Standards-Version: 3.9.4
@@ -14,25 +14,31 @@ Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-filters.git
 Vcs-Browser: https://github.com/Kurento/kms-filters.git
 
-Package: kms-filters
+Package: kms-filters-6.0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
- kms-elements (>= 5.1.0),
+ kms-elements-6.0,
  opencv-data
+Breaks:
+ kms-filters
 Description: Kurento filters module
  Kurento filters implementation
 
-Package: kms-filters-dev
+Package: kms-filters-6.0-dev
 Architecture: any
-Depends: kms-filters (= ${binary:Version}),
-  kms-core-dev (>= 5.1.0),
-  kms-elements-dev (>= 5.1.0),
+Depends: kms-filters-6.0 (= ${binary:Version}),
+  kms-core-6.0-dev,
+  kms-elements-6.0-dev,
   libopencv-dev
+Breaks:
+  kms-filters-dev
 Description: Kurento filters module
  Kurento filters implementation
 
-Package: kms-filters-dbg
+Package: kms-filters-6.0-dbg
 Architecture: any
-Depends: kms-filters (= ${binary:Version})
+Depends: kms-filters-6.0 (= ${binary:Version})
+Breaks:
+  kms-filters-dbg
 Description: Kurento filters module
  Kurento filters implementation
