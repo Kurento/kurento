@@ -20,9 +20,10 @@
     "tests"
   ],
   "dependencies": {
-    "kurento-utils": "5.1.0",
+    "adapter.js": "*",
+    "co": "~3.0.7",
     "kurento-client": "5.1.0",
     "kurento-module-pointerdetector": "1.0.3",
-    "co": "~3.0.7"
+    "kurento-utils": "5.1.0"
   }
 }

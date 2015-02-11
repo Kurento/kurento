@@ -22,7 +22,7 @@
   "dependencies": {
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.1.4",
-    "adapter.js": "kurento-alvar",
+    "adapter.js": "*",
     "kurento-client": "5.1.0",
     "kurento-utils": "5.1.0",
     "kurento-module-backgroundextractor": "1.0.0"

@@ -96,8 +96,12 @@ function startRecording() {
 			}
 		}
 	};
+
 	if(!isWebcam)
-		constraints.video.mandatory.chromeMediaSource = 'screen'
+  {
+    constraints.video.mediaSource = 'screen'
+    constraints.video.chromeMediaSource = 'screen'
+  }
 
 	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
 			onOffer, onError, constraints);
