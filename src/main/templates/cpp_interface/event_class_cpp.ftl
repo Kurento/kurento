@@ -10,11 +10,49 @@ ${event.name}.cpp
 #include "${property.type.name}.hpp"
 </#if>
 </#list>
+#include <time.h>
+#include <string>
 
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
 {
 </#list>
+<#if event.name = "RaiseBase">
+static
+std::string getCurrentTime ()
+{
+  time_t timer;
+  time(&timer);
+  return std::to_string ((int)(timer));
+}
+
+${event.name}::${event.name} (<#rt>
+  <#lt><#assign first = true><#rt>
+  <#lt><#list event.properties as property><#rt>
+  <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+    <#lt><#if !property.optional><#rt>
+      <#lt><#if !first>, </#if><#rt>
+      <#lt><#assign first = false><#rt>
+      <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
+    <#lt></#if><#rt>
+  </#if><#rt>
+  <#lt></#list><#rt>)
+  {
+  <#list event.properties as property><#rt>
+    <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+      <#lt><#if !property.optional><#rt>
+  this->${property.name} = ${property.name};
+      </#if><#rt>
+    </#if><#rt>
+  <#lt></#list>
+  this->setTimestamp (getCurrentTime());
+  if ( source != NULL) {
+    if (source->getSendTagsInEvents ()) {
+      this->setTags (source->getTags ());
+    }
+  }
+}
+</#if>
 
 void
 ${event.name}::Serialize (JsonSerializer &s)

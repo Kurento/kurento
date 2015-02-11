@@ -6,7 +6,6 @@ ${event.name}.hpp
 
 #include <jsoncpp/json/json.h>
 #include <memory>
-
 <#if event.extends??>
 #include "${event.extends.name}.hpp"
 </#if>
@@ -38,42 +37,51 @@ class ${property.type.name};
 </#if>
 </#list>
 
-class ${event.name}<#if event.extends??> : public virtual ${event.extends.name}</#if>
+class ${event.name}<#if event.extends??> : public ${event.extends.name}</#if>
 {
 
 public:
 
   ${event.name} (<#rt>
     <#lt><#assign first = true><#rt>
-    <#lt><#list event.properties as property><#rt>
-      <#lt><#if !property.optional><#rt>
-        <#lt><#if !first>, </#if><#rt>
-        <#lt><#assign first = false><#rt>
-        <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
+    <#lt><#list event.parentProperties as property><#rt>
+      <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+        <#lt><#if !property.optional><#rt>
+          <#lt><#if !first>, </#if><#rt>
+          <#lt><#assign first = false><#rt>
+          <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
+        <#lt></#if><#rt>
       <#lt></#if><#rt>
     <#lt></#list><#rt>
-    <#lt><#list event.parentProperties as property><#rt>
-      <#lt><#if !property.optional><#rt>
-        <#lt><#if !first>, </#if><#rt>
-        <#lt><#assign first = false><#rt>
-        <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
+    <#lt><#list event.properties as property><#rt>
+      <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+        <#lt><#if !property.optional><#rt>
+          <#lt><#if !first>, </#if><#rt>
+          <#lt><#assign first = false><#rt>
+          <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
+        <#lt></#if><#rt>
       <#lt></#if><#rt>
     <#lt></#list>)<#rt>
     <#lt><#assign first = true><#rt>
     <#lt><#if event.extends??> : ${event.extends.name} (<#rt>
-      <#lt><#list event.parentProperties as property><#rt>
-        <#lt><#if !property.optional><#rt>
-          <#lt><#if !first>, </#if><#rt>
-          <#lt><#assign first = false><#rt>
-          <#lt>${property.name}<#rt>
-        <#lt></#if><#rt>
-    <#lt></#list>)</#if> {
-    <#list event.properties as property><#rt>
-      <#lt><#if !property.optional><#rt>
-    this->${property.name} = ${property.name};
-      </#if><#rt>
-    <#lt></#list>
-  };
+      <#lt><#if event.name != "RaiseBase"><#rt>
+        <#lt><#list event.parentProperties as property><#rt>
+          <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+            <#lt><#if !property.optional><#rt>
+              <#lt><#if !first>, </#if><#rt>
+              <#lt><#assign first = false><#rt>
+              <#lt>${property.name}<#rt>
+            <#lt></#if><#rt>
+          <#lt></#if><#rt>
+      <#lt></#list>)</#if> {
+      <#list event.properties as property><#rt>
+        <#lt><#if property.name != "timestamp" && property.name != "tags"><#rt>
+          <#lt><#if !property.optional><#rt>
+      this->${property.name} = ${property.name};
+          </#if><#rt>
+        </#if><#rt>
+      <#lt></#list>
+  }</#if>;
 
   ${event.name} (const Json::Value &value);
 
