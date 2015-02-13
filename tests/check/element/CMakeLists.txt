@@ -107,6 +107,17 @@ target_link_libraries(test_dispatcheronetomany
                       ${gstreamer-check-1.0_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES})
 
+add_test_program (test_dispatcher dispatcher.c)
+add_dependencies(test_dispatcher kmstestutils kmscore kmselements)
+target_include_directories(test_dispatcher PRIVATE
+                           ${KmsGstCommons_INCLUDE_DIRS}
+                           ${gstreamer-1.0_INCLUDE_DIRS}
+                           ${gstreamer-check-1.0_INCLUDE_DIRS})
+target_link_libraries(test_dispatcher
+                      ${gstreamer-1.0_LIBRARIES}
+                      ${gstreamer-check-1.0_LIBRARIES}
+                      ${KmsGstCommons_LIBRARIES})
+
 add_test_program (test_dtls dtls.c)
 add_dependencies(test_dtls rtcpdemux kmsdtls)
 target_include_directories(test_dtls PRIVATE
