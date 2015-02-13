@@ -113,4 +113,8 @@ public class KurentoClient {
 		return new TransactionImpl(manager);
 	}
 
+	public ServerManager getServerManager() {
+		return manager.getOrCreateObject("manager_ServerManager",
+				ServerManager.class);
+	}
 }
