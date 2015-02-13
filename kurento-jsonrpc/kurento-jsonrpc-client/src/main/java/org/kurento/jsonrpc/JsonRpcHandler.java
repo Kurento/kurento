@@ -20,15 +20,15 @@ public interface JsonRpcHandler<P> {
 
 	/**
 	 * Invoked when a new JsonRpc request arrives.
-	 * 
+	 *
 	 * @param transaction
 	 *            the transaction to which the request belongs
 	 * @param request
 	 *            the request
-	 * 
+	 *
 	 * @throws TransportException
 	 *             when there is an error in the transport mechanism
-	 * 
+	 *
 	 * @throws Exception
 	 *             this method can handle or propagate exceptions.
 	 */
@@ -45,4 +45,11 @@ public interface JsonRpcHandler<P> {
 	void handleUncaughtException(Session session, Exception exception);
 
 	Class<?> getHandlerType();
+
+	/**
+	 * This method configures the handler to use sockJS
+	 */
+	void withSockJS();
+
+	boolean isSockJSEnabled();
 }

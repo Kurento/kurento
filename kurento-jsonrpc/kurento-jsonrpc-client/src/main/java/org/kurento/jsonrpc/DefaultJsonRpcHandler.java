@@ -22,6 +22,8 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	private final Logger log = LoggerFactory
 			.getLogger(DefaultJsonRpcHandler.class);
 
+	private boolean useSockJs;
+
 	@Override
 	public void afterConnectionEstablished(Session session) throws Exception {
 	}
@@ -47,4 +49,15 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	public Class<?> getHandlerType() {
 		return this.getClass();
 	}
+
+	@Override
+	public void withSockJS() {
+		this.useSockJs = true;
+	}
+
+	@Override
+	public boolean isSockJSEnabled() {
+		return this.useSockJs;
+	}
+
 }

@@ -19,18 +19,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.jsonrpc.Session;
+import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.util.Assert;
 import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
-import org.kurento.jsonrpc.JsonRpcHandler;
-import org.kurento.jsonrpc.Session;
-import org.kurento.jsonrpc.Transaction;
-import org.kurento.jsonrpc.message.Request;
 
 public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
-		BeanFactoryAware {
+BeanFactoryAware {
 
 	private static final Log logger = LogFactory
 			.getLog(PerConnectionWebSocketHandler.class);
@@ -38,6 +38,8 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 	private final BeanCreatingHelper<JsonRpcHandler<T>> provider;
 
 	private final Map<Session, JsonRpcHandler<T>> handlers = new ConcurrentHashMap<>();
+
+	private boolean useSockJS;
 
 	public PerSessionJsonRpcHandler(String handlerName) {
 		this(handlerName, null);
@@ -83,8 +85,8 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 
 		Assert.isTrue(handler != null,
 				"Handler of class " + provider.getClass()
-						+ " can't be created. Be sure that there"
-						+ " is a bean registered of this type");
+				+ " can't be created. Be sure that there"
+				+ " is a bean registered of this type");
 
 		try {
 			handler.handleRequest(transaction, request);
@@ -154,6 +156,17 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 		logger.error(
 				"Uncaught exception while execution PerSessionJsonRpcHandler",
 				exception);
+	}
+
+	@Override
+	public void withSockJS() {
+		this.useSockJS = true;
+
+	}
+
+	@Override
+	public boolean isSockJSEnabled() {
+		return this.useSockJS;
 	}
 
 }
