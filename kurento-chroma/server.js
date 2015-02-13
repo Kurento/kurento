@@ -14,12 +14,16 @@
  */
 
 var path = require('path');
+var url  = require('url');
+
 var express = require('express');
-var session = require('express-session')
-var ws = require('ws');
 var minimist = require('minimist');
-var url = require('url');
+var session = require('express-session')
+
+var WebSocketServer = require('ws').Server;
+
 var kurento = require('kurento-client');
+
 
 var argv = minimist(process.argv.slice(2),
 {
@@ -31,6 +35,7 @@ var argv = minimist(process.argv.slice(2),
 });
 
 var app = express();
+
 
 kurento.register(require('kurento-module-chroma'));
 
@@ -65,7 +70,7 @@ var server = app.listen(port, function() {
 	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
-var WebSocketServer = ws.Server, wss = new WebSocketServer({
+var wss = new WebSocketServer({
 	server : server,
 	path : '/chroma'
 });
