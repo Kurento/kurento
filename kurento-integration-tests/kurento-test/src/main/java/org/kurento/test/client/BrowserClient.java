@@ -54,6 +54,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -304,8 +305,23 @@ public class BrowserClient implements Closeable {
 				} else {
 					driver = new ChromeDriver(options);
 				}
+			} else if (driverClass.equals(InternetExplorerDriver.class)) {
+
+				if (browserVersion != null && platform != null) {
+					DesiredCapabilities capabilities = new DesiredCapabilities();
+					capabilities.setBrowserName(DesiredCapabilities
+							.internetExplorer().getBrowserName());
+					capabilities.setCapability("version", browserVersion);
+					capabilities.setCapability("platform", platform);
+
+					driver = new RemoteWebDriver(new URL("http://"
+							+ sauceLabsUser + ":" + sauceLabsKey
+							+ "@ondemand.saucelabs.com:80/wd/hub"),
+							capabilities);
+				}
 
 			}
+
 			js = ((JavascriptExecutor) driver);
 
 		} catch (MalformedURLException e) {

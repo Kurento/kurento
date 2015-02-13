@@ -17,6 +17,7 @@ package org.kurento.test.client;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
 
 /**
  * Browser to perform automated web testing with Selenium WebDriver.
@@ -25,10 +26,12 @@ import org.openqa.selenium.firefox.FirefoxDriver;
  * @since 4.2.3
  */
 public enum Browser {
-	CHROME, FIREFOX;
+	CHROME, FIREFOX, IEXPLORER;
 
 	public Class<? extends WebDriver> getDriverClass() {
 		switch (this) {
+		case IEXPLORER:
+			return InternetExplorerDriver.class;
 		case FIREFOX:
 			return FirefoxDriver.class;
 		case CHROME:
