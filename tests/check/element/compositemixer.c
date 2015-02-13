@@ -19,62 +19,157 @@
 #include <gst/check/gstcheck.h>
 #include <gst/gst.h>
 
-#define VIDEO_PATH BINARY_LOCATION "/video/sintel.webm"
+#define KMS_ELEMENT_PAD_TYPE_VIDEO 2
+#define KMS_ELEMENT_PAD_TYPE_AUDIO 1
 
-GST_START_TEST (create)
+GstElement *pipeline;
+GMainLoop *loop;
+GstElement *hubport1, *hubport2, *hubport3;
+
+static void
+handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
+    gpointer user_data)
 {
-  GstElement *pipe = gst_pipeline_new (__FUNCTION__);
-  GstElement *mixer = gst_element_factory_make ("compositemixer", NULL);
-  GstElement *mixerport = gst_element_factory_make ("hubport", NULL);
-  GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
-  GstElement *audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
-
-  gst_bin_add_many (GST_BIN (pipe), mixerport, mixer, audiotestsrc,
-      videotestsrc, NULL);
-  gst_element_set_state (pipe, GST_STATE_NULL);
-
-  if (!gst_element_link (videotestsrc, mixerport))
-    fail ("videotestsrc could not be linked.");
-
-  gst_element_link (mixerport, mixer);
-
-  g_object_unref (pipe);
+  g_main_loop_quit (user_data);
 }
 
-GST_END_TEST static void
-cb_new_pad (GstElement * element, GstPad * pad, gpointer data)
+static void
+srcpad_added (GstElement * hubport, GstPad * new_pad, gpointer user_data)
 {
-  GstPad *sink_pad;
-  GstElement *endpoint;
+  gchar *padname, *expected_name;
+  GstPad *sinkpad;
+  GstElement *fakesink;
+  GstElement *videosrc;
+  GstElement *audiosrc;
 
-  endpoint = GST_ELEMENT (data);
-  sink_pad = gst_element_get_request_pad (endpoint, "video_sink");
+  GST_INFO_OBJECT (hubport, "Pad added %" GST_PTR_FORMAT, new_pad);
 
-  gst_pad_link (pad, sink_pad);
-  gst_object_unref (GST_OBJECT (sink_pad));
+  padname = gst_pad_get_name (new_pad);
+  fail_if (padname == NULL);
 
+  if (g_strcmp0 (padname, "sink_video") == 0) {
+    videosrc = gst_element_factory_make ("videotestsrc", NULL);
+    sinkpad = gst_element_get_static_pad (videosrc, "src");
+
+    gst_bin_add (GST_BIN (pipeline), videosrc);
+
+    fail_if (gst_pad_link (sinkpad, new_pad) != GST_PAD_LINK_OK);
+    gst_element_sync_state_with_parent (videosrc);
+    g_object_unref (sinkpad);
+    goto end;
+  }
+
+  if (g_strcmp0 (padname, "sink_audio") == 0) {
+    audiosrc = gst_element_factory_make ("audiotestsrc", NULL);
+    sinkpad = gst_element_get_static_pad (audiosrc, "src");
+
+    gst_bin_add (GST_BIN (pipeline), audiosrc);
+
+    fail_if (gst_pad_link (sinkpad, new_pad) != GST_PAD_LINK_OK);
+    gst_element_sync_state_with_parent (audiosrc);
+    g_object_unref (sinkpad);
+    goto end;
+  }
+
+  expected_name = *(gchar **) user_data;
+  if (g_strcmp0 (padname, expected_name) != 0) {
+    goto end;
+  }
+
+  fakesink = gst_element_factory_make ("fakesink", NULL);
+  g_object_set (G_OBJECT (fakesink), "async", FALSE, "sync", FALSE,
+      "signal-handoffs", TRUE, NULL);
+  g_signal_connect (fakesink, "handoff", G_CALLBACK (handoff_cb), loop);
+
+  gst_bin_add (GST_BIN (pipeline), fakesink);
+
+  sinkpad = gst_element_get_static_pad (fakesink, "sink");
+
+  fail_if (gst_pad_link (new_pad, sinkpad) != GST_PAD_LINK_OK);
+
+  gst_element_sync_state_with_parent (fakesink);
+  g_object_unref (sinkpad);
+
+end:
+  g_free (padname);
 }
 
-GST_START_TEST (manage_ports)
+GST_START_TEST (connection)
 {
-  GstElement *pipe = gst_pipeline_new (__FUNCTION__);
+  gint handlerId1, handlerId2, handlerId3;
+  gint signalId1, signalId2, signalId3;
+  gchar *padname1, *padname2, *padname3;
+  gchar *padname1_, *padname2_, *padname3_;
   GstElement *mixer = gst_element_factory_make ("compositemixer", NULL);
-  GstElement *mixerport1 = gst_element_factory_make ("hubport", NULL);
-  GstElement *mixerport2 = gst_element_factory_make ("hubport", NULL);
-  GstElement *player1 = gst_element_factory_make ("uridecodebin", NULL);
-  GstElement *player2 = gst_element_factory_make ("uridecodebin", NULL);
 
-  g_signal_connect (player1, "pad-added", G_CALLBACK (cb_new_pad), mixerport1);
-  g_signal_connect (player2, "pad-added", G_CALLBACK (cb_new_pad), mixerport2);
+  hubport1 = gst_element_factory_make ("hubport", NULL);
+  hubport2 = gst_element_factory_make ("hubport", NULL);
+  hubport3 = gst_element_factory_make ("hubport", NULL);
+  loop = g_main_loop_new (NULL, FALSE);
+  pipeline = gst_pipeline_new ("pipeline");
 
-  gst_bin_add_many (GST_BIN (pipe), player1, player2, mixerport1,
-      mixerport2, mixer, NULL);
-  gst_element_set_state (pipe, GST_STATE_NULL);
+  gst_bin_add_many (GST_BIN (pipeline), hubport1,
+      hubport2, hubport3, mixer, NULL);
 
-  g_object_set (player1, "uri", VIDEO_PATH, NULL);
-  g_object_set (player2, "uri", VIDEO_PATH, NULL);
+  signalId1 =
+      g_signal_connect (hubport1, "pad-added", G_CALLBACK (srcpad_added),
+      &padname1);
+  signalId2 =
+      g_signal_connect (hubport2, "pad-added", G_CALLBACK (srcpad_added),
+      &padname2);
+  signalId3 =
+      g_signal_connect (hubport3, "pad-added", G_CALLBACK (srcpad_added),
+      &padname3);
 
-  g_object_unref (pipe);
+  g_signal_emit_by_name (hubport1, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname1);
+  fail_if (padname1 == NULL);
+
+  g_signal_emit_by_name (hubport1, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname1_);
+  fail_if (padname1_ == NULL);
+
+  g_signal_emit_by_name (hubport2, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname2);
+  fail_if (padname2 == NULL);
+
+  g_signal_emit_by_name (hubport2, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname2_);
+  fail_if (padname2_ == NULL);
+
+  g_signal_emit_by_name (hubport3, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname3);
+  fail_if (padname3 == NULL);
+
+  g_signal_emit_by_name (hubport3, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname3_);
+  fail_if (padname3_ == NULL);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  g_signal_emit_by_name (mixer, "handle-port", hubport1, &handlerId1);
+  g_signal_emit_by_name (mixer, "handle-port", hubport2, &handlerId2);
+  g_signal_emit_by_name (mixer, "handle-port", hubport3, &handlerId3);
+
+  gst_debug_bin_to_dot_file_with_ts (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "composite");
+
+  g_main_loop_run (loop);
+
+  g_signal_emit_by_name (mixer, "unhandle-port", handlerId1);
+  g_signal_emit_by_name (mixer, "unhandle-port", handlerId2);
+  g_signal_emit_by_name (mixer, "unhandle-port", handlerId3);
+
+  g_signal_handler_disconnect (hubport1, signalId1);
+  g_signal_handler_disconnect (hubport2, signalId2);
+  g_signal_handler_disconnect (hubport3, signalId3);
+
+  g_free (padname1);
+  g_free (padname2);
+  g_free (padname3);
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (GST_OBJECT (pipeline));
+  g_main_loop_unref (loop);
 }
 
 GST_END_TEST
@@ -88,8 +183,7 @@ composite_mixer_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
-  tcase_add_test (tc_chain, create);
-  tcase_add_test (tc_chain, manage_ports);
+  tcase_add_test (tc_chain, connection);
 
   return s;
 }
