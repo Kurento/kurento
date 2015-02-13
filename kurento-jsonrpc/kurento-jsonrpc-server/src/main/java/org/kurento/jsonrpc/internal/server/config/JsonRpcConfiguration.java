@@ -21,10 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 
 import org.apache.catalina.Context;
 import org.apache.tomcat.websocket.server.WsSci;
+import org.kurento.commons.PropertiesManager;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.internal.http.JsonRpcHttpRequestHandler;
 import org.kurento.jsonrpc.internal.server.PerSessionJsonRpcHandler;
@@ -32,6 +34,8 @@ import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -46,17 +50,25 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 @Configuration
 @EnableWebSocket
 public class JsonRpcConfiguration implements WebSocketConfigurer {
 
+	private static final Logger log = LoggerFactory
+			.getLogger(JsonRpcConfiguration.class);
+
+	public static final String USE_SOCK_JS_PROPERTY = "ws.sockJS";
+	public static final boolean USE_SOCK_JS_DEFAULT_VALUE_PROPERTY = false;
+
 	@Autowired
 	protected ApplicationContext ctx;
 
 	private final List<JsonRpcConfigurer> configurers = new ArrayList<>();
 	private DefaultJsonRpcHandlerRegistry instanceRegistry;
+	private boolean useSockJs;
 
 	private DefaultJsonRpcHandlerRegistry getJsonRpcHandlersRegistry() {
 		if (instanceRegistry == null) {
@@ -66,6 +78,13 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 			}
 		}
 		return instanceRegistry;
+	}
+
+	@PostConstruct
+	private void init() {
+		useSockJs = PropertiesManager.getProperty(USE_SOCK_JS_PROPERTY,
+				USE_SOCK_JS_DEFAULT_VALUE_PROPERTY);
+		log.debug("JsonRPC using sockJs? {}", useSockJs);
 	}
 
 	@Autowired(required = false)
@@ -201,7 +220,12 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 		for (String path : paths) {
 
-			wsHandlerRegistry.addHandler(wsHandler, path);
+			WebSocketHandlerRegistration registration = wsHandlerRegistry
+					.addHandler(wsHandler, path);
+
+			if (useSockJs) {
+				registration.withSockJS();
+			}
 		}
 	}
 

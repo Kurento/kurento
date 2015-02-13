@@ -16,10 +16,10 @@ package org.kurento.jsonrpc.internal.server.config;
 
 /**
  * Properties of the JSON RPC connector
- * 
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.1.1
- * 
+ *
  */
 public class JsonRpcProperties {
 
@@ -141,4 +141,5 @@ public class JsonRpcProperties {
 	public void setAuthToken(String authToken) {
 		this.proxyToken = authToken;
 	}
+
 }
