@@ -18,7 +18,8 @@
       "js": {
         "nodeName": "kurento-client-elements",
         "npmDescription": "Elements implementations for kurento media server",
-        "npmGit": "Kurento/kurento-client-elements-js"
+        "npmGit": "Kurento/kurento-client-elements-js",
+        "npmVersion": "Kurento/kurento-client-elements-js#release-5.1"
       }
     },
     "implementation": {
