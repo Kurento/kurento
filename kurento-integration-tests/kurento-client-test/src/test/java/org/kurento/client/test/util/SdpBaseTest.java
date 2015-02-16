@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test.util;
 
@@ -23,7 +24,7 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.SdpEndpoint;
 
 /**
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @param <T>
  *
  */
@@ -95,8 +96,8 @@ public abstract class SdpBaseTest<T extends SdpEndpoint> extends
 	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				URL_BARCODES).build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES)
+				.build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"

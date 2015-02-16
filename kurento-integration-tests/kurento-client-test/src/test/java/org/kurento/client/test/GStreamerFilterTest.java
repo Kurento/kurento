@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -29,7 +30,7 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  * {@link GStreamerFilter} test suite.
  *
  *
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @since 3.0.1
  *
  */
@@ -49,7 +50,7 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 	}
 
 	@Test
-	public void testInstantiation() {
+	public void testInstantiation() throws InterruptedException {
 
 		filter = new GStreamerFilter.Builder(pipeline,
 				"videoflip method=horizontal-flip").build();
@@ -58,8 +59,10 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 
 		player.connect(filter);
 
-		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<EndOfStreamEvent>(
 				"EndOfStream event");
+
+		 
 
 		player.addEndOfStreamListener(async.getMediaEventListener());
 

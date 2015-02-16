@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -34,7 +35,7 @@ import org.kurento.client.test.util.AsyncResultManager;
  * <li>{@link RecorderEndpoint#stop()}
  * </ul>
  *
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  *
  */
@@ -43,7 +44,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	private RecorderEndpoint recorder;
 
 	@Before
-	public void setupMediaElements() {
+	public void setupMediaElements() throws InterruptedException {
 
 		AsyncResultManager<RecorderEndpoint> async = new AsyncResultManager<>(
 				"RecorderEndpoint creation");
@@ -62,7 +63,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	}
 
 	@Test
-	public void testGetUri() {
+	public void testGetUri() throws InterruptedException {
 
 		AsyncResultManager<String> async = new AsyncResultManager<>(
 				"recorder.getUri() invocation");
@@ -75,7 +76,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	}
 
 	@Test
-	public void testRecorder() {
+	public void testRecorder() throws InterruptedException {
 
 		AsyncResultManager<Void> asyncRecord = new AsyncResultManager<>(
 				"recorder.record() invocation");

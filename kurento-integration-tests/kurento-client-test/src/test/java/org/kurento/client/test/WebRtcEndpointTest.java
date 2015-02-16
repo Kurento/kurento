@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -22,7 +23,7 @@ import org.kurento.client.test.util.SdpBaseTest;
  *
  *
  *
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  *
  */
@@ -32,6 +33,8 @@ public class WebRtcEndpointTest extends SdpBaseTest<WebRtcEndpoint> {
 	public void setupMediaElements() {
 		sdp = new WebRtcEndpoint.Builder(pipeline).build();
 		sdp2 = new WebRtcEndpoint.Builder(pipeline).build();
+
+		 
 	}
 
 }

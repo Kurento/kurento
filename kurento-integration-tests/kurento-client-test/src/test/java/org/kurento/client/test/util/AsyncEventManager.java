@@ -1,7 +1,7 @@
 package org.kurento.client.test.util;
 
-import org.kurento.client.EventListener;
 import org.kurento.client.MediaEvent;
+import org.kurento.client.EventListener;
 
 public class AsyncEventManager<T extends MediaEvent> extends AsyncManager<T> {
 

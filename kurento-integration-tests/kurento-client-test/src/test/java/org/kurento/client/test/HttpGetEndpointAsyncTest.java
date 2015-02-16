@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -53,7 +54,7 @@ import org.kurento.client.test.util.AsyncResultManager;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  *
  */
@@ -63,7 +64,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	private HttpGetEndpoint httpEp;
 
 	@Before
-	public void setupMediaElements() {
+	public void setupMediaElements() throws InterruptedException {
 
 		AsyncResultManager<HttpGetEndpoint> async = new AsyncResultManager<>(
 				"HttpGetEndpoint creation");
@@ -94,7 +95,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		String url = async.waitForResult();
 
-		Assert.assertTrue((url != null) && !url.isEmpty());
+		Assert.assertTrue(url != null && !url.isEmpty());
 	}
 
 	/**
@@ -117,7 +118,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		player.addEndOfStreamListener(async.getMediaEventListener());
 
-		AsyncResultManager<ListenerSubscription> async2 = new AsyncResultManager<>(
+		AsyncResultManager<ListenerSubscription> async2 = new AsyncResultManager<ListenerSubscription>(
 				"EventListener subscription");
 
 		httpEp.addMediaSessionStartedListener(

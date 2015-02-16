@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -29,7 +30,7 @@ import org.kurento.commons.testing.KurentoClientTests;
 import org.kurento.test.base.KurentoClientTest;
 
 /**
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  *
  */
 @Category(KurentoClientTests.class)
@@ -38,7 +39,7 @@ public abstract class MediaPipelineAsyncBaseTest extends KurentoClientTest {
 	protected MediaPipeline pipeline;
 
 	@Before
-	public void setupPipeline() {
+	public void setupPipeline() throws InterruptedException {
 
 		AsyncResultManager<MediaPipeline> async = new AsyncResultManager<>(
 				"MediaPipeline creation");

@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * Factory to create {@link MediaPipeline} in the media server.
  *
  * @author Luis López (llopez@gsyc.es)
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
  */
 public class KurentoClient {

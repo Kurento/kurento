@@ -20,7 +20,7 @@ import org.kurento.client.MediaPipeline;
  * Factory to create {@link MediaPipeline} in the media server.
  *
  * @author Luis López (llopez@gsyc.es)
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
  */
 @Deprecated

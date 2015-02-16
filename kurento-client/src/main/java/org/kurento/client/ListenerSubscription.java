@@ -14,7 +14,7 @@ package org.kurento.client;
  * this listener.
  * 
  * @author Luis López (llopez@gsyc.es)
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
  */
 public interface ListenerSubscription {

@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -44,7 +45,7 @@ import org.kurento.commons.exception.KurentoException;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  *
  */
@@ -76,7 +77,7 @@ public class PlayerEndpointTest extends MediaPipelineBaseTest {
 	}
 
 	@Test
-	public void testEventEndOfStream() {
+	public void testEventEndOfStream() throws InterruptedException {
 
 		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
 				"EndOfStream event");

@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -43,7 +44,7 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  * </ul>
  *
  *
- * @author Ivan Gracia (igracia@kurento.org)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  *
  */
@@ -62,10 +63,10 @@ public class ZBarFilterTest extends MediaPipelineBaseTest {
 	}
 
 	@Test
-	public void testCodeFoundEvent() {
+	public void testCodeFoundEvent() throws InterruptedException {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				URL_BARCODES).build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES)
+				.build();
 		player.connect(zbar);
 
 		AsyncEventManager<CodeFoundEvent> async = new AsyncEventManager<>(

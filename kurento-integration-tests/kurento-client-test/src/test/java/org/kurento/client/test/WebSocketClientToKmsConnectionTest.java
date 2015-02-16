@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -50,7 +51,7 @@ public class WebSocketClientToKmsConnectionTest {
 
 		@OnWebSocketMessage
 		public void onMessage(String msg) {
-			log.debug("WebSocket OnMessage: {}", msg);
+			log.debug("WebSocket OnMessage: " + msg);
 		}
 	}
 
@@ -64,19 +65,22 @@ public class WebSocketClientToKmsConnectionTest {
 
 			String kmsUrl = kms.getLocalhostWsUrl();
 
-			log.info("Connecting to KMS in {}", kmsUrl);
+			log.info("Connecting to KMS in " + kmsUrl);
 
 			WebSocketClient client = new WebSocketClient();
 			WebSocketHandler socket = new WebSocketHandler();
 
 			client.start();
 			ClientUpgradeRequest request = new ClientUpgradeRequest();
-			try (Session wsSession = client.connect(socket, new URI(kmsUrl),
-					request).get()) {
-				wsSession.getRemote().sendString("xxxx");
-				kms.destroy();
-				Thread.sleep(3000);
-			}
+			Session wsSession = client
+					.connect(socket, new URI(kmsUrl), request).get();
+
+			wsSession.getRemote().sendString("xxxx");
+
+			kms.destroy();
+
+			Thread.sleep(3000);
+
 		}
 	}
 
@@ -88,25 +92,28 @@ public class WebSocketClientToKmsConnectionTest {
 
 		String kmsUrl = kms.getLocalhostWsUrl();
 
-		log.info("Connecting to KMS in {}", kmsUrl);
+		log.info("Connecting to KMS in " + kmsUrl);
 
 		WebSocketClient client = new WebSocketClient();
 		WebSocketHandler socket = new WebSocketHandler();
 
 		client.start();
 		ClientUpgradeRequest request = new ClientUpgradeRequest();
-		try (Session wsSession = client.connect(socket, new URI(kmsUrl),
-				request).get()) {
+		Session wsSession = client.connect(socket, new URI(kmsUrl), request)
+				.get();
+
+		wsSession.getRemote().sendString("xxxx");
+
+		kms.destroy();
+
+		Thread.sleep(3000);
+
+		try {
 
 			wsSession.getRemote().sendString("xxxx");
-			kms.destroy();
-			Thread.sleep(3000);
-			try {
-				wsSession.getRemote().sendString("xxxx");
-				fail("Trying to send to a closed WebSocket should raise an exception");
-			} catch (Exception e) {
+			fail("Trying to send to a closed WebSocket should raise an exception");
+		} catch (Exception e) {
 
-			}
 		}
 	}
 }

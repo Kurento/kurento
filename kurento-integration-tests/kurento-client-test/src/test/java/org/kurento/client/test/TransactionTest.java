@@ -10,6 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
+ *
  */
 package org.kurento.client.test;
 
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -40,7 +42,8 @@ import org.kurento.test.base.KurentoClientTest;
 public class TransactionTest extends KurentoClientTest {
 
 	@Test
-	public void transactionTest() {
+	public void transactionTest() throws InterruptedException,
+			ExecutionException {
 
 		// Pipeline creation (no transaction)
 		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
@@ -69,7 +72,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void multipleTransactionTest() {
+	public void multipleTransactionTest() throws InterruptedException,
+			ExecutionException {
 
 		// Pipeline creation (transaction)
 		Transaction tx1 = kurentoClient.beginTransaction();
@@ -95,7 +99,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void creationInTransaction() {
+	public void creationInTransaction() throws InterruptedException,
+			ExecutionException {
 
 		// Pipeline creation (transaction)
 		Transaction tx1 = kurentoClient.beginTransaction();
@@ -126,7 +131,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test(expected = TransactionNotCommitedException.class)
-	public void usePlainMethodsInNewObjectsInsideTx() {
+	public void usePlainMethodsInNewObjectsInsideTx()
+			throws InterruptedException, ExecutionException {
 
 		// Pipeline creation (no transaction)
 		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
@@ -147,7 +153,8 @@ public class TransactionTest extends KurentoClientTest {
 	// should be another error to control non-commited objects
 	// @Ignore
 	@Test(expected = TransactionNotCommitedException.class)
-	public void usePlainMethodsWithNewObjectsAsParamsInsideTx() {
+	public void usePlainMethodsWithNewObjectsAsParamsInsideTx()
+			throws InterruptedException, ExecutionException {
 
 		// Pipeline creation (no transaction)
 		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
@@ -165,7 +172,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void isCommitedTest() {
+	public void isCommitedTest() throws InterruptedException,
+			ExecutionException {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
@@ -187,7 +195,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void asyncTransaction() {
+	public void asyncTransaction() throws InterruptedException,
+			ExecutionException {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
@@ -211,7 +220,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void waitCommitedTest() throws InterruptedException {
+	public void waitCommitedTest() throws InterruptedException,
+			ExecutionException {
 
 		// Pipeline creation (transaction)
 
@@ -230,7 +240,6 @@ public class TransactionTest extends KurentoClientTest {
 		final CountDownLatch readyLatch = new CountDownLatch(1);
 
 		new Thread() {
-			@Override
 			public void run() {
 				try {
 					player.waitCommited();
@@ -251,7 +260,8 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void whenCommitedTest() {
+	public void whenCommitedTest() throws InterruptedException,
+			ExecutionException {
 
 		// Pipeline creation (transaction)
 
@@ -280,7 +290,7 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void futureTest() {
+	public void futureTest() throws InterruptedException, ExecutionException {
 
 		// Pipeline creation (no transaction)
 
@@ -323,7 +333,7 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void userRollbackTest() {
+	public void userRollbackTest() throws InterruptedException {
 
 		Transaction tx = kurentoClient.beginTransaction();
 
@@ -354,7 +364,7 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void transactionErrorTest() {
+	public void transactionErrorTest() throws InterruptedException {
 
 		// Pipeline creation (no transaction)
 
@@ -408,7 +418,7 @@ public class TransactionTest extends KurentoClientTest {
 	}
 
 	@Test
-	public void asyncCommit() {
+	public void asyncCommit() throws InterruptedException, ExecutionException {
 
 		// Pipeline creation (transaction)
 
