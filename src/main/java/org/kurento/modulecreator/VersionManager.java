@@ -129,7 +129,7 @@ public class VersionManager {
 			if (gitRepo == null) {
 				version = removeDevSuffix(version);
 			} else {
-				version = gitRepo + "#develop";
+				version = gitRepo;
 				return version;
 			}
 		}
@@ -218,7 +218,7 @@ public class VersionManager {
 			if (gitRepo == null) {
 				version = removeDevSuffix(version);
 			} else {
-				version = gitRepo + "#develop";
+				version = gitRepo;
 			}
 		}
 		return version;

@@ -47,7 +47,7 @@ public class NpmVersionTest {
 
 		String npmVersionA = moduleA.getCode().getApi().get("js")
 				.get("npmVersion");
-		assertThat(npmVersionA, is("git://host/path#develop"));
+		assertThat(npmVersionA, is("git://host/path"));
 
 		String npmVersionB = moduleB.getCode().getApi().get("js")
 				.get("npmVersion");
