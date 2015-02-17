@@ -1,27 +1,35 @@
-Source: kms-markerdetector
+Source: kms-markerdetector-6.0
 Section: utils
 Priority: optional
 Maintainer: Petri Honkamaa
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev,
+ kms-core-6.0-dev,
+ kms-elements-6.0-dev,
+ kms-filters-6.0-dev,
  libopencv-dev,
  libsoup2.4-dev
 Standards-Version: 3.9.4
 
-Package: kms-markerdetector
+Package: kms-markerdetector-6.0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
+Breaks:
+  kms-markerdetector
+Replaces:
+  kms-markerdetector
 Description: AR Marker detector for Kurento
 
-Package: kms-markerdetector-dev
+Package: kms-markerdetector-6.0-dev
 Architecture: any
-Depends: kms-markerdetector (= ${binary:Version}),
-  kms-core-dev,
-  kms-elements-dev,
-  kms-filters-dev,
+Depends: kms-markerdetector-6.0 (= ${binary:Version}),
+  kms-core-6.0-dev,
+  kms-elements-6.0-dev,
+  kms-filters-6.0-dev,
   libopencv-dev
+Breaks:
+  kms-markerdetector-dev
+Replaces:
+  kms-markerdetector-dev
 Description: AR Marker detector for Kurento dev

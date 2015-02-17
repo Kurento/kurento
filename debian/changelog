@@ -1,3 +1,9 @@
+kms-markerdetector-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Prerelease for 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Feb 2015 12:33:18 +0100
+
 kms-markerdetector (0.0.3) testing; urgency=medium
 
   [ Petri Honkamaa ]
