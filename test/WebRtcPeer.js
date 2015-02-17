@@ -46,20 +46,44 @@ if(typeof QUnit == 'undefined')
 };
 
 
-QUnit.module('WebRtcPeer');
-
+var WebRtcPeerRecvonly = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly;
+var WebRtcPeerSendonly = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly;
 var WebRtcPeerSendrecv = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv;
 
-QUnit.test('WebRtcPeerSendrecv', function(assert)
+var mediaConstraints =
+{
+  audio: false,
+  video:
+  {
+    mandatory:
+    {
+      maxWidth: 640,
+      maxFrameRate: 15,
+      minFrameRate: 15
+    }
+  }
+};
+
+
+QUnit.module('WebRtcPeer');
+
+QUnit.test('WebRtcPeerRecvonly', function(assert)
 {
   var done = assert.async();
 
-  assert.expect(0);
+  assert.expect(1);
 
 //  var localVideo  = document.getElementById('localVideo')
 //  var remoteVideo = document.getElementById('remoteVideo')
 
-  var webRtcPeer = new WebRtcPeerSendrecv()
+  var webRtcPeer = new WebRtcPeerRecvonly()
+
+  function onerror(error)
+  {
+    webRtcPeer.dispose()
+
+    _onerror(error)
+  }
 
   webRtcPeer.on('error', onerror)
   webRtcPeer.on('sdpoffer', function(sdpOffer)
@@ -74,23 +98,6 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
 
     peerConnection.setRemoteDescription(offer, function()
     {
-      var stream = peerConnection.getRemoteStreams()[0]
-
-//      peerConnection.addStream(stream)
-
-      var mediaConstraints =
-      {
-        audio: true,
-        video:
-        {
-          mandatory:
-          {
-            maxWidth: 640,
-            maxFrameRate: 15,
-            minFrameRate: 15
-          }
-        }
-      };
       getUserMedia(mediaConstraints, function(stream)
       {
         peerConnection.addStream(stream)
@@ -103,6 +110,136 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
             {
               if(error) return onerror(error)
 
+              var stream = this.getRemoteStream()
+              assert.notEqual(stream, undefined, 'remote stream')
+
+              this.dispose()
+              done()
+            })
+          },
+          onerror);
+        },
+        onerror);
+      },
+      onerror);
+    },
+    onerror)
+  })
+});
+
+QUnit.test('WebRtcPeerSendonly', function(assert)
+{
+  var done = assert.async();
+
+  assert.expect(2);
+
+//  var localVideo  = document.getElementById('localVideo')
+//  var remoteVideo = document.getElementById('remoteVideo')
+
+  var webRtcPeer = new WebRtcPeerSendonly()
+
+  function onerror(error)
+  {
+    webRtcPeer.dispose()
+
+    _onerror(error)
+  }
+
+  webRtcPeer.on('error', onerror)
+  webRtcPeer.on('sdpoffer', function(sdpOffer)
+  {
+    var stream = this.getLocalStream()
+    assert.notEqual(stream, undefined, 'local stream')
+
+    var offer = new RTCSessionDescription(
+    {
+      type: 'offer',
+      sdp:  sdpOffer
+    });
+
+    var peerConnection = new RTCPeerConnection()
+
+    peerConnection.setRemoteDescription(offer, function()
+    {
+      var stream = peerConnection.getRemoteStreams()[0]
+      assert.notEqual(stream, undefined, 'peer remote stream')
+
+      peerConnection.createAnswer(function(answer)
+      {
+        peerConnection.setLocalDescription(answer, function()
+        {
+          webRtcPeer.processSdpAnswer(answer.sdp, function(error)
+          {
+            if(error) return onerror(error)
+
+            this.dispose()
+
+            done()
+          })
+        },
+        onerror);
+      },
+      onerror);
+    },
+    onerror)
+  })
+});
+
+QUnit.test('WebRtcPeerSendrecv', function(assert)
+{
+  var done = assert.async();
+
+  assert.expect(3);
+
+//  var localVideo  = document.getElementById('localVideo')
+//  var remoteVideo = document.getElementById('remoteVideo')
+
+  var webRtcPeer = new WebRtcPeerSendrecv()
+
+  function onerror(error)
+  {
+    webRtcPeer.dispose()
+
+    _onerror(error)
+  }
+
+  webRtcPeer.on('error', onerror)
+  webRtcPeer.on('sdpoffer', function(sdpOffer)
+  {
+    var stream = this.getLocalStream()
+    assert.notEqual(stream, undefined, 'local stream')
+
+    var offer = new RTCSessionDescription(
+    {
+      type: 'offer',
+      sdp:  sdpOffer
+    });
+
+    var peerConnection = new RTCPeerConnection()
+
+    peerConnection.setRemoteDescription(offer, function()
+    {
+      var stream = peerConnection.getRemoteStreams()[0]
+      assert.notEqual(stream, undefined, 'peer remote stream')
+
+//      peerConnection.addStream(stream)
+
+      getUserMedia(mediaConstraints, function(stream)
+      {
+        peerConnection.addStream(stream)
+
+        peerConnection.createAnswer(function(answer)
+        {
+          peerConnection.setLocalDescription(answer, function()
+          {
+            webRtcPeer.processSdpAnswer(answer.sdp, function(error)
+            {
+              if(error) return onerror(error)
+
+              var stream = this.getRemoteStream()
+              assert.notEqual(stream, undefined, 'remote stream')
+
+              this.dispose()
               done()
             })
           },

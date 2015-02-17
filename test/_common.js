@@ -24,6 +24,8 @@ function onerror(error)
   QUnit.start();
 };
 
+_onerror = onerror;
+
 QUnit.jUnitReport = function (report)
 {
   // Node.js - write report to file
