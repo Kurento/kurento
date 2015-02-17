@@ -114,7 +114,7 @@ public class ProtocolManager {
 
 		} else if (request.getMethod().equals(METHOD_PING)) {
 
-			processPingMessage(responseSender);
+			processPingMessage(factory, request, responseSender, transportId);
 
 		} else {
 
@@ -177,10 +177,14 @@ public class ProtocolManager {
 		return session;
 	}
 
-	private void processPingMessage(ResponseSender responseSender)
-			throws IOException {
+	private void processPingMessage(ServerSessionFactory factory,
+			Request<JsonElement> request, ResponseSender responseSender,
+			String transportId) throws IOException {
 
-		responseSender.sendResponse(new Response<>(PONG));
+		String sessionId = request.getSessionId();
+		responseSender.sendResponse(new Response<>(sessionId, request.getId(),
+				PONG));
+
 	}
 
 	private void processReconnectMessage(ServerSessionFactory factory,
