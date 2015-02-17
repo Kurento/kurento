@@ -56,8 +56,8 @@ public class KurentoClient {
 		this.manager = new RomManager(new RomClientJsonRpcClient(client));
 		try {
 			client.connect();
-		} catch (IOException e) {
-			throw new KurentoException("Exception connecting to KMS", e);
+		} catch (IOException e){
+			throw new KurentoException("Exception connecting to KMS",e);
 		}
 	}
 
@@ -107,8 +107,4 @@ public class KurentoClient {
 		return new TransactionImpl(manager);
 	}
 
-	public ServerManager getServerManager() {
-		return manager.getOrCreateObject("manager_ServerManager",
-				ServerManager.class);
-	}
 }
