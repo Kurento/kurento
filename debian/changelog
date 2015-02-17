@@ -1,3 +1,9 @@
+kms-crowddetector-6.0 (6.0.0~0) testing; urgency=medium
+
+  * Prerelease for 6.0.0
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Feb 2015 11:18:15 +0100
+
 kms-crowddetector (1.0.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
