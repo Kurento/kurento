@@ -14,7 +14,9 @@
  */
 package org.kurento.jsonrpc.internal.server;
 
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_ERROR;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_SUCCESSFUL;
 
@@ -110,6 +112,10 @@ public class ProtocolManager {
 			processReconnectMessage(factory, request, responseSender,
 					transportId);
 
+		} else if (request.getMethod().equals(METHOD_PING)) {
+
+			processPingMessage(responseSender);
+
 		} else {
 
 			ServerSession session = getSession(factory, transportId, request);
@@ -171,6 +177,12 @@ public class ProtocolManager {
 		return session;
 	}
 
+	private void processPingMessage(ResponseSender responseSender)
+			throws IOException {
+
+		responseSender.sendResponse(new Response<>(PONG));
+	}
+
 	private void processReconnectMessage(ServerSessionFactory factory,
 			Request<JsonElement> request, ResponseSender responseSender,
 			String transportId) throws IOException {
@@ -180,10 +192,10 @@ public class ProtocolManager {
 		if (sessionId == null) {
 
 			responseSender
-					.sendResponse(new Response<>(
-							request.getId(),
-							new ResponseError(99999,
-									"SessionId is mandatory in a reconnection request")));
+			.sendResponse(new Response<>(
+					request.getId(),
+					new ResponseError(99999,
+							"SessionId is mandatory in a reconnection request")));
 		} else {
 
 			ServerSession session = sessionsManager.get(sessionId);
@@ -193,7 +205,8 @@ public class ProtocolManager {
 				session.setTransportId(transportId);
 				sessionsManager.updateTransportId(session, oldTransportId);
 
-				//FIXME: Possible race condition if session is disposed when reconnect method has arrived
+				// FIXME: Possible race condition if session is disposed when
+				// reconnect method has arrived
 				cancelCloseTimer(session);
 
 				responseSender.sendResponse(new Response<>(sessionId, request
@@ -254,8 +267,8 @@ public class ProtocolManager {
 								},
 								new Date(
 										System.currentTimeMillis()
-												+ session
-														.getReconnectionTimeoutInMillis()));
+										+ session
+										.getReconnectionTimeoutInMillis()));
 
 				session.setCloseTimerTask(lastStartedTimerFuture);
 

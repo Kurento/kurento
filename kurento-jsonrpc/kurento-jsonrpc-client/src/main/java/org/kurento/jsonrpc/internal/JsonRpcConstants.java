@@ -52,6 +52,10 @@ public class JsonRpcConstants {
 
 	public static final String METHOD_RECONNECT = "connect";
 
+	public static final String METHOD_PING = "ping";
+
+	public static final String PONG = "pong";
+
 	public static final String EVENT_SESSION_TERMINATED = "sessionTerminated";
 
 	public static final String EVENT_SESSION_ERROR = "sessionError";
