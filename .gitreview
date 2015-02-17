@@ -2,5 +2,5 @@
 host=code.kurento.org
 port=12345
 project=kms-markerdetector.git
-defaultbranch=release-5.1
+defaultbranch=master
 
