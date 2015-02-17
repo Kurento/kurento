@@ -125,7 +125,12 @@ QUnit.test('WebRtcPeerSendonly', function(assert)
 
   assert.expect(2);
 
-  var webRtcPeer = new WebRtcPeerSendonly()
+  var options =
+  {
+    audioStream: getOscillatorMedia()
+  }
+
+  var webRtcPeer = new WebRtcPeerSendonly(options)
 
   function onerror(error)
   {
@@ -180,7 +185,12 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
 
   assert.expect(3);
 
-  var webRtcPeer = new WebRtcPeerSendrecv()
+  var options =
+  {
+    audioStream: getOscillatorMedia()
+  }
+
+  var webRtcPeer = new WebRtcPeerSendrecv(options)
 
   function onerror(error)
   {
