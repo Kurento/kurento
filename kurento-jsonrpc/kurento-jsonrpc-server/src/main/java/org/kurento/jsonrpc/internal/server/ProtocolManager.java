@@ -114,7 +114,7 @@ public class ProtocolManager {
 
 		} else if (request.getMethod().equals(METHOD_PING)) {
 
-			processPingMessage(responseSender);
+			processPingMessage(factory, request, responseSender, transportId);
 
 		} else {
 
@@ -177,10 +177,14 @@ public class ProtocolManager {
 		return session;
 	}
 
-	private void processPingMessage(ResponseSender responseSender)
-			throws IOException {
+	private void processPingMessage(ServerSessionFactory factory,
+			Request<JsonElement> request, ResponseSender responseSender,
+			String transportId) throws IOException {
 
-		responseSender.sendResponse(new Response<>(PONG));
+		String sessionId = request.getSessionId();
+		responseSender.sendResponse(new Response<>(sessionId, request.getId(),
+				PONG));
+
 	}
 
 	private void processReconnectMessage(ServerSessionFactory factory,
@@ -192,10 +196,10 @@ public class ProtocolManager {
 		if (sessionId == null) {
 
 			responseSender
-			.sendResponse(new Response<>(
-					request.getId(),
-					new ResponseError(99999,
-							"SessionId is mandatory in a reconnection request")));
+					.sendResponse(new Response<>(
+							request.getId(),
+							new ResponseError(99999,
+									"SessionId is mandatory in a reconnection request")));
 		} else {
 
 			ServerSession session = sessionsManager.get(sessionId);
@@ -267,8 +271,8 @@ public class ProtocolManager {
 								},
 								new Date(
 										System.currentTimeMillis()
-										+ session
-										.getReconnectionTimeoutInMillis()));
+												+ session
+														.getReconnectionTimeoutInMillis()));
 
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
