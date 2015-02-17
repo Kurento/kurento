@@ -1,6 +1,6 @@
 [gerrit]
-host=repository.kurento.com
+host=code.kurento.org
 port=12345
 project=kms-chroma.git
-defaultbranch=develop
+defaultbranch=master
 
