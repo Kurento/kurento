@@ -1,13 +1,13 @@
-Source: kms-platedetector
+Source: kms-platedetector-6.0
 Section: utils
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev (>= 5.1.0),
- kms-elements-dev,
- kms-filters-dev,
+ kms-core-6.0-dev,
+ kms-elements-6.0-dev,
+ kms-filters-6.0-dev,
  libopencv-dev,
  libtesseract-dev
 Standards-Version: 3.9.4
@@ -15,23 +15,35 @@ Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-platedetector.git
 Vcs-Browser: https://github.com/Kurento/kms-platedetector.git
 
-Package: kms-platedetector
+Package: kms-platedetector-6.0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-  kms-core (>= 5.1.0),
-  kms-elements (>= 5.1.0),
-  kms-filters (>= 5.1.0)
+  kms-core-6.0,
+  kms-elements-6.0,
+  kms-filters-6.0
+Breaks:
+  kms-platedetector
+Replaces:
+  kms-platedetector
 Description: Kurento Plate Detector Filter
 
-Package: kms-platedetector-dev
+Package: kms-platedetector-6.0-dev
 Architecture: any
-Depends: kms-platedetector (= ${binary:Version}),
-  kms-core-dev,
-  kms-elements-dev,
-  kms-filters-dev
+Depends: kms-platedetector-6.0 (= ${binary:Version}),
+  kms-core-6.0-dev,
+  kms-elements-6.0-dev,
+  kms-filters-6.0-dev
+Breaks:
+  kms-platedetector-dev
+Replaces:
+  kms-platedetector-dev
 Description: Kurento Plate Detector Filter development files
 
-Package: kms-platedetector-dbg
+Package: kms-platedetector-6.0-dbg
 Architecture: any
-Depends: kms-platedetector (= ${binary:Version})
+Depends: kms-platedetector-6.0 (= ${binary:Version})
+Breaks:
+  kms-platedetector-dbg
+Replaces:
+  kms-platedetector-dbg
 Description: Kurento Plate Detector Filter debug symbols

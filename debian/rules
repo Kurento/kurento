@@ -13,4 +13,4 @@ override_dh_auto_configure:
 .PHONY: override_dh_strip
 
 override_dh_strip:
-	dh_strip --dbg-package=kms-platedetector-dbg
+	dh_strip --dbg-package=kms-platedetector-6.0-dbg
