@@ -73,9 +73,6 @@ QUnit.test('WebRtcPeerRecvonly', function(assert)
 
   assert.expect(1);
 
-//  var localVideo  = document.getElementById('localVideo')
-//  var remoteVideo = document.getElementById('remoteVideo')
-
   var webRtcPeer = new WebRtcPeerRecvonly()
 
   function onerror(error)
@@ -133,9 +130,6 @@ QUnit.test('WebRtcPeerSendonly', function(assert)
 
   assert.expect(2);
 
-//  var localVideo  = document.getElementById('localVideo')
-//  var remoteVideo = document.getElementById('remoteVideo')
-
   var webRtcPeer = new WebRtcPeerSendonly()
 
   function onerror(error)
@@ -190,9 +184,6 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
   var done = assert.async();
 
   assert.expect(3);
-
-//  var localVideo  = document.getElementById('localVideo')
-//  var remoteVideo = document.getElementById('remoteVideo')
 
   var webRtcPeer = new WebRtcPeerSendrecv()
 
@@ -250,5 +241,66 @@ QUnit.test('WebRtcPeerSendrecv', function(assert)
       onerror);
     },
     onerror)
+  })
+});
+
+
+QUnit.test('videoEnabled', function(assert)
+{
+  var done = assert.async();
+
+  assert.expect(3);
+
+  var video   = document.getElementById('localVideo')
+  var canvas  = document.getElementById('canvas')
+  var context = canvas.getContext('2d');
+
+  var options =
+  {
+    localVideo: video,
+    mediaConstraints: {audio: false}
+  }
+
+  var webRtcPeer = new WebRtcPeerSendonly(options)
+
+  function onerror(error)
+  {
+    webRtcPeer.dispose()
+
+    _onerror(error)
+  }
+
+  webRtcPeer.on('error', onerror)
+  webRtcPeer.on('sdpoffer', function(sdpoffer)
+  {
+    setTimeout(function()
+    {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      var x = video.videoWidth  / 2
+      var y = video.videoHeight / 2
+
+      context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
+      assert.notPixelEqual(canvas, x,y, 0,0,0,0, 'enabled');
+
+      webRtcPeer.videoEnabled = false
+
+      setTimeout(function()
+      {
+        context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
+        assert.pixelEqual(canvas, x,y, 0,0,0,255, 'disabled');
+
+        webRtcPeer.videoEnabled = true
+
+        setTimeout(function()
+        {
+          context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
+          assert.notPixelEqual(canvas, x,y, 0,0,0,255, 'enabled again');
+
+          done()
+        }, 0)
+      }, 0)
+    }, 500)
   })
 });
