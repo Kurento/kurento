@@ -310,7 +310,11 @@ QUnit.test('videoEnabled', function(assert)
   {
     configuration: {iceServers: []},
     localVideo: video,
-    mediaConstraints: {audio: false}
+    mediaConstraints:
+    {
+      audio: false,
+      fake: true
+    }
   }
 
   function onerror(error)
@@ -321,11 +325,12 @@ QUnit.test('videoEnabled', function(assert)
     done()
   }
 
-  var webRtcPeer = new WebRtcPeerSendonly(options)
+  const TIMEOUT = 50;  // ms
 
-  webRtcPeer.on('error', onerror)
-  webRtcPeer.on('sdpoffer', function(sdpoffer)
+  function onplaying()
   {
+    video.removeEventListener('playing', onplaying)
+
     setTimeout(function()
     {
       canvas.width  = video.videoWidth;
@@ -353,8 +358,17 @@ QUnit.test('videoEnabled', function(assert)
 
           webRtcPeer.dispose()
           done()
-        }, 0)
-      }, 0)
-    }, 1000)
+        }, TIMEOUT)
+      }, TIMEOUT)
+    }, TIMEOUT)
+  }
+
+
+  var webRtcPeer = new WebRtcPeerSendonly(options)
+
+  webRtcPeer.on('error', onerror)
+  webRtcPeer.on('sdpoffer', function(sdpoffer)
+  {
+    video.addEventListener('playing', onplaying)
   })
 });
