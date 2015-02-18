@@ -67,7 +67,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			wsSession = session;
 			rs = new ClientWebSocketResponseSender(wsSession);
 			latch.countDown();
-			if (connectionListener != null) {
+			if (connectionListener != null && !reconnecting) {
 				connectionListener.connected();
 			}
 		}
@@ -101,6 +101,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private static final long TIMEOUT = 60000;
 
 	private WebSocketClient client;
+
+	private boolean reconnecting = false;
 
 	public JsonRpcClientWebSocket(String url) {
 		this(url, null);
@@ -231,11 +233,15 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		if (!clientClose) {
 
+			reconnecting  = true;
+
 			execService.execute(new Runnable() {
 				@Override
 				public void run() {
 					try {
 						connectIfNecessary();
+
+						reconnecting = false;
 					} catch (KurentoException e) {
 
 						handlerManager.afterConnectionClosed(session,
