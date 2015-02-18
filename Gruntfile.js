@@ -172,12 +172,15 @@ module.exports = function(grunt)
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks("grunt-jscoverage");
+  grunt.loadNpmTasks('grunt-jscoverage');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'jscoverage', 'browserify']);
-  grunt.registerTask('bower',   ['sync:bower', 'shell:bower']);
+  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
+
+  grunt.registerTask('bower',    ['sync:bower', 'shell:bower']);
+  grunt.registerTask('coverage', ['clean:coverage', 'jscoverage',
+                                  'browserify:coverage']);
 };

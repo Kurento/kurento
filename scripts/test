@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-var http       = require('http')
-var outputFile = require('fs-extra').outputFile
+var http = require('http')
 
 var elementIsVisible = require('selenium-webdriver').until.elementIsVisible
 var Driver           = require('selenium-webdriver/firefox').Driver
-var Server           = require('node-static').Server
+
+var install    = require('bower').commands.install
+var outputFile = require('fs-extra').outputFile
+var Server     = require('node-static').Server
+var tasks      = require('grunt').tasks
 
 
 const package_name = require('../package.json').name
@@ -26,38 +29,43 @@ function writeReport(type, data)
   });
 }
 
-
-var file = new Server();
-
-var server = http.createServer(function(request, response)
+function waitReport(driver, id)
 {
-  request.addListener('end', function()
+  var elem = driver.findElement({id: id})
+
+  driver
+      .wait(elementIsVisible(elem), 20000)
+      .then(elem.getAttribute.bind(elem, 'value'))
+      .then(writeReport.bind(undefined, id))
+}
+
+
+install([], undefined, {cwd: 'test'}).on('end', function(installed)
+{
+  installed = Object.keys(installed)
+
+  if(installed.length)
+    console.log('Installed:',installed.join(', '));
+
+  tasks('coverage', {}, function()
   {
-    file.serve(request, response);
-  }).resume();
-}).listen(PORT);
+    var file = new Server();
+
+    var server = http.createServer(function(request, response)
+    {
+      var listener = file.serve.bind(file, request, response)
+
+      request.addListener('end', listener).resume()
+    }).listen(PORT);
 
 
-var driver = new Driver()
+    var driver = new Driver()
 
-driver.get('http://localhost:'+PORT+'/test/index.html')
+    driver.get('http://localhost:'+PORT+'/test/index.html')
 
-var junit = driver.findElement({id: 'junit'})
-var lcov  = driver.findElement({id: 'lcov'})
+    waitReport(driver, 'junit')
+    waitReport(driver, 'lcov')
 
-driver.wait(elementIsVisible(junit), 20000)
-.then(function()
-{
-  junit.getAttribute('value').then(writeReport.bind(undefined, 'xml'))
-})
-driver.wait(elementIsVisible(lcov), 20000)
-.then(function()
-{
-  lcov.getAttribute('value').then(writeReport.bind(undefined, 'lcov'))
-})
-
-driver.quit()
-.then(function()
-{
-  server.close()
-})
+    driver.quit().then(server.close.bind(server))
+  })
+});
