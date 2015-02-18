@@ -104,12 +104,13 @@ public class BrowserClient implements Closeable {
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
 	public static final String TEST_PUBLIC_IP_PROPERTY = "test.public.ip";
+	public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
 
 	private BrowserClient(Builder builder) {
 
 		this.video = builder.video;
 		this.audio = builder.audio;
-		this.serverPort = builder.serverPort;
+		this.serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort);
 		this.client = builder.client;
 		this.browser = builder.browser;
 		this.usePhysicalCam = builder.usePhysicalCam;
@@ -140,7 +141,7 @@ public class BrowserClient implements Closeable {
 					PerformanceTest.SELENIUM_HUB_PUBLIC_PROPERTY, hostAddress);
 
 		} else {
-			hostAddress = "127.0.0.1";
+			hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY, "127.0.0.1");
 		}
 
 		// Selenium timeouts
