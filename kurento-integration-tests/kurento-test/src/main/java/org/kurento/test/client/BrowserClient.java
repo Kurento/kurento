@@ -110,7 +110,8 @@ public class BrowserClient implements Closeable {
 
 		this.video = builder.video;
 		this.audio = builder.audio;
-		this.serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort);
+		this.serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
+				builder.serverPort);
 		this.client = builder.client;
 		this.browser = builder.browser;
 		this.usePhysicalCam = builder.usePhysicalCam;
@@ -123,6 +124,7 @@ public class BrowserClient implements Closeable {
 		this.isLocal = builder.isLocal;
 		this.browserVersion = builder.browserVersion;
 		this.platform = builder.platform;
+		this.name = builder.name;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
@@ -207,6 +209,9 @@ public class BrowserClient implements Closeable {
 							.getBrowserName());
 					capabilities.setCapability("version", browserVersion);
 					capabilities.setCapability("platform", platform);
+					if (name != null) {
+						capabilities.setCapability("name", name);
+					}
 
 					driver = new RemoteWebDriver(new URL("http://"
 							+ sauceLabsUser + ":" + sauceLabsKey
@@ -287,6 +292,9 @@ public class BrowserClient implements Closeable {
 							.getBrowserName());
 					capabilities.setCapability("version", browserVersion);
 					capabilities.setCapability("platform", platform);
+					if (name != null) {
+						capabilities.setCapability("name", name);
+					}
 
 					driver = new RemoteWebDriver(new URL("http://"
 							+ sauceLabsUser + ":" + sauceLabsKey
@@ -314,6 +322,9 @@ public class BrowserClient implements Closeable {
 							.internetExplorer().getBrowserName());
 					capabilities.setCapability("version", browserVersion);
 					capabilities.setCapability("platform", platform);
+					if (name != null) {
+						capabilities.setCapability("name", name);
+					}
 
 					driver = new RemoteWebDriver(new URL("http://"
 							+ sauceLabsUser + ":" + sauceLabsKey
@@ -633,6 +644,7 @@ public class BrowserClient implements Closeable {
 		private boolean isLocal;
 		private String browserVersion;
 		private Platform platform;
+		private String name;
 
 		public Builder() {
 			this(KurentoServicesTestHelper.getAppHttpPort());
@@ -724,6 +736,11 @@ public class BrowserClient implements Closeable {
 			this.platform = platform;
 			return this;
 		}
+
+		public Builder name(String name) {
+			this.name = name;
+			return this;
+		}
 	}
 
 	@Deprecated
@@ -813,14 +830,6 @@ public class BrowserClient implements Closeable {
 
 	public WebDriver getWebDriver() {
 		return driver;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public void activateRtcStats() {
