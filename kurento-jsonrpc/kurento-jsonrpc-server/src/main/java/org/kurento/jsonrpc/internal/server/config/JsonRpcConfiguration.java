@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.Filter;
-
 import org.apache.catalina.Context;
 import org.apache.tomcat.websocket.server.WsSci;
 import org.kurento.jsonrpc.JsonRpcHandler;
@@ -73,15 +71,6 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 	public void setConfigurers(List<JsonRpcConfigurer> configurers) {
 		if (!CollectionUtils.isEmpty(configurers)) {
 			this.configurers.addAll(configurers);
-		}
-	}
-
-	@Configuration
-	protected static class ApplicationContextFilterConfiguration {
-
-		@Bean
-		public Filter applicationContextOAuthFilter(ApplicationContext context) {
-			return new OAuthFiWareFilter();
 		}
 	}
 
