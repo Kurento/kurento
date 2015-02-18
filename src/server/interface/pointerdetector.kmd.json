@@ -1,7 +1,7 @@
 {
   "name": "pointerdetector",
-  "version": "1.0.4-dev",
-  "kurentoVersion": "^5.0.0",
+  "version": "6.0.0-dev",
+  "kurentoVersion": "6.0.0-dev",
   "code": {
     "api": {
       "js": {
