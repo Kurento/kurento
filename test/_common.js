@@ -27,54 +27,39 @@ function onerror(error)
 
 _onerror = onerror;
 
-QUnit.jUnitReport = function(report)
+
+const REPORTS_DIR='reports'
+
+function writeReport(ext, data) {
+  var path = REPORTS_DIR + '/' + require('../package.json').name + '.' + ext
+
+  require('fs-extra').outputFile(path, data, function (error) {
+    if (error) return console.trace(error);
+
+    console.log(ext + ' report saved at ' + path);
+  });
+}
+
+function fetchReport(type, report)
 {
+  var ext = type
+  if (type == 'junit') ext = 'xml'
+
+  report = report[ext]
+
   // Node.js - write report to file
   if(typeof window === 'undefined')
-  {
-    var path = './junitResult.xml';
-
-    require('fs').writeFile(path, report.xml, function(error)
-    {
-      if(error) return console.error(error);
-
-      console.log('XML report saved at ' + path);
-    });
-  }
+    writeReport(ext, report)
 
   // browser - write report to console
-  else
-  {
-    var textarea = document.getElementById('junit');
+  else {
+    var textarea = document.getElementById(type);
 
-    textarea.value = report.xml;
+    textarea.value = report;
     textarea.style.height = textarea.scrollHeight + "px";
     textarea.style.visibility = "visible";
   }
-};
+}
 
-QUnit.lcovReport = function(report)
-{
-  // Node.js - write report to file
-  if(typeof window === 'undefined')
-  {
-    var path = './lcovResult.xml';
-
-    require('fs').writeFile(path, report.lcov, function(error)
-    {
-      if(error) return console.error(error);
-
-      console.log('lcov report saved at ' + path);
-    });
-  }
-
-  // browser - write report to console
-  else
-  {
-    var textarea = document.getElementById('lcov');
-
-    textarea.value = report.lcov;
-    textarea.style.height = textarea.scrollHeight + "px";
-    textarea.style.visibility = "visible";
-  }
-};
+QUnit.jUnitReport = fetchReport.bind(undefined, 'junit')
+QUnit.lcovReport  = fetchReport.bind(undefined, 'lcov')
