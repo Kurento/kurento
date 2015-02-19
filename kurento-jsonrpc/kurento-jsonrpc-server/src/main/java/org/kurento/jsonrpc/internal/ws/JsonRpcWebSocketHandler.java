@@ -87,6 +87,10 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 					return new WebSocketServerSession(sessionId, registerInfo,
 							sessionsManager, wsSession);
 				}
+				@Override
+				public void updateSessionOnReconnection(ServerSession session){
+					((WebSocketServerSession)session).updateWebSocketSession(wsSession);
+				}
 			};
 
 			protocolManager.processMessage(messageJson, factory,

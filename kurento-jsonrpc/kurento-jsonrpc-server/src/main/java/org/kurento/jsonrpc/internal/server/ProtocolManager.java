@@ -51,6 +51,8 @@ public class ProtocolManager {
 	public interface ServerSessionFactory {
 		ServerSession createSession(String sessionId, Object registerInfo,
 				SessionsManager sessionsManager);
+
+		void updateSessionOnReconnection(ServerSession session);
 	}
 
 	private static final Logger log = LoggerFactory
@@ -207,6 +209,7 @@ public class ProtocolManager {
 
 				String oldTransportId = session.getTransportId();
 				session.setTransportId(transportId);
+				factory.updateSessionOnReconnection(session);
 				sessionsManager.updateTransportId(session, oldTransportId);
 
 				// FIXME: Possible race condition if session is disposed when

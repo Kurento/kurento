@@ -94,6 +94,11 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 				return new HttpRequestServerSession(sessionId, registerInfo,
 						sessionsManager, null);
 			}
+
+			@Override
+			public void updateSessionOnReconnection(ServerSession session) {
+				throw new UnsupportedOperationException();
+			}
 		};
 
 		ResponseSender responseSender = new ResponseSender() {
@@ -115,7 +120,7 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param request
 	 * @return
 	 * @throws IOException
