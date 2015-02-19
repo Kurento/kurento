@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.kurento.commons.PropertiesManager.PropertyHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
@@ -19,6 +21,9 @@ import com.google.gson.stream.JsonReader;
 
 public class ConfigFilePropertyHolder implements PropertyHolder {
 
+	private static Logger log = LoggerFactory
+			.getLogger(ConfigFilePropertyHolder.class);
+
 	private static final Gson gson = new GsonBuilder().create();
 
 	private JsonObject configFile;
@@ -29,14 +34,27 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 		Preconditions.checkNotNull(configFilePath,
 				"configFilePath paramter must be not null.");
 
+		log.debug("Using configuration file in path '" + configFilePath + "' ("
+				+ configFilePath.getClass().getCanonicalName() + ")");
+
 		JsonReader reader = new JsonReader(Files.newBufferedReader(
 				configFilePath, StandardCharsets.UTF_8));
 		reader.setLenient(true);
 
 		JsonObject configFile = gson.fromJson(reader, JsonObject.class);
 
+		traceConfigContent(configFile);
+
 		PropertiesManager.setPropertyHolder(new ConfigFilePropertyHolder(
 				configFile));
+	}
+
+	private static void traceConfigContent(JsonObject configFile) {
+		if (log.isDebugEnabled()) {
+			Gson gs = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+			String jsonContents = gs.toJson(configFile);
+			log.debug("Configuration content: " + jsonContents);
+		}
 	}
 
 	public ConfigFilePropertyHolder(JsonObject configFile) {
