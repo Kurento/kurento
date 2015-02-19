@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -78,6 +81,10 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 	public static final String SELENIUM_HUB_PUBLIC_PROPERTY = "selenium.hub.public";
 	public static final String SELENIUM_HUB_HOST_PROPERTY = "selenium.hub.host";
+
+	public static final String SELENIUM_NODES_LIST_PROPERTY = "test.nodes.list";
+	public static final String SELENIUM_NODES_FILE_LIST_PROPERTY = "test.nodes.file.list";
+
 	public static final String SELENIUM_HUB_HOST_DEFAULT = "127.0.0.1";
 
 	private static final int TIMEOUT_NODE = 300; // seconds
@@ -294,14 +301,32 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 			String video, String audio, int maxInstances) {
 		List<Node> nodes = new ArrayList<Node>();
 
-		InputStream inputStream = PerformanceTest.class.getClassLoader()
-				.getResourceAsStream("node-list.txt");
+		String nodesListProp = System.getProperty(SELENIUM_NODES_LIST_PROPERTY);
+		String nodesListFileProp = System
+				.getProperty(SELENIUM_NODES_FILE_LIST_PROPERTY);
+
 		List<String> nodeList = null;
-		try {
-			nodeList = CharStreams.readLines(new InputStreamReader(inputStream,
-					Charsets.UTF_8));
-		} catch (IOException e) {
-			Assert.fail("Exception reading node-list.txt: " + e.getMessage());
+		if (nodesListFileProp != null) {
+			try {
+				nodeList = FileUtils.readLines(new File(nodesListFileProp),
+						Charset.defaultCharset());
+			} catch (IOException e) {
+				Assert.fail("Exception reading node list file: "
+						+ e.getMessage());
+			}
+		} else if (nodesListProp != null) {
+			nodeList = new ArrayList<>(Arrays.asList(nodesListProp.split(";")));
+		} else {
+			InputStream inputStream = PerformanceTest.class.getClassLoader()
+					.getResourceAsStream("node-list.txt");
+
+			try {
+				nodeList = CharStreams.readLines(new InputStreamReader(
+						inputStream, Charsets.UTF_8));
+			} catch (IOException e) {
+				Assert.fail("Exception reading node-list.txt: "
+						+ e.getMessage());
+			}
 		}
 
 		String nodeCandidate;
@@ -318,30 +343,32 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 			}
 			log.debug("Node candidate {}", nodeCandidate);
 
-			if (RemoteHost.ping(nodeCandidate)) {
-				RemoteHost remoteHost = new RemoteHost(nodeCandidate,
-						getProperty("test.node.login"),
-						getProperty("test.node.passwd"));
-				try {
-					remoteHost.start();
-					int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
-					if (xvfb != 2) {
-						log.debug("Node {} has no Xvfb", nodeCandidate);
-					} else {
-						Node node = new Node(nodeCandidate, browser, video,
-								audio);
-						node.setMaxInstances(maxInstances);
-						nodes.add(node);
+			if (!nodeCandidate.isEmpty()) {
+				if (RemoteHost.ping(nodeCandidate)) {
+					RemoteHost remoteHost = new RemoteHost(nodeCandidate,
+							getProperty("test.node.login"),
+							getProperty("test.node.passwd"));
+					try {
+						remoteHost.start();
+						int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
+						if (xvfb != 2) {
+							log.debug("Node {} has no Xvfb", nodeCandidate);
+						} else {
+							Node node = new Node(nodeCandidate, browser, video,
+									audio);
+							node.setMaxInstances(maxInstances);
+							nodes.add(node);
+						}
+					} catch (Exception e) {
+						log.debug("Invalid credentials to access node {} ",
+								nodeCandidate);
+					} finally {
+						remoteHost.stop();
 					}
-				} catch (Exception e) {
-					log.debug("Invalid credentials to access node {} ",
-							nodeCandidate);
-				} finally {
-					remoteHost.stop();
-				}
 
-			} else {
-				log.debug("Node {} seems to be down", nodeCandidate);
+				} else {
+					log.debug("Node {} seems to be down", nodeCandidate);
+				}
 			}
 			nodeList.remove(nodeCandidate);
 
