@@ -170,7 +170,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			} catch (Exception e) {
 				throw new KurentoException(
-						"Exception connecting to WebSocket server", e);
+						"Exception connecting to WebSocket server in " + url, e);
 			}
 
 			try {
@@ -185,17 +185,15 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				if (session == null) {
 
-					session =
-							new ClientSession(null, null,
-									JsonRpcClientWebSocket.this);
+					session = new ClientSession(null, null,
+							JsonRpcClientWebSocket.this);
 					handlerManager.afterConnectionEstablished(session);
 
 				} else {
 
 					try {
-						String result =
-								rsHelper.sendRequest(
-										JsonRpcConstants.METHOD_RECONNECT,
+						String result = rsHelper
+								.sendRequest(JsonRpcConstants.METHOD_RECONNECT,
 										String.class);
 
 						log.info("Reconnection result: {}", result);
@@ -206,10 +204,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						if (e.getCode() == 40007) { // Invalid session exception
 
 							rsHelper.setSessionId(null);
-							String result =
-									rsHelper.sendRequest(
-											JsonRpcConstants.METHOD_RECONNECT,
-											String.class);
+							String result = rsHelper.sendRequest(
+									JsonRpcConstants.METHOD_RECONNECT,
+									String.class);
 
 							log.info("Reconnection result: {}", result);
 
@@ -233,7 +230,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		if (!clientClose) {
 
-			reconnecting  = true;
+			reconnecting = true;
 
 			execService.execute(new Runnable() {
 				@Override
@@ -295,8 +292,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private void handleResponseFromServer(JsonObject message) {
 
-		Response<JsonElement> response =
-				fromJsonResponse(message, JsonElement.class);
+		Response<JsonElement> response = fromJsonResponse(message,
+				JsonElement.class);
 
 		setSessionId(response.getSessionId());
 
@@ -324,8 +321,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			@Override
 			public void run() {
 				try {
-					Response<JsonElement> result =
-							internalSendRequestWebSocket(request, resultClass);
+					Response<JsonElement> result = internalSendRequestWebSocket(
+							request, resultClass);
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
@@ -366,8 +363,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			log.debug("<-Res {}", responseJson.toString());
 
-			Response<R> response =
-					MessageUtils.convertResponse(responseJson, resultClass);
+			Response<R> response = MessageUtils.convertResponse(responseJson,
+					resultClass);
 
 			if (response.getSessionId() != null) {
 				session.setSessionId(response.getSessionId());
