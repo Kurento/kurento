@@ -47,6 +47,7 @@ public class KurentoClient {
 
 	public static KurentoClient create(String websocketUrl,
 			KurentoConnectionListener listener) {
+		log.info("Connecting to KMS in "+websocketUrl);
 		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl,
 				JsonRpcConnectionListenerKurento.create(listener)));
 
