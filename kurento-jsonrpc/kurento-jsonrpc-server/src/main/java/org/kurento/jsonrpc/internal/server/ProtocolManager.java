@@ -69,8 +69,14 @@ public class ProtocolManager {
 
 	private final JsonRpcHandlerManager handlerManager;
 
+	private String label = "";
+
 	public ProtocolManager(JsonRpcHandler<?> handler) {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
+	}
+
+	public void setLabel(String label){
+		this.label = "["+label+"] ";
 	}
 
 	/**
@@ -161,7 +167,7 @@ public class ProtocolManager {
 			session = sessionsManager.get(request.getSessionId());
 
 			if (session == null) {
-				log.warn("There is no session with specified id '{}'."
+				log.warn(label+"There is no session with specified id '{}'."
 						+ "Creating a new one.", request.getSessionId());
 			}
 
@@ -259,7 +265,7 @@ public class ProtocolManager {
 
 		if (session != null) {
 
-			log.info("Configuring close timeout for session: {}",
+			log.info(label+"Configuring close timeout for session: {}",
 					session.getSessionId());
 
 			try {
@@ -280,7 +286,7 @@ public class ProtocolManager {
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
 			} catch (TaskRejectedException e) {
-				log.warn("Close timeout for session {} can not be set "
+				log.warn(label+"Close timeout for session {} can not be set "
 						+ "because the scheduler is shutdown",
 						session.getSessionId());
 			}
@@ -288,7 +294,7 @@ public class ProtocolManager {
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info("Closing session: {}", session.getSessionId());
+		log.info(label+"Closing session: {}", session.getSessionId());
 		sessionsManager.remove(session);
 		handlerManager.afterConnectionClosed(session, reason);
 	}

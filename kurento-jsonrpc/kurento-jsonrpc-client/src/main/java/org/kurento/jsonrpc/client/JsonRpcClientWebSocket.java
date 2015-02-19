@@ -133,6 +133,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		};
 	}
 
+
+
 	@Override
 	public void close() throws IOException {
 		if (wsSession != null) {
@@ -169,8 +171,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				wsSession = client.connect(socket, new URI(url), request).get();
 
 			} catch (Exception e) {
-				throw new KurentoException(
-						"Exception connecting to WebSocket server in " + url, e);
+				throw new KurentoException(label+
+						"Exception connecting to WebSocket server " + url, e);
 			}
 
 			try {
@@ -179,8 +181,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					if (connectionListener != null) {
 						connectionListener.connectionTimeout();
 					}
-					throw new KurentoException(
-							"Timeout of 15s when waiting to connect to Websocket server");
+					throw new KurentoException(label+
+							"Timeout of 15s when waiting to connect to Websocket server "+url);
 				}
 
 				if (session == null) {
@@ -192,25 +194,21 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				} else {
 
 					try {
-						String result = rsHelper
+						rsHelper
 								.sendRequest(JsonRpcConstants.METHOD_RECONNECT,
 										String.class);
 
-						log.info("Reconnection result: {}", result);
-
-						log.info("Reconnected to the same Kurento server");
+						log.info(label+"Reconnected to the same session in server "+url);
 
 					} catch (JsonRpcErrorException e) {
 						if (e.getCode() == 40007) { // Invalid session exception
 
 							rsHelper.setSessionId(null);
-							String result = rsHelper.sendRequest(
+							rsHelper.sendRequest(
 									JsonRpcConstants.METHOD_RECONNECT,
 									String.class);
 
-							log.info("Reconnection result: {}", result);
-
-							log.info("Reconnected to a new Kurento server");
+							log.info(label+"Reconnected to a new session in server "+url);
 						}
 					}
 				}
@@ -244,7 +242,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						handlerManager.afterConnectionClosed(session,
 								closeReason);
 
-						log.debug("WebSocket closed due to: {}", closeReason);
+						log.debug(label+"WebSocket closed due to: {}", closeReason);
 						wsSession = null;
 
 						if (connectionListener != null) {
@@ -252,7 +250,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						}
 
 					} catch (IOException e) {
-						log.warn("Exception trying to reconnect", e);
+						log.warn(label+"Exception trying to reconnect to server "+url, e);
 					}
 				}
 			});
@@ -284,7 +282,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					handlerManager.handleRequest(session,
 							fromJsonRequest(message, JsonElement.class), rs);
 				} catch (IOException e) {
-					log.warn("Exception processing request " + message, e);
+					log.warn(label+"Exception processing request " + message, e);
 				}
 			}
 		});
@@ -326,7 +324,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
-						log.error("Exception while processing response", e);
+						log.error(label+"Exception while processing response", e);
 					}
 				} catch (Exception e) {
 					continuation.onError(e);
@@ -347,7 +345,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 
 		String jsonMessage = request.toString();
-		log.debug("Req-> {}", jsonMessage.trim());
+		log.debug(label+"Req-> {}", jsonMessage.trim());
 		synchronized (wsSession) {
 			wsSession.getRemote().sendString(jsonMessage);
 		}
@@ -361,7 +359,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
-			log.debug("<-Res {}", responseJson.toString());
+			log.debug(label+"<-Res {}", responseJson.toString());
 
 			Response<R> response = MessageUtils.convertResponse(responseJson,
 					resultClass);
@@ -374,13 +372,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
-			throw new KurentoException(
+			throw new KurentoException(label+
 					"Interrupted while waiting for a response", e);
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
-			throw new KurentoException("This exception shouldn't be thrown", e);
+			throw new KurentoException(label+"This exception shouldn't be thrown", e);
 		} catch (TimeoutException e) {
-			throw new TransportException("Timeout of " + TIMEOUT
+			throw new TransportException(label+"Timeout of " + TIMEOUT
 					+ " milliseconds waiting from response to request with id:"
 					+ request.getId(), e);
 		}

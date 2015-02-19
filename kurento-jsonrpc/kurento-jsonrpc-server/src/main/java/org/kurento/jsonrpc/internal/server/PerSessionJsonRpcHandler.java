@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -40,6 +41,8 @@ BeanFactoryAware {
 	private final Map<Session, JsonRpcHandler<T>> handlers = new ConcurrentHashMap<>();
 
 	private boolean useSockJS;
+
+	private String label;
 
 	public PerSessionJsonRpcHandler(String handlerName) {
 		this(handlerName, null);
@@ -159,14 +162,25 @@ BeanFactoryAware {
 	}
 
 	@Override
-	public void withSockJS() {
+	public PerSessionJsonRpcHandler<T> withSockJS() {
 		this.useSockJS = true;
-
+		return this;
 	}
 
 	@Override
 	public boolean isSockJSEnabled() {
 		return this.useSockJS;
+	}
+
+	@Override
+	public PerSessionJsonRpcHandler<T> withLabel(String label){
+		this.label = label;
+		return this;
+	}
+
+	@Override
+	public String getLabel() {
+		return label;
 	}
 
 }

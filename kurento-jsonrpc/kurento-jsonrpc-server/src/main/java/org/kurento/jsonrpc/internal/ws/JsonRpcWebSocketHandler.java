@@ -14,10 +14,14 @@
  */
 package org.kurento.jsonrpc.internal.ws;
 
+import java.io.IOException;
+
+import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
 import org.kurento.jsonrpc.internal.server.ServerSession;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
+import org.kurento.jsonrpc.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
@@ -32,8 +36,15 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 	private final ProtocolManager protocolManager;
 
+	private String label = "";
+
 	public JsonRpcWebSocketHandler(ProtocolManager protocolManager) {
 		this.protocolManager = protocolManager;
+	}
+
+	public void setLabel(String label) {
+		this.label = "[" + label + "] ";
+		this.protocolManager.setLabel(label);
 	}
 
 	@Override
@@ -42,7 +53,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		// We send this notification to the JsonRpcHandler when the JsonRpc
 		// session is established, not when websocket session is established
-		log.info("Client connection stablished from {}",
+		log.info(label + "Client connection stablished from {}",
 				session.getRemoteAddress());
 	}
 
@@ -50,13 +61,13 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
-		log.info("Connection closed because: " + status);
+		log.info(label + "Connection closed because: " + status);
 		if (status.getCode() == CloseStatus.GOING_AWAY.getCode()) {
-			log.info("Client is going away (normal termination)");
+			log.info(label + "Client is going away (normal termination)");
 		} else if (!status.equals(CloseStatus.NORMAL)) {
-			log.error("Abnormal termination: " + status.getCode());
+			log.error(label + "Abnormal termination: " + status.getCode());
 		} else {
-			log.info("Normal termination");
+			log.info(label + "Normal termination");
 		}
 
 		protocolManager.closeSessionIfTimeout(wsSession.getId(),
@@ -77,7 +88,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 			String messageJson = message.getPayload();
 
-			log.debug("Req-> {}", messageJson);
+			log.debug(label + "Req-> {}", messageJson);
 
 			// TODO Ensure only one register message per websocket session.
 			ServerSessionFactory factory = new ServerSessionFactory() {
@@ -87,17 +98,35 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 					return new WebSocketServerSession(sessionId, registerInfo,
 							sessionsManager, wsSession);
 				}
+
 				@Override
-				public void updateSessionOnReconnection(ServerSession session){
-					((WebSocketServerSession)session).updateWebSocketSession(wsSession);
+				public void updateSessionOnReconnection(ServerSession session) {
+					((WebSocketServerSession) session)
+							.updateWebSocketSession(wsSession);
 				}
 			};
 
 			protocolManager.processMessage(messageJson, factory,
-					new WebSocketResponseSender(wsSession), wsSession.getId());
+					new ResponseSender() {
+						@Override
+						public void sendResponse(Message message)
+								throws IOException {
+
+							String jsonMessage = message.toString();
+							log.debug(label + "<-Res {}", jsonMessage);
+							synchronized (wsSession) {
+								if (wsSession.isOpen()) {
+									wsSession.sendMessage(new TextMessage(
+											jsonMessage));
+								} else {
+									log.error("Trying to send a message to a closed session");
+								}
+							}
+						}
+					}, wsSession.getId());
 
 		} catch (Exception e) {
-			log.error("Exception processing request", e);
+			log.error(label + "Exception processing request", e);
 		}
 
 	}

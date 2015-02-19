@@ -42,14 +42,18 @@ public class KurentoClient {
 
 	public static KurentoClient create(String websocketUrl) {
 		log.debug("Connecting to kms in uri " + websocketUrl);
-		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl));
+		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
+		client.setLabel("KurentoClient");
+		return new KurentoClient(client);
 	}
 
 	public static KurentoClient create(String websocketUrl,
 			KurentoConnectionListener listener) {
 		log.info("Connecting to KMS in "+websocketUrl);
-		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl,
-				JsonRpcConnectionListenerKurento.create(listener)));
+		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
+				JsonRpcConnectionListenerKurento.create(listener));
+		client.setLabel("KurentoClient");
+		return new KurentoClient(client);
 
 	}
 

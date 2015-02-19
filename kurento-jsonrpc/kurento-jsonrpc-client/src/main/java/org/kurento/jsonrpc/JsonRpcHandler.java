@@ -49,7 +49,11 @@ public interface JsonRpcHandler<P> {
 	/**
 	 * This method configures the handler to use sockJS
 	 */
-	void withSockJS();
+	 JsonRpcHandler<P> withSockJS();
 
 	boolean isSockJSEnabled();
+
+	 JsonRpcHandler<P> withLabel(String label);
+
+	 String getLabel();
 }

@@ -61,9 +61,14 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected Object registerInfo;
 	protected ClientSession session;
 	protected KeepAliveManager keepAliveManager;
+	protected String label = "";
 
 	public void setServerRequestHandler(JsonRpcHandler<?> handler) {
 		this.handlerManager.setJsonRpcHandler(handler);
+	}
+
+	public void setLabel(String label){
+		this.label = "["+label+"] ";
 	}
 
 	@Override
