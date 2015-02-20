@@ -30,9 +30,8 @@ void ArMarkerdetectorOpenCVImpl::process (cv::Mat &mat)
     int marker_count_prev = ar.detectedMarkersPrev[marker_id];
     if (marker_count == marker_count_prev) continue;
     try {
-      MarkerCount event(marker_id, marker_count, marker_count-marker_count_prev,
-                                    getSharedFromThis(),
-                                    MarkerCount::getName() );
+      MarkerCount event(getSharedFromThis(), MarkerCount::getName(), marker_id,
+                        marker_count, marker_count-marker_count_prev);
       signalMarkerCount(event);
     } catch (std::bad_weak_ptr &e) {}
   }
