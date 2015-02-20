@@ -4,8 +4,5 @@
   "author": "Kurento <info@kurento.com> (http://kurento.org)",
   "bugs": {
     "email": "kurento@googlegroups.com"
-  },
-  "devDependencies": {
-    "kurento-client": "Kurento/kurento-client-js#develop"
   }
 }
