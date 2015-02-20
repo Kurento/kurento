@@ -107,8 +107,12 @@ public class KurentoTest {
 	public static String getDefaultOutputFile(String preffix) {
 		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
 				+ "/" + KurentoServicesTestHelper.getTestCaseName());
-		return fileForRecording.getAbsolutePath() + "/"
-				+ KurentoServicesTestHelper.getTestName() + preffix;
+		String testName = KurentoServicesTestHelper.getTestName();
+		if (testName.indexOf(":") != -1) {
+			// This happens in performance tests with data from JUnit parameters
+			testName = testName.substring(0, testName.indexOf(":")) + "]";
+		}
+		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
 	}
 
 }

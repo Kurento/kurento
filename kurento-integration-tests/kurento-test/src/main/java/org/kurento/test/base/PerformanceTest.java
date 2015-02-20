@@ -133,18 +133,22 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	}
 
 	private void startHub() throws Exception {
-		hubAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY,
-				SELENIUM_HUB_HOST_DEFAULT);
+		hubAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY);
 		hubPublicAddress = getProperty(SELENIUM_HUB_PUBLIC_PROPERTY, hubAddress);
 		hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 				SELENIUM_HUB_PORT_DEFAULT);
 
-		seleniumGridHub = new SeleniumGridHub(hubAddress, hubPort);
-		seleniumGridHub.start();
+		if (hubAddress != null) {
+			seleniumGridHub = new SeleniumGridHub(hubAddress, hubPort);
+			seleniumGridHub.start();
+		}
 	}
 
 	private void startNodes() throws InterruptedException {
-		startNodes(nodes);
+		if (nodes != null) {
+			startNodes(nodes);
+		}
+
 	}
 
 	private void startNodes(List<Node> nodes) throws InterruptedException {
@@ -415,11 +419,15 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	@After
 	public void stopGrid() throws Exception {
 		// Stop Hub
-		seleniumGridHub.stop();
+		if (seleniumGridHub != null) {
+			seleniumGridHub.stop();
+		}
 
 		// Stop Nodes
-		for (Node node : nodes) {
-			stopNode(node);
+		if (nodes != null) {
+			for (Node node : nodes) {
+				stopNode(node);
+			}
 		}
 
 		// Stop master node (if any)
@@ -428,9 +436,11 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		}
 
 		// Monitor
-		monitor.stop();
-		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
-		monitor.destroy();
+		if (monitor != null) {
+			monitor.stop();
+			monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+			monitor.destroy();
+		}
 	}
 
 	private void stopNode(Node node) throws IOException {
@@ -571,6 +581,60 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 				}
 			} finally {
 				log.debug("+++ Ending browser #{} +++", i);
+			}
+		}
+	}
+
+	public void parallelBrowsers(
+			final Map<String, BrowserClient> browserClientMap,
+			final BrowserRunner browserRunner, final Client client,
+			final int port) {
+		ExecutorService internalExec = Executors
+				.newFixedThreadPool(browserClientMap.size());
+		CompletionService<Void> exec = new ExecutorCompletionService<>(
+				internalExec);
+
+		int numBrowser = 0;
+		for (final String key : browserClientMap.keySet()) {
+
+			final int numBrowserFinal = numBrowser;
+
+			exec.submit(new Callable<Void>() {
+				public Void call() throws Exception {
+					try {
+						Thread.currentThread().setName(key);
+						Thread.sleep(browserCreationTime * numBrowserFinal);
+						log.debug("*** Starting node {} ***", key);
+						incrementNumClients();
+
+						BrowserClient browser = browserClientMap.get(key);
+						browser.setMonitor(monitor);
+						monitor.addRtcStats(browser);
+
+						browserRunner.run(browser, numBrowserFinal, key);
+					} finally {
+						decrementNumClients();
+						log.debug("--- Ending client {} ---", key);
+					}
+					return null;
+				}
+			});
+			numBrowser++;
+		}
+
+		for (final String key : browserClientMap.keySet()) {
+			Future<Void> taskFuture = null;
+			try {
+				taskFuture = exec.take();
+				taskFuture.get(timeout, TimeUnit.SECONDS);
+			} catch (Throwable e) {
+				log.error("$$$ {} $$$", e.getCause().getMessage());
+				e.printStackTrace();
+				if (taskFuture != null) {
+					taskFuture.cancel(true);
+				}
+			} finally {
+				log.debug("+++ Ending browser #{} +++", key);
 			}
 		}
 	}

@@ -835,14 +835,27 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void activateRtcStats() {
-		js.executeScript("activateRtcStats();");
+		try {
+			js.executeScript("activateRtcStats();");
+		} catch (WebDriverException we) {
+			// If client is not ready to gather rtc statistics, we just log it
+			// as warning (it is not an error itself)
+			log.warn("Client does not support RTC statistics"
+					+ " (function activateRtcStats() is not defined)");
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getRtcStats() {
-		Map<String, Object> out = (Map<String, Object>) js
-				.executeScript("return rtcStats;");
-		// log.info("getRtcStats from browser {}", out);
+		Map<String, Object> out = new HashMap<>();
+		try {
+			out = (Map<String, Object>) js.executeScript("return rtcStats;");
+		} catch (WebDriverException we) {
+			// If client is not ready to gather rtc statistics, we just log it
+			// as warning (it is not an error itself)
+			log.warn("Client does not support RTC statistics"
+					+ " (variable rtcStats is not defined)");
+		}
 		return out;
 	}
 
