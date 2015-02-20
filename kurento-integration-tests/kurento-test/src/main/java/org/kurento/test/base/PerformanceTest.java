@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,7 +107,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 	}
 
-	protected void setNodes(List<Node> nodes) {
+	public void setNodes(List<Node> nodes) {
 		this.nodes = nodes;
 	}
 
@@ -126,6 +125,11 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 			list.add(masterNode);
 			startNodes(list);
 		}
+
+		// Monitor
+		monitor = new SystemMonitorManager();
+		monitor.setSamplingTime(monitorRate);
+		monitor.start();
 	}
 
 	private void startHub() throws Exception {
@@ -292,13 +296,27 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		}
 	}
 
-	protected static List<Node> getRandomNodes(int numNodes, Browser browser,
+	protected List<Node> getRandomNodes(int numNodes, Browser browser,
 			int maxInstances) {
 		return getRandomNodes(numNodes, browser, null, null, maxInstances);
 	}
 
-	protected static List<Node> getRandomNodes(int numNodes, Browser browser,
+	public List<Node> getRandomNodesHttps(int numNodes, Browser browser,
+			int maxInstances) {
+		return getRandomNodes(numNodes, browser, null, null, maxInstances,
+				true, true);
+	}
+
+	public List<Node> getRandomNodes(int numNodes, Browser browser,
 			String video, String audio, int maxInstances) {
+		return getRandomNodes(numNodes, browser, video, audio, maxInstances,
+				false, false);
+	}
+
+	public List<Node> getRandomNodes(int numNodes, Browser browser,
+			String video, String audio, int maxInstances, boolean https,
+			boolean screenCapture) {
+
 		List<Node> nodes = new ArrayList<Node>();
 
 		String nodesListProp = System.getProperty(SELENIUM_NODES_LIST_PROPERTY);
@@ -356,6 +374,12 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 						} else {
 							Node node = new Node(nodeCandidate, browser, video,
 									audio);
+							if (https) {
+								node.setHttps();
+							}
+							if (screenCapture) {
+								node.setEnableScreenCapture();
+							}
 							node.setMaxInstances(maxInstances);
 							nodes.add(node);
 						}
@@ -402,6 +426,11 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		if (masterNode != null) {
 			stopNode(masterNode);
 		}
+
+		// Monitor
+		monitor.stop();
+		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+		monitor.destroy();
 	}
 
 	private void stopNode(Node node) throws IOException {
@@ -435,20 +464,6 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	private int numBrowsersPerNode = DEFAULT_NBROWSERS;
 	private int timeout = DEFAULT_TIMEOUT;
 
-	@Before
-	public void setup() throws IOException, URISyntaxException {
-		monitor = new SystemMonitorManager();
-		monitor.setSamplingTime(monitorRate);
-		monitor.start();
-	}
-
-	@After
-	public void teardown() throws IOException {
-		monitor.stop();
-		monitor.writeResults(getDefaultOutputFile("-kms-monitor.csv"));
-		monitor.destroy();
-	}
-
 	protected void incrementNumClients() throws IOException {
 		monitor.incrementNumClients();
 	}
@@ -463,20 +478,24 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 
 	// ----------------------------------------------
 
-	protected int getAllBrowsersStartedTime() {
+	public int getAllBrowsersStartedTime() {
 		return nodes.size() * numBrowsersPerNode * browserCreationTime;
 	}
 
-	protected void setBrowserCreationRate(int browserCreationTime) {
+	public void setBrowserCreationRate(int browserCreationTime) {
 		this.browserCreationTime = browserCreationTime;
 	}
 
-	protected void setNumBrowsersPerNode(int numBrowserPerNode) {
+	public void setNumBrowsersPerNode(int numBrowserPerNode) {
 		this.numBrowsersPerNode = numBrowserPerNode;
 	}
 
-	protected void parallelBrowsers(final BrowserRunner browserRunner,
-			final Client client) {
+	public void parallelBrowsers(BrowserRunner browserRunner, Client client) {
+		parallelBrowsers(browserRunner, client, 0);
+	}
+
+	public void parallelBrowsers(final BrowserRunner browserRunner,
+			final Client client, final int port) {
 		final ExecutorService internalExec = Executors.newFixedThreadPool(nodes
 				.size() * numBrowsersPerNode);
 
@@ -503,12 +522,23 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 							BrowserClient browser = null;
 
 							// Browser
-							BrowserClient.Builder builder = new BrowserClient.Builder()
-									.browser(node.getBrowser()).client(client)
-									.remoteNode(node);
+							BrowserClient.Builder builder;
+							if (port != 0) {
+								builder = new BrowserClient.Builder(port);
+							} else {
+								builder = new BrowserClient.Builder();
+							}
+							builder = builder.browser(node.getBrowser())
+									.client(client).remoteNode(node);
 
 							if (node.getVideo() != null) {
 								builder = builder.video(node.getVideo());
+							}
+							if (node.isHttps()) {
+								builder = builder.useHttps();
+							}
+							if (node.isEnableScreenCapture()) {
+								builder = builder.enableScreenCapture();
 							}
 
 							browser = builder.build();
@@ -535,6 +565,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 				taskFuture.get(timeout, TimeUnit.SECONDS);
 			} catch (Throwable e) {
 				log.error("$$$ {} $$$", e.getCause().getMessage());
+				e.printStackTrace();
 				if (taskFuture != null) {
 					taskFuture.cancel(true);
 				}
@@ -544,7 +575,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		}
 	}
 
-	protected void parallelBrowsers(final BrowserRunner browserRunner) {
+	public void parallelBrowsers(final BrowserRunner browserRunner) {
 		parallelBrowsers(browserRunner, Client.WEBRTC);
 	}
 

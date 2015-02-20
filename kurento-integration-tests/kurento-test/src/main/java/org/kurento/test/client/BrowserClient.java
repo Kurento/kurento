@@ -173,8 +173,10 @@ public class BrowserClient implements Closeable {
 
 		} else {
 			String protocol = useHttps ? "https" : "http";
-			driver.get(protocol + "://" + hostAddress + ":" + serverPort
-					+ client.toString());
+			String url = protocol + "://" + hostAddress + ":" + serverPort
+					+ client.toString();
+			log.info("*** Browsing URL with WebDriver: {}", url);
+			driver.get(url);
 		}
 
 		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."

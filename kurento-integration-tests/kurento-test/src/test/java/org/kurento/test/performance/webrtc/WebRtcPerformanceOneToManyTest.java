@@ -92,8 +92,6 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 		nodes.addAll(viewers);
 
-		System.out.println(nodes.size());
-
 		setNodes(nodes);
 		setMasterNode(master);
 

@@ -48,6 +48,8 @@ public class Node {
 	private RemoteHost remoteHost;
 	private String home;
 	private String tmpFolder;
+	private boolean isHttps = false;
+	private boolean enableScreenCapture = false;
 
 	public Node(String address, Browser browser, String video, String audio) {
 		this(address, browser);
@@ -180,6 +182,22 @@ public class Node {
 			}
 		}
 		return home;
+	}
+
+	public boolean isHttps() {
+		return isHttps;
+	}
+
+	public void setHttps() {
+		this.isHttps = true;
+	}
+
+	public boolean isEnableScreenCapture() {
+		return enableScreenCapture;
+	}
+
+	public void setEnableScreenCapture() {
+		this.enableScreenCapture = true;
 	}
 
 }
