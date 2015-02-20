@@ -42,7 +42,7 @@ package.json
     "grunt-jsdoc": "~0.5.7",
     "grunt-npm2bower-sync": "^0.4.0",
     "jsonfile": "^2.0.0",
-    "kurento-client": "${module.kurentoVersion}",
+    "kurento-client": "${generateKurentoClientJsVersion(module.kurentoVersion)}",
     "merge": "^1.2.0",
     "minifyify": "^4.4.0",
 </#if>

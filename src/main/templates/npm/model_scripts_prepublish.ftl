@@ -72,7 +72,7 @@ exists('node_modules/grunt', function(found)
       {
         peerDependencies:
         {
-          "kurento-client": "${module.kurentoVersion}"
+          "kurento-client": "${generateKurentoClientJsVersion(module.kurentoVersion)}"
         }
       }
 
