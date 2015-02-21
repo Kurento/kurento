@@ -41,9 +41,9 @@ import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.ClientSession;
-import org.kurento.jsonrpc.internal.client.ClientWebSocketResponseSender;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.ws.PendingRequests;
+import org.kurento.jsonrpc.message.Message;
 import org.kurento.jsonrpc.message.MessageUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
@@ -66,7 +66,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		@OnWebSocketConnect
 		public void onConnect(Session session) {
 			wsSession = session;
-			rs = new ClientWebSocketResponseSender(wsSession);
+			rs = new ResponseSender(){
+				@Override
+				public void sendResponse(Message message) throws IOException {
+					String jsonMessage = message.toString();
+					log.debug(label+"<-Res {}", jsonMessage);
+					synchronized (wsSession) {
+						wsSession.getRemote().sendString(jsonMessage);
+					}
+				}
+			};
 			latch.countDown();
 			if (connectionListener != null && !reconnecting) {
 				connectionListener.connected();
