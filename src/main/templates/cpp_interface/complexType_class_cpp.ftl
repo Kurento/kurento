@@ -40,7 +40,15 @@ void ${complexType.name}::Serialize (JsonSerializer &s)
   ${complexType.extends.name}::Serialize (s);
 
   </#if>
+
   if (s.IsWriter) {
+    s.JsonValue["__type__"] = "${complexType.name}";
+  <#if module.name == "core" || module.name == "elements" || module.name == "filters">
+    s.JsonValue["__module__"] = "kurento";
+  <#else>
+    s.JsonValue["__module__"] = "${module.name}";
+  </#if>
+
   <#list complexType.properties as property>
     <#if property.optional>
     if (__isSet${property.name?cap_first}) {
