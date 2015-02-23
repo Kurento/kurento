@@ -36,6 +36,10 @@ ${complexType.name}::type ${complexType.name}::getValueFromString (const std::st
 void ${complexType.name}::Serialize (JsonSerializer &s)
 {
 <#if complexType.typeFormat == "REGISTER">
+  <#if complexType.extends??>
+  ${complexType.extends.name}::Serialize (s);
+
+  </#if>
   if (s.IsWriter) {
   <#list complexType.properties as property>
     <#if property.optional>

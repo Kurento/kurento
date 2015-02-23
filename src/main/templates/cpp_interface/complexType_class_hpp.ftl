@@ -7,6 +7,9 @@ ${complexType.name}.hpp
 #include <jsoncpp/json/json.h>
 #include <jsonrpc/JsonRpcException.hpp>
 #include <memory>
+<#if complexType.extends??>
+#include "${complexType.extends.name}.hpp"
+</#if>
 
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
@@ -38,7 +41,7 @@ class ${dependency.type.name};
 </#if>
 </#list>
 
-class ${complexType.name}
+class ${complexType.name}<#if complexType.extends??> : public ${complexType.extends.name}</#if>
 {
 
 public:
@@ -47,13 +50,32 @@ public:
 <#if complexType.typeFormat == "REGISTER">
   ${complexType.name} (<#rt>
     <#assign createEmptyConstructor = false>
+    <#lt><#assign first = true><#rt>
+      <#lt><#if complexType.extends??><#rt>
+        <#lt><#list complexType.parentProperties as property><#rt>
+          <#lt><#if !property.optional><#rt>
+            <#lt><#if !first>, </#if><#rt>
+            <#lt><#assign first = false><#rt>
+            <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
+          <#lt></#if><#rt>
+        <#lt></#list><#rt>
+      <#lt></#if><#rt>
     <#lt><#list complexType.properties as property><#rt>
       <#lt><#if !property.optional><#rt>
-        <#lt><#if (first) ??>, </#if><#rt>
-        <#lt><#assign first = true><#rt>
+        <#lt><#if !first>, </#if><#rt>
+        <#lt><#assign first = false><#rt>
         <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
       <#lt></#if><#rt>
-    <#lt></#list>) {
+    <#lt></#list>)<#rt>
+    <#lt><#assign first = true><#rt>
+    <#lt><#if complexType.extends??> : ${complexType.extends.name} (<#rt>
+      <#lt><#list complexType.parentProperties as property><#rt>
+        <#lt><#if !property.optional><#rt>
+          <#lt><#if !first>, </#if><#rt>
+          <#lt><#assign first = false><#rt>
+          <#lt>${property.name}<#rt>
+        <#lt></#if><#rt>
+    <#lt></#list>)</#if> {
     <#list complexType.properties as property><#rt>
       <#lt><#if !property.optional><#rt>
       <#assign createEmptyConstructor = true>
@@ -81,7 +103,7 @@ public:
 
   </#if>
   </#list>
-  void Serialize (JsonSerializer &s);
+  virtual void Serialize (JsonSerializer &s);
   <#if createEmptyConstructor >
 
 protected:
