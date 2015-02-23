@@ -16,6 +16,7 @@ package org.kurento.jsonrpc.client;
 import static org.kurento.jsonrpc.JsonUtils.fromJson;
 import static org.kurento.jsonrpc.JsonUtils.fromJsonRequest;
 import static org.kurento.jsonrpc.JsonUtils.fromJsonResponse;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
 
 import java.io.IOException;
 import java.net.URI;
@@ -74,11 +75,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		@OnWebSocketMessage
 		public void onMessage(String message) {
-			try {
-				handleWebSocketTextMessage(message);
-			} catch (IOException e) {
-				throw new KurentoException(e);
-			}
+			handleWebSocketTextMessage(message);
 		}
 	}
 
@@ -133,8 +130,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		};
 	}
 
-
-
 	@Override
 	public void close() throws IOException {
 		if (wsSession != null) {
@@ -171,18 +166,23 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				wsSession = client.connect(socket, new URI(url), request).get();
 
 			} catch (Exception e) {
-				throw new KurentoException(label+
-						"Exception connecting to WebSocket server " + url, e);
+				if (connectionListener != null) {
+					connectionListener.connectionTimeout();
+				}
+				throw new KurentoException(label
+						+ " Exception connecting to WebSocket server " + url, e);
 			}
 
 			try {
 				// FIXME: Make this configurable
-				if (!latch.await(15, TimeUnit.SECONDS)) {
+				if (!latch.await(this.connectionTimeout, TimeUnit.MILLISECONDS)) {
 					if (connectionListener != null) {
 						connectionListener.connectionTimeout();
 					}
-					throw new KurentoException(label+
-							"Timeout of 15s when waiting to connect to Websocket server "+url);
+					throw new KurentoException(label + " Timeout of "
+							+ this.connectionTimeout
+							+ "ms when waiting to connect to Websocket server "
+							+ url);
 				}
 
 				if (session == null) {
@@ -194,21 +194,21 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				} else {
 
 					try {
-						rsHelper
-								.sendRequest(JsonRpcConstants.METHOD_RECONNECT,
-										String.class);
+						rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
-						log.info(label+"Reconnected to the same session in server "+url);
+						log.info(label
+								+ " Reconnected to the same session in server "
+								+ url);
 
 					} catch (JsonRpcErrorException e) {
 						if (e.getCode() == 40007) { // Invalid session exception
 
 							rsHelper.setSessionId(null);
-							rsHelper.sendRequest(
-									JsonRpcConstants.METHOD_RECONNECT,
-									String.class);
+							rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
-							log.info(label+"Reconnected to a new session in server "+url);
+							log.info(label
+									+ " Reconnected to a new session in server "
+									+ url);
 						}
 					}
 				}
@@ -242,7 +242,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						handlerManager.afterConnectionClosed(session,
 								closeReason);
 
-						log.debug(label+"WebSocket closed due to: {}", closeReason);
+						log.debug(label + " WebSocket closed due to: {}",
+								closeReason);
 						wsSession = null;
 
 						if (connectionListener != null) {
@@ -250,7 +251,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						}
 
 					} catch (IOException e) {
-						log.warn(label+"Exception trying to reconnect to server "+url, e);
+						log.warn(label
+								+ " Exception trying to reconnect to server "
+								+ url, e);
 					}
 				}
 			});
@@ -265,8 +268,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	private void handleRequestFromServer(final JsonObject message)
-			throws IOException {
+	private void handleRequestFromServer(final JsonObject message) {
 
 		// TODO: Think better ways to do this:
 		// handleWebSocketTextMessage seems to be sequential. That is, the
@@ -282,7 +284,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					handlerManager.handleRequest(session,
 							fromJsonRequest(message, JsonElement.class), rs);
 				} catch (IOException e) {
-					log.warn(label+"Exception processing request " + message, e);
+					log.warn(
+							label + " Exception processing request " + message,
+							e);
 				}
 			}
 		});
@@ -298,7 +302,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		pendingRequests.handleResponse(response);
 	}
 
-	private void handleWebSocketTextMessage(String message) throws IOException {
+	private void handleWebSocketTextMessage(String message) {
 
 		JsonObject jsonMessage = fromJson(message, JsonObject.class);
 
@@ -324,7 +328,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
-						log.error(label+"Exception while processing response", e);
+						log.error(label
+								+ " Exception while processing response", e);
 					}
 				} catch (Exception e) {
 					continuation.onError(e);
@@ -345,7 +350,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 
 		String jsonMessage = request.toString();
-		log.debug(label+"Req-> {}", jsonMessage.trim());
+		log.debug(label + " Req-> {}", jsonMessage.trim());
 		synchronized (wsSession) {
 			wsSession.getRemote().sendString(jsonMessage);
 		}
@@ -359,7 +364,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
-			log.debug(label+"<-Res {}", responseJson.toString());
+			log.debug(label + " <-Res {}", responseJson.toString());
 
 			Response<R> response = MessageUtils.convertResponse(responseJson,
 					resultClass);
@@ -372,13 +377,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
-			throw new KurentoException(label+
-					"Interrupted while waiting for a response", e);
+			throw new KurentoException(label
+					+ " Interrupted while waiting for a response", e);
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
-			throw new KurentoException(label+"This exception shouldn't be thrown", e);
+			throw new KurentoException(label
+					+ " This exception shouldn't be thrown", e);
 		} catch (TimeoutException e) {
-			throw new TransportException(label+"Timeout of " + TIMEOUT
+			throw new TransportException(label + " Timeout of " + TIMEOUT
 					+ " milliseconds waiting from response to request with id:"
 					+ request.getId(), e);
 		}

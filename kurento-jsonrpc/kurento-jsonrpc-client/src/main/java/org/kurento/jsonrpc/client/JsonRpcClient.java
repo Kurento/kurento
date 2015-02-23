@@ -17,6 +17,7 @@ package org.kurento.jsonrpc.client;
 import java.io.Closeable;
 import java.io.IOException;
 
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.Session;
@@ -62,13 +63,14 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected ClientSession session;
 	protected KeepAliveManager keepAliveManager;
 	protected String label = "";
+	protected int connectionTimeout = 15000;
 
 	public void setServerRequestHandler(JsonRpcHandler<?> handler) {
 		this.handlerManager.setJsonRpcHandler(handler);
 	}
 
-	public void setLabel(String label){
-		this.label = "["+label+"] ";
+	public void setLabel(String label) {
+		this.label = "[" + label + "] ";
 	}
 
 	@Override
@@ -120,11 +122,13 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		rsHelper.sendNotification(method, params);
 	}
 
+	@Override
 	public Response<JsonElement> sendRequest(Request<JsonObject> request)
 			throws IOException {
 		return rsHelper.sendRequest(request);
 	}
 
+	@Override
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
 			throws IOException {
@@ -142,6 +146,28 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	public KeepAliveManager getKeepAliveManager() {
 		return keepAliveManager;
+	}
+
+	/**
+	 * Gets the connection timeout, in milliseconds, configured in the client.
+	 *
+	 * @return the timeout in milliseconds
+	 */
+	public int getConnectionTimeoutValue() {
+		return this.connectionTimeout;
+	}
+
+	/**
+	 * Sets a connection timeout in milliseconds in the client. If after this
+	 * timeout, the client could not connect with the server, the
+	 * {@link JsonRpcWSConnectionListener#connectionTimeout()} method will be
+	 * invoked, and a {@link KurentoException} will be thrown.
+	 *
+	 * @param connectionTimeout
+	 *            the timeout in milliseconds
+	 */
+	public void setConnectionTimeoutValue(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
 	}
 
 	public void setKeepAliveManager(KeepAliveManager keepAliveManager) {
