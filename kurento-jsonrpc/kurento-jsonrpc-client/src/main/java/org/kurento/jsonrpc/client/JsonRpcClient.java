@@ -160,7 +160,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	/**
 	 * Sets a connection timeout in milliseconds in the client. If after this
 	 * timeout, the client could not connect with the server, the
-	 * {@link JsonRpcWSConnectionListener#connectionTimeout()} method will be
+	 * {@link JsonRpcWSConnectionListener#connectionFailed()} method will be
 	 * invoked, and a {@link KurentoException} will be thrown.
 	 *
 	 * @param connectionTimeout

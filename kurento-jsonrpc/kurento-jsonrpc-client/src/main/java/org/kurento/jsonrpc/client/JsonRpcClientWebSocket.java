@@ -167,7 +167,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			} catch (Exception e) {
 				if (connectionListener != null) {
-					connectionListener.connectionTimeout();
+					connectionListener.connectionFailed();
 				}
 				throw new KurentoException(label
 						+ " Exception connecting to WebSocket server " + url, e);
@@ -177,7 +177,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				// FIXME: Make this configurable
 				if (!latch.await(this.connectionTimeout, TimeUnit.MILLISECONDS)) {
 					if (connectionListener != null) {
-						connectionListener.connectionTimeout();
+						connectionListener.connectionFailed();
 					}
 					throw new KurentoException(label + " Timeout of "
 							+ this.connectionTimeout

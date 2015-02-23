@@ -59,7 +59,7 @@ public class ConnectionListenerTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connectionFailed() {
 
 					}
 
