@@ -11,17 +11,23 @@ const REPORTS_DIR='reports'
 const LCOV_FILE=REPORTS_DIR+'/'+pkg.name+'.lcov'
 
 
-function onexit(code, signal)
+function onexit(cmd, code, signal)
 {
-  if(code)   console.error('code:',code)
-  if(signal) console.error('signal:',signal)
+  if(code)   console.error(cmd,'exited with code:',code)
+  if(signal) console.error(cmd,'exited with signal:',signal)
 }
 
 function spawn()
 {
-  child_process.spawn.apply(child_process, arguments)
-  .on('exit', onexit)
-  .stderr.pipe(process.stderr)
+  var cmd = arguments[0]
+
+  var cp = child_process.spawn.apply(child_process, arguments)
+  .on('error', console.error.bind(console, cmd,'has errored:'))
+  .on('exit', onexit.bind(undefined, cmd))
+
+  cp.stderr.pipe(process.stderr)
+
+  return cp
 }
 
 
@@ -35,11 +41,9 @@ fs.remove(REPORTS_DIR, function(error)
   {
     if(error) return console.trace(error)
 
-    // // Create and upload new coverage data
-    // fs.createReadStream(LCOV_FILE).on('open', function(fd)
-    // {
-    //   spawn('coveralls', {stdio: [fd]})
-    // })
+    // Create and upload new coverage data
+    if(process.env.COVERALLS_REPO_TOKEN)
+      fs.createReadStream(LCOV_FILE).pipe(spawn('coveralls').stdin)
 
     // Create HTML coverate report
     fs.copy('lib', REPORTS_DIR+'/lib', function(err)
