@@ -156,10 +156,14 @@ module.exports = function (grunt) {
       },
 
       "default": {
-        src: ["lib/**/*.js", "*.js", "test/*.js"]
+        src: ["lib/**/*.js", "*.js", "test/*.js", "test_reconnect/*.js",
+          "scripts/*.js"
+        ]
       },
       "git-pre-commit": {
-        src: ["lib/**/*.js", "*.js", "test/*.js"],
+        src: ["lib/**/*.js", "*.js", "test/*.js", "test_reconnect/*.js",
+          "scripts/*.js"
+        ],
         options: {
           mode: "VERIFY_ONLY"
         }
