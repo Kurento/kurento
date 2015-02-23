@@ -14,6 +14,8 @@
  */
 package org.kurento.test.services;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -52,17 +54,26 @@ public class RemoteHost {
 	private static final int NODE_INITIAL_PORT = 5555;
 	private static final int PING_TIMEOUT = 2; // seconds
 
+	public static final String TEST_NODE_PEM_PROPERTY = "test.node.pem";
+
 	private String host;
 	private String login;
 	private String passwd;
+	private String pem;
 	private String tmpFolder;
 
 	private OverthereConnection connection;
 
 	public RemoteHost(String host, String login, String passwd) {
+
 		this.host = host;
 		this.login = login;
-		this.passwd = passwd;
+		String pem = getProperty(TEST_NODE_PEM_PROPERTY);
+		if (pem != null) {
+			this.pem = pem;
+		} else {
+			this.passwd = passwd;
+		}
 	}
 
 	public void mkdirs(String dir) throws IOException {
@@ -108,8 +119,12 @@ public class RemoteHost {
 
 	public void start() {
 		ConnectionOptions options = new ConnectionOptions();
+		if (pem != null) {
+			options.set(SshConnectionBuilder.PRIVATE_KEY_FILE, pem);
+		} else {
+			options.set(ConnectionOptions.PASSWORD, passwd);
+		}
 		options.set(ConnectionOptions.USERNAME, login);
-		options.set(ConnectionOptions.PASSWORD, passwd);
 		options.set(ConnectionOptions.ADDRESS, host);
 		options.set(ConnectionOptions.OPERATING_SYSTEM,
 				OperatingSystemFamily.UNIX);
@@ -205,6 +220,14 @@ public class RemoteHost {
 
 	public String getHost() {
 		return host;
+	}
+
+	public String getPem() {
+		return pem;
+	}
+
+	public void setPem(String pem) {
+		this.pem = pem;
 	}
 
 }

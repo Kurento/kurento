@@ -72,6 +72,7 @@ public class KurentoMediaServerManager {
 
 	public static final String KURENTO_KMS_LOGIN_PROP = "kms.login";
 	public static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
+	public static final String KURENTO_KMS_PEM_PROP = "kms.pem";
 
 	public static RemoteHost remoteKms = null;
 
@@ -129,11 +130,13 @@ public class KurentoMediaServerManager {
 
 		String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
 		String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
+		String kmsPem = getProperty(KURENTO_KMS_PEM_PROP);
 
 		boolean isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1");
 
-		if (isKmsRemote && (kmsLogin == null || kmsPasswd == null)) {
+		if (isKmsRemote && kmsLogin == null
+				&& (kmsPem == null || kmsPasswd == null)) {
 			String kmsAutoStart = getProperty(
 					KurentoServicesTestHelper.KMS_AUTOSTART_PROP,
 					KurentoServicesTestHelper.KMS_AUTOSTART_DEFAULT);
@@ -148,7 +151,8 @@ public class KurentoMediaServerManager {
 							+ wsUri
 							+ ". Remote KMS should be started but its credentials are not present: "
 							+ KURENTO_KMS_LOGIN_PROP + "=" + kmsLogin + ", "
-							+ KURENTO_KMS_PASSWD_PROP + "=" + kmsPasswd);
+							+ KURENTO_KMS_PASSWD_PROP + "=" + kmsPasswd + ", "
+							+ KURENTO_KMS_PEM_PROP + "=" + kmsPem);
 		}
 
 		serverCommand = PropertiesManager.getProperty(
@@ -196,6 +200,9 @@ public class KurentoMediaServerManager {
 					wsUri.lastIndexOf(":"));
 			log.info("Using remote KMS at {}", remoteKmsStr);
 			remoteKms = new RemoteHost(remoteKmsStr, kmsLogin, kmsPasswd);
+			if (kmsPem != null) {
+				remoteKms.setPem(kmsPem);
+			}
 			remoteKms.start();
 			remoteKms.createTmpFolder();
 		}
