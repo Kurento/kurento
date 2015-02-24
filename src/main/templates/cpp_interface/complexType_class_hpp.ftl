@@ -9,6 +9,8 @@ ${complexType.name}.hpp
 #include <memory>
 <#if complexType.extends??>
 #include "${complexType.extends.name}.hpp"
+<#elseif complexType.typeFormat == "REGISTER">
+#include <RegisterParent.hpp>
 </#if>
 
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
@@ -41,7 +43,7 @@ class ${dependency.type.name};
 </#if>
 </#list>
 
-class ${complexType.name}<#if complexType.extends??> : public ${complexType.extends.name}</#if>
+class ${complexType.name}<#if complexType.extends??> : public ${complexType.extends.name}<#elseif complexType.typeFormat == "REGISTER"> : public RegisterParent </#if>
 {
 
 public:
