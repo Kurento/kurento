@@ -10,6 +10,7 @@ generate_code (
   MODELS ${CMAKE_CURRENT_SOURCE_DIR}/interface
   SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/implementation
-  SERVER_IMPL_LIB_EXTRA_LIBRARIES kmshttpep
+      ${CMAKE_CURRENT_SOURCE_DIR}/../gst-plugins
+  SERVER_IMPL_LIB_EXTRA_LIBRARIES kmshttpep icecandidate
   SERVER_STUB_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/implementation/objects
 )

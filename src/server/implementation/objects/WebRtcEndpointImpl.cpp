@@ -6,6 +6,8 @@
 #include <KurentoException.hpp>
 #include <gst/gst.h>
 #include <boost/filesystem.hpp>
+#include <IceCandidate.hpp>
+#include <webrtcendpoint/kmsicecandidate.h>
 
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -24,8 +26,27 @@ static const uint DEFAULT_STUN_PORT = 3478;
 static std::shared_ptr<std::string> pemCertificate;
 std::mutex WebRtcEndpointImpl::certificateMutex;
 
+static void
+on_ice_candidate (GstElement *webrtcendpoint, KmsIceCandidate *candidate,
+                  gpointer data)
+{
+  auto handler = reinterpret_cast<std::function<void (KmsIceCandidate *) >*>
+                 (data);
+
+  (*handler) (candidate);
+}
+
+static void
+on_ice_gathering_done (GstElement *webrtcendpoint, gpointer data)
+{
+  auto handler = reinterpret_cast<std::function<void() >*> (data);
+
+  (*handler) ();
+}
+
 class TemporalDirectory
 {
+
 public:
   ~TemporalDirectory() {
     if (!dir.string ().empty() ) {
@@ -160,6 +181,73 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   g_object_set ( G_OBJECT (element), "certificate-pem-file",
                  getPemCertificate ()->c_str(), NULL);
+
+  onIceCandidateLambda = [&] (KmsIceCandidate * candidate) {
+    try {
+      std::string cand_str (kms_ice_candidate_get_candidate (candidate) );
+      std::string mid_str (kms_ice_candidate_get_sdp_mid (candidate) );
+      int sdp_m_line_index = kms_ice_candidate_get_sdp_m_line_index (candidate);
+      std::shared_ptr <IceCandidate> cand ( new  IceCandidate
+                                            (cand_str, mid_str, sdp_m_line_index) );
+      OnIceCandidate event (cand, shared_from_this(), OnIceCandidate::getName() );
+
+      signalOnIceCandidate (event);
+    } catch (std::bad_weak_ptr &e) {
+    }
+  };
+
+  handlerOnIceCandidate = g_signal_connect (element, "on-ice-candidate",
+                          G_CALLBACK (on_ice_candidate),
+                          &onIceCandidateLambda);
+
+  onIceGatheringDoneLambda = [&] () {
+    try {
+      OnIceGatheringDone event (shared_from_this(), OnIceGatheringDone::getName() );
+
+      signalOnIceGatheringDone (event);
+    } catch (std::bad_weak_ptr &e) {
+    }
+  };
+
+  handlerOnIceGatheringDone = g_signal_connect (element, "on-ice-gathering-done",
+                              G_CALLBACK (on_ice_gathering_done),
+                              &onIceGatheringDoneLambda);
+}
+
+WebRtcEndpointImpl::~WebRtcEndpointImpl()
+{
+  g_signal_handler_disconnect (element, handlerOnIceCandidate);
+  g_signal_handler_disconnect (element, handlerOnIceGatheringDone);
+}
+
+void
+WebRtcEndpointImpl::gatherCandidates ()
+{
+  gboolean ret;
+
+  g_signal_emit_by_name (element, "gather-candidates", &ret);
+
+  if (!ret) {
+    throw KurentoException (ICE_GATHER_CANDIDATES_ERROR,
+                            "Error gathering candidates");
+  }
+}
+
+void
+WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
+{
+  gboolean ret;
+  const char *cand_str = candidate->getCandidate().c_str ();
+  const char *mid_str = candidate->getSdpMid().c_str ();
+  guint8 sdp_m_line_index = candidate->getSdpMLineIndex ();
+  KmsIceCandidate *cand = kms_ice_candidate_new (cand_str, mid_str,
+                          sdp_m_line_index);
+
+  g_signal_emit_by_name (element, "add-ice-candidate", cand, &ret);
+
+  if (!ret) {
+    throw KurentoException (ICE_ADD_CANDIDATE_ERROR, "Error adding candidate");
+  }
 }
 
 MediaObjectImpl *

@@ -5,6 +5,8 @@
 #include "WebRtcEndpoint.hpp"
 #include <EventHandler.hpp>
 
+typedef struct _KmsIceCandidate KmsIceCandidate;
+
 namespace kurento
 {
 
@@ -23,11 +25,17 @@ public:
   WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                       std::shared_ptr<MediaPipeline> mediaPipeline);
 
-  virtual ~WebRtcEndpointImpl () {};
+  virtual ~WebRtcEndpointImpl ();
+
+  void gatherCandidates ();
+  void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);
+
+  sigc::signal<void, OnIceCandidate> signalOnIceCandidate;
+  sigc::signal<void, OnIceGatheringDone> signalOnIceGatheringDone;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
@@ -36,6 +44,12 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+
+  int handlerOnIceCandidate;
+  int handlerOnIceGatheringDone;
+
+  std::function<void (KmsIceCandidate *) > onIceCandidateLambda;
+  std::function<void() > onIceGatheringDoneLambda;
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

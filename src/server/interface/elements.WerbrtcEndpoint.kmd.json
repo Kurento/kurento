@@ -14,7 +14,73 @@
               "type": "MediaPipeline"
             }
           ]
+        },
+      "methods": [
+        {
+          "name": "gatherCandidates",
+          "doc": "Init the gathering of ICE candidates.\nIt must be called after SdpEndpoint::generateOffer or SdpEndpoint::processOffer",
+          "params": []
+        },
+        {
+          "name": "addIceCandidate",
+          "doc": "Provide a remote ICE candidate",
+          "params": [
+            {
+              "name": "candidate",
+              "doc": "Remote ICE candidate",
+              "type": "IceCandidate"
+            }
+          ]
         }
+      ],
+      "events": [
+        "OnIceCandidate",
+        "OnIceGatheringDone"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "OnIceCandidate",
+      "extends": "Media",
+      "doc": "Notify of a new gathered local candidate.",
+      "properties": [
+        {
+          "name": "candidate",
+          "doc": "New gathered local candidate",
+          "type": "IceCandidate"
+        }
+      ]
+    },
+    {
+      "name": "OnIceGatheringDone",
+      "extends": "Media",
+      "doc": "Notify that all candidates have been gathered.",
+      "properties": []
+    }
+  ],
+  "complexTypes": [
+    {
+      "typeFormat": "REGISTER",
+      "name": "IceCandidate",
+      "doc": "IceCandidate representation based on standard (http://www.w3.org/TR/webrtc/#rtcicecandidate-type).",
+      "properties": [
+        {
+          "name": "candidate",
+          "doc": "The candidate-attribute as defined in section 15.1 of ICE (rfc5245).",
+          "type": "String"
+        },
+        {
+          "name": "sdpMid",
+          "doc": "If present, this contains the identifier of the 'media stream identification'.",
+          "type": "String"
+        },
+        {
+          "name": "sdpMLineIndex",
+          "doc": "The index (starting at zero) of the m-line in the SDP this candidate is associated with.",
+          "type": "int"
+        }
+      ]
     }
   ]
 }
