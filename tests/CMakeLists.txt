@@ -14,3 +14,18 @@ target_link_libraries(test_rpc
   ${JSONRPC_LINK_LIBRARIES}
   jsonrpc
 )
+
+add_test_program (test_serialize TestSerialize.cpp)
+add_dependencies(test_serialize jsonrpc)
+
+set_property (TARGET test_serialize
+  PROPERTY INCLUDE_DIRECTORIES
+    ${JSONCPP_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/
+)
+
+target_link_libraries(test_serialize
+  ${JSONCPP_LINK_LIBRARIES}
+  ${JSONRPC_LINK_LIBRARIES}
+  jsonrpc
+)

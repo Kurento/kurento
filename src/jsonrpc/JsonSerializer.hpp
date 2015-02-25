@@ -214,6 +214,30 @@ public:
     }
   }
 
+  template<typename TKey, typename TMapValue>
+  void
+  Serialize (TKey key, std::map <std::string, TMapValue> &map)
+  {
+    JsonSerializer subVal (IsWriter);
+
+    if (IsWriter) {
+      for (auto pair : map) {
+        subVal.Serialize (pair.first, pair.second);
+      }
+
+      JsonValue[key] = subVal.JsonValue;
+    } else {
+      subVal.JsonValue = JsonValue[key];
+
+      for (auto k : subVal.JsonValue.getMemberNames() ) {
+        TMapValue val;
+
+        subVal.Serialize (k, val);
+        map[k] = val;
+      }
+    }
+  }
+
   //Append a Json::Value directly
   template<typename TKey>
   void WriteOnly (TKey key, const Json::Value &value)
