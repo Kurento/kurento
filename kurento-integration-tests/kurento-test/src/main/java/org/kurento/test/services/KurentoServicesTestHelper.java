@@ -156,8 +156,7 @@ public class KurentoServicesTestHelper {
 	public static KurentoMediaServerManager startKurentoMediaServer(
 			String wsUri, int httpPort) throws IOException {
 
-		kms = KurentoMediaServerManager.createWithWsTransport(wsUri,
-				httpPort);
+		kms = KurentoMediaServerManager.createWithWsTransport(wsUri, httpPort);
 		kms.start();
 
 		return kms;
@@ -189,7 +188,7 @@ public class KurentoServicesTestHelper {
 		}
 
 		kms.setTestClassName(testCaseName);
-		kms.setTestMethodName(testName);
+		kms.setTestMethodName(getSimpleTestName());
 		kms.setTestDir(testDir);
 		kms.start();
 
@@ -262,6 +261,15 @@ public class KurentoServicesTestHelper {
 
 	public static String getTestName() {
 		return KurentoServicesTestHelper.testName;
+	}
+
+	public static String getSimpleTestName() {
+		String out = testName;
+		if (out.indexOf(":") != -1) {
+			// This happens in performance tests with data from JUnit parameters
+			out = out.substring(0, out.indexOf(":")) + "]";
+		}
+		return out;
 	}
 
 	public static void setTestCaseName(String testCaseName) {

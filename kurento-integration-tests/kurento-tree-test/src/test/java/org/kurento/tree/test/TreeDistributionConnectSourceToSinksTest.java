@@ -2,6 +2,8 @@ package org.kurento.tree.test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -13,13 +15,18 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.testing.SystemFunctionalTests;
+import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.SdpOfferProcessor;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.client.KurentoTreeClient;
 import org.kurento.tree.client.TreeEndpoint;
@@ -30,12 +37,33 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @Category(SystemFunctionalTests.class)
-public class TreeDistributionConnectSourceToSinksTest {
+public class TreeDistributionConnectSourceToSinksTest extends
+		BrowserKurentoClientTest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(TreeDistributionConnectSourceToSinksTest.class);
 
 	private static final int NUM_VIEWERS = 4;
+
+	public TreeDistributionConnectSourceToSinksTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		// Test: 1+NUM_VIEWERS local Chrome's
+		TestScenario test = new TestScenario();
+		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+
+		for (int i = 0; i < NUM_VIEWERS; i++) {
+			test.addBrowser(TestConfig.VIEWER + i, new BrowserClient.Builder()
+					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+					.build());
+		}
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
 	private class TreeViewer {
 
@@ -50,10 +78,6 @@ public class TreeDistributionConnectSourceToSinksTest {
 
 		public BrowserClient getBrowser() {
 			return browser;
-		}
-
-		public void setBrowser(BrowserClient browser) {
-			this.browser = browser;
 		}
 
 		public String getSinkId() {
@@ -123,10 +147,11 @@ public class TreeDistributionConnectSourceToSinksTest {
 
 		List<Future<TreeViewer>> viewers = new ArrayList<>();
 		for (int i = 0; i < 3; i++) {
+			final int key = i;
 			viewers.add(exec.submit(new Callable<TreeViewer>() {
 				@Override
 				public TreeViewer call() throws Exception {
-					return createViewer(kurentoTree, treeId);
+					return createViewer(key, kurentoTree, treeId);
 				}
 			}));
 		}
@@ -140,7 +165,7 @@ public class TreeDistributionConnectSourceToSinksTest {
 
 		// Wait for media in viewers
 		for (Future<TreeViewer> viewer : viewers) {
-			viewer.get().getBrowser().waitForEvent("playing");
+			waitForEvent(viewer.get().getBrowser(), "playing");
 		}
 
 		log.info("Media received...");
@@ -165,10 +190,8 @@ public class TreeDistributionConnectSourceToSinksTest {
 	private BrowserClient createMaster(final KurentoTreeClient kurentoTree,
 			final String treeId) {
 
-		BrowserClient masterBrowser = new BrowserClient.Builder().client(
-				Client.WEBRTC).build();
-		masterBrowser.subscribeEvents("playing");
-		masterBrowser.initWebRtcSdpProcessor(new SdpOfferProcessor() {
+		subscribeEvents(TestConfig.PRESENTER, "playing");
+		initWebRtcSdpProcessor(TestConfig.PRESENTER, new SdpOfferProcessor() {
 			@Override
 			public String processSdpOffer(String sdpOffer) {
 				try {
@@ -179,31 +202,30 @@ public class TreeDistributionConnectSourceToSinksTest {
 			}
 		}, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		return masterBrowser;
+		return testScenario.getBrowserMap().get(TestConfig.PRESENTER);
 	}
 
-	private TreeViewer createViewer(final KurentoTreeClient client,
+	private TreeViewer createViewer(int key, final KurentoTreeClient client,
 			final String treeId) {
-
-		BrowserClient browserViewer = new BrowserClient.Builder().client(
-				Client.WEBRTC).build();
-
+		BrowserClient browserViewer = testScenario.getBrowserMap().get(
+				TestConfig.VIEWER + key);
 		final TreeViewer treeClient = new TreeViewer(browserViewer, null);
 
-		browserViewer.subscribeEvents("playing");
-		browserViewer.initWebRtcSdpProcessor(new SdpOfferProcessor() {
-			@Override
-			public String processSdpOffer(String sdpOffer) {
-				try {
-					TreeEndpoint treeEndpoint = client.addTreeSink(treeId,
-							sdpOffer);
-					treeClient.setSinkId(treeEndpoint.getId());
-					return treeEndpoint.getSdp();
-				} catch (TreeException | IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		subscribeEvents(TestConfig.VIEWER + key, "playing");
+		initWebRtcSdpProcessor(TestConfig.VIEWER + key,
+				new SdpOfferProcessor() {
+					@Override
+					public String processSdpOffer(String sdpOffer) {
+						try {
+							TreeEndpoint treeEndpoint = client.addTreeSink(
+									treeId, sdpOffer);
+							treeClient.setSinkId(treeEndpoint.getId());
+							return treeEndpoint.getSdp();
+						} catch (TreeException | IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 		return treeClient;
 	}

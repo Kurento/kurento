@@ -25,7 +25,7 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public enum Browser {
+public enum BrowserType {
 	CHROME, FIREFOX, IEXPLORER;
 
 	public Class<? extends WebDriver> getDriverClass() {

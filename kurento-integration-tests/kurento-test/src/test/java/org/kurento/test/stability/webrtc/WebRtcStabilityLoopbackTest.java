@@ -15,18 +15,24 @@
 package org.kurento.test.stability.webrtc;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.test.base.KurentoClientTest;
 import org.kurento.test.base.StabilityTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 
 /**
@@ -52,47 +58,51 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
 
 	private static final int DEFAULT_PLAYTIME = 30; // minutes
 
+	public WebRtcStabilityLoopbackTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		String videoPath = KurentoClientTest.getPathTestFiles()
+				+ "/video/15sec/rgbHD.y4m";
+		TestScenario test = new TestScenario();
+		test.addBrowser(TestConfig.DEFAULT_BROWSER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.video(videoPath).build());
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	@Test
-	public void testWebRtcStabilityLoopbackChrome()
-			throws InterruptedException, IOException {
+	public void testWebRtcStabilityLoopback() throws InterruptedException,
+			IOException {
 		final int playTime = Integer.parseInt(System.getProperty(
 				"test.webrtcstability.playtime",
 				String.valueOf(DEFAULT_PLAYTIME)));
-		doTest(Browser.CHROME, getPathTestFiles() + "/video/15sec/rgb.y4m",
-				playTime);
-	}
 
-	public void doTest(Browser browserType, String videoPath, int playTime)
-			throws InterruptedException, IOException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
-		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
-				browserType).client(Client.WEBRTC);
-		if (videoPath != null) {
-			builder = builder.video(videoPath);
-		}
-
 		// Latency control
 		LatencyController cs = new LatencyController("WebRTC in loopback");
 
-		try (BrowserClient browser = builder.build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
-					WebRtcMode.SEND_RCV);
+		// WebRTC
+		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
+		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEndpoint,
+				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
 
-			try {
-				cs.activateLocalLatencyAssessmentIn(browser);
-				cs.checkLatency(playTime, TimeUnit.MINUTES);
-			} catch (RuntimeException re) {
-				Assert.fail(re.getMessage());
-			}
-		} finally {
-			// Release Media Pipeline
-			mp.release();
+		try {
+			cs.activateLocalLatencyAssessmentIn(testScenario.getBrowserMap()
+					.get(TestConfig.DEFAULT_BROWSER));
+			cs.checkLatency(playTime, TimeUnit.MINUTES);
+		} catch (RuntimeException re) {
+			Assert.fail(re.getMessage());
 		}
+
+		// Release Media Pipeline
+		mp.release();
 
 		// Draw latency results (PNG chart and CSV file)
 		cs.drawChart(getDefaultOutputFile(".png"), 500, 270);

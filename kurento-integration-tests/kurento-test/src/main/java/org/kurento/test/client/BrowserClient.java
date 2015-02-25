@@ -16,40 +16,22 @@ package org.kurento.test.client;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 
-import java.awt.Color;
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.latency.LatencyController;
-import org.kurento.test.latency.LatencyException;
-import org.kurento.test.latency.VideoTag;
-import org.kurento.test.latency.VideoTagType;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.Protocol;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
-import org.kurento.test.services.Recorder;
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Platform;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -57,49 +39,44 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
- * launch the real browser.
+ * Wrapper of Selenium Webdriver for testing Kurento applications.
  *
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ * @since 5.1.0
  * @see <a href="http://www.seleniumhq.org/">Selenium</a>
  */
 public class BrowserClient implements Closeable {
 
 	public Logger log = LoggerFactory.getLogger(BrowserClient.class);
-	private List<Thread> callbackThreads = new ArrayList<>();
-	private Map<String, CountDownLatch> countDownLatchEvents;
 
 	private WebDriver driver;
-	private JavascriptExecutor js;
-	private String videoUrl;
-	private int timeout; // seconds
-	private double maxDistance;
 
+	private BrowserType browserType;
+	private BrowserScope scope;
+	private String browserVersion;
+	private Platform platform;
 	private String video;
 	private String audio;
-	private int serverPort;
-	private Client client;
-	private Browser browser;
-	private boolean usePhysicalCam;
-	private boolean useHttps;
-	private boolean enableScreenCapture;
-	private Node remoteNode;
 	private int recordAudio;
 	private int audioSampleRate;
 	private AudioChannel audioChannel;
-	private SystemMonitorManager monitor;
+	private int timeout;
+	private boolean usePhysicalCam;
+	private boolean enableScreenCapture;
 	private String name;
-	private boolean isLocal;
-	private String browserVersion;
-	private Platform platform;
+	private double colorDistance;
+	private int thresholdTime;
+	private Protocol protocol;
+	private int serverPort;
+	private Client client;
+	private String hostAddress;
+	private SystemMonitorManager monitor;
+	private Node remoteNode;
 
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
@@ -107,134 +84,50 @@ public class BrowserClient implements Closeable {
 	public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
 
 	private BrowserClient(Builder builder) {
-
+		this.scope = builder.scope;
 		this.video = builder.video;
 		this.audio = builder.audio;
-		this.serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
-				builder.serverPort);
+		this.serverPort = builder.serverPort;
 		this.client = builder.client;
-		this.browser = builder.browser;
+		this.browserType = builder.browserType;
 		this.usePhysicalCam = builder.usePhysicalCam;
 		this.enableScreenCapture = builder.enableScreenCapture;
-		this.useHttps = builder.useHttps;
 		this.remoteNode = builder.remoteNode;
 		this.recordAudio = builder.recordAudio;
 		this.audioSampleRate = builder.audioSampleRate;
 		this.audioChannel = builder.audioChannel;
-		this.isLocal = builder.isLocal;
 		this.browserVersion = builder.browserVersion;
 		this.platform = builder.platform;
 		this.name = builder.name;
-
-		countDownLatchEvents = new HashMap<>();
-		timeout = 60; // default (60 seconds)
-		maxDistance = 60.0; // default distance (for color comparison)
-
-		// Setup Selenium
-		initDriver();
-
-		String hostAddress;
-
-		if (remoteNode != null) {
-			hostAddress = getProperty(
-					PerformanceTest.SELENIUM_HUB_HOST_PROPERTY,
-					PerformanceTest.SELENIUM_HUB_HOST_DEFAULT);
-			hostAddress = getProperty(
-					PerformanceTest.SELENIUM_HUB_PUBLIC_PROPERTY, hostAddress);
-
-		} else {
-			hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY, "127.0.0.1");
-		}
-
-		// Selenium timeouts
-		driver.manage().timeouts();
-		driver.manage().timeouts().implicitlyWait(timeout, TimeUnit.SECONDS);
-		// driver.manage().timeouts().pageLoadTimeout(timeout,
-		// TimeUnit.SECONDS);
-		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
-
-		// Launch Browser
-		if (isLocal) {
-			String clientPage = client.toString();
-			File clientPageFile = new File(this.getClass().getClassLoader()
-					.getResource("static" + clientPage).getFile());
-			String clientAbsolutePath = "file://"
-					+ clientPageFile.getAbsolutePath();
-			log.debug(
-					"Opening client page located in the local file system: {}",
-					clientAbsolutePath);
-			driver.get(clientAbsolutePath);
-
-		} else if (browserVersion != null && platform != null) {
-			String testHost = getProperty(TEST_PUBLIC_IP_PROPERTY);
-			String protocol = useHttps ? "https" : "http";
-			driver.get(protocol + "://" + testHost + ":" + serverPort
-					+ client.toString());
-
-		} else {
-			String protocol = useHttps ? "https" : "http";
-			String url = protocol + "://" + hostAddress + ":" + serverPort
-					+ client.toString();
-			log.info("*** Browsing URL with WebDriver: {}", url);
-			driver.get(url);
-		}
-
-		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
-				+ KurentoServicesTestHelper.getTestName());
+		this.timeout = builder.timeout;
+		this.colorDistance = builder.colorDistance;
+		this.thresholdTime = builder.thresholdTime;
+		this.hostAddress = builder.hostAddress;
+		this.protocol = builder.protocol;
 
 	}
 
-	private void initDriver() {
-		Class<? extends WebDriver> driverClass = browser.getDriverClass();
-
-		String hostAddress = getProperty(
-				PerformanceTest.SELENIUM_HUB_HOST_PROPERTY,
-				PerformanceTest.SELENIUM_HUB_HOST_DEFAULT);
-
-		int hubPort = getProperty(PerformanceTest.SELENIUM_HUB_PORT_PROPERTY,
-				PerformanceTest.SELENIUM_HUB_PORT_DEFAULT);
+	public void init() {
+		Class<? extends WebDriver> driverClass = browserType.getDriverClass();
 
 		try {
-
-			String sauceLabsUser = getProperty(SAUCELAB_USER_PROPERTY);
-			String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
-
+			DesiredCapabilities capabilities = new DesiredCapabilities();
 			if (driverClass.equals(FirefoxDriver.class)) {
 				FirefoxProfile profile = new FirefoxProfile();
 				// This flag avoids granting the access to the camera
 				profile.setPreference("media.navigator.permission.disabled",
 						true);
-				if (browserVersion != null && platform != null) {
-					DesiredCapabilities capabilities = new DesiredCapabilities();
-					capabilities.setCapability(FirefoxDriver.PROFILE, profile);
-					capabilities.setBrowserName(DesiredCapabilities.firefox()
-							.getBrowserName());
-					capabilities.setCapability("version", browserVersion);
-					capabilities.setCapability("platform", platform);
-					if (name != null) {
-						capabilities.setCapability("name", name);
-					}
 
-					driver = new RemoteWebDriver(new URL("http://"
-							+ sauceLabsUser + ":" + sauceLabsKey
-							+ "@ondemand.saucelabs.com:80/wd/hub"),
-							capabilities);
+				capabilities.setCapability(FirefoxDriver.PROFILE, profile);
+				capabilities.setBrowserName(DesiredCapabilities.firefox()
+						.getBrowserName());
 
-				} else if (remoteNode != null) {
-					DesiredCapabilities capabilities = new DesiredCapabilities();
-					capabilities.setCapability(FirefoxDriver.PROFILE, profile);
-					capabilities.setBrowserName(DesiredCapabilities.firefox()
-							.getBrowserName());
-
-					driver = new RemoteWebDriver(new URL("http://"
-							+ hostAddress + ":" + hubPort + "/wd/hub"),
-							capabilities);
+				if (scope == BrowserScope.SAUCELABS) {
+					createSaucelabsDriver(capabilities);
+				} else if (scope == BrowserScope.REMOTE) {
+					createRemoteDriver(capabilities);
 				} else {
 					driver = new FirefoxDriver(profile);
-				}
-
-				if (!usePhysicalCam && video != null) {
-					launchFakeCam();
 				}
 
 			} else if (driverClass.equals(ChromeDriver.class)) {
@@ -256,18 +149,18 @@ public class BrowserClient implements Closeable {
 					options.addArguments("--use-fake-ui-for-media-stream");
 				}
 
-				// This flag avoids warning in chrome. See:
+				// This flag avoids warning in Chrome. See:
 				// https://code.google.com/p/chromedriver/issues/detail?id=799
 				options.addArguments("--test-type");
 
-				if (isLocal) {
+				if (protocol == Protocol.FILE) {
 					// This flag allows reading local files in video tags
 					options.addArguments("--allow-file-access-from-files");
 				}
 
 				if (!usePhysicalCam) {
 					// This flag makes using a synthetic video (green with
-					// spinner) in webrtc. Or it is needed to combine with
+					// spinner) in WebRTC. Or it is needed to combine with
 					// use-file-for-fake-video-capture to use a file faking the
 					// cam
 					options.addArguments("--use-fake-device-for-media-stream");
@@ -279,401 +172,137 @@ public class BrowserClient implements Closeable {
 						} else {
 							options.addArguments("--use-file-for-fake-video-capture="
 									+ video);
-
-							// Alternative: lauch fake cam also in Chrome
-							// launchFakeCam();
 						}
 					}
 				}
 
-				if (browserVersion != null && platform != null) {
-					DesiredCapabilities capabilities = new DesiredCapabilities();
-					capabilities.setCapability(ChromeOptions.CAPABILITY,
-							options);
-					capabilities.setBrowserName(DesiredCapabilities.chrome()
-							.getBrowserName());
-					capabilities.setCapability("version", browserVersion);
-					capabilities.setCapability("platform", platform);
-					if (name != null) {
-						capabilities.setCapability("name", name);
-					}
+				capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+				capabilities.setBrowserName(DesiredCapabilities.chrome()
+						.getBrowserName());
 
-					driver = new RemoteWebDriver(new URL("http://"
-							+ sauceLabsUser + ":" + sauceLabsKey
-							+ "@ondemand.saucelabs.com:80/wd/hub"),
-							capabilities);
-
-				} else if (remoteNode != null) {
-					DesiredCapabilities capabilities = new DesiredCapabilities();
-					capabilities.setCapability(ChromeOptions.CAPABILITY,
-							options);
-					capabilities.setBrowserName(DesiredCapabilities.chrome()
-							.getBrowserName());
-					driver = new RemoteWebDriver(new URL("http://"
-							+ hostAddress + ":" + hubPort + "/wd/hub"),
-							capabilities);
-
+				if (scope == BrowserScope.SAUCELABS) {
+					createSaucelabsDriver(capabilities);
+				} else if (scope == BrowserScope.REMOTE) {
+					createRemoteDriver(capabilities);
 				} else {
 					driver = new ChromeDriver(options);
 				}
 			} else if (driverClass.equals(InternetExplorerDriver.class)) {
 
-				if (browserVersion != null && platform != null) {
-					DesiredCapabilities capabilities = new DesiredCapabilities();
+				if (scope == BrowserScope.SAUCELABS) {
 					capabilities.setBrowserName(DesiredCapabilities
 							.internetExplorer().getBrowserName());
-					capabilities.setCapability("version", browserVersion);
-					capabilities.setCapability("platform", platform);
-					if (name != null) {
-						capabilities.setCapability("name", name);
-					}
-
-					driver = new RemoteWebDriver(new URL("http://"
-							+ sauceLabsUser + ":" + sauceLabsKey
-							+ "@ondemand.saucelabs.com:80/wd/hub"),
-							capabilities);
+					createSaucelabsDriver(capabilities);
 				}
 
 			}
 
-			js = ((JavascriptExecutor) driver);
+			// Timeouts
+			driver.manage().timeouts();
+			driver.manage().timeouts()
+					.implicitlyWait(timeout, TimeUnit.SECONDS);
+			driver.manage().timeouts()
+					.setScriptTimeout(timeout, TimeUnit.SECONDS);
+
+			// Launch Browser
+			String url;
+			if (protocol == Protocol.FILE) {
+				String clientPage = client.toString();
+				File clientPageFile = new File(this.getClass().getClassLoader()
+						.getResource("static" + clientPage).getFile());
+				url = protocol.toString() + clientPageFile.getAbsolutePath();
+			} else {
+				url = protocol.toString() + hostAddress + ":" + serverPort
+						+ client.toString();
+			}
+			log.info("*** Browsing URL with WebDriver: {}", url);
+			driver.get(url);
 
 		} catch (MalformedURLException e) {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
+
 	}
 
-	private void launchFakeCam() {
-		FakeCam.getSingleton().launchCam(video);
-	}
+	public void createSaucelabsDriver(DesiredCapabilities capabilities)
+			throws MalformedURLException {
+		String sauceLabsUser = getProperty(SAUCELAB_USER_PROPERTY);
+		String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
 
-	public void setURL(String videoUrl) {
-		this.videoUrl = videoUrl;
-	}
-
-	public void resetEvents() {
-		driver.findElement(By.id("status")).clear();
-	}
-
-	private void setColorCoordinates(int x, int y) {
-		driver.findElement(By.id("x")).clear();
-		driver.findElement(By.id("y")).clear();
-		driver.findElement(By.id("x")).sendKeys(String.valueOf(x));
-		driver.findElement(By.id("y")).sendKeys(String.valueOf(y));
-	}
-
-	public void subscribeEvents(String... eventType) {
-		subscribeEventsToVideoTag("video", eventType);
-	}
-
-	public void subscribeLocalEvents(String... eventType) {
-		subscribeEventsToVideoTag("local", eventType);
-	}
-
-	public void subscribeEventsToVideoTag(final String videoTag,
-			String... eventType) {
-		for (final String e : eventType) {
-			CountDownLatch latch = new CountDownLatch(1);
-			countDownLatchEvents.put(e, latch);
-			this.addEventListener(videoTag, e, new BrowserEventListener() {
-				@Override
-				public void onEvent(String event) {
-					consoleLog(ConsoleLogLevel.info, "Event in " + videoTag
-							+ " tag: " + event);
-					countDownLatchEvents.get(e).countDown();
-				}
-			});
-		}
-	}
-
-	public boolean waitForEvent(final String eventType)
-			throws InterruptedException {
-		if (!countDownLatchEvents.containsKey(eventType)) {
-			// We cannot wait for an event without previous subscription
-			return false;
+		capabilities.setCapability("version", browserVersion);
+		capabilities.setCapability("platform", platform);
+		if (name != null) {
+			capabilities.setCapability("name", name);
 		}
 
-		boolean result = countDownLatchEvents.get(eventType).await(timeout,
-				TimeUnit.SECONDS);
-
-		// Record local audio when playing event reaches the browser
-		if (eventType.equalsIgnoreCase("playing") && recordAudio > 0) {
-			if (remoteNode != null) {
-				Recorder.recordRemote(remoteNode, recordAudio, audioSampleRate,
-						audioChannel);
-			} else {
-				Recorder.record(recordAudio, audioSampleRate, audioChannel);
-			}
-		}
-
-		countDownLatchEvents.remove(eventType);
-		return result;
+		driver = new RemoteWebDriver(new URL("http://" + sauceLabsUser + ":"
+				+ sauceLabsKey + "@ondemand.saucelabs.com:80/wd/hub"),
+				capabilities);
 	}
 
-	@SuppressWarnings("deprecation")
-	public void addEventListener(final String videoTag, final String eventType,
-			final BrowserEventListener eventListener) {
-		Thread t = new Thread() {
-			public void run() {
-				js.executeScript(videoTag + ".addEventListener('" + eventType
-						+ "', videoEvent, false);");
-				try {
-					(new WebDriverWait(driver, timeout))
-							.until(new ExpectedCondition<Boolean>() {
-								public Boolean apply(WebDriver d) {
-									return d.findElement(By.id("status"))
-											.getAttribute("value")
-											.equalsIgnoreCase(eventType);
-								}
-							});
-					eventListener.onEvent(eventType);
-				} catch (Throwable t) {
-					log.error("~~~ Exception in addEventListener {}",
-							t.getMessage());
-					this.interrupt();
-					this.stop();
-				}
-			}
-		};
-		callbackThreads.add(t);
-		t.setDaemon(true);
-		t.start();
-	}
-
-	public void start() {
-		js.executeScript("play('" + videoUrl + "', false);");
-	}
-
-	public void stop() {
-		js.executeScript("terminate();");
-	}
-
-	public void addTestName(String testName) {
-		try {
-			js.executeScript("addTestName('" + testName + "');");
-		} catch (WebDriverException we) {
-			log.warn(we.getMessage());
-		}
-	}
-
-	public void appendStringToTitle(String webRtcMode) {
-		try {
-			js.executeScript("appendStringToTitle('" + webRtcMode + "');");
-		} catch (WebDriverException we) {
-			log.warn(we.getMessage());
-		}
-	}
-
-	public void consoleLog(ConsoleLogLevel level, String message) {
-		log.info(message);
-		js.executeScript("console." + level.toString() + "('" + message + "');");
-	}
-
-	@Override
-	@SuppressWarnings("deprecation")
-	public void close() {
-		for (Thread t : callbackThreads) {
-			t.stop();
-		}
-		driver.close();
-		driver.quit();
-		driver = null;
-	}
-
-	public int getTimeout() {
-		return timeout;
-	}
-
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
-
-	public double getCurrentTime() {
-		log.debug("getCurrentTime() called");
-		double currentTime = Double.parseDouble(driver.findElement(
-				By.id("currentTime")).getAttribute("value"));
-		log.debug("getCurrentTime() result: {}", currentTime);
-		return currentTime;
-	}
-
-	public boolean similarColorAt(Color expectedColor, int x, int y) {
-		boolean out;
-		final long endTimeMillis = System.currentTimeMillis()
-				+ (timeout * 1000);
-		setColorCoordinates(x, y);
-
-		while (true) {
-			out = compareColor(expectedColor);
-			if (out || System.currentTimeMillis() > endTimeMillis) {
-				break;
-			} else {
-				// Polling: wait 200 ms and check again the color
-				// Max wait = timeout variable
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					log.trace("InterruptedException in guard condition ({})",
-							e.getMessage());
-				}
-			}
-		}
-		return out;
-	}
-
-	public boolean similarColor(Color expectedColor) {
-		return similarColorAt(expectedColor, 0, 0);
-	}
-
-	private boolean compareColor(Color expectedColor) {
-		String[] realColor = driver.findElement(By.id("color"))
-				.getAttribute("value").split(",");
-		int red = Integer.parseInt(realColor[0]);
-		int green = Integer.parseInt(realColor[1]);
-		int blue = Integer.parseInt(realColor[2]);
-
-		double distance = Math.sqrt((red - expectedColor.getRed())
-				* (red - expectedColor.getRed())
-				+ (green - expectedColor.getGreen())
-				* (green - expectedColor.getGreen())
-				+ (blue - expectedColor.getBlue())
-				* (blue - expectedColor.getBlue()));
-
-		boolean out = distance <= getMaxDistance();
-		if (!out) {
-			log.error(
-					"Difference in color comparision. Expected: {}, Real: {} (distance={})",
-					expectedColor, realColor, distance);
-		}
-
-		return out;
-	}
-
-	public double getMaxDistance() {
-		return maxDistance;
-	}
-
-	public void setMaxDistance(double maxDistance) {
-		this.maxDistance = maxDistance;
-	}
-
-	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor,
-			WebRtcChannel channel, WebRtcMode mode) {
-
-		// Append WebRTC mode (send/receive and audio/video) to identify test
-		appendStringToTitle(mode.toString());
-		appendStringToTitle(channel.toString());
-
-		// Setting custom audio stream (if necessary)
-		if (audio != null) {
-			js.executeScript("setCustomAudio('" + audio + "');");
-		}
-
-		// Setting MediaConstraints (if necessary)
-		String channelJsFunction = channel.getJsFunction();
-		if (channelJsFunction != null) {
-			js.executeScript(channelJsFunction);
-		}
-
-		// Execute JavaScript kurentoUtils.WebRtcPeer
-		js.executeScript(mode.getJsFunction());
-
-		// Wait to valid sdpOffer
-		(new WebDriverWait(driver, timeout))
-				.until(new ExpectedCondition<Boolean>() {
-					public Boolean apply(WebDriver d) {
-						return js.executeScript("return sdpOffer;") != null;
-					}
-				});
-		String sdpOffer = (String) js.executeScript("return sdpOffer;");
-		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
-
-		// Uncomment this line to debug SDP offer and answer
-		// log.debug("**** SDP OFFER: {}", sdpOffer);
-		// log.debug("**** SDP ANSWER: {}", sdpAnswer);
-
-		// Encoding in Base64 to avoid parsing errors in JavaScript
-		sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
-
-		// Process sdpAnswer
-		js.executeScript("processSdpAnswer('" + sdpAnswer + "');");
-
-	}
-
-	@SuppressWarnings("deprecation")
-	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
-			final WebRtcChannel channel, final WebRtcMode mode)
-			throws InterruptedException {
-
-		final CountDownLatch latch = new CountDownLatch(1);
-		Thread t = new Thread() {
-			public void run() {
-				initWebRtcSdpProcessor(new SdpOfferProcessor() {
-					@Override
-					public String processSdpOffer(String sdpOffer) {
-						return webRtcEndpoint.processOffer(sdpOffer);
-					}
-				}, channel, mode);
-				latch.countDown();
-			}
-		};
-		t.start();
-		if (!latch.await(this.getTimeout(), TimeUnit.SECONDS)) {
-			t.interrupt();
-			t.stop();
-		}
-	}
-
-	public void playUrlInVideoTag(String url, VideoTagType videoTagType) {
-		js.executeScript("document.getElementById('" + videoTagType.getId()
-				+ "').setAttribute('src', '" + url + "');");
-		js.executeScript("document.getElementById('" + videoTagType.getId()
-				+ "').load();");
+	public void createRemoteDriver(DesiredCapabilities capabilities)
+			throws MalformedURLException {
+		driver = new RemoteWebDriver(new URL("http://" + hostAddress + ":"
+				+ serverPort + "/wd/hub"), capabilities);
 	}
 
 	public static class Builder {
-		private String video;
-		private String audio;
-		private int serverPort;
-		private Client client;
-		private Browser browser = Browser.CHROME;
-		private boolean usePhysicalCam;
-		private boolean enableScreenCapture;
-		private boolean useHttps;
-		private Node remoteNode;
-		private int recordAudio; // seconds
+		private int timeout = 60; // seconds
+		private int thresholdTime = 10; // seconds
+		private double colorDistance = 60;
+		private String hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
+				"127.0.0.1");
+		private int serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
+				KurentoServicesTestHelper.getAppHttpPort());
+		private BrowserScope scope = BrowserScope.LOCAL;
+		private BrowserType browserType = BrowserType.CHROME;
+		private Protocol protocol = Protocol.HTTP;
+		private Client client = Client.WEBRTC;
+		private boolean usePhysicalCam = false;
+		private boolean enableScreenCapture = false;
+		private int recordAudio = 0; // seconds
 		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
 		private AudioChannel audioChannel; // stereo, mono
-		private boolean isLocal;
+		private String video;
+		private String audio;
+		private Node remoteNode;
 		private String browserVersion;
 		private Platform platform;
 		private String name;
 
-		public Builder() {
-			this(KurentoServicesTestHelper.getAppHttpPort());
+		public Builder protocol(Protocol protocol) {
+			this.protocol = protocol;
+			return this;
 		}
 
-		public Builder(int serverPort) {
+		public Builder serverPort(int serverPort) {
 			this.serverPort = serverPort;
+			return this;
+		}
 
-			// By default physical camera will not be used; instead synthetic
-			// videos will be used for testing
-			this.usePhysicalCam = false;
+		public Builder hostAddress(String hostAddress) {
+			this.hostAddress = hostAddress;
+			return this;
+		}
 
-			// By default is not a remote test
-			this.remoteNode = null;
+		public Builder scope(BrowserScope scope) {
+			this.scope = scope;
+			return this;
+		}
 
-			// By default, not recording audio (0 seconds)
-			this.recordAudio = 0;
+		public Builder timeout(int timeout) {
+			this.timeout = timeout;
+			return this;
+		}
 
-			// By default, not enabling the screen capture
-			this.enableScreenCapture = false;
+		public Builder thresholdTime(int thresholdTime) {
+			this.thresholdTime = thresholdTime;
+			return this;
+		}
 
-			// By default HTTPS is not used
-			this.useHttps = false;
-
-			// By default the client is not local (file://), instead is served
-			// by HTTP
-			this.isLocal = false;
+		public Builder colorDistance(double colorDistance) {
+			this.colorDistance = colorDistance;
+			return this;
 		}
 
 		public Builder video(String video) {
@@ -686,8 +315,8 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder browser(Browser browser) {
-			this.browser = browser;
+		public Builder browserType(BrowserType browser) {
+			this.browserType = browser;
 			return this;
 		}
 
@@ -698,11 +327,6 @@ public class BrowserClient implements Closeable {
 
 		public Builder enableScreenCapture() {
 			this.enableScreenCapture = true;
-			return this;
-		}
-
-		public Builder useHttps() {
-			this.useHttps = true;
 			return this;
 		}
 
@@ -720,15 +344,6 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public BrowserClient build() {
-			return new BrowserClient(this);
-		}
-
-		public Builder local() {
-			this.isLocal = true;
-			return this;
-		}
-
 		public Builder browserVersion(String browserVersion) {
 			this.browserVersion = browserVersion;
 			return this;
@@ -743,123 +358,125 @@ public class BrowserClient implements Closeable {
 			this.name = name;
 			return this;
 		}
-	}
 
-	@Deprecated
-	public void addChangeColorEventListener(VideoTag type, LatencyController cs) {
-		cs.addChangeColorEventListener(type, js, type.getName());
-	}
-
-	@Deprecated
-	public void addChangeColorEventListener(VideoTag type,
-			LatencyController cs, String name) {
-		cs.addChangeColorEventListener(type, js, name);
-	}
-
-	public void takeScreeshot(String file) throws IOException {
-		File scrFile = ((TakesScreenshot) driver)
-				.getScreenshotAs(OutputType.FILE);
-		FileUtils.copyFile(scrFile, new File(file));
-	}
-
-	@SuppressWarnings("deprecation")
-	public long getLatency() throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
-		final long[] out = new long[1];
-		Thread t = new Thread() {
-			public void run() {
-				Object latency = js.executeScript("return getLatency();");
-				if (latency != null) {
-					out[0] = (Long) latency;
-				} else {
-					out[0] = Long.MIN_VALUE;
-				}
-
-				latch.countDown();
-			}
-		};
-		t.start();
-		if (!latch.await(this.getTimeout(), TimeUnit.SECONDS)) {
-			t.interrupt();
-			t.stop();
-			throw new LatencyException("Timeout getting latency ("
-					+ this.getTimeout() + "  seconds)");
-		}
-		return out[0];
-	}
-
-	public void activateLatencyControl() {
-		this.subscribeEvents("playing");
-	}
-
-	public long getRemoteTime() {
-		Object time = js.executeScript(VideoTagType.REMOTE.getTime());
-		return (time == null) ? 0 : (Long) time;
-	}
-
-	public void checkLatencyUntil(long endTimeMillis)
-			throws InterruptedException, IOException {
-		while (true) {
-			if (System.currentTimeMillis() > endTimeMillis) {
-				break;
-			}
-			Thread.sleep(100);
-			try {
-				long latency = this.getLatency();
-				if (latency != Long.MIN_VALUE) {
-					monitor.addCurrentLatency(latency);
-				}
-			} catch (LatencyException le) {
-				// log.error("$$$ " + le.getMessage());
-				monitor.incrementLatencyErrors();
-			}
+		public BrowserClient build() {
+			return new BrowserClient(this);
 		}
 	}
 
-	public void checkRemoteLatency(long endTimeMillis,
-			BrowserClient remoteBrowser) throws InterruptedException,
-			IOException {
+	public int getRecordAudio() {
+		return recordAudio;
+	}
 
-		LatencyController cs = new LatencyController();
-		cs.activateRemoteLatencyAssessmentIn(this, remoteBrowser);
-		cs.checkLatency(endTimeMillis, TimeUnit.MILLISECONDS, monitor);
+	public int getAudioSampleRate() {
+		return audioSampleRate;
+	}
 
+	public AudioChannel getAudioChannel() {
+		return audioChannel;
+	}
+
+	public Node getRemoteNode() {
+		return remoteNode;
+	}
+
+	public String getAudio() {
+		return audio;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public WebDriver getDriver() {
+		return driver;
+	}
+
+	public JavascriptExecutor getJs() {
+		return (JavascriptExecutor) driver;
+	}
+
+	public Object executeScript(String command) {
+		return ((JavascriptExecutor) driver).executeScript(command);
+	}
+
+	public SystemMonitorManager getMonitor() {
+		return monitor;
+	}
+
+	public double getColorDistance() {
+		return colorDistance;
+	}
+
+	public int getThresholdTime() {
+		return thresholdTime;
+	}
+
+	public boolean isLocal() {
+		return BrowserScope.LOCAL.equals(this.scope);
+	}
+
+	public boolean isRemote() {
+		return BrowserScope.REMOTE.equals(this.scope);
+	}
+
+	public boolean isSauceLabs() {
+		return BrowserScope.SAUCELABS.equals(this.scope);
+	}
+
+	public BrowserType getBrowserType() {
+		return browserType;
+	}
+
+	public BrowserScope getScope() {
+		return scope;
+	}
+
+	public String getBrowserVersion() {
+		return browserVersion;
+	}
+
+	public Platform getPlatform() {
+		return platform;
+	}
+
+	public String getVideo() {
+		return video;
+	}
+
+	public int getServerPort() {
+		return serverPort;
+	}
+
+	public Client getClient() {
+		return client;
+	}
+
+	public boolean isUsePhysicalCam() {
+		return usePhysicalCam;
+	}
+
+	public boolean isEnableScreenCapture() {
+		return enableScreenCapture;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getHostAddress() {
+		return hostAddress;
 	}
 
 	public void setMonitor(SystemMonitorManager monitor) {
 		this.monitor = monitor;
 	}
 
-	public WebDriver getWebDriver() {
-		return driver;
+	@Override
+	public void close() {
+		driver.close();
+		driver.quit();
+		driver = null;
 	}
 
-	public void activateRtcStats() {
-		try {
-			js.executeScript("activateRtcStats();");
-		} catch (WebDriverException we) {
-			// If client is not ready to gather rtc statistics, we just log it
-			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (function activateRtcStats() is not defined)");
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public Map<String, Object> getRtcStats() {
-		Map<String, Object> out = new HashMap<>();
-		try {
-			out = (Map<String, Object>) js.executeScript("return rtcStats;");
-		} catch (WebDriverException we) {
-			// If client is not ready to gather rtc statistics, we just log it
-			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (variable rtcStats is not defined)");
-		}
-		return out;
-	}
-
-	public String readConsole() {
-		return driver.findElement(By.id("console")).getText();
-	}
 }

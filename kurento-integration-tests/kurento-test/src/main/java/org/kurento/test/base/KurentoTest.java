@@ -14,105 +14,56 @@
  */
 package org.kurento.test.base;
 
-import java.io.File;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
-import org.kurento.commons.testing.IntegrationTests;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.config.TestScenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base for tests.
+ * Base for Kurento tests.
  *
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-@Category(IntegrationTests.class)
+
+@RunWith(Parameterized.class)
 public class KurentoTest {
 
-	public static final String FILE_SCHEMA = "file://";
-
-	private static final Logger log = LoggerFactory
-			.getLogger(KurentoTest.class);
+	public static final Logger log = LoggerFactory.getLogger(KurentoTest.class);
 
 	@Rule
 	public TestName testName = new TestName();
 
-	@Rule
-	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
+	public TestScenario testScenario;
 
-	protected int thresholdTime = 10; // seconds
-
-	/**
-	 * Compares two times and return true|false if these number are similar,
-	 * using a threshold time in the comparison.
-	 *
-	 * @param i
-	 *            First number to be compared
-	 * @param j
-	 *            Second number to be compared
-	 * @return true|false
-	 */
-	public boolean compare(double i, double j) {
-		return Math.abs(j - i) <= getThresholdTime();
+	public KurentoTest() {
 	}
 
-	public int getThresholdTime() {
-		return thresholdTime;
-	}
-
-	public void setThresholdTime(int thresholdTime) {
-		this.thresholdTime = thresholdTime;
-	}
-
-	protected int getServerPort() {
-		return KurentoServicesTestHelper.getAppHttpPort();
-	}
-
-	public String getPathTestFiles() {
-		return KurentoServicesTestHelper.getTestFilesPath();
+	public KurentoTest(TestScenario testScenario) {
+		this.testScenario = testScenario;
 	}
 
 	@Before
-	public void setupKurentoServices() throws Exception {
-
-		log.info("Starting test {}",
-				this.getClass().getName() + "." + testName.getMethodName());
-
-		KurentoServicesTestHelper.setTestCaseName(this.getClass().getName());
-		KurentoServicesTestHelper.setTestName(testName.getMethodName());
-		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
-
+	public void setupKurentoTest() {
+		for (BrowserClient browserClient : testScenario.getBrowserMap()
+				.values()) {
+			browserClient.init();
+		}
 	}
 
 	@After
-	public void teardownKurentoServices() throws Exception {
-		KurentoServicesTestHelper.teardownServices();
-	}
-
-	/*
-	 * If not specified, the default file for recording will have ".webm"
-	 * extension.
-	 */
-	public String getDefaultFileForRecording() {
-		return getDefaultOutputFile(".webm");
-	}
-
-	public static String getDefaultOutputFile(String preffix) {
-		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
-				+ "/" + KurentoServicesTestHelper.getTestCaseName());
-		String testName = KurentoServicesTestHelper.getTestName();
-		if (testName.indexOf(":") != -1) {
-			// This happens in performance tests with data from JUnit parameters
-			testName = testName.substring(0, testName.indexOf(":")) + "]";
+	public void teardownKurentoTest() {
+		for (BrowserClient browserClient : testScenario.getBrowserMap()
+				.values()) {
+			browserClient.close();
 		}
-		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
 	}
 
 }

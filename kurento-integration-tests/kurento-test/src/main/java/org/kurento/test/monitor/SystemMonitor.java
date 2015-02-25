@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.BrowserClient;
 
 /**
@@ -188,7 +189,8 @@ public class SystemMonitor {
 					// Browser Statistics
 					if (browserList != null) {
 						for (BrowserClient bc : browserList) {
-							Map<String, Object> rtc = bc.getRtcStats();
+							Map<String, Object> rtc = BrowserKurentoClientTest
+									.getRtcStats(bc);
 							info.addRtcStats(rtc);
 						}
 					}

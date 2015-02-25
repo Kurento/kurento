@@ -14,19 +14,26 @@
  */
 package org.kurento.test.functional.webrtc;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.ConsoleLogLevel;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 
 /**
  * <strong>Description</strong>: WebRTC to HTTP switch. Test KMS is able to
@@ -51,6 +58,27 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
 
+	public WebRtc2HttpSwitchTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+
+		// Test: 1+nViewers local Chrome's
+		TestScenario test = new TestScenario();
+		test.addBrowser(TestConfig.PRESENTER + 1, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+		test.addBrowser(TestConfig.PRESENTER + 2, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.client(Client.PLAYER).build());
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	@Ignore
 	@Test
 	public void testWebRtc2HttpSwitchChrome() throws Exception {
@@ -61,52 +89,41 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(mp)
 				.build();
 
-		BrowserClient.Builder builderWebrtc = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.WEBRTC);
-		BrowserClient.Builder builderPlayer = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER);
-		try (BrowserClient browser1 = builderWebrtc.build();
-				BrowserClient browser2 = builderWebrtc.build();
-				BrowserClient browser3 = builderPlayer.build()) {
+		// WebRTC
+		subscribeEvents(TestConfig.PRESENTER + 1, "playing");
+		initWebRtc(TestConfig.PRESENTER + 1, webRtcEndpoint1,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+		subscribeEvents(TestConfig.PRESENTER + 2, "playing");
+		initWebRtc(TestConfig.PRESENTER + 2, webRtcEndpoint2,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-			// WebRTC
-			browser1.subscribeEvents("playing");
-			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
-			browser2.subscribeEvents("playing");
-			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
+		// Round #1: Connecting WebRTC #1 to HttpEnpoint
+		webRtcEndpoint1.connect(httpGetEndpoint);
+		consoleLog(TestConfig.VIEWER, ConsoleLogLevel.info,
+				"Connecting to WebRTC #1 source");
 
-			// Round #1: Connecting WebRTC #1 to HttpEnpoint
-			webRtcEndpoint1.connect(httpGetEndpoint);
-			browser3.consoleLog(ConsoleLogLevel.info,
-					"Connecting to WebRTC #1 source");
+		subscribeEvents(TestConfig.VIEWER, "playing");
+		start(TestConfig.VIEWER, httpGetEndpoint.getUrl());
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				waitForEvent(TestConfig.VIEWER, "playing"));
+		Assert.assertTrue(
+				"The color of the video should be green (RGB #008700)",
+				similarColor(TestConfig.VIEWER, CHROME_VIDEOTEST_COLOR));
 
-			browser3.setURL(httpGetEndpoint.getUrl());
-			browser3.subscribeEvents("playing");
-			browser3.start();
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser3.waitForEvent("playing"));
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser3.similarColor(CHROME_VIDEOTEST_COLOR));
+		// Guard time to see stream from WebRTC #1
+		Thread.sleep(PLAYTIME * 1000);
 
-			// Guard time to see stream from WebRTC #1
-			Thread.sleep(PLAYTIME * 1000);
+		// Round #2: Connecting WebRTC #2 to HttpEnpoint
+		webRtcEndpoint2.connect(httpGetEndpoint);
+		consoleLog(TestConfig.VIEWER, ConsoleLogLevel.info,
+				"Switching to WebRTC #2 source");
 
-			// Round #2: Connecting WebRTC #2 to HttpEnpoint
-			webRtcEndpoint2.connect(httpGetEndpoint);
-			browser3.consoleLog(ConsoleLogLevel.info,
-					"Switching to WebRTC #2 source");
+		// Guard time to see stream from WebRTC #2
+		Thread.sleep(PLAYTIME * 1000);
 
-			// Guard time to see stream from WebRTC #2
-			Thread.sleep(PLAYTIME * 1000);
-
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser3.similarColor(CHROME_VIDEOTEST_COLOR));
-		}
+		Assert.assertTrue(
+				"The color of the video should be green (RGB #008700)",
+				similarColor(TestConfig.VIEWER, CHROME_VIDEOTEST_COLOR));
 
 		// Release Media Pipeline
 		mp.release();

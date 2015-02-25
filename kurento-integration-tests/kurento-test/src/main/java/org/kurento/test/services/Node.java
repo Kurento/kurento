@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.test.client.Browser;
+import org.kurento.test.client.BrowserType;
 
 /**
  * Nodes in Selenium Grid testing.
@@ -40,7 +40,7 @@ public class Node {
 	private String address;
 	private String login;
 	private String password;
-	private Browser browser;
+	private BrowserType browser;
 	private int maxInstances;
 	private boolean overwrite;
 	private String video;
@@ -51,18 +51,18 @@ public class Node {
 	private boolean isHttps = false;
 	private boolean enableScreenCapture = false;
 
-	public Node(String address, Browser browser, String video, String audio) {
+	public Node(String address, BrowserType browser, String video, String audio) {
 		this(address, browser);
 		setVideo(video);
 		setAudio(audio);
 	}
 
-	public Node(String address, Browser browser, String video) {
+	public Node(String address, BrowserType browser, String video) {
 		this(address, browser);
 		setVideo(video);
 	}
 
-	public Node(String address, Browser browser) {
+	public Node(String address, BrowserType browser) {
 		setAddress(address);
 		setMaxInstances(DEFAULT_MAX_INSTANCES);
 		setOverwrite(false);
@@ -111,11 +111,11 @@ public class Node {
 		this.overwrite = overwrite;
 	}
 
-	public Browser getBrowser() {
+	public BrowserType getBrowser() {
 		return browser;
 	}
 
-	public void setBrowser(Browser browser) {
+	public void setBrowser(BrowserType browser) {
 		this.browser = browser;
 	}
 

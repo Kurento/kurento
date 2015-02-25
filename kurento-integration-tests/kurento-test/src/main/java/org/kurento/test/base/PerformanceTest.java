@@ -50,10 +50,10 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemPerformanceTests;
 import org.kurento.test.Shell;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserRunner;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.Node;
 import org.kurento.test.services.Randomizer;
@@ -98,7 +98,14 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	private List<Node> nodes;
 	private Node masterNode;
 
-	public PerformanceTest() {
+	public PerformanceTest(TestScenario testScenario) {
+		super(testScenario);
+
+		// TODO add to browserclient
+		String hostAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY,
+				SELENIUM_HUB_HOST_DEFAULT);
+		hostAddress = getProperty(SELENIUM_HUB_PUBLIC_PROPERTY, hostAddress);
+		// TODO also add port (4444) to browserclient
 
 		// Monitor -----------------------
 		monitorRate = Integer
@@ -230,7 +237,7 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 	private void createRemoteScript(Node node, String remotePort,
 			String remoteScript, String remoteFolder,
 			String remoteChromeDriver, String remoteSeleniumJar,
-			Browser browser, int maxInstances) throws IOException {
+			BrowserType browser, int maxInstances) throws IOException {
 
 		// Create script for Node
 		Configuration cfg = new Configuration(
@@ -300,24 +307,24 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		}
 	}
 
-	protected List<Node> getRandomNodes(int numNodes, Browser browser,
+	protected List<Node> getRandomNodes(int numNodes, BrowserType browser,
 			int maxInstances) {
 		return getRandomNodes(numNodes, browser, null, null, maxInstances);
 	}
 
-	public List<Node> getRandomNodesHttps(int numNodes, Browser browser,
+	public List<Node> getRandomNodesHttps(int numNodes, BrowserType browser,
 			int maxInstances) {
 		return getRandomNodes(numNodes, browser, null, null, maxInstances,
 				true, true);
 	}
 
-	public List<Node> getRandomNodes(int numNodes, Browser browser,
+	public List<Node> getRandomNodes(int numNodes, BrowserType browser,
 			String video, String audio, int maxInstances) {
 		return getRandomNodes(numNodes, browser, video, audio, maxInstances,
 				false, false);
 	}
 
-	public List<Node> getRandomNodes(int numNodes, Browser browser,
+	public List<Node> getRandomNodes(int numNodes, BrowserType browser,
 			String video, String audio, int maxInstances, boolean https,
 			boolean screenCapture) {
 
@@ -500,95 +507,99 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 		this.numBrowsersPerNode = numBrowserPerNode;
 	}
 
-	public void parallelBrowsers(BrowserRunner browserRunner, Client client) {
-		parallelBrowsers(browserRunner, client, 0);
-	}
-
-	public void parallelBrowsers(final BrowserRunner browserRunner,
-			final Client client, final int port) {
-		final ExecutorService internalExec = Executors.newFixedThreadPool(nodes
-				.size() * numBrowsersPerNode);
-
-		CompletionService<Void> exec = new ExecutorCompletionService<>(
-				internalExec);
-
-		int numBrowser = 0;
-		for (final Node node : getNodes()) {
-			for (int i = 1; i <= numBrowsersPerNode; i++) {
-
-				final String name = node.getAddress() + "-browser" + i
-						+ "-count" + (numBrowser + 1);
-
-				final int numBrowserFinal = numBrowser;
-
-				exec.submit(new Callable<Void>() {
-					public Void call() throws Exception {
-						try {
-							Thread.currentThread().setName(name);
-							Thread.sleep(browserCreationTime * numBrowserFinal);
-							log.debug("*** Starting node {} ***", name);
-							incrementNumClients();
-
-							BrowserClient browser = null;
-
-							// Browser
-							BrowserClient.Builder builder;
-							if (port != 0) {
-								builder = new BrowserClient.Builder(port);
-							} else {
-								builder = new BrowserClient.Builder();
-							}
-							builder = builder.browser(node.getBrowser())
-									.client(client).remoteNode(node);
-
-							if (node.getVideo() != null) {
-								builder = builder.video(node.getVideo());
-							}
-							if (node.isHttps()) {
-								builder = builder.useHttps();
-							}
-							if (node.isEnableScreenCapture()) {
-								builder = builder.enableScreenCapture();
-							}
-
-							browser = builder.build();
-
-							browser.setMonitor(monitor);
-							monitor.addRtcStats(browser);
-
-							browserRunner.run(browser, numBrowserFinal, name);
-						} finally {
-							decrementNumClients();
-							log.debug("--- Ending client {} ---", name);
-						}
-						return null;
-					}
-				});
-				numBrowser++;
-			}
-		}
-
-		for (int i = 1; i <= getNodes().size() * numBrowsersPerNode; i++) {
-			Future<Void> taskFuture = null;
-			try {
-				taskFuture = exec.take();
-				taskFuture.get(timeout, TimeUnit.SECONDS);
-			} catch (Throwable e) {
-				log.error("$$$ {} $$$", e.getCause().getMessage());
-				e.printStackTrace();
-				if (taskFuture != null) {
-					taskFuture.cancel(true);
-				}
-			} finally {
-				log.debug("+++ Ending browser #{} +++", i);
-			}
-		}
-	}
+	// public void parallelBrowsers(BrowserRunner browserRunner, Client client)
+	// {
+	// parallelBrowsers(browserRunner, client, 0);
+	// }
+	//
+	// public void parallelBrowsers(final BrowserRunner browserRunner,
+	// final Client client, final int port) {
+	// final ExecutorService internalExec = Executors.newFixedThreadPool(nodes
+	// .size() * numBrowsersPerNode);
+	//
+	// CompletionService<Void> exec = new ExecutorCompletionService<>(
+	// internalExec);
+	//
+	// int numBrowser = 0;
+	// for (final Node node : getNodes()) {
+	// for (int i = 1; i <= numBrowsersPerNode; i++) {
+	//
+	// final String name = node.getAddress() + "-browser" + i
+	// + "-count" + (numBrowser + 1);
+	//
+	// final int numBrowserFinal = numBrowser;
+	//
+	// exec.submit(new Callable<Void>() {
+	// public Void call() throws Exception {
+	// try {
+	// Thread.currentThread().setName(name);
+	// Thread.sleep(browserCreationTime * numBrowserFinal);
+	// log.debug("*** Starting node {} ***", name);
+	// incrementNumClients();
+	//
+	// BrowserClient browser = null;
+	//
+	// // Browser
+	// BrowserClient.Builder builder = new BrowserClient.Builder();
+	// if (port != 0) {
+	// builder = builder.serverPort(port);
+	// }
+	// builder = builder.browserType(node.getBrowser())
+	// .client(client).remoteNode(node);
+	//
+	// if (node.getVideo() != null) {
+	// builder = builder.video(node.getVideo());
+	// }
+	// if (node.isHttps()) {
+	// builder = builder.useHttps();
+	// }
+	// if (node.isEnableScreenCapture()) {
+	// builder = builder.enableScreenCapture();
+	// }
+	//
+	// browser = builder.build();
+	//
+	// browser.setMonitor(monitor);
+	// monitor.addRtcStats(browser);
+	//
+	// browserRunner.run(browser, numBrowserFinal, name);
+	// } finally {
+	// decrementNumClients();
+	// log.debug("--- Ending client {} ---", name);
+	// }
+	// return null;
+	// }
+	// });
+	// numBrowser++;
+	// }
+	// }
+	//
+	// for (int i = 1; i <= getNodes().size() * numBrowsersPerNode; i++) {
+	// Future<Void> taskFuture = null;
+	// try {
+	// taskFuture = exec.take();
+	// taskFuture.get(timeout, TimeUnit.SECONDS);
+	// } catch (Throwable e) {
+	// log.error("$$$ {} $$$", e.getCause().getMessage());
+	// e.printStackTrace();
+	// if (taskFuture != null) {
+	// taskFuture.cancel(true);
+	// }
+	// } finally {
+	// log.debug("+++ Ending browser #{} +++", i);
+	// }
+	// }
+	// }
+	//
+	//
+	//
+	// public void parallelBrowsers(final BrowserRunner browserRunner) {
+	// parallelBrowsers(browserRunner, Client.WEBRTC);
+	// }
 
 	public void parallelBrowsers(
 			final Map<String, BrowserClient> browserClientMap,
-			final BrowserRunner browserRunner, final Client client,
-			final int port) {
+			final BrowserRunner browserRunner) {
 		ExecutorService internalExec = Executors
 				.newFixedThreadPool(browserClientMap.size());
 		CompletionService<Void> exec = new ExecutorCompletionService<>(
@@ -637,10 +648,6 @@ public class PerformanceTest extends BrowserKurentoClientTest {
 				log.debug("+++ Ending browser #{} +++", key);
 			}
 		}
-	}
-
-	public void parallelBrowsers(final BrowserRunner browserRunner) {
-		parallelBrowsers(browserRunner, Client.WEBRTC);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,23 +12,23 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.base;
-
-import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.SystemFunctionalTests;
-import org.kurento.test.config.TestScenario;
+package org.kurento.test.config;
 
 /**
- * Functional tests.
- * 
+ * Scope for browser: i) local (installed on machine running the tests; ii)
+ * remote (hosts acceded by Selenium Grid); iii) In Saucelabs (a private PAAS
+ * for testing).
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.5
+ * @since 5.1.0
  */
-@Category(SystemFunctionalTests.class)
-public class FunctionalTest extends BrowserKurentoClientTest {
+public enum BrowserScope {
 
-	public FunctionalTest(TestScenario testScenario) {
-		super(testScenario);
+	LOCAL, REMOTE, SAUCELABS;
+
+	@Override
+	public String toString() {
+		return this.name().toLowerCase();
 	}
 
 }

@@ -14,16 +14,18 @@
  */
 package org.kurento.test.functional.webrtc;
 
+import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 
 /**
  * <strong>Description</strong>: WebRTC in loopback.<br/>
@@ -46,40 +48,40 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds to play in WebRTC
 
-	@Test
-	public void testWebRtcLoopbackChrome() throws InterruptedException {
-		doTest(Browser.CHROME);
+	public WebRtcLoopbackTest(TestScenario testScenario) {
+		super(testScenario);
 	}
 
-	public void doTest(Browser browserType) throws InterruptedException {
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChrome();
+	}
+
+	@Test
+	public void testWebRtcLoopbackChrome() throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
-		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
-				browserType).client(Client.WEBRTC);
+		// Start WebRTC
+		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
+		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEndpoint,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
-		try (BrowserClient browser = builder.build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
+		// Guard time to play the video
+		Thread.sleep(PLAYTIME * 1000);
 
-			// Guard time to play the video
-			Thread.sleep(PLAYTIME * 1000);
-
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser.similarColor(CHROME_VIDEOTEST_COLOR));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-		}
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				waitForEvent(TestConfig.DEFAULT_BROWSER, "playing"));
+		Assert.assertTrue(
+				"The color of the video should be green (RGB #008700)",
+				similarColor(TestConfig.DEFAULT_BROWSER, CHROME_VIDEOTEST_COLOR));
+		double currentTime = getCurrentTime(TestConfig.DEFAULT_BROWSER);
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				compare(TestConfig.DEFAULT_BROWSER, PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

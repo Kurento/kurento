@@ -15,6 +15,8 @@
 package org.kurento.test.functional.webrtc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,15 +25,19 @@ import java.util.concurrent.Future;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 
 /**
  * <strong>Description</strong>: WebRTC connected to N HttpEndpoint.<br/>
@@ -56,72 +62,87 @@ public class WebRtc2HttpTest extends FunctionalTest {
 	private static int PLAYTIME = 10; // seconds to play in player
 	private static int NPLAYERS = 2; // number of HttpEndpoint connected to
 
+	public WebRtc2HttpTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+
+		// Test: 1+nViewers local Chrome's
+		TestScenario test = new TestScenario();
+		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+
+		for (int i = 0; i < NPLAYERS; i++) {
+			test.addBrowser(TestConfig.VIEWER + i, new BrowserClient.Builder()
+					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+					.client(Client.PLAYER).build());
+		}
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	@Ignore
 	@Test
-	public void testWebRtc2HttpChrome() throws Exception {
+	public void testWebRtc2Http() throws Exception {
 		// Media Pipeline
 		final MediaPipeline mp = kurentoClient.createMediaPipeline();
 		final WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp)
 				.build();
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.WEBRTC).build()) {
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
+		initWebRtc(TestConfig.PRESENTER, webRtcEndpoint,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-			// Players
-			ExecutorService exec = Executors.newFixedThreadPool(NPLAYERS);
-			List<Future<?>> results = new ArrayList<>();
-			for (int i = 0; i < NPLAYERS; i++) {
-				results.add(exec.submit(new Runnable() {
-					@Override
-					public void run() {
-						HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
-								.build();
-						webRtcEndpoint.connect(httpEP);
-						try {
-							createPlayer(httpEP.getUrl());
-						} catch (InterruptedException e) {
-							Assert.fail("Exception creating players: "
-									+ e.getClass().getName());
-						}
+		// Players
+		ExecutorService exec = Executors.newFixedThreadPool(NPLAYERS);
+		List<Future<?>> results = new ArrayList<>();
+		for (int i = 0; i < NPLAYERS; i++) {
+			final int j = i;
+			results.add(exec.submit(new Runnable() {
+				@Override
+				public void run() {
+					HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+							.build();
+					webRtcEndpoint.connect(httpEP);
+					try {
+						createPlayer(TestConfig.VIEWER + j, httpEP.getUrl());
+					} catch (InterruptedException e) {
+						Assert.fail("Exception creating players: "
+								+ e.getClass().getName());
 					}
-				}));
-			}
-			for (Future<?> r : results) {
-				r.get();
-			}
+				}
+			}));
+		}
+		for (Future<?> r : results) {
+			r.get();
 		}
 
 		// Release Media Pipeline
 		mp.release();
 	}
 
-	private void createPlayer(String url) throws InterruptedException {
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
-			browser.setURL(url);
-			browser.subscribeEvents("playing");
-			browser.start();
+	private void createPlayer(String browserId, String url)
+			throws InterruptedException {
+		subscribeEvents(browserId, "playing");
+		start(browserId, url);
 
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				waitForEvent(browserId, "playing"));
 
-			// Guard time to see the video
-			Thread.sleep(PLAYTIME * 1000);
+		// Guard time to see the video
+		Thread.sleep(PLAYTIME * 1000);
 
-			// Assertions
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser.similarColor(CHROME_VIDEOTEST_COLOR));
+		// Assertions
+		double currentTime = getCurrentTime(browserId);
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				compare(browserId, PLAYTIME, currentTime));
+		Assert.assertTrue(
+				"The color of the video should be green (RGB #008700)",
+				similarColor(browserId, CHROME_VIDEOTEST_COLOR));
 
-			browser.stop();
-		}
+		stop(browserId);
 	}
 }

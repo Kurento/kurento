@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.base.KurentoTest;
+import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.openqa.selenium.JavascriptExecutor;
@@ -170,7 +170,7 @@ public class LatencyController implements
 			long latency = 0;
 			LatencyRegistry latencyRegistry = new LatencyRegistry();
 			try {
-				latency = localBrowser.getLatency();
+				latency = BrowserKurentoClientTest.getLatency(localBrowser);
 				if (latency == Long.MIN_VALUE) {
 					continue;
 				}
@@ -189,15 +189,18 @@ public class LatencyController implements
 				}
 			}
 
-			long latencyTime = localBrowser.getRemoteTime();
+			long latencyTime = BrowserKurentoClientTest
+					.getRemoteTime(localBrowser);
 			latencyRegistry.setLatency(latency);
 
 			if (latency > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
 
 				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
 						.format(latencyTime);
-				localBrowser.takeScreeshot(KurentoTest.getDefaultOutputFile("-"
-						+ parsedtime + "-error-screenshot.png"));
+				BrowserKurentoClientTest.takeScreeshot(
+						localBrowser,
+						BrowserKurentoClientTest.getDefaultOutputFile("-"
+								+ parsedtime + "-error-screenshot.png"));
 
 				LatencyException latencyException = new LatencyException(
 						latency, TimeUnit.MILLISECONDS);
@@ -477,12 +480,10 @@ public class LatencyController implements
 			BrowserClient browserRemote) {
 		local = false;
 
-		addChangeColorEventListener(videoTaglocal,
-				(JavascriptExecutor) browserLocal.getWebDriver(), getName()
-						+ " " + videoTaglocal);
-		addChangeColorEventListener(videoTagRemote,
-				(JavascriptExecutor) browserRemote.getWebDriver(), getName()
-						+ " " + videoTagRemote);
+		addChangeColorEventListener(videoTaglocal, browserLocal.getJs(),
+				getName() + " " + videoTaglocal);
+		addChangeColorEventListener(videoTagRemote, browserRemote.getJs(),
+				getName() + " " + videoTagRemote);
 	}
 
 	public void activateRemoteLatencyAssessmentIn(BrowserClient browserLocal,
@@ -490,11 +491,9 @@ public class LatencyController implements
 		local = false;
 
 		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL),
-				(JavascriptExecutor) browserLocal.getWebDriver(), getName()
-						+ " " + VideoTagType.LOCAL);
+				browserLocal.getJs(), getName() + " " + VideoTagType.LOCAL);
 		addChangeColorEventListener(new VideoTag(VideoTagType.REMOTE),
-				(JavascriptExecutor) browserRemote.getWebDriver(), getName()
-						+ " " + VideoTagType.REMOTE);
+				browserRemote.getJs(), getName() + " " + VideoTagType.REMOTE);
 	}
 
 	public void setLatencyRate(long latencyRate) {

@@ -14,20 +14,8 @@
  */
 package org.kurento.test.functional.dispatcher;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.kurento.client.Dispatcher;
-import org.kurento.client.HttpGetEndpoint;
-import org.kurento.client.HubPort;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
 
 /**
  * 
@@ -49,55 +37,61 @@ import org.kurento.test.client.WebRtcMode;
  */
 public class DispatcherHttpTest extends FunctionalTest {
 
-	private static int PLAYTIME = 5; // seconds to play in WebRTC
-
-	@Ignore
-	@Test
-	public void testDispatcherHttpChrome() throws Exception {
-		doTest(Browser.CHROME);
+	public DispatcherHttpTest(TestScenario testScenario) {
+		super(testScenario);
 	}
 
-	public void doTest(Browser browserType) throws Exception {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
-				.terminateOnEOS().build();
-
-		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
-		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
-		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
-
-		webRtcEP1.connect(hubPort1);
-		hubPort2.connect(httpEP);
-
-		dispatcher.connect(hubPort1, hubPort2);
-
-		// Test execution
-		try (BrowserClient browser1 = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build();
-				BrowserClient browser2 = new BrowserClient.Builder()
-						.browser(browserType).client(Client.PLAYER).build();) {
-
-			browser1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
-
-			browser2.setURL(httpEP.getUrl());
-			browser2.subscribeEvents("playing");
-			browser2.start();
-
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser2.waitForEvent("playing"));
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser2.similarColor(CHROME_VIDEOTEST_COLOR));
-
-			Thread.sleep(PLAYTIME * 1000);
-		}
-
-		// Release Media Pipeline
-		mp.release();
-	}
+//	private static final int PLAYTIME = 5; // seconds to play in WebRTC
+//	private static final int TIMEOUT = 120; // seconds
+//
+//	@Ignore
+//	@Test
+//	public void testDispatcherHttpChrome() throws Exception {
+//		doTest(BrowserType.CHROME);
+//	}
+//
+//	public void doTest(BrowserType browserType) throws Exception {
+//		// Media Pipeline
+//		MediaPipeline mp = kurentoClient.createMediaPipeline();
+//		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+//		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+//				.terminateOnEOS().build();
+//
+//		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
+//		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
+//		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
+//
+//		webRtcEP1.connect(hubPort1);
+//		hubPort2.connect(httpEP);
+//
+//		dispatcher.connect(hubPort1, hubPort2);
+//
+//		// Test execution
+//		try (BrowserClient browser1 = new BrowserClient.Builder()
+//				.browserType(browserType).client(Client.WEBRTC).build();
+//				BrowserClient browser2 = new BrowserClient.Builder()
+//						.browserType(browserType).client(Client.PLAYER).build();) {
+//
+//			browser1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+//					WebRtcMode.SEND_ONLY);
+//
+//			browser2.setTimeout(TIMEOUT);
+//			browser2.setURL(httpEP.getUrl());
+//			browser2.subscribeEvents("playing");
+//			browser2.start();
+//
+//			// Assertions
+//			Assert.assertTrue(
+//					"Not received media (timeout waiting playing event)",
+//					browser2.waitForEvent("playing"));
+//			Assert.assertTrue(
+//					"The color of the video should be green (RGB #008700)",
+//					browser2.similarColor(CHROME_VIDEOTEST_COLOR));
+//
+//			Thread.sleep(PLAYTIME * 1000);
+//		}
+//
+//		// Release Media Pipeline
+//		mp.release();
+//	}
 }

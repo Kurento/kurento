@@ -17,17 +17,20 @@ package org.kurento.test.performance.webrtc;
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserRunner;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
 
 /**
  * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.<br/>
@@ -63,22 +66,24 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 	private int holdTime;
 
-	public WebRtcPerformanceLoopbackTest() {
+	public WebRtcPerformanceLoopbackTest(TestScenario testScenario) {
+		super(testScenario);
 
 		int numNodes = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
-
 		int numBrowsers = getProperty(NUM_BROWSERS_PROPERTY,
 				NUM_BROWSERS_DEFAULT);
-
 		holdTime = getProperty(HOLD_TIME_PROPERTY, HOLD_TIME_DEFAULT);
-
 		setNumBrowsersPerNode(numBrowsers);
-
 		setBrowserCreationRate(getProperty(CLIENT_RATE_PROPERTY,
 				CLIENT_RATE_DEFAULT));
+		setNodes(getRandomNodes(numNodes, BrowserType.CHROME,
+				getPathTestFiles() + "/video/15sec/rgbHD.y4m", null,
+				numBrowsers));
+	}
 
-		setNodes(getRandomNodes(numNodes, Browser.CHROME, getPathTestFiles()
-				+ "/video/15sec/rgbHD.y4m", null, numBrowsers));
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.noBrowsers();
 	}
 
 	@Ignore
@@ -87,7 +92,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 		final int playTime = getAllBrowsersStartedTime() + holdTime;
 
-		parallelBrowsers(new BrowserRunner() {
+		parallelBrowsers(testScenario.getBrowserMap(), new BrowserRunner() {
 			public void run(BrowserClient browser, int num, String name)
 					throws Exception {
 
@@ -103,13 +108,13 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 					webRtcEndpoint.connect(webRtcEndpoint);
 
 					log.debug("*** start#1 {}", name);
-					browser.subscribeEvents("playing");
+					subscribeEvents(name, "playing");
 					log.debug("### start#2 {}", name);
-					browser.initWebRtc(webRtcEndpoint,
-							WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+					initWebRtc(name, webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+							WebRtcMode.SEND_RCV);
 					log.debug(">>> start#3 {}", name);
 
-					browser.checkLatencyUntil(endTimeMillis);
+					checkLatencyUntil(name, endTimeMillis);
 
 				} catch (Throwable e) {
 					log.error("[[[ {} ]]]", e.getCause().getMessage());

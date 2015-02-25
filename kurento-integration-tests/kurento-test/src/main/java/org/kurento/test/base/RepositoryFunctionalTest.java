@@ -20,6 +20,7 @@ import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
@@ -41,9 +42,14 @@ import com.google.common.io.Files;
 @ComponentScan(basePackages = { "org.kurento.repository" })
 @EnableAutoConfiguration
 @Category(SystemFunctionalTests.class)
-public class RepositoryFunctionalTest extends KurentoClientTest {
+// FIXME extends KurentoClientTest
+public class RepositoryFunctionalTest extends BrowserKurentoClientTest {
 
 	public Repository repository;
+
+	public RepositoryFunctionalTest(TestScenario testScenario) {
+		super(testScenario);
+	}
 
 	@Bean
 	public RepositoryHttpServlet repositoryHttpServlet() {
