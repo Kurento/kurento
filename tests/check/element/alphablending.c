@@ -52,6 +52,8 @@ srcpad_added (GstElement * hubport, GstPad * new_pad, gpointer user_data)
     videosrc = gst_element_factory_make ("videotestsrc", NULL);
     sinkpad = gst_element_get_static_pad (videosrc, "src");
 
+    g_object_set (G_OBJECT (videosrc), "is-live", TRUE, NULL);
+
     gst_bin_add (GST_BIN (pipeline), videosrc);
 
     fail_if (gst_pad_link (sinkpad, new_pad) != GST_PAD_LINK_OK);
