@@ -65,7 +65,8 @@ private:
   //Serialize using a free function defined for the type (default fallback)
   template<typename TValue>
   void SerializeImpl (TValue &value,
-                      typename boost::disable_if<HasSerialize<TValue> >::type *dummy = 0) {
+                      typename boost::disable_if<HasSerialize<TValue> >::type *dummy = 0)
+  {
     //prototype for the serialize free function, so we will get a link error if it's missing
     //this way we don't need a header with all the serialize functions for misc types (eg math)
     void Serialize (TValue &, JsonSerializer &);
@@ -76,18 +77,21 @@ private:
   //Serialize using a member function Serialize(JsonSerializer&)
   template<typename TValue>
   void SerializeImpl (TValue &value,
-                      typename boost::enable_if<HasSerialize<TValue> >::type *dummy = 0) {
+                      typename boost::enable_if<HasSerialize<TValue> >::type *dummy = 0)
+  {
     value.Serialize (*this);
   }
 
 public:
   JsonSerializer (bool isWriter)
-    : IsWriter (isWriter) {
+    : IsWriter (isWriter)
+  {
   }
 
   template<typename TKey, typename TValue>
   void Serialize (TKey key, TValue &value,
-                  typename boost::enable_if<boost::is_class<TValue> >::type *dummy = 0) {
+                  typename boost::enable_if<boost::is_class<TValue> >::type *dummy = 0)
+  {
     JsonSerializer subVal (IsWriter);
 
     if (!IsWriter) {
@@ -103,7 +107,8 @@ public:
 
   //Serialize a string value
   template<typename TKey>
-  void Serialize (TKey key, std::string &value) {
+  void Serialize (TKey key, std::string &value)
+  {
     if (IsWriter) {
       Write (key, value);
     } else {
@@ -114,7 +119,8 @@ public:
   //Serialize a non class type directly using JsonCpp
   template<typename TKey, typename TValue>
   void Serialize (TKey key, TValue &value,
-                  typename boost::enable_if<boost::is_fundamental<TValue> >::type *dummy = 0) {
+                  typename boost::enable_if<boost::is_fundamental<TValue> >::type *dummy = 0)
+  {
     if (IsWriter) {
       Write (key, value);
     } else {
@@ -125,7 +131,8 @@ public:
   //Serialize an enum type to JsonCpp
   template<typename TKey, typename TEnum>
   void Serialize (TKey key, TEnum &value,
-                  typename boost::enable_if<boost::is_enum<TEnum> >::type *dummy = 0) {
+                  typename boost::enable_if<boost::is_enum<TEnum> >::type *dummy = 0)
+  {
     int ival = (int) value;
 
     if (IsWriter) {
@@ -139,7 +146,8 @@ public:
   //Serialize only when writing (saving), useful for r-values
   template<typename TKey, typename TValue>
   void WriteOnly (TKey key, TValue value,
-                  typename boost::enable_if<boost::is_fundamental<TValue> >::type *dummy = 0) {
+                  typename boost::enable_if<boost::is_fundamental<TValue> >::type *dummy = 0)
+  {
     if (IsWriter) {
       Write (key, value);
     }
@@ -147,7 +155,8 @@ public:
 
   //Serialize a series of items by start and end iterators
   template<typename TKey, typename TItor>
-  void WriteOnly (TKey key, TItor first, TItor last) {
+  void WriteOnly (TKey key, TItor first, TItor last)
+  {
     if (!IsWriter) {
       return;
     }
@@ -165,14 +174,16 @@ public:
 
   template<typename TKey, typename TValue>
   void ReadOnly (TKey key, TValue &value,
-                 typename boost::enable_if<boost::is_fundamental<TValue> >::type *dummy = 0) {
+                 typename boost::enable_if<boost::is_fundamental<TValue> >::type *dummy = 0)
+  {
     if (!IsWriter) {
       Read (key, value);
     }
   }
 
   template<typename TValue>
-  void ReadOnly (std::vector<TValue> &vec) {
+  void ReadOnly (std::vector<TValue> &vec)
+  {
     if (IsWriter) {
       return;
     }
@@ -192,7 +203,8 @@ public:
   }
 
   template<typename TKey, typename TValue>
-  void Serialize (TKey key, std::vector<TValue> &vec) {
+  void Serialize (TKey key, std::vector<TValue> &vec)
+  {
     if (IsWriter) {
       WriteOnly (key, vec.begin(), vec.end() );
     } else {
@@ -204,32 +216,37 @@ public:
 
   //Append a Json::Value directly
   template<typename TKey>
-  void WriteOnly (TKey key, const Json::Value &value) {
+  void WriteOnly (TKey key, const Json::Value &value)
+  {
     Write (key, value);
   }
 
   //Forward a pointer
   template<typename TKey, typename TValue>
   void Serialize (TKey key, TValue *value,
-                  typename boost::disable_if<boost::is_fundamental<TValue> >::type *dummy = 0) {
+                  typename boost::disable_if<boost::is_fundamental<TValue> >::type *dummy = 0)
+  {
     Serialize (key, *value);
   }
 
   template<typename TKey, typename TValue>
   void WriteOnly (TKey key, TValue *value,
-                  typename boost::disable_if<boost::is_fundamental<TValue> >::type *dummy = 0) {
+                  typename boost::disable_if<boost::is_fundamental<TValue> >::type *dummy = 0)
+  {
     Serialize (key, *value);
   }
 
   template<typename TKey, typename TValue>
   void ReadOnly (TKey key, TValue *value,
-                 typename boost::disable_if<boost::is_fundamental<TValue> >::type *dummy = 0) {
+                 typename boost::disable_if<boost::is_fundamental<TValue> >::type *dummy = 0)
+  {
     ReadOnly (key, *value);
   }
 
   //Shorthand operator to serialize
   template<typename TKey, typename TValue>
-  void operator() (TKey key, TValue &value) {
+  void operator() (TKey key, TValue &value)
+  {
     Serialize (key, value);
   }
 
@@ -238,44 +255,52 @@ public:
 
 private:
   template<typename TKey, typename TValue>
-  void Write (TKey key, TValue value) {
+  void Write (TKey key, TValue value)
+  {
     JsonValue[key] = value;
   }
 
   template<typename TKey, typename TValue>
   void Read (TKey key, TValue &value,
-             typename boost::enable_if<boost::is_arithmetic<TValue> >::type *dummy = 0) {
+             typename boost::enable_if<boost::is_arithmetic<TValue> >::type *dummy = 0)
+  {
     int ival = JsonValue[key].asInt();
     value = (TValue) ival;
   }
 
   template<typename TKey>
-  void Read (TKey key, bool &value) {
+  void Read (TKey key, bool &value)
+  {
     value = JsonValue[key].asBool();
   }
 
   template<typename TKey>
-  void Read (TKey key, int &value) {
+  void Read (TKey key, int &value)
+  {
     value = JsonValue[key].asInt();
   }
 
   template<typename TKey>
-  void Read (TKey key, unsigned int &value) {
+  void Read (TKey key, unsigned int &value)
+  {
     value = JsonValue[key].asUInt();
   }
 
   template<typename TKey>
-  void Read (TKey key, float &value) {
+  void Read (TKey key, float &value)
+  {
     value = JsonValue[key].asFloat();
   }
 
   template<typename TKey>
-  void Read (TKey key, double &value) {
+  void Read (TKey key, double &value)
+  {
     value = JsonValue[key].asDouble();
   }
 
   template<typename TKey>
-  void Read (TKey key, std::string &value) {
+  void Read (TKey key, std::string &value)
+  {
     value = JsonFixes::getString (JsonValue[key]);
   }
 };
