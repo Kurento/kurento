@@ -15,7 +15,7 @@
 
 #include <gst/check/gstcheck.h>
 #include <gst/sdp/gstsdpmessage.h>
-#include "../../../src/gst-plugins/webrtcendpoint/kmsicecandidate.h"
+#include <webrtcendpoint/kmsicecandidate.h>
 
 #include <commons/kmselementpadtype.h>
 
