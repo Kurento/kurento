@@ -122,8 +122,15 @@ public class ConfigFileFinder {
 		String entryName = s.substring(separator + 2);
 		URI fileURI = URI.create(s.substring(0, separator));
 
-		FileSystem fs = FileSystems.newFileSystem(fileURI,
-				Collections.<String, Object> emptyMap());
+		FileSystem fs;
+		try {
+
+			fs = FileSystems.newFileSystem(fileURI,
+					Collections.<String, Object> emptyMap());
+
+		} catch (java.nio.file.FileSystemAlreadyExistsException e) {
+			fs = FileSystems.getFileSystem(fileURI);
+		}
 		return fs.getPath(entryName);
 	}
 

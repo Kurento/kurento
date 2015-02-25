@@ -30,6 +30,12 @@ public class ConfigFileManager {
 
 			if (configFilePath != null) {
 				configFile = Paths.get(configFilePath);
+
+				if (!Files.exists(configFile)) {
+                    configFile = ConfigFileFinder
+                            .getPathInClasspath("/wowza-controller.conf.json");
+                }
+
 			} else {
 				configFile = ConfigFileFinder
 						.searchConfigFileInDefaultPlaces(configFileName);
