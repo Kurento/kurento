@@ -66,11 +66,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		@OnWebSocketConnect
 		public void onConnect(Session session) {
 			wsSession = session;
-			rs = new ResponseSender(){
+			rs = new ResponseSender() {
 				@Override
 				public void sendResponse(Message message) throws IOException {
 					String jsonMessage = message.toString();
-					log.debug(label+"<-Res {}", jsonMessage);
+					log.debug(label + "<-Res {}", jsonMessage);
 					synchronized (wsSession) {
 						wsSession.getRemote().sendString(jsonMessage);
 					}
@@ -178,6 +178,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				if (connectionListener != null) {
 					connectionListener.connectionFailed();
 				}
+				if (client != null) {
+					client.destroy();
+				}
 				throw new KurentoException(label
 						+ " Exception connecting to WebSocket server " + url, e);
 			}
@@ -187,6 +190,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				if (!latch.await(this.connectionTimeout, TimeUnit.MILLISECONDS)) {
 					if (connectionListener != null) {
 						connectionListener.connectionFailed();
+					}
+					if (client != null) {
+						client.destroy();
 					}
 					throw new KurentoException(label + " Timeout of "
 							+ this.connectionTimeout
