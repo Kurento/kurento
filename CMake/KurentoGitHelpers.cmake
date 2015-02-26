@@ -6,6 +6,7 @@ function (get_git_dir git_dir_output_variable)
   if(EXISTS ${GIT_EXECUTABLE})
     execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --git-dir
         OUTPUT_VARIABLE git_dir
+        ERROR_VARIABLE ignored
         OUTPUT_STRIP_TRAILING_WHITESPACE
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
