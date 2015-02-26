@@ -70,7 +70,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				@Override
 				public void sendResponse(Message message) throws IOException {
 					String jsonMessage = message.toString();
-					log.debug(label + "<-Res {}", jsonMessage);
+					log.debug("{} <-Res {}", label, jsonMessage);
 					synchronized (wsSession) {
 						wsSession.getRemote().sendString(jsonMessage);
 					}
@@ -179,7 +179,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					connectionListener.connectionFailed();
 				}
 				if (client != null) {
+					log.debug("{} Destroying", label);
 					client.destroy();
+					log.debug("{} Client destroyed", label);
 				}
 				throw new KurentoException(label
 						+ " Exception connecting to WebSocket server " + url, e);
@@ -192,7 +194,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						connectionListener.connectionFailed();
 					}
 					if (client != null) {
+						log.debug("{} Destroying", label);
 						client.destroy();
+						log.debug("{} Client destroyed", label);
 					}
 					throw new KurentoException(label + " Timeout of "
 							+ this.connectionTimeout
@@ -211,9 +215,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					try {
 						rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
-						log.info(label
-								+ " Reconnected to the same session in server "
-								+ url);
+						log.info(
+								"{} Reconnected to the same session in server {}",
+								label, url);
 
 					} catch (JsonRpcErrorException e) {
 						if (e.getCode() == 40007) { // Invalid session exception
@@ -221,9 +225,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 							rsHelper.setSessionId(null);
 							rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
-							log.info(label
-									+ " Reconnected to a new session in server "
-									+ url);
+							log.info(
+									"{} Reconnected to a new session in server {}",
+									label, url);
 						}
 					}
 				}
@@ -257,7 +261,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						handlerManager.afterConnectionClosed(session,
 								closeReason);
 
-						log.debug(label + " WebSocket closed due to: {}",
+						log.debug("{} WebSocket closed due to: {}", label,
 								closeReason);
 						wsSession = null;
 
@@ -266,9 +270,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						}
 
 					} catch (IOException e) {
-						log.warn(label
-								+ " Exception trying to reconnect to server "
-								+ url, e);
+						log.warn(
+								"{} Exception trying to reconnect to server {}",
+								label, url, e);
 					}
 				}
 			});
@@ -299,9 +303,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					handlerManager.handleRequest(session,
 							fromJsonRequest(message, JsonElement.class), rs);
 				} catch (IOException e) {
-					log.warn(
-							label + " Exception processing request " + message,
-							e);
+					log.warn("{} Exception processing request {}", label,
+							message, e);
 				}
 			}
 		});
@@ -343,8 +346,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
-						log.error(label
-								+ " Exception while processing response", e);
+						log.error("{} Exception while processing response",
+								label, e);
 					}
 				} catch (Exception e) {
 					continuation.onError(e);
@@ -365,7 +368,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 
 		String jsonMessage = request.toString();
-		log.debug(label + " Req-> {}", jsonMessage.trim());
+		log.debug("{} Req-> {}", label, jsonMessage.trim());
 		synchronized (wsSession) {
 			wsSession.getRemote().sendString(jsonMessage);
 		}
@@ -379,7 +382,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
-			log.debug(label + " <-Res {}", responseJson.toString());
+			log.debug("{} <-Res {}", label, responseJson.toString());
 
 			Response<R> response = MessageUtils.convertResponse(responseJson,
 					resultClass);
