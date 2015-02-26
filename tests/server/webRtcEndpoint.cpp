@@ -39,6 +39,7 @@ BOOST_AUTO_TEST_CASE (gathering_done)
 
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
+  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
 
   std::shared_ptr <WebRtcEndpointImpl> webRtcEp ( new  WebRtcEndpointImpl
       (config, pipe) );

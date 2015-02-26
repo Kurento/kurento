@@ -190,6 +190,7 @@ main (int argc, char **argv)
 
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
+  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
 
   testHttpGetEndPoint (moduleManager, mediaPipeline);
   testHttpPostEndPoint (moduleManager, mediaPipeline);
