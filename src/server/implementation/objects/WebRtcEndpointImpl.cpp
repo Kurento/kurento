@@ -48,13 +48,15 @@ class TemporalDirectory
 {
 
 public:
-  ~TemporalDirectory() {
+  ~TemporalDirectory()
+  {
     if (!dir.string ().empty() ) {
       boost::filesystem::remove_all (dir);
     }
   }
 
-  void setDir (boost::filesystem::path &dir) {
+  void setDir (boost::filesystem::path &dir)
+  {
     this->dir = dir;
   }
 private:
