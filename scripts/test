@@ -10,6 +10,8 @@ var outputFile = require('fs-extra').outputFile
 var Server     = require('node-static').Server
 var tasks      = require('grunt').tasks
 
+var parseString = require('xml2js').parseString;
+
 
 const package_name = require('../package.json').name
 
@@ -17,37 +19,57 @@ const PORT = 8080
 const REPORTS_DIR='reports'
 
 
-function writeReport(type, data)
+function onerror(error)
 {
-  var path = REPORTS_DIR+'/'+package_name+'.'+type
+  if(error)
+  {
+    console.trace(error)
+    process.exit(-1)
+  }
+}
+
+function writeReport(type, data, callback)
+{
+  callback = callback || onerror
+
+  if(!data) return callback("There's no "+type+' report data')
+
+  const path = REPORTS_DIR+'/'+package_name+'.'+type
 
   outputFile(path, data, function(error)
   {
-    if(error) return console.trace(error);
+    if(error) return callback(error);
 
     console.log(type + ' report saved at ' + path);
+
+    callback(null, data)
   });
 }
 
-function waitReport(driver, id)
+function waitReport(driver, id, callback)
 {
   var elem = driver.findElement({id: id})
 
   driver
       .wait(elementIsVisible(elem), 20000)
       .then(elem.getAttribute.bind(elem, 'value'))
-      .then(writeReport.bind(undefined, id))
+      .then(function(data)
+      {
+        writeReport(id, data, callback)
+      })
 }
 
 
-install([], undefined, {cwd: 'test'}).on('end', function(installed)
+install([], undefined, {cwd: 'test'})
+.on('error', onerror)
+.on('end', function(installed)
 {
   installed = Object.keys(installed)
 
   if(installed.length)
     console.log('Installed:',installed.join(', '));
 
-  tasks('coverage', {}, function()
+  tasks(['jsdoc', 'coverage'], {}, function()
   {
     var file = new Server();
 
@@ -63,7 +85,21 @@ install([], undefined, {cwd: 'test'}).on('end', function(installed)
 
     driver.get('http://localhost:'+PORT+'/test/index.html')
 
-    waitReport(driver, 'junit')
+    waitReport(driver, 'junit', function(error, data)
+    {
+      if(error) return onerror(error)
+
+      parseString(data, function(error, result)
+      {
+        if(error) return onerror(error)
+
+        // Set process exit code if test didn't passed
+        var $ = result.testsuites.$
+        var code = parseInt($.failures) + parseInt($.errors)
+        if(code)
+          process.exit(code)
+      });
+    })
     waitReport(driver, 'lcov')
 
     driver.quit().then(server.close.bind(server))
