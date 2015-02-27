@@ -25,7 +25,6 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -73,23 +72,23 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
 		faceOverlayFilter.connect(webRtcEndpoint);
 
 		// Start WebRTC
-		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
-		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEndpoint,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
 		// Guard time to play the video
 		Thread.sleep(playTime * 1000);
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(TestConfig.DEFAULT_BROWSER, "playing"));
+				getBrowser().waitForEvent("playing"));
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				similarColor(TestConfig.DEFAULT_BROWSER, CHROME_VIDEOTEST_COLOR));
-		double currentTime = getCurrentTime(TestConfig.DEFAULT_BROWSER);
+				getBrowser().similarColor(CHROME_VIDEOTEST_COLOR));
+		double currentTime = getBrowser().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + playTime
 				+ " sec, real: " + currentTime + " sec)",
-				compare(TestConfig.DEFAULT_BROWSER, playTime, currentTime));
+				getBrowser().compare(playTime, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

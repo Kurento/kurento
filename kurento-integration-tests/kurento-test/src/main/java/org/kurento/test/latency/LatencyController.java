@@ -25,8 +25,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.BrowserClient;
+import org.kurento.test.base.KurentoClientTest;
+import org.kurento.test.client.KurentoTestClient;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
@@ -74,17 +74,22 @@ public class LatencyController implements
 	private Semaphore remoteEventLatch = new Semaphore(0);
 
 	private boolean failIfLatencyProblem;
-	private boolean local;
-
-	private BrowserClient localBrowser;
 
 	private long latencyRate;
 
 	private int consecutiveFailMax;
 
+	private SystemMonitorManager monitor;
+
 	public LatencyController(String name) {
 		this();
 		this.name = name;
+	}
+
+	public LatencyController(String name, SystemMonitorManager monitor) {
+		this();
+		this.name = name;
+		this.monitor = monitor;
 	}
 
 	public LatencyController() {
@@ -96,7 +101,6 @@ public class LatencyController implements
 		timeoutTimeUnit = TimeUnit.SECONDS;
 
 		failIfLatencyProblem = false;
-		local = true;
 
 		latencyRate = 100; // milliseconds
 
@@ -121,42 +125,12 @@ public class LatencyController implements
 		}
 	}
 
-	public void checkLatency(long testTime, TimeUnit testTimeUnit,
-			SystemMonitorManager monitor) throws InterruptedException,
-			IOException {
-		checkRemoteLatency(testTime, testTimeUnit, monitor);
-	}
-
-	public void checkLatency(long testTime, TimeUnit testTimeUnit)
-			throws InterruptedException, IOException {
-		if (local) {
-			checkLocalLatency(testTime, testTimeUnit);
-		} else {
-			checkRemoteLatency(testTime, testTimeUnit, null);
-		}
-	}
-
-	public void checkLatencyInBackground(final long testTime,
-			final TimeUnit testTimeUnit) throws InterruptedException,
-			IOException {
-		new Thread() {
-			public void run() {
-				try {
-					checkLatency(testTime, testTimeUnit);
-				} catch (InterruptedException e1) {
-					log.warn(
-							"checkLatencyInBackground InterruptedException: {}",
-							e1.getMessage());
-				} catch (IOException e2) {
-					throw new RuntimeException(e2);
-				}
-			}
-		}.start();
-	}
-
+	// TODO: Currently latency control is coupled to kurento-test client. This
+	// should be improved in a future refactor, but in the meantime latency
+	// control is only available on KurentoTestClient
 	public void checkLocalLatency(final long testTime,
-			final TimeUnit testTimeUnit) throws InterruptedException,
-			IOException {
+			final TimeUnit testTimeUnit, KurentoTestClient client)
+			throws InterruptedException, IOException {
 		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
 		long endTimeMillis = System.currentTimeMillis() + playTime;
 		int consecutiveFailCounter = 0;
@@ -170,7 +144,7 @@ public class LatencyController implements
 			long latency = 0;
 			LatencyRegistry latencyRegistry = new LatencyRegistry();
 			try {
-				latency = BrowserKurentoClientTest.getLatency(localBrowser);
+				latency = client.getLatency();
 				if (latency == Long.MIN_VALUE) {
 					continue;
 				}
@@ -189,18 +163,15 @@ public class LatencyController implements
 				}
 			}
 
-			long latencyTime = BrowserKurentoClientTest
-					.getRemoteTime(localBrowser);
+			long latencyTime = client.getRemoteTime();
 			latencyRegistry.setLatency(latency);
 
 			if (latency > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
 
 				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
 						.format(latencyTime);
-				BrowserKurentoClientTest.takeScreeshot(
-						localBrowser,
-						BrowserKurentoClientTest.getDefaultOutputFile("-"
-								+ parsedtime + "-error-screenshot.png"));
+				client.takeScreeshot(KurentoClientTest.getDefaultOutputFile("-"
+						+ parsedtime + "-error-screenshot.png"));
 
 				LatencyException latencyException = new LatencyException(
 						latency, TimeUnit.MILLISECONDS);
@@ -224,12 +195,44 @@ public class LatencyController implements
 		}
 	}
 
-	public void checkRemoteLatency(SystemMonitorManager monitor) {
-		checkRemoteLatency(0, null, monitor);
+	public void checkLocalLatencyInBackground(final long testTime,
+			final TimeUnit testTimeUnit, final KurentoTestClient client)
+			throws InterruptedException, IOException {
+		new Thread() {
+			public void run() {
+				try {
+					checkLocalLatency(testTime, testTimeUnit, client);
+				} catch (InterruptedException e1) {
+					log.warn(
+							"checkLatencyInBackground InterruptedException: {}",
+							e1.getMessage());
+				} catch (IOException e2) {
+					throw new RuntimeException(e2);
+				}
+			}
+		}.start();
+	}
+
+	public void checkRemoteLatencyInBackground(final long testTime,
+			final TimeUnit testTimeUnit, final JavascriptExecutor jsLocal,
+			final JavascriptExecutor jsRemote) {
+		new Thread() {
+			public void run() {
+				checkRemoteLatencyInBackground(testTime, testTimeUnit, jsLocal,
+						jsRemote);
+			}
+		}.start();
 	}
 
 	public void checkRemoteLatency(final long testTime,
-			final TimeUnit testTimeUnit, SystemMonitorManager monitor) {
+			final TimeUnit testTimeUnit, JavascriptExecutor jsLocal,
+			JavascriptExecutor jsRemote) {
+
+		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL), jsLocal,
+				getName() + " " + VideoTagType.LOCAL);
+		addChangeColorEventListener(new VideoTag(VideoTagType.REMOTE),
+				jsRemote, getName() + " " + VideoTagType.REMOTE);
+
 		String msgName = (name != null) ? "[" + name + "] " : "";
 
 		if (localChangeColor == null || remoteChangeColor == null) {
@@ -468,32 +471,6 @@ public class LatencyController implements
 
 	public String getName() {
 		return name != null ? name : "";
-	}
-
-	public void activateLocalLatencyAssessmentIn(BrowserClient browser) {
-		local = true;
-		localBrowser = browser;
-	}
-
-	public void activateRemoteLatencyAssessmentIn(VideoTag videoTaglocal,
-			BrowserClient browserLocal, VideoTag videoTagRemote,
-			BrowserClient browserRemote) {
-		local = false;
-
-		addChangeColorEventListener(videoTaglocal, browserLocal.getJs(),
-				getName() + " " + videoTaglocal);
-		addChangeColorEventListener(videoTagRemote, browserRemote.getJs(),
-				getName() + " " + videoTagRemote);
-	}
-
-	public void activateRemoteLatencyAssessmentIn(BrowserClient browserLocal,
-			BrowserClient browserRemote) {
-		local = false;
-
-		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL),
-				browserLocal.getJs(), getName() + " " + VideoTagType.LOCAL);
-		addChangeColorEventListener(new VideoTag(VideoTagType.REMOTE),
-				browserRemote.getJs(), getName() + " " + VideoTagType.REMOTE);
 	}
 
 	public void setLatencyRate(long latencyRate) {

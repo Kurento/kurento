@@ -60,8 +60,8 @@ public class TestScenario {
 	}
 
 	public void addBrowser(BrowserClient browser) {
-		assertKeyNotExist(TestConfig.DEFAULT_BROWSER);
-		browserMap.put(TestConfig.DEFAULT_BROWSER, browser);
+		assertKeyNotExist(TestConfig.BROWSER);
+		browserMap.put(TestConfig.BROWSER, browser);
 	}
 
 	private void assertKeyNotExist(String key) {
@@ -158,28 +158,21 @@ public class TestScenario {
 		test1.addBrowser(new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
+		return Arrays.asList(new Object[][] { { test1 } });
 
+		// FIXME: Selenium 2.44 is not compliant with Firefox 36, so Firefox is
+		// disabled until Selenium 2.45 is released
 		// Test #2 : Firefox in local
-		TestScenario test2 = new TestScenario();
-		test2.addBrowser(new BrowserClient.Builder()
-				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
-				.build());
-
-		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
-	}
-
-	public static Collection<Object[]> localChrome(int port) {
-		// Test #1 : Chrome in local
-		TestScenario test = new TestScenario();
-		test.addBrowser(new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.enableScreenCapture().protocol(Protocol.HTTPS).build());
-
-		return Arrays.asList(new Object[][] { { test } });
+		// TestScenario test2 = new TestScenario();
+		// test2.addBrowser(new BrowserClient.Builder()
+		// .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
+		// .build());
+		//
+		// return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
 
 	public static Collection<Object[]> localChrome() {
-		// Test #1 : Chrome in local
+		// Test : Chrome in local
 		TestScenario test = new TestScenario();
 		test.addBrowser(new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
@@ -187,6 +180,17 @@ public class TestScenario {
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
+
+	// FIXME: Disabled
+	// public static Collection<Object[]> localFirefox() {
+	// // Test : Firefox in local
+	// TestScenario test = new TestScenario();
+	// test.addBrowser(new BrowserClient.Builder()
+	// .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
+	// .build());
+	//
+	// return Arrays.asList(new Object[][] { { test } });
+	// }
 
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test #1 : Chrome in local (presenter and viewer)
@@ -206,242 +210,4 @@ public class TestScenario {
 	public Map<String, BrowserClient> getBrowserMap() {
 		return browserMap;
 	}
-
-	// TODO Refactor
-	// public static Collection<Object[]> twoBrowsersInLocal() {
-	// // Test #1 : Local Chrome as presenter and local Firefox as viewer
-	// TestScenario test1 = new TestScenario();
-	// test1.addBrowser(TestConfig.PRESENTER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.local).build());
-	// test1.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.local).build());
-	//
-	// // Test #2 : Local Firefox as presenter and local Chrome as viewer
-	// TestScenario test2 = new TestScenario();
-	// test2.addBrowser(TestConfig.PRESENTER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.local).build());
-	// test2.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.local).build());
-	//
-	// return Arrays.asList(new Object[][] { { test1 }, { test2 } });
-	// }
-	//
-	// public static Collection<Object[]> twoBrowsersInLocalSingleTest() {
-	// // Local Chrome as presenter and local Firefox as viewer
-	// TestScenario test = new TestScenario();
-	// test.addBrowser(TestConfig.PRESENTER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.local).build());
-	// test.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.local).build());
-	//
-	// return Arrays.asList(new Object[][] { { test } });
-	// }
-	//
-	// /*
-	// * Remote browsers (in saucelabs)
-	// */
-	// public static Collection<Object[]> oneBrowserInRemote() {
-	// // Test #1 : Remote Chrome 38 in Windows 8
-	// TestScenario test1 = new TestScenario();
-	// test1.addBrowser(new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("38")
-	// .platform(Platform.WIN8).build());
-	//
-	// // Test #2 : Remote Chrome 39 in Windows 8
-	// TestScenario test2 = new TestScenario();
-	// test2.addBrowser(new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("39")
-	// .platform(Platform.WIN8).build());
-	//
-	// // Test #3 : Remote Chrome 40 in Windows 8
-	// TestScenario test3 = new TestScenario();
-	// test3.addBrowser(new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("40")
-	// .platform(Platform.WIN8).build());
-	//
-	// // Test #4 : Remote Chrome 38 in Linux
-	// TestScenario test4 = new TestScenario();
-	// test4.addBrowser(new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("38")
-	// .platform(Platform.LINUX).build());
-	//
-	// // Test #5 : Remote Chrome 39 in Linux
-	// TestScenario test5 = new TestScenario();
-	// test5.addBrowser(new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("39")
-	// .platform(Platform.LINUX).build());
-	//
-	// // Test #6 : Remote Chrome 40 in Linux
-	// TestScenario test6 = new TestScenario();
-	// test6.addBrowser(new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("40")
-	// .platform(Platform.LINUX).build());
-	//
-	// // Test #7 : Remote Firefox 34 in Windows 8
-	// TestScenario test7 = new TestScenario();
-	// test7.addBrowser(new Browser.Builder(BrowserType.FIREFOX)
-	// .scope(BrowserScope.saucelabs).browserVersion("34")
-	// .platform(Platform.WIN8).build());
-	//
-	// // Test #8 : Remote Firefox 35 in Windows 8
-	// TestScenario test8 = new TestScenario();
-	// test8.addBrowser(new Browser.Builder(BrowserType.FIREFOX)
-	// .scope(BrowserScope.saucelabs).browserVersion("35")
-	// .platform(Platform.WIN8).build());
-	//
-	// // Test #9 : Remote Firefox 34 in Linux
-	// TestScenario test9 = new TestScenario();
-	// test9.addBrowser(new Browser.Builder(BrowserType.FIREFOX)
-	// .scope(BrowserScope.saucelabs).browserVersion("34")
-	// .platform(Platform.LINUX).build());
-	//
-	// // Test #10 : Remote Firefox 35 in Linux
-	// TestScenario test10 = new TestScenario();
-	// test10.addBrowser(new Browser.Builder(BrowserType.FIREFOX)
-	// .scope(BrowserScope.saucelabs).browserVersion("35")
-	// .platform(Platform.LINUX).build());
-	//
-	// return Arrays.asList(new Object[][] { { test1 }, { test2 }, { test3 },
-	// { test4 }, { test5 }, { test6 }, { test7 }, { test8 },
-	// { test9 }, { test10 } });
-	// }
-	//
-	// public static Collection<Object[]> twoBrowsersInRemote() {
-	// Browser genericPresenter = new Browser.Builder(BrowserType.CHROME)
-	// .scope(BrowserScope.saucelabs).browserVersion("40")
-	// .platform(Platform.LINUX).build();
-	//
-	// // Test #1 : Remote Chrome 38 in Windows 8
-	// TestScenario test1 = new TestScenario();
-	// test1.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test1.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("38").platform(Platform.WIN8).build());
-	//
-	// // Test #2 : Remote Chrome 39 in Windows 8
-	// TestScenario test2 = new TestScenario();
-	// test2.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test2.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("39").platform(Platform.WIN8).build());
-	//
-	// // Test #3 : Remote Chrome 40 in Windows 8
-	// TestScenario test3 = new TestScenario();
-	// test3.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test3.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("40").platform(Platform.WIN8).build());
-	//
-	// // Test #4 : Remote Chrome 38 in Linux
-	// TestScenario test4 = new TestScenario();
-	// test4.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test4.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("38").platform(Platform.LINUX).build());
-	//
-	// // Test #5 : Remote Chrome 39 in Linux
-	// TestScenario test5 = new TestScenario();
-	// test5.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test5.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("39").platform(Platform.LINUX).build());
-	//
-	// // Test #6 : Remote Chrome 40 in Linux
-	// TestScenario test6 = new TestScenario();
-	// test6.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test6.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("40").platform(Platform.LINUX).build());
-	//
-	// // Test #7 : Remote Firefox 34 in Windows 8
-	// TestScenario test7 = new TestScenario();
-	// test7.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test7.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.saucelabs)
-	// .browserVersion("34").platform(Platform.WIN8).build());
-	//
-	// // Test #8 : Remote Firefox 35 in Windows 8
-	// TestScenario test8 = new TestScenario();
-	// test8.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test8.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.saucelabs)
-	// .browserVersion("35").platform(Platform.WIN8).build());
-	//
-	// // Test #9 : Remote Firefox 34 in Linux
-	// TestScenario test9 = new TestScenario();
-	// test9.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test9.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.saucelabs)
-	// .browserVersion("34").platform(Platform.LINUX).build());
-	//
-	// // Test #10 : Remote Firefox 35 in Linux
-	// TestScenario test10 = new TestScenario();
-	// test10.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test10.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.saucelabs)
-	// .browserVersion("35").platform(Platform.LINUX).build());
-	//
-	// // Test #11 : Remote IExplorer 8 in Windows 7
-	// TestScenario test11 = new TestScenario();
-	// test11.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test11.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.IEXPLORER).scope(BrowserScope.saucelabs)
-	// .browserVersion("8").platform(Platform.VISTA).build());
-	//
-	// // Test #12 : Remote IExplorer 9 in Windows 7
-	// TestScenario test12 = new TestScenario();
-	// test12.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test12.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.IEXPLORER).scope(BrowserScope.saucelabs)
-	// .browserVersion("9").platform(Platform.VISTA).build());
-	//
-	// // Test #13 : Remote IExplorer 10 in Windows 7
-	// TestScenario test13 = new TestScenario();
-	// test13.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test13.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.IEXPLORER).scope(BrowserScope.saucelabs)
-	// .browserVersion("10").platform(Platform.VISTA).build());
-	//
-	// // Test #14 : Remote IExplorer 11 in Windows 7
-	// TestScenario test14 = new TestScenario();
-	// test14.addBrowser(TestConfig.PRESENTER, genericPresenter);
-	// test14.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.IEXPLORER).scope(BrowserScope.saucelabs)
-	// .browserVersion("11").platform(Platform.VISTA).build());
-	//
-	// return Arrays.asList(new Object[][] { { test1 }, { test2 }, { test3 },
-	// { test4 }, { test5 }, { test6 }, { test7 }, { test8 },
-	// { test9 }, { test10 }, { test11 }, { test12 }, { test13 },
-	// { test14 } });
-	// }
-	//
-	// public static Collection<Object[]> twoBrowsersInRemoteSingleTest() {
-	// // Test #1 : Remote Chrome and Firefox
-	// TestScenario test = new TestScenario();
-	// test.addBrowser(TestConfig.PRESENTER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("40").platform(Platform.LINUX).build());
-	// test.addBrowser(TestConfig.VIEWER, new Browser.Builder(
-	// BrowserType.FIREFOX).scope(BrowserScope.saucelabs)
-	// .browserVersion("35").platform(Platform.LINUX).build());
-	// return Arrays.asList(new Object[][] { { test } });
-	// }
-	// /*
-	// * Mixed browsers (local and in remote, i.e. from saucelabs)
-	// */
-	// public static Collection<Object[]> localPresenterRemoteViewers(int
-	// nViewers) {
-	// // Test #1 : Remote Chrome and Firefox
-	// TestScenario test = new TestScenario();
-	// test.addBrowser(TestConfig.PRESENTER, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.local).build());
-	//
-	// for (int i = 1; i <= nViewers; i++) {
-	// test.addBrowser(TestConfig.VIEWER + i, new Browser.Builder(
-	// BrowserType.CHROME).scope(BrowserScope.saucelabs)
-	// .browserVersion("40").platform(Platform.LINUX).build());
-	// }
-	// return Arrays.asList(new Object[][] { { test } });
-	// }
-
 }

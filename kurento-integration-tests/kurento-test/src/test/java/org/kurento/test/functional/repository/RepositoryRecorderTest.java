@@ -34,7 +34,6 @@ import org.kurento.repository.RepositoryItem;
 import org.kurento.test.base.RepositoryFunctionalTest;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -100,9 +99,8 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		launchBrowser(webRtcEP1, playerEP, recorderEP);
 
 		// Wait for EOS
-		Assert.assertTrue("Not received EOS event in player", eosLatch.await(
-				testScenario.getBrowserMap().get(TestConfig.DEFAULT_BROWSER)
-						.getTimeout(), TimeUnit.SECONDS));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -114,9 +112,9 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
 			throws InterruptedException {
 
-		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
-		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEP,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 		playerEP.play();
 		final CountDownLatch eosLatch = new CountDownLatch(1);
 		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
@@ -132,15 +130,14 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(TestConfig.DEFAULT_BROWSER, "playing"));
+				getBrowser().waitForEvent("playing"));
 		Assert.assertTrue("The color of the video should be black",
-				similarColor(TestConfig.DEFAULT_BROWSER, Color.BLACK));
-		Assert.assertTrue("Not received EOS event in player", eosLatch.await(
-				testScenario.getBrowserMap().get(TestConfig.DEFAULT_BROWSER)
-						.getTimeout(), TimeUnit.SECONDS));
-		double currentTime = getCurrentTime(TestConfig.DEFAULT_BROWSER);
+				getBrowser().similarColor(Color.BLACK));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getBrowser().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				compare(TestConfig.DEFAULT_BROWSER, PLAYTIME, currentTime));
+				getBrowser().compare(PLAYTIME, currentTime));
 	}
 }

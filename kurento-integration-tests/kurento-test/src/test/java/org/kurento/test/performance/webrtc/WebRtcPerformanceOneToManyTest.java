@@ -17,6 +17,7 @@ package org.kurento.test.performance.webrtc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,8 +30,8 @@ import org.kurento.test.client.BrowserRunner;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.latency.LatencyController;
 import org.kurento.test.services.Node;
 
 /**
@@ -106,9 +107,9 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				.build();
 
 		// Master
-		subscribeLocalEvents(TestConfig.PRESENTER, "playing");
-		initWebRtc(TestConfig.PRESENTER, masterWebRtcEP,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+		getPresenter().subscribeLocalEvents("playing");
+		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_ONLY);
 
 		// FIXME setMonitor
 		// setMonitor(TestConfig.PRESENTER, monitor);
@@ -116,31 +117,40 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 		final int playTime = getAllBrowsersStartedTime() + holdTime;
 
 		// TODO it should be just viewers, not all the map
-		parallelBrowsers(testScenario.getBrowserMap(), new BrowserRunner() {
-			public void run(BrowserClient browser, int num, String name)
-					throws Exception {
+		parallelBrowsers(getTestScenario().getBrowserMap(),
+				new BrowserRunner() {
+					public void run(BrowserClient browser, int num, String name)
+							throws Exception {
 
-				try {
-					// Viewer
-					WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
-							mp).build();
-					masterWebRtcEP.connect(viewerWebRtcEP);
+						try {
+							// Viewer
+							WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
+									mp).build();
+							masterWebRtcEP.connect(viewerWebRtcEP);
 
-					log.debug("*** start#1 {}", name);
-					subscribeEvents(name, "playing");
-					log.debug("### start#2 {}", name);
-					initWebRtc(name, viewerWebRtcEP, WebRtcChannel.VIDEO_ONLY,
-							WebRtcMode.RCV_ONLY);
-					log.debug(">>> start#3 {}", name);
+							log.debug("*** start#1 {}", name);
+							getBrowser(name).subscribeEvents("playing");
+							log.debug("### start#2 {}", name);
+							getBrowser(name).initWebRtc(viewerWebRtcEP,
+									WebRtcChannel.VIDEO_ONLY,
+									WebRtcMode.RCV_ONLY);
+							log.debug(">>> start#3 {}", name);
 
-					checkRemoteLatency(TestConfig.PRESENTER, playTime, browser);
+							LatencyController cs = new LatencyController(
+									"Latency control on " + name,
+									getPresenter().getBrowserClient()
+											.getMonitor());
+							cs.checkRemoteLatency(playTime,
+									TimeUnit.MILLISECONDS, getPresenter()
+											.getBrowserClient().getJs(),
+									getBrowser(name).getBrowserClient().getJs());
 
-				} catch (Throwable e) {
-					log.error("[[[ {} ]]]", e.getCause().getMessage());
-					throw e;
-				}
-			}
-		});
+						} catch (Throwable e) {
+							log.error("[[[ {} ]]]", e.getCause().getMessage());
+							throw e;
+						}
+					}
+				});
 
 		log.debug("<<< Releasing pipeline");
 

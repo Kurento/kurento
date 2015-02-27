@@ -34,6 +34,7 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.sdp.SdpUtils;
 
 /**
  * <strong>Description</strong>: Stability test for switching a WebRTC connected
@@ -70,7 +71,7 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 		String videoPath = KurentoClientTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.DEFAULT_BROWSER, new BrowserClient.Builder()
+		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(videoPath).build());
 		return Arrays.asList(new Object[][] { { test } });
@@ -95,7 +96,7 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 		log.info("SDP offer in rtpEndpoint1\n{}", sdpOffer);
 
 		// SDP mangling
-		sdpOffer = mangleSdp(sdpOffer, REMOVE_CODECS);
+		sdpOffer = SdpUtils.mangleSdp(sdpOffer, REMOVE_CODECS);
 		log.info("SDP offer in rtpEndpoint1 after mangling\n{}", sdpOffer);
 
 		String sdpAnswer1 = rtpEndpoint2.processOffer(sdpOffer);
@@ -107,19 +108,17 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 		final LatencyController cs = new LatencyController();
 
 		// Test execution
-		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
-		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEndpoint,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_RCV);
 
 		// Assertion: wait to playing event in browser
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(TestConfig.DEFAULT_BROWSER, "playing"));
+				getBrowser().waitForEvent("playing"));
 
 		// Latency assessment
 		try {
-			cs.activateLocalLatencyAssessmentIn(testScenario.getBrowserMap()
-					.get(TestConfig.DEFAULT_BROWSER));
-			cs.checkLatency(playTime, TimeUnit.MINUTES);
+			cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
 		} catch (RuntimeException re) {
 			Assert.fail(re.getMessage());
 		}

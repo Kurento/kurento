@@ -86,21 +86,24 @@
 	function setAudioUserMediaConstraints() {
 		userMediaConstraints = {
 			audio : true,
-			video : false
+			video : false,
+			fake : true
 		};
 	}
 
 	function setVideoUserMediaConstraints() {
 		userMediaConstraints = {
 			audio : false,
-			video : defaultVideoConstraints
+			video : defaultVideoConstraints,
+			fake : true
 		};
 	}
 
 	function setCustomAudio(audioUrl) {
 		mediaConstraints = {
 			audio : false,
-			video : defaultVideoConstraints
+			video : defaultVideoConstraints,
+			fake : true
 		};
 		getUserMedia(mediaConstraints, function(userStream) {
 			videoStream = userStream;

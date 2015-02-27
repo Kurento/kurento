@@ -14,6 +14,8 @@
  */
 package org.kurento.test.base;
 
+import java.awt.Color;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,6 +23,8 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.TestClient;
+import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,16 +41,19 @@ import org.slf4j.LoggerFactory;
 public class KurentoTest {
 
 	public static final Logger log = LoggerFactory.getLogger(KurentoTest.class);
+	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
 	@Rule
 	public TestName testName = new TestName();
 
-	public TestScenario testScenario;
+	private TestClient client;
+	private TestScenario testScenario;
 
 	public KurentoTest() {
 	}
 
 	public KurentoTest(TestScenario testScenario) {
+		client = new TestClient();
 		this.testScenario = testScenario;
 	}
 
@@ -64,6 +71,75 @@ public class KurentoTest {
 				.values()) {
 			browserClient.close();
 		}
+	}
+
+	public TestScenario getTestScenario() {
+		return testScenario;
+	}
+
+	public int getTimeout() {
+		return client.getBrowserClient().getTimeout();
+	}
+
+	public void addBrowserClient(String browserkey, BrowserClient browserClient) {
+		testScenario.getBrowserMap().put(browserkey, browserClient);
+	}
+
+	public void setClient(TestClient client) {
+		this.client = client;
+	}
+
+	public TestClient getBrowser(String browserKey) {
+		return assertAndGetBrowser(browserKey);
+	}
+
+	public TestClient getBrowser() {
+		try {
+			return assertAndGetBrowser(TestConfig.BROWSER);
+
+		} catch (RuntimeException e) {
+			if (testScenario.getBrowserMap().isEmpty()) {
+				throw new RuntimeException(
+						"Empty test scenario: no available browser to run tests!");
+			} else {
+				String browserKey = testScenario.getBrowserMap().entrySet()
+						.iterator().next().getKey();
+				log.debug(TestConfig.BROWSER
+						+ " is not registered in test scenarario, instead"
+						+ " using first browser in the test scenario, i.e. "
+						+ browserKey);
+
+				client.setBrowserClient(testScenario.getBrowserMap().get(
+						browserKey));
+				return client;
+			}
+		}
+	}
+
+	public TestClient getPresenter() {
+		return assertAndGetBrowser(TestConfig.PRESENTER);
+	}
+
+	public TestClient getPresenter(int index) {
+		return assertAndGetBrowser(TestConfig.PRESENTER + index);
+	}
+
+	public TestClient getViewer() {
+		return assertAndGetBrowser(TestConfig.VIEWER);
+	}
+
+	public TestClient getViewer(int index) {
+		return assertAndGetBrowser(TestConfig.VIEWER + index);
+	}
+
+	private TestClient assertAndGetBrowser(String browserKey) {
+		if (!testScenario.getBrowserMap().keySet().contains(browserKey)) {
+			throw new RuntimeException(browserKey
+					+ " is not registered as browser in the test scenario");
+		}
+
+		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
+		return client;
 	}
 
 }

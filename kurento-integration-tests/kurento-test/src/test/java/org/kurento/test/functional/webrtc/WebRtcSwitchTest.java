@@ -29,7 +29,6 @@ import org.kurento.test.client.ConsoleLogLevel;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -55,6 +54,10 @@ public class WebRtcSwitchTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 5; // seconds
 
+	private static final String BROWSER1 = "browser1";
+	private static final String BROWSER2 = "browser2";
+	private static final String BROWSER3 = "browser3";
+
 	public WebRtcSwitchTest(TestScenario testScenario) {
 		super(testScenario);
 	}
@@ -64,15 +67,15 @@ public class WebRtcSwitchTest extends FunctionalTest {
 
 		// Test: 1+nViewers local Chrome's
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER + 1, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
-		test.addBrowser(TestConfig.PRESENTER + 2, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
-		test.addBrowser(TestConfig.PRESENTER + 3, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
+		test.addBrowser(BROWSER1,
+				new BrowserClient.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BROWSER2,
+				new BrowserClient.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BROWSER3,
+				new BrowserClient.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
@@ -88,36 +91,36 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		webRtcEndpoint3.connect(webRtcEndpoint3);
 
 		// Start WebRTC in loopback in each browser
-		subscribeEvents(TestConfig.PRESENTER + 1, "playing");
-		initWebRtc(TestConfig.PRESENTER + 1, webRtcEndpoint1,
+		getBrowser(BROWSER1).subscribeEvents("playing");
+		getBrowser(BROWSER1).initWebRtc(webRtcEndpoint1,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 		// Delay time (to avoid the same timing in videos)
 		Thread.sleep(1000);
 
 		// Browser 2
-		subscribeEvents(TestConfig.PRESENTER + 2, "playing");
-		initWebRtc(TestConfig.PRESENTER + 2, webRtcEndpoint2,
+		getBrowser(BROWSER2).subscribeEvents("playing");
+		getBrowser(BROWSER2).initWebRtc(webRtcEndpoint2,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 		// Delay time (to avoid the same timing in videos)
 		Thread.sleep(1000);
 
 		// Browser 3
-		subscribeEvents(TestConfig.PRESENTER + 3, "playing");
-		initWebRtc(TestConfig.PRESENTER + 3, webRtcEndpoint3,
+		getBrowser(BROWSER3).subscribeEvents("playing");
+		getBrowser(BROWSER3).initWebRtc(webRtcEndpoint3,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 		// Wait until event playing in the remote streams
 		Assert.assertTrue(
 				"Not received media #1 (timeout waiting playing event)",
-				waitForEvent(TestConfig.PRESENTER + 1, "playing"));
+				getBrowser(BROWSER1).waitForEvent("playing"));
 		Assert.assertTrue(
 				"Not received media #2 (timeout waiting playing event)",
-				waitForEvent(TestConfig.PRESENTER + 2, "playing"));
+				getBrowser(BROWSER2).waitForEvent("playing"));
 		Assert.assertTrue(
 				"Not received media #3 (timeout waiting playing event)",
-				waitForEvent(TestConfig.PRESENTER + 3, "playing"));
+				getBrowser(BROWSER3).waitForEvent("playing"));
 
 		// Guard time to see browsers
 		Thread.sleep(PLAYTIME * 1000);
@@ -128,11 +131,11 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		webRtcEndpoint2.connect(webRtcEndpoint3);
 		webRtcEndpoint3.connect(webRtcEndpoint1);
 		assertColor();
-		consoleLog(TestConfig.PRESENTER + 1, ConsoleLogLevel.info,
+		getBrowser(BROWSER1).consoleLog(ConsoleLogLevel.info,
 				"Switch #1: webRtcEndpoint1 -> webRtcEndpoint2");
-		consoleLog(TestConfig.PRESENTER + 2, ConsoleLogLevel.info,
+		getBrowser(BROWSER2).consoleLog(ConsoleLogLevel.info,
 				"Switch #1: webRtcEndpoint2 -> webRtcEndpoint3");
-		consoleLog(TestConfig.PRESENTER + 3, ConsoleLogLevel.info,
+		getBrowser(BROWSER3).consoleLog(ConsoleLogLevel.info,
 				"Switch #1: webRtcEndpoint3 -> webRtcEndpoint1");
 
 		// Guard time to see switching #1
@@ -143,11 +146,11 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		webRtcEndpoint2.connect(webRtcEndpoint1);
 		webRtcEndpoint3.connect(webRtcEndpoint2);
 		assertColor();
-		consoleLog(TestConfig.PRESENTER + 1, ConsoleLogLevel.info,
+		getBrowser(BROWSER1).consoleLog(ConsoleLogLevel.info,
 				"Switch #2: webRtcEndpoint1 -> webRtcEndpoint3");
-		consoleLog(TestConfig.PRESENTER + 2, ConsoleLogLevel.info,
+		getBrowser(BROWSER2).consoleLog(ConsoleLogLevel.info,
 				"Switch #2: webRtcEndpoint2 -> webRtcEndpoint1");
-		consoleLog(TestConfig.PRESENTER + 3, ConsoleLogLevel.info,
+		getBrowser(BROWSER2).consoleLog(ConsoleLogLevel.info,
 				"Switch #2: webRtcEndpoint3 -> webRtcEndpoint2");
 
 		// Guard time to see switching #2
@@ -158,10 +161,10 @@ public class WebRtcSwitchTest extends FunctionalTest {
 	}
 
 	public void assertColor() {
-		for (String key : testScenario.getBrowserMap().keySet()) {
+		for (String key : new String[] { BROWSER1, BROWSER2, BROWSER3 }) {
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					similarColor(key, CHROME_VIDEOTEST_COLOR));
+					getBrowser(key).similarColor(CHROME_VIDEOTEST_COLOR));
 		}
 	}
 

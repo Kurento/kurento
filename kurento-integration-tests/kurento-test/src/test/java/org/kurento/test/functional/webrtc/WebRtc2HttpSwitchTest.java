@@ -65,12 +65,12 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 
-		// Test: 1+nViewers local Chrome's
+		// Test: 3 browsers
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER + 1, new BrowserClient.Builder()
+		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
-		test.addBrowser(TestConfig.PRESENTER + 2, new BrowserClient.Builder()
+		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
@@ -90,32 +90,32 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 				.build();
 
 		// WebRTC
-		subscribeEvents(TestConfig.PRESENTER + 1, "playing");
-		initWebRtc(TestConfig.PRESENTER + 1, webRtcEndpoint1,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-		subscribeEvents(TestConfig.PRESENTER + 2, "playing");
-		initWebRtc(TestConfig.PRESENTER + 2, webRtcEndpoint2,
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint1, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
+		getPresenter().subscribeEvents("playing");
+		getPresenter().initWebRtc(webRtcEndpoint2,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
 		// Round #1: Connecting WebRTC #1 to HttpEnpoint
 		webRtcEndpoint1.connect(httpGetEndpoint);
-		consoleLog(TestConfig.VIEWER, ConsoleLogLevel.info,
+		getViewer().consoleLog(ConsoleLogLevel.info,
 				"Connecting to WebRTC #1 source");
 
-		subscribeEvents(TestConfig.VIEWER, "playing");
-		start(TestConfig.VIEWER, httpGetEndpoint.getUrl());
+		getViewer().subscribeEvents("playing");
+		getViewer().start(httpGetEndpoint.getUrl());
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(TestConfig.VIEWER, "playing"));
+				getViewer().waitForEvent("playing"));
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				similarColor(TestConfig.VIEWER, CHROME_VIDEOTEST_COLOR));
+				getViewer().similarColor(CHROME_VIDEOTEST_COLOR));
 
 		// Guard time to see stream from WebRTC #1
 		Thread.sleep(PLAYTIME * 1000);
 
 		// Round #2: Connecting WebRTC #2 to HttpEnpoint
 		webRtcEndpoint2.connect(httpGetEndpoint);
-		consoleLog(TestConfig.VIEWER, ConsoleLogLevel.info,
+		getViewer().consoleLog(ConsoleLogLevel.info,
 				"Switching to WebRTC #2 source");
 
 		// Guard time to see stream from WebRTC #2
@@ -123,7 +123,7 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				similarColor(TestConfig.VIEWER, CHROME_VIDEOTEST_COLOR));
+				getViewer().similarColor(CHROME_VIDEOTEST_COLOR));
 
 		// Release Media Pipeline
 		mp.release();

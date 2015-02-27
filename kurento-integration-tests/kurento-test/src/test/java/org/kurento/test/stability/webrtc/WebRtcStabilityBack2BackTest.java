@@ -26,7 +26,6 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 
@@ -81,23 +80,22 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 		LatencyController cs2 = new LatencyController(
 				"WebRTC latency in browser 2");
 
-		subscribeLocalEvents(TestConfig.PRESENTER, "playing");
-		initWebRtc(TestConfig.PRESENTER, webRtcEndpoint1,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
-		subscribeEvents(TestConfig.VIEWER, "playing");
-		initWebRtc(TestConfig.VIEWER, webRtcEndpoint2,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+		getPresenter().subscribeLocalEvents("playing");
+		getPresenter().initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_ONLY);
+		getViewer().subscribeEvents("playing");
+		getViewer().initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.RCV_ONLY);
 
 		try {
-			cs1.activateRemoteLatencyAssessmentIn(testScenario.getBrowserMap()
-					.get(TestConfig.VIEWER),
-					testScenario.getBrowserMap().get(TestConfig.PRESENTER));
-			cs1.checkLatencyInBackground(playTime, TimeUnit.MINUTES);
+			cs1.checkRemoteLatencyInBackground(playTime, TimeUnit.MINUTES,
+					getViewer().getBrowserClient().getJs(), getPresenter()
+							.getBrowserClient().getJs());
 
-			cs2.activateRemoteLatencyAssessmentIn(testScenario.getBrowserMap()
-					.get(TestConfig.PRESENTER), testScenario.getBrowserMap()
-					.get(TestConfig.VIEWER));
-			cs2.checkLatency(playTime, TimeUnit.MINUTES);
+			cs2.checkRemoteLatencyInBackground(playTime, TimeUnit.MINUTES,
+					getPresenter().getBrowserClient().getJs(), getViewer()
+							.getBrowserClient().getJs());
+
 		} catch (RuntimeException re) {
 			Assert.fail(re.getMessage());
 		}

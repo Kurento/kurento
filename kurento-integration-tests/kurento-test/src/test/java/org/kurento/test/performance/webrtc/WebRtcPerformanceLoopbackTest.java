@@ -83,6 +83,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
+		// TODO this is not correct
 		return TestScenario.noBrowsers();
 	}
 
@@ -92,43 +93,46 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 		final int playTime = getAllBrowsersStartedTime() + holdTime;
 
-		parallelBrowsers(testScenario.getBrowserMap(), new BrowserRunner() {
-			public void run(BrowserClient browser, int num, String name)
-					throws Exception {
+		parallelBrowsers(getTestScenario().getBrowserMap(),
+				new BrowserRunner() {
+					public void run(BrowserClient browser, int num, String name)
+							throws Exception {
 
-				long endTimeMillis = System.currentTimeMillis() + playTime;
+						long endTimeMillis = System.currentTimeMillis()
+								+ playTime;
 
-				MediaPipeline mp = null;
+						MediaPipeline mp = null;
 
-				try {
-					// Media Pipeline
-					mp = kurentoClient.createMediaPipeline();
-					WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(
-							mp).build();
-					webRtcEndpoint.connect(webRtcEndpoint);
+						try {
+							// Media Pipeline
+							mp = kurentoClient.createMediaPipeline();
+							WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(
+									mp).build();
+							webRtcEndpoint.connect(webRtcEndpoint);
 
-					log.debug("*** start#1 {}", name);
-					subscribeEvents(name, "playing");
-					log.debug("### start#2 {}", name);
-					initWebRtc(name, webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
-							WebRtcMode.SEND_RCV);
-					log.debug(">>> start#3 {}", name);
+							log.debug("*** start#1 {}", name);
+							getBrowser(name).subscribeEvents("playing");
+							log.debug("### start#2 {}", name);
+							getBrowser(name).initWebRtc(webRtcEndpoint,
+									WebRtcChannel.VIDEO_ONLY,
+									WebRtcMode.SEND_RCV);
+							log.debug(">>> start#3 {}", name);
 
-					checkLatencyUntil(name, endTimeMillis);
+							getBrowser(name).checkLatencyUntil(endTimeMillis);
 
-				} catch (Throwable e) {
-					log.error("[[[ {} ]]]", e.getCause().getMessage());
-					throw e;
-				} finally {
-					log.debug("<<< finally {}", name);
+						} catch (Throwable e) {
+							log.error("[[[ {} ]]]", e.getCause().getMessage());
+							throw e;
+						} finally {
+							log.debug("<<< finally {}", name);
 
-					// Release Media Pipeline
-					if (mp != null) {
-						mp.release();
+							// Release Media Pipeline
+							if (mp != null) {
+								mp.release();
+							}
+						}
 					}
-				}
-			}
-		});
+				});
 	}
 
 }

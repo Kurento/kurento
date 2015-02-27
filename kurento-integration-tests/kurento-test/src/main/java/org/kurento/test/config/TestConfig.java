@@ -29,9 +29,9 @@ import org.kurento.test.client.BrowserClient;
  */
 public class TestConfig {
 
+	public static final String BROWSER = "browser";
 	public static final String PRESENTER = "presenter";
 	public static final String VIEWER = "viewer";
-	public static final String DEFAULT_BROWSER = "browser";
 
 	private List<Map<String, BrowserInstance>> executions;
 

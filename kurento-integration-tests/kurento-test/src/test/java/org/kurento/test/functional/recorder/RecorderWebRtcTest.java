@@ -28,7 +28,6 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.Protocol;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
@@ -87,21 +86,20 @@ public class RecorderWebRtcTest extends FunctionalTest {
 		webRtcEP.connect(recorderEP);
 
 		// Test execution #1. WewbRTC in loopback while it is recorded
-		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
-		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEP,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 		recorderEP.record();
 
 		// Wait until event playing in the remote stream
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(TestConfig.DEFAULT_BROWSER, "playing"));
+				getBrowser().waitForEvent("playing"));
 
 		// Guard time to play the video
 		Thread.sleep(PLAYTIME * 1000);
 
-		Assert.assertTrue(
-				"The color of the video should be green",
-				similarColor(TestConfig.DEFAULT_BROWSER, CHROME_VIDEOTEST_COLOR));
+		Assert.assertTrue("The color of the video should be green",
+				getBrowser().similarColor(CHROME_VIDEOTEST_COLOR));
 
 		// Assert codecs
 		AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX),
@@ -116,8 +114,8 @@ public class RecorderWebRtcTest extends FunctionalTest {
 				recordingPostProcess);
 
 		// Play the recording
-		playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
-				CHROME_VIDEOTEST_COLOR);
+		playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME, 0,
+				0, CHROME_VIDEOTEST_COLOR);
 
 		// Uncomment this line to play the recording with a new pipeline
 		// playFileWithPipeline(browserType, recordingPostProcess, PLAYTIME,

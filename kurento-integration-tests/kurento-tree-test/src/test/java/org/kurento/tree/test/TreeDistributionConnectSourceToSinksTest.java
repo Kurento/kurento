@@ -165,7 +165,9 @@ public class TreeDistributionConnectSourceToSinksTest extends
 
 		// Wait for media in viewers
 		for (Future<TreeViewer> viewer : viewers) {
-			waitForEvent(viewer.get().getBrowser(), "playing");
+			// FIXME this seems to be wrong
+			getBrowser(viewer.get().getBrowser().getName()).waitForEvent(
+					"playing");
 		}
 
 		log.info("Media received...");
@@ -190,8 +192,8 @@ public class TreeDistributionConnectSourceToSinksTest extends
 	private BrowserClient createMaster(final KurentoTreeClient kurentoTree,
 			final String treeId) {
 
-		subscribeEvents(TestConfig.PRESENTER, "playing");
-		initWebRtcSdpProcessor(TestConfig.PRESENTER, new SdpOfferProcessor() {
+		getPresenter().subscribeEvents("playing");
+		getPresenter().initWebRtcSdpProcessor(new SdpOfferProcessor() {
 			@Override
 			public String processSdpOffer(String sdpOffer) {
 				try {
@@ -202,17 +204,17 @@ public class TreeDistributionConnectSourceToSinksTest extends
 			}
 		}, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		return testScenario.getBrowserMap().get(TestConfig.PRESENTER);
+		return getTestScenario().getBrowserMap().get(TestConfig.PRESENTER);
 	}
 
 	private TreeViewer createViewer(int key, final KurentoTreeClient client,
 			final String treeId) {
-		BrowserClient browserViewer = testScenario.getBrowserMap().get(
+		BrowserClient browserViewer = getTestScenario().getBrowserMap().get(
 				TestConfig.VIEWER + key);
 		final TreeViewer treeClient = new TreeViewer(browserViewer, null);
 
-		subscribeEvents(TestConfig.VIEWER + key, "playing");
-		initWebRtcSdpProcessor(TestConfig.VIEWER + key,
+		getBrowser(TestConfig.VIEWER + key).subscribeEvents("playing");
+		getBrowser(TestConfig.VIEWER + key).initWebRtcSdpProcessor(
 				new SdpOfferProcessor() {
 					@Override
 					public String processSdpOffer(String sdpOffer) {

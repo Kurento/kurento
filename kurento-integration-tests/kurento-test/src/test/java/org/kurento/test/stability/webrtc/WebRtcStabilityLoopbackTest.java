@@ -67,7 +67,7 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
 		String videoPath = KurentoClientTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.DEFAULT_BROWSER, new BrowserClient.Builder()
+		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(videoPath).build());
 		return Arrays.asList(new Object[][] { { test } });
@@ -89,14 +89,12 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
 		LatencyController cs = new LatencyController("WebRTC in loopback");
 
 		// WebRTC
-		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
-		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEndpoint,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_RCV);
 
 		try {
-			cs.activateLocalLatencyAssessmentIn(testScenario.getBrowserMap()
-					.get(TestConfig.DEFAULT_BROWSER));
-			cs.checkLatency(playTime, TimeUnit.MINUTES);
+			cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
 		} catch (RuntimeException re) {
 			Assert.fail(re.getMessage());
 		}

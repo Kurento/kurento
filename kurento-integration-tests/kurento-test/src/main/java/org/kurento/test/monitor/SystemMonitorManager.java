@@ -43,8 +43,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Objects;
 
-import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.KurentoTestClient;
 import org.kurento.test.services.RemoteHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -271,7 +271,7 @@ public class SystemMonitorManager {
 	}
 
 	public void addRtcStats(BrowserClient browser) {
-		BrowserKurentoClientTest.activateRtcStats(browser);
+		KurentoTestClient.activateRtcStats(browser);
 		monitor.addBrowser(browser);
 	}
 

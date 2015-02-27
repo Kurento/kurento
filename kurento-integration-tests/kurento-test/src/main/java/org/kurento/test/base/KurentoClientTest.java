@@ -14,16 +14,15 @@
  */
 package org.kurento.test.base;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.kurento.client.KurentoClient;
-import org.kurento.test.client.BrowserClient;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoClientTestFactory;
 import org.kurento.test.services.KurentoServicesTestHelper;
-import org.openqa.selenium.WebDriverException;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
@@ -56,7 +55,7 @@ public class KurentoClientTest extends KurentoTest {
 
 	@Before
 	public void setupKurentoClient() throws IOException {
-		// Kurento Services
+		// Kurento services
 		KurentoServicesTestHelper.setTestName(testName.getMethodName());
 		KurentoServicesTestHelper.setTestCaseName(this.getClass().getName());
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
@@ -75,7 +74,7 @@ public class KurentoClientTest extends KurentoTest {
 			kurentoClient.destroy();
 		}
 
-		// Kurento Services
+		// Kurento services
 		KurentoServicesTestHelper.teardownServices();
 	}
 
@@ -87,12 +86,15 @@ public class KurentoClientTest extends KurentoTest {
 		return KurentoServicesTestHelper.getTestFilesPath();
 	}
 
-	public void addTestName(BrowserClient browserClient, String testName) {
-		try {
-			browserClient.executeScript("addTestName('" + testName + "');");
-		} catch (WebDriverException we) {
-			log.warn(we.getMessage());
-		}
+	public String getDefaultFileForRecording() {
+		return getDefaultOutputFile(".webm");
+	}
+
+	public static String getDefaultOutputFile(String preffix) {
+		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
+				+ "/" + KurentoServicesTestHelper.getTestCaseName());
+		String testName = KurentoServicesTestHelper.getSimpleTestName();
+		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
 	}
 
 }

@@ -92,7 +92,7 @@ public class WebRtc2HttpTest extends FunctionalTest {
 				.build();
 
 		// Test execution
-		initWebRtc(TestConfig.PRESENTER, webRtcEndpoint,
+		getPresenter().initWebRtc(webRtcEndpoint,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
 		// Players
@@ -125,24 +125,24 @@ public class WebRtc2HttpTest extends FunctionalTest {
 
 	private void createPlayer(String browserId, String url)
 			throws InterruptedException {
-		subscribeEvents(browserId, "playing");
-		start(browserId, url);
+		getBrowser(browserId).subscribeEvents("playing");
+		getBrowser(browserId).start(url);
 
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(browserId, "playing"));
+				getBrowser(browserId).waitForEvent("playing"));
 
 		// Guard time to see the video
 		Thread.sleep(PLAYTIME * 1000);
 
 		// Assertions
-		double currentTime = getCurrentTime(browserId);
+		double currentTime = getBrowser(browserId).getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
-				compare(browserId, PLAYTIME, currentTime));
+				+ " sec, real: " + currentTime + " sec)", getBrowser(browserId)
+				.compare(PLAYTIME, currentTime));
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				similarColor(browserId, CHROME_VIDEOTEST_COLOR));
+				getBrowser(browserId).similarColor(CHROME_VIDEOTEST_COLOR));
 
-		stop(browserId);
+		getBrowser(browserId).stop();
 	}
 }

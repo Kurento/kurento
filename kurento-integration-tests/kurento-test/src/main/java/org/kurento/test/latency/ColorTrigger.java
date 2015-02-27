@@ -49,6 +49,7 @@ public class ColorTrigger implements Runnable {
 		this.color = "0,0,0,0"; // Initial color
 	}
 
+	// TODO: So far, this utility is coupled to kurento-test client
 	@Override
 	public void run() {
 		while (true) {

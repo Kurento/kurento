@@ -72,7 +72,7 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
 		TestScenario test = new TestScenario();
 		test.addBrowser(
-				TestConfig.DEFAULT_BROWSER,
+				TestConfig.BROWSER,
 				new BrowserClient.Builder()
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL)
@@ -97,27 +97,27 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
-		subscribeEvents(TestConfig.DEFAULT_BROWSER, "playing");
-		initWebRtc(TestConfig.DEFAULT_BROWSER, webRtcEndpoint,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
 		// Wait until event playing in the remote stream
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				waitForEvent(TestConfig.DEFAULT_BROWSER, "playing"));
+				getBrowser().waitForEvent("playing"));
 
 		// Guard time to play the video
 		Thread.sleep(PLAYTIME * 1000);
 
 		// Assert play time
-		double currentTime = getCurrentTime(TestConfig.DEFAULT_BROWSER);
+		double currentTime = getBrowser().getCurrentTime();
 		Assert.assertTrue("Error in play time of player (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				compare(TestConfig.DEFAULT_BROWSER, PLAYTIME, currentTime));
+				getBrowser().compare(PLAYTIME, currentTime));
 
 		// Assert color
 		if (color != null) {
 			Assert.assertTrue("The color of the video should be " + color,
-					similarColor(TestConfig.DEFAULT_BROWSER, color));
+					getBrowser().similarColor(color));
 		}
 
 		// Assert audio quality

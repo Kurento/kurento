@@ -25,7 +25,6 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 
@@ -83,12 +82,14 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 		webRtcEndpoint2.connect(webRtcEndpoint2);
 
 		// Test execution
-		subscribeEvents(TestConfig.PRESENTER, "playing");
-		initWebRtc(TestConfig.PRESENTER, webRtcEndpoint1,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
-		subscribeEvents(TestConfig.VIEWER, "playing");
-		initWebRtc(TestConfig.VIEWER, webRtcEndpoint2,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+		getPresenter().subscribeEvents("playing");
+		getPresenter().initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_RCV);
+		getViewer().subscribeEvents("playing");
+		getViewer().initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_RCV);
+
+		// getPresenter().getBrowserClient().getDriver();
 
 		LatencyController cs1 = new LatencyController("Latency in Browser 1");
 		LatencyController cs2 = new LatencyController("Latency in Browser 2");
@@ -102,18 +103,15 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					webRtcEndpoint2.connect(webRtcEndpoint2);
 
 					// Latency control (loopback)
-					cs1.activateLocalLatencyAssessmentIn(testScenario
-							.getBrowserMap().get(TestConfig.PRESENTER));
-					cs2.activateLocalLatencyAssessmentIn(testScenario
-							.getBrowserMap().get(TestConfig.VIEWER));
-
 					log.debug("[{}.1] Latency control of browser1 to browser1",
 							i);
-					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					cs1.checkLocalLatency(PLAYTIME_PER_SWITCH,
+							TimeUnit.SECONDS, getPresenter());
 
 					log.debug("[{}.2] Latency control of browser2 to browser2",
 							i);
-					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					cs2.checkLocalLatency(PLAYTIME_PER_SWITCH,
+							TimeUnit.SECONDS, getViewer());
 
 				} else {
 					log.debug("Switch #" + i + ": B2B");
@@ -123,24 +121,23 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					// Latency control (B2B)
 					log.debug("[{}.3] Latency control of browser1 to browser2",
 							i);
-					cs1.activateRemoteLatencyAssessmentIn(testScenario
-							.getBrowserMap().get(TestConfig.PRESENTER),
-							testScenario.getBrowserMap().get(TestConfig.VIEWER));
-					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					cs1.checkRemoteLatency(PLAYTIME_PER_SWITCH,
+							TimeUnit.SECONDS, getPresenter().getBrowserClient()
+									.getJs(), getViewer().getBrowserClient()
+									.getJs());
 
 					log.debug("[{}.4] Latency control of browser2 to browser1",
 							i);
-					cs2.activateRemoteLatencyAssessmentIn(
-							testScenario.getBrowserMap().get(TestConfig.VIEWER),
-							testScenario.getBrowserMap().get(
-									TestConfig.PRESENTER));
-					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS);
+					cs2.checkRemoteLatency(PLAYTIME_PER_SWITCH,
+							TimeUnit.SECONDS, getViewer().getBrowserClient()
+									.getJs(), getPresenter().getBrowserClient()
+									.getJs());
 				}
 			}
 		} catch (RuntimeException re) {
-			takeScreeshot(TestConfig.PRESENTER,
+			getPresenter().takeScreeshot(
 					getDefaultOutputFile("-browser1-error-screenshot.png"));
-			takeScreeshot(TestConfig.VIEWER,
+			getViewer().takeScreeshot(
 					getDefaultOutputFile("-browser2-error-screenshot.png"));
 			Assert.fail(re.getMessage());
 		}

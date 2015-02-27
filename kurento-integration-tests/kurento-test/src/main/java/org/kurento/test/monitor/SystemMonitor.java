@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.KurentoTestClient;
 
 /**
  * System monitor class, used to check the CPU usage, memory, swap, and network
@@ -189,7 +189,9 @@ public class SystemMonitor {
 					// Browser Statistics
 					if (browserList != null) {
 						for (BrowserClient bc : browserList) {
-							Map<String, Object> rtc = BrowserKurentoClientTest
+							// TODO RTC stats are only supported in kurento-test
+							// client
+							Map<String, Object> rtc = KurentoTestClient
 									.getRtcStats(bc);
 							info.addRtcStats(rtc);
 						}

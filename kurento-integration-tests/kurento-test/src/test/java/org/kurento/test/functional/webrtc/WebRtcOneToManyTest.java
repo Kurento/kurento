@@ -94,9 +94,9 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		final CountDownLatch latch = new CountDownLatch(numViewers);
 
 		// Master
-		subscribeLocalEvents(TestConfig.PRESENTER, "playing");
-		initWebRtc(TestConfig.PRESENTER, masterWebRtcEP,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+		getPresenter().subscribeLocalEvents("playing");
+		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_ONLY);
 
 		// Viewers
 		for (int j = 0; j < numViewers; j++) {
@@ -107,19 +107,17 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						viewerWebRtcEPs[i] = new WebRtcEndpoint.Builder(mp)
 								.build();
 						masterWebRtcEP.connect(viewerWebRtcEPs[i]);
-						subscribeEvents(TestConfig.VIEWER + i, "playing");
-						initWebRtc(TestConfig.VIEWER + i, viewerWebRtcEPs[i],
+						getViewer(i).subscribeEvents("playing");
+						getViewer(i).initWebRtc(viewerWebRtcEPs[i],
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
 						// Latency control
 						String name = "viewer" + (i + 1);
 						cs[i] = new LatencyController(name);
-						cs[i].activateRemoteLatencyAssessmentIn(
-								testScenario.getBrowserMap().get(
-										TestConfig.PRESENTER),
-								testScenario.getBrowserMap().get(
-										TestConfig.VIEWER + i));
-						cs[i].checkLatency(PLAYTIME, TimeUnit.SECONDS);
+
+						cs[i].checkRemoteLatency(PLAYTIME, TimeUnit.SECONDS,
+								getPresenter().getBrowserClient().getJs(),
+								getViewer(i).getBrowserClient().getJs());
 						cs[i].drawChart(getDefaultOutputFile("-" + name
 								+ "-latency.png"), 500, 270);
 						cs[i].writeCsv(getDefaultOutputFile("-" + name
@@ -129,7 +127,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						// Assertions
 						Assert.assertTrue(
 								"Not received media (timeout waiting playing event)",
-								waitForEvent(TestConfig.VIEWER + i, "playing"));
+								getViewer(i).waitForEvent("playing"));
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
