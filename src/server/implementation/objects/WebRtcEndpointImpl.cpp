@@ -191,7 +191,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
       int sdp_m_line_index = kms_ice_candidate_get_sdp_m_line_index (candidate);
       std::shared_ptr <IceCandidate> cand ( new  IceCandidate
                                             (cand_str, mid_str, sdp_m_line_index) );
-      OnIceCandidate event (cand, shared_from_this(), OnIceCandidate::getName() );
+      OnIceCandidate event (shared_from_this(), OnIceCandidate::getName(), cand);
 
       signalOnIceCandidate (event);
     } catch (std::bad_weak_ptr &e) {
