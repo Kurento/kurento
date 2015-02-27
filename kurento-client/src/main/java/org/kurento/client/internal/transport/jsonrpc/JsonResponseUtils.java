@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.kurento.client.internal.server.ProtocolException;
 import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.Props;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -53,6 +54,13 @@ public class JsonResponseUtils {
 						+ result);
 			}
 
+		} else if (isComplexType(type)) {
+			if (result instanceof JsonObject) {
+				if (((JsonObject) result).has("value")) {
+					return ((JsonObject) result).get("value");
+				}
+			}
+			return result;
 		} else if (isList(type)) {
 
 			if (result instanceof JsonArray) {
@@ -85,6 +93,10 @@ public class JsonResponseUtils {
 		}
 
 		return false;
+	}
+
+	private static boolean isComplexType(Type type) {
+		return (type == Props.class);
 	}
 
 	private static boolean isPrimitiveClass(Type type) {
