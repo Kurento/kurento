@@ -63,13 +63,13 @@
 
 		<!-- Kurento versions -->
 		<version.kurento-java>${project.version}</version.kurento-java>
-		<version.kurento-js>[5.0.0,6.0.0)</version.kurento-js>
-		<version.kms-api-core>[5.0.0,6.0.0)</version.kms-api-core>
-		<version.kms-api-elements>[5.0.0,6.0.0)</version.kms-api-elements>
-		<version.kms-api-filters>[5.0.0,6.0.0)</version.kms-api-filters>
+		<version.kurento-js>[5.0.0,6.0.0-SNAPSHOT)</version.kurento-js>
+		<version.kms-api-core>[5.0.0,6.0.0-SNAPSHOT)</version.kms-api-core>
+		<version.kms-api-elements>[5.0.0,6.0.0-SNAPSHOT)</version.kms-api-elements>
+		<version.kms-api-filters>[5.0.0,6.0.0-SNAPSHOT)</version.kms-api-filters>
 		<version.plumber-endpoint>1.0.0</version.plumber-endpoint>
 		<version.kurento-maven-plugin>1.0.5</version.kurento-maven-plugin>
-		<version.kurento-utils-js>[5.0.0,6.0.0)</version.kurento-utils-js>
+		<version.kurento-utils-js>[5.0.0,6.0.0-SNAPSHOT)</version.kurento-utils-js>
 
 		<!-- External versions -->
 		<version.jetty>9.2.5.v20141112</version.jetty>
