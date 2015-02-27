@@ -102,6 +102,61 @@ function (next_major_version version next)
   set (${next} ${${next}} PARENT_SCOPE)
 endfunction ()
 
+function (next_minor_version version next)
+  parse_version (
+    VERSION ${version}
+    MAJOR major
+    MINOR minor
+    PATCH patch
+  )
+
+  if (DEFINED minor)
+    set (patch 0)
+    math (EXPR minor "${minor} + 1")
+  else ()
+    set (patch 0)
+    set (minor 1)
+  endif ()
+
+  set (${next} ${major})
+  if (DEFINED minor)
+    set (${next} "${${next}}.${minor}")
+  endif ()
+
+  if (DEFINED patch)
+    set (${next} "${${next}}.${patch}")
+  endif ()
+
+  set (${next} ${${next}} PARENT_SCOPE)
+endfunction ()
+
+function (next_patch_version version next)
+  parse_version (
+    VERSION ${version}
+    MAJOR major
+    MINOR minor
+    PATCH patch
+  )
+
+  if (NOT DEFINED patch)
+    set (patch 1)
+  else()
+    math (EXPR patch "${patch} + 1")
+  endif ()
+
+  set (${next} ${major})
+  if (NOT DEFINED minor)
+    set (minor 0)
+  endif ()
+  set (${next} "${${next}}.${minor}")
+
+  if (DEFINED patch)
+    set (${next} "${${next}}.${patch}")
+  endif ()
+
+  set (${next} ${${next}} PARENT_SCOPE)
+endfunction ()
+
 function (next_version version next)
   parse_version (
     VERSION ${version}
