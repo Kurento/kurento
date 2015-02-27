@@ -188,8 +188,10 @@ endfunction ()
 
 function (process_version VERSION OUTPUT_VERSION)
   string(FIND ${VERSION} "." FOUND)
+  string(LENGTH ${VERSION} LEN)
 
-  if (FOUND EQUAL -1)
+  #Boost style version
+  if (FOUND EQUAL -1 AND ${LEN} EQUAL 6)
     string(SUBSTRING ${VERSION} 0 1 MAJOR)
     string(SUBSTRING ${VERSION} 2 2 MINOR)
     string(SUBSTRING ${VERSION} 4 2 PATCH)
