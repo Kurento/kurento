@@ -108,12 +108,9 @@ function (next_version version next)
     MAJOR major
     MINOR minor
     PATCH patch
-    EXTRA extra
   )
 
-  if (DEFINED patch)
-    math (EXPR patch "${patch} + 1")
-  elseif (DEFINED minor)
+  if (DEFINED minor)
     set (patch 0)
     math (EXPR minor "${minor} + 1")
   else ()
