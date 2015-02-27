@@ -6,9 +6,9 @@
 # so when this variable is updated, it should be also updated in conf.py
 
 DOC_VERSION = 5.1.1-dev
-CLIENT_JAVA_VERSION = 
-CLIENT_JS_VERSION = 
-UTILS_JS_VERSION = 
+CLIENT_JAVA_VERSION =
+CLIENT_JS_VERSION =
+UTILS_JS_VERSION =
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -99,7 +99,7 @@ langdoc:
 
 	  # kurento-client javadoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-client
-	  cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-java.git && cd kurento-java && git checkout kurento-java-$(CLIENT_JAVA_VERSION) || git checkout develop
+	  cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-java.git && cd kurento-java && git checkout kurento-java-$(CLIENT_JAVA_VERSION) || git checkout v$(CLIENT_JAVA_VERSION) || echo "Using master branch"
 	  mv $(BUILDDIR)/langdoc/kurento-java/kurento-client $(BUILDDIR)/langdoc
 	  cd $(BUILDDIR)/langdoc/kurento-client && mvn clean package -DskipTests
 	  rsync -av $(BUILDDIR)/langdoc/kurento-client/target/generated-sources/kmd/* $(BUILDDIR)/langdoc/kurento-client/src/main/java/
@@ -108,13 +108,13 @@ langdoc:
 	  # kurento-client-js javadoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-client-js
 	  cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-client-js.git
-	  cd $(BUILDDIR)/langdoc/kurento-client-js && git checkout kurento-client-js-$(CLIENT_JS_VERSION) || git checkout develop && npm install && node_modules/.bin/grunt --force jsdoc
+	  cd $(BUILDDIR)/langdoc/kurento-client-js && git checkout kurento-client-js-$(CLIENT_JS_VERSION) || git checkout v$(CLIENT_JS_VERSION) || echo "Using master branch" && npm install && node_modules/.bin/grunt --force jsdoc
 	  cp -r $(BUILDDIR)/langdoc/kurento-client-js/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/kurento-client-js
 
 	  # kurento-utils-js javadoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-utils-js
 	  cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-utils-js.git
-	  cd $(BUILDDIR)/langdoc/kurento-utils-js && git checkout kurento-utils-js-$(UTILS_JS_VERSION) || git checkout develop && npm install && node_modules/.bin/grunt --force jsdoc
+	  cd $(BUILDDIR)/langdoc/kurento-utils-js && git checkout kurento-utils-js-$(UTILS_JS_VERSION) || git checkout v$(UTILS_JS_VERSION) || echo "Using master branch" && npm install && node_modules/.bin/grunt --force jsdoc
 	  cp -r $(BUILDDIR)/langdoc/kurento-utils-js/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/kurento-utils-js
 
 qthelp:
