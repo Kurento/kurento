@@ -35,3 +35,9 @@ install(
   FILES "${CMAKE_BINARY_DIR}/FindKurentoHelpers.cmake"
   DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
 )
+
+set (DISABLE_TESTS FALSE CACHE BOOL "Disable tests execution")
+
+if (NOT ${DISABLE_TESTS})
+  add_subdirectory(test)
+endif ()
