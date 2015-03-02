@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.kurento.client.KurentoObject;
 import org.kurento.client.TransactionNotCommitedException;
 import org.kurento.client.internal.ParamAnnotationUtils;
 import org.kurento.client.internal.RemoteClass;
@@ -337,6 +338,9 @@ public class ParamsFlattener {
 
 				} else if (value instanceof Props) {
 					return unflattedComplexType(clazz, (Props) value, manager);
+
+				} else if (value instanceof KurentoObject) {
+					return value;
 
 				} else {
 					throw new ProtocolException(
