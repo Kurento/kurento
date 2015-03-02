@@ -105,7 +105,7 @@
 		<version.websocket-api>1.0</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
-		<selenium-java.version>2.44.0</selenium-java.version>
+		<selenium-java.version>2.45.0</selenium-java.version>
 		<xml-apis.version>1.4.01</xml-apis.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.20</freemarker.version>

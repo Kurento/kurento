@@ -158,17 +158,13 @@ public class TestScenario {
 		test1.addBrowser(new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
-		return Arrays.asList(new Object[][] { { test1 } });
-
-		// FIXME: Selenium 2.44 is not compliant with Firefox 36, so Firefox is
-		// disabled until Selenium 2.45 is released
 		// Test #2 : Firefox in local
-		// TestScenario test2 = new TestScenario();
-		// test2.addBrowser(new BrowserClient.Builder()
-		// .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
-		// .build());
-		//
-		// return Arrays.asList(new Object[][] { { test1 }, { test2 } });
+		TestScenario test2 = new TestScenario();
+		test2.addBrowser(new BrowserClient.Builder()
+				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
+				.build());
+
+		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
 
 	public static Collection<Object[]> localChrome() {
@@ -181,16 +177,15 @@ public class TestScenario {
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
-	// FIXME: Disabled
-	// public static Collection<Object[]> localFirefox() {
-	// // Test : Firefox in local
-	// TestScenario test = new TestScenario();
-	// test.addBrowser(new BrowserClient.Builder()
-	// .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
-	// .build());
-	//
-	// return Arrays.asList(new Object[][] { { test } });
-	// }
+	public static Collection<Object[]> localFirefox() {
+		// Test : Firefox in local
+		TestScenario test = new TestScenario();
+		test.addBrowser(new BrowserClient.Builder()
+				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
+				.build());
+
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test #1 : Chrome in local (presenter and viewer)
