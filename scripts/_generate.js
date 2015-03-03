@@ -8,7 +8,10 @@ exists('lib', function (found) {
     if (error) return console.trace(error)
 
     npm.commands.install(function (error, data) {
-      if (error) return console.trace(error)
+      if (error) {
+        console.trace(error)
+        process.exit(1)
+      }
     })
   })
 })
