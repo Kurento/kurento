@@ -106,6 +106,21 @@ public:
   </#if>
   </#list>
   virtual void Serialize (JsonSerializer &s);
+
+  static void registerType () {
+    std::function<RegisterParent*(void)> func =
+        [] () {
+
+      return new ${complexType.name} ();
+
+    };
+
+  <#if module.name == "core" || module.name == "elements" || module.name == "filters">
+    RegisterParent::registerType ("kurento.${complexType.name}", func);
+  <#else>
+    RegisterParent::registerType ("${module.name}.${complexType.name}", func);
+  </#if>
+  }
   <#if createEmptyConstructor >
 
 protected:

@@ -7,6 +7,9 @@ Module.cpp
 #include <${remoteClass.name}ImplFactory.hpp>
 #include <${remoteClass.name}.hpp>
 </#list>
+<#list module.complexTypes as complexType>
+#include <${complexType.name}.hpp>
+</#list>
 
 extern "C" {
 
@@ -24,6 +27,12 @@ getFactoryRegistrar ()
 <#list module.remoteClasses as remoteClass>
   <#if !(remoteClass.abstract)>
     factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory() );
+  </#if>
+</#list>
+
+<#list module.complexTypes as complexType>
+  <#if complexType.typeFormat == "REGISTER">
+    ${module.code.implementation["cppNamespace"]}::${complexType.name}::registerType ();
   </#if>
 </#list>
     loaded = true;
