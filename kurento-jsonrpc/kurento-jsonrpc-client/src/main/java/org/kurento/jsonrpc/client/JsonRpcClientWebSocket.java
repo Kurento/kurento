@@ -179,9 +179,15 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					connectionListener.connectionFailed();
 				}
 				if (client != null) {
-					log.debug("{} Destroying", label);
-					client.destroy();
-					log.debug("{} Client destroyed", label);
+					log.debug("{} Stopping client", label);
+					try {
+						client.stop();
+					} catch (Exception e1) {
+						log.debug(
+								"{} Could not properly close websocket client",
+								label);
+					}
+					client = null;
 				}
 				throw new KurentoException(label
 						+ " Exception connecting to WebSocket server " + url, e);
@@ -194,9 +200,15 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						connectionListener.connectionFailed();
 					}
 					if (client != null) {
-						log.debug("{} Destroying", label);
-						client.destroy();
-						log.debug("{} Client destroyed", label);
+						log.debug("{}Stopping client", label);
+						try {
+							client.stop();
+						} catch (Exception e1) {
+							log.debug(
+									"{} Could not properly close websocket client",
+									label);
+						}
+						client = null;
 					}
 					throw new KurentoException(label + " Timeout of "
 							+ this.connectionTimeout
