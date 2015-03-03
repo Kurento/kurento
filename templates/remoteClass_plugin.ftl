@@ -131,6 +131,7 @@ inherits(${remoteClass.name}, ${extends_name});
   <#list remoteClass.properties?sort_by("name") as property>
     <#if property.name != "id">
       <#assign getPropertyName="get${property.name?cap_first}">
+      <#assign setPropertyName="set${property.name?cap_first}">
 
 /**
       <#if property.doc??>
@@ -159,6 +160,31 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
  * @param {external:Error} error
  * @param {${namepath(property.type.name)}} result
  */
+      <#if !(property.final || property.readOnly)>
+
+/**
+        <#if property.doc??>
+          <#list property.doc?split("\n") as line>
+ * ${sphinxLinks(line, remoteClass_namepath)}
+          </#list>
+        </#if>
+ *
+ * @alias module:${remoteClass_namepath}#${setPropertyName}
+ *
+ * @param {${namepath(property.type.name)}} value
+ * @param {module:${remoteClass_namepath}~${setPropertyName}Callback} [callback]
+ *
+ * @return {external:Promise}
+ */
+${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, callback){
+        <@arguments params=[property]/>
+  return this._invoke(transaction, '${setPropertyName}', params, callback);
+};
+/**
+ * @callback module:${remoteClass_namepath}~${setPropertyName}Callback
+ * @param {external:Error} error
+ */
+      </#if>
     </#if>
   </#list>
 </#if>

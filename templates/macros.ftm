@@ -108,8 +108,8 @@
     </#list>
 
   var params = {
-    <#list methodParams_name as name>
-    ${name}: ${name},
+    <#list params as param>
+    ${param.name}: ${param.name},
     </#list>
   };
   <#else>
