@@ -19,7 +19,6 @@ CompositeImpl::CompositeImpl (const boost::property_tree::ptree &conf,
                               std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (conf,
                                     std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
 {
-  // FIXME: Implement this
 }
 
 MediaObjectImpl *
