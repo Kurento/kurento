@@ -26,10 +26,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.latency.LatencyController;
+import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.LatencyException;
-import org.kurento.test.latency.VideoTag;
 import org.kurento.test.latency.VideoTagType;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Recorder;
 import org.openqa.selenium.By;
@@ -48,11 +48,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class KurentoTestClient extends TestClient {
 
 	private List<Thread> callbackThreads = new ArrayList<>();
-	private Map<String, CountDownLatch> countDownLatchEvents;
-
-	public KurentoTestClient() {
-		countDownLatchEvents = new HashMap<>();
-	}
+	private Map<String, CountDownLatch> countDownLatchEvents = new HashMap<>();
 
 	@After
 	@SuppressWarnings("deprecation")
@@ -60,6 +56,15 @@ public class KurentoTestClient extends TestClient {
 		for (Thread t : callbackThreads) {
 			t.stop();
 		}
+	}
+
+	public KurentoTestClient() {
+	}
+
+	public KurentoTestClient(KurentoTestClient client) {
+		super(client);
+		this.callbackThreads = client.callbackThreads;
+		this.countDownLatchEvents = client.countDownLatchEvents;
 	}
 
 	/*
@@ -82,14 +87,18 @@ public class KurentoTestClient extends TestClient {
 	public void subscribeEventsToVideoTag(final String videoTag,
 			final String eventType) {
 		CountDownLatch latch = new CountDownLatch(1);
-		countDownLatchEvents.put(browserClient.toString() + eventType, latch);
+
+		final String browserName = browserClient.getId();
+		log.info("Subscribe event '{}' in video tag '{}' in browser '{}'",
+				eventType, videoTag, browserName);
+
+		countDownLatchEvents.put(browserName + eventType, latch);
 		addEventListener(videoTag, eventType, new BrowserEventListener() {
 			@Override
 			public void onEvent(String event) {
 				consoleLog(ConsoleLogLevel.info, "Event in " + videoTag
 						+ " tag: " + event);
-				countDownLatchEvents.get(browserClient.toString() + eventType)
-						.countDown();
+				countDownLatchEvents.get(browserName + eventType).countDown();
 			}
 		});
 	}
@@ -111,24 +120,29 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public boolean waitForEvent(final String eventType)
 			throws InterruptedException {
-		if (!countDownLatchEvents.containsKey(browserClient.toString()
-				+ eventType)) {
-			// We cannot wait for an event without previous subscription
+
+		String browserName = browserClient.getId();
+		log.info("Waiting for event '{}' in browser '{}'", eventType,
+				browserName);
+
+		if (!countDownLatchEvents.containsKey(browserName + eventType)) {
+			log.error("We cannot wait for an event without previous subscription");
 			return false;
 		}
 
-		boolean result = countDownLatchEvents.get(
-				browserClient.toString() + eventType).await(
-				browserClient.getTimeout(), TimeUnit.SECONDS);
+		boolean result = countDownLatchEvents.get(browserName + eventType)
+				.await(browserClient.getTimeout(), TimeUnit.SECONDS);
 
 		// Record local audio when playing event reaches the browser
 		if (eventType.equalsIgnoreCase("playing")
 				&& browserClient.getRecordAudio() > 0) {
-			if (browserClient.getRemoteNode() != null) {
-				Recorder.recordRemote(browserClient.getRemoteNode(),
-						browserClient.getRecordAudio(),
-						browserClient.getAudioSampleRate(),
-						browserClient.getAudioChannel());
+			if (browserClient.isRemote()) {
+				Recorder.recordRemote(
+						GridHandler.getInstance()
+								.getNode(browserClient.getId()), browserClient
+								.getRecordAudio(), browserClient
+								.getAudioSampleRate(), browserClient
+								.getAudioChannel());
 			} else {
 				Recorder.record(browserClient.getRecordAudio(),
 						browserClient.getAudioSampleRate(),
@@ -136,7 +150,7 @@ public class KurentoTestClient extends TestClient {
 			}
 		}
 
-		countDownLatchEvents.remove(browserClient.toString() + eventType);
+		countDownLatchEvents.remove(browserName + eventType);
 		return result;
 	}
 
@@ -270,31 +284,6 @@ public class KurentoTestClient extends TestClient {
 		return out;
 	}
 
-	// TODO deprecated
-	/*
-	 * addChangeColorEventListener
-	 */
-	@Deprecated
-	public void addChangeColorEventListener(BrowserClient browserClient,
-			VideoTag type, LatencyController cs) {
-		cs.addChangeColorEventListener(type, browserClient.getJs(),
-				type.getName());
-	}
-
-	/*
-	 * addChangeColorEventListener
-	 */
-	@Deprecated
-	public void addChangeColorEventListener(BrowserClient browserClient,
-			VideoTag type, LatencyController cs, String name) {
-		cs.addChangeColorEventListener(type, browserClient.getJs(), name);
-	}
-
-	// TODO improve this
-	public void activateLatencyControl(BrowserClient browserClient) {
-		subscribeEvents("playing");
-	}
-
 	/*
 	 * getRemoteTime
 	 */
@@ -307,8 +296,8 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * checkLatencyUntil
 	 */
-	public void checkLatencyUntil(long endTimeMillis)
-			throws InterruptedException, IOException {
+	public void checkLatencyUntil(SystemMonitorManager monitor,
+			long endTimeMillis) throws InterruptedException, IOException {
 		while (true) {
 			if (System.currentTimeMillis() > endTimeMillis) {
 				break;
@@ -317,11 +306,11 @@ public class KurentoTestClient extends TestClient {
 			try {
 				long latency = getLatency();
 				if (latency != Long.MIN_VALUE) {
-					browserClient.getMonitor().addCurrentLatency(latency);
+					monitor.addCurrentLatency(latency);
 				}
 			} catch (LatencyException le) {
 				// log.error("$$$ " + le.getMessage());
-				browserClient.getMonitor().incrementLatencyErrors();
+				monitor.incrementLatencyErrors();
 			}
 		}
 	}
@@ -404,10 +393,10 @@ public class KurentoTestClient extends TestClient {
 			WebRtcChannel channel, WebRtcMode mode) {
 
 		// Append WebRTC mode (send/receive and audio/video) to identify test
-		addTestName(browserClient, KurentoServicesTestHelper.getTestCaseName()
-				+ "." + KurentoServicesTestHelper.getTestName());
-		appendStringToTitle(browserClient, mode.toString());
-		appendStringToTitle(browserClient, channel.toString());
+		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
+				+ KurentoServicesTestHelper.getTestName());
+		appendStringToTitle(mode.toString());
+		appendStringToTitle(channel.toString());
 
 		// Setting custom audio stream (if necessary)
 		String audio = browserClient.getAudio();
@@ -451,7 +440,7 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * addTestName
 	 */
-	public void addTestName(BrowserClient browserClient, String testName) {
+	public void addTestName(String testName) {
 		try {
 			browserClient.executeScript("addTestName('" + testName + "');");
 		} catch (WebDriverException we) {
@@ -462,8 +451,7 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * appendStringToTitle
 	 */
-	public void appendStringToTitle(BrowserClient browserClient,
-			String webRtcMode) {
+	public void appendStringToTitle(String webRtcMode) {
 		try {
 			browserClient.executeScript("appendStringToTitle('" + webRtcMode
 					+ "');");
@@ -475,33 +463,16 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * activateRtcStats
 	 */
-	public static void activateRtcStats(BrowserClient browserClient) {
+	public void activateRtcStats(SystemMonitorManager monitor) {
 		try {
 			browserClient.executeScript("activateRtcStats();");
+			monitor.addJs(browserClient.getJs());
 		} catch (WebDriverException we) {
 			// If client is not ready to gather rtc statistics, we just log it
 			// as warning (it is not an error itself)
 			log.warn("Client does not support RTC statistics"
 					+ " (function activateRtcStats() is not defined)");
 		}
-	}
-
-	/*
-	 * getRtcStats
-	 */
-	@SuppressWarnings("unchecked")
-	public static Map<String, Object> getRtcStats(BrowserClient browserClient) {
-		Map<String, Object> out = new HashMap<>();
-		try {
-			out = (Map<String, Object>) browserClient
-					.executeScript("return rtcStats;");
-		} catch (WebDriverException we) {
-			// If client is not ready to gather rtc statistics, we just log it
-			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (variable rtcStats is not defined)");
-		}
-		return out;
 	}
 
 }

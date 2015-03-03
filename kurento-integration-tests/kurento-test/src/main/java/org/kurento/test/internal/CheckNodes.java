@@ -14,15 +14,13 @@
  */
 package org.kurento.test.internal;
 
-import static org.kurento.commons.PropertiesManager.getProperty;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kurento.test.services.RemoteHost;
+import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,11 +50,9 @@ public class CheckNodes {
 		List<String> nodesOk = new ArrayList<String>();
 
 		for (String node : nodeList) {
-			if (RemoteHost.ping(node)) {
+			if (SshConnection.ping(node)) {
 
-				RemoteHost remoteHost = new RemoteHost(node,
-						getProperty("test.node.login"),
-						getProperty("test.node.passwd"));
+				SshConnection remoteHost = new SshConnection(node);
 				try {
 					remoteHost.start();
 					int xvfb = remoteHost.runAndWaitCommand("xvfb-run");

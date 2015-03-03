@@ -14,8 +14,6 @@
  */
 package org.kurento.test.internal;
 
-import static org.kurento.commons.PropertiesManager.getProperty;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,7 +21,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.kurento.test.services.RemoteHost;
+import org.kurento.test.services.SshConnection;
 
 /**
  * Internal utility for killing the active processes of a user in the Selenium
@@ -57,8 +55,7 @@ public class KillActiveProcesses {
 	}
 
 	public void kill(String node) throws IOException {
-		RemoteHost remoteHost = new RemoteHost(node,
-				getProperty("test.node.login"), getProperty("test.node.passwd"));
+		SshConnection remoteHost = new SshConnection(node);
 		remoteHost.start();
 		remoteHost.execCommand("kill", "-9", "-1");
 	}

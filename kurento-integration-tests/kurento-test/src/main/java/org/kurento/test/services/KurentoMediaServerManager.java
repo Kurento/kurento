@@ -74,7 +74,7 @@ public class KurentoMediaServerManager {
 	public static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
 	public static final String KURENTO_KMS_PEM_PROP = "kms.pem";
 
-	public static RemoteHost remoteKms = null;
+	public static SshConnection remoteKms = null;
 
 	public static Logger log = LoggerFactory
 			.getLogger(KurentoMediaServerManager.class);
@@ -199,7 +199,8 @@ public class KurentoMediaServerManager {
 			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
 					wsUri.lastIndexOf(":"));
 			log.info("Using remote KMS at {}", remoteKmsStr);
-			remoteKms = new RemoteHost(remoteKmsStr, kmsLogin, kmsPasswd);
+			remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd,
+					kmsPem);
 			if (kmsPem != null) {
 				remoteKms.setPem(kmsPem);
 			}
@@ -431,7 +432,7 @@ public class KurentoMediaServerManager {
 
 		if (remoteKms != null) {
 			// Copy remote log
-			RemoteHost kms = KurentoMediaServerManager.remoteKms;
+			SshConnection kms = KurentoMediaServerManager.remoteKms;
 			String targetFile = KurentoServicesTestHelper.getServerLogFile()
 					.getAbsolutePath();
 			String origFile = kms.getTmpFolder() + "/kms.log";

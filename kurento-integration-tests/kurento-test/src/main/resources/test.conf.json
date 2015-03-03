@@ -3,7 +3,7 @@
 		{
 			"presenter" : {
 				"scope" : "local",
-				"browser" : "firefox"
+				"browser" : "chrome"
 			},
 			"viewer" : {
 				"scope" : "local",

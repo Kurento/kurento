@@ -25,10 +25,11 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SystemUtils;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
-import org.kurento.test.monitor.SystemMonitorManager;
+import org.kurento.test.grid.GridHandler;
+import org.kurento.test.grid.GridNode;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
-import org.kurento.test.services.Node;
+import org.kurento.test.services.SshConnection;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
@@ -56,6 +57,7 @@ public class BrowserClient implements Closeable {
 
 	private WebDriver driver;
 
+	private Builder builder;
 	private BrowserType browserType;
 	private BrowserScope scope;
 	private String browserVersion;
@@ -69,21 +71,27 @@ public class BrowserClient implements Closeable {
 	private boolean usePhysicalCam;
 	private boolean enableScreenCapture;
 	private String name;
+	private String id;
 	private double colorDistance;
 	private int thresholdTime;
+	private int numInstances;
+	private int browserPerInstance;
 	private Protocol protocol;
+	private String hostAddress;
 	private int serverPort;
 	private Client client;
-	private String hostAddress;
-	private SystemMonitorManager monitor;
-	private Node remoteNode;
+	private String login;
+	private String passwd;
+	private String pem;
 
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
 	public static final String TEST_PUBLIC_IP_PROPERTY = "test.public.ip";
+	public static final String TEST_PUBLIC_IP_DEFAULT = "127.0.0.1";
 	public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
 
-	private BrowserClient(Builder builder) {
+	public BrowserClient(Builder builder) {
+		this.builder = builder;
 		this.scope = builder.scope;
 		this.video = builder.video;
 		this.audio = builder.audio;
@@ -92,19 +100,21 @@ public class BrowserClient implements Closeable {
 		this.browserType = builder.browserType;
 		this.usePhysicalCam = builder.usePhysicalCam;
 		this.enableScreenCapture = builder.enableScreenCapture;
-		this.remoteNode = builder.remoteNode;
 		this.recordAudio = builder.recordAudio;
 		this.audioSampleRate = builder.audioSampleRate;
 		this.audioChannel = builder.audioChannel;
 		this.browserVersion = builder.browserVersion;
 		this.platform = builder.platform;
-		this.name = builder.name;
 		this.timeout = builder.timeout;
 		this.colorDistance = builder.colorDistance;
 		this.thresholdTime = builder.thresholdTime;
 		this.hostAddress = builder.hostAddress;
 		this.protocol = builder.protocol;
-
+		this.numInstances = builder.numInstances;
+		this.browserPerInstance = builder.browserPerInstance;
+		this.login = builder.login;
+		this.passwd = builder.passwd;
+		this.pem = builder.pem;
 	}
 
 	public void init() {
@@ -165,14 +175,9 @@ public class BrowserClient implements Closeable {
 					// cam
 					options.addArguments("--use-fake-device-for-media-stream");
 
-					if (video != null) {
-						if (remoteNode != null) {
-							options.addArguments("--use-file-for-fake-video-capture="
-									+ remoteNode.getRemoteVideo());
-						} else {
-							options.addArguments("--use-file-for-fake-video-capture="
-									+ video);
-						}
+					if (video != null && isLocal()) {
+						options.addArguments("--use-file-for-fake-video-capture="
+								+ video);
 					}
 				}
 
@@ -242,8 +247,62 @@ public class BrowserClient implements Closeable {
 
 	public void createRemoteDriver(DesiredCapabilities capabilities)
 			throws MalformedURLException {
+		if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
+			GridNode node = null;
+
+			if (login != null) {
+				System.setProperty(SshConnection.TEST_NODE_LOGIN_PROPERTY,
+						login);
+			}
+			if (passwd != null) {
+				System.setProperty(SshConnection.TEST_NODE_PASSWD_PROPERTY,
+						passwd);
+			}
+			if (pem != null) {
+				System.setProperty(SshConnection.TEST_NODE_PEM_PROPERTY, pem);
+			}
+
+			if (!hostAddress.equals(TEST_PUBLIC_IP_DEFAULT)
+					&& login != null
+					&& !login.isEmpty()
+					&& ((passwd != null && !passwd.isEmpty()) || (pem != null && !pem
+							.isEmpty()))) {
+				node = new GridNode(hostAddress, browserType,
+						browserPerInstance, login, passwd, pem);
+				GridHandler.getInstance().addNode(id, node);
+			} else {
+				node = GridHandler.getInstance().getRandomNodeFromList(id,
+						browserType, browserPerInstance);
+			}
+
+			// Start Hub (just the first time will be effective)
+			GridHandler.getInstance().startHub();
+
+			// Start node
+			GridHandler.getInstance().startNode(node);
+
+			// Copy video (if necessary)
+			if (video != null && browserType == BrowserType.CHROME) {
+				GridHandler.getInstance().copyRemoteVideo(node, video);
+			}
+
+		}
+
+		// At this moment we are able to use the argument for remote video
+		if (video != null && browserType == BrowserType.CHROME) {
+			ChromeOptions options = (ChromeOptions) capabilities
+					.getCapability(ChromeOptions.CAPABILITY);
+			options.addArguments("--use-file-for-fake-video-capture="
+					+ GridHandler.getInstance().getFirstNode(id)
+							.getRemoteVideo(video));
+			capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+		}
+
+		hostAddress = GridHandler.getInstance().getHubHost();
+		int hubPort = GridHandler.getInstance().getHubPort();
+
 		driver = new RemoteWebDriver(new URL("http://" + hostAddress + ":"
-				+ serverPort + "/wd/hub"), capabilities);
+				+ hubPort + "/wd/hub"), capabilities);
 	}
 
 	public static class Builder {
@@ -251,7 +310,7 @@ public class BrowserClient implements Closeable {
 		private int thresholdTime = 10; // seconds
 		private double colorDistance = 60;
 		private String hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
-				"127.0.0.1");
+				TEST_PUBLIC_IP_DEFAULT);
 		private int serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
 				KurentoServicesTestHelper.getAppHttpPort());
 		private BrowserScope scope = BrowserScope.LOCAL;
@@ -263,15 +322,43 @@ public class BrowserClient implements Closeable {
 		private int recordAudio = 0; // seconds
 		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
 		private AudioChannel audioChannel; // stereo, mono
+		private int numInstances = 0;
+		private int browserPerInstance = 1;
 		private String video;
 		private String audio;
-		private Node remoteNode;
 		private String browserVersion;
 		private Platform platform;
-		private String name;
+		private String login;
+		private String passwd;
+		private String pem;
+
+		public Builder browserPerInstance(int browserPerInstance) {
+			this.browserPerInstance = browserPerInstance;
+			return this;
+		}
+
+		public Builder login(String login) {
+			this.login = login;
+			return this;
+		}
+
+		public Builder passwd(String passwd) {
+			this.passwd = passwd;
+			return this;
+		}
+
+		public Builder pem(String pem) {
+			this.pem = pem;
+			return this;
+		}
 
 		public Builder protocol(Protocol protocol) {
 			this.protocol = protocol;
+			return this;
+		}
+
+		public Builder numInstances(int numInstances) {
+			this.numInstances = numInstances;
 			return this;
 		}
 
@@ -330,11 +417,6 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder remoteNode(Node remoteNode) {
-			this.remoteNode = remoteNode;
-			return this;
-		}
-
 		public Builder audio(String audio, int recordAudio,
 				int audioSampleRate, AudioChannel audioChannel) {
 			this.audio = audio;
@@ -351,11 +433,6 @@ public class BrowserClient implements Closeable {
 
 		public Builder platform(Platform platform) {
 			this.platform = platform;
-			return this;
-		}
-
-		public Builder name(String name) {
-			this.name = name;
 			return this;
 		}
 
@@ -376,10 +453,6 @@ public class BrowserClient implements Closeable {
 		return audioChannel;
 	}
 
-	public Node getRemoteNode() {
-		return remoteNode;
-	}
-
 	public String getAudio() {
 		return audio;
 	}
@@ -398,10 +471,6 @@ public class BrowserClient implements Closeable {
 
 	public Object executeScript(String command) {
 		return ((JavascriptExecutor) driver).executeScript(command);
-	}
-
-	public SystemMonitorManager getMonitor() {
-		return monitor;
 	}
 
 	public double getColorDistance() {
@@ -464,16 +533,54 @@ public class BrowserClient implements Closeable {
 		return name;
 	}
 
+	public String getId() {
+		return id;
+	}
+
 	public String getHostAddress() {
 		return hostAddress;
 	}
 
-	public void setMonitor(SystemMonitorManager monitor) {
-		this.monitor = monitor;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public int getNumInstances() {
+		return numInstances;
+	}
+
+	public Builder getBuilder() {
+		return builder;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public String getPasswd() {
+		return passwd;
+	}
+
+	public String getPem() {
+		return pem;
+	}
+
+	public int getBrowserPerInstance() {
+		return browserPerInstance;
 	}
 
 	@Override
 	public void close() {
+		// Stop Selenium Grid (if necessary)
+		if (GridHandler.getInstance().useRemoteNodes()) {
+			GridHandler.getInstance().stopGrid();
+		}
+
+		// WebDriver
 		driver.close();
 		driver.quit();
 		driver = null;

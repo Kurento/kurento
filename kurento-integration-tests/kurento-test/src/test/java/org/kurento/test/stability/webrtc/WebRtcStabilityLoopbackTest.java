@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
@@ -93,11 +92,8 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
 		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_RCV);
 
-		try {
-			cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
-		} catch (RuntimeException re) {
-			Assert.fail(re.getMessage());
-		}
+		// Latency assessment
+		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
 
 		// Release Media Pipeline
 		mp.release();

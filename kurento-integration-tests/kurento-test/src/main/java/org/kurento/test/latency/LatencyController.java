@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.kurento.test.base.KurentoClientTest;
 import org.kurento.test.client.KurentoTestClient;
+import org.kurento.test.client.TestClient;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
@@ -87,8 +88,7 @@ public class LatencyController implements
 	}
 
 	public LatencyController(String name, SystemMonitorManager monitor) {
-		this();
-		this.name = name;
+		this(name);
 		this.monitor = monitor;
 	}
 
@@ -214,19 +214,22 @@ public class LatencyController implements
 	}
 
 	public void checkRemoteLatencyInBackground(final long testTime,
-			final TimeUnit testTimeUnit, final JavascriptExecutor jsLocal,
-			final JavascriptExecutor jsRemote) {
+			final TimeUnit testTimeUnit, final TestClient localClient,
+			final TestClient remoteClient) {
 		new Thread() {
 			public void run() {
-				checkRemoteLatencyInBackground(testTime, testTimeUnit, jsLocal,
-						jsRemote);
+				checkRemoteLatency(testTime, testTimeUnit, localClient,
+						remoteClient);
 			}
 		}.start();
 	}
 
 	public void checkRemoteLatency(final long testTime,
-			final TimeUnit testTimeUnit, JavascriptExecutor jsLocal,
-			JavascriptExecutor jsRemote) {
+			final TimeUnit testTimeUnit, TestClient localClient,
+			TestClient remoteClient) {
+
+		JavascriptExecutor jsLocal = localClient.getBrowserClient().getJs();
+		JavascriptExecutor jsRemote = remoteClient.getBrowserClient().getJs();
 
 		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL), jsLocal,
 				getName() + " " + VideoTagType.LOCAL);

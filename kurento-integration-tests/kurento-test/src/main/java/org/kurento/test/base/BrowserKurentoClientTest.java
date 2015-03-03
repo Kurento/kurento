@@ -19,7 +19,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
@@ -58,9 +57,6 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 		super();
 	}
 
-	@Rule
-	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
-
 	@Override
 	public KurentoTestClient getBrowser() {
 		return (KurentoTestClient) super.getBrowser();
@@ -69,6 +65,11 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 	@Override
 	public KurentoTestClient getBrowser(String browserKey) {
 		return (KurentoTestClient) super.getBrowser(browserKey);
+	}
+
+	@Override
+	public KurentoTestClient getBrowser(int index) {
+		return (KurentoTestClient) super.getBrowser(index);
 	}
 
 	@Override
@@ -94,23 +95,23 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 	protected void playFileAsLocal(BrowserType browserType,
 			String recordingFile, int playtime, int x, int y,
 			Color... expectedColors) throws InterruptedException {
-		try (BrowserClient browserClient = new BrowserClient.Builder()
+		BrowserClient browserClient = new BrowserClient.Builder()
 				.browserType(browserType).client(Client.WEBRTC)
-				.protocol(Protocol.FILE).build()) {
-			String browserkey = "playBrowser";
-			addBrowserClient(browserkey, browserClient);
+				.protocol(Protocol.FILE).build();
+		browserClient.init();
+		String browserkey = "playBrowser";
+		addBrowserClient(browserkey, browserClient);
 
-			getBrowser(browserkey).subscribeEvents("playing");
-			browserClient.executeScript("document.getElementById('"
-					+ VideoTagType.REMOTE.getId() + "').setAttribute('src', '"
-					+ recordingFile + "');");
-			browserClient.executeScript("document.getElementById('"
-					+ VideoTagType.REMOTE.getId() + "').load();");
+		getBrowser(browserkey).subscribeEvents("playing");
+		browserClient.executeScript("document.getElementById('"
+				+ VideoTagType.REMOTE.getId() + "').setAttribute('src', '"
+				+ recordingFile + "');");
+		browserClient.executeScript("document.getElementById('"
+				+ VideoTagType.REMOTE.getId() + "').load();");
 
-			// Assertions
-			makeAssertions(browserkey, "[played as local file]", browserClient,
-					playtime, x, y, null, expectedColors);
-		}
+		// Assertions
+		makeAssertions(browserkey, "[played as local file]", browserClient,
+				playtime, x, y, null, expectedColors);
 	}
 
 	public void playUrlInVideoTag(BrowserClient browserClient, String url,
@@ -122,43 +123,42 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 			String recordingFile, int playtime, int x, int y,
 			Color... expectedColors) throws InterruptedException {
 
-		MediaPipeline mp = null;
-		try (BrowserClient browserClient = new BrowserClient.Builder()
-				.browserType(browserType).client(Client.WEBRTC).build()) {
-			String browserkey = "playBrowser";
-			addBrowserClient(browserkey, browserClient);
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, recordingFile)
+				.build();
+		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		playerEP.connect(webRtcEP);
 
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-					recordingFile).build();
-			WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-			playerEP.connect(webRtcEP);
+		// Browser
+		BrowserClient browserClient = new BrowserClient.Builder()
+				.browserType(browserType).client(Client.WEBRTC).build();
+		browserClient.init();
+		String browserkey = "playBrowser";
+		addBrowserClient(browserkey, browserClient);
 
-			// Play latch
-			final CountDownLatch eosLatch = new CountDownLatch(1);
-			playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-				@Override
-				public void onEvent(EndOfStreamEvent event) {
-					eosLatch.countDown();
-				}
-			});
-
-			// Test execution
-			getBrowser(browserkey).subscribeEvents("playing");
-			getBrowser(browserkey).initWebRtc(webRtcEP,
-					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-			playerEP.play();
-
-			// Assertions
-			makeAssertions(browserkey, "[played file with media pipeline]",
-					browserClient, playtime, x, y, eosLatch, expectedColors);
-
-		} finally {
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
+		// Play latch
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
 			}
+		});
+
+		// Test execution
+		getBrowser(browserkey).subscribeEvents("playing");
+		getBrowser(browserkey).initWebRtc(webRtcEP,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		playerEP.play();
+
+		// Assertions
+		makeAssertions(browserkey, "[played file with media pipeline]",
+				browserClient, playtime, x, y, eosLatch, expectedColors);
+
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 	}
 

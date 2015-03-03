@@ -64,6 +64,26 @@ public class TestConfig {
 				BrowserClient.Builder builder = new BrowserClient.Builder()
 						.browserType(instance.getBrowserType());
 
+				if (instance.getInstances() > 0) {
+					builder = builder.numInstances(instance.getInstances());
+				}
+				if (instance.getBrowserPerInstance() > 0) {
+					builder = builder.browserPerInstance(instance
+							.getBrowserPerInstance());
+				}
+				if (instance.getHostAddress() != null) {
+					builder = builder.hostAddress(instance.getHostAddress());
+				}
+				if (instance.getLogin() != null) {
+					builder = builder.login(instance.getLogin());
+				}
+				if (instance.getPasswd() != null) {
+					builder = builder.passwd(instance.getPasswd());
+				}
+				if (instance.getKey() != null) {
+					builder = builder.pem(instance.getKey());
+				}
+
 				if (instance.isLocal()) {
 					browserClient = builder.scope(BrowserScope.LOCAL).build();
 				} else if (instance.isRemote()) {

@@ -26,6 +26,7 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.TestClient;
 import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
 @RunWith(Parameterized.class)
 public class KurentoTest {
 
-	public static final Logger log = LoggerFactory.getLogger(KurentoTest.class);
+	public static Logger log = LoggerFactory.getLogger(KurentoTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
 	@Rule
@@ -59,8 +60,11 @@ public class KurentoTest {
 
 	@Before
 	public void setupKurentoTest() {
-		for (BrowserClient browserClient : testScenario.getBrowserMap()
-				.values()) {
+		for (String browserKey : testScenario.getBrowserMap().keySet()) {
+			BrowserClient browserClient = testScenario.getBrowserMap().get(
+					browserKey);
+			browserClient.setId(browserKey);
+			browserClient.setName(testName.getMethodName());
 			browserClient.init();
 		}
 	}
@@ -69,7 +73,11 @@ public class KurentoTest {
 	public void teardownKurentoTest() {
 		for (BrowserClient browserClient : testScenario.getBrowserMap()
 				.values()) {
-			browserClient.close();
+			try {
+				browserClient.close();
+			} catch (UnreachableBrowserException e) {
+				log.warn(e.getMessage());
+			}
 		}
 	}
 
@@ -111,9 +119,13 @@ public class KurentoTest {
 
 				client.setBrowserClient(testScenario.getBrowserMap().get(
 						browserKey));
-				return client;
+				return clonedClient();
 			}
 		}
+	}
+
+	public TestClient getBrowser(int index) {
+		return assertAndGetBrowser(TestConfig.BROWSER + index);
 	}
 
 	public TestClient getPresenter() {
@@ -139,7 +151,17 @@ public class KurentoTest {
 		}
 
 		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
-		return client;
+		return clonedClient();
 	}
 
+	private TestClient clonedClient() {
+		TestClient out = null;
+		try {
+			out = client.getClass().getDeclaredConstructor(client.getClass())
+					.newInstance(client);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return out;
+	}
 }

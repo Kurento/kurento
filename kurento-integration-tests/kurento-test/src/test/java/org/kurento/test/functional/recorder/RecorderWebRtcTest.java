@@ -31,6 +31,8 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  *
  * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
@@ -96,7 +98,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 				getBrowser().waitForEvent("playing"));
 
 		// Guard time to play the video
-		Thread.sleep(PLAYTIME * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		Assert.assertTrue("The color of the video should be green",
 				getBrowser().similarColor(CHROME_VIDEOTEST_COLOR));

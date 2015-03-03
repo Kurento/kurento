@@ -27,13 +27,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.KurentoTestClient;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * System monitor class, used to check the CPU usage, memory, swap, and network
@@ -44,6 +52,8 @@ import org.kurento.test.client.KurentoTestClient;
  */
 public class SystemMonitor {
 
+	public Logger log = LoggerFactory.getLogger(SystemMonitor.class);
+
 	private Thread thread;
 	private Map<Long, SystemInfo> infoMap;
 	private long samplingTime = 100; // Default sampling time, in milliseconds
@@ -53,13 +63,14 @@ public class SystemMonitor {
 	private double currentLatency = 0;
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
-	private List<BrowserClient> browserList;
+	private List<JavascriptExecutor> jsList;
 
 	private final static String OK = "ok";
 	private final static String ERR = "error: ";
 
 	public static final String MONITOR_PORT_PROP = "monitor.port";
 	public static final int MONITOR_PORT_DEFAULT = 12345;
+	public static final int KMS_WAIT_TIMEOUT = 60; // seconds
 	public static final String OUTPUT_CSV = "/kms-monitor.csv";
 
 	public SystemMonitor() {
@@ -152,57 +163,64 @@ public class SystemMonitor {
 	public void start() {
 		final long start = new Date().getTime();
 		final NetInfo initNetInfo = getInitNetInfo();
-		final int kmsPid = getKmsPid();
+
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Callable<Integer> callable = new Callable<Integer>() {
+			@Override
+			public Integer call() {
+				return getKmsPid();
+			}
+		};
+		final Future<Integer> future = executor.submit(callable);
 
 		thread = new Thread() {
 			@Override
 			public void run() {
 				// NetInfo lastNetInfo = null;
-				while (true) {
-					SystemInfo info = new SystemInfo();
+				try {
+					int kmsPid = future.get();
+					while (true) {
+						SystemInfo info = new SystemInfo();
 
-					// Bandwidth (bytes tx and rx)
-					NetInfo newNetInfo = getNetInfo(initNetInfo);
-					info.setNetInfo(newNetInfo);
-					// lastNetInfo = newNetInfo;
+						// Bandwidth (bytes tx and rx)
+						NetInfo newNetInfo = getNetInfo(initNetInfo);
+						info.setNetInfo(newNetInfo);
+						// lastNetInfo = newNetInfo;
 
-					// CPU usage (%)
-					info.setCpuPercent(getCpuUsage());
+						// CPU usage (%)
+						info.setCpuPercent(getCpuUsage());
 
-					// Memory and swap usage (bytes)
-					double[] mem = getMemSwap();
-					info.setMem((long) mem[0]);
-					info.setSwap((long) mem[1]);
-					info.setMemPercent(mem[2]);
-					info.setSwapPercent(mem[3]);
+						// Memory and swap usage (bytes)
+						double[] mem = getMemSwap();
+						info.setMem((long) mem[0]);
+						info.setSwap((long) mem[1]);
+						info.setMemPercent(mem[2]);
+						info.setSwapPercent(mem[3]);
 
-					// Number of clients
-					info.setNumClients(numClients);
+						// Number of clients
+						info.setNumClients(numClients);
 
-					// Latency
-					info.setLatency(getLatency());
-					info.setLatencyErrors(latencyErrors);
+						// Latency
+						info.setLatency(getLatency());
+						info.setLatencyErrors(latencyErrors);
 
-					// Number of threads
-					info.setNumThreadsKms(getNumThreads(kmsPid));
+						// Number of threads
+						info.setNumThreadsKms(getNumThreads(kmsPid));
 
-					// Browser Statistics
-					if (browserList != null) {
-						for (BrowserClient bc : browserList) {
-							// TODO RTC stats are only supported in kurento-test
-							// client
-							Map<String, Object> rtc = KurentoTestClient
-									.getRtcStats(bc);
-							info.addRtcStats(rtc);
+						// Browser Statistics
+						if (jsList != null) {
+							for (JavascriptExecutor js : jsList) {
+								Map<String, Object> rtc = getRtcStats(js);
+								info.addRtcStats(rtc);
+							}
 						}
-					}
 
-					infoMap.put(new Date().getTime() - start, info);
+						infoMap.put(new Date().getTime() - start, info);
 
-					try {
 						Thread.sleep(samplingTime);
-					} catch (InterruptedException e) {
 					}
+				} catch (Exception e) {
+					log.warn(e.getMessage());
 				}
 			}
 		};
@@ -246,8 +264,13 @@ public class SystemMonitor {
 		return getNetInfo(null, null);
 	}
 
-	public void writeResults(String csvTitle) throws IOException {
-		PrintWriter pw = new PrintWriter(new FileWriter(csvTitle));
+	public void writeResults(String csvTitle) {
+		PrintWriter pw;
+		try {
+			pw = new PrintWriter(new FileWriter(csvTitle));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		boolean header = false;
 		String emptyStats = "";
 		List<String> rtcHeader = null;
@@ -260,7 +283,7 @@ public class SystemMonitor {
 				// Browser statistics. First entries may be empty, so we have to
 				// iterate to find values in the statistics in order to write
 				// the header in the resulting CSV
-				if (browserList != null) {
+				if (jsList != null) {
 					rtcHeader = new ArrayList<>();
 					for (SystemInfo info : infoMap.values()) {
 						if (info.getRtcStats() != null
@@ -299,7 +322,7 @@ public class SystemMonitor {
 					+ infoMap.get(time).getNetInfo().parseNetEntry());
 
 			// Browser statistics
-			if (browserList != null) {
+			if (jsList != null) {
 				if (infoMap.get(time).getRtcStats() != null
 						&& !infoMap.get(time).getRtcStats().isEmpty()) {
 					for (String key : rtcHeader) {
@@ -355,15 +378,38 @@ public class SystemMonitor {
 	}
 
 	private int getKmsPid() {
-		String kmsPid = runAndWait("/bin/sh", "-c",
-				"ps axf | grep kurento-media-server | grep -v grep | awk '{print $1}'")
-				.replaceAll("\n", "");
-		if (kmsPid.equals("")) {
-			throw new RuntimeException("KMS is not started");
-		} else if (kmsPid.contains(" ")) {
+		boolean reachable = false;
+		long endTimeMillis = System.currentTimeMillis()
+				+ (KMS_WAIT_TIMEOUT * 1000);
+
+		String kmsPid;
+		while (true) {
+			kmsPid = runAndWait("/bin/sh", "-c",
+					"ps axf | grep kurento-media-server | grep -v grep | awk '{print $1}'")
+					.replaceAll("\n", "");
+			reachable = !kmsPid.equals("");
+			if (kmsPid.contains(" ")) {
+				throw new RuntimeException(
+						"More than one KMS process are started (PIDs:" + kmsPid
+								+ ")");
+			}
+			if (reachable) {
+				break;
+			}
+
+			// Poll time to wait host (1 second)
+			try {
+				Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+			} catch (InterruptedException ie) {
+				ie.printStackTrace();
+			}
+			if (System.currentTimeMillis() > endTimeMillis) {
+				break;
+			}
+		}
+		if (!reachable) {
 			throw new RuntimeException(
-					"More than one KMS process are started (PIDs:" + kmsPid
-							+ ")");
+					"KMS is not started in the local machine");
 		}
 		return Integer.parseInt(kmsPid);
 	}
@@ -440,11 +486,27 @@ public class SystemMonitor {
 		this.samplingTime = samplingTime;
 	}
 
-	public void addBrowser(BrowserClient browser) {
-		if (browserList == null) {
-			browserList = new CopyOnWriteArrayList<>();
+	// TODO currently RTC stats are only supported by kurento-test
+	public void addJs(JavascriptExecutor js) {
+		if (jsList == null) {
+			jsList = new CopyOnWriteArrayList<>();
 		}
-		browserList.add(browser);
+		jsList.add(js);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> getRtcStats(JavascriptExecutor js) {
+		Map<String, Object> out = new HashMap<>();
+		try {
+			out = (Map<String, Object>) js.executeScript("return rtcStats;");
+
+		} catch (WebDriverException we) {
+			// If client is not ready to gather rtc statistics, we just log it
+			// as warning (it is not an error itself)
+			log.warn("Client does not support RTC statistics"
+					+ " (variable rtcStats is not defined)");
+		}
+		return out;
 	}
 
 }

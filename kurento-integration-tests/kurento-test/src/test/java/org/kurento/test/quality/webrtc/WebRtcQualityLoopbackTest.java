@@ -36,6 +36,8 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.Recorder;
 
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  * <strong>Description</strong>: WebRTC in loopback using custom video and audio
  * files.<br/>
@@ -106,7 +108,7 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 				getBrowser().waitForEvent("playing"));
 
 		// Guard time to play the video
-		Thread.sleep(PLAYTIME * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Assert play time
 		double currentTime = getBrowser().getCurrentTime();

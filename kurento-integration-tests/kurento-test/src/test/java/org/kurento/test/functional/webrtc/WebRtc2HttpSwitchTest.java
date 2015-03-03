@@ -35,6 +35,8 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  * <strong>Description</strong>: WebRTC to HTTP switch. Test KMS is able to
  * dynamically switch many WebRTC flows to a single HTTP endpoint Setup. Two
@@ -111,7 +113,7 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 				getViewer().similarColor(CHROME_VIDEOTEST_COLOR));
 
 		// Guard time to see stream from WebRTC #1
-		Thread.sleep(PLAYTIME * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Round #2: Connecting WebRTC #2 to HttpEnpoint
 		webRtcEndpoint2.connect(httpGetEndpoint);
@@ -119,7 +121,7 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 				"Switching to WebRTC #2 source");
 
 		// Guard time to see stream from WebRTC #2
-		Thread.sleep(PLAYTIME * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",

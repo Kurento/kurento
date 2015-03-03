@@ -23,9 +23,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.kurento.test.Shell;
+import org.kurento.test.grid.GridNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.test.Shell;
 
 /**
  * Audio recorder using FFMPEG and audio quality assessment with PESQ.
@@ -44,16 +45,16 @@ public class Recorder {
 	private static final String RECORDED_WAV = KurentoMediaServerManager
 			.getWorkspace() + "recorded.wav";
 
-	public static void recordRemote(Node node, int seconds, int sampleRate,
+	public static void recordRemote(GridNode node, int seconds, int sampleRate,
 			AudioChannel audioChannel) {
 		try {
-			node.getRemoteHost().execCommand("ffmpeg", "-y", "-t",
+			node.getSshConnection().execCommand("ffmpeg", "-y", "-t",
 					String.valueOf(seconds), "-f", "alsa", "-i", "pulse",
 					"-q:a", "0", "-ac", audioChannel.toString(), "-ar",
 					String.valueOf(sampleRate), RECORDED_WAV);
 		} catch (IOException e) {
 			log.error("IOException recording audio in remote node "
-					+ node.getAddress());
+					+ node.getHost());
 		}
 	}
 
@@ -64,9 +65,9 @@ public class Recorder {
 				+ sampleRate + " " + RECORDED_WAV);
 	}
 
-	public static float getRemotePesqMos(Node node, int sampleRate) {
-		node.getRemoteHost().getFile(RECORDED_WAV, RECORDED_WAV);
-		return getPesqMos(node.getAudio(), sampleRate);
+	public static float getRemotePesqMos(GridNode node, String audio, int sampleRate) {
+		node.getSshConnection().getFile(RECORDED_WAV, RECORDED_WAV);
+		return getPesqMos(audio, sampleRate);
 	}
 
 	public static float getPesqMos(String audio, int sampleRate) {

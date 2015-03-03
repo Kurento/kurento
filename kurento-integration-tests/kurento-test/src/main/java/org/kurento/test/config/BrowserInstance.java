@@ -29,7 +29,12 @@ public class BrowserInstance {
 	private String browser;
 	private String version;
 	private String platform;
-	private int number;
+	private int instances;
+	private int browserPerInstance;
+	private String hostAddress;
+	private String login;
+	private String passwd;
+	private String key;
 
 	public BrowserInstance(String browser) {
 		this.browser = browser;
@@ -67,24 +72,64 @@ public class BrowserInstance {
 		this.platform = platform;
 	}
 
-	public int getNumber() {
-		return number;
+	public int getInstances() {
+		return instances;
 	}
 
-	public void setNumber(int number) {
-		this.number = number;
+	public void setInstances(int instances) {
+		this.instances = instances;
+	}
+
+	public int getBrowserPerInstance() {
+		return browserPerInstance;
+	}
+
+	public void setBrowserPerInstance(int browserPerInstance) {
+		this.browserPerInstance = browserPerInstance;
+	}
+
+	public String getHostAddress() {
+		return hostAddress;
+	}
+
+	public void setHostAddress(String hostAddress) {
+		this.hostAddress = hostAddress;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getPasswd() {
+		return passwd;
+	}
+
+	public void setPasswd(String passwd) {
+		this.passwd = passwd;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public boolean isLocal() {
-		return BrowserScope.LOCAL.equals(this.getScope());
+		return BrowserScope.LOCAL.toString().equals(this.getScope());
 	}
 
 	public boolean isRemote() {
-		return BrowserScope.REMOTE.equals(this.getScope());
+		return BrowserScope.REMOTE.toString().equals(this.getScope());
 	}
 
 	public boolean isSauceLabs() {
-		return BrowserScope.REMOTE.equals(this.getScope());
+		return BrowserScope.SAUCELABS.toString().equals(this.getScope());
 	}
 
 	public BrowserType getBrowserType() {
@@ -99,7 +144,7 @@ public class BrowserInstance {
 	public String toString() {
 		return "Browser [scope=" + scope + ", browser=" + browser
 				+ ", version=" + version + ", platform=" + platform
-				+ ", number=" + number + "]";
+				+ ", instances=" + instances + "]";
 	}
 
 }

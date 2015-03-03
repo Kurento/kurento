@@ -20,6 +20,7 @@ import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_PROP;
 import static org.kurento.test.monitor.SystemMonitor.OUTPUT_CSV;
 import static org.kurento.test.services.KurentoMediaServerManager.KURENTO_KMS_LOGIN_PROP;
 import static org.kurento.test.services.KurentoMediaServerManager.KURENTO_KMS_PASSWD_PROP;
+import static org.kurento.test.services.KurentoMediaServerManager.KURENTO_KMS_PEM_PROP;
 import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_PROP;
 
@@ -43,9 +44,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Objects;
 
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.KurentoTestClient;
-import org.kurento.test.services.RemoteHost;
+import org.kurento.test.services.SshConnection;
+import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,39 +60,51 @@ public class SystemMonitorManager {
 	public static Logger log = LoggerFactory
 			.getLogger(SystemMonitorManager.class);
 
+	private static final String DEFAULT_MONITOR_RATE_PROPERTY = "test.monitor.rate";
+	private static final int DEFAULT_MONITOR_RATE_DEFAULT = 1000; // milliseconds
+
 	private SystemMonitor monitor;
-	private RemoteHost remoteKms;
+	private SshConnection remoteKms;
 	private int monitorPort;
 
-	public SystemMonitorManager() throws IOException, URISyntaxException {
-		String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
-		String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
-		String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
-		monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
+	public SystemMonitorManager() {
+		try {
+			String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
+			String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
+			String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
+			String kmsPem = getProperty(KURENTO_KMS_PEM_PROP);
+			monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
 
-		boolean isKmsRemote = !wsUri.contains("localhost")
-				&& !wsUri.contains("127.0.0.1");
+			boolean isKmsRemote = !wsUri.contains("localhost")
+					&& !wsUri.contains("127.0.0.1");
 
-		if (isKmsRemote) {
-			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
-					wsUri.lastIndexOf(":"));
-			log.info("Using remote KMS at {}", remoteKmsStr);
-			remoteKms = new RemoteHost(remoteKmsStr, kmsLogin, kmsPasswd);
-			remoteKms.start();
-			remoteKms.createTmpFolder();
-			copyMonitorToRemoteKms();
-			startRemoteKms();
+			if (isKmsRemote) {
+				String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
+						wsUri.lastIndexOf(":"));
+				log.info("Using remote KMS at {}", remoteKmsStr);
+				remoteKms = new SshConnection(remoteKmsStr, kmsLogin,
+						kmsPasswd, kmsPem);
+				remoteKms.start();
+				remoteKms.createTmpFolder();
+				copyMonitorToRemoteKms();
+				startRemoteKms();
+			}
+			monitor = new SystemMonitor();
+
+			int monitorRate = getProperty(DEFAULT_MONITOR_RATE_PROPERTY,
+					DEFAULT_MONITOR_RATE_DEFAULT);
+			monitor.setSamplingTime(monitorRate);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-		monitor = new SystemMonitor();
 	}
 
 	private void copyMonitorToRemoteKms() throws IOException,
 			URISyntaxException {
 		final String folder = "/org/kurento/test/monitor/";
 		final String[] classesName = { "SystemMonitor.class",
-				"SystemMonitor$1.class", /* "SystemMonitor$2.class", */
-				"NetInfo.class", "NetInfo$NetInfoEntry.class",
-				"SystemInfo.class" };
+				"SystemMonitor$1.class", "NetInfo.class",
+				"NetInfo$NetInfoEntry.class", "SystemInfo.class" };
 
 		Path tempDir = Files.createTempDirectory(null);
 		File newDir = new File(tempDir + folder);
@@ -177,7 +189,7 @@ public class SystemMonitorManager {
 		return fs.getPath(entryName);
 	}
 
-	public void start() throws IOException {
+	public void start() {
 		if (remoteKms != null) {
 			sendMessage("start");
 		} else {
@@ -185,7 +197,7 @@ public class SystemMonitorManager {
 		}
 	}
 
-	public void writeResults(String csvFile) throws IOException {
+	public void writeResults(String csvFile) {
 		if (remoteKms != null) {
 			sendMessage("writeResults " + remoteKms.getTmpFolder());
 			remoteKms.getFile(csvFile, remoteKms.getTmpFolder() + OUTPUT_CSV);
@@ -194,7 +206,7 @@ public class SystemMonitorManager {
 		}
 	}
 
-	public void stop() throws IOException {
+	public void stop() {
 		if (remoteKms != null) {
 			sendMessage("stop");
 		} else {
@@ -202,7 +214,7 @@ public class SystemMonitorManager {
 		}
 	}
 
-	public void incrementNumClients() throws IOException {
+	public void incrementNumClients() {
 		if (remoteKms != null) {
 			sendMessage("incrementNumClients");
 		} else {
@@ -210,7 +222,7 @@ public class SystemMonitorManager {
 		}
 	}
 
-	public void decrementNumClients() throws IOException {
+	public void decrementNumClients() {
 		if (remoteKms != null) {
 			sendMessage("decrementNumClients");
 		} else {
@@ -242,37 +254,42 @@ public class SystemMonitorManager {
 		}
 	}
 
-	private void sendMessage(String message) throws IOException {
-		// log.debug("Sending message {} to {}", message, remoteKms.getHost());
-		Socket client = new Socket(remoteKms.getHost(), monitorPort);
-		PrintWriter output = new PrintWriter(client.getOutputStream(), true);
-		BufferedReader input = new BufferedReader(new InputStreamReader(
-				client.getInputStream()));
-		// log.debug("Sending message to remote monitor: {}", message);
-		output.println(message);
+	private void sendMessage(String message) {
+		try {
+			// log.debug("Sending message {} to {}", message,
+			// remoteKms.getHost());
+			Socket client = new Socket(remoteKms.getHost(), monitorPort);
+			PrintWriter output = new PrintWriter(client.getOutputStream(), true);
+			BufferedReader input = new BufferedReader(new InputStreamReader(
+					client.getInputStream()));
+			// log.debug("Sending message to remote monitor: {}", message);
+			output.println(message);
 
-		String returnedMessage = input.readLine();
+			String returnedMessage = input.readLine();
 
-		if (returnedMessage != null) {
-			// TODO handle errors
-			// log.debug("Returned message by remote monitor: {}",
-			// returnedMessage);
+			if (returnedMessage != null) {
+				// TODO handle errors
+				// log.debug("Returned message by remote monitor: {}",
+				// returnedMessage);
+			}
+			output.close();
+			input.close();
+			client.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-		output.close();
-		input.close();
-		client.close();
 	}
 
-	public void destroy() throws IOException {
+	public void destroy() {
 		if (remoteKms != null) {
 			sendMessage("destroy");
 			remoteKms.stop();
 		}
 	}
 
-	public void addRtcStats(BrowserClient browser) {
-		KurentoTestClient.activateRtcStats(browser);
-		monitor.addBrowser(browser);
+	// TODO currently RTC stats are only supported in local monitor
+	public void addJs(JavascriptExecutor js) {
+		monitor.addJs(js);
 	}
 
 }

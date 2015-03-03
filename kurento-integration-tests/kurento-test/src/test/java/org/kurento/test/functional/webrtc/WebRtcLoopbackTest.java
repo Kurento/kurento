@@ -26,6 +26,8 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  * <strong>Description</strong>: WebRTC in loopback.<br/>
  * <strong>Pipeline</strong>:
@@ -69,7 +71,7 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 				WebRtcMode.SEND_RCV);
 
 		// Guard time to play the video
-		Thread.sleep(PLAYTIME * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",

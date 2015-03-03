@@ -27,6 +27,8 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  * <strong>Description</strong>: WebRTC to FaceOverlayFilter test.<br/>
  * <strong>Pipeline</strong>:
@@ -77,7 +79,7 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
 				WebRtcMode.SEND_RCV);
 
 		// Guard time to play the video
-		Thread.sleep(playTime * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(playTime));
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",

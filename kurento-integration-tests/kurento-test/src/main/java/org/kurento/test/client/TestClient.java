@@ -31,9 +31,16 @@ import org.slf4j.LoggerFactory;
  */
 public class TestClient {
 
-	public static final Logger log = LoggerFactory.getLogger(TestClient.class);
+	public static Logger log = LoggerFactory.getLogger(TestClient.class);
 
 	public BrowserClient browserClient;
+
+	public TestClient() {
+	}
+
+	public TestClient(TestClient client) {
+		this.browserClient = client.browserClient;
+	}
 
 	public BrowserClient getBrowserClient() {
 		return browserClient;
@@ -48,40 +55,5 @@ public class TestClient {
 				.getScreenshotAs(OutputType.FILE);
 		FileUtils.copyFile(scrFile, new File(file));
 	}
-
-	// public String BrowserKey;
-
-	// public TestClient(TestScenario testScenario) {
-	// this.testScenario = testScenario;
-	// browserClient = testScenario.getBrowserMap().get(TestConfig.BROWSER);
-	// }
-	//
-	// public BrowserClient getBrowserClient() {
-	// return browserClient;
-	// }
-	//
-	// public void addBrowser(String key, BrowserClient browserClient) {
-	// this.testScenario.getBrowserMap().put(key, browserClient);
-	// }
-	//
-	// public void setBrowserClient(String key) {
-	// this.browserClient = testScenario.getBrowserMap().get(key);
-	// }
-	//
-	// public TestScenario getTestScenario() {
-	// return testScenario;
-	// }
-	//
-	// public void setTestScenario(TestScenario testScenario) {
-	// this.testScenario = testScenario;
-	// }
-	//
-	// public String getBrowserKey() {
-	// return BrowserKey;
-	// }
-	//
-	// public void setBrowserKey(String browserKey) {
-	// BrowserKey = browserKey;
-	// }
 
 }

@@ -22,6 +22,6 @@ package org.kurento.test.client;
  */
 public interface BrowserRunner {
 
-	void run(BrowserClient browser, int num, String name) throws Exception;
+	void run(BrowserClient browser) throws Exception;
 
 }

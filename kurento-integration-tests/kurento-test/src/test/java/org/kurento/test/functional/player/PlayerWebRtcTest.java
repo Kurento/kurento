@@ -14,7 +14,22 @@
  */
 package org.kurento.test.functional.player;
 
+import java.awt.Color;
+import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.PlayerEndpoint;
+import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
+import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -38,64 +53,54 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerWebRtcTest extends FunctionalTest {
 
+	private static final int PLAYTIME = 10; // seconds
+
 	public PlayerWebRtcTest(TestScenario testScenario) {
 		super(testScenario);
 	}
-	
 
-//	private static final int PLAYTIME = 10; // seconds
-//	private static final int TIMEOUT_EOS = 60; // seconds
-//
-//	@Test
-//	public void testPlayerChrome() throws Exception {
-//		doTest(BrowserType.CHROME);
-//	}
-//
-//	@Test
-//	public void testPlayerFirefox() throws Exception {
-//		doTest(BrowserType.FIREFOX);
-//	}
-//
-//	public void doTest(BrowserType browserType) throws Exception {
-//		// Media Pipeline
-//		MediaPipeline mp = kurentoClient.createMediaPipeline();
-//		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-//				"http://files.kurento.org/video/10sec/blue.webm").build();
-//		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-//		playerEP.connect(webRtcEP);
-//
-//		final CountDownLatch eosLatch = new CountDownLatch(1);
-//		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-//			@Override
-//			public void onEvent(EndOfStreamEvent event) {
-//				eosLatch.countDown();
-//			}
-//		});
-//
-//		// Test execution
-//		try (BrowserClient browser = new BrowserClient.Builder()
-//				.browserType(browserType).client(Client.WEBRTC).build()) {
-//			browser.subscribeEvents("playing");
-//			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-//					WebRtcMode.RCV_ONLY);
-//			playerEP.play();
-//
-//			// Assertions
-//			Assert.assertTrue(
-//					"Not received media (timeout waiting playing event)",
-//					browser.waitForEvent("playing"));
-//			Assert.assertTrue("The color of the video should be blue",
-//					browser.similarColor(Color.BLUE));
-//			Assert.assertTrue("Not received EOS event in player",
-//					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-//			double currentTime = browser.getCurrentTime();
-//			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-//					+ " sec, real: " + currentTime + " sec)",
-//					compare(PLAYTIME, currentTime));
-//		}
-//
-//		// Release Media Pipeline
-//		mp.release();
-//	}
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
+
+	@Test
+	public void testPlayer() throws Exception {
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/blue.webm").build();
+		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		playerEP.connect(webRtcEP);
+
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
+			}
+		});
+
+		// Test execution
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
+		playerEP.play();
+
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		Assert.assertTrue("The color of the video should be blue", getBrowser()
+				.similarColor(Color.BLUE));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				getBrowser().compare(PLAYTIME, currentTime));
+
+		// Release Media Pipeline
+		mp.release();
+	}
 
 }

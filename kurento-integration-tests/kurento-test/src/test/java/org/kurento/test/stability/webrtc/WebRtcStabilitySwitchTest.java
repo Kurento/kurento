@@ -65,7 +65,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localPresenterAndViewer();
+		return TestScenario.localPresenterAndViewerRGB();
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 		webRtcEndpoint1.connect(webRtcEndpoint1);
 		webRtcEndpoint2.connect(webRtcEndpoint2);
 
-		// Test execution
+		// WebRTC
 		getPresenter().subscribeEvents("playing");
 		getPresenter().initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_RCV);
@@ -89,8 +89,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 		getViewer().initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_RCV);
 
-		// getPresenter().getBrowserClient().getDriver();
-
+		// Latency controller
 		LatencyController cs1 = new LatencyController("Latency in Browser 1");
 		LatencyController cs2 = new LatencyController("Latency in Browser 2");
 
@@ -122,16 +121,12 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					log.debug("[{}.3] Latency control of browser1 to browser2",
 							i);
 					cs1.checkRemoteLatency(PLAYTIME_PER_SWITCH,
-							TimeUnit.SECONDS, getPresenter().getBrowserClient()
-									.getJs(), getViewer().getBrowserClient()
-									.getJs());
+							TimeUnit.SECONDS, getPresenter(), getViewer());
 
 					log.debug("[{}.4] Latency control of browser2 to browser1",
 							i);
 					cs2.checkRemoteLatency(PLAYTIME_PER_SWITCH,
-							TimeUnit.SECONDS, getViewer().getBrowserClient()
-									.getJs(), getPresenter().getBrowserClient()
-									.getJs());
+							TimeUnit.SECONDS, getViewer(), getPresenter());
 				}
 			}
 		} catch (RuntimeException re) {

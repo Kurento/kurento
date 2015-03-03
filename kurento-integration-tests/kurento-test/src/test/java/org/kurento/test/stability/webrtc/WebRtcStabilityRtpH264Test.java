@@ -105,9 +105,9 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 		log.info("SDP answer in rtpEndpoint1\n{}", sdpAnswer2);
 
 		// Latency controller
-		final LatencyController cs = new LatencyController();
+		LatencyController cs = new LatencyController();
 
-		// Test execution
+		// WebRTC
 		getBrowser().subscribeEvents("playing");
 		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_RCV);
@@ -117,11 +117,7 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 				getBrowser().waitForEvent("playing"));
 
 		// Latency assessment
-		try {
-			cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
-		} catch (RuntimeException re) {
-			Assert.fail(re.getMessage());
-		}
+		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
 
 		// Release Media Pipeline
 		mp.release();

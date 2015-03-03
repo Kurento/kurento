@@ -39,6 +39,8 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  * <strong>Description</strong>: WebRTC connected to N HttpEndpoint.<br/>
  * <strong>Pipeline</strong>:
@@ -132,7 +134,7 @@ public class WebRtc2HttpTest extends FunctionalTest {
 				getBrowser(browserId).waitForEvent("playing"));
 
 		// Guard time to see the video
-		Thread.sleep(PLAYTIME * 1000);
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Assertions
 		double currentTime = getBrowser(browserId).getCurrentTime();

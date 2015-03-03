@@ -21,8 +21,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.junit.Assert;
 import org.kurento.commons.ConfigFileFinder;
@@ -51,17 +51,31 @@ public class TestScenario {
 	private Map<String, BrowserClient> browserMap;
 
 	public TestScenario() {
-		browserMap = new HashMap<>();
+		browserMap = new TreeMap<>();
 	}
 
 	public void addBrowser(String id, BrowserClient browser) {
-		assertKeyNotExist(id);
-		browserMap.put(id, browser);
+		if (browser.getNumInstances() > 0) {
+			for (int i = 0; i < browser.getNumInstances(); i++) {
+				if (browser.getBrowserPerInstance() > 1) {
+					for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
+						addBrowserInstance(id + i + "-" + j, new BrowserClient(
+								browser.getBuilder()));
+					}
+				} else {
+					addBrowserInstance(id + i,
+							new BrowserClient(browser.getBuilder()));
+				}
+			}
+		} else {
+			addBrowserInstance(id, browser);
+		}
 	}
 
-	public void addBrowser(BrowserClient browser) {
-		assertKeyNotExist(TestConfig.BROWSER);
-		browserMap.put(TestConfig.BROWSER, browser);
+	private void addBrowserInstance(String id, BrowserClient browser) {
+		assertKeyNotExist(id);
+		browser.setId(id);
+		browserMap.put(id, browser);
 	}
 
 	private void assertKeyNotExist(String key) {
@@ -89,9 +103,19 @@ public class TestScenario {
 	@Override
 	public String toString() {
 		String out = "";
-		if (browserMap.isEmpty()) {
-			out = "(browsers from node list)";
+		for (String key : browserMap.keySet()) {
+			if (!out.isEmpty()) {
+				out += ", ";
+			} else {
+				out += "Number of browser(s) = " + browserMap.size() + " : ";
+			}
+			out += key;
 		}
+		return out;
+	}
+
+	public String completeId() {
+		String out = "";
 		for (String key : browserMap.keySet()) {
 			if (!out.isEmpty()) {
 				out += ";";
@@ -102,24 +126,14 @@ public class TestScenario {
 
 			String browserVersion = getBrowserVersion(key);
 			if (browserVersion != null) {
-				out += browserVersion;
+				out += "(browserVersion=" + browserVersion + ")";
 			}
 			Platform platform = getPlatform(key);
 			if (platform != null) {
-				out += platform;
+				out += "(platform=" + platform + ")";
 			}
 		}
 		return out;
-	}
-
-	/*
-	 * No browsers (nor local neither remote).
-	 */
-	public static Collection<Object[]> noBrowsers() {
-		// No browsers
-		TestScenario test = new TestScenario();
-
-		return Arrays.asList(new Object[][] { { test } });
 	}
 
 	/*
@@ -155,12 +169,12 @@ public class TestScenario {
 	public static Collection<Object[]> localChromeAndFirefox() {
 		// Test #1 : Chrome in local
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(new BrowserClient.Builder()
+		test1.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 		// Test #2 : Firefox in local
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(new BrowserClient.Builder()
+		test2.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -168,9 +182,9 @@ public class TestScenario {
 	}
 
 	public static Collection<Object[]> localChrome() {
-		// Test : Chrome in local
+		// Test: Chrome in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(new BrowserClient.Builder()
+		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -178,9 +192,9 @@ public class TestScenario {
 	}
 
 	public static Collection<Object[]> localFirefox() {
-		// Test : Firefox in local
+		// Test: Firefox in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(new BrowserClient.Builder()
+		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -188,7 +202,20 @@ public class TestScenario {
 	}
 
 	public static Collection<Object[]> localPresenterAndViewer() {
-		// Test #1 : Chrome in local (presenter and viewer)
+		// Test: Chrome in local (presenter and viewer)
+		TestScenario test = new TestScenario();
+		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
+	public static Collection<Object[]> localPresenterAndViewerRGB() {
+		// Test: Chrome in local (presenter and viewer)
 		String videoPath = KurentoClientTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
@@ -197,7 +224,7 @@ public class TestScenario {
 				.video(videoPath).build());
 		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
+				.video(videoPath).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}

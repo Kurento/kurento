@@ -58,7 +58,7 @@ import org.kurento.test.sdp.SdpUtils;
  */
 public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 
-	private static final int DEFAULT_PLAYTIME = 30; // minutes
+	private static final int DEFAULT_PLAYTIME = 1; // minutes
 	private static final String[] REMOVE_CODECS = { "H263-1998", "VP8",
 			"MP4V-ES" };
 
@@ -105,9 +105,9 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 		log.info("SDP answer in rtpEndpoint1\n{}", sdpAnswer2);
 
 		// Latency controller
-		final LatencyController cs = new LatencyController();
+		LatencyController cs = new LatencyController();
 
-		// Test execution
+		// WebRTC
 		getBrowser().subscribeEvents("playing");
 		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_RCV);
@@ -117,16 +117,12 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 				getBrowser().waitForEvent("playing"));
 
 		// Latency assessment
-		try {
-			cs.checkLocalLatencyInBackground(playTime, TimeUnit.MINUTES,
-					getBrowser());
-		} catch (RuntimeException re) {
-			Assert.fail(re.getMessage());
-		}
+		cs.checkLocalLatencyInBackground(playTime, TimeUnit.MINUTES,
+				getBrowser());
 
 		// Connect-disconnect each second
 		for (int i = 0; i < DEFAULT_PLAYTIME * 60; i++) {
-			Thread.sleep(1000);
+			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 			rtpEndpoint2.disconnect(webRtcEndpoint);
 			rtpEndpoint2.connect(webRtcEndpoint);
 		}

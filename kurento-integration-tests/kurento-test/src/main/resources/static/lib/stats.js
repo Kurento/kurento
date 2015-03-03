@@ -9,7 +9,7 @@ function activateRtcStats() {
 }
 
 function updateRtcStats() {
-	var remoteStream = webRtcPeer.pc.getRemoteStreams()[0];
+	var remoteStream = webRtcPeer.peerConnection.getRemoteStreams()[0];
 	var videoTrack = remoteStream.getVideoTracks()[0];
 	var audioTrack = remoteStream.getAudioTracks()[0];
 
@@ -18,7 +18,7 @@ function updateRtcStats() {
 }
 
 function updateStats(track, type) {
-	webRtcPeer.pc.getStats(function(stats) {
+	webRtcPeer.peerConnection.getStats(function(stats) {
 		var result = stats.result()[2];
 		result.names().forEach(function(name) {
 			rtcStats[type + name] = result.stat(name);

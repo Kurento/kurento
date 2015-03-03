@@ -46,14 +46,16 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class RemoteHost {
+public class SshConnection {
 
-	public static Logger log = LoggerFactory.getLogger(RemoteHost.class);
+	public static Logger log = LoggerFactory.getLogger(SshConnection.class);
 	public static final String DEFAULT_TMP_FOLDER = "/tmp";
 
 	private static final int NODE_INITIAL_PORT = 5555;
 	private static final int PING_TIMEOUT = 2; // seconds
 
+	public static final String TEST_NODE_LOGIN_PROPERTY = "test.node.login";
+	public static final String TEST_NODE_PASSWD_PROPERTY = "test.node.passwd";
 	public static final String TEST_NODE_PEM_PROPERTY = "test.node.pem";
 
 	private String host;
@@ -61,14 +63,22 @@ public class RemoteHost {
 	private String passwd;
 	private String pem;
 	private String tmpFolder;
-
 	private OverthereConnection connection;
 
-	public RemoteHost(String host, String login, String passwd) {
+	public SshConnection(String host) {
+		this.host = host;
+		this.login = getProperty(TEST_NODE_LOGIN_PROPERTY);
+		String pem = getProperty(TEST_NODE_PEM_PROPERTY);
+		if (pem != null) {
+			this.pem = pem;
+		} else {
+			this.passwd = getProperty(TEST_NODE_PASSWD_PROPERTY);
+		}
+	}
 
+	public SshConnection(String host, String login, String passwd, String pem) {
 		this.host = host;
 		this.login = login;
-		String pem = getProperty(TEST_NODE_PEM_PROPERTY);
 		if (pem != null) {
 			this.pem = pem;
 		} else {
@@ -135,9 +145,14 @@ public class RemoteHost {
 
 	}
 
+	public boolean isStarted() {
+		return connection != null;
+	}
+
 	public void stop() {
 		if (connection != null) {
 			connection.close();
+			connection = null;
 		}
 	}
 
@@ -178,7 +193,7 @@ public class RemoteHost {
 	}
 
 	public static boolean ping(String ipAddress) {
-		return ping(ipAddress, RemoteHost.PING_TIMEOUT);
+		return ping(ipAddress, SshConnection.PING_TIMEOUT);
 	}
 
 	public static boolean ping(final String ipAddress, int timeout) {

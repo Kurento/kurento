@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.grid;
 
 import org.openqa.grid.internal.utils.GridHubConfiguration;
 import org.openqa.grid.web.Hub;
@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class SeleniumGridHub {
+public class GridHub {
 
-	public static Logger log = LoggerFactory.getLogger(SeleniumGridHub.class);
+	public static Logger log = LoggerFactory.getLogger(GridHub.class);
 
 	private static final int DEFAULT_TIMEOUT = 60;
 
@@ -36,7 +36,7 @@ public class SeleniumGridHub {
 	private int timeout;
 	private Hub hub;
 
-	public SeleniumGridHub(String ip, int port) {
+	public GridHub(String ip, int port) {
 		this.ip = ip;
 		this.port = port;
 		this.timeout = DEFAULT_TIMEOUT; // Default timeout

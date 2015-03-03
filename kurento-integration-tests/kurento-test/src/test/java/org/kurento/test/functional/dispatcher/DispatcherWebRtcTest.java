@@ -14,8 +14,21 @@
  */
 package org.kurento.test.functional.dispatcher;
 
+import java.util.Collection;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Dispatcher;
+import org.kurento.client.HubPort;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
+import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * 
@@ -36,57 +49,50 @@ import org.kurento.test.config.TestScenario;
  */
 public class DispatcherWebRtcTest extends FunctionalTest {
 
+	private static final int PLAYTIME = 10; // seconds
+
 	public DispatcherWebRtcTest(TestScenario testScenario) {
 		super(testScenario);
 	}
 
-//	private static final int PLAYTIME = 10; // seconds
-//
-//	@Test
-//	public void testDispatcherWebRtcChrome() throws Exception {
-//		doTest(BrowserType.CHROME);
-//	}
-//
-//	public void doTest(BrowserType browserType) throws Exception {
-//		// Media Pipeline
-//		MediaPipeline mp = kurentoClient.createMediaPipeline();
-//		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-//		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-//
-//		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
-//		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
-//		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
-//
-//		webRtcEP1.connect(hubPort1);
-//		hubPort2.connect(webRtcEP2);
-//
-//		dispatcher.connect(hubPort1, hubPort2);
-//
-//		// Test execution
-//		try (BrowserClient browser1 = new BrowserClient.Builder()
-//				.browserType(browserType).client(Client.WEBRTC).build();
-//				BrowserClient browser2 = new BrowserClient.Builder()
-//						.browserType(browserType).client(Client.WEBRTC).build();) {
-//
-//			browser1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
-//					WebRtcMode.SEND_ONLY);
-//
-//			browser2.subscribeEvents("playing");
-//			browser2.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
-//					WebRtcMode.RCV_ONLY);
-//
-//			Thread.sleep(PLAYTIME * 1000);
-//
-//			// Assertions
-//			Assert.assertTrue(
-//					"Not received media (timeout waiting playing event)",
-//					browser2.waitForEvent("playing"));
-//			Assert.assertTrue(
-//					"The color of the video should be green (RGB #008700)",
-//					browser2.similarColor(CHROME_VIDEOTEST_COLOR));
-//		}
-//
-//		// Release Media Pipeline
-//		mp.release();
-//	}
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localPresenterAndViewer();
+	}
+
+	@Test
+	public void testDispatcherWebRtc() throws Exception {
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+
+		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
+		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
+		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
+
+		webRtcEP1.connect(hubPort1);
+		hubPort2.connect(webRtcEP2);
+
+		dispatcher.connect(hubPort1, hubPort2);
+
+		// Test execution
+		getPresenter().initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
+
+		getViewer().subscribeEvents("playing");
+		getViewer().initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
+
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getViewer().waitForEvent("playing"));
+		Assert.assertTrue("The color of the video should be green", getViewer()
+				.similarColor(CHROME_VIDEOTEST_COLOR));
+
+		// Release Media Pipeline
+		mp.release();
+	}
 }

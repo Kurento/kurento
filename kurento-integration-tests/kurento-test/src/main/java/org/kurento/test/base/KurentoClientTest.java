@@ -19,10 +19,12 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.kurento.client.KurentoClient;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoClientTestFactory;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
@@ -35,8 +37,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public class KurentoClientTest extends KurentoTest {
 
 	protected static KurentoClient kurentoClient;
-
-	private static boolean startHttpServer;
+	protected static boolean startHttpServer;
+	protected ConfigurableApplicationContext context;
 
 	public KurentoClientTest() {
 		super();
@@ -48,10 +50,13 @@ public class KurentoClientTest extends KurentoTest {
 		startHttpServer = !this.getClass().isAnnotationPresent(
 				WebAppConfiguration.class);
 		if (startHttpServer) {
-			KurentoServicesTestHelper
+			context = KurentoServicesTestHelper
 					.startHttpServer(BrowserKurentoClientTest.class);
 		}
 	}
+
+	@Rule
+	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
 
 	@Before
 	public void setupKurentoClient() throws IOException {

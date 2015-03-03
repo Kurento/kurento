@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
@@ -36,6 +39,7 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.monitor.SystemMonitorManager;
 
 /**
  * <strong>Description</strong>: WebRTC one to many test.<br/>
@@ -53,9 +57,10 @@ import org.kurento.test.latency.LatencyController;
  */
 public class WebRtcOneToManyTest extends FunctionalTest {
 
-	private static final int PLAYTIME = 60; // seconds
-	private static final int DEFAULT_NUM_VIEWERS = 2;
+	private static final int PLAYTIME = 40; // seconds
+	private static final int DEFAULT_NUM_VIEWERS = 3;
 	private static int numViewers;
+	private SystemMonitorManager monitor;
 
 	public WebRtcOneToManyTest(TestScenario testScenario) {
 		super(testScenario);
@@ -63,21 +68,31 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		numViewers = getProperty("test.webrtcone2many.numviewers",
+		numViewers = getProperty("webrtc.one2many.numviewers",
 				DEFAULT_NUM_VIEWERS);
 
-		// Test: 1+nViewers local Chrome's
+		// Test: 1 presenter + N viewers (all local Chrome's)
 		TestScenario test = new TestScenario();
 		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(getPathTestFiles() + "/video/15sec/rgbHD.y4m").build());
-
-		for (int i = 0; i < numViewers; i++) {
-			test.addBrowser(TestConfig.VIEWER + i, new BrowserClient.Builder()
-					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-					.build());
-		}
+		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.numInstances(numViewers).build());
 		return Arrays.asList(new Object[][] { { test } });
+	}
+
+	@Before
+	public void setupMonitor() {
+		monitor = new SystemMonitorManager();
+		monitor.start();
+	}
+
+	@After
+	public void teardownMonitor() {
+		monitor.stop();
+		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+		monitor.destroy();
 	}
 
 	@Test
@@ -93,48 +108,51 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		final WebRtcEndpoint[] viewerWebRtcEPs = new WebRtcEndpoint[numViewers];
 		final CountDownLatch latch = new CountDownLatch(numViewers);
 
-		// Master
+		// Presenter
 		getPresenter().subscribeLocalEvents("playing");
 		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
+		getPresenter().activateRtcStats(monitor);
 
 		// Viewers
+		ExecutorService exec = Executors.newFixedThreadPool(numViewers);
 		for (int j = 0; j < numViewers; j++) {
 			final int i = j;
-			new Thread() {
+			Thread thread = new Thread() {
 				public void run() {
 					try {
 						viewerWebRtcEPs[i] = new WebRtcEndpoint.Builder(mp)
 								.build();
 						masterWebRtcEP.connect(viewerWebRtcEPs[i]);
+						monitor.incrementNumClients();
+
+						// Latency control
+						String name = getViewer(i).getBrowserClient().getId();
+						cs[i] = new LatencyController(name, monitor);
+
+						// WebRTC
 						getViewer(i).subscribeEvents("playing");
 						getViewer(i).initWebRtc(viewerWebRtcEPs[i],
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+						getViewer(i).activateRtcStats(monitor);
 
-						// Latency control
-						String name = "viewer" + (i + 1);
-						cs[i] = new LatencyController(name);
-
+						// Latency assessment
 						cs[i].checkRemoteLatency(PLAYTIME, TimeUnit.SECONDS,
-								getPresenter().getBrowserClient().getJs(),
-								getViewer(i).getBrowserClient().getJs());
+								getPresenter(), getViewer(i));
 						cs[i].drawChart(getDefaultOutputFile("-" + name
 								+ "-latency.png"), 500, 270);
 						cs[i].writeCsv(getDefaultOutputFile("-" + name
 								+ "-latency.csv"));
 						cs[i].logLatencyErrorrs();
-
-						// Assertions
-						Assert.assertTrue(
-								"Not received media (timeout waiting playing event)",
-								getViewer(i).waitForEvent("playing"));
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
 						latch.countDown();
+						monitor.decrementNumClients();
 					}
 				}
-			}.start();
+			};
+			exec.execute(thread);
 		}
 
 		// Wait to finish viewers threads
