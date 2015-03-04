@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -75,8 +76,26 @@ public class ProtocolManager {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
 	}
 
-	public void setLabel(String label){
-		this.label = "["+label+"] ";
+	public ProtocolManager(JsonRpcHandler<?> handler,
+			SessionsManager sessionsManager, TaskScheduler taskScheduler) {
+		this.handlerManager = new JsonRpcHandlerManager(handler);
+		this.sessionsManager = sessionsManager;
+		this.taskScheduler = taskScheduler;
+	}
+
+	public void setLabel(String label) {
+		this.label = "[" + label + "] ";
+	}
+
+	public void processMessage(String messageJson,
+			ServerSessionFactory factory, ResponseSender responseSender,
+			String internalSessionId) throws IOException {
+
+		JsonObject messagetJsonObject = JsonUtils.fromJson(messageJson,
+				JsonObject.class);
+
+		processMessage(messagetJsonObject, factory, responseSender,
+				internalSessionId);
 	}
 
 	/**
@@ -89,12 +108,9 @@ public class ProtocolManager {
 	 * @param internalSessionId
 	 * @throws IOException
 	 */
-	public void processMessage(String messageJson,
+	public void processMessage(JsonObject messagetJsonObject,
 			ServerSessionFactory factory, ResponseSender responseSender,
 			String internalSessionId) throws IOException {
-
-		JsonObject messagetJsonObject = JsonUtils.fromJson(messageJson,
-				JsonObject.class);
 
 		if (messagetJsonObject.has(Request.METHOD_FIELD_NAME)) {
 			processRequestMessage(factory, messagetJsonObject, responseSender,
@@ -167,7 +183,7 @@ public class ProtocolManager {
 			session = sessionsManager.get(request.getSessionId());
 
 			if (session == null) {
-				log.warn(label+"There is no session with specified id '{}'."
+				log.warn(label + "There is no session with specified id '{}'."
 						+ "Creating a new one.", request.getSessionId());
 			}
 
@@ -265,7 +281,7 @@ public class ProtocolManager {
 
 		if (session != null) {
 
-			log.info(label+"Configuring close timeout for session: {}",
+			log.info(label + "Configuring close timeout for session: {}",
 					session.getSessionId());
 
 			try {
@@ -286,7 +302,7 @@ public class ProtocolManager {
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
 			} catch (TaskRejectedException e) {
-				log.warn(label+"Close timeout for session {} can not be set "
+				log.warn(label + "Close timeout for session {} can not be set "
 						+ "because the scheduler is shutdown",
 						session.getSessionId());
 			}
@@ -294,7 +310,7 @@ public class ProtocolManager {
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info(label+"Closing session: {}", session.getSessionId());
+		log.info(label + "Closing session: {}", session.getSessionId());
 		sessionsManager.remove(session);
 		handlerManager.afterConnectionClosed(session, reason);
 	}
