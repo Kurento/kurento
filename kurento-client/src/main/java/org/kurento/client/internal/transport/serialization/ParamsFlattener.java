@@ -86,6 +86,10 @@ public class ParamsFlattener {
 	 */
 	public Props flattenParams(Props params, boolean inTx) {
 
+		if(params == null){
+			return null;
+		}
+		
 		Props properties = new Props();
 		for (Prop prop : params) {
 			properties.add(prop.getName(), flattenParam(prop.getValue(), inTx));
@@ -338,10 +342,8 @@ public class ParamsFlattener {
 
 				} else if (value instanceof Props) {
 					return unflattedComplexType(clazz, (Props) value, manager);
-
 				} else if (value instanceof KurentoObject) {
 					return value;
-
 				} else {
 					throw new ProtocolException(
 							"A objectRef coded with a String or a Props is expected for param type '"
