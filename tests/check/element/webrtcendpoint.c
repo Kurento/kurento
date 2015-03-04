@@ -250,7 +250,7 @@ static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     const gchar * pattern_sdp_sendonly_str,
     const gchar * pattern_sdp_recvonly_str, gboolean bundle,
-    gboolean check_request_local_key_frame)
+    gboolean check_request_local_key_frame, gboolean gather_asap)
 {
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -330,6 +330,11 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_free (sdp_str);
   sdp_str = NULL;
 
+  if (gather_asap) {
+    g_signal_emit_by_name (sender, "gather-candidates", &ret);
+    fail_unless (ret);
+  }
+
   mark_point ();
   g_signal_emit_by_name (receiver, "process-offer", offer, &answer);
   fail_unless (answer != NULL);
@@ -345,13 +350,25 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     fail_unless (!ret);
   }
 
+  /* FIXME: not working */
+//  if (gather_asap) {
+//    g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+//    fail_unless (ret);
+//  }
+
   mark_point ();
   g_signal_emit_by_name (sender, "process-answer", answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_signal_emit_by_name (sender, "gather-candidates", &ret);
-  fail_unless (ret);
+  if (!gather_asap) {
+    g_signal_emit_by_name (sender, "gather-candidates", &ret);
+    fail_unless (ret);
+    /* FIXME: not working */
+//    g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+//    fail_unless (ret);
+  }
+
   g_signal_emit_by_name (receiver, "gather-candidates", &ret);
   fail_unless (ret);
 
@@ -1207,11 +1224,17 @@ static const gchar *pattern_sdp_vp8_sendrecv_str = "v=0\r\n"
 GST_START_TEST (test_vp8_sendonly_recvonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, FALSE, FALSE);
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, FALSE, FALSE,
+      FALSE);
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, FALSE);
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, FALSE,
+      FALSE);
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, TRUE);
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, TRUE,
+      FALSE);
+  test_video_sendonly ("vp8enc", vp8_expected_caps,
+      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, FALSE,
+      TRUE);
 }
 
 GST_END_TEST
@@ -1227,9 +1250,11 @@ GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv_but_sendonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, TRUE, FALSE);
+      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, TRUE, FALSE,
+      FALSE);
   test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, FALSE, FALSE);
+      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, FALSE, FALSE,
+      FALSE);
 }
 
 GST_END_TEST
