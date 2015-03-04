@@ -59,8 +59,11 @@ public class TestScenario {
 			for (int i = 0; i < browser.getNumInstances(); i++) {
 				if (browser.getBrowserPerInstance() > 1) {
 					for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
-						addBrowserInstance(id + i + "-" + j, new BrowserClient(
-								browser.getBuilder()));
+						String browserId = (browser.getNumInstances() == 1) ? id
+								+ j
+								: id + i + "-" + j;
+						addBrowserInstance(browserId,
+								new BrowserClient(browser.getBuilder()));
 					}
 				} else {
 					addBrowserInstance(id + i,
