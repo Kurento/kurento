@@ -106,7 +106,7 @@ public class WebSocketServerSession extends ServerSession {
 		}
 
 		try {
-			synchronized (this) {
+			synchronized (wsSession) {
 				wsSession
 						.sendMessage(new TextMessage(JsonUtils.toJson(request)));
 			}
@@ -152,7 +152,7 @@ public class WebSocketServerSession extends ServerSession {
 	}
 
 	public void updateWebSocketSession(WebSocketSession wsSession) {
-		synchronized (this) {
+		synchronized (wsSession) {
 			this.wsSession = wsSession;
 		}
 	}
