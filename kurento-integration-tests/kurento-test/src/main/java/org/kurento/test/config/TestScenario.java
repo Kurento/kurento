@@ -44,7 +44,7 @@ import com.google.gson.Gson;
 public class TestScenario {
 
 	private final static String TEST_CONFIG_JSON_PROPERTY = "test.config.json";
-	private final static String TEST_CONFIG_JSON_DEFAULT = "/test.conf.json";
+	private final static String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
 
 	private static Logger log = LoggerFactory.getLogger(TestScenario.class);
 
@@ -143,18 +143,22 @@ public class TestScenario {
 	 * Configuration based on JSON file
 	 */
 	public static Collection<Object[]> json() {
+		return json(TEST_CONFIG_JSON_DEFAULT);
+	}
+
+	public static Collection<Object[]> json(String jsonFile) {
 		try {
 			String configJson = getProperty(TEST_CONFIG_JSON_PROPERTY);
-			String jsonFile;
+			String jsonPath;
 			if (configJson == null) {
-				jsonFile = ConfigFileFinder.getPathInClasspath(
-						TEST_CONFIG_JSON_DEFAULT).toString();
+				jsonPath = ConfigFileFinder.getPathInClasspath("/" + jsonFile)
+						.toString();
 			} else {
-				jsonFile = configJson;
+				jsonPath = configJson;
 			}
 
 			// Read JSON and transform to GSON
-			BufferedReader br = new BufferedReader(new FileReader(jsonFile));
+			BufferedReader br = new BufferedReader(new FileReader(jsonPath));
 			Gson gson = new Gson();
 			TestConfig browserConfig = gson.fromJson(br, TestConfig.class);
 

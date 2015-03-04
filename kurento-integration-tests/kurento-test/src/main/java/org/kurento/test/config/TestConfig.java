@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.Client;
 
 /**
  * Browser configuration based for JSON test scenarios.
@@ -83,7 +84,32 @@ public class TestConfig {
 				if (instance.getKey() != null) {
 					builder = builder.pem(instance.getKey());
 				}
-
+				if (instance.getPort() > 0) {
+					builder = builder.serverPort(instance.getPort());
+				}
+				if (instance.isEnableScreenCapture()) {
+					builder = builder.enableScreenCapture();
+				}
+				if (instance.getProtocol() != null) {
+					builder = builder.protocol(Protocol.valueOf(instance
+							.getProtocol().toUpperCase()));
+				}
+				if (instance.getClient() != null) {
+					builder = builder.client(Client.value2Client(instance
+							.getClient()));
+				}
+				if (instance.getPublicIP() != null) {
+					System.setProperty(BrowserClient.TEST_PUBLIC_IP_PROPERTY,
+							instance.getPublicIP());
+				}
+				if (instance.getSaucelabsUser() != null) {
+					System.setProperty(BrowserClient.SAUCELAB_USER_PROPERTY,
+							instance.getSaucelabsUser());
+				}
+				if (instance.getSaucelabsKey() != null) {
+					System.setProperty(BrowserClient.SAUCELAB_KEY_PROPERTY,
+							instance.getSaucelabsKey());
+				}
 				if (instance.isLocal()) {
 					browserClient = builder.scope(BrowserScope.LOCAL).build();
 				} else if (instance.isRemote()) {

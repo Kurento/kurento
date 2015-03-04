@@ -35,6 +35,13 @@ public class BrowserInstance {
 	private String login;
 	private String passwd;
 	private String key;
+	private String protocol;
+	private String client;
+	private int port;
+	private boolean enableScreenCapture;
+	private String saucelabsUser;
+	private String saucelabsKey;
+	private String publicIP;
 
 	public BrowserInstance(String browser) {
 		this.browser = browser;
@@ -120,6 +127,30 @@ public class BrowserInstance {
 		this.key = key;
 	}
 
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public String getClient() {
+		return client;
+	}
+
+	public void setClient(String client) {
+		this.client = client;
+	}
+
+	public boolean isEnableScreenCapture() {
+		return enableScreenCapture;
+	}
+
+	public void setEnableScreenCapture(boolean enableScreenCapture) {
+		this.enableScreenCapture = enableScreenCapture;
+	}
+
 	public boolean isLocal() {
 		return BrowserScope.LOCAL.toString().equals(this.getScope());
 	}
@@ -138,6 +169,38 @@ public class BrowserInstance {
 
 	public Platform getPlatformType() {
 		return Platform.valueOf(getPlatform().toUpperCase());
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getSaucelabsUser() {
+		return saucelabsUser;
+	}
+
+	public void setSaucelabsUser(String saucelabsUser) {
+		this.saucelabsUser = saucelabsUser;
+	}
+
+	public String getSaucelabsKey() {
+		return saucelabsKey;
+	}
+
+	public void setSaucelabsKey(String saucelabsKey) {
+		this.saucelabsKey = saucelabsKey;
+	}
+
+	public String getPublicIP() {
+		return publicIP;
+	}
+
+	public void setPublicIP(String publicIP) {
+		this.publicIP = publicIP;
 	}
 
 	@Override

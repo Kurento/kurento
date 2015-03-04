@@ -45,6 +45,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.kurento.test.Shell;
 import org.kurento.test.base.PerformanceTest;
+import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Randomizer;
@@ -74,10 +75,6 @@ public class GridHandler {
 	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
 	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
 
-	public static final String SELENIUM_HUB_PUBLIC_PROPERTY = "selenium.hub.public";
-	public static final String SELENIUM_HUB_HOST_PROPERTY = "selenium.hub.host";
-	public static final String SELENIUM_HUB_HOST_DEFAULT = "127.0.0.1";
-
 	public static final String SELENIUM_NODES_LIST_PROPERTY = "test.nodes.list";
 	public static final String SELENIUM_NODES_LIST_DEFAULT = "node-list.txt";
 	public static final String SELENIUM_NODES_FILE_LIST_PROPERTY = "test.nodes.file.list";
@@ -86,9 +83,10 @@ public class GridHandler {
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private GridHub hub;
-	private String hubAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY);
-	private String hubPublicAddress = getProperty(SELENIUM_HUB_PUBLIC_PROPERTY,
-			hubAddress);
+	private String hubAddress = getProperty(
+			BrowserClient.TEST_PUBLIC_IP_PROPERTY,
+			BrowserClient.TEST_PUBLIC_IP_DEFAULT);
+
 	private int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 			SELENIUM_HUB_PORT_DEFAULT);
 	private CountDownLatch countDownLatch;
@@ -260,7 +258,8 @@ public class GridHandler {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("remotePort", String.valueOf(remotePort));
 		data.put("maxInstances", String.valueOf(maxInstances));
-		data.put("hubIp", hubPublicAddress);
+		// data.put("hubIp", hubPublicAddress);
+		data.put("hubIp", hubAddress);
 		data.put("hubPort", String.valueOf(hubPort));
 		data.put("tmpFolder", node.getTmpFolder());
 		data.put("remoteChromeDriver", remoteChromeDriver);
@@ -408,7 +407,7 @@ public class GridHandler {
 	}
 
 	public String getHubHost() {
-		return hubPublicAddress;
+		return hubAddress;
 	}
 
 	public int getHubPort() {

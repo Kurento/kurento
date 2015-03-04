@@ -309,8 +309,7 @@ public class BrowserClient implements Closeable {
 		private int timeout = 60; // seconds
 		private int thresholdTime = 10; // seconds
 		private double colorDistance = 60;
-		private String hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
-				TEST_PUBLIC_IP_DEFAULT);
+		private String hostAddress;
 		private int serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
 				KurentoServicesTestHelper.getAppHttpPort());
 		private BrowserScope scope = BrowserScope.LOCAL;
@@ -437,6 +436,8 @@ public class BrowserClient implements Closeable {
 		}
 
 		public BrowserClient build() {
+			hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
+					TEST_PUBLIC_IP_DEFAULT);
 			return new BrowserClient(this);
 		}
 	}
