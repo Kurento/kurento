@@ -6,6 +6,7 @@ public class TypeRef extends ModelElement {
 
 	private String name;
 	private boolean isList;
+	private final boolean isMap;
 	private transient String moduleName;
 
 	private transient Type type;
@@ -15,13 +16,20 @@ public class TypeRef extends ModelElement {
 		String moduleName = null;
 		String name;
 		boolean isList;
+		boolean isMap;
 
-		if (!typeRefString.endsWith("[]")) {
-			name = typeRefString;
-			isList = false;
-		} else {
+		if (typeRefString.endsWith("[]")) {
 			name = typeRefString.substring(0, typeRefString.length() - 2);
 			isList = true;
+			isMap = false;
+		} else if (typeRefString.endsWith("<>")) {
+			name = typeRefString.substring(0, typeRefString.length() - 2);
+			isList = false;
+			isMap = true;
+		} else {
+			name = typeRefString;
+			isList = false;
+			isMap = false;
 		}
 
 		String[] parts = name.split("\\.");
@@ -33,14 +41,15 @@ public class TypeRef extends ModelElement {
 					"Invalid module name in type ref: '" + name + "'");
 		}
 
-		return new TypeRef(moduleName, name, isList);
+		return new TypeRef(moduleName, name, isList, isMap);
 	}
 
-	public TypeRef(String moduleName, String name, boolean isList) {
+	public TypeRef(String moduleName, String name, boolean isList, boolean isMap) {
 		super();
 		this.moduleName = moduleName;
 		this.name = name;
 		this.isList = isList;
+		this.isMap = isMap;
 	}
 
 	public void setType(Type type) {
@@ -61,6 +70,8 @@ public class TypeRef extends ModelElement {
 			return false;
 		TypeRef other = (TypeRef) obj;
 		if (isList != other.isList)
+			return false;
+		if (isMap != other.isMap)
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -85,6 +96,10 @@ public class TypeRef extends ModelElement {
 
 	public boolean isList() {
 		return isList;
+	}
+
+	public boolean isMap() {
+		return isMap;
 	}
 
 	public void setList(boolean isList) {
@@ -113,8 +128,8 @@ public class TypeRef extends ModelElement {
 
 	@Override
 	public String toString() {
-		return "TypeRef [name=" + name + ", isList=" + isList + ", moduleName="
-				+ moduleName + "]";
+		return "TypeRef [name=" + name + ", isList=" + isList + ", isMap="
+				+ isMap + ", moduleName=" + moduleName + "]";
 	}
 
 }

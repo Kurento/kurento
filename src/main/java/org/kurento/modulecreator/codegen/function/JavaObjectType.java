@@ -44,6 +44,9 @@ public class JavaObjectType implements TemplateMethodModelEx {
 			if (typeRef.isList()) {
 				return "java.util.List<"
 						+ getTypeAsString(typeRef.getType(), true) + ">";
+			} else if (typeRef.isMap()) {
+				return "java.util.Map<String,"
+						+ getTypeAsString(typeRef.getType(), true) + ">";
 			} else {
 				return getTypeAsString(typeRef.getType(), asObject);
 			}

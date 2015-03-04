@@ -3,10 +3,10 @@ package org.kurento.modulecreator.codegen.function;
 import java.util.List;
 
 import org.kurento.modulecreator.definition.ComplexType;
+import org.kurento.modulecreator.definition.ComplexType.TypeFormat;
 import org.kurento.modulecreator.definition.RemoteClass;
 import org.kurento.modulecreator.definition.Return;
 import org.kurento.modulecreator.definition.TypeRef;
-import org.kurento.modulecreator.definition.ComplexType.TypeFormat;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;
@@ -59,6 +59,12 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
 				data.jsonMethod = "List";
 				data.jsonValueType = "arrayValue";
 				data.typeDescription = "list";
+				return data;
+			} else if (typeRef.isMap()) {
+				JsonTypeData data = new JsonTypeData();
+				data.jsonMethod = "Map";
+				data.jsonValueType = "objectValue";
+				data.typeDescription = "map";
 				return data;
 			} else if (typeRef.getName().equals("String")) {
 				JsonTypeData data = new JsonTypeData();

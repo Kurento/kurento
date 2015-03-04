@@ -21,6 +21,8 @@ public class TypeRefAdapter implements JsonSerializer<TypeRef>,
 		String name = src.getName();
 		if (src.isList()) {
 			name += "[]";
+		} else if (src.isMap()) {
+			name += "<>";
 		}
 		return new JsonPrimitive(name);
 	}

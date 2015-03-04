@@ -70,6 +70,15 @@ public class CppObjectType implements TemplateMethodModelEx {
 					return "std::vector<"
 							+ getTypeAsString(typeRef.getName(), false, prefix,
 									suffix) + ">";
+			} else if (typeRef.isMap()) {
+				if (isParam)
+					return "const std::map <std::string,"
+							+ getTypeAsString(typeRef.getName(), false, prefix,
+									suffix) + "> &";
+				else
+					return "std::map <std::string,"
+							+ getTypeAsString(typeRef.getName(), false, prefix,
+									suffix) + ">";
 			} else {
 				return getTypeAsString(typeRef.getName(), isParam, prefix,
 						suffix);
