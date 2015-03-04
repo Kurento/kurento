@@ -27,6 +27,11 @@ public:
 
   virtual ~WebRtcEndpointImpl ();
 
+  std::string getStunServerAddress ();
+  void setStunServerAddress (const std::string &stunServerAddress);
+  int getStunServerPort ();
+  void setStunServerPort (int stunServerPort);
+
   void gatherCandidates ();
   void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
 

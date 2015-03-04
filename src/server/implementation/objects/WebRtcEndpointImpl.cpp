@@ -48,15 +48,13 @@ class TemporalDirectory
 {
 
 public:
-  ~TemporalDirectory()
-  {
+  ~TemporalDirectory() {
     if (!dir.string ().empty() ) {
       boost::filesystem::remove_all (dir);
     }
   }
 
-  void setDir (boost::filesystem::path &dir)
-  {
+  void setDir (boost::filesystem::path &dir) {
     this->dir = dir;
   }
 private:
@@ -220,6 +218,44 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
 {
   g_signal_handler_disconnect (element, handlerOnIceCandidate);
   g_signal_handler_disconnect (element, handlerOnIceGatheringDone);
+}
+
+std::string
+WebRtcEndpointImpl::getStunServerAddress ()
+{
+  gchar *ret;
+
+  g_object_get ( G_OBJECT (element), "stun-server", &ret, NULL);
+
+  std::string stunServerAddress (ret);
+  g_free (ret);
+
+  return stunServerAddress;
+}
+
+void
+WebRtcEndpointImpl::setStunServerAddress (const std::string &stunServerAddress)
+{
+  g_object_set ( G_OBJECT (element), "stun-server",
+                 stunServerAddress.c_str(),
+                 NULL);
+}
+
+int
+WebRtcEndpointImpl::getStunServerPort ()
+{
+  int ret;
+
+  g_object_get ( G_OBJECT (element), "stun-server-port", &ret, NULL);
+
+  return ret;
+}
+
+void
+WebRtcEndpointImpl::setStunServerPort (int stunServerPort)
+{
+  g_object_set ( G_OBJECT (element), "stun-server-port",
+                 stunServerPort, NULL);
 }
 
 void

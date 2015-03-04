@@ -62,3 +62,30 @@ BOOST_AUTO_TEST_CASE (gathering_done)
 
   webRtcEp.reset ();
 }
+
+BOOST_AUTO_TEST_CASE (stun_properties)
+{
+  gst_init (NULL, NULL);
+
+  std::string stunServerAddress ("10.0.0.1");
+  int stunServerPort = 2345;
+
+  std::shared_ptr <MediaPipelineImpl> pipe (new MediaPipelineImpl (
+        boost::property_tree::ptree() ) );
+  boost::property_tree::ptree config;
+
+  config.add ("configPath", "../../../tests" );
+  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
+  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
+
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEp ( new  WebRtcEndpointImpl
+      (config, pipe) );
+
+  webRtcEp->setStunServerAddress (stunServerAddress);
+  std::string stunServerAddressRet = webRtcEp->getStunServerAddress ();
+  BOOST_CHECK (stunServerAddressRet == stunServerAddress);
+
+  webRtcEp->setStunServerPort (stunServerPort);
+  int stunServerPortRet = webRtcEp->getStunServerPort ();
+  BOOST_CHECK (stunServerPortRet == stunServerPort);
+}

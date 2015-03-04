@@ -4,6 +4,18 @@
       "name": "WebRtcEndpoint",
       "extends": "BaseRtpEndpoint",
       "doc": "WebRtcEndpoint interface. This type of ``Endpoint`` offers media streaming using WebRTC.",
+      "properties": [
+        {
+          "name": "stunServerAddress",
+          "doc": "Address of the STUN server (Only IP address are supported)",
+          "type": "String"
+        },
+        {
+          "name": "stunServerPort",
+          "doc": "Port of the STUN server",
+          "type": "int"
+        }
+      ],
       "constructor":
         {
           "doc": "Builder for the :rom:cls:`WebRtcEndpoint`",
