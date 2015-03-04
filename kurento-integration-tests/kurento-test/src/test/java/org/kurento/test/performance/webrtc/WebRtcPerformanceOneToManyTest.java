@@ -74,23 +74,34 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				BROWSER_PER_VIEWER_DEFAULT);
 
 		TestScenario test = new TestScenario();
-		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
-		// .browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
-		// .platform(Platform.WIN8_1).browserVersion("39").build());
-
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(video).build());
 
 		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
 				.numInstances(numViewers).browserPerInstance(browserPerViewer)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
-				.scope(BrowserScope.REMOTE).build());
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+
+		// Uncomment this for remote scenario
+		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+		// .video(video).build());
+		//
+		// ... or saucelabs, for example:
+		//
+		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
+		// .platform(Platform.WIN8_1).browserVersion("39").build());
+		//
+		// test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		// .numInstances(numViewers).browserPerInstance(browserPerViewer)
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+		// .build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
-	// @Ignore
 	@Test
 	public void test() throws InterruptedException {
 		// Media Pipeline

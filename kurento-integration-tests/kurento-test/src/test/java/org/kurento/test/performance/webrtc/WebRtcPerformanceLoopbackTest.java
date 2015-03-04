@@ -74,12 +74,17 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
 				.numInstances(numViewers).browserPerInstance(browserPerViewer)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
-				.scope(BrowserScope.REMOTE).video(video).build());
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.video(video).build());
+
+		// Uncomment this for remote scenario
+		// test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		// .numInstances(numViewers).browserPerInstance(browserPerViewer)
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+		// .video(video).build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
-	// @Ignore
 	@Test
 	public void testWebRtcPerformanceLoopback() throws Exception {
 		Map<String, BrowserClient> browsers = getTestScenario().getBrowserMap();
