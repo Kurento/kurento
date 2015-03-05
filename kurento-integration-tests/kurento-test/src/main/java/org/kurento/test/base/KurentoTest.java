@@ -15,6 +15,8 @@
 package org.kurento.test.base;
 
 import java.awt.Color;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +24,7 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.TestClient;
 import org.kurento.test.config.TestConfig;
@@ -47,6 +50,11 @@ public class KurentoTest {
 	@Rule
 	public TestName testName = new TestName();
 
+	@Parameters
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] { {} });
+	}
+
 	private TestClient client;
 	private TestScenario testScenario;
 
@@ -60,23 +68,27 @@ public class KurentoTest {
 
 	@Before
 	public void setupKurentoTest() {
-		for (String browserKey : testScenario.getBrowserMap().keySet()) {
-			BrowserClient browserClient = testScenario.getBrowserMap().get(
-					browserKey);
-			browserClient.setId(browserKey);
-			browserClient.setName(testName.getMethodName());
-			browserClient.init();
+		if (testScenario != null) {
+			for (String browserKey : testScenario.getBrowserMap().keySet()) {
+				BrowserClient browserClient = testScenario.getBrowserMap().get(
+						browserKey);
+				browserClient.setId(browserKey);
+				browserClient.setName(testName.getMethodName());
+				browserClient.init();
+			}
 		}
 	}
 
 	@After
 	public void teardownKurentoTest() {
-		for (BrowserClient browserClient : testScenario.getBrowserMap()
-				.values()) {
-			try {
-				browserClient.close();
-			} catch (UnreachableBrowserException e) {
-				log.warn(e.getMessage());
+		if (testScenario != null) {
+			for (BrowserClient browserClient : testScenario.getBrowserMap()
+					.values()) {
+				try {
+					browserClient.close();
+				} catch (UnreachableBrowserException e) {
+					log.warn(e.getMessage());
+				}
 			}
 		}
 	}
