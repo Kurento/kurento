@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map.Entry;
 
 import org.kurento.client.TransactionNotCommitedException;
 import org.kurento.client.internal.ModuleName;
@@ -39,7 +40,7 @@ public class ParamsFlattener {
 	private final ConcurrentHashMap<String, Class<?>> usedClasses = new ConcurrentHashMap<String, Class<?>>();
 
 	public enum RomType {
-		VOID, INTEGER, BOOLEAN, FLOAT, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS
+		VOID, INTEGER, BOOLEAN, FLOAT, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS, MAP
 	}
 
 	public static class GenericListType implements ParameterizedType {
@@ -116,6 +117,18 @@ public class ParamsFlattener {
 		return plainParams;
 	}
 
+	private Props flattenParamsMap(Map<String, ? extends Object> params,
+			boolean inTx) {
+
+		Props props = new Props();
+
+		for (Entry<String, ? extends Object> e : params.entrySet()) {
+			props.add(e.getKey(), flattenParam(e.getValue(), inTx));
+		}
+
+		return props;
+	}
+
 	private Object flattenParam(Object param) {
 		return flattenParam(param, false);
 	}
@@ -168,6 +181,8 @@ public class ParamsFlattener {
 			processedParam = param;
 		} else if (param instanceof List<?>) {
 			processedParam = flattenParamsList((List<?>) param, inTx);
+		} else if (param instanceof Map<?, ?>) {
+			processedParam = flattenParamsMap((Map<String, ?>) param, inTx);
 		} else if (param instanceof Props) {
 			processedParam = flattenParams((Props) param, inTx);
 		} else {
@@ -425,6 +440,10 @@ public class ParamsFlattener {
 				return unflattenList(paramName, (List<?>) value,
 						pType.getActualTypeArguments()[0], manager);
 			}
+			if (((Class<?>) pType.getRawType()).isAssignableFrom(Map.class)) {
+				return unflattenMap(paramName, (Props) value,
+						pType.getActualTypeArguments()[0], manager);
+			}
 		}
 
 		throw new ProtocolException("Type '" + type + "' is not supported");
@@ -477,6 +496,18 @@ public class ParamsFlattener {
 			}
 		}
 		return list;
+	}
+
+	private Object unflattenMap(String paramName, Props value, Type type,
+			ObjectRefsManager manager) {
+
+		Map<String, Object> map = new HashMap<String, Object>();
+		if (value != null) {
+			for (Prop p : value) {
+				map.put(p.getName(), p.getValue());
+			}
+		}
+		return map;
 	}
 
 	private Object unflattenRemoteObject(Type type, String value,
@@ -536,6 +567,8 @@ public class ParamsFlattener {
 		case LIST:
 			return new GenericListType(
 					calculateFlattenType(extractListType(type)));
+		case MAP:
+			return Props.class;
 		case REMOTE_CLASS:
 			return String.class;
 		default:
@@ -567,6 +600,8 @@ public class ParamsFlattener {
 			return RomType.LIST;
 		} else if (isRemoteClass(type)) {
 			return RomType.REMOTE_CLASS;
+		} else if (isMap(type)) {
+			return RomType.MAP;
 		} else {
 			throw new ProtocolException("Unknown type: " + type);
 		}
@@ -588,6 +623,13 @@ public class ParamsFlattener {
 				&& ((Class<?>) type).isAssignableFrom(List.class)
 				|| type instanceof ParameterizedType
 				&& isList(((ParameterizedType) type).getRawType());
+	}
+
+	public boolean isMap(Type type) {
+		return type instanceof Class
+				&& ((Class<?>) type).isAssignableFrom(Map.class)
+				|| type instanceof ParameterizedType
+				&& isMap(((ParameterizedType) type).getRawType());
 	}
 
 	public boolean isEnum(Type type) {
