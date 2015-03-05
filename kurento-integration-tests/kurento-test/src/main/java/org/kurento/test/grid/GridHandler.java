@@ -458,4 +458,8 @@ public class GridHandler {
 		return out;
 	}
 
+	public void setHubAddress(String hubAddress) {
+		this.hubAddress = hubAddress;
+	}
+
 }

@@ -99,8 +99,7 @@ public class TestConfig {
 							.getClient()));
 				}
 				if (instance.getPublicIP() != null) {
-					System.setProperty(BrowserClient.TEST_PUBLIC_IP_PROPERTY,
-							instance.getPublicIP());
+					builder = builder.publicIp(instance.getPublicIP());
 				}
 				if (instance.getSaucelabsUser() != null) {
 					System.setProperty(BrowserClient.SAUCELAB_USER_PROPERTY,
@@ -115,6 +114,11 @@ public class TestConfig {
 				} else if (instance.isRemote()) {
 					browserClient = builder.scope(BrowserScope.REMOTE).build();
 				} else if (instance.isSauceLabs()) {
+					if (instance.getVersion() == null
+							|| instance.getPlatformType() == null) {
+						throw new RuntimeException(
+								"Platform and browser version should be configured in saucelabs tests");
+					}
 					browserClient = builder.scope(BrowserScope.SAUCELABS)
 							.browserVersion(instance.getVersion())
 							.platform(instance.getPlatformType()).build();

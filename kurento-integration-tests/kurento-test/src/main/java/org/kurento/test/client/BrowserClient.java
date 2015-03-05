@@ -78,6 +78,7 @@ public class BrowserClient implements Closeable {
 	private int browserPerInstance;
 	private Protocol protocol;
 	private String hostAddress;
+	private String publicIp;
 	private int serverPort;
 	private Client client;
 	private String login;
@@ -115,6 +116,7 @@ public class BrowserClient implements Closeable {
 		this.login = builder.login;
 		this.passwd = builder.passwd;
 		this.pem = builder.pem;
+		this.publicIp = builder.publicIp;
 	}
 
 	public void init() {
@@ -217,7 +219,8 @@ public class BrowserClient implements Closeable {
 						.getResource("static" + clientPage).getFile());
 				url = protocol.toString() + clientPageFile.getAbsolutePath();
 			} else {
-				url = protocol.toString() + hostAddress + ":" + serverPort
+				String host = publicIp != null ? publicIp : hostAddress;
+				url = protocol.toString() + host + ":" + serverPort
 						+ client.toString();
 			}
 			log.info("*** Browsing URL with WebDriver: {}", url);
@@ -231,8 +234,15 @@ public class BrowserClient implements Closeable {
 
 	public void createSaucelabsDriver(DesiredCapabilities capabilities)
 			throws MalformedURLException {
+		assertPublicIpNotNull();
 		String sauceLabsUser = getProperty(SAUCELAB_USER_PROPERTY);
 		String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
+
+		if (sauceLabsUser == null || sauceLabsKey == null) {
+			throw new RuntimeException("Invalid Saucelabs credentials: "
+					+ SAUCELAB_USER_PROPERTY + "=" + sauceLabsUser + " "
+					+ SAUCELAB_KEY_PROPERTY + "=" + sauceLabsKey);
+		}
 
 		capabilities.setCapability("version", browserVersion);
 		capabilities.setCapability("platform", platform);
@@ -247,6 +257,7 @@ public class BrowserClient implements Closeable {
 
 	public void createRemoteDriver(DesiredCapabilities capabilities)
 			throws MalformedURLException {
+		assertPublicIpNotNull();
 		if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
 			GridNode node = null;
 
@@ -262,7 +273,7 @@ public class BrowserClient implements Closeable {
 				System.setProperty(SshConnection.TEST_NODE_PEM_PROPERTY, pem);
 			}
 
-			if (!hostAddress.equals(TEST_PUBLIC_IP_DEFAULT)
+			if (!hostAddress.equals(publicIp)
 					&& login != null
 					&& !login.isEmpty()
 					&& ((passwd != null && !passwd.isEmpty()) || (pem != null && !pem
@@ -276,6 +287,7 @@ public class BrowserClient implements Closeable {
 			}
 
 			// Start Hub (just the first time will be effective)
+			GridHandler.getInstance().setHubAddress(publicIp);
 			GridHandler.getInstance().startHub();
 
 			// Start node
@@ -298,18 +310,30 @@ public class BrowserClient implements Closeable {
 			capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 		}
 
-		hostAddress = GridHandler.getInstance().getHubHost();
 		int hubPort = GridHandler.getInstance().getHubPort();
 
-		driver = new RemoteWebDriver(new URL("http://" + hostAddress + ":"
+		driver = new RemoteWebDriver(new URL("http://" + publicIp + ":"
 				+ hubPort + "/wd/hub"), capabilities);
+	}
+
+	private void assertPublicIpNotNull() {
+		if (publicIp == null) {
+			throw new RuntimeException(
+					"Public IP must be available to run remote test. "
+							+ "You can do it by addint the paramter -D"
+							+ TEST_PUBLIC_PORT_PROPERTY
+							+ "=<public_ip> or with key 'publicIP' in "
+							+ "the JSON configuration file.");
+		}
 	}
 
 	public static class Builder {
 		private int timeout = 60; // seconds
 		private int thresholdTime = 10; // seconds
 		private double colorDistance = 60;
-		private String hostAddress;
+		private String hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
+				TEST_PUBLIC_IP_DEFAULT);
+		private String publicIp;
 		private int serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
 				KurentoServicesTestHelper.getAppHttpPort());
 		private BrowserScope scope = BrowserScope.LOCAL;
@@ -435,9 +459,12 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
+		public Builder publicIp(String publicIp) {
+			this.publicIp = publicIp;
+			return this;
+		}
+
 		public BrowserClient build() {
-			hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
-					TEST_PUBLIC_IP_DEFAULT);
 			return new BrowserClient(this);
 		}
 	}
@@ -572,6 +599,10 @@ public class BrowserClient implements Closeable {
 
 	public int getBrowserPerInstance() {
 		return browserPerInstance;
+	}
+
+	public String getPublicIp() {
+		return publicIp;
 	}
 
 	@Override
