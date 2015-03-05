@@ -73,7 +73,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			return remoteObjectMethod.invoke(remoteObject, args);
 		}
 
-		LOG.debug("Invoking method {} on object {}", method, proxy);
+		//LOG.debug("Invoking method {} on object {}", method, proxy);
 
 		Continuation<?> cont = null;
 		Transaction tx = null;
