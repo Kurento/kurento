@@ -68,6 +68,10 @@
 		<version.kurento-chroma>[1.0.0,2.0.0)</version.kurento-chroma>
 		<version.kurento-platedetector>[1.0.0,2.0.0)</version.kurento-platedetector>
 		<version.kurento-pointerdetector>[1.0.0,2.0.0)</version.kurento-pointerdetector>
+		<version.kurento-markerdetector>0.0.3</version.kurento-markerdetector>
+		<version.kurento-crowddetector>1.0.1</version.kurento-crowddetector>
+		<version.kurento-facesegmentator>1.0.0</version.kurento-facesegmentator>
+		<version.kurento-backgroundextractor>1.0.0</version.kurento-backgroundextractor>
 		<version.kms-api-core>[5.0.0,6.0.0-SNAPSHOT)</version.kms-api-core>
 		<version.kms-api-elements>[5.0.0,6.0.0-SNAPSHOT)</version.kms-api-elements>
 		<version.kms-api-filters>[5.0.0,6.0.0-SNAPSHOT)</version.kms-api-filters>
@@ -239,6 +243,26 @@
 				<groupId>org.kurento.module</groupId>
 				<artifactId>pointerdetector</artifactId>
 				<version>${version.kurento-pointerdetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>markerdetector</artifactId>
+				<version>${version.kurento-markerdetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>crowddetector</artifactId>
+				<version>${version.kurento-crowddetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>facesegmentator</artifactId>
+				<version>${version.kurento-facesegmentator}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>backgroundextractor</artifactId>
+				<version>${version.kurento-backgroundextractor}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
