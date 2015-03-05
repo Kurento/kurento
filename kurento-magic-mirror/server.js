@@ -14,12 +14,16 @@
  */
 
 var path = require('path');
-var express = require('express');
-var session = require('express-session')
-var ws = require('ws');
-var minimist = require('minimist');
-var url = require('url');
+var url  = require('url');
+
+var cookieParser = require('cookie-parser')
+var express      = require('express');
+var session      = require('express-session')
+var minimist     = require('minimist');
+var ws           = require('ws');
+
 var kurento = require('kurento-client');
+
 
 var argv = minimist(process.argv.slice(2),
 {
@@ -35,7 +39,7 @@ var app = express();
 /*
  * Management of sessions
  */
-app.use(express.cookieParser());
+app.use(cookieParser());
 
 var sessionHandler = session({
 	secret : 'none',

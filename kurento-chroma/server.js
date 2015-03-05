@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -16,6 +16,7 @@
 var path = require('path');
 var url  = require('url');
 
+var cookieParser = require('cookie-parser')
 var express = require('express');
 var minimist = require('minimist');
 var session = require('express-session')
@@ -42,7 +43,7 @@ kurento.register(require('kurento-module-chroma'));
 /*
  * Management of sessions
  */
-app.use(express.cookieParser());
+app.use(cookieParser());
 
 var sessionHandler = session({
 	secret : 'none',
@@ -115,12 +116,12 @@ wss.on('connection', function(ws) {
 					}));
 				}
 				switch (type) {
-					case 'sdpAnswer': 
+					case 'sdpAnswer':
 						ws.send(JSON.stringify({
 							id : 'startResponse',
 							sdpAnswer : data
 						}));
-				}				
+				}
 			});
 			break;
 

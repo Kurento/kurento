@@ -16,11 +16,12 @@
 var path = require('path');
 var url  = require('url');
 
+var cookieParser = require('cookie-parser')
 var express  = require('express');
 var minimist = require('minimist');
 var session  = require('express-session')
 
-var WebSocketServer = require('ws').Server;
+var WebSocketServer = require('ws').Server
 
 var kurento = require('kurento-client');
 
@@ -40,7 +41,7 @@ kurento.register(require('kurento-module-crowddetector'));
 /*
  * Management of sessions
  */
-app.use(express.cookieParser());
+app.use(cookieParser());
 
 var sessionHandler = session({
 	secret : 'none',
@@ -114,31 +115,31 @@ wss.on('connection', function(ws) {
 					}));
 				}
 				switch (type) {
-					case 'sdpAnswer': 
+					case 'sdpAnswer':
 						ws.send(JSON.stringify({
 							id : 'startResponse',
 							sdpAnswer : data
 						}));
 						break;
-					case 'crowdDetectorDirection': 
+					case 'crowdDetectorDirection':
 						ws.send(JSON.stringify({
 							id : 'crowdDetectorDirection',
 							event_data : data
 						}));
 						break;
-					case 'crowdDetectorFluidity': 
+					case 'crowdDetectorFluidity':
 						ws.send(JSON.stringify({
 							id : 'crowdDetectorFluidity',
 							event_data : data
 						}));
 						break;
-					case 'crowdDetectorOccupancy': 
+					case 'crowdDetectorOccupancy':
 						ws.send(JSON.stringify({
 							id : 'crowdDetectorOccupancy',
 							event_data : data
 						}));
-						break;	
-				}				
+						break;
+				}
 			});
 			break;
 
@@ -248,7 +249,7 @@ function createMediaElements(pipeline, callback) {
 			return callback(error);
 		}
 
-		var _roi = {		
+		var _roi = {
 					'id' : 'roi1',
 					'points' : [{'x' : 0, 'y' : 0}, {'x' : 0.5, 'y' : 0}, {'x' : 0.5, 'y' : 0.5}, {'x' : 0, 'y' : 0.5}],
 					'regionOfInterestConfig' : {

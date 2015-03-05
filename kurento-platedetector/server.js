@@ -16,6 +16,7 @@
 var path = require('path');
 var url  = require('url');
 
+var cookieParser = require('cookie-parser')
 var express = require('express');
 var minimist = require('minimist');
 var session = require('express-session')
@@ -40,7 +41,7 @@ kurento.register(require('kurento-module-platedetector'));
 /*
  * Management of sessions
  */
-app.use(express.cookieParser());
+app.use(cookieParser());
 
 var sessionHandler = session({
 	secret : 'none',

@@ -16,6 +16,7 @@
 var path = require('path');
 var url  = require('url');
 
+var cookieParser = require('cookie-parser')
 var express = require('express');
 var minimist = require('minimist');
 var session = require('express-session')
@@ -41,7 +42,7 @@ kurento.register(require('kurento-module-pointerdetector'));
 /*
  * Management of sessions
  */
-app.use(express.cookieParser());
+app.use(cookieParser());
 
 var sessionHandler = session({
 	secret : 'none',
@@ -116,32 +117,32 @@ wss.on('connection', function(ws) {
 					}));
 				}
 				switch (type) {
-					case 'sdpAnswer': 
+					case 'sdpAnswer':
 						ws.send(JSON.stringify({
 							id : 'startResponse',
 							sdpAnswer : data
 						}));
 						break;
-					case 'WindowIn': 
+					case 'WindowIn':
 						ws.send(JSON.stringify({
 							id : 'WindowIn',
 							roiId : data.windowId
 						}));
 						break;
-					case 'WindowOut': 
+					case 'WindowOut':
 						ws.send(JSON.stringify({
 							id : 'WindowOut',
 							roiId : data.windowId
 						}));
 						break;
-				}				
+				}
 			});
 			break;
 
 		case 'stop':
 			stop(sessionId);
 			break;
-		
+
 		case 'calibrate':
 			calibrate(sessionId);
 			break;
@@ -222,7 +223,7 @@ function start(sessionId, sdpOffer, callback) {
 							return callback(null, 'WindowOut', _data);
 						});
 
-						pointerDetector.addWindow({id: 'window0', height: 50, width:50, upperRightX: 500, upperRightY: 150}, 
+						pointerDetector.addWindow({id: 'window0', height: 50, width:50, upperRightX: 500, upperRightY: 150},
 							function(error) {
 							if (error) {
 								pipeline.release();
@@ -230,7 +231,7 @@ function start(sessionId, sdpOffer, callback) {
 							}
 						});
 
-						pointerDetector.addWindow({id: 'window1', height: 50, width:50, upperRightX: 500, upperRightY: 250}, 
+						pointerDetector.addWindow({id: 'window1', height: 50, width:50, upperRightX: 500, upperRightY: 250},
 							function(error) {
 							if (error) {
 								pipeline.release();
