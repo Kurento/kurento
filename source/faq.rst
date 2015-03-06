@@ -88,7 +88,7 @@ How do I...
 
        const ws_uri = 'wss://' + location.hostname + ':8433/kurento';
 
-   - Node.js: Changing this line in `app.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/app.js>`_::
+   - Node.js: Changing this line in `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`_::
 
       const ws_uri = "wss://localhost:8433/kurento";
 
@@ -114,7 +114,7 @@ How do I...
    (get ``InstallCert.java`` from
    `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_).
    Regarding Node applications, please take a look to this
-   `link <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_. 
+   `link <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
 
 
 **...know how many Media Pipelines do I need for my Application?**
@@ -162,4 +162,3 @@ Why do I get the error...
 
 .. Why can't I...
 .. --------------
-

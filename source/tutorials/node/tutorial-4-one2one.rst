@@ -29,7 +29,7 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-one2one-call
     npm install
-    node app.js
+    npm start
 
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).
@@ -105,7 +105,7 @@ This demo has been developed using the **express** framework for Node.js, but
 express is not a requirement for Kurento.
 
 The main script of this demo is
-`app.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/app.js>`_.
+`server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/server.js>`_.
 
 .. sourcecode:: js
 
@@ -144,13 +144,13 @@ depicted in the previous sequence diagram.
 .. sourcecode:: js
 
    wss.on('connection', function(ws) {
-   
+
       //...
-   
+
       ws.on('message', function(_message) {
          var message = JSON.parse(_message);
-   
-         switch (message.id) { 
+
+         switch (message.id) {
          case 'register':
             register(sessionId,
             message.name, ws);
@@ -159,15 +159,15 @@ depicted in the previous sequence diagram.
          case 'call':
             call(sessionId, message.to,
             message.from, message.sdpOffer); break;
-   
+
          case 'incomingCallResponse':
             incomingCallResponse(sessionId,
             message.from, message.callResponse, message.sdpOffer);
             break;
-   
+
          case 'stop':
             stop(sessionId); break;
-   
+
          }
       });
    });
@@ -180,12 +180,12 @@ acceptance message is sent to it.
 
 .. sourcecode :: js
 
-   function register(id, name, ws, callback){      
-        
+   function register(id, name, ws, callback){
+
       if(userRegistry.getByName(name)){
          return onError("already registered");
       }
-        
+
       userRegistry.register(new UserSession(id, name, ws));
       ws.send(JSON.stringify({id: 'registerResponse', response: 'accepted'}));
    }
@@ -211,13 +211,13 @@ message is sent to caller rejecting the call.
                         from: from
                 };
                 return callee.sendMessage(message);
-        } 
+        }
         var message  = {
                 id: 'callResponse',
                 response: 'rejected: ',
                 message: rejectCause
         };
-        caller.sendMessage(message);     
+        caller.sendMessage(message);
    }
 
 
@@ -228,7 +228,7 @@ the Media Pipeline and ends the video communication:
 .. sourcecode :: js
 
    function stop(sessionId){
-        
+
         var pipeline = pipelines[sessionId];
         delete pipelines[sessionId];
         pipeline.release();
@@ -267,13 +267,13 @@ WebRtcEndpoints when invoking ``generateSdpAnswerForCallee`` and
       var callee = userRegistry.getById(calleeId);
          if(!from || !userRegistry.getByName(from)){
             return onError(null, 'unknown from = ' + from);
-         }               
+         }
          var caller = userRegistry.getByName(from);
 
-         if(callResponse === 'accept'){  
-            var pipeline = new CallMediaPipeline(); 
+         if(callResponse === 'accept'){
+            var pipeline = new CallMediaPipeline();
 
-            pipeline.createPipeline(function(error){                     
+            pipeline.createPipeline(function(error){
                pipeline.generateSdpAnswerForCaller(caller.sdpOffer,
                   function(error, callerSdpAnswer){
                      if(error) {
@@ -314,7 +314,7 @@ WebRtcEndpoints when invoking ``generateSdpAnswerForCallee`` and
         }
    }
 
-           
+
 The media logic is implemented in the class `CallMediaPipeline`. As you can see,
 the required media pipeline is quite simple: two ``WebRtcEndpoint`` elements
 directly interconnected. Note that the WebRtcEndpoints need to be connected
@@ -326,25 +326,25 @@ above are implemented.
 
    CallMediaPipeline.prototype.createPipeline = function(callback){
       var self = this;
-	
+
       //...
-                
+
       kurentoClient.create('MediaPipeline', function(error, pipeline){
-         pipeline.create('WebRtcEndpoint', function(error, callerWebRtcEndpoint){                                
-            pipeline.create('WebRtcEndpoint', function(error, calleeWebRtcEndpoint){                                        
-               callerWebRtcEndpoint.connect(calleeWebRtcEndpoint, function(error){                                                
+         pipeline.create('WebRtcEndpoint', function(error, callerWebRtcEndpoint){
+            pipeline.create('WebRtcEndpoint', function(error, calleeWebRtcEndpoint){
+               callerWebRtcEndpoint.connect(calleeWebRtcEndpoint, function(error){
                   calleeWebRtcEndpoint.connect(callerWebRtcEndpoint, function(error){
-                                                
+
                      self._pipeline = pipeline;
                      self._callerWebRtcEndpoint = callerWebRtcEndpoint;
                      self._calleeWebRtcEndpoint = calleeWebRtcEndpoint;
-                                                
+
                      callback(null);
-                  });                                     
+                  });
                });
-            });                     
+            });
          });
-      });             
+      });
    }
 
    CallMediaPipeline.prototype.generateSdpAnswerForCaller = function(sdpOffer, callback){
@@ -394,7 +394,7 @@ start a WebRTC communication.
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'resgisterResponse':
          resgisterResponse(parsedMessage);
@@ -428,7 +428,7 @@ start a WebRTC communication.
          };
          return sendMessage(response);
       }
-      
+
       setCallState(PROCESSING_CALL);
       if (confirm('User ' + message.from  + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
@@ -462,9 +462,9 @@ start a WebRTC communication.
          return;
       }
       setCallState(PROCESSING_CALL);
-      
+
       showSpinner(videoInput, videoOutput);
-   
+
       kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
          webRtcPeer = wp;
          console.log('Invoking SDP offer callback function');

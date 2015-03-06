@@ -30,7 +30,7 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-one2many-call
     npm install
-    node app.js
+    npm start
 
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).
@@ -113,7 +113,7 @@ express is not a requirement for Kurento.
 
 
 The main script of this demo is
-`app.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2many-call/app.js>`_.
+`server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2many-call/server.js>`_.
 
 
 Once the *Kurento Client* has been instantiated, you are ready for communicating

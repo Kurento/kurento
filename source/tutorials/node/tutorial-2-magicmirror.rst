@@ -29,7 +29,7 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-magic-mirror
     npm install
-    node app.js
+    npm start
 
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).
@@ -41,7 +41,7 @@ This application uses computer vision and augmented reality techniques to add a
 funny hat on top of faces. The following picture shows a screenshot of the demo
 running in a web browser:
 
-.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png 
+.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png
    :align:   center
    :alt:     Kurento Magic Mirror Screenshot: WebRTC with filter in loopback
 
@@ -110,7 +110,7 @@ This demo has been developed using the **express** framework for Node.js, but
 express is not a requirement for Kurento.
 
 The main script of this demo is
-`app.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/app.js>`_.
+`server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/server.js>`_.
 
 Once the *Kurento Client* has been instantiated, you are ready for communicating
 with Kurento Media Server and controlling its multimedia capabilities.
@@ -240,11 +240,11 @@ communication.
 .. sourcecode:: javascript
 
    var ws = new WebSocket('ws://' + location.host + '/magicmirror');
-   
+
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'startResponse':
          startResponse(parsedMessage);
@@ -268,9 +268,9 @@ communication.
       // Disable start button
       setState(I_AM_STARTING);
       showSpinner(videoInput, videoOutput);
-   
+
       console.log("Creating WebRtcPeer and generating local sdp offer ...");
-      webRtcPeer = 
+      webRtcPeer =
          kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 

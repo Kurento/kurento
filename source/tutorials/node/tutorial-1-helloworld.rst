@@ -34,7 +34,7 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-hello-world
     npm install
-    node app.js
+    npm start
 
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).
@@ -50,7 +50,7 @@ JavaScript engines including browsers and Node.js.
 This *hello world* demo is one of the simplest web application you can create
 with Kurento. The following picture shows an screenshot of this demo running:
 
-.. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
+.. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png
    :align:   center
    :alt:     Kurento Hello World Screenshot: WebRTC in loopback
 
@@ -120,7 +120,7 @@ This demo has been developed using the **express** framework for Node.js, but
 express is not a requirement for Kurento.
 
 The main script of this demo is
-`app.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/app.js>`_.
+`server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`_.
 As you can see, the *KurentoClient* is instantiated in this class. In this
 instantiation we see that we need to specify to the client library the location
 of the Kurento Media Server. In this example, we assume it's located at
@@ -223,7 +223,7 @@ the remote stream provided by the Kurento Media Server.
    function start() {
       console.log("Starting video call ...");
       showSpinner(videoInput, videoOutput);
-      webRtcPeer = 
+      webRtcPeer =
          kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
