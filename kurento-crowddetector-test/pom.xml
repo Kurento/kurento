@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>org.kurento.tutorial</groupId>
 			<artifactId>kurento-crowddetector</artifactId>
-			<version>${project.version}</version>
+			<version>${version.kurento-tutorials}</version>
 		</dependency>
 	</dependencies>
 

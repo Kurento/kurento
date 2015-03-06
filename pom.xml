@@ -67,6 +67,7 @@
 
 		<!-- Kurento -->
 		<kurento.version>[5.0.0,6.0.0-SNAPSHOT)</kurento.version>
+		<version.kurento-tutorials>5.1.0</version.kurento-tutorials>
 	</properties>
 
 	<build>
