@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.kurento.tutorial</groupId>
 		<artifactId>kurento-tutorial-test</artifactId>
-		<version>5.0.5-SNAPSHOT</version>
+		<version>5.1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>kurento-hello-world-test</artifactId>
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.kurento.tutorial</groupId>
 			<artifactId>kurento-hello-world</artifactId>
-			<version>${kurento.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

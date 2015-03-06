@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>5.0.5-SNAPSHOT</version>
+		<version>5.1.1-SNAPSHOT</version>
     </parent>
 
 	<groupId>org.kurento.tutorial</groupId>
@@ -67,15 +67,6 @@
 
 		<!-- Kurento -->
 		<kurento.version>[5.0.0,6.0.0-SNAPSHOT)</kurento.version>
-
-		<!-- Test dependencies versions -->
-		<selenium-java.version>2.43.1</selenium-java.version>
-
-		<!-- Webdrivers versions -->
-		<linux32-webdriver.version>2.9</linux32-webdriver.version>
-		<linux64-webdriver.version>2.9</linux64-webdriver.version>
-		<mac32-webdriver.version>2.9</mac32-webdriver.version>
-		<win32-webdriver.version>2.9</win32-webdriver.version>
 	</properties>
 
 	<build>
@@ -109,7 +100,6 @@
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
-			<version>${selenium-java.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
