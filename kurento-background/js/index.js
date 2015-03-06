@@ -15,80 +15,79 @@
 
 /* Sample class begin */
 function Sample(file_uri) {
-  this.file_uri = file_uri;
-}
-
-Sample.prototype.start = function () {
   var self = this;
 
-  self.webRtcLocal = kurentoUtils.WebRtcPeer.startRecvOnly(self.tag, function (sdpOffer) {
-    if (pipeline == null) {
-      console.log("MediaPipeline is still not create")
-      return;
-    }
+  this.start = function () {
+    self.webRtcLocal = kurentoUtils.WebRtcPeer.startRecvOnly(self.tag, function (sdpOffer) {
+      if (pipeline == null) {
+        console.log("MediaPipeline is still not create")
+        return;
+      }
 
-    pipeline.create('WebRtcEndpoint', function (error, webRtc) {
-      if (error) return onError(error);
-
-      self.webRtcRemote = webRtc;
-
-      pipeline.create('PlayerEndpoint', {
-        uri: self.file_uri
-      }, function (error, player) {
+      pipeline.create('WebRtcEndpoint', function (error, webRtc) {
         if (error) return onError(error);
 
-        self.player = player;
+        self.webRtcRemote = webRtc;
 
-        pipeline.create("GStreamerFilter", {
-          command: "capsfilter caps=video/x-raw,framerate=10/1,width=320,height=240",
-          filterType: "VIDEO"
-        }, function (error, filter) {
+        pipeline.create('PlayerEndpoint', {
+          uri: file_uri
+        }, function (error, player) {
           if (error) return onError(error);
 
-          self.filter = filter;
+          self.player = player;
 
-          player.connect(filter, function (error) {
+          pipeline.create("GStreamerFilter", {
+            command: "capsfilter caps=video/x-raw,framerate=10/1,width=320,height=240",
+            filterType: "VIDEO"
+          }, function (error, filter) {
             if (error) return onError(error);
 
-            filter.connect(webRtc, function (error) {
+            self.filter = filter;
+
+            player.connect(filter, function (error) {
               if (error) return onError(error);
 
-              player.play(function (error) {
+              filter.connect(webRtc, function (error) {
                 if (error) return onError(error);
 
-                console.log('Playing ' + self.file_uri);
-              });
+                player.play(function (error) {
+                  if (error) return onError(error);
 
-              player.on('EndOfStream', function (data) {
-                player.play();
-              });
+                  console.log('Playing ' + file_uri);
+                });
 
-              webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
-                if (error) return onError(error);
+                player.on('EndOfStream', function (data) {
+                  player.play();
+                });
 
-                self.webRtcLocal.processSdpAnswer(sdpAnswer);
+                webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
+                  if (error) return onError(error);
+
+                  self.webRtcLocal.processSdpAnswer(sdpAnswer);
+                });
               });
             });
           });
         });
       });
-    });
-  }, onError);
-}
-
-Sample.prototype.finish = function () {
-  console.log("Finishing " + this.file_uri);
-  if (!this.webRtcLocal) {
-    return;
+    }, onError);
   }
 
-  this.webRtcLocal.dispose();
-  this.webRtcLocal = null;
-  this.player.stop();
-  this.player.release();
-  this.filter.release();
-  this.webRtcRemote.release();
-};
+  this.finish = function () {
+    console.log("Finishing " + file_uri);
+
+    if (!this.webRtcLocal) return;
+
+    this.webRtcLocal.dispose();
+    this.webRtcLocal = null;
+    this.player.stop();
+    this.player.release();
+    this.filter.release();
+    this.webRtcRemote.release();
+  };
+}
+
+
 /* Sample class end */
 
 function getopts(args, opts) {
@@ -105,7 +104,7 @@ function getopts(args, opts) {
 var args = getopts(location.search, {
   default: {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    as_uri: location.href,
+    as_uri: location.origin,
     ice_servers: undefined
   }
 });

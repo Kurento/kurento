@@ -28,7 +28,7 @@ var args = getopts(location.search,
   default:
   {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    as_uri: location.href,
+    as_uri: location.origin,
     ice_servers: undefined
   }
 });
@@ -112,7 +112,7 @@ window.onload = function() {
 	sample3 = document.getElementById('sample3');
 	sample4 = document.getElementById('sample4');
 	playButton = document.getElementById ('start');
-	
+
 	$('#stop').attr('disabled', true);
 	$('#start').attr('disabled', false);
 }
@@ -120,7 +120,7 @@ window.onload = function() {
 function start() {
 	showSpinner(videoOutput);
 	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(null, videoOutput, onOffer, onError);
-	
+
 	$('#stop').attr('disabled', false);
 	$('#start').attr('disabled', true);
 }
@@ -157,7 +157,7 @@ function onOffer(sdpOffer) {
 				webRtc = _webRtc;
 				pipeline.create('GStreamerFilter', {command : 'videoflip method=4'}, function(error, _gstreamerFilterFlip) {
 					if(error) return onError(error);
-					
+
 					gstreamerFilterFlip = _gstreamerFilterFlip;
 				    pipeline.create('AlphaBlending', function(error, _alphaBlending) {
 						if(error) return onError(error);
@@ -180,7 +180,7 @@ function onOffer(sdpOffer) {
 										    if (error) return onError(error);
 
 											webRtc_port.connect(webRtc, function(error) {
-											    if (error) return onError(error);											
+											    if (error) return onError(error);
 
 												alphaBlending.setMaster (webRtc_port, 3, function(error) {
 													if (error) return onError(error);
@@ -218,9 +218,9 @@ function kiss( video, xPos, yPos) {
 	if ((leftPointX == 0) && (leftPointX == 0) && (rightPointX == 0) && (rightPointY == 0)) {
 		console.log ("There are not face points");
 		kissing = false;
-		reactivateImages (sample1, raquelImg, sample1click, 
+		reactivateImages (sample1, raquelImg, sample1click,
 			sample2, borjaImg, sample2click,
-			sample3, ivanImg, sample3click, 
+			sample3, ivanImg, sample3click,
 			sample4, userImg, sample4click);
 		return;
 	}
@@ -237,7 +237,7 @@ function kiss( video, xPos, yPos) {
 
 	console.log ("L x point " + leftPointX + " ypoint " + leftPointY);
 	console.log ("R x point " + rightPointX + " ypoint " + rightPointY)
-	
+
 	if (unionX < 0){
 		moveX  = " right=" + unionX;
 		cropX  = " left=" + ((-1) * unionX);
@@ -272,14 +272,14 @@ function kiss( video, xPos, yPos) {
 				pipeline.create ('GStreamerFilter', {command : _command}, function (error, _gstreamerFilterCrop) {
 			    	if(error) return onError(error);
 
-		    		gstreamerFilterCrop = _gstreamerFilterCrop;	
+		    		gstreamerFilterCrop = _gstreamerFilterCrop;
 				    alphaBlending.createHubPort (function(error, _video_port) {
 						if (error) return onError(error);
 
 						video_port = _video_port;
 						playerEndpoint.connect(gstreamerFilter, function(error) {
 						    if (error) return onError(error);
-							
+
 							gstreamerFilter.connect(gstreamerFilterBox, function(error) {
 						    	if (error) return onError(error);
 
@@ -308,9 +308,9 @@ function kiss( video, xPos, yPos) {
 												gstreamerFilterBox.release();
 												gstreamerFilterCrop.release();
 												kissing = false;
-												reactivateImages (sample1, raquelImg, sample1click, 
+												reactivateImages (sample1, raquelImg, sample1click,
 													sample2, borjaImg, sample2click,
-													sample3, ivanImg, sample3click, 
+													sample3, ivanImg, sample3click,
 													sample4, userImg, sample4click);
 										    });
 										});
@@ -318,45 +318,45 @@ function kiss( video, xPos, yPos) {
 								});
 							});
 						});
-				    });	
-				});	
-		    });	
+				    });
+				});
+		    });
 		});
     });
 }
 
 function sample1click() {
-	if (kissing == false ) { 
+	if (kissing == false ) {
 		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
 			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (raquel, raquelX, raquelY);
 	}
 }
 
 function sample2click() {
-	if (kissing == false ) { 
+	if (kissing == false ) {
 		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
 			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (borja, borjaX, borjaY);
 	}
-	
+
 }
 
 function sample3click() {
-	if (kissing == false ) { 
+	if (kissing == false ) {
 		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
 			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (ivan, ivanX, ivanY);
 	}
 }
 
 function sample4click() {
-	if (kissing == false ) { 
+	if (kissing == false ) {
 		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate, 
+		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
 			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
 		kiss (clara, claraX, claraY);
 	}
