@@ -14,6 +14,11 @@
           "name": "stunServerPort",
           "doc": "Port of the STUN server",
           "type": "int"
+        },
+        {
+          "name": "turnUrl",
+          "doc": "TURN server URL with this format: 'user:password@address:port(?transport=[udp|tcp|tls])'.\n'address' must be an IP (not a domain).\n'transport' is optional (UDP by default).",
+          "type": "String"
         }
       ],
       "constructor":

@@ -117,12 +117,13 @@ BOOST_AUTO_TEST_CASE (ice_state_changes)
   webRtcEpOfferer.reset ();
 }
 
-BOOST_AUTO_TEST_CASE (stun_properties)
+BOOST_AUTO_TEST_CASE (stun_turn_properties)
 {
   gst_init (NULL, NULL);
 
   std::string stunServerAddress ("10.0.0.1");
   int stunServerPort = 2345;
+  std::string turnUrl ("user0:pass0@10.0.0.2:3456");
 
   std::shared_ptr <MediaPipelineImpl> pipe (new MediaPipelineImpl (
         boost::property_tree::ptree() ) );
@@ -142,4 +143,8 @@ BOOST_AUTO_TEST_CASE (stun_properties)
   webRtcEp->setStunServerPort (stunServerPort);
   int stunServerPortRet = webRtcEp->getStunServerPort ();
   BOOST_CHECK (stunServerPortRet == stunServerPort);
+
+  webRtcEp->setTurnUrl (turnUrl);
+  std::string turnUrlRet = webRtcEp->getTurnUrl ();
+  BOOST_CHECK (turnUrlRet == turnUrl);
 }

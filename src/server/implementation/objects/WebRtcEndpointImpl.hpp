@@ -32,6 +32,9 @@ public:
   int getStunServerPort ();
   void setStunServerPort (int stunServerPort);
 
+  std::string getTurnUrl ();
+  void setTurnUrl (const std::string &turnUrl);
+
   void gatherCandidates ();
   void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
 
