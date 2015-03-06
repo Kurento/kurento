@@ -64,6 +64,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected KeepAliveManager keepAliveManager;
 	protected String label = "";
 	protected int connectionTimeout = 15000;
+	protected int idleTimeout = 300000;
 
 	public void setServerRequestHandler(JsonRpcHandler<?> handler) {
 		this.handlerManager.setJsonRpcHandler(handler);
@@ -168,6 +169,29 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	 */
 	public void setConnectionTimeoutValue(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
+	}
+
+	/**
+	 * Gets the idle timeout (i.e. the time after which the session is
+	 * considered as idle if no messages have been exchanged), in milliseconds,
+	 * configured in the client.
+	 *
+	 * @return the timeout in milliseconds
+	 */
+	public int getIdleTimeout() {
+		return this.idleTimeout;
+	}
+
+	/**
+	 * Sets an idle timeout in milliseconds in the client. If after the
+	 * configured time, no messages have been exchanged between client and
+	 * server, connection is reestablished automatically
+	 *
+	 * @param idleTimeout
+	 *            the timeout in milliseconds
+	 */
+	public void setIdleTimeout(int idleTimeout) {
+		this.idleTimeout = idleTimeout;
 	}
 
 	public void setKeepAliveManager(KeepAliveManager keepAliveManager) {

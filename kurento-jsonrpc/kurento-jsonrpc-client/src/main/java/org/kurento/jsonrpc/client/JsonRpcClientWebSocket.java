@@ -162,17 +162,19 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		if ((wsSession == null) || !wsSession.isOpen()) {
 
 			try {
+				if (client == null) {
+					client = new WebSocketClient();
+					client.setConnectTimeout(this.connectionTimeout);
+					client.start();
 
-				client = new WebSocketClient();
+					// FIXME Give the client some time, otherwise the exception
+					// is not thrown if the server is down.
+					Thread.sleep(100);
+				}
 				SimpleEchoSocket socket = new SimpleEchoSocket();
-
-				client.start();
-
 				ClientUpgradeRequest request = new ClientUpgradeRequest();
-				// FIXME Give the client some time, otherwise the exception is
-				// not thrown if the server is down.
-				Thread.sleep(100);
 				wsSession = client.connect(socket, new URI(url), request).get();
+				wsSession.setIdleTimeout(this.idleTimeout);
 
 			} catch (Exception e) {
 				if (connectionListener != null) {
