@@ -20,7 +20,7 @@ var express  = require('express');
 var minimist = require('minimist');
 var session  = require('express-session')
 
-var WebSocketServer = require('ws');.Server
+var WebSocketServer = require('ws').Server;
 
 var kurento = require('kurento-client');
 
