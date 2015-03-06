@@ -545,6 +545,11 @@
 				<version>${version.mockito.core}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-java</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
