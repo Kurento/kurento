@@ -265,7 +265,7 @@ public class KurentoServicesTestHelper {
 
 	public static String getSimpleTestName() {
 		String out = testName;
-		if (out.indexOf(":") != -1) {
+		if (testName != null && out.indexOf(":") != -1) {
 			// This happens in performance tests with data from JUnit parameters
 			out = out.substring(0, out.indexOf(":")) + "]";
 		}
