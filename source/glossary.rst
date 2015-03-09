@@ -449,6 +449,14 @@ or :term:`kurento`.
     SSL
         Secure Socket Layer. See `TLS`:term:.
 
+    STUN
+    Session Traversal Utilities for NAT
+        STUN is a standardized set of methods to allow an end host to discover
+        its public IP address if it is located behind a :term:`NAT`. STUN is a
+        client-server protocol returning the public IP address to a client
+        together with information from which the client can infer the type
+        of NAT it sits behind.
+
     TLS
         :wikipedia:`Transport Layer Security <en,Transport_Layer_Security>`
         and its prececessor Secure Socket Layer (SSL)
@@ -460,7 +468,9 @@ or :term:`kurento`.
     TURN
     Traversal Using Relays around NAT
         TURN is a protocol that allows for a client behind a :term:`NAT` or
-        firewall to receive incoming data over TCP or UDP connections.
+        firewall to receive incoming data over TCP or UDP connections. TURN
+        places a third party server to relay messages between two clients
+        where peer to peer media traffic is not allowed by a firewall.
 
     VP8
         VP8 is a video compression format created by On2 Technologies as a
