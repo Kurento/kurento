@@ -70,11 +70,15 @@ public class ParallelBrowsers {
 						Thread.currentThread().setName(key);
 						Thread.sleep(clientRate * numBrowserFinal);
 						log.debug("*** Starting node {} ***", key);
-						monitor.incrementNumClients();
+						if (monitor != null) {
+							monitor.incrementNumClients();
+						}
 						BrowserClient browser = browserClientMap.get(key);
 						browserRunner.run(browser);
 					} finally {
-						monitor.decrementNumClients();
+						if (monitor != null) {
+							monitor.decrementNumClients();
+						}
 						log.debug("--- Ending client {} ---", key);
 					}
 					return null;
