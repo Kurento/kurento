@@ -135,7 +135,7 @@ you need to install your module in your system. You can follow two different
 ways:
 
 You can generate the Debian package (``debuild -us -uc``) and install it
-(``dpkg -i``). You can define the following environment variables in the file
+(``dpkg -i``) or you can define the following environment variables in the file
 ``/etc/default/kurento``:
 ``KURENTO_MODULES_PATH=<module_path>/build/src GST_PLUGIN_PATH=<module_path>/build/src``.
 
@@ -175,7 +175,7 @@ Examples
 
 Simple examples for both kind of modules are available in GitHub:
 
-* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample/tree/master>`_
+* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample/tree/develop>`_
 
 * `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`_
 
