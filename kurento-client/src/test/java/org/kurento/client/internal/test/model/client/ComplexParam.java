@@ -2,6 +2,7 @@ package org.kurento.client.internal.test.model.client;
 
 import org.kurento.client.internal.server.Param;
 
+@org.kurento.client.internal.ModuleName("complexParam")
 public class ComplexParam {
 
 	private String prop1;

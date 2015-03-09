@@ -9,6 +9,7 @@ package ${module.code.api.java.packageName};
 
 <#if complexType.typeFormat == "REGISTER">
 <@comment complexType.doc!"" />
+@org.kurento.client.internal.ModuleName (<#if module.name=="core" || module.name=="elements" || module.name=="filters">"kurento"<#else>"${module.name}"</#if>)
 public class ${complexType.name} <#if complexType.extends??>extends ${complexType.extends.name}</#if> {
 
    <#list complexType.properties as property>

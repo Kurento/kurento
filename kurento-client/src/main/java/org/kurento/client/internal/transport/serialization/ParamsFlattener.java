@@ -3,6 +3,7 @@ package org.kurento.client.internal.transport.serialization;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -11,8 +12,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.kurento.client.TransactionNotCommitedException;
+import org.kurento.client.internal.ModuleName;
 import org.kurento.client.internal.ParamAnnotationUtils;
 import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.client.RemoteObject;
@@ -27,8 +30,13 @@ import org.slf4j.LoggerFactory;
 
 public class ParamsFlattener {
 
+	private static String MODULE_INFO_PACKAGE = "org.kurento.module";
+
 	private static final Logger log = LoggerFactory
 			.getLogger(ParamsFlattener.class);
+
+	private final ConcurrentHashMap<String, String> packageNames = new ConcurrentHashMap<String, String>();
+	private final ConcurrentHashMap<String, Class<?>> usedClasses = new ConcurrentHashMap<String, Class<?>>();
 
 	public enum RomType {
 		VOID, INTEGER, BOOLEAN, FLOAT, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS
@@ -239,6 +247,10 @@ public class ParamsFlattener {
 			}
 		}
 
+		propsMap.put("__type__", result.getClass().getSimpleName());
+		ModuleName name = result.getClass().getAnnotation(ModuleName.class);
+		propsMap.put("__module__", name.value());
+
 		return new Props(propsMap);
 	}
 
@@ -289,7 +301,9 @@ public class ParamsFlattener {
 				}
 			}
 		}
-
+		propsMap.put("__type__", param.getClass().getSimpleName());
+		ModuleName name = param.getClass().getAnnotation(ModuleName.class);
+		propsMap.put("__module__", name.value());
 		return new Props(propsMap);
 	}
 
@@ -319,6 +333,56 @@ public class ParamsFlattener {
 		return returnParams;
 	}
 
+	private Class<?> getOrCreateClass(Props props) {
+		Class<?> clazz = null;
+
+		String complexTypeName = (String) props.getProp("__type__");
+		String moduleName = (String) props.getProp("__module__");
+		String moduleNameInit = moduleName.substring(0, 1).toUpperCase();
+		String moduleNameEnd = moduleName.substring(1, moduleName.length());
+
+		if (complexTypeName != null) {
+
+			try {
+				String classPackageName = (MODULE_INFO_PACKAGE + "."
+						+ moduleNameInit + moduleNameEnd + "ModuleInfo");
+
+				String packageName = packageNames.get(classPackageName);
+				if (packageName == null) {
+					Class<?> clazzPackage = Class.forName(classPackageName);
+
+					Method method = clazzPackage.getMethod("getPackageName");
+					packageName = (String) method.invoke(clazzPackage);
+					packageNames.put(classPackageName, packageName);
+				}
+
+				String className = (packageName + "." + complexTypeName);
+				clazz = usedClasses.get(className);
+
+				if (clazz == null) {
+					clazz = Class.forName(className);
+					usedClasses.put(className, clazz);
+				}
+
+			} catch (ClassNotFoundException e) {
+				throw new ProtocolException("Class '" + complexTypeName
+						+ "' not found", e);
+			} catch (NoSuchMethodException e) {
+				throw new ProtocolException("Method not found", e);
+			} catch (SecurityException e) {
+				throw new ProtocolException("Security Exception", e);
+			} catch (IllegalAccessException e) {
+				throw new ProtocolException("Illegal Access", e);
+			} catch (IllegalArgumentException e) {
+				throw new ProtocolException("Illegal Argument", e);
+			} catch (InvocationTargetException e) {
+				throw new ProtocolException("Invocation Target", e);
+			}
+		}
+
+		return clazz;
+	}
+
 	public Object unflattenValue(String paramName, Type type, Object value,
 			ObjectRefsManager manager) {
 
@@ -336,7 +400,16 @@ public class ParamsFlattener {
 					return unflattenRemoteObject(type, (String) value, manager);
 
 				} else if (value instanceof Props) {
-					return unflattedComplexType(clazz, (Props) value, manager);
+
+					Props props = (Props) value;
+
+					Class<?> newClazz = getOrCreateClass(props);
+
+					if (newClazz != null) {
+						clazz = newClazz;
+					}
+
+					return unflattedComplexType(clazz, props, manager);
 
 				} else {
 					throw new ProtocolException(
