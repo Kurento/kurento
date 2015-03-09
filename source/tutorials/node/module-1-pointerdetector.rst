@@ -17,14 +17,13 @@ also installed:
 
     sudo apt-get install kms-pointerdetector
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
-an Ubuntu machine, you can install both as follows:
+Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
+you can install both as follows:
 
 .. sourcecode:: sh
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
-   sudo npm install -g bower
 
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
@@ -34,6 +33,14 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-pointerdetector
     npm install
+
+If you have problems installing any of the dependencies, please remove them and
+clean the npm cache, and try to install them again:
+
+.. sourcecode:: sh
+
+    rm -r node_modules
+    npm cache clean
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
@@ -56,7 +63,7 @@ composed by the following `Media Element`:term: s:
    :alt:     WebRTC with PointerDetector filter in loopback Media Pipeline
 
    *WebRTC with PointerDetector filter in loopback Media Pipeline*
-   
+
 The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-pointerdetector>`_.
 
@@ -100,12 +107,12 @@ the windows. This is implemented in the JavaScript logic as follows:
 
             filter.addWindow({id: 'window0', height: 50, width:50,
                upperRightX: 500, upperRightY: 150}, function(error) {
-                  if (error) return onError(error);                           
+                  if (error) return onError(error);
             });
 
             filter.addWindow({id: 'window1', height: 50, width:50,
                upperRightX: 500, upperRightY: 250}, function(error) {
-                  if (error) return onError(error);                        
+                  if (error) return onError(error);
             });
 
             filter.on ('WindowIn', function (data){
@@ -169,4 +176,3 @@ Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
 ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
 for *pointerdetector*) downloads the latest version of Kurento artifacts from
 NPM and Bower.
-

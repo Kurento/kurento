@@ -17,14 +17,13 @@ installed:
 
     sudo apt-get install kms-chroma
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
-an Ubuntu machine, you can install both as follows:
+Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
+you can install both as follows:
 
 .. sourcecode:: sh
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
-   sudo npm install -g bower
 
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
@@ -34,6 +33,14 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-chroma
     npm install
+
+If you have problems installing any of the dependencies, please remove them and
+clean the npm cache, and try to install them again:
+
+.. sourcecode:: sh
+
+    rm -r node_modules
+    npm cache clean
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
@@ -167,4 +174,3 @@ Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
 ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
 for *chroma*) downloads the latest version of Kurento artifacts from NPM and
 Bower.
-

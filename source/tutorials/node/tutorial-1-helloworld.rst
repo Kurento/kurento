@@ -17,14 +17,13 @@ You need to have installed the Kurento Media Server before running this example.
 Read the :doc:`installation guide <../../installation_guide>` for further
 information.
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
-an Ubuntu machine, you can install both as follows:
+Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
+you can install both as follows:
 
 .. sourcecode:: sh
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
-   sudo npm install -g bower
 
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
@@ -35,6 +34,14 @@ is hosted and then install and run it, as follows:
     cd kurento-tutorial-node/kurento-hello-world
     npm install
     npm start
+
+If you have problems installing any of the dependencies, please remove them and
+clean the npm cache, and try to install them again:
+
+.. sourcecode:: sh
+
+    rm -r node_modules
+    npm cache clean
 
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).

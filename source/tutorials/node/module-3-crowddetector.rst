@@ -18,14 +18,13 @@ also installed:
 
     sudo apt-get install kms-crowddetector
 
-Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
-an Ubuntu machine, you can install both as follows:
+Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
+you can install both as follows:
 
 .. sourcecode:: sh
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
-   sudo npm install -g bower
 
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
@@ -35,6 +34,14 @@ is hosted and then install and run it, as follows:
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-crowddetector
     npm install
+
+If you have problems installing any of the dependencies, please remove them and
+clean the npm cache, and try to install them again:
+
+.. sourcecode:: sh
+
+    rm -r node_modules
+    npm cache clean
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
@@ -146,60 +153,60 @@ All in all, the media pipeline of this demo is is implemented as follows:
 .. sourcecode:: javascript
 
    function start(sessionId, sdpOffer, callback) {
-   
+
       if (!sessionId) {
          return callback("Cannot use undefined sessionId");
       }
-   
+
       // Check if session is already transmitting
       if (pipelines[sessionId]) {
          return callback("Close current session before starting a new one or use " +
             "another browser to open a tutorial.")
       }
-   
+
       getKurentoClient(function(error, kurentoClient) {
          if (error) {
             return callback(error);
          }
-   
+
          kurentoClient.create('MediaPipeline', function(error, pipeline) {
             if (error) {
                return callback(error);
             }
-   
+
             createMediaElements(pipeline, function(error, webRtcEndpoint,
                   crowdDetector) {
                if (error) {
                   pipeline.release();
                   return callback(error);
                }
-   
+
                connectMediaElements(webRtcEndpoint, crowdDetector,
                   function(error) {
                      if (error) {
                         pipeline.release();
                         return callback(error);
                      }
-   
+
                      crowdDetector.on ('CrowdDetectorDirection', function (_data){
                         return callback(null, 'crowdDetectorDirection', _data);
                      });
-   
+
                      crowdDetector.on ('CrowdDetectorFluidity', function (_data){
                         return callback(null, 'crowdDetectorFluidity', _data);
                      });
-   
+
                      crowdDetector.on ('CrowdDetectorOccupancy', function (_data){
                         return callback(null, 'crowdDetectorOccupancy', _data);
                      });
-   
+
                      webRtcEndpoint.processOffer(sdpOffer, function(
                            error, sdpAnswer) {
                         if (error) {
                            pipeline.release();
                            return callback(error);
                         }
-   
+
                         pipelines[sessionId] = pipeline;
                         return callback(null, 'sdpAnswer', sdpAnswer);
                      });
@@ -208,14 +215,14 @@ All in all, the media pipeline of this demo is is implemented as follows:
          });
       });
    }
-   
+
    function createMediaElements(pipeline, callback) {
       pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
          if (error) {
             return callback(error);
          }
-   
-         var _roi = {      
+
+         var _roi = {
                   'id' : 'roi1',
                   'points' : [{'x' : 0, 'y' : 0}, {'x' : 0.5, 'y' : 0},
                         {'x' : 0.5, 'y' : 0.5}, {'x' : 0, 'y' : 0.5}],
@@ -274,4 +281,3 @@ Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
 ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
 for *crowddetector*) downloads the latest version of Kurento artifacts from NPM
 and Bower.
-
