@@ -86,6 +86,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		public void onMessage(String message) {
 			handleWebSocketTextMessage(message);
 		}
+
 	}
 
 	private static final Logger log = LoggerFactory
@@ -166,11 +167,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					client = new WebSocketClient();
 					client.setConnectTimeout(this.connectionTimeout);
 					client.start();
-
-					// FIXME Give the client some time, otherwise the exception
-					// is not thrown if the server is down.
-					Thread.sleep(100);
+				} else {
+					log.debug(
+							"{} Using existing websocket client when session is either null or closed.",
+							label);
 				}
+
+				// FIXME Give the client some time, otherwise the exception
+				// is not thrown if the server is down.
+				Thread.sleep(100);
+
 				SimpleEchoSocket socket = new SimpleEchoSocket();
 				ClientUpgradeRequest request = new ClientUpgradeRequest();
 				wsSession = client.connect(socket, new URI(url), request).get();
@@ -180,17 +186,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				if (connectionListener != null) {
 					connectionListener.connectionFailed();
 				}
-				if (client != null) {
-					log.debug("{} Stopping client", label);
-					try {
-						client.stop();
-					} catch (Exception e1) {
-						log.debug(
-								"{} Could not properly close websocket client",
-								label);
-					}
-					client = null;
-				}
+
+				this.closeClient();
 				throw new KurentoException(label
 						+ " Exception connecting to WebSocket server " + url, e);
 			}
@@ -201,17 +198,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					if (connectionListener != null) {
 						connectionListener.connectionFailed();
 					}
-					if (client != null) {
-						log.debug("{}Stopping client", label);
-						try {
-							client.stop();
-						} catch (Exception e1) {
-							log.debug(
-									"{} Could not properly close websocket client",
-									label);
-						}
-						client = null;
-					}
+					this.closeClient();
 					throw new KurentoException(label + " Timeout of "
 							+ this.connectionTimeout
 							+ "ms when waiting to connect to Websocket server "
@@ -419,6 +406,19 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			throw new TransportException(label + " Timeout of " + TIMEOUT
 					+ " milliseconds waiting from response to request with id:"
 					+ request.getId(), e);
+		}
+	}
+
+	private void closeClient() {
+		if (client != null) {
+			log.debug("{} Stopping client", label);
+			try {
+				client.stop();
+				client.destroy();
+			} catch (Exception e1) {
+				log.debug("{} Could not properly close websocket client", label);
+			}
+			client = null;
 		}
 	}
 }
