@@ -17,7 +17,7 @@ package org.kurento.jsonrpc.client;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
-import static org.kurento.jsonrpc.internal.JsonRpcConstants.RESULT_PROPERTY;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG_PAYLOAD;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -84,7 +84,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	private static final ScheduledExecutorService scheduler = Executors
 			.newSingleThreadScheduledExecutor();
 
-	private Future heartbeat;
+	private Future<?> heartbeat;
 
 	public void setServerRequestHandler(JsonRpcHandler<?> handler) {
 		this.handlerManager.setJsonRpcHandler(handler);
@@ -149,7 +149,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	@Override
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-			throws IOException {
+					throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 
@@ -232,22 +232,23 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	public void enableHeartbeat(int interval) {
 		this.heartbeatInterval = interval;
-		heartbeat = scheduler.schedule(new Runnable() {
 
+		heartbeat = scheduler.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					JsonObject response = sendRequest(METHOD_PING)
 							.getAsJsonObject();
-					if (!PONG.equals(response.get(RESULT_PROPERTY))) {
+
+					if (!PONG.equals(response.get(PONG_PAYLOAD).getAsString())) {
 						stopHeartbeatOnFailure();
 					}
 				} catch (Exception e) {
-					log.warn("Error sending heartbeat to server", e);
+					log.warn("{} Error sending heartbeat to server", label, e);
 					stopHeartbeatOnFailure();
 				}
 			}
-		}, heartbeatInterval, MILLISECONDS);
+		}, 0, heartbeatInterval, MILLISECONDS);
 
 	}
 
@@ -255,10 +256,13 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	 * Cancels the heartbeat task and closes the client
 	 */
 	private final void stopHeartbeatOnFailure() {
+		log.warn(
+				"{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
+				label);
 		try {
 			close();
 		} catch (IOException ex) {
-			log.warn("Error closing client", ex);
+			log.warn("{} Error closing client", label, ex);
 		}
 		heartbeat.cancel(false);
 	}

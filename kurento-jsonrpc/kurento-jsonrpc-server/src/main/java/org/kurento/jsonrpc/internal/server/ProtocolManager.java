@@ -17,6 +17,7 @@ package org.kurento.jsonrpc.internal.server;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG_PAYLOAD;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_ERROR;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_SUCCESSFUL;
 
@@ -41,10 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 
 public class ProtocolManager {
@@ -206,8 +207,10 @@ public class ProtocolManager {
 			String transportId) throws IOException {
 
 		String sessionId = request.getSessionId();
+		JsonObject pongPayload = new JsonObject();
+		pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
 		responseSender.sendResponse(new Response<>(sessionId, request.getId(),
-				PONG));
+				pongPayload));
 
 	}
 

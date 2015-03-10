@@ -54,6 +54,8 @@ public class JsonRpcConstants {
 
 	public static final String METHOD_PING = "ping";
 
+	public static final String PONG_PAYLOAD = "message";
+
 	public static final String PONG = "pong";
 
 	public static final String EVENT_SESSION_TERMINATED = "sessionTerminated";
