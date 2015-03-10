@@ -569,3 +569,43 @@ order to negotiate SDP in WebRTC::
       "jsonrpc":"2.0"
     }
 
+
+Kurento Module Creator
+======================
+
+The default Kurento clients (Java and JavaScript) are created using a tool
+called **Kurento Module Creator**. Therefore, this tool can be also be used to
+create custom clients in other languages.
+
+Kurento Module Creator can be installed in an Ubuntu machine using the following
+command:
+
+.. sourcecode:: sh
+
+   sudo apt-get install kurento-module-creator
+
+The aim of this tools is to generate the client code and also the glue code
+needed in the server-side. For code generation it uses
+`Freemarker <http://freemarker.org/>`_ as template engine. The typicall way to
+use Kurento Module Creater is by running a command like this:
+
+.. sourcecode:: sh
+
+    kurento-module-creator -c <CODEGEN_DIR> -r <ROM_FILE> -r <TEMPLATES_DIR>
+
+Where:
+
+- ``CODEGEN_DIR``: Destination directory for generated files.
+
+- ``ROM_FILE``: A space separated list of Kurento Media Element Description
+  (kmd) files or folders containing this files. As an example, you can take a
+  look to the kmd files within the
+  `Kurento Media Server <https://github.com/Kurento/kurento-media-server/tree/master/scaffold>`_
+  source code.
+
+- ``TEMPLATES_DIR``: Directory that contains template files. As an example,
+  you can take a look to the internal
+  `Java <https://github.com/Kurento/kurento-java/tree/master/kurento-client/src/main/resources/templates>`_
+  and
+  `JavaScript <https://github.com/Kurento/kurento-client-js/tree/master/templates>`_
+  templates.
