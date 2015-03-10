@@ -14,8 +14,16 @@
  */
 package org.kurento.jsonrpc.client;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.RESULT_PROPERTY;
+
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcHandler;
@@ -27,6 +35,8 @@ import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.ClientSession;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -57,6 +67,9 @@ import com.google.gson.JsonObject;
  */
 public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
+	private static final Logger log = LoggerFactory
+			.getLogger(JsonRpcClient.class.getName());
+
 	protected JsonRpcHandlerManager handlerManager = new JsonRpcHandlerManager();
 	protected JsonRpcRequestSenderHelper rsHelper;
 	protected Object registerInfo;
@@ -65,6 +78,13 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected String label = "";
 	protected int connectionTimeout = 15000;
 	protected int idleTimeout = 300000;
+	protected int heartbeatInterval = 5000;
+	protected boolean heartbeating;
+
+	private static final ScheduledExecutorService scheduler = Executors
+			.newSingleThreadScheduledExecutor();
+
+	private Future heartbeat;
 
 	public void setServerRequestHandler(JsonRpcHandler<?> handler) {
 		this.handlerManager.setJsonRpcHandler(handler);
@@ -73,9 +93,6 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public void setLabel(String label) {
 		this.label = "[" + label + "] ";
 	}
-
-	@Override
-	public abstract void close() throws IOException;
 
 	@Override
 	public <R> R sendRequest(String method, Class<R> resultClass)
@@ -145,10 +162,6 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		this.session.setSessionId(sessionId);
 	}
 
-	public KeepAliveManager getKeepAliveManager() {
-		return keepAliveManager;
-	}
-
 	/**
 	 * Gets the connection timeout, in milliseconds, configured in the client.
 	 *
@@ -194,10 +207,78 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		this.idleTimeout = idleTimeout;
 	}
 
+	/**
+	 * Gets the configured heartbeat interval in milliseconds.
+	 *
+	 * @return the interval
+	 */
+	public int getHeartbeatInterval() {
+		return this.heartbeatInterval;
+	}
+
+	/**
+	 * Sets the heartbeat interval in milliseconds.
+	 *
+	 * @param interval
+	 *            in milliseconds
+	 */
+	public void setHeartbeatInterval(int interval) {
+		this.heartbeatInterval = interval;
+	}
+
+	public void enableHeartbeat() {
+		this.enableHeartbeat(this.heartbeatInterval);
+	}
+
+	public void enableHeartbeat(int interval) {
+		this.heartbeatInterval = interval;
+		heartbeat = scheduler.schedule(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					JsonObject response = sendRequest(METHOD_PING)
+							.getAsJsonObject();
+					if (!PONG.equals(response.get(RESULT_PROPERTY))) {
+						stopHeartbeatOnFailure();
+					}
+				} catch (Exception e) {
+					log.warn("Error sending heartbeat to server", e);
+					stopHeartbeatOnFailure();
+				}
+			}
+		}, heartbeatInterval, MILLISECONDS);
+
+	}
+
+	/**
+	 * Cancels the heartbeat task and closes the client
+	 */
+	private final void stopHeartbeatOnFailure() {
+		try {
+			close();
+		} catch (IOException ex) {
+			log.warn("Error closing client", ex);
+		}
+		heartbeat.cancel(false);
+	}
+
+	public void disableHeartbeat() {
+		this.heartbeating = false;
+		heartbeat.cancel(false);
+	}
+
+	public KeepAliveManager getKeepAliveManager() {
+		return keepAliveManager;
+	}
+
 	public void setKeepAliveManager(KeepAliveManager keepAliveManager) {
 		this.keepAliveManager = keepAliveManager;
 	}
 
 	public abstract void connect() throws IOException;
+
+	@Override
+	public abstract void close() throws IOException;
 
 }

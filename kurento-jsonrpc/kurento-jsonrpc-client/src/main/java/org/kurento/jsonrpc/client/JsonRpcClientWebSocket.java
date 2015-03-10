@@ -103,13 +103,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private JsonRpcWSConnectionListener connectionListener;
 
-	private boolean clientClose = false;
+	private boolean clientClose;
 
 	private static final long TIMEOUT = 60000;
 
 	private WebSocketClient client;
 
-	private boolean reconnecting = false;
+	private boolean reconnecting;
 
 	public JsonRpcClientWebSocket(String url) {
 		this(url, null);
@@ -380,7 +380,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		Response<JsonElement> responseJson;
 		try {
-
 			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
 			log.debug("{} <-Res {}", label, responseJson.toString());
