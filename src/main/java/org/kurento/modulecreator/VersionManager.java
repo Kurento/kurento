@@ -40,7 +40,7 @@ public class VersionManager {
 		if (expression instanceof Equal) {
 			return ((Equal) expression).getParsedVersion().toString();
 		} else if (expression instanceof Less) {
-			return "(," + ((Less) expression).getParsedVersion() + ")";
+			return "(," + ((Less) expression).getParsedVersion() + "-SNAPSHOT)";
 		} else if (expression instanceof LessOrEqual) {
 			return "(," + ((LessOrEqual) expression).getParsedVersion() + "]";
 		} else if (expression instanceof Greater) {
@@ -75,7 +75,7 @@ public class VersionManager {
 			Version lessVersion = null;
 			String postFix;
 			if (less instanceof Less) {
-				postFix = ")";
+				postFix = "-SNAPSHOT)";
 				lessVersion = ((Less) less).getParsedVersion();
 			} else {
 				postFix = "]";

@@ -50,13 +50,13 @@ public class ImportModulesWithRangesTest {
 
 		Import modAfromB = moduleB.getImports().get(0);
 		assertThat(modAfromB.getVersion(), is("~1.0"));
-		assertThat(modAfromB.getMavenVersion(), is("[1.0.0,2.0.0)"));
+		assertThat(modAfromB.getMavenVersion(), is("[1.0.0,2.0.0-SNAPSHOT)"));
 		assertThat(modAfromB.getNpmVersion(), is(">=1.0.0 <2.0.0"));
 		assertThat(modAfromB.getModule().getVersion(), is("1.5.0"));
 
 		Import modAfromC = moduleC.getImports().get(0);
 		assertThat(modAfromC.getVersion(), is(">=1.0.0 & <2.0.0"));
-		assertThat(modAfromC.getMavenVersion(), is("[1.0.0,2.0.0)"));
+		assertThat(modAfromC.getMavenVersion(), is("[1.0.0,2.0.0-SNAPSHOT)"));
 		assertThat(modAfromC.getNpmVersion(), is(">=1.0.0 <2.0.0"));
 		assertThat(modAfromC.getModule().getVersion(), is("1.5.0"));
 
