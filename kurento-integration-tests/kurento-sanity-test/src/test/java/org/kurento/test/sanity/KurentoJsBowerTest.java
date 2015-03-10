@@ -16,11 +16,15 @@ package org.kurento.test.sanity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.Shell;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.core.io.ClassPathResource;
 
@@ -31,6 +35,16 @@ import org.springframework.core.io.ClassPathResource;
  * @since 4.2.5
  */
 public class KurentoJsBowerTest extends KurentoJsBase {
+
+	public KurentoJsBowerTest() {
+		super(new TestScenario());
+		kurentoUrl = "./";
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] { {} });
+	}
 
 	@BeforeClass
 	public static void runBower() throws IOException {
@@ -71,18 +85,14 @@ public class KurentoJsBowerTest extends KurentoJsBase {
 								+ outputFolder));
 	}
 
-	public KurentoJsBowerTest() {
-		kurentoUrl = "./";
+	@AfterClass
+	public static void rmBower() {
+		Shell.runAndWait("sh", "-c", "rm -rf bower_components");
 	}
 
 	@Test
 	public void kurentoJsBowerTest() {
 		doTest();
-	}
-
-	@AfterClass
-	public static void rmBower() {
-		Shell.runAndWait("sh", "-c", "rm -rf bower_components");
 	}
 
 }

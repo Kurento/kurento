@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SanityTests;
 import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -60,6 +61,10 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	protected static final String DEFAULT_KURENTO_JS_URL = "http://builds.kurento.org/release/stable/";
 
+	public KurentoJsBase(TestScenario testScenario) {
+		super(testScenario);
+	}
+
 	@Before
 	public void setup() {
 		// ChromeDriver
@@ -89,7 +94,8 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 			final String outputFolder = new ClassPathResource("static")
 					.getFile().getAbsolutePath() + File.separator;
 
-			Configuration cfg = new Configuration();
+			Configuration cfg = new Configuration(
+					Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 			cfg.setClassForTemplateLoading(KurentoJsBase.class, "/templates/");
 			Template template = cfg.getTemplate("kurento-client.html.ftl");
 
@@ -122,6 +128,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 			final String urlTest = "http://" + serverAddress + ":" + serverPort
 					+ "/" + lib + ".html";
 			driver.get(urlTest);
+
 			log.debug("Launching kurento-js sanity test against {}", urlTest);
 
 			String status = driver.findElement(By.id("status")).getAttribute(
