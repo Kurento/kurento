@@ -1,6 +1,6 @@
 [![][KurentoImage]][website]
 
-Copyright © 2014 Kurento. Licensed under [LGPL License].
+Copyright © 2014-2015 Kurento. Licensed under [LGPL License].
 
 Kurento JavaScript Tutorial
 ===========================
@@ -14,22 +14,17 @@ The source code of this project can be cloned from the [GitHub repository].
 Installation instructions
 -------------------------
 
-Be sure to have installed [Node.js] in your system:
+Be sure to have installed [Node.js] and [Bower] in your system:
 
 ```bash
 curl -sL https://deb.nodesource.com/setup | sudo bash -
 sudo apt-get install -y nodejs
-```
-
-Also be sure to have installed [Bower] in your system:
-
-```bash
 sudo npm install -g bower
 ```
 
 Each demo is located in a single folder (e.g. kurento-hello-world,
-kurento-magic-mirror, and so on). For example, to launch the kurento-hello-world
-demo, run:
+kurento-magic-mirror, and so on). For example, to install the kurento-hello-world
+demo dependencies, run:
 
 ```bash
 cd kurento-hello-world
@@ -37,7 +32,7 @@ bower install
 ```
 
 An HTTP server is required for these demos. A very simple way of doing this is
-by means of a NodeJS server. This server can be installed as follows:
+by means of a [Node.js] server. This server can be installed as follows:
 
 ```bash
 sudo npm install -g http-server
@@ -49,12 +44,13 @@ Then, in each demo folder execute this command:
 http-server
 ```
 
-Finally, open this URL in your browser: http://localhost:8080/
+Finally, open http://localhost:8080/ in your browser to access to the demo.
 
 Take into account that demos with Generators (kurento-faceoverlay-generator,
 kurento-recorder-filter-generator, and so on) require [co] (generator based
-flow-control for nodejs). In these demos, the experimental JavaScript
-support must be enabled. In Chrome, this can done in this configuration page:
+flow-control for [Node.js] and browser). In these demos, the experimental
+JavaScript support must be enabled. In Chrome, this can done in the flags
+configuration page:
 
 chrome://flags/#enable-javascript-harmony
 
@@ -64,16 +60,31 @@ Optional parameters
 -------------------
 
 The demos accept some optional GET parameters given on the URL, you only need to
-add them to the query string in the same way you would add them to the Node.js
+add them to the query string in the same way you would add them to the [Node.js]
 executable on your command line:
 
 ```
 http://example.com/index.html?ws_url=ws://example.org/kurento
 ```
 
-All the demos accept the *ws_url* parameter to set the WebSocket Kurento
-MediaServer endpoint, other parameters specific to each demo can be found at the
-top of their index.js files.
+All the demos accept the parameters:
+
+* *ws_url*: the WebSocket Kurento MediaServer endpoint. By default it connects
+  to a Kurento MediaServer instance listening on the port 8888 on the same
+  machine where it's being hosted the demo.
+* *ice_servers*: the TURN and STUN servers to use, formatted as a JSON string
+  holding an array of [RTCIceServer] objects (the same structure used when
+  configuring a [PeerConnection] object), or an empty array to disabled them
+  (this is faster and more reliable when doing tests on a local machine or LAN
+  network). By default it use some random servers from a pre-defined list.
+
+  ```
+  http://example.com/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
+  http://example.com/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
+  ```
+
+Other parameters specific to each demo can be found defined at the top of their
+index.js file.
 
 
 Kurento
@@ -114,4 +125,6 @@ Follow us on Twitter @[kurentoms].
 [kurento-utils-js]: https://github.com/Kurento/kurento-utils-js
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [Node.js]: http://nodejs.org/
+[PeerConnection]: http://www.w3.org/TR/webrtc/#rtcpeerconnection-interface
+[RTCIceServer]: http://www.w3.org/TR/webrtc/#idl-def-RTCIceServer
 [website]: http://kurento.org
