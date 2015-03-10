@@ -51,9 +51,10 @@ the Kurento Media Server configuration file located on at
    "stunServerAddress" : "stun ip address",
    "stunServerPort" : 3478
 
-Be careful with the JSON format. If the ``stunServerPort`` line is the last
-within the ``WebRtcEndpoint`` section, then this line must not finish with a
-comma (``,``).
+The parameter ``stunServerAddress`` should be an IP address (not domain name).
+Moreover, be careful with the JSON format. If the ``stunServerPort`` line is
+the last within the ``WebRtcEndpoint`` section, then this line must not finish
+with a comma (``,``).
 
 There is plenty of public STUN servers available, for example:
 
@@ -90,9 +91,22 @@ the Kurento Media Server configuration file located on at
 
 .. sourcecode:: js
 
-   "turnURL" : "user:password@address:port(?transport=[udp|tcp|tls])"
+   "turnURL" : "user:password@address:port"
 
-As before, be careful with the JSON format and the final comma (``,``).
+As before, TURN address should be an IP address (not domain name). Also be
+careful with the JSON format and the final comma (``,``). See some examples of
+TURN configuration below:
+
+.. sourcecode:: js
+
+   "turnURL" : "kurento:kurento@193.147.51.36:3478"
+
+... or using a free access `numb <http://numb.viagenie.ca/>`_ STUN/TURN server
+as follows:
+
+.. sourcecode:: js
+
+   "turnURL" : "user:password@66.228.45.110:3478"
 
 An open source implementation of a TURN server is
 `coturn <https://code.google.com/p/coturn/>`_. In the :doc:`FAQ <./faq>`
