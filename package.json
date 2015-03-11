@@ -39,7 +39,7 @@
     "grunt-jsdoc": "^0.6.3",
     "grunt-npm2bower-sync": "^0.8.1",
     "grunt-shell": "^1.1.2",
-    "minifyify": "~6.3.1",
+    "minifyify": "~4.4.0",
     "node-static": "^0.7.6",
     "qunit-assert-canvas": "^1.0.2",
     "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",
