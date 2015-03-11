@@ -53,7 +53,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		// We send this notification to the JsonRpcHandler when the JsonRpc
 		// session is established, not when websocket session is established
-		log.info(label + "Client connection stablished from {}",
+		log.info("{} Client connection stablished from {}", label,
 				session.getRemoteAddress());
 	}
 
@@ -61,13 +61,13 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
-		log.info(label + "Connection closed because: " + status);
+		log.info("{} Connection closed because: {}", label, status);
 		if (status.getCode() == CloseStatus.GOING_AWAY.getCode()) {
-			log.info(label + "Client is going away (normal termination)");
+			log.info("{} Client is going away (normal termination)", label);
 		} else if (!status.equals(CloseStatus.NORMAL)) {
-			log.error(label + "Abnormal termination: " + status.getCode());
+			log.error("{} Abnormal termination: {}", label, status.getCode());
 		} else {
-			log.info(label + "Normal termination");
+			log.info("{} Normal termination", label);
 		}
 
 		protocolManager.closeSessionIfTimeout(wsSession.getId(),
@@ -87,8 +87,6 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 		try {
 
 			String messageJson = message.getPayload();
-
-			log.debug(label + "Req-> {}", messageJson);
 
 			// TODO Ensure only one register message per websocket session.
 			ServerSessionFactory factory = new ServerSessionFactory() {
@@ -113,7 +111,21 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 								throws IOException {
 
 							String jsonMessage = message.toString();
-							log.debug(label + "<-Res {}", jsonMessage);
+							log.debug("{} <-Res {}", label, jsonMessage);
+							sendJsonMessage(jsonMessage);
+						}
+
+						@Override
+						public void sendPingResponse(Message message)
+								throws IOException {
+
+							String jsonMessage = message.toString();
+							log.trace("{} <-Res {}", label, jsonMessage);
+							sendJsonMessage(jsonMessage);
+						}
+
+				private void sendJsonMessage(String jsonMessage)
+						throws IOException {
 							synchronized (wsSession) {
 								if (wsSession.isOpen()) {
 									wsSession.sendMessage(new TextMessage(

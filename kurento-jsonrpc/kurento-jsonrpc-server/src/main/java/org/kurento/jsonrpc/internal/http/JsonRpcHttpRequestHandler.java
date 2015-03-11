@@ -21,21 +21,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.web.HttpRequestHandler;
-
-import com.google.common.io.CharStreams;
-import com.google.gson.JsonElement;
-
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.server.ProtocolManager;
+import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
 import org.kurento.jsonrpc.internal.server.ServerSession;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
-import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
 import org.kurento.jsonrpc.message.Message;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
+import org.springframework.web.HttpRequestHandler;
+
+import com.google.common.io.CharStreams;
+import com.google.gson.JsonElement;
 
 public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 
@@ -51,7 +50,7 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 				@Override
 				protected <P, R> Response<R> internalSendRequest(
 						Request<P> request, Class<R> resultClass)
-						throws IOException {
+								throws IOException {
 					// TODO Poner aquí la cola de mensajes que devolver al
 					// cliente cuando haga pooling
 					return new Response<>();
@@ -105,6 +104,11 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 			@Override
 			public void sendResponse(Message message) throws IOException {
 				servletResponse.getWriter().println(message);
+			}
+
+			@Override
+			public void sendPingResponse(Message message) throws IOException {
+				sendResponse(message);
 			}
 		};
 

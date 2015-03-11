@@ -55,6 +55,14 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 							+ "a request from server. But with broker it is"
 							+ " not yet implemented", message);
 		}
+
+		@Override
+		public void sendPingResponse(Message message) throws IOException {
+			log.warn(
+					"The broker client is trying to send the response '{}' for "
+							+ "a request from server. But with broker it is"
+							+ " not yet implemented", message);
+		}
 	};
 
 	public JsonRpcClientRabbitMq(String host, String port, String username,
@@ -76,6 +84,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		this.connect();
 	}
 
+	@Override
 	public void connect() throws IOException {
 		connectIfNecessary();
 	}
@@ -96,7 +105,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 				@Override
 				public <P, R> Response<R> internalSendRequest(
 						Request<P> request, Class<R> resultClass)
-						throws IOException {
+								throws IOException {
 					return internalSendRequestBroker(request, resultClass);
 				}
 
@@ -256,11 +265,11 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 		rabbitMqManager.addMessageReceiver(clientId,
 				new BrokerMessageReceiver() {
-					@Override
-					public void onMessage(String message) {
-						handleRequestFromServer(message);
-					}
-				});
+			@Override
+			public void onMessage(String message) {
+				handleRequestFromServer(message);
+			}
+		});
 	}
 
 	protected void internalSendRequestBroker(

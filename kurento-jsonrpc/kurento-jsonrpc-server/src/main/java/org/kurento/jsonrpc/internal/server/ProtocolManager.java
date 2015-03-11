@@ -73,6 +73,10 @@ public class ProtocolManager {
 
 	private String label = "";
 
+	private int maxHeartbeats = 0;
+
+	private int heartbeats = 0;
+
 	public ProtocolManager(JsonRpcHandler<?> handler) {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
 	}
@@ -132,17 +136,22 @@ public class ProtocolManager {
 		Request<JsonElement> request = JsonUtils.fromJsonRequest(
 				requestJsonObject, JsonElement.class);
 
-		if (request.getMethod().equals(METHOD_RECONNECT)) {
+		switch (request.getMethod()) {
+		case METHOD_RECONNECT:
 
+			log.debug("{} Req-> {}", label, request);
 			processReconnectMessage(factory, request, responseSender,
 					transportId);
+			break;
+		case METHOD_PING:
 
-		} else if (request.getMethod().equals(METHOD_PING)) {
-
+			log.trace("{} Req-> {}", label, request);
 			processPingMessage(factory, request, responseSender, transportId);
 
-		} else {
+			break;
+		default:
 
+			log.debug("{} Req-> {}", label, request);
 			ServerSession session = getSession(factory, transportId, request);
 
 			// TODO, Take out this an put in Http specific handler. The main
@@ -172,7 +181,9 @@ public class ProtocolManager {
 			} else {
 				handlerManager.handleRequest(session, request, responseSender);
 			}
+			break;
 		}
+
 	}
 
 	private ServerSession getSession(ServerSessionFactory factory,
@@ -205,13 +216,13 @@ public class ProtocolManager {
 	private void processPingMessage(ServerSessionFactory factory,
 			Request<JsonElement> request, ResponseSender responseSender,
 			String transportId) throws IOException {
-
-		String sessionId = request.getSessionId();
-		JsonObject pongPayload = new JsonObject();
-		pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
-		responseSender.sendResponse(new Response<>(sessionId, request.getId(),
-				pongPayload));
-
+		if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
+			String sessionId = request.getSessionId();
+			JsonObject pongPayload = new JsonObject();
+			pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
+			responseSender.sendPingResponse(new Response<>(sessionId, request
+					.getId(), pongPayload));
+		}
 	}
 
 	private void processReconnectMessage(ServerSessionFactory factory,
@@ -328,5 +339,14 @@ public class ProtocolManager {
 		final ServerSession session = sessionsManager
 				.getByTransportId(transportId);
 		handlerManager.handleTransportError(session, exception);
+	}
+
+	/**
+	 * Method intended to be used for testing purposes
+	 *
+	 * @param maxHeartbeats
+	 */
+	public void setMaxNumberOfHeartbeats(int maxHeartbeats) {
+		this.maxHeartbeats = maxHeartbeats;
 	}
 }

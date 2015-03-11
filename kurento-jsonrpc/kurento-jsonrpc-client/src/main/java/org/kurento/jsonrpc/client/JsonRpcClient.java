@@ -78,10 +78,11 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected String label = "";
 	protected int connectionTimeout = 15000;
 	protected int idleTimeout = 300000;
-	protected int heartbeatInterval = 5000;
+	protected int heartbeatInterval = 0;
+	private static final int DEFAULT_HEARTBEAT_INTERVAL = 5000;
 	protected boolean heartbeating;
 
-	private static final ScheduledExecutorService scheduler = Executors
+	private ScheduledExecutorService scheduler = Executors
 			.newSingleThreadScheduledExecutor();
 
 	private Future<?> heartbeat;
@@ -149,7 +150,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	@Override
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
+			throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 
@@ -227,11 +228,19 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	}
 
 	public void enableHeartbeat() {
+		if (this.heartbeatInterval == 0) {
+			this.heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
+		}
 		this.enableHeartbeat(this.heartbeatInterval);
 	}
 
 	public void enableHeartbeat(int interval) {
+		this.heartbeating = true;
 		this.heartbeatInterval = interval;
+
+		if (scheduler.isShutdown()) {
+			scheduler = Executors.newSingleThreadScheduledExecutor();
+		}
 
 		heartbeat = scheduler.scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -241,11 +250,11 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 							.getAsJsonObject();
 
 					if (!PONG.equals(response.get(PONG_PAYLOAD).getAsString())) {
-						stopHeartbeatOnFailure();
+						closeHeartbeatOnFailure();
 					}
 				} catch (Exception e) {
-					log.warn("{} Error sending heartbeat to server", label, e);
-					stopHeartbeatOnFailure();
+					log.warn("{} Error sending heartbeat to server", label);
+					closeHeartbeatOnFailure();
 				}
 			}
 		}, 0, heartbeatInterval, MILLISECONDS);
@@ -255,21 +264,27 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	/**
 	 * Cancels the heartbeat task and closes the client
 	 */
-	private final void stopHeartbeatOnFailure() {
+	private final void closeHeartbeatOnFailure() {
 		log.warn(
 				"{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
 				label);
+
+		heartbeat.cancel(true);
+		scheduler.shutdownNow();
+
 		try {
-			close();
-		} catch (IOException ex) {
-			log.warn("{} Error closing client", label, ex);
+			closeWithReconnection();
+		} catch (IOException e) {
+			log.warn("{} Exception while lcosing client", label, e);
 		}
-		heartbeat.cancel(false);
 	}
 
 	public void disableHeartbeat() {
-		this.heartbeating = false;
-		heartbeat.cancel(false);
+		if (heartbeating) {
+			this.heartbeating = false;
+			heartbeat.cancel(true);
+			scheduler.shutdownNow();
+		}
 	}
 
 	public KeepAliveManager getKeepAliveManager() {
@@ -284,5 +299,9 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	@Override
 	public abstract void close() throws IOException;
+
+	public void closeWithReconnection() throws IOException {
+		this.close();
+	}
 
 }

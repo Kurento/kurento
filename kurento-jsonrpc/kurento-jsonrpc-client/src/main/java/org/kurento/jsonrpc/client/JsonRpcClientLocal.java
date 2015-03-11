@@ -100,6 +100,13 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 											continuation
 													.onSuccess((Response<JsonElement>) message);
 										}
+
+										@Override
+										public void sendPingResponse(
+												Message message)
+												throws IOException {
+											sendResponse(message);
+										}
 									});
 						} catch (IOException e) {
 							continuation.onError(e);
@@ -120,6 +127,13 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 										public void sendResponse(Message message)
 												throws IOException {
 											response[0] = message;
+										}
+
+										@Override
+										public void sendPingResponse(
+												Message message)
+												throws IOException {
+											sendResponse(message);
 										}
 									});
 
@@ -154,6 +168,12 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 					public void sendResponse(Message message)
 							throws IOException {
 						response[0] = (Response<JsonObject>) message;
+					}
+
+					@Override
+					public void sendPingResponse(Message message)
+							throws IOException {
+						sendResponse(message);
 					}
 				});
 

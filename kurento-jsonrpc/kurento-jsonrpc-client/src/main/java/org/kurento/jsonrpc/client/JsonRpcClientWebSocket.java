@@ -16,6 +16,7 @@ package org.kurento.jsonrpc.client;
 import static org.kurento.jsonrpc.JsonUtils.fromJson;
 import static org.kurento.jsonrpc.JsonUtils.fromJsonRequest;
 import static org.kurento.jsonrpc.JsonUtils.fromJsonResponse;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
 
 import java.io.IOException;
@@ -71,6 +72,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				public void sendResponse(Message message) throws IOException {
 					String jsonMessage = message.toString();
 					log.debug("{} <-Res {}", label, jsonMessage);
+					synchronized (wsSession) {
+						wsSession.getRemote().sendString(jsonMessage);
+					}
+				}
+
+				@Override
+				public void sendPingResponse(Message message)
+						throws IOException {
+					String jsonMessage = message.toString();
+					log.trace("{} <-Res {}", label, jsonMessage);
 					synchronized (wsSession) {
 						wsSession.getRemote().sendString(jsonMessage);
 					}
@@ -143,10 +154,19 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	@Override
 	public void close() throws IOException {
 		if (wsSession != null) {
+			log.debug("{} Closing session by client", label);
+			this.disableHeartbeat();
 			clientClose = true;
 			wsSession.close();
-			client.destroy();
+			this.closeClient();
 		}
+	}
+
+	@Override
+	public void closeWithReconnection() {
+		log.debug("{} Closing session with reconnection", label);
+		this.wsSession.close();
+		this.closeClient();
 	}
 
 	public void closeNativeSession() {
@@ -160,7 +180,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public synchronized void connectIfNecessary() throws IOException {
 
-		if ((wsSession == null) || !wsSession.isOpen()) {
+		if (((wsSession == null) || !wsSession.isOpen()) && !clientClose) {
 
 			try {
 				if (client == null) {
@@ -171,6 +191,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					log.debug(
 							"{} Using existing websocket client when session is either null or closed.",
 							label);
+				}
+
+				// TODO this should go in the JsonRpcClient
+				if (heartbeating) {
+					enableHeartbeat();
 				}
 
 				// FIXME Give the client some time, otherwise the exception
@@ -368,8 +393,15 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			responseFuture = pendingRequests.prepareResponse(request.getId());
 		}
 
+		boolean isPing = false;
 		String jsonMessage = request.toString();
-		log.debug("{} Req-> {}", label, jsonMessage.trim());
+		if (METHOD_PING.equals(request.getMethod())) {
+			isPing = true;
+			log.trace("{} Req-> {}", label, jsonMessage.trim());
+		} else {
+			log.debug("{} Req-> {}", label, jsonMessage.trim());
+		}
+
 		synchronized (wsSession) {
 			wsSession.getRemote().sendString(jsonMessage);
 		}
@@ -382,7 +414,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		try {
 			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
-			log.debug("{} <-Res {}", label, responseJson.toString());
+			if (isPing) {
+				log.trace("{} <-Res {}", label, responseJson.toString());
+			} else {
+				log.debug("{} <-Res {}", label, responseJson.toString());
+			}
 
 			Response<R> response = MessageUtils.convertResponse(responseJson,
 					resultClass);

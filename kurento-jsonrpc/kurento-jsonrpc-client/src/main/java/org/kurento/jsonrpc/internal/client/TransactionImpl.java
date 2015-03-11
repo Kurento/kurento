@@ -31,6 +31,8 @@ public class TransactionImpl implements Transaction {
 
 	public interface ResponseSender {
 		void sendResponse(Message message) throws IOException;
+
+		void sendPingResponse(Message message) throws IOException;
 	}
 
 	private final Session session;

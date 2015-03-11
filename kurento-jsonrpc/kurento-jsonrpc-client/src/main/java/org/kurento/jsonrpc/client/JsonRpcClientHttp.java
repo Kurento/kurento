@@ -180,7 +180,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 		try {
 
 			org.apache.http.client.fluent.Request.Post(url)
-					.bodyString("", ContentType.APPLICATION_JSON).execute();
+			.bodyString("", ContentType.APPLICATION_JSON).execute();
 
 		} catch (ClientProtocolException e) {
 			// Silence http connection exception. This indicate that server is
