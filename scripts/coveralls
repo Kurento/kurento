@@ -61,4 +61,11 @@ fs.remove(REPORTS_DIR, function(error)
       spawn('genhtml', args)
     })
   })
+  .on('exit', function onexit(code, signal)
+  {
+    if(code)   console.error('test exited with code:',code)
+    if(signal) console.error('test exited with signal:',signal)
+
+    if(code) process.exit(code)
+  })
 })
