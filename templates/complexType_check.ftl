@@ -70,9 +70,7 @@ function check${complexType.name}(key, value)
 
 /**
 <#if complexType.doc??>
-  <#list complexType.doc?split("\n") as line>
- * ${sphinxLinks(line, complexType_namepath)}
-  </#list>
+  <@docstring doc=complexType.doc namepath=complexType_namepath/>
  *
  * @memberof module:${module_namespace}
  *
@@ -87,11 +85,7 @@ function check${complexType.name}(key, value)
  * @type {Object}
     <#list complexType.properties as property>
  * @property {${namepath(property.type.name)}} ${property.name}
-      <#if property.doc??>
-        <#list property.doc?split("\n") as line>
- *  ${sphinxLinks(line, complexType_namepath)}
-        </#list>
-      </#if>
+      <@docstring doc=property.doc namepath=complexType_namepath indent=1/>
     </#list>
     <#if complexType.extends??>
 

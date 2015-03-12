@@ -117,3 +117,11 @@
   </#if>
 
 </#macro>
+
+<#macro docstring doc namepath indent=0>
+  <#if doc??>
+    <#list sphinxLinks(doc, namepath)?split("\n") as line>
+ *<#list 0..indent as i> </#list>${line}
+    </#list>
+  </#if>
+</#macro>

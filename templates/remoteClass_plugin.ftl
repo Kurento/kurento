@@ -91,16 +91,12 @@ var ${extends_name} = require('events').${extends_name};
 
 /**
 <#if remoteClass.constructor?? && remoteClass.constructor.doc??>
-  <#list remoteClass.constructor.doc?split("\n") as line>
- * ${sphinxLinks(line, remoteClass_namepath)}
-  </#list>
+  <@docstring doc=remoteClass.constructor.doc namepath=remoteClass_namepath/>
  *
 </#if>
 <#if remoteClass.doc??>
  * @classdesc
-  <#list remoteClass.doc?split("\n") as line>
- *  ${sphinxLinks(line, remoteClass_namepath)}
-  </#list>
+  <@docstring doc=remoteClass.doc namepath=remoteClass_namepath indent=1/>
  *
 </#if>
 <#if remoteClass.abstract>
@@ -135,11 +131,9 @@ inherits(${remoteClass.name}, ${extends_name});
 
 /**
       <#if property.doc??>
-        <#list property.doc?split("\n") as line>
- * ${sphinxLinks(line, remoteClass_namepath)}
-        </#list>
-      </#if>
+        <@docstring doc=property.doc namepath=remoteClass_namepath/>
  *
+      </#if>
  * @alias module:${remoteClass_namepath}#${getPropertyName}
  *
  * @param {module:${remoteClass_namepath}~${getPropertyName}Callback} [callback]
@@ -164,11 +158,9 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
 
 /**
         <#if property.doc??>
-          <#list property.doc?split("\n") as line>
- * ${sphinxLinks(line, remoteClass_namepath)}
-          </#list>
-        </#if>
+          <@docstring doc=property.doc namepath=remoteClass_namepath/>
  *
+        </#if>
  * @alias module:${remoteClass_namepath}#${setPropertyName}
  *
  * @param {<#if property.type.isMap()>Object.<string, ${namepath(property.type.name)}><#else>${namepath(property.type.name)}</#if>} value
@@ -198,20 +190,14 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
     </#list>
 /**
     <#if method.doc??>
-      <#list method.doc?split("\n") as line>
- * ${sphinxLinks(line, remoteClass_namepath)}
-      </#list>
+      <@docstring doc=method.doc namepath=remoteClass_namepath/>
  *
     </#if>
  * @alias module:${remoteClass_namepath}.${method.name}
     <#list method.params as param>
  *
  * @param {<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
-      <#if param.doc??>
-        <#list param.doc?split("\n") as line>
- *  ${sphinxLinks(line, remoteClass_namepath)}
-        </#list>
-      </#if>
+      <@docstring doc=param.doc namepath=remoteClass_namepath indent=1/>
     </#list>
  *
  * @param {module:${remoteClass_namepath}~${method.name}Callback} [callback]
@@ -235,9 +221,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
  * @param {external:Error} error
     <#if method.return??>
  * @param {<#if method.return.type.isMap()>Object.<string, ${namepath(method.return.type.name)}><#else>${namepath(method.return.type.name)}</#if>} result
-      <#list method.return.doc?split("\n") as line>
- *  ${sphinxLinks(line, remoteClass_namepath)}
-      </#list>
+      <@docstring doc=method.return.doc namepath=remoteClass_namepath indent=1/>
     </#if>
  */
   </#list>
@@ -250,11 +234,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   <#list remoteClass.constructor.params?sort_by("name") as param>
  *
  * @property {${namepath(param.type.name)}} <#if param.optional>[${param.name}]<#else>${param.name}</#if>
-    <#if param.doc??>
-      <#list param.doc?split("\n") as line>
- *  ${sphinxLinks(line, remoteClass_namepath)}
-      </#list>
-    </#if>
+    <@docstring doc=param.doc namepath=remoteClass_namepath indent=1/>
   </#list>
 </#if>
  */

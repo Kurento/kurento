@@ -10,9 +10,7 @@ events.js
 
 /**
   <#if event.doc??>
-    <#list event.doc?split("\n") as line>
- * ${sphinxLinks(line, module_name)}
-    </#list>
+    <@docstring doc=event.doc namepath=module_name/>
  *
   </#if>
  * @event module:${module_name}#${event.name}
@@ -24,11 +22,7 @@ events.js
  *
     <#list event.properties as property>
  * @property {${namepath(property.type.name)}} ${property.name}
-      <#if property.doc??>
-        <#list property.doc?split("\n") as line>
- *  ${sphinxLinks(line, module_name)}
-        </#list>
-      </#if>
+      <@docstring doc=property.doc namepath=module_name indent=1/>
     </#list>
   </#if>
  */
