@@ -36,11 +36,51 @@ module.exports = function (grunt) {
       generated_doc: '<%= jsdoc.all.dest %>'
     },
 
+    githooks: {
+      all: {
+        'pre-commit': 'jsbeautifier:git-pre-commit'
+      }
+    },
+
     // Generate documentation
     jsdoc: {
       all: {
         src: ['README.md', 'lib/**/*.js', 'test/*.js'],
         dest: 'doc/jsdoc'
+      }
+    },
+
+    jsbeautifier: {
+      options: {
+        js: {
+          braceStyle: "collapse",
+          breakChainedMethods: false,
+          e4x: false,
+          evalCode: false,
+          indentChar: " ",
+          indentLevel: 0,
+          indentSize: 2,
+          indentWithTabs: false,
+          jslintHappy: true,
+          keepArrayIndentation: false,
+          keepFunctionIndentation: false,
+          maxPreserveNewlines: 2,
+          preserveNewlines: true,
+          spaceBeforeConditional: true,
+          spaceInParen: false,
+          unescapeStrings: false,
+          wrapLineLength: 80
+        }
+      },
+
+      "default": {
+        src: ["lib/**/*.js", "*.js", "test/*.js", "scripts/*.js"]
+      },
+      "git-pre-commit": {
+        src: ["lib/**/*.js", "*.js", "test/*.js", "scripts/*.js"],
+        options: {
+          mode: "VERIFY_ONLY"
+        }
       }
     },
 
@@ -148,13 +188,17 @@ module.exports = function (grunt) {
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-githooks');
+  grunt.loadNpmTasks('grunt-jsbeautifier');
   grunt.loadNpmTasks('grunt-jscoverage');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
+  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify',
+    'jsbeautifier:git-pre-commit'
+  ]);
 
   grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
   grunt.registerTask('coverage', ['clean:coverage', 'jscoverage',
