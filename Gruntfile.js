@@ -94,6 +94,20 @@ module.exports = function (grunt) {
       }
     },
 
+    jshint: {
+      all: ['lib/**/*.js', "test/*.js"],
+      options: {
+        "curly": true,
+        "indent": 2,
+        "unused": true,
+        "undef": true,
+        "camelcase": false,
+        "newcap": true,
+        "node": true,
+        "browser": true
+      }
+    },
+
     // Generate browser versions and mapping debug file
     browserify: {
       require: {
@@ -192,6 +206,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jsbeautifier');
   grunt.loadNpmTasks('grunt-jscoverage');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
