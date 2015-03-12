@@ -65,8 +65,8 @@ public class LatencyController implements
 	private long lastLocalColorChangeTimeAbsolute = -1;
 	private long lastRemoteColorChangeTimeAbsolute = -1;
 
-	private String lastLocalColor;
-	private String lastRemoteColor;
+	private Color lastLocalColor;
+	private Color lastRemoteColor;
 
 	private Thread localColorTrigger;
 	private Thread remoteColorTrigger;
@@ -125,9 +125,6 @@ public class LatencyController implements
 		}
 	}
 
-	// TODO: Currently latency control is coupled to kurento-test client. This
-	// should be improved in a future refactor, but in the meantime latency
-	// control is only available on KurentoTestClient
 	public void checkLocalLatency(final long testTime,
 			final TimeUnit testTimeUnit, KurentoTestClient client)
 			throws InterruptedException, IOException {
@@ -267,10 +264,10 @@ public class LatencyController implements
 			// Synchronization with the green color
 			do {
 				waitForLocalColor(msgName, t);
-			} while (!similarColor(lastLocalColor, "0,255,0,0"));
+			} while (!similarColor(lastLocalColor, Color.GREEN));
 			do {
 				waitForRemoteColor(msgName, t);
-			} while (!similarColor(lastRemoteColor, "0,255,0,0"));
+			} while (!similarColor(lastRemoteColor, Color.GREEN));
 
 			while (true) {
 
@@ -303,7 +300,7 @@ public class LatencyController implements
 					}
 
 					LatencyRegistry LatencyRegistry = new LatencyRegistry(
-							rgba2Color(lastRemoteColor), latencyMilis);
+							lastRemoteColor, latencyMilis);
 
 					if (latencyMilis > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
 						LatencyException latencyException = new LatencyException(
@@ -356,16 +353,14 @@ public class LatencyController implements
 		}
 	}
 
-	private boolean similarColor(String expectedColorStr, String realColorStr) {
-		String[] realColor = realColorStr.split(",");
-		int realRed = Integer.parseInt(realColor[0]);
-		int realGreen = Integer.parseInt(realColor[1]);
-		int realBlue = Integer.parseInt(realColor[2]);
+	private boolean similarColor(Color expectedColor, Color realColor) {
+		int realRed = realColor.getRed();
+		int realGreen = realColor.getGreen();
+		int realBlue = realColor.getBlue();
 
-		String[] expectedColor = expectedColorStr.split(",");
-		int expectedRed = Integer.parseInt(expectedColor[0]);
-		int expectedGreen = Integer.parseInt(expectedColor[1]);
-		int expectedBlue = Integer.parseInt(expectedColor[2]);
+		int expectedRed = expectedColor.getRed();
+		int expectedGreen = expectedColor.getGreen();
+		int expectedBlue = expectedColor.getBlue();
 
 		double distance = Math.sqrt((realRed - expectedRed)
 				* (realRed - expectedRed) + (realGreen - expectedGreen)
@@ -460,12 +455,6 @@ public class LatencyController implements
 
 	public TimeUnit getTimeoutTimeUnit() {
 		return timeoutTimeUnit;
-	}
-
-	private Color rgba2Color(String rgba) {
-		String[] rgbaArr = rgba.split(",");
-		return new Color(Integer.parseInt(rgbaArr[0]),
-				Integer.parseInt(rgbaArr[1]), Integer.parseInt(rgbaArr[2]));
 	}
 
 	public void failIfLatencyProblem() {

@@ -23,23 +23,30 @@ package org.kurento.test.latency;
 public enum VideoTagType {
 	LOCAL, REMOTE;
 
+	public static String localId;
+	public static String remoteId;
+
 	public String getColor() {
 		switch (this) {
 		case LOCAL:
-			return "return colorInfo[0].rgba;";
+			return "return kurentoTest.colorInfo['" + localId
+					+ "'].changeColor;";
 		case REMOTE:
 		default:
-			return "return colorInfo[1].rgba;";
+			return "return kurentoTest.colorInfo['" + remoteId
+					+ "'].changeColor;";
 		}
 	}
 
 	public String getTime() {
 		switch (this) {
 		case LOCAL:
-			return "return colorInfo[0].time;";
+			return "return kurentoTest.colorInfo['" + localId
+					+ "'].changeTime;";
 		case REMOTE:
 		default:
-			return "return colorInfo[1].time;";
+			return "return kurentoTest.colorInfo['" + remoteId
+					+ "'].changeTime;";
 		}
 	}
 
@@ -64,12 +71,26 @@ public enum VideoTagType {
 	}
 
 	public String getId() {
+		if (localId == null || remoteId == null) {
+			throw new RuntimeException(
+					"You must specify local/remote video tag id in order to perform latency control");
+		}
+
 		switch (this) {
 		case LOCAL:
-			return "local";
+			return localId;
 		case REMOTE:
 		default:
-			return "video";
+			return remoteId;
 		}
 	}
+
+	public static void setLocalId(String id) {
+		localId = id;
+	}
+
+	public static void setRemoteId(String id) {
+		remoteId = id;
+	}
+
 }

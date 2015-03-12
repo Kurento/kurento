@@ -75,6 +75,13 @@ public class KurentoTest {
 				browserClient.setId(browserKey);
 				browserClient.setName(testName.getMethodName());
 				browserClient.init();
+
+				// Injecting kurento-test.js in the client page
+				String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
+				kurentoTestJs += "kurentoScript.src='./lib/kurento-test.js';";
+				kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
+				kurentoTestJs += "return true;";
+				browserClient.executeScript(kurentoTestJs);
 			}
 		}
 	}

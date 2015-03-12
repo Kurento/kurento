@@ -486,7 +486,6 @@ public class SystemMonitor {
 		this.samplingTime = samplingTime;
 	}
 
-	// TODO currently RTC stats are only supported by kurento-test
 	public void addJs(JavascriptExecutor js) {
 		if (jsList == null) {
 			jsList = new CopyOnWriteArrayList<>();
@@ -498,7 +497,7 @@ public class SystemMonitor {
 	public Map<String, Object> getRtcStats(JavascriptExecutor js) {
 		Map<String, Object> out = new HashMap<>();
 		try {
-			out = (Map<String, Object>) js.executeScript("return rtcStats;");
+			out = (Map<String, Object>) js.executeScript("return kurentoTest.rtcStats;");
 
 		} catch (WebDriverException we) {
 			// If client is not ready to gather rtc statistics, we just log it

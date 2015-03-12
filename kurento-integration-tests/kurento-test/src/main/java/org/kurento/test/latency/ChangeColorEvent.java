@@ -14,6 +14,8 @@
  */
 package org.kurento.test.latency;
 
+import java.awt.Color;
+
 /**
  * Events for color change detection.
  *
@@ -25,9 +27,9 @@ public class ChangeColorEvent {
 
 	private VideoTag videoTag;
 	private long time;
-	private String color;
+	private Color color;
 
-	public ChangeColorEvent(VideoTag videoTag, long time, String color) {
+	public ChangeColorEvent(VideoTag videoTag, long time, Color color) {
 		this.videoTag = videoTag;
 		this.time = time;
 		this.color = color;
@@ -49,11 +51,11 @@ public class ChangeColorEvent {
 		this.time = time;
 	}
 
-	public String getColor() {
+	public Color getColor() {
 		return color;
 	}
 
-	public void setColor(String color) {
+	public void setColor(Color color) {
 		this.color = color;
 	}
 

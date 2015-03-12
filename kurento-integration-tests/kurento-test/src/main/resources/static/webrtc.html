@@ -5,207 +5,8 @@
 <title>WebRTC test</title>
 <script src="./lib/adapter.js"></script>
 <script src="./lib/Console.js"></script>
-<script src="./lib/color.js"></script>
-<script src="./lib/stats.js"></script>
+<script src="./lib/webrtc.js"></script>
 <script src="./js/kurento-utils.js"></script>
-<script>
-	var local;
-	var video;
-	var webRtcPeer;
-	var sdpOffer;
-	var userMediaConstraints = {
-		fake : true
-	};
-	var videoStream = null;
-	var audioStream = null;
-	var defaultVideoConstraints = {
-		mandatory : {
-			maxWidth : 640,
-			maxFrameRate : 15,
-			minFrameRate : 15
-		}
-	};
-	var colorInfo;
-	var initTime;
-	var latency = 0;
-	var newLatency = true;
-
-	try {
-		kurentoUtils.WebRtcPeer.prototype.server.iceServers = [];
-	} catch (e) {
-		console.warn(e);
-	}
-
-	window.onload = function() {
-		console = new Console("console", console);
-		local = document.getElementById("local");
-		video = document.getElementById("video");
-		initTime = new Date();
-
-		// Initials colors
-		colorInfo = [ {
-			rgba : "0,0,0,0",
-			time : null
-		}, {
-			rgba : "0,0,0,0",
-			time : null
-		} ];
-
-		setInterval(updateCurrentTime, 100);
-
-	}
-
-	function watchColors() {
-		watchColorChange('localcolor', 0);
-		watchColorChange('color', 1);
-
-		if (!colorChanged(colorInfo[1].rgba, colorInfo[0].rgba) && newLatency) {
-			latency = colorInfo[1].time - colorInfo[0].time;
-			newLatency = false;
-		}
-	}
-
-	function getLatency() {
-		var out = latency;
-		latency = null;
-		return out;
-	}
-
-	function watchColorChange(colorTagId, iColor) {
-		var colorNew = document.getElementById(colorTagId).value;
-
-		if (colorChanged(colorInfo[iColor].rgba, colorNew)) {
-			var log = (iColor == 0) ? "local" : "remote"
-			colorInfo[iColor].time = new Date() - initTime;
-			console.info("Detected color change in " + log + " stream, from "
-					+ colorInfo[iColor].rgba + " to " + colorNew);
-			colorInfo[iColor].rgba = colorNew;
-			newLatency = true;
-		}
-	}
-
-	function setAudioUserMediaConstraints() {
-		userMediaConstraints = {
-			audio : true,
-			video : false,
-			fake : true
-		};
-	}
-
-	function setVideoUserMediaConstraints() {
-		userMediaConstraints = {
-			audio : false,
-			video : defaultVideoConstraints,
-			fake : true
-		};
-	}
-
-	function setCustomAudio(audioUrl) {
-		mediaConstraints = {
-			audio : false,
-			video : defaultVideoConstraints,
-			fake : true
-		};
-		getUserMedia(mediaConstraints, function(userStream) {
-			videoStream = userStream;
-		}, onError);
-
-		var context = new AudioContext();
-		var audioTest = document.getElementById("audioTest");
-		audioTest.src = audioUrl;
-		var sourceStream = context.createMediaElementSource(audioTest);
-		var mixedOutput = context.createMediaStreamDestination();
-		sourceStream.connect(mixedOutput);
-		audioStream = mixedOutput.stream;
-	}
-
-	function startSendRecv() {
-		console.log("Starting WebRTC in SendRecv mode...");
-		showSpinner(local, video);
-		webRtcPeer = kurentoUtils.WebRtcPeer.start('sendRecv', local, video,
-				onOffer, onError, userMediaConstraints, videoStream,
-				audioStream);
-	}
-
-	function startSendOnly() {
-		console.log("Starting WebRTC in SendOnly mode...");
-		showSpinner(local);
-		webRtcPeer = kurentoUtils.WebRtcPeer.start('send', local, null,
-				onOffer, onError, userMediaConstraints, videoStream,
-				audioStream);
-	}
-
-	function startRecvOnly() {
-		console.log("Starting WebRTC in RecvOnly mode...");
-		showSpinner(video);
-		webRtcPeer = kurentoUtils.WebRtcPeer.start('recv', null, video,
-				onOffer, onError, userMediaConstraints, videoStream,
-				audioStream);
-	}
-
-	function onError(error) {
-		console.error(error);
-	}
-
-	function onOffer(offer) {
-		console.info("SDP offer:");
-		sdpOffer = offer;
-		console.info(sdpOffer);
-	}
-
-	function processSdpAnswer(answer) {
-		var sdpAnswer = window.atob(answer);
-		console.info("SDP answer:");
-		console.info(sdpAnswer);
-		webRtcPeer.processSdpAnswer(sdpAnswer);
-	}
-
-	function updateCurrentTime() {
-		document.getElementById("currentTime").value = video.currentTime;
-	}
-
-	function log(text) {
-		document.getElementById("status").value = text;
-	}
-
-	function addEventListener(type, callback) {
-		video.addEventListener(type, callback, false);
-	}
-
-	function videoEvent(e) {
-		if (!e) {
-			e = window.event;
-		}
-		if (e.type == "playing") {
-			audioTest.play();
-			setInterval(watchColors, 10);
-		}
-		log(e.type);
-	}
-
-	function addTestName(testName) {
-		document.getElementById("testName").innerHTML = testName;
-	}
-
-	function appendStringToTitle(string) {
-		document.getElementById("testTitle").innerHTML += " " + string;
-	}
-
-	function showSpinner() {
-		for (var i = 0; i < arguments.length; i++) {
-			arguments[i].poster = './img/transparent-1px.png';
-			arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
-		}
-	}
-
-	function hideSpinner() {
-		for (var i = 0; i < arguments.length; i++) {
-			arguments[i].src = '';
-			arguments[i].poster = './img/webrtc.png';
-			arguments[i].style.background = '';
-		}
-	}
-</script>
 </head>
 <body>
 	<div style="clear: left; margin: 5px;">
@@ -214,23 +15,23 @@
 	</div>
 	<div style="float: left; margin: 5px;">
 		<h3>Local stream</h3>
-		<video id="local" autoplay width="480px" height="360px"
+		<video id="local" width="480px" height="360px" autoplay
 			poster="./img/webrtc.png" style="border: solid gray 1px;"></video>
 	</div>
 	<div style="float: left; margin: 5px;">
 		<h3>Remote stream</h3>
-		<video id="video" autoplay width="480px" height="360px"
+		<video id="video" width="480px" height="360px" autoplay
 			poster="./img/webrtc.png" style="border: solid gray 1px;"></video>
 	</div>
 	<div style="clear: left; margin: 5px;">
 		<label for="output">Status</label> <input id="status" name="status"
-			style="width: 200px;" /> <label for="currentTime">Current
-			Time</label> <input id="currentTime" name="currentTime" /> <label
-			for="color">Local color</label> <input id="localcolor"
-			style="width: 97px;"></input> <label for="color">Remote color</label>
-		<input id="color" style="width: 97px;"></input> <label for="x">x</label>
-		<input id="x" style="width: 30px;" value="0" /> <label for="y">y</label>
-		<input id="y" style="width: 30px;" value="0" /> <br />
+			style="width: 200px;"> <label for="currentTime">Current
+			Time</label> <input id="currentTime" name="currentTime"> <label
+			for="local-color">Local color</label> <input id="local-color"
+			style="width: 97px;"></input> <label for="video-color">Remote
+			color</label> <input id="video-color" style="width: 97px;"></input> <label
+			for="x">x</label> <input id="x" style="width: 30px;" value="0">
+		<label for="y">y</label> <input id="y" style="width: 30px;" value="0"><br>
 		<audio id="audioTest" loop="loop"></audio>
 		<label for="output">Console</label>
 		<div id="console"

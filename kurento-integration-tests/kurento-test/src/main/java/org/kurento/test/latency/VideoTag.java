@@ -29,8 +29,8 @@ public class VideoTag {
 
 	public VideoTag(VideoTagType videoTagType, String mapKey) {
 		this.videoTagType = videoTagType;
-		this.color = "return colorMap['" + mapKey + "'].rgba;";
-		this.time = "return colorMap['" + mapKey + "'].time;";
+		this.color = "return kurentoTest.colorInfo['" + mapKey + "'].changeColor;";
+		this.time = "return kurentoTest.colorInfo['" + mapKey + "'].changeTime;";
 		this.name = mapKey;
 	}
 

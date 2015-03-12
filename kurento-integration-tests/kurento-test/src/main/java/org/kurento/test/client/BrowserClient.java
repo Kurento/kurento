@@ -40,6 +40,8 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -497,7 +499,22 @@ public class BrowserClient implements Closeable {
 		return (JavascriptExecutor) driver;
 	}
 
-	public Object executeScript(String command) {
+	public Object executeScriptAndWaitOutput(final String command) {
+		WebDriverWait wait = new WebDriverWait(driver, timeout);
+		wait.withMessage("Timeout executing script: " + command);
+
+		final Object[] out = new Object[1];
+		wait.until(new ExpectedCondition<Boolean>() {
+			@Override
+			public Boolean apply(WebDriver d) {
+				out[0] = executeScript(command);
+				return out[0] != null;
+			}
+		});
+		return out[0];
+	}
+
+	public Object executeScript(final String command) {
 		return ((JavascriptExecutor) driver).executeScript(command);
 	}
 

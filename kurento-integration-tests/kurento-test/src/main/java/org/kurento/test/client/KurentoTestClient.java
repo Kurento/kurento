@@ -15,7 +15,6 @@
 package org.kurento.test.client;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,9 +26,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.grid.GridHandler;
-import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTagType;
-import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Recorder;
 import org.openqa.selenium.By;
@@ -46,6 +43,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * @since 5.1.0
  */
 public class KurentoTestClient extends TestClient {
+
+	protected static final String LOCAL_VIDEO = "local";
+	protected static final String REMOTE_VIDEO = "video";
 
 	private List<Thread> callbackThreads = new ArrayList<>();
 	private Map<String, CountDownLatch> countDownLatchEvents = new HashMap<>();
@@ -65,7 +65,43 @@ public class KurentoTestClient extends TestClient {
 		super(client);
 		this.callbackThreads = client.callbackThreads;
 		this.countDownLatchEvents = client.countDownLatchEvents;
+
+		// By default all tests are going to track color in both video tags
+		checkColor(LOCAL_VIDEO, REMOTE_VIDEO);
+
+		VideoTagType.setLocalId(LOCAL_VIDEO);
+		VideoTagType.setRemoteId(REMOTE_VIDEO);
 	}
+
+	/*
+	 * setColorCoordinates
+	 */
+	public void setColorCoordinates(int x, int y) {
+		browserClient.getDriver().findElement(By.id("x")).clear();
+		browserClient.getDriver().findElement(By.id("y")).clear();
+		browserClient.getDriver().findElement(By.id("x"))
+				.sendKeys(String.valueOf(x));
+		browserClient.getDriver().findElement(By.id("y"))
+				.sendKeys(String.valueOf(y));
+		super.setColorCoordinates(x, y);
+	}
+
+	/*
+	 * similarColor
+	 */
+	public boolean similarColor(Color expectedColor) {
+		return similarColor(REMOTE_VIDEO, expectedColor);
+
+	}
+
+	/*
+	 * similarColorAt
+	 */
+	public boolean similarColorAt(Color expectedColor, int x, int y) {
+		return similarColorAt(REMOTE_VIDEO, expectedColor, x, y);
+	}
+
+	// ----------------------------------
 
 	/*
 	 * subscribeEvents
@@ -101,18 +137,6 @@ public class KurentoTestClient extends TestClient {
 				countDownLatchEvents.get(browserName + eventType).countDown();
 			}
 		});
-	}
-
-	/*
-	 * setColorCoordinates
-	 */
-	public void setColorCoordinates(int x, int y) {
-		browserClient.getDriver().findElement(By.id("x")).clear();
-		browserClient.getDriver().findElement(By.id("y")).clear();
-		browserClient.getDriver().findElement(By.id("x"))
-				.sendKeys(String.valueOf(x));
-		browserClient.getDriver().findElement(By.id("y"))
-				.sendKeys(String.valueOf(y));
 	}
 
 	/*
@@ -224,95 +248,12 @@ public class KurentoTestClient extends TestClient {
 	}
 
 	/*
-	 * setColorCoordinates
-	 */
-	public boolean similarColorAt(Color expectedColor, int x, int y) {
-		boolean out;
-		final long endTimeMillis = System.currentTimeMillis()
-				+ (browserClient.getTimeout() * 1000);
-		setColorCoordinates(x, y);
-
-		while (true) {
-			out = compareColor(expectedColor);
-			if (out || System.currentTimeMillis() > endTimeMillis) {
-				break;
-			} else {
-				// Polling: wait 200 ms and check again the color
-				// Max wait = timeout variable
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					log.trace("InterruptedException in guard condition ({})",
-							e.getMessage());
-				}
-			}
-		}
-		return out;
-	}
-
-	/*
-	 * similarColor
-	 */
-	public boolean similarColor(Color expectedColor) {
-		return similarColorAt(expectedColor, 0, 0);
-	}
-
-	/*
-	 * compareColor
-	 */
-	public boolean compareColor(Color expectedColor) {
-		String[] realColor = browserClient.getDriver()
-				.findElement(By.id("color")).getAttribute("value").split(",");
-		int red = Integer.parseInt(realColor[0]);
-		int green = Integer.parseInt(realColor[1]);
-		int blue = Integer.parseInt(realColor[2]);
-
-		double distance = Math.sqrt((red - expectedColor.getRed())
-				* (red - expectedColor.getRed())
-				+ (green - expectedColor.getGreen())
-				* (green - expectedColor.getGreen())
-				+ (blue - expectedColor.getBlue())
-				* (blue - expectedColor.getBlue()));
-
-		boolean out = distance <= browserClient.getColorDistance();
-		if (!out) {
-			log.error(
-					"Difference in color comparision. Expected: {}, Real: {} (distance={})",
-					expectedColor, realColor, distance);
-		}
-
-		return out;
-	}
-
-	/*
 	 * getRemoteTime
 	 */
 	public long getRemoteTime() {
 		Object time = browserClient
 				.executeScript(VideoTagType.REMOTE.getTime());
 		return (time == null) ? 0 : (Long) time;
-	}
-
-	/*
-	 * checkLatencyUntil
-	 */
-	public void checkLatencyUntil(SystemMonitorManager monitor,
-			long endTimeMillis) throws InterruptedException, IOException {
-		while (true) {
-			if (System.currentTimeMillis() > endTimeMillis) {
-				break;
-			}
-			Thread.sleep(100);
-			try {
-				long latency = getLatency();
-				if (latency != Long.MIN_VALUE) {
-					monitor.addCurrentLatency(latency);
-				}
-			} catch (LatencyException le) {
-				// log.error("$$$ " + le.getMessage());
-				monitor.incrementLatencyErrors();
-			}
-		}
 	}
 
 	/*
@@ -328,35 +269,6 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public boolean compare(double i, double j) {
 		return Math.abs(j - i) <= browserClient.getThresholdTime();
-	}
-
-	/*
-	 * getLatency
-	 */
-	@SuppressWarnings("deprecation")
-	public long getLatency() throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
-		final long[] out = new long[1];
-		Thread t = new Thread() {
-			public void run() {
-				Object latency = browserClient
-						.executeScript("return getLatency();");
-				if (latency != null) {
-					out[0] = (Long) latency;
-				} else {
-					out[0] = Long.MIN_VALUE;
-				}
-				latch.countDown();
-			}
-		};
-		t.start();
-		if (!latch.await(browserClient.getTimeout(), TimeUnit.SECONDS)) {
-			t.interrupt();
-			t.stop();
-			throw new LatencyException("Timeout getting latency ("
-					+ browserClient.getTimeout() + "  seconds)");
-		}
-		return out[0];
 	}
 
 	/*
@@ -457,21 +369,6 @@ public class KurentoTestClient extends TestClient {
 					+ "');");
 		} catch (WebDriverException we) {
 			log.warn(we.getMessage());
-		}
-	}
-
-	/*
-	 * activateRtcStats
-	 */
-	public void activateRtcStats(SystemMonitorManager monitor) {
-		try {
-			browserClient.executeScript("activateRtcStats();");
-			monitor.addJs(browserClient.getJs());
-		} catch (WebDriverException we) {
-			// If client is not ready to gather rtc statistics, we just log it
-			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (function activateRtcStats() is not defined)");
 		}
 	}
 
