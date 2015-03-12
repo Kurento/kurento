@@ -56,7 +56,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 struct _KmsHttpEPServerPrivate {
   GHashTable *handlers;
   SoupServer *server;
-  gchar *announcedAddr;
+  gchar *announced_addr;
+  gchar *got_addr;
   gchar *iface;
   gint port;
   GRand *rand;
@@ -926,6 +927,22 @@ kms_http_ep_server_register_handler (KmsHttpEPServer *self, gchar *uri,
   return TRUE;
 }
 
+static const gchar *
+kms_http_ep_server_get_announced_addr (KmsHttpEPServer *self)
+{
+  if (self->priv->announced_addr) {
+    return self->priv->announced_addr;
+  } else if (self->priv->iface) {
+    return self->priv->iface;
+  } else {
+    if (!self->priv->got_addr) {
+      self->priv->got_addr = get_address();
+    }
+
+    return self->priv->got_addr;
+  }
+}
+
 static void
 kms_http_ep_server_set_cookie (KmsHttpEPServer *self, GstElement *httpep,
                                SoupMessage *msg, const char *path)
@@ -937,8 +954,9 @@ kms_http_ep_server_set_cookie (KmsHttpEPServer *self, GstElement *httpep,
   /* No cookie has been set for this httpep */
   id = g_rand_double_range (self->priv->rand, G_MININT64, G_MAXINT64);
   id_str = g_strdup_printf ("%" G_GINT64_FORMAT, id);
-  cookie = soup_cookie_new (COOKIE_NAME, id_str, self->priv->announcedAddr,
-                            path, -1);
+  cookie = soup_cookie_new (COOKIE_NAME, id_str,
+                            kms_http_ep_server_get_announced_addr (self), path,
+                            -1);
   g_free (id_str);
 
   header = soup_cookie_to_set_cookie_header (cookie);
@@ -1417,7 +1435,8 @@ kms_http_ep_server_finalize (GObject *obj)
 
   g_free (self->priv->iface);
 
-  g_free (self->priv->announcedAddr);
+  g_free (self->priv->announced_addr);
+  g_free (self->priv->got_addr);
 
   if (self->priv->loop) {
     g_clear_object (&self->priv->loop);
@@ -1465,16 +1484,11 @@ kms_http_ep_server_set_property (GObject *obj, guint prop_id,
   case PROP_KMS_HTTP_EP_SERVER_ANNOUNCED_ADDRESS: {
     gchar *val = g_value_dup_string (value);
 
-    if (self->priv->announcedAddr != NULL) {
-      g_free (self->priv->announcedAddr);
+    if (self->priv->announced_addr != NULL) {
+      g_free (self->priv->announced_addr);
     }
 
-    if (val == NULL) {
-      self->priv->announcedAddr = get_address ();
-      GST_DEBUG ("Announced address is %s", self->priv->announcedAddr);
-    } else {
-      self->priv->announcedAddr = val;
-    }
+    self->priv->announced_addr = val;
 
     break;
   }
@@ -1502,7 +1516,7 @@ kms_http_ep_server_get_property (GObject *obj, guint prop_id, GValue *value,
     break;
 
   case PROP_KMS_HTTP_EP_SERVER_ANNOUNCED_ADDRESS:
-    g_value_set_string (value, self->priv->announcedAddr);
+    g_value_set_string (value, kms_http_ep_server_get_announced_addr (self) );
     break;
 
   default:
@@ -1601,7 +1615,8 @@ kms_http_ep_server_init (KmsHttpEPServer *self)
   self->priv->server = NULL;
   self->priv->port = KMS_HTTP_EP_SERVER_DEFAULT_PORT;
   self->priv->iface = KMS_HTTP_EP_SERVER_DEFAULT_INTERFACE;
-  self->priv->announcedAddr = KMS_HTTP_EP_SERVER_DEFAULT_ANNOUNCED_ADDRESS;
+  self->priv->announced_addr = KMS_HTTP_EP_SERVER_DEFAULT_ANNOUNCED_ADDRESS;
+  self->priv->got_addr = NULL;
   self->priv->handlers = g_hash_table_new_full (g_str_hash, equal_str_key,
                          g_free, g_object_unref);
 
