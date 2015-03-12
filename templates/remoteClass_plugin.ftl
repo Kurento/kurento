@@ -158,7 +158,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
 /**
  * @callback module:${remoteClass_namepath}~${getPropertyName}Callback
  * @param {external:Error} error
- * @param {${namepath(property.type.name)}} result
+ * @param {<#if property.type.isMap()>Object.<string, ${namepath(property.type.name)}><#else>${namepath(property.type.name)}</#if>} result
  */
       <#if !(property.final || property.readOnly)>
 
@@ -171,7 +171,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
  *
  * @alias module:${remoteClass_namepath}#${setPropertyName}
  *
- * @param {${namepath(property.type.name)}} value
+ * @param {<#if property.type.isMap()>Object.<string, ${namepath(property.type.name)}><#else>${namepath(property.type.name)}</#if>} value
  * @param {module:${remoteClass_namepath}~${setPropertyName}Callback} [callback]
  *
  * @return {external:Promise}
@@ -206,7 +206,7 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
  * @alias module:${remoteClass_namepath}.${method.name}
     <#list method.params as param>
  *
- * @param {${namepath(param.type.name)}}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
+ * @param {<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
       <#if param.doc??>
         <#list param.doc?split("\n") as line>
  *  ${sphinxLinks(line, remoteClass_namepath)}
@@ -234,7 +234,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
  * @callback module:${remoteClass_namepath}~${method.name}Callback
  * @param {external:Error} error
     <#if method.return??>
- * @param {${namepath(method.return.type.name)}} result
+ * @param {<#if method.return.type.isMap()>Object.<string, ${namepath(method.return.type.name)}><#else>${namepath(method.return.type.name)}</#if>} result
       <#list method.return.doc?split("\n") as line>
  *  ${sphinxLinks(line, remoteClass_namepath)}
       </#list>
