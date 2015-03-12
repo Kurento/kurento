@@ -204,9 +204,20 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				SimpleEchoSocket socket = new SimpleEchoSocket();
 				ClientUpgradeRequest request = new ClientUpgradeRequest();
-				wsSession = client.connect(socket, new URI(url), request).get();
+				wsSession = client.connect(socket, new URI(url), request).get(this.connectionTimeout, TimeUnit.MILLISECONDS);
 				wsSession.setIdleTimeout(this.idleTimeout);
 
+			} catch (TimeoutException e) {
+				if (connectionListener != null) {
+					connectionListener.connectionFailed();
+				}
+
+				this.closeClient();
+				throw new KurentoException(label + " Timeout of "
+						+ this.connectionTimeout
+						+ "ms when waiting to connect to Websocket server "
+						+ url);
+				
 			} catch (Exception e) {
 				if (connectionListener != null) {
 					connectionListener.connectionFailed();
