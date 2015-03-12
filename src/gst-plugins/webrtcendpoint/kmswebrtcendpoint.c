@@ -585,11 +585,11 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
     goto end;
   }
 
-end:
-  g_free (fingerprint);
-
   self->priv->ready_to_set_remote_candidates = TRUE;
   ret = kms_webrtc_endpoint_add_stored_ice_candidates (self);
+
+end:
+  g_free (fingerprint);
 
   return ret;
 }
