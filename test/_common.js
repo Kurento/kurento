@@ -13,13 +13,11 @@
  *
  */
 
-
 /**
  * Set an assert error and re-start the test so it can fail
  */
-function onerror(error)
-{
-  if(error)
+function onerror(error) {
+  if (error)
     QUnit.pushFailure(error.message || error, error.stack);
 
   QUnit.start();
@@ -27,8 +25,7 @@ function onerror(error)
 
 _onerror = onerror;
 
-
-const REPORTS_DIR='reports'
+const REPORTS_DIR = 'reports'
 
 function writeReport(ext, data) {
   var path = REPORTS_DIR + '/' + require('../package.json').name + '.' + ext
@@ -40,15 +37,14 @@ function writeReport(ext, data) {
   });
 }
 
-function fetchReport(type, report)
-{
+function fetchReport(type, report) {
   var ext = type
   if (type == 'junit') ext = 'xml'
 
   report = report[ext]
 
   // Node.js - write report to file
-  if(typeof window === 'undefined')
+  if (typeof window === 'undefined')
     writeReport(ext, report)
 
   // browser - write report to console
@@ -62,4 +58,4 @@ function fetchReport(type, report)
 }
 
 QUnit.jUnitReport = fetchReport.bind(undefined, 'junit')
-QUnit.lcovReport  = fetchReport.bind(undefined, 'lcov')
+QUnit.lcovReport = fetchReport.bind(undefined, 'lcov')

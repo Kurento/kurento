@@ -35,8 +35,7 @@
  *
  */
 
-if(typeof QUnit == 'undefined')
-{
+if (typeof QUnit == 'undefined') {
   QUnit = require('qunit-cli');
   QUnit.load();
 
@@ -45,16 +44,13 @@ if(typeof QUnit == 'undefined')
   require('./_common');
 };
 
-
 var WebRtcPeer = kurentoUtils.WebRtcPeer;
 
 var WebRtcPeerRecvonly = WebRtcPeer.WebRtcPeerRecvonly;
 var WebRtcPeerSendonly = WebRtcPeer.WebRtcPeerSendonly;
 var WebRtcPeerSendrecv = WebRtcPeer.WebRtcPeerSendrecv;
 
-
-function getOscillatorMedia()
-{
+function getOscillatorMedia() {
   var ac = new AudioContext();
   var osc = ac.createOscillator();
   var dest = ac.createMediaStreamDestination();
@@ -63,228 +59,205 @@ function getOscillatorMedia()
   return dest.stream;
 }
 
-
 QUnit.module('WebRtcPeer');
 
-QUnit.test('WebRtcPeerRecvonly', function(assert)
-{
+QUnit.test('WebRtcPeerRecvonly', function (assert) {
   var done = assert.async();
 
   assert.expect(1);
 
-  var options =
-  {
-    configuration: {iceServers: []}
+  var options = {
+    configuration: {
+      iceServers: []
+    }
   }
 
-  WebRtcPeerRecvonly(options, function(error, sdpOffer, processSdpAnswer)
-  {
+  WebRtcPeerRecvonly(options, function (error, sdpOffer, processSdpAnswer) {
     var self = this
 
-    function onerror(error)
-    {
+    function onerror(error) {
       self.dispose()
 
       _onerror(error)
       done()
     }
 
-    if(error) return onerror(error)
+    if (error) return onerror(error)
 
-    var offer = new RTCSessionDescription(
-    {
+    var offer = new RTCSessionDescription({
       type: 'offer',
-      sdp:  sdpOffer
+      sdp: sdpOffer
     });
 
     var peerConnection = new RTCPeerConnection()
 
-    peerConnection.setRemoteDescription(offer, function()
-    {
-      var stream = getOscillatorMedia()
+    peerConnection.setRemoteDescription(offer, function () {
+        var stream = getOscillatorMedia()
 
-      peerConnection.addStream(stream)
+        peerConnection.addStream(stream)
 
-      peerConnection.createAnswer(function(answer)
-      {
-        peerConnection.setLocalDescription(answer, function()
-        {
-          processSdpAnswer(answer.sdp, function(error)
-          {
-            if(error) return onerror(error)
+        peerConnection.createAnswer(function (answer) {
+            peerConnection.setLocalDescription(answer, function () {
+                processSdpAnswer(answer.sdp, function (error) {
+                  if (error) return onerror(error)
 
-            var stream = this.getRemoteStream()
-            assert.notEqual(stream, undefined, 'remote stream')
+                  var stream = this.getRemoteStream()
+                  assert.notEqual(stream, undefined,
+                    'remote stream')
 
-            this.dispose()
-            done()
-          })
-        },
-        onerror);
+                  this.dispose()
+                  done()
+                })
+              },
+              onerror);
+          },
+          onerror);
       },
-      onerror);
-    },
-    onerror)
+      onerror)
   })
 });
 
-QUnit.test('WebRtcPeerSendonly', function(assert)
-{
+QUnit.test('WebRtcPeerSendonly', function (assert) {
   var done = assert.async();
 
   assert.expect(2);
 
-  var options =
-  {
+  var options = {
     audioStream: getOscillatorMedia(),
-    configuration: {iceServers: []}
+    configuration: {
+      iceServers: []
+    }
   }
 
-  WebRtcPeerSendonly(options, function(error, sdpOffer, processSdpAnswer)
-  {
+  WebRtcPeerSendonly(options, function (error, sdpOffer, processSdpAnswer) {
     var self = this
 
-    function onerror(error)
-    {
+    function onerror(error) {
       self.dispose()
 
       _onerror(error)
       done()
     }
 
-    if(error) return onerror(error)
+    if (error) return onerror(error)
 
     var stream = this.getLocalStream()
     assert.notEqual(stream, undefined, 'local stream')
 
-    var offer = new RTCSessionDescription(
-    {
+    var offer = new RTCSessionDescription({
       type: 'offer',
-      sdp:  sdpOffer
+      sdp: sdpOffer
     });
 
     var peerConnection = new RTCPeerConnection()
 
-    peerConnection.setRemoteDescription(offer, function()
-    {
-      var stream = peerConnection.getRemoteStreams()[0]
-      assert.notEqual(stream, undefined, 'peer remote stream')
+    peerConnection.setRemoteDescription(offer, function () {
+        var stream = peerConnection.getRemoteStreams()[0]
+        assert.notEqual(stream, undefined, 'peer remote stream')
 
-      peerConnection.createAnswer(function(answer)
-      {
-        peerConnection.setLocalDescription(answer, function()
-        {
-          processSdpAnswer(answer.sdp, function(error)
-          {
-            if(error) return onerror(error)
+        peerConnection.createAnswer(function (answer) {
+            peerConnection.setLocalDescription(answer, function () {
+                processSdpAnswer(answer.sdp, function (error) {
+                  if (error) return onerror(error)
 
-            this.dispose()
-            done()
-          })
-        },
-        onerror);
+                  this.dispose()
+                  done()
+                })
+              },
+              onerror);
+          },
+          onerror);
       },
-      onerror);
-    },
-    onerror)
+      onerror)
   })
 });
 
-QUnit.test('WebRtcPeerSendrecv', function(assert)
-{
+QUnit.test('WebRtcPeerSendrecv', function (assert) {
   var done = assert.async();
 
   assert.expect(3);
 
-  var options =
-  {
+  var options = {
     audioStream: getOscillatorMedia(),
-    configuration: {iceServers: []}
+    configuration: {
+      iceServers: []
+    }
   }
 
-  WebRtcPeerSendrecv(options, function(error, sdpOffer, processSdpAnswer)
-  {
+  WebRtcPeerSendrecv(options, function (error, sdpOffer, processSdpAnswer) {
     var self = this
 
-    function onerror(error)
-    {
+    function onerror(error) {
       self.dispose()
 
       _onerror(error)
       done()
     }
 
-    if(error) return onerror(error)
+    if (error) return onerror(error)
 
     var stream = this.getLocalStream()
     assert.notEqual(stream, undefined, 'local stream')
 
-    var offer = new RTCSessionDescription(
-    {
+    var offer = new RTCSessionDescription({
       type: 'offer',
-      sdp:  sdpOffer
+      sdp: sdpOffer
     });
 
     var peerConnection = new RTCPeerConnection()
 
-    peerConnection.setRemoteDescription(offer, function()
-    {
-      var stream = peerConnection.getRemoteStreams()[0]
-      assert.notEqual(stream, undefined, 'peer remote stream')
+    peerConnection.setRemoteDescription(offer, function () {
+        var stream = peerConnection.getRemoteStreams()[0]
+        assert.notEqual(stream, undefined, 'peer remote stream')
 
-      var stream = getOscillatorMedia();
+        var stream = getOscillatorMedia();
 
-      peerConnection.addStream(stream)
+        peerConnection.addStream(stream)
 
-      peerConnection.createAnswer(function(answer)
-      {
-        peerConnection.setLocalDescription(answer, function()
-        {
-          processSdpAnswer(answer.sdp, function(error)
-          {
-            if(error) return onerror(error)
+        peerConnection.createAnswer(function (answer) {
+            peerConnection.setLocalDescription(answer, function () {
+                processSdpAnswer(answer.sdp, function (error) {
+                  if (error) return onerror(error)
 
-            var stream = this.getRemoteStream()
-            assert.notEqual(stream, undefined, 'remote stream')
+                  var stream = this.getRemoteStream()
+                  assert.notEqual(stream, undefined,
+                    'remote stream')
 
-            this.dispose()
-            done()
-          })
-        },
-        onerror);
+                  this.dispose()
+                  done()
+                })
+              },
+              onerror);
+          },
+          onerror);
       },
-      onerror);
-    },
-    onerror)
+      onerror)
   })
 });
 
-
-QUnit.test('enabled', function(assert)
-{
+QUnit.test('enabled', function (assert) {
   var done = assert.async();
 
   assert.expect(4);
 
-  var options =
-  {
+  var options = {
     audioStream: getOscillatorMedia(),
-    configuration: {iceServers: []}
+    configuration: {
+      iceServers: []
+    }
   }
 
-  WebRtcPeerSendonly(options, function(error, sdpoffer, processSdpAnswer)
-  {
+  WebRtcPeerSendonly(options, function (error, sdpoffer, processSdpAnswer) {
     var self = this
 
-    function onerror(error)
-    {
+    function onerror(error) {
       self.dispose()
 
       _onerror(error)
       done()
     }
 
-    if(error) return onerror(error)
+    if (error) return onerror(error)
 
     assert.ok(this.audioEnabled, 'enabled')
 
@@ -302,31 +275,29 @@ QUnit.test('enabled', function(assert)
   })
 });
 
-QUnit.test('audioEnabled', function(assert)
-{
+QUnit.test('audioEnabled', function (assert) {
   var done = assert.async();
 
   assert.expect(3);
 
-  var options =
-  {
+  var options = {
     audioStream: getOscillatorMedia(),
-    configuration: {iceServers: []}
+    configuration: {
+      iceServers: []
+    }
   }
 
-  WebRtcPeerSendonly(options, function(error, sdpoffer, processSdpAnswer)
-  {
+  WebRtcPeerSendonly(options, function (error, sdpoffer, processSdpAnswer) {
     var self = this
 
-    function onerror(error)
-    {
+    function onerror(error) {
       self.dispose()
 
       _onerror(error)
       done()
     }
 
-    if(error) return onerror(error)
+    if (error) return onerror(error)
 
     var stream = this.getLocalStream()
     var track = stream.getAudioTracks()[0]
@@ -344,71 +315,68 @@ QUnit.test('audioEnabled', function(assert)
   })
 });
 
-QUnit.test('videoEnabled', function(assert)
-{
+QUnit.test('videoEnabled', function (assert) {
   var done = assert.async();
 
   assert.expect(3);
 
-  const TIMEOUT = 50;  // ms
+  const TIMEOUT = 50; // ms
 
-  var video   = document.getElementById('localVideo')
-  var canvas  = document.getElementById('canvas')
+  var video = document.getElementById('localVideo')
+  var canvas = document.getElementById('canvas')
   var context = canvas.getContext('2d');
 
-  var options =
-  {
-    configuration: {iceServers: []},
+  var options = {
+    configuration: {
+      iceServers: []
+    },
     localVideo: video,
-    mediaConstraints:
-    {
+    mediaConstraints: {
       audio: false,
       fake: true
     }
   }
 
-  WebRtcPeerSendonly(options, function(error, sdpoffer, processSdpAnswer)
-  {
+  WebRtcPeerSendonly(options, function (error, sdpoffer, processSdpAnswer) {
     var self = this
 
-    function onerror(error)
-    {
+    function onerror(error) {
       self.dispose()
 
       _onerror(error)
       done()
     }
 
-    if(error) return onerror(error)
+    if (error) return onerror(error)
 
-    function onplaying()
-    {
+    function onplaying() {
       video.removeEventListener('playing', onplaying)
 
-      setTimeout(function()
-      {
-        canvas.width  = video.videoWidth;
+      setTimeout(function () {
+        canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        var x = video.videoWidth  / 2
+        var x = video.videoWidth / 2
         var y = video.videoHeight / 2
 
-        context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
-        assert.notPixelEqual(canvas, x,y, 0,0,0,0, 'enabled');
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight)
+        assert.notPixelEqual(canvas, x, y, 0, 0, 0, 0, 'enabled');
 
         self.videoEnabled = false
 
-        setTimeout(function()
-        {
-          context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
-          assert.pixelEqual(canvas, x,y, 0,0,0,255, 'disabled');
+        setTimeout(function () {
+          context.drawImage(video, 0, 0, video.videoWidth,
+            video.videoHeight)
+          assert.pixelEqual(canvas, x, y, 0, 0, 0, 255,
+            'disabled');
 
           self.videoEnabled = true
 
-          setTimeout(function()
-          {
-            context.drawImage(video, 0,0,video.videoWidth,video.videoHeight)
-            assert.notPixelEqual(canvas, x,y, 0,0,0,255, 'enabled again');
+          setTimeout(function () {
+            context.drawImage(video, 0, 0, video.videoWidth,
+              video.videoHeight)
+            assert.notPixelEqual(canvas, x, y, 0, 0, 0,
+              255, 'enabled again');
 
             self.dispose()
             done()
