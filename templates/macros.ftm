@@ -107,6 +107,35 @@
   checkType('${param.type.name}', '${param.name}', ${param.name}<#if param.type.isList() || !param.optional>, {<#if param.type.isList()>isList: true,</#if><#if !param.optional>required: true</#if>}</#if>);
     </#list>
 
+    <#local __module__=''>
+    <#list params as param>
+      <#assign __module__=''>
+      <#list module.imports as import>
+        <#list import.module.complexTypes as complexType>
+          <#if complexType.typeFormat == "REGISTER"
+            && complexType.name == param.type.name>
+            <#assign __module__>
+              <#if module_name=='core'
+                || module_name=='elements'
+                || module_name=='filters'>
+                <#lt>kurento<#rt>
+              <#else>
+                <#lt>${module_name}<#rt>
+              </#if>
+            </#assign>
+  ${param.name}.__type__   = "${param.type.name}"
+  ${param.name}.__module__ = "${__module__}"
+            <#break>
+          </#if>
+        </#list>
+        <#if __module__ != ''>
+          <#break>
+        </#if>
+      </#list>
+    </#list>
+    <#if __module__ != ''>
+
+    </#if>
   var params = {
     <#list params as param>
     ${param.name}: ${param.name},
