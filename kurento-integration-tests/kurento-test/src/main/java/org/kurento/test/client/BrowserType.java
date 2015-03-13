@@ -18,6 +18,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.safari.SafariDriver;
 
 /**
  * Browser to perform automated web testing with Selenium WebDriver.
@@ -26,7 +27,7 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
  * @since 4.2.3
  */
 public enum BrowserType {
-	CHROME, FIREFOX, IEXPLORER;
+	CHROME, FIREFOX, IEXPLORER, SAFARI;
 
 	public Class<? extends WebDriver> getDriverClass() {
 		switch (this) {
@@ -34,6 +35,8 @@ public enum BrowserType {
 			return InternetExplorerDriver.class;
 		case FIREFOX:
 			return FirefoxDriver.class;
+		case SAFARI:
+			return SafariDriver.class;
 		case CHROME:
 		default:
 			return ChromeDriver.class;

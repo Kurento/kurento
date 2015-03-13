@@ -40,6 +40,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -201,6 +202,14 @@ public class BrowserClient implements Closeable {
 				if (scope == BrowserScope.SAUCELABS) {
 					capabilities.setBrowserName(DesiredCapabilities
 							.internetExplorer().getBrowserName());
+					createSaucelabsDriver(capabilities);
+				}
+
+			} else if (driverClass.equals(SafariDriver.class)) {
+
+				if (scope == BrowserScope.SAUCELABS) {
+					capabilities.setBrowserName(DesiredCapabilities.safari()
+							.getBrowserName());
 					createSaucelabsDriver(capabilities);
 				}
 
@@ -620,6 +629,10 @@ public class BrowserClient implements Closeable {
 
 	public String getPublicIp() {
 		return publicIp;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 	@Override
