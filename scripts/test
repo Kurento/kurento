@@ -2,8 +2,7 @@
 
 var http = require('http')
 
-var elementIsVisible = require('selenium-webdriver').until.elementIsVisible
-var Driver           = require('selenium-webdriver/firefox').Driver
+var webdriver = require('selenium-webdriver')
 
 var install    = require('bower').commands.install
 var outputFile = require('fs-extra').outputFile
@@ -51,12 +50,38 @@ function waitReport(driver, id, callback)
   var elem = driver.findElement({id: id})
 
   driver
-      .wait(elementIsVisible(elem), 20000)
+      .wait(webdriver.until.elementIsVisible(elem), 20000)
       .then(elem.getAttribute.bind(elem, 'value'))
       .then(function(data)
       {
         writeReport(id, data, callback)
       })
+}
+
+function runTest(browser)
+{
+  var driver = new webdriver.Builder().forBrowser(browser).build()
+
+  driver.get('http://localhost:'+PORT+'/test/index.html')
+
+  waitReport(driver, 'junit', function(error, data)
+  {
+    if(error) return onerror(error)
+
+    parseString(data, function(error, result)
+    {
+      if(error) return onerror(error)
+
+      // Set process exit code if test didn't passed
+      var $ = result.testsuites.$
+      var code = parseInt($.failures) + parseInt($.errors)
+      if(code)
+        process.exit(code)
+    });
+  })
+  waitReport(driver, 'lcov')
+
+  return driver.quit()
 }
 
 
@@ -80,28 +105,7 @@ install([], undefined, {cwd: 'test'})
       request.addListener('end', listener).resume()
     }).listen(PORT);
 
-
-    var driver = new Driver()
-
-    driver.get('http://localhost:'+PORT+'/test/index.html')
-
-    waitReport(driver, 'junit', function(error, data)
-    {
-      if(error) return onerror(error)
-
-      parseString(data, function(error, result)
-      {
-        if(error) return onerror(error)
-
-        // Set process exit code if test didn't passed
-        var $ = result.testsuites.$
-        var code = parseInt($.failures) + parseInt($.errors)
-        if(code)
-          process.exit(code)
-      });
-    })
-    waitReport(driver, 'lcov')
-
-    driver.quit().then(server.close.bind(server))
+//    runTest('chrome').then(server.close.bind(server))
+    runTest('firefox').then(server.close.bind(server))
   })
 });
