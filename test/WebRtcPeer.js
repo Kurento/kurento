@@ -84,7 +84,7 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
 
     if (error) return onerror(error)
 
-    this.generateOffer(function (error, sdpOffer, processSdpAnswer) {
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
 
       var offer = new RTCSessionDescription({
@@ -102,8 +102,7 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
           peerConnection.createAnswer(function (answer) {
               peerConnection.setLocalDescription(answer,
                 function () {
-                  processSdpAnswer(answer.sdp, function (
-                    error) {
+                  processAnswer(answer.sdp, function (error) {
                     if (error) return onerror(error)
 
                     var stream = this.getRemoteStream()
@@ -147,7 +146,7 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
 
     if (error) return onerror(error)
 
-    this.generateOffer(function (error, sdpOffer, processSdpAnswer) {
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
 
       var stream = this.getLocalStream()
@@ -167,8 +166,7 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
           peerConnection.createAnswer(function (answer) {
               peerConnection.setLocalDescription(answer,
                 function () {
-                  processSdpAnswer(answer.sdp, function (
-                    error) {
+                  processAnswer(answer.sdp, function (error) {
                     if (error) return onerror(error)
 
                     this.dispose()
@@ -208,7 +206,7 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
 
     if (error) return onerror(error)
 
-    this.generateOffer(function (error, sdpOffer, processSdpAnswer) {
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
 
       var stream = this.getLocalStream()
@@ -232,8 +230,7 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
           peerConnection.createAnswer(function (answer) {
               peerConnection.setLocalDescription(answer,
                 function () {
-                  processSdpAnswer(answer.sdp, function (
-                    error) {
+                  processAnswer(answer.sdp, function (error) {
                     if (error) return onerror(error)
 
                     var stream = this.getRemoteStream()
@@ -253,6 +250,56 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
   })
 });
 
+QUnit.test('processOffer', function (assert) {
+  var done = assert.async();
+
+  assert.expect(1);
+
+  WebRtcPeerRecvonly(function (error) {
+    var self = this
+
+    function onerror(error) {
+      self.dispose()
+
+      _onerror(error)
+      done()
+    }
+
+    if (error) return onerror(error)
+
+    var peerConnection = new RTCPeerConnection()
+
+    var stream = getOscillatorMedia()
+    peerConnection.addStream(stream)
+
+    peerConnection.createOffer(function (offer) {
+        peerConnection.setLocalDescription(offer, function () {
+            self.processOffer(offer.sdp, function (error, sdpAnswer) {
+              if (error) return onerror(error)
+
+              var answer = new RTCSessionDescription({
+                type: 'answer',
+                sdp: sdpAnswer
+              });
+
+              peerConnection.setRemoteDescription(answer,
+                function () {
+                  var stream = self.getRemoteStream()
+                  assert.notEqual(stream, undefined,
+                    'remote stream')
+
+                  self.dispose()
+                  done()
+                },
+                onerror)
+            })
+          },
+          onerror);
+      },
+      onerror);
+  })
+});
+
 QUnit.test('enabled', function (assert) {
   var done = assert.async();
 
@@ -265,7 +312,7 @@ QUnit.test('enabled', function (assert) {
     }
   }
 
-  WebRtcPeerSendonly(options, function (error, sdpoffer, processSdpAnswer) {
+  WebRtcPeerSendonly(options, function (error, sdpoffer, processAnswer) {
     var self = this
 
     function onerror(error) {
@@ -305,7 +352,7 @@ QUnit.test('audioEnabled', function (assert) {
     }
   }
 
-  WebRtcPeerSendonly(options, function (error, sdpoffer, processSdpAnswer) {
+  WebRtcPeerSendonly(options, function (error, sdpoffer, processAnswer) {
     var self = this
 
     function onerror(error) {
@@ -355,7 +402,7 @@ QUnit.test('videoEnabled', function (assert) {
     }
   }
 
-  WebRtcPeerSendonly(options, function (error, sdpoffer, processSdpAnswer) {
+  WebRtcPeerSendonly(options, function (error, sdpoffer, processAnswer) {
     var self = this
 
     function onerror(error) {
