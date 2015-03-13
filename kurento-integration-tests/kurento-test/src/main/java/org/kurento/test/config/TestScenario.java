@@ -109,19 +109,9 @@ public class TestScenario {
 		for (String key : browserMap.keySet()) {
 			if (!out.isEmpty()) {
 				out += ", ";
-			} else {
-				out += "Number of browser(s) = " + browserMap.size() + " : ";
 			}
-			out += key;
-		}
-		return out;
-	}
-
-	public String completeId() {
-		String out = "";
-		for (String key : browserMap.keySet()) {
-			if (!out.isEmpty()) {
-				out += ";";
+			else {
+				out += "Number of browser(s) = " + browserMap.size() + " : ";
 			}
 			out += "(id=" + key + ")";
 			out += "(browserType=" + getBrowserType(key) + ")";
