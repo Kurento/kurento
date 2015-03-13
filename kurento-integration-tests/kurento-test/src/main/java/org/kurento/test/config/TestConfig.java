@@ -94,9 +94,9 @@ public class TestConfig {
 					builder = builder.protocol(Protocol.valueOf(instance
 							.getProtocol().toUpperCase()));
 				}
-				if (instance.getClient() != null) {
+				if (instance.getPath() != null) {
 					builder = builder.client(Client.value2Client(instance
-							.getClient()));
+							.getPath()));
 				}
 				if (instance.getPublicIP() != null) {
 					builder = builder.publicIp(instance.getPublicIP());

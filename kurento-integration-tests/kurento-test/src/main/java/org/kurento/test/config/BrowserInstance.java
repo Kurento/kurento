@@ -36,7 +36,7 @@ public class BrowserInstance {
 	private String passwd;
 	private String key;
 	private String protocol;
-	private String client;
+	private String path;
 	private int port;
 	private boolean enableScreenCapture;
 	private String saucelabsUser;
@@ -135,12 +135,12 @@ public class BrowserInstance {
 		this.protocol = protocol;
 	}
 
-	public String getClient() {
-		return client;
+	public String getPath() {
+		return path;
 	}
 
-	public void setClient(String client) {
-		this.client = client;
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	public boolean isEnableScreenCapture() {
