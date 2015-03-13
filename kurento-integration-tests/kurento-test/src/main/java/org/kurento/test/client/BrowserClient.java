@@ -335,7 +335,7 @@ public class BrowserClient implements Closeable {
 		private double colorDistance = 60;
 		private String hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
 				TEST_PUBLIC_IP_DEFAULT);
-		private String publicIp;
+		private String publicIp = hostAddress;
 		private int serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
 				KurentoServicesTestHelper.getAppHttpPort());
 		private BrowserScope scope = BrowserScope.LOCAL;
