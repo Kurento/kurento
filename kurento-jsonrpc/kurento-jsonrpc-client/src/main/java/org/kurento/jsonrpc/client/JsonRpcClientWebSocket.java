@@ -265,6 +265,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 							log.info(
 									"{} Reconnected to a new session in server {}",
 									label, url);
+						} else {
+							log.warn(
+									"{} Error sending reconnection request to server ",
+									label, url, e);
 						}
 					}
 				}
