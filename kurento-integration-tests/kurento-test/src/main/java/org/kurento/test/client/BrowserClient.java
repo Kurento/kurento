@@ -635,6 +635,10 @@ public class BrowserClient implements Closeable {
 		this.timeout = timeout;
 	}
 
+	public Protocol getProtocol() {
+		return protocol;
+	}
+
 	@Override
 	public void close() {
 		// Stop Selenium Grid (if necessary)

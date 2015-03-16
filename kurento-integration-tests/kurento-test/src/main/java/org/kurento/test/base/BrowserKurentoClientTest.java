@@ -98,7 +98,6 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 		BrowserClient browserClient = new BrowserClient.Builder()
 				.browserType(browserType).client(Client.WEBRTC)
 				.protocol(Protocol.FILE).build();
-		browserClient.init();
 		String browserkey = "playBrowser";
 		addBrowserClient(browserkey, browserClient);
 
@@ -133,7 +132,6 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 		// Browser
 		BrowserClient browserClient = new BrowserClient.Builder()
 				.browserType(browserType).client(Client.WEBRTC).build();
-		browserClient.init();
 		String browserkey = "playBrowser";
 		addBrowserClient(browserkey, browserClient);
 
