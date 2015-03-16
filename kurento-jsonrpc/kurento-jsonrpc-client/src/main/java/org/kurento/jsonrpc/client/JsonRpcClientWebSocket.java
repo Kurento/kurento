@@ -473,6 +473,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			try {
 				client.stop();
 				client.destroy();
+				execService.shutdown();
 			} catch (Exception e1) {
 				log.debug("{} Could not properly close websocket client", label);
 			}
