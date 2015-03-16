@@ -41,7 +41,7 @@ public class KurentoClient {
 	protected RomManager manager;
 
 	public static KurentoClient create(String websocketUrl) {
-		log.debug("Connecting to kms in uri " + websocketUrl);
+		log.info("Connecting to kms in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
@@ -49,7 +49,7 @@ public class KurentoClient {
 
 	public static KurentoClient create(String websocketUrl,
 			KurentoConnectionListener listener) {
-		log.info("Connecting to KMS in "+websocketUrl);
+		log.info("Connecting to KMS in {}",websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
 				JsonRpcConnectionListenerKurento.create(listener));
 		client.setLabel("KurentoClient");

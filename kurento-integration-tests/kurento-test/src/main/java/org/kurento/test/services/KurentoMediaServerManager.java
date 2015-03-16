@@ -242,7 +242,7 @@ public class KurentoMediaServerManager {
 				remoteKms.runAndWaitCommand("sh", "-c",
 						remoteKms.getTmpFolder() + "/" + "kurento.sh");
 			} else {
-				Shell.run("sh", "-c", workspace + "kurento.sh > /dev/null 2>&1");
+				Shell.run("sh", "-c", workspace + "kurento.sh > /tmp/kurento.log 2>&1");
 			}
 		}
 
