@@ -15,6 +15,7 @@
 package org.kurento.client;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PreDestroy;
 
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.0.0
  */
 public class KurentoClient {
-
+	
 	private static Logger log = LoggerFactory.getLogger(KurentoClient.class);
 
 	protected RomManager manager;
@@ -100,6 +101,7 @@ public class KurentoClient {
 
 	@PreDestroy
 	public void destroy() {
+		log.info("Closing KurentoClient");
 		manager.destroy();
 	}
 

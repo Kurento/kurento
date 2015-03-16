@@ -160,7 +160,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	@Override
 	public void close() throws IOException {
 		
-		log.debug("{} Closing JsonRpcClientWebsocket", label);
+		log.info("{} Closing JsonRpcClientWebsocket", label);
 		if (wsSession != null) {
 			wsSession.close();
 		}		
@@ -171,7 +171,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	@Override
 	public void closeWithReconnection() {
-		log.debug("{} Closing session with reconnection", label);
+		log.info("{} Closing session with reconnection", label);
 		this.wsSession.close();
 		this.closeClient();
 	}

@@ -120,6 +120,7 @@ public class RomManager implements ObjectRefsManager {
 	}
 
 	public void destroy() {
+		log.info("Closing RomManager");
 		this.client.destroy();
 	}
 
