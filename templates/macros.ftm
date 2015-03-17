@@ -118,10 +118,42 @@
 
 </#macro>
 
+<#function splitMaxLength line width>
+  <#assign result=[]>
+
+  <#assign indent=''>
+  <#assign docLine=indent>
+
+  <#list line?matches("\\S+|\\s+", "r") as token>
+    <#if token_index==0>
+      <#if token?matches("\\s+")>
+        <#assign indent=token>
+      </#if>
+    <#elseif docLine != indent && (docLine?length + token?length > width)>
+      <#assign result=result+[docLine]>
+      <#assign docLine=indent>
+
+      <#if token?matches("\\s+")>
+        <#break>
+      </#if>
+    </#if>
+
+    <#assign docLine=docLine+token>
+  </#list>
+
+  <#if docLine != indent>
+    <#assign result=result+[docLine]>
+  </#if>
+
+  <#return result>
+</#function>
+
 <#macro docstring doc namepath indent=0>
   <#if doc??>
     <#list sphinxLinks(doc, namepath)?split("\n") as line>
- *<#list 0..indent as i> </#list>${line}
+      <#list splitMaxLength(line, 77-indent) as docLine>
+ *<#list 0..indent as i> </#list>${docLine}
+      </#list>
     </#list>
   </#if>
 </#macro>
