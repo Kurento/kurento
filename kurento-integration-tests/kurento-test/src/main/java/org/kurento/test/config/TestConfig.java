@@ -65,6 +65,9 @@ public class TestConfig {
 				BrowserClient.Builder builder = new BrowserClient.Builder()
 						.browserType(instance.getBrowserType());
 
+				if (instance.getVideo() != null) {
+					builder = builder.video(instance.getVideo());
+				}
 				if (instance.getInstances() > 0) {
 					builder = builder.numInstances(instance.getInstances());
 				}

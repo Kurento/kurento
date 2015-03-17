@@ -42,6 +42,7 @@ public class BrowserInstance {
 	private String saucelabsUser;
 	private String saucelabsKey;
 	private String publicIP;
+	private String video;
 
 	public BrowserInstance(String browser) {
 		this.browser = browser;
@@ -201,6 +202,14 @@ public class BrowserInstance {
 
 	public void setPublicIP(String publicIP) {
 		this.publicIP = publicIP;
+	}
+
+	public String getVideo() {
+		return video;
+	}
+
+	public void setVideo(String video) {
+		this.video = video;
 	}
 
 	@Override
