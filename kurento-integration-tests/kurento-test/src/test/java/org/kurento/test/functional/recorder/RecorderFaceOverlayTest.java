@@ -15,11 +15,13 @@
 package org.kurento.test.functional.recorder;
 
 import java.awt.Color;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.FaceOverlayFilter;
@@ -29,11 +31,11 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.Shell;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.Protocol;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
@@ -63,7 +65,6 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderFaceOverlayTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 30; // seconds
-	private static final int TIMEOUT = 120; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
@@ -71,26 +72,26 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 	private static final int EXPECTED_COLOR_X = 420;
 	private static final int EXPECTED_COLOR_Y = 45;
 
-	@Test
-	public void testRecorderFaceOverlayChrome() throws Exception {
-		doTest(Browser.CHROME);
+	public RecorderFaceOverlayTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
 	}
 
 	@Test
-	public void testRecorderFaceOverlayFirefox() throws Exception {
-		doTest(Browser.FIREFOX);
-	}
-
-	public void doTest(Browser browserType) throws Exception {
+	public void testRecorderFaceOverlay() throws Exception {
 		// Media Pipeline #1
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/fiwarecut.mp4").build();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
-		final String recordingPreProcess = FILE_SCHEMA
+		final String recordingPreProcess = Protocol.FILE
 				+ getDefaultOutputFile(PRE_PROCESS_SUFIX);
-		final String recordingPostProcess = FILE_SCHEMA
+		final String recordingPostProcess = Protocol.FILE
 				+ getDefaultFileForRecording();
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
 				recordingPreProcess).build();
@@ -104,7 +105,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		filter.connect(recorderEP);
 
 		// Test execution #1. Play and record
-		launchBrowser(browserType, webRtcEP1, playerEP, recorderEP);
+		launchBrowser(webRtcEP1, playerEP, recorderEP);
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -115,7 +116,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 				recordingPostProcess);
 
 		// Play the recording
-		playFileAsLocal(browserType, recordingPostProcess, PLAYTIME,
+		playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
 				EXPECTED_COLOR_X, EXPECTED_COLOR_Y, EXPECTED_COLOR);
 
 		// Uncomment this line to play the recording with a new pipeline
@@ -123,43 +124,38 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		// EXPECTED_COLOR_X, EXPECTED_COLOR_Y, EXPECTED_COLOR);
 	}
 
-	private void launchBrowser(Browser browserType, WebRtcEndpoint webRtcEP,
+	private void launchBrowser(WebRtcEndpoint webRtcEP,
 			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
 			throws InterruptedException {
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build()) {
-			browser.setTimeout(TIMEOUT);
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
-			final CountDownLatch eosLatch = new CountDownLatch(1);
-			playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-				@Override
-				public void onEvent(EndOfStreamEvent event) {
-					eosLatch.countDown();
-				}
-			});
-			if (recorderEP != null) {
-				recorderEP.record();
-			}
-			playerEP.play();
 
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			Assert.assertTrue(
-					"Color above the head must be red (FaceOverlayFilter)",
-					browser.similarColorAt(EXPECTED_COLOR, EXPECTED_COLOR_X,
-							EXPECTED_COLOR_Y));
-			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT, TimeUnit.SECONDS));
-
-			if (recorderEP != null) {
-				AssertMedia.assertCodecs(
-						getDefaultOutputFile(PRE_PROCESS_SUFIX),
-						EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
 			}
+		});
+		if (recorderEP != null) {
+			recorderEP.record();
+		}
+		playerEP.play();
+
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		Assert.assertTrue(
+				"Color above the head must be red (FaceOverlayFilter)",
+				getBrowser().similarColorAt(EXPECTED_COLOR, EXPECTED_COLOR_X,
+						EXPECTED_COLOR_Y));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+
+		if (recorderEP != null) {
+			AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX),
+					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
 	}
 }

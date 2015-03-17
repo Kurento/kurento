@@ -14,11 +14,9 @@
  */
 package org.kurento.test.internal;
 
-import static org.kurento.commons.PropertiesManager.getProperty;
-
 import java.io.IOException;
 
-import org.kurento.test.services.RemoteHost;
+import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,10 +33,8 @@ public class KillProcesses {
 
 	public static void main(String[] args) throws IOException {
 		for (String node : args) {
-			if (RemoteHost.ping(node)) {
-				RemoteHost remoteHost = new RemoteHost(node,
-						getProperty("test.node.login"),
-						getProperty("test.node.passwd"));
+			if (SshConnection.ping(node)) {
+				SshConnection remoteHost = new SshConnection(node);
 				remoteHost.start();
 				remoteHost.execCommand("kill", "-9", "-1");
 			} else {

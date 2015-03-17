@@ -72,8 +72,9 @@ public class KurentoMediaServerManager {
 
 	public static final String KURENTO_KMS_LOGIN_PROP = "kms.login";
 	public static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
+	public static final String KURENTO_KMS_PEM_PROP = "kms.pem";
 
-	public static RemoteHost remoteKms = null;
+	public static SshConnection remoteKms = null;
 
 	public static Logger log = LoggerFactory
 			.getLogger(KurentoMediaServerManager.class);
@@ -129,11 +130,13 @@ public class KurentoMediaServerManager {
 
 		String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
 		String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
+		String kmsPem = getProperty(KURENTO_KMS_PEM_PROP);
 
 		boolean isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1");
 
-		if (isKmsRemote && (kmsLogin == null || kmsPasswd == null)) {
+		if (isKmsRemote && kmsLogin == null
+				&& (kmsPem == null || kmsPasswd == null)) {
 			String kmsAutoStart = getProperty(
 					KurentoServicesTestHelper.KMS_AUTOSTART_PROP,
 					KurentoServicesTestHelper.KMS_AUTOSTART_DEFAULT);
@@ -148,7 +151,8 @@ public class KurentoMediaServerManager {
 							+ wsUri
 							+ ". Remote KMS should be started but its credentials are not present: "
 							+ KURENTO_KMS_LOGIN_PROP + "=" + kmsLogin + ", "
-							+ KURENTO_KMS_PASSWD_PROP + "=" + kmsPasswd);
+							+ KURENTO_KMS_PASSWD_PROP + "=" + kmsPasswd + ", "
+							+ KURENTO_KMS_PEM_PROP + "=" + kmsPem);
 		}
 
 		serverCommand = PropertiesManager.getProperty(
@@ -195,7 +199,11 @@ public class KurentoMediaServerManager {
 			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
 					wsUri.lastIndexOf(":"));
 			log.info("Using remote KMS at {}", remoteKmsStr);
-			remoteKms = new RemoteHost(remoteKmsStr, kmsLogin, kmsPasswd);
+			remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd,
+					kmsPem);
+			if (kmsPem != null) {
+				remoteKms.setPem(kmsPem);
+			}
 			remoteKms.start();
 			remoteKms.createTmpFolder();
 		}
@@ -234,7 +242,7 @@ public class KurentoMediaServerManager {
 				remoteKms.runAndWaitCommand("sh", "-c",
 						remoteKms.getTmpFolder() + "/" + "kurento.sh");
 			} else {
-				Shell.run("sh", "-c", workspace + "kurento.sh > /dev/null 2>&1");
+				Shell.run("sh", "-c", workspace + "kurento.sh > /tmp/kurento.log 2>&1");
 			}
 		}
 
@@ -424,7 +432,7 @@ public class KurentoMediaServerManager {
 
 		if (remoteKms != null) {
 			// Copy remote log
-			RemoteHost kms = KurentoMediaServerManager.remoteKms;
+			SshConnection kms = KurentoMediaServerManager.remoteKms;
 			String targetFile = KurentoServicesTestHelper.getServerLogFile()
 					.getAbsolutePath();
 			String origFile = kms.getTmpFolder() + "/kms.log";

@@ -23,19 +23,41 @@ package org.kurento.test.client;
 public enum Client {
 	PLAYER, WEBRTC, ROOM, SCREEN, ROOT;
 
+	private static final String ROOT_VALUE = "/";
+	private static final String PLAYER_VALUE = "/player.html";
+	private static final String ROOM_VALUE = "/room.html";
+	private static final String SCREEN_VALUE = "/index.html";
+	private static final String WEBRTC_VALUE = "/webrtc.html";
+
 	public String toString() {
 		switch (this) {
 		case ROOT:
-			return "/";
+			return ROOT_VALUE;
 		case PLAYER:
-			return "/player.html";
+			return PLAYER_VALUE;
 		case ROOM:
-			return "/room.html";
+			return ROOM_VALUE;
 		case SCREEN:
-			return "/index.html";
+			return SCREEN_VALUE;
 		case WEBRTC:
 		default:
-			return "/webrtc.html";
+			return WEBRTC_VALUE;
+		}
+	}
+
+	public static Client value2Client(String value) {
+		switch (value) {
+		case ROOT_VALUE:
+			return ROOT;
+		case PLAYER_VALUE:
+			return PLAYER;
+		case ROOM_VALUE:
+			return ROOM;
+		case SCREEN_VALUE:
+			return SCREEN;
+		case WEBRTC_VALUE:
+		default:
+			return WEBRTC;
 		}
 	}
 }

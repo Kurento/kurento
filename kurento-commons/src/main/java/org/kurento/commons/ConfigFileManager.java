@@ -30,6 +30,18 @@ public class ConfigFileManager {
 
 			if (configFilePath != null) {
 				configFile = Paths.get(configFilePath);
+
+				if (!Files.exists(configFile)) {
+					log.warn(
+							"Property '{}' points to an invalid location '{}'. Searching default config file '{}' in classpath and workdir",
+							CONFIG_FILE_PATH_PROPERTY, configFilePath,
+							configFileName);
+					configFile = ConfigFileFinder
+							.searchConfigFileInDefaultPlaces(configFileName);
+				} else {
+					log.info("Property {} points to a valid location. Will use the config from {}", CONFIG_FILE_PATH_PROPERTY, configFilePath);
+				}
+				
 			} else {
 				configFile = ConfigFileFinder
 						.searchConfigFileInDefaultPlaces(configFileName);
@@ -37,9 +49,9 @@ public class ConfigFileManager {
 
 			if (configFile != null && Files.exists(configFile)) {
 				ConfigFilePropertyHolder
-						.configurePropertiesFromConfigFile(configFile);
+				.configurePropertiesFromConfigFile(configFile);
 			} else {
-				log.warn("Config file not found. Using all default values");
+				log.warn("Config file {} not found. Using all default values", configFileName);
 			}
 
 		} catch (IOException e) {

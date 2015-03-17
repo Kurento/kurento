@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,14 +12,21 @@
  * Lesser General Public License for more details.
  *
  */
+package org.kurento.test.config;
 
 /**
- * Base classes to perform automated tests with JUnit and Spring Boot.
- * 
- * @author Micael Gallego (micael.gallego@gmail.com)
+ * Protocol (HTTP, HTTPS, FILE).
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
- * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
+ * @since 5.1.0
  */
-package org.kurento.test;
+public enum Protocol {
 
+	HTTP, HTTPS, FILE;
+
+	@Override
+	public String toString() {
+		return this.name().toLowerCase() + "://";
+	}
+
+}

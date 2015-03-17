@@ -14,6 +14,8 @@
  */
 package org.kurento.test.services;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -44,25 +46,44 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class RemoteHost {
+public class SshConnection {
 
-	public static Logger log = LoggerFactory.getLogger(RemoteHost.class);
+	public static Logger log = LoggerFactory.getLogger(SshConnection.class);
 	public static final String DEFAULT_TMP_FOLDER = "/tmp";
 
 	private static final int NODE_INITIAL_PORT = 5555;
 	private static final int PING_TIMEOUT = 2; // seconds
 
+	public static final String TEST_NODE_LOGIN_PROPERTY = "test.node.login";
+	public static final String TEST_NODE_PASSWD_PROPERTY = "test.node.passwd";
+	public static final String TEST_NODE_PEM_PROPERTY = "test.node.pem";
+
 	private String host;
 	private String login;
 	private String passwd;
+	private String pem;
 	private String tmpFolder;
-
 	private OverthereConnection connection;
 
-	public RemoteHost(String host, String login, String passwd) {
+	public SshConnection(String host) {
+		this.host = host;
+		this.login = getProperty(TEST_NODE_LOGIN_PROPERTY);
+		String pem = getProperty(TEST_NODE_PEM_PROPERTY);
+		if (pem != null) {
+			this.pem = pem;
+		} else {
+			this.passwd = getProperty(TEST_NODE_PASSWD_PROPERTY);
+		}
+	}
+
+	public SshConnection(String host, String login, String passwd, String pem) {
 		this.host = host;
 		this.login = login;
-		this.passwd = passwd;
+		if (pem != null) {
+			this.pem = pem;
+		} else {
+			this.passwd = passwd;
+		}
 	}
 
 	public void mkdirs(String dir) throws IOException {
@@ -108,8 +129,12 @@ public class RemoteHost {
 
 	public void start() {
 		ConnectionOptions options = new ConnectionOptions();
+		if (pem != null) {
+			options.set(SshConnectionBuilder.PRIVATE_KEY_FILE, pem);
+		} else {
+			options.set(ConnectionOptions.PASSWORD, passwd);
+		}
 		options.set(ConnectionOptions.USERNAME, login);
-		options.set(ConnectionOptions.PASSWORD, passwd);
 		options.set(ConnectionOptions.ADDRESS, host);
 		options.set(ConnectionOptions.OPERATING_SYSTEM,
 				OperatingSystemFamily.UNIX);
@@ -120,9 +145,14 @@ public class RemoteHost {
 
 	}
 
+	public boolean isStarted() {
+		return connection != null;
+	}
+
 	public void stop() {
 		if (connection != null) {
 			connection.close();
+			connection = null;
 		}
 	}
 
@@ -163,7 +193,7 @@ public class RemoteHost {
 	}
 
 	public static boolean ping(String ipAddress) {
-		return ping(ipAddress, RemoteHost.PING_TIMEOUT);
+		return ping(ipAddress, SshConnection.PING_TIMEOUT);
 	}
 
 	public static boolean ping(final String ipAddress, int timeout) {
@@ -205,6 +235,14 @@ public class RemoteHost {
 
 	public String getHost() {
 		return host;
+	}
+
+	public String getPem() {
+		return pem;
+	}
+
+	public void setPem(String pem) {
+		this.pem = pem;
 	}
 
 }

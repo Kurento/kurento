@@ -12,8 +12,8 @@ public class JsonRpcConnectionListenerKurento implements
 	}
 
 	@Override
-	public void connectionTimeout() {
-		listener.connectionTimeout();
+	public void connectionFailed() {
+		listener.connectionFailed();
 	}
 
 	@Override

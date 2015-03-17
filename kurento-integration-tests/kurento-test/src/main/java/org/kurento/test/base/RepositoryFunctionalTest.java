@@ -20,10 +20,10 @@ import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.client.KurentoTestClient;
+import org.kurento.test.config.TestScenario;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +44,45 @@ import com.google.common.io.Files;
 public class RepositoryFunctionalTest extends KurentoClientTest {
 
 	public Repository repository;
+
+	public RepositoryFunctionalTest(TestScenario testScenario) {
+		super(testScenario);
+		this.setClient(new KurentoTestClient());
+	}
+
+	public RepositoryFunctionalTest() {
+		super();
+	}
+
+	@Override
+	public KurentoTestClient getBrowser() {
+		return (KurentoTestClient) super.getBrowser();
+	}
+
+	@Override
+	public KurentoTestClient getBrowser(String browserKey) {
+		return (KurentoTestClient) super.getBrowser(browserKey);
+	}
+
+	@Override
+	public KurentoTestClient getPresenter() {
+		return (KurentoTestClient) super.getPresenter();
+	}
+
+	@Override
+	public KurentoTestClient getViewer() {
+		return (KurentoTestClient) super.getViewer();
+	}
+
+	@Override
+	public KurentoTestClient getPresenter(int index) {
+		return (KurentoTestClient) super.getPresenter(index);
+	}
+
+	@Override
+	public KurentoTestClient getViewer(int index) {
+		return (KurentoTestClient) super.getViewer(index);
+	}
 
 	@Bean
 	public RepositoryHttpServlet repositoryHttpServlet() {
@@ -70,8 +109,6 @@ public class RepositoryFunctionalTest extends KurentoClientTest {
 
 	@Before
 	public void setupHttpServer() throws Exception {
-		ConfigurableApplicationContext context = KurentoServicesTestHelper
-				.startHttpServer(RepositoryFunctionalTest.class);
 		repository = (Repository) context.getBean("repository");
 	}
 }

@@ -17,6 +17,7 @@ package org.kurento.jsonrpc.internal.server;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG_PAYLOAD;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_ERROR;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_SUCCESSFUL;
 
@@ -44,6 +45,7 @@ import org.springframework.scheduling.TaskScheduler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 
 public class ProtocolManager {
@@ -51,6 +53,8 @@ public class ProtocolManager {
 	public interface ServerSessionFactory {
 		ServerSession createSession(String sessionId, Object registerInfo,
 				SessionsManager sessionsManager);
+
+		void updateSessionOnReconnection(ServerSession session);
 	}
 
 	private static final Logger log = LoggerFactory
@@ -67,8 +71,36 @@ public class ProtocolManager {
 
 	private final JsonRpcHandlerManager handlerManager;
 
+	private String label = "";
+
+	private int maxHeartbeats = 0;
+
+	private int heartbeats = 0;
+
 	public ProtocolManager(JsonRpcHandler<?> handler) {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
+	}
+
+	public ProtocolManager(JsonRpcHandler<?> handler,
+			SessionsManager sessionsManager, TaskScheduler taskScheduler) {
+		this.handlerManager = new JsonRpcHandlerManager(handler);
+		this.sessionsManager = sessionsManager;
+		this.taskScheduler = taskScheduler;
+	}
+
+	public void setLabel(String label) {
+		this.label = "[" + label + "] ";
+	}
+
+	public void processMessage(String messageJson,
+			ServerSessionFactory factory, ResponseSender responseSender,
+			String internalSessionId) throws IOException {
+
+		JsonObject messagetJsonObject = JsonUtils.fromJson(messageJson,
+				JsonObject.class);
+
+		processMessage(messagetJsonObject, factory, responseSender,
+				internalSessionId);
 	}
 
 	/**
@@ -81,12 +113,9 @@ public class ProtocolManager {
 	 * @param internalSessionId
 	 * @throws IOException
 	 */
-	public void processMessage(String messageJson,
+	public void processMessage(JsonObject messagetJsonObject,
 			ServerSessionFactory factory, ResponseSender responseSender,
 			String internalSessionId) throws IOException {
-
-		JsonObject messagetJsonObject = JsonUtils.fromJson(messageJson,
-				JsonObject.class);
 
 		if (messagetJsonObject.has(Request.METHOD_FIELD_NAME)) {
 			processRequestMessage(factory, messagetJsonObject, responseSender,
@@ -107,17 +136,21 @@ public class ProtocolManager {
 		Request<JsonElement> request = JsonUtils.fromJsonRequest(
 				requestJsonObject, JsonElement.class);
 
-		if (request.getMethod().equals(METHOD_RECONNECT)) {
+		switch (request.getMethod()) {
+		case METHOD_RECONNECT:
 
+			log.debug("{} Req-> {}", label, request);
 			processReconnectMessage(factory, request, responseSender,
 					transportId);
-
-		} else if (request.getMethod().equals(METHOD_PING)) {
-
+			break;
+		case METHOD_PING:
+			log.trace("{} Req-> {}", label, request);
 			processPingMessage(factory, request, responseSender, transportId);
 
-		} else {
+			break;
+		default:
 
+			log.debug("{} Req-> {}", label, request);
 			ServerSession session = getSession(factory, transportId, request);
 
 			// TODO, Take out this an put in Http specific handler. The main
@@ -147,7 +180,9 @@ public class ProtocolManager {
 			} else {
 				handlerManager.handleRequest(session, request, responseSender);
 			}
+			break;
 		}
+
 	}
 
 	private ServerSession getSession(ServerSessionFactory factory,
@@ -159,7 +194,7 @@ public class ProtocolManager {
 			session = sessionsManager.get(request.getSessionId());
 
 			if (session == null) {
-				log.warn("There is no session with specified id '{}'."
+				log.warn(label + "There is no session with specified id '{}'."
 						+ "Creating a new one.", request.getSessionId());
 			}
 
@@ -180,11 +215,13 @@ public class ProtocolManager {
 	private void processPingMessage(ServerSessionFactory factory,
 			Request<JsonElement> request, ResponseSender responseSender,
 			String transportId) throws IOException {
-
-		String sessionId = request.getSessionId();
-		responseSender.sendResponse(new Response<>(sessionId, request.getId(),
-				PONG));
-
+		if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
+			String sessionId = request.getSessionId();
+			JsonObject pongPayload = new JsonObject();
+			pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
+			responseSender.sendPingResponse(new Response<>(sessionId, request
+					.getId(), pongPayload));
+		}
 	}
 
 	private void processReconnectMessage(ServerSessionFactory factory,
@@ -196,10 +233,10 @@ public class ProtocolManager {
 		if (sessionId == null) {
 
 			responseSender
-			.sendResponse(new Response<>(
-					request.getId(),
-					new ResponseError(99999,
-							"SessionId is mandatory in a reconnection request")));
+					.sendResponse(new Response<>(
+							request.getId(),
+							new ResponseError(99999,
+									"SessionId is mandatory in a reconnection request")));
 		} else {
 
 			ServerSession session = sessionsManager.get(sessionId);
@@ -207,6 +244,7 @@ public class ProtocolManager {
 
 				String oldTransportId = session.getTransportId();
 				session.setTransportId(transportId);
+				factory.updateSessionOnReconnection(session);
 				sessionsManager.updateTransportId(session, oldTransportId);
 
 				// FIXME: Possible race condition if session is disposed when
@@ -256,7 +294,7 @@ public class ProtocolManager {
 
 		if (session != null) {
 
-			log.info("Configuring close timeout for session: {}",
+			log.info(label + "Configuring close timeout for session: {}",
 					session.getSessionId());
 
 			try {
@@ -271,13 +309,13 @@ public class ProtocolManager {
 								},
 								new Date(
 										System.currentTimeMillis()
-										+ session
-										.getReconnectionTimeoutInMillis()));
+												+ session
+														.getReconnectionTimeoutInMillis()));
 
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
 			} catch (TaskRejectedException e) {
-				log.warn("Close timeout for session {} can not be set "
+				log.warn(label + "Close timeout for session {} can not be set "
 						+ "because the scheduler is shutdown",
 						session.getSessionId());
 			}
@@ -285,7 +323,7 @@ public class ProtocolManager {
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info("Closing session: {}", session.getSessionId());
+		log.info(label + "Closing session: {}", session.getSessionId());
 		sessionsManager.remove(session);
 		handlerManager.afterConnectionClosed(session, reason);
 	}
@@ -300,5 +338,14 @@ public class ProtocolManager {
 		final ServerSession session = sessionsManager
 				.getByTransportId(transportId);
 		handlerManager.handleTransportError(session, exception);
+	}
+
+	/**
+	 * Method intended to be used for testing purposes
+	 *
+	 * @param maxHeartbeats
+	 */
+	public void setMaxNumberOfHeartbeats(int maxHeartbeats) {
+		this.maxHeartbeats = maxHeartbeats;
 	}
 }

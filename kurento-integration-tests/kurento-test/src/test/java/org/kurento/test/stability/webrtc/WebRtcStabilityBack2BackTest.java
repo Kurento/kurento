@@ -15,18 +15,17 @@
 package org.kurento.test.stability.webrtc;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.StabilityTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 
 /**
@@ -51,18 +50,22 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 
 	private static final int DEFAULT_PLAYTIME = 30; // minutes
 
+	public WebRtcStabilityBack2BackTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localPresenterAndViewerRGB();
+	}
+
 	@Test
 	public void testWebRtcSwitchChrome() throws InterruptedException,
 			IOException {
 		final int playTime = Integer.parseInt(System.getProperty(
 				"test.webrtc.stability.back2back.playtime",
 				String.valueOf(DEFAULT_PLAYTIME)));
-		doTest(Browser.CHROME, getPathTestFiles() + "/video/15sec/rgb.y4m",
-				playTime);
-	}
 
-	public void doTest(Browser browserType, String videoPath, final int playTime)
-			throws InterruptedException, IOException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint1 = new WebRtcEndpoint.Builder(mp).build();
@@ -70,48 +73,27 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 		webRtcEndpoint1.connect(webRtcEndpoint2);
 		webRtcEndpoint2.connect(webRtcEndpoint1);
 
-		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
-				browserType).client(Client.WEBRTC);
-		if (videoPath != null) {
-			builder = builder.video(videoPath);
-		}
-
 		// Latency control
-		final LatencyController cs1 = new LatencyController(
-				"WebRTC latency in browser 1");
-		LatencyController cs2 = new LatencyController(
-				"WebRTC latency in browser 2");
+		LatencyController cs = new LatencyController("WebRTC latency control");
 
-		try (BrowserClient browser1 = builder.build();
-				BrowserClient browser2 = builder.build()) {
-			browser1.subscribeEvents("playing");
-			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
-					WebRtcMode.SEND_RCV);
-			browser2.subscribeEvents("playing");
-			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
-					WebRtcMode.SEND_RCV);
+		// WebRTC
+		getPresenter().subscribeLocalEvents("playing");
+		getPresenter().initWebRtc(webRtcEndpoint1, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_ONLY);
+		getViewer().subscribeEvents("playing");
+		getViewer().initWebRtc(webRtcEndpoint2, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.RCV_ONLY);
 
-			try {
-				cs1.activateRemoteLatencyAssessmentIn(browser2, browser1);
-				cs1.checkLatencyInBackground(playTime, TimeUnit.MINUTES);
+		// Latency assessment
+		cs.checkRemoteLatency(playTime, TimeUnit.MINUTES, getPresenter(),
+				getViewer());
 
-				cs2.activateRemoteLatencyAssessmentIn(browser1, browser2);
-				cs2.checkLatency(playTime, TimeUnit.MINUTES);
-			} catch (RuntimeException re) {
-				Assert.fail(re.getMessage());
-			}
-		} finally {
-			// Release Media Pipeline
-			mp.release();
-		}
+		// Release Media Pipeline
+		mp.release();
 
 		// Draw latency results (PNG chart and CSV file)
-		cs1.drawChart(getDefaultOutputFile("-browser1.png"), 500, 270);
-		cs1.writeCsv(getDefaultOutputFile("-browser1.csv"));
-		cs1.logLatencyErrorrs();
-
-		cs2.drawChart(getDefaultOutputFile("-browser2.png"), 500, 270);
-		cs2.writeCsv(getDefaultOutputFile("-browser2.csv"));
-		cs2.logLatencyErrorrs();
+		cs.drawChart(getDefaultOutputFile(".png"), 500, 270);
+		cs.writeCsv(getDefaultOutputFile(".csv"));
+		cs.logLatencyErrorrs();
 	}
 }

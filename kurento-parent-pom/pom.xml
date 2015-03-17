@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.kurento</groupId>
@@ -71,8 +72,24 @@
 		<version.kurento-maven-plugin>2.0.0-SNAPSHOT</version.kurento-maven-plugin>
 		<version.kurento-utils-js>6.0.0-SNAPSHOT</version.kurento-utils-js>
 
+		<version.kurento-js>[5.0.0,6.0.0-SNAPSHOT)</version.kurento-js>
+		<version.kurento-chroma>6.0.0-SNAPSHOT</version.kurento-chroma>
+		<version.kurento-platedetector>6.0.0-SNAPSHOT</version.kurento-platedetector>
+		<version.kurento-pointerdetector>6.0.0-SNAPSHOT</version.kurento-pointerdetector>
+		<version.kurento-markerdetector>6.0.0-SNAPSHOT</version.kurento-markerdetector>
+		<version.kurento-crowddetector>6.0.0-SNAPSHOT</version.kurento-crowddetector>
+		<version.kurento-facesegmentator>6.0.0-SNAPSHOT</version.kurento-facesegmentator>
+		<version.kurento-backgroundextractor>6.0.0-SNAPSHOT</version.kurento-backgroundextractor>
+		<version.kms-api-core>6.0.0-SNAPSHOT</version.kms-api-core>
+		<version.kms-api-elements>6.0.0-SNAPSHOT</version.kms-api-elements>
+		<version.kms-api-filters>6.0.0-SNAPSHOT</version.kms-api-filters>
+		<version.plumber-endpoint>6.0.0-SNAPSHOT</version.plumber-endpoint>
+		<version.kurento-maven-plugin>2.0.0-SNAPSHOT</version.kurento-maven-plugin>
+		<version.kurento-utils-js>6.0.0-SNAPSHOT</version.kurento-utils-js>
+
+
 		<!-- External versions -->
-		<version.jetty>9.2.5.v20141112</version.jetty>
+		<version.jetty>9.3.0.M1</version.jetty>
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.3.1</version.apache.commons-fileupload>
 		<version.apache.commons-io>2.4</version.apache.commons-io>
@@ -105,13 +122,13 @@
 		<version.websocket-api>1.0</version.websocket-api>
 
 		<!-- Test Dependencies Versions -->
-		<selenium-java.version>2.44.0</selenium-java.version>
+		<selenium-java.version>2.45.0</selenium-java.version>
 		<xml-apis.version>1.4.01</xml-apis.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.20</freemarker.version>
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
-		<overthere.version>2.4.3</overthere.version>
+		<overthere.version>2.4.8</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
 
 		<!-- Webdrivers versions -->
@@ -139,6 +156,7 @@
 		<version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
 		<version.enforcer.plugin>1.3.1</version.enforcer.plugin>
 		<version.findbugs.plugin>3.0.0</version.findbugs.plugin>
+		<version.filtering.plugin>1.3</version.filtering.plugin>
 		<version.gpg.plugin>1.4</version.gpg.plugin>
 		<version.help.plugin>2.2</version.help.plugin>
 		<version.install.plugin>2.5.2</version.install.plugin>
@@ -161,7 +179,7 @@
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
 		<version.versions.plugin>2.1</version.versions.plugin>
 		<version.wagon.plugin>2.0</version.wagon.plugin>
-		<version.war.plugin>2.5</version.war.plugin>
+		<version.war.plugin>2.6</version.war.plugin>
 
 		<!-- ************** -->
 		<!-- Build settings -->
@@ -216,6 +234,41 @@
 				<groupId>org.kurento.module</groupId>
 				<artifactId>plumberendpoint</artifactId>
 				<version>${version.plumber-endpoint}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>chroma</artifactId>
+				<version>${version.kurento-chroma}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>platedetector</artifactId>
+				<version>${version.kurento-platedetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>pointerdetector</artifactId>
+				<version>${version.kurento-pointerdetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>markerdetector</artifactId>
+				<version>${version.kurento-markerdetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>crowddetector</artifactId>
+				<version>${version.kurento-crowddetector}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>facesegmentator</artifactId>
+				<version>${version.kurento-facesegmentator}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>backgroundextractor</artifactId>
+				<version>${version.kurento-backgroundextractor}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
@@ -484,6 +537,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-io</artifactId>
+				<version>${version.jetty}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
 				<version>${version.jetty}</version>
 			</dependency>
@@ -492,6 +550,11 @@
 				<artifactId>mockito-core</artifactId>
 				<version>${version.mockito.core}</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-java</artifactId>
+				<version>${selenium-java.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -619,6 +682,11 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>findbugs-maven-plugin</artifactId>
 					<version>${version.findbugs.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.shared</groupId>
+					<artifactId>maven-filtering</artifactId>
+					<version>${version.filtering.plugin}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

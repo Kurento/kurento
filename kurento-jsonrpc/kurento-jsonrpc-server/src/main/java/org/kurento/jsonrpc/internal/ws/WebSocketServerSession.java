@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.client.Continuation;
@@ -110,11 +111,10 @@ public class WebSocketServerSession extends ServerSession {
 						.sendMessage(new TextMessage(JsonUtils.toJson(request)));
 			}
 		} catch (Exception e) {
-			LOG.error(
-					"Exception while sending message '{}' to websocket with native sessionId '{}': {}",
-					JsonUtils.toJson(request), wsSession.getId(), e);
-			// TODO Implement retries if possible
-			return null;
+			throw new KurentoException("Exception while sending message '"
+					+ JsonUtils.toJson(request)
+					+ "' to websocket with native sessionId '"
+					+ wsSession.getId() + "'", e);
 		}
 
 		if (responseFuture == null) {
@@ -148,6 +148,12 @@ public class WebSocketServerSession extends ServerSession {
 			wsSession.close();
 		} finally {
 			super.close();
+		}
+	}
+
+	public void updateWebSocketSession(WebSocketSession wsSession) {
+		synchronized (wsSession) {
+			this.wsSession = wsSession;
 		}
 	}
 

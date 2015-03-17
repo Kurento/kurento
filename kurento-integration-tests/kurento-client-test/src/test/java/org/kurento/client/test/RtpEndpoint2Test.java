@@ -14,8 +14,10 @@
  */
 package org.kurento.client.test;
 
+import org.junit.Ignore;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 
+@Ignore
 public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	public static final String URL_BARCODES = "http://files.kurento.org/video/barcodes.webm";

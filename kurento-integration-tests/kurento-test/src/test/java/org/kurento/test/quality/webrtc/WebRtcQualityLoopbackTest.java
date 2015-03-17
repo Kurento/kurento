@@ -15,20 +15,28 @@
 package org.kurento.test.quality.webrtc;
 
 import java.awt.Color;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.test.base.KurentoClientTest;
 import org.kurento.test.base.QualityTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.Recorder;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * <strong>Description</strong>: WebRTC in loopback using custom video and audio
@@ -55,55 +63,63 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
 	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
+	public WebRtcQualityLoopbackTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		String videoPath = KurentoClientTest.getPathTestFiles()
+				+ "/video/10sec/red.y4m";
+		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
+		TestScenario test = new TestScenario();
+		test.addBrowser(
+				TestConfig.BROWSER,
+				new BrowserClient.Builder()
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL)
+						.video(videoPath)
+						.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE,
+								AudioChannel.MONO).build());
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	@Ignore
 	@Test
 	public void testWebRtcQualityChrome() throws InterruptedException {
-		doTest(Browser.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
+		doTest(BrowserType.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
 				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
 				Color.RED);
 	}
 
-	public void doTest(Browser browserType, String videoPath, String audioUrl,
-			Color color) throws InterruptedException {
+	public void doTest(BrowserType browserType, String videoPath,
+			String audioUrl, Color color) throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
-		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
-				browserType).client(Client.WEBRTC);
-		if (videoPath != null) {
-			builder = builder.video(videoPath);
-		}
-		if (audioUrl != null) {
-			builder = builder.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE,
-					AudioChannel.MONO);
-		}
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
-		try (BrowserClient browser = builder.build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
+		// Wait until event playing in the remote stream
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
 
-			// Wait until event playing in the remote stream
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
+		// Guard time to play the video
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
-			// Guard time to play the video
-			Thread.sleep(PLAYTIME * 1000);
+		// Assert play time
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time of player (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				getBrowser().compare(PLAYTIME, currentTime));
 
-			// Assert play time
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time of player (expected: "
-					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-
-			// Assert color
-			if (color != null) {
-				Assert.assertTrue("The color of the video should be " + color,
-						browser.similarColor(color));
-			}
+		// Assert color
+		if (color != null) {
+			Assert.assertTrue("The color of the video should be " + color,
+					getBrowser().similarColor(color));
 		}
 
 		// Assert audio quality

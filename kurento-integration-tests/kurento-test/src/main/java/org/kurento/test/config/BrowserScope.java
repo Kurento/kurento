@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,13 +12,23 @@
  * Lesser General Public License for more details.
  *
  */
+package org.kurento.test.config;
 
 /**
- * Base classes for automated tests of kurento-client.
- * 
- * @author Micael Gallego (micael.gallego@gmail.com)
+ * Scope for browser: i) local (installed on machine running the tests; ii)
+ * remote (hosts acceded by Selenium Grid); iii) In Saucelabs (a private PAAS
+ * for testing).
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @since 5.1.0
  */
-package org.kurento.test.base;
+public enum BrowserScope {
 
+	LOCAL, REMOTE, SAUCELABS;
+
+	@Override
+	public String toString() {
+		return this.name().toLowerCase();
+	}
+
+}

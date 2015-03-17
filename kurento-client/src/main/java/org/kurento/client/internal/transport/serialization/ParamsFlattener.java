@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.kurento.client.TransactionNotCommitedException;
 import org.kurento.client.internal.ModuleName;
@@ -36,8 +36,8 @@ public class ParamsFlattener {
 	private static final Logger log = LoggerFactory
 			.getLogger(ParamsFlattener.class);
 
-	private final ConcurrentHashMap<String, String> packageNames = new ConcurrentHashMap<String, String>();
-	private final ConcurrentHashMap<String, Class<?>> usedClasses = new ConcurrentHashMap<String, Class<?>>();
+	private final ConcurrentHashMap<String, String> packageNames = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Class<?>> usedClasses = new ConcurrentHashMap<>();
 
 	public enum RomType {
 		VOID, INTEGER, BOOLEAN, FLOAT, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS, MAP
@@ -94,6 +94,10 @@ public class ParamsFlattener {
 	 */
 	public Props flattenParams(Props params, boolean inTx) {
 
+		if (params == null) {
+			return null;
+		}
+
 		Props properties = new Props();
 		for (Prop prop : params) {
 			properties.add(prop.getName(), flattenParam(prop.getValue(), inTx));
@@ -127,10 +131,6 @@ public class ParamsFlattener {
 		}
 
 		return props;
-	}
-
-	private Object flattenParam(Object param) {
-		return flattenParam(param, false);
 	}
 
 	/**

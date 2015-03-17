@@ -15,169 +15,178 @@
 package org.kurento.test.base;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.client.Browser;
+import org.kurento.commons.testing.IntegrationTests;
 import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.Client;
+import org.kurento.test.client.KurentoTestClient;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.Protocol;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.VideoTagType;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
- * Base for tests using kurento-client and Http Server.
+ * Base for tests using kurento-client and HTTP Server.
  *
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
 @EnableAutoConfiguration
+@Category(IntegrationTests.class)
 public class BrowserKurentoClientTest extends KurentoClientTest {
 
-	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
-	private static final int TIMEOUT_EOS = 60; // seconds
-	private static final String SDP_DELIMITER = "\r\n";
-
-	@Before
-	public void setupHttpServer() throws Exception {
-		if (!this.getClass().isAnnotationPresent(WebAppConfiguration.class)) {
-			KurentoServicesTestHelper
-					.startHttpServer(BrowserKurentoClientTest.class);
-		}
+	public BrowserKurentoClientTest(TestScenario testScenario) {
+		super(testScenario);
+		this.setClient(new KurentoTestClient());
 	}
 
-	protected void playFileWithPipeline(Browser browserType,
+	public BrowserKurentoClientTest() {
+		super();
+	}
+
+	@Override
+	public KurentoTestClient getBrowser() {
+		return (KurentoTestClient) super.getBrowser();
+	}
+
+	@Override
+	public KurentoTestClient getBrowser(String browserKey) {
+		return (KurentoTestClient) super.getBrowser(browserKey);
+	}
+
+	@Override
+	public KurentoTestClient getBrowser(int index) {
+		return (KurentoTestClient) super.getBrowser(index);
+	}
+
+	@Override
+	public KurentoTestClient getPresenter() {
+		return (KurentoTestClient) super.getPresenter();
+	}
+
+	@Override
+	public KurentoTestClient getViewer() {
+		return (KurentoTestClient) super.getViewer();
+	}
+
+	@Override
+	public KurentoTestClient getPresenter(int index) {
+		return (KurentoTestClient) super.getPresenter(index);
+	}
+
+	@Override
+	public KurentoTestClient getViewer(int index) {
+		return (KurentoTestClient) super.getViewer(index);
+	}
+
+	protected void playFileAsLocal(BrowserType browserType,
+			String recordingFile, int playtime, int x, int y,
+			Color... expectedColors) throws InterruptedException {
+		BrowserClient browserClient = new BrowserClient.Builder()
+				.browserType(browserType).client(Client.WEBRTC)
+				.protocol(Protocol.FILE).build();
+		String browserkey = "playBrowser";
+		addBrowserClient(browserkey, browserClient);
+
+		getBrowser(browserkey).subscribeEvents("playing");
+		browserClient.executeScript("document.getElementById('"
+				+ VideoTagType.REMOTE.getId() + "').setAttribute('src', '"
+				+ recordingFile + "');");
+		browserClient.executeScript("document.getElementById('"
+				+ VideoTagType.REMOTE.getId() + "').load();");
+
+		// Assertions
+		makeAssertions(browserkey, "[played as local file]", browserClient,
+				playtime, x, y, null, expectedColors);
+	}
+
+	public void playUrlInVideoTag(BrowserClient browserClient, String url,
+			VideoTagType videoTagType) {
+
+	}
+
+	protected void playFileWithPipeline(BrowserType browserType,
 			String recordingFile, int playtime, int x, int y,
 			Color... expectedColors) throws InterruptedException {
 
-		MediaPipeline mp = null;
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build()) {
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-					recordingFile).build();
-			WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-			playerEP.connect(webRtcEP);
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, recordingFile)
+				.build();
+		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		playerEP.connect(webRtcEP);
 
-			// Play latch
-			final CountDownLatch eosLatch = new CountDownLatch(1);
-			playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-				@Override
-				public void onEvent(EndOfStreamEvent event) {
-					eosLatch.countDown();
-				}
-			});
+		// Browser
+		BrowserClient browserClient = new BrowserClient.Builder()
+				.browserType(browserType).client(Client.WEBRTC).build();
+		String browserkey = "playBrowser";
+		addBrowserClient(browserkey, browserClient);
 
-			// Test execution
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
-			playerEP.play();
-
-			// Assertions
-			makeAssertions("[played file with media pipeline]", browser,
-					playtime, x, y, eosLatch, expectedColors);
-
-		} finally {
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
+		// Play latch
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
 			}
+		});
+
+		// Test execution
+		getBrowser(browserkey).subscribeEvents("playing");
+		getBrowser(browserkey).initWebRtc(webRtcEP,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		playerEP.play();
+
+		// Assertions
+		makeAssertions(browserkey, "[played file with media pipeline]",
+				browserClient, playtime, x, y, eosLatch, expectedColors);
+
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 	}
 
-	protected void playFileAsLocal(Browser browserType, String recordingFile,
-			int playtime, int x, int y, Color... expectedColors)
+	private void makeAssertions(String browserKey, String messageAppend,
+			BrowserClient browser, int playtime, int x, int y,
+			CountDownLatch eosLatch, Color... expectedColors)
 			throws InterruptedException {
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).local().build()) {
-			browser.subscribeEvents("playing");
-			browser.playUrlInVideoTag(recordingFile, VideoTagType.REMOTE);
-
-			// Assertions
-			makeAssertions("[played as local file]", browser, playtime, x, y,
-					null, expectedColors);
-		}
-	}
-
-	protected void playFileAsLocal(Browser browserType, String recordingFile,
-			int playtime, Color... expectedColors) throws InterruptedException {
-		playFileAsLocal(browserType, recordingFile, playtime, 0, 0,
-				expectedColors);
-	}
-
-	protected void playFileWithPipeline(Browser browserType,
-			String recordingFile, int playtime, Color... expectedColors)
-			throws InterruptedException {
-		playFileWithPipeline(browserType, recordingFile, playtime, 0, 0,
-				expectedColors);
-	}
-
-	private void makeAssertions(String messageAppend, BrowserClient browser,
-			int playtime, int x, int y, CountDownLatch eosLatch,
-			Color... expectedColors) throws InterruptedException {
 		Assert.assertTrue(
 				"Not received media in the recording (timeout waiting playing event) "
-						+ messageAppend, browser.waitForEvent("playing"));
+						+ messageAppend,
+				getBrowser(browserKey).waitForEvent("playing"));
 		for (Color color : expectedColors) {
 			Assert.assertTrue("The color of the recorded video should be "
-					+ color + " " + messageAppend,
-					browser.similarColorAt(color, x, y));
+					+ color + " " + messageAppend, getBrowser(browserKey)
+					.similarColorAt(color, x, y));
 		}
 
 		if (eosLatch != null) {
 			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
+					eosLatch.await(getTimeout(), TimeUnit.SECONDS));
 		} else {
 			Thread.sleep(playtime * 1000);
 		}
 
-		double currentTime = browser.getCurrentTime();
+		double currentTime = getBrowser(browserKey).getCurrentTime();
 		Assert.assertTrue(
 				"Error in play time in the recorded video (expected: "
 						+ playtime + " sec, real: " + currentTime + " sec) "
-						+ messageAppend, compare(playtime, currentTime));
+						+ messageAppend,
+				getBrowser(browserKey).compare(playtime, currentTime));
 	}
 
-	protected String mangleSdp(String sdpIn, String[] removeCodes) {
-		String sdpMangled1 = "";
-		List<String> indexList = new ArrayList<>();
-		for (String line : sdpIn.split(SDP_DELIMITER)) {
-			boolean codecFound = false;
-			for (String codec : removeCodes) {
-				codecFound |= line.contains(codec);
-			}
-			if (codecFound) {
-				String index = line.substring(line.indexOf(":") + 1,
-						line.indexOf(" ") + 1);
-				indexList.add(index);
-			} else {
-				sdpMangled1 += line + SDP_DELIMITER;
-			}
-		}
-
-		String sdpMangled2 = "";
-		log.info("indexList " + indexList);
-		for (String line : sdpMangled1.split(SDP_DELIMITER)) {
-			for (String index : indexList) {
-				line = line.replaceAll(index, "");
-			}
-			sdpMangled2 += line + SDP_DELIMITER;
-		}
-		return sdpMangled2;
-	}
 }

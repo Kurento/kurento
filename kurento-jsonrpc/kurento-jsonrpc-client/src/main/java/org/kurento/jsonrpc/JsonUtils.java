@@ -83,6 +83,15 @@ public class JsonUtils {
 		return fromJson(getGson().toJson(obj), JsonObject.class);
 	}
 
+	public static Message fromJsonMessage(String message) {
+		JsonObject json = fromJson(message, JsonObject.class);
+		if(json.has(METHOD_PROPERTY)){
+			return fromJsonRequest(json, JsonObject.class);
+		} else {
+			return fromJsonResponse(json, JsonElement.class);
+		}
+	}
+	
 	public static <T> Request<T> fromJsonRequest(String json,
 			Class<T> paramsClass) {
 

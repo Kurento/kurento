@@ -2,10 +2,22 @@ package org.kurento.jsonrpc.client;
 
 public interface JsonRpcWSConnectionListener {
 
-	public void connected();
+	/**
+	 * Method invoked when the JsonRpcWS client successfully connects to the
+	 * server
+	 */
+	void connected();
 
-	public void connectionTimeout();
+	/**
+	 * Method invoked when the JsonRpcWS client could not connect to the server.
+	 * This method can be invoked also if a reconnection is needed.
+	 */
+	void connectionFailed();
 
-	public void disconnected();
+	/**
+	 * Method invoked when the JsonRpcWS client connection with the server is
+	 * interrupted
+	 */
+	void disconnected();
 
 }

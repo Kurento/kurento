@@ -14,35 +14,92 @@
  */
 package org.kurento.test.base;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.kurento.client.KurentoClient;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoClientTestFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kurento.test.services.KurentoServicesTestHelper;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * Base for tests using kurento-client.
  * 
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
 public class KurentoClientTest extends KurentoTest {
 
-	public static Logger log = LoggerFactory.getLogger(KurentoClientTest.class);
+	protected static KurentoClient kurentoClient;
+	protected static boolean startHttpServer;
+	protected ConfigurableApplicationContext context;
 
-	protected KurentoClient kurentoClient;
+	public KurentoClientTest() {
+		super();
+	}
+
+	public KurentoClientTest(TestScenario testScenario) {
+		super(testScenario);
+		// HTTP server
+		startHttpServer = !this.getClass().isAnnotationPresent(
+				WebAppConfiguration.class);
+		if (startHttpServer) {
+			context = KurentoServicesTestHelper
+					.startHttpServer(BrowserKurentoClientTest.class);
+		}
+	}
+
+	@Rule
+	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
 
 	@Before
-	public void setupMediaPipelineFactory() throws Exception {
+	public void setupKurentoClient() throws IOException {
+		// Kurento services
+		KurentoServicesTestHelper.setTestName(testName.getMethodName());
+		KurentoServicesTestHelper.setTestCaseName(this.getClass().getName());
+		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
+
+		log.info("Starting test {}",
+				this.getClass().getName() + "." + testName.getMethodName());
+
+		// Kurento client
 		kurentoClient = KurentoClientTestFactory.createKurentoForTest();
 	}
 
 	@After
-	public void teardownMediaPipelineFactory() throws Exception {
+	public void teardownKurentoClient() throws Exception {
+		// Kurento client
 		if (kurentoClient != null) {
 			kurentoClient.destroy();
 		}
+
+		// Kurento services
+		KurentoServicesTestHelper.teardownServices();
 	}
+
+	protected int getServerPort() {
+		return KurentoServicesTestHelper.getAppHttpPort();
+	}
+
+	public static String getPathTestFiles() {
+		return KurentoServicesTestHelper.getTestFilesPath();
+	}
+
+	public String getDefaultFileForRecording() {
+		return getDefaultOutputFile(".webm");
+	}
+
+	public static String getDefaultOutputFile(String preffix) {
+		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
+				+ "/" + KurentoServicesTestHelper.getTestCaseName());
+		String testName = KurentoServicesTestHelper.getSimpleTestName();
+		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
+	}
+
 }

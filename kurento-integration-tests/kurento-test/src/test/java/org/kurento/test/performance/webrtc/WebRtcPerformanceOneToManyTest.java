@@ -14,21 +14,29 @@
  */
 package org.kurento.test.performance.webrtc;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.kurento.commons.PropertiesManager.getProperty;
 
-import org.junit.Ignore;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserRunner;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.services.Node;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
+import org.kurento.test.grid.ParallelBrowsers;
+import org.kurento.test.latency.LatencyController;
 
 /**
  * <strong>Description</strong>: WebRTC (one to many) test with Selenium Grid.<br/>
@@ -46,60 +54,54 @@ import org.kurento.test.services.Node;
  */
 public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
-	// Number of nodes
-	private static final String NUM_VIEWERS_PROPERTY = "perf.one2many.numnodes";
-	private static final int NUM_VIEWERS_DEFAULT = 2;
+	private static final String NUM_VIEWERS_PROPERTY = "perf.one2many.numviewers";
+	private static final int NUM_VIEWERS_DEFAULT = 1;
 
-	// Browser per node
-	private static final String NUM_BROWSERS_PROPERTY = "perf.one2many.numbrowsers";
-	private static final int NUM_BROWSERS_DEFAULT = 3;
+	private static final String BROWSER_PER_VIEWER_PROPERTY = "perf.one2many.browserperviewer";
+	private static final int BROWSER_PER_VIEWER_DEFAULT = 2;
 
-	// Client rate in milliseconds
-	private static final String CLIENT_RATE_PROPERTY = "perf.one2many.clientrate";
-	private static final int CLIENT_RATE_DEFAULT = 2000;
+	private static int numViewers;
+	private static int browserPerViewer;
 
-	// Hold time in milliseconds
-	private static final String HOLD_TIME_PROPERTY = "perf.one2many.holdtime";
-	private static final int HOLD_TIME_DEFAULT = 10000;
-
-	private int holdTime;
-	private Node master;
-
-	public WebRtcPerformanceOneToManyTest() throws InterruptedException {
-
-		int numViewers = Integer.parseInt(System.getProperty(
-				NUM_VIEWERS_PROPERTY, String.valueOf(NUM_VIEWERS_DEFAULT)));
-
-		int numBrowsers = Integer.parseInt(System.getProperty(
-				NUM_BROWSERS_PROPERTY, String.valueOf(NUM_BROWSERS_DEFAULT)));
-
-		int clientRate = Integer.parseInt(System.getProperty(
-				CLIENT_RATE_PROPERTY, String.valueOf(CLIENT_RATE_DEFAULT)));
-
-		holdTime = Integer.parseInt(System.getProperty(HOLD_TIME_PROPERTY,
-				String.valueOf(HOLD_TIME_DEFAULT)));
-
-		setBrowserCreationRate(clientRate);
-		setNumBrowsersPerNode(numBrowsers);
-
-		ArrayList<Node> nodes = new ArrayList<>();
-
-		List<Node> viewers = getRandomNodes(numViewers, Browser.CHROME, null,
-				null, numBrowsers);
-
-		master = getRandomNodes(1, Browser.CHROME,
-				getPathTestFiles() + "/video/15sec/rgbHD.y4m", null, 1).get(0);
-
-		nodes.addAll(viewers);
-
-		System.out.println(nodes.size());
-
-		setNodes(nodes);
-		setMasterNode(master);
-
+	public WebRtcPerformanceOneToManyTest(TestScenario testScenario) {
+		super(testScenario);
 	}
 
-	@Ignore
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		numViewers = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
+		browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY,
+				BROWSER_PER_VIEWER_DEFAULT);
+
+		TestScenario test = new TestScenario();
+		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
+		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.video(video).build());
+
+		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+				.numInstances(numViewers).browserPerInstance(browserPerViewer)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.build());
+
+		// Uncomment this for remote scenario
+		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+		// .video(video).build());
+		//
+		// ... or saucelabs, for example:
+		//
+		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
+		// .platform(Platform.WIN8_1).browserVersion("39").build());
+		//
+		// test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		// .numInstances(numViewers).browserPerInstance(browserPerViewer)
+		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+		// .build());
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	@Test
 	public void test() throws InterruptedException {
 		// Media Pipeline
@@ -107,52 +109,52 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 		final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp)
 				.build();
 
-		try (BrowserClient masterBrowser = new BrowserClient.Builder()
-				.browser(master.getBrowser()).client(Client.WEBRTC)
-				.video(master.getVideo()).remoteNode(master).build()) {
+		// Master
+		getPresenter().subscribeLocalEvents("playing");
+		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_ONLY);
 
-			// Master
-			masterBrowser.subscribeLocalEvents("playing");
-			masterBrowser.initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
-					WebRtcMode.SEND_ONLY);
-			masterBrowser.setMonitor(monitor);
+		Map<String, BrowserClient> browsers = new TreeMap<>(getTestScenario()
+				.getBrowserMap());
+		browsers.remove(TestConfig.PRESENTER);
+		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 
-			final int playTime = getAllBrowsersStartedTime() + holdTime;
+		ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
+			public void run(BrowserClient browser) throws Exception {
+				String name = browser.getId();
 
-			parallelBrowsers(new BrowserRunner() {
-				public void run(BrowserClient browser, int num, String name)
-						throws Exception {
+				try {
+					// Viewer
+					WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
+							mp).build();
+					masterWebRtcEP.connect(viewerWebRtcEP);
 
-					try {
-						// Viewer
-						WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
-								mp).build();
-						masterWebRtcEP.connect(viewerWebRtcEP);
+					// Latency control
+					LatencyController cs = new LatencyController(
+							"Latency control on " + name, monitor);
 
-						log.debug("*** start#1 {}", name);
-						browser.subscribeEvents("playing");
-						log.debug("### start#2 {}", name);
-						browser.initWebRtc(viewerWebRtcEP,
-								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
-						log.debug(">>> start#3 {}", name);
+					// WebRTC
+					log.debug(">>> start {}", name);
+					getBrowser(name).subscribeEvents("playing");
+					getBrowser(name).initWebRtc(viewerWebRtcEP,
+							WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
-						masterBrowser.checkRemoteLatency(playTime, browser);
+					// Latency assessment
+					cs.checkRemoteLatency(playTime, TimeUnit.MILLISECONDS,
+							getPresenter(), getBrowser(name));
 
-					} catch (Throwable e) {
-						log.error("[[[ {} ]]]", e.getCause().getMessage());
-						throw e;
-					}
+				} catch (Throwable e) {
+					log.error("[[[ {} ]]]", e.getCause().getMessage());
+					throw e;
 				}
-			});
-
-		} finally {
-
-			log.debug("<<< Releasing pipeline");
-
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
 			}
+		});
+
+		log.debug("<<< Releasing pipeline");
+
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 	}
 }

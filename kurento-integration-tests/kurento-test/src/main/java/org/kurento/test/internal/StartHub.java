@@ -16,7 +16,7 @@ package org.kurento.test.internal;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 
-import org.kurento.test.services.SeleniumGridHub;
+import org.kurento.test.grid.GridHub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public class StartHub {
 		int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 				SELENIUM_HUB_PORT_DEFAULT);
 
-		SeleniumGridHub seleniumGridHub = new SeleniumGridHub(hubAddress,
+		GridHub seleniumGridHub = new GridHub(hubAddress,
 				hubPort);
 		seleniumGridHub.start();
 	}

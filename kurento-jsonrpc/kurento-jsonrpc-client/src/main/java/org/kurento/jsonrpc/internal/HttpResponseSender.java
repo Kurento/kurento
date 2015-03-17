@@ -37,4 +37,9 @@ public class HttpResponseSender implements ResponseSender {
 	public synchronized void sendResponse(Message message) throws IOException {
 		responses.add((Response<Object>) message);
 	}
+
+	@Override
+	public void sendPingResponse(Message message) throws IOException {
+		sendResponse(message);
+	}
 }

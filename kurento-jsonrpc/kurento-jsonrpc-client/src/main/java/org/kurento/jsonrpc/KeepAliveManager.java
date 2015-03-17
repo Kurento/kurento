@@ -6,15 +6,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonObject;
-
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonObject;
 
 public class KeepAliveManager {
 
@@ -28,13 +27,13 @@ public class KeepAliveManager {
 
 	public enum Mode {
 		PER_CLIENT, PER_ID_AS_SESSION, PER_ID_AS_MEDIAPIPELINE
-	};
+	}
 
 	private JsonRpcClient client;
 	private long keepAliveIntervalTime;
 	private Mode mode;
 
-	private ConcurrentHashMap<String, Object> ids = new ConcurrentHashMap<String, Object>();
+	private ConcurrentHashMap<String, Object> ids = new ConcurrentHashMap<>();
 
 	// TODO Is single thread executor the best choice?
 	private ScheduledExecutorService executor = Executors
@@ -104,13 +103,13 @@ public class KeepAliveManager {
 				JsonObject params = new JsonObject();
 				params.addProperty("object", id);
 				try {
-					client.sendRequest(new Request<JsonObject>(id, null,
-							"keepAlive", params));
+					client.sendRequest(new Request<>(id, null, "keepAlive",
+							params));
 				} catch (JsonRpcErrorException e) {
 					log.warn(
 							"Error while sending keepAlive for MediaPipeline '{}':"
 									+ " {}. Removing this MediaPipeline from keepAlive list.",
-							id, e.getMessage());
+									id, e.getMessage());
 
 				} catch (IOException e) {
 					log.error(

@@ -72,6 +72,12 @@ public class PropertiesManager {
 				: defaultValue;
 	}
 
+	public static long getProperty(String property, long defaultValue) {
+		String systemValue = propertyHolder.getProperty(property);
+		return systemValue != null ? Integer.parseInt(systemValue)
+				: defaultValue;
+	}
+
 	public static String getProperty(String property, String defaultValue) {
 		String value = propertyHolder.getProperty(property);
 		if (value != null) {

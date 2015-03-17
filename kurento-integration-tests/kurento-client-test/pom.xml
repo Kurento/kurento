@@ -76,42 +76,35 @@
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>chroma</artifactId>
-			<version>1.0.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>pointerdetector</artifactId>
-			<version>1.0.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>platedetector</artifactId>
-			<version>1.0.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>markerdetector</artifactId>
-			<version>0.0.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>crowddetector</artifactId>
-			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>facesegmentator</artifactId>
-			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento.module</groupId>
 			<artifactId>backgroundextractor</artifactId>
-			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

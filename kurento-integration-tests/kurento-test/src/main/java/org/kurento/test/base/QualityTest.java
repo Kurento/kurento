@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemQualityTests;
+import org.kurento.test.config.TestScenario;
 
 /**
  * Quality tests.
@@ -25,5 +26,9 @@ import org.kurento.commons.testing.SystemQualityTests;
  */
 @Category(SystemQualityTests.class)
 public class QualityTest extends BrowserKurentoClientTest {
+
+	public QualityTest(TestScenario testScenario) {
+		super(testScenario);
+	}
 
 }

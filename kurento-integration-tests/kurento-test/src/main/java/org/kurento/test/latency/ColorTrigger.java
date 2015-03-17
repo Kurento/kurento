@@ -14,7 +14,9 @@
  */
 package org.kurento.test.latency;
 
+import java.awt.Color;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -36,7 +38,7 @@ public class ColorTrigger implements Runnable {
 	public Logger log = LoggerFactory.getLogger(ColorTrigger.class);
 	private VideoTag videoTag;
 	private JavascriptExecutor js;
-	private String color;
+	private Color color = Color.BLACK; // Initial color
 	private ChangeColorObservable observable;
 	private long timeoutSeconds;
 
@@ -46,7 +48,6 @@ public class ColorTrigger implements Runnable {
 		this.js = js;
 		this.observable = observable;
 		this.timeoutSeconds = timeoutSeconds;
-		this.color = "0,0,0,0"; // Initial color
 	}
 
 	@Override
@@ -61,8 +62,9 @@ public class ColorTrigger implements Runnable {
 							}
 						});
 
-				String currentColor = (String) js.executeScript(videoTag
-						.getColor());
+				@SuppressWarnings("unchecked")
+				Color currentColor = getColor((List<Long>) js
+						.executeScript(videoTag.getColor()));
 
 				if (!currentColor.equals(color)) {
 					long changeTimeMilis = (Long) js.executeScript(videoTag
@@ -85,5 +87,10 @@ public class ColorTrigger implements Runnable {
 				break;
 			}
 		}
+	}
+
+	private Color getColor(List<Long> color) {
+		return new Color(color.get(0).intValue(), color.get(1).intValue(),
+				color.get(2).intValue());
 	}
 }

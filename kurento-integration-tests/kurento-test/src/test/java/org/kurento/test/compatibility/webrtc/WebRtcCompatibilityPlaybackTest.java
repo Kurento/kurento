@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
@@ -31,11 +29,13 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.CompatibilityTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
 import org.openqa.selenium.Platform;
 
 /**
@@ -55,58 +55,30 @@ import org.openqa.selenium.Platform;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-@RunWith(Parameterized.class)
 public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 
 	private static final int PLAYTIME = 10; // seconds
-	private static final int TIMEOUT_EOS = 60; // seconds
 	private static final String VIDEO_URL = "http://files.kurento.org/video/10sec/red.webm";
 	private static final Color[] EXPECTED_COLORS = { Color.RED };
 
-	private Platform platform;
-	private Browser browserType;
-	private String browserVersion;
-
-	@Parameters(name = "Platform={0}, Browser={1}, BrowserVersion={2}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ Platform.WIN8_1, Browser.CHROME, "28" },
-				{ Platform.WIN8_1, Browser.CHROME, "29" },
-				{ Platform.WIN8_1, Browser.CHROME, "30" },
-				{ Platform.WIN8_1, Browser.CHROME, "31" },
-				{ Platform.WIN8_1, Browser.CHROME, "32" },
-				{ Platform.WIN8_1, Browser.CHROME, "33" },
-				{ Platform.WIN8_1, Browser.CHROME, "34" },
-				{ Platform.WIN8_1, Browser.CHROME, "35" },
-				{ Platform.WIN8_1, Browser.CHROME, "36" },
-				{ Platform.WIN8_1, Browser.CHROME, "37" },
-				{ Platform.WIN8_1, Browser.CHROME, "38" },
-				{ Platform.WIN8_1, Browser.CHROME, "39" },
-
-				{ Platform.LINUX, Browser.FIREFOX, "23" },
-				{ Platform.LINUX, Browser.FIREFOX, "24" },
-				{ Platform.LINUX, Browser.FIREFOX, "25" },
-				{ Platform.LINUX, Browser.FIREFOX, "26" },
-				{ Platform.LINUX, Browser.FIREFOX, "27" },
-				{ Platform.LINUX, Browser.FIREFOX, "28" },
-				{ Platform.LINUX, Browser.FIREFOX, "29" },
-				{ Platform.LINUX, Browser.FIREFOX, "30" },
-				{ Platform.LINUX, Browser.FIREFOX, "31" },
-				{ Platform.LINUX, Browser.FIREFOX, "32" },
-				{ Platform.LINUX, Browser.FIREFOX, "33" },
-				{ Platform.LINUX, Browser.FIREFOX, "34" },
-				{ Platform.LINUX, Browser.FIREFOX, "35" } });
+	public WebRtcCompatibilityPlaybackTest(TestScenario testScenario) {
+		super(testScenario);
 	}
 
-	public WebRtcCompatibilityPlaybackTest(Platform platform,
-			Browser browserType, String browserVersion) {
-		this.platform = platform;
-		this.browserType = browserType;
-		this.browserVersion = browserVersion;
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		// Test: Browsers in saucelabs
+		TestScenario test1 = new TestScenario();
+		test1.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
+				.platform(Platform.WIN8_1).browserVersion("39").build());
 
-		log.debug(
-				"Starting test with the following parameters: platform={}, browserType={}, browserVersion={}",
-				this.platform, this.browserType, this.browserVersion);
+		TestScenario test2 = new TestScenario();
+		test2.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+				.browserType(BrowserType.FIREFOX).scope(BrowserScope.SAUCELABS)
+				.platform(Platform.LINUX).browserVersion("35").build());
+
+		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
 
 	@Test
@@ -119,42 +91,36 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 		playerEndpoint.connect(webRtcEndpoint);
 
 		// Browser
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).browserVersion(browserVersion)
-				.platform(platform).client(Client.WEBRTC).build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
-			playerEndpoint.play();
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
+		playerEndpoint.play();
 
-			// Subscription to EOS event
-			final CountDownLatch eosLatch = new CountDownLatch(1);
-			playerEndpoint
-					.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-						@Override
-						public void onEvent(EndOfStreamEvent event) {
-							eosLatch.countDown();
-						}
-					});
+		// Subscription to EOS event
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEndpoint
+				.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+					@Override
+					public void onEvent(EndOfStreamEvent event) {
+						eosLatch.countDown();
+					}
+				});
 
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			for (Color color : EXPECTED_COLORS) {
-				Assert.assertTrue("The color of the video should be " + color,
-						browser.similarColor(color));
-			}
-			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-
-		} finally {
-			// Release Media Pipeline
-			mp.release();
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		for (Color color : EXPECTED_COLORS) {
+			Assert.assertTrue("The color of the video should be " + color,
+					getBrowser().similarColor(color));
 		}
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				getBrowser().compare(PLAYTIME, currentTime));
+
+		// Release Media Pipeline
+		mp.release();
 	}
 }

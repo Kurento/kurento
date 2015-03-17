@@ -12,6 +12,7 @@ import org.kurento.jsonrpc.test.ErrorServerTest;
 import org.kurento.jsonrpc.test.MultipleSessionsTest;
 import org.kurento.jsonrpc.test.NewSessionTest;
 import org.kurento.jsonrpc.test.NotificationTest;
+import org.kurento.jsonrpc.test.ReconnectionServerTest;
 import org.kurento.jsonrpc.test.ReconnectionTest;
 import org.kurento.jsonrpc.test.ServerEventsTest;
 import org.kurento.jsonrpc.test.handler.EchoJsonRpcHandler;
@@ -55,6 +56,8 @@ public class BootTestApplication implements JsonRpcConfigurer {
 				"/close_session_handler");
 
 		registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
+
+		registry.addHandler(new ReconnectionServerTest.Handler(), "/reconnection2");
 
 		registry.addHandler(new ConnectionListenerTest.Handler(),
 				"/connectionlistener");

@@ -1,0 +1,14 @@
+{
+	"executions" : [
+		{
+			"presenter" : {
+				"scope" : "local",
+				"browser" : "chrome"
+			},
+			"viewer" : {
+				"scope" : "local",
+				"browser" : "chrome"
+			}
+		}
+	]
+}

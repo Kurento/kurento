@@ -15,12 +15,14 @@
 package org.kurento.test.functional.player;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.CodeFoundEvent;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
@@ -29,12 +31,10 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.client.ZBarFilter;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.client.ConsoleLogLevel;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
 
 /**
  * <strong>Description</strong>: Test of a Player with ZBar Filter.<br/>
@@ -56,19 +56,18 @@ import org.kurento.test.client.WebRtcMode;
 public class PlayerZBarTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 13; // seconds
-	private static final int TIMEOUT_EOS = 60; // seconds
 
-	@Test
-	public void testPlayerZBarChrome() throws Exception {
-		doTest(Browser.CHROME);
+	public PlayerZBarTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
 	}
 
 	@Test
-	public void testPlayerZBarFirefox() throws Exception {
-		doTest(Browser.FIREFOX);
-	}
-
-	public void doTest(Browser browserType) throws Exception {
+	public void testPlayerZBar() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
@@ -87,41 +86,36 @@ public class PlayerZBarTest extends FunctionalTest {
 		});
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
-			playerEP.play();
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
+		playerEP.play();
 
-			final List<String> codeFoundEvents = new ArrayList<>();
-			zBarFilter
-					.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
-						@Override
-						public void onEvent(CodeFoundEvent event) {
-							String codeFound = event.getValue();
+		final List<String> codeFoundEvents = new ArrayList<>();
+		zBarFilter.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
+			@Override
+			public void onEvent(CodeFoundEvent event) {
+				String codeFound = event.getValue();
 
-							if (!codeFoundEvents.contains(codeFound)) {
-								codeFoundEvents.add(codeFound);
-								browser.consoleLog(ConsoleLogLevel.info,
-										"Code found: " + codeFound);
-							}
-						}
-					});
+				if (!codeFoundEvents.contains(codeFound)) {
+					codeFoundEvents.add(codeFound);
+					getBrowser().consoleLog(ConsoleLogLevel.info,
+							"Code found: " + codeFound);
+				}
+			}
+		});
 
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			Assert.assertTrue("Not received EOS event in player",
-					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-			Assert.assertFalse("No code found by ZBar filter",
-					codeFoundEvents.isEmpty());
-		}
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				getBrowser().compare(PLAYTIME, currentTime));
+		Assert.assertFalse("No code found by ZBar filter",
+				codeFoundEvents.isEmpty());
 
 		// Release Media Pipeline
 		mp.release();

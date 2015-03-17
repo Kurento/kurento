@@ -23,6 +23,7 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 			.getLogger(DefaultJsonRpcHandler.class);
 
 	private boolean useSockJs;
+	private String label;
 
 	@Override
 	public void afterConnectionEstablished(Session session) throws Exception {
@@ -36,7 +37,7 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	@Override
 	public void handleTransportError(Session session, Throwable exception)
 			throws Exception {
-		log.warn("Transport error", exception);
+		log.warn("Transport error. Exception "+exception.getClass().getName()+":"+exception.getLocalizedMessage());
 	}
 
 	@Override
@@ -51,8 +52,9 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	}
 
 	@Override
-	public void withSockJS() {
+	public DefaultJsonRpcHandler<P> withSockJS() {
 		this.useSockJs = true;
+		return this;
 	}
 
 	@Override
@@ -60,4 +62,14 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 		return this.useSockJs;
 	}
 
+	@Override
+	public DefaultJsonRpcHandler<P> withLabel(String label){
+		this.label = label;
+		return this;
+	}
+
+	@Override
+	public String getLabel() {
+		return label;
+	}
 }

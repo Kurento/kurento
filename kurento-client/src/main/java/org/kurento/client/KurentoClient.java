@@ -41,15 +41,19 @@ public class KurentoClient {
 	protected RomManager manager;
 
 	public static KurentoClient create(String websocketUrl) {
-		log.debug("Connecting to kms in uri " + websocketUrl);
-		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl));
+		log.info("Connecting to kms in {}", websocketUrl);
+		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
+		client.setLabel("KurentoClient");
+		return new KurentoClient(client);
 	}
 
 	public static KurentoClient create(String websocketUrl,
 			KurentoConnectionListener listener) {
-		log.info("Connecting to KMS in "+websocketUrl);
-		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl,
-				JsonRpcConnectionListenerKurento.create(listener)));
+		log.info("Connecting to KMS in {}", websocketUrl);
+		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+				websocketUrl, JsonRpcConnectionListenerKurento.create(listener));
+		client.setLabel("KurentoClient");
+		return new KurentoClient(client);
 
 	}
 
@@ -57,8 +61,8 @@ public class KurentoClient {
 		this.manager = new RomManager(new RomClientJsonRpcClient(client));
 		try {
 			client.connect();
-		} catch (IOException e){
-			throw new KurentoException("Exception connecting to KMS",e);
+		} catch (IOException e) {
+			throw new KurentoException("Exception connecting to KMS", e);
 		}
 	}
 
@@ -86,7 +90,7 @@ public class KurentoClient {
 	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
 			throws KurentoException {
 		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-				.buildAsync(cont);
+		.buildAsync(cont);
 	}
 
 	public MediaPipeline createMediaPipeline(Transaction tx) {
@@ -96,6 +100,7 @@ public class KurentoClient {
 
 	@PreDestroy
 	public void destroy() {
+		log.info("Closing KurentoClient");
 		manager.destroy();
 	}
 

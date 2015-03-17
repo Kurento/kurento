@@ -14,17 +14,20 @@
  */
 package org.kurento.test.functional.player;
 
+import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * <strong>Description</strong>: Test of a N Players.<br/>
@@ -46,17 +49,17 @@ public class PlayerSwitchTest extends FunctionalTest {
 	private static final int PLAYTIME = 30; // seconds
 	private static final int N_PLAYER = 5;
 
-	@Test
-	public void testPlayerSwitchChrome() throws Exception {
-		doTest(Browser.CHROME);
+	public PlayerSwitchTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
 	}
 
 	@Test
-	public void testPlayerSwitchFirefox() throws Exception {
-		doTest(Browser.FIREFOX);
-	}
-
-	public void doTest(Browser browserType) throws Exception {
+	public void testPlayerSwitch() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
@@ -74,47 +77,43 @@ public class PlayerSwitchTest extends FunctionalTest {
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
-			// red
-			playerRed.connect(webRtcEndpoint);
-			playerRed.play();
-			browser.subscribeEvents("playing");
-			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+		// red
+		playerRed.connect(webRtcEndpoint);
+		playerRed.play();
+		getBrowser().subscribeEvents("playing");
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-			// green
-			playerGreen.connect(webRtcEndpoint);
-			playerGreen.play();
-			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+		// green
+		playerGreen.connect(webRtcEndpoint);
+		playerGreen.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-			// blue
-			playerBlue.connect(webRtcEndpoint);
-			playerBlue.play();
-			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+		// blue
+		playerBlue.connect(webRtcEndpoint);
+		playerBlue.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-			// smpte
-			playerBall.connect(webRtcEndpoint);
-			playerBall.play();
-			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+		// smpte
+		playerBall.connect(webRtcEndpoint);
+		playerBall.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-			// ball
-			playerRtsp.connect(webRtcEndpoint);
-			playerRtsp.play();
-			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+		// ball
+		playerRtsp.connect(webRtcEndpoint);
+		playerRtsp.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-					+ " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-		}
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+				+ " sec, real: " + currentTime + " sec)",
+				getBrowser().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

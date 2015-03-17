@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemStabilityTests;
+import org.kurento.test.config.TestScenario;
 
 /**
  * Stability tests.
@@ -25,5 +26,9 @@ import org.kurento.commons.testing.SystemStabilityTests;
  */
 @Category(SystemStabilityTests.class)
 public class StabilityTest extends BrowserKurentoClientTest {
+
+	public StabilityTest(TestScenario testScenario) {
+		super(testScenario);
+	}
 
 }

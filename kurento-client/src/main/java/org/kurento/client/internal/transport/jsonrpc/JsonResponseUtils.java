@@ -54,7 +54,7 @@ public class JsonResponseUtils {
 						+ result);
 			}
 
-		} else if (isRegisterType(type)) {
+		} else if (isComplexType(type)) {
 			if (result instanceof JsonObject) {
 				if (((JsonObject) result).has("value")) {
 					return ((JsonObject) result).get("value");
@@ -95,7 +95,7 @@ public class JsonResponseUtils {
 		return false;
 	}
 
-	private static boolean isRegisterType(Type type) {
+	private static boolean isComplexType(Type type) {
 		return (type == Props.class);
 	}
 

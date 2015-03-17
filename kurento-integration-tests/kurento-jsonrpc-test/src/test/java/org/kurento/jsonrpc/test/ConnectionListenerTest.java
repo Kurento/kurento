@@ -55,7 +55,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connectionFailed() {
 						latch.countDown();
 					}
 				});
@@ -95,7 +95,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connectionFailed() {
 						// TODO Auto-generated method stub
 
 					}
@@ -131,7 +131,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connectionFailed() {
 						// TODO Auto-generated method stub
 
 					}
@@ -168,7 +168,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connectionFailed() {
 						// TODO Auto-generated method stub
 
 					}

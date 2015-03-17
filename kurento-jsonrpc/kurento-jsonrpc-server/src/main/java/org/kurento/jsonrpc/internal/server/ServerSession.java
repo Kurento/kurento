@@ -115,14 +115,16 @@ public abstract class ServerSession extends AbstractSession {
 		rsHelper.sendNotification(method);
 	}
 
+	@Override
 	public Response<JsonElement> sendRequest(Request<JsonObject> request)
 			throws IOException {
 		return rsHelper.sendRequest(request);
 	}
 
+	@Override
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-			throws IOException {
+					throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 

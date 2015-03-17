@@ -15,20 +15,22 @@
 package org.kurento.test.functional.composite;
 
 import java.awt.Color;
+import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Composite;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * 
@@ -52,17 +54,17 @@ public class CompositePlayerTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5; // seconds
 
-	@Test
-	public void testCompositePlayerChrome() throws Exception {
-		doTest(Browser.CHROME);
+	public CompositePlayerTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
 	}
 
 	@Test
-	public void testCompositePlayerFirefox() throws Exception {
-		doTest(Browser.FIREFOX);
-	}
-
-	public void doTest(Browser browserType) throws Exception {
+	public void testCompositePlayer() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 
@@ -91,33 +93,29 @@ public class CompositePlayerTest extends FunctionalTest {
 		hubPort5.connect(webRtcEP);
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).build()) {
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.RCV_ONLY);
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
-			playerRed.play();
-			playerGreen.play();
-			playerBlue.play();
-			playerWhite.play();
+		playerRed.play();
+		playerGreen.play();
+		playerBlue.play();
+		playerWhite.play();
 
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			Assert.assertTrue("Upper left part of the video must be red",
-					browser.similarColorAt(Color.RED, 0, 0));
-			Assert.assertTrue("Upper right part of the video must be green",
-					browser.similarColorAt(Color.GREEN, 450, 0));
-			Assert.assertTrue("Lower left part of the video must be blue",
-					browser.similarColorAt(Color.BLUE, 0, 450));
-			Assert.assertTrue("Lower right part of the video must be white",
-					browser.similarColorAt(Color.WHITE, 450, 450));
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		Assert.assertTrue("Upper left part of the video must be red",
+				getBrowser().similarColorAt(Color.RED, 0, 0));
+		Assert.assertTrue("Upper right part of the video must be green",
+				getBrowser().similarColorAt(Color.GREEN, 450, 0));
+		Assert.assertTrue("Lower left part of the video must be blue",
+				getBrowser().similarColorAt(Color.BLUE, 0, 450));
+		Assert.assertTrue("Lower right part of the video must be white",
+				getBrowser().similarColorAt(Color.WHITE, 450, 450));
 
-			// Guard time to see the composite result
-			Thread.sleep(PLAYTIME * 1000);
-		}
+		// Guard time to see the composite result
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Release Media Pipeline
 		mp.release();

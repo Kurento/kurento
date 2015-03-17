@@ -14,7 +14,9 @@
  */
 package org.kurento.client.test;
 
+import org.junit.Ignore;
 
+@Ignore
 public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 	// @Test

@@ -14,17 +14,20 @@
  */
 package org.kurento.test.functional.webrtc;
 
+import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.TestScenario;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * <strong>Description</strong>: WebRTC to FaceOverlayFilter test.<br/>
@@ -47,49 +50,47 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
 
 	private static final int DEFAULT_PLAYTIME = 10; // seconds
 
-	@Test
-	public void testWebRtcFaceOverlayChrome() throws InterruptedException {
-		final int playTime = Integer.parseInt(System.getProperty(
-				"test.webrtcfaceoverlay.playtime",
-				String.valueOf(DEFAULT_PLAYTIME)));
-		doTest(Browser.CHROME, playTime);
+	public WebRtcFaceOverlayTest(TestScenario testScenario) {
+		super(testScenario);
 	}
 
-	public void doTest(Browser browserType, int playTime)
-			throws InterruptedException {
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChrome();
+	}
+
+	@Test
+	public void testWebRtcFaceOverlay() throws InterruptedException {
+		int playTime = Integer.parseInt(System.getProperty(
+				"test.webrtcfaceoverlay.playtime",
+				String.valueOf(DEFAULT_PLAYTIME)));
+
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(mp)
 				.build();
-
 		webRtcEndpoint.connect(faceOverlayFilter);
 		faceOverlayFilter.connect(webRtcEndpoint);
 
-		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
-				browserType).client(Client.WEBRTC);
+		// Start WebRTC
+		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
-		try (BrowserClient browser = builder.build()) {
+		// Guard time to play the video
+		Thread.sleep(TimeUnit.SECONDS.toMillis(playTime));
 
-			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
-
-			// Guard time to play the video
-			Thread.sleep(playTime * 1000);
-
-			// Assertions
-			Assert.assertTrue(
-					"Not received media (timeout waiting playing event)",
-					browser.waitForEvent("playing"));
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser.similarColor(CHROME_VIDEOTEST_COLOR));
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time (expected: " + playTime
-					+ " sec, real: " + currentTime + " sec)",
-					compare(playTime, currentTime));
-		}
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getBrowser().waitForEvent("playing"));
+		Assert.assertTrue(
+				"The color of the video should be green (RGB #008700)",
+				getBrowser().similarColor(CHROME_VIDEOTEST_COLOR));
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time (expected: " + playTime
+				+ " sec, real: " + currentTime + " sec)",
+				getBrowser().compare(playTime, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

@@ -14,17 +14,25 @@
  */
 package org.kurento.test.functional.webrtc;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.ConsoleLogLevel;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
+import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.TestScenario;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * <strong>Description</strong>: Back-To-Back WebRTC switch. Three clients:
@@ -48,102 +56,91 @@ import org.kurento.test.client.WebRtcMode;
 public class WebRtcSwitchTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 5; // seconds
+	private static final int NUM_BROWSERS = 3;
+
+	public WebRtcSwitchTest(TestScenario testScenario) {
+		super(testScenario);
+	}
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		// Test: NUM_BROWSERS local Chrome's
+		TestScenario test = new TestScenario();
+		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+				.browserType(BrowserType.CHROME).numInstances(NUM_BROWSERS)
+				.scope(BrowserScope.LOCAL).build());
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
 	@Test
 	public void testWebRtcSwitchChrome() throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEndpoint1 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEndpoint2 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEndpoint3 = new WebRtcEndpoint.Builder(mp).build();
-		webRtcEndpoint1.connect(webRtcEndpoint1);
-		webRtcEndpoint2.connect(webRtcEndpoint2);
-		webRtcEndpoint3.connect(webRtcEndpoint3);
+		WebRtcEndpoint webRtcEndpoints[] = new WebRtcEndpoint[NUM_BROWSERS];
 
-		BrowserClient.Builder builderWebrtc = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.WEBRTC);
-
-		try (BrowserClient browser1 = builderWebrtc.build();
-				BrowserClient browser2 = builderWebrtc.build();
-				BrowserClient browser3 = builderWebrtc.build()) {
+		for (int i = 0; i < NUM_BROWSERS; i++) {
+			webRtcEndpoints[i] = new WebRtcEndpoint.Builder(mp).build();
+			webRtcEndpoints[i].connect(webRtcEndpoints[i]);
 
 			// Start WebRTC in loopback in each browser
-			browser1.subscribeEvents("playing");
-			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
+			getBrowser(i).subscribeEvents("playing");
+			getBrowser(i).initWebRtc(webRtcEndpoints[i],
+					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 			// Delay time (to avoid the same timing in videos)
-			Thread.sleep(1000);
-
-			// Browser 2
-			browser2.subscribeEvents("playing");
-			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
-
-			// Delay time (to avoid the same timing in videos)
-			Thread.sleep(1000);
-
-			// Browser 3
-			browser3.subscribeEvents("playing");
-			browser3.initWebRtc(webRtcEndpoint3, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
+			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 
 			// Wait until event playing in the remote streams
 			Assert.assertTrue(
 					"Not received media #1 (timeout waiting playing event)",
-					browser1.waitForEvent("playing"));
-			Assert.assertTrue(
-					"Not received media #2 (timeout waiting playing event)",
-					browser2.waitForEvent("playing"));
-			Assert.assertTrue(
-					"Not received media #3 (timeout waiting playing event)",
-					browser3.waitForEvent("playing"));
+					getBrowser(i).waitForEvent("playing"));
 
-			// Guard time to see browsers
-			Thread.sleep(PLAYTIME * 1000);
-			assertColor(browser1, browser2, browser3);
-
-			// Switching (round #1)
-			webRtcEndpoint1.connect(webRtcEndpoint2);
-			webRtcEndpoint2.connect(webRtcEndpoint3);
-			webRtcEndpoint3.connect(webRtcEndpoint1);
-			assertColor(browser1, browser2, browser3);
-			browser1.consoleLog(ConsoleLogLevel.info,
-					"Switch #1: webRtcEndpoint1 -> webRtcEndpoint2");
-			browser2.consoleLog(ConsoleLogLevel.info,
-					"Switch #1: webRtcEndpoint2 -> webRtcEndpoint3");
-			browser3.consoleLog(ConsoleLogLevel.info,
-					"Switch #1: webRtcEndpoint3 -> webRtcEndpoint1");
-
-			// Guard time to see switching #1
-			Thread.sleep(PLAYTIME * 1000);
-
-			// Switching (round #2)
-			webRtcEndpoint1.connect(webRtcEndpoint3);
-			webRtcEndpoint2.connect(webRtcEndpoint1);
-			webRtcEndpoint3.connect(webRtcEndpoint2);
-			assertColor(browser1, browser2, browser3);
-			browser1.consoleLog(ConsoleLogLevel.info,
-					"Switch #2: webRtcEndpoint1 -> webRtcEndpoint3");
-			browser2.consoleLog(ConsoleLogLevel.info,
-					"Switch #2: webRtcEndpoint2 -> webRtcEndpoint1");
-			browser3.consoleLog(ConsoleLogLevel.info,
-					"Switch #2: webRtcEndpoint3 -> webRtcEndpoint2");
-
-			// Guard time to see switching #2
-			Thread.sleep(PLAYTIME * 1000);
+			// Assert color
+			assertColor(i);
 		}
+
+		// Guard time to see switching #0
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+
+		// Switching (round #1)
+		for (int i = 0; i < NUM_BROWSERS; i++) {
+			int next = (i + 1) >= NUM_BROWSERS ? 0 : i + 1;
+			webRtcEndpoints[i].connect(webRtcEndpoints[next]);
+			getBrowser(i).consoleLog(
+					ConsoleLogLevel.info,
+					"Switch #1: webRtcEndpoint" + i + " -> webRtcEndpoint"
+							+ next);
+			// Assert color
+			assertColor(i);
+		}
+
+		// Guard time to see switching #1
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+
+		// Switching (round #2)
+		for (int i = 0; i < NUM_BROWSERS; i++) {
+			int previous = (i - 1) < 0 ? NUM_BROWSERS - 1 : i - 1;
+			webRtcEndpoints[i].connect(webRtcEndpoints[previous]);
+			getBrowser(i).consoleLog(
+					ConsoleLogLevel.info,
+					"Switch #2: webRtcEndpoint" + i + " -> webRtcEndpoint"
+							+ previous);
+			// Assert color
+			assertColor(i);
+		}
+
+		// Guard time to see switching #2
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Release Media Pipeline
 		mp.release();
 	}
 
-	public void assertColor(BrowserClient... browsers) {
-		for (BrowserClient browser : browsers) {
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser.similarColor(CHROME_VIDEOTEST_COLOR));
-		}
+	public void assertColor(int index) {
+		Assert.assertTrue(
+				"The color of the video should be green (RGB #008700)",
+				getBrowser(index).similarColor(CHROME_VIDEOTEST_COLOR));
+
 	}
 
 }
