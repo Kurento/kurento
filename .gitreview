@@ -2,4 +2,4 @@
 host=code.kurento.org
 port=12345
 project=kurento-java
-defaultbranch=release-5.1
+defaultbranch=master
