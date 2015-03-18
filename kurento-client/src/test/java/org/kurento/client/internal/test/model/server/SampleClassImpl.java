@@ -1,6 +1,7 @@
 package org.kurento.client.internal.test.model.server;
 
 import java.util.List;
+import java.util.Map;
 
 import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.server.Param;
@@ -54,6 +55,16 @@ public class SampleClassImpl {
 
 	public List<ComplexParam> echoListRegister(
 			@Param("param") List<ComplexParam> param) {
+		return param;
+	}
+
+	public Map<String, SampleEnum> echoMapEnum(
+			@Param("param") Map<String, SampleEnum> param) {
+		return param;
+	}
+
+	public Map<String, ComplexParam> echoMapRegister(
+			@Param("param") Map<String, ComplexParam> param) {
 		return param;
 	}
 

@@ -1,6 +1,7 @@
 package org.kurento.client.internal.test.model.client;
 
 import java.util.List;
+import java.util.Map;
 
 import org.kurento.client.AbstractBuilder;
 import org.kurento.client.Continuation;
@@ -55,6 +56,18 @@ public interface SampleClass extends KurentoObject {
 
 	void echoListRegister(@Param("param") List<ComplexParam> param,
 			Continuation<List<ComplexParam>> cont);
+
+	Map<String, SampleEnum> echoMapEnum(
+			@Param("param") Map<String, SampleEnum> param);
+
+	void echoMapEnum(@Param("param") Map<String, SampleEnum> param,
+			Continuation<Map<String, SampleEnum>> cont);
+
+	Map<String, ComplexParam> echoMapRegister(
+			@Param("param") Map<String, ComplexParam> param);
+
+	void echoMapRegister(@Param("param") Map<String, ComplexParam> param,
+			Continuation<Map<String, ComplexParam>> cont);
 
 	SampleClass echoObjectRef(@Param("param") SampleClass param);
 
