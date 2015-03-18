@@ -59,7 +59,19 @@ function getOscillatorMedia() {
   return dest.stream;
 }
 
-QUnit.module('WebRtcPeer');
+QUnit.module('WebRtcPeer', {
+  afterEach: function () {
+    if (this.webRtcPeer)
+      this.webRtcPeer.dispose()
+
+    if (this.peerConnection)
+      this.peerConnection.close()
+  }
+});
+
+//
+// Child classes
+//
 
 QUnit.test('WebRtcPeerRecvonly', function (assert) {
   var done = assert.async();
@@ -250,6 +262,10 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
   })
 });
 
+//
+// Methods
+//
+
 QUnit.test('processOffer', function (assert) {
   var done = assert.async();
 
@@ -297,6 +313,129 @@ QUnit.test('processOffer', function (assert) {
           onerror);
       },
       onerror);
+  })
+});
+
+//
+// Properties
+//
+
+QUnit.test('currentFrame', function (assert) {
+  var done = assert.async();
+
+  assert.expect(2);
+
+  var ctx = this
+
+  function onerror(error) {
+    if (error)
+      QUnit.pushFailure(error.message || error, error.stack);
+
+    done()
+  }
+
+  var video = document.getElementById('video')
+
+  var options = {
+    configuration: {
+      iceServers: []
+    },
+    remoteVideo: video
+  }
+
+  this.webRtcPeer = WebRtcPeerRecvonly(options, function (error) {
+    var self = this
+
+    if (error) return onerror(error)
+
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
+      if (error) return onerror(error)
+
+      var offer = new RTCSessionDescription({
+        type: 'offer',
+        sdp: sdpOffer
+      });
+
+      ctx.peerConnection = new RTCPeerConnection()
+
+      this.on('icecandidate', function (icecandidate) {
+        if (ctx.peerConnection.signalingState == 'closed')
+          return
+
+        ctx.peerConnection.addIceCandidate(icecandidate,
+          function () {
+            console.log('ICE candidate:', icecandidate)
+          }, onerror)
+      })
+      ctx.peerConnection.addEventListener('icecandidate', function (
+        event) {
+        var candidate = event.candidate
+        if (candidate)
+          self.addIceCandidate(candidate)
+      })
+
+      ctx.peerConnection.setRemoteDescription(offer, function () {
+          var mediaConstraints = {
+            audio: false,
+            fake: true,
+            video: {
+              mandatory: {
+                maxWidth: 640,
+                maxFrameRate: 15,
+                minFrameRate: 15
+              }
+            }
+          }
+
+          getUserMedia(mediaConstraints, function (stream) {
+              ctx.peerConnection.addStream(stream)
+
+              ctx.peerConnection.createAnswer(function (answer) {
+                  ctx.peerConnection.setLocalDescription(
+                    answer,
+                    function () {
+                      processAnswer(answer.sdp, function (
+                        error) {
+                        if (error) return onerror(error)
+
+                        var stream = this.getRemoteStream()
+                        assert.notEqual(stream,
+                          undefined, 'remote stream')
+
+                        function onplaying() {
+                          video.removeEventListener(
+                            'playing', onplaying)
+
+                          setTimeout(function () {
+                            var currentFrame =
+                              self.currentFrame
+
+                            var x = currentFrame.width /
+                              2
+                            var y = currentFrame.height /
+                              2
+
+                            assert.notPixelEqual(
+                              currentFrame, x,
+                              y, 0, 0, 0, 0,
+                              'playing');
+
+                            done()
+                          }, 1000)
+                        }
+
+                        video.addEventListener(
+                          'playing', onplaying)
+                      })
+                    },
+                    onerror);
+                },
+                onerror);
+            },
+            onerror)
+        },
+        onerror)
+    })
   })
 });
 
@@ -387,7 +526,7 @@ QUnit.test('videoEnabled', function (assert) {
 
   const TIMEOUT = 50; // ms
 
-  var video = document.getElementById('localVideo')
+  var video = document.getElementById('video')
   var canvas = document.getElementById('canvas')
   var context = canvas.getContext('2d');
 
