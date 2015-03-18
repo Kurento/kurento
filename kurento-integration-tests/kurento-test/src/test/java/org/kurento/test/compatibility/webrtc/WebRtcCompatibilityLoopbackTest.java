@@ -25,6 +25,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.CompatibilityTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
@@ -64,7 +65,7 @@ public class WebRtcCompatibilityLoopbackTest extends CompatibilityTest {
 		TestScenario test1 = new TestScenario();
 		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
-				.platform(Platform.WIN8_1).browserVersion("39").build());
+				.client(Client.WEBRTC).platform(Platform.WIN8_1).browserVersion("39").build());
 
 		return Arrays.asList(new Object[][] { { test1 } });
 	}

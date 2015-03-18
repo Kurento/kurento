@@ -30,10 +30,11 @@ import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserRunner;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
+import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.grid.ParallelBrowsers;
 import org.kurento.test.latency.LatencyController;
@@ -75,14 +76,19 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 		TestScenario test = new TestScenario();
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.video(video).build());
+		test.addBrowser(
+				BrowserConfig.PRESENTER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(video).build());
 
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
-				.numInstances(numViewers).browserPerInstance(browserPerViewer)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
+		test.addBrowser(
+				BrowserConfig.VIEWER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.numInstances(numViewers)
+						.browserPerInstance(browserPerViewer)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
 		// Uncomment this for remote scenario
 		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()

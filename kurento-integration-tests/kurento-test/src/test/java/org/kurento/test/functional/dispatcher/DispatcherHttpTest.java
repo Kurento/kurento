@@ -67,12 +67,17 @@ public class DispatcherHttpTest extends FunctionalTest {
 	public static Collection<Object[]> data() {
 		// Test: 2 browsers
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.client(Client.PLAYER).build());
+		test.addBrowser(
+				BrowserConfig.PRESENTER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(
+				BrowserConfig.VIEWER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).client(Client.PLAYER)
+						.build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 

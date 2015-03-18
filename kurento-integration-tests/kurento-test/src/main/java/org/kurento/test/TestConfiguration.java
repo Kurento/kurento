@@ -24,13 +24,21 @@ import org.kurento.commons.Address;
  */
 public class TestConfiguration {
 
-	// Host (address and port)
+	// Host (address, port, protocol, path)
+	public static final String TEST_HOST_PROPERTY = "test.host";
 	public static final String TEST_PUBLIC_IP_PROPERTY = "test.public.ip";
 	public static final String TEST_PUBLIC_IP_DEFAULT = "127.0.0.1";
 
+	public static final String TEST_PORT_PROPERTY = "test.port";
 	public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
 	public static final String APP_HTTP_PORT_PROP = "server.port";
 	public static final int APP_HTTP_PORT_DEFAULT = 7779;
+
+	public static final String TEST_PATH_PROPERTY = "test.path";
+	public static final String TEST_PATH_DEFAULT = "/";
+
+	public static final String TEST_PROTOCOL_PROPERTY = "test.protocol";
+	public static final String TEST_PROTOCOL_DEFAULT = "http";
 
 	// Saucelabs
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";

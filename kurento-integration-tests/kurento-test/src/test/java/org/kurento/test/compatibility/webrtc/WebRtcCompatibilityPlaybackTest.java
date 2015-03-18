@@ -31,6 +31,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.CompatibilityTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
@@ -69,14 +70,20 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 	public static Collection<Object[]> data() {
 		// Test: Browsers in saucelabs
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
-				.platform(Platform.WIN8_1).browserVersion("39").build());
+		test1.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.SAUCELABS)
+						.platform(Platform.WIN8_1).browserVersion("39").build());
 
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.FIREFOX).scope(BrowserScope.SAUCELABS)
-				.platform(Platform.LINUX).browserVersion("35").build());
+		test2.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.SAUCELABS).platform(Platform.LINUX)
+						.browserVersion("35").build());
 
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}

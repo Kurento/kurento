@@ -17,9 +17,15 @@ package org.kurento.test.client;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_PASSWD_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_PEM_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_PATH_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_PATH_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_PORT_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_PROTOCOL_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_PROTOCOL_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
@@ -87,8 +93,8 @@ public class BrowserClient implements Closeable {
 	private int numInstances;
 	private int browserPerInstance;
 	private Protocol protocol;
-	private String hostAddress;
-	private String publicIp;
+	private String node;
+	private String host;
 	private int serverPort;
 	private Client client;
 	private String login;
@@ -100,8 +106,8 @@ public class BrowserClient implements Closeable {
 		this.scope = builder.scope;
 		this.video = builder.video;
 		this.audio = builder.audio;
-		this.serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
-				builder.serverPort);
+		this.serverPort = getProperty(TEST_PORT_PROPERTY,
+				getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort));
 		this.client = builder.client;
 		this.browserType = builder.browserType;
 		this.usePhysicalCam = builder.usePhysicalCam;
@@ -114,14 +120,14 @@ public class BrowserClient implements Closeable {
 		this.timeout = builder.timeout;
 		this.colorDistance = builder.colorDistance;
 		this.thresholdTime = builder.thresholdTime;
-		this.hostAddress = builder.hostAddress;
+		this.node = builder.node;
 		this.protocol = builder.protocol;
 		this.numInstances = builder.numInstances;
 		this.browserPerInstance = builder.browserPerInstance;
 		this.login = builder.login;
 		this.passwd = builder.passwd;
 		this.pem = builder.pem;
-		this.publicIp = builder.publicIp;
+		this.host = builder.host;
 	}
 
 	public void init() {
@@ -232,8 +238,8 @@ public class BrowserClient implements Closeable {
 						.getResource("static" + clientPage).getFile());
 				url = protocol.toString() + clientPageFile.getAbsolutePath();
 			} else {
-				String host = publicIp != null ? publicIp : hostAddress;
-				url = protocol.toString() + host + ":" + serverPort
+				String hostName = host != null ? host : node;
+				url = protocol.toString() + hostName + ":" + serverPort
 						+ client.toString();
 			}
 			log.info("*** Browsing URL with WebDriver: {}", url);
@@ -272,7 +278,7 @@ public class BrowserClient implements Closeable {
 			throws MalformedURLException {
 		assertPublicIpNotNull();
 		if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
-			GridNode node = null;
+			GridNode gridNode = null;
 
 			if (login != null) {
 				System.setProperty(TEST_NODE_LOGIN_PROPERTY, login);
@@ -284,29 +290,29 @@ public class BrowserClient implements Closeable {
 				System.setProperty(TEST_NODE_PEM_PROPERTY, pem);
 			}
 
-			if (!hostAddress.equals(publicIp)
+			if (!node.equals(host)
 					&& login != null
 					&& !login.isEmpty()
 					&& ((passwd != null && !passwd.isEmpty()) || (pem != null && !pem
 							.isEmpty()))) {
-				node = new GridNode(hostAddress, browserType,
-						browserPerInstance, login, passwd, pem);
-				GridHandler.getInstance().addNode(id, node);
+				gridNode = new GridNode(node, browserType, browserPerInstance,
+						login, passwd, pem);
+				GridHandler.getInstance().addNode(id, gridNode);
 			} else {
-				node = GridHandler.getInstance().getRandomNodeFromList(id,
+				gridNode = GridHandler.getInstance().getRandomNodeFromList(id,
 						browserType, browserPerInstance);
 			}
 
 			// Start Hub (just the first time will be effective)
-			GridHandler.getInstance().setHubAddress(publicIp);
+			GridHandler.getInstance().setHubAddress(host);
 			GridHandler.getInstance().startHub();
 
 			// Start node
-			GridHandler.getInstance().startNode(node);
+			GridHandler.getInstance().startNode(gridNode);
 
 			// Copy video (if necessary)
 			if (video != null && browserType == BrowserType.CHROME) {
-				GridHandler.getInstance().copyRemoteVideo(node, video);
+				GridHandler.getInstance().copyRemoteVideo(gridNode, video);
 			}
 
 		}
@@ -323,17 +329,17 @@ public class BrowserClient implements Closeable {
 
 		int hubPort = GridHandler.getInstance().getHubPort();
 
-		driver = new RemoteWebDriver(new URL("http://" + publicIp + ":"
-				+ hubPort + "/wd/hub"), capabilities);
+		driver = new RemoteWebDriver(new URL("http://" + host + ":" + hubPort
+				+ "/wd/hub"), capabilities);
 	}
 
 	private void assertPublicIpNotNull() {
-		if (publicIp == null) {
+		if (host == null) {
 			throw new RuntimeException(
 					"Public IP must be available to run remote test. "
-							+ "You can do it by addint the paramter -D"
-							+ TEST_PUBLIC_PORT_PROPERTY
-							+ "=<public_ip> or with key 'publicIP' in "
+							+ "You can do it by adding the paramter -D"
+							+ TEST_HOST_PROPERTY
+							+ "=<public_ip> or with key 'host' in "
 							+ "the JSON configuration file.");
 		}
 	}
@@ -342,15 +348,19 @@ public class BrowserClient implements Closeable {
 		private int timeout = 60; // seconds
 		private int thresholdTime = 10; // seconds
 		private double colorDistance = 60;
-		private String hostAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
-				TEST_PUBLIC_IP_DEFAULT);
-		private String publicIp = hostAddress;
-		private int serverPort = getProperty(TEST_PUBLIC_PORT_PROPERTY,
-				KurentoServicesTestHelper.getAppHttpPort());
+		private String node = getProperty(TEST_HOST_PROPERTY,
+				getProperty(TEST_PUBLIC_IP_PROPERTY, TEST_PUBLIC_IP_DEFAULT));
+		private String host = node;
+		private int serverPort = getProperty(
+				TEST_PORT_PROPERTY,
+				getProperty(TEST_PUBLIC_PORT_PROPERTY,
+						KurentoServicesTestHelper.getAppHttpPort()));
 		private BrowserScope scope = BrowserScope.LOCAL;
 		private BrowserType browserType = BrowserType.CHROME;
-		private Protocol protocol = Protocol.HTTP;
-		private Client client = Client.WEBRTC;
+		private Protocol protocol = Protocol.valueOf(getProperty(
+				TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT).toUpperCase());
+		private Client client = Client.value2Client(getProperty(
+				TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
 		private boolean usePhysicalCam = false;
 		private boolean enableScreenCapture = false;
 		private int recordAudio = 0; // seconds
@@ -401,8 +411,8 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder hostAddress(String hostAddress) {
-			this.hostAddress = hostAddress;
+		public Builder node(String node) {
+			this.node = node;
 			return this;
 		}
 
@@ -470,8 +480,8 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder publicIp(String publicIp) {
-			this.publicIp = publicIp;
+		public Builder host(String host) {
+			this.host = host;
 			return this;
 		}
 
@@ -591,8 +601,8 @@ public class BrowserClient implements Closeable {
 		return id;
 	}
 
-	public String getHostAddress() {
-		return hostAddress;
+	public String getNode() {
+		return node;
 	}
 
 	public void setName(String name) {
@@ -627,8 +637,8 @@ public class BrowserClient implements Closeable {
 		return browserPerInstance;
 	}
 
-	public String getPublicIp() {
-		return publicIp;
+	public String getHost() {
+		return host;
 	}
 
 	public void setTimeout(int timeout) {

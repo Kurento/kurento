@@ -78,8 +78,8 @@ public class BrowserConfig {
 					builder = builder.browserPerInstance(instance
 							.getBrowserPerInstance());
 				}
-				if (instance.getHostAddress() != null) {
-					builder = builder.hostAddress(instance.getHostAddress());
+				if (instance.getNode() != null) {
+					builder = builder.node(instance.getNode());
 				}
 				if (instance.getLogin() != null) {
 					builder = builder.login(instance.getLogin());
@@ -104,8 +104,8 @@ public class BrowserConfig {
 					builder = builder.client(Client.value2Client(instance
 							.getPath()));
 				}
-				if (instance.getPublicIP() != null) {
-					builder = builder.publicIp(instance.getPublicIP());
+				if (instance.getHost() != null) {
+					builder = builder.host(instance.getHost());
 				}
 				if (instance.getSaucelabsUser() != null) {
 					System.setProperty(SAUCELAB_USER_PROPERTY,

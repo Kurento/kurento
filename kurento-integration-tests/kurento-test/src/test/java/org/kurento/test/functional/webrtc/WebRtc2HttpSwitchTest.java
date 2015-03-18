@@ -69,15 +69,22 @@ public class WebRtc2HttpSwitchTest extends FunctionalTest {
 
 		// Test: 3 browsers
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.client(Client.PLAYER).build());
+		test.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(
+				BrowserConfig.PRESENTER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(
+				BrowserConfig.VIEWER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).client(Client.PLAYER)
+						.build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 

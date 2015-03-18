@@ -29,6 +29,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
@@ -80,25 +81,25 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		test.addBrowser(
 				BROWSER2,
 				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/red.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER3,
 				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/green.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER4,
 				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER5,
 				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/white.y4m")
 						.build());
 		return Arrays.asList(new Object[][] { { test } });

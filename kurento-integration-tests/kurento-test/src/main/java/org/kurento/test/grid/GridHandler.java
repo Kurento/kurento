@@ -21,6 +21,7 @@ import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_NODES_FILE_LIST_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 
@@ -82,8 +83,8 @@ public class GridHandler {
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private GridHub hub;
-	private String hubAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
-			TEST_PUBLIC_IP_DEFAULT);
+	private String hubAddress = getProperty(TEST_HOST_PROPERTY,
+			getProperty(TEST_PUBLIC_IP_PROPERTY, TEST_PUBLIC_IP_DEFAULT));
 
 	private int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 			SELENIUM_HUB_PORT_DEFAULT);

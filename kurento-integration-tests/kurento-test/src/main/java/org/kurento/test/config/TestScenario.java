@@ -29,6 +29,7 @@ import org.kurento.commons.ConfigFileFinder;
 import org.kurento.test.base.KurentoClientTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.openqa.selenium.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,8 +110,7 @@ public class TestScenario {
 		for (String key : browserMap.keySet()) {
 			if (!out.isEmpty()) {
 				out += ", ";
-			}
-			else {
+			} else {
 				out += "Number of browser(s) = " + browserMap.size() + " : ";
 			}
 			out += "(id=" + key + ")";
@@ -150,7 +150,8 @@ public class TestScenario {
 			// Read JSON and transform to GSON
 			BufferedReader br = new BufferedReader(new FileReader(jsonPath));
 			Gson gson = new Gson();
-			BrowserConfig browserConfig = gson.fromJson(br, BrowserConfig.class);
+			BrowserConfig browserConfig = gson
+					.fromJson(br, BrowserConfig.class);
 
 			return browserConfig.getTestScenario();
 
@@ -166,14 +167,18 @@ public class TestScenario {
 	public static Collection<Object[]> localChromeAndFirefox() {
 		// Test #1 : Chrome in local
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
+		test1.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 		// Test #2 : Firefox in local
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
-				.build());
+		test2.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
@@ -181,9 +186,11 @@ public class TestScenario {
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
+		test.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -191,9 +198,11 @@ public class TestScenario {
 	public static Collection<Object[]> localFirefox() {
 		// Test: Firefox in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
-				.build());
+		test.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -201,12 +210,16 @@ public class TestScenario {
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test: Chrome in local (presenter and viewer)
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.build());
+		test.addBrowser(
+				BrowserConfig.PRESENTER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(
+				BrowserConfig.VIEWER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -216,12 +229,16 @@ public class TestScenario {
 		String videoPath = KurentoClientTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.video(videoPath).build());
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.video(videoPath).build());
+		test.addBrowser(
+				BrowserConfig.PRESENTER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(
+				BrowserConfig.VIEWER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}

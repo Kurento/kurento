@@ -25,6 +25,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.ConsoleLogLevel;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
@@ -67,8 +68,8 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		// Test: NUM_BROWSERS local Chrome's
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).numInstances(NUM_BROWSERS)
-				.scope(BrowserScope.LOCAL).build());
+				.client(Client.WEBRTC).browserType(BrowserType.CHROME)
+				.numInstances(NUM_BROWSERS).scope(BrowserScope.LOCAL).build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 

@@ -28,6 +28,7 @@ import org.kurento.test.base.KurentoClientTest;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
@@ -71,9 +72,11 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 		String videoPath = KurentoClientTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-				.video(videoPath).build());
+		test.addBrowser(
+				BrowserConfig.BROWSER,
+				new BrowserClient.Builder().client(Client.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 

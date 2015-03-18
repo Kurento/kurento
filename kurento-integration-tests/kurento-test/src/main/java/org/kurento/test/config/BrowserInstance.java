@@ -31,7 +31,7 @@ public class BrowserInstance {
 	private String platform;
 	private int instances;
 	private int browserPerInstance;
-	private String hostAddress;
+	private String node;
 	private String login;
 	private String passwd;
 	private String key;
@@ -41,7 +41,7 @@ public class BrowserInstance {
 	private boolean enableScreenCapture;
 	private String saucelabsUser;
 	private String saucelabsKey;
-	private String publicIP;
+	private String host;
 	private String video;
 
 	public BrowserInstance(String browser) {
@@ -96,12 +96,12 @@ public class BrowserInstance {
 		this.browserPerInstance = browserPerInstance;
 	}
 
-	public String getHostAddress() {
-		return hostAddress;
+	public String getNode() {
+		return node;
 	}
 
-	public void setHostAddress(String hostAddress) {
-		this.hostAddress = hostAddress;
+	public void setNode(String node) {
+		this.node = node;
 	}
 
 	public String getLogin() {
@@ -196,12 +196,12 @@ public class BrowserInstance {
 		this.saucelabsKey = saucelabsKey;
 	}
 
-	public String getPublicIP() {
-		return publicIP;
+	public String getHost() {
+		return host;
 	}
 
-	public void setPublicIP(String publicIP) {
-		this.publicIP = publicIP;
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	public String getVideo() {
