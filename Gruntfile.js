@@ -197,8 +197,11 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'jscoverage', 'browserify',
+  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify',
     'jsbeautifier:git-pre-commit'
   ]);
   grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
+  grunt.registerTask('coverage', ['clean:coverage', 'jscoverage',
+    'browserify:coverage'
+  ]);
 };
