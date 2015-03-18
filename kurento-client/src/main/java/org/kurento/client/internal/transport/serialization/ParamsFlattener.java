@@ -215,6 +215,8 @@ public class ParamsFlattener {
 			return result;
 		} else if (result instanceof List<?>) {
 			return flattenResultList((List<?>) result, manager);
+		} else if (result instanceof Map<?, ?>) {
+			return flattenParamsMap((Map<String, ?>) result, false);
 		} else if (result.getClass().getAnnotation(RemoteClass.class) != null) {
 			return extractObjectRefFromRemoteClass(result, manager);
 		} else {
@@ -442,7 +444,7 @@ public class ParamsFlattener {
 			}
 			if (((Class<?>) pType.getRawType()).isAssignableFrom(Map.class)) {
 				return unflattenMap(paramName, (Props) value,
-						pType.getActualTypeArguments()[0], manager);
+						pType.getActualTypeArguments()[1], manager);
 			}
 		}
 
@@ -504,7 +506,9 @@ public class ParamsFlattener {
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (value != null) {
 			for (Prop p : value) {
-				map.put(p.getName(), p.getValue());
+				map.put(p.getName(),
+						unflattenValue(paramName + ".get('" + p.getName()
+								+ "')", type, p.getValue(), manager));
 			}
 		}
 		return map;
