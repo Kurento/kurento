@@ -14,6 +14,9 @@
  */
 package org.kurento.test.config;
 
+import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
+import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,7 +31,7 @@ import org.kurento.test.client.Client;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
  */
-public class TestConfig {
+public class BrowserConfig {
 
 	public static final String BROWSER = "browser";
 	public static final String PRESENTER = "presenter";
@@ -36,7 +39,7 @@ public class TestConfig {
 
 	private List<Map<String, BrowserInstance>> executions;
 
-	public TestConfig() {
+	public BrowserConfig() {
 		executions = new ArrayList<>();
 	}
 
@@ -50,7 +53,7 @@ public class TestConfig {
 
 	@Override
 	public String toString() {
-		return "TestConfig [executions=" + executions + "]";
+		return "BrowserConfig [executions=" + executions + "]";
 	}
 
 	public Collection<Object[]> getTestScenario() {
@@ -105,11 +108,11 @@ public class TestConfig {
 					builder = builder.publicIp(instance.getPublicIP());
 				}
 				if (instance.getSaucelabsUser() != null) {
-					System.setProperty(BrowserClient.SAUCELAB_USER_PROPERTY,
+					System.setProperty(SAUCELAB_USER_PROPERTY,
 							instance.getSaucelabsUser());
 				}
 				if (instance.getSaucelabsKey() != null) {
-					System.setProperty(BrowserClient.SAUCELAB_KEY_PROPERTY,
+					System.setProperty(SAUCELAB_KEY_PROPERTY,
 							instance.getSaucelabsKey());
 				}
 				if (instance.isLocal()) {

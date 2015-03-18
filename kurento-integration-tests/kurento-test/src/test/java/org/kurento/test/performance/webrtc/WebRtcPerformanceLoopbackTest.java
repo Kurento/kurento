@@ -31,7 +31,7 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.grid.ParallelBrowsers;
 
@@ -72,7 +72,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 		TestScenario test = new TestScenario();
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
 				.numInstances(numViewers).browserPerInstance(browserPerViewer)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(video).build());

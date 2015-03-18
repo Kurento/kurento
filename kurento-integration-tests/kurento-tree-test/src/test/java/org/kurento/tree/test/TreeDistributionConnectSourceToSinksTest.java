@@ -18,14 +18,15 @@ import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.testing.SystemFunctionalTests;
+import org.kurento.test.TestConfiguration;
 import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.SdpOfferProcessor;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.client.KurentoTreeClient;
@@ -53,14 +54,14 @@ public class TreeDistributionConnectSourceToSinksTest extends
 	public static Collection<Object[]> data() {
 		// Test: 1+NUM_VIEWERS local Chrome's
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 
 		for (int i = 0; i < NUM_VIEWERS; i++) {
-			test.addBrowser(TestConfig.VIEWER + i, new BrowserClient.Builder()
-					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-					.build());
+			test.addBrowser(BrowserConfig.VIEWER + i,
+					new BrowserClient.Builder().browserType(BrowserType.CHROME)
+							.scope(BrowserScope.LOCAL).build());
 		}
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -97,8 +98,8 @@ public class TreeDistributionConnectSourceToSinksTest extends
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
 		String kmsUri = PropertiesManager.getProperty(
-				KurentoServicesTestHelper.KMS_WS_URI_PROP,
-				KurentoServicesTestHelper.KMS_WS_URI_DEFAULT);
+				TestConfiguration.KMS_WS_URI_PROP,
+				TestConfiguration.KMS_WS_URI_DEFAULT);
 
 		System.setProperty(KurentoTreeServerApp.KMSS_URIS_PROPERTY, "[\""
 				+ kmsUri + "\",\"" + kmsUri + "\"]");
@@ -204,17 +205,17 @@ public class TreeDistributionConnectSourceToSinksTest extends
 			}
 		}, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		return getTestScenario().getBrowserMap().get(TestConfig.PRESENTER);
+		return getTestScenario().getBrowserMap().get(BrowserConfig.PRESENTER);
 	}
 
 	private TreeViewer createViewer(int key, final KurentoTreeClient client,
 			final String treeId) {
 		BrowserClient browserViewer = getTestScenario().getBrowserMap().get(
-				TestConfig.VIEWER + key);
+				BrowserConfig.VIEWER + key);
 		final TreeViewer treeClient = new TreeViewer(browserViewer, null);
 
-		getBrowser(TestConfig.VIEWER + key).subscribeEvents("playing");
-		getBrowser(TestConfig.VIEWER + key).initWebRtcSdpProcessor(
+		getBrowser(BrowserConfig.VIEWER + key).subscribeEvents("playing");
+		getBrowser(BrowserConfig.VIEWER + key).initWebRtcSdpProcessor(
 				new SdpOfferProcessor() {
 					@Override
 					public String processSdpOffer(String sdpOffer) {

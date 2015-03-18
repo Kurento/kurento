@@ -36,7 +36,7 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 import org.kurento.test.monitor.SystemMonitorManager;
@@ -73,10 +73,10 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 
 		// Test: 1 presenter + N viewers (all local Chrome's)
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(getPathTestFiles() + "/video/15sec/rgbHD.y4m").build());
-		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.numInstances(numViewers).build());
 		return Arrays.asList(new Object[][] { { test } });

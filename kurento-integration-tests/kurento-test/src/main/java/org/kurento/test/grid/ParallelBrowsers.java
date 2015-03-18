@@ -15,6 +15,10 @@
 package org.kurento.test.grid;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.CLIENT_RATE_DEFAULT;
+import static org.kurento.test.TestConfiguration.CLIENT_RATE_PROPERTY;
+import static org.kurento.test.TestConfiguration.HOLD_TIME_DEFAULT;
+import static org.kurento.test.TestConfiguration.HOLD_TIME_PROPERTY;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -40,12 +44,6 @@ import org.slf4j.LoggerFactory;
 public class ParallelBrowsers {
 
 	public static Logger log = LoggerFactory.getLogger(ParallelBrowsers.class);
-
-	private static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
-	private static final int CLIENT_RATE_DEFAULT = 5000; // milliseconds
-
-	private static final String HOLD_TIME_PROPERTY = "parallel.browsers.holdtime";
-	private static final int HOLD_TIME_DEFAULT = 10000; // milliseconds
 
 	private static int clientRate = getProperty(CLIENT_RATE_PROPERTY,
 			CLIENT_RATE_DEFAULT);

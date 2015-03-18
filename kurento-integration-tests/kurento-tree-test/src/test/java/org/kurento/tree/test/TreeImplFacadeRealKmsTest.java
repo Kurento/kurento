@@ -13,6 +13,7 @@ import org.junit.experimental.categories.Category;
 import org.kurento.client.KurentoClient;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.testing.SystemFunctionalTests;
+import org.kurento.test.TestConfiguration;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.server.kms.Element;
 import org.kurento.tree.server.kms.Pipeline;
@@ -28,8 +29,8 @@ public class TreeImplFacadeRealKmsTest {
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
 		RealKms kms = new RealKms(KurentoClient.create(PropertiesManager
-				.getProperty(KurentoServicesTestHelper.KMS_WS_URI_PROP,
-						KurentoServicesTestHelper.KMS_WS_URI_DEFAULT)));
+				.getProperty(TestConfiguration.KMS_WS_URI_PROP,
+						TestConfiguration.KMS_WS_URI_DEFAULT)));
 
 		Pipeline pipeline = kms.createPipeline();
 		WebRtc master = pipeline.createWebRtc();

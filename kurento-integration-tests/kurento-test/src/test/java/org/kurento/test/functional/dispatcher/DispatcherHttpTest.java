@@ -34,7 +34,7 @@ import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -67,10 +67,10 @@ public class DispatcherHttpTest extends FunctionalTest {
 	public static Collection<Object[]> data() {
 		// Test: 2 browsers
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
-		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.client(Client.PLAYER).build());
 		return Arrays.asList(new Object[][] { { test } });

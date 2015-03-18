@@ -15,6 +15,37 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.APP_HTTP_PORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.APP_HTTP_PORT_PROP;
+import static org.kurento.test.TestConfiguration.AUTOSTART_FALSE_VALUE;
+import static org.kurento.test.TestConfiguration.AUTOSTART_TEST_SUITE_VALUE;
+import static org.kurento.test.TestConfiguration.AUTOSTART_TEST_VALUE;
+import static org.kurento.test.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_DEFAULT;
+import static org.kurento.test.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_PROP;
+import static org.kurento.test.TestConfiguration.BOWER_KURENTO_UTILS_TAG_DEFAULT;
+import static org.kurento.test.TestConfiguration.BOWER_KURENTO_UTILS_TAG_PROP;
+import static org.kurento.test.TestConfiguration.KCS_AUTOSTART_DEFAULT;
+import static org.kurento.test.TestConfiguration.KCS_AUTOSTART_PROP;
+import static org.kurento.test.TestConfiguration.KCS_WS_URI_DEFAULT;
+import static org.kurento.test.TestConfiguration.KCS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_PROP;
+import static org.kurento.test.TestConfiguration.KMS_HTTP_PORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_HTTP_PORT_PROP;
+import static org.kurento.test.TestConfiguration.KMS_PRINT_LOG_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_PRINT_LOG_PROP;
+import static org.kurento.test.TestConfiguration.KMS_RABBITMQ_ADDRESS_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_RABBITMQ_ADDRESS_PROP;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_PROP;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_RABBITMQ_VALUE;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_WS_VALUE;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_TESTFILES_DEFAULT;
+import static org.kurento.test.TestConfiguration.KURENTO_TESTFILES_PROP;
+import static org.kurento.test.TestConfiguration.PROJECT_PATH_DEFAULT;
+import static org.kurento.test.TestConfiguration.PROJECT_PATH_PROP;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,62 +61,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class KurentoServicesTestHelper {
-
-	// Test properties
-
-	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";
-	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
-
-	private static final String PROJECT_PATH_PROP = "project.path";
-	private static final String PROJECT_PATH_DEFAULT = ".";
-
-	// Autostart properties
-
-	public static final String AUTOSTART_FALSE_VALUE = "false";
-	public static final String AUTOSTART_TEST_VALUE = "test";
-	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
-
-	public static final String KMS_AUTOSTART_PROP = "kms.autostart";
-	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_TEST_VALUE;
-
-	public static final String KCS_AUTOSTART_PROP = "kcs.autostart";
-	public static final String KCS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
-
-	// Kms properties
-
-	public static final String KMS_TRANSPORT_PROP = "kms.transport";
-	public static final String KMS_TRANSPORT_WS_VALUE = "ws";
-	public static final String KMS_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
-	public static final String KMS_TRANSPORT_DEFAULT = KMS_TRANSPORT_WS_VALUE;
-
-	public static final String KMS_PRINT_LOG_PROP = "kms.print.log";
-	public static final String KMS_PRINT_LOG_DEFAULT = "true";
-
-	public static final String KMS_HTTP_PORT_PROP = "kms.http.port";
-	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
-
-	public static final String KMS_RABBITMQ_ADDRESS_PROP = "kms.rabbitmq.address";
-	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address(
-			"127.0.0.1", 5672);
-
-	public static final String KMS_WS_URI_PROP = "kms.ws.uri";
-	public static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
-
-	// Kcs properties
-
-	public static final String KCS_WS_URI_PROP = "kcs.ws.uri";
-	public static final String KCS_WS_URI_DEFAULT = "ws://localhost:8889/kurento";
-
-	// App properties
-
-	public static final String APP_HTTP_PORT_PROP = "server.port";
-	public static final int APP_HTTP_PORT_DEFAULT = 7779;
-
-	// Bower properties
-	public static final String BOWER_KURENTO_CLIENT_TAG_PROP = "bower.kurentoclient.tag";
-	public static final String BOWER_KURENTO_CLIENT_TAG_DEFAULT = "";
-	public static final String BOWER_KURENTO_UTILS_TAG_PROP = "bower.kurentoutils.tag";
-	public static final String BOWER_KURENTO_UTILS_TAG_DEFAULT = "";
 
 	// Attributes
 	private static KurentoMediaServerManager kms;

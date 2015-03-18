@@ -15,6 +15,9 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_NODE_PASSWD_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_NODE_PEM_PROPERTY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,10 +56,6 @@ public class SshConnection {
 
 	private static final int NODE_INITIAL_PORT = 5555;
 	private static final int PING_TIMEOUT = 2; // seconds
-
-	public static final String TEST_NODE_LOGIN_PROPERTY = "test.node.login";
-	public static final String TEST_NODE_PASSWD_PROPERTY = "test.node.passwd";
-	public static final String TEST_NODE_PEM_PROPERTY = "test.node.pem";
 
 	private String host;
 	private String login;

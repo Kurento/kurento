@@ -28,7 +28,7 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.openqa.selenium.Platform;
 
@@ -62,7 +62,7 @@ public class WebRtcCompatibilityLoopbackTest extends CompatibilityTest {
 	public static Collection<Object[]> data() {
 		// Test: Browsers in saucelabs
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
 				.platform(Platform.WIN8_1).browserVersion("39").build());
 

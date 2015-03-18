@@ -15,6 +15,10 @@
 package org.kurento.test.internal;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 
 import org.kurento.test.grid.GridHub;
 import org.slf4j.Logger;
@@ -31,20 +35,13 @@ public class StartHub {
 
 	public Logger log = LoggerFactory.getLogger(StartHub.class);
 
-	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
-	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
-
-	public static final String SELENIUM_HUB_HOST_PROPERTY = "selenium.hub.host";
-	public static final String SELENIUM_HUB_HOST_DEFAULT = "127.0.0.1";
-
 	public static void main(String[] args) throws Exception {
-		String hubAddress = getProperty(SELENIUM_HUB_HOST_PROPERTY,
-				SELENIUM_HUB_HOST_DEFAULT);
+		String hubAddress = getProperty(TEST_PUBLIC_IP_DEFAULT,
+				TEST_PUBLIC_IP_PROPERTY);
 		int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 				SELENIUM_HUB_PORT_DEFAULT);
 
-		GridHub seleniumGridHub = new GridHub(hubAddress,
-				hubPort);
+		GridHub seleniumGridHub = new GridHub(hubAddress, hubPort);
 		seleniumGridHub.start();
 	}
 }

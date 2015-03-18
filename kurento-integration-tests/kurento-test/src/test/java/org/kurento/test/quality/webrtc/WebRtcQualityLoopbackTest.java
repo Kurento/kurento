@@ -31,7 +31,7 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.Recorder;
@@ -74,7 +74,7 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
 		TestScenario test = new TestScenario();
 		test.addBrowser(
-				TestConfig.BROWSER,
+				BrowserConfig.BROWSER,
 				new BrowserClient.Builder()
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL)

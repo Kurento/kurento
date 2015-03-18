@@ -15,7 +15,20 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_PROP;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
+import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_DEFAULT;
+import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_SERVER_DEBUG_DEFAULT;
+import static org.kurento.test.TestConfiguration.KURENTO_SERVER_DEBUG_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_WORKSPACE_DEFAULT;
+import static org.kurento.test.TestConfiguration.KURENTO_WORKSPACE_PROP;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -57,22 +70,6 @@ import freemarker.template.Template;
  * @since 4.2.3
  */
 public class KurentoMediaServerManager {
-
-	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
-	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
-
-	private static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
-	private static final String KURENTO_GST_PLUGINS_DEFAULT = "";
-
-	private static final String KURENTO_SERVER_COMMAND_PROP = "kms.command";
-	private static final String KURENTO_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento-media-server";
-
-	private static final String KURENTO_SERVER_DEBUG_PROP = "kms.debug";
-	private static final String KURENTO_SERVER_DEBUG_DEFAULT = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
-
-	public static final String KURENTO_KMS_LOGIN_PROP = "kms.login";
-	public static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
-	public static final String KURENTO_KMS_PEM_PROP = "kms.pem";
 
 	public static SshConnection remoteKms = null;
 
@@ -137,12 +134,11 @@ public class KurentoMediaServerManager {
 
 		if (isKmsRemote && kmsLogin == null
 				&& (kmsPem == null || kmsPasswd == null)) {
-			String kmsAutoStart = getProperty(
-					KurentoServicesTestHelper.KMS_AUTOSTART_PROP,
-					KurentoServicesTestHelper.KMS_AUTOSTART_DEFAULT);
+			String kmsAutoStart = getProperty(KMS_AUTOSTART_PROP,
+					KMS_AUTOSTART_DEFAULT);
 			throw new RuntimeException(
 					"Bad test parameters: "
-							+ KurentoServicesTestHelper.KMS_AUTOSTART_PROP
+							+ KMS_AUTOSTART_PROP
 							+ "="
 							+ kmsAutoStart
 							+ " and "
@@ -242,7 +238,8 @@ public class KurentoMediaServerManager {
 				remoteKms.runAndWaitCommand("sh", "-c",
 						remoteKms.getTmpFolder() + "/" + "kurento.sh");
 			} else {
-				Shell.run("sh", "-c", workspace + "kurento.sh > /tmp/kurento.log 2>&1");
+				Shell.run("sh", "-c", workspace
+						+ "kurento.sh > /tmp/kurento.log 2>&1");
 			}
 		}
 

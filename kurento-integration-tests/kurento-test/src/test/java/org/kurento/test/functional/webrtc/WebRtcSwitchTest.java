@@ -29,7 +29,7 @@ import org.kurento.test.client.ConsoleLogLevel;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
@@ -66,7 +66,7 @@ public class WebRtcSwitchTest extends FunctionalTest {
 	public static Collection<Object[]> data() {
 		// Test: NUM_BROWSERS local Chrome's
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).numInstances(NUM_BROWSERS)
 				.scope(BrowserScope.LOCAL).build());
 		return Arrays.asList(new Object[][] { { test } });

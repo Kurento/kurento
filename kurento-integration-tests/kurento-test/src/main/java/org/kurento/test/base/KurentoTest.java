@@ -29,7 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.TestClient;
 import org.kurento.test.config.Protocol;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.slf4j.Logger;
@@ -137,7 +137,7 @@ public class KurentoTest {
 
 	public TestClient getBrowser() {
 		try {
-			return assertAndGetBrowser(TestConfig.BROWSER);
+			return assertAndGetBrowser(BrowserConfig.BROWSER);
 
 		} catch (RuntimeException e) {
 			if (testScenario.getBrowserMap().isEmpty()) {
@@ -146,7 +146,7 @@ public class KurentoTest {
 			} else {
 				String browserKey = testScenario.getBrowserMap().entrySet()
 						.iterator().next().getKey();
-				log.debug(TestConfig.BROWSER
+				log.debug(BrowserConfig.BROWSER
 						+ " is not registered in test scenarario, instead"
 						+ " using first browser in the test scenario, i.e. "
 						+ browserKey);
@@ -159,23 +159,23 @@ public class KurentoTest {
 	}
 
 	public TestClient getBrowser(int index) {
-		return assertAndGetBrowser(TestConfig.BROWSER + index);
+		return assertAndGetBrowser(BrowserConfig.BROWSER + index);
 	}
 
 	public TestClient getPresenter() {
-		return assertAndGetBrowser(TestConfig.PRESENTER);
+		return assertAndGetBrowser(BrowserConfig.PRESENTER);
 	}
 
 	public TestClient getPresenter(int index) {
-		return assertAndGetBrowser(TestConfig.PRESENTER + index);
+		return assertAndGetBrowser(BrowserConfig.PRESENTER + index);
 	}
 
 	public TestClient getViewer() {
-		return assertAndGetBrowser(TestConfig.VIEWER);
+		return assertAndGetBrowser(BrowserConfig.VIEWER);
 	}
 
 	public TestClient getViewer(int index) {
-		return assertAndGetBrowser(TestConfig.VIEWER + index);
+		return assertAndGetBrowser(BrowserConfig.VIEWER + index);
 	}
 
 	private TestClient assertAndGetBrowser(String browserKey) {

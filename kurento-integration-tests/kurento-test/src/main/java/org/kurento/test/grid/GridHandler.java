@@ -16,6 +16,13 @@
 package org.kurento.test.grid;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_NODES_FILE_LIST_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_DEFAULT;
+import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -45,7 +52,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.kurento.test.Shell;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Randomizer;
@@ -72,20 +78,12 @@ public class GridHandler {
 
 	private static GridHandler instance = null;
 
-	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
-	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
-
-	public static final String SELENIUM_NODES_LIST_PROPERTY = "test.nodes.list";
-	public static final String SELENIUM_NODES_LIST_DEFAULT = "node-list.txt";
-	public static final String SELENIUM_NODES_FILE_LIST_PROPERTY = "test.nodes.file.list";
-
 	private static final int TIMEOUT_NODE = 300; // seconds
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private GridHub hub;
-	private String hubAddress = getProperty(
-			BrowserClient.TEST_PUBLIC_IP_PROPERTY,
-			BrowserClient.TEST_PUBLIC_IP_DEFAULT);
+	private String hubAddress = getProperty(TEST_PUBLIC_IP_PROPERTY,
+			TEST_PUBLIC_IP_DEFAULT);
 
 	private int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
 			SELENIUM_HUB_PORT_DEFAULT);

@@ -15,14 +15,16 @@
 package org.kurento.test.monitor;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.DEFAULT_MONITOR_RATE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DEFAULT_MONITOR_RATE_PROPERTY;
 import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_DEFAULT;
 import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_PROP;
 import static org.kurento.test.monitor.SystemMonitor.OUTPUT_CSV;
-import static org.kurento.test.services.KurentoMediaServerManager.KURENTO_KMS_LOGIN_PROP;
-import static org.kurento.test.services.KurentoMediaServerManager.KURENTO_KMS_PASSWD_PROP;
-import static org.kurento.test.services.KurentoMediaServerManager.KURENTO_KMS_PEM_PROP;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_DEFAULT;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,9 +61,6 @@ public class SystemMonitorManager {
 
 	public static Logger log = LoggerFactory
 			.getLogger(SystemMonitorManager.class);
-
-	private static final String DEFAULT_MONITOR_RATE_PROPERTY = "test.monitor.rate";
-	private static final int DEFAULT_MONITOR_RATE_DEFAULT = 1000; // milliseconds
 
 	private SystemMonitor monitor;
 	private SshConnection remoteKms;

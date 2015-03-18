@@ -33,7 +33,7 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.grid.ParallelBrowsers;
 import org.kurento.test.latency.LatencyController;
@@ -75,11 +75,11 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 		TestScenario test = new TestScenario();
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(video).build());
 
-		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
 				.numInstances(numViewers).browserPerInstance(browserPerViewer)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
@@ -116,7 +116,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 		Map<String, BrowserClient> browsers = new TreeMap<>(getTestScenario()
 				.getBrowserMap());
-		browsers.remove(TestConfig.PRESENTER);
+		browsers.remove(BrowserConfig.PRESENTER);
 		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 
 		ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {

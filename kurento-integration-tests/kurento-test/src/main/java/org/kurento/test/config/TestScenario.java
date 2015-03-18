@@ -150,7 +150,7 @@ public class TestScenario {
 			// Read JSON and transform to GSON
 			BufferedReader br = new BufferedReader(new FileReader(jsonPath));
 			Gson gson = new Gson();
-			TestConfig browserConfig = gson.fromJson(br, TestConfig.class);
+			BrowserConfig browserConfig = gson.fromJson(br, BrowserConfig.class);
 
 			return browserConfig.getTestScenario();
 
@@ -166,12 +166,12 @@ public class TestScenario {
 	public static Collection<Object[]> localChromeAndFirefox() {
 		// Test #1 : Chrome in local
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 		// Test #2 : Firefox in local
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+		test2.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -181,7 +181,7 @@ public class TestScenario {
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -191,7 +191,7 @@ public class TestScenario {
 	public static Collection<Object[]> localFirefox() {
 		// Test: Firefox in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.BROWSER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
 				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -201,10 +201,10 @@ public class TestScenario {
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test: Chrome in local (presenter and viewer)
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
-		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 
@@ -216,10 +216,10 @@ public class TestScenario {
 		String videoPath = KurentoClientTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(videoPath).build());
-		test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.video(videoPath).build());
 

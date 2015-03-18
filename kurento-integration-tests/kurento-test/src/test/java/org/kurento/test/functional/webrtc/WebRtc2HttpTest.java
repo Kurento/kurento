@@ -36,7 +36,7 @@ import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
-import org.kurento.test.config.TestConfig;
+import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
@@ -73,12 +73,12 @@ public class WebRtc2HttpTest extends FunctionalTest {
 
 		// Test: 1+nViewers local Chrome's
 		TestScenario test = new TestScenario();
-		test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.build());
 
 		for (int i = 0; i < NPLAYERS; i++) {
-			test.addBrowser(TestConfig.VIEWER + i, new BrowserClient.Builder()
+			test.addBrowser(BrowserConfig.VIEWER + i, new BrowserClient.Builder()
 					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 					.client(Client.PLAYER).build());
 		}
@@ -109,7 +109,7 @@ public class WebRtc2HttpTest extends FunctionalTest {
 							.build();
 					webRtcEndpoint.connect(httpEP);
 					try {
-						createPlayer(TestConfig.VIEWER + j, httpEP.getUrl());
+						createPlayer(BrowserConfig.VIEWER + j, httpEP.getUrl());
 					} catch (InterruptedException e) {
 						Assert.fail("Exception creating players: "
 								+ e.getClass().getName());

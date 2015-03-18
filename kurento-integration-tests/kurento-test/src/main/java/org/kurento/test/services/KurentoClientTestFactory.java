@@ -1,15 +1,15 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.services.KurentoServicesTestHelper.KCS_WS_URI_PROP;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_RABBITMQ_ADDRESS_DEFAULT;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_RABBITMQ_ADDRESS_PROP;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_TRANSPORT_DEFAULT;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_TRANSPORT_PROP;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_TRANSPORT_RABBITMQ_VALUE;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_TRANSPORT_WS_VALUE;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_DEFAULT;
-import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KCS_WS_URI_PROP;
+import static org.kurento.test.TestConfiguration.KMS_RABBITMQ_ADDRESS_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_RABBITMQ_ADDRESS_PROP;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_PROP;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_RABBITMQ_VALUE;
+import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_WS_VALUE;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
