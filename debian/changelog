@@ -1,3 +1,21 @@
+kms-cmake-utils (1.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare .gitreview to work with new gerrit
+  * KurentoGitHelpers: Do not show errors if git repository is not found
+  * KurentoGitHelpers: Change the way version is get from git repository
+  * VersionHelpers: Fix next version calculation
+  * VersionHelpers: Add next_minor and next_patch version calculation
+  * VersionHelpers: Process only major number versions correctly
+  * Add tests for version parsing
+  * Add a target that just builds all tests
+  * Prepare release 1.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 19 Mar 2015 17:33:47 +0100
+
 kms-cmake-utils (1.1.2) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
