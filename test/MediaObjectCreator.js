@@ -27,7 +27,7 @@ QUnit.module('MediaObjectCreator');
 QUnit.test('Get unknown constructor', function (assert) {
   QUnit.expect(1);
 
-  var MediaObject = require('kurento-client-core').abstracts.MediaObject;
+  var MediaObject = kurentoClient.register.abstracts.MediaObject;
   var MediaObjectCreator = kurentoClient.MediaObjectCreator;
 
   function noop() {}
