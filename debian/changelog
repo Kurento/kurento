@@ -1,3 +1,38 @@
+kms-elements (5.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * DispatcherOneToMany: Implement methods
+  * valgrind: Add exception for g_tls_certificate_new_from_file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update .gitreview to use new repo
+  * Update .gitreview for release branch
+  * Add support for cmake versions other than 2.8
+
+  [ Miguel París Díaz ]
+  * kmsrtcpdemux: add useful log
+  * webrtcendpoint: use g_slice_new0
+  * webrtcendpoint: add check for request_local_key_frame
+
+  [ Jose Antonio Santos Cadenas ]
+  * Set version for generated npm code to release-5.1 branch
+
+  [ David Fernandez ]
+  * kmscompositemixer: Add a capsfilter in the inputs
+
+  [ Jose Antonio Santos Cadenas ]
+  * CompositeImpl: Remove old FIXME
+  * MixerImpl: Restore functionality deleted during migration from version 4
+  * HttpEpServer: Announce iface address by default
+  * Prepare release 5.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 19 Mar 2015 23:06:22 +0100
+
 kms-elements (5.1.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
