@@ -3,8 +3,10 @@
 var spawn   = require('child_process').spawn
 var resolve = require('path').resolve
 
+var eachSeries = require('async').eachSeries
 
-function generate(moduleName)
+
+function generate(moduleName, callback)
 {
   var options =
   {
@@ -13,9 +15,15 @@ function generate(moduleName)
   };
 
   spawn(process.execPath, [resolve('scripts/_generate.js')], options)
+  .on('exit', callback)
 }
 
 
-generate('kurento-client-core')
-generate('kurento-client-elements')
-generate('kurento-client-filters')
+var plugins =
+[
+  'kurento-client-core',
+  'kurento-client-elements',
+  'kurento-client-filters'
+]
+
+eachSeries(plugins, generate, process.exit.bind(process))

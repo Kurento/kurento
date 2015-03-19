@@ -27,5 +27,7 @@ fs.unlink(LINK_PATH, function(error)
   .on('exit', function(code)
   {
     fs.unlink(LINK_PATH);
+
+    if(code) process.exit(code)
   });
 })
