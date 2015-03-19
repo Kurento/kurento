@@ -1,3 +1,18 @@
+kms-filters (5.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix build dependencies for tests
+  * Add support for different cmake vesions
+  * Update .gitreview to work with new repo
+  * Update .gitreview to submit patches to release-5.1 branch
+  * Set version for generated npm code to release-5.1 branch
+  * Prepare release 5.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 19 Mar 2015 23:11:21 +0100
+
 kms-filters (5.1.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
