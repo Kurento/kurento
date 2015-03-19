@@ -59,32 +59,46 @@ function getOscillatorMedia() {
   return dest.stream;
 }
 
-function setIceCandidateCallbacks(webRtcPeer, peerConnection, onerror) {
+function setIceCandidateCallbacks(webRtcPeer, pc, onerror) {
   var candidatesQueue = []
 
-  webRtcPeer.on('icecandidate', function (icecandidate) {
-    switch (peerConnection.signalingState) {
+  function callback(error) {
+    if (error) return onerror(error)
+
+    console.log('Received ICE candidate from WebRtcPeerRecvonly')
+  }
+
+  webRtcPeer.on('icecandidate', function (candidate) {
+    switch (pc.signalingState) {
     case 'closed':
-      onerror(new Error('PeerConnection object is closed'))
+      callback(new Error('PeerConnection object is closed'))
       break
 
     case 'stable':
-      if (peerConnection.remoteDescription) {
-        console.log('ICE candidate for PeerConnection:', icecandidate)
-        peerConnection.addIceCandidate(icecandidate, function () {
-          console.log(
-            'Received ICE candidate from WebRtcPeerRecvonly:',
-            icecandidate)
-        }, onerror)
+      if (pc.remoteDescription) {
+        console.log('ICE candidate for PeerConnection:', candidate)
+        pc.addIceCandidate(candidate, callback, callback)
         break;
       }
 
     default:
-      candidatesQueue.push(icecandidate)
+      candidatesQueue.push({
+        candidate: candidate,
+        callback: callback
+      })
     }
   })
 
-  peerConnection.addEventListener('icecandidate', function (event) {
+  pc.addEventListener('signalingstatechange', function () {
+    if (this.signalingState == 'stable')
+      while (candidatesQueue.length) {
+        var entry = candidatesQueue.shift()
+
+        this.addIceCandidate(entry.candidate, entry.callback, entry.callback);
+      }
+  })
+
+  pc.addEventListener('icecandidate', function (event) {
     var candidate = event.candidate
     if (candidate)
       webRtcPeer.addIceCandidate(candidate, function (error) {
@@ -93,19 +107,6 @@ function setIceCandidateCallbacks(webRtcPeer, peerConnection, onerror) {
         console.log('Received ICE candidate from PeerConnection:',
           candidate)
       })
-  })
-
-  peerConnection.addEventListener('signalingstatechange', function () {
-    if (this.signalingState == 'stable')
-      while (candidatesQueue.length) {
-        var icecandidate = candidatesQueue.shift()
-
-        this.addIceCandidate(icecandidate, function () {
-          console.log(
-            'Received ICE candidate from WebRtcPeerRecvonly:',
-            icecandidate)
-        }, onerror);
-      }
   })
 }
 
