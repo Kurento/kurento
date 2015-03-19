@@ -23,6 +23,7 @@
 #include <gst/gst.h>
 #include <gst/base/gstbaseparse.h>
 #include <gst/rtp/gstrtcpbuffer.h>
+#include <gst/rtp/gstrtpbuffer.h>
 #include "kms-marshal.h"
 
 #define PLUGIN_NAME "rtcpdemux"
@@ -156,19 +157,14 @@ end:
 static gboolean
 buffer_is_rtcp (GstBuffer * buffer)
 {
-  GstMapInfo map;
-  guint8 pt;
+  GstRTPBuffer rtp_buffer = { NULL };
 
-  if (!gst_buffer_map (buffer, &map, GST_MAP_READ)) {
-    gst_buffer_unref (buffer);
-    GST_ERROR_OBJECT (buffer, "Buffer cannot be mapped");
-    return GST_FLOW_ERROR;
+  if (!gst_rtp_buffer_map (buffer, GST_MAP_READ, &rtp_buffer)) {
+    return TRUE;
   }
 
-  pt = map.data[1];
-  gst_buffer_unmap (buffer, &map);
-
-  return (pt >= GST_RTCP_TYPE_SR && pt <= GST_RTCP_TYPE_PSFB);
+  gst_rtp_buffer_unmap (&rtp_buffer);
+  return FALSE;
 }
 
 static GstFlowReturn
