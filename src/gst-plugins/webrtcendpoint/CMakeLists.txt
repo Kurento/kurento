@@ -50,8 +50,8 @@ add_dependencies(webrtcendpoint kmsdtls rtcpdemux)
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
   ${gstreamer-1.0_INCLUDE_DIRS}
-  ${gstreamer-base-1.0_SOURCE_DIRS}
-  ${gstreamer-pbutils-1.0_SOURCE_DIRS}
+  ${gstreamer-base-1.0_INCLUDE_DIRS}
+  ${gstreamer-pbutils-1.0_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${nice_INCLUDE_DIRS}
