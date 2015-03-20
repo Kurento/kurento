@@ -27,6 +27,7 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTagType;
 
 /**
  * <strong>Description</strong>: Stability test for switching 2 WebRTC (looback
@@ -104,11 +105,15 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					// Latency control (loopback)
 					log.debug("[{}.1] Latency control of browser1 to browser1",
 							i);
+
 					cs1.checkLocalLatency(PLAYTIME_PER_SWITCH,
 							TimeUnit.SECONDS, getPresenter());
 
 					log.debug("[{}.2] Latency control of browser2 to browser2",
 							i);
+					getViewer().activateLatencyControl(
+							VideoTagType.LOCAL.getId(),
+							VideoTagType.REMOTE.getId());
 					cs2.checkLocalLatency(PLAYTIME_PER_SWITCH,
 							TimeUnit.SECONDS, getViewer());
 

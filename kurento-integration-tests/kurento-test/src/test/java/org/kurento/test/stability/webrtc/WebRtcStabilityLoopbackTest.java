@@ -34,6 +34,7 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTagType;
 
 /**
  * <strong>Description</strong>: Stability test for WebRTC in loopback during a
@@ -96,6 +97,8 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
 				WebRtcMode.SEND_RCV);
 
 		// Latency assessment
+		getBrowser().activateLatencyControl(VideoTagType.LOCAL.getId(),
+				VideoTagType.REMOTE.getId());
 		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
 
 		// Release Media Pipeline

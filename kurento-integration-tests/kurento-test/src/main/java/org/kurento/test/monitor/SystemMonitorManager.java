@@ -46,8 +46,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Objects;
 
+import org.kurento.test.client.TestClient;
 import org.kurento.test.services.SshConnection;
-import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -287,8 +287,8 @@ public class SystemMonitorManager {
 	}
 
 	// TODO currently RTC stats are only supported in local monitor
-	public void addJs(JavascriptExecutor js) {
-		monitor.addJs(js);
+	public void addTestClient(TestClient client) {
+		monitor.addTestClient(client);
 	}
 
 }

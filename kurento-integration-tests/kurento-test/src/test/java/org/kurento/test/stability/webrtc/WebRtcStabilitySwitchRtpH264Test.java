@@ -35,6 +35,7 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTagType;
 import org.kurento.test.sdp.SdpUtils;
 
 /**
@@ -59,7 +60,7 @@ import org.kurento.test.sdp.SdpUtils;
  */
 public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 
-	private static final int DEFAULT_PLAYTIME = 1; // minutes
+	private static final int DEFAULT_PLAYTIME = 30; // minutes
 	private static final String[] REMOVE_CODECS = { "H263-1998", "VP8",
 			"MP4V-ES" };
 
@@ -120,6 +121,8 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 				getBrowser().waitForEvent("playing"));
 
 		// Latency assessment
+		getBrowser().activateLatencyControl(VideoTagType.LOCAL.getId(),
+				VideoTagType.REMOTE.getId());
 		cs.checkLocalLatencyInBackground(playTime, TimeUnit.MINUTES,
 				getBrowser());
 

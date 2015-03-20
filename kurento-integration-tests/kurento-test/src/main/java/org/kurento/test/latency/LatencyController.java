@@ -26,10 +26,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.kurento.test.base.KurentoClientTest;
-import org.kurento.test.client.KurentoTestClient;
 import org.kurento.test.client.TestClient;
 import org.kurento.test.monitor.SystemMonitorManager;
-import org.openqa.selenium.JavascriptExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,12 +124,13 @@ public class LatencyController implements
 	}
 
 	public void checkLocalLatency(final long testTime,
-			final TimeUnit testTimeUnit, KurentoTestClient client)
+			final TimeUnit testTimeUnit, TestClient client)
 			throws InterruptedException, IOException {
 		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
 		long endTimeMillis = System.currentTimeMillis() + playTime;
 		int consecutiveFailCounter = 0;
 		boolean first = true;
+
 		while (true) {
 			if (System.currentTimeMillis() > endTimeMillis) {
 				break;
@@ -142,7 +141,7 @@ public class LatencyController implements
 			LatencyRegistry latencyRegistry = new LatencyRegistry();
 			try {
 				latency = client.getLatency();
-				if (latency == Long.MIN_VALUE) {
+				if (latency == Long.MIN_VALUE || latency == 0) {
 					continue;
 				}
 				if (first) {
@@ -160,7 +159,8 @@ public class LatencyController implements
 				}
 			}
 
-			long latencyTime = client.getRemoteTime();
+			long latencyTime = client.getCurrentTime(new VideoTag(
+					VideoTagType.REMOTE));
 			latencyRegistry.setLatency(latency);
 
 			if (latency > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
@@ -193,7 +193,7 @@ public class LatencyController implements
 	}
 
 	public void checkLocalLatencyInBackground(final long testTime,
-			final TimeUnit testTimeUnit, final KurentoTestClient client)
+			final TimeUnit testTimeUnit, final TestClient client)
 			throws InterruptedException, IOException {
 		new Thread() {
 			public void run() {
@@ -225,13 +225,10 @@ public class LatencyController implements
 			final TimeUnit testTimeUnit, TestClient localClient,
 			TestClient remoteClient) {
 
-		JavascriptExecutor jsLocal = localClient.getBrowserClient().getJs();
-		JavascriptExecutor jsRemote = remoteClient.getBrowserClient().getJs();
-
-		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL), jsLocal,
-				getName() + " " + VideoTagType.LOCAL);
+		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL),
+				localClient, getName() + " " + VideoTagType.LOCAL);
 		addChangeColorEventListener(new VideoTag(VideoTagType.REMOTE),
-				jsRemote, getName() + " " + VideoTagType.REMOTE);
+				remoteClient, getName() + " " + VideoTagType.REMOTE);
 
 		String msgName = (name != null) ? "[" + name + "] " : "";
 
@@ -370,14 +367,14 @@ public class LatencyController implements
 	}
 
 	public void addChangeColorEventListener(VideoTag type,
-			JavascriptExecutor js, String name) {
+			TestClient testClient, String name) {
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
 				timeoutTimeUnit);
 
 		if (type.getVideoTagType() == VideoTagType.LOCAL) {
 			localChangeColor = new ChangeColorObservable();
 			localChangeColor.addListener(this);
-			localColorTrigger = new Thread(new ColorTrigger(type, js,
+			localColorTrigger = new Thread(new ColorTrigger(type, testClient,
 					localChangeColor, timeoutSeconds));
 			if (name != null) {
 				localColorTrigger.setName(name);
@@ -386,7 +383,7 @@ public class LatencyController implements
 		} else {
 			remoteChangeColor = new ChangeColorObservable();
 			remoteChangeColor.addListener(this);
-			remoteColorTrigger = new Thread(new ColorTrigger(type, js,
+			remoteColorTrigger = new Thread(new ColorTrigger(type, testClient,
 					remoteChangeColor, timeoutSeconds));
 			if (name != null) {
 				remoteColorTrigger.setName(name);

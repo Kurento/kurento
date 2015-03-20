@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -38,8 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriverException;
+import org.kurento.test.client.TestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +61,7 @@ public class SystemMonitor {
 	private double currentLatency = 0;
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
-	private List<JavascriptExecutor> jsList;
+	private List<TestClient> testClientList;
 
 	private final static String OK = "ok";
 	private final static String ERR = "error: ";
@@ -208,9 +206,9 @@ public class SystemMonitor {
 						info.setNumThreadsKms(getNumThreads(kmsPid));
 
 						// Browser Statistics
-						if (jsList != null) {
-							for (JavascriptExecutor js : jsList) {
-								Map<String, Object> rtc = getRtcStats(js);
+						if (testClientList != null) {
+							for (TestClient client : testClientList) {
+								Map<String, Object> rtc = client.getRtcStats();
 								info.addRtcStats(rtc);
 							}
 						}
@@ -283,7 +281,7 @@ public class SystemMonitor {
 				// Browser statistics. First entries may be empty, so we have to
 				// iterate to find values in the statistics in order to write
 				// the header in the resulting CSV
-				if (jsList != null) {
+				if (testClientList != null) {
 					rtcHeader = new ArrayList<>();
 					for (SystemInfo info : infoMap.values()) {
 						if (info.getRtcStats() != null
@@ -322,7 +320,7 @@ public class SystemMonitor {
 					+ infoMap.get(time).getNetInfo().parseNetEntry());
 
 			// Browser statistics
-			if (jsList != null) {
+			if (testClientList != null) {
 				if (infoMap.get(time).getRtcStats() != null
 						&& !infoMap.get(time).getRtcStats().isEmpty()) {
 					for (String key : rtcHeader) {
@@ -486,26 +484,11 @@ public class SystemMonitor {
 		this.samplingTime = samplingTime;
 	}
 
-	public void addJs(JavascriptExecutor js) {
-		if (jsList == null) {
-			jsList = new CopyOnWriteArrayList<>();
+	public void addTestClient(TestClient client) {
+		if (testClientList == null) {
+			testClientList = new CopyOnWriteArrayList<>();
 		}
-		jsList.add(js);
-	}
-
-	@SuppressWarnings("unchecked")
-	public Map<String, Object> getRtcStats(JavascriptExecutor js) {
-		Map<String, Object> out = new HashMap<>();
-		try {
-			out = (Map<String, Object>) js.executeScript("return kurentoTest.rtcStats;");
-
-		} catch (WebDriverException we) {
-			// If client is not ready to gather rtc statistics, we just log it
-			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (variable rtcStats is not defined)");
-		}
-		return out;
+		testClientList.add(client);
 	}
 
 }

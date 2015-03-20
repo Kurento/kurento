@@ -17,16 +17,23 @@ package org.kurento.test.client;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.test.latency.LatencyException;
+import org.kurento.test.latency.VideoTag;
 import org.kurento.test.monitor.SystemMonitorManager;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +62,17 @@ public class TestClient {
 
 	public void setBrowserClient(BrowserClient browserClient) {
 		this.browserClient = browserClient;
+	}
+
+	public TestClient clone() {
+		TestClient out = null;
+		try {
+			out = this.getClass().getDeclaredConstructor(this.getClass())
+					.newInstance(this);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return out;
 	}
 
 	public void takeScreeshot(String file) throws IOException {
@@ -154,15 +172,19 @@ public class TestClient {
 	/*
 	 * activateRtcStats
 	 */
-	public void activateRtcStats(SystemMonitorManager monitor) {
+	public void activateRtcStats(SystemMonitorManager monitor,
+			String peerConnection) {
 		try {
-			browserClient.executeScript("kurentoTest.activateRtcStats();");
-			monitor.addJs(browserClient.getJs());
+			browserClient.executeScript("kurentoTest.activateRtcStats('"
+					+ peerConnection + "');");
+			monitor.addTestClient(this.clone());
 		} catch (WebDriverException we) {
+			we.printStackTrace();
+
 			// If client is not ready to gather rtc statistics, we just log it
 			// as warning (it is not an error itself)
 			log.warn("Client does not support RTC statistics"
-					+ " (function activateRtcStats() is not defined)");
+					+ " (function kurentoTest.activateRtcStats() is not defined)");
 		}
 	}
 
@@ -195,6 +217,40 @@ public class TestClient {
 		return out[0];
 	}
 
+	public void waitColor(long timeoutSeconds, final VideoTag videoTag,
+			final Color color) {
+		WebDriverWait wait = new WebDriverWait(browserClient.getDriver(),
+				timeoutSeconds);
+		wait.until(new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver d) {
+				return !((JavascriptExecutor) d).executeScript(
+						videoTag.getColor()).equals(color);
+			}
+		});
+	}
+
+	/*
+	 * getCurrentTime
+	 */
+	public long getCurrentTime(VideoTag videoTag) {
+		Object time = browserClient.executeScript(videoTag.getTime());
+		return (time == null) ? 0 : (Long) time;
+	}
+
+	/*
+	 * getCurrentColor
+	 */
+	@SuppressWarnings("unchecked")
+	public Color getCurrentColor(VideoTag videoTag) {
+		return getColor((List<Long>) browserClient.executeScript(videoTag
+				.getColor()));
+	}
+
+	private Color getColor(List<Long> color) {
+		return new Color(color.get(0).intValue(), color.get(1).intValue(),
+				color.get(2).intValue());
+	}
+
 	/*
 	 * checkLatencyUntil
 	 */
@@ -214,5 +270,35 @@ public class TestClient {
 				monitor.incrementLatencyErrors();
 			}
 		}
+	}
+
+	/*
+	 * getRtcStats
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> getRtcStats() {
+		Map<String, Object> out = new HashMap<>();
+		try {
+			out = (Map<String, Object>) browserClient
+					.executeScript("return kurentoTest.rtcStats;");
+
+			System.err.println(">>>>>>>>>> out " + out);
+
+		} catch (WebDriverException we) {
+			// If client is not ready to gather rtc statistics, we just log it
+			// as warning (it is not an error itself)
+			log.warn("Client does not support RTC statistics"
+					+ " (variable rtcStats is not defined)");
+		}
+		return out;
+	}
+
+	/*
+	 * activateLatencyControl
+	 */
+	public void activateLatencyControl(String localId, String remoteId) {
+		browserClient.executeScript("kurentoTest.activateLatencyControl('"
+				+ localId + "', '" + remoteId + "');");
+
 	}
 }

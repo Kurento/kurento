@@ -31,6 +31,7 @@ function KurentoTest() {
 	this.latencyVideoTagsId = null;
 	this.latencyTime = {};
 	this.latency = 0;
+	this.firstLatency = true;
 
 	// RTC statistics parameters
 	this.rtcStats = {};
@@ -84,8 +85,6 @@ KurentoTest.prototype.checkColorIn = function(videoTagId) {
 		requestAnimationFrame(step);
 	}
 	requestAnimationFrame(step);
-
-	// TODO this in former version is done when playing event reach 'video'
 	setInterval(watchColor, this.colorCheckRate);
 
 	function watchColor() {
@@ -97,18 +96,20 @@ KurentoTest.prototype.checkColorIn = function(videoTagId) {
 					+ " to " + self.colorInfo[videoTagId].currentColor);
 			self.colorInfo[videoTagId].changeColor = self.colorInfo[videoTagId].currentColor;
 
-			if (self.activateLatencyControl) {
+			if (videoTagId == self.latencyVideoTagsId[1] && self.firstLatency) {
+				self.firstLatency = false;
+			} else {
 				self.latencyTime[videoTagId] = self.colorInfo[videoTagId].changeTime;
+			}
 
-				if (self.latencyVideoTagsId
-						&& self.latencyTime[self.latencyVideoTagsId[0]]
-						&& self.latencyTime[self.latencyVideoTagsId[1]]) {
-					self.latencyTime = {};
-					var latency = self.colorInfo[self.latencyVideoTagsId[1]].changeTime
-							- self.colorInfo[self.latencyVideoTagsId[0]].changeTime;
-					self.latency = latency;
-					console.info("---> Latency " + self.latency);
-				}
+			if (self.latencyVideoTagsId
+					&& self.latencyTime[self.latencyVideoTagsId[0]]
+					&& self.latencyTime[self.latencyVideoTagsId[1]]) {
+				self.latencyTime = {};
+				var latency = self.colorInfo[self.latencyVideoTagsId[1]].changeTime
+						- self.colorInfo[self.latencyVideoTagsId[0]].changeTime;
+				self.latency = latency;
+				console.info("---> Latency " + self.latency);
 			}
 		}
 	}
@@ -116,12 +117,13 @@ KurentoTest.prototype.checkColorIn = function(videoTagId) {
 
 KurentoTest.prototype.activateLatencyControl = function(localVideoTagId,
 		remoteVideoTagId) {
+	this.latencyTime = {};
 	this.latencyVideoTagsId = [ localVideoTagId, remoteVideoTagId ];
 }
 
 KurentoTest.prototype.getLatency = function() {
-	var out = latency;
-	latency = null;
+	var out = this.latency;
+	this.latency = null;
 	return out;
 }
 
@@ -146,12 +148,12 @@ KurentoTest.prototype.colorChanged = function(expectedColor, realColor) {
 	}
 }
 
-KurentoTest.prototype.activateRtcStats = function() {
+KurentoTest.prototype.activateRtcStats = function(peerConnection) {
 	var rate = this.rtcStatsRate;
 	if (arguments.length) {
 		rate = arguments[0];
 	}
-	setInterval(updateRtcStats, rate);
+	setInterval(this.updateRtcStats, rate, eval(peerConnection));
 }
 
 KurentoTest.prototype.updateRtcStats = function(peerConnection) {
@@ -159,17 +161,19 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection) {
 	var videoTrack = remoteStream.getVideoTracks()[0];
 	var audioTrack = remoteStream.getAudioTracks()[0];
 
+	var updateStats = function(peerConnection, track, type) {
+		peerConnection.getStats(function(stats) {
+			var result = stats.result()[2];
+			if (result) {
+				result.names().forEach(function(name) {
+					kurentoTest.rtcStats[type + name] = result.stat(name);
+				});
+			}
+		}, track);
+	}
+
 	updateStats(peerConnection, videoTrack, "video_");
 	updateStats(peerConnection, audioTrack, "audio_");
-}
-
-KurentoTest.prototype.updateStats = function(peerConnection, track, type) {
-	peerConnection.getStats(function(stats) {
-		var result = stats.result()[2];
-		result.names().forEach(function(name) {
-			this.rtcStats[type + name] = result.stat(name);
-		});
-	}, track);
 }
 
 /*

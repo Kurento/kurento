@@ -35,6 +35,7 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
+import org.kurento.test.latency.VideoTagType;
 import org.kurento.test.sdp.SdpUtils;
 
 /**
@@ -120,6 +121,8 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 				getBrowser().waitForEvent("playing"));
 
 		// Latency assessment
+		getBrowser().activateLatencyControl(VideoTagType.LOCAL.getId(),
+				VideoTagType.REMOTE.getId());
 		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
 
 		// Release Media Pipeline

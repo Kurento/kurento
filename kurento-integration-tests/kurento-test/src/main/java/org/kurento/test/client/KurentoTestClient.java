@@ -248,15 +248,6 @@ public class KurentoTestClient extends TestClient {
 	}
 
 	/*
-	 * getRemoteTime
-	 */
-	public long getRemoteTime() {
-		Object time = browserClient
-				.executeScript(VideoTagType.REMOTE.getTime());
-		return (time == null) ? 0 : (Long) time;
-	}
-
-	/*
 	 * readConsole
 	 */
 	public String readConsole() {
@@ -326,15 +317,8 @@ public class KurentoTestClient extends TestClient {
 		browserClient.executeScript(mode.getJsFunction());
 
 		// Wait to valid sdpOffer
-		(new WebDriverWait(browserClient.getDriver(),
-				browserClient.getTimeout()))
-				.until(new ExpectedCondition<Boolean>() {
-					public Boolean apply(WebDriver d) {
-						return browserClient.executeScript("return sdpOffer;") != null;
-					}
-				});
 		String sdpOffer = (String) browserClient
-				.executeScript("return sdpOffer;");
+				.executeScriptAndWaitOutput("return sdpOffer;");
 		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
 
 		// Uncomment this line to debug SDP offer and answer

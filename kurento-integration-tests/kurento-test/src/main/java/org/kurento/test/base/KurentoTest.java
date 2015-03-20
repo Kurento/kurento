@@ -138,7 +138,7 @@ public class KurentoTest {
 
 				client.setBrowserClient(testScenario.getBrowserMap().get(
 						browserKey));
-				return clonedClient();
+				return client.clone();
 			}
 		}
 	}
@@ -170,17 +170,7 @@ public class KurentoTest {
 		}
 
 		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
-		return clonedClient();
+		return client.clone();
 	}
 
-	private TestClient clonedClient() {
-		TestClient out = null;
-		try {
-			out = client.getClass().getDeclaredConstructor(client.getClass())
-					.newInstance(client);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return out;
-	}
 }
