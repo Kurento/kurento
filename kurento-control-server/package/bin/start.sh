@@ -84,11 +84,12 @@ if [ ! -f $KCS_BINARY ]; then
     KCS_HOME=/var/lib/kurento
     KCS_BINARY=$KCS_HOME/kurento-control-server.jar
     KCS_CONFIG="/etc/kurento/control-server.conf.json"
-    KCS_OPTS="-DconfigFilePath=$KCS_CONFIG"
 fi
 
 [ -f $KCS_BINARY ] || { echo "Unable to find KSC binary file"; exit 1; }
 [ -f $KCS_CONFIG ] || { echo "Unable to find configuration file: $KCS_CONFIG"; exit 1; }
+
+KCS_OPTS="-DconfigFilePath=$KCS_CONFIG -Drabbit.retryTimeout=15000 -Drabbit.numRetries=4"
 
 # Display our environment
 echo "========================================================================="
