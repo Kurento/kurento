@@ -50,8 +50,10 @@ var WebRtcPeerRecvonly = WebRtcPeer.WebRtcPeerRecvonly;
 var WebRtcPeerSendonly = WebRtcPeer.WebRtcPeerSendonly;
 var WebRtcPeerSendrecv = WebRtcPeer.WebRtcPeerSendrecv;
 
+var ac = null
+
 function getOscillatorMedia() {
-  var ac = new AudioContext();
+  ac = ac || new AudioContext();
   var osc = ac.createOscillator();
   var dest = ac.createMediaStreamDestination();
   osc.connect(dest);
@@ -202,8 +204,10 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
     done()
   }
 
+  var audioStream = getOscillatorMedia()
+
   var options = {
-    audioStream: getOscillatorMedia(),
+    audioStream: audioStream,
     configuration: {
       iceServers: []
     }
@@ -218,7 +222,7 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
       if (error) return onerror(error)
 
       var stream = this.getLocalStream()
-      assert.notEqual(stream, undefined, 'local stream')
+      assert.equal(stream, audioStream, 'local stream')
 
       var offer = new RTCSessionDescription({
         type: 'offer',
@@ -265,8 +269,10 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
     done()
   }
 
+  var audioStream = getOscillatorMedia()
+
   var options = {
-    audioStream: getOscillatorMedia(),
+    audioStream: audioStream,
     configuration: {
       iceServers: []
     }
@@ -281,7 +287,7 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
       if (error) return onerror(error)
 
       var stream = this.getLocalStream()
-      assert.notEqual(stream, undefined, 'local stream')
+      assert.equal(stream, audioStream, 'local stream')
 
       var offer = new RTCSessionDescription({
         type: 'offer',
