@@ -15,7 +15,6 @@
 package org.kurento.test.base;
 
 import java.awt.Color;
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -28,7 +27,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.TestClient;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.openqa.selenium.remote.UnreachableBrowserException;
@@ -84,20 +82,7 @@ public class KurentoTest {
 		browserClient.setId(browserKey);
 		browserClient.setName(testName.getMethodName());
 		browserClient.init();
-
-		// Injecting kurento-test.js in the client page
-		String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
-		String kurentoTestJsPath = "./lib/kurento-test.js";
-		if (browserClient.getProtocol() == Protocol.FILE) {
-			File clientPageFile = new File(this.getClass().getClassLoader()
-					.getResource("static/lib/kurento-test.js").getFile());
-			kurentoTestJsPath = browserClient.getProtocol().toString()
-					+ clientPageFile.getAbsolutePath();
-		}
-		kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
-		kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
-		kurentoTestJs += "return true;";
-		browserClient.executeScript(kurentoTestJs);
+		browserClient.injectKurentoTestJs();
 	}
 
 	@After

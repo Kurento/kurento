@@ -344,6 +344,21 @@ public class BrowserClient implements Closeable {
 		}
 	}
 
+	public void injectKurentoTestJs() {
+		String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
+		String kurentoTestJsPath = "./lib/kurento-test.js";
+		if (this.getProtocol() == Protocol.FILE) {
+			File clientPageFile = new File(this.getClass().getClassLoader()
+					.getResource("static/lib/kurento-test.js").getFile());
+			kurentoTestJsPath = this.getProtocol().toString()
+					+ clientPageFile.getAbsolutePath();
+		}
+		kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
+		kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
+		kurentoTestJs += "return true;";
+		this.executeScript(kurentoTestJs);
+	}
+
 	public static class Builder {
 		private int timeout = 60; // seconds
 		private int thresholdTime = 10; // seconds
