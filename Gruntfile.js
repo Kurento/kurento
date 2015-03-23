@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -70,7 +70,7 @@ module.exports = function (grunt) {
       },
 
       coverage: {
-        src: 'lib-cov/browser.js',
+        src: PKG_BROWSER,
         dest: DIST_DIR + '/<%= pkg.name %>.cov.js'
       },
 
@@ -121,6 +121,20 @@ module.exports = function (grunt) {
           'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
           'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
           'node_modules/.bin/bower cache clean'
+        ].join('&&')
+      },
+
+      'pre-coverage': {
+        command: [
+          'rm -rf lib_orig',
+          'mv lib lib_orig',
+          'mv lib-cov lib'
+        ].join('&&')
+      },
+      'post-coverage': {
+        command: [
+          'rm -rf lib',
+          'mv lib_orig lib'
         ].join('&&')
       }
     },
@@ -188,7 +202,8 @@ module.exports = function (grunt) {
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks("grunt-jscoverage");
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-jscoverage');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
@@ -201,7 +216,8 @@ module.exports = function (grunt) {
     'jsbeautifier:git-pre-commit'
   ]);
   grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
-  grunt.registerTask('coverage', ['clean:coverage', 'jscoverage',
-    'browserify:coverage'
+  grunt.registerTask('coverage', [
+    'jscoverage',
+    'shell:pre-coverage', 'browserify:coverage', 'shell:post-coverage'
   ]);
 };
