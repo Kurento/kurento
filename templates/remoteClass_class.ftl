@@ -60,7 +60,7 @@ var ChecktypeError = kurentoClient.checkType.ChecktypeError;
 
 var Transaction = kurentoClient.TransactionsManager.Transaction;
 </#if>
-<#include "requires.ftm" >
+<#include "remoteClass_requires.ftm" >
 <#if remoteClass.extends??>
   <#assign import_package="">
   <#list module.imports as import>
@@ -119,7 +119,7 @@ var ${extends_name} = require('events').${extends_name};
 function ${remoteClass.name}(){<#if extends_name??>
   ${remoteClass.name}.super_.call(this);
 </#if>
-<#include "constructor.ftm" >};
+<#include "remoteClass_constructors.ftm" >};
 <#if extends_name??>
 inherits(${remoteClass.name}, ${extends_name});
 </#if>
@@ -227,7 +227,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   </#list>
 </#if>
 
-<#include "prototypes.ftm" >
+<#include "remoteClass_prototypes.ftm" >
 /**
  * @alias module:${remoteClass_namepath}.constructorParams
 <#if remoteClass.constructor??>
@@ -274,3 +274,4 @@ ${remoteClass.name}.check = function(key, value)
   if(!(value instanceof ${remoteClass.name}))
     throw ChecktypeError(key, ${remoteClass.name}, value);
 };
+
