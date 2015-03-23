@@ -163,7 +163,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
         </#if>
  * @alias module:${remoteClass_namepath}#${setPropertyName}
  *
- * @param {<#if property.type.isMap()>Object.<string, ${namepath(property.type.name)}><#else>${namepath(property.type.name)}</#if>} value
+ * @param {<#if property.type.isMap()>Object.<string, ${namepath(property.type.name)}><#else>${namepath(property.type.name)}</#if>} ${property.name}
  * @param {module:${remoteClass_namepath}~${setPropertyName}Callback} [callback]
  *
  * @return {external:Promise}
@@ -267,11 +267,21 @@ ${remoteClass.name}.events = ${extends_name}.events<#if remoteClassEvents_name?h
 ${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator=", "/>];
 </#if>
 
-module.exports = ${remoteClass.name};
-
-${remoteClass.name}.check = function(key, value)
+/**
+ * Checker for {@link ${remoteClass_namepath}}
+ *
+ * @memberof module:${module_namespace}
+ *
+ * @param {external:String} key
+ * @param {module:${remoteClass_namepath}} value
+ */
+function check${remoteClass.name}(key, value)
 {
   if(!(value instanceof ${remoteClass.name}))
     throw ChecktypeError(key, ${remoteClass.name}, value);
 };
 
+
+module.exports = ${remoteClass.name};
+
+${remoteClass.name}.check = check${remoteClass.name};
