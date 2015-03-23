@@ -2,6 +2,9 @@
   <#case "MediaObject">
 
 
+  var self = this;
+
+
   //
   // Define object properties
   //
@@ -58,7 +61,7 @@
 
     this.emit('_rpc', undefined, 'unsubscribe', params, function(error)
     {
-      if(error) return this.emit('error', error);
+      if(error) return self.emit('error', error);
 
       delete subscriptions[event];
     });
@@ -87,7 +90,7 @@
 
     this.emit('_rpc', undefined, 'subscribe', params, function(error, token)
     {
-      if(error) return this.emit('error', error);
+      if(error) return self.emit('error', error);
 
       subscriptions[event] = token;
     });
