@@ -87,10 +87,13 @@ public class JavaObjectType implements TemplateMethodModelEx {
 				return "Float";
 			} else if (typeName.equals("boolean")) {
 				return "Boolean";
+			} else if (typeName.equals("double")) {
+				return "Double";
 			}
+
 		} else {
 			if (typeName.equals("int") || typeName.equals("float")
-					|| typeName.equals("boolean")) {
+					|| typeName.equals("boolean") || typeName.equals("double")) {
 				return typeName;
 			}
 		}
@@ -101,5 +104,4 @@ public class JavaObjectType implements TemplateMethodModelEx {
 
 		return null;
 	}
-
 }

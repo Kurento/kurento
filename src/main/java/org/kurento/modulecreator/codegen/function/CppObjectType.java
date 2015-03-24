@@ -21,6 +21,7 @@ public class CppObjectType implements TemplateMethodModelEx {
 
 		nativeTypes.add("float");
 		nativeTypes.add("int");
+		nativeTypes.add("double");
 	}
 
 	@Override
