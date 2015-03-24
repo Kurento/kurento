@@ -39,12 +39,11 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	public static <E> E newProxy(RemoteObject remoteObject, RomManager manager,
 			Class<E> clazz) {
 
-		RemoteObjectInvocationHandler handler =
-				new RemoteObjectInvocationHandler(remoteObject, manager);
+		RemoteObjectInvocationHandler handler = new RemoteObjectInvocationHandler(
+				remoteObject, manager);
 
-		KurentoObject kurentoObject =
-				(KurentoObject) Proxy.newProxyInstance(clazz.getClassLoader(),
-						new Class[] {clazz}, handler);
+		KurentoObject kurentoObject = (KurentoObject) Proxy.newProxyInstance(
+				clazz.getClassLoader(), new Class[] { clazz }, handler);
 
 		remoteObject.setKurentoObject(kurentoObject);
 
@@ -68,8 +67,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		String methodName = method.getName();
 		if (REMOTE_OBJECT_METHODS.contains(methodName)) {
-			Method remoteObjectMethod =
-					findMethod(remoteObject, methodName, args);
+			Method remoteObjectMethod = findMethod(remoteObject, methodName,
+					args);
 			return remoteObjectMethod.invoke(remoteObject, args);
 		}
 
@@ -104,8 +103,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		} else if (method.getAnnotation(EventSubscription.class) != null) {
 
-			EventSubscription eventSubscription =
-					method.getAnnotation(EventSubscription.class);
+			EventSubscription eventSubscription = method
+					.getAnnotation(EventSubscription.class);
 
 			if (methodName.startsWith("add")) {
 				return subscribeEventListener(proxy, args, methodName,
@@ -132,8 +131,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 		if (cont != null) {
 
 			Type[] paramTypes = method.getGenericParameterTypes();
-			ParameterizedType contType =
-					(ParameterizedType) paramTypes[paramTypes.length - 1];
+			ParameterizedType contType = (ParameterizedType) paramTypes[paramTypes.length - 1];
 			Type returnType = contType.getActualTypeArguments()[0];
 			remoteObject.invoke(method.getName(), props, returnType, cont);
 			return null;
@@ -177,9 +175,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			final Class<? extends Event> eventClass, Continuation<?> cont,
 			Transaction tx) {
 
-		String eventName =
-				eventClass.getSimpleName().substring(0,
-						eventClass.getSimpleName().length() - "Event".length());
+		String eventName = eventClass.getSimpleName().substring(0,
+				eventClass.getSimpleName().length() - "Event".length());
 
 		RemoteObjectEventListener listener = new RemoteObjectEventListener() {
 			@Override
@@ -206,8 +203,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			final Class<? extends Event> eventClass, Continuation<?> cont,
 			Transaction tx) {
 
-		ListenerSubscriptionImpl listenerSubscription =
-				(ListenerSubscriptionImpl) args[0];
+		ListenerSubscriptionImpl listenerSubscription = (ListenerSubscriptionImpl) args[0];
 		if (cont != null) {
 			remoteObject.removeEventListener(listenerSubscription,
 					(Continuation<Void>) cont);
@@ -220,7 +216,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 		return null;
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void propagateEventTo(Object object,
 			Class<? extends Event> eventClass, Props data,
 			EventListener<?> listener) {
@@ -231,7 +227,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 			Constructor<?> constructor = eventClass.getConstructors()[0];
 
-			data.add("source", object);
+			data.add("source", ((KurentoObject) object).getId());
 
 			Object[] params = ParamsFlattener.getInstance().unflattenParams(
 					constructor.getParameterAnnotations(),
@@ -271,9 +267,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result =
-				(prime * result)
-						+ ((remoteObject == null) ? 0 : remoteObject.hashCode());
+		result = (prime * result)
+				+ ((remoteObject == null) ? 0 : remoteObject.hashCode());
 		return result;
 	}
 

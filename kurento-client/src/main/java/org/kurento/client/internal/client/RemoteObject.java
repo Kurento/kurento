@@ -161,6 +161,10 @@ public class RemoteObject {
 		
 		checkCreated();
 		
+		if(method.equals("getId")){
+			return objectRef;
+		}
+		
 		Type flattenType = FLATTENER.calculateFlattenType(type);
 		
 		Object obj = manager.invoke(objectRef, method, params, flattenType);

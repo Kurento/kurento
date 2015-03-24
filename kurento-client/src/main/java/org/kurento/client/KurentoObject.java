@@ -34,5 +34,7 @@ public interface KurentoObject {
 	void release(Continuation<Void> continuation);
 
 	void release(Transaction tx);
+	
+	String getId();
 
 }
