@@ -40,7 +40,7 @@ public class ParamsFlattener {
 	private final ConcurrentHashMap<String, Class<?>> usedClasses = new ConcurrentHashMap<>();
 
 	public enum RomType {
-		VOID, INTEGER, BOOLEAN, FLOAT, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS, MAP
+		VOID, INTEGER, BOOLEAN, FLOAT, DOUBLE, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS, MAP
 	}
 
 	public static class GenericListType implements ParameterizedType {
@@ -326,7 +326,8 @@ public class ParamsFlattener {
 
 	private boolean isPrimitive(Object param) {
 		return param instanceof String || param instanceof Boolean
-				|| param instanceof Integer || param instanceof Float;
+				|| param instanceof Integer || param instanceof Float
+				|| param instanceof Double;
 	}
 
 	public Object[] unflattenParams(Annotation[][] paramAnnotations,
@@ -456,7 +457,8 @@ public class ParamsFlattener {
 				|| clazz == Float.class || clazz == Integer.class
 				|| clazz == boolean.class || clazz == float.class
 				|| clazz == int.class || clazz == void.class
-				|| clazz == Void.class;
+				|| clazz == Void.class || clazz == double.class
+				|| clazz == Double.class;
 	}
 
 	private Object unflattedComplexType(Class<?> clazz, Props props,
@@ -561,6 +563,7 @@ public class ParamsFlattener {
 		case BOOLEAN:
 		case INTEGER:
 		case FLOAT:
+		case DOUBLE:
 		case STRING:
 		case VOID:
 			return type;
@@ -592,6 +595,8 @@ public class ParamsFlattener {
 			return RomType.INTEGER;
 		} else if (type == Float.class || type == float.class) {
 			return RomType.FLOAT;
+		} else if (type == Double.class || type == double.class) {
+			return RomType.DOUBLE;
 		} else if (type == Boolean.class || type == boolean.class) {
 			return RomType.BOOLEAN;
 		} else if (type == String.class) {

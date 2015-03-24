@@ -102,8 +102,9 @@ public class JsonResponseUtils {
 	private static boolean isPrimitiveClass(Type type) {
 		return type == String.class || type == Integer.class
 				|| type == Float.class || type == Boolean.class
-				|| type == int.class || type == float.class
-				|| type == boolean.class;
+				|| type == Double.class || type == int.class
+				|| type == float.class || type == boolean.class
+				|| type == double.class;
 	}
 
 	private static boolean isList(Type type) {
