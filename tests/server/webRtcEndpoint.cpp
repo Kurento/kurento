@@ -63,6 +63,60 @@ BOOST_AUTO_TEST_CASE (gathering_done)
   webRtcEp.reset ();
 }
 
+BOOST_AUTO_TEST_CASE (ice_state_changes)
+{
+  gst_init (NULL, NULL);
+
+  std::atomic<bool> ice_state_changed (false);
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+
+  std::shared_ptr <MediaPipelineImpl> pipe (new MediaPipelineImpl (
+        boost::property_tree::ptree() ) );
+  boost::property_tree::ptree config;
+
+  config.add ("configPath", "../../../tests" );
+  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
+  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
+
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer ( new  WebRtcEndpointImpl
+      (config, pipe) );
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer ( new  WebRtcEndpointImpl
+      (config, pipe) );
+
+  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    webRtcEpAnswerer->addIceCandidate (event.getCandidate() );
+  });
+
+  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    webRtcEpOfferer->addIceCandidate (event.getCandidate() );
+  });
+
+  webRtcEpOfferer->signalOnIceComponentStateChanged.connect ([&] (
+  OnIceComponentStateChanged event) {
+    ice_state_changed = true;
+    cv.notify_one();
+  });
+
+  std::string offer = webRtcEpOfferer->generateOffer ();
+  std::string answer = webRtcEpAnswerer->processOffer (offer);
+  webRtcEpOfferer->processAnswer (answer);
+
+  webRtcEpOfferer->gatherCandidates ();
+  webRtcEpAnswerer->gatherCandidates ();
+
+  cv.wait_for (lck, std::chrono::seconds (5), [&] () {
+    return ice_state_changed.load();
+  });
+
+  if (!ice_state_changed) {
+    BOOST_ERROR ("ICE state not chagned");
+  }
+
+  webRtcEpOfferer.reset ();
+}
+
 BOOST_AUTO_TEST_CASE (stun_properties)
 {
   gst_init (NULL, NULL);

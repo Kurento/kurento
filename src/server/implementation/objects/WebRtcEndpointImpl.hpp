@@ -41,6 +41,7 @@ public:
 
   sigc::signal<void, OnIceCandidate> signalOnIceCandidate;
   sigc::signal<void, OnIceGatheringDone> signalOnIceGatheringDone;
+  sigc::signal<void, OnIceComponentStateChanged> signalOnIceComponentStateChanged;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
@@ -52,9 +53,12 @@ private:
 
   int handlerOnIceCandidate;
   int handlerOnIceGatheringDone;
+  int handlerOnIceComponentStateChanged;
 
   std::function<void (KmsIceCandidate *) > onIceCandidateLambda;
   std::function<void() > onIceGatheringDoneLambda;
+  std::function<void (guint streamId, guint componentId, guint state) >
+  onIceComponentStateChangedLambda;
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

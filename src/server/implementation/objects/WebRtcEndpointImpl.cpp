@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <IceCandidate.hpp>
 #include <webrtcendpoint/kmsicecandidate.h>
+#include <IceComponentState.hpp>
 
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -42,6 +43,17 @@ on_ice_gathering_done (GstElement *webrtcendpoint, gpointer data)
   auto handler = reinterpret_cast<std::function<void() >*> (data);
 
   (*handler) ();
+}
+
+static void
+on_ice_component_state_changed (NiceAgent *agent, guint stream_id,
+                                guint component_id, NiceComponentState state, gpointer data)
+{
+  auto handler =
+    reinterpret_cast<std::function<void (guint streamId, guint componentId, guint state) >*>
+    (data);
+
+  (*handler) (stream_id, component_id, state);
 }
 
 class TemporalDirectory
@@ -212,12 +224,63 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   handlerOnIceGatheringDone = g_signal_connect (element, "on-ice-gathering-done",
                               G_CALLBACK (on_ice_gathering_done),
                               &onIceGatheringDoneLambda);
+
+  onIceComponentStateChangedLambda = [&] (guint streamId, guint componentId,
+  guint state) {
+    try {
+      IceComponentState::type type;
+
+      switch (state) {
+      case NICE_COMPONENT_STATE_DISCONNECTED:
+        type = IceComponentState::DISCONNECTED;
+        break;
+
+      case NICE_COMPONENT_STATE_GATHERING:
+        type = IceComponentState::GATHERING;
+        break;
+
+      case NICE_COMPONENT_STATE_CONNECTING:
+        type = IceComponentState::CONNECTING;
+        break;
+
+      case NICE_COMPONENT_STATE_CONNECTED:
+        type = IceComponentState::CONNECTED;
+        break;
+
+      case NICE_COMPONENT_STATE_READY:
+        type = IceComponentState::READY;
+        break;
+
+      case NICE_COMPONENT_STATE_FAILED:
+        type = IceComponentState::FAILED;
+        break;
+
+      default:
+        type = IceComponentState::FAILED;
+        break;
+      }
+
+      IceComponentState *componentState = new IceComponentState (type);
+      OnIceComponentStateChanged event (shared_from_this(),
+                                        OnIceComponentStateChanged::getName(),
+                                        streamId, componentId,  std::shared_ptr<IceComponentState> (componentState) );
+
+      signalOnIceComponentStateChanged (event);
+    } catch (std::bad_weak_ptr &e) {
+    }
+  };
+
+  handlerOnIceComponentStateChanged = g_signal_connect (element,
+                                      "on-ice-component-state-changed",
+                                      G_CALLBACK (on_ice_component_state_changed),
+                                      &onIceComponentStateChangedLambda);
 }
 
 WebRtcEndpointImpl::~WebRtcEndpointImpl()
 {
   g_signal_handler_disconnect (element, handlerOnIceCandidate);
   g_signal_handler_disconnect (element, handlerOnIceGatheringDone);
+  g_signal_handler_disconnect (element, handlerOnIceComponentStateChanged);
 }
 
 std::string

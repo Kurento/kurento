@@ -47,7 +47,8 @@
       ],
       "events": [
         "OnIceCandidate",
-        "OnIceGatheringDone"
+        "OnIceGatheringDone",
+        "OnIceComponentStateChanged"
       ]
     }
   ],
@@ -69,6 +70,28 @@
       "extends": "Media",
       "doc": "Notify that all candidates have been gathered.",
       "properties": []
+    },
+    {
+      "name": "OnIceComponentStateChanged",
+      "extends": "Media",
+      "doc": "Notify about the change of an ICE component state.",
+      "properties": [
+        {
+          "name": "streamId",
+          "doc": "The ID of the stream",
+          "type": "int"
+        },
+        {
+          "name": "componentId",
+          "doc": "The ID of the component",
+          "type": "int"
+        },
+        {
+          "name": "state",
+          "doc": "The state of the component",
+          "type": "IceComponentState"
+        }
+      ]
     }
   ],
   "complexTypes": [
@@ -92,6 +115,19 @@
           "doc": "The index (starting at zero) of the m-line in the SDP this candidate is associated with.",
           "type": "int"
         }
+      ]
+    },
+    {
+      "name": "IceComponentState",
+      "typeFormat": "ENUM",
+      "doc": "States of an ICE component.",
+      "values": [
+        "DISCONNECTED",
+        "GATHERING",
+        "CONNECTING",
+        "CONNECTED",
+        "READY",
+        "FAILED"
       ]
     }
   ]
