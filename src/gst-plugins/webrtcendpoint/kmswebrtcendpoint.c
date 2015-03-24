@@ -76,6 +76,7 @@ enum
 {
   SIGNAL_ON_ICE_CANDIDATE,
   SIGNAL_ON_ICE_GATHERING_DONE,
+  SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED,
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
   LAST_SIGNAL
@@ -712,6 +713,18 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 
 /* Start Transport end */
 
+static void
+kms_webrtc_endpoint_component_state_change (NiceAgent * agent, guint stream_id,
+    guint component_id, NiceComponentState state, KmsWebrtcEndpoint * self)
+{
+  GST_DEBUG_OBJECT (self, "stream_id: %d, component_id: %d, state: %s",
+      stream_id, component_id, nice_component_state_to_string (state));
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
+      stream_id, component_id, state);
+}
+
 /* ICE candidates management begin */
 
 static void
@@ -1271,6 +1284,20 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       G_STRUCT_OFFSET (KmsWebrtcEndpointClass, on_ice_gathering_done), NULL,
       NULL, NULL, G_TYPE_NONE, 0);
 
+  /**
+   * KmsWebrtcEndpoint::on-component-state-changed
+   * @self: the object which received the signal
+   * @stream_id: The ID of the stream
+   * @component_id: The ID of the component
+   * @state: The #NiceComponentState of the component
+   *
+   * This signal is fired whenever a component's state changes
+   */
+  kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED] =
+      g_signal_new ("on-ice-component-state-changed",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+
   kms_webrtc_endpoint_signals[SIGNAL_ADD_ICE_CANDIDATE] =
       g_signal_new ("add-ice-candidate",
       G_TYPE_FROM_CLASS (klass),
@@ -1321,6 +1348,8 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
       G_CALLBACK (kms_webrtc_endpoint_gathering_done), self);
   g_signal_connect (self->priv->agent, "new-candidate",
       G_CALLBACK (kms_webrtc_endpoint_new_candidate), self);
+  g_signal_connect (self->priv->agent, "component-state-changed",
+      G_CALLBACK (kms_webrtc_endpoint_component_state_change), self);
 }
 
 gboolean
