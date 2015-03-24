@@ -1,4 +1,7 @@
 {
+  "metadata" : {
+  	"publicIp" : "127.0.0.1"
+  },
   "mediaServer" : {
     "net" : {
       <#if transport=="rabbitmq">
