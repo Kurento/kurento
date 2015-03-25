@@ -72,7 +72,7 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
     }
   }
 
-  WebRtcPeerRecvonly(options, function(error) {
+  WebRtcPeerRecvonly(options, function (error) {
     var self = this
 
     function onerror(error) {
@@ -84,8 +84,7 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
 
     if (error) return onerror(error)
 
-    this.generateOffer(function(error, sdpOffer, processSdpAnswer)
-    {
+    this.generateOffer(function (error, sdpOffer, processSdpAnswer) {
       if (error) return onerror(error)
 
       var offer = new RTCSessionDescription({
@@ -96,27 +95,30 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
       var peerConnection = new RTCPeerConnection()
 
       peerConnection.setRemoteDescription(offer, function () {
-        var stream = getOscillatorMedia()
+          var stream = getOscillatorMedia()
 
-        peerConnection.addStream(stream)
+          peerConnection.addStream(stream)
 
-        peerConnection.createAnswer(function (answer) {
-          peerConnection.setLocalDescription(answer, function () {
-            processSdpAnswer(answer.sdp, function (error) {
-              if (error) return onerror(error)
+          peerConnection.createAnswer(function (answer) {
+              peerConnection.setLocalDescription(answer,
+                function () {
+                  processSdpAnswer(answer.sdp, function (
+                    error) {
+                    if (error) return onerror(error)
 
-              var stream = this.getRemoteStream()
-              assert.notEqual(stream, undefined, 'remote stream')
+                    var stream = this.getRemoteStream()
+                    assert.notEqual(stream, undefined,
+                      'remote stream')
 
-              this.dispose()
-              done()
-            })
-          },
-          onerror);
+                    this.dispose()
+                    done()
+                  })
+                },
+                onerror);
+            },
+            onerror);
         },
-        onerror);
-      },
-      onerror)
+        onerror)
     })
   })
 });
@@ -133,7 +135,7 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
     }
   }
 
-  WebRtcPeerSendonly(options, function(error) {
+  WebRtcPeerSendonly(options, function (error) {
     var self = this
 
     function onerror(error) {
@@ -145,8 +147,7 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
 
     if (error) return onerror(error)
 
-    this.generateOffer(function(error, sdpOffer, processSdpAnswer)
-    {
+    this.generateOffer(function (error, sdpOffer, processSdpAnswer) {
       if (error) return onerror(error)
 
       var stream = this.getLocalStream()
@@ -160,23 +161,25 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
       var peerConnection = new RTCPeerConnection()
 
       peerConnection.setRemoteDescription(offer, function () {
-        var stream = peerConnection.getRemoteStreams()[0]
-        assert.notEqual(stream, undefined, 'peer remote stream')
+          var stream = peerConnection.getRemoteStreams()[0]
+          assert.notEqual(stream, undefined, 'peer remote stream')
 
-        peerConnection.createAnswer(function (answer) {
-          peerConnection.setLocalDescription(answer, function () {
-            processSdpAnswer(answer.sdp, function (error) {
-              if (error) return onerror(error)
+          peerConnection.createAnswer(function (answer) {
+              peerConnection.setLocalDescription(answer,
+                function () {
+                  processSdpAnswer(answer.sdp, function (
+                    error) {
+                    if (error) return onerror(error)
 
-              this.dispose()
-              done()
-            })
-          },
-          onerror);
+                    this.dispose()
+                    done()
+                  })
+                },
+                onerror);
+            },
+            onerror);
         },
-        onerror);
-      },
-      onerror)
+        onerror)
     })
   })
 });
@@ -193,7 +196,7 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
     }
   }
 
-  WebRtcPeerSendrecv(options, function(error) {
+  WebRtcPeerSendrecv(options, function (error) {
     var self = this
 
     function onerror(error) {
@@ -205,8 +208,7 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
 
     if (error) return onerror(error)
 
-    this.generateOffer(function(error, sdpOffer, processSdpAnswer)
-    {
+    this.generateOffer(function (error, sdpOffer, processSdpAnswer) {
       if (error) return onerror(error)
 
       var stream = this.getLocalStream()
@@ -220,30 +222,33 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
       var peerConnection = new RTCPeerConnection()
 
       peerConnection.setRemoteDescription(offer, function () {
-        var stream = peerConnection.getRemoteStreams()[0]
-        assert.notEqual(stream, undefined, 'peer remote stream')
+          var stream = peerConnection.getRemoteStreams()[0]
+          assert.notEqual(stream, undefined, 'peer remote stream')
 
-        var stream = getOscillatorMedia();
+          var stream = getOscillatorMedia();
 
-        peerConnection.addStream(stream)
+          peerConnection.addStream(stream)
 
-        peerConnection.createAnswer(function (answer) {
-          peerConnection.setLocalDescription(answer, function () {
-            processSdpAnswer(answer.sdp, function (error) {
-              if (error) return onerror(error)
+          peerConnection.createAnswer(function (answer) {
+              peerConnection.setLocalDescription(answer,
+                function () {
+                  processSdpAnswer(answer.sdp, function (
+                    error) {
+                    if (error) return onerror(error)
 
-              var stream = this.getRemoteStream()
-              assert.notEqual(stream, undefined, 'remote stream')
+                    var stream = this.getRemoteStream()
+                    assert.notEqual(stream, undefined,
+                      'remote stream')
 
-              this.dispose()
-              done()
-            })
-          },
-          onerror);
+                    this.dispose()
+                    done()
+                  })
+                },
+                onerror);
+            },
+            onerror);
         },
-        onerror);
-      },
-      onerror)
+        onerror)
     })
   })
 });
