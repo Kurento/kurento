@@ -14,6 +14,10 @@
  */
 package org.kurento.test.base;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
+
 import java.awt.Color;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -90,9 +94,12 @@ public class KurentoTest {
 				List<URL> browserList = new ArrayList<>();
 				for (BrowserClient bc : getTestScenario().getBrowserMap()
 						.values()) {
+					int timeout = getProperty(TEST_URL_TIMEOUT_PROPERTY,
+							TEST_URL_TIMEOUT_DEFAULT);
+
 					URL url = bc.getUrl();
 					if (!browserList.contains(url)) {
-						waitForHostIsReachable(url, bc.getTimeout());
+						waitForHostIsReachable(url, timeout);
 					} else {
 						browserList.add(url);
 					}

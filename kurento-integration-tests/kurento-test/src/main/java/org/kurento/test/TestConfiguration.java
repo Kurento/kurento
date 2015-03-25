@@ -40,6 +40,9 @@ public class TestConfiguration {
 	public static final String TEST_PROTOCOL_PROPERTY = "test.protocol";
 	public static final String TEST_PROTOCOL_DEFAULT = "http";
 
+	public final static String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
+	public final static int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
+
 	// Saucelabs
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
