@@ -240,15 +240,14 @@ public class KurentoTest {
 			};
 			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
-			HttpURLConnection connection = (HttpURLConnection) url
-					.openConnection();
-			connection.setConnectTimeout((int) timeoutMillis);
-			connection.setReadTimeout((int) timeoutMillis);
-			connection.setRequestMethod("HEAD");
-
 			int responseCode = 0;
 			while (true) {
 				try {
+					HttpURLConnection connection = (HttpURLConnection) url
+							.openConnection();
+					connection.setConnectTimeout((int) timeoutMillis);
+					connection.setReadTimeout((int) timeoutMillis);
+					connection.setRequestMethod("HEAD");
 					responseCode = connection.getResponseCode();
 					break;
 				} catch (SSLHandshakeException ssl) {
