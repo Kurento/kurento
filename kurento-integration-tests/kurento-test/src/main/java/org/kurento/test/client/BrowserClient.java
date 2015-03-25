@@ -664,6 +664,21 @@ public class BrowserClient implements Closeable {
 		return protocol;
 	}
 
+	public URL getUrl() {
+		String ip = this.getHost();
+		int port = this.getServerPort();
+		String protocol = this.getProtocol().toString();
+		String path = this.getClient().toString();
+		URL url = null;
+		try {
+			url = new URL(protocol + ip + ":" + port + path);
+		} catch (MalformedURLException e) {
+			log.error("Malformed URL", e);
+			throw new RuntimeException(e);
+		}
+		return url;
+	}
+
 	@Override
 	public void close() {
 		// Stop Selenium Grid (if necessary)
@@ -672,9 +687,11 @@ public class BrowserClient implements Closeable {
 		}
 
 		// WebDriver
-		driver.close();
-		driver.quit();
-		driver = null;
+		if (driver != null) {
+			driver.close();
+			driver.quit();
+			driver = null;
+		}
 	}
 
 }

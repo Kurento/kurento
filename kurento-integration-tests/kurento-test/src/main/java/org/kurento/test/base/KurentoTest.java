@@ -15,10 +15,23 @@
 package org.kurento.test.base;
 
 import java.awt.Color;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -32,6 +45,8 @@ import org.kurento.test.config.TestScenario;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * Base for Kurento tests.
@@ -72,6 +87,16 @@ public class KurentoTest {
 			for (String browserKey : testScenario.getBrowserMap().keySet()) {
 				BrowserClient browserClient = testScenario.getBrowserMap().get(
 						browserKey);
+				List<URL> browserList = new ArrayList<>();
+				for (BrowserClient bc : getTestScenario().getBrowserMap()
+						.values()) {
+					URL url = bc.getUrl();
+					if (!browserList.contains(url)) {
+						waitForHostIsReachable(url, bc.getTimeout());
+					} else {
+						browserList.add(url);
+					}
+				}
 				initBrowserClient(browserKey, browserClient);
 			}
 		}
@@ -171,6 +196,52 @@ public class KurentoTest {
 
 		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
 		return client.clone();
+	}
+
+	public void waitForHostIsReachable(URL url, int timeout) {
+		int timeMillis = (int) TimeUnit.MILLISECONDS.convert(timeout,
+				TimeUnit.SECONDS);
+		try {
+			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+
+				public void checkClientTrusted(X509Certificate[] certs,
+						String authType) {
+				}
+
+				public void checkServerTrusted(X509Certificate[] certs,
+						String authType) {
+				}
+			} };
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection
+					.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+			HostnameVerifier allHostsValid = new HostnameVerifier() {
+				public boolean verify(String hostname, SSLSession session) {
+					return true;
+				}
+			};
+			HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+
+			HttpURLConnection connection = (HttpURLConnection) url
+					.openConnection();
+			connection.setConnectTimeout(timeMillis);
+			connection.setReadTimeout(timeMillis);
+			connection.setRequestMethod("HEAD");
+			int responseCode = connection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				Assert.fail("URL " + url + " not reachable. Response code="
+						+ responseCode);
+			}
+		} catch (Exception e) {
+			Assert.fail("URL " + url + " not reachable in " + timeout
+					+ " seconds (" + e.getClass().getName() + ", "
+					+ e.getMessage() + ")");
+		}
 	}
 
 }
