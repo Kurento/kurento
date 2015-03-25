@@ -30,6 +30,7 @@ import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -206,8 +207,12 @@ public class KurentoTest {
 	}
 
 	public void waitForHostIsReachable(URL url, int timeout) {
-		int timeMillis = (int) TimeUnit.MILLISECONDS.convert(timeout,
+		log.debug("Waiting for {} to be reachable", url);
+
+		long timeoutMillis = TimeUnit.MILLISECONDS.convert(timeout,
 				TimeUnit.SECONDS);
+		long endTimeMillis = System.currentTimeMillis() + timeoutMillis;
+
 		try {
 			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -222,6 +227,7 @@ public class KurentoTest {
 						String authType) {
 				}
 			} };
+
 			SSLContext sc = SSLContext.getInstance("SSL");
 			sc.init(null, trustAllCerts, new java.security.SecureRandom());
 			HttpsURLConnection
@@ -236,19 +242,38 @@ public class KurentoTest {
 
 			HttpURLConnection connection = (HttpURLConnection) url
 					.openConnection();
-			connection.setConnectTimeout(timeMillis);
-			connection.setReadTimeout(timeMillis);
+			connection.setConnectTimeout((int) timeoutMillis);
+			connection.setReadTimeout((int) timeoutMillis);
 			connection.setRequestMethod("HEAD");
-			int responseCode = connection.getResponseCode();
+
+			int responseCode = 0;
+			while (true) {
+				try {
+					responseCode = connection.getResponseCode();
+					break;
+				} catch (SSLHandshakeException ssl) {
+					log.warn("SSL error {}, trying again in 1 second",
+							ssl.getMessage());
+					// Polling to wait a consistent SSL state
+					Thread.sleep(1000);
+				}
+				if (System.currentTimeMillis() > endTimeMillis) {
+					break;
+				}
+			}
+
 			if (responseCode != HttpURLConnection.HTTP_OK) {
 				Assert.fail("URL " + url + " not reachable. Response code="
 						+ responseCode);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			Assert.fail("URL " + url + " not reachable in " + timeout
 					+ " seconds (" + e.getClass().getName() + ", "
 					+ e.getMessage() + ")");
 		}
+
+		log.debug("URL {} already reachable", url);
 	}
 
 }
