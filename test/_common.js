@@ -13,18 +13,6 @@
  *
  */
 
-/**
- * Set an assert error and re-start the test so it can fail
- */
-function onerror(error) {
-  if (error)
-    QUnit.pushFailure(error.message || error, error.stack);
-
-  QUnit.start();
-};
-
-_onerror = onerror;
-
 const REPORTS_DIR = 'reports'
 
 function writeReport(ext, data) {
