@@ -111,21 +111,11 @@ public class TestScenario {
 			if (!out.isEmpty()) {
 				out += ", ";
 			} else {
-				out += "Number of browser(s) = " + browserMap.size() + " : ";
+				out += "Number of browser(s) = " + browserMap.size() + " (";
 			}
-			out += "(id=" + key + ")";
-			out += "(browserType=" + getBrowserType(key) + ")";
-			out += "(scope=" + getScope(key) + ")";
-
-			String browserVersion = getBrowserVersion(key);
-			if (browserVersion != null) {
-				out += "(browserVersion=" + browserVersion + ")";
-			}
-			Platform platform = getPlatform(key);
-			if (platform != null) {
-				out += "(platform=" + platform + ")";
-			}
+			out += getBrowserType(key);
 		}
+		out += ")";
 		return out;
 	}
 
