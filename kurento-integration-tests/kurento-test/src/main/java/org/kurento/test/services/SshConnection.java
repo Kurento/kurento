@@ -118,6 +118,9 @@ public class SshConnection {
 	}
 
 	public void scp(String origFile, String targetFile) throws IOException {
+		log.debug("Copying remote file: {} (in host {}) to local file: {} ",
+				host, targetFile, origFile);
+
 		OverthereFile motd = connection.getFile(targetFile);
 		OutputStream w = motd.getOutputStream();
 
