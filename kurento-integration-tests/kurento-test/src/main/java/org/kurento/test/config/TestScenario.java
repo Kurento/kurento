@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -107,15 +108,30 @@ public class TestScenario {
 	@Override
 	public String toString() {
 		String out = "";
+		Map<String, Integer> browsers = new HashMap<>();
 		for (String key : browserMap.keySet()) {
-			if (!out.isEmpty()) {
-				out += ", ";
-			} else {
-				out += "Number of browser(s) = " + browserMap.size() + " (";
+			String browser = getBrowserType(key).toString();
+			String version = getBrowserVersion(key);
+			if (version != null) {
+				browser += version;
 			}
-			out += getBrowserType(key);
+			if (browsers.containsKey(browser)) {
+				int newCount = browsers.get(browser) + 1;
+				browsers.put(browser, newCount);
+			} else {
+				browsers.put(browser, 1);
+			}
 		}
-		out += ")";
+		for (String browser : browsers.keySet()) {
+			int count = browsers.get(browser);
+			if (!out.isEmpty()) {
+				out += " ";
+			}
+			if (count > 1) {
+				out += count + "X";
+			}
+			out += browser;
+		}
 		return out;
 	}
 
