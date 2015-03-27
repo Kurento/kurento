@@ -43,25 +43,25 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
   case MediaProfileSpecType::WEBM_VIDEO_ONLY:
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY, NULL);
-    GST_INFO ("Set WEBM profile");
+    GST_INFO ("Set WEBM VIDEO ONLY profile");
     break;
 
   case MediaProfileSpecType::WEBM_AUDIO_ONLY:
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY, NULL);
-    GST_INFO ("Set WEBM profile");
+    GST_INFO ("Set WEBM AUDIO ONLY profile");
     break;
 
   case MediaProfileSpecType::MP4_VIDEO_ONLY:
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY, NULL);
-    GST_INFO ("Set WEBM profile");
+    GST_INFO ("Set MP4 VIDEO ONLY profile");
     break;
 
   case MediaProfileSpecType::MP4_AUDIO_ONLY:
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY, NULL);
-    GST_INFO ("Set WEBM profile");
+    GST_INFO ("Set MP4 AUDIO ONLY profile");
     break;
   }
 }
