@@ -133,6 +133,26 @@ function ${complexType.name}(${complexTypeDict}){
   <#if complexType.extends??>
 inherits(${complexType.name}, ${extends_name})
   </#if>
+
+  <#if module_name=="core"
+    || module_name=="elements"
+    || module_name=="filters">
+    <#assign __module__="kurento">
+  <#else>
+    <#assign __module__=module_name>
+  </#if>
+// Private identifiers to allow re-construction of the complexType on the server
+// They need to be enumerable so JSON.stringify() can access to them
+Object.defineProperties(${complexType.name}.prototype, {
+  __module__: {
+    enumerable: true,
+    value: "${__module__}"
+  },
+  __type__: {
+    enumerable: true,
+    value: "${complexType.name}"
+  }
+})
 </#if>
 
 /**
