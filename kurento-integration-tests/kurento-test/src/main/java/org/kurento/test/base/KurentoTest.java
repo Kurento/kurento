@@ -20,6 +20,7 @@ import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
 
 import java.awt.Color;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -252,9 +253,9 @@ public class KurentoTest {
 					connection.setRequestMethod("HEAD");
 					responseCode = connection.getResponseCode();
 					break;
-				} catch (SSLHandshakeException ssl) {
-					log.warn("SSL error {}, trying again in 1 second",
-							ssl.getMessage());
+				} catch (SSLHandshakeException | SocketException e) {
+					log.warn("Error {} waiting URL, trying again in 1 second",
+							e.getMessage());
 					// Polling to wait a consistent SSL state
 					Thread.sleep(1000);
 				}
