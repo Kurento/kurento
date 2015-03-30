@@ -210,6 +210,8 @@ public class BrowserClient implements Closeable {
 				if (scope == BrowserScope.SAUCELABS) {
 					capabilities.setBrowserName(DesiredCapabilities
 							.internetExplorer().getBrowserName());
+					capabilities.setCapability("ignoreProtectedModeSettings",
+							true);
 					createSaucelabsDriver(capabilities);
 				}
 
@@ -345,18 +347,20 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void injectKurentoTestJs() {
-		String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
-		String kurentoTestJsPath = "./lib/kurento-test.js";
-		if (this.getProtocol() == Protocol.FILE) {
-			File clientPageFile = new File(this.getClass().getClassLoader()
-					.getResource("static/lib/kurento-test.js").getFile());
-			kurentoTestJsPath = this.getProtocol().toString()
-					+ clientPageFile.getAbsolutePath();
+		if (this.getBrowserType() != BrowserType.IEXPLORER) {
+			String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
+			String kurentoTestJsPath = "./lib/kurento-test.js";
+			if (this.getProtocol() == Protocol.FILE) {
+				File clientPageFile = new File(this.getClass().getClassLoader()
+						.getResource("static/lib/kurento-test.js").getFile());
+				kurentoTestJsPath = this.getProtocol().toString()
+						+ clientPageFile.getAbsolutePath();
+			}
+			kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
+			kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
+			kurentoTestJs += "return true;";
+			this.executeScript(kurentoTestJs);
 		}
-		kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
-		kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
-		kurentoTestJs += "return true;";
-		this.executeScript(kurentoTestJs);
 	}
 
 	public static class Builder {
