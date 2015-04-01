@@ -105,7 +105,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	}
 
-	private static final Logger log = LoggerFactory
+	public static Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
 
 	private CountDownLatch latch = new CountDownLatch(1);

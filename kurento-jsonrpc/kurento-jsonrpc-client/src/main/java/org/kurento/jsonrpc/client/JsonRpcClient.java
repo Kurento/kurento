@@ -67,7 +67,7 @@ import com.google.gson.JsonObject;
  */
 public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
-	private static final Logger log = LoggerFactory
+	public static Logger log = LoggerFactory
 			.getLogger(JsonRpcClient.class.getName());
 
 	protected JsonRpcHandlerManager handlerManager = new JsonRpcHandlerManager();
