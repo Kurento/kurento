@@ -253,7 +253,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 						closeHeartbeatOnFailure();
 					}
 				} catch (Exception e) {
-					log.warn("{} Error sending heartbeat to server", label);
+					log.warn("{} Error sending heartbeat to server", label, e);
 					closeHeartbeatOnFailure();
 				}
 			}
@@ -275,7 +275,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		try {
 			closeWithReconnection();
 		} catch (IOException e) {
-			log.warn("{} Exception while lcosing client", label, e);
+			log.warn("{} Exception while closing client", label, e);
 		}
 	}
 
