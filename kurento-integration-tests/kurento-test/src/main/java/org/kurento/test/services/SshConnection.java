@@ -177,6 +177,16 @@ public class SshConnection {
 		return CharStreams.toString(new InputStreamReader(process.getStdout(),
 				"UTF-8"));
 	}
+	
+	public String execAndWaitCommandWithStderr(String... command) throws IOException {
+		OverthereProcess process = connection.startProcess(CmdLine
+				.build(command));
+		String result = CharStreams.toString(new InputStreamReader(process.getStdout(),
+				"UTF-8"));
+		result += CharStreams.toString(new InputStreamReader(process.getStderr(),
+				"UTF-8"));
+		return result;
+	}
 
 	public String execAndWaitCommandNoBr(String... command) throws IOException {
 		return execAndWaitCommand(command).replace("\n", "").replace("\r", "");
