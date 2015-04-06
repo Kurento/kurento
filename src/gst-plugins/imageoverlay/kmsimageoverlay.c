@@ -191,8 +191,6 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
 
 end:
 
-  GST_OBJECT_LOCK (imageoverlay);
-
   if (imageoverlay->priv->costume != NULL) {
     cvReleaseImage (&imageoverlay->priv->costume);
     imageoverlay->priv->costume = NULL;
@@ -202,8 +200,6 @@ end:
     imageoverlay->priv->costume = costumeAux;
   }
 
-  GST_OBJECT_UNLOCK (imageoverlay);
-
   g_free (url);
 }
 
@@ -212,6 +208,8 @@ kms_image_overlay_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
   KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+
+  GST_OBJECT_LOCK (imageoverlay);
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -228,6 +226,7 @@ kms_image_overlay_set_property (GObject * object, guint property_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
+  GST_OBJECT_UNLOCK (imageoverlay);
 }
 
 static void
@@ -237,6 +236,8 @@ kms_image_overlay_get_property (GObject * object, guint property_id,
   KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
 
   GST_DEBUG_OBJECT (imageoverlay, "get_property");
+
+  GST_OBJECT_LOCK (imageoverlay);
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -253,6 +254,7 @@ kms_image_overlay_get_property (GObject * object, guint property_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
+  GST_OBJECT_UNLOCK (imageoverlay);
 }
 
 static void
