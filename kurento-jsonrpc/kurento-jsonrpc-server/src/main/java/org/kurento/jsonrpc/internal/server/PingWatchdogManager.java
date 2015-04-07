@@ -27,11 +27,12 @@ public class PingWatchdogManager {
 
 		private long firstPingArrivalTime;
 		private int currentPingMeasures = 0;
-
+		private String sessionId;
+		
 		private Runnable closeSessionTask = new Runnable() {
 			public void run() {
-				log.info("Closing session with transportId={} for not receiving ping in "
-						+ (pingInterval * NUM_NO_PINGS_TO_CLOSE) + " millis", transportId);
+				log.info("Closing session with sessionId={} and transportId={} for not receiving ping in "
+						+ (pingInterval * NUM_NO_PINGS_TO_CLOSE) + " millis", sessionId, transportId);
 				closer.closeSession(transportId);
 			}
 		};
@@ -72,6 +73,10 @@ public class PingWatchdogManager {
 					System.currentTimeMillis()
 							+ (NUM_NO_PINGS_TO_CLOSE * pingInterval)));
 		}
+
+		public void setSessionId(String sessionId) {
+			this.sessionId = sessionId;			
+		}
 	}
 
 	private ConcurrentHashMap<String, PingWatchdogSession> sessions = new ConcurrentHashMap<>();
@@ -85,16 +90,27 @@ public class PingWatchdogManager {
 		this.closer = closer;
 	}
 
+	public void associateSessionId(String transportId, String sessionId){
+		if (pingWachdog) {
+			PingWatchdogSession session = getOrCreatePingSession(transportId);
+			session.setSessionId(sessionId);
+		}
+	}
+	
 	public void pingReceived(String transportId) {
 		if (pingWachdog) {
-			PingWatchdogSession session = sessions.get(transportId);
-			if (session == null) {
-				session = new PingWatchdogSession(transportId);
-				sessions.put(transportId, session);
-			}
-
+			PingWatchdogSession session = getOrCreatePingSession(transportId);
 			session.pingReceived();
 		}
+	}
+
+	private PingWatchdogSession getOrCreatePingSession(String transportId) {
+		PingWatchdogSession session = sessions.get(transportId);
+		if (session == null) {
+			session = new PingWatchdogSession(transportId);
+			sessions.put(transportId, session);
+		}
+		return session;
 	}
 
 	public void setPingWatchdog(boolean pingWachdog) {

@@ -61,13 +61,18 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
-		log.info("{} Connection closed because: {}", label, status);
 		if (status.getCode() == CloseStatus.GOING_AWAY.getCode()) {
-			log.info("{} Client is going away (normal termination)", label);
+			log.info(
+					"{} WebSocket session '{}' closed because client is going away (Normal termination)",
+					label, wsSession.getId());
 		} else if (!status.equals(CloseStatus.NORMAL)) {
-			log.error("{} Abnormal termination: {}", label, status.getCode());
+			log.error(
+					"{} WebSocket session '{}' closed because: {} (Abnormal termination)",
+					label, wsSession.getId(), status.getCode());
 		} else {
-			log.info("{} Normal termination", label);
+			log.info(
+					"{} WebSocket session '{}' closed because: {} (Normal termination)",
+					wsSession.getId(), status.getCode());
 		}
 
 		protocolManager.closeSessionIfTimeout(wsSession.getId(),
@@ -124,8 +129,8 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 							sendJsonMessage(jsonMessage);
 						}
 
-				private void sendJsonMessage(String jsonMessage)
-						throws IOException {
+						private void sendJsonMessage(String jsonMessage)
+								throws IOException {
 							synchronized (wsSession) {
 								if (wsSession.isOpen()) {
 									wsSession.sendMessage(new TextMessage(

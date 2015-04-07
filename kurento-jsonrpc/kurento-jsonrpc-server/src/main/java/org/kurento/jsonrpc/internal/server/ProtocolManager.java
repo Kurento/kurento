@@ -96,20 +96,22 @@ public class ProtocolManager {
 
 	@PostConstruct
 	private void postConstruct() {
-		
+
 		NativeSessionCloser nativeSessionCloser = new NativeSessionCloser() {
 			@Override
 			public void closeSession(String transportId) {
-				ServerSession serverSession = sessionsManager.getByTransportId(transportId);
-				if(serverSession != null){
+				ServerSession serverSession = sessionsManager
+						.getByTransportId(transportId);
+				if (serverSession != null) {
 					serverSession.closeNativeSession();
 				} else {
 					log.warn("Ping wachdog trying to close a non-registered ServerSession");
 				}
 			}
 		};
-		
-		this.pingWachdogManager = new PingWatchdogManager(taskScheduler, nativeSessionCloser);
+
+		this.pingWachdogManager = new PingWatchdogManager(taskScheduler,
+				nativeSessionCloser);
 	}
 
 	public void setLabel(String label) {
@@ -296,6 +298,9 @@ public class ProtocolManager {
 		ServerSession session = factory.createSession(sessionId, registerInfo,
 				sessionsManager);
 
+		pingWachdogManager.associateSessionId(session.getTransportId(),
+				sessionId);
+
 		sessionsManager.put(session);
 
 		return session;
@@ -321,8 +326,10 @@ public class ProtocolManager {
 
 		if (session != null) {
 
-			log.info(label + "Configuring close timeout for session: {}",
-					session.getSessionId());
+			log.info(
+					label
+							+ "Configuring close timeout for session: {} transportId: {}",
+					session.getSessionId(), transportId);
 
 			try {
 
@@ -342,15 +349,18 @@ public class ProtocolManager {
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
 			} catch (TaskRejectedException e) {
-				log.warn(label + "Close timeout for session {} can not be set "
-						+ "because the scheduler is shutdown",
-						session.getSessionId());
+				log.warn(
+						label
+								+ "Close timeout for session {} with transportId {} can not be set "
+								+ "because the scheduler is shutdown",
+						session.getSessionId(), transportId);
 			}
 		}
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info(label + "Closing session: {}", session.getSessionId());
+		log.info(label + "Closing session: {} with transportId",
+				session.getSessionId(), session.getTransportId());
 		sessionsManager.remove(session);
 		pingWachdogManager.removeSession(session);
 		handlerManager.afterConnectionClosed(session, reason);
