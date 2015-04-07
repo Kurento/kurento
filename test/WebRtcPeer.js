@@ -183,7 +183,7 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
                 },
                 onerror);
             },
-            onerror);
+            onerror)
         },
         onerror)
     })
@@ -323,7 +323,7 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
             },
             onerror);
         },
-        onerror)
+        onerror);
     })
   })
 });

@@ -142,7 +142,9 @@ module.exports = function (grunt) {
         dest: DIST_DIR + '/<%= pkg.name %>_require.min.js',
 
         options: {
-          debug: true,
+          browserifyOptions: {
+            debug: true
+          },
           plugin: [
             ['minifyify', {
               compressPath: DIST_DIR,

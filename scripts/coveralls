@@ -31,13 +31,15 @@ function spawn()
 }
 
 
+const script = (process.argv.length > 2) ? process.argv[2] : 'test'
+
 // Remove old report
 fs.remove(REPORTS_DIR, function(error)
 {
   if(error) console.trace(error)
 
   // Exec test and fetch coverage data
-  child_process.execFile(pkg.scripts.test, function(error)
+  child_process.execFile(pkg.scripts[script], function(error)
   {
     if(error) return console.trace(error)
 

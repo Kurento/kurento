@@ -16,6 +16,7 @@ const package_name = require('../package.json').name
 
 const PORT = 8080
 const REPORTS_DIR='reports'
+const TIMEOUT=20
 
 
 function onerror(error)
@@ -50,7 +51,7 @@ function waitReport(driver, id, callback)
   var elem = driver.findElement({id: id})
 
   driver
-      .wait(webdriver.until.elementIsVisible(elem), 20000)
+      .wait(webdriver.until.elementIsVisible(elem), TIMEOUT*1000)
       .then(elem.getAttribute.bind(elem, 'value'))
       .then(function(data)
       {
