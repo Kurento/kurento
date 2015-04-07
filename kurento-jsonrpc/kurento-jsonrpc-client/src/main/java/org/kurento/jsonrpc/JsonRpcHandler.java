@@ -57,5 +57,5 @@ public interface JsonRpcHandler<P> {
 
 	 String getLabel();
 	 
-	 boolean isPingWachdog();
+	 boolean isPingWatchdog();
 }

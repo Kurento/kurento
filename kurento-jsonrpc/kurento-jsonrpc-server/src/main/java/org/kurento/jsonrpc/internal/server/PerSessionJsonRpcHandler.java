@@ -190,7 +190,7 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 		return this;
 	}
 	
-	public boolean isPingWachdog(){
+	public boolean isPingWatchdog(){
 		return pingWachdog;
 	}
 

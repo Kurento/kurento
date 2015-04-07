@@ -191,7 +191,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 		JsonRpcWebSocketHandler wsHandler = new JsonRpcWebSocketHandler(
 				protocolManager);
 
-		protocolManager.setPingWachdog(handler.isPingWachdog());
+		protocolManager.setPingWachdog(handler.isPingWatchdog());
 
 		for (String path : paths) {
 

@@ -28,7 +28,7 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 		}
 		
 		@Override
-		public boolean isPingWachdog() {
+		public boolean isPingWatchdog() {
 			return true;
 		}
 	}
