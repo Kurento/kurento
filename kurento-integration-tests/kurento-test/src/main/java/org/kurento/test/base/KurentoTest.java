@@ -212,9 +212,8 @@ public class KurentoTest {
 				TimeUnit.SECONDS);
 		long endTimeMillis = System.currentTimeMillis() + timeoutMillis;
 
-		log.debug(
-				"Waiting for {} to be reachable (timeout {} seconds, i.e. {} milliseconds)",
-				url, timeout, timeoutMillis);
+		log.debug("Waiting for {} to be reachable (timeout {} seconds)", url,
+				timeout);
 
 		try {
 			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
