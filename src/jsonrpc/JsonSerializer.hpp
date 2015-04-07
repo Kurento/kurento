@@ -319,6 +319,14 @@ private:
     JsonValue[key] = value;
   }
 
+  template<typename TKey>
+  void Write (TKey key, int64_t value)
+  {
+    Json::LargestInt cast_value = value;
+
+    JsonValue[key] = cast_value;
+  }
+
   template<typename TKey, typename TValue>
   void Read (TKey key, TValue &value,
              typename boost::enable_if<boost::is_arithmetic<TValue> >::type *dummy = 0)
@@ -355,6 +363,12 @@ private:
   void Read (TKey key, double &value)
   {
     value = JsonValue[key].asDouble();
+  }
+
+  template<typename TKey>
+  void Read (TKey key, int64_t &value)
+  {
+    value = JsonValue[key].asLargestInt();
   }
 
   template<typename TKey>

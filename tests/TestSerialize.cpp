@@ -138,3 +138,25 @@ BOOST_AUTO_TEST_CASE (serialize_vector)
   BOOST_ASSERT (writer.JsonValue.toStyledString() ==
                 writer2.JsonValue.toStyledString() );
 }
+
+BOOST_AUTO_TEST_CASE (serialize_int64)
+{
+  int64_t data = LLONG_MAX;
+  int64_t newData;
+  kurento::JsonSerializer writer (true);
+  kurento::JsonSerializer writer2 (true);
+  kurento::JsonSerializer reader (false);
+
+  writer.Serialize ("intValue", data);
+
+  std::cout << writer.JsonValue.toStyledString () << std::endl;
+
+  reader.JsonValue = writer.JsonValue;
+  reader.Serialize ("intValue", newData);
+
+  writer2.Serialize ("intValue", newData);
+
+  std::cout << "old value " << data << " new value " << newData << std::endl;
+  BOOST_ASSERT (writer.JsonValue.toStyledString() ==
+                writer2.JsonValue.toStyledString() );
+}
