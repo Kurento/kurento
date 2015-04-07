@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -42,6 +43,8 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 	private boolean useSockJS;
 
 	private String label;
+
+	private boolean pingWachdog = false;
 
 	public PerSessionJsonRpcHandler(String handlerName) {
 		this(handlerName, null);
@@ -180,6 +183,15 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 	@Override
 	public String getLabel() {
 		return label;
+	}
+	
+	public PerSessionJsonRpcHandler<T> withPingWachdog(boolean pingAsWachdog) {
+		this.pingWachdog  = pingAsWachdog;
+		return this;
+	}
+	
+	public boolean isPingWachdog(){
+		return pingWachdog;
 	}
 
 }

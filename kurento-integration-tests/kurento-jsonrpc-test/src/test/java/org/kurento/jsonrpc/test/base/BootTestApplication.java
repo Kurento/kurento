@@ -12,6 +12,7 @@ import org.kurento.jsonrpc.test.ErrorServerTest;
 import org.kurento.jsonrpc.test.MultipleSessionsTest;
 import org.kurento.jsonrpc.test.NewSessionTest;
 import org.kurento.jsonrpc.test.NotificationTest;
+import org.kurento.jsonrpc.test.PingPongTest;
 import org.kurento.jsonrpc.test.ReconnectionServerTest;
 import org.kurento.jsonrpc.test.ReconnectionTest;
 import org.kurento.jsonrpc.test.ServerEventsTest;
@@ -31,6 +32,8 @@ public class BootTestApplication implements JsonRpcConfigurer {
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
 
 		registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
+		
+		registry.addHandler(new PingPongTest.Handler(), "/pingpong");
 
 		registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
 

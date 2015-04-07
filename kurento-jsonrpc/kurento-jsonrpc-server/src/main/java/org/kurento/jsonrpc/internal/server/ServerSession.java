@@ -35,7 +35,7 @@ public abstract class ServerSession extends AbstractSession {
 	private JsonRpcRequestSenderHelper rsHelper;
 	private String transportId;
 	private ScheduledFuture<?> closeTimerTask;
-
+	
 	private volatile ConcurrentMap<String, Object> attributes;
 
 	// TODO Make this configurable
@@ -157,4 +157,6 @@ public abstract class ServerSession extends AbstractSession {
 
 		return attributes;
 	}
+	
+	public abstract void closeNativeSession();
 }

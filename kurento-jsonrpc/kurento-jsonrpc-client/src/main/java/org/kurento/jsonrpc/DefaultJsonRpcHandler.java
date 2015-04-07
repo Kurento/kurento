@@ -24,6 +24,7 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 
 	private boolean useSockJs;
 	private String label;
+	private boolean pingWachdog = false;
 
 	@Override
 	public void afterConnectionEstablished(Session session) throws Exception {
@@ -71,5 +72,14 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	@Override
 	public String getLabel() {
 		return label;
+	}
+	
+	public DefaultJsonRpcHandler<P> withPingWachdog(boolean pingAsWachdog) {
+		this.pingWachdog = pingAsWachdog;
+		return this;
+	}
+	
+	public boolean isPingWachdog(){
+		return pingWachdog;
 	}
 }

@@ -1,8 +1,8 @@
 package org.kurento.jsonrpc.test;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;

@@ -70,6 +70,11 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 		@Override
 		public void handleResponse(Response<JsonElement> response) {
 		}
+
+		@Override
+		public void closeNativeSession() {
+			throw new UnsupportedOperationException();			
+		}
 	}
 
 	private final ProtocolManager protocolManager;

@@ -67,8 +67,8 @@ import com.google.gson.JsonObject;
  */
 public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
-	public static Logger log = LoggerFactory
-			.getLogger(JsonRpcClient.class.getName());
+	public static Logger log = LoggerFactory.getLogger(JsonRpcClient.class
+			.getName());
 
 	protected JsonRpcHandlerManager handlerManager = new JsonRpcHandlerManager();
 	protected JsonRpcRequestSenderHelper rsHelper;
@@ -234,31 +234,36 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		this.enableHeartbeat(this.heartbeatInterval);
 	}
 
-	public void enableHeartbeat(int interval) {
-		this.heartbeating = true;
-		this.heartbeatInterval = interval;
+	public synchronized void enableHeartbeat(int interval) {
 
-		if (scheduler.isShutdown()) {
-			scheduler = Executors.newSingleThreadScheduledExecutor();
-		}
+		if (heartbeat == null || heartbeat.isCancelled()) {
 
-		heartbeat = scheduler.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					JsonObject response = sendRequest(METHOD_PING)
-							.getAsJsonObject();
+			this.heartbeating = true;
+			this.heartbeatInterval = interval;
 
-					if (!PONG.equals(response.get(PONG_PAYLOAD).getAsString())) {
+			if (scheduler.isShutdown()) {
+				scheduler = Executors.newSingleThreadScheduledExecutor();
+			}
+
+			heartbeat = scheduler.scheduleAtFixedRate(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						JsonObject response = sendRequest(METHOD_PING)
+								.getAsJsonObject();
+
+						if (!PONG.equals(response.get(PONG_PAYLOAD)
+								.getAsString())) {
+							closeHeartbeatOnFailure();
+						}
+					} catch (Exception e) {
+						log.warn("{} Error sending heartbeat to server", label,
+								e);
 						closeHeartbeatOnFailure();
 					}
-				} catch (Exception e) {
-					log.warn("{} Error sending heartbeat to server", label, e);
-					closeHeartbeatOnFailure();
 				}
-			}
-		}, 0, heartbeatInterval, MILLISECONDS);
-
+			}, 0, heartbeatInterval, MILLISECONDS);
+		}
 	}
 
 	/**
@@ -269,7 +274,8 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 				"{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
 				label);
 
-		heartbeat.cancel(true);
+		heartbeat.cancel(false);
+		heartbeat = null;
 		scheduler.shutdownNow();
 
 		try {
@@ -282,7 +288,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public void disableHeartbeat() {
 		if (heartbeating) {
 			this.heartbeating = false;
-			heartbeat.cancel(true);
+			heartbeat.cancel(false);
 			scheduler.shutdownNow();
 		}
 	}

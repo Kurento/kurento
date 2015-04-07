@@ -28,11 +28,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
+import javax.annotation.PostConstruct;
+
 import org.kurento.commons.SecretGenerator;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
+import org.kurento.jsonrpc.internal.server.PingWatchdogManager.NativeSessionCloser;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
@@ -77,6 +80,8 @@ public class ProtocolManager {
 
 	private int heartbeats = 0;
 
+	private PingWatchdogManager pingWachdogManager;
+
 	public ProtocolManager(JsonRpcHandler<?> handler) {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
 	}
@@ -86,6 +91,25 @@ public class ProtocolManager {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
 		this.sessionsManager = sessionsManager;
 		this.taskScheduler = taskScheduler;
+		postConstruct();
+	}
+
+	@PostConstruct
+	private void postConstruct() {
+		
+		NativeSessionCloser nativeSessionCloser = new NativeSessionCloser() {
+			@Override
+			public void closeSession(String transportId) {
+				ServerSession serverSession = sessionsManager.getByTransportId(transportId);
+				if(serverSession != null){
+					serverSession.closeNativeSession();
+				} else {
+					log.warn("Ping wachdog trying to close a non-registered ServerSession");
+				}
+			}
+		};
+		
+		this.pingWachdogManager = new PingWatchdogManager(taskScheduler, nativeSessionCloser);
 	}
 
 	public void setLabel(String label) {
@@ -216,6 +240,9 @@ public class ProtocolManager {
 			Request<JsonElement> request, ResponseSender responseSender,
 			String transportId) throws IOException {
 		if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
+
+			pingWachdogManager.pingReceived(transportId);
+
 			String sessionId = request.getSessionId();
 			JsonObject pongPayload = new JsonObject();
 			pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
@@ -325,6 +352,7 @@ public class ProtocolManager {
 	public void closeSession(ServerSession session, String reason) {
 		log.info(label + "Closing session: {}", session.getSessionId());
 		sessionsManager.remove(session);
+		pingWachdogManager.removeSession(session);
 		handlerManager.afterConnectionClosed(session, reason);
 	}
 
@@ -347,5 +375,9 @@ public class ProtocolManager {
 	 */
 	public void setMaxNumberOfHeartbeats(int maxHeartbeats) {
 		this.maxHeartbeats = maxHeartbeats;
+	}
+
+	public void setPingWachdog(boolean pingWachdog) {
+		this.pingWachdogManager.setPingWatchdog(pingWachdog);
 	}
 }

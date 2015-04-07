@@ -185,8 +185,13 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 			WebSocketHandlerRegistry wsHandlerRegistry,
 			JsonRpcHandler<?> handler, List<String> paths) {
 
+		ProtocolManager protocolManager = (ProtocolManager) ctx.getBean(
+				"protocolManager", handler);
+
 		JsonRpcWebSocketHandler wsHandler = new JsonRpcWebSocketHandler(
-				(ProtocolManager) ctx.getBean("protocolManager", handler));
+				protocolManager);
+
+		protocolManager.setPingWachdog(handler.isPingWachdog());
 
 		for (String path : paths) {
 

@@ -225,6 +225,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		try {
 
+			LOG.info("Event class '"+eventClass.getSimpleName()+" Data: "+data);
+			
 			Constructor<?> constructor = eventClass.getConstructors()[0];
 
 			data.add("source", ((KurentoObject) object).getId());

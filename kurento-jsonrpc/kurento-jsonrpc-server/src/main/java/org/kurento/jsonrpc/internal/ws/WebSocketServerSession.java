@@ -157,4 +157,13 @@ public class WebSocketServerSession extends ServerSession {
 		}
 	}
 
+	@Override
+	public void closeNativeSession() {
+		try {
+			wsSession.close();
+		} catch (IOException e) {
+			LOG.warn("Exception closing webSocket session", e);
+		}		
+	}
+
 }
