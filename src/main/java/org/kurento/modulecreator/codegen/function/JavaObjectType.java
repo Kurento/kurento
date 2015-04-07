@@ -89,12 +89,18 @@ public class JavaObjectType implements TemplateMethodModelEx {
 				return "Boolean";
 			} else if (typeName.equals("double")) {
 				return "Double";
+			} else if (typeName.equals("int64")) {
+				return "Long";
 			}
 
 		} else {
 			if (typeName.equals("int") || typeName.equals("float")
 					|| typeName.equals("boolean") || typeName.equals("double")) {
 				return typeName;
+			}
+
+			if (typeName.equals("int64")) {
+				return "long";
 			}
 		}
 

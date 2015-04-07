@@ -33,6 +33,7 @@ public class ModuleDefinition {
 	public static final PrimitiveType INT = new PrimitiveType("int");
 	public static final PrimitiveType FLOAT = new PrimitiveType("float");
 	public static final PrimitiveType DOUBLE = new PrimitiveType("double");
+	public static final PrimitiveType INT64 = new PrimitiveType("int64");
 
 	private static Logger log = LoggerFactory.getLogger(ModuleDefinition.class);
 
@@ -334,6 +335,7 @@ public class ModuleDefinition {
 		put(types, INT);
 		put(types, FLOAT);
 		put(types, DOUBLE);
+		put(types, INT64);
 
 		allTypes = new HashMap<String, Type>(types);
 

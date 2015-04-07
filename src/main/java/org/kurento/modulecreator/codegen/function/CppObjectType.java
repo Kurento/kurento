@@ -22,6 +22,7 @@ public class CppObjectType implements TemplateMethodModelEx {
 		nativeTypes.add("float");
 		nativeTypes.add("int");
 		nativeTypes.add("double");
+		nativeTypes.add("int64");
 	}
 
 	@Override
@@ -103,10 +104,19 @@ public class CppObjectType implements TemplateMethodModelEx {
 				return "std::string";
 			}
 		} else if (nativeTypes.contains(typeName)) {
-			if (isParam)
-				return typeName + " ";
-			else
-				return typeName;
+			if (isParam) {
+				if (typeName.equals("int64")) {
+					return "int64_t ";
+				} else {
+					return typeName + " ";
+				}
+			} else {
+				if (typeName.equals("int64")) {
+					return "int64_t";
+				} else {
+					return typeName;
+				}
+			}
 		} else {
 			if (isParam)
 				return "std::shared_ptr<" + prefix + typeName + suffix + "> ";

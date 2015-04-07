@@ -91,6 +91,12 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
 				data.jsonValueType = "realValue";
 				data.typeDescription = "double";
 				return data;
+			} else if (typeRef.getName().equals("int64")) {
+				JsonTypeData data = new JsonTypeData();
+				data.jsonMethod = "Int64";
+				data.jsonValueType = "int64Value";
+				data.typeDescription = "int64";
+				return data;
 			} else if (typeRef.getType() instanceof ComplexType) {
 				ComplexType complexType = (ComplexType) typeRef.getType();
 
