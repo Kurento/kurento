@@ -112,8 +112,13 @@ public class TestScenario {
 		for (String key : browserMap.keySet()) {
 			String browser = getBrowserType(key).toString();
 			String version = getBrowserVersion(key);
+			String platform = getPlatform(key).toString();
+
 			if (version != null) {
 				browser += version;
+			}
+			if (platform != null) {
+				browser += platform;
 			}
 			if (browsers.containsKey(browser)) {
 				int newCount = browsers.get(browser) + 1;
