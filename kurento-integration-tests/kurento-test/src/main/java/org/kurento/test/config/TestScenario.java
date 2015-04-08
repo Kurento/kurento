@@ -112,7 +112,7 @@ public class TestScenario {
 		for (String key : browserMap.keySet()) {
 			String browser = getBrowserType(key).toString();
 			String version = getBrowserVersion(key);
-			String platform = getPlatform(key).toString();
+			Platform platform = getPlatform(key);
 
 			if (version != null) {
 				browser += version;
