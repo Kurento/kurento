@@ -266,9 +266,8 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
+  gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-  g_object_unref (bus);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -390,6 +389,8 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
       GST_DEBUG_GRAPH_SHOW_ALL, "test_sendonly_end");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
@@ -480,9 +481,8 @@ test_video_sendrecv (const gchar * video_enc_name,
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
+  gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-  g_object_unref (bus);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -570,6 +570,8 @@ test_video_sendrecv (const gchar * video_enc_name,
       GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_end");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
@@ -607,9 +609,8 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
-  gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
+  gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-  g_object_unref (bus);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -705,6 +706,8 @@ test_audio_sendrecv (const gchar * audio_enc_name,
       GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_end");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
@@ -783,9 +786,8 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
-  gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
+  gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-  g_object_unref (bus);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -894,6 +896,8 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
       GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_video_sendonly_recvonly_end");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod_audio);
@@ -953,9 +957,8 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
-  gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
+  gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-  g_object_unref (bus);
 
   fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -1090,6 +1093,8 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
       GST_DEBUG_GRAPH_SHOW_ALL, "test_sendrecv_end");
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod_audio_offerer);
