@@ -298,6 +298,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			reconnecting = true;
 
+			if (execService == null || execService.isShutdown()
+					|| execService.isTerminated()) {
+				execService = Executors.newFixedThreadPool(10, threadFactory);
+			}
+
 			execService.execute(new Runnable() {
 				@Override
 				public void run() {
@@ -474,9 +479,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				client.stop();
 				client.destroy();
 				execService.shutdown();
-			} catch (Exception e1) {
-				log.debug("{} Could not properly close websocket client", label);
+			} catch (Exception e) {
+				log.debug("{} Could not properly close websocket client",
+						label, e);
 			}
+			execService = null;
 			client = null;
 		}
 	}
