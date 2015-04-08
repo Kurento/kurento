@@ -111,12 +111,12 @@ module.exports = function (grunt) {
     // Generate browser versions and mapping debug file
     browserify: {
       require: {
-        src: '<%= pkg.main %>',
+        src: 'lib/browser.js',
         dest: DIST_DIR + '/<%= pkg.name %>_require.js'
       },
 
       standalone: {
-        src: '<%= pkg.main %>',
+        src: 'lib/browser.js',
         dest: DIST_DIR + '/<%= pkg.name %>.js',
 
         options: {
@@ -127,7 +127,7 @@ module.exports = function (grunt) {
       },
 
       coverage: {
-        src: 'lib-cov/index.js',
+        src: 'lib-cov/browser.js',
         dest: DIST_DIR + '/<%= pkg.name %>.cov.js',
 
         options: {
@@ -138,7 +138,7 @@ module.exports = function (grunt) {
       },
 
       'require minified': {
-        src: '<%= pkg.main %>',
+        src: 'lib/browser.js',
         dest: DIST_DIR + '/<%= pkg.name %>_require.min.js',
 
         options: {
@@ -155,7 +155,7 @@ module.exports = function (grunt) {
       },
 
       'standalone minified': {
-        src: '<%= pkg.main %>',
+        src: 'lib/browser.js',
         dest: DIST_DIR + '/<%= pkg.name %>.min.js',
 
         options: {
