@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 @Configuration
 @ComponentScan(basePackageClasses = { org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration.class })
@@ -32,7 +33,7 @@ public class BootTestApplication implements JsonRpcConfigurer {
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
 
 		registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
-		
+
 		registry.addHandler(new PingPongTest.Handler(), "/pingpong");
 
 		registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
@@ -60,7 +61,8 @@ public class BootTestApplication implements JsonRpcConfigurer {
 
 		registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
 
-		registry.addHandler(new ReconnectionServerTest.Handler(), "/reconnection2");
+		registry.addHandler(new ReconnectionServerTest.Handler(),
+				"/reconnection2");
 
 		registry.addHandler(new ConnectionListenerTest.Handler(),
 				"/connectionlistener");
@@ -83,6 +85,13 @@ public class BootTestApplication implements JsonRpcConfigurer {
 	@Bean
 	public JsonRpcHandler<?> echoJsonRpcHandler() {
 		return new EchoJsonRpcHandler();
+	}
+
+	@Bean
+	public ServletServerContainerFactoryBean createWebSocketContainer() {
+		ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+		container.setMaxSessionIdleTimeout(10000);
+		return container;
 	}
 
 }

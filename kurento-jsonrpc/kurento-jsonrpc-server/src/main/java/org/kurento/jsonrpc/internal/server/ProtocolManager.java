@@ -23,6 +23,7 @@ import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_SUCCESS
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -62,6 +63,9 @@ public class ProtocolManager {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ProtocolManager.class);
+
+	private static final SimpleDateFormat format = new SimpleDateFormat(
+			"MM-dd-yyyy hh:mm:ss,S");
 
 	protected SecretGenerator secretGenerator = new SecretGenerator();
 
@@ -103,7 +107,8 @@ public class ProtocolManager {
 				ServerSession serverSession = sessionsManager
 						.getByTransportId(transportId);
 				if (serverSession != null) {
-					serverSession.closeNativeSession();
+					serverSession
+							.closeNativeSession("Close for not receive ping from client");
 				} else {
 					log.warn("Ping wachdog trying to close a non-registered ServerSession");
 				}
@@ -261,11 +266,11 @@ public class ProtocolManager {
 
 		if (sessionId == null) {
 
-			responseSender
-					.sendResponse(new Response<>(
-							request.getId(),
-							new ResponseError(99999,
-									"SessionId is mandatory in a reconnection request")));
+			ServerSession session = getSession(factory, transportId, request);
+
+			responseSender.sendResponse(new Response<String>(session.getSessionId(), request.getId(),
+					"OK"));
+
 		} else {
 
 			ServerSession session = sessionsManager.get(sessionId);
@@ -274,6 +279,8 @@ public class ProtocolManager {
 				String oldTransportId = session.getTransportId();
 				session.setTransportId(transportId);
 				factory.updateSessionOnReconnection(session);
+				pingWachdogManager.updateTransportId(transportId,
+						oldTransportId);
 				sessionsManager.updateTransportId(session, oldTransportId);
 
 				// FIXME: Possible race condition if session is disposed when
@@ -324,29 +331,36 @@ public class ProtocolManager {
 		final ServerSession session = sessionsManager
 				.getByTransportId(transportId);
 
-		if (session != null) {
+		if (session == null) {
 
-			log.info(
-					label
-							+ "Configuring close timeout for session: {} transportId: {}",
-					session.getSessionId(), transportId);
+			log.warn(
+					"{} Session with transportId {} is not associated with a jsonRpcSession",
+					label, transportId);
+
+		} else {
 
 			try {
 
+				Date closeTime = new Date(System.currentTimeMillis()
+						+ session.getReconnectionTimeoutInMillis());
+
+				log.info(
+						label
+								+ "Configuring close timeout for session: {} transportId: {} at {}",
+						session.getSessionId(), transportId,
+						format.format(closeTime));
+
 				ScheduledFuture<?> lastStartedTimerFuture = taskScheduler
-						.schedule(
-								new Runnable() {
-									@Override
-									public void run() {
-										closeSession(session, reason);
-									}
-								},
-								new Date(
-										System.currentTimeMillis()
-												+ session
-														.getReconnectionTimeoutInMillis()));
+						.schedule(new Runnable() {
+							@Override
+							public void run() {
+								closeSession(session, reason);
+							}
+						}, closeTime);
 
 				session.setCloseTimerTask(lastStartedTimerFuture);
+
+				pingWachdogManager.disablePingWatchdogForSession(transportId);
 
 			} catch (TaskRejectedException e) {
 				log.warn(
@@ -359,7 +373,8 @@ public class ProtocolManager {
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info(label + "Closing session: {} with transportId",
+		log.info(label
+				+ "Removing session {} with transportId {} in ProtocolManager",
 				session.getSessionId(), session.getTransportId());
 		sessionsManager.remove(session);
 		pingWachdogManager.removeSession(session);

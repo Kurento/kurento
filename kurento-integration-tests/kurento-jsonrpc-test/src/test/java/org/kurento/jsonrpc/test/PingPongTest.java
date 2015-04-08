@@ -67,14 +67,21 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 
 		Assert.assertEquals(result, "OK");
 
-		Thread.sleep(2000);
+		Thread.sleep(20000);
 		
-		log.info("Disabling heartbeat in client");
+		log.info("----------------- Disabling heartbeat in client ----------------");
 		
 		client.disableHeartbeat();
 		
-		Thread.sleep(50000);
+		//This should lead to reconnect clients
+		
+		Thread.sleep(30000);
 
+		log.info("----------------- Enabling heartbeat in client ----------------");
+		client.enableHeartbeat();
+		
+		Thread.sleep(30000);
+		
 		log.info("Client finished");
 
 	}

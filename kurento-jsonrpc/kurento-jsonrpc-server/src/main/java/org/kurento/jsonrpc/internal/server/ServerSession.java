@@ -158,5 +158,5 @@ public abstract class ServerSession extends AbstractSession {
 		return attributes;
 	}
 	
-	public abstract void closeNativeSession();
+	public abstract void closeNativeSession(String reason);
 }

@@ -20,6 +20,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.websocket.CloseReason;
+import javax.websocket.CloseReason.CloseCode;
+
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
@@ -32,6 +35,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -158,9 +162,9 @@ public class WebSocketServerSession extends ServerSession {
 	}
 
 	@Override
-	public void closeNativeSession() {
+	public void closeNativeSession(String reason) {
 		try {
-			wsSession.close();
+			wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(), reason));
 		} catch (IOException e) {
 			LOG.warn("Exception closing webSocket session", e);
 		}		

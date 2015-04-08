@@ -72,7 +72,7 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 		}
 
 		@Override
-		public void closeNativeSession() {
+		public void closeNativeSession(String reason) {
 			throw new UnsupportedOperationException();			
 		}
 	}

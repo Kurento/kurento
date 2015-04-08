@@ -17,7 +17,7 @@ public class PingWatchdogManager {
 		public void closeSession(String transportId);
 	}
 
-	private static final long NUM_NO_PINGS_TO_CLOSE = 3;
+	private static final long NUM_NO_PINGS_TO_CLOSE = 5;
 
 	public class PingWatchdogSession {
 
@@ -28,11 +28,13 @@ public class PingWatchdogManager {
 		private long firstPingArrivalTime;
 		private int currentPingMeasures = 0;
 		private String sessionId;
-		
+
 		private Runnable closeSessionTask = new Runnable() {
 			public void run() {
-				log.info("Closing session with sessionId={} and transportId={} for not receiving ping in "
-						+ (pingInterval * NUM_NO_PINGS_TO_CLOSE) + " millis", sessionId, transportId);
+				log.info(
+						"Closing session with sessionId={} and transportId={} for not receiving ping in "
+								+ (pingInterval * NUM_NO_PINGS_TO_CLOSE)
+								+ " millis", sessionId, transportId);
 				closer.closeSession(transportId);
 			}
 		};
@@ -53,8 +55,9 @@ public class PingWatchdogManager {
 					pingInterval = (long) (((double) (System
 							.currentTimeMillis() - firstPingArrivalTime)) / NUM_NO_PINGS_TO_CLOSE);
 
-					log.info("Measured ping interval in " + pingInterval
-							+ " millis");
+					log.info("Measured ping interval in {}"
+							+ " millis in session {} with transportId {}",
+							pingInterval, sessionId, transportId);
 					activateSessionCloser();
 				}
 				currentPingMeasures++;
@@ -65,17 +68,33 @@ public class PingWatchdogManager {
 		}
 
 		private void activateSessionCloser() {
-			if (lastTask != null) {
-				lastTask.cancel(false);
-			}
+			
+			disablePingWatchdog();
 
-			lastTask = taskScheduler.schedule(closeSessionTask, new Date(
-					System.currentTimeMillis()
+			lastTask = taskScheduler.schedule(closeSessionTask,
+					new Date(System.currentTimeMillis()
 							+ (NUM_NO_PINGS_TO_CLOSE * pingInterval)));
 		}
 
 		public void setSessionId(String sessionId) {
-			this.sessionId = sessionId;			
+			this.sessionId = sessionId;
+		}
+
+		public void setTransportId(String transportId) {
+			this.transportId = transportId;
+			disablePingWatchdog();
+
+			if (pingWachdog && pingInterval != -1) {
+				log.info("Restarting timer to consider disconnected client if pings are not received in "
+						+ NUM_NO_PINGS_TO_CLOSE * pingInterval + " millis");
+				activateSessionCloser();
+			}
+		}
+
+		private void disablePingWatchdog() {
+			if (lastTask != null) {
+				lastTask.cancel(false);
+			}
 		}
 	}
 
@@ -90,13 +109,13 @@ public class PingWatchdogManager {
 		this.closer = closer;
 	}
 
-	public void associateSessionId(String transportId, String sessionId){
+	public void associateSessionId(String transportId, String sessionId) {
 		if (pingWachdog) {
 			PingWatchdogSession session = getOrCreatePingSession(transportId);
 			session.setSessionId(sessionId);
 		}
 	}
-	
+
 	public void pingReceived(String transportId) {
 		if (pingWachdog) {
 			PingWatchdogSession session = getOrCreatePingSession(transportId);
@@ -104,9 +123,13 @@ public class PingWatchdogManager {
 		}
 	}
 
-	private PingWatchdogSession getOrCreatePingSession(String transportId) {
+	// TODO Improve concurrency
+	private synchronized PingWatchdogSession getOrCreatePingSession(
+			String transportId) {
 		PingWatchdogSession session = sessions.get(transportId);
 		if (session == null) {
+			log.info("Created PingWatchdogSession for transportId {}",
+					transportId);
 			session = new PingWatchdogSession(transportId);
 			sessions.put(transportId, session);
 		}
@@ -118,7 +141,39 @@ public class PingWatchdogManager {
 	}
 
 	public void removeSession(ServerSession session) {
-		sessions.remove(session.getSessionId());
+		log.info("Removed PingWatchdogSession for transportId {}",
+				session.getTransportId());
+		sessions.remove(session.getTransportId());
+	}
+
+	public synchronized void updateTransportId(String transportId,
+			String oldTransportId) {
+		PingWatchdogSession session = sessions.remove(oldTransportId);
+		if (session != null) {
+			log.info(
+					"Updated with new transportId {} the session with old transportId {}",
+					transportId, oldTransportId);
+			session.setTransportId(transportId);
+			sessions.put(transportId, session);
+		} else {
+			log.warn(
+					"Trying to update transport for unexisting session with oldTransportId {}",
+					oldTransportId);
+		}
+	}
+
+	public void disablePingWatchdogForSession(String transportId) {
+		PingWatchdogSession session = sessions.get(transportId);
+		if (session != null) {
+			log.info(
+					"Disabling PingWatchdog for session with transportId {}",
+					transportId);
+			session.disablePingWatchdog();
+		} else {
+			log.warn(
+					"Trying to disable PingWatchdog for unexisting session with transportId {}",
+					transportId);
+		}		
 	}
 
 }

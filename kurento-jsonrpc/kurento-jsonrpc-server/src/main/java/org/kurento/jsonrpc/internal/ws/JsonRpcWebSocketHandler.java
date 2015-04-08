@@ -24,7 +24,6 @@ import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -61,19 +60,10 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
-		if (status.getCode() == CloseStatus.GOING_AWAY.getCode()) {
-			log.info(
-					"{} WebSocket session '{}' closed because client is going away (Normal termination)",
-					label, wsSession.getId());
-		} else if (!status.equals(CloseStatus.NORMAL)) {
-			log.error(
-					"{} WebSocket session '{}' closed because: {} (Abnormal termination)",
-					label, wsSession.getId(), status.getCode());
-		} else {
-			log.info(
-					"{} WebSocket session '{}' closed because: {} (Normal termination)",
-					wsSession.getId(), status.getCode());
-		}
+		log.info("{} WebSocket session '{}' closed for {} (code {}, reason '{}')", label,
+				wsSession.getId(), 
+				CloseStatusHelper.getCloseStatusType(status.getCode()),
+				status.getCode(), status.getReason());
 
 		protocolManager.closeSessionIfTimeout(wsSession.getId(),
 				status.getReason());
