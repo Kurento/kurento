@@ -274,6 +274,11 @@ public class BrowserClient implements Closeable {
 		driver = new RemoteWebDriver(new URL("http://" + sauceLabsUser + ":"
 				+ sauceLabsKey + "@ondemand.saucelabs.com:80/wd/hub"),
 				capabilities);
+
+		String jobID = ((RemoteWebDriver) driver).getSessionId().toString();
+		log.info("%%%%%%%%%%%%% Saucelabs URL job ({} {} in {}) %%%%%%%%%%%%%",
+				browserType, browserVersion, platform);
+		log.info("https://saucelabs.com/tests/{}", jobID);
 	}
 
 	public void createRemoteDriver(DesiredCapabilities capabilities)
