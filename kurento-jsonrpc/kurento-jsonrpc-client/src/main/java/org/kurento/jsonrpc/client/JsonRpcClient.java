@@ -237,7 +237,8 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public synchronized void enableHeartbeat(int interval) {
 
 		if (heartbeat == null || heartbeat.isCancelled()) {
-
+			log.debug("{} Enabling heartbeat with an interval of {} ms", label,
+					interval);
 			this.heartbeating = true;
 			this.heartbeatInterval = interval;
 
@@ -281,14 +282,18 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		try {
 			closeWithReconnection();
 		} catch (IOException e) {
-			log.warn("{} Exception while closing client", label, e);
+			log.warn("{} Exception while closing client: {}", label,
+					e.getMessage());
 		}
 	}
 
 	public void disableHeartbeat() {
 		if (heartbeating) {
 			this.heartbeating = false;
-			heartbeat.cancel(false);
+			if (heartbeat != null) {
+				heartbeat.cancel(false);
+				heartbeat = null;
+			}
 			scheduler.shutdownNow();
 		}
 	}
