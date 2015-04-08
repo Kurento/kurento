@@ -19,9 +19,12 @@ import static org.kurento.commons.PropertiesManager.getProperty;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -51,9 +54,11 @@ public class TestScenario {
 	private static Logger log = LoggerFactory.getLogger(TestScenario.class);
 
 	private Map<String, BrowserClient> browserMap;
+	private List<URL> urlList;
 
 	public TestScenario() {
 		browserMap = new TreeMap<>();
+		urlList = new ArrayList<>();
 	}
 
 	public void addBrowser(String id, BrowserClient browser) {
@@ -257,4 +262,9 @@ public class TestScenario {
 	public Map<String, BrowserClient> getBrowserMap() {
 		return browserMap;
 	}
+
+	public List<URL> getUrlList() {
+		return urlList;
+	}
+
 }

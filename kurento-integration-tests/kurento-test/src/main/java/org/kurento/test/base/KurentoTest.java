@@ -23,10 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -93,17 +91,15 @@ public class KurentoTest {
 			for (String browserKey : testScenario.getBrowserMap().keySet()) {
 				BrowserClient browserClient = testScenario.getBrowserMap().get(
 						browserKey);
-				List<URL> browserList = new ArrayList<>();
 				for (BrowserClient bc : getTestScenario().getBrowserMap()
 						.values()) {
 					int timeout = getProperty(TEST_URL_TIMEOUT_PROPERTY,
 							TEST_URL_TIMEOUT_DEFAULT);
 
 					URL url = bc.getUrl();
-					if (!browserList.contains(url)) {
+					if (!testScenario.getUrlList().contains(url)) {
 						waitForHostIsReachable(url, timeout);
-					} else {
-						browserList.add(url);
+						testScenario.getUrlList().add(url);
 					}
 				}
 				initBrowserClient(browserKey, browserClient);
