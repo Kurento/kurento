@@ -82,31 +82,82 @@ function setCustomAudio(audioUrl) {
 function startSendRecv() {
 	console.log("Starting WebRTC in SendRecv mode...");
 	showSpinner(local, video);
-	webRtcPeer = kurentoUtils.WebRtcPeer.start('sendRecv', local, video,
-			onOffer, onError, userMediaConstraints, videoStream, audioStream);
+
+    var options = {
+      localVideo: local,
+      remoteVideo: video,
+      mediaConstraints: userMediaConstraints,
+      oncandidategatheringdone: onCandidateGatheringDone
+    }
+
+	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+		function (error) {
+		  if(error) {
+			  onError(error);
+		  }
+		  webRtcPeer.generateOffer (onOffer);
+		});
 }
 
 function startSendOnly() {
 	console.log("Starting WebRTC in SendOnly mode...");
 	showSpinner(local);
-	webRtcPeer = kurentoUtils.WebRtcPeer.start('send', local, null, onOffer,
-			onError, userMediaConstraints, videoStream, audioStream);
+
+    var options = {
+      localVideo: local,
+      mediaConstraints: userMediaConstraints,
+      oncandidategatheringdone: onCandidateGatheringDone
+    }
+
+	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
+		function (error) {
+		  if(error) {
+			  onError(error);
+		  }
+		  webRtcPeer.generateOffer (onOffer);
+		});
 }
 
 function startRecvOnly() {
 	console.log("Starting WebRTC in RecvOnly mode...");
 	showSpinner(video);
-	webRtcPeer = kurentoUtils.WebRtcPeer.start('recv', null, video, onOffer,
-			onError, userMediaConstraints, videoStream, audioStream);
+
+    var options = {
+      remoteVideo: video,
+      mediaConstraints: userMediaConstraints,
+      oncandidategatheringdone: onCandidateGatheringDone
+    }
+
+	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
+		function (error) {
+		  if(error) {
+			  onError(error);
+		  }
+		  webRtcPeer.generateOffer (onOffer);
+		});
 }
 
 function onError(error) {
 	console.error(error);
 }
 
-function onOffer(offer) {
+function onOffer(error, offer) {
 	console.info("SDP offer:");
-	sdpOffer = offer;
+}
+
+function addIceCandidate (serverCandidate) {
+	candidate = JSON.parse(serverCandidate);
+	webRtcPeer.addIceCandidate(candidate, function (error) {
+	   if (error) {
+	     console.error("Error adding candidate: " + error);
+	     return;
+	   }
+	});
+}
+
+function onCandidateGatheringDone(error) {
+	console.log("Candidates generated");
+	sdpOffer = webRtcPeer.getLocalSessionDescriptor().sdp;
 	console.info(sdpOffer);
 }
 
@@ -114,7 +165,10 @@ function processSdpAnswer(answer) {
 	var sdpAnswer = window.atob(answer);
 	console.info("SDP answer:");
 	console.info(sdpAnswer);
-	webRtcPeer.processSdpAnswer(sdpAnswer);
+
+	webRtcPeer.processAnswer (sdpAnswer, function (error) {
+		if (error) return console.error (error);
+	});
 }
 
 function updateCurrentTime() {
