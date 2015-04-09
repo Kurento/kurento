@@ -36,7 +36,7 @@ exists('node_modules/grunt', function(found)
   if(!found)
     exists('lib', function(found)
     {
-//      if(!found)
+      if(!found)
       {
         npm.load(function(error)
         {
