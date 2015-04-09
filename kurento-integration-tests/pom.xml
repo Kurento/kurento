@@ -52,7 +52,6 @@
 		<module>kurento-test</module>
 		<module>kurento-control-server-test</module>
 		<module>kurento-sanity-test</module>
-		<module>kurento-tree-test</module>
 	</modules>
 
 	<dependencies>
