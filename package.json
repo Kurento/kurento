@@ -16,7 +16,7 @@
   "scripts": {
     "coveralls": "scripts/coveralls",
     "coverallsBrowser": "scripts/coveralls -- testBrowser",
-    "prepublish": "scripts/prepublish",
+    "install": "scripts/install",
     "test": "scripts/test",
     "testBrowser": "scripts/testBrowser"
   },
