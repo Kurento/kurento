@@ -17,12 +17,15 @@ public class PingWatchdogManager {
 		public void closeSession(String transportId);
 	}
 
-	private static final long NUM_NO_PINGS_TO_CLOSE = 5;
+	private static final long NUM_NO_PINGS_TO_CLOSE = 3;
 
 	public class PingWatchdogSession {
 
+		private static final long MAX_PING_INTERVAL = 20000;
+		
 		private String transportId;
-		private long pingInterval = -1;
+		private long pingInterval = MAX_PING_INTERVAL;
+		private boolean pingIntervalCalculated = false;
 		private volatile ScheduledFuture<?> lastTask;
 
 		private long firstPingArrivalTime;
@@ -45,7 +48,7 @@ public class PingWatchdogManager {
 
 		public void pingReceived() {
 
-			if (pingInterval == -1) {
+			if (!pingIntervalCalculated) {
 
 				// First ping is ignored because its receiving time is not very
 				// precise
@@ -55,6 +58,8 @@ public class PingWatchdogManager {
 					pingInterval = (long) (((double) (System
 							.currentTimeMillis() - firstPingArrivalTime)) / NUM_NO_PINGS_TO_CLOSE);
 
+					pingIntervalCalculated = true;
+					
 					log.info("Measured ping interval in {}"
 							+ " millis in session {} with transportId {}",
 							pingInterval, sessionId, transportId);
@@ -62,14 +67,14 @@ public class PingWatchdogManager {
 				}
 				currentPingMeasures++;
 
-			} else {
-				activateSessionCloser();
 			}
+			
+			activateSessionCloser();
 		}
 
 		private void activateSessionCloser() {
 			
-			disablePingWatchdog();
+			disablePrevPingWatchdog();
 
 			lastTask = taskScheduler.schedule(closeSessionTask,
 					new Date(System.currentTimeMillis()
@@ -82,16 +87,16 @@ public class PingWatchdogManager {
 
 		public void setTransportId(String transportId) {
 			this.transportId = transportId;
-			disablePingWatchdog();
+			disablePrevPingWatchdog();
 
-			if (pingWachdog && pingInterval != -1) {
+			if (pingWachdog) {
 				log.info("Restarting timer to consider disconnected client if pings are not received in "
 						+ NUM_NO_PINGS_TO_CLOSE * pingInterval + " millis");
 				activateSessionCloser();
 			}
 		}
 
-		private void disablePingWatchdog() {
+		private void disablePrevPingWatchdog() {
 			if (lastTask != null) {
 				lastTask.cancel(false);
 			}
@@ -168,7 +173,7 @@ public class PingWatchdogManager {
 			log.info(
 					"Disabling PingWatchdog for session with transportId {}",
 					transportId);
-			session.disablePingWatchdog();
+			session.disablePrevPingWatchdog();
 		} else {
 			log.warn(
 					"Trying to disable PingWatchdog for unexisting session with transportId {}",
