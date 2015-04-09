@@ -165,7 +165,16 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
 
   callback = (callback || noop).bind(this)
 
+      <#if property.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
+  return this._invoke(transaction, '${getPropertyName}', function(error, result)
+  {
+    if (error) return callback(error);
+
+    this.emit('_describe', result, callback);
+  });
+      <#else>
   return this._invoke(transaction, '${getPropertyName}', callback);
+      </#if>
 };
 /**
  * @callback module:${remoteClass_namepath}~${getPropertyName}Callback
@@ -235,6 +244,13 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   promise.connect = sink.connect.bind(sink);
 
   return promise;
+    <#elseif method.return?? && method.return.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
+  return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, function(error, result)
+  {
+    if (error) return callback(error);
+
+    this.emit('_describe', result, callback);
+  });
     <#else>
   return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
     </#if>

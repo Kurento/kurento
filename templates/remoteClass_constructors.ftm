@@ -149,10 +149,12 @@
     self.emit('_transaction', params, callback);
   }
 
+  var describe = this.emit.bind(this, '_describe');
+
 
   // Creation of objects
 
-  var mediaObjectCreator = new MediaObjectCreator(this, encodeCreate, encodeRpc, encodeTransaction);
+  var mediaObjectCreator = new MediaObjectCreator(this, encodeCreate, encodeRpc, encodeTransaction, describe);
 
   /**
    * Create a new instance of a {module:core/abstract.MediaObject} attached to
