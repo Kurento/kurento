@@ -1,9 +1,9 @@
 [![][KurentoImage]][website]
 
-Copyright © 2013 Kurento. Licensed under [LGPL License].
+Copyright © 2013-2015 Kurento. Licensed under [LGPL License].
 
 kurento-module-creator
-===================
+======================
 Processor for the Remote Object Model of the Kurento media server
 
 The kurento-module-creator project contains a processor that will
@@ -11,7 +11,7 @@ generate code for RPC between the Kurento Media Server and remote
 libraries.
 
 What is Kurento
------
+---------------
 Kurento provides an open platform for video processing and streaming
 based on standards.
 
@@ -45,4 +45,3 @@ Follow us on Twitter @[kurentoms].
 [GitHub Kurento Group]: https://github.com/Kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
-
