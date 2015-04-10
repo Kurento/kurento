@@ -14,6 +14,8 @@
  */
 package org.kurento.test.functional.dispatcher;
 
+import java.awt.Color;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Assert;
@@ -24,8 +26,12 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.BrowserType;
+import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
@@ -50,6 +56,9 @@ import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 public class DispatcherWebRtcTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
+	private static final String BROWSER1 = "browser1";
+	private static final String BROWSER2 = "browser2";
+	private static final String BROWSER3 = "browser3";
 
 	public DispatcherWebRtcTest(TestScenario testScenario) {
 		super(testScenario);
@@ -57,7 +66,26 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localPresenterAndViewer();
+		TestScenario test = new TestScenario();
+
+		test.addBrowser(BROWSER1,
+				new BrowserClient.Builder().browserType(BrowserType.CHROME)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+						.build());
+		test.addBrowser(
+				BROWSER2,
+				new BrowserClient.Builder().browserType(BrowserType.CHROME)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+						.video(getPathTestFiles() + "/video/10sec/green.y4m")
+						.build());
+		test.addBrowser(
+				BROWSER3,
+				new BrowserClient.Builder().browserType(BrowserType.CHROME)
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
+						.build());
+
+		return Arrays.asList(new Object[][] { { test } });
 	}
 
 	@Test
@@ -66,31 +94,45 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
 
 		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
 		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
 		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
+		HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
 
 		webRtcEP1.connect(hubPort1);
+		webRtcEP3.connect(hubPort3);
 		hubPort2.connect(webRtcEP2);
 
 		dispatcher.connect(hubPort1, hubPort2);
 
 		// Test execution
-		getPresenter().initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+		getBrowser(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_ONLY);
+		getBrowser(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
 
-		getViewer().subscribeEvents("playing");
-		getViewer().initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+		getBrowser(BROWSER1).subscribeEvents("playing");
+		getBrowser(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.RCV_ONLY);
 
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getViewer().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be green", getViewer()
-				.similarColor(CHROME_VIDEOTEST_COLOR));
+				getBrowser(BROWSER1).waitForEvent("playing"));
+
+		Assert.assertTrue("The color of the video should be green",
+				getBrowser(BROWSER1).similarColor(Color.GREEN));
+
+		Thread.sleep(5000);
+		dispatcher.connect(hubPort3, hubPort2);
+
+		Assert.assertTrue("The color of the video should be blue (BLUE)",
+				getBrowser(BROWSER1).similarColor(Color.BLUE));
+
+		Thread.sleep(2000);
 
 		// Release Media Pipeline
 		mp.release();

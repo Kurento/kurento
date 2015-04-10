@@ -35,7 +35,7 @@ import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- *
+ * 
  * <strong>Description</strong>: A PlayerEndpoint is connected to a
  * WebRtcEndpoint through a Dispatcher.<br/>
  * <strong>Pipeline</strong>:
@@ -49,7 +49,7 @@ import org.kurento.test.config.TestScenario;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -73,18 +73,22 @@ public class DispatcherPlayerTest extends FunctionalTest {
 
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/red.webm").build();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/blue.webm").build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
 		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
 		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
 		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
+		HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
 
 		playerEP.connect(hubPort1);
+		playerEP2.connect(hubPort3);
 		hubPort2.connect(webRtcEP);
 		dispatcher.connect(hubPort1, hubPort2);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);
-		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+		playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
 			@Override
 			public void onEvent(EndOfStreamEvent event) {
 				eosLatch.countDown();
@@ -102,6 +106,13 @@ public class DispatcherPlayerTest extends FunctionalTest {
 				getBrowser().waitForEvent("playing"));
 		Assert.assertTrue("The color of the video should be red", getBrowser()
 				.similarColor(Color.RED));
+
+		Thread.sleep(5000);
+		playerEP2.play();
+		dispatcher.connect(hubPort3, hubPort2);
+		Assert.assertTrue("The color of the video should be blue", getBrowser()
+				.similarColor(Color.BLUE));
+
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getBrowser().getCurrentTime();
