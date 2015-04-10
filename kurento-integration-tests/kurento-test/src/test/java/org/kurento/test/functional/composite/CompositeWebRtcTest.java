@@ -77,7 +77,8 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		TestScenario test = new TestScenario();
 		test.addBrowser(BROWSER1,
 				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).build());
+						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+						.build());
 		test.addBrowser(
 				BROWSER2,
 				new BrowserClient.Builder().browserType(BrowserType.CHROME)
@@ -105,7 +106,6 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
-	// @Ignore
 	@Test
 	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(BrowserType.CHROME);
@@ -137,18 +137,18 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		// Test execution
 
 		// WebRTC browsers
-		getBrowser(BROWSER2).initWebRtc(webRtcEPRed, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
+		getBrowser(BROWSER2).initWebRtc(webRtcEPRed,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 		getBrowser(BROWSER3).initWebRtc(webRtcEPGreen,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
-		getBrowser(BROWSER4).initWebRtc(webRtcEPBlue, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+		getBrowser(BROWSER4).initWebRtc(webRtcEPBlue,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 		getBrowser(BROWSER5).initWebRtc(webRtcEPWhite,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
 		getBrowser(BROWSER1).subscribeEvents("playing");
 		getBrowser(BROWSER1).initWebRtc(webRtcEPComposite,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",

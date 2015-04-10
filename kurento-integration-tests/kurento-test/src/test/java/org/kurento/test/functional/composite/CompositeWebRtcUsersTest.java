@@ -37,7 +37,7 @@ import org.kurento.test.config.TestScenario;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
- *
+ * 
  * <strong>Description</strong>: Four synthetic videos are played by four
  * WebRtcEndpoint and mixed by a Composite. The resulting video is played in an
  * WebRtcEndpoint.<br/>
@@ -54,7 +54,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
  * <li>Finally color of the video should be the expected (red, blue, green, and
  * white)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 5.0.5
@@ -131,18 +131,18 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 		hubPort5.connect(webRtcEPComposite);
 
 		// Test execution
-		getBrowser(BROWSER2).initWebRtc(webRtcEPRed, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
+		getBrowser(BROWSER2).initWebRtc(webRtcEPRed,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 		getBrowser(BROWSER3).initWebRtc(webRtcEPGreen,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
-		getBrowser(BROWSER4).initWebRtc(webRtcEPBlue, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+		getBrowser(BROWSER4).initWebRtc(webRtcEPBlue,
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 		getBrowser(BROWSER5).initWebRtc(webRtcEPWhite,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
 		getBrowser(BROWSER1).subscribeEvents("playing");
 		getBrowser(BROWSER1).initWebRtc(webRtcEPComposite,
-				WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
