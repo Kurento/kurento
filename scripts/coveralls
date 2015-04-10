@@ -31,7 +31,7 @@ function spawn()
 }
 
 
-const script = (process.argv.length > 3) ? process.argv[3] : 'test'
+const script = (process.argv.length > 2) ? process.argv[2] : 'test'
 
 // Remove old report
 fs.remove(REPORTS_DIR, function(error)
