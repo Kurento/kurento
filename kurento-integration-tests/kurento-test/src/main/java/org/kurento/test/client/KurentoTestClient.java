@@ -24,7 +24,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
+import org.kurento.client.EventListener;
+import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.VideoTagType;
 import org.kurento.test.services.KurentoServicesTestHelper;
@@ -270,6 +273,16 @@ public class KurentoTestClient extends TestClient {
 			final WebRtcChannel channel, final WebRtcMode mode)
 			throws InterruptedException {
 
+		webRtcEndpoint
+				.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+					@Override
+					public void onEvent(OnIceCandidateEvent event) {
+						browserClient.executeScript("addIceCandidate('"
+								+ JsonUtils.toJsonObject(event.getCandidate())
+								+ "');");
+					}
+				});
+
 		final CountDownLatch latch = new CountDownLatch(1);
 		Thread t = new Thread() {
 			public void run() {
@@ -287,6 +300,7 @@ public class KurentoTestClient extends TestClient {
 			t.interrupt();
 			t.stop();
 		}
+		webRtcEndpoint.gatherCandidates();
 	}
 
 	/*
