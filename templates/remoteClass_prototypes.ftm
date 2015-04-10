@@ -15,6 +15,8 @@ Hub.prototype.createHubPort = function(callback){
 
   if(!arguments.length) callback = undefined;
 
+  callback = (callback || noop).bind(this)
+
   var mediaObject = new HubPort()
 
   mediaObject.on('_rpc', this.emit.bind(this, '_rpc'));
@@ -121,7 +123,18 @@ MediaObject.prototype._invoke = function(transaction, method, params, callback){
     });
   }
 
-  promise = promiseCallback(promise, callback);
+  var then = promise.then
+  promise.then = function(onFulfilled, onRejected)
+  {
+    if(onFulfilled instanceof Function) onFulfilled = onFulfilled.bind(self)
+    if(onRejected  instanceof Function) onRejected  = onRejected.bind(self)
+
+    then.call(this, onFulfilled, onRejected)
+
+    return this
+  }
+
+  promise = promiseCallback(promise, callback, this);
 
   return promise
 };
@@ -145,6 +158,8 @@ MediaObject.prototype.release = function(callback){
                   : undefined;
 
   if(!arguments.length) callback = undefined;
+
+  callback = (callback || noop).bind(this)
 
   var self = this;
 

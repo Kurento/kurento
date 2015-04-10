@@ -79,6 +79,8 @@
            ? Array.prototype.pop.call(arguments)
            : undefined;
 
+  callback = (callback || noop).bind(this)
+
   switch(arguments.length){
         <#local params_min=0>
         <#local params_max=params?size>

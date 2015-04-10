@@ -88,6 +88,17 @@ var ${extends_name} = kurentoClient.register.<#if remoteClass.extends.type.abstr
 
 var ${extends_name} = require('events').${extends_name};
 </#if>
+<#if remoteClass.methods?has_content
+  || remoteClass.properties?has_content
+  || remoteClass.name=="Hub"
+  || remoteClass.name=="MediaObject">
+
+
+function noop(error) {
+  if (error) console.trace(error);
+};
+</#if>
+
 
 /**
 <#if remoteClass.constructor?? && remoteClass.constructor.doc??>
@@ -124,6 +135,11 @@ function ${remoteClass.name}(){<#if extends_name??>
 inherits(${remoteClass.name}, ${extends_name});
 </#if>
 <#if remoteClass.properties?has_content>
+
+
+//
+// Public properties
+//
   <#list remoteClass.properties?sort_by("name") as property>
     <#if property.name != "id">
       <#assign getPropertyName="get${property.name?cap_first}">
@@ -146,6 +162,8 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
                   : undefined;
 
   if(!arguments.length) callback = undefined;
+
+  callback = (callback || noop).bind(this)
 
   return this._invoke(transaction, '${getPropertyName}', callback);
 };
@@ -181,6 +199,11 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
   </#list>
 </#if>
 <#if remoteClass.methods?has_content>
+
+
+//
+// Public methods
+//
 
   <#list remoteClass.methods?sort_by("name") as method>
 
@@ -227,7 +250,8 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   </#list>
 </#if>
 
-<#include "remoteClass_prototypes.ftm" >
+<#include "remoteClass_prototypes.ftm">
+
 /**
  * @alias module:${remoteClass_namepath}.constructorParams
 <#if remoteClass.constructor??>
@@ -266,6 +290,7 @@ ${remoteClass.name}.events = ${extends_name}.events<#if remoteClassEvents_name?h
 <#else>
 ${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator=", "/>];
 </#if>
+
 
 /**
  * Checker for {@link ${remoteClass_namepath}}
