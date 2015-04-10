@@ -46,6 +46,8 @@ if (typeof QUnit == 'undefined') {
 
 var WebRtcPeer = kurentoUtils.WebRtcPeer;
 
+var bufferizeCandidates = WebRtcPeer.bufferizeCandidates;
+
 var WebRtcPeerRecvonly = WebRtcPeer.WebRtcPeerRecvonly;
 var WebRtcPeerSendonly = WebRtcPeer.WebRtcPeerSendonly;
 var WebRtcPeerSendrecv = WebRtcPeer.WebRtcPeerSendrecv;
@@ -62,43 +64,11 @@ function getOscillatorMedia() {
 }
 
 function setIceCandidateCallbacks(webRtcPeer, pc, onerror) {
-  var candidatesQueue = []
-
-  function callback(error) {
+  webRtcPeer.on('icecandidate', bufferizeCandidates(pc, function (error) {
     if (error) return onerror(error)
 
     console.log('Received ICE candidate from WebRtcPeerRecvonly')
-  }
-
-  webRtcPeer.on('icecandidate', function (candidate) {
-    switch (pc.signalingState) {
-    case 'closed':
-      callback(new Error('PeerConnection object is closed'))
-      break
-
-    case 'stable':
-      if (pc.remoteDescription) {
-        console.log('ICE candidate for PeerConnection:', candidate)
-        pc.addIceCandidate(candidate, callback, callback)
-        break;
-      }
-
-    default:
-      candidatesQueue.push({
-        candidate: candidate,
-        callback: callback
-      })
-    }
-  })
-
-  pc.addEventListener('signalingstatechange', function () {
-    if (this.signalingState == 'stable')
-      while (candidatesQueue.length) {
-        var entry = candidatesQueue.shift()
-
-        this.addIceCandidate(entry.candidate, entry.callback, entry.callback);
-      }
-  })
+  }))
 
   pc.addEventListener('icecandidate', function (event) {
     var candidate = event.candidate
