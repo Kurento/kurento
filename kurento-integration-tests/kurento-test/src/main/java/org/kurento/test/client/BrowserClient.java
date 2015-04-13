@@ -15,6 +15,8 @@
 package org.kurento.test.client;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
+import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
@@ -135,6 +137,7 @@ public class BrowserClient implements Closeable {
 
 		try {
 			DesiredCapabilities capabilities = new DesiredCapabilities();
+
 			if (driverClass.equals(FirefoxDriver.class)) {
 				FirefoxProfile profile = new FirefoxProfile();
 				// This flag avoids granting the access to the camera
@@ -258,6 +261,8 @@ public class BrowserClient implements Closeable {
 		assertPublicIpNotNull();
 		String sauceLabsUser = getProperty(SAUCELAB_USER_PROPERTY);
 		String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
+		int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY,
+				SAUCELAB_IDLE_TIMEOUT_DEFAULT);
 
 		if (sauceLabsUser == null || sauceLabsKey == null) {
 			throw new RuntimeException("Invalid Saucelabs credentials: "
@@ -267,6 +272,7 @@ public class BrowserClient implements Closeable {
 
 		capabilities.setCapability("version", browserVersion);
 		capabilities.setCapability("platform", platform);
+		capabilities.setCapability("idleTimeout", idleTimeout);
 		if (name != null) {
 			capabilities.setCapability("name", name);
 		}

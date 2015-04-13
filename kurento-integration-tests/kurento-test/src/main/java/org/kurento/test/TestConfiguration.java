@@ -46,6 +46,8 @@ public class TestConfiguration {
 	// Saucelabs
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
+	public static final String SAUCELAB_IDLE_TIMEOUT_PROPERTY = "saucelab.idle.timeout";
+	public final static int SAUCELAB_IDLE_TIMEOUT_DEFAULT = 120; // seconds
 
 	// Selenium
 	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
