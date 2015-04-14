@@ -16,22 +16,22 @@ add_dependencies(rtpendpoint rtcpdemux)
 
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
-  ${gstreamer-1.0_INCLUDE_DIRS}
-  ${gstreamer-base-1.0_INCLUDE_DIRS}
-  ${gstreamer-sdp-1.0_INCLUDE_DIRS}
-  ${gstreamer-pbutils-1.0_INCLUDE_DIRS}
+  ${gstreamer-1.5_INCLUDE_DIRS}
+  ${gstreamer-base-1.5_INCLUDE_DIRS}
+  ${gstreamer-sdp-1.5_INCLUDE_DIRS}
+  ${gstreamer-pbutils-1.5_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${nice_INCLUDE_DIRS}
+  ${nice0.1.10_INCLUDE_DIRS}
 )
 
 target_link_libraries(rtpendpoint
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.0_LIBRARIES}
-  ${gstreamer-base-1.0_LIBRARIES}
-  ${gstreamer-sdp-1.0_LIBRARIES}
-  ${gstreamer-pbutils-1.0_LIBRARIES}
-  ${nice_LIBRARIES}
+  ${gstreamer-1.5_LIBRARIES}
+  ${gstreamer-base-1.5_LIBRARIES}
+  ${gstreamer-sdp-1.5_LIBRARIES}
+  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${nice0.1.10_LIBRARIES}
 )
 
 install(

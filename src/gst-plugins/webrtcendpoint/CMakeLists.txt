@@ -19,6 +19,14 @@ add_library(icecandidate SHARED ${KMS_ICE_CANDIDATE_SOURCES} ${KMS_ICE_CANDIDATE
 set_target_properties(icecandidate PROPERTIES PUBLIC_HEADER "${KMS_ICE_CANDIDATE_HEADERS}")
 set_target_properties(icecandidate PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
+include_directories(
+  ${nice0.1.10_INCLUDE_DIRS}
+)
+
+target_link_libraries(icecandidate
+  ${nice0.1.10_LIBRARIES}
+)
+
 install(
   TARGETS icecandidate
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -49,21 +57,21 @@ add_dependencies(webrtcendpoint kmsdtls rtcpdemux)
 
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
-  ${gstreamer-1.0_INCLUDE_DIRS}
-  ${gstreamer-base-1.0_INCLUDE_DIRS}
-  ${gstreamer-pbutils-1.0_INCLUDE_DIRS}
+  ${gstreamer-1.5_INCLUDE_DIRS}
+  ${gstreamer-base-1.5_INCLUDE_DIRS}
+  ${gstreamer-pbutils-1.5_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${nice_INCLUDE_DIRS}
+  ${nice0.1.10_INCLUDE_DIRS}
 )
 
 target_link_libraries(webrtcendpoint
   icecandidate
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.0_LIBRARIES}
-  ${gstreamer-base-1.0_LIBRARIES}
-  ${gstreamer-pbutils-1.0_LIBRARIES}
-  ${nice_LIBRARIES}
+  ${gstreamer-1.5_LIBRARIES}
+  ${gstreamer-base-1.5_LIBRARIES}
+  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${nice0.1.10_LIBRARIES}
 )
 
 install(

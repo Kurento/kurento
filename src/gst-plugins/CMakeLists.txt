@@ -50,9 +50,9 @@ add_dependencies(${LIBRARY_NAME}plugins webrtcendpoint rtpendpoint)
 
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
-  ${gstreamer-1.0_INCLUDE_DIRS}
-  ${gstreamer-base-1.0_INCLUDE_DIRS}
-  ${gstreamer-pbutils-1.0_INCLUDE_DIRS}
+  ${gstreamer-1.5_INCLUDE_DIRS}
+  ${gstreamer-base-1.5_INCLUDE_DIRS}
+  ${gstreamer-pbutils-1.5_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${libsoup-2.4_INCLUDE_DIRS}
@@ -60,9 +60,9 @@ include_directories(
 
 target_link_libraries(${LIBRARY_NAME}plugins
   ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.0_LIBRARIES}
-  ${gstreamer-base-1.0_LIBRARIES}
-  ${gstreamer-pbutils-1.0_LIBRARIES}
+  ${gstreamer-1.5_LIBRARIES}
+  ${gstreamer-base-1.5_LIBRARIES}
+  ${gstreamer-pbutils-1.5_LIBRARIES}
   ${libsoup-2.4_LIBRARIES}
 )
 

@@ -22,7 +22,7 @@ set_property (TARGET test_constructors
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${DEPENDENCIES_INCLUDE_DIRS}
-    ${gstreamer-1.0_INCLUDE_DIRS}
+    ${gstreamer-1.5_INCLUDE_DIRS}
 )
 target_link_libraries(test_constructors
   ${LIBRARY_NAME}impl
@@ -43,7 +43,7 @@ set_property (TARGET test_webrtc_endpoint
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${KMSCORE_INCLUDE_DIRS}
     ${glibmm-2.4_INCLUDE_DIRS}
-    ${gstreamer-1.0_INCLUDE_DIRS}
+    ${gstreamer-1.5_INCLUDE_DIRS}
 )
 
 target_link_libraries(test_webrtc_endpoint

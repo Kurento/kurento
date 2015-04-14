@@ -10,7 +10,8 @@ Build-Depends: debhelper (>= 8.0.0),
  libboost-test-dev,
  libsoup2.4-dev,
  libgnutls28-dev,
- libnice-dev (>= 0.1.7),
+ libnice0.1.10-dev (>= 0.1.10),
+ gstreamer1.5-nice0.1.10,
  uuid-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
@@ -22,7 +23,7 @@ Architecture: any
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
-  gstreamer1.0-nice (>= 0.1.7),
+  gstreamer1.5-nice0.1.10 (>= 0.1.10),
   gnutls-bin,
   kms-core-6.0
 Breaks:
