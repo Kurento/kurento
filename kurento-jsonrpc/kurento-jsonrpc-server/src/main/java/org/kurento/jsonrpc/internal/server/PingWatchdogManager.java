@@ -50,6 +50,11 @@ public class PingWatchdogManager {
 
 			if (!pingIntervalCalculated) {
 
+				if(currentPingMeasures == 0){
+					log.info("Activated PingWatchdog for session {} with transportId {}",
+							sessionId, transportId);
+				}
+				
 				// First ping is ignored because its receiving time is not very
 				// precise
 				if (currentPingMeasures == 1) {

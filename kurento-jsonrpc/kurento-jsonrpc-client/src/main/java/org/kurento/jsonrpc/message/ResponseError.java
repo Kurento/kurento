@@ -63,6 +63,7 @@ public class ResponseError {
 
 			StringWriter writer = new StringWriter();
 			e.printStackTrace(new PrintWriter(writer));
+			//TODO Make this configurable to avoid stacktraces in production
 			return new ResponseError(requestId, e.getClass().getSimpleName()
 					+ ":" + e.getMessage(), writer.toString());
 //			return new ResponseError(requestId, e.getClass().getSimpleName()

@@ -30,6 +30,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.websocket.api.CloseException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -428,6 +429,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			log.trace("{} Req-> {}", label, jsonMessage.trim());
 		} else {
 			log.debug("{} Req-> {}", label, jsonMessage.trim());
+		}
+
+		if (wsSession == null) {
+			// SERVER_ERROR
+			throw new CloseException(1011,
+					"JsonRpcClient is disconnected from WebSocket server at '"
+							+ this.url + "'");
 		}
 
 		synchronized (wsSession) {
