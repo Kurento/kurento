@@ -12,6 +12,10 @@ index.js
  * @license LGPL
  */
 
+Object.defineProperty(exports, 'name',    {value: '${module.name}'});
+Object.defineProperty(exports, 'version', {value: '${module.version}'});
+
+
 <#list module.remoteClasses?sort_by("name") as remoteClass>
   <#if !remoteClass.abstract>
 var ${remoteClass.name} = require('./${remoteClass.name}');
