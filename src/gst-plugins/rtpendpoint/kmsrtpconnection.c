@@ -35,6 +35,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 enum
 {
   PROP_0,
+  PROP_ADDED,
   PROP_CONNECTED
 };
 
@@ -48,6 +49,7 @@ struct _KmsRtpConnectionPrivate
   GstElement *rtcp_udpsink;
   GstElement *rtcp_udpsrc;
 
+  gboolean added;
   gboolean connected;
 };
 
@@ -244,6 +246,9 @@ kms_rtp_connection_set_property (GObject * object, guint prop_id,
   KmsRtpConnection *self = KMS_RTP_CONNECTION (object);
 
   switch (prop_id) {
+    case PROP_ADDED:
+      self->priv->added = g_value_get_boolean (value);
+      break;
     case PROP_CONNECTED:
       self->priv->connected = g_value_get_boolean (value);
       break;
@@ -260,10 +265,12 @@ kms_rtp_connection_get_property (GObject * object,
   KmsRtpConnection *self = KMS_RTP_CONNECTION (object);
 
   switch (prop_id) {
+    case PROP_ADDED:
+      g_value_set_boolean (value, self->priv->added);
+      break;
     case PROP_CONNECTED:
       g_value_set_boolean (value, self->priv->connected);
       break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -359,6 +366,7 @@ kms_rtp_connection_class_init (KmsRtpConnectionClass * klass)
 
   g_type_class_add_private (klass, sizeof (KmsRtpConnectionPrivate));
 
+  g_object_class_override_property (gobject_class, PROP_ADDED, "added");
   g_object_class_override_property (gobject_class, PROP_CONNECTED, "connected");
 }
 
