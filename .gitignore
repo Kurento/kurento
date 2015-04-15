@@ -2,7 +2,6 @@
 .project
 .settings/
 *~
-bower.json
 junitResult.xml
 lcovResult.lcov
 dist/
