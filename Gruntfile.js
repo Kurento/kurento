@@ -72,7 +72,6 @@ module.exports = function (grunt) {
           wrapLineLength: 80
         }
       },
-
       "default": {
         src: ["lib/**/*.js", "*.js", "test/*.js", "scripts/*.js"]
       },
@@ -216,7 +215,6 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify',
     'jsbeautifier:git-pre-commit'
   ]);
-
   grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
   grunt.registerTask('coverage', ['clean:coverage', 'jscoverage',
     'browserify:coverage'
