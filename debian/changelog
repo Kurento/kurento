@@ -1,3 +1,15 @@
+kms-jsonrpc (0.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonSerializer: Indent code correctly
+  * JsonSerializer: Add support for string indexed maps
+  * Prepare release 0.2.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 15 Apr 2015 10:22:59 +0200
+
 kms-jsonrpc (0.2.2) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
