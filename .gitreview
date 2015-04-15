@@ -1,0 +1,5 @@
+[gerrit]
+host=code.kurento.org
+port=12345
+project=adm-scripts.git
+defaultbranch=master
