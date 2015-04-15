@@ -54,6 +54,7 @@
   "dependencies": {
     "freeice": "^2.1.2",
     "inherits": "^2.0.1",
-    "merge": "^1.2.0"
+    "merge": "^1.2.0",
+    "ua-parser-js": "^0.7.6"
   }
 }
