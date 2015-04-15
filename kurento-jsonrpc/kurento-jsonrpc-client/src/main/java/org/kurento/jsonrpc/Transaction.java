@@ -17,6 +17,7 @@ package org.kurento.jsonrpc;
 import java.io.IOException;
 
 import org.kurento.jsonrpc.message.Response;
+import org.kurento.jsonrpc.message.ResponseError;
 
 /**
  * A transaction represents a conversation between a client and the server.
@@ -42,5 +43,7 @@ public interface Transaction {
 	void startAsync();
 
 	boolean isNotification();
+
+	void sendError(ResponseError error) throws IOException;
 
 }

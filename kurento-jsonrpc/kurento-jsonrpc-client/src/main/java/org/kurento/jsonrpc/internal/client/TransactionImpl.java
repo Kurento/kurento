@@ -127,4 +127,9 @@ public class TransactionImpl implements Transaction {
 	public void sendVoidResponse() throws IOException {
 		sendResponse(null);
 	}
+
+	@Override
+	public void sendError(ResponseError error) throws IOException {
+		internalSendResponse(new Response<>(request.getId(), error));
+	}
 }
