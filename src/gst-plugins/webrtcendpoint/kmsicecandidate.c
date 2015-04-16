@@ -120,9 +120,6 @@ kms_ice_candidate_class_init (KmsIceCandidateClass * klass)
   gobject_class->set_property = kms_ice_candidate_set_property;
   gobject_class->get_property = kms_bse_rtp_endpoint_get_property;
 
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
-      GST_DEFAULT_NAME);
-
   g_object_class_install_property (gobject_class, PROP_CANDIDATE,
       g_param_spec_string ("candidate",
           "ICE candidate with string representation",
@@ -330,3 +327,12 @@ end:
 }
 
 /* Utils end */
+
+static void init_debug (void) __attribute__ ((constructor));
+
+static void
+init_debug (void)
+{
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
+      GST_DEFAULT_NAME);
+}
