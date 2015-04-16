@@ -66,7 +66,12 @@ module.exports = function (grunt) {
     // Generate browser versions and mapping debug file
     browserify: {
       options: {
-        alias: ['<%= pkg.main %>:<%= pkg.name %>']
+        alias: [
+          '<%= pkg.main %>:<%= pkg.name %>',
+          'kurento-client-core',
+          'kurento-client-elements',
+          'kurento-client-filters'
+        ]
       },
 
       coverage: {
