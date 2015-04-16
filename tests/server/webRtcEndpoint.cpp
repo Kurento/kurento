@@ -24,6 +24,7 @@
 #include <ModuleManager.hpp>
 #include <KurentoException.hpp>
 #include <MediaSet.hpp>
+#include <MediaElementImpl.hpp>
 
 using namespace kurento;
 
@@ -86,6 +87,30 @@ releaseWebRtc (std::shared_ptr<WebRtcEndpointImpl> &ep)
   ep.reset();
   MediaSet::getMediaSet ()->release (id);
 }
+
+static std::shared_ptr <MediaElementImpl>
+createTestSrc (void)
+{
+  std::shared_ptr <MediaElementImpl> src = std::dynamic_pointer_cast
+      <MediaElementImpl> (MediaSet::getMediaSet()->ref (new  MediaElementImpl (
+                            boost::property_tree::ptree(),
+                            MediaSet::getMediaSet()->getMediaObject (mediaPipelineId),
+                            "dummysrc") ) );
+
+  g_object_set (src->getGstreamerElement(), "audio", TRUE, "video", TRUE, NULL);
+
+  return std::dynamic_pointer_cast <MediaElementImpl> (src);
+}
+
+static void
+releaseTestSrc (std::shared_ptr<MediaElementImpl> &ep)
+{
+  std::string id = ep->getId();
+
+  ep.reset();
+  MediaSet::getMediaSet ()->release (id);
+}
+
 
 BOOST_AUTO_TEST_CASE (gathering_done)
 {
@@ -187,4 +212,73 @@ BOOST_AUTO_TEST_CASE (stun_turn_properties)
   BOOST_CHECK (turnUrlRet == turnUrl);
 
   releaseWebRtc (webRtcEp);
+}
+
+BOOST_AUTO_TEST_CASE (media_state_changes)
+{
+  std::atomic<bool> media_state_changed (false);
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+
+  init ();
+
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+  std::shared_ptr <MediaElementImpl> src = createTestSrc();
+
+  src->connect (webRtcEpOfferer);
+
+  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    BOOST_TEST_MESSAGE ("Offerer: adding candidate " +
+                        event.getCandidate()->getCandidate() );
+    webRtcEpAnswerer->addIceCandidate (event.getCandidate() );
+  });
+
+  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    BOOST_TEST_MESSAGE ("Answerer: adding candidate " +
+                        event.getCandidate()->getCandidate() );
+    webRtcEpOfferer->addIceCandidate (event.getCandidate() );
+  });
+
+  webRtcEpOfferer->signalOnIceGatheringDone.connect ([&] (
+  OnIceGatheringDone event) {
+    BOOST_TEST_MESSAGE ("Offerer: Gathering done");
+  });
+
+  webRtcEpAnswerer->signalOnIceGatheringDone.connect ([&] (
+  OnIceGatheringDone event) {
+    BOOST_TEST_MESSAGE ("Answerer: Gathering done");
+  });
+
+  webRtcEpAnswerer->signalMediaStateChanged.connect ([&] (
+  MediaStateChanged event) {
+    media_state_changed = true;
+    cv.notify_one();
+  });
+
+  std::string offer = webRtcEpOfferer->generateOffer ();
+  BOOST_TEST_MESSAGE ("offer: " + offer);
+
+  std::string answer = webRtcEpAnswerer->processOffer (offer);
+  BOOST_TEST_MESSAGE ("answer: " + answer);
+
+  webRtcEpOfferer->processAnswer (answer);
+
+  webRtcEpOfferer->gatherCandidates ();
+  webRtcEpAnswerer->gatherCandidates ();
+
+  cv.wait_for (lck, std::chrono::seconds (5), [&] () {
+
+    return media_state_changed.load();
+  });
+
+
+  if (!media_state_changed) {
+    BOOST_ERROR ("Not media state chagned");
+  }
+
+  releaseTestSrc (src);
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
 }
