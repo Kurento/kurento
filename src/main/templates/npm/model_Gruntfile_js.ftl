@@ -33,6 +33,8 @@ module.exports = function(grunt)
 
   var pkg = grunt.file.readJSON('package.json');
 
+  const PKG_BROWSER = 'lib/browser.js';
+
   // Project configuration.
   grunt.initConfig({
     pkg: pkg,
@@ -90,57 +92,30 @@ module.exports = function(grunt)
     browserify:
     {
       options: {
-        external: ['kurento-client']
+        alias:    ['.:<%= pkg.name %>'],
+        external: [
+          'es6-promise',
+          'inherits',
+          'kurento-client',
+          'promisecallback'
+        ]
       },
 
-      'require':
+      'standard':
       {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
+        src:  PKG_BROWSER,
+        dest: DIST_DIR+'/<%= pkg.name %>.js'
       },
 
-      'standalone':
+      'minified':
       {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>.js',
-
-        options: {
-          browserifyOptions: {
-            standalone: '<%= pkg.name %>',
-          }
-        }
-      },
-
-      'require minified':
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.min.js',
-
-        options:
-        {
-          browserifyOptions: {
-            debug: true
-          },
-          plugin: [
-            ['minifyify',
-             {
-               compressPath: DIST_DIR,
-               map: '<%= pkg.name %>.map'
-             }]
-          ]
-        }
-      },
-
-      'standalone minified':
-      {
-        src:  '<%= pkg.main %>',
+        src:  PKG_BROWSER,
         dest: DIST_DIR+'/<%= pkg.name %>.min.js',
 
         options:
         {
           browserifyOptions: {
-            debug: true,
-            standalone: '<%= pkg.name %>'
+            debug: true
           },
           plugin: [
             ['minifyify',
