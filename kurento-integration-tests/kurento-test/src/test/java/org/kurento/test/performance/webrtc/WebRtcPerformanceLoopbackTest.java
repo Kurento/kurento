@@ -113,7 +113,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 					getBrowser(name).subscribeEvents("playing");
 					getBrowser(name).initWebRtc(webRtcEndpoint,
 							WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
-					getBrowser(name).activateRtcStats(monitor,
+					getBrowser(name).activateRemoteRtcStats(monitor,
 							"webRtcPeer.peerConnection");
 					getBrowser(name).checkLatencyUntil(monitor, endTimeMillis);
 

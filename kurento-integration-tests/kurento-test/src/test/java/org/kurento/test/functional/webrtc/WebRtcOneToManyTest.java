@@ -141,7 +141,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						getViewer(i).subscribeEvents("playing");
 						getViewer(i).initWebRtc(viewerWebRtcEPs[i],
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
-						getViewer(i).activateRtcStats(monitor,
+						getViewer(i).activateRemoteRtcStats(monitor,
 								"webRtcPeer.peerConnection");
 
 						// Latency assessment

@@ -148,16 +148,25 @@ KurentoTest.prototype.colorChanged = function(expectedColor, realColor) {
 	}
 }
 
-KurentoTest.prototype.activateRtcStats = function(peerConnection) {
+KurentoTest.prototype.activateLocalRtcStats = function(peerConnection) {
+	this.activateRtcStats(peerConnection, "getLocalStreams");
+}
+
+
+KurentoTest.prototype.activateRemoteRtcStats = function(peerConnection) {
+	this.activateRtcStats(peerConnection, "getRemoteStreams");
+}
+
+KurentoTest.prototype.activateRtcStats = function(peerConnection, streamFunction) {
 	var rate = this.rtcStatsRate;
 	if (arguments.length) {
 		rate = arguments[0];
 	}
-	setInterval(this.updateRtcStats, rate, eval(peerConnection));
+	setInterval(this.updateRtcStats, rate, eval(peerConnection), streamFunction);
 }
 
-KurentoTest.prototype.updateRtcStats = function(peerConnection) {
-	var remoteStream = peerConnection.getRemoteStreams()[0];
+KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction) {
+	eval("var remoteStream = peerConnection." + streamFunction + "()[0];");
 	var videoTrack = remoteStream.getVideoTracks()[0];
 	var audioTrack = remoteStream.getAudioTracks()[0];
 

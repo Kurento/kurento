@@ -170,12 +170,25 @@ public class TestClient {
 	}
 
 	/*
-	 * activateRtcStats
+	 * activateRemoteRtcStats
 	 */
-	public void activateRtcStats(SystemMonitorManager monitor,
+	public void activateRemoteRtcStats(SystemMonitorManager monitor,
 			String peerConnection) {
+		activateRtcStats("activateRemoteRtcStats", monitor, peerConnection);
+	}
+
+	/*
+	 * activateLocalRtcStats
+	 */
+	public void activateLocalRtcStats(SystemMonitorManager monitor,
+			String peerConnection) {
+		activateRtcStats("activateLocalRtcStats", monitor, peerConnection);
+	}
+
+	private void activateRtcStats(String jsFunction,
+			SystemMonitorManager monitor, String peerConnection) {
 		try {
-			browserClient.executeScript("kurentoTest.activateRtcStats('"
+			browserClient.executeScript("kurentoTest." + jsFunction + "('"
 					+ peerConnection + "');");
 			monitor.addTestClient(this.clone());
 		} catch (WebDriverException we) {
@@ -183,8 +196,9 @@ public class TestClient {
 
 			// If client is not ready to gather rtc statistics, we just log it
 			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (function kurentoTest.activateRtcStats() is not defined)");
+			log.warn(
+					"Client does not support RTC statistics (function kurentoTest.{}() not defined)",
+					jsFunction);
 		}
 	}
 
@@ -282,7 +296,7 @@ public class TestClient {
 			out = (Map<String, Object>) browserClient
 					.executeScript("return kurentoTest.rtcStats;");
 
-			System.err.println(">>>>>>>>>> out " + out);
+			log.debug(">>>>>>>>>> kurentoTest.rtcStats {}", out);
 
 		} catch (WebDriverException we) {
 			// If client is not ready to gather rtc statistics, we just log it

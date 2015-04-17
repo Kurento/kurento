@@ -263,6 +263,18 @@ public class TestScenario {
 		return browserMap;
 	}
 
+	public Map<String, BrowserClient> getBrowserMap(String... types) {
+		Map<String, BrowserClient> out = new HashMap<String, BrowserClient>();
+		for (String key : browserMap.keySet()) {
+			for (String type : types) {
+				if (key.startsWith(type)) {
+					out.put(key, browserMap.get(key));
+				}
+			}
+		}
+		return out;
+	}
+
 	public List<URL> getUrlList() {
 		return urlList;
 	}
