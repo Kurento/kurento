@@ -111,6 +111,93 @@ WebRtcEndpointImpl::getPemCertificate ()
   return pemCertificate;
 }
 
+static const std::string supported_codecs[] = {"VP8", "OPUS", "PCMU"};
+static const int n_codecs = sizeof (supported_codecs) / sizeof (std::string);
+
+static void
+remove_not_supported_codecs_from_pattern (GstElement *element)
+{
+
+  GstSDPMessage *old_pattern = NULL, *pattern;
+  guint medias_len, i;
+
+  g_object_get (element, "pattern-sdp", &old_pattern, NULL);
+
+  if (old_pattern == NULL) {
+    return;
+  }
+
+  if (gst_sdp_message_copy (old_pattern, &pattern) != GST_SDP_OK) {
+    goto end;
+  }
+
+  medias_len = gst_sdp_message_medias_len (pattern);
+
+  for (i = 0; i < medias_len; i ++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (pattern, i);
+    guint attributes_len, j, formats_len;
+
+    attributes_len = gst_sdp_media_attributes_len (media);
+    std::list <std::string> to_remove_formats;
+
+    for (j = 0; j < attributes_len; j++) {
+      const GstSDPAttribute *attribute = gst_sdp_media_get_attribute (media, j);
+
+      if (g_ascii_strcasecmp ("rtpmap", attribute->key) == 0) {
+        gchar *rtpmap = g_strstr_len (attribute->value, -1, " ");
+        bool supported = false;
+
+        if (rtpmap != NULL) {
+          rtpmap = rtpmap + 1;
+
+          for (int k = 0; k < n_codecs; k++) {
+            if (g_strstr_len (rtpmap, -1, supported_codecs[k].c_str() ) == rtpmap) {
+              supported = true;
+              break;
+            }
+          }
+        }
+
+        if (!supported) {
+          GST_INFO ("Removing not supported codec from pattern: '%s'", attribute->value);
+
+          * (rtpmap - 1) = '\0';
+          to_remove_formats.push_back (std::string (attribute->value) );
+
+          gst_sdp_media_remove_attribute ( (GstSDPMedia *) media, j);
+          attributes_len --;
+          j--;
+        }
+      }
+    }
+
+    formats_len = gst_sdp_media_formats_len (media);
+
+    for (j = 0; j < formats_len; j++) {
+      bool to_remove = false;
+
+      for (std::string format : to_remove_formats) {
+        if (format == std::string (gst_sdp_media_get_format (media, j) ) ) {
+          to_remove = true;
+          break;
+        }
+      }
+
+      if (to_remove) {
+        gst_sdp_media_remove_format ( (GstSDPMedia *) media, j);
+        formats_len --;
+        j--;
+      }
+    }
+  }
+
+  g_object_set (element, "pattern-sdp", pattern, NULL);
+
+  gst_sdp_message_free (pattern);
+
+end:
+  gst_sdp_message_free (old_pattern);
+}
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
@@ -121,6 +208,8 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   uint stunPort;
   std::string stunAddress;
   std::string turnURL;
+
+  remove_not_supported_codecs_from_pattern (element);
 
   //set properties
   try {
