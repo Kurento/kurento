@@ -114,7 +114,10 @@ public class KurentoClient {
 	}
 
 	public ServerManager getServerManager() {
-		return manager.getOrCreateObject("manager_ServerManager",
-				ServerManager.class);
+		return getById("manager_ServerManager", ServerManager.class);
+	}
+
+	public <T extends KurentoObject> T getById(String id, Class<T> clazz) {
+		return manager.getById(id, clazz);
 	}
 }

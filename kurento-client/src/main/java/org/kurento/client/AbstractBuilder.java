@@ -51,21 +51,20 @@ public class AbstractBuilder<T> {
 	@SuppressWarnings("unchecked")
 	public T build() {
 
-		RemoteObject remoteObject = manager
-				.create(clazz.getSimpleName(), props);
+		RemoteObject remoteObject = manager.createWithKurentoObject(clazz,
+				props);
 
-		return (T) RemoteObjectInvocationHandler.newProxy(remoteObject,
-				manager, clazz);
+		return (T) remoteObject.getKurentoObject();
+
 	}
 
 	@SuppressWarnings("unchecked")
 	public T build(Transaction transaction) {
 
-		RemoteObject remoteObject = manager.create(clazz.getSimpleName(),
+		RemoteObject remoteObject = manager.createWithKurentoObject(clazz,
 				props, transaction);
 
-		return (T) RemoteObjectInvocationHandler.newProxy(remoteObject,
-				manager, clazz);
+		return (T) remoteObject.getKurentoObject();
 	}
 
 	/**

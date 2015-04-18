@@ -28,25 +28,24 @@ public class RomManager implements ObjectRefsManager {
 		}
 	}
 
-	//FIXME: Improve concurrency
-	public synchronized RemoteObject create(String remoteClassName, Props constructorParams) {
+	// FIXME: Improve concurrency
+	public synchronized RemoteObject create(String remoteClassName,
+			Props constructorParams) {
 		String objectRef = client.create(remoteClassName, constructorParams);
 
 		return new RemoteObject(objectRef, remoteClassName, this);
 	}
 
-	public synchronized RemoteObject create(String remoteClassName, Props constructorParams,
-			Transaction tx) {
+	public synchronized RemoteObject create(String remoteClassName,
+			Props constructorParams, Transaction tx) {
 
 		TransactionImpl txImpl = (TransactionImpl) tx;
 
-		RemoteObject remoteObject =
-				new RemoteObject(txImpl.nextObjectRef(), remoteClassName,
-						false, this);
+		RemoteObject remoteObject = new RemoteObject(txImpl.nextObjectRef(),
+				remoteClassName, false, this);
 
-		MediaObjectCreationOperation op =
-				new MediaObjectCreationOperation(remoteClassName,
-						constructorParams, remoteObject);
+		MediaObjectCreationOperation op = new MediaObjectCreationOperation(
+				remoteClassName, constructorParams, remoteObject);
 
 		txImpl.addOperation(op);
 
@@ -88,7 +87,8 @@ public class RomManager implements ObjectRefsManager {
 				});
 	}
 
-	public synchronized void create(String remoteClassName, Continuation<RemoteObject> cont) {
+	public synchronized void create(String remoteClassName,
+			Continuation<RemoteObject> cont) {
 		create(remoteClassName, null, cont);
 	}
 
@@ -98,24 +98,23 @@ public class RomManager implements ObjectRefsManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized <T> T getOrCreateObject(String objectRef, Class<T> clazz){
-		Object kurentoObj = this.getObject(objectRef);
-		if (kurentoObj == null) {
+	public synchronized <T> T getById(String objectRef, Class<T> clazz) {
 
-			RemoteObject remoteObject = new RemoteObject(objectRef,
-					clazz.getSimpleName(), this);
+		RemoteObject remoteObject = (RemoteObject) this.getObject(objectRef);
 
-			kurentoObj = RemoteObjectInvocationHandler.newProxy(
-					remoteObject, this, clazz);
+		if (remoteObject == null) {
 
-		} else {
-			kurentoObj = ((RemoteObject)kurentoObj).getKurentoObject();
+			remoteObject = new RemoteObject(objectRef, clazz.getSimpleName(),
+					this);
+
+			RemoteObjectInvocationHandler.newProxy(remoteObject, this, clazz);
 		}
 
-		return (T) kurentoObj;
+		return (T) remoteObject.getKurentoObject();
 	}
 
-	public synchronized void registerObject(String objectRef, RemoteObject remoteObject) {
+	public synchronized void registerObject(String objectRef,
+			RemoteObject remoteObject) {
 		this.manager.registerObject(objectRef, remoteObject);
 	}
 
@@ -216,5 +215,27 @@ public class RomManager implements ObjectRefsManager {
 
 	public RomClient getRomClient() {
 		return client;
+	}
+
+	public synchronized RemoteObject createWithKurentoObject(Class<?> clazz,
+			Props props, Transaction transaction) {
+
+		RemoteObject remoteObject = this.create(clazz.getSimpleName(), props,
+				transaction);
+
+		RemoteObjectInvocationHandler.newProxy(remoteObject, this, clazz);
+
+		return remoteObject;
+	}
+
+	public synchronized RemoteObject createWithKurentoObject(Class<?> clazz,
+			Props props) {
+
+		RemoteObject remoteObject = this.create(clazz.getSimpleName(), props);
+
+		RemoteObjectInvocationHandler.newProxy(remoteObject, this, clazz);
+
+		return remoteObject;
+
 	}
 }

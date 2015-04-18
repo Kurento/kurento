@@ -362,8 +362,8 @@ public class ParamsFlattener {
 		if (complexTypeName != null) {
 
 			try {
-				String classPackageName = (MODULE_INFO_PACKAGE + "."
-						+ moduleNameInit + moduleNameEnd + "ModuleInfo");
+				String classPackageName = MODULE_INFO_PACKAGE + "."
+						+ moduleNameInit + moduleNameEnd + "ModuleInfo";
 
 				String packageName = packageNames.get(classPackageName);
 				if (packageName == null) {
@@ -374,7 +374,7 @@ public class ParamsFlattener {
 					packageNames.put(classPackageName, packageName);
 				}
 
-				String className = (packageName + "." + complexTypeName);
+				String className = packageName + "." + complexTypeName;
 				clazz = usedClasses.get(className);
 
 				if (clazz == null) {
@@ -516,29 +516,28 @@ public class ParamsFlattener {
 		return map;
 	}
 
-	private Object unflattenRemoteObject(Type type, String value,
+	private Object unflattenRemoteObject(Type type, String id,
 			ObjectRefsManager manager) {
 
-		Object remoteObject = manager.getObject(value);
+		Object remoteObject = manager.getObject(id);
+
 		if (remoteObject == null) {
 
 			if (manager instanceof RomManager) {
 
 				RomManager clientManager = (RomManager) manager;
-				RemoteObject newRemoteObject = new RemoteObject(value,
-						((Class<?>) type).getSimpleName(), clientManager);
-				clientManager.registerObject(value, newRemoteObject);
-				return newRemoteObject;
 
+				return clientManager.getById(id, (Class<?>) type);
 			}
 
-			throw new ProtocolException("Remote object with objectRef '"
-					+ value + "' is not found");
+			throw new ProtocolException("Remote object with objectRef '" + id
+					+ "' is not found");
 
 		} else if (remoteObject instanceof RemoteObject) {
+
 			// We are in the client side
 			Object wrapper = ((RemoteObject) remoteObject).getKurentoObject();
-			return (wrapper != null) ? wrapper : remoteObject;
+			return wrapper != null ? wrapper : remoteObject;
 
 		} else {
 			return remoteObject;

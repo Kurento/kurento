@@ -1,9 +1,10 @@
 package org.kurento.client.test;
 
 import static org.junit.Assert.assertThat;
-
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,16 +50,32 @@ public class ServerManagerTest extends KurentoClientTest {
 		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
 		try {
-			MediaObject eventObject = exchanger.exchange(null, 500,
+			MediaObject eventObject = exchanger.exchange(null, 10,
 					TimeUnit.SECONDS);
 
-			System.out.println("pipeline: "+pipeline);
-			System.out.println("eventObject: "+eventObject);
+			System.out.println("pipeline: " + pipeline);
+			System.out.println("eventObject: " + eventObject);
 
 			assertThat(pipeline, IsSame.sameInstance(eventObject));
 
 		} catch (TimeoutException e) {
 			fail(ObjectCreatedEvent.class.getName() + " should be thrown");
 		}
+	}
+
+	@Test
+	public void readPipelines() {
+
+		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
+
+		ServerManager serverManager = kurentoClient.getServerManager();
+		List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
+
+		for (MediaPipeline p : mediaPipelines) {
+			String gstreamerDot = p.getGstreamerDot();
+			System.out.println(p.getId() + ": " + gstreamerDot);
+		}
+
+		assertTrue(mediaPipelines.contains(pipeline));
 	}
 }
