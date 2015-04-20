@@ -40,15 +40,18 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  virtual void postConstructor ();
+
 private:
 
-  int signalEOS;
-  int signalInvalidURI;
-  int signalInvalidMedia;
+  gulong signalEOS = 0;
+  gulong signalInvalidURI = 0;
+  gulong signalInvalidMedia = 0;
 
-  std::function<void() > eosLambda;
-  std::function<void() > invalidUriLambda;
-  std::function<void() > invalidMediaLambda;
+  void eosHandler ();
+  void invalidUri ();
+  void invalidMedia ();
 
   class StaticConstructor
   {

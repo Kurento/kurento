@@ -5,6 +5,7 @@
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
+#include "SignalHandler.hpp"
 
 #define GST_CAT_DEFAULT kurento_player_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -14,12 +15,60 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 namespace kurento
 {
-static void
-adaptor_function (GstElement *player, gpointer data)
+void PlayerEndpointImpl::eosHandler ()
 {
-  auto handler = reinterpret_cast<std::function<void() >*> (data);
+  try {
+    EndOfStream event (shared_from_this(), EndOfStream::getName() );
 
-  (*handler) ();
+    signalEndOfStream (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void PlayerEndpointImpl::invalidUri ()
+{
+  try {
+    /* TODO: Define error codes and types*/
+    Error error (shared_from_this(), "Invalid Uri", 0, "INVALID_URI");
+
+    signalError (error);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void PlayerEndpointImpl::invalidMedia ()
+{
+  try {
+    /* TODO: Define error codes and types*/
+    Error error (shared_from_this(), "Invalid Media", 0, "INVALID_MEDIA");
+
+    signalError (error);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void PlayerEndpointImpl::postConstructor()
+{
+  UriEndpointImpl::postConstructor ();
+
+  signalEOS = register_signal_handler (G_OBJECT (element), "eos",
+                                       std::function <void (GstElement *) >
+                                       (std::bind (&PlayerEndpointImpl::eosHandler, this) ),
+                                       std::dynamic_pointer_cast<PlayerEndpointImpl>
+                                       (shared_from_this() ) );
+
+  signalInvalidURI = register_signal_handler (G_OBJECT (element), "invalid-uri",
+                     std::function <void (GstElement *) >
+                     (std::bind (&PlayerEndpointImpl::invalidUri, this) ),
+                     std::dynamic_pointer_cast<PlayerEndpointImpl>
+                     (shared_from_this() ) );
+
+  signalInvalidMedia = register_signal_handler (G_OBJECT (element),
+                       "invalid-media",
+                       std::function <void (GstElement *) >
+                       (std::bind (&PlayerEndpointImpl::invalidMedia, this) ),
+                       std::dynamic_pointer_cast<PlayerEndpointImpl>
+                       (shared_from_this() ) );
 }
 
 
@@ -32,51 +81,22 @@ PlayerEndpointImpl::PlayerEndpointImpl (const boost::property_tree::ptree &conf,
   GstElement *element = getGstreamerElement();
 
   g_object_set (G_OBJECT (element), "use-encoded-media", useEncodedMedia, NULL);
-
-  eosLambda = [&] () {
-    try {
-      EndOfStream event (shared_from_this(), EndOfStream::getName() );
-
-      signalEndOfStream (event);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
-  invalidUriLambda = [&] () {
-    try {
-      /* TODO: Define error codes and types*/
-      Error error (shared_from_this(), "Invalid Uri", 0, "INVALID_URI");
-
-      signalError (error);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
-  invalidMediaLambda = [&] () {
-    try {
-      /* TODO: Define error codes and types*/
-      Error error (shared_from_this(), "Invalid Media", 0, "INVALID_MEDIA");
-
-      signalError (error);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
-  signalEOS = g_signal_connect (element, "eos", G_CALLBACK (adaptor_function),
-                                &eosLambda);
-  signalInvalidURI = g_signal_connect (element, "invalid-uri",
-                                       G_CALLBACK (adaptor_function),
-                                       &invalidUriLambda);
-  signalInvalidMedia = g_signal_connect (element, "invalid-media",
-                                         G_CALLBACK (adaptor_function),
-                                         &invalidMediaLambda);
 }
 
 PlayerEndpointImpl::~PlayerEndpointImpl()
 {
-  g_signal_handler_disconnect (element, signalEOS);
-  g_signal_handler_disconnect (element, signalInvalidMedia);
-  g_signal_handler_disconnect (element, signalInvalidURI);
+  if (signalEOS > 0 ) {
+    unregister_signal_handler (element, signalEOS);
+  }
+
+  if (signalInvalidMedia > 0 ) {
+    unregister_signal_handler (element, signalInvalidMedia);
+  }
+
+  if (signalInvalidURI > 0 ) {
+    unregister_signal_handler (element, signalInvalidURI);
+  }
+
   stop();
 }
 
