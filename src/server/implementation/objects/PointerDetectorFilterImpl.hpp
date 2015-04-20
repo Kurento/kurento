@@ -80,11 +80,14 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  virtual void postConstructor ();
+
 private:
 
   GstElement *pointerDetector;
   gulong bus_handler_id;
-  std::function<void (GstMessage *) > busMessageLambda;
+  void busMessage (GstMessage *message);
 
   class StaticConstructor
   {

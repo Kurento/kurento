@@ -10,6 +10,7 @@
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
+#include "SignalHandler.hpp"
 
 #define GST_CAT_DEFAULT kurento_pointer_detector_filter_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -25,16 +26,6 @@ namespace module
 {
 namespace pointerdetector
 {
-
-static void
-bus_message_adaptor (GstBus *bus, GstMessage *message, gpointer data)
-{
-  auto func = reinterpret_cast<std::function<void (GstMessage *message) >*>
-              (data);
-
-  (*func) (message);
-}
-
 static GstStructure *
 get_structure_from_window (std::shared_ptr<PointerDetectorWindowMediaParam>
                            window)
@@ -68,6 +59,75 @@ get_structure_from_window (std::shared_ptr<PointerDetectorWindowMediaParam>
   return buttonsLayoutAux;
 }
 
+void PointerDetectorFilterImpl::busMessage (GstMessage *message)
+{
+  const GstStructure *st;
+  gchar *windowID;
+  const gchar *type;
+  std::string windowIDStr, typeStr;
+
+  if (GST_MESSAGE_SRC (message) != GST_OBJECT (pointerDetector) ||
+      GST_MESSAGE_TYPE (message) != GST_MESSAGE_ELEMENT) {
+    return;
+  }
+
+  st = gst_message_get_structure (message);
+  type = gst_structure_get_name (st);
+
+  if ( (g_strcmp0 (type, "window-out") != 0) &&
+       (g_strcmp0 (type, "window-in") != 0) ) {
+    GST_WARNING ("The message does not have the correct name");
+    return;
+  }
+
+  if (!gst_structure_get (st, "window", G_TYPE_STRING , &windowID, NULL) ) {
+    GST_WARNING ("The message does not contain the window ID");
+    return;
+  }
+
+  windowIDStr = windowID;
+  typeStr = type;
+
+  g_free (windowID);
+
+  if (typeStr == "window-in") {
+    try {
+      WindowIn event (shared_from_this(), WindowIn::getName(), windowIDStr );
+
+      signalWindowIn (event);
+    } catch (std::bad_weak_ptr &e) {
+    }
+  } else if (typeStr == "window-out") {
+    try {
+      WindowOut event (shared_from_this(), WindowOut::getName(), windowIDStr );
+
+      signalWindowOut (event);
+    } catch (std::bad_weak_ptr &e) {
+    }
+  }
+}
+
+void PointerDetectorFilterImpl::postConstructor ()
+{
+  GstBus *bus;
+  std::shared_ptr<MediaPipelineImpl> pipe;
+
+  FilterImpl::postConstructor ();
+
+  pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
+
+  bus_handler_id = register_signal_handler (G_OBJECT (bus),
+                   "message",
+                   std::function <void (GstElement *, GstMessage *) >
+                   (std::bind (&PointerDetectorFilterImpl::busMessage, this,
+                               std::placeholders::_2) ),
+                   std::dynamic_pointer_cast<PointerDetectorFilterImpl>
+                   (shared_from_this() ) );
+
+  g_object_unref (bus);
+}
 
 PointerDetectorFilterImpl::PointerDetectorFilterImpl (const
     boost::property_tree::ptree &config,
@@ -77,16 +137,10 @@ PointerDetectorFilterImpl::PointerDetectorFilterImpl (const
   FilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl>
               (mediaPipeline) )
 {
-  GstBus *bus;
-  std::shared_ptr<MediaPipelineImpl> pipe;
   GstStructure *calibrationArea;
   GstStructure *buttonsLayout;
 
-  pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
-
   g_object_set (element, "filter-factory", "pointerdetector", NULL);
-
-  bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
 
   g_object_get (G_OBJECT (element), "filter", &pointerDetector, NULL);
 
@@ -124,57 +178,7 @@ PointerDetectorFilterImpl::PointerDetectorFilterImpl (const
                 NULL);
   gst_structure_free (buttonsLayout);
 
-  busMessageLambda = [&] (GstMessage * message) {
-    const GstStructure *st;
-    gchar *windowID;
-    const gchar *type;
-    std::string windowIDStr, typeStr;
-
-    if (GST_MESSAGE_SRC (message) != GST_OBJECT (pointerDetector) ||
-        GST_MESSAGE_TYPE (message) != GST_MESSAGE_ELEMENT) {
-      return;
-    }
-
-    st = gst_message_get_structure (message);
-    type = gst_structure_get_name (st);
-
-    if ( (g_strcmp0 (type, "window-out") != 0) &&
-         (g_strcmp0 (type, "window-in") != 0) ) {
-      GST_WARNING ("The message does not have the correct name");
-      return;
-    }
-
-    if (!gst_structure_get (st, "window", G_TYPE_STRING , &windowID, NULL) ) {
-      GST_WARNING ("The message does not contain the window ID");
-      return;
-    }
-
-    windowIDStr = windowID;
-    typeStr = type;
-
-    g_free (windowID);
-
-    if (typeStr == "window-in") {
-      try {
-        WindowIn event (shared_from_this(), WindowIn::getName(), windowIDStr );
-
-        signalWindowIn (event);
-      } catch (std::bad_weak_ptr &e) {
-      }
-    } else if (typeStr == "window-out") {
-      try {
-        WindowOut event (shared_from_this(), WindowOut::getName(), windowIDStr );
-
-        signalWindowOut (event);
-      } catch (std::bad_weak_ptr &e) {
-      }
-    }
-  };
-
-  bus_handler_id = g_signal_connect (bus, "message",
-                                     G_CALLBACK (bus_message_adaptor),
-                                     &busMessageLambda);
-  g_object_unref (bus);
+  bus_handler_id = 0;
   // There is no need to reference pointerdetector because its life cycle is the same as the filter life cycle
   g_object_unref (pointerDetector);
 }
@@ -183,10 +187,12 @@ PointerDetectorFilterImpl::~PointerDetectorFilterImpl()
 {
   std::shared_ptr<MediaPipelineImpl> pipe;
 
-  pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
-  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
-  g_signal_handler_disconnect (bus, bus_handler_id);
-  g_object_unref (bus);
+  if (bus_handler_id > 0) {
+    pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
+    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
+    unregister_signal_handler (bus, bus_handler_id);
+    g_object_unref (bus);
+  }
 }
 
 
