@@ -25,7 +25,7 @@ public:
                         std::shared_ptr<MediaPipeline> mediaPipeline,
                         int disconnectionTimeout, bool useEncodedMedia);
 
-  virtual ~HttpPostEndpointImpl () {};
+  virtual ~HttpPostEndpointImpl ();
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
@@ -39,8 +39,13 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  virtual void postConstructor ();
+
 private:
-  std::function<void() > eosLambda;
+  void eosLambda ();
+
+  int handlerEos = 0;
 
   class StaticConstructor
   {

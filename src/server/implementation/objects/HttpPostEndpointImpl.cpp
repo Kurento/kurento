@@ -5,6 +5,7 @@
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
+#include <SignalHandler.hpp>
 
 #define USE_ENCODED_MEDIA "use-encoded-media"
 
@@ -17,12 +18,25 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-static void
-adaptor_function (GstElement *player, gpointer data)
+void HttpPostEndpointImpl::eosLambda ()
 {
-  auto handler = reinterpret_cast<std::function<void() >*> (data);
+  try {
+    EndOfStream event (shared_from_this(), EndOfStream::getName() );
 
-  (*handler) ();
+    signalEndOfStream (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void HttpPostEndpointImpl::postConstructor ()
+{
+  HttpEndpointImpl::postConstructor ();
+
+  handlerEos = register_signal_handler (G_OBJECT (element), "eos",
+                                        std::function <void (GstElement *) >
+                                        (std::bind (&HttpPostEndpointImpl::eosLambda, this) ),
+                                        std::dynamic_pointer_cast<HttpPostEndpointImpl>
+                                        (shared_from_this() ) );
 }
 
 HttpPostEndpointImpl::HttpPostEndpointImpl (const boost::property_tree::ptree
@@ -34,24 +48,21 @@ HttpPostEndpointImpl::HttpPostEndpointImpl (const boost::property_tree::ptree
 {
   g_object_set (G_OBJECT (element), USE_ENCODED_MEDIA, useEncodedMedia, NULL);
 
-  eosLambda = [&] () {
-    try {
-      EndOfStream event (shared_from_this(), EndOfStream::getName() );
-
-      signalEndOfStream (event);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
   /* Do not accept EOS */
   g_object_set ( G_OBJECT (element), "accept-eos", false, NULL);
-  g_signal_connect (element, "eos", G_CALLBACK (adaptor_function), this);
 
   register_end_point();
 
   if (!is_registered() ) {
     throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR,
                             "Cannot register HttpPostEndPoint");
+  }
+}
+
+HttpPostEndpointImpl::~HttpPostEndpointImpl ()
+{
+  if (handlerEos > 0) {
+    unregister_signal_handler (element, handlerEos);
   }
 }
 
