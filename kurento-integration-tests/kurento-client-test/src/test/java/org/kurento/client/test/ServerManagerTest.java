@@ -1,9 +1,11 @@
 package org.kurento.client.test;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
@@ -12,11 +14,14 @@ import java.util.concurrent.TimeoutException;
 import org.hamcrest.core.IsSame;
 import org.junit.Test;
 import org.kurento.client.EventListener;
+import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaObject;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.ObjectCreatedEvent;
 import org.kurento.client.ServerManager;
+import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.KurentoClientTest;
+import org.kurento.test.services.KurentoClientTestFactory;
 
 public class ServerManagerTest extends KurentoClientTest {
 
@@ -78,4 +83,28 @@ public class ServerManagerTest extends KurentoClientTest {
 
 		assertTrue(mediaPipelines.contains(pipeline));
 	}
+
+	@Test
+	public void readPipelineElements() throws IOException {
+
+		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
+
+		new WebRtcEndpoint.Builder(pipeline).build();
+
+		KurentoClient otherKurentoClient = KurentoClientTestFactory
+				.createKurentoForTest();
+
+		ServerManager serverManager = otherKurentoClient.getServerManager();
+
+		List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
+
+		for (MediaObject o : mediaPipelines.get(0).getChilds()) {
+			if (o.getId().indexOf("WebRtcEndpoint") >= 0) {
+				WebRtcEndpoint webRtc = (WebRtcEndpoint) o;
+
+				assertThat(pipeline, is(webRtc.getParent()));
+			}
+		}
+	}
+
 }

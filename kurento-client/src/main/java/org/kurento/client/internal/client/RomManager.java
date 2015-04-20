@@ -104,6 +104,8 @@ public class RomManager implements ObjectRefsManager {
 
 		if (remoteObject == null) {
 
+			clazz = obtainConcreteClass(objectRef, clazz);
+
 			remoteObject = new RemoteObject(objectRef, clazz.getSimpleName(),
 					this);
 
@@ -111,6 +113,30 @@ public class RomManager implements ObjectRefsManager {
 		}
 
 		return (T) remoteObject.getKurentoObject();
+	}
+
+	// FIXME: This method assumes that specified class is of the same module as
+	// concrete one.
+	@SuppressWarnings("unchecked")
+	private <T> Class<T> obtainConcreteClass(String objectRef, Class<T> clazz) {
+
+		if (objectRef.endsWith(clazz.getSimpleName())) {
+			return clazz;
+		} else {
+			String className = objectRef
+					.substring(objectRef.lastIndexOf("_") + 1);
+			String concreteClassName = clazz.getPackage().getName() + "."
+					+ className;
+			try {
+				return (Class<T>) Class.forName(concreteClassName);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(
+						"Class "
+								+ concreteClassName
+								+ " not found. If correct class is found in other package, you hit a bug",
+						e);
+			}
+		}
 	}
 
 	public synchronized void registerObject(String objectRef,
