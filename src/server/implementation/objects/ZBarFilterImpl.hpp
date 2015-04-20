@@ -38,6 +38,9 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  virtual void postConstructor ();
+
 private:
 
   GstElement *zbar;
@@ -47,7 +50,7 @@ private:
   std::string lastType;
   std::string lastSymbol;
 
-  std::function<void (GstMessage *) > busMessageLambda;
+  void busMessage (GstMessage *message);
 
   void barcodeDetected (guint64 ts, std::string &type, std::string &symbol);
 
