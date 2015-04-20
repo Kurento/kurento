@@ -7,6 +7,7 @@
 #include "PlateDetectorFilterImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
+#include "SignalHandler.hpp"
 
 #define GST_CAT_DEFAULT kurento_plate_detector_filter_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -21,13 +22,64 @@ namespace module
 namespace platedetector
 {
 
-static void
-bus_message_adaptor (GstBus *bus, GstMessage *message, gpointer data)
+void PlateDetectorFilterImpl::busMessage (GstMessage *message)
 {
-  auto func = reinterpret_cast<std::function<void (GstMessage *message) >*>
-              (data);
+  const GstStructure *st;
+  gchar *plateNumber;
+  const gchar *type;
+  std::string typeStr, plateNumberStr;
 
-  (*func) (message);
+  if (GST_MESSAGE_SRC (message) != GST_OBJECT (plateDetector) ||
+      GST_MESSAGE_TYPE (message) != GST_MESSAGE_ELEMENT) {
+    return;
+  }
+
+  st = gst_message_get_structure (message);
+  type = gst_structure_get_name (st);
+
+  if (g_strcmp0 (type, "plate-detected") != 0) {
+    GST_WARNING ("The message does not have the correct type");
+    return;
+  }
+
+  if (! (gst_structure_get (st, "plate", G_TYPE_STRING , &plateNumber,
+                            NULL) ) ) {
+    GST_WARNING ("The message does not contain the plate number");
+    return;
+  }
+
+  plateNumberStr = plateNumber;
+  typeStr = type;
+
+  try {
+    PlateDetected event (shared_from_this(), typeStr, plateNumberStr);
+    signalPlateDetected (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+
+  g_free (plateNumber);
+}
+
+void PlateDetectorFilterImpl::postConstructor ()
+{
+  GstBus *bus;
+  std::shared_ptr<MediaPipelineImpl> pipe;
+
+  FilterImpl::postConstructor ();
+
+  pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
+
+  bus_handler_id = register_signal_handler (G_OBJECT (bus),
+                   "message",
+                   std::function <void (GstElement *, GstMessage *) >
+                   (std::bind (&PlateDetectorFilterImpl::busMessage, this,
+                               std::placeholders::_2) ),
+                   std::dynamic_pointer_cast<PlateDetectorFilterImpl>
+                   (shared_from_this() ) );
+
+  g_object_unref (bus);
 }
 
 PlateDetectorFilterImpl::PlateDetectorFilterImpl (const
@@ -36,75 +88,26 @@ PlateDetectorFilterImpl::PlateDetectorFilterImpl (const
           std::dynamic_pointer_cast<MediaPipelineImpl>
           (mediaPipeline) )
 {
-  GstBus *bus;
-  std::shared_ptr<MediaPipelineImpl> pipe;
-
-  pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
-
   g_object_set (element, "filter-factory", "platedetector", NULL);
 
   g_object_get (G_OBJECT (element), "filter", &plateDetector, NULL);
 
-  if (plateDetector == NULL) {
-    throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
-                            "Media Object not available");
-  }
+  bus_handler_id = 0;
 
   // There is no need to reference platedetector because its life cycle is the same as the filter life cycle
   g_object_unref (plateDetector);
-
-  busMessageLambda = [&] (GstMessage * message) {
-    const GstStructure *st;
-    gchar *plateNumber;
-    const gchar *type;
-    std::string typeStr, plateNumberStr;
-
-    if (GST_MESSAGE_SRC (message) != GST_OBJECT (plateDetector) ||
-        GST_MESSAGE_TYPE (message) != GST_MESSAGE_ELEMENT) {
-      return;
-    }
-
-    st = gst_message_get_structure (message);
-    type = gst_structure_get_name (st);
-
-    if (g_strcmp0 (type, "plate-detected") != 0) {
-      GST_WARNING ("The message does not have the correct type");
-      return;
-    }
-
-    if (! (gst_structure_get (st, "plate", G_TYPE_STRING , &plateNumber,
-                              NULL) ) ) {
-      GST_WARNING ("The message does not contain the plate number");
-      return;
-    }
-
-    plateNumberStr = plateNumber;
-    typeStr = type;
-
-    try {
-      PlateDetected event (shared_from_this(), typeStr, plateNumberStr);
-      signalPlateDetected (event);
-    } catch (std::bad_weak_ptr &e) {
-    }
-
-    g_free (plateNumber);
-  };
-
-  bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
-  bus_handler_id = g_signal_connect (bus, "message",
-                                     G_CALLBACK (bus_message_adaptor),
-                                     &busMessageLambda);
-  g_object_unref (bus);
 }
 
 PlateDetectorFilterImpl::~PlateDetectorFilterImpl()
 {
   std::shared_ptr<MediaPipelineImpl> pipe;
 
-  pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
-  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
-  g_signal_handler_disconnect (bus, bus_handler_id);
-  g_object_unref (bus);
+  if (bus_handler_id > 0) {
+    pipe = std::dynamic_pointer_cast<MediaPipelineImpl> (getMediaPipeline() );
+    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe->getPipeline() ) );
+    unregister_signal_handler (bus, bus_handler_id);
+    g_object_unref (bus);
+  }
 }
 
 void PlateDetectorFilterImpl::setPlateWidthPercentage (float
