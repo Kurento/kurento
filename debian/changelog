@@ -1,3 +1,15 @@
+kms-elements (5.1.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * WebRtcEndpoint: Fix format
+  * WebrtcEndpoint: Avoid negotiating not supported codecs
+  * Prepeare release 5.1.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 20 Apr 2015 15:27:40 +0200
+
 kms-elements (5.1.2) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
