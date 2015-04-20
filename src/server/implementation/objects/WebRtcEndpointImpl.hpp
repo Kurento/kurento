@@ -52,16 +52,19 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  virtual void postConstructor ();
+
 private:
 
-  int handlerOnIceCandidate;
-  int handlerOnIceGatheringDone;
-  int handlerOnIceComponentStateChanged;
+  gulong handlerOnIceCandidate = 0;
+  gulong handlerOnIceGatheringDone = 0;
+  gulong handlerOnIceComponentStateChanged = 0;
 
-  std::function<void (KmsIceCandidate *) > onIceCandidateLambda;
-  std::function<void() > onIceGatheringDoneLambda;
-  std::function<void (guint streamId, guint componentId, guint state) >
-  onIceComponentStateChangedLambda;
+  void onIceCandidate (KmsIceCandidate *candidate);
+  void onIceGatheringDone ();
+  void onIceComponentStateChanged (guint streamId, guint componentId,
+                                   guint state);
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

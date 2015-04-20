@@ -9,6 +9,7 @@
 #include <IceCandidate.hpp>
 #include <webrtcendpoint/kmsicecandidate.h>
 #include <IceComponentState.hpp>
+#include <SignalHandler.hpp>
 
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -26,35 +27,6 @@ static const uint DEFAULT_STUN_PORT = 3478;
 
 static std::shared_ptr<std::string> pemCertificate;
 std::mutex WebRtcEndpointImpl::certificateMutex;
-
-static void
-on_ice_candidate (GstElement *webrtcendpoint, KmsIceCandidate *candidate,
-                  gpointer data)
-{
-  auto handler = reinterpret_cast<std::function<void (KmsIceCandidate *) >*>
-                 (data);
-
-  (*handler) (candidate);
-}
-
-static void
-on_ice_gathering_done (GstElement *webrtcendpoint, gpointer data)
-{
-  auto handler = reinterpret_cast<std::function<void() >*> (data);
-
-  (*handler) ();
-}
-
-static void
-on_ice_component_state_changed (NiceAgent *agent, guint stream_id,
-                                guint component_id, NiceComponentState state, gpointer data)
-{
-  auto handler =
-    reinterpret_cast<std::function<void (guint streamId, guint componentId, guint state) >*>
-    (data);
-
-  (*handler) (stream_id, component_id, state);
-}
 
 class TemporalDirectory
 {
@@ -232,6 +204,105 @@ end:
   gst_sdp_message_free (old_pattern);
 }
 
+void WebRtcEndpointImpl::onIceCandidate (KmsIceCandidate *candidate)
+{
+  try {
+    std::string cand_str (kms_ice_candidate_get_candidate (candidate) );
+    std::string mid_str (kms_ice_candidate_get_sdp_mid (candidate) );
+    int sdp_m_line_index = kms_ice_candidate_get_sdp_m_line_index (candidate);
+    std::shared_ptr <IceCandidate> cand ( new  IceCandidate
+                                          (cand_str, mid_str, sdp_m_line_index) );
+    OnIceCandidate event (shared_from_this(), OnIceCandidate::getName(), cand);
+
+    signalOnIceCandidate (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void WebRtcEndpointImpl::onIceGatheringDone ()
+{
+  try {
+    OnIceGatheringDone event (shared_from_this(), OnIceGatheringDone::getName() );
+
+    signalOnIceGatheringDone (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void WebRtcEndpointImpl::onIceComponentStateChanged (guint streamId,
+    guint componentId, guint state)
+{
+  try {
+    IceComponentState::type type;
+
+    switch (state) {
+    case NICE_COMPONENT_STATE_DISCONNECTED:
+      type = IceComponentState::DISCONNECTED;
+      break;
+
+    case NICE_COMPONENT_STATE_GATHERING:
+      type = IceComponentState::GATHERING;
+      break;
+
+    case NICE_COMPONENT_STATE_CONNECTING:
+      type = IceComponentState::CONNECTING;
+      break;
+
+    case NICE_COMPONENT_STATE_CONNECTED:
+      type = IceComponentState::CONNECTED;
+      break;
+
+    case NICE_COMPONENT_STATE_READY:
+      type = IceComponentState::READY;
+      break;
+
+    case NICE_COMPONENT_STATE_FAILED:
+      type = IceComponentState::FAILED;
+      break;
+
+    default:
+      type = IceComponentState::FAILED;
+      break;
+    }
+
+    IceComponentState *componentState = new IceComponentState (type);
+    OnIceComponentStateChanged event (shared_from_this(),
+                                      OnIceComponentStateChanged::getName(),
+                                      streamId, componentId,  std::shared_ptr<IceComponentState> (componentState) );
+
+    signalOnIceComponentStateChanged (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void WebRtcEndpointImpl::postConstructor ()
+{
+  BaseRtpEndpointImpl::postConstructor ();
+
+  handlerOnIceCandidate = register_signal_handler (G_OBJECT (element),
+                          "on-ice-candidate",
+                          std::function <void (GstElement *, KmsIceCandidate *) >
+                          (std::bind (&WebRtcEndpointImpl::onIceCandidate, this,
+                                      std::placeholders::_2) ),
+                          std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                          (shared_from_this() ) );
+
+  handlerOnIceGatheringDone = register_signal_handler (G_OBJECT (element),
+                              "on-ice-gathering-done",
+                              std::function <void (GstElement *) >
+                              (std::bind (&WebRtcEndpointImpl::onIceGatheringDone, this) ),
+                              std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                              (shared_from_this() ) );
+
+  handlerOnIceComponentStateChanged = register_signal_handler (G_OBJECT (element),
+                                      "on-ice-component-state-changed",
+                                      std::function <void (GstElement *, guint, guint, guint) >
+                                      (std::bind (&WebRtcEndpointImpl::onIceComponentStateChanged, this,
+                                          std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) ),
+                                      std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                                      (shared_from_this() ) );
+}
+
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
                                         mediaPipeline) : BaseRtpEndpointImpl (conf,
@@ -284,94 +355,21 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   g_object_set ( G_OBJECT (element), "certificate-pem-file",
                  getPemCertificate ()->c_str(), NULL);
-
-  onIceCandidateLambda = [&] (KmsIceCandidate * candidate) {
-    try {
-      std::string cand_str (kms_ice_candidate_get_candidate (candidate) );
-      std::string mid_str (kms_ice_candidate_get_sdp_mid (candidate) );
-      int sdp_m_line_index = kms_ice_candidate_get_sdp_m_line_index (candidate);
-      std::shared_ptr <IceCandidate> cand ( new  IceCandidate
-                                            (cand_str, mid_str, sdp_m_line_index) );
-      OnIceCandidate event (shared_from_this(), OnIceCandidate::getName(), cand);
-
-      signalOnIceCandidate (event);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
-  handlerOnIceCandidate = g_signal_connect (element, "on-ice-candidate",
-                          G_CALLBACK (on_ice_candidate),
-                          &onIceCandidateLambda);
-
-  onIceGatheringDoneLambda = [&] () {
-    try {
-      OnIceGatheringDone event (shared_from_this(), OnIceGatheringDone::getName() );
-
-      signalOnIceGatheringDone (event);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
-  handlerOnIceGatheringDone = g_signal_connect (element, "on-ice-gathering-done",
-                              G_CALLBACK (on_ice_gathering_done),
-                              &onIceGatheringDoneLambda);
-
-  onIceComponentStateChangedLambda = [&] (guint streamId, guint componentId,
-  guint state) {
-    try {
-      IceComponentState::type type;
-
-      switch (state) {
-      case NICE_COMPONENT_STATE_DISCONNECTED:
-        type = IceComponentState::DISCONNECTED;
-        break;
-
-      case NICE_COMPONENT_STATE_GATHERING:
-        type = IceComponentState::GATHERING;
-        break;
-
-      case NICE_COMPONENT_STATE_CONNECTING:
-        type = IceComponentState::CONNECTING;
-        break;
-
-      case NICE_COMPONENT_STATE_CONNECTED:
-        type = IceComponentState::CONNECTED;
-        break;
-
-      case NICE_COMPONENT_STATE_READY:
-        type = IceComponentState::READY;
-        break;
-
-      case NICE_COMPONENT_STATE_FAILED:
-        type = IceComponentState::FAILED;
-        break;
-
-      default:
-        type = IceComponentState::FAILED;
-        break;
-      }
-
-      IceComponentState *componentState = new IceComponentState (type);
-      OnIceComponentStateChanged event (shared_from_this(),
-                                        OnIceComponentStateChanged::getName(),
-                                        streamId, componentId,  std::shared_ptr<IceComponentState> (componentState) );
-
-      signalOnIceComponentStateChanged (event);
-    } catch (std::bad_weak_ptr &e) {
-    }
-  };
-
-  handlerOnIceComponentStateChanged = g_signal_connect (element,
-                                      "on-ice-component-state-changed",
-                                      G_CALLBACK (on_ice_component_state_changed),
-                                      &onIceComponentStateChangedLambda);
 }
 
 WebRtcEndpointImpl::~WebRtcEndpointImpl()
 {
-  g_signal_handler_disconnect (element, handlerOnIceCandidate);
-  g_signal_handler_disconnect (element, handlerOnIceGatheringDone);
-  g_signal_handler_disconnect (element, handlerOnIceComponentStateChanged);
+  if (handlerOnIceCandidate > 0) {
+    unregister_signal_handler (element, handlerOnIceCandidate);
+  }
+
+  if (handlerOnIceGatheringDone > 0) {
+    unregister_signal_handler (element, handlerOnIceGatheringDone);
+  }
+
+  if (handlerOnIceComponentStateChanged > 0) {
+    unregister_signal_handler (element, handlerOnIceComponentStateChanged);
+  }
 }
 
 std::string
