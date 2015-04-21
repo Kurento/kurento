@@ -21,28 +21,72 @@
 #include <IceCandidate.hpp>
 #include <mutex>
 #include <condition_variable>
+#include <ModuleManager.hpp>
+#include <KurentoException.hpp>
+#include <MediaSet.hpp>
 
 using namespace kurento;
 
-BOOST_AUTO_TEST_CASE (gathering_done)
+boost::property_tree::ptree config;
+std::string mediaPipelineId;
+ModuleManager moduleManager;
+std::once_flag init_flag;
+
+static void
+init_internal()
 {
   gst_init (NULL, NULL);
 
-  std::atomic<bool> gathering_done (false);
-  std::condition_variable cv;
-  std::mutex mtx;
-  std::unique_lock<std::mutex> lck (mtx);
-
-  std::shared_ptr <MediaPipelineImpl> pipe (new MediaPipelineImpl (
-        boost::property_tree::ptree() ) );
-  boost::property_tree::ptree config;
+  moduleManager.loadModulesFromDirectories ("../../src/server");
 
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
   config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
 
-  std::shared_ptr <WebRtcEndpointImpl> webRtcEp ( new  WebRtcEndpointImpl
-      (config, pipe) );
+  mediaPipelineId = moduleManager.getFactory ("MediaPipeline")->createObject (
+                      config, "",
+                      Json::Value() )->getId();
+}
+
+static void
+init()
+{
+  std::call_once (init_flag, init_internal);
+}
+
+static std::shared_ptr <WebRtcEndpointImpl>
+createWebrtc (void)
+{
+  std::shared_ptr <kurento::MediaObjectImpl> webrtcEndpoint;
+  Json::Value constructorParams;
+
+  constructorParams ["mediaPipeline"] = mediaPipelineId;
+
+  webrtcEndpoint = moduleManager.getFactory ("WebRtcEndpoint")->createObject (
+                     config, "",
+                     constructorParams );
+
+  return std::dynamic_pointer_cast <WebRtcEndpointImpl> (webrtcEndpoint);
+}
+
+static void
+releaseWebRtc (std::shared_ptr<WebRtcEndpointImpl> &ep)
+{
+  std::string id = ep->getId();
+
+  ep.reset();
+  MediaSet::getMediaSet ()->release (id);
+}
+
+BOOST_AUTO_TEST_CASE (gathering_done)
+{
+  init ();
+
+  std::atomic<bool> gathering_done (false);
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEp = createWebrtc();
 
   webRtcEp->signalOnIceGatheringDone.connect ([&] (OnIceGatheringDone event) {
     gathering_done = true;
@@ -60,30 +104,23 @@ BOOST_AUTO_TEST_CASE (gathering_done)
     BOOST_ERROR ("Gathering not done");
   }
 
-  webRtcEp.reset ();
+  releaseWebRtc (webRtcEp);
 }
 
 BOOST_AUTO_TEST_CASE (ice_state_changes)
 {
-  gst_init (NULL, NULL);
+  init ();
 
   std::atomic<bool> ice_state_changed (false);
   std::condition_variable cv;
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
 
-  std::shared_ptr <MediaPipelineImpl> pipe (new MediaPipelineImpl (
-        boost::property_tree::ptree() ) );
-  boost::property_tree::ptree config;
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
 
-  config.add ("configPath", "../../../tests" );
-  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
-  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
-
-  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer ( new  WebRtcEndpointImpl
-      (config, pipe) );
-  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer ( new  WebRtcEndpointImpl
-      (config, pipe) );
+  webRtcEpOfferer->setName ("offerer");
+  webRtcEpAnswerer->setName ("answerer");
 
   webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
     webRtcEpAnswerer->addIceCandidate (event.getCandidate() );
@@ -114,27 +151,19 @@ BOOST_AUTO_TEST_CASE (ice_state_changes)
     BOOST_ERROR ("ICE state not chagned");
   }
 
-  webRtcEpOfferer.reset ();
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
 }
 
 BOOST_AUTO_TEST_CASE (stun_turn_properties)
 {
-  gst_init (NULL, NULL);
-
   std::string stunServerAddress ("10.0.0.1");
   int stunServerPort = 2345;
   std::string turnUrl ("user0:pass0@10.0.0.2:3456");
 
-  std::shared_ptr <MediaPipelineImpl> pipe (new MediaPipelineImpl (
-        boost::property_tree::ptree() ) );
-  boost::property_tree::ptree config;
+  init ();
 
-  config.add ("configPath", "../../../tests" );
-  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
-  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
-
-  std::shared_ptr <WebRtcEndpointImpl> webRtcEp ( new  WebRtcEndpointImpl
-      (config, pipe) );
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEp  = createWebrtc();
 
   webRtcEp->setStunServerAddress (stunServerAddress);
   std::string stunServerAddressRet = webRtcEp->getStunServerAddress ();
@@ -147,4 +176,6 @@ BOOST_AUTO_TEST_CASE (stun_turn_properties)
   webRtcEp->setTurnUrl (turnUrl);
   std::string turnUrlRet = webRtcEp->getTurnUrl ();
   BOOST_CHECK (turnUrlRet == turnUrl);
+
+  releaseWebRtc (webRtcEp);
 }
