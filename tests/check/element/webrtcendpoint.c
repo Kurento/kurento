@@ -25,6 +25,26 @@
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
+static GArray *
+create_codecs_array (gchar * codecs[])
+{
+  GArray *a = g_array_new (FALSE, TRUE, sizeof (GValue));
+  int i;
+
+  for (i = 0; i < g_strv_length (codecs); i++) {
+    GValue v = G_VALUE_INIT;
+    GstStructure *s;
+
+    g_value_init (&v, GST_TYPE_STRUCTURE);
+    s = gst_structure_new (codecs[i], NULL, NULL);
+    gst_value_set_structure (&v, s);
+    gst_structure_free (s);
+    g_array_append_val (a, v);
+  }
+
+  return a;
+}
+
 static gboolean
 quit_main_loop_idle (gpointer data)
 {
@@ -248,13 +268,14 @@ connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
 
 static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
-    const gchar * pattern_sdp_sendonly_str,
-    const gchar * pattern_sdp_recvonly_str, gboolean bundle,
+    gchar * codec, gboolean bundle,
     gboolean check_request_local_key_frame, gboolean gather_asap)
 {
+  GArray *codecs_array;
+  gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
   GstElement *video_enc = gst_element_factory_make (video_enc_name, NULL);
@@ -269,17 +290,12 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (sender, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_recvonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (receiver, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (sender, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), "bundle", bundle, NULL);
+  g_object_set (receiver, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_array_unref (codecs_array);
 
   /* Trickle ICE management */
   g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
@@ -457,12 +473,13 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_video_sendrecv (const gchar * video_enc_name,
-    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str,
-    gboolean bundle)
+    GstStaticCaps expected_caps, gchar * codec, gboolean bundle)
 {
+  GArray *codecs_array;
+  gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc_offerer =
       gst_element_factory_make ("videotestsrc", NULL);
@@ -484,12 +501,12 @@ test_video_sendrecv (const gchar * video_enc_name,
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
-  g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), "bundle", bundle, NULL);
+  g_object_set (answerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_array_unref (codecs_array);
 
   /* Trickle ICE management */
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
@@ -577,14 +594,17 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_slice_free (HandOffData, hod);
 }
 
+#include <commons/kmsutils.h>
+
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str,
-    gboolean bundle)
+    GstStaticCaps expected_caps, gchar * codec, gboolean bundle)
 {
+  GArray *codecs_array;
+  gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *audiotestsrc_offerer =
       gst_element_factory_make ("audiotestsrc", NULL);
@@ -612,12 +632,12 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
-  g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (codecs_array), "bundle", bundle, NULL);
+  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_array_unref (codecs_array);
 
   /* Trickle ICE management */
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
@@ -698,6 +718,8 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_before_entering_loop");
 
+  kms_utils_debug_graph_delay (GST_BIN (pipeline), 5);
+
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
@@ -757,13 +779,16 @@ sendrecv_fakesink_hand_off (GstElement * fakesink,
 
 static void
 test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
-    GstStaticCaps audio_expected_caps, const gchar * video_enc_name,
-    GstStaticCaps video_expected_caps, const gchar * pattern_sdp_sendonly_str,
-    const gchar * pattern_sdp_recvonly_str, gboolean bundle)
+    GstStaticCaps audio_expected_caps, gchar * audio_codec,
+    const gchar * video_enc_name, GstStaticCaps video_expected_caps,
+    gchar * video_codec, gboolean bundle)
 {
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { audio_codec, NULL };
+  gchar *video_codecs[] = { video_codec, NULL };
   HandOffData *hod_audio, *hod_video;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
   GstElement *audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
@@ -789,17 +814,16 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (sender, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_recvonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (receiver, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (sender, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), "bundle", bundle, NULL);
+  g_object_set (receiver, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
 
   /* Trickle ICE management */
   g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
@@ -906,14 +930,17 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
 
 static void
 test_audio_video_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps audio_expected_caps, const gchar * video_enc_name,
-    GstStaticCaps video_expected_caps, const gchar * pattern_sdp_sendrcv_str,
-    gboolean bundle)
+    GstStaticCaps audio_expected_caps, gchar * audio_codec,
+    const gchar * video_enc_name, GstStaticCaps video_expected_caps,
+    gchar * video_codec, gboolean bundle)
 {
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { audio_codec, NULL };
+  gchar *video_codecs[] = { video_codec, NULL };
   HandOffData *hod_audio_offerer, *hod_video_offerer, *hod_audio_answerer,
       *hod_video_answerer;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
   GstElement *audiotestsrc_offerer =
@@ -960,12 +987,16 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, "bundle", bundle, NULL);
-  g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), "bundle", bundle, NULL);
+  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
 
   /* Trickle ICE management */
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
@@ -1103,19 +1134,10 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_slice_free (HandOffData, hod_video_answerer);
 }
 
-static const gchar *pattern_sdp_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 96\r\n"
-    "a=rtpmap:96 VP8/90000\r\n"
-    "a=sendrecv\r\n"
-    "m=audio 0 RTP/AVP 97\r\n" "a=rtpmap:97 OPUS/48000/1\r\n" "a=sendrecv\r\n";
-
 GST_START_TEST (negotiation)
 {
-  GstSDPMessage *pattern_sdp;
+  GArray *audio_codecs_array;
+  gchar *audio_codecs[] = { "OPUS/48000/1", "AMR/8000/1", NULL };
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
@@ -1128,23 +1150,12 @@ GST_START_TEST (negotiation)
   g_object_set (offerer, "max-video-recv-bandwidth", 0, NULL);
   g_object_set (answerer, "max-video-recv-bandwidth", 0, NULL);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-  g_object_get (offerer, "pattern-sdp", &pattern_sdp, NULL);
-  fail_unless (pattern_sdp != NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-  g_object_get (answerer, "pattern-sdp", &pattern_sdp, NULL);
-  fail_unless (pattern_sdp != NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), NULL);
+  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), NULL);
+  g_array_unref (audio_codecs_array);
 
   g_signal_emit_by_name (offerer, "generate-offer", &offer);
   fail_unless (offer != NULL);
@@ -1180,7 +1191,7 @@ GST_START_TEST (negotiation)
   answerer_remote_sdp_str = gst_sdp_message_as_text (answerer_remote_sdp);
 
   GST_DEBUG ("Offerer local SDP\n%s", offerer_local_sdp_str);
-  GST_DEBUG ("Offerer remote SDPr\n%s", offerer_remote_sdp_str);
+  GST_DEBUG ("Offerer remote SDP\n%s", offerer_remote_sdp_str);
   GST_DEBUG ("Answerer local SDP\n%s", answerer_local_sdp_str);
   GST_DEBUG ("Answerer remote SDP\n%s", answerer_remote_sdp_str);
 
@@ -1205,60 +1216,31 @@ GST_END_TEST
 /* Video tests */
 static GstStaticCaps vp8_expected_caps = GST_STATIC_CAPS ("video/x-vp8");
 
-static const gchar *pattern_sdp_vp8_sendonly_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n" "a=sendonly\r\n";
-
-static const gchar *pattern_sdp_vp8_recvonly_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n" "a=recvonly\r\n";
-
-static const gchar *pattern_sdp_vp8_sendrecv_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n" "a=sendrecv\r\n";
-
 GST_START_TEST (test_vp8_sendonly_recvonly)
 {
-  test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, FALSE, FALSE,
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
       FALSE);
-  test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, FALSE,
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
       FALSE);
-  test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, TRUE,
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, TRUE,
       FALSE);
-  test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendonly_str, pattern_sdp_vp8_recvonly_str, TRUE, FALSE,
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
       TRUE);
 }
 
 GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv)
 {
-  test_video_sendrecv ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, FALSE);
-  test_video_sendrecv ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, TRUE);
+  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
+  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
 }
 
 GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv_but_sendonly)
 {
-  test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, TRUE, FALSE,
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
       FALSE);
-  test_video_sendonly ("vp8enc", vp8_expected_caps,
-      pattern_sdp_vp8_sendrecv_str, pattern_sdp_vp8_sendrecv_str, FALSE, FALSE,
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
       FALSE);
 }
 
@@ -1266,73 +1248,29 @@ GST_END_TEST
 /* Audio tests */
 static GstStaticCaps pcmu_expected_caps = GST_STATIC_CAPS ("audio/x-mulaw");
 
-static const gchar *pattern_sdp_pcmu_sendrecv_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n" "c=IN IP4 0.0.0.0\r\n" "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 0\r\n" "a=rtpmap:0 PCMU/8000\r\n" "a=sendrecv\r\n";
-
 GST_START_TEST (test_pcmu_sendrecv)
 {
-  test_audio_sendrecv ("mulawenc", pcmu_expected_caps,
-      pattern_sdp_pcmu_sendrecv_str, FALSE);
-  test_audio_sendrecv ("mulawenc", pcmu_expected_caps,
-      pattern_sdp_pcmu_sendrecv_str, TRUE);
+  test_audio_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000", FALSE);
+  test_audio_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000", TRUE);
 }
 
 /* Audio and video tests */
 GST_END_TEST
-    static const gchar *pattern_sdp_pcmu_vp8_sendonly_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 0\r\n" "a=rtpmap:0 PCMU/8000\r\n" "a=sendonly\r\n"
-    "m=video 0 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n" "a=sendonly\r\n";
-
-static const gchar *pattern_sdp_pcmu_vp8_recvonly_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 0\r\n" "a=rtpmap:0 PCMU/8000\r\n" "a=recvonly\r\n"
-    "m=video 0 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n" "a=recvonly\r\n";
-
-static const gchar *pattern_sdp_pcmu_vp8_sendrecv_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 0\r\n" "a=rtpmap:0 PCMU/8000\r\n" "a=sendrecv\r\n"
-    "m=video 0 RTP/AVP 96\r\n" "a=rtpmap:96 VP8/90000\r\n" "a=sendrecv\r\n";
-
 GST_START_TEST (test_pcmu_vp8_sendonly_recvonly)
 {
-  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendonly_str,
-      pattern_sdp_pcmu_vp8_recvonly_str, FALSE);
-  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendonly_str,
-      pattern_sdp_pcmu_vp8_recvonly_str, TRUE);
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
+      "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
+  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps,
+      "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
 }
 
 GST_END_TEST
 GST_START_TEST (test_pcmu_vp8_sendrecv)
 {
-  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str, FALSE);
-  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str, TRUE);
-}
-
-GST_END_TEST
-GST_START_TEST (test_pcmu_vp8_sendrecv_but_sendonly)
-{
-  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str,
-      pattern_sdp_pcmu_vp8_sendrecv_str, FALSE);
-  test_audio_video_sendonly_recvonly ("mulawenc", pcmu_expected_caps, "vp8enc",
-      vp8_expected_caps, pattern_sdp_pcmu_vp8_sendrecv_str,
-      pattern_sdp_pcmu_vp8_sendrecv_str, TRUE);
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
+  test_audio_video_sendrecv ("mulawenc", pcmu_expected_caps, "PCMU/8000",
+      "vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
 }
 
 GST_END_TEST
@@ -1346,17 +1284,17 @@ webrtcendpoint_test_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
+
   tcase_add_test (tc_chain, negotiation);
 
   tcase_add_test (tc_chain, test_pcmu_sendrecv);
-  tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
 
+  tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
   tcase_add_test (tc_chain, test_vp8_sendrecv);
 
   tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
-  tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv_but_sendonly);
 
   return s;
 }

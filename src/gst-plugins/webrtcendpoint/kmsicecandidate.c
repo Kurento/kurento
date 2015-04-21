@@ -197,20 +197,13 @@ kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self)
 }
 
 gboolean
-kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand,
-    gboolean bundle)
+kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand)
 {
   gboolean ret;
 
   ret = kms_ice_candidate_create_nice_from_str (self->priv->candidate, cand);
   if (*cand != NULL) {
-    guint stream_id = 1;
-
-    if (!bundle) {
-      stream_id = self->priv->sdp_m_line_index + 1;
-    }
-
-    (*cand)->stream_id = stream_id;
+    (*cand)->stream_id = self->priv->sdp_m_line_index + 1;
   }
 
   return ret;
