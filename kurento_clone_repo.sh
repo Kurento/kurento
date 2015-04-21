@@ -22,10 +22,10 @@ fi
 
 echo "Preparing to clone project: ${KURENTO_REPO_URL}/${PROJECT_NAME} (${BRANCH})"
 
-git clone ${KURENTO_REPO_URL}/${PROJECT_NAME}
+git clone ${KURENTO_REPO_URL}/${PROJECT_NAME} || exit 1
 
-cd ${PROJECT_NAME}
+cd ${PROJECT_NAME} || exit 1
 
-git checkout ${BRANCH}
+git checkout ${BRANCH} || exit 1
 
-git submodule update --init --recursive
+git submodule update --init --recursive || exit 1
