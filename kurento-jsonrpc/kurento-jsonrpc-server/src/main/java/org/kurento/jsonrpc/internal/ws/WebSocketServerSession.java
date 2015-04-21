@@ -19,14 +19,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import javax.websocket.CloseReason;
-import javax.websocket.CloseReason.CloseCode;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.client.Continuation;
+import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.server.ServerSession;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
@@ -112,7 +113,7 @@ public class WebSocketServerSession extends ServerSession {
 		try {
 			synchronized (wsSession) {
 				wsSession
-						.sendMessage(new TextMessage(JsonUtils.toJson(request)));
+				.sendMessage(new TextMessage(JsonUtils.toJson(request)));
 			}
 		} catch (Exception e) {
 			throw new KurentoException("Exception while sending message '"
@@ -127,7 +128,8 @@ public class WebSocketServerSession extends ServerSession {
 
 		Response<JsonElement> responseJsonObject;
 		try {
-			responseJsonObject = responseFuture.get();
+			responseJsonObject = responseFuture.get(
+					JsonRpcClientWebSocket.TIMEOUT, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
 			throw new JsonRpcException(
@@ -135,6 +137,11 @@ public class WebSocketServerSession extends ServerSession {
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
 			throw new JsonRpcException("This exception shouldn't be thrown", e);
+		} catch (TimeoutException e) {
+			throw new TransportException("Timeout of "
+					+ JsonRpcClientWebSocket.TIMEOUT
+					+ " milliseconds waiting from response to request with id:"
+					+ request.getId(), e);
 		}
 
 		return MessageUtils.convertResponse(responseJsonObject, resultClass);
@@ -164,10 +171,11 @@ public class WebSocketServerSession extends ServerSession {
 	@Override
 	public void closeNativeSession(String reason) {
 		try {
-			wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(), reason));
+			wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(),
+					reason));
 		} catch (IOException e) {
 			LOG.warn("Exception closing webSocket session", e);
-		}		
+		}
 	}
 
 }

@@ -60,7 +60,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -123,7 +123,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private boolean clientClose;
 
-	private static final long TIMEOUT = 60000;
+	public static final long TIMEOUT = 60000;
 
 	private WebSocketClient client;
 
@@ -188,7 +188,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public synchronized void connectIfNecessary() throws IOException {
 
-		if (((wsSession == null) || !wsSession.isOpen()) && !clientClose) {
+		if ((wsSession == null || !wsSession.isOpen()) && !clientClose) {
 
 			try {
 				if (client == null) {
@@ -413,6 +413,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request,
 			Class<R> resultClass) throws IOException {
+
+		if (request.getMethod().equals("pull")) {
+			log.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		}
 
 		connectIfNecessary();
 
