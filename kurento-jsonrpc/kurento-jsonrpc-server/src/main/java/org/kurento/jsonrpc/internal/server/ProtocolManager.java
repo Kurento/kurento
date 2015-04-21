@@ -108,7 +108,7 @@ public class ProtocolManager {
 						.getByTransportId(transportId);
 				if (serverSession != null) {
 					serverSession
-							.closeNativeSession("Close for not receive ping from client");
+					.closeNativeSession("Close for not receive ping from client");
 				} else {
 					log.warn("Ping wachdog trying to close a non-registered ServerSession");
 				}
@@ -181,8 +181,10 @@ public class ProtocolManager {
 			break;
 		default:
 
-			log.debug("{} Req-> {}", label, request);
 			ServerSession session = getSession(factory, transportId, request);
+
+			log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]",
+					label, request, session.getSessionId(), transportId);
 
 			// TODO, Take out this an put in Http specific handler. The main
 			// reason is to wait for request before responding to the client.
@@ -268,8 +270,8 @@ public class ProtocolManager {
 
 			ServerSession session = getSession(factory, transportId, request);
 
-			responseSender.sendResponse(new Response<String>(session.getSessionId(), request.getId(),
-					"OK"));
+			responseSender.sendResponse(new Response<String>(session
+					.getSessionId(), request.getId(), "OK"));
 
 		} else {
 
@@ -346,7 +348,7 @@ public class ProtocolManager {
 
 				log.info(
 						label
-								+ "Configuring close timeout for session: {} transportId: {} at {}",
+						+ "Configuring close timeout for session: {} transportId: {} at {}",
 						session.getSessionId(), transportId,
 						format.format(closeTime));
 
@@ -365,8 +367,8 @@ public class ProtocolManager {
 			} catch (TaskRejectedException e) {
 				log.warn(
 						label
-								+ "Close timeout for session {} with transportId {} can not be set "
-								+ "because the scheduler is shutdown",
+						+ "Close timeout for session {} with transportId {} can not be set "
+						+ "because the scheduler is shutdown",
 						session.getSessionId(), transportId);
 			}
 		}
