@@ -70,6 +70,11 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public static Logger log = LoggerFactory.getLogger(JsonRpcClient.class
 			.getName());
 
+	private static class PingParams {
+		@SuppressWarnings("unused")
+		public long interval;
+	}
+
 	protected JsonRpcHandlerManager handlerManager = new JsonRpcHandlerManager();
 	protected JsonRpcRequestSenderHelper rsHelper;
 	protected Object registerInfo;
@@ -81,6 +86,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected int heartbeatInterval = 0;
 	private static final int DEFAULT_HEARTBEAT_INTERVAL = 5000;
 	protected boolean heartbeating;
+	private volatile PingParams pingParams;
 
 	private ScheduledExecutorService scheduler = Executors
 			.newSingleThreadScheduledExecutor();
@@ -150,7 +156,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	@Override
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-			throws IOException {
+					throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 
@@ -237,6 +243,10 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public synchronized void enableHeartbeat(int interval) {
 
 		if (heartbeat == null || heartbeat.isCancelled()) {
+
+			pingParams = new PingParams();
+			pingParams.interval = interval;
+
 			log.debug("{} Enabling heartbeat with an interval of {} ms", label,
 					interval);
 			this.heartbeating = true;
@@ -250,8 +260,10 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 				@Override
 				public void run() {
 					try {
-						JsonObject response = sendRequest(METHOD_PING)
-								.getAsJsonObject();
+						JsonObject response = sendRequest(METHOD_PING,
+								pingParams).getAsJsonObject();
+
+						pingParams = null;
 
 						if (!PONG.equals(response.get(PONG_PAYLOAD)
 								.getAsString())) {

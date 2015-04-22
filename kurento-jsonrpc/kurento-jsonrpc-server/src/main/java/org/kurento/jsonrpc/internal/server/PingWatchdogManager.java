@@ -22,22 +22,21 @@ public class PingWatchdogManager {
 	public class PingWatchdogSession {
 
 		private static final long MAX_PING_INTERVAL = 20000;
-		
-		private String transportId;
-		private long pingInterval = MAX_PING_INTERVAL;
-		private boolean pingIntervalCalculated = false;
-		private volatile ScheduledFuture<?> lastTask;
 
-		private long firstPingArrivalTime;
-		private int currentPingMeasures = 0;
+		private String transportId;
 		private String sessionId;
 
+		private long pingInterval = -1;
+
+		private volatile ScheduledFuture<?> lastTask;
+
 		private Runnable closeSessionTask = new Runnable() {
+			@Override
 			public void run() {
 				log.info(
-						"Closing session with sessionId={} and transportId={} for not receiving ping in "
-								+ (pingInterval * NUM_NO_PINGS_TO_CLOSE)
-								+ " millis", sessionId, transportId);
+						"Closing session with sessionId={} and transportId={} for not receiving ping in {}"
+								+ " millis", sessionId, transportId,
+						pingInterval * NUM_NO_PINGS_TO_CLOSE);
 				closer.closeSession(transportId);
 			}
 		};
@@ -46,44 +45,36 @@ public class PingWatchdogManager {
 			this.transportId = transportId;
 		}
 
-		public void pingReceived() {
+		public void pingReceived(long interval) {
 
-			if (!pingIntervalCalculated) {
+			if (pingInterval == -1) {
 
-				if(currentPingMeasures == 0){
-					log.info("Activated PingWatchdog for session {} with transportId {}",
-							sessionId, transportId);
+				if (interval == -1) {
+					pingInterval = MAX_PING_INTERVAL;
+					log.warn("Received first ping request without 'interval'");
+				} else {
+					pingInterval = interval;
 				}
-				
-				// First ping is ignored because its receiving time is not very
-				// precise
-				if (currentPingMeasures == 1) {
-					firstPingArrivalTime = System.currentTimeMillis();
-				} else if (currentPingMeasures == NUM_NO_PINGS_TO_CLOSE + 1) {
-					pingInterval = (long) (((double) (System
-							.currentTimeMillis() - firstPingArrivalTime)) / NUM_NO_PINGS_TO_CLOSE);
 
-					pingIntervalCalculated = true;
-					
-					log.info("Measured ping interval in {}"
-							+ " millis in session {} with transportId {}",
-							pingInterval, sessionId, transportId);
-					activateSessionCloser();
-				}
-				currentPingMeasures++;
-
+				log.info(
+						"Setting ping interval to {}"
+								+ " millis in session with transportId={}. "
+								+ "Connection is closed if a ping is not received in {}x{}={} millis",
+						pingInterval, this.transportId, pingInterval,
+						NUM_NO_PINGS_TO_CLOSE, NUM_NO_PINGS_TO_CLOSE
+								* pingInterval);
 			}
-			
+
 			activateSessionCloser();
 		}
 
 		private void activateSessionCloser() {
-			
+
 			disablePrevPingWatchdog();
 
 			lastTask = taskScheduler.schedule(closeSessionTask,
-					new Date(System.currentTimeMillis()
-							+ (NUM_NO_PINGS_TO_CLOSE * pingInterval)));
+					new Date(System.currentTimeMillis() + NUM_NO_PINGS_TO_CLOSE
+							* pingInterval));
 		}
 
 		public void setSessionId(String sessionId) {
@@ -95,8 +86,11 @@ public class PingWatchdogManager {
 			disablePrevPingWatchdog();
 
 			if (pingWachdog) {
-				log.info("Restarting timer to consider disconnected client if pings are not received in "
-						+ NUM_NO_PINGS_TO_CLOSE * pingInterval + " millis");
+				log.info(
+						"Setting new transportId={} for sessionId={}. "
+								+ "Restarting timer to consider disconnected client if pings are not received in {}"
+								+ " millis", transportId, sessionId,
+						NUM_NO_PINGS_TO_CLOSE * pingInterval);
 				activateSessionCloser();
 			}
 		}
@@ -126,10 +120,10 @@ public class PingWatchdogManager {
 		}
 	}
 
-	public void pingReceived(String transportId) {
+	public void pingReceived(String transportId, long interval) {
 		if (pingWachdog) {
 			PingWatchdogSession session = getOrCreatePingSession(transportId);
-			session.pingReceived();
+			session.pingReceived(interval);
 		}
 	}
 
@@ -175,15 +169,14 @@ public class PingWatchdogManager {
 	public void disablePingWatchdogForSession(String transportId) {
 		PingWatchdogSession session = sessions.get(transportId);
 		if (session != null) {
-			log.info(
-					"Disabling PingWatchdog for session with transportId {}",
+			log.info("Disabling PingWatchdog for session with transportId {}",
 					transportId);
 			session.disablePrevPingWatchdog();
 		} else {
 			log.warn(
 					"Trying to disable PingWatchdog for unexisting session with transportId {}",
 					transportId);
-		}		
+		}
 	}
 
 }

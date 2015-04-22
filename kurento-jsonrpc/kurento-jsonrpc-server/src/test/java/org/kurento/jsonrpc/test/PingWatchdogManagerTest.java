@@ -20,9 +20,9 @@ public class PingWatchdogManagerTest {
 		PingWatchdogManager manager = new PingWatchdogManager(executor, closer);
 
 		manager.setPingWatchdog(true);
-		
+
 		for (int i = 0; i < 10; i++) {
-			manager.pingReceived("TransportID");
+			manager.pingReceived("TransportID", 100);
 			Thread.sleep(100);
 		}
 

@@ -54,6 +54,8 @@ import com.google.gson.reflect.TypeToken;
 
 public class ProtocolManager {
 
+	private static final String INTERVAL_PROPERTY = "interval";
+
 	public interface ServerSessionFactory {
 		ServerSession createSession(String sessionId, Object registerInfo,
 				SessionsManager sessionsManager);
@@ -108,7 +110,7 @@ public class ProtocolManager {
 						.getByTransportId(transportId);
 				if (serverSession != null) {
 					serverSession
-					.closeNativeSession("Close for not receive ping from client");
+							.closeNativeSession("Close for not receive ping from client");
 				} else {
 					log.warn("Ping wachdog trying to close a non-registered ServerSession");
 				}
@@ -250,7 +252,16 @@ public class ProtocolManager {
 			String transportId) throws IOException {
 		if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
 
-			pingWachdogManager.pingReceived(transportId);
+			long interval = -1;
+
+			if (request.getParams() != null) {
+				JsonObject element = (JsonObject) request.getParams();
+				if (element.has(INTERVAL_PROPERTY)) {
+					interval = element.get(INTERVAL_PROPERTY).getAsLong();
+				}
+			}
+
+			pingWachdogManager.pingReceived(transportId, interval);
 
 			String sessionId = request.getSessionId();
 			JsonObject pongPayload = new JsonObject();
@@ -348,7 +359,7 @@ public class ProtocolManager {
 
 				log.info(
 						label
-						+ "Configuring close timeout for session: {} transportId: {} at {}",
+								+ "Configuring close timeout for session: {} transportId: {} at {}",
 						session.getSessionId(), transportId,
 						format.format(closeTime));
 
@@ -367,8 +378,8 @@ public class ProtocolManager {
 			} catch (TaskRejectedException e) {
 				log.warn(
 						label
-						+ "Close timeout for session {} with transportId {} can not be set "
-						+ "because the scheduler is shutdown",
+								+ "Close timeout for session {} with transportId {} can not be set "
+								+ "because the scheduler is shutdown",
 						session.getSessionId(), transportId);
 			}
 		}
