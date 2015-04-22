@@ -16,7 +16,6 @@
   "scripts": {
     "coveralls": "scripts/coveralls",
     "coverallsBrowser": "scripts/coveralls -- testBrowser",
-    "install": "scripts/install",
     "test": "scripts/test",
     "testBrowser": "scripts/testBrowser"
   },
@@ -68,7 +67,6 @@
     "grunt-shell": "^1.1.2",
     "minifyify": "^6.4.0",
     "node-static": "^0.7.6",
-    "npm": "*",
     "qunit-cli": "KurentoForks/qunit-cli",
     "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",
     "qunit-reporter-lcov": "^1.0.2",
