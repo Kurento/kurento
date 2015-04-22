@@ -9,6 +9,13 @@ else
   exit 1
 fi
 
+cur_dir=`dirname "$0"`
+if [ ! "${DIR:0:1}" = "/" ]
+then
+  cur_dir=`pwd`/$cur_dir
+fi
+PATH=$PATH:$cur_dir
+
 echo Create tag $CREATE_TAG
 
 PROJECT_VERSION=`kurento_get_version.sh`

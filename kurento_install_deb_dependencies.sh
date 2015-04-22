@@ -5,7 +5,6 @@ if [ ! -s debian/control ] ; then
   exit 1
 fi
 
-
 if [ $(dpkg -l | grep postpone | wc -l) -lt 1 ]
 then
   DEBIAN_FRONTEND=noninteractive sudo apt-get install --force-yes -y postpone

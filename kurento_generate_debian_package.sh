@@ -11,6 +11,13 @@ then
   echo "You should indentify an gnupg key in environment variable KEY_ID, use one from gpg -K"
 fi
 
+cur_dir=`dirname "$0"`
+if [ ! "${DIR:0:1}" = "/" ]
+then
+  cur_dir=`pwd`/$cur_dir
+fi
+PATH=$PATH:$cur_dir
+
 PROJECT_NAME=$1
 BRANCH=$2
 
