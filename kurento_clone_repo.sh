@@ -20,9 +20,9 @@ then
   exit 1
 fi
 
-echo "Preparing to clone project: ${KURENTO_REPO_URL}/${PROJECT_NAME} (${BRANCH})"
+echo "Preparing to clone project: ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} (${BRANCH})"
 
-git clone ${KURENTO_REPO_URL}/${PROJECT_NAME} || exit 1
+git clone ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} || exit 1
 
 cd ${PROJECT_NAME} || exit 1
 
