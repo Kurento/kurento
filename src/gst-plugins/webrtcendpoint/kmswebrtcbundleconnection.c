@@ -79,7 +79,7 @@ static void
 
 static void
 kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
-    GstBin * bin, gboolean local_offer)
+    GstBin * bin, gboolean active)
 {
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
@@ -87,8 +87,8 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
   KmsWebRtcTransport *tr = priv->tr;
 
   /* srcs */
-  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", !local_offer, NULL);
-  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", !local_offer, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", active, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", active, NULL);
   gst_bin_add_many (bin,
       g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);

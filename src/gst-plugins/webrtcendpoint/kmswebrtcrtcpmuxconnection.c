@@ -71,7 +71,7 @@ kms_webrtc_rtcp_mux_connection_set_certificate_pem_file (KmsWebRtcBaseConnection
 
 static void
 kms_webrtc_rtcp_mux_connection_add (KmsIRtpConnection * base_rtp_conn,
-    GstBin * bin, gboolean local_offer)
+    GstBin * bin, gboolean active)
 {
   KmsWebRtcRtcpMuxConnection *self =
       KMS_WEBRTC_RTCP_MUX_CONNECTION (base_rtp_conn);
@@ -79,8 +79,8 @@ kms_webrtc_rtcp_mux_connection_add (KmsIRtpConnection * base_rtp_conn,
   KmsWebRtcTransport *tr = priv->tr;
 
   /* srcs */
-  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", !local_offer, NULL);
-  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", !local_offer, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", active, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", active, NULL);
   gst_bin_add_many (bin,
       g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);

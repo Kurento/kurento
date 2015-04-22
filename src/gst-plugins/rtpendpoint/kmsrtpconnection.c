@@ -191,7 +191,7 @@ kms_rtp_connection_set_remote_info (KmsRtpBaseConnection * base_conn,
 
 static void
 kms_rtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
-    gboolean local_offer)
+    gboolean active)
 {
   KmsRtpConnection *self = KMS_RTP_CONNECTION (base_rtp_conn);
   KmsRtpConnectionPrivate *priv = self->priv;

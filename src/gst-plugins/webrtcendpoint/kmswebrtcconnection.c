@@ -96,13 +96,12 @@ add_tr (KmsWebRtcTransport * tr, GstBin * bin, gboolean is_client)
 
 static void
 kms_webrtc_rtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
-    gboolean local_offer)
+    gboolean active)
 {
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
-  gboolean is_client = !local_offer;
 
-  add_tr (self->priv->rtp_tr, bin, is_client);
-  add_tr (self->priv->rtcp_tr, bin, is_client);
+  add_tr (self->priv->rtp_tr, bin, active);
+  add_tr (self->priv->rtcp_tr, bin, active);
 }
 
 static GstPad *
