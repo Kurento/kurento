@@ -14,9 +14,9 @@ then
   BRANCH=master
 fi
 
-if [ "${KURENTO_REPO_URL}x" == "x" ]
+if [ "${KURENTO_GIT_REPOSITORY}x" == "x" ]
 then
-  echo "KURENTO_REPO_URL environment variable should be to the base url for the repos"
+  echo "KURENNTO_GIT_REPOSITORY environment variable should be to the base url for the repos"
   exit 1
 fi
 
