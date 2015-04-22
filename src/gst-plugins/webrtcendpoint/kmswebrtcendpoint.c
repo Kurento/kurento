@@ -731,6 +731,13 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   gboolean bundle;
   guint len, i;
 
+  /*  [rfc5245#section-5.2]
+   *  The agent that generated the offer which
+   *  started the ICE processing MUST take the controlling role, and the
+   *  other MUST take the controlled role.
+   */
+  g_object_set (self->priv->agent, "controlling-mode", local_offer, NULL);
+
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->start_transport_send
@@ -1107,8 +1114,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
     return;
   }
 
-  g_object_set (self->priv->agent, "controlling-mode", FALSE, "upnp", FALSE,
-      NULL);
+  g_object_set (self->priv->agent, "upnp", FALSE, NULL);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (gathering_done), self);
 }
