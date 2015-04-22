@@ -112,10 +112,10 @@ KEY=$ID_RSA_FILE
 
 for i in ../*${ver}_*.deb
 do
-  curl --insecure --key $KEY --cert $CERT -X POST ${REPRERPRO_URL}?dist=$DIST --data-binary @$i || echo "Failed to upload package $i"
+  curl --insecure --key $KEY --cert $CERT -X POST ${REPRERPRO_URL}/upload?dist=$DIST --data-binary @$i || echo "Failed to upload package $i"
 
   if [ $rc = 0 ]
   then
-    curl --insecure --key $KEY --cert $CERT -X POST https://ubuntu.kurento.org/upload?dist=$DIST-releases --data-binary @$i || echo "Failed to upload package $i"
+    curl --insecure --key $KEY --cert $CERT -X POST ${REPRERPRO_URL}/upload?dist=$DIST-releases --data-binary @$i || echo "Failed to upload package $i"
   fi
 done
