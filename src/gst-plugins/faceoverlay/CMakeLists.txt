@@ -1,6 +1,6 @@
 include_directories(
-  ${gstreamer-1.0_INCLUDE_DIRS}
-  ${gstreamer-video-1.0_INCLUDE_DIRS}
+  ${gstreamer-1.5_INCLUDE_DIRS}
+  ${gstreamer-video-1.5_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${opencv_INCLUDE_DIRS}
 )
@@ -15,8 +15,8 @@ add_library(faceoverlay MODULE ${FACEOVERLAY_SOURCES})
 add_dependencies(faceoverlay imageoverlay facedetector)
 
 target_link_libraries(faceoverlay
-  ${gstreamer-1.0_LIBRARIES}
-  ${gstreamer-video-1.0_LIBRARIES}
+  ${gstreamer-1.5_LIBRARIES}
+  ${gstreamer-video-1.5_LIBRARIES}
   ${opencv_LIBRARIES}
 )
 

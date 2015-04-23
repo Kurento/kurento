@@ -31,7 +31,6 @@
 #include <opencv/cv.h>
 
 #include <opencv/highgui.h>
-#include <gstreamer-1.0/gst/video/gstvideofilter.h>
 #include <libsoup/soup.h>
 
 #define TEMP_PATH "/tmp/XXXXXX"

@@ -20,16 +20,16 @@ install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
 include (GenericFind)
 
-set (GST_REQUIRED ~1.4.4)
+set (GST_REQUIRED ~1.5.0)
 set (GLIB_REQUIRED ^2.38)
 set (OPENCV_REQUIRED ^2.0.0)
 set (LIBSOUP_REQUIRED ^2.40)
 
 #gst-plugins dependencies
-generic_find (LIBNAME gstreamer-1.0 VERSION ${GST_REQUIRED} REQUIRED)
-generic_find (LIBNAME gstreamer-base-1.0 VERSION ${GST_REQUIRED} REQUIRED)
-generic_find (LIBNAME gstreamer-video-1.0 VERSION ${GST_REQUIRED} REQUIRED)
-generic_find (LIBNAME gstreamer-check-1.0 VERSION ${GST_REQUIRED})
+generic_find (LIBNAME gstreamer-1.5 VERSION ${GST_REQUIRED} REQUIRED)
+generic_find (LIBNAME gstreamer-base-1.5 VERSION ${GST_REQUIRED} REQUIRED)
+generic_find (LIBNAME gstreamer-video-1.5 VERSION ${GST_REQUIRED} REQUIRED)
+generic_find (LIBNAME gstreamer-check-1.5 VERSION ${GST_REQUIRED})
 generic_find (LIBNAME opencv VERSION ${OPENCV_REQUIRED} REQUIRED)
 generic_find (LIBNAME libsoup-2.4 VERSION ${LIBSOUP_REQUIRED} REQUIRED)
 
@@ -40,7 +40,7 @@ set (MANUAL_CHECK OFF CACHE BOOL "Tests will generate files")
 
 include(GNUInstallDirs)
 
-set (CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
+set (CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.5)
 set (KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 
 set (BINARY_LOCATION "http://files.kurento.org/" CACHE STRING "Local binary directory expressed as an URI ( http:// or file:/// )")
