@@ -469,9 +469,14 @@ kms_webrtc_endpoint_local_sdp_add_default_info (KmsWebrtcEndpoint * self)
   KmsBaseSdpEndpoint *base_sdp_ep = KMS_BASE_SDP_ENDPOINT (self);
   SdpMessageContext *local_ctx =
       kms_base_sdp_endpoint_get_local_sdp_ctx (base_sdp_ep);
+  const GstSDPMessage *sdp =
+      kms_sdp_message_context_get_sdp_message (local_ctx);
   const GSList *item = kms_sdp_message_context_get_medias (local_ctx);
   gboolean use_ipv6;
+  GstSDPConnection *conn;
 
+  conn = (GstSDPConnection *) gst_sdp_message_get_connection (sdp);
+  gst_sdp_connection_clear (conn);
   g_object_get (base_sdp_ep, "use-ipv6", &use_ipv6, NULL);
 
   for (; item != NULL; item = g_slist_next (item)) {
