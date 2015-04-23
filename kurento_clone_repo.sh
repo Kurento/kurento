@@ -22,6 +22,7 @@ fi
 
 if [ ! "${GIT_SSH_KEY}x" == "x" ]
 then
+  echo "Adding key: ${GIT_SSH_KEY}"
   ssh-add ${GIT_SSH_KEY}
 fi
 
