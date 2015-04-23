@@ -16,7 +16,7 @@ fi
 
 if [ "${KURENTO_GIT_REPOSITORY}x" == "x" ]
 then
-  echo "KURENNTO_GIT_REPOSITORY environment variable should be to the base url for the repos"
+  echo "KURENTO_GIT_REPOSITORY environment variable should be to the base url for the repos"
   exit 1
 fi
 

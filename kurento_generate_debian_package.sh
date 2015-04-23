@@ -102,9 +102,9 @@ then
   exit 1
 fi
 
-if [ "${REPRERPRO_URL}x" == "x" ]
+if [ "${REPREPRO_URL}x" == "x" ]
 then
-  echo "You need to specify environment variable REPRERPRO_URL with the address of your repository"
+  echo "You need to specify environment variable REPREPRO_URL with the address of your repository"
   exit 1
 fi
 
@@ -112,10 +112,10 @@ KEY=$ID_RSA_FILE
 
 for i in ../*${ver}_*.deb
 do
-  curl --insecure --key $KEY --cert $CERT -X POST ${REPRERPRO_URL}/upload?dist=$DIST --data-binary @$i || echo "Failed to upload package $i"
+  curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST --data-binary @$i || echo "Failed to upload package $i"
 
   if [ $rc = 0 ]
   then
-    curl --insecure --key $KEY --cert $CERT -X POST ${REPRERPRO_URL}/upload?dist=$DIST-releases --data-binary @$i || echo "Failed to upload package $i"
+    curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST-releases --data-binary @$i || echo "Failed to upload package $i"
   fi
 done
