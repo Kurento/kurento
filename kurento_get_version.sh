@@ -2,7 +2,12 @@
 
 # This scripts gets project version from CMakeList.txt, pom.xml or configure.ac
 
-exec 3>&1 >/dev/tty
+if [ -f /dev/tty ]
+then
+  exec 3>&1 >/dev/tty
+else
+  exec 3>&1 >/dev/null
+fi
 
 if [ -f CMakeLists.txt ]
 then
