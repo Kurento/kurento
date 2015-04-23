@@ -66,7 +66,7 @@ public class SystemMonitor {
 	private final static String OK = "ok";
 	private final static String ERR = "error: ";
 
-	public static final String MONITOR_PORT_PROP = "monitor.port";
+	public static final String MONITOR_PORT_PROP = "kms.monitor.port";
 	public static final int MONITOR_PORT_DEFAULT = 12345;
 	public static final int KMS_WAIT_TIMEOUT = 60; // seconds
 	public static final String OUTPUT_CSV = "/kms-monitor.csv";

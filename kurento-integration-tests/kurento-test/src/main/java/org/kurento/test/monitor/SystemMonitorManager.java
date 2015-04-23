@@ -66,6 +66,23 @@ public class SystemMonitorManager {
 	private SshConnection remoteKms;
 	private int monitorPort;
 
+	public SystemMonitorManager(String kmsHost, String kmsLogin, String kmsPem) {
+		try {
+			monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
+			remoteKms = new SshConnection(kmsHost, kmsLogin, null, kmsPem);
+			remoteKms.start();
+			remoteKms.createTmpFolder();
+			copyMonitorToRemoteKms();
+			startRemoteKms();
+			monitor = new SystemMonitor();
+			int monitorRate = getProperty(DEFAULT_MONITOR_RATE_PROPERTY,
+					DEFAULT_MONITOR_RATE_DEFAULT);
+			monitor.setSamplingTime(monitorRate);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public SystemMonitorManager() {
 		try {
 			String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
