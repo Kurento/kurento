@@ -44,7 +44,7 @@ import com.google.gson.JsonElement;
 
 public class WebSocketServerSession extends ServerSession {
 
-	private static Logger LOG = LoggerFactory
+	private static Logger log = LoggerFactory
 			.getLogger(WebSocketServerSession.class);
 
 	private WebSocketSession wsSession;
@@ -92,7 +92,7 @@ public class WebSocketServerSession extends ServerSession {
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
-						LOG.error("Exception while processing response", e);
+						log.error("Exception while processing response", e);
 					}
 				} catch (Exception e) {
 					continuation.onError(e);
@@ -103,6 +103,8 @@ public class WebSocketServerSession extends ServerSession {
 
 	private <P, R> Response<R> sendRequestWebSocket(Request<P> request,
 			Class<R> resultClass) {
+
+		log.info("Req-> {}", request.toString());
 
 		Future<Response<JsonElement>> responseFuture = null;
 
@@ -130,6 +132,9 @@ public class WebSocketServerSession extends ServerSession {
 		try {
 			responseJsonObject = responseFuture.get(
 					JsonRpcClientWebSocket.TIMEOUT, TimeUnit.MILLISECONDS);
+
+			log.info("<-Res {}", responseJsonObject.toString());
+
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
 			throw new JsonRpcException(
@@ -174,7 +179,7 @@ public class WebSocketServerSession extends ServerSession {
 			wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(),
 					reason));
 		} catch (IOException e) {
-			LOG.warn("Exception closing webSocket session", e);
+			log.warn("Exception closing webSocket session", e);
 		}
 	}
 
