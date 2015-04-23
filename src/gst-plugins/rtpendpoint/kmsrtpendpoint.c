@@ -206,9 +206,11 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
 static void
 kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
-    base_sdp_endpoint, SdpMessageContext * remote_ctx)
+    base_sdp_endpoint, gboolean offerer)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
+  SdpMessageContext *remote_ctx =
+      kms_base_sdp_endpoint_get_remote_sdp_ctx (base_sdp_endpoint);
   const GstSDPMessage *sdp =
       kms_sdp_message_context_get_sdp_message (remote_ctx);
   const GSList *item = kms_sdp_message_context_get_medias (remote_ctx);
@@ -216,7 +218,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->start_transport_send
-      (base_sdp_endpoint, remote_ctx);
+      (base_sdp_endpoint, offerer);
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;

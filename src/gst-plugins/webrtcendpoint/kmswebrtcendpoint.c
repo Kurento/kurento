@@ -655,11 +655,11 @@ kms_webrtc_endpoint_add_stored_ice_candidates (KmsWebrtcEndpoint * self)
 
 static void
 kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
-    base_sdp_endpoint, SdpMessageContext * remote_ctx)
+    base_sdp_endpoint, gboolean offerer)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
-  gboolean offerer =
-      kms_sdp_message_context_get_type (remote_ctx) == KMS_SDP_ANSWER;
+  SdpMessageContext *remote_ctx =
+      kms_base_sdp_endpoint_get_remote_sdp_ctx (base_sdp_endpoint);
   const GstSDPMessage *sdp =
       kms_sdp_message_context_get_sdp_message (remote_ctx);
   const GSList *item = kms_sdp_message_context_get_medias (remote_ctx);
@@ -675,7 +675,7 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->start_transport_send
-      (base_sdp_endpoint, remote_ctx);
+      (base_sdp_endpoint, offerer);
 
   ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
   pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
