@@ -9,6 +9,7 @@ import org.kurento.client.internal.TransactionImpl;
 import org.kurento.client.internal.client.operation.MediaObjectCreationOperation;
 import org.kurento.client.internal.client.operation.Operation;
 import org.kurento.client.internal.transport.serialization.ObjectRefsManager;
+import org.kurento.client.internal.transport.serialization.ParamsFlattener;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ import org.slf4j.LoggerFactory;
 public class RomManager implements ObjectRefsManager {
 
 	private static final Logger log = LoggerFactory.getLogger(RomManager.class);
+
+	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
 	private final RomClientObjectManager manager;
 	private final RomClient client;
@@ -62,29 +65,29 @@ public class RomManager implements ObjectRefsManager {
 
 		client.create(remoteClassName, constructorParams,
 				new Continuation<String>() {
-					@Override
-					public void onSuccess(String objectRef) {
-						try {
-							cont.onSuccess(new RemoteObject(objectRef,
-									remoteClassName, RomManager.this));
-						} catch (Exception e) {
-							log.warn(
-									"[Continuation] error invoking onSuccess implemented by client",
-									e);
-						}
-					}
+			@Override
+			public void onSuccess(String objectRef) {
+				try {
+					cont.onSuccess(new RemoteObject(objectRef,
+							remoteClassName, RomManager.this));
+				} catch (Exception e) {
+					log.warn(
+							"[Continuation] error invoking onSuccess implemented by client",
+							e);
+				}
+			}
 
-					@Override
-					public void onError(Throwable cause) {
-						try {
-							cont.onError(cause);
-						} catch (Exception e) {
-							log.warn(
-									"[Continuation] error invoking onError implemented by client",
-									e);
-						}
-					}
-				});
+			@Override
+			public void onError(Throwable cause) {
+				try {
+					cont.onError(cause);
+				} catch (Exception e) {
+					log.warn(
+							"[Continuation] error invoking onError implemented by client",
+							e);
+				}
+			}
+		});
 	}
 
 	public synchronized void create(String remoteClassName,
@@ -115,27 +118,17 @@ public class RomManager implements ObjectRefsManager {
 		return (T) remoteObject.getKurentoObject();
 	}
 
-	// FIXME: This method assumes that specified class is of the same module as
-	// concrete one.
 	@SuppressWarnings("unchecked")
 	private <T> Class<T> obtainConcreteClass(String objectRef, Class<T> clazz) {
 
 		if (objectRef.endsWith(clazz.getSimpleName())) {
 			return clazz;
 		} else {
-			String className = objectRef
-					.substring(objectRef.lastIndexOf("_") + 1);
-			String concreteClassName = clazz.getPackage().getName() + "."
-					+ className;
-			try {
-				return (Class<T>) Class.forName(concreteClassName);
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(
-						"Class "
-								+ concreteClassName
-								+ " not found. If correct class is found in other package, you hit a bug",
-						e);
-			}
+
+			String romFullyClassName = objectRef.substring(objectRef
+					.lastIndexOf("_") + 1);
+
+			return (Class<T>) FLATTENER.getClassFor(romFullyClassName);
 		}
 	}
 

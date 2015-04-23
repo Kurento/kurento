@@ -3,7 +3,6 @@ package org.kurento.client.internal.transport.serialization;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -13,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.kurento.client.TransactionNotCommitedException;
 import org.kurento.client.internal.ModuleName;
@@ -31,13 +29,13 @@ import org.slf4j.LoggerFactory;
 
 public class ParamsFlattener {
 
-	private static String MODULE_INFO_PACKAGE = "org.kurento.module";
+	private static final String MODULE_PROPERTY = "__module__";
+	private static final String TYPE_PROPERTY = "__type__";
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ParamsFlattener.class);
 
-	private final ConcurrentHashMap<String, String> packageNames = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<String, Class<?>> usedClasses = new ConcurrentHashMap<>();
+	private ModuleClassesManager moduleClassesManager = new ModuleClassesManager();
 
 	public enum RomType {
 		VOID, INTEGER, BOOLEAN, FLOAT, DOUBLE, STRING, CT_ENUM, CT_REGISTER, LIST, REMOTE_CLASS, MAP
@@ -149,6 +147,7 @@ public class ParamsFlattener {
 	 * @param param
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	private Object flattenParam(Object param, boolean inTx) {
 
 		if (param == null) {
@@ -205,6 +204,7 @@ public class ParamsFlattener {
 
 	// TODO Refactor this method because there are other method very similar to
 	// this but with params instead result
+	@SuppressWarnings("unchecked")
 	public Object flattenResult(Object result, RemoteObjectManager manager) {
 
 		if (result == null) {
@@ -264,9 +264,9 @@ public class ParamsFlattener {
 			}
 		}
 
-		propsMap.put("__type__", result.getClass().getSimpleName());
+		propsMap.put(TYPE_PROPERTY, result.getClass().getSimpleName());
 		ModuleName name = result.getClass().getAnnotation(ModuleName.class);
-		propsMap.put("__module__", name.value());
+		propsMap.put(MODULE_PROPERTY, name.value());
 
 		return new Props(propsMap);
 	}
@@ -318,9 +318,9 @@ public class ParamsFlattener {
 				}
 			}
 		}
-		propsMap.put("__type__", param.getClass().getSimpleName());
+		propsMap.put(TYPE_PROPERTY, param.getClass().getSimpleName());
 		ModuleName name = param.getClass().getAnnotation(ModuleName.class);
-		propsMap.put("__module__", name.value());
+		propsMap.put(MODULE_PROPERTY, name.value());
 		return new Props(propsMap);
 	}
 
@@ -352,53 +352,15 @@ public class ParamsFlattener {
 	}
 
 	private Class<?> getOrCreateClass(Props props) {
-		Class<?> clazz = null;
 
-		String complexTypeName = (String) props.getProp("__type__");
-		String moduleName = (String) props.getProp("__module__");
-		String moduleNameInit = moduleName.substring(0, 1).toUpperCase();
-		String moduleNameEnd = moduleName.substring(1, moduleName.length());
+		String typeName = (String) props.getProp(TYPE_PROPERTY);
+		String moduleName = (String) props.getProp(MODULE_PROPERTY);
 
-		if (complexTypeName != null) {
+		return moduleClassesManager.getClassFor(moduleName, typeName);
+	}
 
-			try {
-				String classPackageName = MODULE_INFO_PACKAGE + "."
-						+ moduleNameInit + moduleNameEnd + "ModuleInfo";
-
-				String packageName = packageNames.get(classPackageName);
-				if (packageName == null) {
-					Class<?> clazzPackage = Class.forName(classPackageName);
-
-					Method method = clazzPackage.getMethod("getPackageName");
-					packageName = (String) method.invoke(clazzPackage);
-					packageNames.put(classPackageName, packageName);
-				}
-
-				String className = packageName + "." + complexTypeName;
-				clazz = usedClasses.get(className);
-
-				if (clazz == null) {
-					clazz = Class.forName(className);
-					usedClasses.put(className, clazz);
-				}
-
-			} catch (ClassNotFoundException e) {
-				throw new ProtocolException("Class '" + complexTypeName
-						+ "' not found", e);
-			} catch (NoSuchMethodException e) {
-				throw new ProtocolException("Method not found", e);
-			} catch (SecurityException e) {
-				throw new ProtocolException("Security Exception", e);
-			} catch (IllegalAccessException e) {
-				throw new ProtocolException("Illegal Access", e);
-			} catch (IllegalArgumentException e) {
-				throw new ProtocolException("Illegal Argument", e);
-			} catch (InvocationTargetException e) {
-				throw new ProtocolException("Invocation Target", e);
-			}
-		}
-
-		return clazz;
+	public Class<?> getClassFor(String fullyClassName) {
+		return moduleClassesManager.getClassFor(fullyClassName);
 	}
 
 	public Object unflattenValue(String paramName, Type type, Object value,
