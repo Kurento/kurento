@@ -35,13 +35,22 @@ std::once_flag init_flag;
 static void
 init_internal()
 {
+  boost::property_tree::ptree ac, audioCodecs, vc, videoCodecs;
   gst_init (NULL, NULL);
 
   moduleManager.loadModulesFromDirectories ("../../src/server");
 
   config.add ("configPath", "../../../tests" );
-  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
-  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
+  config.add ("modules.kurento.SdpEndpoint.numAudioMedias", 1);
+  config.add ("modules.kurento.SdpEndpoint.numVideoMedias", 1);
+
+  ac.put ("name", "opus/48000/2");
+  audioCodecs.push_back (std::make_pair ("", ac) );
+  config.add_child ("modules.kurento.SdpEndpoint.audioCodecs", audioCodecs);
+
+  vc.put ("name", "VP8/90000");
+  videoCodecs.push_back (std::make_pair ("", vc) );
+  config.add_child ("modules.kurento.SdpEndpoint.videoCodecs", videoCodecs);
 
   mediaPipelineId = moduleManager.getFactory ("MediaPipeline")->createObject (
                       config, "",
@@ -139,6 +148,8 @@ BOOST_AUTO_TEST_CASE (ice_state_changes)
   std::string offer = webRtcEpOfferer->generateOffer ();
   std::string answer = webRtcEpAnswerer->processOffer (offer);
   webRtcEpOfferer->processAnswer (answer);
+
+  std::cout << offer << std::endl;
 
   webRtcEpOfferer->gatherCandidates ();
   webRtcEpAnswerer->gatherCandidates ();
