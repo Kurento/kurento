@@ -543,7 +543,6 @@ kms_image_overlay_init (KmsImageOverlay * imageoverlay)
 static gboolean
 kms_image_overlay_sink_events (GstBaseTransform * trans, GstEvent * event)
 {
-  gboolean ret;
   KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (trans);
 
   switch (GST_EVENT_TYPE (event)) {
@@ -562,8 +561,8 @@ kms_image_overlay_sink_events (GstBaseTransform * trans, GstEvent * event)
     default:
       break;
   }
-  ret = gst_pad_push_event (trans->srcpad, event);
-  return ret;
+
+  return gst_pad_event_default (trans->sinkpad, GST_OBJECT (trans), event);
 }
 
 static void
