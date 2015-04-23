@@ -20,6 +20,11 @@ then
   exit 1
 fi
 
+if [ ! "${GIT_SSH_KEY}x" == "x" ]
+then
+  ssh-add ${GIT_SSH_KEY}
+fi
+
 echo "Preparing to clone project: ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} (${BRANCH})"
 
 git clone ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} || exit 1
