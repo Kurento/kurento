@@ -1459,6 +1459,9 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
   test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
       pcmu_expected_caps, "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000",
       FALSE);
+  test_offerer_audio_video_answerer_video_sendrecv ("mulawenc",
+      pcmu_expected_caps, "PCMU/8000", "vp8enc", vp8_expected_caps, "VP8/90000",
+      TRUE);
 }
 
 GST_END_TEST
