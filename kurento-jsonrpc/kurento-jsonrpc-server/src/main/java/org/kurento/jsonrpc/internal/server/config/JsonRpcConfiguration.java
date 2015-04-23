@@ -199,7 +199,9 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 					.addHandler(wsHandler, path);
 
 			if (handler.isSockJSEnabled()) {
-				registration.withSockJS();
+				registration.withSockJS().setSessionCookieNeeded(false);
+				// .setClientLibraryUrl(
+				// "../../bower_components/sockjs/sockjs.js");
 			}
 
 			if (handler.getLabel() != null) {
@@ -210,7 +212,6 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 	// This methods workaround the bug
 	// https://jira.springsource.org/browse/SPR-10841
-
 	@Bean
 	public TomcatEmbeddedServletContainerFactory tomcatContainerFactory() {
 		TomcatEmbeddedServletContainerFactory factory = new TomcatEmbeddedServletContainerFactory();

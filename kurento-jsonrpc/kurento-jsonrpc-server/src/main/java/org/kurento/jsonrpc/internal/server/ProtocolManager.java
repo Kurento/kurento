@@ -140,7 +140,7 @@ public class ProtocolManager {
 	 * Process incoming message. The response is sent using responseSender. If
 	 * null, the session will be used.
 	 *
-	 * @param messageJson
+	 * @param messagetJsonObject
 	 * @param factory
 	 * @param responseSender
 	 * @param internalSessionId
@@ -250,7 +250,7 @@ public class ProtocolManager {
 	private void processPingMessage(ServerSessionFactory factory,
 			Request<JsonElement> request, ResponseSender responseSender,
 			String transportId) throws IOException {
-		if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
+		if ((maxHeartbeats == 0) || (maxHeartbeats > ++heartbeats)) {
 
 			long interval = -1;
 
@@ -281,8 +281,8 @@ public class ProtocolManager {
 
 			ServerSession session = getSession(factory, transportId, request);
 
-			responseSender.sendResponse(new Response<String>(session
-					.getSessionId(), request.getId(), "OK"));
+			responseSender.sendResponse(new Response<>(session.getSessionId(),
+					request.getId(), "OK"));
 
 		} else {
 
