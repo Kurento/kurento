@@ -15,22 +15,38 @@
 
 package org.kurento.repository;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+
 import java.util.Properties;
 
+import org.kurento.commons.ConfigFileManager;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Lazy;
 
-import com.google.common.io.Files;
+@SpringBootApplication
+public class KurentoRepositoryServerApp {
 
-@ComponentScan
-@EnableAutoConfiguration
-public class BootApplication {
+	static {
+		ConfigFileManager.loadConfigFile("repository.conf.json");
+	}
+
+	// TODO remove if not used
+	private static final Logger log = LoggerFactory
+			.getLogger(KurentoRepositoryServerApp.class);
+
+	public static int SERVER_PORT = getProperty("repository.port", 7676);
+	public static String SERVER_HOSTNAME = getProperty("repository.hostname",
+			"localhost");
+	public static String REPO_TYPE = getProperty("repository.type",
+			RepoType.FILESYSTEM.getTypeValue());
 
 	public static void main(String[] args) {
 		start();
@@ -51,43 +67,37 @@ public class BootApplication {
 	}
 
 	@Bean
+	@Lazy
 	public RepositoryApiConfiguration repositoryApiConfiguration() {
-
-		String port = getPort();
-
 		RepositoryApiConfiguration config = new RepositoryApiConfiguration();
-
-		// TODO obtain values from configuration
-		RepoType type = RepoType.MONGODB;
+		config.setWebappPublicURL("http://" + SERVER_HOSTNAME + ":"
+				+ SERVER_PORT + "/");
+		RepoType type = RepoType.parseType(REPO_TYPE);
 		config.setRepositoryType(type);
 		if (type.isFilesystem()) {
-			config.setFileSystemFolder(Files.createTempDir().getAbsolutePath());
+			String filesFolder = getProperty("repository.filesystem.folder",
+					config.getFileSystemFolder());
+			config.setFileSystemFolder(filesFolder);
 		} else if (type.isMongoDB()) {
-			config.setMongoDatabaseName("kurento");
-			config.setMongoGridFSCollectionName("fs");
-			config.setMongoURLConnection("mongodb://localhost");
+			String dbName = getProperty("repository.mongodb.dbName",
+					config.getMongoDatabaseName());
+			config.setMongoDatabaseName(dbName);
+			String grid = getProperty("repository.mongodb.gridName",
+					config.getMongoGridFSCollectionName());
+			config.setMongoGridFSCollectionName(grid);
+			String url = getProperty("repository.mongodb.urlConn",
+					config.getMongoURLConnection());
+			config.setMongoURLConnection(url);
 		}
-		config.setWebappPublicURL("http://localhost:" + port + "/");
-
 		return config;
 	}
 
-	private static String getPort() {
-		String port = System.getProperty("repository.port");
-		if (port == null) {
-			port = "7676";
-		}
-		return port;
-	}
-
 	public static ConfigurableApplicationContext start() {
+		SpringApplication application = new SpringApplication(
+				KurentoRepositoryServerApp.class);
 
 		Properties properties = new Properties();
-		properties.put("server.port", getPort());
-
-		SpringApplication application = new SpringApplication(
-				BootApplication.class);
-
+		properties.put("server.port", SERVER_PORT);
 		application.setDefaultProperties(properties);
 
 		return application.run();

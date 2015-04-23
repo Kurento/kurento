@@ -17,27 +17,55 @@ package org.kurento.repository;
 
 public class RepositoryApiConfiguration {
 
+	public enum RepoType {
+		FILESYSTEM("filesystem"), MONGODB("mongodb");
+
+		private String value;
+
+		private RepoType(String val) {
+			this.value = val;
+		}
+
+		public String getTypeValue() {
+			return this.value;
+		}
+
+		public static RepoType parseType(String typeValue) {
+			for (RepoType t : RepoType.values())
+				if (t.getTypeValue().equalsIgnoreCase(typeValue))
+					return t;
+			return FILESYSTEM;
+		}
+
+		public boolean isFilesystem() {
+			return this.compareTo(FILESYSTEM) == 0;
+		}
+
+		public boolean isMongoDB() {
+			return this.compareTo(MONGODB) == 0;
+		}
+	}
+
 	private String webappPublicURL = "";
-	private String repositoryType = "filesystem";
+	private RepoType repositoryType = RepoType.FILESYSTEM;
 	private String fileSystemFolder = "repository";
 	private String mongoDatabaseName = "kurento-repository";
 	private String mongoGridFSCollectionName = "fs";
 	private String mongoURLConnection = "mongodb://localhost";
 
 	/**
-	 * Returns the repository type. The default value is "filesystem" and can be
-	 * changed with a properties file or with the method
-	 * {@link RepositoryApiConfiguration#setRepositoryType(String)}.
+	 * Returns the repository public URL. The default value is "" and can be
+	 * changed using
+	 * {@link RepositoryApiConfiguration#setWebappPublicURL(String)}.
 	 * 
-	 * @return the repository type.
+	 * @return the repository public URL.
 	 */
 	public String getWebappPublicURL() {
 		return webappPublicURL;
 	}
 
 	/**
-	 * Sets the type of the repository. The value can be "filesystem" or
-	 * "mongodb".
+	 * Sets the public URL for the webapp of the repository.
 	 * 
 	 * @param webappPublicURL
 	 *            URL for the web application
@@ -47,24 +75,25 @@ public class RepositoryApiConfiguration {
 	}
 
 	/**
-	 * Returns the repository type. The default value is "filesystem" and can be
-	 * changed with a properties file or with the method
+	 * Returns the repository type. The default value is
+	 * {@link RepoType#FILESYSTEM} and can be changed with a properties file or
+	 * with the method
 	 * {@link RepositoryApiConfiguration#setRepositoryType(String)}.
 	 * 
 	 * @return the repository type.
 	 */
-	public String getRepositoryType() {
+	public RepoType getRepositoryType() {
 		return repositoryType;
 	}
 
 	/**
-	 * Sets the type of the repository. The value can be "filesystem" or
-	 * "mongodb".
+	 * Sets the type of the repository. The value can be
+	 * {@link RepoType#FILESYSTEM} or {@link RepoType#MONGODB}.
 	 * 
 	 * @param repositoryType
 	 *            type of the repository
 	 */
-	public void setRepositoryType(String repositoryType) {
+	public void setRepositoryType(RepoType repositoryType) {
 		this.repositoryType = repositoryType;
 	}
 

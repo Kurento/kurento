@@ -1,0 +1,16 @@
+{
+  "repository": {
+    "port": 8080,
+    "hostname": "127.0.0.1",
+    //mongodb or filesystem
+    "type": "mongodb",
+    "mongodb": {
+      "dbName": "kurento",
+      "gridName": "kfs",
+      "urlConn": "mongodb://localhost"
+    },
+    "filesystem": {
+      "folder": "/tmp/repository"
+    }
+  }
+}

@@ -17,17 +17,10 @@ package org.kurento.repository;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.kurento.repository.HttpSessionStartedEvent;
-import org.kurento.repository.HttpSessionTerminatedEvent;
-import org.kurento.repository.Repository;
-import org.kurento.repository.RepositoryApiConfiguration;
-import org.kurento.repository.RepositoryHttpEventListener;
-import org.kurento.repository.RepositoryHttpPlayer;
-import org.kurento.repository.RepositoryHttpRecorder;
-import org.kurento.repository.RepositoryItem;
 
 public class OneRecordingServer {
 
@@ -41,6 +34,11 @@ public class OneRecordingServer {
 		startServer();
 
 		RepositoryItem repositoryItem = getRepository().createRepositoryItem();
+		Repository repo = getRepository();
+		if (repo instanceof MongoRepository) {
+			MongoRepository mrepo = (MongoRepository) repo;
+			mrepo.getGridFS().getDB().dropDatabase();
+		}
 
 		prepareToUploadVideo(repositoryItem);
 		prepareToDownloadVideo(repositoryItem);
@@ -156,6 +154,7 @@ public class OneRecordingServer {
 	public static void startServerAndWait() {
 
 		thread = new Thread() {
+			@Override
 			public void run() {
 				try {
 					OneRecordingServer.main(null);

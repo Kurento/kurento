@@ -17,15 +17,15 @@ package org.kurento.repository.internal;
 
 import javax.servlet.MultipartConfigElement;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.internal.repoimpl.filesystem.FileSystemRepository;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class RepositoryApplicationContextConfiguration {
@@ -37,11 +37,9 @@ public class RepositoryApplicationContextConfiguration {
 
 	@Bean
 	public Repository repository() {
-		if (repositoryApiConfiguration().getRepositoryType().equals(
-				"filesystem")) {
+		if (repositoryApiConfiguration().getRepositoryType().isFilesystem()) {
 			return new FileSystemRepository();
-		} else if (repositoryApiConfiguration().getRepositoryType().equals(
-				"mongodb")) {
+		} else if (repositoryApiConfiguration().getRepositoryType().isMongoDB()) {
 			return new MongoRepository();
 		} else {
 			throw new KurentoException(

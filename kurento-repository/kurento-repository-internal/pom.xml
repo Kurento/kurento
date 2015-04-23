@@ -3,15 +3,17 @@
 
 	<parent>
 		<groupId>org.kurento</groupId>
-		<artifactId>kurento-integration-tests</artifactId>
+		<artifactId>kurento-repository</artifactId>
 		<version>6.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>kurento-repository-test</artifactId>
+	<artifactId>kurento-repository-internal</artifactId>
 	<packaging>jar</packaging>
-	<name>Kurento Integration tests - Repository</name>
+
+	<name>Kurento Repository Internal</name>
+
 	<description>
-			Tests for the Kurento Repository project
+			Kurento Repository library is a Java API allowing access to repository services in Kurento.
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -45,48 +47,43 @@
 	</developers>
 
 	<dependencies>
+		<!-- Boot support -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-repository-internal</artifactId>
+			<artifactId>kurento-commons</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-commons-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-	<profiles>
-		<profile>
-			<id>default</id>
-			<activation>
-				<property>
-					<name>default</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+
 </project>

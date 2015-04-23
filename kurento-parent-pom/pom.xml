@@ -311,6 +311,16 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
+				<artifactId>kurento-repository-internal</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento</groupId>
+				<artifactId>kurento-repository-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>

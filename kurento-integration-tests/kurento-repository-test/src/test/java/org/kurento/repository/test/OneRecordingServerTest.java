@@ -26,16 +26,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.kurento.commons.testing.RepositoryApiTests;
+import org.kurento.repository.OneRecordingServer;
+import org.kurento.repository.test.util.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.kurento.commons.testing.RepositoryApiTests;
-import org.kurento.repository.OneRecordingServer;
-import org.kurento.repository.test.util.TestUtils;
 
 @Category(RepositoryApiTests.class)
 public class OneRecordingServerTest {
@@ -43,10 +45,18 @@ public class OneRecordingServerTest {
 	private static final Logger log = LoggerFactory
 			.getLogger(OneRecordingServerTest.class);
 
+	@Before
+	public void setUp() {
+		OneRecordingServer.startServerAndWait();
+	}
+
+	@After
+	public void tearDown() {
+		OneRecordingServer.stop();
+	}
+
 	@Test
 	public void test() throws Exception {
-
-		OneRecordingServer.startServerAndWait();
 
 		String publicWebappURL = OneRecordingServer.getPublicWebappURL();
 
@@ -76,8 +86,6 @@ public class OneRecordingServerTest {
 
 		assertTrue("The uploadad and downloaded files are different",
 				equalFiles);
-
-		OneRecordingServer.stop();
 	}
 
 	protected void downloadFromURL(String urlToDownload, File downloadedFile)

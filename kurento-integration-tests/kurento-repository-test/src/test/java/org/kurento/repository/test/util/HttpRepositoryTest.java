@@ -30,6 +30,7 @@ import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
+import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -55,6 +56,11 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 		tmpFolder.delete();
 		tmpFolder.mkdirs();
 
+		Repository repo = getRepository();
+		if (repo instanceof MongoRepository) {
+			MongoRepository mrepo = (MongoRepository) repo;
+			mrepo.getGridFS().getDB().dropDatabase();
+		}
 	}
 
 	protected Repository getRepository() {

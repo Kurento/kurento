@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -9,14 +10,13 @@
 	</parent>
 
 	<artifactId>kurento-repository</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
 	<name>Kurento Repository</name>
-
 	<description>
-			Kurento Repository
+                        Kurento Repository
 
-			The Kurento Repository project is a Java API allowing access to repository services in Kurento.
+                        The Kurento Repository project is an API allowing access to repository services in Kurento.
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -49,39 +49,12 @@
 		</developer>
 	</developers>
 
-	<dependencies>
-		<!-- Boot support -->
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-mongodb</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-commons</artifactId>
-		</dependency>
+	<modules>
+		<module>kurento-repository-internal</module>
+		<module>kurento-repository-server</module>
+	</modules>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
+	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons-testing</artifactId>

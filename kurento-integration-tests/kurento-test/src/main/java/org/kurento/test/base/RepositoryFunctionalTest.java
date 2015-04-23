@@ -19,6 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
+import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.kurento.test.client.KurentoTestClient;
 import org.kurento.test.config.TestScenario;
@@ -103,7 +104,7 @@ public class RepositoryFunctionalTest extends KurentoClientTest {
 		RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 		config.setWebappPublicURL("http://localhost:" + getServerPort() + "/");
 		config.setFileSystemFolder(Files.createTempDir().toString());
-		config.setRepositoryType("filesystem");
+		config.setRepositoryType(RepoType.FILESYSTEM);
 		return config;
 	}
 

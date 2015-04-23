@@ -56,7 +56,7 @@ public interface RepositoryHttpEndpoint {
 	 * Adds the {@link RepositoryHttpEventListener}&lt;
 	 * {@link HttpSessionStartedEvent}> to this {@link RepositoryHttpEndpoint}.
 	 * When the media is requested, a {@link HttpSessionStartedEvent} will be
-	 * fired to all registered listenersand the method
+	 * fired to all registered listeners and the method
 	 * {@link RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent)
 	 * onEvent} will be invoked.
 	 * 

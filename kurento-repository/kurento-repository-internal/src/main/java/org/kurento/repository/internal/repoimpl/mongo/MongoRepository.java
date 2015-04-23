@@ -23,14 +23,15 @@ import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.bson.types.ObjectId;
 import org.kurento.repository.DuplicateItemException;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.internal.http.RepositoryHttpManager;
 import org.kurento.repository.internal.repoimpl.RepositoryWithHttp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -83,7 +84,7 @@ public class MongoRepository implements RepositoryWithHttp {
 	}
 
 	private DBObject idQuery(String id) {
-		return new BasicDBObject("_id", id);
+		return new BasicDBObject("_id", new ObjectId(id));
 	}
 
 	private RepositoryItem createRepositoryItem(GridFSInputFile dbFile) {

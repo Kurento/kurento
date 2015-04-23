@@ -41,7 +41,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-repository</artifactId>
+			<artifactId>kurento-repository-internal</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>

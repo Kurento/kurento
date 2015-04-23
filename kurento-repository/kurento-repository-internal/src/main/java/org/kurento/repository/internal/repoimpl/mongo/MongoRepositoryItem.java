@@ -22,6 +22,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.bson.types.ObjectId;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.repository.RepositoryItemAttributes;
 import org.kurento.repository.internal.repoimpl.AbstractRepositoryItem;
 
@@ -30,7 +32,6 @@ import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSFile;
 import com.mongodb.gridfs.GridFSInputFile;
-import com.mongodb.util.JSON;
 
 public class MongoRepositoryItem extends AbstractRepositoryItem {
 
@@ -101,8 +102,11 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 	}
 
 	protected void refreshAttributesOnClose() {
-		DBObject query = (DBObject) JSON.parse("{ _id : '" + getId() + "' }");
+		BasicDBObject query = new BasicDBObject("_id", new ObjectId(getId()));
 		dbFile = ((MongoRepository) repository).getGridFS().findOne(query);
+		if (dbFile == null)
+			throw new KurentoException("Grid object not found for id "
+					+ getId());
 		state = State.STORED;
 		attributes.setContentLength(dbFile.getLength());
 	}

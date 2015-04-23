@@ -26,6 +26,8 @@ import org.junit.Test;
 import org.kurento.repository.Repository;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
@@ -34,6 +36,9 @@ import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
 public class FilenameAsIdTest extends HttpRepositoryTest {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(FilenameAsIdTest.class);
 
 	@Test
 	public void test() throws IOException {
@@ -58,7 +63,8 @@ public class FilenameAsIdTest extends HttpRepositoryTest {
 
 			assertNotNull(files);
 			assertEquals(1, files.size());
-		}
+		} else
+			log.info("Repository is not MongoDB");
 
 	}
 
