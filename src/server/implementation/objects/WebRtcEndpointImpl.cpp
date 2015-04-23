@@ -32,15 +32,13 @@ class TemporalDirectory
 {
 
 public:
-  ~TemporalDirectory()
-  {
+  ~TemporalDirectory() {
     if (!dir.string ().empty() ) {
       boost::filesystem::remove_all (dir);
     }
   }
 
-  void setDir (boost::filesystem::path &dir)
-  {
+  void setDir (boost::filesystem::path &dir) {
     this->dir = dir;
   }
 private:
@@ -116,92 +114,57 @@ WebRtcEndpointImpl::getPemCertificate ()
   return pemCertificate;
 }
 
-static const std::string supported_codecs[] = {"VP8", "OPUS", "PCMU"};
-static const int n_codecs = sizeof (supported_codecs) / sizeof (std::string);
+static const gchar *supported_codecs[] = { "VP8", "opus", "PCMU" };
 
 static void
-remove_not_supported_codecs_from_pattern (GstElement *element)
+remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
 {
+  guint i;
 
-  GstSDPMessage *old_pattern = NULL, *pattern;
-  guint medias_len, i;
-
-  g_object_get (element, "pattern-sdp", &old_pattern, NULL);
-
-  if (old_pattern == NULL) {
+  if (codecs == NULL) {
     return;
   }
 
-  if (gst_sdp_message_copy (old_pattern, &pattern) != GST_SDP_OK) {
-    goto end;
-  }
+  for (i = 0; i < codecs->len; i++) {
+    GValue *v = &g_array_index (codecs, GValue, i);
+    const GstStructure *s;
+    const gchar *codec_name;
+    gboolean supported = FALSE;
+    guint j;
 
-  medias_len = gst_sdp_message_medias_len (pattern);
+    if (!GST_VALUE_HOLDS_STRUCTURE (v) ) {
+      GST_WARNING_OBJECT (element, "Value into array is not a GstStructure");
+      continue;
+    }
 
-  for (i = 0; i < medias_len; i ++) {
-    const GstSDPMedia *media = gst_sdp_message_get_media (pattern, i);
-    guint attributes_len, j, formats_len;
+    s = gst_value_get_structure (v);
+    codec_name = gst_structure_get_name (s);
 
-    attributes_len = gst_sdp_media_attributes_len (media);
-    std::list <std::string> to_remove_formats;
-
-    for (j = 0; j < attributes_len; j++) {
-      const GstSDPAttribute *attribute = gst_sdp_media_get_attribute (media, j);
-
-      if (g_ascii_strcasecmp ("rtpmap", attribute->key) == 0) {
-        gchar *rtpmap = g_strstr_len (attribute->value, -1, " ");
-        bool supported = false;
-
-        if (rtpmap != NULL) {
-          rtpmap = rtpmap + 1;
-
-          for (int k = 0; k < n_codecs; k++) {
-            if (g_strstr_len (rtpmap, -1, supported_codecs[k].c_str() ) == rtpmap) {
-              supported = true;
-              break;
-            }
-          }
-        }
-
-        if (!supported) {
-          GST_INFO ("Removing not supported codec from pattern: '%s'", attribute->value);
-
-          * (rtpmap - 1) = '\0';
-          to_remove_formats.push_back (std::string (attribute->value) );
-
-          gst_sdp_media_remove_attribute ( (GstSDPMedia *) media, j);
-          attributes_len --;
-          j--;
-        }
+    for (j = 0; j < G_N_ELEMENTS (supported_codecs); j++) {
+      if (g_str_has_prefix (codec_name, supported_codecs[j]) ) {
+        supported = TRUE;
+        break;
       }
     }
 
-    formats_len = gst_sdp_media_formats_len (media);
-
-    for (j = 0; j < formats_len; j++) {
-      bool to_remove = false;
-
-      for (std::string format : to_remove_formats) {
-        if (format == std::string (gst_sdp_media_get_format (media, j) ) ) {
-          to_remove = true;
-          break;
-        }
-      }
-
-      if (to_remove) {
-        gst_sdp_media_remove_format ( (GstSDPMedia *) media, j);
-        formats_len --;
-        j--;
-      }
+    if (!supported) {
+      GST_INFO_OBJECT (element, "Removing not supported codec '%s'", codec_name);
+      g_array_remove_index (codecs, i);
+      i--;
     }
   }
+}
 
-  g_object_set (element, "pattern-sdp", pattern, NULL);
+static void
+remove_not_supported_codecs (GstElement *element)
+{
+  GArray *codecs;
 
-  gst_sdp_message_free (pattern);
+  g_object_get (element, "audio-codecs", &codecs, NULL);
+  remove_not_supported_codecs_from_array (element, codecs);
 
-end:
-  gst_sdp_message_free (old_pattern);
+  g_object_get (element, "video-codecs", &codecs, NULL);
+  remove_not_supported_codecs_from_array (element, codecs);
 }
 
 void WebRtcEndpointImpl::onIceCandidate (KmsIceCandidate *candidate)
@@ -313,7 +276,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::string stunAddress;
   std::string turnURL;
 
-  remove_not_supported_codecs_from_pattern (element);
+  remove_not_supported_codecs (element);
 
   //set properties
   try {
