@@ -189,8 +189,10 @@ main (int argc, char **argv)
                     Json::Value() );
 
   config.add ("configPath", "../../../tests" );
-  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
-  config.add ("modules.kurento.SdpEndpoint.configPath", "../../../tests");
+  config.add ("modules.kurento.SdpEndpoint.numAudioMedias", 0);
+  config.add ("modules.kurento.SdpEndpoint.numVideoMedias", 0);
+  config.add ("modules.kurento.SdpEndpoint.audioCodecs", "[]");
+  config.add ("modules.kurento.SdpEndpoint.videoCodecs", "[]");
 
   testHttpGetEndPoint (moduleManager, mediaPipeline);
   testHttpPostEndPoint (moduleManager, mediaPipeline);
