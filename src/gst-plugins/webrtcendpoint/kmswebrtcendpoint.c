@@ -905,12 +905,20 @@ kms_webrtc_endpoint_set_remote_ice_candidate (KmsWebrtcEndpoint * self,
     GST_WARNING_OBJECT (self,
         "Media not found in local SDP for index %" G_GUINT16_FORMAT, index);
     return FALSE;
+  } else if (kms_sdp_media_config_is_inactive (mconf)) {
+    GST_DEBUG_OBJECT (self, "Media inactive for index %" G_GUINT16_FORMAT,
+        index);
+    return TRUE;
   } else {
     GSList *candidates;
     const gchar *cand_str;
 
     nice_cand->stream_id =
         kms_webrtc_endpoint_media_get_stream_id (self, mconf);
+    if (nice_cand->stream_id == -1) {
+      return FALSE;
+    }
+
     cand_str = kms_ice_candidate_get_candidate (candidate);
     candidates = g_slist_append (NULL, nice_cand);
 
