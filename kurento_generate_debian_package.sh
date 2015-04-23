@@ -88,7 +88,7 @@ else
 fi
 
 dpkg-buildpackage -S -sa $build_args
-# dpkg-buildpackage $build_args
+dpkg-buildpackage $build_args
 
 if [ "${ID_RSA_FILE}x" == "x" ]
 then
