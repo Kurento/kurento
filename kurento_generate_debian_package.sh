@@ -82,13 +82,14 @@ echo Version is: ${ver}
 if [ "${KEY_ID}x" == "x" ]
 then
  echo "Generating packages without signing them"
- build_args=-uc -us
+ build_args="-uc -us"
 else
- build_args=-k${KEY_ID}
+ echo "Using key ${KEY_ID}"
+ build_args="-k${KEY_ID}"
 fi
 
 dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
-dpkg-buildpackage $build_args || exit 1
+dpkg-buildpackage $build_args || echo "Warning, failure detecten on debian package generation"
 
 if [ "${ID_RSA_FILE}x" == "x" ]
 then
