@@ -457,6 +457,8 @@ WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
 
   g_signal_emit_by_name (element, "add-ice-candidate", cand, &ret);
 
+  g_object_unref (cand);
+
   if (!ret) {
     throw KurentoException (ICE_ADD_CANDIDATE_ERROR, "Error adding candidate");
   }
