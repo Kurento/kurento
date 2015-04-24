@@ -71,3 +71,24 @@ BOOST_AUTO_TEST_CASE (serialize_map_of_map)
   BOOST_ASSERT (writer.JsonValue.toStyledString() ==
                 writer2.JsonValue.toStyledString() );
 }
+
+BOOST_AUTO_TEST_CASE (serialize_empty_array)
+{
+  std::vector <int> array;
+  std::vector <int> newArray;
+  kurento::JsonSerializer writer (true);
+  kurento::JsonSerializer writer2 (true);
+  kurento::JsonSerializer reader (false);
+
+  writer.Serialize ("array", array);
+
+  reader.JsonValue = writer.JsonValue;
+  reader.Serialize ("array", newArray);
+  BOOST_ASSERT (writer.JsonValue.toStyledString().find ("[]") !=
+                std::string::npos );
+
+  writer2.Serialize ("array", newArray);
+
+  BOOST_ASSERT (writer.JsonValue.toStyledString() ==
+                writer2.JsonValue.toStyledString() );
+}

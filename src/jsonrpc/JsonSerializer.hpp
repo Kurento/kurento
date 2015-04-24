@@ -164,6 +164,8 @@ public:
     JsonSerializer subVal (IsWriter);
     int index = 0;
 
+    subVal.JsonValue = Json::arrayValue;
+
     for (TItor it = first; it != last; ++it) {
       subVal.Serialize (index, *it);
       ++index;
