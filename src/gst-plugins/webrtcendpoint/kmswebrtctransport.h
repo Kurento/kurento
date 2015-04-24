@@ -27,6 +27,9 @@ typedef struct _KmsWebRtcTransport
   GstElement *dtlssrtpdec;
   GstElement *nicesink;
   GstElement *nicesrc;
+
+  guint rtp_id; /* atomic */
+  guint rtcp_id; /* atomic */
 } KmsWebRtcTransport;
 
 KmsWebRtcTransport *kms_webrtc_transport_create (NiceAgent * agent,

@@ -39,8 +39,6 @@ enum
 struct _KmsWebRtcBundleConnectionPrivate
 {
   KmsWebRtcTransport *tr;
-  GstElement *rtp_funnel;
-  GstElement *rtcp_funnel;
 
   gboolean added;
   gboolean connected;
@@ -71,10 +69,19 @@ static void
     kms_webrtc_bundle_connection_set_certificate_pem_file
     (KmsWebRtcBaseConnection * base_conn, const gchar * pem)
 {
-  KmsWebRtcBundleConnection *self = KMS_WEBRTC_BUNDLE_CONNECTION (base_conn);
+  GST_WARNING_OBJECT (base_conn, "Deprectated (using erdtls)");
+}
 
-  g_object_set (G_OBJECT (self->priv->tr->dtlssrtpdec),
-      "certificate-pem-file", pem, NULL);
+static gchar *
+kms_webrtc_bundle_connection_get_certificate_pem (KmsWebRtcBaseConnection *
+    base_conn)
+{
+  KmsWebRtcBundleConnection *self = KMS_WEBRTC_BUNDLE_CONNECTION (base_conn);
+  gchar *pem;
+
+  g_object_get (G_OBJECT (self->priv->tr->dtlssrtpdec), "pem", &pem, NULL);
+
+  return pem;
 }
 
 static void
@@ -88,7 +95,7 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
 
   /* srcs */
   g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", active, NULL);
-  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", active, NULL);
+
   gst_bin_add_many (bin,
       g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
@@ -97,18 +104,13 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
   gst_element_sync_state_with_parent_target_state (tr->nicesrc);
 
   /* sinks */
-  gst_bin_add_many (bin, g_object_ref (priv->rtp_funnel),
-      g_object_ref (priv->rtcp_funnel),
-      g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
+  gst_bin_add_many (bin, g_object_ref (tr->dtlssrtpenc),
+      g_object_ref (tr->nicesink), NULL);
 
   gst_element_link (tr->dtlssrtpenc, tr->nicesink);
-  gst_element_link_pads (priv->rtp_funnel, NULL, tr->dtlssrtpenc, "rtp_sink");
-  gst_element_link_pads (priv->rtcp_funnel, NULL, tr->dtlssrtpenc, "rtcp_sink");
 
   gst_element_sync_state_with_parent_target_state (tr->nicesink);
   gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
-  gst_element_sync_state_with_parent_target_state (priv->rtp_funnel);
-  gst_element_sync_state_with_parent_target_state (priv->rtcp_funnel);
 }
 
 static GstPad *
@@ -117,8 +119,16 @@ kms_webrtc_bundle_connection_request_rtp_sink (KmsIRtpConnection *
 {
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
+  GstPad *pad;
+  gchar *str;
 
-  return gst_element_get_request_pad (self->priv->rtp_funnel, "sink_%u");
+  str = g_strdup_printf ("rtp_sink_%d",
+      g_atomic_int_add (&self->priv->tr->rtp_id, 1));
+
+  pad = gst_element_get_request_pad (self->priv->tr->dtlssrtpenc, str);
+  g_free (str);
+
+  return pad;
 }
 
 static GstPad *
@@ -127,7 +137,7 @@ kms_webrtc_bundle_connection_request_rtp_src (KmsIRtpConnection * base_rtp_conn)
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_static_pad (self->priv->tr->dtlssrtpdec, "src");
+  return gst_element_get_static_pad (self->priv->tr->dtlssrtpdec, "rtp_src");
 }
 
 static GstPad *
@@ -136,8 +146,16 @@ kms_webrtc_bundle_connection_request_rtcp_sink (KmsIRtpConnection *
 {
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
+  GstPad *pad;
+  gchar *str;
 
-  return gst_element_get_request_pad (self->priv->rtcp_funnel, "sink_%u");
+  str = g_strdup_printf ("rtcp_sink_%d",
+      g_atomic_int_add (&self->priv->tr->rtcp_id, 1));
+
+  pad = gst_element_get_request_pad (self->priv->tr->dtlssrtpenc, str);
+  g_free (str);
+
+  return pad;
 }
 
 static GstPad *
@@ -147,7 +165,7 @@ kms_webrtc_bundle_connection_request_rtcp_src (KmsIRtpConnection *
   KmsWebRtcBundleConnection *self =
       KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_static_pad (self->priv->tr->dtlssrtpdec, "src");
+  return gst_element_get_static_pad (self->priv->tr->dtlssrtpdec, "rtp_src");
 }
 
 static void
@@ -189,7 +207,7 @@ kms_webrtc_bundle_connection_get_property (GObject * object,
 }
 
 static void
-connected_cb (GstElement * dtls, gpointer self)
+connected_cb (GstElement * dtlssrtpenc, gpointer self)
 {
   kms_i_rtp_connection_connected_signal (self);
 }
@@ -223,15 +241,12 @@ kms_webrtc_bundle_connection_new (NiceAgent * agent, GMainContext * context,
     return NULL;
   }
 
-  g_signal_connect (priv->tr->dtlssrtpenc, "connected",
+  g_signal_connect (priv->tr->dtlssrtpenc, "on-key-set",
       G_CALLBACK (connected_cb), conn);
 
   nice_agent_attach_recv (agent, base_conn->stream_id,
       NICE_COMPONENT_TYPE_RTP, context, kms_webrtc_transport_nice_agent_recv_cb,
       NULL);
-
-  priv->rtp_funnel = gst_element_factory_make ("funnel", NULL);
-  priv->rtcp_funnel = gst_element_factory_make ("funnel", NULL);
 
   return conn;
 }
@@ -245,8 +260,6 @@ kms_webrtc_bundle_connection_finalize (GObject * object)
   GST_DEBUG_OBJECT (self, "finalize");
 
   kms_webrtc_transport_destroy (priv->tr);
-  g_clear_object (&priv->rtp_funnel);
-  g_clear_object (&priv->rtcp_funnel);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_bundle_connection_parent_class)->finalize (object);
@@ -273,6 +286,8 @@ kms_webrtc_bundle_connection_class_init (KmsWebRtcBundleConnectionClass * klass)
   base_conn_class = KMS_WEBRTC_BASE_CONNECTION_CLASS (klass);
   base_conn_class->set_certificate_pem_file =
       kms_webrtc_bundle_connection_set_certificate_pem_file;
+  base_conn_class->get_certificate_pem =
+      kms_webrtc_bundle_connection_get_certificate_pem;
 
   g_type_class_add_private (klass, sizeof (KmsWebRtcBundleConnectionPrivate));
 
