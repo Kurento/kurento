@@ -33,12 +33,20 @@ G_BEGIN_DECLS
 #define KMS_IS_WEBRTC_BASE_CONNECTION_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_WEBRTC_BASE_CONNECTION))
 #define KMS_WEBRTC_BASE_CONNECTION_CAST(obj) ((KmsWebRtcBaseConnection*)(obj))
+
+#define KMS_WEBRTC_BASE_CONNECTION_LOCK(conn) \
+  (g_rec_mutex_lock (&KMS_WEBRTC_BASE_CONNECTION_CAST ((conn))->mutex))
+#define KMS_WEBRTC_BASE_CONNECTION_UNLOCK(conn) \
+  (g_rec_mutex_unlock (&KMS_WEBRTC_BASE_CONNECTION_CAST ((conn))->mutex))
+
 typedef struct _KmsWebRtcBaseConnection KmsWebRtcBaseConnection;
 typedef struct _KmsWebRtcBaseConnectionClass KmsWebRtcBaseConnectionClass;
 
 struct _KmsWebRtcBaseConnection
 {
   GObject parent;
+
+  GRecMutex mutex;
 
   NiceAgent *agent;
   gboolean ice_gathering_done;

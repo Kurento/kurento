@@ -66,6 +66,7 @@ kms_webrtc_base_connection_finalize (GObject * object)
   nice_agent_remove_stream (self->agent, self->stream_id);
   g_free (self->name);
   g_clear_object (&self->agent);
+  g_rec_mutex_clear (&self->mutex);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_base_connection_parent_class)->finalize (object);
@@ -74,7 +75,7 @@ kms_webrtc_base_connection_finalize (GObject * object)
 static void
 kms_webrtc_base_connection_init (KmsWebRtcBaseConnection * self)
 {
-  /* Nothing to do */
+  g_rec_mutex_init (&self->mutex);
 }
 
 static void
