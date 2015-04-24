@@ -60,6 +60,7 @@ struct _KmsWebRtcBaseConnectionClass
 
   void (*set_certificate_pem_file) (KmsWebRtcBaseConnection * self,
       const gchar * pem);
+  gchar *(*get_certificate_pem) (KmsWebRtcBaseConnection * self);
 };
 
 GType kms_webrtc_base_connection_get_type (void);
@@ -67,6 +68,8 @@ GType kms_webrtc_base_connection_get_type (void);
 void
 kms_webrtc_base_connection_set_certificate_pem_file (KmsWebRtcBaseConnection *
     self, const gchar * pem);
+gchar *kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection *
+    self);
 void kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
     const gchar * server_ip, guint server_port, const gchar * username,
     const gchar * password, NiceRelayType type);

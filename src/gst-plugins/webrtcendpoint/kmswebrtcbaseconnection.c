@@ -56,6 +56,22 @@ static void
   }
 }
 
+static gchar *kms_webrtc_base_connection_get_certificate_pem_default
+    (KmsWebRtcBaseConnection * self)
+{
+  KmsWebRtcBaseConnectionClass *klass =
+      KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
+
+  if (klass->get_certificate_pem ==
+      kms_webrtc_base_connection_get_certificate_pem_default) {
+    GST_WARNING_OBJECT (self,
+        "%s does not reimplement 'get_certificate_pem'",
+        G_OBJECT_CLASS_NAME (klass));
+  }
+
+  return NULL;
+}
+
 static void
 kms_webrtc_base_connection_finalize (GObject * object)
 {
@@ -88,6 +104,8 @@ kms_webrtc_base_connection_class_init (KmsWebRtcBaseConnectionClass * klass)
 
   klass->set_certificate_pem_file =
       kms_webrtc_base_connection_set_certificate_pem_file_default;
+  klass->get_certificate_pem =
+      kms_webrtc_base_connection_get_certificate_pem_default;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
@@ -101,6 +119,15 @@ kms_webrtc_base_connection_set_certificate_pem_file (KmsWebRtcBaseConnection *
       KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
 
   klass->set_certificate_pem_file (self, pem);
+}
+
+gchar *
+kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection * self)
+{
+  KmsWebRtcBaseConnectionClass *klass =
+      KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
+
+  return klass->get_certificate_pem (self);
 }
 
 void
