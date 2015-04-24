@@ -119,8 +119,9 @@ public class SystemMonitorManager {
 			URISyntaxException {
 		final String folder = "/org/kurento/test/monitor/";
 		final String[] classesName = { "SystemMonitor.class",
-				"SystemMonitor$1.class", "NetInfo.class",
-				"NetInfo$NetInfoEntry.class", "SystemInfo.class" };
+				"SystemMonitor$1.class", "SystemMonitor$2.class",
+				"NetInfo.class", "NetInfo$NetInfoEntry.class",
+				"SystemInfo.class" };
 
 		Path tempDir = Files.createTempDirectory(null);
 		File newDir = new File(tempDir + folder);
@@ -305,7 +306,8 @@ public class SystemMonitorManager {
 
 	// TODO currently RTC stats are only supported in local monitor
 	public void addTestClient(TestClient client) {
-		monitor.addTestClient(client);
+		// TODO: Deactivated statistics
+		// monitor.addTestClient(client);
 	}
 
 }

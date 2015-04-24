@@ -17,9 +17,6 @@ package org.kurento.test.monitor;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * System information (CPU usage, memory, swap, and network).
  *
@@ -27,8 +24,6 @@ import org.slf4j.LoggerFactory;
  * @since 5.0.5
  */
 public class SystemInfo {
-	public Logger log = LoggerFactory.getLogger(SystemInfo.class);
-
 	private double cpuPercent;
 	private long mem;
 	private long swap;

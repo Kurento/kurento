@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -172,19 +173,21 @@ public class SshConnection {
 	}
 
 	public String execAndWaitCommand(String... command) throws IOException {
+		log.info("execAndWaitCommand: {} ", Arrays.toString(command));
 		OverthereProcess process = connection.startProcess(CmdLine
 				.build(command));
 		return CharStreams.toString(new InputStreamReader(process.getStdout(),
 				"UTF-8"));
 	}
-	
-	public String execAndWaitCommandWithStderr(String... command) throws IOException {
+
+	public String execAndWaitCommandWithStderr(String... command)
+			throws IOException {
 		OverthereProcess process = connection.startProcess(CmdLine
 				.build(command));
-		String result = CharStreams.toString(new InputStreamReader(process.getStdout(),
-				"UTF-8"));
-		result += CharStreams.toString(new InputStreamReader(process.getStderr(),
-				"UTF-8"));
+		String result = CharStreams.toString(new InputStreamReader(process
+				.getStdout(), "UTF-8"));
+		result += CharStreams.toString(new InputStreamReader(process
+				.getStderr(), "UTF-8"));
 		return result;
 	}
 

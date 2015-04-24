@@ -23,23 +23,16 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import org.kurento.test.client.TestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * System monitor class, used to check the CPU usage, memory, swap, and network
@@ -50,8 +43,6 @@ import org.slf4j.LoggerFactory;
  */
 public class SystemMonitor {
 
-	public Logger log = LoggerFactory.getLogger(SystemMonitor.class);
-
 	private Thread thread;
 	private Map<Long, SystemInfo> infoMap;
 	private long samplingTime = 100; // Default sampling time, in milliseconds
@@ -61,7 +52,9 @@ public class SystemMonitor {
 	private double currentLatency = 0;
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
-	private List<TestClient> testClientList;
+
+	// TODO: Deactivated statistics
+	// private List<TestClient> testClientList;
 
 	private final static String OK = "ok";
 	private final static String ERR = "error: ";
@@ -205,20 +198,21 @@ public class SystemMonitor {
 						// Number of threads
 						info.setNumThreadsKms(getNumThreads(kmsPid));
 
+						// TODO: Deactivated statistics
 						// Browser Statistics
-						if (testClientList != null) {
-							for (TestClient client : testClientList) {
-								Map<String, Object> rtc = client.getRtcStats();
-								info.addRtcStats(rtc);
-							}
-						}
+						// if (testClientList != null) {
+						// for (TestClient client : testClientList) {
+						// Map<String, Object> rtc = client.getRtcStats();
+						// info.addRtcStats(rtc);
+						// }
+						// }
 
 						infoMap.put(new Date().getTime() - start, info);
 
 						Thread.sleep(samplingTime);
 					}
 				} catch (Exception e) {
-					log.warn(e.getMessage());
+					System.out.println(e.getMessage());
 				}
 			}
 		};
@@ -270,36 +264,38 @@ public class SystemMonitor {
 			throw new RuntimeException(e);
 		}
 		boolean header = false;
-		String emptyStats = "";
-		List<String> rtcHeader = null;
+		// TODO: Deactivated statistics
+		// String emptyStats = "";
+		// List<String> rtcHeader = null;
 
 		for (long time : infoMap.keySet()) {
 			if (!header) {
 				pw.print("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number, latency_ms_avg, latency_errors_number"
 						+ infoMap.get(time).getNetInfo().parseHeaderEntry());
 
+				// TODO: Deactivated statistics
 				// Browser statistics. First entries may be empty, so we have to
 				// iterate to find values in the statistics in order to write
 				// the header in the resulting CSV
-				if (testClientList != null) {
-					rtcHeader = new ArrayList<>();
-					for (SystemInfo info : infoMap.values()) {
-						if (info.getRtcStats() != null
-								&& !info.getRtcStats().isEmpty()) {
-							for (String rtcStatsKey : info.getRtcStats()
-									.keySet()) {
-								if (!rtcHeader.contains(rtcStatsKey)) {
-									rtcHeader.add(rtcStatsKey);
-									pw.print(", "
-											+ rtcStatsKey
-											+ StatsOperation.map().get(
-													rtcStatsKey));
-									emptyStats += ",";
-								}
-							}
-						}
-					}
-				}
+				// if (testClientList != null) {
+				// rtcHeader = new ArrayList<>();
+				// for (SystemInfo info : infoMap.values()) {
+				// if (info.getRtcStats() != null
+				// && !info.getRtcStats().isEmpty()) {
+				// for (String rtcStatsKey : info.getRtcStats()
+				// .keySet()) {
+				// if (!rtcHeader.contains(rtcStatsKey)) {
+				// rtcHeader.add(rtcStatsKey);
+				// pw.print(", "
+				// + rtcStatsKey
+				// + StatsOperation.map().get(
+				// rtcStatsKey));
+				// emptyStats += ",";
+				// }
+				// }
+				// }
+				// }
+				// }
 
 				pw.println("");
 				header = true;
@@ -320,19 +316,19 @@ public class SystemMonitor {
 					+ infoMap.get(time).getNetInfo().parseNetEntry());
 
 			// Browser statistics
-			if (testClientList != null) {
-				if (infoMap.get(time).getRtcStats() != null
-						&& !infoMap.get(time).getRtcStats().isEmpty()) {
-					for (String key : rtcHeader) {
-						pw.print(",");
-						if (infoMap.get(time).getRtcStats().containsKey(key)) {
-							pw.print(infoMap.get(time).getRtcStats().get(key));
-						}
-					}
-				} else {
-					pw.print(emptyStats);
-				}
-			}
+			// if (testClientList != null) {
+			// if (infoMap.get(time).getRtcStats() != null
+			// && !infoMap.get(time).getRtcStats().isEmpty()) {
+			// for (String key : rtcHeader) {
+			// pw.print(",");
+			// if (infoMap.get(time).getRtcStats().containsKey(key)) {
+			// pw.print(infoMap.get(time).getRtcStats().get(key));
+			// }
+			// }
+			// } else {
+			// pw.print(emptyStats);
+			// }
+			// }
 
 			pw.println("");
 		}
@@ -484,11 +480,12 @@ public class SystemMonitor {
 		this.samplingTime = samplingTime;
 	}
 
-	public void addTestClient(TestClient client) {
-		if (testClientList == null) {
-			testClientList = new CopyOnWriteArrayList<>();
-		}
-		testClientList.add(client);
-	}
+	// TODO: Deactivated statistics
+	// public void addTestClient(TestClient client) {
+	// if (testClientList == null) {
+	// testClientList = new CopyOnWriteArrayList<>();
+	// }
+	// testClientList.add(client);
+	// }
 
 }
