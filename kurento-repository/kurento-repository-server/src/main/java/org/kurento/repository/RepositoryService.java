@@ -15,15 +15,26 @@
 
 package org.kurento.repository;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
-import org.kurento.commons.exception.KurentoException;
-import org.kurento.repository.service.pojo.RepositoryItemStore;
+import org.kurento.repository.RepositoryItem.State;
+import org.kurento.repository.service.pojo.RepositoryItemPlayer;
+import org.kurento.repository.service.pojo.RepositoryItemRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service component that exposes a simpler Java API for the Kurento Repository.
+ * 
+ * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
+ */
 @Service
 public class RepositoryService {
 
@@ -35,72 +46,148 @@ public class RepositoryService {
 
 	/**
 	 * Creates a new repository item with the provided metadata and its
-	 * associated store endpoint (recorder).
+	 * associated recorder endpoint.
 	 *
 	 * @param metadata
 	 *            key-value pairs, can be null
-	 * @return a {@link RepositoryItemStore} containing the item's id and the
+	 * @return a {@link RepositoryItemRecorder} containing the item's id and the
 	 *         recorder URL
 	 */
-	public RepositoryItemStore createRepositoryItem(Map<String, String> metadata) {
+	public RepositoryItemRecorder createRepositoryItem(Map<String, String> metadata) {
 		RepositoryItem item = repository.createRepositoryItem();
-		if (metadata != null) {
+		if (metadata != null)
 			item.setMetadata(metadata);
-		}
-		log.info("New repository item #{} - metadata: {}", item.getId(),
-				item.getMetadata());
-		RepositoryItemStore itemStore = new RepositoryItemStore();
-		itemStore.setId(item.getId());
-		itemStore.setUrl(getWriteEndpoint(item));
-		return itemStore;
+		RepositoryItemRecorder itemRec = new RepositoryItemRecorder();
+		itemRec.setId(item.getId());
+		itemRec.setUrl(getEndpointUrl(item, false, "Upload"));
+		return itemRec;
 	}
 
 	/**
-	 * Obtains a new endpoint for reading on the repository item.
+	 * Removes the repository item associated to the provided id.
+	 * 
+	 * @param itemId
+	 *            the id of an existing repository item
+	 * @throws ItemNotFoundException
+	 */
+	public void removeRepositoryItem(String itemId)
+			throws ItemNotFoundException {
+		repository.remove(findRepositoryItemById(itemId));
+	}
+
+	/**
+	 * Obtains a new endpoint for reading (playing multimedia) from the
+	 * repository item.
 	 *
+	 * @param itemId
+	 *            the id of an existing repository item
+	 * @return the URL of the reading endpoint
+	 * @throws ItemNotFoundException
+	 */
+	public RepositoryItemPlayer getReadEndpoint(String itemId)
+			throws ItemNotFoundException {
+		RepositoryItemPlayer itemPlay = new RepositoryItemPlayer();
+		itemPlay.setId(itemId);
+		itemPlay.setUrl(getEndpointUrl(itemId, true, "Download"));
+		return itemPlay;
+	}
+
+	/**
+	 * Searches for repository items by each pair of attributes and their
+	 * values. The values can be regular expressions (use the flag, Luke).
+	 * 
+	 * @param metadata
+	 *            pairs of attributes and their values (can be regexes)
+	 * @param regex
+	 *            if true, will activate search by attribute regex
+	 * @return a {@link Set}&lt;{@link String}&gt; with identifiers of the
+	 *         repository items that were found
+	 */
+	public Set<String> findItems(Map<String, String> metadata,
+			boolean regex) {
+		Set<String> itemIds = new HashSet<String>();
+		for (Entry<String, String> data : metadata.entrySet()) {
+			List<RepositoryItem> foundItems = null;
+			if (regex)
+				foundItems = repository.findRepositoryItemsByAttRegex(
+						data.getKey(), data.getValue());
+			else
+				foundItems = repository.findRepositoryItemsByAttValue(
+						data.getKey(), data.getValue());
+			if (foundItems != null)
+				for (RepositoryItem item : foundItems)
+					itemIds.add(item.getId());
+		}
+		return itemIds;
+	}
+
+	/**
+	 * Returns the metadata from a repository item.
+	 * 
+	 * @param itemId
+	 *            the id of an existing repository item
+	 * @return the metadata map
+	 * @throws ItemNotFoundException
+	 */
+	public Map<String, String> getRepositoryItemMetadata(String itemId)
+			throws ItemNotFoundException {
+		return findRepositoryItemById(itemId).getMetadata();
+	}
+
+	/**
+	 * Replaces the metadata of a repository item.
+	 * 
+	 * @param itemId
+	 *            the id of an existing repository item
+	 * @param metadata
+	 *            the new metadata
+	 * @throws ItemNotFoundException
+	 */
+	public void setRepositoryItemMetadata(String itemId,
+			Map<String, String> metadata) throws ItemNotFoundException {
+		RepositoryItem item = findRepositoryItemById(itemId);
+		Map<String, String> oldMetadata = item.getMetadata();
+		item.setMetadata(metadata);
+		log.info("Current metadata: {} - updated metadata: {}", oldMetadata,
+				item.getMetadata());
+	}
+
+	/**
+	 * Used to obtain the URL of a [play|rec] Http endpoint. Should be used only
+	 * if the item'state is {@link State#STORED}, otherwise the search for the
+	 * item will fail.
+	 * 
+	 * @param itemId
+	 *            the id of an existing repository item
+	 * @param toRead
+	 *            if true, the endpoint will be for playing/reading, otherwise
+	 *            for recording/writing
+	 * @param action
+	 *            a message to be used when logging the various events triggered
+	 *            during the endpoint's lifetime (should be "Upload"|"Download")
+	 * @return a public URL
+	 * @throws ItemNotFoundException
+	 */
+	private String getEndpointUrl(String itemId, boolean toRead,
+			final String action) throws ItemNotFoundException {
+		return getEndpointUrl(findRepositoryItemById(itemId),
+				toRead, action);
+	}
+
+	/**
+	 * Used to obtain the URL of a [play|rec] Http endpoint.
+	 * 
 	 * @param item
 	 *            an existing repository item
-	 * @return the URL of the reading endpoint
+	 * @param toRead
+	 *            if true, the endpoint will be for playing/reading, otherwise
+	 *            for recording/writing
+	 * @param action
+	 *            a message to be used when logging the various events triggered
+	 *            during the endpoint's lifetime (should be "Upload"|"Download")
+	 * @return a public URL
 	 */
-	public String getReadEndpoint(RepositoryItem item) {
-		return getEndpoint(item, true, "Download");
-	}
-
-	/**
-	 * Obtains a new endpoint for reading on the repository item.
-	 *
-	 * @param itemId
-	 *            the id of an existing repository item
-	 * @return the URL of the reading endpoint
-	 */
-	public String getReadEndpoint(String itemId) {
-		return getEndpoint(itemId, true, "Download");
-	}
-
-	/**
-	 * Obtains a new endpoint for writing on the repository item.
-	 *
-	 * @param an
-	 *            existing repository item
-	 * @return the URL of the writing endpoint
-	 */
-	public String getWriteEndpoint(RepositoryItem item) {
-		return getEndpoint(item, false, "Upload");
-	}
-
-	/**
-	 * Obtains a new endpoint for writing on the repository item.
-	 *
-	 * @param itemId
-	 *            the id of an existing repository item
-	 * @return the URL of the writing endpoint
-	 */
-	public String getWriteEndpoint(String itemId) {
-		return getEndpoint(itemId, false, "Upload");
-	}
-
-	// action should be "Download" or "Upload"
-	private String getEndpoint(RepositoryItem item, boolean toRead,
+	private String getEndpointUrl(RepositoryItem item, boolean toRead,
 			final String action) {
 		RepositoryHttpEndpoint endpoint = null;
 		String type = null;
@@ -111,14 +198,13 @@ public class RepositoryService {
 			endpoint = item.createRepositoryHttpRecorder();
 			type = "recorder";
 		}
-		log.info("Created {} for repo item #{}\n\ttimeout={}, url={}", type,
-				item.getId(), endpoint.getAutoTerminationTimeout(),
+		log.debug("Created {} for repo item #{}\n\turl={}", type, item.getId(),
 				endpoint.getURL());
 
 		endpoint.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
 			@Override
 			public void onEvent(HttpSessionStartedEvent event) {
-				log.info("{} started on repo item #{}", action, event
+				log.debug("{} started on repo item #{}", action, event
 						.getSource().getRepositoryItem().getId());
 			}
 		});
@@ -126,9 +212,8 @@ public class RepositoryService {
 		endpoint.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
 			@Override
 			public void onEvent(HttpSessionTerminatedEvent event) {
-				log.info("{} terminated on repo item #{}", action, event
+				log.debug("{} terminated on repo item #{}", action, event
 						.getSource().getRepositoryItem().getId());
-				// TODO should we do something about this??
 			}
 		});
 
@@ -145,13 +230,23 @@ public class RepositoryService {
 		return endpoint.getURL();
 	}
 
-	// action should be "Download" or "Upload"
-	private String getEndpoint(String itemId, boolean toRead,
-			final String action) {
-		RepositoryItem item = repository.findRepositoryItemById(itemId);
-		if (item == null)
-			throw new KurentoException("No repository item found with id "
-					+ itemId);
-		return getEndpoint(item, toRead, action);
+	/**
+	 * Wrapper for {@link Repository#findRepositoryItemById(String)} that throws
+	 * a checked exception when the item is not found.
+	 * 
+	 * @param itemId
+	 *            the id of a repository item
+	 * @return the found object
+	 * @throws ItemNotFoundException
+	 *             when there's no instance with the provided id
+	 */
+	private RepositoryItem findRepositoryItemById(String itemId)
+			throws ItemNotFoundException {
+		try {
+			return repository.findRepositoryItemById(itemId);
+		} catch (NoSuchElementException e) {
+			log.debug("Provided id is not valid", e);
+			throw new ItemNotFoundException(e.getMessage());
+		}
 	}
 }

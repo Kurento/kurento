@@ -31,6 +31,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 
+/**
+ * Kurento Repository web application (it's a Spring app).
+ * 
+ * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
+ */
 @SpringBootApplication
 public class KurentoRepositoryServerApp {
 

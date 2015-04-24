@@ -1,3 +1,18 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+
 package org.kurento.repository;
 
 import static org.junit.Assert.assertEquals;
@@ -9,12 +24,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
-import org.kurento.repository.service.pojo.RepositoryItemStore;
+import org.kurento.repository.service.pojo.RepositoryItemPlayer;
+import org.kurento.repository.service.pojo.RepositoryItemRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +49,15 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
 import retrofit.RestAdapter;
-import retrofit.http.Body;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
+/**
+ * Test for the {@link KurentoRepositoryServerApp}. Runs the target Spring app
+ * inside an embedded Tomcat and tests its REST endpoint(s).
+ * 
+ * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = KurentoRepositoryServerApp.class)
 @WebAppConfiguration
@@ -42,17 +67,6 @@ public class RepositoryRestTest {
 	private static final Logger log = LoggerFactory
 			.getLogger(RepositoryRestTest.class);
 
-	public interface RepositoryRestApi {
-
-		@POST("/repo/item")
-		RepositoryItemStore createRepositoryItem(
-				@Body Map<String, String> metadata);
-
-		@GET("/repo/item/{itemId}/read")
-		String getReadEndpoint(@Path("itemId") String itemId);
-
-	}
-
 	@Value("${local.server.port}")
 	private int port;
 
@@ -60,6 +74,9 @@ public class RepositoryRestTest {
 
 	@Autowired
 	private Repository repository;
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -80,19 +97,25 @@ public class RepositoryRestTest {
 	InterruptedException {
 		Map<String, String> metadata = new HashMap<String, String>();
 		metadata.put("restKey", "restValue");
-		RepositoryItemStore itemStore = restService
+		RepositoryItemRecorder itemRec = restService
 				.createRepositoryItem(metadata);
-		log.info("Obtained item store: {}", itemStore);
+		log.info("Obtained item store: {}", itemRec);
 
 		File fileToUpload = new File("test-files/logo.png");
-		uploadFileWithCURL(itemStore.getUrl(), fileToUpload);
+		uploadFileWithCURL(itemRec.getUrl(), fileToUpload);
 
 		Thread.sleep(1000 * 6);
 
-		String playUrl = restService.getReadEndpoint(itemStore.getId());
+		RepositoryItemPlayer itemPlay = restService.getReadEndpoint(itemRec
+				.getId());
+		assertEquals("Items' ids don't match", itemRec.getId(),
+				itemPlay.getId());
+
+		String playUrl = itemPlay.getUrl();
 		File downloadedFile = new File("test-files/sampleDownload.txt");
 
-		log.info("Start downloading file");
+		log.info("Start downloading file from {} to {}", playUrl,
+				downloadedFile.getPath());
 		downloadFromURL(playUrl, downloadedFile);
 
 		boolean equalFiles = TestUtils.equalFiles(fileToUpload, downloadedFile);
@@ -105,6 +128,59 @@ public class RepositoryRestTest {
 
 		assertTrue("The uploadad and downloaded files are different",
 				equalFiles);
+
+		Set<String> items = restService.simpleFindItems(metadata);
+		assertEquals(
+				"Not one exact element found based on our simple search data: "
+						+ metadata, 1, items.size());
+
+		assertEquals("Ids don't match", itemRec.getId(), items.iterator()
+				.next());
+
+		Map<String, String> regexValues = new HashMap<String, String>();
+		regexValues.put("restKey", "restVal*");
+
+		items = restService.regexFindItems(regexValues);
+		assertEquals(
+				"More than 1 element found based on our regex search data: "
+						+ regexValues, 1, items.size());
+
+		assertEquals("Ids don't match", itemRec.getId(), items.iterator()
+				.next());
+
+		Map<String, String> serverMetadata = restService
+				.getRepositoryItemMetadata(itemRec.getId());
+		assertEquals("Local metadata doesn't match saved metadata", metadata,
+				serverMetadata);
+
+		Map<String, String> updateMetadata = new HashMap<String, String>();
+		updateMetadata.put("restKey", "newVal");
+		Response response = restService.setRepositoryItemMetadata(
+				itemRec.getId(), updateMetadata);
+		assertEquals(
+				"Response status of metadata update request is not 200 OK",
+				HttpStatus.OK.value(), response.getStatus());
+
+		serverMetadata = restService.getRepositoryItemMetadata(itemRec.getId());
+		assertEquals(
+				"New local metadata doesn't match updated server metadata",
+				updateMetadata, serverMetadata);
+
+		response = restService.removeRepositoryItem(itemRec.getId());
+		assertEquals("Response status of remove item request is not 200 OK",
+				HttpStatus.OK.value(), response.getStatus());
+
+		exception.expect(RetrofitError.class);
+		exception.expectMessage(CoreMatchers.containsString("404 Not Found"));
+		RepositoryItemPlayer itemFound = restService.getReadEndpoint(itemRec
+				.getId());
+		Assert.assertNull(itemFound);
+
+		items = restService.regexFindItems(regexValues);
+		assertEquals(
+				"No items should have been found based on our regex search data: "
+						+ regexValues + " (was deleted)", 0, items.size());
+
 	}
 
 	protected void uploadFileWithCURL(String uploadURL, File fileToUpload)

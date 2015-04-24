@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bson.types.ObjectId;
@@ -45,7 +46,8 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 				repository);
 
 		this.dbFile = dbFile;
-		this.setMetadata(new HashMap<String, String>());
+		// don't call ours setMetadata(...)
+		super.setMetadata(new HashMap<String, String>());
 	}
 
 	private static RepositoryItemAttributes loadAttributes(GridFSFile file) {
@@ -83,22 +85,20 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 
 			@Override
 			public void close() throws IOException {
-				putMetadataInGridFS();
+				putMetadataInGridFS(false);
 				super.close();
 				refreshAttributesOnClose();
-			}
-
-			// TODO Optimise this to use the GridFS metadata
-			private void putMetadataInGridFS() {
-				DBObject metadataDBO = new BasicDBObject();
-				for (Entry<String, String> entry : metadata.entrySet()) {
-					metadataDBO.put(entry.getKey(), entry.getValue());
-				}
-				dbFile.setMetaData(metadataDBO);
 			}
 		};
 
 		return storingOutputStream;
+	}
+
+	@Override
+	public void setMetadata(Map<String, String> metadata) {
+		super.setMetadata(metadata);
+		if (state.equals(State.STORED))
+			putMetadataInGridFS(true);
 	}
 
 	protected void refreshAttributesOnClose() {
@@ -109,6 +109,17 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 					+ getId());
 		state = State.STORED;
 		attributes.setContentLength(dbFile.getLength());
+	}
+
+	// TODO Optimise this to use the GridFS metadata
+	private void putMetadataInGridFS(boolean save) {
+		DBObject metadataDBO = new BasicDBObject();
+		for (Entry<String, String> entry : metadata.entrySet()) {
+			metadataDBO.put(entry.getKey(), entry.getValue());
+		}
+		dbFile.setMetaData(metadataDBO);
+		if (save)
+			dbFile.save();
 	}
 
 }
