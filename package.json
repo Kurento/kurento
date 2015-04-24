@@ -15,7 +15,7 @@
     "url": "Kurento/kurento-utils-js"
   },
   "bugs": {
-    "url": "Kurento/kurento-utils-js/issues",
+    "url": "https://github.com/Kurento/kurento-utils-js/issues",
     "email": "info@kurento.com"
   },
   "keywords": [
@@ -30,12 +30,12 @@
   "devDependencies": {
     "bower": "~1.4.1",
     "coveralls": "~2.11.2",
-    "fs-extra": "^0.18.0",
+    "fs-extra": "^0.18.2",
     "grunt": "^0.4.5",
     "grunt-browserify": "~3.7.0",
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.6.0",
-    "grunt-contrib-jshint": "^0.11.1",
+    "grunt-contrib-jshint": "^0.11.2",
     "grunt-githooks": "^0.3.1",
     "grunt-jsbeautifier": "^0.2.10",
     "grunt-jscoverage": "^0.1.3",
@@ -49,7 +49,7 @@
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "^1.18.0",
     "selenium-webdriver": "^2.45.1",
-    "xml2js": "^0.4.6"
+    "xml2js": "^0.4.8"
   },
   "dependencies": {
     "freeice": "^2.1.2",
