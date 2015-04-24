@@ -31,6 +31,8 @@ import static org.kurento.test.TestConfiguration.TEST_PROTOCOL_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
+import static org.kurento.test.client.BrowserType.IEXPLORER;
+import static org.kurento.test.config.BrowserScope.SAUCELABS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -191,7 +193,7 @@ public class BrowserClient implements Closeable {
 					// cam
 					options.addArguments("--use-fake-device-for-media-stream");
 
-					if (video != null && isLocal()) {
+					if ((video != null) && isLocal()) {
 						options.addArguments("--use-file-for-fake-video-capture="
 								+ video);
 					}
@@ -264,7 +266,7 @@ public class BrowserClient implements Closeable {
 		int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY,
 				SAUCELAB_IDLE_TIMEOUT_DEFAULT);
 
-		if (sauceLabsUser == null || sauceLabsKey == null) {
+		if ((sauceLabsUser == null) || (sauceLabsKey == null)) {
 			throw new RuntimeException("Invalid Saucelabs credentials: "
 					+ SAUCELAB_USER_PROPERTY + "=" + sauceLabsUser + " "
 					+ SAUCELAB_KEY_PROPERTY + "=" + sauceLabsKey);
@@ -272,6 +274,13 @@ public class BrowserClient implements Closeable {
 
 		capabilities.setCapability("version", browserVersion);
 		capabilities.setCapability("platform", platform);
+
+		if ((SAUCELABS == scope) && (IEXPLORER == browserType)
+				&& ("8".equals(browserVersion) || "9".equals(browserVersion))) {
+			capabilities.setCapability("avoid-proxy", true);
+			capabilities.setCapability("parent-tunnel", "mmatyjek");
+		}
+
 		capabilities.setCapability("idleTimeout", idleTimeout);
 		if (name != null) {
 			capabilities.setCapability("name", name);
@@ -304,9 +313,9 @@ public class BrowserClient implements Closeable {
 			}
 
 			if (!node.equals(host)
-					&& login != null
+					&& (login != null)
 					&& !login.isEmpty()
-					&& ((passwd != null && !passwd.isEmpty()) || (pem != null && !pem
+					&& (((passwd != null) && !passwd.isEmpty()) || ((pem != null) && !pem
 							.isEmpty()))) {
 				gridNode = new GridNode(node, browserType, browserPerInstance,
 						login, passwd, pem);
@@ -324,14 +333,14 @@ public class BrowserClient implements Closeable {
 			GridHandler.getInstance().startNode(gridNode);
 
 			// Copy video (if necessary)
-			if (video != null && browserType == BrowserType.CHROME) {
+			if ((video != null) && (browserType == BrowserType.CHROME)) {
 				GridHandler.getInstance().copyRemoteVideo(gridNode, video);
 			}
 
 		}
 
 		// At this moment we are able to use the argument for remote video
-		if (video != null && browserType == BrowserType.CHROME) {
+		if ((video != null) && (browserType == BrowserType.CHROME)) {
 			ChromeOptions options = (ChromeOptions) capabilities
 					.getCapability(ChromeOptions.CAPABILITY);
 			options.addArguments("--use-file-for-fake-video-capture="
