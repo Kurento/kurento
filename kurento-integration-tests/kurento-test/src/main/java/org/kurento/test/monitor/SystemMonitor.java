@@ -52,6 +52,7 @@ public class SystemMonitor {
 	private double currentLatency = 0;
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
+	private boolean showLantency = false;
 
 	// TODO: Deactivated statistics
 	// private List<TestClient> testClientList;
@@ -192,8 +193,12 @@ public class SystemMonitor {
 						info.setNumClients(numClients);
 
 						// Latency
-						info.setLatency(getLatency());
+						double latency = getLatency();
+						info.setLatency(latency);
 						info.setLatencyErrors(latencyErrors);
+						if (latency > 0) {
+							showLantency = true;
+						}
 
 						// Number of threads
 						info.setNumThreadsKms(getNumThreads(kmsPid));
@@ -270,8 +275,11 @@ public class SystemMonitor {
 
 		for (long time : infoMap.keySet()) {
 			if (!header) {
-				pw.print("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number, latency_ms_avg, latency_errors_number"
-						+ infoMap.get(time).getNetInfo().parseHeaderEntry());
+				pw.print("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number");
+				if (showLantency) {
+					pw.print(", latency_ms_avg, latency_errors_number");
+				}
+				pw.print(infoMap.get(time).getNetInfo().parseHeaderEntry());
 
 				// TODO: Deactivated statistics
 				// Browser statistics. First entries may be empty, so we have to
@@ -310,10 +318,14 @@ public class SystemMonitor {
 			pw.print(parsedtime + "," + cpu + "," + mem + "," + memPercent
 					+ "," + swap + "," + swapPercent + ","
 					+ infoMap.get(time).getNumClients() + ","
-					+ infoMap.get(time).getNumThreadsKms() + ","
-					+ infoMap.get(time).getLatency() + ","
-					+ infoMap.get(time).getLatencyErrors()
-					+ infoMap.get(time).getNetInfo().parseNetEntry());
+					+ infoMap.get(time).getNumThreadsKms());
+
+			if (showLantency) {
+				pw.print("," + infoMap.get(time).getLatency() + ","
+						+ infoMap.get(time).getLatencyErrors());
+			}
+
+			pw.print(infoMap.get(time).getNetInfo().parseNetEntry());
 
 			// Browser statistics
 			// if (testClientList != null) {
@@ -366,6 +378,13 @@ public class SystemMonitor {
 
 		double percetageMem = ((double) usedMem / (double) totalMem) * 100;
 		double percetageSwap = ((double) usedSwap / (double) totalSwap) * 100;
+
+		if (Double.isNaN(percetageMem)) {
+			percetageMem = 0;
+		}
+		if (Double.isNaN(percetageSwap)) {
+			percetageSwap = 0;
+		}
 
 		double[] out = { usedMem, usedSwap, percetageMem, percetageSwap };
 		return out;
