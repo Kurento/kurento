@@ -36,7 +36,7 @@ public class PingWatchdogManager {
 				log.info(
 						"Closing session with sessionId={} and transportId={} for not receiving ping in {}"
 								+ " millis", sessionId, transportId,
-						pingInterval * NUM_NO_PINGS_TO_CLOSE);
+								pingInterval * NUM_NO_PINGS_TO_CLOSE);
 				closer.closeSession(transportId);
 			}
 		};
@@ -60,8 +60,8 @@ public class PingWatchdogManager {
 						"Setting ping interval to {}"
 								+ " millis in session with transportId={}. "
 								+ "Connection is closed if a ping is not received in {}x{}={} millis",
-						pingInterval, this.transportId, pingInterval,
-						NUM_NO_PINGS_TO_CLOSE, NUM_NO_PINGS_TO_CLOSE
+								pingInterval, this.transportId, pingInterval,
+								NUM_NO_PINGS_TO_CLOSE, NUM_NO_PINGS_TO_CLOSE
 								* pingInterval);
 			}
 
@@ -86,12 +86,14 @@ public class PingWatchdogManager {
 			disablePrevPingWatchdog();
 
 			if (pingWachdog) {
-				log.info(
-						"Setting new transportId={} for sessionId={}. "
-								+ "Restarting timer to consider disconnected client if pings are not received in {}"
-								+ " millis", transportId, sessionId,
-						NUM_NO_PINGS_TO_CLOSE * pingInterval);
-				activateSessionCloser();
+				if (pingInterval != -1) {
+					log.info(
+							"Setting new transportId={} for sessionId={}. "
+									+ "Restarting timer to consider disconnected client if pings are not received in {}"
+									+ " millis", transportId, sessionId,
+									NUM_NO_PINGS_TO_CLOSE * pingInterval);
+					activateSessionCloser();
+				}
 			}
 		}
 
