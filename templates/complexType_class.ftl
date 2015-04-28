@@ -111,7 +111,7 @@ function ${complexType.name}(${complexTypeDict}){
 
   // Check ${complexTypeDict} has the required fields
     <#list complexType.properties as property>
-  checkType('${property.type.name}', '${complexTypeDict}.${property.name}', ${complexTypeDict}.${property.name}${property.optional?string("", ", true")});
+  checkType('${property.type.name}', '${complexTypeDict}.${property.name}', ${complexTypeDict}.${property.name}<@checkTypeOptions param=property/>);
     </#list>
   </#if>
 

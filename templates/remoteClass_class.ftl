@@ -228,7 +228,7 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
  * @alias module:${remoteClass_namepath}.${method.name}
     <#list method.params as param>
  *
- * @param {<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
+ * @param <@paramType param=param/>
       <@docstring doc=param.doc namepath=remoteClass_namepath indent=1/>
     </#list>
  *
@@ -273,22 +273,25 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 <#if remoteClass.constructor??>
   <#list remoteClass.constructor.params?sort_by("name") as param>
  *
- * @property {${namepath(param.type.name)}} <#if param.optional>[${param.name}]<#else>${param.name}</#if>
+ * @property <@paramType param=param/>
     <@docstring doc=param.doc namepath=remoteClass_namepath indent=1/>
   </#list>
 </#if>
  */
-${remoteClass.name}.constructorParams = {<#list (remoteClass.constructor.params?sort_by("name"))![] as param>
+${remoteClass.name}.constructorParams = {
+<#list (remoteClass.constructor.params?sort_by("name"))![] as param>
   ${param.name}: {
-    type: '${param.type.name}',
-  <#if param.type.isList()>
-    isList: true,
-  </#if>
-  <#if !param.optional>
+    type: '${param.type.name}'<#if param.type.isList() || !param.optional>,
+    <#if param.type.isList()>
+    isArray: true<#if !param.optional>,</#if>
+    </#if>
+    <#if !param.optional>
     required: true
+    </#if>
   </#if>
   },
-</#list>};
+</#list>
+};
 
 /**
  * @alias module:${remoteClass_namepath}.events

@@ -67,6 +67,12 @@
   <#return "external:"+name>
 </#function>
 
+<#macro checkTypeOptions param>
+  <#if param.type.isList() || !param.optional>
+, {<#if param.type.isList()>isArray: true<#if !param.optional>, </#if></#if><#if !param.optional>required: true</#if>}
+  </#if>
+</#macro>
+
 <#macro arguments params>
   var transaction = (arguments[0] instanceof Transaction)
                   ? Array.prototype.shift.apply(arguments)
@@ -106,7 +112,7 @@
       </#if>
     </#list>
     <#list params as param>
-  checkType('${param.type.name}', '${param.name}', ${param.name}<#if param.type.isList() || !param.optional>, {<#if param.type.isList()>isList: true,</#if><#if !param.optional>required: true</#if>}</#if>);
+  checkType('${param.type.name}', '${param.name}', ${param.name}<@checkTypeOptions param=param/>);
     </#list>
 
   var params = {
@@ -158,4 +164,8 @@
       </#list>
     </#list>
   </#if>
+</#macro>
+
+<#macro paramType param>
+  {<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
 </#macro>
