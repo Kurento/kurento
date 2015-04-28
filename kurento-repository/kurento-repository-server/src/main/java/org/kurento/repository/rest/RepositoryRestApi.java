@@ -13,13 +13,15 @@
  *
  */
 
-package org.kurento.repository;
+package org.kurento.repository.rest;
 
 import java.util.Map;
 import java.util.Set;
 
+import org.kurento.repository.RepositoryController;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
+import org.springframework.stereotype.Component;
 
 import retrofit.client.Response;
 import retrofit.http.Body;
@@ -32,10 +34,17 @@ import retrofit.http.Path;
 /**
  * Client REST API for the Kurento repository server application.
  * 
+ * @see RepositoryController
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
+@Component
 public interface RepositoryRestApi {
 
+	/**
+	 * @param metadata
+	 *            a map of values. Can be empty but <strong>not null</strong>.
+	 * @return
+	 */
 	@POST("/repo/item")
 	RepositoryItemRecorder createRepositoryItem(
 			@Body Map<String, String> metadata);

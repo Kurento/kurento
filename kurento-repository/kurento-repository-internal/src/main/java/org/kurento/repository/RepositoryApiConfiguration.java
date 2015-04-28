@@ -17,6 +17,11 @@ package org.kurento.repository;
 
 public class RepositoryApiConfiguration {
 
+	private static final String DEFAULT_MONGO_URL = "mongodb://localhost";
+	private static final String DEFAULT_MONGO_GRIDFS = "fs";
+	private static final String DEFAULT_MONGO_DBNAME = "kurento-repository";
+	public static final String DEFAULT_FILESYSTEM_LOC = "repository";
+
 	public enum RepoType {
 		FILESYSTEM("filesystem"), MONGODB("mongodb");
 
@@ -48,10 +53,10 @@ public class RepositoryApiConfiguration {
 
 	private String webappPublicURL = "";
 	private RepoType repositoryType = RepoType.FILESYSTEM;
-	private String fileSystemFolder = "repository";
-	private String mongoDatabaseName = "kurento-repository";
-	private String mongoGridFSCollectionName = "fs";
-	private String mongoURLConnection = "mongodb://localhost";
+	private String fileSystemFolder = DEFAULT_FILESYSTEM_LOC;
+	private String mongoDatabaseName = DEFAULT_MONGO_DBNAME;
+	private String mongoGridFSCollectionName = DEFAULT_MONGO_GRIDFS;
+	private String mongoURLConnection = DEFAULT_MONGO_URL;
 
 	/**
 	 * Returns the repository public URL. The default value is "" and can be

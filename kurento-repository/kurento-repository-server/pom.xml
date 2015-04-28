@@ -65,7 +65,6 @@
 			<groupId>com.squareup.retrofit</groupId>
 			<artifactId>retrofit</artifactId>
 			<version>1.9.0</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>

@@ -25,16 +25,16 @@ import java.util.NoSuchElementException;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.repository.DuplicateItemException;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.internal.http.RepositoryHttpManager;
 import org.kurento.repository.internal.repoimpl.RepositoryWithHttp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class FileSystemRepository implements RepositoryWithHttp {
@@ -50,6 +50,7 @@ public class FileSystemRepository implements RepositoryWithHttp {
 	private File baseFolder;
 
 	private int nextFreeFileNumber = 1;
+	private boolean firstIdRequest = true;
 
 	private ItemsMetadata metadata;
 
@@ -60,7 +61,7 @@ public class FileSystemRepository implements RepositoryWithHttp {
 	public void init() {
 		baseFolder = new File(config.getFileSystemFolder());
 		checkFolder(baseFolder);
-		calculateNextId();
+		calculateNextId(true);
 		metadata = new ItemsMetadata(new File(baseFolder,
 				ITEMS_METADATA_FILE_PATH));
 	}
@@ -71,18 +72,27 @@ public class FileSystemRepository implements RepositoryWithHttp {
 		this.metadata.save();
 	}
 
-	private synchronized String calculateNextId() {
-
+	private synchronized String calculateNextId(boolean init) {
 		// Very naive unique identifier system
-
-		while (true) {
-			File file = getFileForId(Integer.toString(nextFreeFileNumber));
-			if (file.exists()) {
-				nextFreeFileNumber++;
-			} else {
-				return Integer.toString(nextFreeFileNumber);
+		if (firstIdRequest) {
+			firstIdRequest = false;
+			while (true) {
+				File file = getFileForId(Integer.toString(nextFreeFileNumber));
+				if (file.exists()) {
+					log.debug(
+							"File with id {} already exists, trying next value",
+							nextFreeFileNumber);
+					nextFreeFileNumber++;
+				} else {
+					if (init)
+						nextFreeFileNumber--;
+					break;
+				}
 			}
-		}
+		} else
+			nextFreeFileNumber++;
+		log.debug("Returning next free ID {}", nextFreeFileNumber);
+		return Integer.toString(nextFreeFileNumber);
 	}
 
 	private void checkFolder(File folder) {
@@ -115,7 +125,7 @@ public class FileSystemRepository implements RepositoryWithHttp {
 
 	@Override
 	public RepositoryItem createRepositoryItem() {
-		String id = calculateNextId();
+		String id = calculateNextId(false);
 		return new FileRepositoryItem(this, getFileForId(id), id,
 				metadata.loadMetadata(id));
 	}

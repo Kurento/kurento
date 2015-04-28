@@ -1,6 +1,6 @@
 {
   "repository": {
-    "port": 8080,
+    "port": 7676,
     "hostname": "127.0.0.1",
     //mongodb or filesystem
     "type": "mongodb",
