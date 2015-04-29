@@ -50,6 +50,9 @@ public class TestConfiguration {
 	public final static int SAUCELAB_IDLE_TIMEOUT_DEFAULT = 120; // seconds
 
 	// Selenium
+	public static final String SELENIUM_HUB_ADDRESS = "selenium.hub.address";
+	public static final String SELENIUM_HUB_ADDRESS_DEFAULT = "127.0.0.1";
+
 	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
 	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
 

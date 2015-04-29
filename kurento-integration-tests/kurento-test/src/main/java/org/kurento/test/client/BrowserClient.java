@@ -329,7 +329,6 @@ public class BrowserClient implements Closeable {
 			}
 
 			// Start Hub (just the first time will be effective)
-			GridHandler.getInstance().setHubAddress(host);
 			GridHandler.getInstance().startHub();
 
 			// Start node
@@ -353,9 +352,10 @@ public class BrowserClient implements Closeable {
 		}
 
 		int hubPort = GridHandler.getInstance().getHubPort();
+		String hubHost = GridHandler.getInstance().getHubHost();
 
-		driver = new RemoteWebDriver(new URL("http://" + host + ":" + hubPort
-				+ "/wd/hub"), capabilities);
+		driver = new RemoteWebDriver(new URL("http://" + hubHost + ":"
+				+ hubPort + "/wd/hub"), capabilities);
 	}
 
 	private void assertPublicIpNotNull() {
