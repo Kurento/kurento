@@ -24,14 +24,14 @@
 #include <gio/gio.h>
 #include "gstiostream.h"
 
-typedef struct _GstDtlsConnection GstDtlsConnection;
-typedef struct _GstDtlsConnectionClass GstDtlsConnectionClass;
-typedef struct _GstDtlsBase GstDtlsBase;
-typedef struct _GstDtlsBaseClass GstDtlsBaseClass;
-typedef struct _GstDtlsEnc GstDtlsEnc;
-typedef struct _GstDtlsEncClass GstDtlsEncClass;
-typedef struct _GstDtlsDec GstDtlsDec;
-typedef struct _GstDtlsDecClass GstDtlsDecClass;
+typedef struct _KmsGstDtlsConnection KmsGstDtlsConnection;
+typedef struct _KmsGstDtlsConnectionClass KmsGstDtlsConnectionClass;
+typedef struct _KmsGstDtlsBase KmsGstDtlsBase;
+typedef struct _KmsGstDtlsBaseClass KmsGstDtlsBaseClass;
+typedef struct _KmsGstDtlsEnc KmsGstDtlsEnc;
+typedef struct _KmsGstDtlsEncClass KmsGstDtlsEncClass;
+typedef struct _KmsGstDtlsDec KmsGstDtlsDec;
+typedef struct _KmsGstDtlsDecClass KmsGstDtlsDecClass;
 
 
 #include "gstdtlsbase.h"
@@ -39,18 +39,18 @@ typedef struct _GstDtlsDecClass GstDtlsDecClass;
 #include "gstdtlsdec.h"
 
 #define GST_TYPE_DTLS_CONNECTION            (gst_dtls_connection_get_type())
-#define GST_DTLS_CONNECTION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_CONNECTION,GstDtlsConnection))
+#define GST_DTLS_CONNECTION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_CONNECTION,KmsGstDtlsConnection))
 #define GST_IS_DTLS_CONNECTION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DTLS_CONNECTION))
-#define GST_DTLS_CONNECTION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_CONNECTION,GstDtlsConnectionClass))
+#define GST_DTLS_CONNECTION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_CONNECTION,KmsGstDtlsConnectionClass))
 #define GST_IS_DTLS_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass) ,GST_TYPE_DTLS_CONNECTION))
-#define GST_DTLS_CONNECTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_CONNECTION,GstDtlsConnectionClass))
+#define GST_DTLS_CONNECTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_CONNECTION,KmsGstDtlsConnectionClass))
 
 /**
- * GstDtlsConnection:
+ * KmsGstDtlsConnection:
  *
  * The adder object structure.
  */
-struct _GstDtlsConnection
+struct _KmsGstDtlsConnection
 {
   GObject parent;
 
@@ -61,8 +61,8 @@ struct _GstDtlsConnection
 
   gboolean is_client;
 
-  GstDtlsEnc *enc;
-  GstDtlsDec *dec;
+  KmsGstDtlsEnc *enc;
+  KmsGstDtlsDec *dec;
 
   GMutex lock;
 
@@ -72,7 +72,7 @@ struct _GstDtlsConnection
   gboolean playing;
 };
 
-struct _GstDtlsConnectionClass
+struct _KmsGstDtlsConnectionClass
 {
   GObjectClass parent_class;
 };
@@ -80,10 +80,10 @@ struct _GstDtlsConnectionClass
 GType gst_dtls_connection_get_type (void);
 
 
-GstDtlsConnection *
+KmsGstDtlsConnection *
 gst_dtls_connection_get_by_id (const gchar * id,  gboolean is_client,
-    GstDtlsBase * encdec);
+    KmsGstDtlsBase * encdec);
 
 void
-gst_dtls_connection_set_playing (GstDtlsConnection *conn,
-    GstDtlsBase * encdec, gboolean playing);
+gst_dtls_connection_set_playing (KmsGstDtlsConnection *conn,
+    KmsGstDtlsBase * encdec, gboolean playing);

@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -30,8 +29,7 @@
 GST_DEBUG_CATEGORY_STATIC (dtls_srtp_demux_debug);
 #define GST_CAT_DEFAULT (dtls_srtp_demux_debug)
 
-G_DEFINE_TYPE (GstDtlsSrtpDemux, gst_dtls_srtp_demux, GST_TYPE_ELEMENT);
-
+G_DEFINE_TYPE (KmsGstDtlsSrtpDemux, gst_dtls_srtp_demux, GST_TYPE_ELEMENT);
 
 static GstStaticPadTemplate gst_dtls_srtp_demux_sink_template =
 GST_STATIC_PAD_TEMPLATE ("sink",
@@ -56,7 +54,7 @@ static GstFlowReturn gst_dtls_srtp_demux_chain (GstPad * pad,
     GstObject * parent, GstBuffer * buffer);
 
 static void
-gst_dtls_srtp_demux_class_init (GstDtlsSrtpDemuxClass * klass)
+gst_dtls_srtp_demux_class_init (KmsGstDtlsSrtpDemuxClass * klass)
 {
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
 
@@ -71,14 +69,14 @@ gst_dtls_srtp_demux_class_init (GstDtlsSrtpDemuxClass * klass)
       gst_static_pad_template_get (&gst_dtls_srtp_demux_srtp_src_template));
 
   gst_element_class_set_static_metadata (gstelement_class,
-      "DTLS-SRTP demultiplexer",
+      "Kurento DTLS-SRTP demultiplexer",
       "Demux/Network",
       "Demultiplexes DTLS and RTP/RTCP/SRTP/SRTCP packets",
       "Olivier Crete <olivier.crete@collabora.com>");
 }
 
 static void
-gst_dtls_srtp_demux_init (GstDtlsSrtpDemux * self)
+gst_dtls_srtp_demux_init (KmsGstDtlsSrtpDemux * self)
 {
 
   self->dtls_srcpad =
@@ -98,14 +96,12 @@ gst_dtls_srtp_demux_init (GstDtlsSrtpDemux * self)
   gst_element_add_pad (GST_ELEMENT (self), self->sinkpad);
 }
 
-
 static GstFlowReturn
 gst_dtls_srtp_demux_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
 {
-  GstDtlsSrtpDemux *self = GST_DTLS_SRTP_DEMUX (parent);
+  KmsGstDtlsSrtpDemux *self = GST_DTLS_SRTP_DEMUX (parent);
   GstMapInfo map;
   guint8 first_byte;
-
 
   if (!gst_buffer_map_range (buffer, 0, 1, &map, GST_MAP_READ)) {
     gst_buffer_unref (buffer);

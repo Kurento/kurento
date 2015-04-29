@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -28,15 +27,16 @@
 #include "gstdtlsconnection.h"
 
 #include "ext/gio/kmsgtlscertificate.h"
+#include "gstdtlsbase.h"
 
 GST_DEBUG_CATEGORY_STATIC (dtls_base_debug);
 #define GST_CAT_DEFAULT (dtls_base_debug)
 
 static gpointer gst_dtls_base_parent_class = NULL;
 
-static void gst_dtls_base_class_init (GstDtlsBaseClass * klass);
-static void gst_dtls_base_init (GstDtlsBase * self,
-    GstDtlsBaseClass * dtlsbase_class);
+static void gst_dtls_base_class_init (KmsGstDtlsBaseClass * klass);
+static void gst_dtls_base_init (KmsGstDtlsBase * self,
+    KmsGstDtlsBaseClass * dtlsbase_class);
 
 static void gst_dtls_base_finalize (GObject * object);
 static void gst_dtls_base_set_property (GObject * object,
@@ -59,15 +59,14 @@ gst_dtls_base_get_type (void)
 
   if (g_once_init_enter (&dtls_base_type)) {
     GType _type = g_type_register_static_simple (GST_TYPE_ELEMENT,
-        "GstDtlsBase", sizeof (GstDtlsBaseClass),
-        (GClassInitFunc) gst_dtls_base_class_init, sizeof (GstDtlsBase),
+        "KmsGstDtlsBase", sizeof (KmsGstDtlsBaseClass),
+        (GClassInitFunc) gst_dtls_base_class_init, sizeof (KmsGstDtlsBase),
         (GInstanceInitFunc) gst_dtls_base_init, G_TYPE_FLAG_ABSTRACT);
 
     g_once_init_leave (&dtls_base_type, _type);
   }
   return dtls_base_type;
 }
-
 
 enum
 {
@@ -78,9 +77,8 @@ enum
   PROP_CLIENT_VALIDATION_FLAGS
 };
 
-
 static void
-gst_dtls_base_class_init (GstDtlsBaseClass * klass)
+gst_dtls_base_class_init (KmsGstDtlsBaseClass * klass)
 {
   GObjectClass *gobject_class = (GObjectClass *) klass;
   GstElementClass *gstelement_class = (GstElementClass *) klass;
@@ -132,7 +130,7 @@ gst_dtls_base_class_init (GstDtlsBaseClass * klass)
 }
 
 static void
-gst_dtls_base_init (GstDtlsBase * self, GstDtlsBaseClass * dtlsbase_class)
+gst_dtls_base_init (KmsGstDtlsBase * self, KmsGstDtlsBaseClass * dtlsbase_class)
 {
   GstElementClass *element_class = GST_ELEMENT_CLASS (dtlsbase_class);
 
@@ -148,11 +146,10 @@ gst_dtls_base_init (GstDtlsBase * self, GstDtlsBaseClass * dtlsbase_class)
   gst_element_add_pad (GST_ELEMENT (self), self->sinkpad);
 }
 
-
 static void
 gst_dtls_base_finalize (GObject * object)
 {
-  GstDtlsBase *self = GST_DTLS_BASE (object);
+  KmsGstDtlsBase *self = GST_DTLS_BASE (object);
 
   g_free (self->channel_id);
   g_free (self->certificate_pem_file);
@@ -160,12 +157,11 @@ gst_dtls_base_finalize (GObject * object)
   G_OBJECT_CLASS (gst_dtls_base_parent_class)->finalize (object);
 }
 
-
 static void
 gst_dtls_base_set_property (GObject * object,
     guint prop_id, const GValue * value, GParamSpec * pspec)
 {
-  GstDtlsBase *self = GST_DTLS_BASE (object);
+  KmsGstDtlsBase *self = GST_DTLS_BASE (object);
 
   switch (prop_id) {
     case PROP_CHANNEL_ID:
@@ -188,12 +184,11 @@ gst_dtls_base_set_property (GObject * object,
   }
 }
 
-
 static void
 gst_dtls_base_get_property (GObject * object,
     guint prop_id, GValue * value, GParamSpec * pspec)
 {
-  GstDtlsBase *self = GST_DTLS_BASE (object);
+  KmsGstDtlsBase *self = GST_DTLS_BASE (object);
 
   switch (prop_id) {
     case PROP_CHANNEL_ID:
@@ -219,7 +214,7 @@ gst_dtls_base_get_property (GObject * object,
 }
 
 static void
-gst_dtls_base_update_certificate (GstDtlsBase * self)
+gst_dtls_base_update_certificate (KmsGstDtlsBase * self)
 {
   GError *error = NULL;
 
@@ -230,10 +225,12 @@ gst_dtls_base_update_certificate (GstDtlsBase * self)
   if (self->certificate_pem_file && self->certificate_pem_file[0]) {
     GTlsCertificate *cert;
 
-#if 0 /* glib */
+#if 0                           /* glib */
     cert = g_tls_certificate_new_from_file (self->certificate_pem_file, &error);
 #else
-    cert = kms_g_tls_certificate_new_from_file (self->certificate_pem_file, &error);
+    cert =
+        kms_g_tls_certificate_new_from_file (self->certificate_pem_file,
+        &error);
 #endif
 
     if (cert) {
@@ -251,7 +248,7 @@ gst_dtls_base_update_certificate (GstDtlsBase * self)
 static GstStateChangeReturn
 gst_dtls_base_change_state (GstElement * element, GstStateChange transition)
 {
-  GstDtlsBase *self = GST_DTLS_BASE (element);
+  KmsGstDtlsBase *self = GST_DTLS_BASE (element);
   GstStateChangeReturn ret;
 
   switch (transition) {
@@ -282,9 +279,9 @@ gst_dtls_base_change_state (GstElement * element, GstStateChange transition)
     case GST_STATE_CHANGE_READY_TO_NULL:
       g_io_stream_close_async (G_IO_STREAM (self->conn->conn), 0, NULL, NULL,
           NULL);
-       // g_clear_object (&self->conn);
+      // g_clear_object (&self->conn);
       /* FIXME: this causes:
-            "g_output_stream_close: assertion 'G_IS_OUTPUT_STREAM (stream)' failed"*/
+         "g_output_stream_close: assertion 'G_IS_OUTPUT_STREAM (stream)' failed" */
       break;
     default:
       break;
@@ -292,12 +289,10 @@ gst_dtls_base_change_state (GstElement * element, GstStateChange transition)
   return ret;
 }
 
-
-
 static GstFlowReturn
 gst_dtls_base_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
 {
-  GstDtlsBase *self = GST_DTLS_BASE (parent);
+  KmsGstDtlsBase *self = GST_DTLS_BASE (parent);
 
   return GST_DTLS_BASE_GET_CLASS (self)->chain (self, buffer);
 }

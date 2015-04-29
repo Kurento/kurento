@@ -173,8 +173,8 @@ GST_START_TEST (test_dtlsenc_init_handshake_on_paused)
   GstElement *pipeline = gst_pipeline_new (__FUNCTION__);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  GstElement *dtlsenc_client = gst_element_factory_make ("dtlsenc", NULL);
-  GstElement *dtlsdec_client = gst_element_factory_make ("dtlsdec", NULL);
+  GstElement *dtlsenc_client = gst_element_factory_make ("kmsdtlsenc", NULL);
+  GstElement *dtlsdec_client = gst_element_factory_make ("kmsdtlsdec", NULL);
   GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
 
   cert_key_pem_file = generate_certkey_pem_file_path ();
@@ -246,13 +246,13 @@ GST_START_TEST (test_dtls_send_recv_data)
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   GstElement *fakesrc_client = gst_element_factory_make ("fakesrc", NULL);
-  GstElement *dtlsenc_client = gst_element_factory_make ("dtlsenc", NULL);
-  GstElement *dtlsdec_client = gst_element_factory_make ("dtlsdec", NULL);
+  GstElement *dtlsenc_client = gst_element_factory_make ("kmsdtlsenc", NULL);
+  GstElement *dtlsdec_client = gst_element_factory_make ("kmsdtlsdec", NULL);
   GstElement *fakesink_client = gst_element_factory_make ("fakesink", NULL);
 
   GstElement *fakesrc_server = gst_element_factory_make ("fakesrc", NULL);
-  GstElement *dtlsenc_server = gst_element_factory_make ("dtlsenc", NULL);
-  GstElement *dtlsdec_server = gst_element_factory_make ("dtlsdec", NULL);
+  GstElement *dtlsenc_server = gst_element_factory_make ("kmsdtlsenc", NULL);
+  GstElement *dtlsdec_server = gst_element_factory_make ("kmsdtlsdec", NULL);
   GstElement *fakesink_server = gst_element_factory_make ("fakesink", NULL);
 
   cert_key_pem_file = generate_certkey_pem_file_path ();

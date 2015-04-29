@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -34,15 +33,13 @@
 
 static void gst_dtls_connection_dispose (GObject * object);
 
-G_DEFINE_TYPE (GstDtlsConnection, gst_dtls_connection, G_TYPE_OBJECT);
+G_DEFINE_TYPE (KmsGstDtlsConnection, gst_dtls_connection, G_TYPE_OBJECT);
 
 static GHashTable *connections = NULL;
 static GMutex connections_lock;
 
-
-
 static void
-gst_dtls_connection_class_init (GstDtlsConnectionClass * klass)
+gst_dtls_connection_class_init (KmsGstDtlsConnectionClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
@@ -50,7 +47,7 @@ gst_dtls_connection_class_init (GstDtlsConnectionClass * klass)
 }
 
 static void
-gst_dtls_connection_init (GstDtlsConnection * self)
+gst_dtls_connection_init (KmsGstDtlsConnection * self)
 {
   self->base_stream = g_object_new (GST_TYPE_IO_STREAM, NULL);
 
@@ -60,7 +57,7 @@ gst_dtls_connection_init (GstDtlsConnection * self)
 static void
 gst_dtls_connection_dispose (GObject * object)
 {
-  GstDtlsConnection *self = GST_DTLS_CONNECTION (object);
+  KmsGstDtlsConnection *self = GST_DTLS_CONNECTION (object);
 
   g_object_unref (self->base_stream);
   if (self->conn)
@@ -73,7 +70,6 @@ gst_dtls_connection_dispose (GObject * object)
   G_OBJECT_CLASS (gst_dtls_connection_parent_class)->dispose (object);
 }
 
-
 static void
 free_weakref (gpointer data)
 {
@@ -83,11 +79,11 @@ free_weakref (gpointer data)
   g_slice_free (GWeakRef, ref);
 }
 
-GstDtlsConnection *
+KmsGstDtlsConnection *
 gst_dtls_connection_get_by_id (const gchar * id, gboolean is_client,
-    GstDtlsBase * encdec)
+    KmsGstDtlsBase * encdec)
 {
-  GstDtlsConnection *self = NULL;
+  KmsGstDtlsConnection *self = NULL;
   GWeakRef *ref;
   GError *error = NULL;
 
@@ -113,12 +109,12 @@ gst_dtls_connection_get_by_id (const gchar * id, gboolean is_client,
     self->is_client = is_client;
     if (is_client) {
       self->conn = (GTlsConnection *)
-          kms_g_tls_client_connection_new (G_IO_STREAM (self->base_stream), NULL,
-          &error);
+          kms_g_tls_client_connection_new (G_IO_STREAM (self->base_stream),
+          NULL, &error);
     } else {
       self->conn = (GTlsConnection *)
-          kms_g_tls_server_connection_new (G_IO_STREAM (self->base_stream), NULL,
-          &error);
+          kms_g_tls_server_connection_new (G_IO_STREAM (self->base_stream),
+          NULL, &error);
     }
 
     if (self->conn == NULL)
@@ -144,7 +140,6 @@ gst_dtls_connection_get_by_id (const gchar * id, gboolean is_client,
   } else {
     g_assert_not_reached ();
   }
-
 
   return self;
 

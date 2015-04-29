@@ -54,8 +54,8 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 
   /* TODO: improve creating elements when needed */
   tr->component_id = component_id;
-  tr->dtlssrtpenc = gst_element_factory_make ("dtlssrtpenc", NULL);
-  tr->dtlssrtpdec = gst_element_factory_make ("dtlssrtpdec", NULL);
+  tr->dtlssrtpenc = gst_element_factory_make ("kmsdtlssrtpenc", NULL);
+  tr->dtlssrtpdec = gst_element_factory_make ("kmsdtlssrtpdec", NULL);
   tr->nicesink = gst_element_factory_make ("nicesink", NULL);
   tr->nicesrc = gst_element_factory_make ("nicesrc", NULL);
 

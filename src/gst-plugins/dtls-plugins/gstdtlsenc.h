@@ -30,30 +30,30 @@
 
 G_BEGIN_DECLS
 #define GST_TYPE_DTLS_ENC            (gst_dtls_enc_get_type())
-#define GST_DTLS_ENC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_ENC,GstDtlsEnc))
+#define GST_DTLS_ENC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_ENC,KmsGstDtlsEnc))
 #define GST_IS_DTLS_ENC(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DTLS_ENC))
-#define GST_DTLS_ENC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_ENC,GstDtlsEncClass))
+#define GST_DTLS_ENC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_ENC,KmsGstDtlsEncClass))
 #define GST_IS_DTLS_ENC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass) ,GST_TYPE_DTLS_ENC))
-#define GST_DTLS_ENC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_ENC,GstDtlsEncClass))
+#define GST_DTLS_ENC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_ENC,KmsGstDtlsEncClass))
 
 
 /**
- * GstDtlsEnc:
+ * KmsGstDtlsEnc:
  *
  * The adder object structure.
  */
-struct _GstDtlsEnc
+struct _KmsGstDtlsEnc
 {
   /*< private >*/
-  GstDtlsBase parent;
+  KmsGstDtlsBase parent;
 
   GstBuffer *src_buffer;
   GThread *running_thread;
 };
 
-struct _GstDtlsEncClass
+struct _KmsGstDtlsEncClass
 {
-  GstDtlsBaseClass parent_class;
+  KmsGstDtlsBaseClass parent_class;
 };
 
 GType gst_dtls_enc_get_type (void);

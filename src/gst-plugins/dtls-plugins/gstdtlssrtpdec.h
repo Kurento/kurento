@@ -33,21 +33,21 @@
 
 G_BEGIN_DECLS
 #define GST_TYPE_DTLS_SRTP_DEC            (gst_dtls_srtp_dec_get_type())
-#define GST_DTLS_SRTP_DEC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_SRTP_DEC,GstDtlsSrtpDec))
+#define GST_DTLS_SRTP_DEC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_SRTP_DEC,KmsGstDtlsSrtpDec))
 #define GST_IS_DTLS_SRTP_DEC(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DTLS_SRTP_DEC))
-#define GST_DTLS_SRTP_DEC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_SRTP_DEC,GstDtlsSrtpDecClass))
+#define GST_DTLS_SRTP_DEC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_SRTP_DEC,KmsGstDtlsSrtpDecClass))
 #define GST_IS_DTLS_SRTP_DEC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass) ,GST_TYPE_DTLS_SRTP_DEC))
-#define GST_DTLS_SRTP_DEC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_SRTP_DEC,GstDtlsSrtpDecClass))
+#define GST_DTLS_SRTP_DEC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_SRTP_DEC,KmsGstDtlsSrtpDecClass))
 
-typedef struct _GstDtlsSrtpDec GstDtlsSrtpDec;
-typedef struct _GstDtlsSrtpDecClass GstDtlsSrtpDecClass;
+typedef struct _KmsGstDtlsSrtpDec KmsGstDtlsSrtpDec;
+typedef struct _KmsGstDtlsSrtpDecClass KmsGstDtlsSrtpDecClass;
 
 /**
- * GstDtlsSrtpDec:
+ * KmsGstDtlsSrtpDec:
  *
  * The adder object structure.
  */
-struct _GstDtlsSrtpDec
+struct _KmsGstDtlsSrtpDec
 {
   /*< private >*/
   GstBin parent;
@@ -78,7 +78,7 @@ struct _GstDtlsSrtpDec
   GstDtlsSrtpProfile profiles;
 };
 
-struct _GstDtlsSrtpDecClass
+struct _KmsGstDtlsSrtpDecClass
 {
   GstBinClass parent_class;
 };

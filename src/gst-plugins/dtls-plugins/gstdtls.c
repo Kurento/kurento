@@ -33,27 +33,27 @@
 static gboolean
 kms_dtls_init (GstPlugin * plugin)
 {
-  if (!gst_element_register (plugin, "dtlsenc", GST_RANK_NONE,
+  if (!gst_element_register (plugin, "kmsdtlsenc", GST_RANK_NONE,
           GST_TYPE_DTLS_ENC)) {
     return FALSE;
   }
 
-  if (!gst_element_register (plugin, "dtlsdec", GST_RANK_NONE,
+  if (!gst_element_register (plugin, "kmsdtlsdec", GST_RANK_NONE,
           GST_TYPE_DTLS_DEC)) {
     return FALSE;
   }
 
-  if (!gst_element_register (plugin, "dtlssrtpdemux", GST_RANK_NONE,
+  if (!gst_element_register (plugin, "kmsdtlssrtpdemux", GST_RANK_NONE,
           GST_TYPE_DTLS_SRTP_DEMUX)) {
     return FALSE;
   }
 
-  if (!gst_element_register (plugin, "dtlssrtpenc", GST_RANK_NONE,
+  if (!gst_element_register (plugin, "kmsdtlssrtpenc", GST_RANK_NONE,
           GST_TYPE_DTLS_SRTP_ENC)) {
     return FALSE;
   }
 
-  if (!gst_element_register (plugin, "dtlssrtpdec", GST_RANK_NONE,
+  if (!gst_element_register (plugin, "kmsdtlssrtpdec", GST_RANK_NONE,
           GST_TYPE_DTLS_SRTP_DEC)) {
     return FALSE;
   }
@@ -65,5 +65,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     kmsdtls,
     "Kurento Datagram TLS",
-    kms_dtls_init, VERSION, "LGPL", "Kurento",
-    "http://kurento.com/")
+    kms_dtls_init, VERSION, "LGPL", "Kurento", "http://kurento.com/")

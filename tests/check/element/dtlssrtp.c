@@ -212,9 +212,9 @@ GST_START_TEST (test_dtlssrtp)
   GstElement *vp8enc_client = gst_element_factory_make ("vp8enc", NULL);
   GstElement *rtpvp8pay_client = gst_element_factory_make ("rtpvp8pay", NULL);
   GstElement *dtlssrtpenc_client =
-      gst_element_factory_make ("dtlssrtpenc", NULL);
+      gst_element_factory_make ("kmsdtlssrtpenc", NULL);
   GstElement *dtlssrtpdec_client =
-      gst_element_factory_make ("dtlssrtpdec", NULL);
+      gst_element_factory_make ("kmsdtlssrtpdec", NULL);
   GSocket *socket_client;
   GstElement *udpsink_client = gst_element_factory_make ("udpsink", NULL);
   GstElement *udpsrc_client = gst_element_factory_make ("udpsrc", NULL);
@@ -225,9 +225,9 @@ GST_START_TEST (test_dtlssrtp)
   GstElement *vp8enc_server = gst_element_factory_make ("vp8enc", NULL);
   GstElement *rtpvp8pay_server = gst_element_factory_make ("rtpvp8pay", NULL);
   GstElement *dtlssrtpenc_server =
-      gst_element_factory_make ("dtlssrtpenc", NULL);
+      gst_element_factory_make ("kmsdtlssrtpenc", NULL);
   GstElement *dtlssrtpdec_server =
-      gst_element_factory_make ("dtlssrtpdec", NULL);
+      gst_element_factory_make ("kmsdtlssrtpdec", NULL);
   GSocket *socket_server;
   GstElement *udpsink_server = gst_element_factory_make ("udpsink", NULL);
   GstElement *udpsrc_server = gst_element_factory_make ("udpsrc", NULL);

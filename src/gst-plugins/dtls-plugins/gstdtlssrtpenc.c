@@ -33,7 +33,7 @@
 GST_DEBUG_CATEGORY_STATIC (dtls_srtp_enc_debug);
 #define GST_CAT_DEFAULT (dtls_srtp_enc_debug)
 
-G_DEFINE_TYPE (GstDtlsSrtpEnc, gst_dtls_srtp_enc, GST_TYPE_BIN);
+G_DEFINE_TYPE (KmsGstDtlsSrtpEnc, gst_dtls_srtp_enc, GST_TYPE_BIN);
 
 #define RTCP_SINK_TEMPLATE "rtcp_sink_%u"
 #define RTP_SINK_TEMPLATE "rtp_sink_%u"
@@ -86,7 +86,7 @@ static GstStateChangeReturn gst_dtls_srtp_enc_change_state (GstElement *
     element, GstStateChange transition);
 
 static void
-gst_dtls_srtp_enc_class_init (GstDtlsSrtpEncClass * klass)
+gst_dtls_srtp_enc_class_init (KmsGstDtlsSrtpEncClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
@@ -107,7 +107,7 @@ gst_dtls_srtp_enc_class_init (GstDtlsSrtpEncClass * klass)
       gst_static_pad_template_get (&gst_dtls_srtp_enc_src_template));
 
   gst_element_class_set_static_metadata (gstelement_class,
-      "DTLS-SRTP encrypter",
+      "Kurento DTLS-SRTP encrypter",
       "Enc/Network",
       "Demultiplexes DTLS and RTP/RTCP/SRTP/SRTCP packets",
       "Olivier Crete <olivier.crete@collabora.com>");
@@ -159,12 +159,12 @@ gst_dtls_srtp_enc_class_init (GstDtlsSrtpEncClass * klass)
       g_signal_new ("connected",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (GstDtlsSrtpEncClass, connected_signal), NULL, NULL,
+      G_STRUCT_OFFSET (KmsGstDtlsSrtpEncClass, connected_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 static void
-gst_dtls_srtp_enc_init (GstDtlsSrtpEnc * self)
+gst_dtls_srtp_enc_init (KmsGstDtlsSrtpEnc * self)
 {
   GstPadTemplate *tmpl;
   GstPad *srcpad;
@@ -179,7 +179,7 @@ gst_dtls_srtp_enc_init (GstDtlsSrtpEnc * self)
   }
   gst_bin_add (GST_BIN (self), self->out_funnel);
 
-  self->dtls_enc = gst_element_factory_make ("dtlsenc", NULL);
+  self->dtls_enc = gst_element_factory_make ("kmsdtlsenc", NULL);
   gst_bin_add (GST_BIN (self), self->dtls_enc);
 
   gst_element_link_pads (self->dtls_enc, "src", self->out_funnel, "sink_1");
@@ -208,7 +208,7 @@ static void
 gst_dtls_srtp_enc_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstDtlsSrtpEnc *self = GST_DTLS_SRTP_ENC (object);
+  KmsGstDtlsSrtpEnc *self = GST_DTLS_SRTP_ENC (object);
 
   switch (prop_id) {
     case PROP_CHANNEL_ID:
@@ -239,7 +239,7 @@ static void
 gst_dtls_srtp_enc_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
-  GstDtlsSrtpEnc *self = GST_DTLS_SRTP_ENC (object);
+  KmsGstDtlsSrtpEnc *self = GST_DTLS_SRTP_ENC (object);
 
   switch (prop_id) {
     case PROP_CHANNEL_ID:
@@ -270,7 +270,7 @@ gst_dtls_srtp_enc_get_property (GObject * object, guint prop_id,
 }
 
 static void
-clear_pad_blocks (GstDtlsSrtpEnc * self)
+clear_pad_blocks (KmsGstDtlsSrtpEnc * self)
 {
   if (self->rtp_probe_id)
     gst_pad_remove_probe (self->rtp_sinkpad, self->rtp_probe_id);
@@ -291,7 +291,7 @@ release_funnel_pad (const GValue * item, gpointer user_data)
 
 static void
 tls_status_changed (GTlsConnection * connection, GParamSpec * param,
-    GstDtlsSrtpEnc * self)
+    KmsGstDtlsSrtpEnc * self)
 {
   GTlsStatus status;
   GTlsSrtpProfile profile;
@@ -437,7 +437,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 static GstStateChangeReturn
 gst_dtls_srtp_enc_change_state (GstElement * element, GstStateChange transition)
 {
-  GstDtlsSrtpEnc *self = GST_DTLS_SRTP_ENC (element);
+  KmsGstDtlsSrtpEnc *self = GST_DTLS_SRTP_ENC (element);
   GstStateChangeReturn ret;
   GstElementFactory *fact = NULL;
   gboolean is_client;

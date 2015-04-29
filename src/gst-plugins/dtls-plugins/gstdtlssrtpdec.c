@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -34,8 +33,7 @@
 GST_DEBUG_CATEGORY_STATIC (dtls_srtp_dec_debug);
 #define GST_CAT_DEFAULT (dtls_srtp_dec_debug)
 
-G_DEFINE_TYPE (GstDtlsSrtpDec, gst_dtls_srtp_dec, GST_TYPE_BIN);
-
+G_DEFINE_TYPE (KmsGstDtlsSrtpDec, gst_dtls_srtp_dec, GST_TYPE_BIN);
 
 enum
 {
@@ -71,7 +69,7 @@ static GstStateChangeReturn gst_dtls_srtp_dec_change_state (GstElement *
     element, GstStateChange transition);
 
 static void
-gst_dtls_srtp_dec_class_init (GstDtlsSrtpDecClass * klass)
+gst_dtls_srtp_dec_class_init (KmsGstDtlsSrtpDecClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
@@ -90,7 +88,7 @@ gst_dtls_srtp_dec_class_init (GstDtlsSrtpDecClass * klass)
       gst_static_pad_template_get (&gst_dtls_srtp_dec_sink_template));
 
   gst_element_class_set_static_metadata (gstelement_class,
-      "DTLS-SRTP decrypter",
+      "Kurento DTLS-SRTP decrypter",
       "Dec/Network",
       "Decrypts DTLS and SRTP/SRTCP packets",
       "Olivier Crete <olivier.crete@collabora.com>");
@@ -140,7 +138,7 @@ gst_dtls_srtp_dec_class_init (GstDtlsSrtpDecClass * klass)
 }
 
 static void
-gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
+gst_dtls_srtp_dec_init (KmsGstDtlsSrtpDec * self)
 {
   GstPadTemplate *tmpl;
   GstPad *pad;
@@ -181,10 +179,10 @@ gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
   g_object_set (self->queue, "leaky", 2, NULL);
   gst_bin_add (GST_BIN (self), self->queue);
 
-  self->dtls_dec = gst_element_factory_make ("dtlsdec", NULL);
+  self->dtls_dec = gst_element_factory_make ("kmsdtlsdec", NULL);
   gst_bin_add (GST_BIN (self), self->dtls_dec);
 
-  self->demux = gst_element_factory_make ("dtlssrtpdemux", NULL);
+  self->demux = gst_element_factory_make ("kmsdtlssrtpdemux", NULL);
   gst_bin_add (GST_BIN (self), self->demux);
 
   pad = gst_element_get_static_pad (self->funnel, "src");
@@ -204,8 +202,10 @@ gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
   gst_element_link_pads (self->srtp_dec, "rtp_src", self->funnel, NULL);
   gst_element_link_pads (self->srtp_dec, "rtcp_src", self->funnel, NULL);
   gst_element_link (self->queue, self->rtcp_demux);
-  gst_element_link_pads (self->rtcp_demux, "rtp_src", self->srtp_dec, "rtp_sink");
-  gst_element_link_pads (self->rtcp_demux, "rtcp_src", self->srtp_dec, "rtcp_sink");
+  gst_element_link_pads (self->rtcp_demux, "rtp_src", self->srtp_dec,
+      "rtp_sink");
+  gst_element_link_pads (self->rtcp_demux, "rtcp_src", self->srtp_dec,
+      "rtcp_sink");
 
   gst_element_link_pads (self->demux, "srtp_src", self->queue, "sink");
   gst_element_link (self->dtls_dec, self->funnel);
@@ -219,7 +219,7 @@ static void
 gst_dtls_srtp_dec_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstDtlsSrtpDec *self = GST_DTLS_SRTP_DEC (object);
+  KmsGstDtlsSrtpDec *self = GST_DTLS_SRTP_DEC (object);
 
   switch (prop_id) {
     case PROP_CHANNEL_ID:
@@ -250,7 +250,7 @@ static void
 gst_dtls_srtp_dec_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
-  GstDtlsSrtpDec *self = GST_DTLS_SRTP_DEC (object);
+  KmsGstDtlsSrtpDec *self = GST_DTLS_SRTP_DEC (object);
 
   switch (prop_id) {
     case PROP_CHANNEL_ID:
@@ -281,7 +281,7 @@ gst_dtls_srtp_dec_get_property (GObject * object, guint prop_id,
 }
 
 static void
-block_queue (GstDtlsSrtpDec * self)
+block_queue (KmsGstDtlsSrtpDec * self)
 {
   if (self->queue_probe_id == 0)
     self->queue_probe_id = gst_pad_add_probe (self->queue_srcpad,
@@ -289,7 +289,7 @@ block_queue (GstDtlsSrtpDec * self)
 }
 
 static void
-clear_queue_block (GstDtlsSrtpDec * self)
+clear_queue_block (KmsGstDtlsSrtpDec * self)
 {
   if (self->queue_probe_id)
     gst_pad_remove_probe (self->queue_srcpad, self->queue_probe_id);
@@ -298,7 +298,7 @@ clear_queue_block (GstDtlsSrtpDec * self)
 
 static void
 tls_status_changed (GTlsConnection * connection, GParamSpec * param,
-    GstDtlsSrtpDec * self)
+    KmsGstDtlsSrtpDec * self)
 {
   GTlsStatus status;
   GTlsSrtpProfile profile;
@@ -355,7 +355,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 }
 
 static GstCaps *
-srtpdec_request_key (GstElement * srtpdec, guint ssrc, GstDtlsSrtpDec * self)
+srtpdec_request_key (GstElement * srtpdec, guint ssrc, KmsGstDtlsSrtpDec * self)
 {
   GstCaps *caps;
 
@@ -407,7 +407,7 @@ srtpdec_request_key (GstElement * srtpdec, guint ssrc, GstDtlsSrtpDec * self)
 static GstStateChangeReturn
 gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
 {
-  GstDtlsSrtpDec *self = GST_DTLS_SRTP_DEC (element);
+  KmsGstDtlsSrtpDec *self = GST_DTLS_SRTP_DEC (element);
   GstStateChangeReturn ret;
 
   if (self->srtp_dec == NULL || self->funnel == NULL || self->queue == NULL ||

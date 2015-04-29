@@ -33,21 +33,21 @@
 
 G_BEGIN_DECLS
 #define GST_TYPE_DTLS_SRTP_ENC            (gst_dtls_srtp_enc_get_type())
-#define GST_DTLS_SRTP_ENC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_SRTP_ENC,GstDtlsSrtpEnc))
+#define GST_DTLS_SRTP_ENC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_SRTP_ENC,KmsGstDtlsSrtpEnc))
 #define GST_IS_DTLS_SRTP_ENC(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DTLS_SRTP_ENC))
-#define GST_DTLS_SRTP_ENC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_SRTP_ENC,GstDtlsSrtpEncClass))
+#define GST_DTLS_SRTP_ENC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_SRTP_ENC,KmsGstDtlsSrtpEncClass))
 #define GST_IS_DTLS_SRTP_ENC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass) ,GST_TYPE_DTLS_SRTP_ENC))
-#define GST_DTLS_SRTP_ENC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_SRTP_ENC,GstDtlsSrtpEncClass))
+#define GST_DTLS_SRTP_ENC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_SRTP_ENC,KmsGstDtlsSrtpEncClass))
 
-typedef struct _GstDtlsSrtpEnc GstDtlsSrtpEnc;
-typedef struct _GstDtlsSrtpEncClass GstDtlsSrtpEncClass;
+typedef struct _KmsGstDtlsSrtpEnc KmsGstDtlsSrtpEnc;
+typedef struct _KmsGstDtlsSrtpEncClass KmsGstDtlsSrtpEncClass;
 
 /**
- * GstDtlsSrtpEnc:
+ * KmsGstDtlsSrtpEnc:
  *
  * The adder object structure.
  */
-struct _GstDtlsSrtpEnc
+struct _KmsGstDtlsSrtpEnc
 {
   /*< private >*/
   GstBin parent;
@@ -78,11 +78,11 @@ struct _GstDtlsSrtpEnc
   GstDtlsSrtpProfile profiles;
 };
 
-struct _GstDtlsSrtpEncClass
+struct _KmsGstDtlsSrtpEncClass
 {
   GstBinClass parent_class;
 
-  void (*connected_signal) (GstDtlsSrtpEnc * self);
+  void (*connected_signal) (KmsGstDtlsSrtpEnc * self);
 };
 
 GType gst_dtls_srtp_enc_get_type (void);

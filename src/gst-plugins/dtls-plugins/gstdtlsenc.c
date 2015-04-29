@@ -29,7 +29,7 @@
 GST_DEBUG_CATEGORY_STATIC (dtls_enc_debug);
 #define GST_CAT_DEFAULT (dtls_enc_debug)
 
-G_DEFINE_TYPE (GstDtlsEnc, gst_dtls_enc, GST_TYPE_DTLS_BASE);
+G_DEFINE_TYPE (KmsGstDtlsEnc, gst_dtls_enc, GST_TYPE_DTLS_BASE);
 
 static GstStaticPadTemplate gst_dtls_enc_sink_template =
 GST_STATIC_PAD_TEMPLATE ("sink",
@@ -43,17 +43,17 @@ GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS ("application/x-dtls"));
 
-static GstFlowReturn gst_dtls_enc_chain (GstDtlsBase * base,
+static GstFlowReturn gst_dtls_enc_chain (KmsGstDtlsBase * base,
     GstBuffer * buffer);
 
 static GstStateChangeReturn gst_dtls_enc_change_state (GstElement * element,
     GstStateChange transition);
 
 static void
-gst_dtls_enc_class_init (GstDtlsEncClass * klass)
+gst_dtls_enc_class_init (KmsGstDtlsEncClass * klass)
 {
   GstElementClass *gstelement_class = (GstElementClass *) klass;
-  GstDtlsBaseClass *base_class = (GstDtlsBaseClass *) klass;
+  KmsGstDtlsBaseClass *base_class = (KmsGstDtlsBaseClass *) klass;
 
   GST_DEBUG_CATEGORY_INIT (dtls_enc_debug, "dtlsenc", 0, "DTLS Encrypter");
 
@@ -61,9 +61,8 @@ gst_dtls_enc_class_init (GstDtlsEncClass * klass)
       gst_static_pad_template_get (&gst_dtls_enc_src_template));
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&gst_dtls_enc_sink_template));
-  gst_element_class_set_static_metadata (gstelement_class, "DTLS Encrypter",
-      "Generic",
-      "Encrypts packets using DTLS",
+  gst_element_class_set_static_metadata (gstelement_class,
+      "Kurento DTLS Encrypter", "Generic", "Encrypts packets using DTLS",
       "Olivier Crete <olivier.crete@collabora.com>");
 
   gstelement_class->change_state = gst_dtls_enc_change_state;
@@ -71,14 +70,14 @@ gst_dtls_enc_class_init (GstDtlsEncClass * klass)
 }
 
 static void
-gst_dtls_enc_init (GstDtlsEnc * enc)
+gst_dtls_enc_init (KmsGstDtlsEnc * enc)
 {
 }
 
 static GstFlowReturn
-gst_dtls_enc_chain (GstDtlsBase * base, GstBuffer * buffer)
+gst_dtls_enc_chain (KmsGstDtlsBase * base, GstBuffer * buffer)
 {
-  GstDtlsEnc *self = GST_DTLS_ENC (base);
+  KmsGstDtlsEnc *self = GST_DTLS_ENC (base);
   gssize ret;
   GstMapInfo map;
   GError *error = NULL;
@@ -140,9 +139,9 @@ gst_dtls_enc_chain (GstDtlsBase * base, GstBuffer * buffer)
 }
 
 static GstFlowReturn
-gst_dtls_enc_push (GstDtlsEnc * self, GstBuffer * buffer)
+gst_dtls_enc_push (KmsGstDtlsEnc * self, GstBuffer * buffer)
 {
-  GstDtlsBase *base = GST_DTLS_BASE (self);
+  KmsGstDtlsBase *base = GST_DTLS_BASE (self);
   GstEvent *segment_event, *caps_event;
   gchar *stream_id;
 
@@ -202,14 +201,14 @@ gst_dtls_enc_push (GstDtlsEnc * self, GstBuffer * buffer)
 static GstStateChangeReturn
 gst_dtls_enc_change_state (GstElement * element, GstStateChange transition)
 {
-  GstDtlsBase *base = GST_DTLS_BASE (element);
+  KmsGstDtlsBase *base = GST_DTLS_BASE (element);
   GstStateChangeReturn ret;
 
   switch (transition) {
     case GST_STATE_CHANGE_READY_TO_PAUSED:
       gst_output_stream_set_push_function (GST_OUTPUT_STREAM
-          (g_io_stream_get_output_stream (G_IO_STREAM (base->conn->
-                      base_stream))),
+          (g_io_stream_get_output_stream (G_IO_STREAM (base->
+                      conn->base_stream))),
           (GstOutputStreamPushFunc) gst_dtls_enc_push, element);
       break;
     default:
@@ -224,8 +223,8 @@ gst_dtls_enc_change_state (GstElement * element, GstStateChange transition)
   switch (transition) {
     case GST_STATE_CHANGE_PAUSED_TO_READY:
       gst_output_stream_set_push_function (GST_OUTPUT_STREAM
-          (g_io_stream_get_output_stream (G_IO_STREAM (base->conn->
-                      base_stream))), NULL, NULL);
+          (g_io_stream_get_output_stream (G_IO_STREAM (base->
+                      conn->base_stream))), NULL, NULL);
       break;
     default:
       break;

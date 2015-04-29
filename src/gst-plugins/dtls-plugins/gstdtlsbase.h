@@ -28,18 +28,18 @@
 
 G_BEGIN_DECLS
 #define GST_TYPE_DTLS_BASE            (gst_dtls_base_get_type())
-#define GST_DTLS_BASE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_BASE,GstDtlsBase))
+#define GST_DTLS_BASE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_BASE,KmsGstDtlsBase))
 #define GST_IS_DTLS_BASE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DTLS_BASE))
-#define GST_DTLS_BASE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_BASE,GstDtlsBaseClass))
+#define GST_DTLS_BASE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass) ,GST_TYPE_DTLS_BASE,KmsGstDtlsBaseClass))
 #define GST_IS_DTLS_BASE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass) ,GST_TYPE_DTLS_BASE))
-#define GST_DTLS_BASE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_BASE,GstDtlsBaseClass))
+#define GST_DTLS_BASE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj) ,GST_TYPE_DTLS_BASE,KmsGstDtlsBaseClass))
 
 /**
- * GstDtlsBase:
+ * KmsGstDtlsBase:
  *
  * The adder object structure.
  */
-struct _GstDtlsBase
+struct _KmsGstDtlsBase
 {
   /*< private >*/
   GstElement element;
@@ -52,14 +52,14 @@ struct _GstDtlsBase
   gchar *certificate_pem_file;
   GTlsCertificateFlags client_validation_flags;
 
-  GstDtlsConnection *conn;
+  KmsGstDtlsConnection *conn;
 };
 
-struct _GstDtlsBaseClass
+struct _KmsGstDtlsBaseClass
 {
   GstElementClass parent_class;
 
-  GstFlowReturn (*chain) (GstDtlsBase * base, GstBuffer * buffer);
+  GstFlowReturn (*chain) (KmsGstDtlsBase * base, GstBuffer * buffer);
 };
 
 GType gst_dtls_base_get_type (void);

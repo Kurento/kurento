@@ -24,15 +24,15 @@
 #include <gst/gst.h>
 
 #define GST_TYPE_DTLS_SRTP_DEMUX            (gst_dtls_srtp_demux_get_type())
-#define GST_DTLS_SRTP_DEMUX(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_SRTP_DEMUX,GstDtlsSrtpDemux))
-#define GST_DTLS_SRTP_DEMUX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_DTLS_SRTP_DEMUX,GstDtlsSrtpDemuxClass))
+#define GST_DTLS_SRTP_DEMUX(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DTLS_SRTP_DEMUX,KmsGstDtlsSrtpDemux))
+#define GST_DTLS_SRTP_DEMUX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_DTLS_SRTP_DEMUX,KmsGstDtlsSrtpDemuxClass))
 #define GST_IS_DTLS_SRTP_DEMUX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DTLS_SRTP_DEMUX))
 #define GST_IS_DTLS_SRTP_DEMUX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_DTLS_SRTP_DEMUX))
 
-typedef struct _GstDtlsSrtpDemux GstDtlsSrtpDemux;
-typedef struct _GstDtlsSrtpDemuxClass GstDtlsSrtpDemuxClass;
+typedef struct _KmsGstDtlsSrtpDemux KmsGstDtlsSrtpDemux;
+typedef struct _KmsGstDtlsSrtpDemuxClass KmsGstDtlsSrtpDemuxClass;
 
-struct _GstDtlsSrtpDemux
+struct _KmsGstDtlsSrtpDemux
 {
   GstElement parent;
 
@@ -42,7 +42,7 @@ struct _GstDtlsSrtpDemux
   GstPad *dtls_srcpad;
 };
 
-struct _GstDtlsSrtpDemuxClass
+struct _KmsGstDtlsSrtpDemuxClass
 {
   GstElementClass parent_class;
 };

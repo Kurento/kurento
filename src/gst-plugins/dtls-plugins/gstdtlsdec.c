@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -30,7 +29,7 @@
 GST_DEBUG_CATEGORY_STATIC (dtls_dec_debug);
 #define GST_CAT_DEFAULT (dtls_dec_debug)
 
-G_DEFINE_TYPE (GstDtlsDec, gst_dtls_dec, GST_TYPE_DTLS_BASE);
+G_DEFINE_TYPE (KmsGstDtlsDec, gst_dtls_dec, GST_TYPE_DTLS_BASE);
 
 static GstStaticPadTemplate gst_dtls_dec_sink_template =
 GST_STATIC_PAD_TEMPLATE ("sink",
@@ -48,7 +47,7 @@ static void gst_dtls_dec_dispose (GObject * object);
 
 static gboolean gst_dtls_dec_event (GstPad * pad, GstObject * parent,
     GstEvent * event);
-static GstFlowReturn gst_dtls_dec_chain (GstDtlsBase * base,
+static GstFlowReturn gst_dtls_dec_chain (KmsGstDtlsBase * base,
     GstBuffer * buffer);
 static gboolean gst_dtls_dec_activatemode (GstPad * pad, GstObject * parent,
     GstPadMode mode, gboolean active);
@@ -57,11 +56,11 @@ static GstStateChangeReturn gst_dtls_dec_change_state (GstElement * element,
     GstStateChange transition);
 
 static void
-gst_dtls_dec_class_init (GstDtlsDecClass * klass)
+gst_dtls_dec_class_init (KmsGstDtlsDecClass * klass)
 {
   GObjectClass *gobject_class = (GObjectClass *) klass;
   GstElementClass *gstelement_class = (GstElementClass *) klass;
-  GstDtlsBaseClass *base_class = (GstDtlsBaseClass *) klass;
+  KmsGstDtlsBaseClass *base_class = (KmsGstDtlsBaseClass *) klass;
 
   GST_DEBUG_CATEGORY_INIT (dtls_dec_debug, "dtlsdec", 0, "DTLS Decrypter");
 
@@ -69,9 +68,8 @@ gst_dtls_dec_class_init (GstDtlsDecClass * klass)
       gst_static_pad_template_get (&gst_dtls_dec_src_template));
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&gst_dtls_dec_sink_template));
-  gst_element_class_set_static_metadata (gstelement_class, "DTLS Decrypter",
-      "Generic",
-      "Encrypts packets using DTLS",
+  gst_element_class_set_static_metadata (gstelement_class,
+      "Kurento DTLS Decrypter", "Generic", "Encrypts packets using DTLS",
       "Olivier Crete <olivier.crete@collabora.com>");
 
   gobject_class->dispose = gst_dtls_dec_dispose;
@@ -82,9 +80,9 @@ gst_dtls_dec_class_init (GstDtlsDecClass * klass)
 }
 
 static void
-gst_dtls_dec_init (GstDtlsDec * dec)
+gst_dtls_dec_init (KmsGstDtlsDec * dec)
 {
-  GstDtlsBase *base = GST_DTLS_BASE (dec);
+  KmsGstDtlsBase *base = GST_DTLS_BASE (dec);
 
   g_assert (base->srcpad);
 
@@ -97,7 +95,7 @@ gst_dtls_dec_init (GstDtlsDec * dec)
 static void
 gst_dtls_dec_dispose (GObject * object)
 {
-  GstDtlsDec *dec = GST_DTLS_DEC (object);
+  KmsGstDtlsDec *dec = GST_DTLS_DEC (object);
 
   if (dec->cancellable)
     g_object_unref (dec->cancellable);
@@ -106,9 +104,9 @@ gst_dtls_dec_dispose (GObject * object)
 }
 
 static GstFlowReturn
-gst_dtls_dec_chain (GstDtlsBase * base, GstBuffer * buffer)
+gst_dtls_dec_chain (KmsGstDtlsBase * base, GstBuffer * buffer)
 {
-  GstDtlsDec *self = GST_DTLS_DEC (base);
+  KmsGstDtlsDec *self = GST_DTLS_DEC (base);
   GstFlowReturn ret;
 
   /* Ignore zero sized buffers */
@@ -125,12 +123,11 @@ gst_dtls_dec_chain (GstDtlsBase * base, GstBuffer * buffer)
   return g_atomic_int_get (&self->flow_ret);
 }
 
-
 static void
 gst_dtls_dec_loop (gpointer user_data)
 {
-  GstDtlsDec *self = GST_DTLS_DEC (user_data);
-  GstDtlsBase *base = GST_DTLS_BASE (user_data);
+  KmsGstDtlsDec *self = GST_DTLS_DEC (user_data);
+  KmsGstDtlsBase *base = GST_DTLS_BASE (user_data);
   gssize bytes_read;
   GstMapInfo map;
   GError *error = NULL;
@@ -167,10 +164,11 @@ gst_dtls_dec_loop (gpointer user_data)
 
         if (stream_id == NULL) {
           stream_id = gst_pad_create_stream_id (base->srcpad,
-                                                GST_ELEMENT (base), NULL);
+              GST_ELEMENT (base), NULL);
         }
 
-        gst_pad_push_event (base->srcpad, gst_event_new_stream_start(stream_id));
+        gst_pad_push_event (base->srcpad,
+            gst_event_new_stream_start (stream_id));
       }
 
       g_free (stream_id);
@@ -263,7 +261,7 @@ end:
 }
 
 static void
-gst_dtls_dec_set_flushing (GstDtlsDec * self, gboolean flushing)
+gst_dtls_dec_set_flushing (KmsGstDtlsDec * self, gboolean flushing)
 {
   if (flushing) {
     g_atomic_int_set (&self->flow_ret, GST_FLOW_FLUSHING);
@@ -279,7 +277,7 @@ static gboolean
 gst_dtls_dec_activatemode (GstPad * pad, GstObject * parent, GstPadMode mode,
     gboolean active)
 {
-  GstDtlsDec *self = GST_DTLS_DEC (parent);
+  KmsGstDtlsDec *self = GST_DTLS_DEC (parent);
 
   g_return_val_if_fail (mode == GST_PAD_MODE_PUSH, FALSE);
 
@@ -289,6 +287,7 @@ gst_dtls_dec_activatemode (GstPad * pad, GstObject * parent, GstPadMode mode,
         gst_object_unref);
   } else {
     gboolean ret;
+
     gst_dtls_dec_set_flushing (self, TRUE);
     ret = gst_pad_stop_task (pad);
     g_cancellable_reset (self->cancellable);
@@ -299,8 +298,8 @@ gst_dtls_dec_activatemode (GstPad * pad, GstObject * parent, GstPadMode mode,
 static gboolean
 gst_dtls_dec_event (GstPad * pad, GstObject * parent, GstEvent * event)
 {
-  GstDtlsDec *self = GST_DTLS_DEC (parent);
-  GstDtlsBase *base = GST_DTLS_BASE (parent);
+  KmsGstDtlsDec *self = GST_DTLS_DEC (parent);
+  KmsGstDtlsBase *base = GST_DTLS_BASE (parent);
 
   if (GST_EVENT_IS_SERIALIZED (event))
     gst_input_stream_wait_for_empty (self->gst_istream);
@@ -323,8 +322,8 @@ gst_dtls_dec_event (GstPad * pad, GstObject * parent, GstEvent * event)
 static GstStateChangeReturn
 gst_dtls_dec_change_state (GstElement * element, GstStateChange transition)
 {
-  GstDtlsDec *self = GST_DTLS_DEC (element);
-  GstDtlsBase *base = GST_DTLS_BASE (element);
+  KmsGstDtlsDec *self = GST_DTLS_DEC (element);
+  KmsGstDtlsBase *base = GST_DTLS_BASE (element);
   GstStateChangeReturn ret;
 
   switch (transition) {
