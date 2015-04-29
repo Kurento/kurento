@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -35,175 +35,197 @@ var args = getopts(location.search,
 if (args.ice_servers) {
   console.log("Use ICE servers: " + args.ice_servers);
   kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
-} else {
+} else
   console.log("Use freeice")
-}
 
 var filter = null;
 var pipeline;
 var webRtcPeer
 
+
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
+}
+
+
 window.addEventListener("load", function(event)
 {
-	kurentoClient.register(kurentoModulePointerdetector)	
-	console = new Console('console', console);
+  console = new Console('console', console);
+  kurentoClient.register('kurento-module-pointerdetector')
 
-	var videoInput = document.getElementById('videoInput');
-	var videoOutput = document.getElementById('videoOutput');
+  const PointerDetectorWindowMediaParam = kurentoClient.register.complexTypes.PointerDetectorWindowMediaParam
+  const WindowParam                     = kurentoClient.register.complexTypes.WindowParam
 
-	var startButton = document.getElementById("start");
-	var stopButton = document.getElementById("stop");
-	stopButton.addEventListener("click", stop);
+  var videoInput = document.getElementById('videoInput');
+  var videoOutput = document.getElementById('videoOutput');
 
-	startButton.addEventListener("click", function start()
-	{
-		console.log("WebRTC loopback starting");
+  var startButton = document.getElementById("start");
+  var stopButton = document.getElementById("stop");
+  stopButton.addEventListener("click", stop);
 
-		showSpinner(videoInput, videoOutput);
+  startButton.addEventListener("click", function start()
+  {
+    console.log("WebRTC loopback starting");
 
-		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-		                                                   onOffer, onError);
+    showSpinner(videoInput, videoOutput);
 
-		function onOffer(sdpOffer) {
-			console.log("onOffer");
+    var options =
+    {
+      localVideo: videoInput,
+      remoteVideo: videoOutput
+    }
 
-			kurentoClient(args.ws_uri, function(error, client) {
-				if (error) return onError(error);
+    webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+    {
+      if(error) return onError(error)
 
-				client.create('MediaPipeline', function(error, p) {
-					if (error) return onError(error);
+      this.generateOffer(onOffer)
+    });
 
-					pipeline = p;
+    function onOffer(error, sdpOffer) {
+      if (error) return onError(error);
 
-					console.log("Got MediaPipeline");
+      console.log("onOffer");
 
-					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
-						if (error) return onError(error);
+      kurentoClient(args.ws_uri, function(error, client) {
+        if (error) return onError(error);
 
-						console.log("Got WebRtcEndpoint");
+        client.create('MediaPipeline', function(error, _pipeline) {
+          if (error) return onError(error);
+
+          pipeline = _pipeline;
+
+          console.log("Got MediaPipeline");
+
+          pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+            if (error) return onError(error);
+
+            console.log("Got WebRtcEndpoint");
+
+            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+            webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+              if (error) return onError(error);
+
+              console.log("SDP answer obtained. Processing ...");
+
+              webRtc.gatherCandidates(onError);
+              webRtcPeer.processAnswer(sdpAnswer);
+            });
 
             var options =
             {
-              calibrationRegion:
-              {
+              calibrationRegion: WindowParam({
                 topRightCornerX: 5,
                 topRightCornerY:5,
                 width:30,
                 height: 30
-              }
+              })
             };
 
-						pipeline.create('PointerDetectorFilter', options,
-						function(error, _filter) {
-							if (error) return onError(error);
+            pipeline.create('PointerDetectorFilter', options, function(error, _filter) {
+              if (error) return onError(error);
 
-							filter = _filter;
-							console.log("Connecting ...");
+              filter = _filter;
 
-							webRtc.connect(filter, function(error) {
-								if (error) return onError(error);
+              var options = PointerDetectorWindowMediaParam({
+                id: 'window0',
+                height: 50,
+                width:50,
+                upperRightX: 500,
+                upperRightY: 150
+              });
 
-								console.log("WebRtcEndpoint --> filter");
+              filter.addWindow(options, onError);
 
-								filter.connect(webRtc, function(error) {
-									if (error) return onError(error);
+              var options = PointerDetectorWindowMediaParam({
+                id: 'window1',
+                height: 50,
+                width:50,
+                upperRightX: 500,
+                upperRightY: 250
+              });
 
-									console.log("Filter --> WebRtcEndpoint");
+              filter.addWindow(options, onError);
 
-                  var options =
-                  {
-                    id: 'window0',
-                    height: 50,
-                    width:50,
-                    upperRightX: 500,
-                    upperRightY: 150
-                  };
+              filter.on ('WindowIn', function (data){
+                console.log ("Event window in detected in window " + data.windowId);
+              });
 
-									filter.addWindow(options, onError);
+              filter.on ('WindowOut', function (data){
+                console.log ("Event window out detected in window " + data.windowId);
+              });
 
-                  var options =
-                  {
-                    id: 'window1',
-                    height: 50,
-                    width:50,
-                    upperRightX: 500,
-                    upperRightY: 250
-                  };
+              console.log("Connecting ...");
+              client.connect(webRtc, filter, webRtc, function(error) {
+                if (error) return onError(error);
 
-									filter.addWindow(options, onError);
-
-									filter.on ('WindowIn', function (data){
-										console.log ("Event window in detected in window " + data.windowId);
-									});
-
-									filter.on ('WindowOut', function (data){
-										console.log ("Event window out detected in window " + data.windowId);
-									});
-								});
-							});
-
-							webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-								if (error) return onError(error);
-
-								console.log("SDP answer obtained. Processing ...");
-
-								webRtcPeer.processSdpAnswer(sdpAnswer);
-							});
-						});
-					});
-				});
-			});
-		}
-	});
+                console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
+              });
+            });
+          });
+        });
+      });
+    }
+  });
 });
 
 function calibrate() {
-	if (filter != null) {
-		filter.trackColorFromCalibrationRegion (function(error) {
-			if (error) {
-				return onError(error);
-			}
-		});
-	}
+  if(filter) filter.trackColorFromCalibrationRegion(onError);
 }
 
 function onError(error) {
-	if(error) console.error(error);
-}
-
-function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-	}
-}
-
-function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = 'img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  if(error) console.error(error);
 }
 
 function stop(){
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
+  if(pipeline){
+    pipeline.release();
+    pipeline = null;
+  }
 
-	if(webRtcPeer){
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
+  if(webRtcPeer){
+    webRtcPeer.dispose();
+    webRtcPeer = null;
+  }
 
-	hideSpinner(videoInput, videoOutput);
+  hideSpinner(videoInput, videoOutput);
+}
+
+function showSpinner() {
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = 'img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+  }
+}
+
+function hideSpinner() {
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = 'img/webrtc.png';
+    arguments[i].style.background = '';
+  }
 }
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

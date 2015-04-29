@@ -24,7 +24,10 @@ https.createServer(options, function(request, response)
   {
     file.serve(request, response);
   }).resume();
-}).listen(HTTPS_PORT);
+}).listen(HTTPS_PORT, function()
+{
+  console.log('HTTPS server available at https://localhost:'+HTTPS_PORT)
+});
 
 
 // Redirect from http to https - http://stackoverflow.com/a/23977269/586382
@@ -37,4 +40,7 @@ http.createServer(function(req, res)
 
   res.writeHead(301, headers);
   res.end();
-}).listen(HTTP_PORT);
+}).listen(HTTP_PORT, function()
+{
+  console.log('HTTP server available at http://localhost:'+HTTP_PORT)
+});

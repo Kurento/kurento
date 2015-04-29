@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -104,316 +104,363 @@ var claraX = 588;
 var claraY = 155;
 
 
-window.onload = function() {
-	console = new Console('console', console);
-	videoOutput = document.getElementById('videoOutput');
-	sample1 = document.getElementById('sample1');
-	sample2 = document.getElementById('sample2');
-	sample3 = document.getElementById('sample3');
-	sample4 = document.getElementById('sample4');
-	playButton = document.getElementById ('start');
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
 
-	$('#stop').attr('disabled', true);
-	$('#start').attr('disabled', false);
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
+}
+
+
+window.onload = function() {
+  console = new Console('console', console);
+  videoOutput = document.getElementById('videoOutput');
+  sample1 = document.getElementById('sample1');
+  sample2 = document.getElementById('sample2');
+  sample3 = document.getElementById('sample3');
+  sample4 = document.getElementById('sample4');
+  playButton = document.getElementById ('start');
+
+  $('#stop').attr('disabled', true);
+  $('#start').attr('disabled', false);
 }
 
 function start() {
-	showSpinner(videoOutput);
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(null, videoOutput, onOffer, onError);
+  showSpinner(videoOutput);
 
-	$('#stop').attr('disabled', false);
-	$('#start').attr('disabled', true);
+  var options =
+  {
+    remoteVideo: videoOutput
+  }
+
+  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+  {
+    if(error) return onError(error)
+
+    this.generateOffer(onOffer)
+  });
+
+  $('#stop').attr('disabled', false);
+  $('#start').attr('disabled', true);
 }
 
 function stop() {
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-	hideSpinner(videoOutput);
-	hideImages (sample1, sample2, sample3, sample4);
+  if (webRtcPeer) {
+    webRtcPeer.dispose();
+    webRtcPeer = null;
+  }
+  if(pipeline){
+    pipeline.release();
+    pipeline = null;
+  }
+  hideSpinner(videoOutput);
+  hideImages (sample1, sample2, sample3, sample4);
 
-	$('#stop').attr('disabled', true);
-	$('#start').attr('disabled', false);
+  $('#stop').attr('disabled', true);
+  $('#start').attr('disabled', false);
 
-	kissing = false;
+  kissing = false;
 }
 
-function onOffer(sdpOffer) {
-    kurentoClient(args.ws_uri, function(error, kurentoClient) {
-		if (error) return onError(error);
 
-		kurentoClient.create('MediaPipeline', function(error, _pipeline) {
-		    if (error) return onError(error);
+var connect
 
-		    pipeline = _pipeline;
-		    pipeline.create('WebRtcEndpoint', function(error, _webRtc) {
-				if (error) return onError(error);
+function onOffer(error, sdpOffer) {
+  if(error) return onError(error)
 
-				webRtc = _webRtc;
-				pipeline.create('GStreamerFilter', {command : 'videoflip method=4'}, function(error, _gstreamerFilterFlip) {
-					if(error) return onError(error);
+  kurentoClient(args.ws_uri, function(error, client) {
+    if (error) return onError(error);
 
-					gstreamerFilterFlip = _gstreamerFilterFlip;
-				    pipeline.create('AlphaBlending', function(error, _alphaBlending) {
-						if(error) return onError(error);
+    connect = client.connect.bind(client)
 
-					    alphaBlending = _alphaBlending;
-					    alphaBlending.createHubPort (function(error, _webRtc_port) {
-							if (error) return onError(error);
+    client.create('MediaPipeline', function(error, _pipeline) {
+      if (error) return onError(error);
 
-							webRtc_port = _webRtc_port;
-							pipeline.create ('FaceSegmentatorFilter', function(error, facesegmentator) {
-							    if (error) return onError(error);
+      pipeline = _pipeline;
 
-							    webRtc.connect(gstreamerFilterFlip, function(error) {
-										if (error) return onError(error);
+      pipeline.create('WebRtcEndpoint', function(error, _webRtc) {
+        if (error) return onError(error);
 
-							        gstreamerFilterFlip.connect(facesegmentator, function(error) {
-										if (error) return onError(error);
+        webRtc = _webRtc;
 
-										facesegmentator.connect(webRtc_port, function(error) {
-										    if (error) return onError(error);
+        setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-											webRtc_port.connect(webRtc, function(error) {
-											    if (error) return onError(error);
+        webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+          if (error) return onError(error);
 
-												alphaBlending.setMaster (webRtc_port, 3, function(error) {
-													if (error) return onError(error);
-														console.log("Set Master Port");
-											    });
+          webRtc.gatherCandidates(onError);
+          webRtcPeer.processAnswer(sdpAnswer);
+        });
 
-											    facesegmentator.on('FacePosition', function(data)
-											    {
-											      rightPointX = data.rightPoint.x;
-											      rightPointY = data.rightPoint.y;
-											      leftPointX = data.leftPoint.x;
-											      leftPointY = data.leftPoint.y;
-											    });
+        var options = {command : 'videoflip method=4'}
 
-											    webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-												    if (error) return onError(error);
+        pipeline.create('GStreamerFilter', options, function(error, _gstreamerFilterFlip) {
+          if(error) return onError(error);
 
-												    webRtcPeer.processSdpAnswer(sdpAnswer);
-											    });
-											});
-										});
-								    });
-								});
-							});
-					    });
-				    });
-				});
-		    });
-		});
+          gstreamerFilterFlip = _gstreamerFilterFlip;
+
+          pipeline.create ('FaceSegmentatorFilter', function(error, facesegmentator) {
+            if (error) return onError(error);
+
+            facesegmentator.on('FacePosition', function(data)
+            {
+              rightPointX = data.rightPoint.x;
+              rightPointY = data.rightPoint.y;
+              leftPointX = data.leftPoint.x;
+              leftPointY = data.leftPoint.y;
+            });
+
+            pipeline.create('AlphaBlending', function(error, _alphaBlending) {
+              if(error) return onError(error);
+
+              alphaBlending = _alphaBlending;
+
+              alphaBlending.createHubPort (function(error, _webRtc_port) {
+                if (error) return onError(error);
+
+                webRtc_port = _webRtc_port;
+
+                alphaBlending.setMaster(webRtc_port, 3, function(error) {
+                  if (error) return onError(error);
+
+                  console.log("Set Master Port");
+                });
+
+                connect(webRtc, gstreamerFilterFlip, facesegmentator,
+                  webRtc_port, webRtc, onError);
+              });
+            });
+          });
+        });
+      });
     });
-	showImages (sample1, raquelImg, sample2, borjaImg, sample3, ivanImg, sample4, userImg);
+  });
+
+  showImages(sample1, raquelImg, sample2, borjaImg, sample3, ivanImg, sample4, userImg);
 }
 
 function kiss( video, xPos, yPos) {
-	if ((leftPointX == 0) && (leftPointX == 0) && (rightPointX == 0) && (rightPointY == 0)) {
-		console.log ("There are not face points");
-		kissing = false;
-		reactivateImages (sample1, raquelImg, sample1click,
-			sample2, borjaImg, sample2click,
-			sample3, ivanImg, sample3click,
-			sample4, userImg, sample4click);
-		return;
-	}
+  if ((leftPointX == 0) && (leftPointX == 0) && (rightPointX == 0) && (rightPointY == 0)) {
+    console.log ("There are not face points");
+    kissing = false;
+    reactivateImages (sample1, raquelImg, sample1click,
+      sample2, borjaImg, sample2click,
+      sample3, ivanImg, sample3click,
+      sample4, userImg, sample4click);
+    return;
+  }
 
-	//calculate union point
-	var unionX = (leftPointX - xPos);
-	var unionY = (leftPointY - yPos);
+  //calculate union point
+  var unionX = (leftPointX - xPos);
+  var unionY = (leftPointY - yPos);
 
-	var moveX = "";
-	var moveY = "";
+  var moveX = "";
+  var moveY = "";
 
-	var cropX = "";
-	var cropY = "";
+  var cropX = "";
+  var cropY = "";
 
-	console.log ("L x point " + leftPointX + " ypoint " + leftPointY);
-	console.log ("R x point " + rightPointX + " ypoint " + rightPointY)
+  console.log ("L x point " + leftPointX + " ypoint " + leftPointY);
+  console.log ("R x point " + rightPointX + " ypoint " + rightPointY)
 
-	if (unionX < 0){
-		moveX  = " right=" + unionX;
-		cropX  = " left=" + ((-1) * unionX);
-	} else {
-		moveX  = " left=" + ((-1) * unionX);
-		cropX  = " right=" + unionX;
-	}
+  if (unionX < 0){
+    moveX  = " right=" + unionX;
+    cropX  = " left=" + ((-1) * unionX);
+  } else {
+    moveX  = " left=" + ((-1) * unionX);
+    cropX  = " right=" + unionX;
+  }
 
-	if (unionY < 0){
-		moveY  = " bottom=" + unionY;
-		cropY  = " top=" + ((-1) * unionY);
-	} else {
-		moveY  = " top=" + ((-1) * unionY);
-		cropY  = " bottom=" + unionY;
-	}
+  if (unionY < 0){
+    moveY  = " bottom=" + unionY;
+    cropY  = " top=" + ((-1) * unionY);
+  } else {
+    moveY  = " top=" + ((-1) * unionY);
+    cropY  = " bottom=" + unionY;
+  }
 
-    pipeline.create('PlayerEndpoint', {uri : video}, function(error, _playerEndpoint) {
-		if(error) return onError(error);
 
-		playerEndpoint = _playerEndpoint;
-		//pipeline.create ('GStreamerFilter', {command : 'alpha method=custom target-r=70 target-g=140 target-b=140 angle=25'}, function (error, _gstreamerFilter) {
-			pipeline.create ('GStreamerFilter', {command : 'alpha method=custom target-r=124 target-g=167 target-b=154 angle=30'}, function (error, _gstreamerFilter) {
-		    if(error) return onError(error);
+  var options = {uri : video}
 
-		    gstreamerFilter = _gstreamerFilter;
-		    var _command = "videobox border-alpha=0" + moveX + moveY;
-			pipeline.create ('GStreamerFilter', {command : _command}, function (error, _gstreamerFilterBox) {
-		    	if(error) return onError(error);
+  pipeline.create('PlayerEndpoint', options, function(error, _playerEndpoint) {
+    if(error) return onError(error);
 
-		    	gstreamerFilterBox = _gstreamerFilterBox;
-		    	_command = "videocrop" + cropX + cropY;
-				pipeline.create ('GStreamerFilter', {command : _command}, function (error, _gstreamerFilterCrop) {
-			    	if(error) return onError(error);
+    playerEndpoint = _playerEndpoint;
 
-		    		gstreamerFilterCrop = _gstreamerFilterCrop;
-				    alphaBlending.createHubPort (function(error, _video_port) {
-						if (error) return onError(error);
+    playerEndpoint.on('EndOfStream', function(data)
+    {
+      video_port.release();
+      video_port = null;
 
-						video_port = _video_port;
-						playerEndpoint.connect(gstreamerFilter, function(error) {
-						    if (error) return onError(error);
+      playerEndpoint.release();
+      gstreamerFilter.release();
+      gstreamerFilterBox.release();
+      gstreamerFilterCrop.release();
+      kissing = false;
 
-							gstreamerFilter.connect(gstreamerFilterBox, function(error) {
-						    	if (error) return onError(error);
-
-						    	gstreamerFilterBox.connect(gstreamerFilterCrop, function(error) {
-						    	if (error) return onError(error);
-
-									gstreamerFilterCrop.connect(video_port, function(error) {
-										if (error) return onError(error);
-
-										alphaBlending.setPortProperties (0, 0, 4, 1, 1, video_port, function(error) {
-										 	if (error) return onError(error);
-										 		console.log("Setting port properties");
-									    });
-
-										playerEndpoint.play(function(error){
-										    if(error) return onError(error);
-
-										    console.log('Playing ...');
-
-											playerEndpoint.on('EndOfStream', function(data)
-										    {
-									    		video_port.release ();
-												video_port = null;
-												playerEndpoint.release ();
-												gstreamerFilter.release();
-												gstreamerFilterBox.release();
-												gstreamerFilterCrop.release();
-												kissing = false;
-												reactivateImages (sample1, raquelImg, sample1click,
-													sample2, borjaImg, sample2click,
-													sample3, ivanImg, sample3click,
-													sample4, userImg, sample4click);
-										    });
-										});
-								    });
-								});
-							});
-						});
-				    });
-				});
-		    });
-		});
+      reactivateImages(
+        sample1, raquelImg, sample1click,
+        sample2, borjaImg,  sample2click,
+        sample3, ivanImg,   sample3click,
+        sample4, userImg,   sample4click
+      );
     });
+
+    var options = {command : 'alpha method=custom target-r=124 target-g=167 target-b=154 angle=30'}
+//    var options = {command : 'alpha method=custom target-r=70 target-g=140 target-b=140 angle=25'}
+
+    pipeline.create('GStreamerFilter', options, function (error, _gstreamerFilter) {
+      if(error) return onError(error);
+
+      gstreamerFilter = _gstreamerFilter;
+
+      var options = {command: "videobox border-alpha=0" + moveX + moveY};
+
+      pipeline.create ('GStreamerFilter', options, function (error, _gstreamerFilterBox) {
+        if(error) return onError(error);
+
+        gstreamerFilterBox = _gstreamerFilterBox;
+
+        var options = {command: "videocrop" + cropX + cropY};
+
+        pipeline.create ('GStreamerFilter', options, function (error, _gstreamerFilterCrop) {
+          if(error) return onError(error);
+
+          gstreamerFilterCrop = _gstreamerFilterCrop;
+
+          alphaBlending.createHubPort(function(error, _video_port) {
+            if (error) return onError(error);
+
+            video_port = _video_port;
+
+            alphaBlending.setPortProperties(0, 0, 4, 1, 1, video_port,
+            function(error) {
+              if (error) return onError(error);
+
+              console.log("Setting port properties");
+            });
+
+            connect(playerEndpoint, gstreamerFilter, gstreamerFilterBox,
+              gstreamerFilterCrop, video_port, function(error) {
+              if (error) return onError(error);
+
+              playerEndpoint.play(function(error){
+                if(error) return onError(error);
+
+                console.log('Playing...');
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 }
 
 function sample1click() {
-	if (kissing == false ) {
-		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
-			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
-		kiss (raquel, raquelX, raquelY);
-	}
+  if (kissing == false ) {
+    kissing = true;
+    deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
+      sample3, ivanImgDeactivate, sample4, userImgDeactivate);
+    kiss (raquel, raquelX, raquelY);
+  }
 }
 
 function sample2click() {
-	if (kissing == false ) {
-		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
-			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
-		kiss (borja, borjaX, borjaY);
-	}
+  if (kissing == false ) {
+    kissing = true;
+    deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
+      sample3, ivanImgDeactivate, sample4, userImgDeactivate);
+    kiss (borja, borjaX, borjaY);
+  }
 
 }
 
 function sample3click() {
-	if (kissing == false ) {
-		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
-			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
-		kiss (ivan, ivanX, ivanY);
-	}
+  if (kissing == false ) {
+    kissing = true;
+    deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
+      sample3, ivanImgDeactivate, sample4, userImgDeactivate);
+    kiss (ivan, ivanX, ivanY);
+  }
 }
 
 function sample4click() {
-	if (kissing == false ) {
-		kissing = true;
-		deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
-			sample3, ivanImgDeactivate, sample4, userImgDeactivate);
-		kiss (clara, claraX, claraY);
-	}
+  if (kissing == false ) {
+    kissing = true;
+    deactivateImages (sample1, raquelImgDeactivate, sample2, borjaImgDeactivate,
+      sample3, ivanImgDeactivate, sample4, userImgDeactivate);
+    kiss (clara, claraX, claraY);
+  }
 }
 
 function onError(error) {
-	if(error) console.error(error);
-	stop();
+  if(error)
+  {
+    console.error(error);
+    stop();
+  }
 }
 
 function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = 'img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+  }
 }
 
 function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = 'img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = 'img/webrtc.png';
+    arguments[i].style.background = '';
+  }
 }
 
 function showImages() {
-	for (var i = 0; i < arguments.length; i=i+2) {
-		arguments[i].poster = arguments[i+1];
-	}
+  for (var i = 0; i < arguments.length; i=i+2) {
+    arguments[i].poster = arguments[i+1];
+  }
 }
 
 function hideImages() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = args.as_uri+'/img/user.png';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = args.as_uri+'/img/user.png';
+  }
 }
 
 function deactivateImages() {
-	for (var i = 0; i < arguments.length; i=i+2) {
-		arguments[i].poster = arguments[i+1];
-		arguments[i].style.cursor = "default";
-		arguments[i].onclick = '';
-	}
+  for (var i = 0; i < arguments.length; i=i+2) {
+    arguments[i].poster = arguments[i+1];
+    arguments[i].style.cursor = "default";
+    arguments[i].onclick = '';
+  }
 }
 
 function reactivateImages() {
-	for (var i = 0; i < arguments.length; i=i+3) {
-		arguments[i].poster = arguments[i+1];
-		arguments[i].style.cursor = "pointer";
-		arguments[i].onclick = arguments[i+2];
-	}
+  for (var i = 0; i < arguments.length; i=i+3) {
+    arguments[i].poster = arguments[i+1];
+    arguments[i].style.cursor = "pointer";
+    arguments[i].onclick = arguments[i+2];
+  }
 }
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

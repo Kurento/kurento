@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -40,132 +40,161 @@ if (args.ice_servers) {
   console.log("Use freeice")
 }
 
-var pipeline;
-var webRtcPeer
+
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
+}
+
 
 window.addEventListener("load", function(event)
 {
-	console = new Console('console', console);
+  console = new Console('console', console);
 
-	var videoInput = document.getElementById('videoInput');
-	var videoOutput = document.getElementById('videoOutput');
+  var pipeline;
+  var webRtcPeer;
 
-	var startButton = document.getElementById("start");
-	var stopButton = document.getElementById("stop");
-	stopButton.addEventListener("click", stop);
+  var videoInput = document.getElementById('videoInput');
+  var videoOutput = document.getElementById('videoOutput');
 
-	startButton.addEventListener("click", function start()
-	{
-		console.log("WebRTC loopback starting");
+  var startButton = document.getElementById("start");
+  var stopButton = document.getElementById("stop");
+      stopButton.addEventListener("click", stop);
 
-		showSpinner(videoInput, videoOutput);
 
-		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+  function stop(){
+    if(webRtcPeer){
+      webRtcPeer.dispose();
+      webRtcPeer = null;
+    }
 
-		function onOffer(sdpOffer) {
-			console.log("onOffer");
+    if(pipeline){
+      pipeline.release();
+      pipeline = null;
+    }
 
-			kurentoClient(args.ws_uri, function(error, client) {
-				if (error) return onError(error);
+    hideSpinner(videoInput, videoOutput);
+  }
 
-				client.create('MediaPipeline', function(error, p) {
-					if (error) return onError(error);
+  function onError(error) {
+    if(error)
+    {
+      console.error(error);
+      stop();
+    }
+  }
 
-					pipeline = p;
 
-					console.log("Got MediaPipeline");
+  startButton.addEventListener("click", function start()
+  {
+    console.log("WebRTC loopback starting");
 
-					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
-						if (error) return onError(error);
+    showSpinner(videoInput, videoOutput);
 
-						console.log("Got WebRtcEndpoint");
+    var options = {
+      localVideo: videoInput,
+      remoteVideo: videoOutput
+    };
 
-						pipeline.create('FaceOverlayFilter', function(error, filter) {
-							if (error) return onError(error);
+    webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+    {
+      if(error) return onError(error)
 
-							console.log("Got FaceOverlayFilter");
+      this.generateOffer(onOffer)
+    });
+  });
 
-							var offsetXPercent = -0.35;
-							var offsetYPercent = -1.2;
-							var widthPercent = 1.6;
-							var heightPercent = 1.6;
+  function onOffer(error, sdpOffer) {
+    console.log("onOffer");
 
-							console.log("Setting overlay image");
+    if(error) return onError(error)
 
-							filter.setOverlayedImage(args.hat_uri, offsetXPercent,
-								offsetYPercent, widthPercent,
-								heightPercent, function(error) {
-									if (error) return onError(error);
+    kurentoClient(args.ws_uri, function(error, client) {
+      if (error) return onError(error);
 
-									console.log("Set overlay image");
-								});
+      client.create('MediaPipeline', function(error, _pipeline) {
+        if (error) return onError(error);
 
-							console.log("Connecting ...");
+        pipeline = _pipeline;
 
-							webRtc.connect(filter, function(error) {
-								if (error) return onError(error);
+        console.log("Got MediaPipeline");
 
-								console.log("WebRtcEndpoint --> filter");
+        pipeline.create('WebRtcEndpoint', function(error, webRtcEp) {
+          if (error) return onError(error);
 
-								filter.connect(webRtc, function(error) {
-									if (error) return onError(error);
+          setIceCandidateCallbacks(webRtcPeer, webRtcEp, onError)
 
-									console.log("Filter --> WebRtcEndpoint");
-								});
-							});
+          console.log("Got WebRtcEndpoint");
 
-							webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-								if (error) return onError(error);
+          webRtcEp.processOffer(sdpOffer, function(error, sdpAnswer) {
+            if (error) return onError(error);
 
-								console.log("SDP answer obtained. Processing ...");
+            console.log("SDP answer obtained. Processing...");
 
-								webRtcPeer.processSdpAnswer(sdpAnswer);
-							});
-						});
-					});
-				});
-			});
-		}
-	});
+            webRtcEp.gatherCandidates(onError);
+            webRtcPeer.processAnswer(sdpAnswer, onError);
+          });
+
+          pipeline.create('FaceOverlayFilter', function(error, filter) {
+            if (error) return onError(error);
+
+            console.log("Got FaceOverlayFilter");
+
+            filter.setOverlayedImage(args.hat_uri, -0.35, -1.2, 1.6, 1.6,
+            function(error) {
+              if (error) return onError(error);
+
+              console.log("Set overlay image");
+            });
+
+            console.log("Connecting...");
+
+            client.connect(webRtcEp, filter, webRtcEp, function(error) {
+              if (error) return onError(error);
+
+              console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+            });
+          });
+        });
+      });
+    });
+  }
 });
 
-function stop(){
-	if(webRtcPeer){
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-
-	hideSpinner(videoInput, videoOutput);
-}
-
-function onError(error) {
-	if(error) console.error(error);
-	stop();
-}
 
 function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = 'img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+  }
 }
 
 function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = 'img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = 'img/webrtc.png';
+    arguments[i].style.background = '';
+  }
 }
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

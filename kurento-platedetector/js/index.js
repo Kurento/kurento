@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -35,23 +35,41 @@ var args = getopts(location.search,
 if (args.ice_servers) {
   console.log("Use ICE servers: " + args.ice_servers);
   kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
-} else {
+} else
   console.log("Use freeice")
-}
 
 function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = 'img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+  }
 }
 
 function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = 'img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = 'img/webrtc.png';
+    arguments[i].style.background = '';
+  }
+}
+
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
 }
 
 
@@ -61,92 +79,107 @@ window.addEventListener("load", function(event)
   var webRtcPeer
 
   function stop(){
-	  if(pipeline){
-		  pipeline.release();
-		  pipeline = null;
-	  }
+    if(pipeline){
+      pipeline.release();
+      pipeline = null;
+    }
 
-	  if(webRtcPeer){
-		  webRtcPeer.dispose();
-		  webRtcPeer = null;
-	  }
+    if(webRtcPeer){
+      webRtcPeer.dispose();
+      webRtcPeer = null;
+    }
 
-	  hideSpinner(videoInput, videoOutput);
+    hideSpinner(videoInput, videoOutput);
   }
 
   function onError(error) {
-	  if(error) console.error(error);
-	  stop();
+    if(error)
+    {
+      console.error(error);
+      stop();
+    }
   }
 
-	kurentoClient.register(kurentoModulePlatedetector)
-	console = new Console('console', console);
+  kurentoClient.register('kurento-module-platedetector')
+  console = new Console('console', console);
 
-	var videoInput = document.getElementById('videoInput');
-	var videoOutput = document.getElementById('videoOutput');
+  var videoInput = document.getElementById('videoInput');
+  var videoOutput = document.getElementById('videoOutput');
 
-	var startButton = document.getElementById("start");
-	var stopButton = document.getElementById("stop");
-	stopButton.addEventListener("click", stop);
+  var startButton = document.getElementById("start");
+  var stopButton = document.getElementById("stop");
 
-	startButton.addEventListener("click", function start()
-	{
-		console.log("WebRTC loopback starting");
+  stopButton.addEventListener("click", stop);
 
-		showSpinner(videoInput, videoOutput);
+  startButton.addEventListener("click", function start()
+  {
+    console.log("WebRTC loopback starting");
 
-		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+    showSpinner(videoInput, videoOutput);
 
-		function onOffer(sdpOffer) {
-			console.log("onOffer");
+    var options = {
+      localVideo: videoInput,
+      remoteVideo: videoOutput
+    };
 
-			kurentoClient(args.ws_uri, function(error, client) {
-				if (error) return onError(error);
+    webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+    {
+      if(error) return onError(error)
 
-				client.create('MediaPipeline', function(error, p) {
-					if (error) return onError(error);
+      this.generateOffer(onOffer)
+    });
 
-					pipeline = p;
+    function onOffer(error, sdpOffer) {
+      if (error) return onError(error);
 
-					console.log("Got MediaPipeline");
+      console.log("onOffer");
 
-					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
-						if (error) return onError(error);
+      kurentoClient(args.ws_uri, function(error, client) {
+        if (error) return onError(error);
 
-						console.log("Got WebRtcEndpoint");
-						pipeline.create('PlateDetectorFilter', function(error, filter) {
-							if (error) return onError(error);
-							
-							console.log("Got Filter");
+        client.create('MediaPipeline', function(error, _pipeline) {
+          if (error) return onError(error);
 
-							webRtc.connect(filter, function(error) {
-								if (error) return onError(error);
+          pipeline = _pipeline;
 
-								console.log("WebRtcEndpoint --> filter");
-								filter.connect(webRtc, function(error) {
-									if (error) return onError(error);
+          console.log("Got MediaPipeline");
 
-									console.log("filter --> WebRtcEndpoint");
+          pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+            if (error) return onError(error);
 
-									filter.on ('PlateDetected', function (data){
-										console.log ("License plate detected " + data.plate);
-									});
-								});
-							});
+            console.log("Got WebRtcEndpoint");
 
-							webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-								if (error) return onError(error);
+            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-								console.log("SDP answer obtained. Processing ...");
+            webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+              if (error) return onError(error);
 
-								webRtcPeer.processSdpAnswer(sdpAnswer);
-							});
-						});
-					});
-				});
-			});
-		}
-	});
+              console.log("SDP answer obtained. Processing...");
+
+              webRtc.gatherCandidates(onError);
+              webRtcPeer.processAnswer(sdpAnswer);
+            });
+
+            pipeline.create('PlateDetectorFilter', function(error, filter) {
+              if (error) return onError(error);
+
+              console.log("Got Filter");
+
+              filter.on('PlateDetected', function (data){
+                console.log("License plate detected " + data.plate);
+              });
+
+              client.connect(webRtc, filter, webRtc, function(error) {
+                if (error) return onError(error);
+
+                console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+              });
+            });
+          });
+        });
+      });
+    }
+  });
 });
 
 
@@ -154,6 +187,6 @@ window.addEventListener("load", function(event)
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

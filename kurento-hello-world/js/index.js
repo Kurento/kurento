@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -39,86 +39,139 @@ if (args.ice_servers) {
   console.log("Use freeice")
 }
 
-var videoInput;
-var videoOutput;
-var webRtcPeer;
-var pipeline;
 
-window.onload = function() {
-	console = new Console('console', console);
-	videoInput = document.getElementById('videoInput');
-	videoOutput = document.getElementById('videoOutput');
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
 }
 
-function start() {
-	showSpinner(videoInput, videoOutput);
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
-}
 
-function stop() {
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-	hideSpinner(videoInput, videoOutput);
-}
+window.addEventListener('load', function()
+{
+  console = new Console('console', console);
 
-function onOffer(sdpOffer){
-	kurentoClient(args.ws_uri, function(error, kurentoClient) {
-		if(error) return onError(error);
+  var webRtcPeer;
+  var pipeline;
 
-		kurentoClient.create("MediaPipeline", function(error, p) {
-			if(error) return onError(error);
+  var videoInput = document.getElementById('videoInput');
+  var videoOutput = document.getElementById('videoOutput');
 
-			pipeline = p;
+  var startButton = document.getElementById("start");
+  var stopButton = document.getElementById("stop");
 
-			pipeline.create("WebRtcEndpoint", function(error, webRtc){
-				if(error) return onError(error);
+  startButton.addEventListener("click", function()
+  {
+    showSpinner(videoInput, videoOutput);
 
-				webRtc.processOffer(sdpOffer, function(error, sdpAnswer){
-					if(error) return onError(error);
+    var options = {
+      localVideo: videoInput,
+      remoteVideo: videoOutput
+    };
 
-					webRtcPeer.processSdpAnswer(sdpAnswer);
-				});
+    webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+    {
+      if(error) return onError(error)
 
-				webRtc.connect(webRtc, function(error){
-					if(error) return onError(error);
+      this.generateOffer(onOffer)
+    });
 
-					console.log("Loopback established");
-				});
-			});
-		});
-	});
-}
+    function onOffer(error, sdpOffer)
+    {
+      if(error) return onError(error)
 
-function onError(error) {
-	if(error) console.error(error);
-	stop();
-}
+      kurentoClient(args.ws_uri, function(error, kurentoClient)
+      {
+        if(error) return onError(error);
+
+        kurentoClient.create("MediaPipeline", function(error, _pipeline)
+        {
+          if(error) return onError(error);
+
+          pipeline = _pipeline;
+
+          pipeline.create("WebRtcEndpoint", function(error, webRtc){
+            if(error) return onError(error);
+
+            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+            webRtc.processOffer(sdpOffer, function(error, sdpAnswer){
+              if(error) return onError(error);
+
+              webRtc.gatherCandidates(onError);
+
+              webRtcPeer.processAnswer(sdpAnswer, onError);
+            });
+
+            webRtc.connect(webRtc, function(error){
+              if(error) return onError(error);
+
+              console.log("Loopback established");
+            });
+          });
+        });
+      });
+    }
+  });
+  stopButton.addEventListener("click", stop);
+
+
+  function stop() {
+    if (webRtcPeer) {
+      webRtcPeer.dispose();
+      webRtcPeer = null;
+    }
+
+    if(pipeline){
+      pipeline.release();
+      pipeline = null;
+    }
+
+    hideSpinner(videoInput, videoOutput);
+  }
+
+  function onError(error) {
+    if(error)
+    {
+      console.error(error);
+      stop();
+    }
+  }
+})
+
 
 function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = 'img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = 'img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+  }
 }
 
 function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = 'img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = 'img/webrtc.png';
+    arguments[i].style.background = '';
+  }
 }
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

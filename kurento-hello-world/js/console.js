@@ -15,11 +15,11 @@
 
 /**
  * Object that piggy-back the browser console and show their messages on a DIV
- * 
+ *
  * Inspired by Node.js ClIM module (https://github.com/epeli/node-clim)
- * 
+ *
  * @constructor
- * 
+ *
  * @param {String}
  *            id: id attribute of the DIV tag where to show the messages
  * @param console:
@@ -47,7 +47,7 @@ function Console(id, console) {
 
 	/**
 	 * Show an Error message both on browser console and on defined DIV
-	 * 
+	 *
 	 * @param msg:
 	 *            message or object to be shown
 	 */
@@ -58,7 +58,7 @@ function Console(id, console) {
 
 	/**
 	 * Show an Warn message both on browser console and on defined DIV
-	 * 
+	 *
 	 * @param msg:
 	 *            message or object to be shown
 	 */
@@ -69,7 +69,7 @@ function Console(id, console) {
 
 	/**
 	 * Show an Info message both on browser console and on defined DIV
-	 * 
+	 *
 	 * @param msg:
 	 *            message or object to be shown
 	 */
@@ -80,7 +80,7 @@ function Console(id, console) {
 
 	/**
 	 * Show an Debug message both on browser console and on defined DIV
-	 * 
+	 *
 	 * @param msg:
 	 *            message or object to be shown
 	 */

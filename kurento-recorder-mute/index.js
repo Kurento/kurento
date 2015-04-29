@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -40,6 +40,27 @@ if (args.ice_servers) {
   console.log("Use freeice")
 }
 
+
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
+}
+
+
 window.addEventListener('load', function(event) {
   var startRecordButton = document.getElementById('startRecordButton');
   var playButton = document.getElementById('startPlayButton');
@@ -55,8 +76,17 @@ function startRecording() {
   var videoInput = document.getElementById("videoInput");
   var videoOutput = document.getElementById("videoOutput");
 
-  webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-      onOffer, onError);
+  var options = {
+    localVideo: videoInput,
+    remoteVideo: videoOutput
+  };
+
+  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+  {
+    if(error) return onError(error)
+
+    this.generateOffer(onOffer)
+  });
 
   var disableButton = document.getElementById("disableButton");
   var enableButton  = document.getElementById("enableButton");
@@ -65,6 +95,8 @@ function startRecording() {
   var enableAudioButton  = document.getElementById("enableAudioButton");
   var disableVideoButton = document.getElementById("disableVideoButton");
   var enableVideoButton  = document.getElementById("enableVideoButton");
+
+  var stopRecordButton = document.getElementById("stopRecordButton")
 
   disableButton.addEventListener('click', function()
   {
@@ -92,7 +124,9 @@ function startRecording() {
     webRtcPeer.videoEnabled = true;
   })
 
-  function onOffer(offer) {
+  function onOffer(error, offer) {
+    if (error) return onError(error);
+
     console.log("Offer ...");
 
     kurentoClient(args.ws_uri, function(error, client) {
@@ -103,8 +137,9 @@ function startRecording() {
 
         console.log("Got MediaPipeline");
 
-        pipeline.create('RecorderEndpoint', {uri : args.file_uri},
-        function(error, recorder) {
+        var options = {uri : args.file_uri}
+
+        pipeline.create('RecorderEndpoint', options, function(error, recorder) {
           if (error) return onError(error);
 
           console.log("Got RecorderEndpoint");
@@ -114,7 +149,18 @@ function startRecording() {
 
             console.log("Got WebRtcEndpoint");
 
-            webRtc.connect(recorder, function(error) {
+            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+            webRtc.processOffer(offer, function(error, answer) {
+              if (error) return onError(error);
+
+              console.log("offer");
+
+              webRtc.gatherCandidates(onError);
+              webRtcPeer.processAnswer(answer);
+            });
+
+            client.connect(webRtc, webRtc, recorder, function(error) {
               if (error) return onError(error);
 
               console.log("Connected");
@@ -124,22 +170,7 @@ function startRecording() {
 
                 console.log("record");
 
-                webRtc.connect(webRtc, function(error) {
-                  if (error) return onError(error);
-
-                  console.log("Second connect");
-                });
-
-                webRtc.processOffer(offer, function(error, answer) {
-                  if (error) return onError(error);
-
-                  console.log("offer");
-
-                  webRtcPeer.processSdpAnswer(answer);
-                });
-
-                document.getElementById("stopRecordButton").addEventListener("click",
-                function(event){
+                stopRecordButton.addEventListener("click", function(event){
                   recorder.stop();
                   pipeline.release();
                   webRtcPeer.dispose();
@@ -161,43 +192,65 @@ function startPlaying()
   console.log("Start playing");
 
   var videoPlayer = document.getElementById('videoPlayer');
-  var webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(videoPlayer,
-      onPlayOffer, onError);
+  var stopPlayButton = document.getElementById("stopPlayButton")
 
-  function onPlayOffer(offer) {
+  var options = {
+    remoteVideo: videoPlayer
+  };
+
+  var webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function(error)
+  {
+    if(error) return onError(error)
+
+    this.generateOffer(onPlayOffer)
+  });
+
+  function onPlayOffer(error, offer) {
+    if (error) return onError(error);
+
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
       client.create('MediaPipeline', function(error, pipeline) {
-        pipeline.create('WebRtcEndpoint', function(error, webRtc) {
-          webRtc.processOffer(offer, function(error, answer) {
-            webRtcPeer.processSdpAnswer(answer);
+        if (error) return onError(error);
 
-            pipeline.create("PlayerEndpoint", {
-              uri : args.file_uri
-            }, function(error, player) {
+        var options = {uri : args.file_uri}
 
-              player.on('EndOfStream', function(event){
-                pipeline.release();
-                videoPlayer.src = "";
-              });
+        pipeline.create("PlayerEndpoint", options, function(error, player) {
+          if (error) return onError(error);
 
-              player.connect(webRtc, function(error) {
-                if (error) return onError(error);
+          player.on('EndOfStream', function(event){
+            pipeline.release();
+            videoPlayer.src = "";
+          });
 
-                player.play(function(error) {
-                  if (error) return onError(error);
-                  console.log("Playing ...");
-                });
-              });
+          pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+            if (error) return onError(error);
 
-              document.getElementById("stopPlayButton").addEventListener("click",
-              function(event){
-                pipeline.release();
-                webRtcPeer.dispose();
-                videoPlayer.src="";
-              })
+            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+            webRtc.processOffer(offer, function(error, answer) {
+              if (error) return onError(error);
+
+              webRtc.gatherCandidates(onError);
+
+              webRtcPeer.processAnswer(answer);
             });
+
+            player.connect(webRtc, function(error) {
+              if (error) return onError(error);
+
+              player.play(function(error) {
+                if (error) return onError(error);
+                console.log("Playing...");
+              });
+            });
+
+            stopPlayButton.addEventListener("click", function(event){
+              pipeline.release();
+              webRtcPeer.dispose();
+              videoPlayer.src="";
+            })
           });
         });
       });
@@ -206,5 +259,5 @@ function startPlaying()
 }
 
 function onError(error) {
-  console.log(error);
+  if(error) console.log(error);
 }

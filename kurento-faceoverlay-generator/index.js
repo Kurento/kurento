@@ -1,4 +1,4 @@
-/* (C) Copyright 2014 Kurento (http://kurento.org/)
+/* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -51,71 +51,111 @@ if (args.ice_servers) {
 var webRtcPeer;
 var pipeline;
 
+
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
+}
+
+
 window.addEventListener("load", function(event){
-	console.log("onLoad");
-	var button = document.getElementById("startButton");
-	button.addEventListener("click", startVideo);
+  console.log("onLoad");
+  var button = document.getElementById("startButton");
+  button.addEventListener("click", startVideo);
 });
 
 function startVideo(){
-	console.log("Starting WebRTC loopback ...");
+  console.log("Starting WebRTC loopback ...");
 
-	var videoInput = document.getElementById("videoInput");
-	var videoOutput = document.getElementById("videoOutput");
-	var stopButton = document.getElementById("stopButton");
+  var videoInput = document.getElementById("videoInput");
+  var videoOutput = document.getElementById("videoOutput");
+  var stopButton = document.getElementById("stopButton");
 
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+  var options =
+  {
+    localVideo: videoInput,
+    remoteVideo: videoOutput
+  }
 
-	function onOffer(offer){
+  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+  {
+    if(error) return onError(error)
 
-		console.log("Creating Kurento client...");
+    this.generateOffer(onOffer)
+  });
 
-		co(function*(){
-			try{
-				var client = yield kurentoClient(args.ws_uri);
-				pipeline   = yield client.create("MediaPipeline");
-				console.log("MediaPipeline created ...");
+  function onOffer(error, offer)
+  {
+    if (error) return onError(error);
 
-				var webRtc = yield pipeline.create("WebRtcEndpoint");
-				console.log("WebRtcEndpoint created ...");
+    console.log("Creating Kurento client...");
 
-				var filter = yield pipeline.create("FaceOverlayFilter");
+    co(function*(){
+      try{
+        var client = yield kurentoClient(args.ws_uri);
+        pipeline   = yield client.create("MediaPipeline");
+        console.log("MediaPipeline created...");
 
-				var offsetXPercent = -0.3;
-				var offsetYPercent = -0.9;
-				var widthPercent = 1.4;
-				var heightPercent = 1.4;
-				yield filter.setOverlayedImage(args.hat_uri, offsetXPercent, offsetYPercent, widthPercent, heightPercent);
+        var webRtc = yield pipeline.create("WebRtcEndpoint");
+        console.log("WebRtcEndpoint created...");
 
-				var answer = yield webRtc.processOffer(offer);
-				console.log("Got SDP answer ...");
-				webRtcPeer.processSdpAnswer(answer);
+        setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-				yield webRtc.connect(filter);
-				yield filter.connect(webRtc);
+        var answer = yield webRtc.processOffer(offer);
+        console.log("Got SDP answer...");
+        webRtc.gatherCandidates(onError);
+        webRtcPeer.processAnswer(answer);
 
-				console.log("loopback established ...");
-				
-				stopButton.addEventListener("click", stop);
-			} catch(e){
-				console.log(e);
-			}
-		})();
-	}
+        var filter = yield pipeline.create("FaceOverlayFilter");
+
+        var offsetXPercent = -0.3;
+        var offsetYPercent = -0.9;
+        var widthPercent = 1.4;
+        var heightPercent = 1.4;
+        yield filter.setOverlayedImage(args.hat_uri, offsetXPercent, offsetYPercent, widthPercent, heightPercent);
+
+        yield webRtc.connect(filter);
+        yield filter.connect(webRtc);
+
+        console.log("loopback established...");
+
+        stopButton.addEventListener("click", stop);
+      } catch(e){
+        console.log(e);
+      }
+    })();
+  }
 }
 
 function stop() {
-	if(pipeline){
-		pipeline.release();
-		pipeline = null;
-	}
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
+  if(pipeline){
+    pipeline.release();
+    pipeline = null;
+  }
+  if (webRtcPeer) {
+    webRtcPeer.dispose();
+    webRtcPeer = null;
+  }
 }
 
 function onError(error) {
-	console.error(error);
-	stop();
+  if(error)
+  {
+    console.error(error);
+    stop();
+  }
 }

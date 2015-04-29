@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -46,67 +46,104 @@ if (args.ice_servers) {
   console.log("Use freeice")
 }
 
+
+function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
+{
+  webRtcPeer.on('icecandidate', function(candidate) {
+    console.log("Local candidate:",candidate);
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    webRtcEp.addIceCandidate(candidate, onerror)
+  });
+
+  webRtcEp.on('OnIceCandidate', function(event) {
+    var candidate = event.candidate;
+
+    console.log("Remote candidate:",candidate);
+
+    webRtcPeer.addIceCandidate(candidate, onerror);
+  });
+}
+
+
 window.addEventListener("load", function(event){
-	console.log("onLoad");
-	var button = document.getElementById("startButton");
-	button.addEventListener("click", startVideo);
+  console.log("onLoad");
+  var button = document.getElementById("startButton");
+  button.addEventListener("click", startVideo);
 });
 
 function startVideo(){
-	console.log("Starting WebRTC loopback ...");
+  console.log("Starting WebRTC loopback ...");
 
   var webRtcPeer;
   var pipeline;
 
   function stop() {
-	  if(pipeline){
-		  pipeline.release();
-		  pipeline = null;
-	  }
+    if(pipeline){
+      pipeline.release();
+      pipeline = null;
+    }
 
-	  if (webRtcPeer) {
-		  webRtcPeer.dispose();
-		  webRtcPeer = null;
-	  }
+    if (webRtcPeer) {
+      webRtcPeer.dispose();
+      webRtcPeer = null;
+    }
   }
 
   function onError(error) {
-	  console.error(error);
-	  stop();
+    if(error)
+    {
+      console.error(error);
+      stop();
+    }
   }
 
-	var videoInput = document.getElementById("videoInput");
-	var videoOutput = document.getElementById("videoOutput");
-	var stopButton = document.getElementById("stopButton");
+  var videoInput = document.getElementById("videoInput");
+  var videoOutput = document.getElementById("videoOutput");
+  var stopButton = document.getElementById("stopButton");
 
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput,
-			videoOutput, onOffer, onError);
+  var options = {
+    localVideo: videoInput,
+    remoteVideo: videoOutput
+  };
 
-	function onOffer(offer)
-	{
-		console.log("Creating Kurento client...");
+  webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+  {
+    if(error) return onError(error)
 
-		co(function*(){
-			try{
-				var client = yield kurentoClient(args.ws_uri);
-				pipeline = yield client.create("MediaPipeline");
-				console.log("MediaPipeline created ...");
+    this.generateOffer(onOffer)
+  });
 
-				var webRtc = yield pipeline.create("WebRtcEndpoint");
-				console.log("WebRtcEndpoint created ...");
+  function onOffer(error, offer)
+  {
+    if(error) return onError(error)
 
-				var answer = yield webRtc.processOffer(offer);
-				console.log("Got SDP answer ...");
-				webRtcPeer.processSdpAnswer(answer);
+    console.log("Creating Kurento client...");
 
-				yield webRtc.connect(webRtc);
-				console.log("loopback established ...");
+    co(function*(){
+      try{
+        var client = yield kurentoClient(args.ws_uri);
+        pipeline = yield client.create("MediaPipeline");
+        console.log("MediaPipeline created ...");
 
-				stopButton.addEventListener("click", stop);
+        var webRtc = yield pipeline.create("WebRtcEndpoint");
+        console.log("WebRtcEndpoint created ...");
 
-			} catch(e){
-				console.log(e);
-			}
-		})();
-	}
+        setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+        var answer = yield webRtc.processOffer(offer);
+        console.log("Got SDP answer ...");
+
+        webRtc.gatherCandidates(onError);
+        webRtcPeer.processAnswer(answer);
+
+        yield webRtc.connect(webRtc);
+        console.log("loopback established ...");
+
+        stopButton.addEventListener("click", stop);
+      } catch(e){
+        console.log(e);
+      }
+    })();
+  }
 }

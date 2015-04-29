@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Kurento (http://kurento.org/)
+* (C) Copyright 2014-2015 Kurento (http://kurento.org/)
 *
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the GNU Lesser General Public License
@@ -28,108 +28,98 @@ var args = getopts(location.search,
   default:
   {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    as_uri: 'http://' + location.host,
-    ice_servers: undefined
+    as_uri: 'http://' + location.host
   }
 });
-
-if (args.ice_servers) {
-  console.log("Use ICE servers: " + args.ice_servers);
-  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
-} else {
-  console.log("Use freeice")
-}
 
 const file_uri = args.as_uri+'/video/fiwarecut.mp4';
 const hat_uri  = args.as_uri+'/img/mario-wings.png';
 
 
+function onError(error)
+{
+  if(error) console.log(error);
+}
+
+
 window.addEventListener("load", function(event)
 {
-	var videoOutput = document.getElementById('videoOutput');
+  var videoOutput = document.getElementById('videoOutput');
 
-	var playButton = document.getElementById("playButton");
-	var stopButton = document.getElementById("stopButton");
+  var playButton = document.getElementById("playButton");
+  var stopButton = document.getElementById("stopButton");
 
-	playButton.addEventListener("click", function()
-	{
-		console.log("Strarting video playing ...");
+  playButton.addEventListener("click", function()
+  {
+    console.log("Strarting video playing...");
 
-		kurentoClient(args.ws_uri, function(error, kurentoClient)
-		{
-			if (error) return onError(error);
+    kurentoClient(args.ws_uri, function(error, client)
+    {
+      if(error) return onError(error);
 
-			kurentoClient.create('MediaPipeline', function(error, pipeline)
-			{
-				if (error) return onError(error);
+      client.create('MediaPipeline', function(error, pipeline)
+      {
+        if(error) return onError(error);
 
-				function release(event)
-				{
-					pipeline.release();
-					videoOutput.src = "";
-				}
+        function release()
+        {
+          pipeline.release();
+          videoOutput.src = "";
+        }
 
-				pipeline.create('HttpGetEndpoint', function(error, httpGetEndpoint)
-				{
-					if(error) return onError(error);
+        function onError(error)
+        {
+          if(error)
+          {
+            console.log(error);
+            release()
+          }
+        }
 
-					pipeline.create('FaceOverlayFilter', function(error, filter)
-					{
-						if (error) return onError(error);
+        stopButton.addEventListener("click", release);
 
-						console.log('Got FaceOverlayFilter');
+        var options = {uri: file_uri}
 
-						var offsetXPercent = -0.2;
-						var offsetYPercent = -1.1;
-						var widthPercent = 1.6;
-						var heightPercent = 1.6;
+        pipeline.create('PlayerEndpoint', options, function(error, playerEndpoint)
+        {
+          if(error) return onError(error);
 
-						console.log('Setting overlay image');
+          playerEndpoint.on('EndOfStream', release);
 
-						filter.setOverlayedImage(hat_uri, offsetXPercent, offsetYPercent,
-								widthPercent,	heightPercent, function(error)
-						{
-							if (error) return onError(error);
-						});
+          pipeline.create('FaceOverlayFilter', function(error, filter)
+          {
+            if(error) return onError(error);
 
-						filter.connect(httpGetEndpoint, function(error)
-						{
-							pipeline.create('PlayerEndpoint', {uri : file_uri},
-									function(error, playerEndpoint)
-							{
-								if(error) return onError(error);
+            console.log('Got FaceOverlayFilter');
 
-								playerEndpoint.connect(filter, function(error)
-								{
-									if(error) return onError(error);
+            filter.setOverlayedImage(hat_uri, -0.2, -1.1, 1.6, 1.6, onError);
 
-									httpGetEndpoint.getUrl(function(error, url)
-									{
-										if(error) return onError(error);
+            pipeline.create('HttpGetEndpoint', function(error, httpGetEndpoint)
+            {
+              if(error) return onError(error);
 
-										videoOutput.src = url;
-									});
+              httpGetEndpoint.getUrl(function(error, url)
+              {
+                if(error) return onError(error);
 
-									playerEndpoint.on('EndOfStream', release);
+                videoOutput.src = url;
+              });
 
-									playerEndpoint.play(function(error)
-									{
-										if(error) return onError(error);
+              client.connect(playerEndpoint, filter, httpGetEndpoint, function(error)
+              {
+                if(error) return onError(error);
 
-										console.log('Playing ...');
-									});
-								});
-							});
-						});
-					});
-				});
+                playerEndpoint.play(function(error)
+                {
+                  if(error) return onError(error);
 
-				stopButton.addEventListener("click", release);
-			});
-		});
-	});
+                  console.log('Playing...');
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 });
-
-function onError(error) {
-	console.log(error);
-}

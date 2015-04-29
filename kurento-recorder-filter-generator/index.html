@@ -1,48 +1,39 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="US-ASCII">
-<title>RecorderFilterGenerator</title>
+  <head>
+    <meta charset="US-ASCII">
+    <title>RecorderFilterGenerator</title>
 
-<script src="bower_components/adapter.js/adapter.js"></script>
-<script src="bower_components/co/co.js"></script>
-<script src="bower_components/kurento-client/js/kurento-client.js"></script>
-<script src="bower_components/kurento-module-pointerdetector/js/kurento-module-pointerdetector.js"></script>
-<script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
-<script src="index.js"></script>
-
-</head>
-
-<body>
-
-	<br>
-	<hr>
-	<br>
-	<button id="startRecordButton">Click to start recording</button>
-	<button id="calibratePointerDetector">Calibrate pointer detector</button>
-	<button id="stopRecordButton">Click to stop recording</button>
-	<div style="clear: both;"></div>
-	<div style="float: left; border: 2px solid black; margin: 5px;">
-		<h1>Local stream</h1>
-		<video id="videoInput" autoplay></video>
-	</div>
-	<div style="float: left; border: 2px solid black; margin: 5px;">
-		<h1>Remote stream</h1>
-		<video id="videoOutput" autoplay></video>
-	</div>
-
-	<div style="clear: both;"></div>
-	<br>
-	<hr>
-	<br>
-	<button id="startPlayButton">Click to start playing</button>
-	<button id="stopPlayButton">Click to stop playing</button>
-
-	<div style="clear: both;"></div>
-	<div style="float: left; border: 2px solid black; margin: 5px;">
-		<h1>Remote stream</h1>
-		<video id="videoPlayer" autoplay></video>
-	</div>
-
-</body>
+    <script src="bower_components/adapter.js/adapter.js"></script>
+    <script src="bower_components/co/co.js"></script>
+    <script src="bower_components/kurento-client/js/kurento-client.js"></script>
+    <script src="bower_components/kurento-module-pointerdetector/js/kurento-module-pointerdetector.js"></script>
+    <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
+    <script src="index.js"></script>
+  </head>
+  <body>
+    <button id="startRecordButton">Click to start recording</button>
+    <button id="calibratePointerDetector">Calibrate pointer detector</button>
+    <button id="stopRecordButton">Click to stop recording</button>
+    <div style="clear: both;"></div>
+    <div style="float: left; border: 2px solid black; margin: 5px;">
+      <h1>Local stream</h1>
+      <video id="videoInput" autoplay></video>
+    </div>
+    <div style="float: left; border: 2px solid black; margin: 5px;">
+      <h1>Remote stream</h1>
+      <video id="videoOutput" autoplay></video>
+    </div>
+    <div style="clear: both;"></div>
+    <br>
+    <hr>
+    <br>
+    <button id="startPlayButton">Click to start playing</button>
+    <button id="stopPlayButton">Click to stop playing</button>
+    <div style="clear: both;"></div>
+    <div style="float: left; border: 2px solid black; margin: 5px;">
+      <h1>Remote stream</h1>
+      <video id="videoPlayer" autoplay></video>
+    </div>
+  </body>
 </html>
