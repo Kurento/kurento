@@ -231,11 +231,7 @@ public class BrowserClient implements Closeable {
 			}
 
 			// Timeouts
-			driver.manage().timeouts();
-			driver.manage().timeouts()
-					.implicitlyWait(timeout, TimeUnit.SECONDS);
-			driver.manage().timeouts()
-					.setScriptTimeout(timeout, TimeUnit.SECONDS);
+			changeTimeout(timeout);
 
 			// Launch Browser
 			String url;
@@ -256,6 +252,13 @@ public class BrowserClient implements Closeable {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
 
+	}
+
+	public void changeTimeout(int timeoutSeconds) {
+		driver.manage().timeouts()
+				.implicitlyWait(timeoutSeconds, TimeUnit.SECONDS);
+		driver.manage().timeouts()
+				.setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
 	}
 
 	public void createSaucelabsDriver(DesiredCapabilities capabilities)

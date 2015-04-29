@@ -203,6 +203,10 @@ public class KurentoTest {
 		return client.clone();
 	}
 
+	public void setTimeout(int timeoutSeconds) {
+		client.getBrowserClient().changeTimeout(timeoutSeconds);
+	}
+
 	public void waitForHostIsReachable(URL url, int timeout) {
 		long timeoutMillis = TimeUnit.MILLISECONDS.convert(timeout,
 				TimeUnit.SECONDS);
