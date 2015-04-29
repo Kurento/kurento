@@ -37,6 +37,7 @@ import static org.kurento.test.config.BrowserScope.SAUCELABS;
 import java.io.Closeable;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -172,6 +173,16 @@ public class BrowserClient implements Closeable {
 				if (enableScreenCapture) {
 					// This flag enables the screen sharing
 					options.addArguments("--enable-usermedia-screen-capturing");
+					try {
+						URL crxUrl = ClassLoader
+								.getSystemResource("kurento.crx");
+						File crx = new File(crxUrl.toURI());
+						options.addExtensions(crx);
+						options.addArguments("--auto-select-desktop-capture-source=Entire screen");
+					} catch (URISyntaxException e) {
+						log.warn(e.getMessage());
+					}
+
 				} else {
 					// This flag avoids grant the camera
 					options.addArguments("--use-fake-ui-for-media-stream");
