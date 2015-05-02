@@ -39,9 +39,6 @@ package.json
   </#if>
     "minifyify": "^6.4.0"
   },
-  "peerDependencies": {
-    "kurento-client": "${generateKurentoClientJsVersion(module.kurentoVersion)}"
-  },
 </#if>
   "keywords": [
     "Kurento",
