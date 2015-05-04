@@ -27,12 +27,10 @@ import org.slf4j.LoggerFactory;
  * @since 6.0.0
  */
 public class Retry implements TestRule {
-	private Logger log = LoggerFactory.getLogger(Retry.class);
-
+	private static Logger log = LoggerFactory.getLogger(Retry.class);
 	private static final String SEPARATOR = "=======================================";
 
 	private int retryCount;
-
 	private int currentRetry = 1;
 
 	public Retry(int retryCount) {
@@ -49,8 +47,6 @@ public class Retry implements TestRule {
 			@Override
 			public void evaluate() throws Throwable {
 				Throwable caughtThrowable = null;
-
-				// implement retry logic here
 				for (; currentRetry <= retryCount; currentRetry++) {
 					try {
 						base.evaluate();
@@ -59,14 +55,14 @@ public class Retry implements TestRule {
 						caughtThrowable = t;
 						log.error(SEPARATOR);
 						log.error("{}: run {} failed",
-								description.getDisplayName(), currentRetry);
+								description.getDisplayName(), currentRetry, t);
 						log.error(SEPARATOR);
 					}
 				}
 
 				log.error(SEPARATOR);
-				System.err.println(description.getDisplayName()
-						+ ": giving up after " + retryCount + " failures");
+				log.error("{} : giving up after {} failures",
+						description.getDisplayName(), retryCount);
 				log.error(SEPARATOR);
 
 				throw caughtThrowable;
