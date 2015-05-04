@@ -36,7 +36,7 @@ add_library(kmshttpep ${HTTP_EP_SOURCES})
 
 set_target_properties(kmshttpep PROPERTIES
   PUBLIC_HEADER "${HTTP_EP_HEADERS}"
-  COMPILE_FLAGS "-fPIC"
+  COMPILE_FLAGS "-fPIC -Wno-deprecated-declarations"
 )
 
 include_directories(kmshttpep
