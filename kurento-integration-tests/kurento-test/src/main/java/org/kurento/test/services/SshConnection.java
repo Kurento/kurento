@@ -263,4 +263,8 @@ public class SshConnection {
 		this.pem = pem;
 	}
 
+	public OverthereConnection getConnection() {
+		return connection;
+	}
+
 }
