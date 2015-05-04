@@ -407,11 +407,13 @@ kms_logo_overlay_transform_frame_ip (GstVideoFilter * filter,
       continue;
     }
 
-    kms_logo_overlay_display_overlay_img (logooverlay,
-        logooverlay->priv->cv_image->width *
-        (structAux->offsetXPercent),
-        logooverlay->priv->cv_image->height *
-        (structAux->offsetYPercent), structAux->active_icon);
+    if (structAux->active_icon != NULL) {
+      kms_logo_overlay_display_overlay_img (logooverlay,
+          logooverlay->priv->cv_image->width *
+          (structAux->offsetXPercent),
+          logooverlay->priv->cv_image->height *
+          (structAux->offsetYPercent), structAux->active_icon);
+    }
   }
 
   GST_OBJECT_UNLOCK (logooverlay);
