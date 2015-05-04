@@ -59,7 +59,7 @@ developers:
    other elements input streams (sinks). Hence, the pipeline represents a
    “machine” capable of performing a sequence of operations over a stream.
 
-.. image:: ../images/kurento-java-tutorial-2-magicmirror-pipeline.png
+.. figure:: ../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:  center
    :alt:    Media Pipeline Example
 
