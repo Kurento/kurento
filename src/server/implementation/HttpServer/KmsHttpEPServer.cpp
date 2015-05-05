@@ -153,23 +153,27 @@ get_address ()
       continue;
     }
 
-    switch (g_inet_address_get_family (addr) ) {
-    case G_SOCKET_FAMILY_INVALID:
-    case G_SOCKET_FAMILY_UNIX:
-      /* Ignore this addresses */
-      break;
+    if (G_IS_INET_ADDRESS (addr) ) {
+      switch (g_inet_address_get_family (addr) ) {
+      case G_SOCKET_FAMILY_INVALID:
+      case G_SOCKET_FAMILY_UNIX:
+        /* Ignore this addresses */
+        break;
 
-    case G_SOCKET_FAMILY_IPV6:
-      /* Ignore this addresses */
-      break;
+      case G_SOCKET_FAMILY_IPV6:
+        /* Ignore this addresses */
+        break;
 
-    case G_SOCKET_FAMILY_IPV4:
-      addressStr = g_strdup ( (const gchar *) l->data);
-      done = TRUE;
-      break;
+      case G_SOCKET_FAMILY_IPV4:
+        addressStr = g_strdup ( (const gchar *) l->data);
+        done = TRUE;
+        break;
+      }
     }
 
-    g_object_unref (addr);
+    if (G_IS_OBJECT (addr) ) {
+      g_object_unref (addr);
+    }
   }
 
   g_list_free_full (ips, g_free);

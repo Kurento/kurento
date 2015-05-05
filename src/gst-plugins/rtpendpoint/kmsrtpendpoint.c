@@ -111,40 +111,47 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
     gboolean is_ipv6 = FALSE;
 
     addr = g_inet_address_new_from_string (l->data);
-    switch (g_inet_address_get_family (addr)) {
-      case G_SOCKET_FAMILY_INVALID:
-      case G_SOCKET_FAMILY_UNIX:
-        /* Ignore this addresses */
-        break;
-      case G_SOCKET_FAMILY_IPV6:
-        is_ipv6 = TRUE;
-      case G_SOCKET_FAMILY_IPV4:
-      {
-        gchar *addr_str;
-        gboolean use_ipv6;
+    if (G_IS_INET_ADDRESS (addr)) {
+      switch (g_inet_address_get_family (addr)) {
+        case G_SOCKET_FAMILY_INVALID:
+        case G_SOCKET_FAMILY_UNIX:
+          /* Ignore this addresses */
+          break;
+        case G_SOCKET_FAMILY_IPV6:
+          is_ipv6 = TRUE;
+        case G_SOCKET_FAMILY_IPV4:
+        {
+          gchar *addr_str;
+          gboolean use_ipv6;
 
-        g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
-        if (is_ipv6 != use_ipv6) {
-          GST_DEBUG ("No valid address type: %d", is_ipv6);
+          g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
+          if (is_ipv6 != use_ipv6) {
+            GST_DEBUG ("No valid address type: %d", is_ipv6);
+            break;
+          }
+
+          addr_str = g_inet_address_to_string (addr);
+          if (addr_str != NULL) {
+            const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
+            gchar *ntp =
+                g_strdup_printf ("%" G_GUINT64_FORMAT, get_ntp_time ());
+
+            gst_sdp_message_set_connection (msg, "IN", addr_type, l->data, 0,
+                0);
+            gst_sdp_message_set_origin (msg, "-", ntp, ntp, "IN", addr_type,
+                addr_str);
+            g_free (ntp);
+            g_free (addr_str);
+            done = TRUE;
+          }
           break;
         }
-
-        addr_str = g_inet_address_to_string (addr);
-        if (addr_str != NULL) {
-          const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
-          gchar *ntp = g_strdup_printf ("%" G_GUINT64_FORMAT, get_ntp_time ());
-
-          gst_sdp_message_set_connection (msg, "IN", addr_type, l->data, 0, 0);
-          gst_sdp_message_set_origin (msg, "-", ntp, ntp, "IN",
-              addr_type, addr_str);
-          g_free (ntp);
-          g_free (addr_str);
-          done = TRUE;
-        }
-        break;
       }
     }
-    g_object_unref (addr);
+
+    if (G_IS_OBJECT (addr)) {
+      g_object_unref (addr);
+    }
   }
 
   g_list_free_full (ips, g_free);
