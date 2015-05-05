@@ -79,12 +79,12 @@ target_include_directories(test_webrtcendpoint PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS}
-                           ${nice0.1.10_INCLUDE_DIRS}
+                           ${kmsnice_INCLUDE_DIRS}
                            "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
 target_link_libraries(test_webrtcendpoint
                       ${gstreamer-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
-                      ${nice0.1.10_LIBRARIES}
+                      ${kmsnice_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES}
                       kmstestutils)
 

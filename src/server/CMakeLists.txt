@@ -11,8 +11,8 @@ generate_code (
   SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/implementation
       ${CMAKE_CURRENT_SOURCE_DIR}/../gst-plugins
-      ${nice0.1.10_INCLUDE_DIRS}
+      ${kmsnice_INCLUDE_DIRS}
   SERVER_IMPL_LIB_EXTRA_LIBRARIES kmshttpep icecandidate 
-      ${nice0.1.10_LIBRARIES}
+      ${kmsnice_LIBRARIES}
   SERVER_STUB_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/implementation/objects
 )

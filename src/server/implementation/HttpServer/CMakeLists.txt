@@ -45,7 +45,7 @@ include_directories(kmshttpep
   ${libsoup-2.4_INCLUDE_DIRS}
   ${uuid_INCLUDE_DIRS}
   ${gio-2.0_INCLUDE_DIRS}
-  ${nice0.1.10_INCLUDE_DIRS}
+  ${kmsnice_INCLUDE_DIRS}
 )
 
 target_link_libraries(kmshttpep
@@ -54,5 +54,5 @@ target_link_libraries(kmshttpep
   ${libsoup-2.4_LIBRARIES}
   ${uuid_LIBRARIES}
   ${gio-2.0_LIBRARIES}
-  ${nice0.1.10_LIBRARIES}
+  ${kmsnice_LIBRARIES}
 )
