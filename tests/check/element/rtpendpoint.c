@@ -39,23 +39,25 @@ static const gchar *pattern_offer_sdp_str = "v=0\r\n"
     "m=audio 0 RTP/AVP 98 99\r\n"
     "a=rtpmap:98 OPUS/48000/1\r\n" "a=rtpmap:99 AMR/8000/1\r\n";
 
-static const gchar *pattern_answer_sdp_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 99\r\n"
-    "a=rtpmap:99 VP8/90000\r\n"
-    "m=audio 0 RTP/AVP 100\r\n" "a=rtpmap:100 OPUS/48000/1\r\n";
+static GArray *
+create_codecs_array (gchar * codecs[])
+{
+  GArray *a = g_array_new (FALSE, TRUE, sizeof (GValue));
+  int i;
 
-static const gchar *pattern_sdp_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 96\r\n"
-    "a=rtpmap:96 VP8/90000\r\n"
-    "m=audio 0 RTP/AVP 97\r\n" "a=rtpmap:97 OPUS/48000/1\r\n";
+  for (i = 0; i < g_strv_length (codecs); i++) {
+    GValue v = G_VALUE_INIT;
+    GstStructure *s;
+
+    g_value_init (&v, GST_TYPE_STRUCTURE);
+    s = gst_structure_new (codecs[i], NULL, NULL);
+    gst_value_set_structure (&v, s);
+    gst_structure_free (s);
+    g_array_append_val (a, v);
+  }
+
+  return a;
+}
 
 static gboolean
 quit_main_loop (gpointer data)
@@ -207,8 +209,10 @@ connect_sink_async (GstElement * rtpendpoint, GstElement * agnostic,
 
 GST_START_TEST (loopback)
 {
+  GArray *video_codecs_array;
+  gchar *video_codecs[] = { "VP8/90000", NULL };
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (__FUNCTION__);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
   GstElement *agnosticbin =
@@ -229,13 +233,12 @@ GST_START_TEST (loopback)
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
   g_object_unref (bus);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
-
-  g_object_set (rtpendpointsender, "pattern-sdp", pattern_sdp, NULL);
-  g_object_set (rtpendpointreceiver, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (rtpendpointsender, "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+  g_object_set (rtpendpointreceiver, "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+  g_array_unref (video_codecs_array);
 
   g_object_set (G_OBJECT (outputfakesink), "signal-handoffs", TRUE, "async",
       FALSE, NULL);
@@ -290,7 +293,9 @@ GST_START_TEST (loopback)
 GST_END_TEST
 GST_START_TEST (negotiation_offerer)
 {
-  GstSDPMessage *pattern_sdp;
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { "OPUS/48000/1", "AMR/8000/1", NULL };
+  gchar *video_codecs[] = { "H263-1998/90000", "VP8/90000", NULL };
   GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
@@ -300,27 +305,16 @@ GST_START_TEST (negotiation_offerer)
   gchar *answerer_local_sdp_str, *answerer_remote_sdp_str;
   gchar *sdp_str = NULL;
 
-  g_object_set (offerer, "max-video-recv-bandwidth", 0, NULL);
-  g_object_set (answerer, "max-video-recv-bandwidth", 0, NULL);
-
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_offer_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
-
-  g_object_set (offerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-  g_object_get (offerer, "pattern-sdp", &pattern_sdp, NULL);
-  fail_unless (pattern_sdp != NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_answer_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (answerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-  g_object_get (answerer, "pattern-sdp", &pattern_sdp, NULL);
-  fail_unless (pattern_sdp != NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
 
   g_signal_emit_by_name (offerer, "generate-offer", &offer);
   fail_unless (offer != NULL);

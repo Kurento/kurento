@@ -26,6 +26,26 @@
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
+static GArray *
+create_codecs_array (gchar * codecs[])
+{
+  GArray *a = g_array_new (FALSE, TRUE, sizeof (GValue));
+  int i;
+
+  for (i = 0; i < g_strv_length (codecs); i++) {
+    GValue v = G_VALUE_INIT;
+    GstStructure *s;
+
+    g_value_init (&v, GST_TYPE_STRUCTURE);
+    s = gst_structure_new (codecs[i], NULL, NULL);
+    gst_value_set_structure (&v, s);
+    gst_structure_free (s);
+    g_array_append_val (a, v);
+  }
+
+  return a;
+}
+
 static gboolean
 quit_main_loop_idle (gpointer data)
 {
@@ -211,12 +231,13 @@ fakesink_hand_off (GstElement * fakesink, GstBuffer * buf, GstPad * pad,
 
 static void
 test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
-    const gchar * pattern_sdp_sendonly_str,
-    const gchar * pattern_sdp_recvonly_str, gboolean play_after_negotiation)
+    gchar * codec, gboolean play_after_negotiation)
 {
+  GArray *codecs_array;
+  gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
   GstElement *audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
@@ -232,18 +253,12 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
   mark_point ();
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (rtpendpointsender, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-
-  mark_point ();
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_recvonly_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (rtpendpointreceiver, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (rtpendpointsender, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_object_set (rtpendpointreceiver, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_array_unref (codecs_array);
 
   mark_point ();
   hod = g_slice_new (HandOffData);
@@ -365,11 +380,13 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps expected_caps, const gchar * pattern_sdp_sendrcv_str)
+    GstStaticCaps expected_caps, gchar * codec)
 {
+  GArray *codecs_array;
+  gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
-  GstSDPMessage *pattern_sdp, *offer, *answer;
+  GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
   GstElement *audiotestsrc_offerer =
@@ -391,12 +408,12 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_sdp_sendrcv_str, -1, pattern_sdp) == GST_SDP_OK);
-  g_object_set (rtpendpoint_offerer, "pattern-sdp", pattern_sdp, NULL);
-  g_object_set (rtpendpoint_answerer, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (rtpendpoint_offerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_object_set (rtpendpoint_answerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_array_unref (codecs_array);
 
   hod = g_slice_new (HandOffData);
   hod->expected_caps = expected_caps;
@@ -473,32 +490,10 @@ test_audio_sendrecv (const gchar * audio_enc_name,
 
 static GstStaticCaps opus_expected_caps = GST_STATIC_CAPS ("audio/x-opus");
 
-static const gchar *pattern_sdp_opus_sendonly_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 96\r\n" "a=rtpmap:96 OPUS/48000/1\r\n" "a=sendonly\r\n";
-
-static const gchar *pattern_sdp_opus_recvonly_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 96\r\n" "a=rtpmap:96 OPUS/48000/1\r\n" "a=recvonly\r\n";
-
-static const gchar *pattern_sdp_opus_sendrecv_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=audio 0 RTP/AVP 96\r\n" "a=rtpmap:96 OPUS/48000/1\r\n" "a=sendrecv\r\n";
-
 static void
 test_opus_sendonly (gboolean play_after_negotiation)
 {
-  test_audio_sendonly ("opusenc", opus_expected_caps,
-      pattern_sdp_opus_sendonly_str, pattern_sdp_opus_recvonly_str,
+  test_audio_sendonly ("opusenc", opus_expected_caps, "OPUS/48000/1",
       play_after_negotiation);
 }
 
@@ -516,8 +511,7 @@ GST_START_TEST (test_opus_sendonly_play_after_negotiation)
 GST_END_TEST
 GST_START_TEST (test_opus_sendrecv)
 {
-  test_audio_sendrecv ("opusenc", opus_expected_caps,
-      pattern_sdp_opus_sendrecv_str);
+  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1");
 }
 
 GST_END_TEST

@@ -22,7 +22,7 @@
 #include "kmsrtpendpoint.h"
 #include "kmsrtpconnection.h"
 #include <commons/sdp_utils.h>
-#include <commons/kmsloop.h>
+#include <commons/sdpagent/kmssdprtpavpfmediahandler.h>
 
 #define PLUGIN_NAME "rtpendpoint"
 
@@ -44,6 +44,20 @@ enum
 {
   PROP_0
 };
+
+/* Media handler management begin */
+static void
+kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
+    KmsSdpMediaHandler ** handler)
+{
+  *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avpf_media_handler_new ());
+
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_rtp_endpoint_parent_class)->create_media_handler (base_sdp, handler);
+}
+
+/* Media handler management end */
 
 /* Connection management begin */
 static KmsIRtpConnection *
@@ -68,21 +82,13 @@ kms_rtp_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
 
 static KmsRtpBaseConnection *
 kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
-    const GstSDPMedia * media, gboolean bundle)
+    SdpMediaConfig * mconf)
 {
   KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
-  const gchar *conn_name;
   KmsIRtpConnection *conn;
 
-  if (bundle) {
-    conn_name = BUNDLE_STREAM_NAME;
-  } else {
-    conn_name = gst_sdp_media_get_media (media);
-  }
-
-  conn = kms_base_rtp_endpoint_get_connection (base_rtp, conn_name);
+  conn = kms_base_rtp_endpoint_get_connection (base_rtp, mconf);
   if (conn == NULL) {
-    GST_WARNING_OBJECT (self, "Connection '%s' not found", conn_name);
     return NULL;
   }
 
@@ -91,16 +97,8 @@ kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
 
 /* Connection management end */
 
-/* Set Transport begin */
-static guint64
-get_ntp_time ()
-{
-  return time (NULL) + G_GUINT64_CONSTANT (2208988800);
-}
-
 static void
-gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
-    GstSDPMessage * msg)
+kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
 {
   GList *ips, *l;
   gboolean done = FALSE;
@@ -124,23 +122,18 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
           gchar *addr_str;
           gboolean use_ipv6;
 
-          g_object_get (base_sdp_endpoint, "use-ipv6", &use_ipv6, NULL);
+          g_object_get (self, "use-ipv6", &use_ipv6, NULL);
           if (is_ipv6 != use_ipv6) {
-            GST_DEBUG ("No valid address type: %d", is_ipv6);
+            GST_DEBUG_OBJECT (self, "No valid address type: %d", is_ipv6);
             break;
           }
 
           addr_str = g_inet_address_to_string (addr);
           if (addr_str != NULL) {
-            const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
-            gchar *ntp =
-                g_strdup_printf ("%" G_GUINT64_FORMAT, get_ntp_time ());
+            KmsBaseSdpEndpoint *base_sdp = KMS_BASE_SDP_ENDPOINT (self);
+            KmsSdpAgent *agent = kms_base_sdp_endpoint_get_sdp_agent (base_sdp);
 
-            gst_sdp_message_set_connection (msg, "IN", addr_type, l->data, 0,
-                0);
-            gst_sdp_message_set_origin (msg, "-", ntp, ntp, "IN", addr_type,
-                addr_str);
-            g_free (ntp);
+            g_object_set (agent, "addr", addr_str, NULL);
             g_free (addr_str);
             done = TRUE;
           }
@@ -155,120 +148,86 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
   }
 
   g_list_free_full (ips, g_free);
+
+  if (!done) {
+    GST_WARNING_OBJECT (self, "Addr not set");
+  }
 }
 
+/* Configure media SDP begin */
 static gboolean
-kms_rtp_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint * base_sdp_endpoint,
-    GstSDPMessage * msg)
+kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
+    SdpMediaConfig * mconf)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  gboolean ret;
-  guint len, i;
+  KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
+  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  guint conn_len, c;
+  guint attr_len, a;
+  KmsRtpBaseConnection *conn;
+  gboolean ret = TRUE;
 
   /* Chain up */
-  ret =
-      KMS_BASE_SDP_ENDPOINT_CLASS
-      (kms_rtp_endpoint_parent_class)->set_transport_to_sdp (base_sdp_endpoint,
-      msg);
-
+  ret = KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_rtp_endpoint_parent_class)->configure_media (base_sdp_endpoint,
+      mconf);
   if (ret == FALSE) {
     return FALSE;
   }
 
-  gst_udp_set_connection (base_sdp_endpoint, msg);
+  conn_len = gst_sdp_media_connections_len (media);
+  for (c = 0; c < conn_len; c++) {
+    gst_sdp_media_remove_connection (media, c);
+  }
 
-  len = gst_sdp_message_medias_len (msg);
-  for (i = 0; i < len; i++) {
-    GstSDPMedia *media = (GstSDPMedia *) gst_sdp_message_get_media (msg, i);
-    guint conn_len, c;
-    guint attr_len, a;
-    KmsRtpBaseConnection *conn;
+  conn =
+      KMS_RTP_BASE_CONNECTION (kms_base_rtp_endpoint_get_connection (base_rtp,
+          mconf));
+  if (conn == NULL) {
+    return TRUE;
+  }
 
-    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0) {
-      ((GstSDPMedia *) media)->port = 0;
-      continue;
-    }
+  media->port = kms_rtp_base_connection_get_rtp_port (conn);
 
-    conn_len = gst_sdp_media_connections_len (media);
-    for (c = 0; c < conn_len; c++) {
-      gst_sdp_media_remove_connection (media, c);
-    }
+  attr_len = gst_sdp_media_attributes_len (media);
+  for (a = 0; a < attr_len; a++) {
+    const GstSDPAttribute *attr = gst_sdp_media_get_attribute (media, a);
 
-    /* TODO: bundle support */
-    conn = kms_rtp_endpoint_media_get_connection (self, media, FALSE);
-    if (conn == NULL) {
-      continue;
-    }
-
-    media->port = kms_rtp_base_connection_get_rtp_port (conn);
-
-    attr_len = gst_sdp_media_attributes_len (media);
-    for (a = 0; a < attr_len; a++) {
-      const GstSDPAttribute *attr = gst_sdp_media_get_attribute (media, a);
-
-      if (g_strcmp0 (attr->key, "rtcp") == 0) {
-        gst_sdp_media_remove_attribute (media, a);
-        /* TODO: complete rtcp attr with addr and rtcp port */
-      }
+    if (g_strcmp0 (attr->key, "rtcp") == 0) {
+      gst_sdp_media_remove_attribute (media, a);
+      /* TODO: complete rtcp attr with addr and rtcp port */
     }
   }
 
   return TRUE;
 }
 
-/* Set Transport end */
+/* Configure media SDP end */
 
 static void
-kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
-    const GstSDPMessage * offer, const GstSDPMessage * answer,
-    gboolean local_offer)
+kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, SdpMessageContext * remote_ctx)
 {
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_rtp_endpoint);
-  const GstSDPConnection *msg_conn;
-  const GstSDPMessage *sdp;
-  guint len, i;
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
+  const GstSDPMessage *sdp =
+      kms_sdp_message_context_get_sdp_message (remote_ctx);
+  const GSList *item = kms_sdp_message_context_get_medias (remote_ctx);
+  const GstSDPConnection *msg_conn = gst_sdp_message_get_connection (sdp);
 
-  KMS_BASE_SDP_ENDPOINT_CLASS
-      (kms_rtp_endpoint_parent_class)->start_transport_send
-      (base_rtp_endpoint, answer, offer, local_offer);
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->start_transport_send
+      (base_sdp_endpoint, remote_ctx);
 
-  if (local_offer) {
-    sdp = answer;
-  } else {
-    sdp = offer;
-  }
-
-  msg_conn = gst_sdp_message_get_connection (sdp);
-
-  len = gst_sdp_message_medias_len (sdp);
-  for (i = 0; i < len; i++) {
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *mconf = item->data;
+    GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
     const GstSDPConnection *media_con;
-    const GstSDPMedia *offer_media = gst_sdp_message_get_media (offer, i);
-    const GstSDPMedia *answer_media = gst_sdp_message_get_media (answer, i);
-    const GstSDPMedia *media;
-    const gchar *media_str;
     KmsRtpBaseConnection *conn;
     guint port;
 
-    if (offer_media == NULL || answer_media == NULL)
-      continue;
-
-    if (g_ascii_strcasecmp ("RTP/AVP",
-            gst_sdp_media_get_proto (answer_media)) != 0) {
-      ((GstSDPMedia *) answer_media)->port = 0;
+    if (media->port == 0) {
       continue;
     }
-
-    if (answer_media->port == 0) {
-      continue;
-    }
-
-    if (local_offer) {
-      media = answer_media;
-    } else {
-      media = offer_media;
-    }
-    media_str = gst_sdp_media_get_media (media);
 
     if (gst_sdp_media_connections_len (media) != 0) {
       media_con = gst_sdp_media_get_connection (media, 0);
@@ -278,13 +237,14 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
 
     if (media_con == NULL || media_con->address == NULL
         || media_con->address[0] == '\0') {
+      const gchar *media_str = gst_sdp_media_get_media (media);
+
       GST_WARNING_OBJECT (self, "Missing connection information for '%s'",
           media_str);
       continue;
     }
 
-    /* TODO: bundle support */
-    conn = kms_rtp_endpoint_media_get_connection (self, media, FALSE);
+    conn = kms_rtp_endpoint_media_get_connection (self, mconf);
     if (conn == NULL) {
       continue;
     }
@@ -292,6 +252,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
     port = gst_sdp_media_get_port (media);
     kms_rtp_base_connection_set_remote_info (conn,
         media_con->address, port, port + 1);
+    /* TODO: get rtcp port from attr if it exists */
   }
 }
 
@@ -311,10 +272,14 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
   base_sdp_endpoint_class = KMS_BASE_SDP_ENDPOINT_CLASS (klass);
-  base_sdp_endpoint_class->set_transport_to_sdp =
-      kms_rtp_endpoint_set_transport_to_sdp;
   base_sdp_endpoint_class->start_transport_send =
       kms_rtp_endpoint_start_transport_send;
+
+  /* Media handler management */
+  base_sdp_endpoint_class->create_media_handler =
+      kms_rtp_endpoint_create_media_handler;
+
+  base_sdp_endpoint_class->configure_media = kms_rtp_endpoint_configure_media;
 
   base_rtp_endpoint_class = KMS_BASE_RTP_ENDPOINT_CLASS (klass);
   /* Connection management */
@@ -324,13 +289,17 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
       kms_rtp_endpoint_create_bundle_connection;
 }
 
+/* inmediate-TODO: not add abs-send-time extmap */
+
 static void
 kms_rtp_endpoint_init (KmsRtpEndpoint * self)
 {
-  g_object_set (G_OBJECT (self), "proto", SDP_MEDIA_RTP_AVP_PROTO, "bundle",
-      FALSE, "rtcp-fir", FALSE, "rtcp-nack", FALSE, "rtcp-pli", FALSE,
-      "rtcp-remb", FALSE, "max-video-recv-bandwidth", 0, NULL);
+  g_object_set (G_OBJECT (self), "bundle",
+      FALSE, "rtcp-mux", FALSE, "rtcp-nack", FALSE, "rtcp-remb", FALSE,
+      "max-video-recv-bandwidth", 0, NULL);
   /* FIXME: remove max-video-recv-bandwidth when it b=AS:X is in the SDP offer */
+
+  kms_rtp_endpoint_set_addr (self);
 }
 
 gboolean
