@@ -47,7 +47,7 @@ var inherits = require('inherits');
 
 var kurentoClient = require('kurento-client');
 
-<#if remoteClass.methods?has_content>
+<#if remoteClass.methods?has_content || hasSetters(remoteClass)>
 var checkType      = kurentoClient.checkType;
 var ChecktypeError = checkType.ChecktypeError;
 <#else>

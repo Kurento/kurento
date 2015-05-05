@@ -169,3 +169,13 @@
 <#macro paramType param>
   {<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
 </#macro>
+
+<#function hasSetters remoteClass>
+  <#list remoteClass.properties as property>
+    <#if !(property.final || property.readOnly)>
+      <#return true>
+    </#if>
+  </#list>
+
+  <#return false>
+</#function>
