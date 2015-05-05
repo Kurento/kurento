@@ -33,7 +33,7 @@ package.json
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.6.0",
     "grunt-jsdoc": "^0.6.3",
-    "grunt-npm2bower-sync": "^0.9.0",
+    "grunt-npm2bower-sync": "^0.9.1",
   <#if bowerGit??>
     "grunt-shell": "^1.1.2",
   </#if>
