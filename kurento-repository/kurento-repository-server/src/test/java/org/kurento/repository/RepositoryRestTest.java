@@ -40,6 +40,7 @@ import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.kurento.repository.rest.RepositoryRestApi;
+import org.kurento.repository.rest.RestServiceProvider;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
 import org.slf4j.Logger;
@@ -49,7 +50,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
@@ -97,9 +97,7 @@ public class RepositoryRestTest {
 		String serviceUrl = "http://"
 				+ RepositoryApplicationContextConfiguration.SERVER_HOSTNAME
 				+ ":" + RepositoryApplicationContextConfiguration.SERVER_PORT;
-		RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(
-				serviceUrl).build();
-		restService = restAdapter.create(RepositoryRestApi.class);
+		restService = RestServiceProvider.create(serviceUrl).getRestService();
 		log.info("Rest service created for {}", serviceUrl);
 
 		repository = (Repository) app.getBean("repository");

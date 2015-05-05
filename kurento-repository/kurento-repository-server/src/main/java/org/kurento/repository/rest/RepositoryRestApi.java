@@ -21,7 +21,6 @@ import java.util.Set;
 import org.kurento.repository.RepositoryController;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
-import org.springframework.stereotype.Component;
 
 import retrofit.client.Response;
 import retrofit.http.Body;
@@ -37,7 +36,6 @@ import retrofit.http.Path;
  * @see RepositoryController
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
-@Component
 public interface RepositoryRestApi {
 
 	/**
