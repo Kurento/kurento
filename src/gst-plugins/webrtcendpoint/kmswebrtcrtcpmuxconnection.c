@@ -214,7 +214,6 @@ kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
   g_signal_connect (priv->tr->dtlssrtpenc, "connected",
       G_CALLBACK (connected_cb), conn);
 
-  nice_agent_set_stream_name (agent, base_conn->stream_id, name);
   nice_agent_attach_recv (agent, base_conn->stream_id,
       NICE_COMPONENT_TYPE_RTP, context, kms_webrtc_transport_nice_agent_recv_cb,
       NULL);
