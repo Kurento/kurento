@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -13,127 +13,153 @@
  *
  */
 
-var ws = new WebSocket('ws://' + location.host + '/call');
-var video;
-var webRtcPeer;
-
 window.onload = function() {
-	console = new Console('console', console);
-	video = document.getElementById('video');
+  console = new Console('console', console);
+
+  var webRtcPeer;
+
+  const packer = RpcBuilder.packers.JsonRPC;
+
+  var rpcBuilder = new RpcBuilder(packer, new WebSocket('ws:'+location.host),
+  onRequest);
+
+  window.onbeforeunload = rpcBuilder.close.bind(rpcBuilder);
+
+  var video = document.getElementById('video');
+
+  var btnCall = document.getElementById('call');
+  var btnViewer = document.getElementById('viewer');
+  var btnTerminate = document.getElementById('terminate');
+
+  btnCall.addEventListener('click', function()
+  {
+    if (!webRtcPeer) {
+      showSpinner(video);
+
+      var options =
+      {
+        localVideo: video
+      }
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
+      function(error)
+      {
+        if(error) return onError(error)
+
+        this.generateOffer(onOfferMaster)
+      });
+
+      webRtcPeer.on('icecandidate', function(candidate) {
+        rpcBuilder.encode('candidate', [candidate])
+      });
+    }
+  })
+  btnViewer.addEventListener('click', function()
+  {
+    if (!webRtcPeer) {
+      showSpinner(video);
+
+      var options =
+      {
+        remoteVideo: video
+      }
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
+      function(error)
+      {
+        if(error) return onError(error)
+
+        this.generateOffer(onOfferViewer)
+      });
+
+      webRtcPeer.on('icecandidate', function(candidate) {
+        rpcBuilder.encode('candidate', [candidate])
+      });
+    }
+  })
+  btnTerminate.addEventListener('click', function()
+  {
+    rpcBuilder.encode('stop');
+
+    dispose();
+  })
+
+
+  function onOfferMaster(error, offerSdp) {
+    if(error) return onError(error)
+
+    rpcBuilder.encode('master', [offerSdp], response);
+  }
+
+  function onOfferViewer(error, offerSdp) {
+    if(error) return onError(error)
+
+    rpcBuilder.encode('viewer', [offerSdp], response);
+  }
+
+
+  function dispose() {
+    if (webRtcPeer) {
+      webRtcPeer.dispose();
+      webRtcPeer = null;
+    }
+
+    hideSpinner(video);
+  }
+
+  function onRequest(request) {
+    switch(request.method)
+    {
+      case 'candidate':
+        webRtcPeer.addIceCandidate(request.params[0])
+      break;
+
+      case 'stopCommunication':
+        dispose();
+      break;
+
+      default:
+        console.error('Unrecognized message', request);
+    }
+  }
+
+  function response(error, sdpAnswer)
+  {
+    if(error)
+    {
+      onError(error);
+
+      return dispose();
+    }
+
+    webRtcPeer.processAnswer(sdpAnswer);
+  }
 }
 
-window.onbeforeunload = function() {
-	ws.close();
-}
 
-ws.onmessage = function(message) {
-	var parsedMessage = JSON.parse(message.data);
-	console.info('Received message: ' + message.data);
-
-	switch (parsedMessage.id) {
-	case 'masterResponse':
-		masterResponse(parsedMessage);
-		break;
-	case 'viewerResponse':
-		viewerResponse(parsedMessage);
-		break;
-	case 'stopCommunication':
-		dispose();
-		break;
-	default:
-		console.error('Unrecognized message', parsedMessage);
-	}
-}
-
-function masterResponse(message) {
-	if (message.response != 'accepted') {
-		var errorMsg = message.message ? message.message : 'Unknow error';
-		console.info('Call not accepted for the following reason: ' + errorMsg);
-		dispose();
-	} else {
-		webRtcPeer.processSdpAnswer(message.sdpAnswer);
-	}
-}
-
-function viewerResponse(message) {
-	if (message.response != 'accepted') {
-		var errorMsg = message.message ? message.message : 'Unknow error';
-		console.info('Call not accepted for the following reason: ' + errorMsg);
-		dispose();
-	} else {
-		webRtcPeer.processSdpAnswer(message.sdpAnswer);
-	}
-}
-
-function master() {
-	if (!webRtcPeer) {
-		showSpinner(video);
-
-		webRtcPeer = kurentoUtils.WebRtcPeer.startSendOnly(video, function(offerSdp) {
-			var message = {
-				id : 'master',
-				sdpOffer : offerSdp
-			};
-			sendMessage(message);
-		});
-	}
-}
-
-function viewer() {
-	if (!webRtcPeer) {
-		showSpinner(video);
-
-		webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(video, function(offerSdp) {
-			var message = {
-				id : 'viewer',
-				sdpOffer : offerSdp
-			};
-			sendMessage(message);
-		});
-	}
-}
-
-function stop() {
-	var message = {
-		id : 'stop'
-	}
-	sendMessage(message);
-	dispose();
-}
-
-function dispose() {
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
-	}
-	hideSpinner(video);
-}
-
-function sendMessage(message) {
-	var jsonMessage = JSON.stringify(message);
-	console.log('Senging message: ' + jsonMessage);
-	ws.send(jsonMessage);
+function onError(error) {
+  if(error) console.error(error);
 }
 
 function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = './img/transparent-1px.png';
-		arguments[i].style.background = 'center transparent url("./img/spinner.gif") no-repeat';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = './img/transparent-1px.png';
+    arguments[i].style.background = 'center transparent url("./img/spinner.gif") no-repeat';
+  }
 }
 
 function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = './img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = './img/webrtc.png';
+    arguments[i].style.background = '';
+  }
 }
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

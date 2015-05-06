@@ -20,9 +20,10 @@
     "tests"
   ],
   "dependencies": {
+    "adapter.js": "*",
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.2.3",
-    "adapter.js": "*",
-    "kurento-utils": "5.1.0"
+    "kurento-jsonrpc": "master",
+    "kurento-utils": "master"
   }
 }

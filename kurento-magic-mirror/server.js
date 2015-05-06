@@ -1,5 +1,6 @@
+#!/usr/bin/env node
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -16,13 +17,15 @@
 var path = require('path');
 var url  = require('url');
 
-var cookieParser = require('cookie-parser')
-var express      = require('express');
-var session      = require('express-session')
-var minimist     = require('minimist');
-var ws           = require('ws');
+var minimist = require('minimist');
 
-var kurento = require('kurento-client');
+var express   = require('express');
+var expressWs = require('express-ws');
+
+var kurentoClient = require('kurento-client')
+var RpcBuilder    = require('kurento-jsonrpc');
+
+const packer = RpcBuilder.packers.JsonRPC;
 
 
 var argv = minimist(process.argv.slice(2),
@@ -34,29 +37,8 @@ var argv = minimist(process.argv.slice(2),
   }
 });
 
-var app = express();
+var app = expressWs(express()).app;
 
-/*
- * Management of sessions
- */
-app.use(cookieParser());
-
-var sessionHandler = session({
-	secret : 'none',
-	rolling : true,
-	resave : true,
-	saveUninitialized : true
-});
-
-app.use(sessionHandler);
-
-
-/*
- * Definition of global variables.
- */
-
-var pipelines = {};
-var kurentoClient = null;
 
 /*
  * Server startup
@@ -64,199 +46,130 @@ var kurentoClient = null;
 
 var asUrl = url.parse(argv.as_uri);
 var port = asUrl.port;
+asUrl = url.format(asUrl)
+
 var server = app.listen(port, function() {
-	console.log('Kurento Tutorial started');
-	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
+  console.log('Kurento Tutorial started');
+  console.log('Open ' + asUrl + ' with a WebRTC capable browser');
 });
 
-var wss = new ws.Server({
-	server : server,
-	path : '/magicmirror'
-});
 
 /*
  * Management of WebSocket messages
  */
-wss.on('connection', function(ws) {
-	var sessionId = null;
-	var request = ws.upgradeReq;
-	var response = {
-		writeHead : {}
-	}; // black magic here
+app.ws('/', function(ws)
+{
+  var pipeline
+  var webRtcEndpoint
 
-	sessionHandler(request, response, function(err) {
-		sessionId = request.session.id;
-		console.log("Connection received with sessionId " + sessionId);
-	});
+  var rpcBuilder = new RpcBuilder(packer, ws, function(request)
+  {
+    switch(request.method)
+    {
+      case 'offer':
+        processOffer(request)
+      break;
 
-	ws.on('error', function(error) {
-		console.log('Connection ' + sessionId + ' error');
-		stop(sessionId);
-	});
+      case 'candidate':
+        processCandidate(request)
+      break;
 
-	ws.on('close', function() {
-		console.log('Connection ' + sessionId + ' closed');
-		stop(sessionId);
-	});
+      case 'stop':
+        stop();
+      break;
 
-	ws.on('message', function(_message) {
-		var message = JSON.parse(_message);
-		console.log('Connection ' + sessionId + ' received message ', message);
+      default:
+        console.error(request)
+        request.reply('Invalid message')
+    }
+  });
 
-		switch (message.id) {
-		case 'start':
-			start(sessionId, message.sdpOffer, function(error, sdpAnswer) {
-				if (error) {
-					return ws.send(JSON.stringify({
-						id : 'error',
-						message : error
-					}));
-				}
-				ws.send(JSON.stringify({
-					id : 'startResponse',
-					sdpAnswer : sdpAnswer
-				}));
-			});
-			break;
 
-		case 'stop':
-			stop(sessionId);
-			break;
+  var candidatesQueue = []
 
-		default:
-			ws.send(JSON.stringify({
-				id : 'error',
-				message : 'Invalid message ' + message
-			}));
-			break;
-		}
+  function processOffer(request) {
+    var sdpOffer = request.params[0];
 
-	});
+    kurentoClient.getSingleton(argv.ws_uri, function(error, client) {
+      if (error) return request.reply(error);
+
+      client.create('MediaPipeline', function(error, _pipeline) {
+        if (error) return request.reply(error);
+
+        pipeline = _pipeline
+
+        function onError(error)
+        {
+          if(error)
+          {
+            pipeline.release();
+            request.reply(error);
+          }
+        }
+
+        pipeline.create('WebRtcEndpoint', function(error, _webRtcEndpoint) {
+          if (error) return onError(error);
+
+          webRtcEndpoint = _webRtcEndpoint
+
+          while(candidatesQueue.length)
+          {
+            var candidate = candidatesQueue.shift()
+
+            webRtcEndpoint.addIceCandidate(candidate)
+          }
+
+          webRtcEndpoint.on('OnIceCandidate', function(event) {
+            rpcBuilder.encode('candidate', [event.candidate])
+          });
+
+          webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+            if (error) return onError(error)
+
+            request.reply(null, sdpAnswer);
+          });
+          webRtcEndpoint.gatherCandidates(onError);
+
+          pipeline.create('FaceOverlayFilter', function(error, faceOverlayFilter) {
+            if (error) return onError(error);
+
+            faceOverlayFilter.setOverlayedImage(asUrl+"img/mario-wings.png",
+              -0.35, -1.2, 1.6, 1.6, onError);
+
+            client.connect(webRtcEndpoint, faceOverlayFilter, webRtcEndpoint,
+              onError);
+          });
+        });
+      });
+    });
+  }
+
+  function processCandidate(request)
+  {
+    var candidate = request.params[0];
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    if(webRtcEndpoint)
+      webRtcEndpoint.addIceCandidate(candidate)
+    else
+      candidatesQueue.push(candidate)
+  }
+
+  function stop() {
+    if(pipeline) pipeline.release();
+  }
+
+
+  ws.on('error', function(error) {
+    console.error(error);
+    stop();
+  });
+
+  ws.on('close', function() {
+    console.log('Connection closed');
+    stop();
+  });
 });
-
-/*
- * Definition of functions
- */
-
-// Recover kurentoClient for the first time.
-function getKurentoClient(callback) {
-	if (kurentoClient !== null) {
-		return callback(null, kurentoClient);
-	}
-
-	kurento(argv.ws_uri, function(error, _kurentoClient) {
-		if (error) {
-			console.log("Could not find media server at address " + argv.ws_uri);
-			return callback("Could not find media server at address" + argv.ws_uri
-					+ ". Exiting with error " + error);
-		}
-
-		kurentoClient = _kurentoClient;
-		callback(null, kurentoClient);
-	});
-}
-
-function start(sessionId, sdpOffer, callback) {
-
-	if (!sessionId) {
-		return callback("Cannot use undefined sessionId");
-	}
-
-	// Check if session is already transmitting
-	if (pipelines[sessionId]) {
-		return callback("You already have an magic mirror with this session. Close current session before starting a new one or use another browser to open a new magic mirror.")
-	}
-
-	getKurentoClient(function(error, kurentoClient) {
-		if (error) {
-			return callback(error);
-		}
-
-		kurentoClient.create('MediaPipeline', function(error, pipeline) {
-			if (error) {
-				return callback(error);
-			}
-
-			createMediaElements(pipeline, function(error, webRtcEndpoint,
-					faceOverlayFilter) {
-				if (error) {
-					pipeline.release();
-					return callback(error);
-				}
-
-				connectMediaElements(webRtcEndpoint, faceOverlayFilter,
-						function(error) {
-							if (error) {
-								pipeline.release();
-								return callback(error);
-							}
-
-							webRtcEndpoint.processOffer(sdpOffer, function(
-									error, sdpAnswer) {
-								if (error) {
-									pipeline.release();
-									return callback(error);
-								}
-
-								pipelines[sessionId] = pipeline;
-								return callback(null, sdpAnswer);
-							});
-						});
-			});
-		});
-	});
-}
-
-function createMediaElements(pipeline, callback) {
-
-	pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
-		if (error) {
-			return callback(error);
-		}
-
-		pipeline.create('FaceOverlayFilter',
-				function(error, faceOverlayFilter) {
-					if (error) {
-						return callback(error);
-					}
-
-					faceOverlayFilter.setOverlayedImage(
-							url.format(asUrl)+"img/mario-wings.png",
-							-0.35, -1.2, 1.6, 1.6, function(error) {
-								if (error) {
-									return callback(error);
-								}
-
-								return callback(null, webRtcEndpoint,
-										faceOverlayFilter);
-
-							});
-				});
-	});
-}
-
-function connectMediaElements(webRtcEndpoint, faceOverlayFilter, callback) {
-	webRtcEndpoint.connect(faceOverlayFilter, function(error) {
-		if (error) {
-			return callback(error);
-		}
-
-		faceOverlayFilter.connect(webRtcEndpoint, function(error) {
-			if (error) {
-				return callback(error);
-			}
-
-			return callback(null);
-		});
-	});
-}
-
-function stop(sessionId) {
-	if (pipelines[sessionId]) {
-		var pipeline = pipelines[sessionId];
-		pipeline.release();
-		delete pipelines[sessionId];
-	}
-}
 
 app.use(express.static(path.join(__dirname, 'static')));

@@ -1,167 +1,75 @@
+#!/usr/bin/env node
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials are made
+ * available under the terms of the GNU Lesser General Public License (LGPL)
+ * version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
 var path = require('path');
-var express = require('express');
-var ws = require('ws');
+var url  = require('url');
+
 var minimist = require('minimist');
-var url = require('url');
-var kurento = require('kurento-client');
+
+var express   = require('express');
+var expressWs = require('express-ws');
+
+var kurentoClient = require('kurento-client');
+var RpcBuilder    = require('kurento-jsonrpc');
+
+const packer = RpcBuilder.packers.JsonRPC;
+
+
+// Recover kurentoClient for the first time.
+var getKurentoClient = (function()
+{
+  var client = null;
+
+  function disconnect()
+  {
+    client = null
+  }
+
+  return function(callback)
+  {
+    if(client) return callback(null, client);
+
+    kurentoClient(argv.ws_uri, function(error, _client) {
+      if(error) return callback(error);
+
+      client = _client;
+      client.on('disconnect', disconnect)
+
+      callback(null, client);
+    });
+  }
+})()
+
 
 var argv = minimist(process.argv.slice(2),
 {
   default:
   {
-	  as_uri: "http://localhost:8080/",
-	  ws_uri: "ws://localhost:8888/kurento"
+    as_uri: "http://localhost:8080/",
+    ws_uri: "ws://localhost:8888/kurento"
   }
 });
 
-var app = express();
+var app = expressWs(express()).app;
 
 /*
  * Definition of global variables.
  */
 
-var kurentoClient = null;
-var userRegistry = new UserRegistry();
-var pipelines = {};
-var idCounter = 0;
+var users = {};
 
-function nextUniqueId() {
-	idCounter++;
-	return idCounter.toString();
-}
-
-/*
- * Definition of helper classes
- */
-
-//Represents caller and callee sessions
-function UserSession(id, name, ws){
-	this.id = id;
-	this.name = name;
-	this.ws = ws;
-	this.peer = null;
-	this.sdpOffer = null;
-}
-
-UserSession.prototype.sendMessage = function(message){
-	this.ws.send(JSON.stringify(message));
-}
-
-//Represents registrar of users
-function UserRegistry(){
-	this.usersById = {};
-	this.usersByName = {};
-}
-
-UserRegistry.prototype.register = function(user){
-	this.usersById[user.id] = user;
-	this.usersByName[user.name] = user;
-}
-
-UserRegistry.prototype.unregister = function(id){
-	var user = this.getById(id);
-	if(user) delete this.usersById[id]
-	if(user && this.getByName(user.name)) delete this.usersByName[user.name];
-}
-
-UserRegistry.prototype.getById = function(id){
-	return this.usersById[id];
-}
-
-UserRegistry.prototype.getByName = function(name){
-	return this.usersByName[name];
-}
-
-UserRegistry.prototype.removeById = function(id){
-	var userSession = this.usersById[id];
-	if(!userSession) return;
-	delete this.usersById[id];
-	delete this.usersByName[userSession.name];
-}
-
-//Represents a B2B active call
-function CallMediaPipeline(){
-	this._pipeline = null;
-	this._callerWebRtcEndpoint = null;
-	this._calleeWebRtcEndpoint = null;
-}
-
-CallMediaPipeline.prototype.createPipeline = function(callback){
-	var self = this;
-	getKurentoClient(function(error, kurentoClient){
-		if(error){
-			return callback(error);
-		}
-		
-		kurentoClient.create('MediaPipeline', function(error, pipeline){
-			if(error){
-				return callback(error);
-			}
-			
-			pipeline.create('WebRtcEndpoint', function(error, callerWebRtcEndpoint){
-				if(error){
-					pipeline.release();
-					return callback(error);
-				}
-				
-				pipeline.create('WebRtcEndpoint', function(error, calleeWebRtcEndpoint){
-					if(error){
-						pipeline.release();
-						return callback(error);
-					}
-					
-					callerWebRtcEndpoint.connect(calleeWebRtcEndpoint, function(error){
-						if(error){
-							pipeline.release();
-							return callback(error);
-						}
-						
-						calleeWebRtcEndpoint.connect(callerWebRtcEndpoint, function(error){
-							if(error){
-								pipeline.release();
-								return callback(error);
-							}
-						});
-						
-						self._pipeline = pipeline;
-						self._callerWebRtcEndpoint = callerWebRtcEndpoint;
-						self._calleeWebRtcEndpoint = calleeWebRtcEndpoint;
-						
-						callback(null);
-					});					
-				});
-			});			
-		});		
-	})
-}
-
-CallMediaPipeline.prototype.generateSdpAnswerForCaller = function(sdpOffer, callback){
-	this._callerWebRtcEndpoint.processOffer(sdpOffer, callback);
-}
-
-CallMediaPipeline.prototype.generateSdpAnswerForCallee = function(sdpOffer, callback){
-	this._calleeWebRtcEndpoint.processOffer(sdpOffer, callback);
-}
-
-CallMediaPipeline.prototype.release = function(){
-	if(this._pipeline) this._pipeline.release();
-	this._pipeline = null;
-}
 
 /*
  * Server startup
@@ -170,228 +78,231 @@ CallMediaPipeline.prototype.release = function(){
 var asUrl = url.parse(argv.as_uri);
 var port = asUrl.port;
 var server = app.listen(port, function() {
-	console.log('Kurento Tutorial started');
-	console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
-});
-
-var wss = new ws.Server({
-	server : server,
-	path : '/call'
+  console.log('Kurento Tutorial started');
+  console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
 
-wss.on('connection', function(ws) {
+app.ws('/', function(ws)
+{
+  console.log('Connection received');
 
-	var sessionId = nextUniqueId();
+  var rpcBuilder = new RpcBuilder(packer, ws, function(request)
+  {
+    console.log('Connection received message', request.method, request.params[0]);
 
-	console.log('Connection received with sessionId ' + sessionId);
+    switch(request.method)
+    {
+      case 'register':
+        register(request);
+        break;
 
-	ws.on('error', function(error) {
-		console.log('Connection ' + sessionId + ' error');
-		stop(sessionId);
-	});
+      case 'call':
+        call(request);
+        break;
 
-	ws.on('close', function() {
-		console.log('Connection ' + sessionId + ' closed');		
-		stop(sessionId);
-		userRegistry.unregister(sessionId);
-	});
+      case 'callResponse':
+        callResponse(request);
+        break;
 
-	ws.on('message', function(_message) {
-		var message = JSON.parse(_message);
-		console.log('Connection ' + sessionId + ' received message ', message);
+      case 'candidate':
+        processCandidate(request)
+      break;
 
-		switch (message.id) {
-		case 'register':
-			register(sessionId, message.name, ws);				
-			break;
+      case 'stop':
+        stop(rpcBuilder);
+      break;
 
-		case 'call':
-			call(sessionId, message.to, message.from, message.sdpOffer);
-			break;
+      default:
+        console.error(request)
+        request.reply('Invalid message ' + message);
+    }
+  });
 
-		case 'incomingCallResponse':
-			incomingCallResponse(sessionId, message.from, message.callResponse, message.sdpOffer);
-			break;
-		
-		case 'stop':
-			stop(sessionId);
-			break;
 
-		default:
-			ws.send(JSON.stringify({
-				id : 'error',
-				message : 'Invalid message ' + message
-			}));
-			break;
-		}
+  var candidatesQueue = []
 
-	});
+  rpcBuilder.addCandidates = function(webRtcEndpoint)
+  {
+    while(candidatesQueue.length)
+    {
+      var candidate = candidatesQueue.shift()
+
+      webRtcEndpoint.addIceCandidate(candidate)
+    }
+
+    var self = this
+
+    webRtcEndpoint.on('OnIceCandidate', function(event) {
+      self.encode('candidate', [event.candidate])
+    });
+  }
+
+
+  function register(request){
+    var name = request.params[0]
+
+    function onError(error)
+    {
+      if(error)
+      {
+        console.log("Error processing register:", error);
+        request.reply(error)
+      }
+    }
+
+    if(!name) return onError("empty user name");
+
+    if(users[name]) return onError("already registered");
+
+    rpcBuilder.name = name
+    users[name] = rpcBuilder
+
+    request.reply()
+  }
+
+  function call(request)
+  {
+    var to = request.params[0]
+
+    var callee = users[to];
+    if(!callee) return request.reply('user ' + to + ' is not registered');
+
+    callee.encode('call', [rpcBuilder.name], function(error)
+    {
+      if(error) return request.reply(error);
+
+      rpcBuilder.request = request
+    });
+  }
+
+  function callResponse(request)
+  {
+    var from     = request.params[0]
+    var sdpOffer = request.params[1]
+
+    var caller = users[from];
+    if(!caller) return request.reply('unknown from = ' + from);
+
+    rpcBuilder.peer = caller;
+    caller.peer     = rpcBuilder;
+
+    var callerRequest = caller.request
+    delete caller.request
+
+    function onError(error)
+    {
+      if(error)
+      {
+        request.reply(error);
+        callerRequest.reply(error)
+      }
+    }
+
+    getKurentoClient(function(error, client)
+    {
+      if(error) return onError(error);
+
+      client.create('MediaPipeline', function(error, pipeline)
+      {
+        if(error) return onError(error);
+
+        caller.pipeline = pipeline
+
+        function onError(error)
+        {
+          if(error)
+          {
+            pipeline.release();
+            request.reply(error);
+            callerRequest.reply(error)
+          }
+        }
+
+        pipeline.create('WebRtcEndpoint', function(error, callerWebRtcEndpoint)
+        {
+          if(error) return onError(error);
+
+          caller.addCandidates(callerWebRtcEndpoint)
+
+          callerWebRtcEndpoint.processOffer(callerRequest.params[1],
+            function(error, sdpAnswer)
+          {
+            if(error) return onError(error)
+
+            callerRequest.reply(null, sdpAnswer);
+          })
+          callerWebRtcEndpoint.gatherCandidates(onError);
+
+          pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
+          {
+            if(error) return onError(error);
+
+            rpcBuilder.addCandidates(webRtcEndpoint)
+
+            webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer)
+            {
+              if(error) return onError(error)
+
+              request.reply(null, sdpAnswer);
+            })
+            webRtcEndpoint.gatherCandidates(onError);
+
+            client.connect(callerWebRtcEndpoint, webRtcEndpoint,
+              callerWebRtcEndpoint, onError);
+          });
+        });
+      });
+    })
+  }
+
+  function processCandidate(request)
+  {
+    var candidate = request.params[0];
+
+    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+
+    var webRtcEndpoint = ws.webRtcEndpoint
+    if(webRtcEndpoint)
+      webRtcEndpoint.addIceCandidate(candidate)
+    else
+      candidatesQueue.push(candidate)
+  }
+
+
+  ws.on('error', function(error)
+  {
+    console.log('Connection error');
+    stop(rpcBuilder);
+  });
+
+  ws.on('close', function()
+  {
+    console.log('Connection closed');
+    stop(rpcBuilder);
+  });
 });
 
-function stop(sessionId){
-	if(!pipelines[sessionId]){
-		return;
-	}
-	
-	var pipeline = pipelines[sessionId];
-	delete pipelines[sessionId];
-	pipeline.release();
-	var stopperUser = userRegistry.getById(sessionId);
-	var stoppedUser = userRegistry.getByName(stopperUser.peer);
-	stopperUser.peer = null;
-	if(stoppedUser){
-		stoppedUser.peer = null;
-		delete pipelines[stoppedUser.id];
-		var message = {
-			id: 'stopCommunication',
-			message: 'remote user hanged out'
-		}
-		stoppedUser.sendMessage(message)
-	}
+
+function stop(rpcBuilder)
+{
+  delete users[rpcBuilder.name]
+
+  if(rpcBuilder.pipeline)
+  {
+    rpcBuilder.pipeline.release()
+    delete rpcBuilder.pipeline
+  }
+
+  if(rpcBuilder.peer)
+  {
+    rpcBuilder.peer.encode('stop', ['remote user hanged out'])
+
+    delete rpcBuilder.peer.pipeline
+    delete rpcBuilder.peer.peer
+    delete rpcBuilder.peer
+  }
 }
 
-function incomingCallResponse(calleeId, from, callResponse, calleeSdp){
-	
-	function onError(callerReason, calleeReason){
-		if(pipeline) pipeline.release();
-		if(caller){
-			var callerMessage = {
-				id: 'callResponse',
-				response: 'rejected'
-			};
-			if(callerReason) callerMessage.message = callerReason;
-			caller.sendMessage(callerMessage);
-		}
-			
-		var calleeMessage = {
-			id: 'stopCommunication'
-		};
-		if(calleeReason) calleeMessage.message = calleeReason;
-		callee.sendMessage(calleeMessage);
-	}
-	
-	var callee = userRegistry.getById(calleeId);
-	if(!from || !userRegistry.getByName(from)){
-		return onError(null, 'unknown from = ' + from);
-	}		
-	var caller = userRegistry.getByName(from);
-	
-	if(callResponse === 'accept'){	
-		var pipeline = new CallMediaPipeline();	
-		
-		pipeline.createPipeline(function(error){
-			if(error){
-				return onError(error, error);
-			}
-			
-			pipeline.generateSdpAnswerForCaller(caller.sdpOffer, function(error, callerSdpAnswer){
-				if(error){
-					return onError(error, error);
-				}
-				
-				pipeline.generateSdpAnswerForCallee(calleeSdp, function(error, calleeSdpAnswer){
-					if(error){
-						return onError(error, error);
-					}
-					
-					pipelines[caller.id] = pipeline;
-					pipelines[callee.id] = pipeline;
-					
-					var message = {
-						id: 'startCommunication',
-						sdpAnswer: calleeSdpAnswer
-					};
-					
-					callee.sendMessage(message);
-					
-					message = {
-						id: 'callResponse',
-						response : 'accepted',
-						sdpAnswer: callerSdpAnswer
-					};
-					
-					caller.sendMessage(message);					
-				});				
-			});			
-		});
-	} else {
-		
-		var decline = {
-			id: 'callResponse',
-			response: 'rejected',
-			message: 'user declined'
-		};
-		
-		caller.sendMessage(decline);
-	}
-}
-
-function call(callerId, to, from, sdpOffer){
-	var caller = userRegistry.getById(callerId);
-	var rejectCause = 'user ' + to + ' is not registered';
-	if(userRegistry.getByName(to)){
-		var callee = userRegistry.getByName(to);
-		caller.sdpOffer = sdpOffer
-		callee.peer = from;
-		caller.peer = to;
-		var message = {
-			id: 'incomingCall',
-			from: from
-		};
-		try{
-			return callee.sendMessage(message);
-		} catch(exception){
-			rejectCause = "Error " + exception;
-		}
-	} 
-	var message  = {
-		id: 'callResponse',
-		response: 'rejected: ',
-		message: rejectCause
-	};
-	caller.sendMessage(message);
-	
-}
-
-function register(id, name, ws, callback){
-	function onError(error){
-		console.log("Error processing register: " + error);
-		ws.send(JSON.stringify({id:'registerResponse', response : 'rejected ', message: error}));
-	}
-	
-	if(!name){
-		return onError("empty user name");
-	}
-	
-	if(userRegistry.getByName(name)){
-		return onError("already registered");
-	}
-	
-	userRegistry.register(new UserSession(id, name, ws));
-	try {
-		ws.send(JSON.stringify({id: 'registerResponse', response: 'accepted'}));
-	} catch(exception){
-		onError(exception);
-	}
-}
-
-//Recover kurentoClient for the first time.
-function getKurentoClient(callback) {
-	if (kurentoClient !== null) {
-		return callback(null, kurentoClient);
-	}
-
-	kurento(argv.ws_uri, function(error, _kurentoClient) {
-		if (error) {
-			var message = 'Coult not find media server at address ' + argv.ws_uri;
-			console.log(message);
-			return callback(message + ". Exiting with error " + error);
-		}
-
-		kurentoClient = _kurentoClient;
-		callback(null, kurentoClient);
-	});
-}
 
 app.use(express.static(path.join(__dirname, 'static')));

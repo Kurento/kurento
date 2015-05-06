@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -45,10 +45,10 @@ ws.onmessage = function(message) {
 		break;
 	case 'WindowIn':
 		windowIn(parsedMessage);
-		break;	
+		break;
 	case 'WindowOut':
 		windowOut(parsedMessage);
-		break;	
+		break;
 	case 'error':
 		if (state == I_AM_STARTING) {
 			setState(I_CAN_START);
@@ -64,7 +64,7 @@ ws.onmessage = function(message) {
 }
 
 function windowIn(message) {
-	console.log ("Window in detected in "+message.roiId);	
+	console.log ("Window in detected in "+message.roiId);
 }
 
 function windowOut(message) {
@@ -100,9 +100,9 @@ function startResponse(message) {
 	webRtcPeer.processSdpAnswer(message.sdpAnswer);
 }
 
-function calibrate() {	
+function calibrate() {
 	if (webRtcPeer) {
-		console.log("Calibrating...");	
+		console.log("Calibrating...");
 		var message = {
 			id : 'calibrate'
 		}

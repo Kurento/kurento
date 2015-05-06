@@ -1,6 +1,6 @@
 [![][KurentoImage]][website]
 
-Copyright © 2014 Kurento. Licensed under [LGPL License].
+Copyright © 2014-2015 Kurento. Licensed under [LGPL License].
 
 Kurento tutorial for Node.js
 ============================
