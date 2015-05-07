@@ -41,7 +41,7 @@ public:
   void removeImage (const std::string &id);
   void addImage (const std::string &id, const std::string &uri,
                  float offsetXPercent, float offsetYPercent, float widthPercent,
-                 float heightPercent);
+                 float heightPercent, bool keepAspectRatio, bool center);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
@@ -53,6 +53,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+
   GstElement *imageOverlay;
 
   class StaticConstructor

@@ -2,6 +2,7 @@
 
 #include <gst/gst.h>
 #include "MediaPipeline.hpp"
+#include "MediaPipelineImpl.hpp"
 #include <ImageOverlayFilterImplFactory.hpp>
 #include "ImageOverlayFilterImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
@@ -68,7 +69,8 @@ void ImageOverlayFilterImpl::removeImage (const std::string &id)
 
 void ImageOverlayFilterImpl::addImage (const std::string &id,
                                        const std::string &uri, float offsetXPercent, float offsetYPercent,
-                                       float widthPercent, float heightPercent)
+                                       float widthPercent, float heightPercent,
+                                       bool keepAspectRatio, bool center)
 {
   GstStructure *imagesLayout, *imageSt;
 
@@ -79,6 +81,8 @@ void ImageOverlayFilterImpl::addImage (const std::string &id,
                                "offsetYPercent", G_TYPE_FLOAT, float (offsetYPercent),
                                "widthPercent", G_TYPE_FLOAT, float (widthPercent),
                                "heightPercent", G_TYPE_FLOAT, float (heightPercent),
+                               "keepAspectRatio", G_TYPE_BOOLEAN, keepAspectRatio,
+                               "center", G_TYPE_BOOLEAN, center,
                                NULL);
 
   /* The function obtains the actual window list */

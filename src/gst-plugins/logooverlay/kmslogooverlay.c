@@ -71,6 +71,7 @@ typedef struct _ImageStruct
   gfloat offsetXPercent, offsetYPercent, widthPercent, heightPercent;
   gchar *id;
   IplImage *active_icon;
+  gboolean keepAspectRatio, center;
 } ImageStruct;
 
 /* pad templates */
@@ -195,6 +196,8 @@ kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
     if (ret) {
       ImageStruct *structAux = g_malloc0 (sizeof (ImageStruct));
       IplImage *aux = NULL;
+      int new_width;
+      int new_height;
 
       gst_structure_get (image, "offsetXPercent", G_TYPE_FLOAT,
           &structAux->offsetXPercent, NULL);
@@ -206,6 +209,10 @@ kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
           &structAux->heightPercent, NULL);
       gst_structure_get (image, "id", G_TYPE_STRING, &structAux->id, NULL);
       gst_structure_get (image, "uri", G_TYPE_STRING, &uri, NULL);
+      gst_structure_get (image, "keepAspectRatio", G_TYPE_BOOLEAN,
+          &structAux->keepAspectRatio, NULL);
+      gst_structure_get (image, "center", G_TYPE_BOOLEAN, &structAux->center,
+          NULL);
 
       if ((structAux->widthPercent == 0) || (structAux->heightPercent == 0)) {
         continue;
@@ -214,11 +221,34 @@ kms_logo_overlay_load_image_layout (KmsLogoOverlay * logooverlay)
       aux = load_image (uri, logooverlay->priv->dir, structAux->id);
 
       if (aux != NULL) {
+
+        new_width = logooverlay->priv->cv_image->width *
+            (structAux->widthPercent);
+        new_height = logooverlay->priv->cv_image->height *
+            (structAux->heightPercent);
+
+        if (structAux->keepAspectRatio) {
+          float old_ratio = (float) aux->height / (float) aux->width;
+          float new_ratio = (float) new_height / (float) new_width;
+
+          if (old_ratio != new_ratio) {
+            float widthRatio = (float) new_width / (float) aux->width;
+            float heightRatio = (float) new_height / (float) aux->height;
+
+            if (widthRatio < heightRatio) {
+              //keep width and recalculate height
+              new_height = (float) new_width / old_ratio;
+            } else {
+              //keep height and recalculate width
+              new_width = old_ratio * (float) new_height;
+            }
+          }
+        } else {
+          structAux->center = FALSE;
+        }
         structAux->active_icon =
-            cvCreateImage (cvSize (logooverlay->priv->cv_image->width *
-                (structAux->widthPercent),
-                logooverlay->priv->cv_image->height *
-                (structAux->heightPercent)), aux->depth, aux->nChannels);
+            cvCreateImage (cvSize (new_width, new_height), aux->depth,
+            aux->nChannels);
         cvResize (aux, structAux->active_icon, CV_INTER_CUBIC);
         cvReleaseImage (&aux);
       } else {
@@ -408,11 +438,30 @@ kms_logo_overlay_transform_frame_ip (GstVideoFilter * filter,
     }
 
     if (structAux->active_icon != NULL) {
+      int x_position = logooverlay->priv->cv_image->width *
+          (structAux->offsetXPercent);
+      int y_position = logooverlay->priv->cv_image->height *
+          (structAux->offsetYPercent);
+
+      if (structAux->center) {
+        int real_width = logooverlay->priv->cv_image->width *
+            (structAux->widthPercent);
+        int real_height = logooverlay->priv->cv_image->height *
+            (structAux->heightPercent);
+
+        if (real_width > structAux->active_icon->width) {
+          x_position = x_position +
+              ((real_width - structAux->active_icon->width) / 2);
+        }
+
+        if (real_height > structAux->active_icon->height) {
+          y_position = y_position +
+              ((real_height - structAux->active_icon->height) / 2);
+        }
+      }
+
       kms_logo_overlay_display_overlay_img (logooverlay,
-          logooverlay->priv->cv_image->width *
-          (structAux->offsetXPercent),
-          logooverlay->priv->cv_image->height *
-          (structAux->offsetYPercent), structAux->active_icon);
+          x_position, y_position, structAux->active_icon);
     }
   }
 

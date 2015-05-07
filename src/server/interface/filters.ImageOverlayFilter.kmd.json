@@ -42,12 +42,12 @@
             },
             {
               "name": "offsetXPercent",
-              "doc": "Percentage relative to the image width to calculate the X coordinate of the position [0..1]",
+              "doc": "Percentage relative to the image width to calculate the X coordinate of the position (left upper corner) [0..1]",
               "type": "float"
             },
             {
               "name": "offsetYPercent",
-              "doc": "Percentage relative to the image height to calculate the Y coordinate of the position [0..1]",
+              "doc": "Percentage relative to the image height to calculate the Y coordinate of the position (left upper corner) [0..1]",
               "type": "float"
             },
             {
@@ -59,6 +59,16 @@
               "name": "heightPercent",
               "doc": "Proportional height of the overlaid image, relative to the height of the video [0..1].",
               "type": "float"
+            },
+            {
+              "name": "keepAspectRatio",
+              "doc": "Keep the aspect ratio of the original image.",
+              "type": "boolean"
+            },
+            {
+              "name": "center",
+              "doc": "If the image doesn't fit in the dimensions, the image will be center into the region defined by height and width.",
+              "type": "boolean"
             }
           ]
         }
