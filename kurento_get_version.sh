@@ -2,7 +2,7 @@
 
 # This scripts gets project version from CMakeList.txt, pom.xml or configure.ac
 
-if [ -f /dev/tty ]
+if [ -e /dev/tty ]
 then
   exec 3>&1 >/dev/tty
 else
