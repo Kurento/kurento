@@ -4,7 +4,7 @@ ${event.name}.hpp
 #ifndef __${camelToUnderscore(event.name)}_HPP__
 #define __${camelToUnderscore(event.name)}_HPP__
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <memory>
 <#if event.extends??>
 #include "${event.extends.name}.hpp"

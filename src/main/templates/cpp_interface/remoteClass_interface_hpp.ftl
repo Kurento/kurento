@@ -4,7 +4,7 @@ ${remoteClass.name}.hpp
 #ifndef __${camelToUnderscore(remoteClass.name)}_HPP__
 #define __${camelToUnderscore(remoteClass.name)}_HPP__
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <jsonrpc/JsonRpcException.hpp>
 #include <memory>
 #include <vector>

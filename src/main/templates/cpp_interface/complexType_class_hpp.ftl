@@ -4,7 +4,7 @@ ${complexType.name}.hpp
 #ifndef __${camelToUnderscore(complexType.name)}_HPP__
 #define __${camelToUnderscore(complexType.name)}_HPP__
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <jsonrpc/JsonRpcException.hpp>
 #include <memory>
 <#if complexType.extends??>
