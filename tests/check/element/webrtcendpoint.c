@@ -25,6 +25,10 @@
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -1315,54 +1319,192 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_slice_free (HandOffData, hod);
 }
 
-GST_START_TEST (negotiation)
+#ifdef ENABLE_DEBUGGING_TESTS
+static void
+dummysrc_pad_added (GstElement * element, GstPad * new_pad, gpointer user_data)
 {
-  GArray *audio_codecs_array;
-  gchar *audio_codecs[] = { "OPUS/48000/1", "AMR/8000/1", NULL };
-  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
-  GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
+  GstPad *sink_pad = GST_PAD (user_data);
+
+  GST_DEBUG_OBJECT (element, "Added pad %" GST_PTR_FORMAT, new_pad);
+
+  fail_unless (GST_PAD_IS_SRC (new_pad));
+
+  GST_DEBUG ("Linking %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, new_pad,
+      sink_pad);
+  fail_unless (gst_pad_link (new_pad, sink_pad) == GST_PAD_LINK_OK);
+}
+
+static void
+webrtc_sender_pad_added (GstElement * element, GstPad * new_pad,
+    gpointer user_data)
+{
+  GstElement *dummysrc, *pipeline = GST_ELEMENT (user_data);
+  gchar *padname = NULL;
+
+  GST_DEBUG_OBJECT (element, "Added pad %" GST_PTR_FORMAT, new_pad);
+
+  fail_unless (GST_PAD_IS_SINK (new_pad));
+
+  dummysrc = gst_element_factory_make ("dummysrc", NULL);
+  gst_bin_add (GST_BIN (pipeline), dummysrc);
+
+  g_signal_connect (dummysrc, "pad-added", G_CALLBACK (dummysrc_pad_added),
+      new_pad);
+
+  /* request src pad using action */
+  g_signal_emit_by_name (dummysrc, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_DATA, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Pad name %s", padname);
+  g_object_set (G_OBJECT (dummysrc), "data", TRUE, NULL);
+
+  g_free (padname);
+
+  gst_element_sync_state_with_parent_target_state (dummysrc);
+}
+
+static void
+fakesink_handoff (GstElement * fakesink, GstBuffer * buff, GstPad * pad,
+    gpointer user_data)
+{
+  GMainLoop *loop = user_data;
+  GstMapInfo info;
+  gchar *data;
+
+  if (!gst_buffer_map (buff, &info, GST_MAP_READ)) {
+    GST_WARNING ("Can no map buffer");
+    return;
+  }
+
+  data = g_strndup ((const gchar *) info.data, info.size);
+  GST_DEBUG ("Data buffer: '%s'", data);
+  g_free (data);
+
+  gst_buffer_unmap (buff, &info);
+
+  g_idle_add (quit_main_loop_idle, loop);
+
+  g_signal_handlers_disconnect_by_data (fakesink, user_data);
+}
+
+typedef struct _TmpCallbackData
+{
+  GstElement *pipeline;
+  GMainLoop *loop;
+} TmpCallbackData;
+
+static void
+webrtc_receiver_pad_added (GstElement * element, GstPad * new_pad,
+    gpointer user_data)
+{
+  TmpCallbackData *tmp = user_data;
+  GstElement *fakesink, *pipeline = tmp->pipeline;
+  GstPad *sink_pad;
+
+  if (GST_PAD_IS_SINK (new_pad)) {
+    /* Do not connect anything here */
+    return;
+  }
+
+  fakesink = gst_element_factory_make ("fakesink", NULL);
+  g_object_set (G_OBJECT (fakesink), "sync", FALSE, "signal-handoffs", TRUE,
+      NULL);
+  g_signal_connect (fakesink, "handoff", G_CALLBACK (fakesink_handoff),
+      tmp->loop);
+
+  gst_bin_add (GST_BIN (pipeline), fakesink);
+
+  sink_pad = gst_element_get_static_pad (fakesink, "sink");
+  fail_unless (gst_pad_link (new_pad, sink_pad) == GST_PAD_LINK_OK);
+  g_object_unref (sink_pad);
+
+  gst_element_sync_state_with_parent_target_state (fakesink);
+}
+
+static void
+test_data_channels (gboolean bundle)
+{
+  GstElement *sender = gst_element_factory_make ("webrtcendpoint", NULL);
+  GstElement *receiver = gst_element_factory_make ("webrtcendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
   GstSDPMessage *offerer_local_sdp = NULL, *offerer_remote_sdp = NULL;
   gchar *offerer_local_sdp_str, *offerer_remote_sdp_str;
   GstSDPMessage *answerer_local_sdp = NULL, *answerer_remote_sdp = NULL;
   gchar *answerer_local_sdp_str, *answerer_remote_sdp_str;
+  GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  GstElement *pipeline = gst_pipeline_new (NULL);
   gchar *sdp_str = NULL;
+  gchar *padname = NULL;
+  gboolean ret;
+  TmpCallbackData tmp;
 
-  g_object_set (offerer, "max-video-recv-bandwidth", 0, NULL);
-  g_object_set (answerer, "max-video-recv-bandwidth", 0, NULL);
+  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  audio_codecs_array = create_codecs_array (audio_codecs);
-  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (audio_codecs_array), NULL);
-  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (audio_codecs_array), NULL);
-  g_array_unref (audio_codecs_array);
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  g_object_set (sender, "use-data-channels", TRUE, NULL);
+  g_object_set (receiver, "use-data-channels", TRUE, NULL);
+
+  gst_bin_add_many (GST_BIN (pipeline), sender, receiver, NULL);
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  g_object_set (sender, "max-video-recv-bandwidth", 0, NULL);
+  g_object_set (receiver, "max-video-recv-bandwidth", 0, NULL);
+
+  g_object_set (sender, "bundle", bundle, "num-audio-medias", 0,
+      "num-video-medias", 0, NULL);
+  g_object_set (receiver, "num-audio-medias", "num-video-medias", 0, NULL);
+
+  g_signal_connect (sender, "pad-added", G_CALLBACK (webrtc_sender_pad_added),
+      pipeline);
+
+  tmp.pipeline = pipeline;
+  tmp.loop = loop;
+
+  g_signal_connect (receiver, "pad-added",
+      G_CALLBACK (webrtc_receiver_pad_added), &tmp);
+
+  g_signal_emit_by_name (receiver, "request-new-srcpad",
+      KMS_ELEMENT_PAD_TYPE_DATA, NULL, &padname);
+  fail_if (padname == NULL);
+
+  GST_DEBUG ("Requested pad name %s", padname);
+  g_free (padname);
+
+  /* Trickle ICE management */
+  g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), receiver);
+  g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), sender);
+
+  /* SDP Negotiation */
+  g_signal_emit_by_name (sender, "generate-offer", &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (receiver, "process-offer", offer, &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (sender, "process-answer", answer);
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_object_get (offerer, "local-sdp", &offerer_local_sdp, NULL);
+  g_object_get (sender, "local-sdp", &offerer_local_sdp, NULL);
   fail_unless (offerer_local_sdp != NULL);
-  g_object_get (offerer, "remote-sdp", &offerer_remote_sdp, NULL);
+  g_object_get (sender, "remote-sdp", &offerer_remote_sdp, NULL);
   fail_unless (offerer_remote_sdp != NULL);
 
-  g_object_get (answerer, "local-sdp", &answerer_local_sdp, NULL);
+  g_object_get (receiver, "local-sdp", &answerer_local_sdp, NULL);
   fail_unless (answerer_local_sdp != NULL);
-  g_object_get (answerer, "remote-sdp", &answerer_remote_sdp, NULL);
+  g_object_get (receiver, "remote-sdp", &answerer_remote_sdp, NULL);
   fail_unless (answerer_remote_sdp != NULL);
 
   offerer_local_sdp_str = gst_sdp_message_as_text (offerer_local_sdp);
@@ -1389,11 +1531,37 @@ GST_START_TEST (negotiation)
   gst_sdp_message_free (answerer_local_sdp);
   gst_sdp_message_free (answerer_remote_sdp);
 
-  g_object_unref (offerer);
-  g_object_unref (answerer);
+  g_signal_emit_by_name (sender, "gather-candidates", &ret);
+  fail_unless (ret);
+
+  g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+  fail_unless (ret);
+
+  g_main_loop_run (loop);
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, "test_sendonly_end");
+
+  GST_WARNING ("Finishing test");
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_bus_remove_signal_watch (bus);
+  g_object_unref (bus);
+  g_object_unref (pipeline);
+  g_main_loop_unref (loop);
+}
+
+GST_START_TEST (test_webrtc_data_channel)
+{
+  /* Check data channels in a bundle connection */
+  test_data_channels (TRUE);
+
+  /* Check data channels in a dedicated connection */
+  test_data_channels (FALSE);
 }
 
 GST_END_TEST
+#endif
 /* Video tests */
 static GstStaticCaps vp8_expected_caps = GST_STATIC_CAPS ("video/x-vp8");
 
@@ -1478,10 +1646,7 @@ webrtcendpoint_test_suite (void)
 
   suite_add_tcase (s, tc_chain);
 
-  tcase_add_test (tc_chain, negotiation);
-
   tcase_add_test (tc_chain, test_pcmu_sendrecv);
-
   tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
   tcase_add_test (tc_chain, test_vp8_sendrecv);
@@ -1489,6 +1654,10 @@ webrtcendpoint_test_suite (void)
 
   tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
+
+#ifdef ENABLE_DEBUGGING_TESTS
+  tcase_add_test (tc_chain, test_webrtc_data_channel);
+#endif
 
   return s;
 }
