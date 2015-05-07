@@ -90,18 +90,12 @@ static guint kms_webrtc_endpoint_signals[LAST_SIGNAL] = { 0 };
 
 #define FINGERPRINT_CHECKSUM G_CHECKSUM_SHA256
 
-#define FILE_PERMISIONS (S_IRWXU)
-#define TMP_DIR_TEMPLATE "/tmp/kms_webrtc_endpoint_XXXXXX"
-#define CERTTOOL_TEMPLATE "certtool.tmpl"
-#define CERT_KEY_PEM_FILE "certkey.pem"
-
 #define WEBRTC_ENDPOINT "webrtc-endpoint"
 
 struct _KmsWebrtcEndpointPrivate
 {
   KmsLoop *loop;
   GMainContext *context;
-  gchar *tmp_dir;
   gchar *certificate_pem_file;
 
   NiceAgent *agent;
@@ -208,25 +202,6 @@ kms_webrtc_endpoint_media_get_stream_id (KmsWebrtcEndpoint * self,
 }
 
 /* Connection management end */
-
-static int
-delete_file (const char *fpath, const struct stat *sb, int typeflag,
-    struct FTW *ftwbuf)
-{
-  int rv = g_remove (fpath);
-
-  if (rv) {
-    GST_WARNING ("Error deleting file: %s. %s", fpath, strerror (errno));
-  }
-
-  return rv;
-}
-
-static void
-remove_recursive (const gchar * path)
-{
-  nftw (path, delete_file, 64, FTW_DEPTH | FTW_PHYS);
-}
 
 static gchar *
 generate_fingerprint_from_pem (const gchar * pem)
@@ -1152,11 +1127,6 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  if (self->priv->tmp_dir != NULL) {
-    remove_recursive (self->priv->tmp_dir);
-    g_free (self->priv->tmp_dir);
-  }
-
   g_slist_free_full (self->priv->remote_candidates, g_object_unref);
 
   g_free (self->priv->certificate_pem_file);
@@ -1304,17 +1274,12 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 static void
 kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 {
-  gchar t[] = TMP_DIR_TEMPLATE;
-
   g_object_set (G_OBJECT (self), "bundle", TRUE, "rtcp-mux", TRUE, "rtcp-nack",
       TRUE, "rtcp-remb", TRUE, NULL);
 
   self->priv = KMS_WEBRTC_ENDPOINT_GET_PRIVATE (self);
 
-  self->priv->tmp_dir = g_strdup (g_mkdtemp_full (t, FILE_PERMISIONS));
-
   self->priv->loop = kms_loop_new ();
-
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);
 
   self->priv->agent =
