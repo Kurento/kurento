@@ -1,3 +1,9 @@
+kms-jsonrpc-1.0 (1.0.0~0) testing; urgency=medium
+
+  * Change package name
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 07 May 2015 17:03:29 +0200
+
 kms-jsonrpc (0.3.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

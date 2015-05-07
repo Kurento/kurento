@@ -1,4 +1,4 @@
-Source: kms-jsonrpc
+Source: kms-jsonrpc-1.0
 Section: utils
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
@@ -14,22 +14,28 @@ Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-jsonrpc.git
 Vcs-Browser: https://github.com/Kurento/kms-jsonrpc.git
 
-Package: kms-jsonrpc
+Package: kms-jsonrpc-1.0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Breaks: kms-jsonrpc
+Replaces: kms-jsonrpc
 Description: Kurento jsonrpc library
  Implementation of the jsonRPC protocol in C++
 
-Package: kms-jsonrpc-dev
+Package: kms-jsonrpc-1.0-dev
 Architecture: any
-Depends: kms-jsonrpc (= ${binary:Version}),
+Depends: kms-jsonrpc-1.0 (= ${binary:Version}),
          libboost-dev,
          libjsoncpp-dev
+Breaks: kms-jsonrpc-dev
+Replaces: kms-jsonrpc-dev
 Description: Kurento jsonrpc library
  Implementation of the jsonRPC protocol in C++
 
-Package: kms-jsonrpc-dbg
+Package: kms-jsonrpc-1.0-dbg
 Architecture: any
-Depends: kms-jsonrpc (= ${binary:Version})
+Depends: kms-jsonrpc-1.0 (= ${binary:Version})
+Breaks: kms-jsonrpc-dbg
+Replaces: kms-jsonrpc-dbg
 Description: Kurento jsonrpc library
  Implementation of the jsonRPC protocol in C++
