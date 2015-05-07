@@ -132,16 +132,16 @@ target_link_libraries(test_dispatcher
 #                      ${gstreamer-check-1.5_LIBRARIES}
 #                      ${KmsGstCommons_LIBRARIES})
 
-add_test_program (test_dtls dtls.c)
-add_dependencies(test_dtls rtcpdemux kmsdtls)
-target_include_directories(test_dtls PRIVATE
-                          ${gstreamer-1.5_INCLUDE_DIRS}
-                          ${gstreamer-check-1.5_INCLUDE_DIRS}
-                          ${gio-2.0_INCLUDE_DIRS})
-target_link_libraries(test_dtls
-                      ${gstreamer-1.5_LIBRARIES}
-                      ${gstreamer-check-1.5_LIBRARIES}
-                      ${gio-2.0_LIBRARIES})
+#add_test_program (test_dtls dtls.c)
+#add_dependencies(test_dtls rtcpdemux kmsdtls)
+#target_include_directories(test_dtls PRIVATE
+#                          ${gstreamer-1.5_INCLUDE_DIRS}
+#                          ${gstreamer-check-1.5_INCLUDE_DIRS}
+#                          ${gio-2.0_INCLUDE_DIRS})
+#target_link_libraries(test_dtls
+#                      ${gstreamer-1.5_LIBRARIES}
+#                      ${gstreamer-check-1.5_LIBRARIES}
+#                      ${gio-2.0_LIBRARIES})
 
 if (${ENABLE_DEBUGGING_TESTS})
   add_test_program (test_dtlssrtp dtlssrtp.c)
