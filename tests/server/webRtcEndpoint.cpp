@@ -149,8 +149,6 @@ BOOST_AUTO_TEST_CASE (ice_state_changes)
   std::string answer = webRtcEpAnswerer->processOffer (offer);
   webRtcEpOfferer->processAnswer (answer);
 
-  std::cout << offer << std::endl;
-
   webRtcEpOfferer->gatherCandidates ();
   webRtcEpAnswerer->gatherCandidates ();
 
