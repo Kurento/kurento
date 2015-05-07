@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 8.0.0),
                cmake,
                pkg-config,
                kms-cmake-utils (>= 1.1.0),
-               libjsoncpp-dev,
+               kmsjsoncpp-dev,
                libboost-dev,
                libboost-test-dev
 Standards-Version: 3.9.4
@@ -26,7 +26,7 @@ Package: kms-jsonrpc-1.0-dev
 Architecture: any
 Depends: kms-jsonrpc-1.0 (= ${binary:Version}),
          libboost-dev,
-         libjsoncpp-dev
+         kmsjsoncpp-dev
 Breaks: kms-jsonrpc-dev
 Replaces: kms-jsonrpc-dev
 Description: Kurento jsonrpc library

@@ -12,7 +12,7 @@ install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 find_package(PkgConfig)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-pkg_check_modules(JSONCPP REQUIRED jsoncpp>=0.6.0)
+pkg_check_modules(JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
 
 include(GNUInstallDirs)
 
@@ -30,7 +30,7 @@ set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
 set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}")
-set(requires "jsoncpp")
+set(requires "kmsjsoncpp")
 
 configure_file(libjsonrpc.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libjsonrpc.pc @ONLY)
 configure_file(FindKmsJsonRpc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/FindKmsJsonRpc.cmake @ONLY)

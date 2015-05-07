@@ -10,7 +10,7 @@ set(KmsJsonRpc_VERSION ${PACKAGE_VERSION})
 
 find_package(PkgConfig)
 
-pkg_check_modules(_JSONCPP REQUIRED jsoncpp>=0.6.0)
+pkg_check_modules(_JSONCPP REQUIRED kmsjsoncpp>=0.6.0)
 
 find_path(KmsJsonRpc_INCLUDE_DIR
   NAMES

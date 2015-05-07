@@ -15,7 +15,7 @@ set (HEADER_FILES
   jsonrpc/JsonFixes.hpp
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${JSONCPP_INCLUDE_DIRS})
 
 add_library(jsonrpc SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
