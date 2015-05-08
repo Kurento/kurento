@@ -28,6 +28,7 @@
 #include <boost/type_traits.hpp>
 #include <string>
 #include <memory>
+#include <list>
 #include "JsonFixes.hpp"
 
 namespace kurento
@@ -206,6 +207,38 @@ public:
 
   template<typename TKey, typename TValue>
   void Serialize (TKey key, std::vector<TValue> &vec)
+  {
+    if (IsWriter) {
+      WriteOnly (key, vec.begin(), vec.end() );
+    } else {
+      JsonSerializer subVal (IsWriter);
+      subVal.JsonValue = JsonValue[key];
+      subVal.ReadOnly (vec);
+    }
+  }
+
+  template<typename TValue>
+  void ReadOnly (std::list<TValue> &list)
+  {
+    if (IsWriter) {
+      return;
+    }
+
+    if (!JsonValue.isArray() ) {
+      return;
+    }
+
+    list.clear();
+
+    for (unsigned int i = 0; i < JsonValue.size(); ++i) {
+      TValue val;
+      Serialize (i, val);
+      list.push_back (val);
+    }
+  }
+
+  template<typename TKey, typename TValue>
+  void Serialize (TKey key, std::list<TValue> &vec)
   {
     if (IsWriter) {
       WriteOnly (key, vec.begin(), vec.end() );

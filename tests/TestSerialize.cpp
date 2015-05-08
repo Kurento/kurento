@@ -92,3 +92,49 @@ BOOST_AUTO_TEST_CASE (serialize_empty_array)
   BOOST_ASSERT (writer.JsonValue.toStyledString() ==
                 writer2.JsonValue.toStyledString() );
 }
+
+BOOST_AUTO_TEST_CASE (serialize_list)
+{
+  std::list <std::string> array;
+  std::list <std::string> newArray;
+  kurento::JsonSerializer writer (true);
+  kurento::JsonSerializer writer2 (true);
+  kurento::JsonSerializer reader (false);
+
+  array.push_back ("first");
+  array.push_back ("2");
+  array.push_back ("three");
+
+  writer.Serialize ("array", array);
+
+  reader.JsonValue = writer.JsonValue;
+  reader.Serialize ("array", newArray);
+
+  writer2.Serialize ("array", newArray);
+
+  BOOST_ASSERT (writer.JsonValue.toStyledString() ==
+                writer2.JsonValue.toStyledString() );
+}
+
+BOOST_AUTO_TEST_CASE (serialize_vector)
+{
+  std::vector <int> array;
+  std::vector <int> newArray;
+  kurento::JsonSerializer writer (true);
+  kurento::JsonSerializer writer2 (true);
+  kurento::JsonSerializer reader (false);
+
+  array.push_back (1);
+  array.push_back (2);
+  array.push_back (3);
+
+  writer.Serialize ("array", array);
+
+  reader.JsonValue = writer.JsonValue;
+  reader.Serialize ("array", newArray);
+
+  writer2.Serialize ("array", newArray);
+
+  BOOST_ASSERT (writer.JsonValue.toStyledString() ==
+                writer2.JsonValue.toStyledString() );
+}
