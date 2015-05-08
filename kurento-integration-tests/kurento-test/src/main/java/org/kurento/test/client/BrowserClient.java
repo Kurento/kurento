@@ -76,6 +76,7 @@ public class BrowserClient implements Closeable {
 	public Logger log = LoggerFactory.getLogger(BrowserClient.class);
 
 	private WebDriver driver;
+	private String jobId;
 
 	private Builder builder;
 	private BrowserType browserType;
@@ -305,10 +306,10 @@ public class BrowserClient implements Closeable {
 				+ sauceLabsKey + "@ondemand.saucelabs.com:80/wd/hub"),
 				capabilities);
 
-		String jobID = ((RemoteWebDriver) driver).getSessionId().toString();
+		jobId = ((RemoteWebDriver) driver).getSessionId().toString();
 		log.info("%%%%%%%%%%%%% Saucelabs URL job ({} {} in {}) %%%%%%%%%%%%%",
 				browserType, browserVersion, platform);
-		log.info("https://saucelabs.com/tests/{}", jobID);
+		log.info("https://saucelabs.com/tests/{}", jobId);
 	}
 
 	public void createRemoteDriver(DesiredCapabilities capabilities)
@@ -731,6 +732,10 @@ public class BrowserClient implements Closeable {
 			driver.quit();
 			driver = null;
 		}
+	}
+
+	public String getJobId() {
+		return jobId;
 	}
 
 }

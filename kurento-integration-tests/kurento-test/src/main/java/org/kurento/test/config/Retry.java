@@ -14,6 +14,9 @@
  */
 package org.kurento.test.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -32,9 +35,17 @@ public class Retry implements TestRule {
 
 	private int retryCount;
 	private int currentRetry = 1;
+	private List<Throwable> exceptions;
+	private TestReport testReport;
+	private TestScenario testScenario;
 
 	public Retry(int retryCount) {
 		this.retryCount = retryCount;
+		exceptions = new ArrayList<>(retryCount);
+	}
+
+	public void useReport() {
+		testReport = new TestReport();
 	}
 
 	public Statement apply(Statement base, Description description) {
@@ -52,6 +63,19 @@ public class Retry implements TestRule {
 						base.evaluate();
 						return;
 					} catch (Throwable t) {
+						exceptions.add(t);
+
+						if (testReport != null) {
+							int exSize = exceptions.size();
+							testReport
+									.appendHeader(description.getMethodName());
+							testReport.appendWarning("Test with retry");
+							testReport.appendHtml("Number of retries " + exSize
+									+ "/" + getRetryCount());
+							testReport.carriageReturn();
+							testReport.appendException(t, testScenario);
+						}
+
 						caughtThrowable = t;
 						log.error(SEPARATOR);
 						log.error("{}: run {} failed",
@@ -60,10 +84,14 @@ public class Retry implements TestRule {
 					}
 				}
 
-				log.error(SEPARATOR);
-				log.error("{} : giving up after {} failures",
-						description.getDisplayName(), retryCount);
-				log.error(SEPARATOR);
+				String errorMessage = "TEST FAILED: "
+						+ description.getMethodName() + " (giving up after "
+						+ retryCount + " failures)";
+				if (exceptions.size() > 0 && testReport != null) {
+					testReport.appendError(errorMessage);
+					testReport.appendLine();
+				}
+				log.error(errorMessage);
 
 				throw caughtThrowable;
 			}
@@ -72,6 +100,22 @@ public class Retry implements TestRule {
 
 	public int getCurrentRetry() {
 		return currentRetry;
+	}
+
+	public List<Throwable> getExceptions() {
+		return exceptions;
+	}
+
+	public int getRetryCount() {
+		return retryCount;
+	}
+
+	public TestReport getTestReport() {
+		return testReport;
+	}
+
+	public void setTestScenario(TestScenario testScenario) {
+		this.testScenario = testScenario;
 	}
 
 }
