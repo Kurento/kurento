@@ -112,8 +112,7 @@ Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${comp
   if (!s.IsWriter && !object) {
  <#if complexType.typeFormat == "REGISTER">
     if (!s.JsonValue.isMember ("__type__") || !s.JsonValue["__type__"].isConvertibleTo (Json::ValueType::stringValue) || !s.JsonValue.isMember ("__module__") || !s.JsonValue["__module__"].isConvertibleTo (Json::ValueType::stringValue)) {
-      object.reset (dynamic_cast <${module.code.implementation["cppNamespace"]}::${complexType.name}*>
-        (kurento::RegisterParent::createRegister ("<#if module.name == "core" || module.name == "elements" || module.name == "filters">kurento<#else>${module.name}</#if>.${complexType.name}")));
+      object.reset (new ${module.code.implementation["cppNamespace"]}::${complexType.name}() );
     } else {
       object.reset (dynamic_cast <${module.code.implementation["cppNamespace"]}::${complexType.name}*>
         (kurento::RegisterParent::createRegister (s.JsonValue["__module__"].asString () + "." + s.JsonValue["__type__"].asString ())));
