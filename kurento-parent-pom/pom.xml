@@ -67,6 +67,7 @@
 
 		<version.kurento-js>6.0.0-SNAPSHOT</version.kurento-js>
 		<version.kurento-chroma>6.0.0-SNAPSHOT</version.kurento-chroma>
+		<version.kurento-imageendpoint>6.0.0-SNAPSHOT</version.kurento-imageendpoint>
 		<version.kurento-platedetector>6.0.0-SNAPSHOT</version.kurento-platedetector>
 		<version.kurento-pointerdetector>6.0.0-SNAPSHOT</version.kurento-pointerdetector>
 		<version.kurento-markerdetector>6.0.0-SNAPSHOT</version.kurento-markerdetector>
@@ -232,6 +233,11 @@
 				<groupId>org.kurento.module</groupId>
 				<artifactId>chroma</artifactId>
 				<version>${version.kurento-chroma}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.module</groupId>
+				<artifactId>imageendpoint</artifactId>
+				<version>${version.kurento-imageendpoint}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento.module</groupId>
