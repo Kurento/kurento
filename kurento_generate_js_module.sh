@@ -25,8 +25,11 @@ then
   git push origin ${BRANCH}
 fi
 
+PATH=$PATH:$(realpath $(dirname "$0"))
+PROJECT_VERSION=`kurento_get_version.sh` 
+
 # If release version, create tag
-if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
+if [[ ${PROJECT_VERSION} != *-dev ]]; then
   echo "Creating tag ${JS_PROJECT_NAME}-${PROJECT_VERSION}"
   git tag "v${PROJECT_VERSION}"
   git push --tags
