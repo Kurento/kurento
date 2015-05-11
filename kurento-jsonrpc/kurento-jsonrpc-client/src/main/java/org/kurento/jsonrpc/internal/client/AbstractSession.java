@@ -54,4 +54,40 @@ public abstract class AbstractSession implements Session {
 		this.newSession = newSession;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (newSession ? 1231 : 1237);
+		result = prime * result
+				+ ((registerInfo == null) ? 0 : registerInfo.hashCode());
+		result = prime * result
+				+ ((sessionId == null) ? 0 : sessionId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractSession other = (AbstractSession) obj;
+		if (newSession != other.newSession)
+			return false;
+		if (registerInfo == null) {
+			if (other.registerInfo != null)
+				return false;
+		} else if (!registerInfo.equals(other.registerInfo))
+			return false;
+		if (sessionId == null) {
+			if (other.sessionId != null)
+				return false;
+		} else if (!sessionId.equals(other.sessionId))
+			return false;
+		return true;
+	}
+
 }
