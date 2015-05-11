@@ -395,15 +395,12 @@ kms_recorder_endpoint_get_sink_fallback (KmsRecorderEndpoint * self)
 
   if ((g_strcmp0 (prot, HTTP_PROTO) == 0)
       || (g_strcmp0 (prot, HTTPS_PROTO) == 0)) {
-    SoupSession *ss;
 
     if (kms_is_valid_uri (KMS_URI_ENDPOINT (self)->uri)) {
       /* We use souphttpclientsink */
-      sink = gst_element_factory_make ("souphttpclientsink", NULL);
-      g_object_set (sink, "blocksize", MEGA_BYTES (1), NULL);
-      ss = soup_session_new_with_options ("timeout", HTTP_TIMEOUT,
-          "ssl-strict", FALSE, NULL);
-      g_object_set (G_OBJECT (sink), "session", ss, NULL);
+      sink = gst_element_factory_make ("curlhttpsink", NULL);
+      g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
+          "async", FALSE, NULL);
     } else {
       GST_ERROR ("URL not valid");
     }
