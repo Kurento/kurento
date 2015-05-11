@@ -738,6 +738,7 @@ kms_webrtc_endpoint_sdp_media_add_ice_candidate (KmsWebrtcEndpoint * self,
 {
   guint media_stream_id;
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  const gchar *mid;
 
   media_stream_id = kms_webrtc_endpoint_media_get_stream_id (self, mconf);
   if (media_stream_id == -1) {
@@ -750,7 +751,12 @@ kms_webrtc_endpoint_sdp_media_add_ice_candidate (KmsWebrtcEndpoint * self,
 
   sdp_media_add_ice_candidate (media, agent, cand);
 
-  return gst_sdp_media_get_media (media);
+  mid = kms_sdp_media_config_get_mid (mconf);
+  if (mid == NULL) {
+    return "";
+  }
+
+  return mid;
 }
 
 static void
@@ -767,20 +773,20 @@ kms_webrtc_endpoint_sdp_msg_add_ice_candidate (KmsWebrtcEndpoint * self,
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;
-    gint mid = kms_sdp_media_config_get_id (mconf);
-    const gchar *media_str;
+    gint idx = kms_sdp_media_config_get_id (mconf);
+    const gchar *mid;
 
     if (kms_sdp_media_config_is_inactive (mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
       continue;
     }
 
-    media_str =
+    mid =
         kms_webrtc_endpoint_sdp_media_add_ice_candidate (self, mconf,
         agent, nice_cand);
-    if (media_str != NULL) {
+    if (mid != NULL) {
       KmsIceCandidate *candidate =
-          kms_ice_candidate_new_from_nice (agent, nice_cand, media_str, mid);
+          kms_ice_candidate_new_from_nice (agent, nice_cand, mid, idx);
 
       list = g_list_append (list, candidate);
     }
