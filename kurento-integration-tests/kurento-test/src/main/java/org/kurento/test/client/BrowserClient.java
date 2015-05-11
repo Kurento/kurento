@@ -36,10 +36,12 @@ import static org.kurento.test.config.BrowserScope.SAUCELABS;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
@@ -174,16 +176,16 @@ public class BrowserClient implements Closeable {
 					// This flag enables the screen sharing
 					options.addArguments("--enable-usermedia-screen-capturing");
 
-					// FIXME: Enable this logic
-					// try {
-					// URL crxUrl = ClassLoader
-					// .getSystemResource("kurento.crx");
-					// File crx = new File(crxUrl.toURI());
-					// options.addExtensions(crx);
-					// options.addArguments("--auto-select-desktop-capture-source=Entire screen");
-					// } catch (URISyntaxException e) {
-					// log.warn(e.getMessage());
-					// }
+					try {
+						InputStream is = ClassLoader
+								.getSystemResourceAsStream("kurento.crx");
+						File crx = File.createTempFile("kurento", ".crx");
+						FileUtils.copyInputStreamToFile(is, crx);
+						options.addExtensions(crx);
+						options.addArguments("--auto-select-desktop-capture-source=Entire screen");
+					} catch (Exception e) {
+						log.error(e.getMessage());
+					}
 
 				} else {
 					// This flag avoids grant the camera
