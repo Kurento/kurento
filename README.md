@@ -64,12 +64,12 @@ add them to the query string in the same way you would add them to the [Node.js]
 executable on your command line:
 
 ```
-http://example.com/index.html?ws_url=ws://example.org/kurento
+http://example.com/index.html?ws_uri=ws://example.org/kurento
 ```
 
 All the demos accept the parameters:
 
-* *ws_url*: the WebSocket Kurento MediaServer endpoint. By default it connects
+* *ws_uri*: the WebSocket Kurento MediaServer endpoint. By default it connects
   to a Kurento MediaServer instance listening on the port 8888 on the same
   machine where it's being hosted the demo.
 * *ice_servers*: the TURN and STUN servers to use, formatted as a JSON string
