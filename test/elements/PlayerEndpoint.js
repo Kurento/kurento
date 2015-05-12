@@ -82,10 +82,10 @@ QUnit.asyncTest('Play, Pause & Stop', function () {
     });
 });
 
-QUnit.asyncTest('End of Stream', function () {
+QUnit.asyncTest('End of Stream', function (assert) {
   var self = this;
 
-  QUnit.expect(2);
+  assert.expect(2);
 
   var timeout = new Timeout('"PlayerEndpoint:End of Stream"',
     10 * 1000, onerror);
@@ -101,7 +101,7 @@ QUnit.asyncTest('End of Stream', function () {
     if (error) return onerror(error);
 
     player.on('EndOfStream', function (data) {
-      QUnit.ok(true, 'EndOfStream');
+      assert.ok(true, 'EndOfStream');
 
       timeout.stop();
 
@@ -109,7 +109,7 @@ QUnit.asyncTest('End of Stream', function () {
     });
 
     player.play(function (error) {
-      QUnit.equal(error, undefined, 'playing');
+      assert.equal(error, undefined, 'playing');
 
       if (error) return onerror(error);
 

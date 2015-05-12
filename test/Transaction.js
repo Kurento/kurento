@@ -595,3 +595,39 @@ QUnit.asyncTest('Transactional API', function (assert) {
       QUnit.start();
     });
 });
+
+/**
+ * Transaction at KurentoClient
+ */
+QUnit.asyncTest('Auto-transactions', function (assert) {
+  var self = this;
+
+  assert.expect(1);
+
+  var player;
+  var recorder;
+
+  var pipeline = self.pipeline;
+
+  recorder = this.kurento.create('RecorderEndpoint', {
+    mediaPipeline: pipeline,
+    uri: URL_SMALL
+  });
+
+  this.kurento.transaction(function () {
+      player = pipeline.create('PlayerEndpoint', {
+        uri: URL_SMALL
+      });
+
+      player.connect(recorder);
+    },
+    function (error) {
+      assert.equal(error, undefined, 'transaction');
+
+      if (error) return onerror(error);
+
+      QUnit.start();
+    });
+
+  player.release();
+});
