@@ -141,7 +141,7 @@ refresh_rtcp_rr_ssrcs_map (KmsRtcpDemux * rtcpdemux, GstBuffer * buffer)
   if (!ret && (gst_rtcp_packet_get_rb_count (&packet) > 0)) {
     gst_rtcp_packet_get_rb (&packet, 0, &local_ssrc, NULL, NULL, NULL, NULL,
         NULL, NULL);
-    GST_TRACE_OBJECT (rtcpdemux, "remote_ssrc (%u) - local_ssrc(%u)",
+    GST_DEBUG_OBJECT (rtcpdemux, "remote_ssrc (%u) - local_ssrc(%u)",
         remote_ssrc, local_ssrc);
     g_hash_table_insert (rtcpdemux->priv->rr_ssrcs,
         GUINT_TO_POINTER (remote_ssrc), GUINT_TO_POINTER (local_ssrc));
