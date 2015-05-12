@@ -2,12 +2,7 @@
 
 # This scripts gets project version from CMakeList.txt, pom.xml or configure.ac
 
-if [ -e /dev/tty ]
-then
-  exec 3>&1 >/dev/tty
-else
-  exec 3>&1 >/dev/null
-fi
+exec 3>&1 >/dev/tty || exec 3>&1 >/dev/null
 
 if [ -f CMakeLists.txt ]
 then
@@ -16,7 +11,7 @@ then
   cd check_version
   echo "@PROJECT_VERSION@" > version.txt.in
   echo 'configure_file(${CMAKE_BINARY_DIR}/version.txt.in version.txt)' >> ../CMakeLists.txt
-  cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE > /dev/null
+  cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE -DCMAKE_MODULE_PATH=/usr/share/cmake-2.8/Modules > /dev/null
   PROJECT_VERSION=`cat version.txt`
   echo ${PROJECT_VERSION}
   cd ..
