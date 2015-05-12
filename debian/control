@@ -9,7 +9,6 @@ Build-Depends: debhelper (>= 8.0.0),
  libboost-filesystem-dev,
  libboost-test-dev,
  libsoup2.4-dev,
- libgnutls28-dev,
  libkmsnice-dev (>= 0.1.10),
  gstreamer1.5-kmsnice,
  uuid-dev
@@ -24,7 +23,6 @@ Depends:
   ${shlibs:Depends},
   ${misc:Depends},
   gstreamer1.5-kmsnice (>= 0.1.10),
-  gnutls-bin,
   kms-core-6.0
 Breaks:
   kms-elements

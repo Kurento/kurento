@@ -26,7 +26,6 @@ set (GST_REQUIRED ~1.5.0)
 set (GLIB_REQUIRED ^2.38)
 set (SOUP_REQUIRED ^2.40)
 set (NICE_REQUIRED ^0.1.10)
-set (GNUTLS_REQUIRED ^3.2.0)
 set (GLIBMM_REQUIRED ^2.37)
 
 #gst-plugins dependencies
@@ -41,7 +40,6 @@ generic_find (LIBNAME glibmm-2.4 VERSION ${GLIBMM_REQUIRED} REQUIRED)
 generic_find (LIBNAME KmsGstCommons REQUIRED)
 generic_find (LIBNAME libsoup-2.4 VERSION ${SOUP_REQUIRED} REQUIRED)
 generic_find (LIBNAME kmsnice VERSION ${NICE_REQUIRED} REQUIRED)
-generic_find (LIBNAME gnutls VERSION ${GNUTLS_REQUIRED} GNUTLS REQUIRED)
 generic_find (LIBNAME gio-2.0 VERSION ${GLIB_REQUIRED} REQUIRED)
 generic_find (LIBNAME uuid REQUIRED)
 
