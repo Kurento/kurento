@@ -27,32 +27,6 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
-// Recover kurentoClient for the first time.
-var getKurentoClient = (function()
-{
-  var client = null;
-
-  function disconnect()
-  {
-    client = null
-  }
-
-  return function(callback)
-  {
-    if(client) return callback(null, client);
-
-    kurentoClient(argv.ws_uri, function(error, _client) {
-      if(error) return callback(error);
-
-      client = _client;
-      client.on('disconnect', disconnect)
-
-      callback(null, client);
-    });
-  }
-})()
-
-
 var getPipeline = (function()
 {
   var pipeline = null;
@@ -66,7 +40,7 @@ var getPipeline = (function()
   {
     if(pipeline) return callback(null, pipeline);
 
-    getKurentoClient(function(error, client) {
+    kurentoClient.getSingleton(argv.ws_uri, function(error, client) {
       if(error) return callback(error);
 
       client.create('MediaPipeline', function(error, _pipeline) {
@@ -171,7 +145,6 @@ app.ws('/', function(ws)
     if(master) return request.reply("Another user is currently acting as sender. Try again later...");
 
     master = ws;
-    console.log('processMaster', master !== undefined)
 
     function onError(error)
     {
