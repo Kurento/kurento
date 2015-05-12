@@ -53,7 +53,7 @@ add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_
 
 add_library(webrtcendpoint MODULE ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
 
-add_dependencies(webrtcendpoint kmsdtls rtcpdemux)
+add_dependencies(webrtcendpoint rtcpdemux)
 
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
