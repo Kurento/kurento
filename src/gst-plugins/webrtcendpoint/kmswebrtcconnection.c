@@ -152,7 +152,7 @@ kms_webrtc_rtp_connection_request_rtcp_src (KmsIRtpConnection * base_rtp_conn)
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
 
   return gst_element_get_static_pad (self->priv->rtcp_tr->dtlssrtpdec,
-      "rtp_src");
+      "rtcp_src");
 }
 
 static void
