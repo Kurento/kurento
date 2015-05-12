@@ -38,7 +38,7 @@ fi
 
 echo Compiling package: ${name}
 
-last_release=$(git rev-list --tags --max-count=1 || git rev-list HEAD | tail -n 1)
+last_release=$(git describe --abbrev=0 --tags || git rev-list --max-parents=0 HEAD)
 
 export rc=$(git log ${last_release}..HEAD --oneline | wc -l)
 
