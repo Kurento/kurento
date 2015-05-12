@@ -43,11 +43,21 @@ function (get_git_version version_output_variable default_version)
   cmake_parse_arguments(GIT_VERSION "" "TAG_PREFIX" "" ${ARGN})
 
   if(EXISTS "${GIT_DIR}" AND ${CALCULATE_VERSION_WITH_GIT})
-    execute_process(COMMAND ${GIT_EXECUTABLE} rev-list --tags --max-count=1
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --tags
       OUTPUT_VARIABLE LAST_TAG
+      ERROR_VARIABLE DISCARD_ERROR
       OUTPUT_STRIP_TRAILING_WHITESPACE
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+
+    if (NOT LAST_TAG)
+      execute_process(COMMAND ${GIT_EXECUTABLE} rev-list --max-parents=0 HEAD
+        OUTPUT_VARIABLE LAST_TAG
+        ERROR_VARIABLE DISCARD_ERROR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      )
+    endif ()
 
     execute_process(COMMAND ${GIT_EXECUTABLE} rev-list ${LAST_TAG}..HEAD --count
       OUTPUT_VARIABLE N_COMMITS
