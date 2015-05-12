@@ -84,15 +84,9 @@ add_tr (KmsWebRtcTransport * tr, GstBin * bin, gboolean is_client)
       g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
 
-  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
-  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
-
   gst_bin_add_many (bin,
       g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
   gst_element_link (tr->dtlssrtpenc, tr->nicesink);
-
-  gst_element_sync_state_with_parent_target_state (tr->nicesink);
-  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
 }
 
 static void
@@ -103,6 +97,26 @@ kms_webrtc_rtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
 
   add_tr (self->priv->rtp_tr, bin, active);
   add_tr (self->priv->rtcp_tr, bin, active);
+}
+
+static void
+sync_tr (KmsWebRtcTransport * tr)
+{
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
+  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
+
+  gst_element_sync_state_with_parent_target_state (tr->nicesink);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
+}
+
+static void
+kms_webrtc_rtp_connection_sync_state_with_parent (KmsIRtpConnection *
+    base_rtp_conn)
+{
+  KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
+
+  sync_tr (self->priv->rtp_tr);
+  sync_tr (self->priv->rtcp_tr);
 }
 
 static GstPad *
@@ -327,6 +341,8 @@ static void
 kms_webrtc_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
 {
   iface->add = kms_webrtc_rtp_connection_add;
+  iface->sync_state_with_parent =
+      kms_webrtc_rtp_connection_sync_state_with_parent;
   iface->request_rtp_sink = kms_webrtc_rtp_connection_request_rtp_sink;
   iface->request_rtp_src = kms_webrtc_rtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_webrtc_rtp_connection_request_rtcp_sink;
