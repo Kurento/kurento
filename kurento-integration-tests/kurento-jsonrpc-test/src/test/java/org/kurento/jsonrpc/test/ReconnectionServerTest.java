@@ -39,7 +39,7 @@ public class ReconnectionServerTest extends JsonRpcConnectorBaseTest {
 		public void handleRequest(final Transaction transaction,
 				Request<String> request) throws Exception {
 
-			log.info("Receive request in server: "+request);
+			log.info("Receive request in server: " + request);
 
 			if (session == null) {
 				session = transaction.getSession();
@@ -60,7 +60,7 @@ public class ReconnectionServerTest extends JsonRpcConnectorBaseTest {
 						log.info("Request send from server");
 						JsonElement result = session.sendRequest("hello");
 						log.info("Response received in server");
-						log.info("Result: "+result);
+						log.info("Result: " + result);
 						s.release();
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -80,14 +80,14 @@ public class ReconnectionServerTest extends JsonRpcConnectorBaseTest {
 	public void test() throws IOException, InterruptedException {
 
 		JsonRpcClient client = new JsonRpcClientWebSocket("ws://localhost:"
-				+ getPort() + "/reconnection2", null);
+				+ getPort() + "/reconnection2");
 		client.setServerRequestHandler(new DefaultJsonRpcHandler<JsonElement>() {
 
 			@Override
 			public void handleRequest(Transaction transaction,
 					Request<JsonElement> request) throws Exception {
 
-				log.info("Receive request in client: "+request);
+				log.info("Receive request in client: " + request);
 				transaction.sendResponse("world");
 				log.info("Response sent from client");
 			}
@@ -122,8 +122,9 @@ public class ReconnectionServerTest extends JsonRpcConnectorBaseTest {
 	}
 
 	private void waitForServer() throws InterruptedException {
-		if(!s.tryAcquire(TIMEOUT, TimeUnit.SECONDS)){
-			throw new RuntimeException("Timeout waiting for request from server");
+		if (!s.tryAcquire(TIMEOUT, TimeUnit.SECONDS)) {
+			throw new RuntimeException(
+					"Timeout waiting for request from server");
 		}
 	}
 

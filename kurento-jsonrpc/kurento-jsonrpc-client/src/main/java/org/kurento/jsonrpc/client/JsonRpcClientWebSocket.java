@@ -30,6 +30,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -59,7 +60,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -93,7 +94,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				}
 			};
 			latch.countDown();
-			if (connectionListener != null && !reconnecting) {
+			if ((connectionListener != null) && !reconnecting) {
 				connectionListener.connected();
 			}
 		}
@@ -105,36 +106,48 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	}
 
-	public static Logger log = LoggerFactory
+	public static final Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
 
-	private CountDownLatch latch = new CountDownLatch(1);
+	public static final long TIMEOUT = 60000;
+
+	private final CountDownLatch latch = new CountDownLatch(1);
 
 	private ExecutorService execService = Executors.newFixedThreadPool(10,
 			threadFactory);
 
-	private String url;
+	private final String url;
 	private volatile Session wsSession;
 	private final PendingRequests pendingRequests = new PendingRequests();
 	private ResponseSender rs;
 
-	private JsonRpcWSConnectionListener connectionListener;
+	private final SslContextFactory sslContextFactory;
+	private final JsonRpcWSConnectionListener connectionListener;
 
 	private boolean clientClose;
-
-	public static final long TIMEOUT = 60000;
 
 	private WebSocketClient client;
 
 	private boolean reconnecting;
 
 	public JsonRpcClientWebSocket(String url) {
-		this(url, null);
+		this(url, null, null);
+	}
+
+	public JsonRpcClientWebSocket(String url,
+			SslContextFactory sslContextFactory) {
+		this(url, null, sslContextFactory);
 	}
 
 	public JsonRpcClientWebSocket(String url,
 			JsonRpcWSConnectionListener connectionListener) {
+		this(url, connectionListener, null);
+	}
 
+	public JsonRpcClientWebSocket(String url,
+			JsonRpcWSConnectionListener connectionListener,
+			SslContextFactory sslContextFactory) {
+		this.sslContextFactory = sslContextFactory;
 		this.url = url;
 		this.connectionListener = connectionListener;
 
@@ -187,11 +200,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public synchronized void connectIfNecessary() throws IOException {
 
-		if ((wsSession == null || !wsSession.isOpen()) && !clientClose) {
+		if (((wsSession == null) || !wsSession.isOpen()) && !clientClose) {
 
 			try {
 				if (client == null) {
-					client = new WebSocketClient();
+					client = new WebSocketClient(sslContextFactory);
 					client.setConnectTimeout(this.connectionTimeout);
 					client.start();
 				} else {
@@ -298,7 +311,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			reconnecting = true;
 
-			if (execService == null || execService.isShutdown()
+			if ((execService == null) || execService.isShutdown()
 					|| execService.isTerminated()) {
 				execService = Executors.newFixedThreadPool(10, threadFactory);
 			}
