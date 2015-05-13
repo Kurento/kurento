@@ -45,7 +45,7 @@ Hub.prototype.createHubPort = function(callback){
 
 function throwRpcNotReady()
 {
-  throw new Error('RPC result is not ready, use .then() method instead');
+  throw new SyntaxError('RPC result is not ready, use .then() method instead');
 };
 
 /**
@@ -255,7 +255,7 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
 
     if(self.id === null)
     {
-      var error = new Error('MediaObject not found in server');
+      var error = new ReferenceError('MediaObject not found in server');
           error.code = 40101;
           error.object = self;
 
