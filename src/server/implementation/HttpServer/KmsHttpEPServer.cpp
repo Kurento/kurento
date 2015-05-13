@@ -34,13 +34,10 @@
 #define COOKIE_NAME "HttpEPCookie"
 
 #define KEY_HTTP_EP_SERVER "kms-http-ep-server"
-#define KEY_NEW_SAMPLE_HANDLER_ID "kms-new-sample-handler-id"
 #define KEY_GOT_DATA_HANDLER_ID "kms-got-data-handler-id"
 #define KEY_FINISHED_HANDLER_ID "kms-finish-handler-id"
-#define KEY_EOS_HANDLER_ID "kms-eos-handler-id"
 #define KEY_TIMEOUT_ID "kms-timeout-id"
 #define KEY_FINISHED "kms-finish"
-#define KEY_BOUNDARY "kms-boundary"
 #define KEY_MESSAGE "kms-message"
 #define KEY_COOKIE "kms-cookie"
 
@@ -202,16 +199,6 @@ kms_http_ep_server_remove_timeout (KmsHttpEPServer *self, GstElement *httpep)
   g_object_set_data_full (G_OBJECT (httpep), KEY_TIMEOUT_ID, NULL, NULL);
 }
 
-static gboolean
-msg_has_finished (SoupMessage *msg)
-{
-  gboolean *finished;
-
-  finished = (gboolean *) g_object_get_data (G_OBJECT (msg), KEY_FINISHED);
-
-  return *finished;
-}
-
 static GstElement *
 kms_http_ep_server_get_ep_from_msg (KmsHttpEPServer *self, SoupMessage *msg)
 {
@@ -223,134 +210,6 @@ kms_http_ep_server_get_ep_from_msg (KmsHttpEPServer *self, SoupMessage *msg)
   }
 
   return (GstElement *) g_hash_table_lookup (self->priv->handlers, uri);
-}
-
-static gboolean
-send_buffer_cb (gpointer data)
-{
-  struct sample_data *sdata = (struct sample_data *) data;
-  SoupMessage *msg = (SoupMessage *) g_object_get_data (
-                       G_OBJECT (sdata->httpep), KEY_MESSAGE);
-  KmsHttpEPServer *httpepserver;
-  GstBuffer *buffer;
-  GstMapInfo info;
-
-  if (msg == NULL || msg_has_finished (msg) ) {
-    GST_WARNING ("Client has closed underlaying HTTP connection. "
-                 "Buffer won't be sent");
-    return G_SOURCE_REMOVE;
-  }
-
-  buffer = gst_sample_get_buffer (sdata->sample);
-
-  if (buffer == NULL) {
-    return G_SOURCE_REMOVE;
-  }
-
-  if (!gst_buffer_map (buffer, &info, GST_MAP_READ) ) {
-    GST_WARNING ("Could not get buffer map");
-    return G_SOURCE_REMOVE;
-  }
-
-  httpepserver = KMS_HTTP_EP_SERVER (g_object_get_data (G_OBJECT (msg),
-                                     KEY_HTTP_EP_SERVER) );
-
-  soup_message_body_append (msg->response_body, SOUP_MEMORY_COPY,
-                            info.data, info.size);
-  soup_server_unpause_message (httpepserver->priv->server, msg);
-  gst_buffer_unmap (buffer, &info);
-
-  return G_SOURCE_REMOVE;
-}
-
-static void
-destroy_sample_data (gpointer data)
-{
-  struct sample_data *sdata = (struct sample_data *) data;
-
-  if (sdata->sample != NULL) {
-    gst_sample_unref (sdata->sample);
-  }
-
-  if (sdata->httpep != NULL) {
-    gst_object_unref (sdata->httpep);
-  }
-
-  g_slice_free (struct sample_data, sdata);
-}
-
-static GstFlowReturn
-new_sample_handler (GstElement *httpep, KmsHttpLoop *loop)
-{
-  GstSample *sample = NULL;
-  struct sample_data *sdata;
-
-  GST_TRACE ("New-sample in %" GST_PTR_FORMAT, (gpointer) httpep);
-
-  g_signal_emit_by_name (httpep, "pull-sample", &sample);
-
-  if (sample == NULL) {
-    return GST_FLOW_ERROR;
-  }
-
-  sdata = g_slice_new (struct sample_data);
-  sdata->sample = gst_sample_ref (sample);
-  sdata->httpep = GST_ELEMENT (gst_object_ref (httpep) );
-
-  /* Write buffer in the main context thread */
-  kms_http_loop_idle_add_full (loop, G_PRIORITY_HIGH_IDLE, send_buffer_cb,
-                               sdata, destroy_sample_data);
-
-  gst_sample_unref (sample);
-  return GST_FLOW_OK;
-}
-
-static gboolean
-get_recv_eos_cb (gpointer data)
-{
-  GstElement *httpep = GST_ELEMENT (data);
-  SoupMessage *msg;
-  SoupURI *uri;
-  const char *path;
-  KmsHttpEPServer *serv;
-
-  msg = (SoupMessage *) g_object_get_data (G_OBJECT (httpep), KEY_MESSAGE);
-
-  if (msg == NULL) {
-    GST_WARNING ("Could not send EOS in %" GST_PTR_FORMAT, (gpointer) httpep);
-    return G_SOURCE_REMOVE;
-  }
-
-  GST_DEBUG ("EOS received in %" GST_PTR_FORMAT, (gpointer) httpep);
-
-  uri = soup_message_get_uri (msg);
-  path = soup_uri_get_path (uri);
-
-  serv = (KmsHttpEPServer *) g_object_get_data (G_OBJECT (msg),
-         KEY_HTTP_EP_SERVER);
-
-  /* Force to remove message reference */
-  g_object_set_data_full (G_OBJECT (httpep), KEY_MESSAGE, NULL, NULL);
-
-  g_signal_emit (G_OBJECT (serv), obj_signals[URL_EXPIRED], 0, path);
-
-  return G_SOURCE_REMOVE;
-}
-
-static void
-get_recv_eos (GstElement *httpep, KmsHttpLoop *loop)
-{
-  kms_http_loop_idle_add_full (loop, G_PRIORITY_HIGH_IDLE, get_recv_eos_cb,
-                               gst_object_ref (httpep), gst_object_unref);
-}
-
-static void
-msg_finished (SoupMessage *msg)
-{
-  gboolean *finished;
-
-  finished = (gboolean *) g_object_get_data (G_OBJECT (msg), KEY_FINISHED);
-  *finished = TRUE;
 }
 
 static gboolean
@@ -411,113 +270,9 @@ emit_expiration_signal (SoupMessage *msg, GstElement *httpep)
 }
 
 static void
-finished_get_processing (SoupMessage *msg, gpointer data)
-{
-  GstElement *httpep = GST_ELEMENT (data);
-  gpointer param;
-
-  GST_DEBUG ("Message finished %" GST_PTR_FORMAT, (gpointer) msg);
-  msg_finished (msg);
-
-  emit_expiration_signal (msg, httpep);
-
-  /* Drop internal media flowing in the piepline */
-  g_object_set (G_OBJECT (httpep), "start", FALSE, NULL);
-
-  param = g_object_steal_data (G_OBJECT (httpep), KEY_MESSAGE);
-
-  if (param != NULL) {
-    g_object_unref (G_OBJECT (param) );
-  }
-}
-
-static void
-destroy_gboolean (gboolean *finished)
-{
-  g_slice_free (gboolean, finished);
-}
-
-static void
 destroy_ulong (gulong *handlerid)
 {
   g_slice_free (gulong, handlerid);
-}
-
-static void
-msg_add_finished_property (SoupMessage *msg)
-{
-  gboolean *finished;
-
-  finished = g_slice_new (gboolean);
-  *finished = FALSE;
-
-  g_object_set_data_full (G_OBJECT (msg), KEY_FINISHED, finished,
-                          (GDestroyNotify) destroy_gboolean);
-}
-
-static void
-install_http_get_signals (GstElement *httpep, KmsHttpLoop *loop)
-{
-  gulong *handlerid;
-
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_NEW_SAMPLE_HANDLER_ID);
-
-  if (handlerid == NULL) {
-    handlerid = g_slice_new (gulong);
-    *handlerid = g_signal_connect_data (httpep, "new-sample",
-                                        G_CALLBACK (new_sample_handler),
-                                        g_object_ref (loop),
-                                        (GClosureNotify) g_object_unref,
-                                        (GConnectFlags) 0);
-    GST_DEBUG ("Installing new-sample signal with id %lu from %p ",
-               *handlerid, (gpointer) httpep);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_NEW_SAMPLE_HANDLER_ID,
-                            handlerid, (GDestroyNotify) destroy_ulong);
-  }
-
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_EOS_HANDLER_ID);
-
-  if (handlerid == NULL) {
-    handlerid = g_slice_new (gulong);
-    *handlerid = g_signal_connect_data (httpep, "eos",
-                                        G_CALLBACK (get_recv_eos),
-                                        g_object_ref (loop),
-                                        (GClosureNotify) g_object_unref,
-                                        (GConnectFlags) 0);
-    GST_DEBUG ("Installing eos signal with id %lu from %p ",
-               *handlerid, (gpointer) httpep);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_EOS_HANDLER_ID, handlerid,
-                            (GDestroyNotify) destroy_ulong);
-  }
-}
-
-static void
-uninstall_http_get_signals (GstElement *httpep)
-{
-  gulong *handlerid;
-
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_NEW_SAMPLE_HANDLER_ID);
-
-  if (handlerid != NULL) {
-    GST_DEBUG ("Disconnecting new-sample signal with id %lu from %p ",
-               *handlerid, (gpointer) httpep);
-    g_signal_handler_disconnect (httpep, *handlerid);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_NEW_SAMPLE_HANDLER_ID, NULL,
-                            NULL);
-  }
-
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_EOS_HANDLER_ID);
-
-  if (handlerid != NULL) {
-    GST_DEBUG ("Disconnecting eos signal with id %lu from %p ",
-               *handlerid, (gpointer) httpep);
-    g_signal_handler_disconnect (httpep, *handlerid);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_EOS_HANDLER_ID, NULL, NULL);
-  }
 }
 
 static void
@@ -652,7 +407,7 @@ uninstall_http_post_signals (GstElement *httpep)
 static void
 add_access_control_headers (SoupMessage *msg)
 {
-  soup_message_headers_append (msg->response_headers, "Allow", "GET, POST");
+  soup_message_headers_append (msg->response_headers, "Allow", "POST");
 
   /* We allow access from all domains. This is generally not appropriate */
   /* TODO: Provide a configuration file containing all allowed domains */
@@ -662,49 +417,6 @@ add_access_control_headers (SoupMessage *msg)
   /* Next header is required by chrome to work */
   soup_message_headers_append (msg->response_headers,
                                "Access-Control-Allow-Headers", "Content-Type");
-}
-
-static void
-kms_http_ep_server_get_handler (KmsHttpEPServer *self, SoupMessage *msg,
-                                GstElement *httpep)
-{
-  gulong *handlerid;
-  gint profile;
-
-  /* TODO: Check wether we support client's capabilities before sending */
-  /* back a response code 200 OK. Furthermore, we only provide support  */
-  /* for webm in content type response */
-  soup_message_set_status (msg, SOUP_STATUS_OK);
-
-  g_object_get (G_OBJECT (httpep), "profile", &profile, NULL);
-
-  if (profile == 0 /* webm */)
-    soup_message_headers_set_content_type (msg->response_headers,
-                                           "video/webm", NULL);
-  else if (profile == 1 /* mp4 */)
-    soup_message_headers_set_content_type (msg->response_headers,
-                                           "video/mp4", NULL);
-  else
-    soup_message_headers_set_content_type (msg->response_headers,
-                                           "video/unknown", NULL);
-
-  soup_message_headers_set_encoding (msg->response_headers,
-                                     SOUP_ENCODING_CHUNKED);
-
-  add_access_control_headers (msg);
-
-  msg_add_finished_property (msg);
-
-  handlerid = g_slice_new (gulong);
-  *handlerid = g_signal_connect (G_OBJECT (msg), "finished",
-                                 G_CALLBACK (finished_get_processing), httpep);
-  g_object_set_data_full (G_OBJECT (msg), KEY_FINISHED_HANDLER_ID, handlerid,
-                          (GDestroyNotify) destroy_ulong);
-
-  install_http_get_signals (httpep, self->priv->loop);
-
-  /* allow media stream to flow in HttpEndPoint pipeline */
-  g_object_set (G_OBJECT (httpep), "start", TRUE, NULL);
 }
 
 static void
@@ -737,7 +449,6 @@ static void
 kms_http_ep_server_clean_http_end_point (KmsHttpEPServer *self,
     GstElement *httpep)
 {
-  uninstall_http_get_signals (httpep);
   uninstall_http_post_signals (httpep);
 
   kms_http_ep_server_remove_timeout (self, httpep);
@@ -1076,10 +787,7 @@ got_headers_handler (SoupMessage *msg, gpointer data)
   g_object_set_data_full (G_OBJECT (msg), KEY_HTTP_EP_SERVER,
                           g_object_ref (self), g_object_unref);
 
-  if (msg->method == SOUP_METHOD_GET) {
-    kms_http_ep_server_get_handler (self, msg, httpep);
-    action = KMS_HTTP_END_POINT_ACTION_GET;
-  } else if (msg->method == SOUP_METHOD_POST) {
+  if (msg->method == SOUP_METHOD_POST) {
     kms_http_ep_server_post_handler (self, msg, httpep);
     action = KMS_HTTP_END_POINT_ACTION_POST;
   } else if (msg->method == SOUP_METHOD_OPTIONS) {
