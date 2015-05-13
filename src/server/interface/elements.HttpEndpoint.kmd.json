@@ -1,43 +1,6 @@
 {
   "remoteClasses": [
     {
-      "name": "HttpGetEndpoint",
-      "extends": "HttpEndpoint",
-      "doc": "An ``HttpGetEndpoint`` contains SOURCE pads for AUDIO and VIDEO, delivering media using HTML5 pseudo-streaming mechanism.\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSink` is associated with the HTTP GET method",
-      "constructor":
-        {
-          "doc": "Builder for the :rom:cls:`HttpGetEndpoint`.",
-          "params": [
-            {
-              "name": "mediaPipeline",
-              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
-              "type": "MediaPipeline"
-            },
-            {
-              "name": "terminateOnEOS",
-              "doc": "raise a :rom:evnt:`MediaSessionTerminated` event when the associated player raises a :rom:evnt:`EndOfStream`, and thus terminate the media session",
-              "type": "boolean",
-              "optional": true,
-              "defaultValue": false
-            },
-            {
-              "name": "mediaProfile",
-              "doc": "the :rom:enum:`MediaProfileSpecType` (WEBM, MP4...) for the endpoint",
-              "type": "MediaProfileSpecType",
-              "optional": true,
-              "defaultValue": "WEBM"
-            },
-            {
-              "name": "disconnectionTimeout",
-              "doc": "disconnection timeout in seconds.\n\nThis is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.",
-              "type": "int",
-              "optional": true,
-              "defaultValue": 2
-            }
-          ]
-        }
-    },
-    {
       "name": "HttpPostEndpoint",
       "extends": "HttpEndpoint",
       "doc": "An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSources <MediaSource>` are accessed through the :term:`HTTP` POST method.",

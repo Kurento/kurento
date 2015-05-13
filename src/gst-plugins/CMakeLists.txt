@@ -9,7 +9,6 @@ add_subdirectory(webrtcendpoint)
 set(KMS_ELEMENTS_SOURCES
   kmselements.c
   kmshttpendpoint.c
-  kmshttpgetendpoint.c
   kmshttppostendpoint.c
   kmsplayerendpoint.c
   kmsrecorderendpoint.c
@@ -24,7 +23,6 @@ set(KMS_ELEMENTS_SOURCES
 set(KMS_ELEMENTS_HEADERS
   kmshttpendpoint.h
   kmshttpendpointmethod.h
-  kmshttpgetendpoint.h
   kmshttppostendpoint.h
   kmsplayerendpoint.h
   kmsrecorderendpoint.h

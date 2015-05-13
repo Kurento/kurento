@@ -22,28 +22,8 @@
 #include <MediaSet.hpp>
 #include <gst/gst.h>
 #include <config.h>
-#include "HttpGetEndpointImpl.hpp"
 
 boost::property_tree::ptree config;
-
-void
-testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
-                     std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
-{
-  kurento::JsonSerializer w (true);
-
-  w.SerializeNVP (mediaPipeline);
-
-  config.add<std::string> ("modules.kurento.HttpEndpoint.announcedAddress",
-                           "localhost");
-  config.add<uint> ("modules.kurento.HttpEndpoint.port", 0);
-
-  std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("HttpGetEndpoint")->createObject (config, "",
-        w.JsonValue);
-
-  kurento::MediaSet::getMediaSet()->release (object);
-}
 
 void
 testHttpPostEndPoint (kurento::ModuleManager &moduleManager,
@@ -194,7 +174,6 @@ main (int argc, char **argv)
   config.add ("modules.kurento.SdpEndpoint.audioCodecs", "[]");
   config.add ("modules.kurento.SdpEndpoint.videoCodecs", "[]");
 
-  testHttpGetEndPoint (moduleManager, mediaPipeline);
   testHttpPostEndPoint (moduleManager, mediaPipeline);
   testPlayerEndPoint (moduleManager, mediaPipeline);
   testRecorderEndPoint (moduleManager, mediaPipeline);

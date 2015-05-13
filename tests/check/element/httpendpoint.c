@@ -39,67 +39,6 @@ typedef struct _KmsConnectData
   gulong id;
 } KmsConnectData;
 
-static gboolean
-print_timedout_pipeline (gpointer data)
-{
-  GstElement *pipeline;
-  gchar *pipeline_name;
-  gchar *name;
-
-  pipeline = GST_ELEMENT (data);
-
-  pipeline_name = gst_element_get_name (pipeline);
-  name = g_strdup_printf ("%s_timedout", pipeline_name);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, name);
-
-  g_free (name);
-  g_free (pipeline_name);
-
-  return FALSE;
-}
-
-static void
-kms_connect_data_destroy (gpointer data)
-{
-  g_slice_free (KmsConnectData, data);
-}
-
-static void
-connect_sink (GstElement * element, GstPad * pad, gpointer user_data)
-{
-  KmsConnectData *data = user_data;
-
-  if (!g_str_has_prefix (GST_OBJECT_NAME (pad), data->pad_prefix)) {
-    return;
-  }
-
-  GST_INFO_OBJECT (pad, "Linking to %" GST_PTR_FORMAT, data->src);
-
-  gst_element_link_pads (data->src, "src", element, GST_OBJECT_NAME (pad));
-
-  if (data->id != 0) {
-    g_signal_handler_disconnect (element, data->id);
-  }
-}
-
-static void
-connect_sink_async (GstElement * httpendpoint, GstElement * src,
-    GstElement * pipe, const gchar * pad_prefix)
-{
-  KmsConnectData *data = g_slice_new (KmsConnectData);
-
-  data->src = src;
-  data->pipe = GST_BIN (pipe);
-  data->pad_prefix = pad_prefix;
-
-  data->id =
-      g_signal_connect_data (httpendpoint, "pad-added",
-      G_CALLBACK (connect_sink), data,
-      (GClosureNotify) kms_connect_data_destroy, 0);
-}
-
 static void
 bus_msg_cb (GstBus * bus, GstMessage * msg, gpointer pipeline)
 {
@@ -306,111 +245,6 @@ GST_START_TEST (check_push_buffer)
 
 GST_END_TEST
 /* End of test check_push_buffer */
-    static void
-get_recv_eos (GstElement * httep, gpointer user_data)
-{
-  GST_DEBUG ("End of streaming detected. Finishing test");
-  g_main_loop_quit (loop);
-}
-
-static GstFlowReturn
-get_recv_sample (GstElement * appsink, gpointer user_data)
-{
-  GstSample *sample;
-  GstBuffer *buffer;
-
-  g_signal_emit_by_name (appsink, "pull-sample", &sample);
-
-  if (sample == NULL)
-    return GST_FLOW_ERROR;
-
-  buffer = gst_sample_get_buffer (sample);
-  if (buffer == NULL)
-    GST_WARNING ("No buffer got from sample");
-  else
-    GST_TRACE ("Got buffer");
-
-  gst_sample_unref (sample);
-  return GST_FLOW_OK;
-}
-
-GST_START_TEST (check_pull_buffer)
-{
-  GstElement *videotestsrc, *audiotestsrc, *timeoverlay, *encoder, *aencoder;
-  guint bus_watch_id1;
-  GstBus *srcbus;
-
-  GST_INFO ("Running test check_pull_buffer");
-
-  loop = g_main_loop_new (NULL, FALSE);
-
-  GST_DEBUG ("Preparing source pipeline");
-
-  /* Create gstreamer elements */
-  src_pipeline = gst_pipeline_new ("src-pipeline");
-  videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
-  encoder = gst_element_factory_make ("vp8enc", NULL);
-  aencoder = gst_element_factory_make ("vorbisenc", NULL);
-  timeoverlay = gst_element_factory_make ("timeoverlay", NULL);
-  audiotestsrc = gst_element_factory_make ("audiotestsrc", NULL);
-  httpep = gst_element_factory_make ("httpgetendpoint", NULL);
-
-  GST_DEBUG ("Adding watcher to the pipeline");
-  srcbus = gst_pipeline_get_bus (GST_PIPELINE (src_pipeline));
-
-  bus_watch_id1 = gst_bus_add_watch (srcbus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (srcbus, "message", G_CALLBACK (bus_msg_cb), src_pipeline);
-  g_object_unref (srcbus);
-
-  GST_DEBUG ("Configuring source pipeline");
-  gst_bin_add_many (GST_BIN (src_pipeline), videotestsrc, timeoverlay,
-      audiotestsrc, encoder, aencoder, httpep, NULL);
-  gst_element_link (videotestsrc, timeoverlay);
-  gst_element_link (timeoverlay, encoder);
-  gst_element_link (audiotestsrc, aencoder);
-  connect_sink_async (httpep, encoder, src_pipeline, "sink_video");
-  connect_sink_async (httpep, aencoder, src_pipeline, "sink_audio");
-
-  /* Profile 0 stands for WEBM */
-  g_object_set (httpep, "profile", 0, NULL);
-
-  GST_DEBUG ("Configuring elements");
-  g_object_set (G_OBJECT (videotestsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "pattern", 18, "num-buffers", 150, NULL);
-  g_object_set (G_OBJECT (audiotestsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "num-buffers", 150, NULL);
-  g_object_set (G_OBJECT (timeoverlay), "font-desc", "Sans 28", NULL);
-
-  g_signal_connect (httpep, "new-sample", G_CALLBACK (get_recv_sample), NULL);
-  g_signal_connect (httpep, "eos", G_CALLBACK (get_recv_eos), NULL);
-
-  GST_DEBUG ("Starting pipeline");
-  gst_element_set_state (src_pipeline, GST_STATE_PLAYING);
-
-  g_object_get (G_OBJECT (httpep), "http-method", &method, NULL);
-  GST_INFO ("Http end point configured as %d", method);
-  ck_assert_int_eq (method, KMS_HTTP_ENDPOINT_METHOD_GET);
-
-  /* allow media stream to flow */
-  g_object_set (G_OBJECT (httpep), "start", TRUE, NULL);
-
-  g_timeout_add_seconds (4, print_timedout_pipeline, src_pipeline);
-
-  g_main_loop_run (loop);
-
-  GST_DEBUG ("Main loop stopped");
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (src_pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "after_main_loop");
-
-  gst_element_set_state (src_pipeline, GST_STATE_NULL);
-  gst_object_unref (GST_OBJECT (src_pipeline));
-
-  g_source_remove (bus_watch_id1);
-  g_main_loop_unref (loop);
-}
-
-GST_END_TEST
 GST_START_TEST (check_emit_encoded_media)
 {
   guint bus_watch_id1, bus_watch_id2;
@@ -503,9 +337,6 @@ httpendpoint_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
-
-  /* Simulates GET behaviour */
-  tcase_add_test (tc_chain, check_pull_buffer);
 
   /* Simulates POST behaviour */
   tcase_add_test (tc_chain, check_push_buffer);
