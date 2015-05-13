@@ -1,6 +1,7 @@
 package org.kurento.jsonrpc.test;
 
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
@@ -68,8 +69,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 			}
 
 		} catch (KurentoException e) {
-			assertThat(e.getMessage(),
-					containsString("Exception connecting to"));
+			assertTrue(e.getMessage().contains("Exception connecting to"));
 		}
 
 		client.close();
