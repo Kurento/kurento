@@ -181,7 +181,7 @@ public class BrowserClient implements Closeable {
 								.getSystemResourceAsStream("kurento.crx");
 						File crx = File.createTempFile("kurento", ".crx");
 						FileUtils.copyInputStreamToFile(is, crx);
-						// options.addExtensions(crx);
+						options.addExtensions(crx);
 						options.addArguments("--auto-select-desktop-capture-source=Entire screen");
 					} catch (Exception e) {
 						log.error(e.getMessage());
