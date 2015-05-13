@@ -27,12 +27,5 @@
       }
       </#if>
     }
-  },
-  "modules": {
-    "kurento": {
-      "SdpEndpoint" : {
-        "sdpPattern" : "/etc/kurento/sdp_pattern.txt"
-      }
-    }
   }
 }
