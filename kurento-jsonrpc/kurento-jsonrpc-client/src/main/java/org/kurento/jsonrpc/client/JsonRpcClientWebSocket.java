@@ -60,7 +60,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-	.setNameFormat("JsonRpcClientWebsocket-%d").build();
+			.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -106,7 +106,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	}
 
-	public static final Logger log = LoggerFactory
+	public static Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
 
 	public static final long TIMEOUT = 60000;
