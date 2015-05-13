@@ -69,7 +69,7 @@
 
 <#macro checkTypeOptions param>
   <#if param.type.isList() || !param.optional>
-, {<#if param.type.isList()>isArray: true<#if !param.optional>, </#if></#if><#if !param.optional>required: true</#if>}
+    <#lt>, {<#if param.type.isList()>isArray: true<#if !param.optional>, </#if></#if><#if !param.optional>required: true</#if>}<#rt>
   </#if>
 </#macro>
 
@@ -100,7 +100,7 @@
     break;
 
     default:
-      var error = new RangeError('Number of params ('+arguments.length+') not in range ['+${params_min}+'-'+${params_max}+']');
+      var error = new RangeError('Number of params ('+arguments.length+') not in range [${params_min}-${params_max}]');
           error.length = arguments.length;
           error.min = ${params_min};
           error.max = ${params_max};
@@ -117,7 +117,7 @@
 
   var params = {
     <#list params as param>
-    ${param.name}: ${param.name},
+    ${param.name}: ${param.name}<#if param_has_next>,</#if>
     </#list>
   };
   <#else>
@@ -167,7 +167,7 @@
 </#macro>
 
 <#macro paramType param>
-  {<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
+  <#lt>{<#if param.type.isMap()>Object.<string, ${namepath(param.type.name)}><#else>${namepath(param.type.name)}</#if>}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if><#rt>
 </#macro>
 
 <#function hasSetters remoteClass>

@@ -289,7 +289,7 @@ ${remoteClass.name}.constructorParams = {
     required: true
     </#if>
   </#if>
-  },
+  }<#if param_has_next>,</#if>
 </#list>
 };
 
