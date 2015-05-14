@@ -108,7 +108,7 @@ kms_webrtc_bundle_connection_add (KmsIRtpConnection * base_rtp_conn,
 }
 
 static void
-kms_webrtc_bundle_connection_sync_state_with_parent (KmsIRtpConnection *
+kms_webrtc_bundle_connection_src_sync_state_with_parent (KmsIRtpConnection *
     base_rtp_conn)
 {
   KmsWebRtcBundleConnection *self =
@@ -117,6 +117,15 @@ kms_webrtc_bundle_connection_sync_state_with_parent (KmsIRtpConnection *
 
   gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
   gst_element_sync_state_with_parent_target_state (tr->nicesrc);
+}
+
+static void
+kms_webrtc_bundle_connection_sink_sync_state_with_parent (KmsIRtpConnection *
+    base_rtp_conn)
+{
+  KmsWebRtcBundleConnection *self =
+      KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
+  KmsWebRtcTransport *tr = self->priv->tr;
 
   gst_element_sync_state_with_parent_target_state (tr->nicesink);
   gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
@@ -312,8 +321,10 @@ kms_webrtc_bundle_rtp_connection_interface_init (KmsIRtpConnectionInterface *
     iface)
 {
   iface->add = kms_webrtc_bundle_connection_add;
-  iface->sync_state_with_parent =
-      kms_webrtc_bundle_connection_sync_state_with_parent;
+  iface->src_sync_state_with_parent =
+      kms_webrtc_bundle_connection_src_sync_state_with_parent;
+  iface->sink_sync_state_with_parent =
+      kms_webrtc_bundle_connection_sink_sync_state_with_parent;
   iface->request_rtp_sink = kms_webrtc_bundle_connection_request_rtp_sink;
   iface->request_rtp_src = kms_webrtc_bundle_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_webrtc_bundle_connection_request_rtcp_sink;

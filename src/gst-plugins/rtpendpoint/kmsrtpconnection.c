@@ -203,15 +203,25 @@ kms_rtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
 }
 
 static void
-kms_rtp_connection_sync_state_with_parent (KmsIRtpConnection * base_rtp_conn)
+kms_rtp_connection_src_sync_state_with_parent (KmsIRtpConnection *
+    base_rtp_conn)
+{
+  KmsRtpConnection *self = KMS_RTP_CONNECTION (base_rtp_conn);
+  KmsRtpConnectionPrivate *priv = self->priv;
+
+  gst_element_sync_state_with_parent (priv->rtp_udpsrc);
+  gst_element_sync_state_with_parent (priv->rtcp_udpsrc);
+}
+
+static void
+kms_rtp_connection_sink_sync_state_with_parent (KmsIRtpConnection *
+    base_rtp_conn)
 {
   KmsRtpConnection *self = KMS_RTP_CONNECTION (base_rtp_conn);
   KmsRtpConnectionPrivate *priv = self->priv;
 
   gst_element_sync_state_with_parent (priv->rtp_udpsink);
-  gst_element_sync_state_with_parent (priv->rtp_udpsrc);
   gst_element_sync_state_with_parent (priv->rtcp_udpsink);
-  gst_element_sync_state_with_parent (priv->rtcp_udpsrc);
 }
 
 static GstPad *
@@ -381,7 +391,10 @@ static void
 kms_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
 {
   iface->add = kms_rtp_connection_add;
-  iface->sync_state_with_parent = kms_rtp_connection_sync_state_with_parent;
+  iface->src_sync_state_with_parent =
+      kms_rtp_connection_src_sync_state_with_parent;
+  iface->sink_sync_state_with_parent =
+      kms_rtp_connection_sink_sync_state_with_parent;
   iface->request_rtp_sink = kms_rtp_connection_request_rtp_sink;
   iface->request_rtp_src = kms_rtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_rtp_connection_request_rtcp_sink;
