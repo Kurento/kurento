@@ -44,6 +44,10 @@ public class Retry implements TestRule {
 		exceptions = new ArrayList<>(retryCount);
 	}
 
+	public void useReport(String testName) {
+		testReport = new TestReport(testName);
+	}
+
 	public void useReport() {
 		testReport = new TestReport();
 	}

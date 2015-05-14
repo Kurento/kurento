@@ -39,15 +39,21 @@ public class TestReport {
 
 	protected PrintWriter writer;
 
-	public TestReport() {
+	public TestReport(String name) {
 		try {
+			String title = (name == null) ? "Clearslide tests report" : name;
+			title += " [" + new Date() + "]";
 			writer = new PrintWriter(new BufferedWriter(new FileWriter(
 					testReport, true)));
-			appendTitle("Clearslide tests report [" + new Date() + "]");
+			appendTitle(title);
 			writer.flush();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public TestReport() {
+		this(null);
 	}
 
 	public void appendTitle(String text) {
