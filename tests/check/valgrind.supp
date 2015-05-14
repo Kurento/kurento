@@ -94,3 +94,162 @@
    fun:g_tls_certificate_new_from_file
    ...
 }
+{
+   GThread pool
+   Memcheck:Leak
+   ...
+   fun:g_system_thread_new
+   ...
+   fun:g_thread_pool_push
+   ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  fun:EVP_EncodeBlock
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_sqr4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_mul4x_mont
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:bn_mul4x_mont_gather5
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:md5_block_asm_data_order
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:sha1_block_data_order_avx
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:dtls1_read_bytes
+  fun:ssl3_read_internal
+  ...
+}
+{
+  Libcrypto uninitialized
+  Memcheck:Value8
+  ...
+  fun:export_srtp_keys
+  fun:openssl_poll
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:srtp_stream_init_keys
+  fun:srtp_stream_init
+  fun:srtp_add_stream
+  fun:srtp_create
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:aes_encrypt
+  fun:aes_icm_encrypt_ismacryp
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:octet_string_is_eq
+  fun:srtp_unprotect_rtcp
+  fun:gst_srtp_dec_decode_buffer
+  fun:gst_srtp_dec_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:md5_block_asm_data_order
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:sha1_block_data_order_avx
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Libcrypto conditional jump
+  Memcheck:Cond
+  ...
+  fun:dtls1_read_bytes
+  fun:ssl3_read_internal
+  ...
+}
+#This should be ignored in a better way
+{
+  Libcrypto uninitialized
+  Memcheck:Param
+  sendmsg(msg.msg_iov[0])
+  ...
+  fun:g_socket_send_message
+  ...
+  fun:nice_agent_send_messages_nonblocking_internal
+  ...
+}
