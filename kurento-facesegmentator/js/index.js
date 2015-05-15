@@ -56,10 +56,7 @@ const userImg           = args.as_uri+'/img/clara.png';
 const userImgDeactivate = args.as_uri+'/img/clara_deactivate.png';
 
 
-if(typeof kurentoClient == 'undefined')
-  kurentoClient = require('kurento-client');
-
-kurentoClient.register(kurentoModuleFacesegmentator)
+kurentoClient.register('kurento-module-facesegmentator')
 
 var sample1, sample2, sample3, sample4;
 var playButton, stopButton;

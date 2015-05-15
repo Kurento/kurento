@@ -125,20 +125,20 @@ function startVideo(){
       try{
         var client = yield kurentoClient(args.ws_uri);
         pipeline = yield client.create("MediaPipeline");
-        console.log("MediaPipeline created ...");
+        console.log("MediaPipeline created...");
 
         var webRtc = yield pipeline.create("WebRtcEndpoint");
-        console.log("WebRtcEndpoint created ...");
+        console.log("WebRtcEndpoint created...");
 
         setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
         var answer = yield webRtc.processOffer(offer);
-        console.log("Got SDP answer ...");
+        console.log("Got SDP answer...");
 
         webRtc.gatherCandidates(onError);
         webRtcPeer.processAnswer(answer);
 
         yield webRtc.connect(webRtc);
-        console.log("loopback established ...");
+        console.log("loopback established...");
 
         stopButton.addEventListener("click", stop);
       } catch(e){

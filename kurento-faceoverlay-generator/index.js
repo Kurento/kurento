@@ -79,7 +79,7 @@ window.addEventListener("load", function(event){
 });
 
 function startVideo(){
-  console.log("Starting WebRTC loopback ...");
+  console.log("Starting WebRTC loopback...");
 
   var videoInput = document.getElementById("videoInput");
   var videoOutput = document.getElementById("videoOutput");

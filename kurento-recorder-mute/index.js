@@ -127,7 +127,7 @@ function startRecording() {
   function onOffer(error, offer) {
     if (error) return onError(error);
 
-    console.log("Offer ...");
+    console.log("Offer...");
 
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
