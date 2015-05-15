@@ -12,6 +12,8 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
+import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -77,6 +79,8 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
 		alphaBlending.setPortProperties(0.4F, 0.4F, 7, 0.2F, 0.2F, hubPort3);
 
 		getBrowser().subscribeEvents("playing");
+		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.RCV_ONLY);
 
 		playerRed.play();
 		playerGreen.play();
