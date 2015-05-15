@@ -540,6 +540,10 @@ kms_alpha_blending_port_data_destroy (KmsAlphaBlendingData * port_data)
 
     if (!GST_OBJECT_FLAG_IS_SET (pad, GST_PAD_FLAG_EOS)) {
 
+      if (GST_PAD_IS_FLUSHING (pad)) {
+        gst_pad_send_event (pad, gst_event_new_flush_stop (FALSE));
+      }
+
       event = gst_event_new_eos ();
       result = gst_pad_send_event (pad, event);
 
