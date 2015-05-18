@@ -26,6 +26,10 @@ elif [ -f configure.ac ]
 then
   echo "Getting version from configure.ac"
   PROJECT_VERSION=`grep AC_INIT configure.ac | cut -d "," -f 2 | cut -d "[" -f 2 | cut -d "]" -f 1 | tr -d '[[:space:]]'`
+elif [ -f package.json ]
+then
+  echo "Getting version from package.json"
+  PROJECT_VERSION=$(grep version package.json | cut -d ":" -f 2 | cut -d "\"" -f 2)
 else
   echo "PROJECT_VERSION not defined, need CMakeLists.txt, pom.xml or configure.ac file"
   exit 1
