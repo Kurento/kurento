@@ -38,10 +38,12 @@ public class TestReport {
 			TEST_REPORT_DEFAULT);
 
 	protected PrintWriter writer;
+	protected String extraHtml;
 
 	public TestReport(String name) {
 		try {
-			String title = (name == null) ? "Clearslide tests report" : name;
+			extraHtml = "";
+			String title = (name == null) ? "Tests report" : name;
 			title += " [" + new Date() + "]";
 			writer = new PrintWriter(new BufferedWriter(new FileWriter(
 					testReport, true)));
@@ -164,15 +166,30 @@ public class TestReport {
 		appendCode(throwable.getStackTrace());
 		if (testScenario != null) {
 			for (BrowserClient bc : testScenario.getBrowserMap().values()) {
-				appendText("Saucelabs jobs");
-				carriageReturn();
 				if (bc.getScope() == BrowserScope.SAUCELABS) {
+					appendHtml("<b>Saucelabs jobs</b>");
+					carriageReturn();
 					String jobId = bc.getJobId();
 					appendHtml("<a href='https://saucelabs.com/tests/" + jobId
 							+ "'>https://saucelabs.com/tests/" + jobId
 							+ "</a><br>");
 				}
 			}
+		}
+	}
+
+	public void addExtraText(String text) {
+		extraHtml += escapeHtml(text);
+	}
+
+	public void addExtraHtml(String html) {
+		extraHtml += html;
+	}
+
+	public void flushExtraHtml() {
+		if (!extraHtml.isEmpty()) {
+			appendHtml(extraHtml);
+			extraHtml = "";
 		}
 	}
 }

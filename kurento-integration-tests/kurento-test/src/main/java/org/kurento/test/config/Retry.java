@@ -74,10 +74,11 @@ public class Retry implements TestRule {
 							testReport
 									.appendHeader(description.getMethodName());
 							testReport.appendWarning("Test with retry");
-							testReport.appendHtml("Number of retries " + exSize
-									+ "/" + getRetryCount());
+							testReport.appendHtml("<b>Number of retries "
+									+ exSize + "/" + getRetryCount() + "</b>");
 							testReport.carriageReturn();
 							testReport.appendException(t, testScenario);
+							testReport.flushExtraHtml();
 						}
 
 						caughtThrowable = t;
