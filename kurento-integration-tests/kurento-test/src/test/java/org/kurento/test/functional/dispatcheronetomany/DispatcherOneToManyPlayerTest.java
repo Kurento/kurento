@@ -47,7 +47,6 @@ import org.kurento.test.config.TestScenario;
  */
 
 public class DispatcherOneToManyPlayerTest extends FunctionalTest {
-	private static final int PLAYTIME = 10; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds
 	private static final String BROWSER1 = "browser1";
 	private static final String BROWSER2 = "browser2";

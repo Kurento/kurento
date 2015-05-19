@@ -76,7 +76,7 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
 	}
 
 	@Test
-	public void testDispatcherOneToManyPlayer() throws Exception {
+	public void testDispatcherOneToManyWebRtc() throws Exception {
 
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
