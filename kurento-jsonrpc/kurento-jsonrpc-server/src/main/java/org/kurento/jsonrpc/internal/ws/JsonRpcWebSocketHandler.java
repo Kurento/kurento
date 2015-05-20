@@ -50,29 +50,56 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	public void afterConnectionEstablished(WebSocketSession session)
 			throws Exception {
 
-		// We send this notification to the JsonRpcHandler when the JsonRpc
-		// session is established, not when websocket session is established
-		log.info("{} Client connection stablished from {}", label,
-				session.getRemoteAddress());
+		try {
+			// We send this notification to the JsonRpcHandler when the JsonRpc
+			// session is established, not when websocket session is established
+			log.info(
+					"{} Client connection stablished from session={} uri={} headers={} acceptedProtocol={} attributes={}",
+					label, session.getRemoteAddress(), session.getUri(),
+					session.getHandshakeHeaders(),
+					session.getAcceptedProtocol(), session.getAttributes());
+
+		} catch (Throwable t) {
+			log.error(
+					label
+							+ "Exception processing afterConnectionEstablished in session={}",
+					session.getId(), t);
+		}
 	}
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
-		log.info("{} WebSocket session '{}' closed for {} (code {}, reason '{}')", label,
-				wsSession.getId(), 
-				CloseStatusHelper.getCloseStatusType(status.getCode()),
-				status.getCode(), status.getReason());
+		try {
+			log.info(
+					"{} WebSocket session '{}' closed for {} (code {}, reason '{}')",
+					label, wsSession.getId(),
+					CloseStatusHelper.getCloseStatusType(status.getCode()),
+					status.getCode(), status.getReason());
 
-		protocolManager.closeSessionIfTimeout(wsSession.getId(),
-				status.getReason());
+			protocolManager.closeSessionIfTimeout(wsSession.getId(),
+					status.getReason());
+
+		} catch (Throwable t) {
+			log.error(
+					label
+							+ "Exception processing afterConnectionClosed in session={}",
+					wsSession.getId(), t);
+		}
 	}
 
 	@Override
 	public void handleTransportError(WebSocketSession session,
 			Throwable exception) throws Exception {
-		protocolManager.processTransportError(session.getId(), exception);
+
+		try {
+			protocolManager.processTransportError(session.getId(), exception);
+		} catch (Throwable t) {
+			log.error(label
+					+ "Exception processing transportError in session={}",
+					session.getId(), t);
+		}
 	}
 
 	@Override
@@ -95,45 +122,45 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 				@Override
 				public void updateSessionOnReconnection(ServerSession session) {
 					((WebSocketServerSession) session)
-							.updateWebSocketSession(wsSession);
+					.updateWebSocketSession(wsSession);
 				}
 			};
 
 			protocolManager.processMessage(messageJson, factory,
 					new ResponseSender() {
-						@Override
-						public void sendResponse(Message message)
-								throws IOException {
+				@Override
+				public void sendResponse(Message message)
+						throws IOException {
 
-							String jsonMessage = message.toString();
-							log.debug("{} <-Res {}", label, jsonMessage);
-							sendJsonMessage(jsonMessage);
+					String jsonMessage = message.toString();
+					log.debug("{} <-Res {}", label, jsonMessage);
+					sendJsonMessage(jsonMessage);
+				}
+
+				@Override
+				public void sendPingResponse(Message message)
+						throws IOException {
+
+					String jsonMessage = message.toString();
+					log.trace("{} <-Res {}", label, jsonMessage);
+					sendJsonMessage(jsonMessage);
+				}
+
+				private void sendJsonMessage(String jsonMessage)
+						throws IOException {
+					synchronized (wsSession) {
+						if (wsSession.isOpen()) {
+							wsSession.sendMessage(new TextMessage(
+									jsonMessage));
+						} else {
+							log.error("Trying to send a message to a closed session");
 						}
+					}
+				}
+			}, wsSession.getId());
 
-						@Override
-						public void sendPingResponse(Message message)
-								throws IOException {
-
-							String jsonMessage = message.toString();
-							log.trace("{} <-Res {}", label, jsonMessage);
-							sendJsonMessage(jsonMessage);
-						}
-
-						private void sendJsonMessage(String jsonMessage)
-								throws IOException {
-							synchronized (wsSession) {
-								if (wsSession.isOpen()) {
-									wsSession.sendMessage(new TextMessage(
-											jsonMessage));
-								} else {
-									log.error("Trying to send a message to a closed session");
-								}
-							}
-						}
-					}, wsSession.getId());
-
-		} catch (Exception e) {
-			log.error(label + "Exception processing request", e);
+		} catch (Throwable t) {
+			log.error(label + "Exception processing request", t);
 		}
 
 	}

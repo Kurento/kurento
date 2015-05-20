@@ -55,9 +55,19 @@ public class Shell {
 		}
 	}
 
-	public static String runAndWait(final String... command) {
+	public static String runAndWaitString(final String command) {
+		return runAndWait(command.split(" "));
+	}
+
+	public static String runAndWaitArray(final String[] command) {
 		log.debug("Running command on the shell: {}", Arrays.toString(command));
-		return runAndWaitNoLog(command);
+		String result = runAndWaitNoLog(command);
+		log.debug("Result:" + result);
+		return result;
+	}
+
+	public static String runAndWait(final String... command) {
+		return runAndWaitArray(command);
 	}
 
 	public static String runAndWaitNoLog(final String... command) {

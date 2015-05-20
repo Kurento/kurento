@@ -30,6 +30,8 @@ import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -37,19 +39,52 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 
 @Configuration
 @EnableWebSocket
 public class JsonRpcConfiguration implements WebSocketConfigurer {
+
+	public static class LoggerHandshakeInterceptor implements
+	HandshakeInterceptor {
+
+		private static final Logger log = LoggerFactory
+				.getLogger(LoggerHandshakeInterceptor.class);
+
+		@Override
+		public boolean beforeHandshake(ServerHttpRequest request,
+				ServerHttpResponse response, WebSocketHandler wsHandler,
+				Map<String, Object> attributes) throws Exception {
+
+			log.info(
+					"Websocket request before handshake. Request: headers={} uri={} Attributes:{},",
+					request.getHeaders(), request.getURI(), attributes);
+
+			return true;
+		}
+
+		@Override
+		public void afterHandshake(ServerHttpRequest request,
+				ServerHttpResponse response, WebSocketHandler wsHandler,
+				Exception exception) {
+
+			log.info(
+					"Websocket request after handshake. Request: headers={} uri={} Exception:{},",
+					request.getHeaders(), request.getURI(), exception);
+		}
+	}
 
 	@Autowired
 	protected ApplicationContext ctx;
@@ -197,6 +232,8 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 			WebSocketHandlerRegistration registration = wsHandlerRegistry
 					.addHandler(wsHandler, path);
+
+			registration.addInterceptors(new LoggerHandshakeInterceptor());
 
 			if (handler.isSockJSEnabled()) {
 				registration.withSockJS().setSessionCookieNeeded(false);
