@@ -406,6 +406,9 @@ kms_recorder_endpoint_get_sink_fallback (KmsRecorderEndpoint * self)
     }
 
   }
+
+  g_free (prot);
+
   /* Add more if required */
   return sink;
 }
@@ -435,6 +438,7 @@ kms_recorder_endpoint_get_sink (KmsRecorderEndpoint * self)
     sink = kms_recorder_endpoint_get_sink_fallback (self);
     if (sink == NULL)
       goto no_sink;
+    g_clear_error (&err);
   }
 
   /* Try to configure the sink element */
