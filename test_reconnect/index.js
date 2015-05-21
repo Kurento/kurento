@@ -1,16 +1,15 @@
 /*
- * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2013-2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials are made
+ * available under the terms of the GNU Lesser General Public License (LGPL)
+ * version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
 /**
@@ -29,10 +28,8 @@
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  *
- *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- *
  */
 
 if (typeof QUnit == 'undefined') {
@@ -44,223 +41,140 @@ if (typeof QUnit == 'undefined') {
   kurentoClient = require('..');
 };
 
-URL_SMALL = "http://files.kurento.org/video/small.webm";
-
-const args = ['--gst-debug-no-color', '-f', './kurento.conf.json'];
+const ARGV = ['-f', './kurento.conf.json'];
+const ws_uri = 'ws://127.0.0.1:8889/kurento'
 
 /**
- * Set an assert error and re-start the test so it can fail
+ * Manage timeouts in an object-oriented style
  */
-function onerror(error) {
-  QUnit.pushFailure(error.message || error, error.stack);
+Timeout = function Timeout(id, delay, ontimeout) {
+  if (!(this instanceof Timeout))
+    return new Timeout(id, delay, ontimeout);
 
-  //  client.close();
+  var timeout;
 
-  QUnit.start();
+  function _ontimeout(message) {
+    this.stop();
+
+    ontimeout(message);
+  };
+
+  this.start = function () {
+    var delay_factor = delay * Timeout.factor;
+
+    timeout = setTimeout(_ontimeout.bind(this), delay_factor,
+      'Time out ' + id + ' (' + delay_factor + 'ms)');
+  };
+
+  this.stop = function () {
+    clearTimeout(timeout);
+  };
 };
 
-QUnit.module('reconnect');
+function getOnError(done) {
+  return function onerror(error) {
+    QUnit.pushFailure(error.message || error, error.stack);
 
-/**
- * restart the MediaServer and keep working
- */
-QUnit.asyncTest('MediaServer restarted', function () {
-  var self = this;
+    done();
+  };
+}
 
-  QUnit.expect(6);
+Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
 
-  var child = spawn('kurento-media-server', args)
+QUnit.config.testTimeout = 30000 * Timeout.factor;
 
-  // First connection
-  kurentoClient('ws://127.0.0.1:8889/kurento')
-    .then(function createPipeline(client) {
-        //Create pipeline
-        client.create('MediaPipeline', function (error, pipeline) {
-          if (error) return onerror(error);
+QUnit.module('reconnect', {
+  beforeEach: function () {
+    var self = this;
 
-          var sessionId = client.sessionId;
+    var options = {
+      request_timeout: 5000 * Timeout.factor
+    };
 
-          pipeline.create('PlayerEndpoint', {
-            uri: URL_SMALL
-          }, function (error, player) {
-            if (error) return onerror(error);
+    this.server = spawn('kurento-media-server', ARGV)
+      .on('error', onerror)
 
-            pipeline.create('RecorderEndpoint', {
-              uri: URL_SMALL
-            }, function (error, recorder) {
-              if (error) return onerror(error);
+    this.client = kurentoClient(ws_uri, options)
+    this.client.create('MediaPipeline', function (error, pipeline) {
+      if (error) return onerror(error);
 
-              player.connect(recorder, function (error) {
-                if (error) return onerror(error);
+      self.pipeline = pipeline;
 
-                // restart MediaServer
-                child.kill();
-                child = spawn('kurento-media-server', args)
+      QUnit.start();
+    });
 
-                QUnit.strictEqual(client.sessionId,
-                  sessionId);
+    QUnit.stop();
+  },
 
-                client.getMediaobjectById([pipeline.id,
-                    player.id, recorder.id
-                  ],
-                  function (error, mediaObjects) {
-                    if (error) return onerror(error);
-
-                    QUnit.strictEqual(mediaObjects.length,
-                      3);
-
-                    QUnit.strictEqual(mediaObjects[0],
-                      pipeline);
-                    QUnit.strictEqual(mediaObjects[1],
-                      player);
-                    QUnit.strictEqual(mediaObjects[2],
-                      recorder);
-
-                    player.play(function (error) {
-                      QUnit.notStrictEqual(error,
-                        undefined);
-
-                      client.close();
-                      child.kill();
-
-                      QUnit.start();
-                    })
-                  })
-              });
-            });
-          });
-        });
-      },
-      onerror);
+  afterEach: function () {
+    this.client.close();
+    this.server.kill()
+  }
 });
 
 /**
- * Stop the server, start it later and keep using the same client
+ * restart the MediaServer and keep the session
  */
-QUnit.asyncTest('Keep using client after MediaServer restart', function () {
+QUnit.test('MediaServer restarted', function (assert) {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(4);
 
-  var child = spawn('kurento-media-server', args)
+  var done = assert.async()
+  var onerror = getOnError(done)
 
-  // First connection
-  kurentoClient('ws://127.0.0.1:8889/kurento')
-    .then(function createPipeline(client) {
-        // stop MediaServer
-        child.kill();
+  var client = self.client
+  var pipeline = self.pipeline
 
-        client.once('disconnect', function () {
-          // start MediaServer
-          child = spawn('kurento-media-server', args)
+  var sessionId = client.sessionId;
 
-          //Create pipeline
-          client.create('MediaPipeline', function (error, pipeline) {
-            if (error) return onerror(error);
+  // restart MediaServer
+  self.server.kill();
+  self.server.on('exit', function (code, signal) {
+    assert.equal(code, undefined, 'MediaServer killed');
 
-            pipeline.create('PlayerEndpoint', {
-                uri: URL_SMALL
-              },
-              function (error, player) {
-                if (error) return onerror(error);
+    client._resetCache()
 
-                pipeline.create('RecorderEndpoint', {
-                  uri: URL_SMALL
-                }, function (error, recorder) {
-                  if (error) return onerror(error);
+    self.server = spawn('kurento-media-server', ARGV)
+      .on('error', onerror)
 
-                  player.connect(recorder, function (error) {
-                    if (error) return onerror(error);
+    client.getMediaobjectById(pipeline.id, function (error, mediaObject) {
+      assert.notEqual(error, undefined);
+      assert.strictEqual(error.code, 40101);
 
-                    player.play(function (error) {
-                      QUnit.equal(error, undefined);
+      assert.strictEqual(client.sessionId, sessionId);
 
-                      client.close();
-                      child.kill();
-
-                      QUnit.start();
-                    });
-                  });
-                });
-              });
-          });
-        });
-      },
-      onerror);
+      done();
+    })
+  })
 });
 
 /**
- * Close the connection and keep working
+ * All objects are Invalid after the MediaServer got down
  */
-QUnit.asyncTest('Network error', function () {
+QUnit.test('MediaServer closed, client disconnected', function (assert) {
   var self = this;
 
-  QUnit.expect(6);
+  QUnit.expect(2);
 
-  // First connection
-  kurentoClient('ws://127.0.0.1:8888/kurento')
-    .then(function createPipeline(client) {
-        var sessionId = client.sessionId;
+  var done = assert.async()
+  var onerror = getOnError(done)
 
-        //Create pipeline
-        client.create('MediaPipeline', function (error, pipeline) {
-          if (error) return onerror(error);
+  var client = self.client
+  var pipeline = self.pipeline
 
-          pipeline.create('PlayerEndpoint', {
-            uri: URL_SMALL
-          }, function (error, player) {
-            if (error) return onerror(error);
+  // stop MediaServer
+  self.server.kill();
+  self.server.on('exit', function (code, signal) {
+    client.once('disconnect', function (error) {
+      assert.notEqual(error, undefined);
 
-            pipeline.create('RecorderEndpoint', {
-              uri: URL_SMALL
-            }, function (error, recorder) {
-              if (error) return onerror(error);
+      assert.throws(function () {
+          client.sessionId
+        },
+        new SyntaxError('Client has been disconnected'));
 
-              player.connect(recorder, function (error) {
-                if (error) return onerror(error);
-
-                // End connection and wait for a new one
-                var old_connection = client._re._connection;
-                old_connection.end();
-
-                client._re.once('connect', function (con) {
-                  QUnit.notStrictEqual(con,
-                    old_connection);
-
-                  QUnit.strictEqual(client.sessionId,
-                    sessionId,
-                    'sessionId=' + client.sessionId);
-
-                  client.getMediaobjectById([pipeline.id,
-                      player.id, recorder.id
-                    ],
-                    function (error, mediaObjects) {
-                      if (error) return onerror(error);
-
-                      QUnit.strictEqual(mediaObjects.length,
-                        3);
-
-                      QUnit.strictEqual(mediaObjects[
-                        0], pipeline);
-                      QUnit.strictEqual(mediaObjects[
-                        1], player);
-                      QUnit.strictEqual(mediaObjects[
-                        2], recorder);
-
-                      player.play(function (error) {
-                        if (error) return onerror(
-                          error);
-
-                        client.close();
-
-                        QUnit.start();
-                      })
-                    })
-                });
-              });
-            });
-          });
-        });
-      },
-      onerror);
+      done();
+    });
+  })
 });
