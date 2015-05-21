@@ -25,10 +25,12 @@ git ls-remote --tags|grep -q "v$RELEASE_VERSION" && echo "WARN: Tag already exis
 git checkout $RELEASE_BRANCH || git checkout -b $RELEASE_BRANCH origin/$RELEASE_BRANCH
 
 # Prepare release
-mvn -B --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-release-plugin:2.5:prepare -DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$NEXT_VERSION-SNAPSHOT -DpushChanges=false -Darguments='-Dmaven.test.skip=true' || exit 1
+mvn -B --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-release-plugin:2.5:prepare -DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$NEXT_VERSION-SNAPSHOT -DautoVersionSubmodules=true -Dtag=v$RELEASE_VERSION -DpushChanges=false -Darguments='-Dmaven.test.skip=true -DpreparationGoals=clean,package' || exit 1
+mvn -B --settings $MAVEN_SETTINGS -Dmaven.test.skip=true clean package || exit 1
 
 # Push release tag to repo
 if [ $PUSH_TAG = "y" ]; then
   echo "Push tag v$RELEASE_VERSION to repository"
+  git push origin $RELEASE_BRANCH
   git push origin --tags v$RELEASE_VERSION || exit 1
 fi
