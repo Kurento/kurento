@@ -157,14 +157,7 @@ inherits(${remoteClass.name}, ${extends_name});
  * @return {external:Promise}
  */
 ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
-  if(!arguments.length) callback = undefined;
-
-  callback = (callback || noop).bind(this)
-
+      <@arguments/>
       <#if property.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
   return this._invoke(transaction, '${getPropertyName}', function(error, result)
   {

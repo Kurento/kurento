@@ -9,14 +9,7 @@
  * @return {external:Promise}
  */
 Hub.prototype.createHubPort = function(callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
-  if(!arguments.length) callback = undefined;
-
-  callback = (callback || noop).bind(this)
-
+  <@arguments/>
   var mediaObject = new HubPort()
 
   mediaObject.on('_rpc', this.emit.bind(this, '_rpc'));
@@ -154,14 +147,7 @@ Object.defineProperty(MediaObject.prototype, '_invoke',
  * @return {external:Promise}
  */
 MediaObject.prototype.release = function(callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
-  if(!arguments.length) callback = undefined;
-
-  callback = (callback || noop).bind(this)
-
+  <@arguments/>
   var self = this;
 
   var promise;
@@ -306,6 +292,8 @@ MediaPipeline.prototype.connect = function(media, callback){
              : undefined;
   }
 
+  callback = (callback || noop).bind(this)
+
   // Check if we have enought media components
   if(media.length < 2)
     throw new SyntaxError('Need at least two media elements to connect');
@@ -367,6 +355,8 @@ MediaSource.prototype.disconnect = function(sink, callback){
   {
     src: this
   };
+
+  callback = (callback || noop).bind(this)
 
   return sink._invoke(transaction, 'disconnect', params, callback);
 };

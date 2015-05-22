@@ -73,7 +73,7 @@
   </#if>
 </#macro>
 
-<#macro arguments params>
+<#macro arguments params=[]>
   var transaction = (arguments[0] instanceof Transaction)
                   ? Array.prototype.shift.apply(arguments)
                   : undefined;
@@ -84,8 +84,6 @@
   callback = arguments[arguments.length-1] instanceof Function
            ? Array.prototype.pop.call(arguments)
            : undefined;
-
-  callback = (callback || noop).bind(this)
 
   switch(arguments.length){
         <#local params_min=0>
@@ -123,6 +121,8 @@
   <#else>
   if(!arguments.length) callback = undefined;
   </#if>
+
+  callback = (callback || noop).bind(this)
 
 </#macro>
 
