@@ -70,9 +70,11 @@ remove_not_supported_codecs (GstElement *element)
 
   g_object_get (element, "audio-codecs", &codecs, NULL);
   remove_not_supported_codecs_from_array (element, codecs);
+  g_array_unref (codecs);
 
   g_object_get (element, "video-codecs", &codecs, NULL);
   remove_not_supported_codecs_from_array (element, codecs);
+  g_array_unref (codecs);
 }
 
 void WebRtcEndpointImpl::onIceCandidate (KmsIceCandidate *candidate)
