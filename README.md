@@ -37,6 +37,12 @@ cd kurento-utils
 npm install
 ```
 
+Screen and window sharing depens on the privative module
+```kurento-browser-extensions```. To enable its support, you'll need to install
+the package dependency manually or proportionate a ```getScreenConstraints```
+function yourself on runtime. If it's not available, when trying to share the
+screen or a window content it will throw an exception.
+
 ### Browser
 
 To build the browser version of the library you'll only need to exec the [grunt]

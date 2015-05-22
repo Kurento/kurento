@@ -109,6 +109,10 @@ module.exports = function (grunt) {
 
     // Generate browser versions and mapping debug file
     browserify: {
+      options: {
+        transform: ['browserify-optional']
+      },
+
       require: {
         src: 'lib/browser.js',
         dest: DIST_DIR + '/<%= pkg.name %>_require.js'

@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "bower": "~1.4.1",
+    "browserify-optional": "^1.0.0",
     "coveralls": "~2.11.2",
     "fs-extra": "^0.18.2",
     "grunt": "^0.4.5",
@@ -56,5 +57,8 @@
     "inherits": "^2.0.1",
     "merge": "^1.2.0",
     "ua-parser-js": "^0.7.6"
+  },
+  "optionalDependencies": {
+    "kurento-browser-extensions": "*"
   }
 }
