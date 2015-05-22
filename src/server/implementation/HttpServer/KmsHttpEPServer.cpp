@@ -1011,6 +1011,7 @@ kms_http_ep_server_register_end_point_impl (KmsHttpEPServer *self,
     }
 
     http_t = gst_element_factory_get_element_type (http_f);
+    g_object_unref (http_f);
   }
 
   if (!KMS_IS_EXPECTED_TYPE (endpoint, http_t) ) {
