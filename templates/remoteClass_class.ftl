@@ -206,7 +206,6 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
 //
 // Public methods
 //
-
   <#list remoteClass.methods?sort_by("name") as method>
 
     <#assign methodParams_name=[]>
@@ -231,13 +230,7 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
  */
 ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodParams_name + ["callback"]) separator=", "/>){
     <@arguments params=method.params/>
-    <#if method.name == 'connect'>
-  var promise = this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
-
-  promise.connect = sink.connect.bind(sink);
-
-  return promise;
-    <#elseif method.return?? && method.return.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
+    <#if method.return?? && method.return.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
   return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, function(error, result)
   {
     if (error) return callback(error);
@@ -245,6 +238,43 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
     this.emit('_describe', result, callback);
   });
     <#else>
+      <#if remoteClass.name == 'MediaElement' && method.name == 'connect'>
+  if(sink instanceof Array)
+  {
+    var media = sink
+
+    // Check if we have enought media components
+    if(!media.length)
+      throw new SyntaxError('Need at least one media element to connect');
+
+    // Check MediaElements are of the correct type
+    media.forEach(checkMediaElement);
+
+    // Connect the media elements
+    var src = this;
+    var sink = media[media.length-1]
+
+    // Generate promise
+    var promise = new Promise(function(resolve, reject)
+    {
+      function callback(error, result)
+      {
+        if(error) return reject(error);
+
+        resolve(result);
+      };
+
+      async.each(media, function(sink, callback)
+      {
+        src = src.connect(sink, callback);
+      },
+      callback);
+    });
+
+    return disguise(promiseCallback(promise, callback), sink)
+  }
+
+      </#if>
   return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
     </#if>
 };
