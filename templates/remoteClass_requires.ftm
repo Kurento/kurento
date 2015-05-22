@@ -8,6 +8,8 @@ var HubPort = require('../HubPort');
 var Promise = require('es6-promise').Promise;
 
 var promiseCallback = require('promisecallback');
+
+var disguise = kurentoClient.disguise;
   <#break>
   <#case "MediaPipeline">
 

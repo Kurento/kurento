@@ -57,87 +57,88 @@ function throwRpcNotReady()
  *
  * @return {external:Promise}
  */
-MediaObject.prototype._invoke = function(transaction, method, params, callback){
-  var self = this;
+Object.defineProperty(MediaObject.prototype, '_invoke',
+{
+  value: function(transaction, method, params, callback){
+    var self = this;
 
-  // Fix optional parameters
-  if(params instanceof Function)
-  {
-    if(callback)
-      throw new SyntaxError("Nothing can be defined after the callback");
-
-    callback = params;
-    params = undefined;
-  };
-
-  var promise;
-  var error = this._createError;
-  if(error)
-  {
-    promise = Promise.reject(error)
-
-    Object.defineProperty(promise, 'value', {get: function(){throw error}});
-  }
-  else
-  {
-    promise = new Promise(function(resolve, reject)
+    // Fix optional parameters
+    if(params instanceof Function)
     {
-      // Generate request parameters
-      var params2 =
+      if(callback)
+        throw new SyntaxError("Nothing can be defined after the callback");
+
+      callback = params;
+      params = undefined;
+    };
+
+    var promise;
+    var error = this._createError;
+    if(error)
+    {
+      promise = Promise.reject(error)
+
+      Object.defineProperty(promise, 'value', {get: function(){throw error}});
+    }
+    else
+    {
+      promise = new Promise(function(resolve, reject)
       {
-        object: self,
-        operation: method
-      };
-
-      if(params)
-        params2.operationParams = params;
-
-      function callback(error, result)
-      {
-        delete promise.value;
-
-        if(error)
+        // Generate request parameters
+        var params2 =
         {
-          Object.defineProperty(promise, 'value', {get: function(){throw error}});
+          object: self,
+          operation: method
+        };
 
-          return reject(error);
+        if(params)
+          params2.operationParams = params;
+
+        function callback(error, result)
+        {
+          delete promise.value;
+
+          if(error)
+          {
+            Object.defineProperty(promise, 'value', {get: function(){throw error}});
+
+            return reject(error);
+          }
+
+          var value = result.value;
+          if(value === undefined)
+            value = self
+          else
+            Object.defineProperty(promise, 'value', {value: value});
+
+          resolve(value);
         }
 
-        var value = result.value;
-        if(value === undefined)
-          value = self
-        else
-          Object.defineProperty(promise, 'value', {value: value});
+        // Do request
+        self.emit('_rpc', transaction, 'invoke', params2, callback);
+      });
 
-        resolve(value);
-      }
+      Object.defineProperty(promise, 'value',
+      {
+        configurable: true,
+        get: throwRpcNotReady
+      });
+    }
 
-      // Do request
-      self.emit('_rpc', transaction, 'invoke', params2, callback);
-    });
-
-    Object.defineProperty(promise, 'value',
+    var then = promise.then
+    promise.then = function(onFulfilled, onRejected)
     {
-      configurable: true,
-      get: throwRpcNotReady
-    });
+      if(onFulfilled instanceof Function) onFulfilled = onFulfilled.bind(self)
+      if(onRejected  instanceof Function) onRejected  = onRejected.bind(self)
+
+      then.call(this, onFulfilled, onRejected)
+
+      return this
+    }
+
+    return disguise(promiseCallback(promise, callback, this), this)
   }
-
-  var then = promise.then
-  promise.then = function(onFulfilled, onRejected)
-  {
-    if(onFulfilled instanceof Function) onFulfilled = onFulfilled.bind(self)
-    if(onRejected  instanceof Function) onRejected  = onRejected.bind(self)
-
-    then.call(this, onFulfilled, onRejected)
-
-    return this
-  }
-
-  promise = promiseCallback(promise, callback, this);
-
-  return promise
-};
+})
 /**
  * @callback core/abstract.MediaObject~invokeCallback
  * @param {external:Error} error
@@ -202,7 +203,7 @@ MediaObject.prototype.release = function(callback){
       self.emit('_rpc', transaction, 'release', params, callback);
     });
 
-  return promiseCallback(promise, callback);
+  return disguise(promiseCallback(promise, callback), this)
 };
 /**
  * @callback core/abstract.MediaObject~releaseCallback
@@ -215,7 +216,7 @@ MediaObject.prototype.release = function(callback){
 MediaObject.prototype.then = function(onFulfilled, onRejected){
   var self = this;
 
-  return new Promise(function(resolve, reject)
+  var promise = new Promise(function(resolve, reject)
   {
     function success(id)
     {
@@ -271,6 +272,8 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
         success(self);
       })
   })
+
+  return disguise(promise, this)
 }
 
 Object.defineProperty(MediaObject.prototype, 'commited',
@@ -310,6 +313,10 @@ MediaPipeline.prototype.connect = function(media, callback){
   // Check MediaElements are of the correct type
   media.forEach(checkMediaElement);
 
+  // Connect the media elements
+  var src = media[0];
+  var sink = media[media.length-1]
+
   // Generate promise
   var promise = new Promise(function(resolve, reject)
   {
@@ -320,10 +327,6 @@ MediaPipeline.prototype.connect = function(media, callback){
       resolve(result);
     };
 
-    // Connect the media elements
-    var src = media[0];
-    var sink = media[media.length-1]
-
     async.each(media.slice(1), function(sink, callback)
     {
       src = src.connect(sink, callback);
@@ -331,10 +334,7 @@ MediaPipeline.prototype.connect = function(media, callback){
     callback);
   });
 
-  promise = promiseCallback(promise, callback);
-  promise.connect = sink.connect.bind(sink);
-
-  return promise
+  return disguise(promiseCallback(promise, callback), sink)
 };
 /**
  * @callback MediaPipeline~connectCallback

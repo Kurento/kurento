@@ -19,11 +19,11 @@
   this.once('_id', function(error, id)
   {
     if(error)
-    {
-      this._createError = error;
-
-      return Object.defineProperty(this, 'id', {value: null});
-    }
+      return Object.defineProperties(this,
+      {
+        '_createError': {value: error},
+        'id': {value: null, enumerable: true}
+      });
 
     Object.defineProperty(this, 'id',
     {
