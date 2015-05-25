@@ -20,7 +20,7 @@ fs.unlink(LINK_PATH, function(error)
     '-c', 'wock:node_modules/wock',
     '-c', 'test/_common.js',
     '-c', 'test/_proxy.js',
-    'test/'
+    'test/','test/core','test/elements','test/filters'
   ]
 
   spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
