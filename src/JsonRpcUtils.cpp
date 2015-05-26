@@ -37,7 +37,7 @@ getValue (const Json::Value &params, const std::string &name,
 {
   checkParameter (params, name);
 
-  if (!params[name].isString() ) {
+  if (!params[name].isConvertibleTo (Json::stringValue) ) {
     JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
                               "'" + name + "' parameter should be a string");
     throw e;
@@ -52,7 +52,7 @@ getValue (const Json::Value &params, const std::string &name,
 {
   checkParameter (params, name);
 
-  if (!params[name].isInt () ) {
+  if (!params[name].isConvertibleTo (Json::intValue) ) {
     JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
                               "'" + name + "' parameter should be an integer");
     throw e;
