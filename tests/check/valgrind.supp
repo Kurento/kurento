@@ -104,6 +104,15 @@
    ...
 }
 {
+  Clock with no gst_deinit
+  Memcheck:Leak
+  ...
+  fun:g_system_thread_new
+  fun:g_thread_new_internal
+  fun:gst_system_clock_id_wait_async
+  ...
+}
+{
   Libcrypto uninitialized
   Memcheck:Value8
   fun:EVP_EncodeBlock
@@ -194,6 +203,36 @@
   fun:sink_chain
   ...
 }
+#   fun:g_base64_encode_step
+#   fun:g_base64_encode
+#   fun:on_key_received
+#   fun:ffi_call_unix64
+{
+  Srtp uninitialized encode
+  Memcheck:Value8
+  ...
+  fun:g_base64_encode
+  fun:on_key_received
+  ...
+  fun:ffi_call
+  ...
+}
+{
+  Srtp uninitialized encode
+  Memcheck:Value8
+  ...
+  fun:RSA_sign
+  ...
+}
+{
+  Srtp uninitialized
+  Memcheck:Value8
+  ...
+  fun:gst_rtp_session_chain_recv_rtcp
+  ...
+  fun:sink_chain
+  ...
+}
 {
   Srtp conditional jump
   Memcheck:Cond
@@ -209,6 +248,22 @@
   Memcheck:Cond
   ...
   fun:kms_rtcp_demux_chain
+  ...
+  fun:sink_chain
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:ffi_call
+  ...
+}
+{
+  Srtp conditional jump
+  Memcheck:Cond
+  ...
+  fun:rtp_session_process_rtcp
   ...
   fun:sink_chain
   ...
