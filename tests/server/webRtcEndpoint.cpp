@@ -31,10 +31,15 @@ using namespace kurento;
 boost::property_tree::ptree config;
 std::string mediaPipelineId;
 ModuleManager moduleManager;
-std::once_flag init_flag;
 
-static void
-init_internal()
+struct GF {
+  GF();
+  ~GF();
+};
+
+BOOST_GLOBAL_FIXTURE (GF)
+
+GF::GF()
 {
   boost::property_tree::ptree ac, audioCodecs, vc, videoCodecs;
   gst_init (NULL, NULL);
@@ -58,10 +63,9 @@ init_internal()
                       Json::Value() )->getId();
 }
 
-static void
-init()
+GF::~GF()
 {
-  std::call_once (init_flag, init_internal);
+  MediaSet::deleteMediaSet();
 }
 
 static std::shared_ptr <WebRtcEndpointImpl>
@@ -114,8 +118,6 @@ releaseTestSrc (std::shared_ptr<MediaElementImpl> &ep)
 
 BOOST_AUTO_TEST_CASE (gathering_done)
 {
-  init ();
-
   std::atomic<bool> gathering_done (false);
   std::condition_variable cv;
   std::mutex mtx;
@@ -143,8 +145,6 @@ BOOST_AUTO_TEST_CASE (gathering_done)
 
 BOOST_AUTO_TEST_CASE (ice_state_changes)
 {
-  init ();
-
   std::atomic<bool> ice_state_changed (false);
   std::condition_variable cv;
   std::mutex mtx;
@@ -195,8 +195,6 @@ BOOST_AUTO_TEST_CASE (stun_turn_properties)
   int stunServerPort = 2345;
   std::string turnUrl ("user0:pass0@10.0.0.2:3456");
 
-  init ();
-
   std::shared_ptr <WebRtcEndpointImpl> webRtcEp  = createWebrtc();
 
   webRtcEp->setStunServerAddress (stunServerAddress);
@@ -220,8 +218,6 @@ BOOST_AUTO_TEST_CASE (media_state_changes)
   std::condition_variable cv;
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
-
-  init ();
 
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
   std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
