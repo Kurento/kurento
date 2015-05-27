@@ -48,13 +48,16 @@ enum
 /* Media handler management begin */
 static void
 kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
-    KmsSdpMediaHandler ** handler)
+    const gchar * media, KmsSdpMediaHandler ** handler)
 {
-  *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avpf_media_handler_new ());
+  if (g_strcmp0 (media, "audio") == 0 || g_strcmp0 (media, "video") == 0) {
+    *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avpf_media_handler_new ());
+  }
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
-      (kms_rtp_endpoint_parent_class)->create_media_handler (base_sdp, handler);
+      (kms_rtp_endpoint_parent_class)->create_media_handler (base_sdp, media,
+      handler);
 }
 
 /* Media handler management end */

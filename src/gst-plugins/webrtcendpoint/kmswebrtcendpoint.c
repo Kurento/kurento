@@ -26,6 +26,7 @@
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
 #include <commons/sdpagent/kmssdprtpsavpfmediahandler.h>
+#include <commons/sdpagent/kmssdpsctpmediahandler.h>
 #include "kms-webrtc-marshal.h"
 
 #include <gio/gio.h>
@@ -112,13 +113,17 @@ struct _KmsWebrtcEndpointPrivate
 /* Media handler management begin */
 static void
 kms_webrtc_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
-    KmsSdpMediaHandler ** handler)
+    const gchar * media, KmsSdpMediaHandler ** handler)
 {
-  *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_savpf_media_handler_new ());
+  if (g_strcmp0 (media, "audio") == 0 || g_strcmp0 (media, "video") == 0) {
+    *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_savpf_media_handler_new ());
+  } else if (g_strcmp0 (media, "application") == 0) {
+    *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_sctp_media_handler_new ());
+  }
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
-      (kms_webrtc_endpoint_parent_class)->create_media_handler (base_sdp,
+      (kms_webrtc_endpoint_parent_class)->create_media_handler (base_sdp, media,
       handler);
 }
 
