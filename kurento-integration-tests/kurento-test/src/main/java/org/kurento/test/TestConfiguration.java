@@ -47,7 +47,9 @@ public class TestConfiguration {
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
 	public static final String SAUCELAB_IDLE_TIMEOUT_PROPERTY = "saucelab.idle.timeout";
-	public final static int SAUCELAB_IDLE_TIMEOUT_DEFAULT = 120; // seconds
+	public static final int SAUCELAB_IDLE_TIMEOUT_DEFAULT = 120; // seconds
+	public static final String SAUCELAB_COMMAND_TIMEOUT_PROPERTY = "saucelab.command.timeout";
+	public static final int SAUCELAB_COMMAND_TIMEOUT_DEFAULT = 300; // seconds
 
 	// Selenium
 	public static final String SELENIUM_HUB_ADDRESS = "selenium.hub.address";

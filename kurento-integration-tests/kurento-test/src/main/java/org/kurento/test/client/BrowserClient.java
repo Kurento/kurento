@@ -15,6 +15,8 @@
 package org.kurento.test.client;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
+import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
@@ -283,6 +285,8 @@ public class BrowserClient implements Closeable {
 		String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
 		int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY,
 				SAUCELAB_IDLE_TIMEOUT_DEFAULT);
+		int commandTimeout = getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY,
+				SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
 
 		if ((sauceLabsUser == null) || (sauceLabsKey == null)) {
 			throw new RuntimeException("Invalid Saucelabs credentials: "
@@ -300,6 +304,8 @@ public class BrowserClient implements Closeable {
 		}
 
 		capabilities.setCapability("idleTimeout", idleTimeout);
+		capabilities.setCapability("commandTimeout", commandTimeout);
+
 		if (name != null) {
 			capabilities.setCapability("name", name);
 		}
