@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.kurento.client.HttpGetEndpoint;
+import org.kurento.client.HttpPostEndpoint;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.KurentoConnectionListener;
 import org.kurento.client.MediaPipeline;
@@ -74,10 +74,10 @@ public class ConnectionListenerTest {
 		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
 				"http://files.kurento.org/video/small.webm").build();
 
-		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+		HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline)
 				.build();
 
-		player.connect(httpGetEndpoint);
+		player.connect(httpEndpoint);
 
 		try {
 			kms.destroy();

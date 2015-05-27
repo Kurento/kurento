@@ -16,7 +16,7 @@ package org.kurento.client.test;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.client.HttpGetEndpoint;
+import org.kurento.client.HttpPostEndpoint;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 
@@ -28,12 +28,12 @@ public class BasicPipelineTest extends MediaPipelineBaseTest {
 		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
 				"http://files.kurento.org/video/small.webm").build();
 
-		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+		HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline)
 				.build();
 
-		player.connect(httpGetEndpoint);
+		player.connect(httpEndpoint);
 
-		String url = httpGetEndpoint.getUrl();
+		String url = httpEndpoint.getUrl();
 
 		player.release();
 
