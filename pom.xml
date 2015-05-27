@@ -53,7 +53,6 @@
 		<module>kurento-one2one-call-advanced-test</module>
 		<module>kurento-one2many-call-test</module>
 		<module>kurento-group-call-test</module>
-		<module>kurento-http-player-test</module>
 		<module>kurento-platedetector-test</module>
 		<module>kurento-crowddetector-test</module>
 		<module>kurento-chroma-test</module>
