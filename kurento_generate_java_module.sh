@@ -1,9 +1,15 @@
 #!/bin/bash
 
-echo MAVEN_KURENTO_SNAPSHOTS $MAVEN_KURENTO_SNAPSHOTS
-echo MAVEN_KURENTO_RELEASES $MAVEN_KURENTO_RELEASES
-echo MAVEN_SONATYPE_NEXUS_STAGING $MAVEN_SONATYPE_NEXUS_STAGING
-echo MAVEN_SETTINGS $MAVEN_SETTINGS
+if [ $# -lt 3 ]
+then
+  echo "Usage: $0 <full_release(0|1)> <KURENTO_SNAPSHOTS_REPOSITORY> <KURENTO_RELEASE_REPOSITORY> [<SONATYPE_NEXUS_STAGING_REPOSITORY>]"
+  exit 1
+fi
+
+[ -n "$1" ] && FULL_RELEASE=$1 || exit 1
+[ -n "$2" ] && KURENTO_SNAPSHOTS_REPOSITORY=$2 || exit 1
+[ -n "$3" ] && KURENTO_RELEASE_REPOSITORY=$3 || exit 1
+[ -n "$4" ] && SONATYPE_NEXUS_STAGING_REPOSITORY=$4
 
 rm -rf build
 mkdir build && cd build && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
@@ -11,16 +17,19 @@ mkdir build && cd build && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABL
 cd java || exit 1
 PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"`
 
-OPTS="package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy"
-OPTS="$OPTS -Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
+OPTS="package"
+[ $FULL_RELEASE -eq 1 ] && OPTS="$OPTS javadoc:jar source:jar gpg:sign"
+OPTS="$OPTS org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
 OPTS="$OPTS -U -Prelease"
 
 echo $OPTS
 
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
-  mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_RELEASES} || exit 1
-  mvn --settings ${MAVEN_SETTINGS} deploy $OPTS -DaltDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING}  || exit 1
+  mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${KURENTO_RELEASE_REPOSITORY} || exit 1
+  if [[ -n $SONATYPE_NEXUS_STAGING_REPOSITORY ]]; then
+  	mvn --settings ${MAVEN_SETTINGS} deploy $OPTS -DaltDeploymentRepository=${SONATYPE_NEXUS_STAGING_REPOSITORY} || exit 1
+  fi
 else
-  mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_SNAPSHOTS} -DaltSnapshotDeploymentRepository=${MAVEN_KURENTO_SNAPSHOTS} || exit 1
+  mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${KURENTO_SNAPSHOTS_REPOSITORY} -DaltSnapshotDeploymentRepository=${KURENTO_SNAPSHOTS_REPOSITORY} || exit 1
 fi
 
