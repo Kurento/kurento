@@ -1,3 +1,18 @@
+kms-elements (5.1.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: fix ICE controlling/controlled role
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 5.1.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 28 May 2015 16:44:16 +0200
+
 kms-elements (5.1.3) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
