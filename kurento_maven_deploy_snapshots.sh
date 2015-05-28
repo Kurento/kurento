@@ -24,7 +24,7 @@ git checkout $REFSPEC || exit 1
 
 if [ SIGN_ARTIFACTS -eq 1 ]; then
 	# Deploy to requested repo
-	mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS $REPO || exit 1
+	mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS $SNAPSHOT_REPOSITORY || exit 1
 	
 	#Verify signed files (if any)
 	SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
@@ -41,5 +41,5 @@ if [ SIGN_ARTIFACTS -eq 1 ]; then
 	done
 else
 	# Deploy to requested repo
-	mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS $REPO || exit 1
+	mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS $SNAPSHOT_REPOSITORY || exit 1
 fi
