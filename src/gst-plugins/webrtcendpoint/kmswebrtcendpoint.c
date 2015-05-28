@@ -483,6 +483,109 @@ kms_webrtc_endpoint_configure_media (KmsBaseSdpEndpoint *
 
 /* Configure media SDP end */
 
+static guint
+get_sctp_association_id ()
+{
+  static guint assoc_id = 0;
+
+  return g_atomic_int_add (&assoc_id, 1);
+}
+
+static void
+kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
+    SdpMediaConfig * mconf)
+{
+  GstElement *sctpdec = NULL, *sctpenc = NULL;
+  GstPad *srcpad = NULL, *sinkpad = NULL, *tmppad;
+  KmsIRtpConnection *conn;
+  guint id;
+
+  conn = kms_base_rtp_endpoint_get_connection (KMS_BASE_RTP_ENDPOINT (self),
+      mconf);
+
+  if (conn == NULL) {
+    return;
+  }
+
+  sctpdec = gst_element_factory_make ("sctpdec", NULL);
+  if (sctpdec == NULL) {
+    GST_WARNING_OBJECT (self, "Can not create sctpdec element");
+    return;
+  }
+
+  sctpenc = gst_element_factory_make ("sctpenc", NULL);
+  if (sctpenc == NULL) {
+    GST_WARNING_OBJECT (self, "Can not create sctpenc element");
+    goto error;
+  }
+
+  sinkpad = kms_i_rtp_connection_request_data_sink (conn);
+  if (sinkpad == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get data sink pad");
+    goto error;
+  }
+
+  srcpad = kms_i_rtp_connection_request_data_src (conn);
+  if (srcpad == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get data src pad");
+    goto error;
+  }
+
+  id = get_sctp_association_id ();
+  g_object_set (sctpdec, "sctp-association-id", id, NULL);
+  g_object_set (sctpenc, "sctp-association-id", id, NULL);
+
+  gst_bin_add_many (GST_BIN (self), sctpdec, sctpenc, NULL);
+
+  tmppad = gst_element_get_static_pad (sctpdec, "sink");
+  gst_pad_link (srcpad, tmppad);
+  g_object_unref (tmppad);
+
+  tmppad = gst_element_get_static_pad (sctpenc, "src");
+  gst_pad_link (tmppad, sinkpad);
+  g_object_unref (tmppad);
+
+  g_object_unref (sinkpad);
+  g_object_unref (srcpad);
+
+  gst_element_sync_state_with_parent_target_state (sctpdec);
+  gst_element_sync_state_with_parent_target_state (sctpenc);
+
+  return;
+
+error:
+  GST_ERROR_OBJECT (self, "Rtc data channels are not supported");
+
+  g_clear_object (&sctpdec);
+  g_clear_object (&sctpenc);
+  g_clear_object (&sinkpad);
+  g_clear_object (&srcpad);
+}
+
+static void
+kms_webrtc_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, SdpMessageContext * negotiated_ctx)
+{
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
+  const GSList *item = kms_sdp_message_context_get_medias (negotiated_ctx);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *mconf = item->data;
+    GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+    const gchar *media_str = gst_sdp_media_get_media (media);
+
+    if (g_strcmp0 (media_str, "application") == 0 &&
+        g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
+      kms_webrtc_endpoint_connect_sctp_elements (self, mconf);
+    }
+  }
+
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_webrtc_endpoint_parent_class)->connect_input_elements
+      (base_sdp_endpoint, negotiated_ctx);
+}
+
 /* Start Transport begin */
 static void
 gst_media_add_remote_candidates (SdpMediaConfig * mconf,
@@ -1182,6 +1285,8 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 
   base_sdp_endpoint_class->configure_media =
       kms_webrtc_endpoint_configure_media;
+  base_sdp_endpoint_class->connect_input_elements =
+      kms_webrtc_endpoint_connect_input_elements;
 
   base_rtp_endpoint_class = KMS_BASE_RTP_ENDPOINT_CLASS (klass);
   /* Connection management */
