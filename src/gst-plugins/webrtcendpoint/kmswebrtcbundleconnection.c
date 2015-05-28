@@ -186,6 +186,26 @@ kms_webrtc_bundle_connection_request_rtcp_src (KmsIRtpConnection *
   return gst_element_get_static_pad (self->priv->tr->dtlssrtpdec, "rtcp_src");
 }
 
+static GstPad *
+kms_webrtc_bundle_connection_request_data_src (KmsIRtpConnection *
+    base_rtp_conn)
+{
+  KmsWebRtcBundleConnection *self =
+      KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
+
+  return gst_element_get_request_pad (self->priv->tr->dtlssrtpdec, "data_src");
+}
+
+static GstPad *
+kms_webrtc_bundle_connection_request_data_sink (KmsIRtpConnection *
+    base_rtp_conn)
+{
+  KmsWebRtcBundleConnection *self =
+      KMS_WEBRTC_BUNDLE_CONNECTION (base_rtp_conn);
+
+  return gst_element_get_request_pad (self->priv->tr->dtlssrtpenc, "data_sink");
+}
+
 static void
 kms_webrtc_bundle_connection_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
@@ -329,6 +349,8 @@ kms_webrtc_bundle_rtp_connection_interface_init (KmsIRtpConnectionInterface *
   iface->request_rtp_src = kms_webrtc_bundle_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_webrtc_bundle_connection_request_rtcp_sink;
   iface->request_rtcp_src = kms_webrtc_bundle_connection_request_rtcp_src;
+  iface->request_data_src = kms_webrtc_bundle_connection_request_data_src;
+  iface->request_data_sink = kms_webrtc_bundle_connection_request_data_sink;
 }
 
 static void
