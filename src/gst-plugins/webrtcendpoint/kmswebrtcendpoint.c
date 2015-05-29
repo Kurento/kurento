@@ -580,6 +580,32 @@ configure_sctp_elements (KmsWebrtcEndpoint * self, SdpMediaConfig * mconf,
 }
 
 static void
+kms_webrtc_endpoint_src_data_pad_added (GstElement * sctpdec, GstPad * pad,
+    KmsWebrtcEndpoint * self)
+{
+  GstElement *data_tee;
+  GstPad *sinkpad = NULL;
+
+  data_tee = kms_element_get_data_tee (KMS_ELEMENT (self));
+  sinkpad = gst_element_get_static_pad (data_tee, "sink");
+
+  if (GST_PAD_IS_LINKED (sinkpad)) {
+    GST_WARNING_OBJECT (self, "Only 1 stream is supported per data channel");
+    goto end;
+  }
+
+  if (gst_pad_link (pad, sinkpad) == GST_PAD_LINK_OK) {
+    GST_DEBUG_OBJECT (self, "New data pad: %" GST_PTR_FORMAT " linked to %"
+        GST_PTR_FORMAT, pad, data_tee);
+  } else {
+    GST_ERROR_OBJECT (self, "Can not link data pad %" GST_PTR_FORMAT, pad);
+  }
+
+end:
+  g_clear_object (&sinkpad);
+}
+
+static void
 kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
     SdpMediaConfig * mconf)
 {
@@ -621,6 +647,9 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
   if (!configure_sctp_elements (self, mconf, sctpdec, sctpenc)) {
     goto error;
   }
+
+  g_signal_connect (sctpdec, "pad-added",
+      G_CALLBACK (kms_webrtc_endpoint_src_data_pad_added), self);
 
   gst_bin_add_many (GST_BIN (self), sctpdec, sctpenc, NULL);
 
