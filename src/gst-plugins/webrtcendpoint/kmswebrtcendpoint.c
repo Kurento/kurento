@@ -38,6 +38,8 @@
 
 #include <gst/rtp/gstrtcpbuffer.h>
 
+#define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
+
 static void
 kms_webrtc_endpoint_remote_sdp_add_ice_candidate (KmsWebrtcEndpoint * self,
     NiceCandidate * nice_cand, guint8 index);
@@ -606,6 +608,38 @@ end:
 }
 
 static void
+kms_webrtc_endpoint_sctp_association_established (GstElement * sctpenc,
+    gboolean connected, KmsWebrtcEndpoint * self)
+{
+  GstPadTemplate *pad_template;
+  GstCaps *caps;
+  GstPad *sinkpad;
+
+  if (!connected) {
+    GST_WARNING_OBJECT (self, "Disconnected SCTP association %" GST_PTR_FORMAT,
+        sctpenc);
+    return;
+  } else {
+    GST_DEBUG_OBJECT (self, "SCTP association established");
+  }
+
+  pad_template =
+      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (sctpenc),
+      "sink_%u");
+
+  caps =
+      gst_caps_new_simple ("application/data", "ordered", G_TYPE_BOOLEAN, TRUE,
+      "ppid", G_TYPE_UINT, KMS_WEBRTC_DATA_CHANNEL_PPID_STRING, NULL);
+  sinkpad = gst_element_request_pad (sctpenc, pad_template, "sink_0", caps);
+  gst_caps_unref (caps);
+
+  kms_element_connect_sink_target (KMS_ELEMENT (self), sinkpad,
+      KMS_ELEMENT_PAD_TYPE_DATA);
+
+  g_object_unref (sinkpad);
+}
+
+static void
 kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
     SdpMediaConfig * mconf)
 {
@@ -650,6 +684,8 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
 
   g_signal_connect (sctpdec, "pad-added",
       G_CALLBACK (kms_webrtc_endpoint_src_data_pad_added), self);
+  g_signal_connect (sctpenc, "sctp-association-established",
+      G_CALLBACK (kms_webrtc_endpoint_sctp_association_established), self);
 
   gst_bin_add_many (GST_BIN (self), sctpdec, sctpenc, NULL);
 
