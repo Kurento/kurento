@@ -483,12 +483,100 @@ kms_webrtc_endpoint_configure_media (KmsBaseSdpEndpoint *
 
 /* Configure media SDP end */
 
+static gboolean
+get_port_from_string (const gchar * str, gint * _ret)
+{
+  gchar *endptr;
+  gint64 val;
+
+  errno = 0;                    /* To distinguish success/failure after call */
+  val = g_ascii_strtoll (str, &endptr, 0);
+  if ((errno == ERANGE && (val == G_MAXINT64 || val == G_MININT64))
+      || (errno == EINVAL && val == 0)) {
+    return FALSE;
+  }
+
+  if (str == endptr) {
+    /* Nothing parsed from the string */
+    return FALSE;
+  }
+
+  if (val > G_MAXINT32 || val < G_MININT32) {
+    /* Value ut of int 32 range */
+    return FALSE;
+  }
+
+  if (_ret != NULL) {
+    *_ret = val;
+  }
+
+  return TRUE;
+}
+
 static guint
 get_sctp_association_id ()
 {
   static guint assoc_id = 0;
 
   return g_atomic_int_add (&assoc_id, 1);
+}
+
+static gboolean
+configure_sctp_elements (KmsWebrtcEndpoint * self, SdpMediaConfig * mconf,
+    GstElement * sctpdec, GstElement * sctpenc)
+{
+  const gchar *sctpmap_attr = NULL;
+  GstSDPMedia *media;
+  guint i, id, len;
+  gint port = -1;
+
+  id = get_sctp_association_id ();
+  g_object_set (sctpdec, "sctp-association-id", id, NULL);
+  g_object_set (sctpenc, "sctp-association-id", id, NULL);
+
+  media = kms_sdp_media_config_get_sdp_media (mconf);
+
+  len = gst_sdp_media_formats_len (media);
+  if (len < 0) {
+    GST_WARNING_OBJECT (self, "No SCTP format");
+    return FALSE;
+  }
+
+  if (len > 1) {
+    GST_INFO_OBJECT (self,
+        "Only one SCTP link is supported over the same DTLS connection");
+  }
+
+  for (i = 0; i < len; i++) {
+    const gchar *port_str;
+    gchar **attrs;
+
+    port_str = gst_sdp_media_get_format (media, 0);
+    sctpmap_attr = sdp_utils_get_attr_map_value (media, "sctpmap", port_str);
+
+    attrs = g_strsplit (sctpmap_attr, " ", 0);
+    if (g_strcmp0 (attrs[1], "webrtc-datachannel") != 0) {
+      g_strfreev (attrs);
+      continue;
+    }
+
+    if (get_port_from_string (port_str, &port)) {
+      g_strfreev (attrs);
+      break;
+    }
+
+    g_strfreev (attrs);
+  }
+
+  if (port < 0) {
+    GST_ERROR_OBJECT (self, "SCTP can not be configured");
+    return FALSE;
+  }
+
+  g_object_set (sctpdec, "local-sctp-port", port, NULL);
+  g_object_set (sctpenc, "remote-sctp-port", port, NULL);
+
+  return TRUE;
 }
 
 static void
@@ -498,7 +586,6 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
   GstElement *sctpdec = NULL, *sctpenc = NULL;
   GstPad *srcpad = NULL, *sinkpad = NULL, *tmppad;
   KmsIRtpConnection *conn;
-  guint id;
 
   conn = kms_base_rtp_endpoint_get_connection (KMS_BASE_RTP_ENDPOINT (self),
       mconf);
@@ -531,9 +618,9 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
     goto error;
   }
 
-  id = get_sctp_association_id ();
-  g_object_set (sctpdec, "sctp-association-id", id, NULL);
-  g_object_set (sctpenc, "sctp-association-id", id, NULL);
+  if (!configure_sctp_elements (self, mconf, sctpdec, sctpenc)) {
+    goto error;
+  }
 
   gst_bin_add_many (GST_BIN (self), sctpdec, sctpenc, NULL);
 
