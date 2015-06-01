@@ -45,7 +45,7 @@ module.exports = function (grunt) {
     // Generate documentation
     jsdoc: {
       all: {
-        src: ['README.md', 'lib/**/*.js', 'test/*.js'],
+        src: ['package.json', 'README.md', 'lib/**/*.js', 'test/*.js'],
         dest: 'doc/jsdoc'
       }
     },

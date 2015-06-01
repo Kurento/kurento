@@ -53,6 +53,14 @@ if you don't have it globally installed, you can run a local copy by executing
 node_modules/.bin/grunt
 ```
 
+
+Acknowledges
+------------
+
+* [Bertrand CHEVRIER](https://github.com/krampstudio) for
+  [grunt-jsdoc](https://github.com/krampstudio/grunt-jsdoc)
+
+
 Kurento
 =======
 
