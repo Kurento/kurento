@@ -154,7 +154,8 @@
 
   // Creation of objects
 
-  var mediaObjectCreator = new MediaObjectCreator(this, encodeCreate, encodeRpc, encodeTransaction, describe);
+  var mediaObjectCreator = new MediaObjectCreator(this, encodeCreate, encodeRpc,
+    encodeTransaction, describe, strict);
 
   /**
    * Create a new instance of a {module:core/abstract.MediaObject} attached to

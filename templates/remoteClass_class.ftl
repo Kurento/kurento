@@ -127,7 +127,7 @@ function noop(error) {
   </#list>
 </#if>
  */
-function ${remoteClass.name}(){<#if extends_name??>
+function ${remoteClass.name}(<#if remoteClass.name=="MediaPipeline">strict</#if>){<#if extends_name??>
   ${remoteClass.name}.super_.call(this);
 </#if>
 <#include "remoteClass_constructors.ftm" >};
