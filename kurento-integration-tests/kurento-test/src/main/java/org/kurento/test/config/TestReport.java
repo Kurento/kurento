@@ -36,6 +36,7 @@ public class TestReport {
 	protected final static String TEST_REPORT_DEFAULT = "target/report.html";
 	protected String testReport = getProperty(TEST_REPORT_PROPERTY,
 			TEST_REPORT_DEFAULT);
+	protected final static String RETURN = "\r\n";
 
 	protected PrintWriter writer;
 	protected String extraHtml;
@@ -43,8 +44,8 @@ public class TestReport {
 	public TestReport(String name) {
 		try {
 			extraHtml = "";
-			String title = (name == null) ? "Tests report" : name;
-			title += " [" + new Date() + "]";
+			String title = (name == null) ? "Tests report [" + new Date() + "]"
+					: name;
 			writer = new PrintWriter(new BufferedWriter(new FileWriter(
 					testReport, true)));
 			appendTitle(title);
@@ -78,13 +79,24 @@ public class TestReport {
 		writer.flush();
 	}
 
-	public void appendCode(Object[] text) {
-		writer.println("<pre>");
-		for (Object o : text) {
-			writer.println(escapeHtml(o.toString()));
-		}
-		writer.println("</pre>");
+	public String getCode(String text) {
+		String code = "<textarea readonly style='width:95%; height:150px; white-space:nowrap;'>";
+		code += text;
+		code += "</textarea><br><br>";
+		return code;
+	}
+
+	public void appendCode(String text) {
+		writer.println(getCode(text));
 		writer.flush();
+	}
+
+	public void appendCode(Object[] text) {
+		String allText = "";
+		for (Object o : text) {
+			allText += o.toString() + RETURN;
+		}
+		appendCode(allText);
 	}
 
 	public void appendText(Object[] text) {
@@ -96,6 +108,12 @@ public class TestReport {
 
 	public void appendText(String text) {
 		writer.println(escapeHtml(text));
+		writer.flush();
+	}
+
+	public void appendSuccess(String text) {
+		writer.println("<p style='color:green;font-weight:bold;'>"
+				+ escapeHtml(text) + "</p>");
 		writer.flush();
 	}
 
