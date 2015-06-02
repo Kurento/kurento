@@ -73,40 +73,6 @@
 			<artifactId>kurento-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>chroma</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>pointerdetector</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>platedetector</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>markerdetector</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>crowddetector</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>facesegmentator</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento.module</groupId>
-			<artifactId>backgroundextractor</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<profiles>
