@@ -112,6 +112,37 @@ struct _KmsWebrtcEndpointPrivate
   NiceRelayType turn_transport;
 };
 
+typedef struct _ConnectSCTPData
+{
+  KmsWebrtcEndpoint *self;
+  KmsIRtpConnection *conn;
+  GstSDPMedia *media;
+  gboolean connected;
+} ConnectSCTPData;
+
+static ConnectSCTPData *
+connect_sctp_data_new (KmsWebrtcEndpoint * self, GstSDPMedia * media,
+    KmsIRtpConnection * conn)
+{
+  ConnectSCTPData *data;
+
+  data = g_slice_new0 (ConnectSCTPData);
+
+  data->self = self;
+  data->conn = conn;
+  data->media = media;
+
+  return data;
+}
+
+static void
+connect_sctp_data_destroy (ConnectSCTPData * data, GClosure * closure)
+{
+  gst_sdp_media_free (data->media);
+
+  g_slice_free (ConnectSCTPData, data);
+}
+
 /* Media handler management begin */
 static void
 kms_webrtc_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
@@ -524,19 +555,17 @@ get_sctp_association_id ()
 }
 
 static gboolean
-configure_sctp_elements (KmsWebrtcEndpoint * self, SdpMediaConfig * mconf,
+configure_sctp_elements (KmsWebrtcEndpoint * self, GstSDPMedia * media,
     GstElement * sctpdec, GstElement * sctpenc)
 {
   const gchar *sctpmap_attr = NULL;
-  GstSDPMedia *media;
   guint i, id, len;
   gint port = -1;
 
   id = get_sctp_association_id ();
   g_object_set (sctpdec, "sctp-association-id", id, NULL);
-  g_object_set (sctpenc, "sctp-association-id", id, NULL);
-
-  media = kms_sdp_media_config_get_sdp_media (mconf);
+  g_object_set (sctpenc, "sctp-association-id", id, "use-sock-stream", TRUE,
+      NULL);
 
   len = gst_sdp_media_formats_len (media);
   if (len < 0) {
@@ -641,18 +670,10 @@ kms_webrtc_endpoint_sctp_association_established (GstElement * sctpenc,
 
 static void
 kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
-    SdpMediaConfig * mconf)
+    GstSDPMedia * media, KmsIRtpConnection * conn)
 {
   GstElement *sctpdec = NULL, *sctpenc = NULL;
   GstPad *srcpad = NULL, *sinkpad = NULL, *tmppad;
-  KmsIRtpConnection *conn;
-
-  conn = kms_base_rtp_endpoint_get_connection (KMS_BASE_RTP_ENDPOINT (self),
-      mconf);
-
-  if (conn == NULL) {
-    return;
-  }
 
   sctpdec = gst_element_factory_make ("sctpdec", NULL);
   if (sctpdec == NULL) {
@@ -678,7 +699,7 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
     goto error;
   }
 
-  if (!configure_sctp_elements (self, mconf, sctpdec, sctpenc)) {
+  if (!configure_sctp_elements (self, media, sctpdec, sctpenc)) {
     goto error;
   }
 
@@ -715,11 +736,65 @@ error:
 }
 
 static void
+kms_webrtc_endpoint_connect_sctp_elements_cb (KmsIRtpConnection * conn,
+    ConnectSCTPData * data)
+{
+  if (g_atomic_int_compare_and_exchange (&data->connected, FALSE, TRUE)) {
+    kms_webrtc_endpoint_connect_sctp_elements (data->self, data->media,
+        data->conn);
+  } else {
+    GST_WARNING_OBJECT (data->self, "SCTP elements already configured");
+  }
+}
+
+static void
+kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
+    SdpMediaConfig * mconf)
+{
+  gboolean connected = FALSE;
+  KmsIRtpConnection *conn;
+  ConnectSCTPData *data;
+  GstSDPMedia *media;
+  gulong handler_id = 0;
+
+  conn = kms_base_rtp_endpoint_get_connection (KMS_BASE_RTP_ENDPOINT (self),
+      mconf);
+
+  if (conn == NULL) {
+    return;
+  }
+
+  gst_sdp_media_copy (kms_sdp_media_config_get_sdp_media (mconf), &media);
+  data = connect_sctp_data_new (self, media, conn);
+
+  handler_id = g_signal_connect_data (conn, "connected",
+      G_CALLBACK (kms_webrtc_endpoint_connect_sctp_elements_cb), data,
+      (GClosureNotify) connect_sctp_data_destroy, 0);
+
+  g_object_get (conn, "connected", &connected, NULL);
+  if (connected && g_atomic_int_compare_and_exchange (&data->connected, FALSE,
+          TRUE)) {
+    if (handler_id) {
+      g_signal_handler_disconnect (conn, handler_id);
+    }
+    kms_webrtc_endpoint_connect_sctp_elements (self,
+        kms_sdp_media_config_get_sdp_media (mconf), conn);
+  } else {
+    GST_DEBUG_OBJECT (self, "SCTP: waiting for DTLS layer to be established");
+  }
+}
+
+static void
 kms_webrtc_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
     base_sdp_endpoint, SdpMessageContext * negotiated_ctx)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
   const GSList *item = kms_sdp_message_context_get_medias (negotiated_ctx);
+
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_webrtc_endpoint_parent_class)->connect_input_elements
+      (base_sdp_endpoint, negotiated_ctx);
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;
@@ -728,14 +803,9 @@ kms_webrtc_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
 
     if (g_strcmp0 (media_str, "application") == 0 &&
         g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
-      kms_webrtc_endpoint_connect_sctp_elements (self, mconf);
+      kms_webrtc_endpoint_support_sctp_stream (self, mconf);
     }
   }
-
-  /* Chain up */
-  KMS_BASE_SDP_ENDPOINT_CLASS
-      (kms_webrtc_endpoint_parent_class)->connect_input_elements
-      (base_sdp_endpoint, negotiated_ctx);
 }
 
 /* Start Transport begin */
