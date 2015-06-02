@@ -838,6 +838,93 @@ kms_webrtc_endpoint_add_stored_ice_candidates (KmsWebrtcEndpoint * self)
   }
 }
 
+static gboolean
+kms_webrtc_endpoint_add_connection (KmsBaseRtpEndpoint * self,
+    SdpMediaConfig * mconf, gboolean offerer)
+{
+  gboolean connected, active;
+  KmsIRtpConnection *conn;
+
+  conn = kms_base_rtp_endpoint_get_connection (self, mconf);
+  if (conn == NULL) {
+    return FALSE;
+  }
+
+  g_object_get (conn, "added", &connected, NULL);
+  if (connected) {
+    GST_DEBUG_OBJECT (self, "Conn already added");
+    return TRUE;
+  }
+
+  active =
+      sdp_utils_media_is_active (kms_sdp_media_config_get_sdp_media (mconf),
+      offerer);
+
+  kms_i_rtp_connection_add (conn, GST_BIN (self), active);
+  kms_i_rtp_connection_sink_sync_state_with_parent (conn);
+  kms_i_rtp_connection_src_sync_state_with_parent (conn);
+
+  return TRUE;
+}
+
+static gboolean
+kms_webrtc_endpoint_configure_connection (KmsBaseRtpEndpoint * self,
+    SdpMediaConfig * neg_mconf, SdpMediaConfig * remote_mconf, gboolean offerer)
+{
+  GstSDPMedia *neg_media = kms_sdp_media_config_get_sdp_media (neg_mconf);
+  const gchar *neg_proto_str = gst_sdp_media_get_proto (neg_media);
+  GstSDPMedia *remote_media = kms_sdp_media_config_get_sdp_media (remote_mconf);
+  const gchar *remote_proto_str = gst_sdp_media_get_proto (remote_media);
+
+  if (g_strcmp0 (neg_proto_str, remote_proto_str) != 0) {
+    GST_WARNING_OBJECT (self,
+        "Negotiated proto ('%s') not matching with remote proto ('%s')",
+        neg_proto_str, remote_proto_str);
+    return FALSE;
+  }
+
+  if (g_strcmp0 (neg_proto_str, "DTLS/SCTP") != 0) {
+    return FALSE;
+  }
+
+  kms_webrtc_endpoint_add_connection (self, neg_mconf, offerer);
+
+  return TRUE;
+}
+
+static void
+kms_webrtc_endpoint_configure_connections (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, gboolean offerer)
+{
+  KmsBaseRtpEndpoint *self = KMS_BASE_RTP_ENDPOINT (base_sdp_endpoint);
+  SdpMessageContext *neg_ctx =
+      kms_base_sdp_endpoint_get_negotiated_sdp_ctx (base_sdp_endpoint);
+  SdpMessageContext *remote_ctx =
+      kms_base_sdp_endpoint_get_remote_sdp_ctx (base_sdp_endpoint);
+  GSList *item = kms_sdp_message_context_get_medias (neg_ctx);
+  GSList *remote_media_list = kms_sdp_message_context_get_medias (remote_ctx);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *neg_mconf = item->data;
+    gint mid = kms_sdp_media_config_get_id (neg_mconf);
+    SdpMediaConfig *remote_mconf;
+
+    if (kms_sdp_media_config_is_inactive (neg_mconf)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
+      continue;
+    }
+
+    remote_mconf = g_slist_nth_data (remote_media_list, mid);
+    if (remote_mconf == NULL) {
+      GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
+      continue;
+    }
+
+    kms_webrtc_endpoint_configure_connection (self, neg_mconf, remote_mconf,
+        offerer);
+  }
+}
+
 static void
 kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     base_sdp_endpoint, gboolean offerer)
@@ -864,6 +951,9 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->start_transport_send
       (base_sdp_endpoint, offerer);
+
+  /* Configure specific webrtc connection such as SCTP if negotiated */
+  kms_webrtc_endpoint_configure_connections (base_sdp_endpoint, offerer);
 
   ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
   pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
