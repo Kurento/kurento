@@ -174,8 +174,13 @@ public class SshConnection {
 
 	public String execAndWaitCommand(String... command) throws IOException {
 		log.info("execAndWaitCommand: {} ", Arrays.toString(command));
-		OverthereProcess process = connection.startProcess(CmdLine
-				.build(command));
+
+		CmdLine cmdLine = new CmdLine();
+		for (String c : command) {
+			cmdLine.addRaw(c);
+		}
+		OverthereProcess process = connection.startProcess(cmdLine);
+
 		return CharStreams.toString(new InputStreamReader(process.getStdout(),
 				"UTF-8"));
 	}
