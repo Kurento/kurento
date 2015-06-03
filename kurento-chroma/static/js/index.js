@@ -19,7 +19,7 @@ const I_AM_STARTING = 2;
 window.onload = function() {
   console.log("Page loaded...");
 
-  console = new Console('console', console);
+  console = new Console();
 
   var webRtcPeer;
   var rpcBuilder;

@@ -22,6 +22,7 @@
   "dependencies": {
     "adapter.js": "*",
     "bootstrap": "~3.3.0",
+    "demo-console": "master",
     "ekko-lightbox": "~3.2.3",
     "kurento-jsonrpc": "master",
     "kurento-utils": "master"

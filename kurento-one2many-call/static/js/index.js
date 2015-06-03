@@ -13,7 +13,7 @@
  */
 
 window.onload = function() {
-  console = new Console('console', console);
+  console = new Console();
 
   var webRtcPeer;
 

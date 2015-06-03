@@ -79,8 +79,9 @@ function setCallState(nextState){
 
 
 window.onload = function() {
+  console = new Console();
+
   setRegisterState(NOT_REGISTERED);
-  console = new Console('console', console);
 
   const packer = RpcBuilder.packers.JsonRPC;
 
