@@ -101,7 +101,7 @@ window.addEventListener("load", function(event)
   }
 
   kurentoClient.register('kurento-module-platedetector')
-  console = new Console('console', console);
+  console = new Console();
 
   var videoInput = document.getElementById('videoInput');
   var videoOutput = document.getElementById('videoOutput');
@@ -128,58 +128,58 @@ window.addEventListener("load", function(event)
 
       this.generateOffer(onOffer)
     });
+  });
 
-    function onOffer(error, sdpOffer) {
+  function onOffer(error, sdpOffer) {
+    if (error) return onError(error);
+
+    console.log("onOffer");
+
+    kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
-      console.log("onOffer");
-
-      kurentoClient(args.ws_uri, function(error, client) {
+      client.create('MediaPipeline', function(error, _pipeline) {
         if (error) return onError(error);
 
-        client.create('MediaPipeline', function(error, _pipeline) {
+        pipeline = _pipeline;
+
+        console.log("Got MediaPipeline");
+
+        pipeline.create('WebRtcEndpoint', function(error, webRtc) {
           if (error) return onError(error);
 
-          pipeline = _pipeline;
+          console.log("Got WebRtcEndpoint");
 
-          console.log("Got MediaPipeline");
+          setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-          pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+          webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
             if (error) return onError(error);
 
-            console.log("Got WebRtcEndpoint");
+            console.log("SDP answer obtained. Processing...");
 
-            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+            webRtc.gatherCandidates(onError);
+            webRtcPeer.processAnswer(sdpAnswer);
+          });
 
-            webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-              if (error) return onError(error);
+          pipeline.create('PlateDetectorFilter', function(error, filter) {
+            if (error) return onError(error);
 
-              console.log("SDP answer obtained. Processing...");
+            console.log("Got Filter");
 
-              webRtc.gatherCandidates(onError);
-              webRtcPeer.processAnswer(sdpAnswer);
+            filter.on('PlateDetected', function (data){
+              console.log("License plate detected " + data.plate);
             });
 
-            pipeline.create('PlateDetectorFilter', function(error, filter) {
+            client.connect(webRtc, filter, webRtc, function(error) {
               if (error) return onError(error);
 
-              console.log("Got Filter");
-
-              filter.on('PlateDetected', function (data){
-                console.log("License plate detected " + data.plate);
-              });
-
-              client.connect(webRtc, filter, webRtc, function(error) {
-                if (error) return onError(error);
-
-                console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
-              });
+              console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
             });
           });
         });
       });
-    }
-  });
+    });
+  }
 });
 
 

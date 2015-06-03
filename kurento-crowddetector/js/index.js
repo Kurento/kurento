@@ -65,7 +65,7 @@ if (args.ice_servers) {
 
 window.addEventListener("load", function(event)
 {
-  console = new Console('console', console);
+  console = new Console();
 
   kurentoClient.register('kurento-module-crowddetector')
   const RegionOfInterest       = kurentoClient.register.complexTypes.RegionOfInterest
@@ -98,104 +98,104 @@ window.addEventListener("load", function(event)
 
       this.generateOffer(onOffer)
     });
+  });
 
-    function onOffer(error, sdpOffer) {
+  function onOffer(error, sdpOffer) {
+    if (error) return onError(error);
+
+    console.log("onOffer");
+
+    kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
-      console.log("onOffer");
-
-      kurentoClient(args.ws_uri, function(error, client) {
+      client.create('MediaPipeline', function(error, p) {
         if (error) return onError(error);
 
-        client.create('MediaPipeline', function(error, p) {
+        pipeline = p;
+
+        console.log("Got MediaPipeline");
+
+        pipeline.create('WebRtcEndpoint', function(error, webRtc) {
           if (error) return onError(error);
 
-          pipeline = p;
+          console.log("Got WebRtcEndpoint");
 
-          console.log("Got MediaPipeline");
+          setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-          pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+          webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
             if (error) return onError(error);
 
-            console.log("Got WebRtcEndpoint");
+            console.log("SDP answer obtained. Processing ...");
 
-            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+            webRtc.gatherCandidates(onError);
 
-            webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-              if (error) return onError(error);
+            webRtcPeer.processAnswer(sdpAnswer);
+          });
 
-              console.log("SDP answer obtained. Processing ...");
+          var options =
+          {
+            rois:
+            [
+              RegionOfInterest({
+                id: 'roi1',
+                points:
+                [
+                  RelativePoint({x: 0,   y: 0}),
+                  RelativePoint({x: 0.5, y: 0}),
+                  RelativePoint({x: 0.5, y: 0.5}),
+                  RelativePoint({x: 0,   y: 0.5})
+                ],
+                regionOfInterestConfig: RegionOfInterestConfig({
+                  occupancyLevelMin: 10,
+                  occupancyLevelMed: 35,
+                  occupancyLevelMax: 65,
+                  occupancyNumFramesToEvent: 5,
+                  fluidityLevelMin: 10,
+                  fluidityLevelMed: 35,
+                  fluidityLevelMax: 65,
+                  fluidityNumFramesToEvent: 5,
+                  sendOpticalFlowEvent: false,
+                  opticalFlowNumFramesToEvent: 3,
+                  opticalFlowNumFramesToReset: 3,
+                  opticalFlowAngleOffset: 0
+                })
+              })
+            ]
+          }
 
-              webRtc.gatherCandidates(onError);
+          pipeline.create('CrowdDetectorFilter', options, function(error, filter)
+          {
+            if (error) return onError(error);
 
-              webRtcPeer.processAnswer(sdpAnswer);
+            console.log("Connecting...");
+
+            filter.on('CrowdDetectorDirection', function (data){
+              console.log("Direction event received in roi " + data.roiID +
+                 " with direction " + data.directionAngle);
             });
 
-            var options =
-            {
-              rois:
-              [
-                RegionOfInterest({
-                  id: 'roi1',
-                  points:
-                  [
-                    RelativePoint({x: 0,   y: 0}),
-                    RelativePoint({x: 0.5, y: 0}),
-                    RelativePoint({x: 0.5, y: 0.5}),
-                    RelativePoint({x: 0,   y: 0.5})
-                  ],
-                  regionOfInterestConfig: RegionOfInterestConfig({
-                    occupancyLevelMin: 10,
-                    occupancyLevelMed: 35,
-                    occupancyLevelMax: 65,
-                    occupancyNumFramesToEvent: 5,
-                    fluidityLevelMin: 10,
-                    fluidityLevelMed: 35,
-                    fluidityLevelMax: 65,
-                    fluidityNumFramesToEvent: 5,
-                    sendOpticalFlowEvent: false,
-                    opticalFlowNumFramesToEvent: 3,
-                    opticalFlowNumFramesToReset: 3,
-                    opticalFlowAngleOffset: 0
-                  })
-                })
-              ]
-            }
+            filter.on('CrowdDetectorFluidity', function (data){
+              console.log("Fluidity event received in roi " + data.roiID +
+               ". Fluidity level " + data.fluidityPercentage +
+               " and fluidity percentage " + data.fluidityLevel);
+            });
 
-            pipeline.create('CrowdDetectorFilter', options, function(error, filter)
-            {
+            filter.on('CrowdDetectorOccupancy', function (data){
+              console.log("Occupancy event received in roi " + data.roiID +
+               ". Occupancy level " + data.occupancyPercentage +
+               " and occupancy percentage " + data.occupancyLevel);
+            });
+
+            client.connect(webRtc, filter, webRtc, function(error){
               if (error) return onError(error);
 
-              console.log("Connecting...");
-
-              filter.on('CrowdDetectorDirection', function (data){
-                console.log("Direction event received in roi " + data.roiID +
-                   " with direction " + data.directionAngle);
-              });
-
-              filter.on('CrowdDetectorFluidity', function (data){
-                console.log("Fluidity event received in roi " + data.roiID +
-                 ". Fluidity level " + data.fluidityPercentage +
-                 " and fluidity percentage " + data.fluidityLevel);
-              });
-
-              filter.on('CrowdDetectorOccupancy', function (data){
-                console.log("Occupancy event received in roi " + data.roiID +
-                 ". Occupancy level " + data.occupancyPercentage +
-                 " and occupancy percentage " + data.occupancyLevel);
-              });
-
-              client.connect(webRtc, filter, webRtc, function(error){
-                if (error) return onError(error);
-
-                console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
-              });
+              console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
             });
           });
         });
       });
-    }
-  });
+    });
+  }
 });
 
 function stop(){

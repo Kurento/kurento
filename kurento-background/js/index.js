@@ -166,7 +166,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 
 window.addEventListener('load', function () {
-  console = new Console('console', console);
+  console = new Console();
 
   var video_port;
   var alphaBlending;
@@ -246,64 +246,6 @@ window.addEventListener('load', function () {
       this.generateOffer(onOffer)
     });
 
-    function onOffer(error, sdpOffer) {
-      if (error) return onError(error);
-
-      kurentoClient(args.ws_uri, function (error, _client) {
-        if (error) return onError(error);
-
-        client = _client
-
-        client.create('MediaPipeline', function (error, _pipeline) {
-          if (error) return onError(error);
-
-          pipeline = _pipeline;
-
-          samples.forEach(function (item) {
-            item.start();
-          });
-
-          pipeline.create('WebRtcEndpoint', function (error, webRtc) {
-            if (error) return onError(error);
-
-            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
-
-            webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
-              if (error) return onError(error);
-
-              webRtc.gatherCandidates(onError);
-
-              webRtcPeer.processAnswer(sdpAnswer);
-            });
-
-            pipeline.create('AlphaBlending', function (error, _alphaBlending) {
-              if (error) return onError(error);
-
-              alphaBlending = _alphaBlending;
-              alphaBlending.createHubPort(function (error, webRtc_port) {
-                if (error) return onError(error);
-
-                alphaBlending.setMaster(webRtc_port, 3, function (error) {
-                  if (error) return onError(error);
-
-                  console.log("Set Master Port");
-                });
-
-                pipeline.create('BackgroundExtractorFilter', function (error, _background) {
-                  if (error) return onError(error);
-
-                  background = _background;
-                  background.activateProcessing(false);
-
-                  client.connect(webRtc, background, webRtc_port, webRtc, onError);
-                });
-              });
-            });
-          });
-        });
-      });
-    }
-
     $('#stop').attr('disabled', false);
     $('#start').attr('disabled', true);
     $('#noMore').attr('disabled', false);
@@ -319,6 +261,64 @@ window.addEventListener('load', function () {
 
     $('#noMore').attr('disabled', true);
   })
+
+  function onOffer(error, sdpOffer) {
+    if (error) return onError(error);
+
+    kurentoClient(args.ws_uri, function (error, _client) {
+      if (error) return onError(error);
+
+      client = _client
+
+      client.create('MediaPipeline', function (error, _pipeline) {
+        if (error) return onError(error);
+
+        pipeline = _pipeline;
+
+        samples.forEach(function (item) {
+          item.start();
+        });
+
+        pipeline.create('WebRtcEndpoint', function (error, webRtc) {
+          if (error) return onError(error);
+
+          setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+          webRtc.processOffer(sdpOffer, function (error, sdpAnswer) {
+            if (error) return onError(error);
+
+            webRtc.gatherCandidates(onError);
+
+            webRtcPeer.processAnswer(sdpAnswer);
+          });
+
+          pipeline.create('AlphaBlending', function (error, _alphaBlending) {
+            if (error) return onError(error);
+
+            alphaBlending = _alphaBlending;
+            alphaBlending.createHubPort(function (error, webRtc_port) {
+              if (error) return onError(error);
+
+              alphaBlending.setMaster(webRtc_port, 3, function (error) {
+                if (error) return onError(error);
+
+                console.log("Set Master Port");
+              });
+
+              pipeline.create('BackgroundExtractorFilter', function (error, _background) {
+                if (error) return onError(error);
+
+                background = _background;
+                background.activateProcessing(false);
+
+                client.connect(webRtc, background, webRtc_port, webRtc, onError);
+              });
+            });
+          });
+        });
+      });
+    });
+  }
 
   $('#stop').attr('disabled', true);
   $('#start').attr('disabled', false);

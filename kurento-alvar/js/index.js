@@ -65,7 +65,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 window.addEventListener('load', function()
 {
-  console = new Console('console', console);
+  console = new Console();
 
   var webRtcPeer;
   var pipeline;
@@ -92,64 +92,64 @@ window.addEventListener('load', function()
       this.generateOffer(onOffer)
     });
 
-    function onOffer(error, sdpOffer)
-    {
-      if(error) return onError(error)
-
-      kurentoClient(args.ws_uri, function(error, client)
-      {
-        if (error) return onError(error);
-
-        client.create('MediaPipeline', function(error, _pipeline)
-        {
-          if (error) return onError(error);
-
-          pipeline = _pipeline;
-
-          pipeline.create('WebRtcEndpoint', function(error, webRtc)
-          {
-            if (error) return onError(error);
-
-            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
-
-            webRtc.processOffer(sdpOffer, function(error, sdpAnswer)
-            {
-              if (error) return onError(error);
-
-              console.log("SDP answer obtained. Processing...");
-
-              webRtc.gatherCandidates(onError);
-
-              webRtcPeer.processAnswer(sdpAnswer);
-            });
-
-            pipeline.create('ArMarkerdetector', function(error, filter)
-            {
-              if (error) return onError(error);
-
-              filter.setOverlayImage(args.logo_uri, function(error)
-              {
-                if (error) return onError(error);
-
-                console.log("Set Image");
-              });
-
-              client.connect(webRtc, filter, webRtc, function(error)
-              {
-                if (error) return onError(error);
-
-                console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
-              });
-            });
-          });
-        });
-      });
-    }
-
     $('#stop').attr('disabled', false);
     $('#start').attr('disabled', true);
   })
   stopButton.addEventListener("click", stop);
+
+  function onOffer(error, sdpOffer)
+  {
+    if(error) return onError(error)
+
+    kurentoClient(args.ws_uri, function(error, client)
+    {
+      if (error) return onError(error);
+
+      client.create('MediaPipeline', function(error, _pipeline)
+      {
+        if (error) return onError(error);
+
+        pipeline = _pipeline;
+
+        pipeline.create('WebRtcEndpoint', function(error, webRtc)
+        {
+          if (error) return onError(error);
+
+          setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+          webRtc.processOffer(sdpOffer, function(error, sdpAnswer)
+          {
+            if (error) return onError(error);
+
+            console.log("SDP answer obtained. Processing...");
+
+            webRtc.gatherCandidates(onError);
+
+            webRtcPeer.processAnswer(sdpAnswer);
+          });
+
+          pipeline.create('ArMarkerdetector', function(error, filter)
+          {
+            if (error) return onError(error);
+
+            filter.setOverlayImage(args.logo_uri, function(error)
+            {
+              if (error) return onError(error);
+
+              console.log("Set Image");
+            });
+
+            client.connect(webRtc, filter, webRtc, function(error)
+            {
+              if (error) return onError(error);
+
+              console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+            });
+          });
+        });
+      });
+    });
+  }
 
   function stop() {
     if(pipeline){

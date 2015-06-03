@@ -22,6 +22,7 @@
   "dependencies": {
     "adapter.js": "*",
     "co": "~3.0.7",
+    "demo-console": "master",
     "kurento-client": "master",
     "kurento-utils": "master"
   }

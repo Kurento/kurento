@@ -65,7 +65,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 window.addEventListener("load", function(event)
 {
-  console = new Console('console', console);
+  console = new Console();
   kurentoClient.register('kurento-module-pointerdetector')
 
   const PointerDetectorWindowMediaParam = kurentoClient.register.complexTypes.PointerDetectorWindowMediaParam
@@ -96,93 +96,93 @@ window.addEventListener("load", function(event)
 
       this.generateOffer(onOffer)
     });
+  });
 
-    function onOffer(error, sdpOffer) {
+  function onOffer(error, sdpOffer) {
+    if (error) return onError(error);
+
+    console.log("onOffer");
+
+    kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
-      console.log("onOffer");
-
-      kurentoClient(args.ws_uri, function(error, client) {
+      client.create('MediaPipeline', function(error, _pipeline) {
         if (error) return onError(error);
 
-        client.create('MediaPipeline', function(error, _pipeline) {
+        pipeline = _pipeline;
+
+        console.log("Got MediaPipeline");
+
+        pipeline.create('WebRtcEndpoint', function(error, webRtc) {
           if (error) return onError(error);
 
-          pipeline = _pipeline;
+          console.log("Got WebRtcEndpoint");
 
-          console.log("Got MediaPipeline");
+          setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-          pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+          webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
             if (error) return onError(error);
 
-            console.log("Got WebRtcEndpoint");
+            console.log("SDP answer obtained. Processing ...");
 
-            setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+            webRtc.gatherCandidates(onError);
+            webRtcPeer.processAnswer(sdpAnswer);
+          });
 
-            webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-              if (error) return onError(error);
+          var options =
+          {
+            calibrationRegion: WindowParam({
+              topRightCornerX: 5,
+              topRightCornerY:5,
+              width:30,
+              height: 30
+            })
+          };
 
-              console.log("SDP answer obtained. Processing ...");
+          pipeline.create('PointerDetectorFilter', options, function(error, _filter) {
+            if (error) return onError(error);
 
-              webRtc.gatherCandidates(onError);
-              webRtcPeer.processAnswer(sdpAnswer);
+            filter = _filter;
+
+            var options = PointerDetectorWindowMediaParam({
+              id: 'window0',
+              height: 50,
+              width:50,
+              upperRightX: 500,
+              upperRightY: 150
             });
 
-            var options =
-            {
-              calibrationRegion: WindowParam({
-                topRightCornerX: 5,
-                topRightCornerY:5,
-                width:30,
-                height: 30
-              })
-            };
+            filter.addWindow(options, onError);
 
-            pipeline.create('PointerDetectorFilter', options, function(error, _filter) {
+            var options = PointerDetectorWindowMediaParam({
+              id: 'window1',
+              height: 50,
+              width:50,
+              upperRightX: 500,
+              upperRightY: 250
+            });
+
+            filter.addWindow(options, onError);
+
+            filter.on ('WindowIn', function (data){
+              console.log ("Event window in detected in window " + data.windowId);
+            });
+
+            filter.on ('WindowOut', function (data){
+              console.log ("Event window out detected in window " + data.windowId);
+            });
+
+            console.log("Connecting ...");
+            client.connect(webRtc, filter, webRtc, function(error) {
               if (error) return onError(error);
 
-              filter = _filter;
-
-              var options = PointerDetectorWindowMediaParam({
-                id: 'window0',
-                height: 50,
-                width:50,
-                upperRightX: 500,
-                upperRightY: 150
-              });
-
-              filter.addWindow(options, onError);
-
-              var options = PointerDetectorWindowMediaParam({
-                id: 'window1',
-                height: 50,
-                width:50,
-                upperRightX: 500,
-                upperRightY: 250
-              });
-
-              filter.addWindow(options, onError);
-
-              filter.on ('WindowIn', function (data){
-                console.log ("Event window in detected in window " + data.windowId);
-              });
-
-              filter.on ('WindowOut', function (data){
-                console.log ("Event window out detected in window " + data.windowId);
-              });
-
-              console.log("Connecting ...");
-              client.connect(webRtc, filter, webRtc, function(error) {
-                if (error) return onError(error);
-
-                console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
-              });
+              console.log("WebRtcEndpoint --> Filter --> WebRtcEndpoint");
             });
           });
         });
       });
-    }
-  });
+    });
+  }
 });
 
 function calibrate() {

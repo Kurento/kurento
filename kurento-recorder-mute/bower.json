@@ -20,8 +20,9 @@
     "tests"
   ],
   "dependencies": {
+    "adapter.js": "*",
+    "demo-console": "master",
     "kurento-utils": "master",
-    "kurento-client": "master",
-    "adapter.js": "*"
+    "kurento-client": "master"
   }
 }

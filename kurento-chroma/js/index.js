@@ -79,7 +79,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 window.addEventListener('load', function(event)
 {
-  console = new Console('console', console);
+  console = new Console();
 
   kurentoClient.register('kurento-module-chroma')
   const WindowParam = kurentoClient.register.complexTypes.WindowParam

@@ -63,7 +63,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 window.addEventListener("load", function(event)
 {
-  console = new Console('console', console);
+  console = new Console();
 
   var pipeline;
   var webRtcPeer;

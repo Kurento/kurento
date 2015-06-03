@@ -122,12 +122,15 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 
 window.onload = function() {
-  console = new Console('console', console);
+  console = new Console();
+
   videoOutput = document.getElementById('videoOutput');
+
   sample1 = document.getElementById('sample1');
   sample2 = document.getElementById('sample2');
   sample3 = document.getElementById('sample3');
   sample4 = document.getElementById('sample4');
+
   playButton = document.getElementById ('start');
 
   $('#stop').attr('disabled', true);

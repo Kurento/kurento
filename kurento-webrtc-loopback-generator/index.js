@@ -68,6 +68,8 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 
 window.addEventListener("load", function(event){
+  console = new Console()
+
   console.log("onLoad");
   var button = document.getElementById("startButton");
   button.addEventListener("click", startVideo);

@@ -101,7 +101,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 
 
 window.onload = function() {
-  console = new Console('console', console);
+  console = new Console();
 
   videoInput = document.getElementById('videoInput');
   videoOutput = document.getElementById('videoOutput');
