@@ -110,7 +110,7 @@ public class ProtocolManager {
 						.getByTransportId(transportId);
 				if (serverSession != null) {
 					serverSession
-							.closeNativeSession("Close for not receive ping from client");
+					.closeNativeSession("Close for not receive ping from client");
 				} else {
 					log.warn("Ping wachdog trying to close a non-registered ServerSession");
 				}
@@ -250,7 +250,7 @@ public class ProtocolManager {
 	private void processPingMessage(ServerSessionFactory factory,
 			Request<JsonElement> request, ResponseSender responseSender,
 			String transportId) throws IOException {
-		if ((maxHeartbeats == 0) || (maxHeartbeats > ++heartbeats)) {
+		if (maxHeartbeats == 0 || maxHeartbeats > ++heartbeats) {
 
 			long interval = -1;
 
@@ -344,13 +344,7 @@ public class ProtocolManager {
 		final ServerSession session = sessionsManager
 				.getByTransportId(transportId);
 
-		if (session == null) {
-
-			log.warn(
-					"{} Session with transportId {} is not associated with a jsonRpcSession",
-					label, transportId);
-
-		} else {
+		if (session != null) {
 
 			try {
 
@@ -359,7 +353,7 @@ public class ProtocolManager {
 
 				log.info(
 						label
-								+ "Configuring close timeout for session: {} transportId: {} at {}",
+						+ "Configuring close timeout for session: {} transportId: {} at {}",
 						session.getSessionId(), transportId,
 						format.format(closeTime));
 
@@ -378,8 +372,8 @@ public class ProtocolManager {
 			} catch (TaskRejectedException e) {
 				log.warn(
 						label
-								+ "Close timeout for session {} with transportId {} can not be set "
-								+ "because the scheduler is shutdown",
+						+ "Close timeout for session {} with transportId {} can not be set "
+						+ "because the scheduler is shutdown",
 						session.getSessionId(), transportId);
 			}
 		}
