@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import org.apache.http.concurrent.BasicFuture;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.message.Response;
+import org.kurento.jsonrpc.message.ResponseError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,15 @@ public class PendingRequests {
 		}
 
 		return responseFuture;
+	}
+
+	public void closeAllPendingRequests() {
+		for (BasicFuture<Response<JsonElement>> responseFuture : pendingRequests
+				.values()) {
+			responseFuture.completed(new Response<JsonElement>(
+					new ResponseError(0, "Conection closed")));
+		}
+		pendingRequests.clear();
 	}
 
 }

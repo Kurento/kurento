@@ -38,6 +38,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcErrorException;
 import org.kurento.jsonrpc.TransportException;
@@ -60,7 +61,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -94,7 +95,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				}
 			};
 			latch.countDown();
-			if ((connectionListener != null) && !reconnecting) {
+			if (connectionListener != null && !reconnecting) {
 				connectionListener.connected();
 			}
 		}
@@ -109,7 +110,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	public static Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
 
-	public static final long TIMEOUT = 60000;
+	public static final long TIMEOUT = PropertiesManager.getProperty(
+			"jsonRpcClientWebSocket.timeout", 60000);
 
 	private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -177,6 +179,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		if (wsSession != null) {
 			wsSession.close();
 		}
+		pendingRequests.closeAllPendingRequests();
 		this.disableHeartbeat();
 		clientClose = true;
 		this.closeClient();
@@ -200,7 +203,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public synchronized void connectIfNecessary() throws IOException {
 
-		if (((wsSession == null) || !wsSession.isOpen()) && !clientClose) {
+		if ((wsSession == null || !wsSession.isOpen()) && !clientClose) {
 
 			try {
 				if (client == null) {
@@ -311,7 +314,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			reconnecting = true;
 
-			if ((execService == null) || execService.isShutdown()
+			if (execService == null || execService.isShutdown()
 					|| execService.isTerminated()) {
 				execService = Executors.newFixedThreadPool(10, threadFactory);
 			}
@@ -324,6 +327,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 						reconnecting = false;
 					} catch (KurentoException e) {
+
+						pendingRequests.closeAllPendingRequests();
 
 						handlerManager.afterConnectionClosed(session,
 								closeReason);
@@ -345,6 +350,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			});
 
 		} else {
+
+			pendingRequests.closeAllPendingRequests();
 
 			handlerManager.afterConnectionClosed(session, closeReason);
 
