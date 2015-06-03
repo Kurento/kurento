@@ -65,7 +65,7 @@ kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 /* Connection management begin */
 static KmsIRtpConnection *
 kms_rtp_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    const gchar * name)
+    SdpMediaConfig * mconf, const gchar * name)
 {
   KmsRtpConnection *conn = kms_rtp_connection_new ();
 

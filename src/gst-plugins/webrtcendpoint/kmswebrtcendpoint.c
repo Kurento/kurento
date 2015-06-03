@@ -22,6 +22,7 @@
 #include "kmswebrtcconnection.h"
 #include "kmswebrtcrtcpmuxconnection.h"
 #include "kmswebrtcbundleconnection.h"
+#include "kmswebrtcsctpconnection.h"
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
@@ -165,15 +166,26 @@ kms_webrtc_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 /* Connection management begin */
 static KmsIRtpConnection *
 kms_webrtc_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    const gchar * name)
+    SdpMediaConfig * mconf, const gchar * name)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
-  KmsWebRtcConnection *conn;
+  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  KmsWebRtcBaseConnection *conn;
 
-  conn =
-      kms_webrtc_connection_new (self->priv->agent, self->priv->context, name);
-  kms_webrtc_base_connection_set_certificate_pem_file
-      (KMS_WEBRTC_BASE_CONNECTION (conn), self->priv->certificate_pem_file);
+  if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
+    GST_DEBUG_OBJECT (self, "Create SCTP connection");
+    conn =
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new (self->priv->
+            agent, self->priv->context, name));
+  } else {
+    GST_DEBUG_OBJECT (self, "Create RTP connection");
+    conn =
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new (self->priv->
+            agent, self->priv->context, name));
+  }
+
+  kms_webrtc_base_connection_set_certificate_pem_file (conn,
+      self->priv->certificate_pem_file);
 
   return KMS_I_RTP_CONNECTION (conn);
 }
@@ -688,6 +700,7 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
   }
 
   sinkpad = kms_i_rtp_connection_request_data_sink (conn);
+
   if (sinkpad == NULL) {
     GST_ERROR_OBJECT (self, "Can not get data sink pad");
     goto error;
@@ -917,6 +930,7 @@ kms_webrtc_endpoint_add_connection (KmsBaseRtpEndpoint * self,
 
   conn = kms_base_rtp_endpoint_get_connection (self, mconf);
   if (conn == NULL) {
+    GST_ERROR_OBJECT (self, "No connection created");
     return FALSE;
   }
 
