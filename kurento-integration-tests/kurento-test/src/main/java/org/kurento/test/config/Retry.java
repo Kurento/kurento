@@ -64,19 +64,18 @@ public class Retry implements TestRule {
 				Throwable caughtThrowable = null;
 				for (; currentRetry <= retryCount; currentRetry++) {
 					try {
+						testReport.appendHeader(description.getMethodName()
+								+ " - Execution " + (exceptions.size() + 1)
+								+ "/" + getRetryCount());
 						base.evaluate();
+						testReport.appendSuccess("Test ok");
+						testReport.appendLine();
 						return;
 					} catch (Throwable t) {
 						exceptions.add(t);
-
 						if (testReport != null) {
-							int exSize = exceptions.size();
-							testReport
-									.appendHeader(description.getMethodName());
-							testReport.appendWarning("Test with retry");
-							testReport.appendHtml("<b>Number of retries "
-									+ exSize + "/" + getRetryCount() + "</b>");
-							testReport.carriageReturn();
+							testReport.appendWarning("Test failed in retry "
+									+ exceptions.size());
 							testReport.appendException(t, testScenario);
 							testReport.flushExtraHtml();
 						}
@@ -89,14 +88,13 @@ public class Retry implements TestRule {
 					}
 				}
 
-				String errorMessage = "TEST FAILED: "
+				String errorMessage = "TEST ERROR: "
 						+ description.getMethodName() + " (giving up after "
-						+ retryCount + " failures)";
+						+ retryCount + " retries)";
 				if (exceptions.size() > 0 && testReport != null) {
 					testReport.appendError(errorMessage);
 					testReport.appendLine();
 				}
-				log.error(errorMessage);
 
 				throw caughtThrowable;
 			}

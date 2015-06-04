@@ -37,6 +37,7 @@ public class TestReport {
 	protected String testReport = getProperty(TEST_REPORT_PROPERTY,
 			TEST_REPORT_DEFAULT);
 	protected final static String RETURN = "\r\n";
+	protected final static int WIDTH_PERCENTAGE = 95;
 
 	protected PrintWriter writer;
 	protected String extraHtml;
@@ -75,12 +76,14 @@ public class TestReport {
 	}
 
 	public void appendLine() {
-		writer.println("<hr>");
+		writer.println("<hr style='margin-left:0; width:" + WIDTH_PERCENTAGE
+				+ "%;'>");
 		writer.flush();
 	}
 
 	public String getCode(String text) {
-		String code = "<textarea readonly style='width:95%; height:150px; white-space:nowrap;'>";
+		String code = "<textarea readonly style='width:" + WIDTH_PERCENTAGE
+				+ "%; height:150px;' wrap='off'>";
 		code += text;
 		code += "</textarea><br><br>";
 		return code;
@@ -134,6 +137,12 @@ public class TestReport {
 		writer.flush();
 	}
 
+	public void appendTrace(String text) {
+		writer.println("<pre style='width:" + WIDTH_PERCENTAGE + "%'>" + text
+				+ "</pre>");
+		writer.flush();
+	}
+
 	public String escapeHtml(String text) {
 		StringBuilder builder = new StringBuilder();
 		boolean previousWasASpace = false;
@@ -179,19 +188,25 @@ public class TestReport {
 	}
 
 	public void appendException(Throwable throwable, TestScenario testScenario) {
-		appendHtml(throwable.getMessage());
-		carriageReturn();
+		appendHtml("<b>Error description</b><br>");
+		appendCode(throwable.getMessage());
+		appendHtml("<b>Error trace</b><br>");
 		appendCode(throwable.getStackTrace());
+		boolean saucelabsTitle = false;
 		if (testScenario != null) {
 			for (BrowserClient bc : testScenario.getBrowserMap().values()) {
 				if (bc.getScope() == BrowserScope.SAUCELABS) {
-					appendHtml("<b>Saucelabs jobs</b>");
-					carriageReturn();
+					if (!saucelabsTitle) {
+						appendHtml("<b>Saucelabs job(s)</b><br>");
+						saucelabsTitle = true;
+					}
 					String jobId = bc.getJobId();
 					appendHtml("<a href='https://saucelabs.com/tests/" + jobId
-							+ "'>https://saucelabs.com/tests/" + jobId
-							+ "</a><br>");
+							+ "'>" + bc.getId() + "</a><br>");
 				}
+			}
+			if (saucelabsTitle) {
+				carriageReturn();
 			}
 		}
 	}
