@@ -26,6 +26,7 @@
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
+#include <commons/kmsrefstruct.h>
 #include <commons/sdpagent/kmssdprtpsavpfmediahandler.h>
 #include <commons/sdpagent/kmssdpsctpmediahandler.h>
 #include "kms-webrtc-marshal.h"
@@ -115,11 +116,20 @@ struct _KmsWebrtcEndpointPrivate
 
 typedef struct _ConnectSCTPData
 {
+  KmsRefStruct ref;
   KmsWebrtcEndpoint *self;
   KmsIRtpConnection *conn;
   GstSDPMedia *media;
   gboolean connected;
 } ConnectSCTPData;
+
+static void
+connect_sctp_data_destroy (ConnectSCTPData * data, GClosure * closure)
+{
+  gst_sdp_media_free (data->media);
+
+  g_slice_free (ConnectSCTPData, data);
+}
 
 static ConnectSCTPData *
 connect_sctp_data_new (KmsWebrtcEndpoint * self, GstSDPMedia * media,
@@ -129,19 +139,14 @@ connect_sctp_data_new (KmsWebrtcEndpoint * self, GstSDPMedia * media,
 
   data = g_slice_new0 (ConnectSCTPData);
 
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (data),
+      (GDestroyNotify) connect_sctp_data_destroy);
+
   data->self = self;
   data->conn = conn;
   data->media = media;
 
   return data;
-}
-
-static void
-connect_sctp_data_destroy (ConnectSCTPData * data, GClosure * closure)
-{
-  gst_sdp_media_free (data->media);
-
-  g_slice_free (ConnectSCTPData, data);
 }
 
 /* Media handler management begin */
@@ -175,13 +180,13 @@ kms_webrtc_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
   if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
     GST_DEBUG_OBJECT (self, "Create SCTP connection");
     conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new (self->priv->
-            agent, self->priv->context, name));
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new (self->
+            priv->agent, self->priv->context, name));
   } else {
     GST_DEBUG_OBJECT (self, "Create RTP connection");
     conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new (self->priv->
-            agent, self->priv->context, name));
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new (self->
+            priv->agent, self->priv->context, name));
   }
 
   kms_webrtc_base_connection_set_certificate_pem_file (conn,
@@ -758,6 +763,11 @@ kms_webrtc_endpoint_connect_sctp_elements_cb (KmsIRtpConnection * conn,
   } else {
     GST_WARNING_OBJECT (data->self, "SCTP elements already configured");
   }
+
+  /* DTLS is already connected, so we do not need to be attached to this */
+  /* signal any more. We can free the tmp data without waiting for the   */
+  /* object to be realeased. (Early release) */
+  g_signal_handlers_disconnect_by_data (data->conn, data);
 }
 
 static void
@@ -781,8 +791,9 @@ kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
   data = connect_sctp_data_new (self, media, conn);
 
   handler_id = g_signal_connect_data (conn, "connected",
-      G_CALLBACK (kms_webrtc_endpoint_connect_sctp_elements_cb), data,
-      (GClosureNotify) connect_sctp_data_destroy, 0);
+      G_CALLBACK (kms_webrtc_endpoint_connect_sctp_elements_cb),
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (data)),
+      (GClosureNotify) kms_ref_struct_unref, 0);
 
   g_object_get (conn, "connected", &connected, NULL);
   if (connected && g_atomic_int_compare_and_exchange (&data->connected, FALSE,
@@ -795,6 +806,8 @@ kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
   } else {
     GST_DEBUG_OBJECT (self, "SCTP: waiting for DTLS layer to be established");
   }
+
+  kms_ref_struct_unref (KMS_REF_STRUCT_CAST (data));
 }
 
 static void
