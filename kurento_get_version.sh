@@ -11,7 +11,7 @@ then
   cd check_version
   echo "@PROJECT_VERSION@" > version.txt.in
   echo 'configure_file(${CMAKE_BINARY_DIR}/version.txt.in version.txt)' >> ../CMakeLists.txt
-  cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE -DCMAKE_MODULE_PATH=/usr/share/cmake-2.8/Modules > /dev/null
+  cmake .. -DCALCULATE_VERSION_WITH_GIT=FALSE -DDISABLE_LIBRARIES_GENERATION=TRUE > /dev/null
   PROJECT_VERSION=`cat version.txt`
   echo ${PROJECT_VERSION}
   cd ..
