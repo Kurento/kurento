@@ -91,32 +91,12 @@ fi
 dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
 dpkg-buildpackage $build_args || echo "Warning, failure detecten on debian package generation"
 
-if [ "${ID_RSA_FILE}x" == "x" ]
-then
-  echo "You need to specify environment variable ID_RSA_FILE with the public key to upload packages to the repository"
-  exit 1
-fi
-
-if [ "${CERT}x" == "x" ]
-then
-  echo "You need to specify environment variable CERT with the certificate to upload packages to the repository via https"
-  exit 1
-fi
-
-if [ "${REPREPRO_URL}x" == "x" ]
-then
-  echo "You need to specify environment variable REPREPRO_URL with the address of your repository"
-  exit 1
-fi
-
-KEY=$ID_RSA_FILE
-
 for i in ../*${ver}_*.deb
 do
-  curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST --data-binary @$i || echo "Failed to upload package $i"
+  kurento_upload_package.sh $DIST $i || echo "Failed to upload package $i"
 
   if [ $rc = 0 ]
   then
-    curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST-releases --data-binary @$i || echo "Failed to upload package $i"
+    kurento_upload_package.sh $DIST-releases $i || echo "Failed to upload package $i"
   fi
 done
