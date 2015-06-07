@@ -189,7 +189,8 @@ public class TestReport {
 
 	public void appendException(Throwable throwable, TestScenario testScenario) {
 		appendHtml("<b>Error description</b><br>");
-		appendCode(throwable.getMessage());
+		appendCode(throwable.getClass().getName() + " : "
+				+ throwable.getMessage());
 		appendHtml("<b>Error trace</b><br>");
 		appendCode(throwable.getStackTrace());
 		boolean saucelabsTitle = false;
