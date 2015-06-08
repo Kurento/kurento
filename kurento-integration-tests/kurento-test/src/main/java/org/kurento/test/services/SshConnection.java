@@ -110,14 +110,16 @@ public class SshConnection {
 				origFile, host, targetFile);
 
 		OverthereFile motd = connection.getFile(origFile);
-		InputStream is = motd.getInputStream();
-		try {
-			Files.copy(is, Paths.get(targetFile),
-					StandardCopyOption.REPLACE_EXISTING);
-			is.close();
-		} catch (IOException e) {
-			log.error("Exception getting file: {} to {} ({})", origFile,
-					targetFile, e.getMessage());
+		if (!motd.isDirectory()) {
+			InputStream is = motd.getInputStream();
+			try {
+				Files.copy(is, Paths.get(targetFile),
+						StandardCopyOption.REPLACE_EXISTING);
+				is.close();
+			} catch (IOException e) {
+				log.error("Exception getting file: {} to {} ({})", origFile,
+						targetFile, e.getMessage());
+			}
 		}
 	}
 
