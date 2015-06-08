@@ -13,7 +13,7 @@ fs.unlink(LINK_PATH, function(error)
 
   var kurentoClient = process.env.KURENTOCLIENT_COV ? './lib-cov':'./lib'
 
-  var args =
+  var argv =
   [
     '-c', 'kurentoClient:'+kurentoClient,
     '-c', 'node_modules/qunit-reporter-junit',
@@ -23,7 +23,7 @@ fs.unlink(LINK_PATH, function(error)
     'test/'
   ]
 
-  spawn('qunit-cli', args, {stdio: 'inherit'})
+  spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
   .on('exit', function(code)
   {
     fs.unlink(LINK_PATH);
