@@ -148,10 +148,12 @@ QUnit.asyncTest('Connect', function () {
   }, function (error, player) {
     if (error) return onerror(error);
 
-    self.pipeline.create('HttpGetEndpoint', function (error, httpGet) {
+    self.pipeline.create('RecorderEndpoint', {
+      uri: URL_SMALL
+    }, function (error, recorder) {
       if (error) return onerror(error);
 
-      player.connect(httpGet, function (error) {
+      player.connect(recorder, function (error) {
         QUnit.equal(error, undefined, 'connect');
 
         if (error) return onerror(error);
@@ -161,9 +163,9 @@ QUnit.asyncTest('Connect', function () {
 
           if (error) return onerror(error);
 
-          httpGet.release(function (error) {
+          recorder.release(function (error) {
             QUnit.equal(error, undefined,
-              'release httpGet');
+              'release recorder');
 
             if (error) return onerror(error);
 
@@ -192,15 +194,17 @@ QUnit.asyncTest('Connect by type', function () {
   }, function (error, player) {
     if (error) return onerror(error);
 
-    self.pipeline.create('HttpGetEndpoint', function (error, httpGet) {
+    self.pipeline.create('RecorderEndpoint', {
+      uri: URL_SMALL
+    }, function (error, recorder) {
       if (error) return onerror(error);
 
-      player.connect(httpGet, 'AUDIO', function (error) {
+      player.connect(recorder, 'AUDIO', function (error) {
         QUnit.equal(error, undefined, 'connect AUDIO');
 
         if (error) return onerror(error);
 
-        player.connect(httpGet, 'VIDEO', function (error) {
+        player.connect(recorder, 'VIDEO', function (error) {
           QUnit.equal(error, undefined, 'connect VIDEO');
 
           if (error) return onerror(error);
@@ -210,9 +214,9 @@ QUnit.asyncTest('Connect by type', function () {
 
             if (error) return onerror(error);
 
-            httpGet.release(function (error) {
+            recorder.release(function (error) {
               QUnit.equal(error, undefined,
-                'release httpGet');
+                'release recorder');
 
               if (error) return onerror(error);
 

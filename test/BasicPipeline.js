@@ -1,16 +1,15 @@
 /*
- * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2013-2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials are made
+ * available under the terms of the GNU Lesser General Public License (LGPL)
+ * version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
 /**
@@ -50,35 +49,31 @@ QUnit.module('BasicPipeline', lifecycle);
 /**
  * Basic pipeline reading a video from a URL and stream it over HTTP
  */
-QUnit.asyncTest('Creation', function () {
+QUnit.asyncTest('Creation', function (assert) {
   var self = this;
 
-  QUnit.expect(4);
+  assert.expect(3);
 
   self.pipeline.create('PlayerEndpoint', {
     uri: URL_SMALL
   }, function (error, player) {
     if (error) return onerror(error);
 
-    QUnit.notEqual(player, undefined, 'player');
+    assert.notEqual(player, undefined, 'player');
 
-    self.pipeline.create('HttpGetEndpoint', function (error, httpGet) {
+    self.pipeline.create('RecorderEndpoint', {
+      uri: URL_SMALL
+    }, function (error, recorder) {
       if (error) return onerror(error);
 
-      QUnit.notEqual(httpGet, undefined, 'httpGet');
+      assert.notEqual(recorder, undefined, 'recorder');
 
-      player.connect(httpGet, function (error) {
-        QUnit.equal(error, undefined, 'connect');
+      player.connect(recorder, function (error) {
+        assert.equal(error, undefined, 'connect');
 
         if (error) return onerror(error);
 
-        httpGet.getUrl(function (error, url) {
-          if (error) return onerror(error);
-
-          QUnit.notEqual(url, undefined, 'URL: ' + url);
-
-          QUnit.start();
-        })
+        QUnit.start();
       });
     });
   });
@@ -90,26 +85,22 @@ QUnit.asyncTest('Creation', function () {
 QUnit.asyncTest('Pseudo-syncronous API', function () {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(0);
 
   var pipeline = self.pipeline;
 
   var player = pipeline.create('PlayerEndpoint', {
     uri: URL_SMALL
   });
-  var httpGet = pipeline.create('HttpGetEndpoint');
-
-  player.connect(httpGet);
-
-  httpGet.getUrl(function (error, url) {
-    if (error) return onerror(error);
-
-    player.release();
-
-    QUnit.notEqual(url, undefined, 'URL: ' + url);
-
-    QUnit.start();
+  var recorder = pipeline.create('RecorderEndpoint', {
+    uri: URL_SMALL
   });
+
+  player.connect(recorder);
+
+  player.release();
+
+  QUnit.start();
 });
 
 /**
@@ -118,33 +109,28 @@ QUnit.asyncTest('Pseudo-syncronous API', function () {
 QUnit.asyncTest('Transactional API', function () {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(1);
 
   var player;
-  var httpGet;
 
   self.pipeline.transaction(function () {
       player = this.create('PlayerEndpoint', {
         uri: URL_SMALL
       });
-      httpGet = this.create('HttpGetEndpoint');
+      var recorder = this.create('RecorderEndpoint', {
+        uri: URL_SMALL
+      });
 
-      player.connect(httpGet);
+      player.connect(recorder);
     },
     function (error) {
       QUnit.equal(error, undefined, 'transaction ended');
 
       if (error) return onerror(error);
 
-      httpGet.getUrl(function (error, url) {
-        if (error) return onerror(error);
+      player.release();
 
-        player.release();
-
-        QUnit.notEqual(url, undefined, 'URL: ' + url);
-
-        QUnit.start();
-      });
+      QUnit.start();
     });
 });
 
@@ -154,7 +140,7 @@ QUnit.asyncTest('Transactional API', function () {
 QUnit.asyncTest('Transactional plain API', function () {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(1);
 
   var pipeline = self.pipeline;
 
@@ -162,9 +148,11 @@ QUnit.asyncTest('Transactional plain API', function () {
   var player = pipeline.create(tx, 'PlayerEndpoint', {
     uri: URL_SMALL
   });
-  var httpGet = pipeline.create(tx, 'HttpGetEndpoint');
+  var recorder = pipeline.create(tx, 'RecorderEndpoint', {
+    uri: URL_SMALL
+  });
 
-  player.connect(tx, httpGet);
+  player.connect(tx, recorder);
   tx.commit(function (error)
     //  pipeline.beginTransaction();
     //    var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
@@ -177,15 +165,9 @@ QUnit.asyncTest('Transactional plain API', function () {
 
       if (error) return onerror(error);
 
-      httpGet.getUrl(function (error, url) {
-        if (error) return onerror(error);
+      player.release();
 
-        player.release();
-
-        QUnit.notEqual(url, undefined, 'URL: ' + url);
-
-        QUnit.start();
-      });
+      QUnit.start();
     });
 });
 
@@ -195,7 +177,7 @@ QUnit.asyncTest('Transactional plain API', function () {
 QUnit.asyncTest('Early transaction', function () {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(0);
 
   var pipeline = self.pipeline;
 
@@ -203,20 +185,16 @@ QUnit.asyncTest('Early transaction', function () {
     var player = pipeline.create('PlayerEndpoint', {
       uri: URL_SMALL
     });
-    var httpGet = pipeline.create('HttpGetEndpoint');
-
-    player.connect(httpGet);
-
-    httpGet.getUrl(function (error, url) {
-      if (error) return onerror(error);
-
-      player.release();
-
-      QUnit.notEqual(url, undefined, 'URL: ' + url);
-
-      pipeline.release();
-
-      QUnit.start();
+    var recorder = pipeline.create('RecorderEndpoint', {
+      uri: URL_SMALL
     });
+
+    player.connect(recorder);
+
+    player.release();
+
+    pipeline.release();
+
+    QUnit.start();
   });
 });

@@ -72,31 +72,6 @@ Play a video using an ad-hoc GStreamer filter and capture an End of Stream event
 * End of Stream event is received
 
 
-# HttpGetEndpoint
-
-## Method GetUrl
-
-Create an empty HttpGet endpoint and check it has a valid URL
-
-### Assertions
-
-* HttpGet endpoint is set
-* HttpGet endpoint has a valid URL
-
-
-## Media session started
-
-Create an empty HttpGet endpoint and check the stream start and ends
-
-### Assertions
-
-* player endpoint is set
-* HttpGet endpoint is set
-* HttpGet endpoint has a valid URL
-* MediaSessionStarted event is dispatched
-* End of Stream event is dispatched
-
-
 # PlateDetectorFilter
 
 ## Detect plate in a video
