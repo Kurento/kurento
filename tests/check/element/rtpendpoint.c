@@ -224,14 +224,15 @@ GST_START_TEST (loopback)
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  int handler_id;
 
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
 
   g_object_set_data (G_OBJECT (pipeline), "loop", loop);
 
   gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);
-  g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
-  g_object_unref (bus);
+  handler_id =
+      g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
   video_codecs_array = create_codecs_array (video_codecs);
   g_object_set (rtpendpointsender, "num-video-medias", 1, "video-codecs",
@@ -285,6 +286,8 @@ GST_START_TEST (loopback)
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, __FUNCTION__);
 
+  g_signal_handler_disconnect (bus, handler_id);
+  g_object_unref (bus);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
