@@ -44,7 +44,7 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('BasicPipeline', lifecycle);
+QUnit.module('MediaPipeline', lifecycle);
 
 /**
  * Basic pipeline reading a video from a URL and stream it over HTTP
