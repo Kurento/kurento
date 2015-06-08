@@ -473,7 +473,8 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_video_sendrecv (const gchar * video_enc_name,
-    GstStaticCaps expected_caps, gchar * codec, gboolean bundle)
+    GstStaticCaps expected_caps, gchar * codec, gboolean bundle,
+    gboolean rtcp_mux)
 {
   GArray *codecs_array;
   gchar *codecs[] = { codec, NULL };
@@ -503,7 +504,7 @@ test_video_sendrecv (const gchar * video_enc_name,
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
-      g_array_ref (codecs_array), "bundle", bundle, NULL);
+      g_array_ref (codecs_array), "bundle", bundle, "rtcp-mux", rtcp_mux, NULL);
   g_object_set (answerer, "num-video-medias", 1, "video-codecs",
       g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
@@ -1411,8 +1412,9 @@ GST_START_TEST (test_vp8_sendonly_recvonly)
 GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv)
 {
-  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE);
-  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE);
+  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE);
+  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, TRUE);
+  test_video_sendrecv ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, TRUE);
 }
 
 GST_END_TEST
