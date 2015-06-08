@@ -61,7 +61,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-	.setNameFormat("JsonRpcClientWebsocket-%d").build();
+			.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -314,10 +314,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			reconnecting = true;
 
-			if (execService == null || execService.isShutdown()
-					|| execService.isTerminated()) {
-				execService = Executors.newFixedThreadPool(10, threadFactory);
-			}
+			createExecServiceIfNecessary();
 
 			execService.execute(new Runnable() {
 				@Override
@@ -361,7 +358,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
+	private void createExecServiceIfNecessary() {
+		if (execService == null || execService.isShutdown()
+				|| execService.isTerminated()) {
+			execService = Executors.newFixedThreadPool(10, threadFactory);
+		}
+	}
+
 	private void handleRequestFromServer(final JsonObject message) {
+
+		createExecServiceIfNecessary();
 
 		// TODO: Think better ways to do this:
 		// handleWebSocketTextMessage seems to be sequential. That is, the
