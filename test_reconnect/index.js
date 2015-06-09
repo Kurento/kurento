@@ -85,11 +85,12 @@ QUnit.asyncTest('MediaServer restarted', function () {
           }, function (error, player) {
             if (error) return onerror(error);
 
-            pipeline.create('HttpGetEndpoint', function (error,
-              httpGet) {
+            pipeline.create('RecorderEndpoint', {
+              uri: URL_SMALL
+            }, function (error, recorder) {
               if (error) return onerror(error);
 
-              player.connect(httpGet, function (error) {
+              player.connect(recorder, function (error) {
                 if (error) return onerror(error);
 
                 // restart MediaServer
@@ -100,7 +101,7 @@ QUnit.asyncTest('MediaServer restarted', function () {
                   sessionId);
 
                 client.getMediaobjectById([pipeline.id,
-                    player.id, httpGet.id
+                    player.id, recorder.id
                   ],
                   function (error, mediaObjects) {
                     if (error) return onerror(error);
@@ -113,7 +114,7 @@ QUnit.asyncTest('MediaServer restarted', function () {
                     QUnit.strictEqual(mediaObjects[1],
                       player);
                     QUnit.strictEqual(mediaObjects[2],
-                      httpGet);
+                      recorder);
 
                     player.play(function (error) {
                       QUnit.notStrictEqual(error,
@@ -163,11 +164,12 @@ QUnit.asyncTest('Keep using client after MediaServer restart', function () {
               function (error, player) {
                 if (error) return onerror(error);
 
-                pipeline.create('HttpGetEndpoint', function (
-                  error, httpGet) {
+                pipeline.create('RecorderEndpoint', {
+                  uri: URL_SMALL
+                }, function (error, recorder) {
                   if (error) return onerror(error);
 
-                  player.connect(httpGet, function (error) {
+                  player.connect(recorder, function (error) {
                     if (error) return onerror(error);
 
                     player.play(function (error) {
@@ -209,11 +211,12 @@ QUnit.asyncTest('Network error', function () {
           }, function (error, player) {
             if (error) return onerror(error);
 
-            pipeline.create('HttpGetEndpoint', function (error,
-              httpGet) {
+            pipeline.create('RecorderEndpoint', {
+              uri: URL_SMALL
+            }, function (error, recorder) {
               if (error) return onerror(error);
 
-              player.connect(httpGet, function (error) {
+              player.connect(recorder, function (error) {
                 if (error) return onerror(error);
 
                 // End connection and wait for a new one
@@ -229,7 +232,7 @@ QUnit.asyncTest('Network error', function () {
                     'sessionId=' + client.sessionId);
 
                   client.getMediaobjectById([pipeline.id,
-                      player.id, httpGet.id
+                      player.id, recorder.id
                     ],
                     function (error, mediaObjects) {
                       if (error) return onerror(error);
@@ -242,7 +245,7 @@ QUnit.asyncTest('Network error', function () {
                       QUnit.strictEqual(mediaObjects[
                         1], player);
                       QUnit.strictEqual(mediaObjects[
-                        2], httpGet);
+                        2], recorder);
 
                       player.play(function (error) {
                         if (error) return onerror(
