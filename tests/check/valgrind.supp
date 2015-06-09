@@ -408,3 +408,13 @@
   fun:FcEndElement
   ...
 }
+#Supressions for player test
+{
+  LibSoup
+  Memcheck:Leak
+  ...
+  fun:soup_proxy_resolver_default_constructed
+  ...
+  fun:soup_session_add_feature_by_type
+  ...
+}
