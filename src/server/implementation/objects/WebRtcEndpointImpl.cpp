@@ -186,6 +186,9 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::string stunAddress;
   std::string turnURL;
 
+  /* TODO: Set to TRUE to support data channels */
+  g_object_set (element, "use-data-channels", FALSE, NULL);
+
   remove_not_supported_codecs (element);
 
   //set properties

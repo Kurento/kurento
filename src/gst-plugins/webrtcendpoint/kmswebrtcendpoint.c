@@ -180,13 +180,13 @@ kms_webrtc_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
   if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
     GST_DEBUG_OBJECT (self, "Create SCTP connection");
     conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new (self->
-            priv->agent, self->priv->context, name));
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new (self->priv->
+            agent, self->priv->context, name));
   } else {
     GST_DEBUG_OBJECT (self, "Create RTP connection");
     conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new (self->
-            priv->agent, self->priv->context, name));
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new (self->priv->
+            agent, self->priv->context, name));
   }
 
   kms_webrtc_base_connection_set_certificate_pem_file (conn,
@@ -826,6 +826,13 @@ kms_webrtc_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
     SdpMediaConfig *mconf = item->data;
     GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
     const gchar *media_str = gst_sdp_media_get_media (media);
+
+    if (gst_sdp_media_get_port (media) == 0) {
+      /* Media not supported */
+      GST_ERROR_OBJECT (base_sdp_endpoint, "Media not supported: %s",
+          media_str);
+      continue;
+    }
 
     if (g_strcmp0 (media_str, "application") == 0 &&
         g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
