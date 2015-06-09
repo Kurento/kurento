@@ -46,6 +46,8 @@ struct _KmsHttpPostEndpointPrivate
 {
   GstElement *appsrc;
   gboolean use_encoded_media;
+  int handler_id;
+  GstBus *bus;
 };
 
 /* Object properties */
@@ -310,7 +312,6 @@ static void
 kms_http_post_endpoint_init_pipeline (KmsHttpPostEndpoint * self)
 {
   GstElement *decodebin;
-  GstBus *bus;
   GstCaps *deco_caps;
 
   KMS_HTTP_ENDPOINT (self)->pipeline = gst_pipeline_new (POST_PIPELINE);
@@ -342,11 +343,12 @@ kms_http_post_endpoint_init_pipeline (KmsHttpPostEndpoint * self)
   g_signal_connect (decodebin, "pad-removed",
       G_CALLBACK (post_decodebin_pad_removed_handler), self);
 
-  bus =
+  self->priv->bus =
       gst_pipeline_get_bus (GST_PIPELINE (KMS_HTTP_ENDPOINT (self)->pipeline));
-  gst_bus_add_signal_watch (bus);
-  g_signal_connect (G_OBJECT (bus), "message", G_CALLBACK (bus_message), self);
-  g_object_unref (bus);
+  gst_bus_add_signal_watch (self->priv->bus);
+  self->priv->handler_id =
+      g_signal_connect (G_OBJECT (self->priv->bus), "message",
+      G_CALLBACK (bus_message), self);
 
   /* Set pipeline to playing */
   gst_element_set_state (KMS_HTTP_ENDPOINT (self)->pipeline, GST_STATE_PLAYING);
@@ -428,12 +430,27 @@ kms_http_post_endpoint_get_property (GObject * object, guint property_id,
 }
 
 static void
+kms_http_post_endpoint_finalize (GObject * object)
+{
+  KmsHttpPostEndpoint *self = KMS_HTTP_POST_ENDPOINT (object);
+
+  if (self->priv->handler_id > 0) {
+    g_signal_handler_disconnect (self->priv->bus, self->priv->handler_id);
+  }
+  gst_bus_remove_signal_watch (self->priv->bus);
+  g_object_unref (self->priv->bus);
+
+  G_OBJECT_CLASS (kms_http_post_endpoint_parent_class)->finalize (object);
+}
+
+static void
 kms_http_post_endpoint_class_init (KmsHttpPostEndpointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gobject_class->set_property = kms_http_post_endpoint_set_property;
   gobject_class->get_property = kms_http_post_endpoint_get_property;
+  gobject_class->finalize = kms_http_post_endpoint_finalize;
 
   /* Install properties */
   obj_properties[PROP_USE_ENCODED_MEDIA] = g_param_spec_boolean
