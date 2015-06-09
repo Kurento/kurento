@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * (C) Copyright 2013-2015 Kurento (http://kurento.org/)
  *
@@ -32,14 +34,12 @@
  * @version 1.0.0
  */
 
-if (typeof QUnit == 'undefined') {
-  var spawn = require('child_process').spawn;
+var spawn = require('child_process').spawn;
 
-  QUnit = require('qunit-cli');
-  QUnit.load();
+var QUnit = require('qunit-cli');
+QUnit.load();
 
-  kurentoClient = require('..');
-};
+var kurentoClient = require('..');
 
 const ARGV = ['-f', './kurento.conf.json'];
 const ws_uri = 'ws://127.0.0.1:8889/kurento'
@@ -47,7 +47,7 @@ const ws_uri = 'ws://127.0.0.1:8889/kurento'
 /**
  * Manage timeouts in an object-oriented style
  */
-Timeout = function Timeout(id, delay, ontimeout) {
+function Timeout(id, delay, ontimeout) {
   if (!(this instanceof Timeout))
     return new Timeout(id, delay, ontimeout);
 
