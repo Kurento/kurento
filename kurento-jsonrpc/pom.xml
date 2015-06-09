@@ -49,6 +49,7 @@
 	<modules>
 		<module>kurento-jsonrpc-client</module>
 		<module>kurento-jsonrpc-server</module>
+		<module>kurento-jsonrpc-demo-server</module>
 	</modules>
 
 	<dependencies>
