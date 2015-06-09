@@ -286,12 +286,17 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
+				<artifactId>kurento-room-sdk</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-room-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-room-client</artifactId>
+				<artifactId>kurento-room-demo</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
