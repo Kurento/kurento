@@ -61,7 +61,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -280,6 +280,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 								"{} Reconnected to the same session in server {}",
 								label, url);
 
+						if (connectionListener != null) {
+							connectionListener.reconnected(true);
+						}
+
 					} catch (JsonRpcErrorException e) {
 						if (e.getCode() == 40007) { // Invalid session exception
 
@@ -291,6 +295,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 							log.info(
 									"{} Reconnected to a new session in server {}",
 									label, url);
+
+							if (connectionListener != null) {
+								connectionListener.reconnected(false);
+							}
+
 						} else {
 							log.warn(
 									"{} Error sending reconnection request to server ",

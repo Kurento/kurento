@@ -20,4 +20,9 @@ public interface JsonRpcWSConnectionListener {
 	 */
 	void disconnected();
 
+	/**
+	 * Method invoked when the JsonRpcWS client is reconnected to a server
+	 */
+	void reconnected(boolean sameServer);
+
 }
