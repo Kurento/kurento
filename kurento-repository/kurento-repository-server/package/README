@@ -1,0 +1,66 @@
+----------------------------------------
+--- EXECUTE KURENTO REPOSITORY 6.0.x ---
+----------------------------------------
+
+- Build
+
+   cd kurento-repository
+   mvn clean install
+
+- Unzip distribution files
+
+   cd kurento-repository-server/target
+   unzip kurento-repository-server-6.0.0-SNAPSHOT.zip
+   
+- Execute start script
+
+   cd kurento-repository-server-6.0.0-SNAPSHOT
+   ./bin/start.sh
+
+- Configure logging
+
+   vim kurento-repository-server-6.0.0-SNAPSHOT/config/kurento-repo-log4j.properties
+
+  << Log file by default will be located in 
+     kurento-repository-server-6.0.0-SNAPSHOT/logs/ >>
+
+- Configure server
+
+   vim kurento-repository-server-6.0.0-SNAPSHOT/config/kurento-repo.conf.json
+
+---------------------------------------------------------
+--- START KURENTO-REPO 6.0.x AS DAEMON (kurento-repo) ---
+--- IN UBUNTU OR CENTOS ---------------------------------
+---------------------------------------------------------
+
+- Build
+
+   cd kurento-repository
+   mvn clean install
+
+- Unzip distribution files
+
+   cd kurento-repository-server/target
+   unzip kurento-repository-server-6.0.0-SNAPSHOT.zip
+   
+- Execute install script
+
+   cd kurento-repository-server-6.0.0-SNAPSHOT
+   sudo ./bin/install.sh
+
+  << The service (kurento-repo) will be automatically started. >>
+  
+- Control the service (Ubuntu)
+
+   sudo service kurento-repo {start|stop|status|restart|reload}
+  
+- Configure logging
+
+   sudo vim /etc/kurento/kurento-repo-log4j.properties
+
+  << Log file by default will be located in 
+     /var/log/kurento/ >>
+
+- Configure server
+
+   sudo vim /etc/kurento/kurento-repo.conf.json

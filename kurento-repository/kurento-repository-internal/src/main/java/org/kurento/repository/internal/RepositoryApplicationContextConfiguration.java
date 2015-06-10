@@ -35,7 +35,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class RepositoryApplicationContextConfiguration {
-	public static final String KEY_CONFIG_FILENAME = "repository.conf.json";
+	public static final String KEY_CONFIG_FILENAME = "kurento-repo.conf.json";
 
 	public static final String KEY_REPO_HOST = "repository.hostname";
 	public static final String KEY_REPO_PORT = "repository.port";

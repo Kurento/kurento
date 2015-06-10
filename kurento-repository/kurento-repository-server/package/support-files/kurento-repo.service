@@ -1,10 +1,10 @@
 [Unit]
-Description=KJRServer daemon
+Description=Kurento repository daemon
 After=network.target
 
 [Service]
 User=nobody
-ExecStart=/usr/bin/kjrserver
+ExecStart=/usr/bin/kurento-repo
 
 [Install]
 WantedBy=default.target
