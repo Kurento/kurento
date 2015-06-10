@@ -286,6 +286,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 							rsHelper.setSessionId(null);
 							rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
+							pendingRequests.closeAllPendingRequests();
+
 							log.info(
 									"{} Reconnected to a new session in server {}",
 									label, url);
@@ -415,6 +417,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			final Request<? extends Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
+
+		createExecServiceIfNecessary();
 
 		// FIXME: Poor man async implementation.
 		execService.submit(new Runnable() {
