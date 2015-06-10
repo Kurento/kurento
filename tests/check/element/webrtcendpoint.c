@@ -1153,19 +1153,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
-  GstElement *audiotestsrc_offerer =
-      gst_element_factory_make ("audiotestsrc", NULL);
-  GstElement *audiotestsrc_answerer =
-      gst_element_factory_make ("audiotestsrc", NULL);
-  GstElement *capsfilter_offerer =
-      gst_element_factory_make ("capsfilter", NULL);
-  GstElement *capsfilter_answerer =
-      gst_element_factory_make ("capsfilter", NULL);
-  GstElement *audio_enc_offerer =
-      gst_element_factory_make (audio_enc_name, NULL);
-  GstElement *audio_enc_answerer =
-      gst_element_factory_make (audio_enc_name, NULL);
-
   GstElement *videotestsrc_offerer =
       gst_element_factory_make ("videotestsrc", NULL);
   GstElement *videotestsrc_answerer =
@@ -1178,16 +1165,11 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
 
-  GstElement *audio_fakesink_offerer =
-      gst_element_factory_make ("fakesink", NULL);
-  GstElement *audio_fakesink_answerer =
-      gst_element_factory_make ("fakesink", NULL);
   GstElement *video_fakesink_offerer =
       gst_element_factory_make ("fakesink", NULL);
   GstElement *video_fakesink_answerer =
       gst_element_factory_make ("fakesink", NULL);
 
-  GstCaps *caps;
   gchar *sdp_str = NULL;
   gboolean ret;
 
@@ -1228,24 +1210,12 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (G_OBJECT (video_fakesink_answerer), "handoff",
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
-  g_object_set (G_OBJECT (audiotestsrc_offerer), "is-live", TRUE, NULL);
-  g_object_set (G_OBJECT (audiotestsrc_answerer), "is-live", TRUE, NULL);
-
-  caps = gst_caps_new_simple ("audio/x-raw", "rate", G_TYPE_INT, 8000, NULL);
-  g_object_set (capsfilter_offerer, "caps", caps, NULL);
-  g_object_set (capsfilter_answerer, "caps", caps, NULL);
-  gst_caps_unref (caps);
-
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
-  connect_sink_async (offerer, audiotestsrc_offerer, audio_enc_offerer,
-      capsfilter_offerer, pipeline, "sink_audio");
   connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
       pipeline, "sink_video");
 
   gst_bin_add (GST_BIN (pipeline), answerer);
-  connect_sink_async (answerer, audiotestsrc_answerer, audio_enc_answerer,
-      capsfilter_answerer, pipeline, "sink_audio");
   connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
       pipeline, "sink_video");
 
@@ -1276,18 +1246,13 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_signal_emit_by_name (answerer, "gather-candidates", &ret);
   fail_unless (ret);
 
-  gst_bin_add_many (GST_BIN (pipeline), audio_fakesink_offerer,
-      audio_fakesink_answerer, NULL);
-
   g_signal_connect (offerer, "pad-added",
       G_CALLBACK (connect_sink_on_srcpad_added), NULL);
   g_signal_connect (answerer, "pad-added",
       G_CALLBACK (connect_sink_on_srcpad_added), NULL);
 
-  g_object_set_data (G_OBJECT (offerer), AUDIO_SINK, audio_fakesink_offerer);
   fail_unless (kms_element_request_srcpad (offerer,
           KMS_ELEMENT_PAD_TYPE_AUDIO));
-  g_object_set_data (G_OBJECT (answerer), AUDIO_SINK, audio_fakesink_answerer);
   fail_unless (kms_element_request_srcpad (answerer,
           KMS_ELEMENT_PAD_TYPE_AUDIO));
 
