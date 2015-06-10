@@ -434,11 +434,13 @@ kms_http_post_endpoint_finalize (GObject * object)
 {
   KmsHttpPostEndpoint *self = KMS_HTTP_POST_ENDPOINT (object);
 
-  if (self->priv->handler_id > 0) {
-    g_signal_handler_disconnect (self->priv->bus, self->priv->handler_id);
+  if (self->priv->bus != NULL) {
+    if (self->priv->handler_id > 0) {
+      g_signal_handler_disconnect (self->priv->bus, self->priv->handler_id);
+    }
+    gst_bus_remove_signal_watch (self->priv->bus);
+    g_object_unref (self->priv->bus);
   }
-  gst_bus_remove_signal_watch (self->priv->bus);
-  g_object_unref (self->priv->bus);
 
   G_OBJECT_CLASS (kms_http_post_endpoint_parent_class)->finalize (object);
 }
