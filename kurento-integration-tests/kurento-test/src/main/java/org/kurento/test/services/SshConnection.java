@@ -19,6 +19,7 @@ import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_PASSWD_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_PEM_PROPERTY;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -46,7 +47,7 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
 
 /**
  * SSH connection to a remote host.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -183,8 +184,19 @@ public class SshConnection {
 		}
 		OverthereProcess process = connection.startProcess(cmdLine);
 
-		return CharStreams.toString(new InputStreamReader(process.getStdout(),
-				"UTF-8"));
+		BufferedReader r = new BufferedReader(new InputStreamReader(
+				process.getStdout(), "UTF-8"));
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+		while ((line = r.readLine()) != null) {
+			System.out.println(line);
+			sb.append(line).append("\r\n");
+		}
+		return sb.toString();
+
+		// return CharStreams.toString(new
+		// InputStreamReader(process.getStdout(),
+		// "UTF-8"));
 	}
 
 	public String execAndWaitCommandWithStderr(String... command)
@@ -225,11 +237,12 @@ public class SshConnection {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		Thread t = new Thread() {
+			@Override
 			public void run() {
 				try {
 					String[] command = { "ping", "-c", "1", ipAddress };
 					Process p = new ProcessBuilder(command)
-							.redirectErrorStream(true).start();
+					.redirectErrorStream(true).start();
 					CharStreams.toString(new InputStreamReader(p
 							.getInputStream(), "UTF-8"));
 					latch.countDown();

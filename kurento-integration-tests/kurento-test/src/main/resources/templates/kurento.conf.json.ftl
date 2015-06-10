@@ -21,7 +21,7 @@
         <#if registrar??>
         ,"registrar": {
           "address": "${registrar}",
-          "localAddress": "localhost"
+          "localAddress": "${registrarLocalAddress}"
         }
         </#if>
       }
