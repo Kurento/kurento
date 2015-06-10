@@ -20,9 +20,4 @@ public interface KurentoConnectionListener {
 	 */
 	void disconnected();
 
-	/**
-	 * Method invoked when the Kurento client is reconnected to a server
-	 */
-	void reconnected(boolean sameServer);
-
 }
