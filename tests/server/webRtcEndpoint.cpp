@@ -13,9 +13,10 @@
  *
  */
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE WebRtcEndpoint
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_STATIC_LINK
+#define BOOST_TEST_PROTECTED_VIRTUAL
+
+#include <boost/test/included/unit_test.hpp>
 #include <MediaPipelineImpl.hpp>
 #include <objects/WebRtcEndpointImpl.hpp>
 #include <IceCandidate.hpp>
@@ -27,6 +28,7 @@
 #include <MediaElementImpl.hpp>
 
 using namespace kurento;
+using namespace boost::unit_test;
 
 boost::property_tree::ptree config;
 std::string mediaPipelineId;
@@ -116,7 +118,8 @@ releaseTestSrc (std::shared_ptr<MediaElementImpl> &ep)
 }
 
 
-BOOST_AUTO_TEST_CASE (gathering_done)
+static void
+gathering_done ()
 {
   std::atomic<bool> gathering_done (false);
   std::condition_variable cv;
@@ -132,7 +135,7 @@ BOOST_AUTO_TEST_CASE (gathering_done)
   webRtcEp->generateOffer ();
   webRtcEp->gatherCandidates ();
 
-  cv.wait_for (lck, std::chrono::seconds (5), [&] () {
+  cv.wait (lck, [&] () {
     return gathering_done.load();
   });
 
@@ -143,7 +146,8 @@ BOOST_AUTO_TEST_CASE (gathering_done)
   releaseWebRtc (webRtcEp);
 }
 
-BOOST_AUTO_TEST_CASE (ice_state_changes)
+static  void
+ice_state_changes()
 {
   std::atomic<bool> ice_state_changed (false);
   std::condition_variable cv;
@@ -177,7 +181,7 @@ BOOST_AUTO_TEST_CASE (ice_state_changes)
   webRtcEpOfferer->gatherCandidates ();
   webRtcEpAnswerer->gatherCandidates ();
 
-  cv.wait_for (lck, std::chrono::seconds (5), [&] () {
+  cv.wait (lck, [&] () {
     return ice_state_changed.load();
   });
 
@@ -189,7 +193,8 @@ BOOST_AUTO_TEST_CASE (ice_state_changes)
   releaseWebRtc (webRtcEpAnswerer);
 }
 
-BOOST_AUTO_TEST_CASE (stun_turn_properties)
+static  void
+stun_turn_properties ()
 {
   std::string stunServerAddress ("10.0.0.1");
   int stunServerPort = 2345;
@@ -212,7 +217,8 @@ BOOST_AUTO_TEST_CASE (stun_turn_properties)
   releaseWebRtc (webRtcEp);
 }
 
-BOOST_AUTO_TEST_CASE (media_state_changes)
+static void
+media_state_changes ()
 {
   std::atomic<bool> media_state_changed (false);
   std::condition_variable cv;
@@ -264,7 +270,7 @@ BOOST_AUTO_TEST_CASE (media_state_changes)
   webRtcEpOfferer->gatherCandidates ();
   webRtcEpAnswerer->gatherCandidates ();
 
-  cv.wait_for (lck, std::chrono::seconds (5), [&] () {
+  cv.wait (lck, [&] () {
 
     return media_state_changed.load();
   });
@@ -277,4 +283,16 @@ BOOST_AUTO_TEST_CASE (media_state_changes)
   releaseTestSrc (src);
   releaseWebRtc (webRtcEpOfferer);
   releaseWebRtc (webRtcEpAnswerer);
+}
+
+test_suite *
+init_unit_test_suite ( int , char* [] )
+{
+  test_suite *test = BOOST_TEST_SUITE ( "WebRtcEndpoint" );
+  test->add (BOOST_TEST_CASE ( &gathering_done ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &ice_state_changes ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &stun_turn_properties ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &media_state_changes ), 0, /* timeout */ 15);
+
+  return test;
 }
