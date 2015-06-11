@@ -60,17 +60,17 @@ QUnit.asyncTest('Record, Pause & Stop', function () {
 
       QUnit.notEqual(recorder, undefined, 'recorder');
 
-      recorder.record(function (error) {
+      return recorder.record(function (error) {
         QUnit.equal(error, undefined, 'record');
 
         if (error) return onerror(error);
 
-        recorder.pause(function (error) {
+        return recorder.pause(function (error) {
           QUnit.equal(error, undefined, 'pause');
 
           if (error) return onerror(error);
 
-          recorder.stop(function (error) {
+          return recorder.stop(function (error) {
             QUnit.equal(error, undefined, 'stop');
 
             if (error) return onerror(error);
@@ -79,7 +79,8 @@ QUnit.asyncTest('Record, Pause & Stop', function () {
           });
         });
       });
-    });
+    })
+    .catch(onerror)
 });
 
 QUnit.asyncTest('GetUrl', function () {
@@ -93,12 +94,13 @@ QUnit.asyncTest('GetUrl', function () {
     function (error, recorder) {
       if (error) return onerror(error);
 
-      recorder.getUri(function (error, uri) {
+      return recorder.getUri(function (error, uri) {
         if (error) return onerror(error);
 
         QUnit.equal(uri, URL_SMALL, 'URI: ' + uri);
 
         QUnit.start();
       });
-    });
+    })
+    .catch(onerror)
 });

@@ -61,14 +61,14 @@ QUnit.asyncTest('Creation', function (assert) {
 
     assert.notEqual(player, undefined, 'player');
 
-    self.pipeline.create('RecorderEndpoint', {
+    return self.pipeline.create('RecorderEndpoint', {
       uri: URL_SMALL
     }, function (error, recorder) {
       if (error) return onerror(error);
 
       assert.notEqual(recorder, undefined, 'recorder');
 
-      player.connect(recorder, function (error) {
+      return player.connect(recorder, function (error) {
         assert.equal(error, undefined, 'connect');
 
         if (error) return onerror(error);
@@ -76,7 +76,8 @@ QUnit.asyncTest('Creation', function (assert) {
         QUnit.start();
       });
     });
-  });
+  })
+  .catch(onerror)
 });
 
 /**
@@ -121,7 +122,7 @@ QUnit.asyncTest('Transactional API', function () {
         uri: URL_SMALL
       });
 
-      player.connect(recorder);
+      return player.connect(recorder);
     },
     function (error) {
       QUnit.equal(error, undefined, 'transaction ended');
@@ -131,7 +132,8 @@ QUnit.asyncTest('Transactional API', function () {
       player.release();
 
       QUnit.start();
-    });
+    })
+    .catch(onerror)
 });
 
 /**

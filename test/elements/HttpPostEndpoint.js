@@ -57,14 +57,15 @@ QUnit.asyncTest('Method GetUrl', function () {
 
     QUnit.notEqual(httpPost, undefined, 'httpPost');
 
-    httpPost.getUrl(function (error, url) {
+    return httpPost.getUrl(function (error, url) {
       if (error) return onerror(error);
 
       QUnit.notEqual(url, undefined, 'URL: ' + url);
 
       QUnit.start();
     })
-  });
+  })
+  .catch(onerror)
 });
 
 //QUnit.asyncTest('Media session terminated', function()

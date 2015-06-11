@@ -47,30 +47,32 @@ if (typeof QUnit == 'undefined') {
 
 QUnit.module('ServerManager', lifecycle);
 
-QUnit.asyncTest('Server manager', function () {
+QUnit.asyncTest('Server manager', function (assert) {
   var self = this;
 
-  QUnit.expect(1);
+  assert.expect(1);
 
   self.kurento.getServerManager(function (error, server) {
-    if (error) return onerror(error);
+      if (error) return onerror(error);
 
-    var mediaPipeline_id;
+      var mediaPipeline_id;
 
-    server.on('ObjectCreated', function (event) {
-      mediaPipeline_id = event.object;
-    })
-
-    setTimeout(function () {
-      self.kurento.create('MediaPipeline', function (error,
-        pipeline) {
-        if (error) return onerror(error);
-
-        QUnit.equal(pipeline.id, mediaPipeline_id, 'ID: ' +
-          pipeline.id);
-
-        QUnit.start();
+      server.on('ObjectCreated', function (event) {
+        mediaPipeline_id = event.object;
       })
-    }, 500)
-  })
+
+      setTimeout(function () {
+        self.kurento.create('MediaPipeline', function (error,
+            pipeline) {
+            if (error) return onerror(error);
+
+            assert.equal(pipeline.id, mediaPipeline_id, 'ID: ' +
+              pipeline.id);
+
+            QUnit.start();
+          })
+          .catch(onerror)
+      }, 500)
+    })
+    .catch(onerror)
 });

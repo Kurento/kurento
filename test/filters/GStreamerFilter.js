@@ -67,35 +67,36 @@ QUnit.asyncTest('End of Stream', function () {
 
     QUnit.notEqual(player, undefined, 'player');
 
-    self.pipeline.create('GStreamerFilter', {
-        command: 'videoflip method=horizontal-flip'
-      },
-      function (error, gStreamerFilter) {
+    return self.pipeline.create('GStreamerFilter', {
+      command: 'videoflip method=horizontal-flip'
+    },
+    function (error, gStreamerFilter) {
+      if (error) return onerror(error);
+
+      QUnit.notEqual(gStreamerFilter, undefined, 'GStreamerFilter');
+
+      return player.connect(gStreamerFilter, function (error) {
+        QUnit.equal(error, undefined, 'connect');
+
         if (error) return onerror(error);
 
-        QUnit.notEqual(gStreamerFilter, undefined, 'GStreamerFilter');
+        player.on('EndOfStream', function (data) {
+          QUnit.ok(true, 'EndOfStream');
 
-        player.connect(gStreamerFilter, function (error) {
-          QUnit.equal(error, undefined, 'connect');
+          timeout.stop();
+
+          QUnit.start();
+        });
+
+        return player.play(function (error) {
+          QUnit.equal(error, undefined, 'playing');
 
           if (error) return onerror(error);
 
-          player.on('EndOfStream', function (data) {
-            QUnit.ok(true, 'EndOfStream');
-
-            timeout.stop();
-
-            QUnit.start();
-          });
-
-          player.play(function (error) {
-            QUnit.equal(error, undefined, 'playing');
-
-            if (error) return onerror(error);
-
-            timeout.start();
-          });
+          timeout.start();
         });
       });
-  });
+    });
+  })
+  .catch(onerror)
 });

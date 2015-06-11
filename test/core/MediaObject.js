@@ -36,11 +36,12 @@ QUnit.test('setName', function (assert) {
   pipeline.setName(NAME, function (error) {
     if (error) return onerror(error)
 
-    pipeline.getName(function (error, name) {
+    return pipeline.getName(function (error, name) {
       if (error) return onerror(error)
 
       assert.equal(name, NAME)
       done();
     })
   })
+  .catch(onerror)
 });

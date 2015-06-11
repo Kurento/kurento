@@ -59,17 +59,17 @@ QUnit.asyncTest('Create pipeline and play video', function () {
 
     QUnit.notEqual(player, undefined, 'player');
 
-    self.pipeline.create('ZBarFilter', function (error, zbar) {
+    return self.pipeline.create('ZBarFilter', function (error, zbar) {
       if (error) return onerror(error);
 
       QUnit.notEqual(zbar, undefined, 'zbar');
 
-      player.connect(zbar, function (error) {
+      return player.connect(zbar, function (error) {
         QUnit.equal(error, undefined, 'connect');
 
         if (error) return onerror(error);
 
-        player.play(function (error) {
+        return player.play(function (error) {
           QUnit.equal(error, undefined, 'play');
 
           if (error) return onerror(error);
@@ -78,7 +78,8 @@ QUnit.asyncTest('Create pipeline and play video', function () {
         });
       });
     });
-  });
+  })
+  .catch(onerror)
 });
 
 QUnit.asyncTest('Detect bar-code in a video', function () {
@@ -99,22 +100,8 @@ QUnit.asyncTest('Detect bar-code in a video', function () {
   }, function (error, player) {
     if (error) return onerror(error);
 
-    self.pipeline.create('ZBarFilter', function (error, zbar) {
+    return self.pipeline.create('ZBarFilter', function (error, zbar) {
       if (error) return onerror(error);
-
-      player.connect(zbar, function (error) {
-        QUnit.equal(error, undefined, 'connect');
-
-        if (error) return onerror(error);
-
-        player.play(function (error) {
-          QUnit.equal(error, undefined, 'play');
-
-          if (error) return onerror(error);
-
-          timeout.start();
-        });
-      });
 
       zbar.on('CodeFound', function (data) {
         QUnit.ok(true, 'CodeFound:' + data.value);
@@ -123,6 +110,21 @@ QUnit.asyncTest('Detect bar-code in a video', function () {
 
         QUnit.start();
       });
+
+      return player.connect(zbar, function (error) {
+        QUnit.equal(error, undefined, 'connect');
+
+        if (error) return onerror(error);
+
+        return player.play(function (error) {
+          QUnit.equal(error, undefined, 'play');
+
+          if (error) return onerror(error);
+
+          timeout.start();
+        });
+      });
     });
-  });
+  })
+  .catch(onerror)
 });

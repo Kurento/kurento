@@ -57,7 +57,7 @@ QUnit.asyncTest('create', function () {
 
     QUnit.notEqual(composite, undefined, 'composite');
 
-    composite.createHubPort(function (error, hubPort) {
+    return composite.createHubPort(function (error, hubPort) {
       QUnit.equal(error, undefined, 'createHubPort');
 
       if (error) return onerror(error);
@@ -66,5 +66,6 @@ QUnit.asyncTest('create', function () {
 
       QUnit.start();
     });
-  });
+  })
+  .catch(onerror)
 });

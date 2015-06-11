@@ -49,10 +49,11 @@ QUnit.test('setVideoFormat', function (assert) {
     caps.framerate = kurentoClient.register.complexTypes.Fraction(caps.framerate)
     caps = kurentoClient.register.complexTypes.VideoCaps(caps)
 
-    passThrough.setVideoFormat(caps, function (error) {
+    return passThrough.setVideoFormat(caps, function (error) {
       assert.equal(error, undefined)
 
       done();
     })
   })
+  .catch(onerror)
 });
