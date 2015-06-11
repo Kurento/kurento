@@ -162,9 +162,11 @@ public class PingWatchdogManager {
 			session.setTransportId(transportId);
 			sessions.put(transportId, session);
 		} else {
-			log.warn(
-					"Trying to update transport for unexisting session with oldTransportId {}",
-					oldTransportId);
+			if (pingWachdog) {
+				log.warn(
+						"Trying to update transport for unexisting session with oldTransportId {}",
+						oldTransportId);
+			}
 		}
 	}
 
@@ -175,9 +177,11 @@ public class PingWatchdogManager {
 					transportId);
 			session.disablePrevPingWatchdog();
 		} else {
-			log.warn(
-					"Trying to disable PingWatchdog for unexisting session with transportId {}",
-					transportId);
+			if (pingWachdog) {
+				log.warn(
+						"Trying to disable PingWatchdog for unexisting session with transportId {}",
+						transportId);
+			}
 		}
 	}
 
