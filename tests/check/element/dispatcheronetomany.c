@@ -20,14 +20,19 @@
 #include <gst/gst.h>
 
 #define KMS_ELEMENT_PAD_TYPE_VIDEO 2
+#define NUM_CONNEXIONS 2
 
 GstElement *pipeline;
 GMainLoop *loop;
-GstElement *hubport1, *hubport2, *hubport3, *hubport4, *hubport5;
+GstElement *hubport1, *hubport2, *hubport3, *hubport4, *hubport5, *mixer;
 int num_ports;
 gboolean handoff_3 = FALSE;
 gboolean handoff_4 = FALSE;
 gboolean handoff_5 = FALSE;
+gint handlerId1, handlerId2, handlerId3, handlerId4, handlerId5;
+gchar *padname3, *padname4, *padname5;
+GMutex mutex;
+int connected = 0;
 
 static void
 handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
@@ -66,6 +71,32 @@ handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
   }
 }
 
+void
+check_connected ()
+{
+  if (connected == NUM_CONNEXIONS) {
+    gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+    g_signal_emit_by_name (hubport3, "request-new-srcpad",
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname3);
+    fail_if (padname3 == NULL);
+
+    g_signal_emit_by_name (hubport4, "request-new-srcpad",
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname4);
+    fail_if (padname4 == NULL);
+
+    g_signal_emit_by_name (hubport5, "request-new-srcpad",
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname5);
+    fail_if (padname5 == NULL);
+
+    g_signal_emit_by_name (mixer, "handle-port", hubport3, &handlerId3);
+    g_signal_emit_by_name (mixer, "handle-port", hubport4, &handlerId4);
+    g_signal_emit_by_name (mixer, "handle-port", hubport5, &handlerId5);
+
+    g_object_set (mixer, "main", handlerId1, NULL);
+  }
+}
+
 static void
 srcpad_added (GstElement * hubport, GstPad * new_pad, gpointer user_data)
 {
@@ -91,6 +122,12 @@ srcpad_added (GstElement * hubport, GstPad * new_pad, gpointer user_data)
     fail_if (gst_pad_link (sinkpad, new_pad) != GST_PAD_LINK_OK);
     gst_element_sync_state_with_parent (videosrc);
     g_object_unref (sinkpad);
+
+    g_mutex_lock (&mutex);
+    connected++;
+    check_connected ();
+    g_mutex_unlock (&mutex);
+
     goto end;
   }
 
@@ -126,10 +163,10 @@ end:
 
 GST_START_TEST (connection)
 {
-  gint handlerId1, handlerId2, handlerId3, handlerId4, handlerId5;
   gint signalId1, signalId2, signalId3, signalId4, signalId5;
-  gchar *padname3, *padname4, *padname5;
-  GstElement *mixer = gst_element_factory_make ("dispatcheronetomany", NULL);
+
+  mixer = gst_element_factory_make ("dispatcheronetomany", NULL);
+  g_mutex_init (&mutex);
 
   hubport1 = gst_element_factory_make ("hubport", NULL);
   hubport2 = gst_element_factory_make ("hubport", NULL);
@@ -158,25 +195,8 @@ GST_START_TEST (connection)
       g_signal_connect (hubport5, "pad-added", G_CALLBACK (srcpad_added),
       &padname5);
 
-  g_signal_emit_by_name (hubport3, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname3);
-  fail_if (padname3 == NULL);
-
-  g_signal_emit_by_name (hubport4, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname4);
-  fail_if (padname4 == NULL);
-
-  g_signal_emit_by_name (hubport5, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname5);
-  fail_if (padname5 == NULL);
-
   g_signal_emit_by_name (mixer, "handle-port", hubport1, &handlerId1);
   g_signal_emit_by_name (mixer, "handle-port", hubport2, &handlerId2);
-  g_signal_emit_by_name (mixer, "handle-port", hubport3, &handlerId3);
-  g_signal_emit_by_name (mixer, "handle-port", hubport4, &handlerId4);
-  g_signal_emit_by_name (mixer, "handle-port", hubport5, &handlerId5);
-
-  gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   g_object_set (mixer, "main", handlerId1, NULL);
 
@@ -200,6 +220,7 @@ GST_START_TEST (connection)
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));
   g_main_loop_unref (loop);
+  g_mutex_clear (&mutex);
 }
 
 GST_END_TEST
