@@ -47,11 +47,11 @@ public interface RepositoryRestApi {
 	RepositoryItemRecorder createRepositoryItem(
 			@Body Map<String, String> metadata);
 
-	@DELETE("/repo/item/{itemId}/delete")
+	@DELETE("/repo/item/{itemId}")
 	Response removeRepositoryItem(
 			@Path("itemId") String itemId);
 
-	@GET("/repo/item/{itemId}/read")
+	@GET("/repo/item/{itemId}")
 	RepositoryItemPlayer getReadEndpoint(@Path("itemId") String itemId);
 
 	@POST("/repo/item/find")

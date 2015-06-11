@@ -50,7 +50,7 @@ public class RepositoryController {
 		return repoService.createRepositoryItem(metadata);
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{itemId}/delete")
+	@RequestMapping(method = RequestMethod.DELETE, value = "/{itemId}")
 	public void removeRepositoryItem(@PathVariable("itemId") String itemId,
 			HttpServletResponse response) {
 		try {
@@ -65,7 +65,7 @@ public class RepositoryController {
 		}
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{itemId}/read")
+	@RequestMapping(method = RequestMethod.GET, value = "/{itemId}")
 	public RepositoryItemPlayer getReadEndpoint(
 			@PathVariable("itemId") String itemId, HttpServletResponse response) {
 		try {

@@ -34,9 +34,7 @@ import org.kurento.repository.internal.repoimpl.RepositoryWithHttp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
 public class FileSystemRepository implements RepositoryWithHttp {
 
 	private static final Logger log = LoggerFactory
@@ -59,6 +57,8 @@ public class FileSystemRepository implements RepositoryWithHttp {
 
 	@PostConstruct
 	public void init() {
+		log.debug("Invoked post construct init method");
+		
 		baseFolder = new File(config.getFileSystemFolder());
 		checkFolder(baseFolder);
 		calculateNextId(true);

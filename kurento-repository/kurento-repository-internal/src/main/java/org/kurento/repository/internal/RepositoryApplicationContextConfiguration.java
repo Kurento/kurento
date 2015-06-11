@@ -68,9 +68,11 @@ public class RepositoryApplicationContextConfiguration {
 	@Bean
 	public Repository repository() {
 		RepositoryApiConfiguration repositoryApiConfiguration = repositoryApiConfiguration();
-		if (repositoryApiConfiguration.getRepositoryType().isFilesystem()) {
+		RepoType rtype = repositoryApiConfiguration.getRepositoryType();
+		log.info("Repository type: {}", rtype);
+		if (rtype.isFilesystem()) {
 			return new FileSystemRepository();
-		} else if (repositoryApiConfiguration.getRepositoryType().isMongoDB()) {
+		} else if (rtype.isMongoDB()) {
 			return new MongoRepository();
 		} else {
 			throw new KurentoException(

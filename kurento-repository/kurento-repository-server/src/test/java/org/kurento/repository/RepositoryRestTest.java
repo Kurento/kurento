@@ -35,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.kurento.commons.ConfigFileManager;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
@@ -106,9 +105,6 @@ public class RepositoryRestTest {
 			mrepo.getGridFS().getDB().dropDatabase();
 			log.info("Cleaned up the Mongo repository");
 		} else {
-			ConfigFileManager
-			.loadConfigFile(RepositoryApplicationContextConfiguration.KEY_CONFIG_FILENAME);
-
 			String filesFolder = getProperty(
 					RepositoryApplicationContextConfiguration.KEY_FS_FOLDER,
 					RepositoryApiConfiguration.DEFAULT_FILESYSTEM_LOC);
