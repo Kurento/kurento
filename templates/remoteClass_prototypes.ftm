@@ -118,17 +118,6 @@ Object.defineProperty(MediaObject.prototype, '_invoke',
       });
     }
 
-    var then = promise.then
-    promise.then = function(onFulfilled, onRejected)
-    {
-      if(onFulfilled instanceof Function) onFulfilled = onFulfilled.bind(self)
-      if(onRejected  instanceof Function) onRejected  = onRejected.bind(self)
-
-      then.call(this, onFulfilled, onRejected)
-
-      return this
-    }
-
     return disguise(promiseCallback(promise, callback, this), this)
   }
 })
@@ -260,6 +249,10 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
   })
 
   return disguise(promise, this)
+}
+MediaObject.prototype.catch = function(onRejected)
+{
+  this.then(null, onRejected);
 }
 
 Object.defineProperty(MediaObject.prototype, 'commited',
