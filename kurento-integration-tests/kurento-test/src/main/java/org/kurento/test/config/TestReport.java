@@ -17,6 +17,7 @@ package org.kurento.test.config;
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -47,8 +48,13 @@ public class TestReport {
 			extraHtml = "";
 			String title = (name == null) ? "Tests report [" + new Date() + "]"
 					: name;
-			writer = new PrintWriter(new BufferedWriter(new FileWriter(
-					testReport, true)));
+			File file = new File(testReport);
+			boolean exists = file.exists();
+			writer = new PrintWriter(new BufferedWriter(new FileWriter(file,
+					true)));
+			if (!exists) {
+				appendHeader();
+			}
 			appendTitle(title);
 			writer.flush();
 		} catch (IOException e) {
@@ -58,6 +64,10 @@ public class TestReport {
 
 	public TestReport() {
 		this(null);
+	}
+
+	public void appendHeader() {
+		appendHtml("<script src='http://cdn.rawgit.com/eligrey/FileSaver.js/master/FileSaver.js'></script>");
 	}
 
 	public void appendTitle(String text) {
@@ -82,7 +92,11 @@ public class TestReport {
 	}
 
 	public String getCode(String text) {
-		String code = "<textarea readonly style='width:" + WIDTH_PERCENTAGE
+		String code = "<button type='button' onclick=\"saveAs(new Blob([nextSibling.value], "
+				+ "{type: 'text/plain;charset=utf-8'}), previousSibling.innerText ? "
+				+ "previousSibling.innerText : previousSibling.previousSibling.innerText "
+				+ "+ '.log');\">Save</button>";
+		code += "<textarea readonly style='width:" + WIDTH_PERCENTAGE
 				+ "%; height:150px;' wrap='off'>";
 		code += text;
 		code += "</textarea><br><br>";
@@ -188,10 +202,10 @@ public class TestReport {
 	}
 
 	public void appendException(Throwable throwable, TestScenario testScenario) {
-		appendHtml("<b>Error description</b><br>");
+		appendHtml("<b>Error description</b>");
 		appendCode(throwable.getClass().getName() + " : "
 				+ throwable.getMessage());
-		appendHtml("<b>Error trace</b><br>");
+		appendHtml("<b>Error trace</b>");
 		appendCode(throwable.getStackTrace());
 		boolean saucelabsTitle = false;
 		if (testScenario != null) {
