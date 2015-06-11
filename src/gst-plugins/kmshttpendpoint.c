@@ -68,14 +68,14 @@ kms_http_endpoint_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   if (self->pipeline == NULL)
-    return;
+    goto end;
 
   gst_element_set_state (self->pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (self->pipeline));
   self->pipeline = NULL;
 
   /* clean up as possible. May be called multiple times */
-
+end:
   G_OBJECT_CLASS (kms_http_endpoint_parent_class)->dispose (object);
 }
 
