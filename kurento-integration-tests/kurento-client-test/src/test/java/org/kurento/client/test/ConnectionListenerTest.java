@@ -67,6 +67,11 @@ public class ConnectionListenerTest {
 					public void connected() {
 
 					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
+												
+					}
 				});
 
 		MediaPipeline pipeline = kurentoClient.createMediaPipeline();

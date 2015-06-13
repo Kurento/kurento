@@ -26,41 +26,51 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 
 			transaction.sendResponse("OK");
 		}
-		
+
 		@Override
 		public boolean isPingWatchdog() {
 			return true;
 		}
 	}
-	
+
 	@Test
 	public void test() throws IOException, InterruptedException {
 
 		log.info("Client started");
 
-		JsonRpcClient client = createJsonRpcClient("/pingpong", new JsonRpcWSConnectionListener(){
+		JsonRpcClient client = createJsonRpcClient("/pingpong",
+				new JsonRpcWSConnectionListener() {
 
-			@Override
-			public void connected() {
-				// TODO Auto-generated method stub
-				
-			}
+					@Override
+					public void connected() {
+						// TODO Auto-generated method stub
 
-			@Override
-			public void connectionFailed() {
-				System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-				
-			}
+					}
 
-			@Override
-			public void disconnected() {
-				System.out.println("#######################################");
-				
-			}});
+					@Override
+					public void connectionFailed() {
+						System.out
+								.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+					}
+
+					@Override
+					public void disconnected() {
+						System.out
+								.println("#######################################");
+
+					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
+						// TODO Auto-generated method stub
+
+					}
+				});
 
 		client.setHeartbeatInterval(500);
 		client.enableHeartbeat();
-		
+
 		String result = client.sendRequest("echo", "Params", String.class);
 
 		log.info("Response:" + result);
@@ -68,20 +78,20 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 		Assert.assertEquals(result, "OK");
 
 		Thread.sleep(20000);
-		
+
 		log.info("----------------- Disabling heartbeat in client ----------------");
-		
+
 		client.disableHeartbeat();
-		
-		//This should lead to reconnect clients
-		
+
+		// This should lead to reconnect clients
+
 		Thread.sleep(30000);
 
 		log.info("----------------- Enabling heartbeat in client ----------------");
 		client.enableHeartbeat();
-		
+
 		Thread.sleep(30000);
-		
+
 		log.info("Client finished");
 
 	}

@@ -21,7 +21,7 @@ public class ConnectionListener2Test extends JsonRpcConnectorBaseTest {
 
 	@Test
 	public void serverDisconnectedTest() throws IOException,
-	InterruptedException {
+			InterruptedException {
 
 		final CountDownLatch latch = new CountDownLatch(1);
 
@@ -41,6 +41,12 @@ public class ConnectionListener2Test extends JsonRpcConnectorBaseTest {
 
 					@Override
 					public void connected() {
+					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
+						// TODO Auto-generated method stub
+
 					}
 				});
 

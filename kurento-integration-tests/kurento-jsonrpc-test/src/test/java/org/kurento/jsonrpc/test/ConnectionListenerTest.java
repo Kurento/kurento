@@ -1,9 +1,7 @@
 package org.kurento.jsonrpc.test;
 
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -38,7 +36,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
 	@Test
 	public void connectionTimeoutTest() throws IOException,
-			InterruptedException {
+	InterruptedException {
 
 		final CountDownLatch latch = new CountDownLatch(1);
 
@@ -58,6 +56,12 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					@Override
 					public void connectionFailed() {
 						latch.countDown();
+					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
+						// TODO Auto-generated method stub
+
 					}
 				});
 
@@ -99,6 +103,12 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 						// TODO Auto-generated method stub
 
 					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
+						// TODO Auto-generated method stub
+
+					}
 				});
 
 		client.sendRequest("sessiontest", String.class);
@@ -112,7 +122,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
 	@Test
 	public void clientDisconnectedTest() throws IOException,
-			InterruptedException {
+	InterruptedException {
 
 		final CountDownLatch latch = new CountDownLatch(1);
 
@@ -135,6 +145,12 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 						// TODO Auto-generated method stub
 
 					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
+						// TODO Auto-generated method stub
+
+					}
 				});
 
 		client.sendRequest("sessiontest", String.class);
@@ -149,7 +165,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
 	@Test
 	public void communicationFailureDisconnectionTest() throws IOException,
-			InterruptedException {
+	InterruptedException {
 
 		final CountDownLatch latch = new CountDownLatch(1);
 
@@ -169,6 +185,12 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
 					@Override
 					public void connectionFailed() {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void reconnected(boolean sameServer) {
 						// TODO Auto-generated method stub
 
 					}
