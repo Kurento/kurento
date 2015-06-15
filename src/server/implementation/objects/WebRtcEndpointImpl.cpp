@@ -77,6 +77,21 @@ remove_not_supported_codecs (GstElement *element)
   g_array_unref (codecs);
 }
 
+static void
+check_support_for_h264 ()
+{
+  GstPlugin *plugin;
+
+  plugin = gst_plugin_load_by_name ("openh264");
+
+  if (plugin == NULL) {
+    return;
+  }
+
+  supported_codecs.push_back ("H264");
+  gst_object_unref (plugin);
+}
+
 void WebRtcEndpointImpl::onIceCandidate (KmsIceCandidate *candidate)
 {
   try {
@@ -350,6 +365,8 @@ WebRtcEndpointImpl::StaticConstructor::StaticConstructor()
 {
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
                            GST_DEFAULT_NAME);
+
+  check_support_for_h264 ();
 }
 
 } /* kurento */
