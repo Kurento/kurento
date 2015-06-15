@@ -22,7 +22,7 @@ namespace kurento
 
 static const uint DEFAULT_STUN_PORT = 3478;
 
-static const gchar *supported_codecs[] = { "VP8", "opus", "PCMU" };
+std::vector<std::string> supported_codecs = { "VP8", "opus", "PCMU" };
 
 static void
 remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
@@ -38,7 +38,6 @@ remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
     const GstStructure *s;
     const gchar *codec_name;
     gboolean supported = FALSE;
-    guint j;
 
     if (!GST_VALUE_HOLDS_STRUCTURE (v) ) {
       GST_WARNING_OBJECT (element, "Value into array is not a GstStructure");
@@ -48,8 +47,9 @@ remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
     s = gst_value_get_structure (v);
     codec_name = gst_structure_get_name (s);
 
-    for (j = 0; j < G_N_ELEMENTS (supported_codecs); j++) {
-      if (g_str_has_prefix (codec_name, supported_codecs[j]) ) {
+    for (std::vector<std::string>::iterator it = supported_codecs.begin();
+         it != supported_codecs.end(); ++it) {
+      if (g_str_has_prefix (codec_name, (*it).c_str() ) ) {
         supported = TRUE;
         break;
       }
