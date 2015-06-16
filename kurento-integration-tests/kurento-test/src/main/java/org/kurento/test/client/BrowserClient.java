@@ -35,6 +35,9 @@ import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
 import io.github.bonigarcia.wdm.ChromeDriverManager;
 
+import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
+
 import java.io.Closeable;
 import java.io.File;
 import java.net.MalformedURLException;

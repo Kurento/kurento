@@ -66,6 +66,9 @@ public class TestConfiguration {
 	public static final String TEST_NODE_PASSWD_PROPERTY = "test.node.passwd";
 	public static final String TEST_NODE_PEM_PROPERTY = "test.node.pem";
 
+	public static final String TEST_SCREEN_SHARE_TITLE_PROPERTY = "test.screenshare.title";
+	public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT = "Entire screen";
+
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
 	public static final int CLIENT_RATE_DEFAULT = 5000; // milliseconds
