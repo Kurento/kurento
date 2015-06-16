@@ -106,6 +106,10 @@ public class BrowserClient implements Closeable {
 	private String passwd;
 	private String pem;
 
+	private boolean avoidProxy;
+
+	private String parentTunnel;
+
 	public BrowserClient(Builder builder) {
 		this.builder = builder;
 		this.scope = builder.scope;
@@ -133,6 +137,8 @@ public class BrowserClient implements Closeable {
 		this.passwd = builder.passwd;
 		this.pem = builder.pem;
 		this.host = builder.host;
+		this.avoidProxy = builder.avoidProxy;
+		this.parentTunnel = builder.parentTunnel;
 	}
 
 	public void init() {
@@ -277,6 +283,14 @@ public class BrowserClient implements Closeable {
 
 		capabilities.setCapability("version", browserVersion);
 		capabilities.setCapability("platform", platform);
+
+		if (parentTunnel != null) {
+			capabilities.setCapability("parent-tunnel", parentTunnel);
+		}
+		if (avoidProxy) {
+			capabilities.setCapability("avoid-proxy", avoidProxy);
+		}
+
 		capabilities.setCapability("idleTimeout", idleTimeout);
 		capabilities.setCapability("commandTimeout", commandTimeout);
 
@@ -412,6 +426,8 @@ public class BrowserClient implements Closeable {
 		private String login;
 		private String passwd;
 		private String pem;
+		private boolean avoidProxy;
+		private String parentTunnel;
 
 		public Builder browserPerInstance(int browserPerInstance) {
 			this.browserPerInstance = browserPerInstance;
@@ -490,6 +506,16 @@ public class BrowserClient implements Closeable {
 
 		public Builder usePhysicalCam() {
 			this.usePhysicalCam = true;
+			return this;
+		}
+
+		public Builder avoidProxy() {
+			this.avoidProxy = true;
+			return this;
+		}
+
+		public Builder parentTunnel(String parentTunnel) {
+			this.parentTunnel = parentTunnel;
 			return this;
 		}
 

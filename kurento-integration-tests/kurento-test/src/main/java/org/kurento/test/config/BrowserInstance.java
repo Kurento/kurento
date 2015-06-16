@@ -43,6 +43,8 @@ public class BrowserInstance {
 	private String saucelabsKey;
 	private String host;
 	private String video;
+	private boolean avoidProxy;
+	private String parentTunnel;
 
 	public BrowserInstance(String browser) {
 		this.browser = browser;
@@ -210,6 +212,22 @@ public class BrowserInstance {
 
 	public void setVideo(String video) {
 		this.video = video;
+	}
+
+	public boolean isAvoidProxy() {
+		return avoidProxy;
+	}
+
+	public void setAvoidProxy(boolean avoidProxy) {
+		this.avoidProxy = avoidProxy;
+	}
+
+	public String getParentTunnel() {
+		return parentTunnel;
+	}
+
+	public void setParentTunnel(String parentTunnel) {
+		this.parentTunnel = parentTunnel;
 	}
 
 	@Override
