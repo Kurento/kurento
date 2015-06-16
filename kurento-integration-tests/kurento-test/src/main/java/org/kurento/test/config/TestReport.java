@@ -68,6 +68,21 @@ public class TestReport {
 
 	public void appendHeader() {
 		appendHtml("<script src='http://cdn.rawgit.com/eligrey/FileSaver.js/master/FileSaver.js'></script>");
+		appendHtml("<script>");
+		appendHtml("window.onload = function() {");
+		appendHtml("var allTextPage = document.documentElement.innerText;");
+		appendHtml("var ok = (allTextPage.match(/Test ok/g) || []).length;");
+		appendHtml("var retries = (allTextPage.match(/Test failed in retry/g) || []).length;");
+		appendHtml("var errors = (allTextPage.match(/TEST ERROR/g) || []).length;");
+		appendHtml("var summary = document.getElementById('summary');");
+		appendHtml("var executions = ok + retries;");
+		appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Total of test(s) executions: \" + executions + \"</p>\";");
+		appendHtml("if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Total of test(s) ok: \" + ok + \"</p>\";");
+		appendHtml("if (retries > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Total of test(s) with retry: \" + retries + \"</p>\";");
+		appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Total of test(s) with error (after 2 retries): \" + errors + \"</p>\";");
+		appendHtml("}");
+		appendHtml("</script>");
+		appendHtml("<div style='width:95%; border: 1px solid grey;' id='summary'><h1>Test report summary</h1><hr></div>");
 	}
 
 	public void appendTitle(String text) {
