@@ -75,9 +75,11 @@ public class TestReport {
 		appendHtml("var summary = document.getElementById('summary');");
 		appendHtml("var executions = ok + retries;");
 		appendHtml("var tests = ok + errors;");
+		appendHtml("var retriesOk = retries - errors*" + numRetries + ";");
 		appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \" - Number of test(s) executions: \" + executions + \"</p>\";");
 		appendHtml("if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Number of test(s) ok: \" + ok + \"</p>\";");
 		appendHtml("if (retries > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) with retry: \" + retries + \"</p>\";");
+		appendHtml("if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) retried but succeeded: \" + retriesOk + \"</p>\";");
 		appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after "
 				+ numRetries + " retries): \" + errors + \"</p>\";");
 		appendHtml("}");
