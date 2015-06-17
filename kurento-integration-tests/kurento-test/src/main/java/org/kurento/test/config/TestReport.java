@@ -82,7 +82,9 @@ public class TestReport {
 				+ numRetries + " retries): \" + errors + \"</p>\";");
 		appendHtml("}");
 		appendHtml("</script>");
-		appendHtml("<div style='width:95%; border: 1px solid grey;' id='summary'><h1>Test report summary</h1><hr></div>");
+		appendHtml("<div style='width:"
+				+ WIDTH_PERCENTAGE
+				+ "%; border: 1px solid grey;' id='summary'><h1>Test report summary</h1><hr></div>");
 	}
 
 	public void appendTitle(String text) {
