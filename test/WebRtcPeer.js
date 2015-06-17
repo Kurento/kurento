@@ -1,16 +1,15 @@
 /*
  * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials are made
+ * available under the terms of the GNU Lesser General Public License (LGPL)
+ * version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
 /**
@@ -32,17 +31,7 @@
  *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @since 4.2.4
- *
  */
-
-if (typeof QUnit == 'undefined') {
-  QUnit = require('qunit-cli');
-  QUnit.load();
-
-  kurentoUtils = require('..');
-
-  require('./_common');
-};
 
 var WebRtcPeer = kurentoUtils.WebRtcPeer;
 
@@ -104,10 +93,11 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
   var options = {
@@ -141,21 +131,20 @@ QUnit.test('WebRtcPeerRecvonly', function (assert) {
           ctx.peerConnection.createAnswer(function (answer) {
               ctx.peerConnection.setLocalDescription(answer,
                 function () {
-                  processAnswer(answer.sdp, function (error) {
-                    if (error) return onerror(error)
-
-                    var stream = this.getRemoteStream()
-                    assert.notEqual(stream, undefined,
-                      'remote stream')
-
-                    done()
-                  })
+                  processAnswer(answer.sdp, onerror)
                 },
                 onerror);
             },
             onerror)
         },
         onerror)
+    })
+
+    this.once('connected', function () {
+      var stream = this.getRemoteStream()
+      assert.notEqual(stream, undefined, 'remote stream')
+
+      done()
     })
   })
 });
@@ -168,10 +157,11 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
   var audioStream = getOscillatorMedia()
@@ -191,9 +181,6 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
     this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
 
-      var stream = this.getLocalStream()
-      assert.equal(stream, audioStream, 'local stream')
-
       var offer = new RTCSessionDescription({
         type: 'offer',
         sdp: sdpOffer
@@ -210,17 +197,20 @@ QUnit.test('WebRtcPeerSendonly', function (assert) {
           ctx.peerConnection.createAnswer(function (answer) {
               ctx.peerConnection.setLocalDescription(answer,
                 function () {
-                  processAnswer(answer.sdp, function (error) {
-                    if (error) return onerror(error)
-
-                    done()
-                  })
+                  processAnswer(answer.sdp, onerror)
                 },
                 onerror);
             },
             onerror);
         },
         onerror)
+    })
+
+    this.once('connected', function () {
+      var stream = this.getLocalStream()
+      assert.equal(stream, audioStream, 'local stream')
+
+      done()
     })
   })
 });
@@ -233,10 +223,11 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
   var audioStream = getOscillatorMedia()
@@ -255,9 +246,6 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
 
     this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
-
-      var stream = this.getLocalStream()
-      assert.equal(stream, audioStream, 'local stream')
 
       var offer = new RTCSessionDescription({
         type: 'offer',
@@ -279,21 +267,23 @@ QUnit.test('WebRtcPeerSendrecv', function (assert) {
           ctx.peerConnection.createAnswer(function (answer) {
               ctx.peerConnection.setLocalDescription(answer,
                 function () {
-                  processAnswer(answer.sdp, function (error) {
-                    if (error) return onerror(error)
-
-                    var stream = this.getRemoteStream()
-                    assert.notEqual(stream, undefined,
-                      'remote stream')
-
-                    done()
-                  })
+                  processAnswer(answer.sdp, onerror)
                 },
                 onerror);
             },
             onerror);
         },
         onerror);
+    })
+
+    this.once('connected', function () {
+      var stream = this.getLocalStream()
+      assert.equal(stream, audioStream, 'local stream')
+
+      var stream = this.getRemoteStream()
+      assert.notEqual(stream, undefined, 'remote stream')
+
+      done()
     })
   })
 });
@@ -312,10 +302,9 @@ QUnit.test('processOffer', function (assert) {
   function onerror(error) {
     if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
-      console.trace(error)
-    }
 
-    done()
+      done()
+    }
   }
 
   ctx.webRtcPeer = WebRtcPeerRecvonly(function (error) {
@@ -345,11 +334,9 @@ QUnit.test('processOffer', function (assert) {
 
               ctx.peerConnection.setRemoteDescription(answer,
                 function () {
-                  var stream = self.getRemoteStream()
-                  assert.notEqual(stream, undefined,
-                    'remote stream')
-
-                  done()
+                  console.log(
+                    'ctx.peerConnection.setRemoteDescription'
+                  )
                 },
                 onerror)
             })
@@ -357,6 +344,13 @@ QUnit.test('processOffer', function (assert) {
           onerror);
       },
       onerror);
+
+    this.once('connected', function () {
+      var stream = this.getRemoteStream()
+      assert.notEqual(stream, undefined, 'remote stream')
+
+      done()
+    })
   })
 });
 
@@ -372,10 +366,11 @@ QUnit.test('currentFrame', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
   var video = document.getElementById('video')
@@ -391,6 +386,26 @@ QUnit.test('currentFrame', function (assert) {
     var self = this
 
     if (error) return onerror(error)
+
+    function onplaying() {
+      video.removeEventListener('playing', onplaying)
+
+      setTimeout(function () {
+        var currentFrame = self.currentFrame
+
+        var x = currentFrame.width / 2
+        var y = currentFrame.height / 2
+
+        assert.notPixelEqual(
+          currentFrame, x,
+          y, 0, 0, 0, 0,
+          'playing');
+
+        done()
+      }, 1000)
+    }
+
+    video.addEventListener('playing', onplaying)
 
     this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
@@ -424,39 +439,7 @@ QUnit.test('currentFrame', function (assert) {
                   ctx.peerConnection.setLocalDescription(
                     answer,
                     function () {
-                      processAnswer(answer.sdp, function (
-                        error) {
-                        if (error) return onerror(error)
-
-                        var stream = this.getRemoteStream()
-                        assert.notEqual(stream,
-                          undefined, 'remote stream')
-
-                        function onplaying() {
-                          video.removeEventListener(
-                            'playing', onplaying)
-
-                          setTimeout(function () {
-                            var currentFrame =
-                              self.currentFrame
-
-                            var x = currentFrame.width /
-                              2
-                            var y = currentFrame.height /
-                              2
-
-                            assert.notPixelEqual(
-                              currentFrame, x,
-                              y, 0, 0, 0, 0,
-                              'playing');
-
-                            done()
-                          }, 1000)
-                        }
-
-                        video.addEventListener(
-                          'playing', onplaying)
-                      })
+                      processAnswer(answer.sdp, onerror)
                     },
                     onerror);
                 },
@@ -465,6 +448,11 @@ QUnit.test('currentFrame', function (assert) {
             onerror)
         },
         onerror)
+    })
+
+    this.once('connected', function () {
+      var stream = this.getRemoteStream()
+      assert.notEqual(stream, undefined, 'remote stream')
     })
   })
 });
@@ -477,10 +465,11 @@ QUnit.test('enabled', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
   var options = {
@@ -490,25 +479,51 @@ QUnit.test('enabled', function (assert) {
     }
   }
 
-  ctx.webRtcPeer = WebRtcPeerSendonly(options, function (error, sdpoffer,
-    processAnswer) {
+  ctx.webRtcPeer = WebRtcPeerSendonly(options, function (error) {
     var self = this
 
     if (error) return onerror(error)
 
-    assert.ok(this.audioEnabled, 'enabled')
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
+      if (error) return onerror(error)
 
-    this.enabled = false
-    assert.ok(!this.audioEnabled, 'disabled')
+      var offer = new RTCSessionDescription({
+        type: 'offer',
+        sdp: sdpOffer
+      });
 
-    this.enabled = true
-    assert.ok(this.audioEnabled, 'enabled again')
+      ctx.peerConnection = new RTCPeerConnection()
 
-    this.audioEnabled = false
-    assert.ok(!this.enabled, 'audio disable global')
+      setIceCandidateCallbacks(this, ctx.peerConnection, onerror)
 
-    this.dispose()
-    done()
+      ctx.peerConnection.setRemoteDescription(offer, function () {
+          ctx.peerConnection.createAnswer(function (answer) {
+              ctx.peerConnection.setLocalDescription(answer,
+                function () {
+                  processAnswer(answer.sdp, onerror)
+                },
+                onerror);
+            },
+            onerror);
+        },
+        onerror)
+    })
+
+    this.once('connected', function () {
+      assert.ok(this.audioEnabled, 'enabled')
+
+      this.enabled = false
+      assert.notOk(this.audioEnabled, 'disabled')
+
+      this.enabled = true
+      assert.ok(this.audioEnabled, 'enabled again')
+
+      this.audioEnabled = false
+      assert.notOk(this.enabled, 'audio disable global')
+
+      this.dispose()
+      done()
+    })
   })
 });
 
@@ -520,10 +535,11 @@ QUnit.test('audioEnabled', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
   var options = {
@@ -533,25 +549,51 @@ QUnit.test('audioEnabled', function (assert) {
     }
   }
 
-  ctx.webRtcPeer = WebRtcPeerSendonly(options, function (error, sdpoffer,
-    processAnswer) {
+  ctx.webRtcPeer = WebRtcPeerSendonly(options, function (error) {
     var self = this
 
     if (error) return onerror(error)
 
-    var stream = this.getLocalStream()
-    var track = stream.getAudioTracks()[0]
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
+      if (error) return onerror(error)
 
-    assert.ok(track.enabled, 'enabled')
+      var offer = new RTCSessionDescription({
+        type: 'offer',
+        sdp: sdpOffer
+      });
 
-    this.audioEnabled = false
-    assert.ok(!track.enabled, 'disabled')
+      ctx.peerConnection = new RTCPeerConnection()
 
-    this.audioEnabled = true
-    assert.ok(track.enabled, 'enabled again')
+      setIceCandidateCallbacks(this, ctx.peerConnection, onerror)
 
-    this.dispose()
-    done()
+      ctx.peerConnection.setRemoteDescription(offer, function () {
+          ctx.peerConnection.createAnswer(function (answer) {
+              ctx.peerConnection.setLocalDescription(answer,
+                function () {
+                  processAnswer(answer.sdp, onerror)
+                },
+                onerror);
+            },
+            onerror);
+        },
+        onerror)
+    })
+
+    this.once('connected', function () {
+      var stream = this.getLocalStream()
+      var track = stream.getAudioTracks()[0]
+
+      assert.ok(track.enabled, 'enabled')
+
+      this.audioEnabled = false
+      assert.notOk(track.enabled, 'disabled')
+
+      this.audioEnabled = true
+      assert.ok(track.enabled, 'enabled again')
+
+      this.dispose()
+      done()
+    })
   })
 });
 
@@ -563,13 +605,14 @@ QUnit.test('videoEnabled', function (assert) {
   var ctx = this
 
   function onerror(error) {
-    if (error)
+    if (error) {
       QUnit.pushFailure(error.message || error, error.stack);
 
-    done()
+      done()
+    }
   }
 
-  const TIMEOUT = 50; // ms
+  const TIMEOUT = 1000; // ms
 
   var video = document.getElementById('video')
   var canvas = document.getElementById('canvas')
@@ -586,8 +629,7 @@ QUnit.test('videoEnabled', function (assert) {
     }
   }
 
-  ctx.webRtcPeer = WebRtcPeerSendonly(options, function (error, sdpoffer,
-    processAnswer) {
+  ctx.webRtcPeer = WebRtcPeerSendonly(options, function (error) {
     var self = this
 
     if (error) return onerror(error)
@@ -618,8 +660,8 @@ QUnit.test('videoEnabled', function (assert) {
           setTimeout(function () {
             context.drawImage(video, 0, 0, video.videoWidth,
               video.videoHeight)
-            assert.notPixelEqual(canvas, x, y, 0, 0, 0,
-              255, 'enabled again');
+            assert.notPixelEqual(canvas, x, y, 0, 0, 0, 255,
+              'enabled again');
 
             self.dispose()
             done()
@@ -629,5 +671,30 @@ QUnit.test('videoEnabled', function (assert) {
     }
 
     video.addEventListener('playing', onplaying)
+
+    this.generateOffer(function (error, sdpOffer, processAnswer) {
+      if (error) return onerror(error)
+
+      var offer = new RTCSessionDescription({
+        type: 'offer',
+        sdp: sdpOffer
+      });
+
+      ctx.peerConnection = new RTCPeerConnection()
+
+      setIceCandidateCallbacks(this, ctx.peerConnection, onerror)
+
+      ctx.peerConnection.setRemoteDescription(offer, function () {
+          ctx.peerConnection.createAnswer(function (answer) {
+              ctx.peerConnection.setLocalDescription(answer,
+                function () {
+                  processAnswer(answer.sdp, onerror)
+                },
+                onerror);
+            },
+            onerror);
+        },
+        onerror)
+    })
   })
 });
