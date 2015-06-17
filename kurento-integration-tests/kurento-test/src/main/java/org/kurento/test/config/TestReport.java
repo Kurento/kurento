@@ -42,9 +42,11 @@ public class TestReport {
 
 	protected PrintWriter writer;
 	protected String extraHtml;
+	protected int numRetries;
 
-	public TestReport(String name) {
+	public TestReport(String name, int numRetries) {
 		try {
+			this.numRetries = numRetries;
 			extraHtml = "";
 			String title = (name == null) ? "Tests report [" + new Date() + "]"
 					: name;
@@ -62,10 +64,6 @@ public class TestReport {
 		}
 	}
 
-	public TestReport() {
-		this(null);
-	}
-
 	public void appendHeader() {
 		appendHtml("<script src='//cdn.rawgit.com/eligrey/FileSaver.js/master/FileSaver.js'></script>");
 		appendHtml("<script>");
@@ -80,7 +78,8 @@ public class TestReport {
 		appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \" - Number of test(s) executions: \" + executions + \"</p>\";");
 		appendHtml("if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Number of test(s) ok: \" + ok + \"</p>\";");
 		appendHtml("if (retries > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) with retry: \" + retries + \"</p>\";");
-		appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after 2 retries): \" + errors + \"</p>\";");
+		appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after "
+				+ numRetries + " retries): \" + errors + \"</p>\";");
 		appendHtml("}");
 		appendHtml("</script>");
 		appendHtml("<div style='width:95%; border: 1px solid grey;' id='summary'><h1>Test report summary</h1><hr></div>");

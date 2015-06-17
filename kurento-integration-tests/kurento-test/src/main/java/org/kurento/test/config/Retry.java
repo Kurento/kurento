@@ -45,11 +45,7 @@ public class Retry implements TestRule {
 	}
 
 	public void useReport(String testName) {
-		testReport = new TestReport(testName);
-	}
-
-	public void useReport() {
-		testReport = new TestReport();
+		testReport = new TestReport(testName, retryCount);
 	}
 
 	public Statement apply(Statement base, Description description) {
