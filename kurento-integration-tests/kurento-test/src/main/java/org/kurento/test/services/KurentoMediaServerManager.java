@@ -211,10 +211,10 @@ public class KurentoMediaServerManager {
 
 		if (isKmsRemote) {
 			String[] filesToBeCopied = { "kurento.conf.json", "pattern.sdp",
-			"kurento.sh" };
+					"kurento.sh" };
 			for (String s : filesToBeCopied) {
 				remoteKms
-				.scp(workspace + s, remoteKms.getTmpFolder() + "/" + s);
+						.scp(workspace + s, remoteKms.getTmpFolder() + "/" + s);
 			}
 			remoteKms.runAndWaitCommand("chmod", "+x", remoteKms.getTmpFolder()
 					+ "/kurento.sh");
@@ -248,8 +248,8 @@ public class KurentoMediaServerManager {
 				remoteKms.execCommand("sh", "-c", remoteKms.getTmpFolder()
 						+ "/" + "kurento.sh");
 			} else {
-				Shell.run("sh", "-c", workspace
-						+ "kurento.sh > /tmp/kurento.log 2>&1");
+				Shell.run("sh", "-c", workspace + "kurento.sh > " + workspace
+						+ "kurento.log 2>&1");
 			}
 		}
 
@@ -308,7 +308,7 @@ public class KurentoMediaServerManager {
 				try {
 					Session wsSession = container.connectToServer(
 							new WebSocketClient(), ClientEndpointConfig.Builder
-							.create().build(), new URI(wsUri));
+									.create().build(), new URI(wsUri));
 					wsSession.close();
 
 					double time = (System.nanoTime() - initTime)
@@ -500,13 +500,13 @@ public class KurentoMediaServerManager {
 						remoteKms.getTmpFolder() + "/kms-pid");
 				result = Integer.parseInt(remoteKms.execAndWaitCommandNoBr(
 						"sh", "-c", "ps --pid " + kmsPid
-						+ " --no-headers | wc -l"));
+								+ " --no-headers | wc -l"));
 			} else {
 				String[] command = {
 						"sh",
 						"-c",
 						"ps --pid `cat " + workspace
-						+ "kms-pid` --no-headers | wc -l" };
+								+ "kms-pid` --no-headers | wc -l" };
 				Process countKms = Runtime.getRuntime().exec(command);
 				String stringFromStream = CharStreams
 						.toString(new InputStreamReader(countKms
