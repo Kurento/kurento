@@ -18,7 +18,6 @@ import static org.kurento.jsonrpc.internal.JsonRpcConstants.DATA_PROPERTY;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.ERROR_PROPERTY;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.ID_PROPERTY;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.JSON_RPC_PROPERTY;
-import static org.kurento.jsonrpc.internal.JsonRpcConstants.JSON_RPC_VERSION;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PROPERTY;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PARAMS_PROPERTY;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RESULT_PROPERTY;
@@ -85,13 +84,13 @@ public class JsonUtils {
 
 	public static Message fromJsonMessage(String message) {
 		JsonObject json = fromJson(message, JsonObject.class);
-		if(json.has(METHOD_PROPERTY)){
+		if (json.has(METHOD_PROPERTY)) {
 			return fromJsonRequest(json, JsonObject.class);
 		} else {
 			return fromJsonResponse(json, JsonElement.class);
 		}
 	}
-	
+
 	public static <T> Request<T> fromJsonRequest(String json,
 			Class<T> paramsClass) {
 
@@ -256,7 +255,7 @@ public class JsonUtils {
 	}
 
 	private static Class<?> getClassOrNull(Object object) {
-		return (object == null) ? null : object.getClass();
+		return object == null ? null : object.getClass();
 	}
 
 	/**
@@ -536,9 +535,8 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 		try {
 			id = Integer.valueOf(jObject.get(ID_PROPERTY).getAsInt());
 		} catch (Exception e) {
-			throw new JsonParseException(
-					"Invalid JsonRpc response. It lacks a valid '"
-							+ ID_PROPERTY + "' field");
+			throw new JsonParseException("Invalid JsonRpc response " + json
+					+ ". It lacks a valid '" + ID_PROPERTY + "' field");
 		}
 
 		if (jObject.has(RESULT_PROPERTY)) {
@@ -579,16 +577,16 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 
 		JsonObject jObject = (JsonObject) json;
 
-//		FIXME: Enable again when KMS sends jsonrpc field in register message
-//		if (!jObject.has(JSON_RPC_PROPERTY)) {
-//			throw new JsonParseException(
-//					"Invalid JsonRpc request lacking version '"
-//							+ JSON_RPC_PROPERTY + "' field");
-//		}
-//
-//		if (!jObject.get("jsonrpc").getAsString().equals(JSON_RPC_VERSION)) {
-//			throw new JsonParseException("Invalid JsonRpc version");
-//		}
+		// FIXME: Enable again when KMS sends jsonrpc field in register message
+		// if (!jObject.has(JSON_RPC_PROPERTY)) {
+		// throw new JsonParseException(
+		// "Invalid JsonRpc request lacking version '"
+		// + JSON_RPC_PROPERTY + "' field");
+		// }
+		//
+		// if (!jObject.get("jsonrpc").getAsString().equals(JSON_RPC_VERSION)) {
+		// throw new JsonParseException("Invalid JsonRpc version");
+		// }
 
 		if (!jObject.has(METHOD_PROPERTY)) {
 			throw new JsonParseException("Invalid JsonRpc request lacking '"
@@ -610,7 +608,7 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 }
 
 class JsonPropsAdapter implements JsonDeserializer<Props>,
-		JsonSerializer<Props> {
+JsonSerializer<Props> {
 
 	@Override
 	public Props deserialize(JsonElement json, Type typeOfT,
@@ -663,7 +661,7 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 		} else if (primitive.isNumber()) {
 			Number number = primitive.getAsNumber();
 			double value = number.doubleValue();
-			if (((int) value == value)) {
+			if ((int) value == value) {
 				return Integer.valueOf((int) value);
 			}
 
