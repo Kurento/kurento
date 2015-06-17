@@ -67,7 +67,8 @@ public class TestConfiguration {
 	public static final String TEST_NODE_PEM_PROPERTY = "test.node.pem";
 
 	public static final String TEST_SCREEN_SHARE_TITLE_PROPERTY = "test.screenshare.title";
-	public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT = "Screen 1";
+	public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT = "Entire screen";
+	public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN = "Screen 1";
 
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";

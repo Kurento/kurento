@@ -36,6 +36,7 @@ import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
 import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
 
 import java.io.Closeable;
@@ -178,7 +179,6 @@ public class BrowserClient implements Closeable {
 				if (enableScreenCapture) {
 					// This flag enables the screen sharing
 					options.addArguments("--enable-usermedia-screen-capturing");
-
 				} else {
 					// This flag avoids grant the camera
 					options.addArguments("--use-fake-ui-for-media-stream");
