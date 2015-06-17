@@ -308,3 +308,58 @@
   fun:nice_agent_send_messages_nonblocking_internal
   ...
 }
+#Supressions for httpendpoint test
+{
+  LibGio
+  Memcheck:Leak
+  ...
+  fun:g_socket_create_source
+  fun:_g_socket_read_with_control_messages
+  fun:_g_dbus_worker_do_read_unlocked
+  fun:_g_dbus_worker_do_read_cb
+  fun:g_simple_async_result_complete
+  fun:complete_in_idle_cb
+  fun:g_main_context_dispatch
+  fun:g_main_context_iterate.isra.24
+  fun:g_main_loop_run
+  fun:gdbus_shared_thread_func
+  ...
+}
+{
+  LibSoup
+  Memcheck:Leak
+  ...
+  fun:try_implementation
+  fun:_g_io_module_get_default
+  fun:soup_proxy_resolver_default_constructed
+  ...
+}
+{
+  LibDconfSettings
+  Memcheck:Leak
+  ...
+  fun:_g_dbus_worker_new
+  fun:initable_init
+  fun:g_bus_get_sync
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libdconfsettings.so
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libdconfsettings.so
+  fun:g_main_context_dispatch
+  fun:g_main_context_iterate.isra.24
+  fun:g_main_context_iteration
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libdconfsettings.so
+  ...
+}
+{
+  LibProxy
+  Memcheck:Leak
+  ...
+  fun:tls_get_addr_tail
+  fun:__cxa_get_globals
+  fun:__cxa_throw
+  obj:/usr/lib/x86_64-linux-gnu/libproxy.so.1.0.0
+  obj:/usr/lib/x86_64-linux-gnu/libproxy.so.1.0.0
+  obj:/usr/lib/x86_64-linux-gnu/libproxy.so.1.0.0
+  fun:px_proxy_factory_get_proxies
+  obj:/usr/lib/x86_64-linux-gnu/gio/modules/libgiolibproxy.so
+  ...
+}
