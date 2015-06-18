@@ -251,7 +251,7 @@ QUnit.asyncTest('is commited', function () {
 });
 
 QUnit.asyncTest('user rollback', function () {
-  QUnit.expect(2);
+  QUnit.expect(1);
 
   var tx = this.kurento.beginTransaction();
 
@@ -269,11 +269,6 @@ QUnit.asyncTest('user rollback', function () {
 
     QUnit.start();
   });
-
-  QUnit.throws(function () {
-      var uri = promiseUri.value;
-    },
-    TransactionRollbackException);
 });
 
 QUnit.asyncTest('transaction error', function () {

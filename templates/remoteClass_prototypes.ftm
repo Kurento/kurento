@@ -68,11 +68,7 @@ Object.defineProperty(MediaObject.prototype, '_invoke',
     var promise;
     var error = this._createError;
     if(error)
-    {
       promise = Promise.reject(error)
-
-      Object.defineProperty(promise, 'value', {get: function(){throw error}});
-    }
     else
     {
       promise = new Promise(function(resolve, reject)
@@ -89,32 +85,17 @@ Object.defineProperty(MediaObject.prototype, '_invoke',
 
         function callback(error, result)
         {
-          delete promise.value;
-
-          if(error)
-          {
-            Object.defineProperty(promise, 'value', {get: function(){throw error}});
-
-            return reject(error);
-          }
+          if(error) return reject(error);
 
           var value = result.value;
           if(value === undefined)
             value = self
-          else
-            Object.defineProperty(promise, 'value', {value: value});
 
           resolve(value);
         }
 
         // Do request
         self.emit('_rpc', transaction, 'invoke', params2, callback);
-      });
-
-      Object.defineProperty(promise, 'value',
-      {
-        configurable: true,
-        get: throwRpcNotReady
       });
     }
 
