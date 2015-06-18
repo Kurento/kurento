@@ -27,6 +27,7 @@ static guint number_of_transitions;
 static gboolean expected_warnings;
 static guint test_number;
 static guint state;
+gboolean valgrind_test = FALSE;
 
 struct state_controller
 {
@@ -160,7 +161,11 @@ state_changed_cb (GstElement * recorder, KmsUriEndpointState newState,
 
   GST_DEBUG ("State changed %s. Time %d seconds.", state2string (newState),
       seconds);
-  g_timeout_add (seconds * 1000, transite_cb, loop);
+  if (valgrind_test) {
+    g_timeout_add (seconds * 10000, transite_cb, loop);
+  } else {
+    g_timeout_add (seconds * 1000, transite_cb, loop);
+  }
 }
 
 static void
@@ -493,10 +498,15 @@ state_changed_cb3 (GstElement * recorder, KmsUriEndpointState newState,
 {
   GST_DEBUG ("State changed %s.", state2string (newState));
 
-  if (newState == KMS_URI_ENDPOINT_STATE_START)
-    g_timeout_add (3000, stop_recorder, NULL);
-  else if (newState == KMS_URI_ENDPOINT_STATE_STOP)
+  if (newState == KMS_URI_ENDPOINT_STATE_START) {
+    if (valgrind_test) {
+      g_timeout_add (15000, stop_recorder, NULL);
+    } else {
+      g_timeout_add (3000, stop_recorder, NULL);
+    }
+  } else if (newState == KMS_URI_ENDPOINT_STATE_STOP) {
     g_idle_add (quit_main_loop_idle, loop);
+  }
 }
 
 GST_START_TEST (check_video_only)
@@ -631,6 +641,13 @@ recorderendpoint_suite (void)
 {
   Suite *s = suite_create ("recorderendpoint");
   TCase *tc_chain = tcase_create ("element");
+  const char *valgrind_value;
+  const char *env = "VALGRIND";
+
+  valgrind_value = g_getenv (env);
+  if (g_strcmp0 ("TRUE", valgrind_value) == 0) {
+    valgrind_test = TRUE;
+  }
 
   suite_add_tcase (s, tc_chain);
 
