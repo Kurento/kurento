@@ -47,10 +47,17 @@
 	<properties>
 		<!-- Main class -->
         <start-class>org.kurento.jsonrpc.TestServerApplication</start-class>
-	</properties>
+    </properties>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>${start-class}</mainClass>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
