@@ -105,7 +105,7 @@ endif ()
 
     add_custom_command (TARGET ${test_name}.valgrind
       COMMENT "Running valgrind for ${test_name}"
-      COMMAND G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_PROPERTIES} ${VALGRING_TEST_PROPERTIES} ${CMAKE_COMMAND} -DARGS=\${ARGS} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
+      COMMAND VALGRIND=TRUE G_DEBUG=gc-friendly G_SLICE=always-malloc ${TEST_PROPERTIES} ${VALGRING_TEST_PROPERTIES} ${CMAKE_COMMAND} -DARGS=\${ARGS} -P ${CMAKE_CURRENT_BINARY_DIR}/${test_name}_valgrind.cmake
     )
 
     create_valgrind_target()
