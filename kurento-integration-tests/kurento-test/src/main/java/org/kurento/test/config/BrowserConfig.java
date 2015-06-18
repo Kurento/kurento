@@ -107,6 +107,12 @@ public class BrowserConfig {
 				if (instance.getHost() != null) {
 					builder = builder.host(instance.getHost());
 				}
+				if (instance.getParentTunnel() != null ) {
+					builder = builder.parentTunnel(instance.getParentTunnel());
+				}
+				if (instance.isAvoidProxy() ){
+					builder.avoidProxy();
+				}
 				if (instance.getSaucelabsUser() != null) {
 					System.setProperty(SAUCELAB_USER_PROPERTY,
 							instance.getSaucelabsUser());
