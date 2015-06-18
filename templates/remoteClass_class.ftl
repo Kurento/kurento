@@ -94,8 +94,10 @@ var ${extends_name} = require('events').${extends_name};
   || remoteClass.name=="MediaObject">
 
 
-function noop(error) {
+function noop(error, result) {
   if (error) console.trace(error);
+
+  return result
 };
 </#if>
 
