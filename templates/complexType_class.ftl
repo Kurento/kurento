@@ -109,6 +109,8 @@ function ${complexType.name}(${complexTypeDict}){
     return new ${complexType.name}(${complexTypeDict})
   <#if complexType.properties??>
 
+  ${complexTypeDict} = ${complexTypeDict} || {}
+
   // Check ${complexTypeDict} has the required fields
     <#list complexType.properties as property>
   checkType('${property.type.name}', '${complexTypeDict}.${property.name}', ${complexTypeDict}.${property.name}<@checkTypeOptions param=property/>);
