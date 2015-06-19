@@ -628,11 +628,45 @@ configure_sctp_elements (KmsWebrtcEndpoint * self, GstSDPMedia * media,
 }
 
 static void
-kms_webrtc_endpoint_src_data_pad_added (GstElement * sctpdec, GstPad * pad,
-    KmsWebrtcEndpoint * self)
+kms_webrtc_endpoint_add_sink_data (KmsWebrtcEndpoint * self,
+    GstElement * sctpenc, guint sctp_stream_id)
 {
+  GstPadTemplate *pad_template;
+  GstCaps *caps;
+  GstPad *sinkpad;
+  gchar *pad_name;
+
+  GST_DEBUG_OBJECT (self, "Create sink data pad for stream %d", sctp_stream_id);
+
+  pad_template =
+      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (sctpenc),
+      "sink_%u");
+
+  caps =
+      gst_caps_new_simple ("application/data", "ordered", G_TYPE_BOOLEAN, TRUE,
+      "ppid", G_TYPE_UINT, KMS_WEBRTC_DATA_CHANNEL_PPID_STRING,
+      "partially-reliability", G_TYPE_STRING, "none", NULL);
+
+  pad_name = g_strdup_printf ("sink_%u", sctp_stream_id);
+  sinkpad = gst_element_request_pad (sctpenc, pad_template, pad_name, caps);
+  gst_caps_unref (caps);
+  g_free (pad_name);
+
+  kms_element_connect_sink_target (KMS_ELEMENT (self), sinkpad,
+      KMS_ELEMENT_PAD_TYPE_DATA);
+
+  g_object_unref (sinkpad);
+}
+
+static void
+kms_webrtc_endpoint_src_data_pad_added (GstElement * sctpdec, GstPad * pad,
+    GstElement * sctpenc)
+{
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (GST_ELEMENT_PARENT (sctpdec));
   GstElement *data_tee;
   GstPad *sinkpad = NULL;
+  guint sctp_stream_id;
+  gchar *name;
 
   data_tee = kms_element_get_data_tee (KMS_ELEMENT (self));
   sinkpad = gst_element_get_static_pad (data_tee, "sink");
@@ -649,6 +683,12 @@ kms_webrtc_endpoint_src_data_pad_added (GstElement * sctpdec, GstPad * pad,
     GST_ERROR_OBJECT (self, "Can not link data pad %" GST_PTR_FORMAT, pad);
   }
 
+  name = gst_pad_get_name (pad);
+  sscanf (name, "src_%u", &sctp_stream_id);
+  g_free (name);
+
+  kms_webrtc_endpoint_add_sink_data (self, sctpenc, sctp_stream_id);
+
 end:
   g_clear_object (&sinkpad);
 }
@@ -657,32 +697,12 @@ static void
 kms_webrtc_endpoint_sctp_association_established (GstElement * sctpenc,
     gboolean connected, KmsWebrtcEndpoint * self)
 {
-  GstPadTemplate *pad_template;
-  GstCaps *caps;
-  GstPad *sinkpad;
-
   if (!connected) {
     GST_WARNING_OBJECT (self, "Disconnected SCTP association %" GST_PTR_FORMAT,
         sctpenc);
-    return;
   } else {
     GST_DEBUG_OBJECT (self, "SCTP association established");
   }
-
-  pad_template =
-      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (sctpenc),
-      "sink_%u");
-
-  caps =
-      gst_caps_new_simple ("application/data", "ordered", G_TYPE_BOOLEAN, TRUE,
-      "ppid", G_TYPE_UINT, KMS_WEBRTC_DATA_CHANNEL_PPID_STRING, NULL);
-  sinkpad = gst_element_request_pad (sctpenc, pad_template, "sink_0", caps);
-  gst_caps_unref (caps);
-
-  kms_element_connect_sink_target (KMS_ELEMENT (self), sinkpad,
-      KMS_ELEMENT_PAD_TYPE_DATA);
-
-  g_object_unref (sinkpad);
 }
 
 static void
@@ -722,7 +742,7 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
   }
 
   g_signal_connect (sctpdec, "pad-added",
-      G_CALLBACK (kms_webrtc_endpoint_src_data_pad_added), self);
+      G_CALLBACK (kms_webrtc_endpoint_src_data_pad_added), sctpenc);
   g_signal_connect (sctpenc, "sctp-association-established",
       G_CALLBACK (kms_webrtc_endpoint_sctp_association_established), self);
 
