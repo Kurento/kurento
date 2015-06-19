@@ -55,7 +55,7 @@ public class TestReport {
 			writer = new PrintWriter(new BufferedWriter(new FileWriter(file,
 					true)));
 			if (!exists) {
-				appendHeader();
+				initPage();
 			}
 			appendTitle(title);
 			writer.flush();
@@ -64,7 +64,7 @@ public class TestReport {
 		}
 	}
 
-	public void appendHeader() {
+	public void initPage() {
 		appendHtml("<script src='//cdn.rawgit.com/eligrey/FileSaver.js/master/FileSaver.js'></script>");
 		appendHtml("<script>");
 		appendHtml("window.onload = function() {");
@@ -76,10 +76,11 @@ public class TestReport {
 		appendHtml("var executions = ok + retries;");
 		appendHtml("var tests = ok + errors;");
 		appendHtml("var retriesOk = retries - errors*" + numRetries + ";");
-		appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \" - Number of test(s) executions: \" + executions + \"</p>\";");
+		appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \"</p>\";");
+		appendHtml("if (tests != executions) summary.innerHTML += \"Number of test(s) executions: \" + executions + \"</p>\";");
 		appendHtml("if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Number of test(s) ok: \" + ok + \"</p>\";");
 		appendHtml("if (retries > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) with retry: \" + retries + \"</p>\";");
-		appendHtml("if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) retried but succeeded: \" + retriesOk + \"</p>\";");
+		appendHtml("if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) retried and succeeded: \" + retriesOk + \"</p>\";");
 		appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after "
 				+ numRetries + " retries): \" + errors + \"</p>\";");
 		appendHtml("}");
