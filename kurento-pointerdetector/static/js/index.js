@@ -1,22 +1,17 @@
 /*
  * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials are made
+ * available under the terms of the GNU Lesser General Public License (LGPL)
+ * version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
-var ws = new WebSocket('ws://' + location.host + '/pointerdetector');
-var videoInput;
-var videoOutput;
-var webRtcPeer;
 var state = null;
 
 const I_CAN_START = 0;
@@ -24,159 +19,172 @@ const I_CAN_STOP = 1;
 const I_AM_STARTING = 2;
 
 window.onload = function() {
-	console = new Console();
+  console = new Console();
 
-	console.log("Page loaded ...");
+  console.log("Page loaded...");
 
-	videoInput = document.getElementById('videoInput');
-	videoOutput = document.getElementById('videoOutput');
+  var webRtcPeer;
 
-	setState(I_CAN_START);
-}
+  var videoInput = document.getElementById('videoInput');
+  var videoOutput = document.getElementById('videoOutput');
 
-window.onbeforeunload = function() {
-	ws.close();
-}
+  var btnStart = document.getElementById('btnStart');
+  var btnStop = document.getElementById('btnStop');
+  var btnCalibrate = document.getElementById('btnCalibrate');
 
-ws.onmessage = function(message) {
-	var parsedMessage = JSON.parse(message.data);
-	console.info('Received message: ' + message.data);
+  function onRequest(request)
+  {
+    switch(request.method)
+    {
+      case 'candidate':
+        webRtcPeer.addIceCandidate(request.params[0])
+      break;
 
-	switch (parsedMessage.id) {
-	case 'startResponse':
-		startResponse(parsedMessage);
-		break;
-	case 'WindowIn':
-		windowIn(parsedMessage);
-		break;
-	case 'WindowOut':
-		windowOut(parsedMessage);
-		break;
-	case 'error':
-		if (state == I_AM_STARTING) {
-			setState(I_CAN_START);
-		}
-		onError("Error message from server: " + parsedMessage.message);
-		break;
-	default:
-		if (state == I_AM_STARTING) {
-			setState(I_CAN_START);
-		}
-		onError('Unrecognized message', parsedMessage);
+      case 'WindowIn':
+        windowIn(request.params);
+        break;
+
+      case 'WindowOut':
+        windowOut(request.params);
+        break;
+
+      default:
+        onError('Unrecognized message', request);
+    }
+  }
+
+  btnStart.addEventListener('click', function()
+  {
+    console.log("Starting video call...")
+
+		const packer = RpcBuilder.packers.JsonRPC;
+
+    rpcBuilder = new RpcBuilder(packer, new WebSocket('ws:'+location.host),
+      onRequest);
+
+    // Disable start button
+    setState(I_AM_STARTING);
+    showSpinner(videoInput, videoOutput);
+
+    console.log("Creating WebRtcPeer and generating local sdp offer...");
+
+    var options =
+    {
+      localVideo: videoInput,
+      remoteVideo: videoOutput
+    }
+
+    webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
+    {
+      if(error) return onError(error)
+
+      this.generateOffer(onOffer)
+    });
+
+    webRtcPeer.on('icecandidate', function(candidate) {
+      rpcBuilder.encode('candidate', [candidate])
+    });
+  })
+  btnStop.addEventListener('click', function()
+  {
+		console.log("Stopping video call...");
+	  setState(I_CAN_START);
+
+	  if (webRtcPeer) {
+	    webRtcPeer.dispose();
+	    webRtcPeer = null;
+
+			rpcBuilder.encode('stop');
+	  }
+	  hideSpinner(videoInput, videoOutput);
+  })
+  btnCalibrate.addEventListener('click', function()
+  {
+		if (webRtcPeer) {
+	    console.log("Calibrating...");
+
+			rpcBuilder.encode('calibrate', onError);
+	  }
+  })
+
+  function onOffer(error, offerSdp)
+  {
+    if(error) return onError(error)
+
+    console.info('Invoking SDP offer callback function', location.host);
+
+    rpcBuilder.encode('start', [offerSdp], processAnswer);
+  }
+
+	function processAnswer(error, sdpAnswer) {
+		if(error) return onError(error)
+
+	  setState(I_CAN_STOP);
+
+	  console.log("SDP answer received from server. Processing...");
+	  webRtcPeer.processAnswer(sdpAnswer);
 	}
+
+  setState(I_CAN_START);
 }
 
-function windowIn(message) {
-	console.log ("Window in detected in "+message.roiId);
+
+function windowIn(data) {
+  console.log("Window in detected in",data.roiId);
 }
 
-function windowOut(message) {
-	console.log ("Window out detected in "+message.roiId);
+function windowOut(data) {
+  console.log("Window out detected in",data.roiId);
 }
 
-function start() {
-	console.log("Starting video call ...")
-	// Disable start button
-	setState(I_AM_STARTING);
-	showSpinner(videoInput, videoOutput);
-
-	console.log("Creating WebRtcPeer and generating local sdp offer ...");
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
-}
-
-function onOffer(offerSdp) {
-	console.info('Invoking SDP offer callback function ' + location.host);
-	var message = {
-		id : 'start',
-		sdpOffer : offerSdp
-	}
-	sendMessage(message);
-}
 
 function onError(error) {
-	console.error(error);
+  if(error) console.error(error);
 }
 
-function startResponse(message) {
-	setState(I_CAN_STOP);
-	console.log("SDP answer received from server. Processing ...");
-	webRtcPeer.processSdpAnswer(message.sdpAnswer);
-}
+function setState(nextState)
+{
+  switch (nextState)
+  {
+    case I_CAN_START:
+      $('#start').attr('disabled', false);
+      $('#stop').attr('disabled', true);
+    break;
 
-function calibrate() {
-	if (webRtcPeer) {
-		console.log("Calibrating...");
-		var message = {
-			id : 'calibrate'
-		}
-		sendMessage(message);
-	}
-}
+    case I_CAN_STOP:
+      $('#start').attr('disabled', true);
+      $('#stop').attr('disabled', false);
+    break;
 
-function stop() {
-	console.log("Stopping video call ...");
-	setState(I_CAN_START);
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-		webRtcPeer = null;
+    case I_AM_STARTING:
+      $('#start').attr('disabled', true);
+      $('#stop').attr('disabled', true);
+    break;
 
-		var message = {
-			id : 'stop'
-		}
-		sendMessage(message);
-	}
-	hideSpinner(videoInput, videoOutput);
-}
-
-function setState(nextState) {
-	switch (nextState) {
-	case I_CAN_START:
-		$('#start').attr('disabled', false);
-		$('#stop').attr('disabled', true);
-		break;
-
-	case I_CAN_STOP:
-		$('#start').attr('disabled', true);
-		$('#stop').attr('disabled', false);
-		break;
-
-	case I_AM_STARTING:
-		$('#start').attr('disabled', true);
-		$('#stop').attr('disabled', true);
-		break;
-
-	default:
-		onError("Unknown state " + nextState);
-		return;
-	}
-	state = nextState;
-}
-
-function sendMessage(message) {
-	var jsonMessage = JSON.stringify(message);
-	console.log('Senging message: ' + jsonMessage);
-	ws.send(jsonMessage);
+    default:
+      onError("Unknown state " + nextState);
+  }
 }
 
 function showSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = './img/transparent-1px.png';
-		arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = './img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
+  }
 }
 
 function hideSpinner() {
-	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].src = '';
-		arguments[i].poster = './img/webrtc.png';
-		arguments[i].style.background = '';
-	}
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = './img/webrtc.png';
+    arguments[i].style.background = '';
+  }
 }
 
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
  */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
-	event.preventDefault();
-	$(this).ekkoLightbox();
+  event.preventDefault();
+  $(this).ekkoLightbox();
 });

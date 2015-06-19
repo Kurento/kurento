@@ -23,7 +23,8 @@
     "adapter.js": "*",
     "bootstrap": "~3.3.0",
     "demo-console": "master",
-    "ekko-lightbox": "~3.2.3",
-    "kurento-utils": "5.1.0"
+    "ekko-lightbox": "~3.3.0",
+    "kurento-jsonrpc": "master",
+    "kurento-utils": "master"
   }
 }
