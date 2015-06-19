@@ -30,6 +30,7 @@
   "devDependencies": {
     "bower": "~1.4.1",
     "browserify-optional": "^1.0.0",
+    "uuid": "~2.0.1",
     "coveralls": "~2.11.2",
     "fs-extra": "^0.18.2",
     "grunt": "^0.4.5",
