@@ -107,7 +107,7 @@ app.ws('/', function(ws)
     if (pipeline)
       return request.reply("Close current session before starting a new one or use another browser to open a tutorial.")
 
-    kurentoClient.getSingleton(argv.ws_uri, function(error, client) {
+    kurentoClient.getSingleton(args.ws_uri, function(error, client) {
       if (error) return request.reply(error);
 
       client.create('MediaPipeline', function(error, _pipeline) {

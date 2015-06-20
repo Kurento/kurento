@@ -28,7 +28,6 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
-
 var args = minimist(process.argv.slice(2),
 {
   default:
@@ -93,10 +92,10 @@ app.ws('/', function(ws)
     var sdpOffer = request.params[0];
 
   	// Check if session is already transmitting
-  	if(pipeline) return callback("Close current session before starting a new one or use another browser to open a tutorial.")
+  	if(pipeline) return request.reply("Close current session before starting a new one or use another browser to open a tutorial.")
 
-    kurentoClient.getSingleton(argv.ws_uri, function(error, client) {
-  		if (error) return callback(error);
+    kurentoClient.getSingleton(args.ws_uri, function(error, client) {
+  		if (error) return request.reply(error);
 
       client.create('MediaPipeline', function(error, _pipeline) {
   			if (error) return request.reply(error);

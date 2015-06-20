@@ -27,32 +27,6 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
-// Recover kurentoClient for the first time.
-var getKurentoClient = (function()
-{
-  var client = null;
-
-  function disconnect()
-  {
-    client = null
-  }
-
-  return function(callback)
-  {
-    if(client) return callback(null, client);
-
-    kurentoClient(argv.ws_uri, function(error, _client) {
-      if(error) return callback(error);
-
-      client = _client;
-      client.on('disconnect', disconnect)
-
-      callback(null, client);
-    });
-  }
-})()
-
-
 var args = minimist(process.argv.slice(2),
 {
   default:
@@ -75,7 +49,7 @@ var users = {};
  * Server startup
  */
 
-var asUrl = url.parse(argv.as_uri);
+var asUrl = url.parse(args.as_uri);
 var port = asUrl.port;
 var server = app.listen(port, function() {
   console.log('Kurento Tutorial started');
@@ -199,7 +173,7 @@ app.ws('/', function(ws)
       }
     }
 
-    getKurentoClient(function(error, client)
+    kurentoClient.getSingleton(args.ws_uri, function(error, client)
     {
       if(error) return onError(error);
 

@@ -92,7 +92,7 @@ app.ws('/', function(ws) {
   function getPipeline(callback) {
     if (pipeline) return callback(null, pipeline);
 
-    kurentoClient(argv.ws_uri, function(error, client) {
+    kurentoClient(args.ws_uri, function(error, client) {
       if (error) return callback(error);
 
       client.create('MediaPipeline', function(error, _pipeline) {

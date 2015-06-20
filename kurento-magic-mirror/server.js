@@ -28,7 +28,7 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
-var argv = minimist(process.argv.slice(2),
+var args = minimist(process.argv.slice(2),
 {
   default:
   {
@@ -90,7 +90,7 @@ app.ws('/', function(ws)
   function processOffer(request) {
     var sdpOffer = request.params[0];
 
-    kurentoClient.getSingleton(argv.ws_uri, function(error, client) {
+    kurentoClient.getSingleton(args.ws_uri, function(error, client) {
       if (error) return request.reply(error);
 
       client.create('MediaPipeline', function(error, _pipeline) {

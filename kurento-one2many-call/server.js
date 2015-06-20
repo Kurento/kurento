@@ -27,6 +27,15 @@ var RpcBuilder    = require('kurento-jsonrpc');
 const packer = RpcBuilder.packers.JsonRPC;
 
 
+var args = minimist(process.argv.slice(2),
+{
+  default:
+  {
+    as_uri: "http://localhost:8080/",
+    ws_uri: "ws://localhost:8888/kurento"
+  }
+});
+
 var getPipeline = (function()
 {
   var pipeline = null;
@@ -40,7 +49,7 @@ var getPipeline = (function()
   {
     if(pipeline) return callback(null, pipeline);
 
-    kurentoClient.getSingleton(argv.ws_uri, function(error, client) {
+    kurentoClient.getSingleton(args.ws_uri, function(error, client) {
       if(error) return callback(error);
 
       client.create('MediaPipeline', function(error, _pipeline) {
@@ -55,15 +64,6 @@ var getPipeline = (function()
   }
 })()
 
-
-var args = minimist(process.argv.slice(2),
-{
-  default:
-  {
-    as_uri: "http://localhost:8080/",
-    ws_uri: "ws://localhost:8888/kurento"
-  }
-});
 
 var app = expressWs(express()).app;
 
