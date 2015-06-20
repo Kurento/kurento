@@ -41,10 +41,14 @@ import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERT
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.grid.GridHandler;
@@ -109,10 +113,9 @@ public class BrowserClient implements Closeable {
 	private String login;
 	private String passwd;
 	private String pem;
-
 	private boolean avoidProxy;
-
 	private String parentTunnel;
+	private List<Map<String, String>> extensions;
 
 	public BrowserClient(Builder builder) {
 		this.builder = builder;
@@ -143,6 +146,7 @@ public class BrowserClient implements Closeable {
 		this.host = builder.host;
 		this.avoidProxy = builder.avoidProxy;
 		this.parentTunnel = builder.parentTunnel;
+		this.extensions = builder.extensions;
 	}
 
 	public void init() {
@@ -161,6 +165,26 @@ public class BrowserClient implements Closeable {
 				capabilities.setBrowserName(DesiredCapabilities.firefox()
 						.getBrowserName());
 
+				// Firefox extensions
+				if (extensions != null && !extensions.isEmpty()) {
+					for (Map<String, String> extension : extensions) {
+						InputStream is = getExtensionAsInputStream(extension
+								.values().iterator().next());
+						if (is != null) {
+							try {
+								File xpi = File.createTempFile(extension
+										.keySet().iterator().next(), ".xpi");
+								FileUtils.copyInputStreamToFile(is, xpi);
+								profile.addExtension(xpi);
+							} catch (Throwable t) {
+								log.error(
+										"Error loading Firefox extension {} ({} : {})",
+										extension, t.getClass(), t.getMessage());
+							}
+						}
+					}
+				}
+
 				if (scope == BrowserScope.SAUCELABS) {
 					createSaucelabsDriver(capabilities);
 				} else if (scope == BrowserScope.REMOTE) {
@@ -176,9 +200,42 @@ public class BrowserClient implements Closeable {
 				// Chrome options
 				ChromeOptions options = new ChromeOptions();
 
+				// Chrome extensions
+				if (extensions != null && !extensions.isEmpty()) {
+					for (Map<String, String> extension : extensions) {
+						InputStream is = getExtensionAsInputStream(extension
+								.values().iterator().next());
+						if (is != null) {
+							try {
+								File crx = File.createTempFile(extension
+										.keySet().iterator().next(), ".crx");
+								FileUtils.copyInputStreamToFile(is, crx);
+								options.addExtensions(crx);
+							} catch (Throwable t) {
+								log.error(
+										"Error loading Chrome extension {} ({} : {})",
+										extension, t.getClass(), t.getMessage());
+							}
+						}
+					}
+				}
+
 				if (enableScreenCapture) {
 					// This flag enables the screen sharing
 					options.addArguments("--enable-usermedia-screen-capturing");
+
+					String windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT;
+					if (platform != null
+							&& (platform == Platform.WINDOWS
+									|| platform == Platform.XP
+									|| platform == Platform.VISTA
+									|| platform == Platform.WIN8 || platform == Platform.WIN8_1)) {
+						windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
+					}
+					options.addArguments("--auto-select-desktop-capture-source="
+							+ getProperty(TEST_SCREEN_SHARE_TITLE_PROPERTY,
+									windowTitle));
+
 				} else {
 					// This flag avoids grant the camera
 					options.addArguments("--use-fake-ui-for-media-stream");
@@ -259,6 +316,47 @@ public class BrowserClient implements Closeable {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
 
+	}
+
+	public InputStream getExtensionAsInputStream(String extension) {
+		InputStream is = null;
+
+		try {
+			log.info("Trying to locate extension in the classpath ({}) ...",
+					extension);
+			is = ClassLoader.getSystemResourceAsStream(extension);
+			if (is.available() < 0) {
+				log.warn("Extension {} is not located in the classpath",
+						extension);
+				is = null;
+			} else {
+				log.info("Success. Loading extension {} from classpath",
+						extension);
+			}
+		} catch (Throwable t) {
+			log.warn(
+					"Exception reading extension {} in the classpath ({} : {})",
+					extension, t.getClass(), t.getMessage());
+			is = null;
+		}
+		if (is == null) {
+			try {
+				log.info("Trying to locate extension as URL ({}) ...",
+						extension);
+				URL url = new URL(extension);
+				is = url.openStream();
+				log.info("Success. Loading extension {} from URL", extension);
+			} catch (Throwable t) {
+				log.warn("Exception reading extension {} as URL ({} : {})",
+						extension, t.getClass(), t.getMessage());
+			}
+		}
+		if (is == null) {
+			throw new RuntimeException(extension
+					+ " is not a valid extension (it is not located in project"
+					+ " classpath neither is a valid URL)");
+		}
+		return is;
 	}
 
 	public void changeTimeout(int timeoutSeconds) {
@@ -431,6 +529,7 @@ public class BrowserClient implements Closeable {
 		private String pem;
 		private boolean avoidProxy;
 		private String parentTunnel;
+		private List<Map<String, String>> extensions;
 
 		public Builder browserPerInstance(int browserPerInstance) {
 			this.browserPerInstance = browserPerInstance;
@@ -548,6 +647,11 @@ public class BrowserClient implements Closeable {
 
 		public Builder host(String host) {
 			this.host = host;
+			return this;
+		}
+
+		public Builder extensions(List<Map<String, String>> extensions) {
+			this.extensions = extensions;
 			return this;
 		}
 

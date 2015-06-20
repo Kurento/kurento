@@ -14,6 +14,9 @@
  */
 package org.kurento.test.config;
 
+import java.util.List;
+import java.util.Map;
+
 import org.kurento.test.client.BrowserType;
 import org.openqa.selenium.Platform;
 
@@ -39,6 +42,7 @@ public class BrowserInstance {
 	private String path;
 	private int port;
 	private boolean enableScreenCapture;
+	private List<Map<String, String>> extensions;
 	private String saucelabsUser;
 	private String saucelabsKey;
 	private String host;
@@ -228,6 +232,14 @@ public class BrowserInstance {
 
 	public void setParentTunnel(String parentTunnel) {
 		this.parentTunnel = parentTunnel;
+	}
+
+	public List<Map<String, String>> getExtensions() {
+		return extensions;
+	}
+
+	public void setExtensions(List<Map<String, String>> extensions) {
+		this.extensions = extensions;
 	}
 
 	@Override
