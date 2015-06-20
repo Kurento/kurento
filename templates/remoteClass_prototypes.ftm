@@ -99,7 +99,7 @@ Object.defineProperty(MediaObject.prototype, '_invoke',
       });
     }
 
-    return disguise(promiseCallback(promise, callback, this), this)
+    return promiseCallback(promise, callback, this)
   }
 })
 /**
@@ -244,8 +244,6 @@ Object.defineProperty(MediaObject.prototype, 'commited',
   <#break>
   <#case "MediaPipeline">
 
-var checkMediaElement = checkType.bind(null, 'MediaElement', 'media');
-
 /**
  * Connect the source of a media to the sink of the next one
  *
@@ -272,31 +270,7 @@ MediaPipeline.prototype.connect = function(media, callback){
   if(media.length < 2)
     throw new SyntaxError('Need at least two media elements to connect');
 
-  // Check MediaElements are of the correct type
-  media.forEach(checkMediaElement);
-
-  // Connect the media elements
-  var src = media[0];
-  var sink = media[media.length-1]
-
-  // Generate promise
-  var promise = new Promise(function(resolve, reject)
-  {
-    function callback(error, result)
-    {
-      if(error) return reject(error);
-
-      resolve(result);
-    };
-
-    async.each(media.slice(1), function(sink, callback)
-    {
-      src = src.connect(sink, callback);
-    },
-    callback);
-  });
-
-  return disguise(promiseCallback(promise, callback), sink)
+  return media[0].connect(media.slice(1), callback)
 };
 /**
  * @callback MediaPipeline~connectCallback
@@ -332,7 +306,7 @@ MediaSource.prototype.disconnect = function(sink, callback){
 
   callback = (callback || noop).bind(this)
 
-  return sink._invoke(transaction, 'disconnect', params, callback);
+  return disguise(sink._invoke(transaction, 'disconnect', params, callback), this)
 };
 /**
  * @callback module:core/abstract.MediaSource~disconnectCallback

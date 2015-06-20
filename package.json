@@ -38,7 +38,7 @@
   ],
   "dependencies": {
     "async": "~1.2.1",
-    "checktype": "^0.0.6",
+    "checktype": "^0.0.7",
     "error-tojson": "0.0.1",
     "es6-promise": "^2.3.0",
     "extend": "^2.0.1",

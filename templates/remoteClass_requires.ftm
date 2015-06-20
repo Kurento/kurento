@@ -3,13 +3,17 @@
 
 var HubPort = require('../HubPort');
   <#break>
+  <#case "MediaElement">
+
+var each = require('async').each
+
+var promiseCallback = require('promisecallback');
+  <#break>
   <#case "MediaObject">
 
 var Promise = require('es6-promise').Promise;
 
 var promiseCallback = require('promisecallback');
-
-var disguise = kurentoClient.disguise;
   <#break>
   <#case "MediaPipeline">
 

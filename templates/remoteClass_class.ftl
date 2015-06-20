@@ -47,9 +47,15 @@ var inherits = require('inherits');
 
 var kurentoClient = require('kurento-client');
 
+var disguise = kurentoClient.disguise;
+
 <#if remoteClass.methods?has_content || hasSetters(remoteClass)>
 var checkType      = kurentoClient.checkType;
 var ChecktypeError = checkType.ChecktypeError;
+
+  <#if remoteClass.name=="MediaElement">
+var checkArray = checkType.checkArray;
+  </#if>
 <#else>
 var ChecktypeError = kurentoClient.checkType.ChecktypeError;
 </#if>
@@ -161,14 +167,14 @@ inherits(${remoteClass.name}, ${extends_name});
 ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
       <@arguments/>
       <#if property.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
-  return this._invoke(transaction, '${getPropertyName}', function(error, result)
+  return disguise(this._invoke(transaction, '${getPropertyName}', function(error, result)
   {
     if (error) return callback(error);
 
     this.emit('_describe', result, callback);
-  });
+  }), this)
       <#else>
-  return this._invoke(transaction, '${getPropertyName}', callback);
+  return disguise(this._invoke(transaction, '${getPropertyName}', callback), this)
       </#if>
 };
 /**
@@ -192,7 +198,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
  */
 ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, callback){
         <@arguments params=[property]/>
-  return this._invoke(transaction, '${setPropertyName}', params, callback);
+  return disguise(this._invoke(transaction, '${setPropertyName}', params, callback), this)
 };
 /**
  * @callback module:${remoteClass_namepath}~${setPropertyName}Callback
@@ -231,33 +237,39 @@ ${remoteClass.name}.prototype.${setPropertyName} = function(${property.name}, ca
  * @return {external:Promise}
  */
 ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodParams_name + ["callback"]) separator=", "/>){
-    <@arguments params=method.params/>
     <#if method.return?? && method.return.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
-  return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, function(error, result)
+      <@arguments params=method.params/>
+  return disguise(this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, function(error, result)
   {
     if (error) return callback(error);
 
     this.emit('_describe', result, callback);
-  });
-    <#else>
-      <#if remoteClass.name == 'MediaElement' && method.name == 'connect'>
+  }), this)
+    <#elseif remoteClass.name == 'MediaElement' && method.name == 'connect'>
+  var transaction = (arguments[0] instanceof Transaction)
+                  ? Array.prototype.shift.apply(arguments)
+                  : undefined;
+
+  var promise
   if(sink instanceof Array)
   {
+    callback = arguments[arguments.length-1] instanceof Function
+             ? Array.prototype.pop.call(arguments)
+             : undefined;
+
     var media = sink
+    var src = this;
+    sink = media[media.length-1]
 
     // Check if we have enought media components
     if(!media.length)
       throw new SyntaxError('Need at least one media element to connect');
 
     // Check MediaElements are of the correct type
-    media.forEach(checkMediaElement);
-
-    // Connect the media elements
-    var src = this;
-    var sink = media[media.length-1]
+    checkArray('MediaElement', 'media', media)
 
     // Generate promise
-    var promise = new Promise(function(resolve, reject)
+    promise = new Promise(function(resolve, reject)
     {
       function callback(error, result)
       {
@@ -266,18 +278,25 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
         resolve(result);
       };
 
-      async.each(media, function(sink, callback)
+      each(media, function(sink, callback)
       {
         src = src.connect(sink, callback);
       },
       callback);
     });
 
-    return disguise(promiseCallback(promise, callback), sink)
+    promise = promiseCallback(promise, callback)
+  }
+  else
+  {
+      <@arguments params=method.params/>
+    promise = this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback)
   }
 
-      </#if>
-  return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
+  return disguise(promise, sink)
+    <#else>
+      <@arguments params=method.params/>
+  return disguise(this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback), this)
     </#if>
 };
 /**

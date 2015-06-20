@@ -68,6 +68,7 @@ module.exports = function (grunt) {
       options: {
         alias: [
           '<%= pkg.main %>:<%= pkg.name %>',
+          'async',
           'es6-promise',
           'inherits',
           'kurento-client-core',
