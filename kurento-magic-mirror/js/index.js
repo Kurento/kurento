@@ -145,9 +145,9 @@ window.addEventListener("load", function(event)
 
             console.log("SDP answer obtained. Processing...");
 
-            webRtcEp.gatherCandidates(onError);
             webRtcPeer.processAnswer(sdpAnswer, onError);
           });
+          webRtcEp.gatherCandidates(onError);
 
           pipeline.create('FaceOverlayFilter', function(error, filter) {
             if (error) return onError(error);
