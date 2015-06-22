@@ -28,6 +28,8 @@ public:
 
   virtual ~GStreamerFilterImpl () {};
 
+  virtual std::string getCommand ();
+
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);
@@ -40,6 +42,7 @@ public:
 
 private:
   GstElement *filter = NULL;
+  std::string cmd;
 
   void setCommandProperties (const std::string &rest_token);
 

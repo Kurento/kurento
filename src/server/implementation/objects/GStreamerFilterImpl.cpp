@@ -26,6 +26,7 @@ GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
 {
   std::string gstreamerElement, rest_token;
 
+  this->cmd = command;
   gstreamerElement = command.substr (0, command.find (' ') );
 
   GST_DEBUG ("Command %s", gstreamerElement.c_str() );
@@ -246,6 +247,11 @@ GStreamerFilterImpl::setCommandProperties (const std::string &rest_token)
 
   g_regex_unref (regex);
   words.clear ();
+}
+
+std::string GStreamerFilterImpl::getCommand ()
+{
+  return this->cmd;
 }
 
 GStreamerFilterImpl::StaticConstructor GStreamerFilterImpl::staticConstructor;

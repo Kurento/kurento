@@ -25,7 +25,15 @@
             "defaultValue" : "AUTODETECT"
           }
 	]
-      }
+      },
+      "properties": [
+        {
+          "name": "command",
+          "doc": "GStreamer command.",
+          "type": "String",
+          "readOnly": true
+        }
+      ]
     }
   ]
 }
