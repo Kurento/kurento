@@ -11,14 +11,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.DemoBean;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class MultipleSessionsTest extends JsonRpcConnectorBaseTest {
 
@@ -42,6 +43,7 @@ public class MultipleSessionsTest extends JsonRpcConnectorBaseTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void test() throws InterruptedException {
 
