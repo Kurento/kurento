@@ -51,7 +51,7 @@ kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
     const gchar * media, KmsSdpMediaHandler ** handler)
 {
   if (g_strcmp0 (media, "audio") == 0 || g_strcmp0 (media, "video") == 0) {
-    *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avp_media_handler_new ());
+    *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avpf_media_handler_new ());
   }
 
   /* Chain up */
