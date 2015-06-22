@@ -1600,6 +1600,91 @@ GST_START_TEST (test_offerer_pcmu_vp8_answerer_vp8_sendrecv)
 }
 
 GST_END_TEST
+GST_START_TEST (test_remb_params)
+{
+  GArray *codecs_array;
+  gchar *codecs[] = { "VP8/90000", NULL };
+  GstSDPMessage *offer, *answer;
+  gchar *sdp_str = NULL;
+  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
+  GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
+  GstStructure *remb_params_in = gst_structure_new_empty ("remb-params");
+  GstStructure *remb_params_out;
+  guint value;
+
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_object_set (answerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), NULL);
+  g_array_unref (codecs_array);
+
+  gst_structure_set (remb_params_in, "lineal-factor-min", G_TYPE_UINT, 200,
+      NULL);
+  g_object_set (offerer, "remb-params", remb_params_in, NULL);
+  gst_structure_free (remb_params_in);
+
+  g_object_get (offerer, "remb-params", &remb_params_out, NULL);
+  value = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_UINT, &value,
+      NULL);
+  gst_structure_free (remb_params_out);
+  fail_if (value != 200);
+
+  /* Check twice to verify that the getter does a copy of the structure */
+  g_object_get (offerer, "remb-params", &remb_params_out, NULL);
+  value = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_UINT, &value,
+      NULL);
+  gst_structure_free (remb_params_out);
+  fail_if (value != 200);
+
+  /* SDP negotiation */
+  mark_point ();
+  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  fail_unless (offer != NULL);
+  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  mark_point ();
+  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  fail_unless (answer != NULL);
+  GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  g_signal_emit_by_name (offerer, "process-answer", answer);
+  gst_sdp_message_free (offer);
+  gst_sdp_message_free (answer);
+
+  /* Check that RembLocal has the previous value */
+  g_object_get (offerer, "remb-params", &remb_params_out, NULL);
+  value = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_UINT, &value,
+      NULL);
+  gst_structure_free (remb_params_out);
+  fail_if (value != 200);
+
+  /* This should set RembLocal params instead the aux structure */
+  remb_params_in = gst_structure_new_empty ("remb-params");
+  gst_structure_set (remb_params_in, "lineal-factor-min", G_TYPE_UINT, 300,
+      NULL);
+  g_object_set (offerer, "remb-params", remb_params_in, NULL);
+  gst_structure_free (remb_params_in);
+
+  g_object_get (offerer, "remb-params", &remb_params_out, NULL);
+  value = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_UINT, &value,
+      NULL);
+  gst_structure_free (remb_params_out);
+  fail_if (value != 300);
+
+  g_object_unref (offerer);
+  g_object_unref (answerer);
+}
+
+GST_END_TEST
 /*
  * End of test cases
  */
@@ -1619,6 +1704,8 @@ webrtcendpoint_test_suite (void)
 
   tcase_add_test (tc_chain, test_pcmu_vp8_sendrecv);
   tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
+
+  tcase_add_test (tc_chain, test_remb_params);
 
 #ifdef ENABLE_DEBUGGING_TESTS
   tcase_add_test (tc_chain, test_webrtc_data_channel);
