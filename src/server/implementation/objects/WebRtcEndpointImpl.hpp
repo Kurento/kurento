@@ -23,7 +23,8 @@ class WebRtcEndpointImpl : public BaseRtpEndpointImpl,
 public:
 
   WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
-                      std::shared_ptr<MediaPipeline> mediaPipeline);
+                      std::shared_ptr<MediaPipeline> mediaPipeline,
+                      bool useDataChannels);
 
   virtual ~WebRtcEndpointImpl ();
 

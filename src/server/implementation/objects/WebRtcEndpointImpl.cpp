@@ -193,16 +193,18 @@ void WebRtcEndpointImpl::postConstructor ()
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
-                                        mediaPipeline) : BaseRtpEndpointImpl (conf,
-                                              std::dynamic_pointer_cast<MediaObjectImpl>
-                                              (mediaPipeline), FACTORY_NAME)
+                                        mediaPipeline, bool useDataChannels) :
+  BaseRtpEndpointImpl (conf,
+                       std::dynamic_pointer_cast<MediaObjectImpl>
+                       (mediaPipeline), FACTORY_NAME)
 {
   uint stunPort;
   std::string stunAddress;
   std::string turnURL;
 
-  /* TODO: Set to TRUE to support data channels */
-  g_object_set (element, "use-data-channels", FALSE, NULL);
+  if (useDataChannels) {
+    g_object_set (element, "use-data-channels", TRUE, NULL);
+  }
 
   remove_not_supported_codecs (element);
 
@@ -354,9 +356,9 @@ WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
 MediaObjectImpl *
 WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
-    mediaPipeline) const
+    mediaPipeline, bool useDataChannels) const
 {
-  return new WebRtcEndpointImpl (conf, mediaPipeline);
+  return new WebRtcEndpointImpl (conf, mediaPipeline, useDataChannels);
 }
 
 WebRtcEndpointImpl::StaticConstructor WebRtcEndpointImpl::staticConstructor;

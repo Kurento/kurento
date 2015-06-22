@@ -29,6 +29,13 @@
               "name": "mediaPipeline",
               "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
               "type": "MediaPipeline"
+            },
+            {
+              "name": "useDataChannels",
+              "doc": "Activate data channels support",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
             }
           ]
         },
