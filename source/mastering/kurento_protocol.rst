@@ -42,7 +42,7 @@ The following JSON shows a sample requests::
       "method": "create",
       "params": {
         "type": "PlayerEndPoint",
-        "creationParams": {
+        "constructorParams": {
           "pipeline": "6829986",
           "uri": "http://host/app/video.mp4"
         },
@@ -145,8 +145,8 @@ Create messages
 
 Create message requests the creation of an object of the Kurento API. The
 parameter ``type`` specifies the type of the object to be created. The
-parameter ``creationParams`` contains all the information needed to create the
-object. Each message needs different ``creationParams`` to create the object.
+parameter ``constructorParams`` contains all the information needed to create the
+object. Each message needs different ``constructorParams`` to create the object.
 These parameters are defined in :doc:`Kurento API section <kurento_API>`.
 
 Finally, a ``sessionId`` parameter is included with the identifier of the
@@ -166,7 +166,7 @@ parameter ``uri: http://host/app/video.mp4`` in the session
       "method": "create",
       "params": {
         "type": "PlayerEndPoint",
-        "creationParams": {
+        "constructorParams": {
           "pipeline": "6829986",
           "uri": "http://host/app/video.mp4"
         },
@@ -515,8 +515,8 @@ to the client::
       "jsonrpc":"2.0"
     }
 
-5. Client invokes the ``create`` primitive in the ``WebRtcEndpoint`` in order to
-create a loopback::
+5. Client invokes the ``connect`` primitive in the ``WebRtcEndpoint`` in order
+to create a loopback::
 
     {
       "id":3,
