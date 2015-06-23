@@ -1610,7 +1610,7 @@ GST_START_TEST (test_remb_params)
   GstElement *answerer = gst_element_factory_make ("webrtcendpoint", NULL);
   GstStructure *remb_params_in = gst_structure_new_empty ("remb-params");
   GstStructure *remb_params_out;
-  guint value;
+  guint v1, v2;
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
@@ -1620,24 +1620,26 @@ GST_START_TEST (test_remb_params)
   g_array_unref (codecs_array);
 
   gst_structure_set (remb_params_in, "lineal-factor-min", G_TYPE_INT, 200,
-      NULL);
+      "remb-on-connect", G_TYPE_INT, 500, NULL);
   g_object_set (offerer, "remb-params", remb_params_in, NULL);
   gst_structure_free (remb_params_in);
 
   g_object_get (offerer, "remb-params", &remb_params_out, NULL);
-  value = 0;
-  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &value,
-      NULL);
+  v1 = v2 = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &v1,
+      "remb-on-connect", G_TYPE_INT, &v2, NULL);
   gst_structure_free (remb_params_out);
-  fail_if (value != 200);
+  fail_if (v1 != 200);
+  fail_if (v2 != 500);
 
   /* Check twice to verify that the getter does a copy of the structure */
   g_object_get (offerer, "remb-params", &remb_params_out, NULL);
-  value = 0;
-  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &value,
-      NULL);
+  v1 = v2 = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &v1,
+      "remb-on-connect", G_TYPE_INT, &v2, NULL);
   gst_structure_free (remb_params_out);
-  fail_if (value != 200);
+  fail_if (v1 != 200);
+  fail_if (v2 != 500);
 
   /* SDP negotiation */
   mark_point ();
@@ -1660,27 +1662,27 @@ GST_START_TEST (test_remb_params)
 
   /* Check that RembLocal has the previous value */
   g_object_get (offerer, "remb-params", &remb_params_out, NULL);
-  value = 0;
-  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &value,
-      NULL);
+  v1 = v2 = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &v1,
+      "remb-on-connect", G_TYPE_INT, &v2, NULL);
   gst_structure_free (remb_params_out);
-  GST_ERROR ("value: %d", value);
-  fail_if (value != 200);
+  fail_if (v1 != 200);
+  fail_if (v2 != 500);
 
   /* This should set RembLocal params instead the aux structure */
   remb_params_in = gst_structure_new_empty ("remb-params");
   gst_structure_set (remb_params_in, "lineal-factor-min", G_TYPE_INT, 300,
-      NULL);
+      "remb-on-connect", G_TYPE_INT, 600, NULL);
   g_object_set (offerer, "remb-params", remb_params_in, NULL);
   gst_structure_free (remb_params_in);
 
   g_object_get (offerer, "remb-params", &remb_params_out, NULL);
-  value = 0;
-  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &value,
-      NULL);
+  v1 = v2 = 0;
+  gst_structure_get (remb_params_out, "lineal-factor-min", G_TYPE_INT, &v1,
+      "remb-on-connect", G_TYPE_INT, &v2, NULL);
   gst_structure_free (remb_params_out);
-  GST_ERROR ("value: %d", value);
-  fail_if (value != 300);
+  fail_if (v1 != 300);
+  fail_if (v2 != 600);
 
   g_object_unref (offerer);
   g_object_unref (answerer);
