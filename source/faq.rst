@@ -8,9 +8,10 @@ This is a list of Frequently Asked Questions about Kurento. Feel free to suggest
 new entries or different wording for answers!
 
 How do I...
------------
+===========
 
-**...install Kurento Media Server in an Amazon EC2 instance?**
+...install Kurento Media Server in an Amazon EC2 instance?
+----------------------------------------------------------
 
    You need to install a :term:`TURN` server, for example
    `coturn <https://code.google.com/p/coturn/>`__. Here are some instructions
@@ -61,7 +62,8 @@ How do I...
 
       sudo service coturn start && sudo service kurento-media-server restart
 
-**...configure Kurento Media Server to use Secure WebSocket (WSS)?**
+...configure Kurento Media Server to use Secure WebSocket (WSS)?
+----------------------------------------------------------------
 
    First, you need to change the configuration file of Kurento Media Server,
    i.e. ``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
@@ -117,7 +119,8 @@ How do I...
    `link <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
 
 
-**...know how many Media Pipelines do I need for my Application?**
+...know how many Media Pipelines do I need for my Application?
+--------------------------------------------------------------
 
     Media Elements can only communicate with each other when they are part
     of the same pipeline. Different MediaPipelines in the server are
@@ -127,7 +130,8 @@ How do I...
     communicating partners in a channel, and one Endpoint in this pipeline per
     audio/video streams reaching a partner.
 
-**...know how many Endpoints do I need?**
+...know how many Endpoints do I need?
+-------------------------------------
 
     Your application will need to create an Endpoint for each media stream
     flowing to (or from) the pipeline. As we said in the previous answer, each
@@ -135,7 +139,8 @@ How do I...
     Pipeline, and each of them will use one oe more Endpoints. They could use
     more than one if they are recording or reproducing several streams.
 
-**...know to what client a given WebRtcEndPoint belongs or where is it coming from?**
+...know to what client a given WebRtcEndPoint belongs or where is it coming from?
+---------------------------------------------------------------------------------
 
     Kurento API currently offers no way to get application attributes stored
     in a Media Element. However, the application developer can maintain a
@@ -145,9 +150,10 @@ How do I...
 
 
 Why do I get the error...
--------------------------
+=========================
 
-**..."Cannot create gstreamer element"?**
+..."Cannot create gstreamer element"?
+-------------------------------------
 
     This is a typical error which happens when you update Kurento Media
     Server from version 4 to 5. The problem is related to the GStreamer
