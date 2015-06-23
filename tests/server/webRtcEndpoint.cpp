@@ -26,6 +26,7 @@
 #include <KurentoException.hpp>
 #include <MediaSet.hpp>
 #include <MediaElementImpl.hpp>
+#include <ConnectionState.hpp>
 
 using namespace kurento;
 using namespace boost::unit_test;
@@ -271,16 +272,86 @@ media_state_changes ()
   webRtcEpAnswerer->gatherCandidates ();
 
   cv.wait (lck, [&] () {
-
     return media_state_changed.load();
   });
-
 
   if (!media_state_changed) {
     BOOST_ERROR ("Not media state chagned");
   }
 
   releaseTestSrc (src);
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
+}
+
+static void
+connection_state_changes ()
+{
+  std::atomic<bool> conn_state_changed (false);
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+
+  webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    BOOST_TEST_MESSAGE ("Offerer: adding candidate " +
+                        event.getCandidate()->getCandidate() );
+    webRtcEpAnswerer->addIceCandidate (event.getCandidate() );
+  });
+
+  webRtcEpAnswerer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
+    BOOST_TEST_MESSAGE ("Answerer: adding candidate " +
+                        event.getCandidate()->getCandidate() );
+    webRtcEpOfferer->addIceCandidate (event.getCandidate() );
+  });
+
+  webRtcEpOfferer->signalOnIceGatheringDone.connect ([&] (
+  OnIceGatheringDone event) {
+    BOOST_TEST_MESSAGE ("Offerer: Gathering done");
+  });
+
+  webRtcEpAnswerer->signalOnIceGatheringDone.connect ([&] (
+  OnIceGatheringDone event) {
+    BOOST_TEST_MESSAGE ("Answerer: Gathering done");
+  });
+
+  webRtcEpAnswerer->signalConnectionStateChanged.connect ([&] (
+  ConnectionStateChanged event) {
+    conn_state_changed = true;
+    cv.notify_one();
+  });
+
+  std::string offer = webRtcEpOfferer->generateOffer ();
+  BOOST_TEST_MESSAGE ("offer: " + offer);
+
+  std::string answer = webRtcEpAnswerer->processOffer (offer);
+  BOOST_TEST_MESSAGE ("answer: " + answer);
+
+  webRtcEpOfferer->processAnswer (answer);
+
+  if (webRtcEpAnswerer->getConnectionState ()->getValue () !=
+      ConnectionState::DISCONNECTED) {
+    BOOST_ERROR ("Connection must be disconnected");
+  }
+
+  webRtcEpOfferer->gatherCandidates ();
+  webRtcEpAnswerer->gatherCandidates ();
+
+  cv.wait (lck, [&] () {
+    return conn_state_changed.load();
+  });
+
+  if (!conn_state_changed) {
+    BOOST_ERROR ("Not conn state chagned");
+  }
+
+  if (webRtcEpAnswerer->getConnectionState ()->getValue () !=
+      ConnectionState::CONNECTED) {
+    BOOST_ERROR ("Connection must be connected");
+  }
+
   releaseWebRtc (webRtcEpOfferer);
   releaseWebRtc (webRtcEpAnswerer);
 }
@@ -293,6 +364,7 @@ init_unit_test_suite ( int , char* [] )
   test->add (BOOST_TEST_CASE ( &ice_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &stun_turn_properties ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &media_state_changes ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &connection_state_changes ), 0, /* timeout */ 15);
 
   return test;
 }
