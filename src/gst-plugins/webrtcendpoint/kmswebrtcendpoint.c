@@ -829,7 +829,7 @@ kms_webrtc_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
 
     if (gst_sdp_media_get_port (media) == 0) {
       /* Media not supported */
-      GST_ERROR_OBJECT (base_sdp_endpoint, "Media not supported: %s",
+      GST_DEBUG_OBJECT (base_sdp_endpoint, "Media not supported: %s",
           media_str);
       continue;
     }
