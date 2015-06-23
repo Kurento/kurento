@@ -35,6 +35,7 @@ import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
 import static org.kurento.test.client.BrowserType.IEXPLORER;
 import static org.kurento.test.config.BrowserScope.SAUCELABS;
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 import java.io.Closeable;
 import java.io.File;
@@ -44,7 +45,6 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.grid.GridHandler;
@@ -164,14 +164,10 @@ public class BrowserClient implements Closeable {
 				}
 
 			} else if (driverClass.equals(ChromeDriver.class)) {
-				String chromedriver = null;
-				if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
-					chromedriver = "chromedriver";
-				} else if (SystemUtils.IS_OS_WINDOWS) {
-					chromedriver = "chromedriver.exe";
-				}
-				System.setProperty("webdriver.chrome.driver", new File(
-						"target/webdriver/" + chromedriver).getAbsolutePath());
+				// Chrome driver
+				new ChromeDriverManager().setup();
+
+				// Chrome options
 				ChromeOptions options = new ChromeOptions();
 
 				if (enableScreenCapture) {
@@ -736,9 +732,13 @@ public class BrowserClient implements Closeable {
 
 		// WebDriver
 		if (driver != null) {
-			driver.close();
-			driver.quit();
-			driver = null;
+			try {
+				driver.quit();
+				driver = null;
+			} catch (Throwable t) {
+				log.warn("Exception closing webdriver {} : {}", t.getClass(),
+						t.getMessage());
+			}
 		}
 	}
 

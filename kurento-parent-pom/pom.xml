@@ -124,12 +124,7 @@
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<overthere.version>2.4.8</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
-
-		<!-- Webdrivers versions -->
-		<linux32-webdriver.version>2.9</linux32-webdriver.version>
-		<linux64-webdriver.version>2.9</linux64-webdriver.version>
-		<mac32-webdriver.version>2.9</mac32-webdriver.version>
-		<win32-webdriver.version>2.9</win32-webdriver.version>
+		<webdrivermanager.version>1.1.1</webdrivermanager.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->

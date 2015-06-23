@@ -14,16 +14,20 @@
  */
 package org.kurento.test.sanity;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import io.github.bonigarcia.wdm.ChromeDriverManager;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SanityTests;
 import org.kurento.test.base.BrowserKurentoClientTest;
@@ -32,13 +36,9 @@ import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 /**
  * Base for kurento-js sanity tests.
@@ -65,22 +65,14 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 		super(testScenario);
 	}
 
+	@BeforeClass
+	public static void setupClass() {
+		new ChromeDriverManager().setup();
+	}
+
 	@Before
 	public void setup() {
-		// ChromeDriver
-		String chromedriver = "chromedriver";
-		if (SystemUtils.IS_OS_WINDOWS) {
-			chromedriver += ".exe";
-		}
-		System.setProperty("webdriver.chrome.driver", new File(
-				"target/webdriver/" + chromedriver).getAbsolutePath());
-
-		ChromeOptions options = new ChromeOptions();
-		// This flag avoids warning in Chrome. See:
-		// https://code.google.com/p/chromedriver/issues/detail?id=799
-		options.addArguments("--test-type");
-
-		driver = new ChromeDriver(options);
+		driver = new ChromeDriver();
 
 		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();
