@@ -6,7 +6,7 @@
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
 		<version>6.0.0-SNAPSHOT</version>
-    </parent>
+	</parent>
 
 	<groupId>org.kurento.tutorial</groupId>
 	<artifactId>kurento-tutorial-test</artifactId>
@@ -107,157 +107,12 @@
 			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>${webdrivermanager.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-
-	<profiles>
-		<!-- Webdrivers for Chrome (binary dependencies in the repository) -->
-		<profile>
-			<id>mac</id>
-			<activation>
-				<os>
-					<family>mac</family>
-				</os>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>unpack</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>unpack</goal>
-								</goals>
-								<configuration>
-									<artifactItems>
-										<artifactItem>
-											<groupId>com.google.webdriver</groupId>
-											<artifactId>mac32</artifactId>
-											<version>${mac32-webdriver.version}</version>
-											<type>zip</type>
-											<overWrite>false</overWrite>
-											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
-										</artifactItem>
-									</artifactItems>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>linux32</id>
-			<activation>
-				<os>
-					<family>linux</family>
-					<arch>i386</arch>
-				</os>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>unpack</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>unpack</goal>
-								</goals>
-								<configuration>
-									<artifactItems>
-										<artifactItem>
-											<groupId>com.google.webdriver</groupId>
-											<artifactId>linux32</artifactId>
-											<version>${linux32-webdriver.version}</version>
-											<type>zip</type>
-											<overWrite>false</overWrite>
-											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
-										</artifactItem>
-									</artifactItems>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>linux64</id>
-			<activation>
-				<os>
-					<family>linux</family>
-					<arch>amd64</arch>
-				</os>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>unpack</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>unpack</goal>
-								</goals>
-								<configuration>
-									<artifactItems>
-										<artifactItem>
-											<groupId>com.google.webdriver</groupId>
-											<artifactId>linux64</artifactId>
-											<version>${linux64-webdriver.version}</version>
-											<type>zip</type>
-											<overWrite>false</overWrite>
-											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
-										</artifactItem>
-									</artifactItems>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>windows</id>
-			<activation>
-				<os>
-					<family>windows</family>
-				</os>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>unpack</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>unpack</goal>
-								</goals>
-								<configuration>
-									<artifactItems>
-										<artifactItem>
-											<groupId>com.google.webdriver</groupId>
-											<artifactId>win32</artifactId>
-											<version>${win32-webdriver.version}</version>
-											<type>zip</type>
-											<overWrite>false</overWrite>
-											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
-										</artifactItem>
-									</artifactItems>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<!-- /Webdrivers for Chrome (binary dependencies in the repository) -->
-	</profiles>
 
 </project>

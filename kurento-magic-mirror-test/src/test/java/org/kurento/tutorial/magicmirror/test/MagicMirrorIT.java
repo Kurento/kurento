@@ -14,12 +14,12 @@
  */
 package org.kurento.tutorial.magicmirror.test;
 
-import java.io.File;
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kurento.tutorial.magicmirror.MagicMirrorApp;
@@ -50,27 +50,19 @@ public class MagicMirrorIT {
 	protected final static int TEST_TIMEOUT = 100; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 
+	@BeforeClass
+	public static void setupClass() {
+		new ChromeDriverManager().setup();
+	}
+
 	@Before
 	public void setup() {
 		ChromeOptions options = new ChromeOptions();
-		// This flag avoids a warning in Chrome. See:
-		// https://code.google.com/p/chromedriver/issues/detail?id=799
-		options.addArguments("--test-type");
 		// This flag avoids granting camera/microphone
 		options.addArguments("--use-fake-ui-for-media-stream");
 		// This flag makes using a synthetic video (green with spinner) in
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
-
-		// Path to chrome driver binary
-		String chromedriver = null;
-		if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
-			chromedriver = "chromedriver";
-		} else if (SystemUtils.IS_OS_WINDOWS) {
-			chromedriver = "chromedriver.exe";
-		}
-		System.setProperty("webdriver.chrome.driver", new File(
-				"target/webdriver/" + chromedriver).getAbsolutePath());
 
 		driver = new ChromeDriver(options);
 	}
@@ -107,7 +99,9 @@ public class MagicMirrorIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
+			Assert.fail("Video tag '" + videoTagId
+					+ "' is not playing media after " + TEST_TIMEOUT
+					+ " seconds");
 		}
 	}
 
