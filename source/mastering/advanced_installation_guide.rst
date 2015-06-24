@@ -5,13 +5,22 @@ Kurento Media Server Advanced Installation guide
 Kurento Media Server Configuration
 ==================================
 
-The KMS configuration file is located in ``/etc/kurento/kurento.conf.json``.
-After a fresh installation this file is the following:
+The main KMS configuration file is located in
+``/etc/kurento/kurento.conf.json``. After a fresh installation this file is the
+following:
 
 .. sourcecode:: js
 
    {
      "mediaServer" : {
+       "resources": {
+       //  //Resources usage limit for raising an exception when an object creation is attempted
+       //  "exceptionLimit": "0.8",
+       //  // Resources usage limit for restarting the server when no objects are alive
+       //  "killLimit": "0.7",
+           // Garbage collector period in seconds
+           "garbageCollectorPeriod": 240
+       },
        "net" : {
          // Uncomment just one of them
          /*
@@ -30,137 +39,16 @@ After a fresh installation this file is the following:
            //  "certificate": "defaultCertificate.pem",
            //  "password": ""
            //},
-           "path": "kurento",
-           "threads": 10
-         }
-       }
-     },
-     "modules": {
-       "kurento": {
-         "SdpEndpoint" : {
-           "sdpPattern" : "sdp_pattern.txt"
-         },
-         "HttpEndpoint" : {
-           // "serverAddress" : "localhost",
-           /*
-             Announced IP Addess may be helpful under situations such as the server needs
-             to provide URLs to clients whose host name is different from the one the
-             server is listening in. If this option is not provided, http server will try
-             to look for any available address in your system.
-           */
-           // "announcedAddress" : "localhost"
-         },
-         "WebRtcEndpoint" : {
-           // "stunServerAddress" : "stun ip address",
-           // "stunServerPort" : 3478,
-           // turnURL gives the necessary info to configure TURN for WebRTC.
-           //    'address' must be an IP (not a domain).
-           //    'transport' is optional (UDP by default).
-           // "turnURL" : "user:password@address:port(?transport=[udp|tcp|tls])",
-           // "pemCertificate" : "file"
-         },
-         "PlumberEndpoint" : {
-           // "bindAddress" : "localhost",
-           /*
-             Announced IP Address may be helpful under situations such as the endpoint needs
-             to provide an IP address to clients whose host name is different from the one
-             that the element is listening in. If this option is not provided, the bindAddress
-             will be used instead.
-           */
-           // "announcedAddress" : "localhost"
-         }
-       }
-       //"module1": { …. }
-       //"module2": { …. }
-     }
-   }
-
-
-Kurento Media Server behind a NAT
-=================================
-
-KMS can be installed on a private network behind a router with :term:`NAT`. The
-picture below shows the typical scenario.
-
-.. figure:: ../images/Kurento_nat_deployment.png
-   :align: center
-   :alt: Typical scenario of Kurento Media Server behind a NAT
-
-   *Typical scenario of Kurento Media Server behind a NAT*
-
-
-In this case, KMS should announce the router public IP in order to be reachable
-from the outside. In the example example, sections ``HttpEndpoint`` and
-``PlumberEndpoint`` within ``/etc/kurento/kurento.conf.json`` should be
-configured as follows:
-
-.. sourcecode:: js
-
-   {
-     "mediaServer" : {
-       "net" : {
-         // Uncomment just one of them
-         /*
-         "rabbitmq": {
-           "address" : "127.0.0.1",
-           "port" : 5672,
-           "username" : "guest",
-           "password" : "guest",
-           "vhost" : "/"
-         }
-         */
-         "websocket": {
-           "port": 8888,
-           //"secure": {
-           //  "port": 8433,
-           //  "certificate": "defaultCertificate.pem",
-           //  "password": ""
+           //"registrar": {
+           //  "address": "ws://localhost:9090",
+           //  "localAddress": "localhost"
            //},
            "path": "kurento",
            "threads": 10
          }
        }
-     },
-     "modules": {
-       "kurento": {
-         "SdpEndpoint" : {
-           "sdpPattern" : "sdp_pattern.txt"
-         },
-         "HttpEndpoint" : {
-           // "serverAddress" : "localhost",
-           /*
-             Announced IP Addess may be helpful under situations such as the server needs
-             to provide URLs to clients whose host name is different from the one the
-             server is listening in. If this option is not provided, http server will try
-             to look for any available address in your system.
-           */
-           "announcedAddress" : "130.206.82.56"
-         },
-         "WebRtcEndpoint" : {
-           // "stunServerAddress" : "stun ip address",
-           // "stunServerPort" : 3478,
-           // turnURL gives the necessary info to configure TURN for WebRTC.
-           //    'address' must be an IP (not a domain).
-           //    'transport' is optional (UDP by default).
-           // "turnURL" : "user:password@address:port(?transport=[udp|tcp|tls])",
-           // "pemCertificate" : "file"
-         },
-         "PlumberEndpoint" : {
-           // "bindAddress" : "localhost",
-           /*
-             Announced IP Address may be helpful under situations such as the endpoint needs
-             to provide an IP address to clients whose host name is different from the one
-             that the element is listening in. If this option is not provided, the bindAddress
-             will be used instead.
-           */
-           "announcedAddress" : "130.206.82.56"
-         }
-       }
-       //"module1": { …. }
-       //"module2": { …. }
      }
    }
-
 
 Verifying Kurento Media Server installation
 ===========================================
@@ -172,7 +60,7 @@ To verify that KMS is up and running use the command:
 
 .. sourcecode:: sh
 
-    ps -ef | grep kurento
+    ps -ef | grep kurento-media-server
 
 The output should include the ``kurento-media-server`` process:
 
@@ -203,13 +91,16 @@ The output should be similar to the following:
 Kurento Media Server Log
 ------------------------
 
-KMS has a log file located at
-``/var/log/kurento-media-server/media-server.log``. You can check it for
-example as follows:
+Kurento Media Server logs file are stored in the folder
+``/var/log/kurento-media-server/``. The content of this folder is as follows:
 
-.. sourcecode:: sh
+* ``media-server_<timestamp>.<log_number>.<kms_pid>.log``: Current log for
+  Kurento Media Server
 
-   tail -f /var/log/kurento-media-server/media-server.log
+* ``media-server_error.log``: Third-party errors
+
+* ``logs``: Folder that contains the KMS rotated logs
+
 
 When KMS starts correctly, this trace is written in the log file:
 
