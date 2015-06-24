@@ -115,8 +115,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private final CountDownLatch latch = new CountDownLatch(1);
 
-	private ExecutorService execService = Executors.newFixedThreadPool(10,
-			threadFactory);
+	private volatile ExecutorService execService;
+	private volatile ExecutorService disconnectExecService;
 
 	private final String url;
 	private volatile Session wsSession;
@@ -205,6 +205,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		if ((wsSession == null || !wsSession.isOpen()) && !clientClose) {
 
+			log.debug("{} Connecting webSocket client to server {}", label, url);
+
 			try {
 				if (client == null) {
 					client = new WebSocketClient(sslContextFactory);
@@ -223,7 +225,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				// FIXME Give the client some time, otherwise the exception
 				// is not thrown if the server is down.
-				Thread.sleep(100);
+				// Thread.sleep(100);
 
 				SimpleEchoSocket socket = new SimpleEchoSocket();
 				ClientUpgradeRequest request = new ClientUpgradeRequest();
@@ -312,6 +314,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				Thread.currentThread().interrupt();
 			}
 		}
+
+		log.debug("{} Connected webSocket client to server {}", label, url);
 	}
 
 	public Session getWebSocketSession() {
@@ -327,7 +331,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			createExecServiceIfNecessary();
 
-			execService.execute(new Runnable() {
+			disconnectExecService.execute(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -369,10 +373,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	private void createExecServiceIfNecessary() {
+	private synchronized void createExecServiceIfNecessary() {
 		if (execService == null || execService.isShutdown()
 				|| execService.isTerminated()) {
-			execService = Executors.newFixedThreadPool(10, threadFactory);
+			execService = Executors.newFixedThreadPool(50, threadFactory);
+		}
+
+		if (disconnectExecService == null || disconnectExecService.isShutdown()
+				|| disconnectExecService.isTerminated()) {
+			disconnectExecService = Executors.newFixedThreadPool(1,
+					threadFactory);
 		}
 	}
 
@@ -545,6 +555,17 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						label, e.getMessage());
 			}
 			execService = null;
+		}
+
+		if (disconnectExecService != null) {
+			try {
+				disconnectExecService.shutdown();
+			} catch (Exception e) {
+				log.debug(
+						"{} Could not properly shut down disconnect executor service. Reason: {}",
+						label, e.getMessage());
+			}
+			disconnectExecService = null;
 		}
 	}
 }
