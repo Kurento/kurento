@@ -104,6 +104,17 @@ or :term:`kurento`.
 
         .. seealso:: :rfc:`2616`
 
+    ICE
+    Interactive Connectivity Establishment
+        Interactive Connectivity Establishment (ICE) is a technique used to achieve
+        :term:`NAT Traversal`. ICE makes use of the :term:`STUN` protocol and its extension,
+        :term:`TURN`. ICE can be used by any protocol utilizing the offer/answer model.
+
+        .. seealso::
+            :rfc:`5245`
+
+            :wikipedia:`en,Interactive Connectivity Establishment`
+                Wikipedia reference of ICE
     IMS
         :wikipedia:`IP Multimedia Subsystem <en,IP_Multimedia_Subsystem>` is
         :wikipedia:`3GPP <en,3rd_Generation_Partnership_Project>`
@@ -148,9 +159,8 @@ or :term:`kurento`.
         inspiring for what the multimedia community needs: simplicity, openness and
         universality. Kurento is open source, released under LGPL 2.1, and has several
         components, providing solutions to most multimedia common services
-        requirements. Those components include: term:`Kurento Media Server <Kurento Media Server>`,
-        term:`Kurento API <Kurento API>`, term:`Kurento Protocol <Kurento Protocol>`, and
-        term:`Kurento Client <Kurento Client>`.
+        requirements. Those components include: :term:`Kurento Media Server`,
+        :term:`Kurento API`, :term:`Kurento Protocol`, and :term:`Kurento Client`.
 
     Kurento API
          **Kurento API** is an object oriented API to create media pipelines to control
@@ -456,6 +466,15 @@ or :term:`kurento`.
         client-server protocol returning the public IP address to a client
         together with information from which the client can infer the type
         of NAT it sits behind.
+
+    Trickle ICE
+        Extension to the :term:`ICE` protocol that allows ICE agents to send and receive
+        candidates incrementally rather than exchanging complete lists. With such
+        incremental provisioning, ICE agents can begin connectivity checks while they
+        are still gathering candidates and considerably shorten the time necessary for
+        ICE processing to complete.
+
+        .. seealso:: `Trickle ICE IETF Draft <https://tools.ietf.org/html/draft-ietf-mmusic-trickle-ice-02>`_
 
     TLS
         :wikipedia:`Transport Layer Security <en,Transport_Layer_Security>`
