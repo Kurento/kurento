@@ -61,7 +61,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-	.setNameFormat("JsonRpcClientWebsocket-%d").build();
+			.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -376,13 +376,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private synchronized void createExecServiceIfNecessary() {
 		if (execService == null || execService.isShutdown()
 				|| execService.isTerminated()) {
-			execService = Executors.newFixedThreadPool(50, threadFactory);
+			execService = Executors.newCachedThreadPool(threadFactory);
 		}
 
 		if (disconnectExecService == null || disconnectExecService.isShutdown()
 				|| disconnectExecService.isTerminated()) {
-			disconnectExecService = Executors.newFixedThreadPool(1,
-					threadFactory);
+			disconnectExecService = Executors
+					.newCachedThreadPool(threadFactory);
 		}
 	}
 
