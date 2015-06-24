@@ -63,7 +63,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class WebSocketClientSocket {
@@ -278,10 +278,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						this.closeClient();
 						throw new KurentoException(
 								label
-										+ " Timeout of "
-										+ this.connectionTimeout
-										+ "ms when waiting to connect to Websocket server "
-										+ url);
+								+ " Timeout of "
+								+ this.connectionTimeout
+								+ "ms when waiting to connect to Websocket server "
+								+ url);
 					}
 
 					if (session == null) {
@@ -587,10 +587,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						label, e.getMessage());
 			}
 			client = null;
-		} else {
-			if (connectionListener != null) {
-				connectionListener.disconnected();
-			}
 		}
 
 		if (execService != null) {
