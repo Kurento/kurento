@@ -136,10 +136,19 @@ Endpoints
 
 Let us discuss briefly the different Endpoints offered by kurento.
 
-An **HttpGetEndpoint** is an output endpoint that delivers media using HTML5
-pseudo-streaming mechanism by means of http GET requests.
+A **WebRtcEndpoint** is an output and input endpoint that provides media
+streaming for Real Time Communications (RTC) through the web. It implements
+:term:`WebRTC` technology to communicate with browsers.
 
-.. image:: ../images/toolbox/HttpGetEndpoint.png
+.. image:: ../images/toolbox/WebRtcEndpoint.png
+   :align:  center
+
+A **RtpEndpoint** is an output and input endpoint. That is, provides
+bidirectional content delivery capabilities with remote networked peers through
+RTP protocol. As you can imagine, to send and receive media through the network
+it uses :term:`RTP` protocol and :term:`SDP` for media negotiation.
+
+.. image:: ../images/toolbox/RtpEndpoint.png
    :align:  center
 
 An **HttpPostEndpoint** is an input endpoint that accepts media using http POST
@@ -160,23 +169,6 @@ pads for audio and video.
 
 .. image:: ../images/toolbox/RecorderEndpoint.png
    :align:  center
-
-
-A **RtpEndpoint** is an output and input endpoint. That is, provides
-bidirectional content delivery capabilities with remote networked peers through
-RTP protocol. As you can imagine, to send and receive media through the network
-it uses :term:`RTP` protocol and :term:`SDP` for media negotiation.
-
-.. image:: ../images/toolbox/RtpEndpoint.png
-   :align:  center
-
-A **WebRtcEndpoint** is an output and input endpoint that provides media
-streaming for Real Time Communications (RTC) through the web. It implements
-:term:`WebRTC` technology to communicate with browsers.
-
-.. image:: ../images/toolbox/WebRtcEndpoint.png
-   :align:  center
-
 
 The following class diagram shows the relationships of the main endpoint classes.
 
@@ -209,7 +201,6 @@ The following class diagram shows the relationships of the main endpoint classes
    SessionEndpoint -> HttpEndpoint;
    SessionEndpoint -> SdpEndpoint;
 
-   HttpEndpoint -> HttpGetEndpoint;
    HttpEndpoint -> HttpPostEndpoint;
 
    SdpEndpoint -> RtpEndpoint;

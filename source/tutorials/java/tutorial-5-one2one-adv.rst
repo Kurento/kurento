@@ -78,9 +78,7 @@ in the browser:
 .. note::
 
    The playback of a static file can be done in several ways. In addition to this
-   media pipeline (*PlayerEndpoint* -> *WebRtcEndpoint*), other possibilities can
-   be implemented. For example, a Media Pipeline composed by *PlayerEndpoint* ->
-   *HttpGetEndpoint* could be another possible alternative. Also, the recorded file
+   media pipeline (*PlayerEndpoint* -> *WebRtcEndpoint*) the recorded file
    could be served directly by an HTTP server.
 
 To communicate the client with the server to manage calls we have designed a
