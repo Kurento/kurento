@@ -156,7 +156,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	@Override
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
+			throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 
@@ -326,5 +326,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public void closeWithReconnection() throws IOException {
 		this.close();
 	}
+
+	public abstract void setRequestTimeout(long requesTimeout);
 
 }

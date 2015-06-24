@@ -306,4 +306,9 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		}
 	}
 
+	@Override
+	public void setRequestTimeout(long requesTimeout) {
+		log.warn("setRequestTimeout(...) method is ignored");
+	}
+
 }

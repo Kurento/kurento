@@ -85,97 +85,97 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		ClientSession clientSession = new ClientSession("XXX", null,
 				new JsonRpcRequestSenderHelper() {
 
-					@Override
-					protected void internalSendRequest(
-							Request<? extends Object> request,
-							Class<JsonElement> clazz,
-							final Continuation<Response<JsonElement>> continuation) {
-						try {
-							handlerManager.handleRequest(session,
-									(Request<JsonElement>) request,
-									new ResponseSender() {
-										@Override
-										public void sendResponse(Message message)
-												throws IOException {
-											continuation
-													.onSuccess((Response<JsonElement>) message);
-										}
-
-										@Override
-										public void sendPingResponse(
-												Message message)
-												throws IOException {
-											sendResponse(message);
-										}
-									});
-						} catch (IOException e) {
-							continuation.onError(e);
+			@Override
+			protected void internalSendRequest(
+					Request<? extends Object> request,
+					Class<JsonElement> clazz,
+					final Continuation<Response<JsonElement>> continuation) {
+				try {
+					handlerManager.handleRequest(session,
+							(Request<JsonElement>) request,
+							new ResponseSender() {
+						@Override
+						public void sendResponse(Message message)
+								throws IOException {
+							continuation
+							.onSuccess((Response<JsonElement>) message);
 						}
-					}
 
-					@Override
-					protected <P2, R2> Response<R2> internalSendRequest(
-							Request<P2> request, Class<R2> resultClass)
+						@Override
+						public void sendPingResponse(
+								Message message)
+										throws IOException {
+							sendResponse(message);
+						}
+					});
+				} catch (IOException e) {
+					continuation.onError(e);
+				}
+			}
+
+			@Override
+			protected <P2, R2> Response<R2> internalSendRequest(
+					Request<P2> request, Class<R2> resultClass)
 							throws IOException {
 
-						final Object[] response = new Object[1];
-						try {
-							handlerManager.handleRequest(session,
-									(Request<JsonElement>) request,
-									new ResponseSender() {
-										@Override
-										public void sendResponse(Message message)
-												throws IOException {
-											response[0] = message;
-										}
-
-										@Override
-										public void sendPingResponse(
-												Message message)
-												throws IOException {
-											sendResponse(message);
-										}
-									});
-
-							Response<R2> response2 = (Response<R2>) response[0];
-							Object result = response2.getResult();
-
-							if (result == null
-									|| resultClass.isAssignableFrom(result
-											.getClass())) {
-								return response2;
-							} else if (resultClass == JsonElement.class) {
-								response2.setResult((R2) JsonUtils
-										.toJsonElement(result));
-								return response2;
-							} else {
-								throw new ClassCastException("Class " + result
-										+ " cannot be converted to "
-										+ resultClass);
-							}
-
-						} catch (IOException e) {
-							return new Response<R2>(request.getId(),
-									ResponseError.newFromException(e));
+				final Object[] response = new Object[1];
+				try {
+					handlerManager.handleRequest(session,
+							(Request<JsonElement>) request,
+							new ResponseSender() {
+						@Override
+						public void sendResponse(Message message)
+								throws IOException {
+							response[0] = message;
 						}
+
+						@Override
+						public void sendPingResponse(
+								Message message)
+										throws IOException {
+							sendResponse(message);
+						}
+					});
+
+					Response<R2> response2 = (Response<R2>) response[0];
+					Object result = response2.getResult();
+
+					if (result == null
+							|| resultClass.isAssignableFrom(result
+									.getClass())) {
+						return response2;
+					} else if (resultClass == JsonElement.class) {
+						response2.setResult((R2) JsonUtils
+								.toJsonElement(result));
+						return response2;
+					} else {
+						throw new ClassCastException("Class " + result
+								+ " cannot be converted to "
+								+ resultClass);
 					}
-				});
+
+				} catch (IOException e) {
+					return new Response<R2>(request.getId(),
+							ResponseError.newFromException(e));
+				}
+			}
+		});
 
 		TransactionImpl t = new TransactionImpl(clientSession, newRequest,
 				new ResponseSender() {
 
-					@Override
-					public void sendResponse(Message message)
-							throws IOException {
-						response[0] = (Response<JsonObject>) message;
-					}
+			@Override
+			public void sendResponse(Message message)
+					throws IOException {
+				response[0] = (Response<JsonObject>) message;
+			}
 
-					@Override
-					public void sendPingResponse(Message message)
-							throws IOException {
-						sendResponse(message);
-					}
-				});
+			@Override
+			public void sendPingResponse(Message message)
+					throws IOException {
+				sendResponse(message);
+			}
+		});
 
 		try {
 			remoteHandler.handleRequest(t, (Request) request);
@@ -222,8 +222,12 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 	@Override
 	public void connect() throws IOException {
-		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void setRequestTimeout(long requesTimeout) {
+		log.warn("setRequestTimeout(...) method will be ignored");
 	}
 
 }

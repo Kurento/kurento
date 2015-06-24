@@ -22,12 +22,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.client.Continuation;
-import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.server.ServerSession;
 import org.kurento.jsonrpc.internal.server.SessionsManager;
@@ -44,6 +44,9 @@ import com.google.gson.JsonElement;
 
 public class WebSocketServerSession extends ServerSession {
 
+	private static final long TIMEOUT = PropertiesManager.getProperty(
+			"jsonRpcServerWebSocket.timeout", 10000);
+
 	private static Logger log = LoggerFactory
 			.getLogger(WebSocketServerSession.class);
 
@@ -51,7 +54,7 @@ public class WebSocketServerSession extends ServerSession {
 
 	private final PendingRequests pendingRequests = new PendingRequests();
 
-	private ExecutorService execService = Executors.newFixedThreadPool(10);
+	private ExecutorService execService = Executors.newCachedThreadPool();
 
 	public WebSocketServerSession(String sessionId, Object registerInfo,
 			SessionsManager sessionsManager, WebSocketSession wsSession) {
@@ -130,8 +133,8 @@ public class WebSocketServerSession extends ServerSession {
 
 		Response<JsonElement> responseJsonObject;
 		try {
-			responseJsonObject = responseFuture.get(
-					JsonRpcClientWebSocket.TIMEOUT, TimeUnit.MILLISECONDS);
+			responseJsonObject = responseFuture.get(TIMEOUT,
+					TimeUnit.MILLISECONDS);
 
 			log.info("<-Res {}", responseJsonObject.toString());
 
@@ -143,8 +146,7 @@ public class WebSocketServerSession extends ServerSession {
 			// TODO Is there a better way to handle this?
 			throw new JsonRpcException("This exception shouldn't be thrown", e);
 		} catch (TimeoutException e) {
-			throw new TransportException("Timeout of "
-					+ JsonRpcClientWebSocket.TIMEOUT
+			throw new TransportException("Timeout of " + TIMEOUT
 					+ " milliseconds waiting from response to request with id:"
 					+ request.getId(), e);
 		}

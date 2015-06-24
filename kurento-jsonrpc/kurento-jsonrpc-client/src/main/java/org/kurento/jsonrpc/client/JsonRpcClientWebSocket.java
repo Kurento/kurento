@@ -61,7 +61,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class SimpleEchoSocket {
@@ -110,7 +110,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	public static Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
 
-	public static final long TIMEOUT = PropertiesManager.getProperty(
+	public long requestTimeout = PropertiesManager.getProperty(
 			"jsonRpcClientWebSocket.timeout", 60000);
 
 	private final CountDownLatch latch = new CountDownLatch(1);
@@ -500,7 +500,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		Response<JsonElement> responseJson;
 		try {
-			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
+			responseJson = responseFuture.get(requestTimeout,
+					TimeUnit.MILLISECONDS);
 
 			if (isPing) {
 				log.trace("{} <-Res {}", label, responseJson.toString());
@@ -526,7 +527,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			throw new KurentoException(label
 					+ " This exception shouldn't be thrown", e);
 		} catch (TimeoutException e) {
-			throw new TransportException(label + " Timeout of " + TIMEOUT
+			throw new TransportException(label + " Timeout of "
+					+ requestTimeout
 					+ " milliseconds waiting from response to request with id:"
 					+ request.getId(), e);
 		}
@@ -567,5 +569,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			}
 			disconnectExecService = null;
 		}
+	}
+
+	public void setRequestTimeout(long timeout) {
+		this.requestTimeout = timeout;
+	}
+
+	public long getRequestTimeout() {
+		return requestTimeout;
 	}
 }

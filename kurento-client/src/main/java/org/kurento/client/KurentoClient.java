@@ -21,6 +21,7 @@ import javax.annotation.PreDestroy;
 import org.kurento.client.internal.TransactionImpl;
 import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
+import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
@@ -39,6 +40,9 @@ public class KurentoClient {
 	private static Logger log = LoggerFactory.getLogger(KurentoClient.class);
 
 	protected RomManager manager;
+
+	private long requesTimeout = PropertiesManager.getProperty(
+			"kurento.client.requestTimeout", 10000);
 
 	public static KurentoClient create(String websocketUrl) {
 		log.info("Connecting to kms in {}", websocketUrl);
@@ -59,6 +63,7 @@ public class KurentoClient {
 
 	KurentoClient(JsonRpcClient client) {
 		this.manager = new RomManager(new RomClientJsonRpcClient(client));
+		client.setRequestTimeout(requesTimeout);
 		try {
 			client.connect();
 		} catch (IOException e) {
