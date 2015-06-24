@@ -27,8 +27,18 @@ import org.kurento.test.config.TestScenario;
 @Category(SystemStabilityTests.class)
 public class StabilityTest extends BrowserKurentoClientTest {
 
+	private static final int STABILITY_START_WAIT_MS = 10000; // ms
+
 	public StabilityTest(TestScenario testScenario) {
 		super(testScenario);
+
+		try {
+			log.info("Waiting {} ms before stability test startup",
+					STABILITY_START_WAIT_MS);
+			Thread.sleep(STABILITY_START_WAIT_MS);
+		} catch (InterruptedException e) {
+			log.warn("{} during wait of stability test startup", e.getClass());
+		}
 	}
 
 }
