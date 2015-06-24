@@ -92,6 +92,7 @@
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
+			<version>2.3.22</version>
 		</dependency>
 
 		<!-- OverThere -->
@@ -184,7 +185,7 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
 				<version>9.2.5.v20141112</version>
-			</dependency>
+			</dependency>			
 		</dependencies>
 	</dependencyManagement>
 </project>

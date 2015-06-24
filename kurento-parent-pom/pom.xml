@@ -125,7 +125,7 @@
 		<selenium-java.version>2.46.0</selenium-java.version>
 		<xml-apis.version>1.4.01</xml-apis.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
-		<freemarker.version>2.3.20</freemarker.version>
+		<freemarker.version>2.3.22</freemarker.version>
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<overthere.version>2.4.8</overthere.version>
