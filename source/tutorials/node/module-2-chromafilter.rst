@@ -68,7 +68,7 @@ The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-chroma>`_.
 
 This example is a modified version of the
-:doc:`Magic Mirror <./tutorial-1-magicmirror>` tutorial. In this case, this
+:doc:`Magic Mirror <./tutorial-2-magicmirror>` tutorial. In this case, this
 demo uses a **Chroma** instead of **FaceOverlay** filter.
 
 In order to perform chroma detection, there must be a color calibration stage.

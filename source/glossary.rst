@@ -115,6 +115,7 @@ or :term:`kurento`.
 
             :wikipedia:`en,Interactive Connectivity Establishment`
                 Wikipedia reference of ICE
+
     IMS
         :wikipedia:`IP Multimedia Subsystem <en,IP_Multimedia_Subsystem>` is
         :wikipedia:`3GPP <en,3rd_Generation_Partnership_Project>`

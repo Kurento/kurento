@@ -116,7 +116,7 @@ How do I...
    (get ``InstallCert.java`` from
    `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_).
    Regarding Node applications, please take a look to this
-   `link <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
+   `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
 
 
 ...know how many Media Pipelines do I need for my Application?

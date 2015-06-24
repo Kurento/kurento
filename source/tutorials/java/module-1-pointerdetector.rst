@@ -54,7 +54,7 @@ The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-pointerdetector>`_.
 
 This example is a modified version of the
-:doc:`Magic Mirror <./tutorial-1-magicmirror>` tutorial. In this case, this
+:doc:`Magic Mirror <./tutorial-2-magicmirror>` tutorial. In this case, this
 demo uses a **PointerDetector** instead of **FaceOverlay** filter.
 
 In order to perform pointer detection, there must be a calibration stage, in
@@ -74,8 +74,8 @@ This is done by clicking on the *Calibrate* blue button of the GUI.
 After that, the color of the pointer is tracked in real time by Kurento Media
 Server. ``PointerDetectorFilter`` can also define regions in the screen called
 *windows* in which some actions are performed when the pointer is detected when
-the pointer enters (``WindowInEvent``event) and exits (``WindowOutEvent``event)
-the windows. This is implemented in the server-side logic as follows:
+the pointer enters (``WindowInEvent`` event) and exits (``WindowOutEvent``
+event) the windows. This is implemented in the server-side logic as follows:
 
 .. sourcecode:: java
 

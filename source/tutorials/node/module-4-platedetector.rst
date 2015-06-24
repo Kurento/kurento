@@ -68,7 +68,7 @@ The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-platedetector>`_.
 
 This example is a modified version of the
-:doc:`Magic Mirror <./tutorial-1-magicmirror>` tutorial. In this case, this
+:doc:`Magic Mirror <./tutorial-2-magicmirror>` tutorial. In this case, this
 demo uses a **PlateDetector** instead of **FaceOverlay** filter. An screenshot
 of the running example is shown in the following picture:
 
