@@ -66,7 +66,6 @@ peers receives it.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-3-one2many>
-   Browser JavaScript </tutorials/js/tutorial-3-one2many>
    Node.js </tutorials/node/tutorial-3-one2many>
 
 Tutorial 4 - WebRTC one-to-one video call
@@ -78,7 +77,6 @@ This web application is a videophone (call one to one) based on `WebRTC`:term:.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-4-one2one>
-   Browser JavaScript </tutorials/js/tutorial-4-one2one>
    Node.js </tutorials/node/tutorial-4-one2one>
 
 Tutorial 5 - WebRTC one-to-one video call with recording and filtering
@@ -91,33 +89,3 @@ communication, and also integration with an augmented reality filter.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-5-one2one-adv>
-   Browser JavaScript </tutorials/js/tutorial-5-one2one-adv>
-   Node.js </tutorials/node/tutorial-5-one2one-adv>
-
-.. 
-   Tutorial 6 - Group video call
-   =============================
-
-   Web application based on WebRTC to communicate several peers.
-
-   .. toctree::
-      :maxdepth: 1
-
-      Java </tutorials/java/tutorial-6-group>
-      Browser JavaScript </tutorials/js/tutorial-6-group>
-      Node.js </tutorials/node/tutorial-6-group>
-
-   Tutorial 7 - Group video call with recording and filtering
-   ==========================================================
-
-   Enhanced version of the previous demo, with recording and filtering capabilities.
-
-   Tutorial: Java, Node.js, Browser JavaScript
-
-
-   Tutorial 8 - HTTP Player
-   ========================
-
-   Play of a video through HTTP.
-
-   Tutorial: Java, Node.js, Browser JavaScript
