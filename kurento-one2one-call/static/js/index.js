@@ -114,7 +114,7 @@ window.onload = function() {
   btnCall.addEventListener('click', call)
   btnTerminate.addEventListener('click', function(event)
   {
-    rpcBuilder.encode('stop')
+    rpcBuilder.encode('stop', registerName)
     stop()
   })
 
@@ -126,6 +126,7 @@ window.onload = function() {
 
     rpcBuilder.encode('register', name, registerResponse);
 
+    registerName = name;
     setRegisterState(REGISTERING);
     txtPeer.focus();
   }
