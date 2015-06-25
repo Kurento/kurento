@@ -256,10 +256,19 @@ eos_cb (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
   GstFlowReturn ret;
+  GstPad *pad;
 
   GST_DEBUG_OBJECT (appsrc, "Sending eos event to main pipeline");
 
   g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
+
+  pad = gst_element_get_static_pad (appsrc, "src");
+
+  if (pad != NULL) {
+    gst_pad_send_event (pad, gst_event_new_flush_start ());
+    gst_pad_send_event (pad, gst_event_new_flush_stop (0));
+    g_object_unref (pad);
+  }
 
   GST_DEBUG_OBJECT (appsrc, "Returned %s", gst_flow_get_name (ret));
 }
