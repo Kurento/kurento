@@ -41,13 +41,15 @@ public class TestReport {
 	protected final static int WIDTH_PERCENTAGE = 95;
 
 	protected PrintWriter writer;
-	protected String extraHtml;
+	protected String extraInfoHtml;
+	protected String extraErrorHtml;
 	protected int numRetries;
 
 	public TestReport(String name, int numRetries) {
 		try {
 			this.numRetries = numRetries;
-			extraHtml = "";
+			this.extraInfoHtml = "";
+			this.extraErrorHtml = "";
 			String title = (name == null) ? "Tests report [" + new Date() + "]"
 					: name;
 			File file = new File(testReport);
@@ -246,18 +248,33 @@ public class TestReport {
 		}
 	}
 
-	public void addExtraText(String text) {
-		extraHtml += escapeHtml(text);
+	public void addExtraInfoText(String text) {
+		extraInfoHtml += escapeHtml(text);
 	}
 
-	public void addExtraHtml(String html) {
-		extraHtml += html;
+	public void addExtraInfoHtml(String html) {
+		extraInfoHtml += html;
 	}
 
-	public void flushExtraHtml() {
-		if (!extraHtml.isEmpty()) {
-			appendHtml(extraHtml);
-			extraHtml = "";
+	public void addExtraErrorText(String text) {
+		extraErrorHtml += escapeHtml(text);
+	}
+
+	public void addExtraErrorHtml(String html) {
+		extraErrorHtml += html;
+	}
+
+	public void flushExtraInfoHtml() {
+		if (!extraInfoHtml.isEmpty()) {
+			appendHtml(extraInfoHtml);
+			extraInfoHtml = "";
+		}
+	}
+
+	public void flushExtraErrorHtml() {
+		if (!extraErrorHtml.isEmpty()) {
+			appendHtml(extraErrorHtml);
+			extraErrorHtml = "";
 		}
 	}
 }

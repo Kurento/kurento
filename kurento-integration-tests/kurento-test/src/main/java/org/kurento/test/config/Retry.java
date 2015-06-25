@@ -65,6 +65,7 @@ public class Retry implements TestRule {
 								+ "/" + getRetryCount());
 						base.evaluate();
 						testReport.appendSuccess("Test ok");
+						testReport.flushExtraInfoHtml();
 						testReport.appendLine();
 						return;
 					} catch (Throwable t) {
@@ -73,7 +74,8 @@ public class Retry implements TestRule {
 							testReport.appendWarning("Test failed in retry "
 									+ exceptions.size());
 							testReport.appendException(t, testScenario);
-							testReport.flushExtraHtml();
+							testReport.flushExtraInfoHtml();
+							testReport.flushExtraErrorHtml();
 						}
 
 						caughtThrowable = t;
