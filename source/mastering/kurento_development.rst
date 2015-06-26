@@ -46,7 +46,7 @@ Kurento Media Server
 
 The development builds of Kurento Media Server are .deb packages hosted in
 http://ubuntu.kurento.org. You can find current development version at
-http://ubuntu.kurento.org/pool/main/k/kurento-media-server/.
+http://ubuntu.kurento.org/pool/main/k/kurento-media-server-6.0/.
 
 To install packages from unstable repository you need to execute::
 
@@ -54,18 +54,17 @@ To install packages from unstable repository you need to execute::
     sudo apt-add-repository http://ubuntu.kurento.org
     wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
     sudo apt-get update
-    sudo apt-get install kurento-media-server
+    sudo apt-get install kurento-media-server-6.0
 
 As you can imagine, it is not possible to have installed at the same time latest
 stable version and latest development version of Kurento Media Server.
 
-Older versions can be manually downloaded from http://ubuntu.kurento.org/repo.
-Notice dependencies will be downgraded as required by the old package. For
-example::
+Older versions can be manually downloaded from
+http://ubuntu.kurento.org/pool/main/k/. Notice dependencies will be downgraded
+as required by the old package. For example::
 
-    sudo dpkg -i kurento_4.2.5-16-g18d9c6~1.gbp18d9c6_i386.deb
+    sudo dpkg -i kurento-media-server-dbg_5.1.4~20150528151643.2.g75f094f.trusty_amd64.deb
     sudo apt-get -f install
-
 
 
 Kurento Java Client
@@ -113,7 +112,7 @@ point to a development version. There is no way in Maven to use the latest
 development version of an artifact. You have to specify the concrete
 development version you want to depend on. To know what is the current Kurento
 Java Client development version, you can take a look to the
-`internal Kurento Maven repository <https://repository.kurento.com/archiva/browse/org.kurento/kurento-client>`_
+`internal Kurento Maven repository <http://maven.kurento.org/archiva/browse/org.kurento/kurento-client>`_
 and search for the latest version. Then, you have to include in your
 application's pom.xml the following dependency:
 
@@ -168,4 +167,4 @@ libraries from HTML resources, then, you have to change to development URLs:
 .. sourcecode:: html
 
    <script type="text/javascript"
-       src="http://builds.kurento.org/dev/latest/js/kurento-client.min.js"></script>
+       src="http://builds.kurento.org/dev/master/latest/js/kurento-client.min.js"></script>
