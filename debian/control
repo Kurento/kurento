@@ -12,6 +12,7 @@ Build-Depends: debhelper (>= 8.0.0),
  libnice-dev (>= 0.1.7),
  gstreamer1.5-nice,
  uuid-dev,
+ valgrind,
  openwebrtc-gst-plugins-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
