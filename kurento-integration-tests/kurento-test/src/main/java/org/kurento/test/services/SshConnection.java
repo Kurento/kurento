@@ -58,12 +58,14 @@ public class SshConnection {
 
 	private static final int NODE_INITIAL_PORT = 5555;
 	private static final int PING_TIMEOUT = 2; // seconds
+	private static final int DEFAULT_CONNECTION_TIMEOUT = 30000; // ms
 
 	private String host;
 	private String login;
 	private String passwd;
 	private String pem;
 	private String tmpFolder;
+	private int connectionTimeout;
 	private OverthereConnection connection;
 
 	public SshConnection(String host) {
@@ -75,6 +77,7 @@ public class SshConnection {
 		} else {
 			this.passwd = getProperty(TEST_NODE_PASSWD_PROPERTY);
 		}
+		this.connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 	}
 
 	public SshConnection(String host, String login, String passwd, String pem) {
@@ -143,6 +146,9 @@ public class SshConnection {
 		} else {
 			options.set(ConnectionOptions.PASSWORD, passwd);
 		}
+
+		options.set(ConnectionOptions.CONNECTION_TIMEOUT_MILLIS,
+				connectionTimeout);
 		options.set(ConnectionOptions.USERNAME, login);
 		options.set(ConnectionOptions.ADDRESS, host);
 		options.set(ConnectionOptions.OPERATING_SYSTEM,
@@ -242,7 +248,7 @@ public class SshConnection {
 				try {
 					String[] command = { "ping", "-c", "1", ipAddress };
 					Process p = new ProcessBuilder(command)
-					.redirectErrorStream(true).start();
+							.redirectErrorStream(true).start();
 					CharStreams.toString(new InputStreamReader(p
 							.getInputStream(), "UTF-8"));
 					latch.countDown();
@@ -285,6 +291,14 @@ public class SshConnection {
 
 	public OverthereConnection getConnection() {
 		return connection;
+	}
+
+	public int getConnectionTimeout() {
+		return connectionTimeout;
+	}
+
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
 	}
 
 }
