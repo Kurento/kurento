@@ -27,6 +27,12 @@ then
   exit 1
 fi
 
+if [ "${COMPONENT}x" == "x" ]
+then
+  echo "You did not specified a component, using main by default"
+  COMPONENT=main
+fi
+
 KEY=$ID_RSA_FILE
 
-curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST --data-binary @$PACKAGE || exit 1
+curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST\&comp=$COMPONENT --data-binary @$PACKAGE || exit 1
