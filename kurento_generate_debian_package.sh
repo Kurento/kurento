@@ -93,10 +93,10 @@ dpkg-buildpackage $build_args || echo "Warning, failure detecten on debian packa
 
 for i in ../*${ver}_*.deb
 do
-  kurento_upload_package.sh $DIST $i || echo "Failed to upload package $i"
+  kurento_upload_package.sh $DIST-dev $i || echo "Failed to upload package $i"
 
   if [ $rc = 0 ]
   then
-    kurento_upload_package.sh $DIST-releases $i || echo "Failed to upload package $i"
+    kurento_upload_package.sh $DIST $i || echo "Failed to upload package $i"
   fi
 done
