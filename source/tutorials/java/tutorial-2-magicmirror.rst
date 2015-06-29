@@ -25,6 +25,17 @@ The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
 Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``kms.ws.uri`` to the Maven execution command, as follows:
+
+   .. sourcecode:: sh
+
+      mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
+
+
 Understanding this example
 ==========================
 
@@ -87,11 +98,11 @@ the following picture:
 
    *One to one video call signaling protocol*
 
-As you can see in the diagram, an `SDP`:term: needs to be exchanged between
-client and server to establish the `WebRTC`:term: session between the browser
-and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer at the
-browser with the WebRtcEndpoint at the server. The complete source code of this
-demo can be found in
+As you can see in the diagram, an :term:`SDP` and :term:`ICE` candidates needs
+to be exchanged between client and server to establish the :term:`WebRTC`
+session between the Kurento client and server. Specifically, the SDP
+negotiation connects the WebRtcPeer at the browser with the WebRtcEndpoint at
+the server. The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-magic-mirror>`_.
 
 Application Server Side
@@ -132,6 +143,7 @@ In the following figure you can see a class diagram of the server side code:
 
    MagicMirrorApp -> MagicMirrorHandler;
    MagicMirrorApp -> KurentoClient;
+   MagicMirrorHandler -> UserSession;
    MagicMirrorHandler -> KurentoClient [constraint = false]
 
 The main class of this demo is named
@@ -150,7 +162,10 @@ location of your Kurento Media Server instance there.
    @EnableWebSocket
    @EnableAutoConfiguration
    public class MagicMirrorApp implements WebSocketConfigurer {
-   
+
+      final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
+      final static String DEFAULT_APP_SERVER_URL = "http://localhost:8080";
+
       @Bean
       public MagicMirrorHandler handler() {
          return new MagicMirrorHandler();
@@ -158,9 +173,11 @@ location of your Kurento Media Server instance there.
    
       @Bean
       public KurentoClient kurentoClient() {
-         return KurentoClient.create("ws://localhost:8888/kurento");
+         return KurentoClient.create(System.getProperty("kms.ws.uri",
+               DEFAULT_KMS_WS_URI));
       }
    
+      @Override
       public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
          registry.addHandler(handler(), "/magicmirror");
       }
@@ -185,28 +202,24 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kinds of incoming messages to
-the *Server* : ``start`` and ``stop``. These messages are treated in the
-*switch* clause, taking the proper steps in each case.
+the *Server* : ``start``, ``onIceCandidates`` and ``stop``. These messages are
+treated in the *switch* clause, taking the proper steps in each case.
 
 .. sourcecode:: java
 
    public class MagicMirrorHandler extends TextWebSocketHandler {
    
-      private final Logger log = LoggerFactory
-            .getLogger(MagicMirrorHandler.class);
+      private final Logger log = LoggerFactory.getLogger(MagicMirrorHandler.class);
       private static final Gson gson = new GsonBuilder().create();
    
-      private ConcurrentHashMap<String, MediaPipeline> pipelines = 
-            new ConcurrentHashMap<String, MediaPipeline>();
+      private final ConcurrentHashMap<String, UserSession> users = new ConcurrentHashMap<String, UserSession>();
    
       @Autowired
       private KurentoClient kurento;
    
       @Override
-      public void handleTextMessage(WebSocketSession session, TextMessage message)
-            throws Exception {
-         JsonObject jsonMessage = gson.fromJson(message.getPayload(),
-               JsonObject.class);
+      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+         JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
    
          log.debug("Incoming message: {}", jsonMessage);
    
@@ -214,19 +227,26 @@ the *Server* : ``start`` and ``stop``. These messages are treated in the
          case "start":
             start(session, jsonMessage);
             break;
-   
-         case "stop":
-            String sessionId = session.getId();
-            if (pipelines.containsKey(sessionId)) {
-               pipelines.get(sessionId).release();
-               pipelines.remove(sessionId);
+         case "stop": {
+            UserSession user = users.remove(session.getId());
+            if (user != null) {
+               user.release();
             }
             break;
+         }
+         case "onIceCandidate": {
+            JsonObject jsonCandidate = jsonMessage.get("candidate").getAsJsonObject();
    
+            UserSession user = users.get(session.getId());
+            if (user != null) {
+               IceCandidate candidate = new IceCandidate(jsonCandidate.get("candidate").getAsString(),
+                     jsonCandidate.get("sdpMid").getAsString(), jsonCandidate.get("sdpMLineIndex").getAsInt());
+               user.addCandidate(candidate);
+            }
+            break;
+         }
          default:
-            sendError(session,
-                  "Invalid message with id "
-                        + jsonMessage.get("id").getAsString());
+            sendError(session, "Invalid message with id " + jsonMessage.get("id").getAsString());
             break;
          }
       }
@@ -240,26 +260,46 @@ the *Server* : ``start`` and ``stop``. These messages are treated in the
       }
    }
 
-In the following snippet, we can see the ``start`` method. It creates a Media
-Pipeline, creates the Media Elements (``WebRtcEndpoint`` and
-``FaceOverlayFilter``) and make the connections among them. A ``startResponse``
-message is sent back to the client with the SDP answer.
+In the following snippet, we can see the ``start`` method. It handles the ICE
+candidates gathering, creates a Media Pipeline, creates the Media Elements
+(``WebRtcEndpoint`` and ``FaceOverlayFilter``) and make the connections among
+them. A ``startResponse`` message is sent back to the client with the SDP
+answer.
 
 .. sourcecode:: java
 
-   private void start(WebSocketSession session, JsonObject jsonMessage) {
+   private void start(final WebSocketSession session, JsonObject jsonMessage) {
       try {
-         // Media Logic (Media Pipeline and Elements)
+         // User session
+         UserSession user = new UserSession();
          MediaPipeline pipeline = kurento.createMediaPipeline();
-         pipelines.put(session.getId(), pipeline);
+         user.setMediaPipeline(pipeline);
+         WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
+         user.setWebRtcEndpoint(webRtcEndpoint);
+         users.put(session.getId(), user);
 
-         WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
-               .build();
-         FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(
-               pipeline).build();
-         faceOverlayFilter.setOverlayedImage(
-               "http://files.kurento.org/imgs/mario-wings.png", -0.35F,
-               -1.2F, 1.6F, 1.6F);
+         // ICE candidates
+         webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+            @Override
+            public void onEvent(OnIceCandidateEvent event) {
+               JsonObject response = new JsonObject();
+               response.addProperty("id", "iceCandidate");
+               response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+               try {
+                  synchronized (session) {
+                     session.sendMessage(new TextMessage(response.toString()));
+                  }
+               } catch (IOException e) {
+                  log.debug(e.getMessage());
+               }
+            }
+         });
+
+         // Media logic
+         FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
+
+         String appServerUrl = System.getProperty("app.server.url", MagicMirrorApp.DEFAULT_APP_SERVER_URL);
+         faceOverlayFilter.setOverlayedImage(appServerUrl + "/img/mario-wings.png", -0.35F, -1.2F, 1.6F, 1.6F);
 
          webRtcEndpoint.connect(faceOverlayFilter);
          faceOverlayFilter.connect(webRtcEndpoint);
@@ -268,11 +308,16 @@ message is sent back to the client with the SDP answer.
          String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
          String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
-         // Sending response back to client
          JsonObject response = new JsonObject();
          response.addProperty("id", "startResponse");
          response.addProperty("sdpAnswer", sdpAnswer);
-         session.sendMessage(new TextMessage(response.toString()));
+
+         synchronized (session) {
+            session.sendMessage(new TextMessage(response.toString()));
+         }
+
+         webRtcEndpoint.gatherCandidates();
+
       } catch (Throwable t) {
          sendError(session, t.getMessage());
       }
@@ -313,11 +358,11 @@ web page, and are used in the
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/magicmirror``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are four incoming messages to client: ``startResponse`` and
-``error``. Convenient actions are taken to implement each step in the
-communication. For example, in functions ``start`` the function
-``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to start a WebRTC
-communication.
+Notice that there are three incoming messages to client: ``iceCandidate``,
+``startResponse`` and ``error``. Convenient actions are taken to implement each
+step in the communication. For example, in functions ``start`` the function
+``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
+WebRTC communication.
 
 .. sourcecode:: javascript
 
@@ -335,13 +380,21 @@ communication.
          if (state == I_AM_STARTING) {
             setState(I_CAN_START);
          }
-         console.error("Error message from server: " + parsedMessage.message);
+         onError("Error message from server: " + parsedMessage.message);
          break;
+      case 'iceCandidate':
+          webRtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
+            if (error) {
+               console.error("Error adding candidate: " + error);
+               return;
+            }
+          });
+          break;
       default:
          if (state == I_AM_STARTING) {
             setState(I_CAN_START);
          }
-         console.error('Unrecognized message', parsedMessage);
+         onError('Unrecognized message', parsedMessage);
       }
    }
 
@@ -352,8 +405,19 @@ communication.
       showSpinner(videoInput, videoOutput);
    
       console.log("Creating WebRtcPeer and generating local sdp offer ...");
-      webRtcPeer = 
-         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+
+       var options = {
+            localVideo: videoInput,
+            remoteVideo: videoOutput,
+            onicecandidate: onIceCandidate
+          }
+      webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+         function (error) {
+           if (error) {
+              return console.error(error);
+           }
+           webRtcPeer.generateOffer(onOffer);
+         });
    }
 
    function onOffer(offerSdp) {
@@ -365,38 +429,45 @@ communication.
       sendMessage(message);
    }
 
-   function onError(error) {
-      console.error(error);
+   function onIceCandidate(candidate) {
+        console.log("Local candidate" + JSON.stringify(candidate));
+
+        var message = {
+          id: 'onIceCandidate',
+          candidate: candidate
+        };
+        sendMessage(message);
    }
 
 Dependencies
 ============
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
-part of the *pom.xml* is where Kurento dependencies are declared. As the
-following snippet shows, we need two dependencies: the Kurento Client Java
-dependency (*kurento-client*) and the JavaScript Kurento utility library
-(*kurento-utils*) for the client-side:
+part of the
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/pom.xml>`_
+is where Kurento dependencies are declared. As the following snippet shows, we
+need two dependencies: the Kurento Client Java dependency (*kurento-client*)
+and the JavaScript Kurento utility library (*kurento-utils*) for the
+client-side:
 
 .. sourcecode:: xml 
+
+   <parent>
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-parent-pom</artifactId>
+      <version>|CLIENT_JAVA_VERSION|</version>
+   </parent>
 
    <dependencies> 
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>[5.0.0,6.0.0)</version>
       </dependency> 
       <dependency> 
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId> 
-         <version>[5.0.0,6.0.0)</version>
       </dependency> 
    </dependencies>
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``[5.0.0,6.0.0)`` downloads the latest version of Kurento artefacts from
-Maven Central in version 5 (i.e. 5.x.x). Major versions are released when
-incompatible changes are made.
 
 .. note::
 
@@ -411,3 +482,16 @@ properties section:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
+
+Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, and *adapter.js*) are
+handled with :term:`Bower`. This dependencies are defined in the file
+`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/bower.json>`_.
+The command ``bower install`` is automatically called from Maven. Thus, Bower
+should be present in your system. It can be installed in an Ubuntu machine as
+follows:
+
+.. sourcecode:: sh
+
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
+   sudo npm install -g bower
