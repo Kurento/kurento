@@ -31,11 +31,6 @@
     "Kurento",
     "WebRTC"
   ],
-  "bundleDependencies": [
-    "kurento-client-core",
-    "kurento-client-elements",
-    "kurento-client-filters"
-  ],
   "dependencies": {
     "async": "~1.2.1",
     "checktype": "^0.0.7",
