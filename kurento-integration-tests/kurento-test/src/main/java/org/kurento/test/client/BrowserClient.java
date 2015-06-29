@@ -33,18 +33,14 @@ import static org.kurento.test.TestConfiguration.TEST_PROTOCOL_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
-import static org.kurento.test.client.BrowserType.IEXPLORER;
-import static org.kurento.test.config.BrowserScope.SAUCELABS;
 import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.grid.GridHandler;
@@ -174,17 +170,6 @@ public class BrowserClient implements Closeable {
 					// This flag enables the screen sharing
 					options.addArguments("--enable-usermedia-screen-capturing");
 
-					try {
-						InputStream is = ClassLoader
-								.getSystemResourceAsStream("kurento.crx");
-						File crx = File.createTempFile("kurento", ".crx");
-						FileUtils.copyInputStreamToFile(is, crx);
-						options.addExtensions(crx);
-						options.addArguments("--auto-select-desktop-capture-source=Entire screen");
-					} catch (Exception e) {
-						log.error(e.getMessage());
-					}
-
 				} else {
 					// This flag avoids grant the camera
 					options.addArguments("--use-fake-ui-for-media-stream");
@@ -292,13 +277,6 @@ public class BrowserClient implements Closeable {
 
 		capabilities.setCapability("version", browserVersion);
 		capabilities.setCapability("platform", platform);
-
-		if ((SAUCELABS == scope) && (IEXPLORER == browserType)
-				&& ("8".equals(browserVersion) || "9".equals(browserVersion))) {
-			capabilities.setCapability("avoid-proxy", true);
-			capabilities.setCapability("parent-tunnel", "mmatyjek");
-		}
-
 		capabilities.setCapability("idleTimeout", idleTimeout);
 		capabilities.setCapability("commandTimeout", commandTimeout);
 
