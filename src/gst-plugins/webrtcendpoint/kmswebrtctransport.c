@@ -20,6 +20,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "kmswebrtctransport"
 
 #define SRTPENC_NAME "srtp-encoder"
+#define SRTPDEC_NAME "srtp-decoder"
+#define REPLAY_WINDOW_SIZE 512
 
 void
 kms_webrtc_transport_nice_agent_recv_cb (NiceAgent * agent, guint stream_id,
@@ -53,7 +55,7 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 {
   KmsWebRtcTransport *tr;
   gchar *str;
-  GstElement *srtpenc;
+  GstElement *srtpenc, *srtpdec;
 
   tr = g_slice_new0 (KmsWebRtcTransport);
 
@@ -75,10 +77,19 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 
   srtpenc = gst_bin_get_by_name (GST_BIN (tr->dtlssrtpenc), SRTPENC_NAME);
   if (srtpenc != NULL) {
-    g_object_set (srtpenc, "allow-repeat-tx", TRUE, NULL);
+    g_object_set (srtpenc, "allow-repeat-tx", TRUE, "replay-window-size",
+        REPLAY_WINDOW_SIZE, NULL);
     g_object_unref (srtpenc);
   } else {
     GST_WARNING ("Cannot get srtpenc with name %s", SRTPENC_NAME);
+  }
+
+  srtpdec = gst_bin_get_by_name (GST_BIN (tr->dtlssrtpdec), SRTPDEC_NAME);
+  if (srtpdec != NULL) {
+    g_object_set (srtpdec, "replay-window-size", REPLAY_WINDOW_SIZE, NULL);
+    g_object_unref (srtpdec);
+  } else {
+    GST_WARNING ("Cannot get srtpdec with name %s", SRTPDEC_NAME);
   }
 
   str =
