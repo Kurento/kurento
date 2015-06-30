@@ -1,144 +1,153 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials are made
+ * available under the terms of the GNU Lesser General Public License (LGPL)
+ * version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
-var ws = new WebSocket('ws://' + location.host + '/call');
-var video;
-var webRtcPeer;
-
-window.onload = function() {
-  console = new Console('console', console);
-  video = document.getElementById('video');
-}
-
-window.onbeforeunload = function() {
-  ws.close();
-}
-
-ws.onmessage = function(message) {
-  var parsedMessage = JSON.parse(message.data);
-  console.info('Received message: ' + message.data);
-
-  switch (parsedMessage.id) {
-  case 'masterResponse':
-    masterResponse(parsedMessage);
-    break;
-  case 'viewerResponse':
-    viewerResponse(parsedMessage);
-    break;
-  case 'newViewerResponse':
-    newViewerResponse(parsedMessage);
-    break;
-  case 'stopCommunication':
-    dispose();
-    break;
-  default:
-    console.error('Unrecognized message', parsedMessage);
-  }
-}
-
-function masterResponse(message) {
-  if (message.response != 'accepted') {
-    var errorMsg = message.message ? message.message : 'Unknow error';
-    console.info('Call not accepted for the following reason: ' + errorMsg);
-    dispose();
-  } else {
-    webRtcPeer.processSdpAnswer(message.sdpAnswer);
-  }
-}
-
-function viewerResponse(message) {
-  if (message.response != 'accepted') {
-    var errorMsg = message.message ? message.message : 'Unknow error';
-    console.info('Call not accepted for the following reason: ' + errorMsg);
-    dispose();
-  } else {
-    webRtcPeer.processSdpAnswer(message.sdpAnswer);
-  }
-}
-
-function newViewerResponse(message) {
-  if (message.response != 'accepted') {
-    var errorMsg = message.message ? message.message : 'Unknow error';
-    console.info('Call not accepted for the following reason: ' + errorMsg);
-    dispose();
-  } else {
-    webRtcPeer.processSdpAnswer_newViewer(message.sdpAnswer);
-  }
-}
-
-function master() {
-  if (!webRtcPeer) {
-    showSpinner(video);
-
-		webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(video, null, function(offerSdp) {
-//		webRtcPeer = kurentoUtils.WebRtcPeer.startSendOnly(video, function(offerSdp) {
-      var message = {
-        id : 'master',
-        sdpOffer : offerSdp
-      };
-      sendMessage(message);
-    });
-  }
-}
-
-function viewer()
+window.onload = function()
 {
-  if(!webRtcPeer)
+  console = new Console();
+
+  var webRtcPeer;
+
+  const packer = RpcBuilder.packers.JsonRPC;
+
+  var rpcBuilder = new RpcBuilder(packer, new WebSocket('ws:'+location.host),
+  onRequest);
+
+  window.onbeforeunload = rpcBuilder.close.bind(rpcBuilder);
+
+  var video = document.getElementById('video');
+
+  var btnCall = document.getElementById('call');
+  var btnViewer = document.getElementById('viewer');
+  var btnTerminate = document.getElementById('terminate');
+
+
+  btnCall.addEventListener('click', function()
   {
-    showSpinner(video);
-
-    webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(video, function(offerSdp)
+    if(!webRtcPeer)
     {
-      var message = {
-        id : 'viewer',
-        sdpOffer : offerSdp
-      };
-      sendMessage(message);
-    });
-  }
-  else
-    webRtcPeer.connect(function(offerSdp)
+      showSpinner(video);
+
+      var options =
+      {
+        localVideo: video
+      }
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
+        function(error)
+      {
+        if(error) return onError(error)
+
+        this.generateOffer(onOfferMaster)
+      });
+
+      webRtcPeer.on('icecandidate', function(candidate) {
+        rpcBuilder.encode('candidate', [candidate])
+      });
+    }
+  })
+  btnViewer.addEventListener('click', function()
+  {
+    if(!webRtcPeer)
     {
-      var message = {
-        id : 'newViewer',
-        sdpOffer : offerSdp
-      };
-      sendMessage(message);
-    })
-}
+      showSpinner(video);
 
-function stop() {
-  var message = {
-    id : 'stop'
+      var options =
+      {
+        remoteVideo: video
+      }
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
+        function(error)
+      {
+        if(error) return onError(error)
+
+        this.generateOffer(onOfferViewer)
+      });
+
+      webRtcPeer.on('icecandidate', function(candidate) {
+        rpcBuilder.encode('candidate', [candidate])
+      });
+    }
+    else
+      webRtcPeer.generateOffer(onOfferViewer)
+  })
+  btnTerminate.addEventListener('click', function()
+  {
+    rpcBuilder.encode('stop')
+    dispose();
+  })
+
+
+  function onOfferMaster(error, offerSdp)
+  {
+    if(error) return onError(error)
+
+    rpcBuilder.encode('master', [offerSdp], response)
   }
-  sendMessage(message);
-  dispose();
-}
 
-function dispose() {
-  if (webRtcPeer) {
-    webRtcPeer.dispose();
-    webRtcPeer = null;
+  function onOfferViewer(error, offerSdp)
+  {
+    if(error) return onError(error)
+
+    rpcBuilder.encode('viewer', [offerSdp], response)
   }
-  hideSpinner(video);
+
+
+  function dispose()
+  {
+    if(webRtcPeer)
+    {
+      webRtcPeer.dispose();
+      webRtcPeer = null;
+    }
+
+    hideSpinner(video);
+  }
+
+  function onRequest(request)
+  {
+    switch(request.method)
+    {
+      case 'candidate':
+        webRtcPeer.addIceCandidate(request.params[0])
+      break;
+
+      case 'stop':
+        dispose();
+      break;
+
+      default:
+        console.error(request)
+    }
+  }
+
+  function response(error, sdpAnswer)
+  {
+    if(error)
+    {
+      onError(error);
+
+      return dispose();
+    }
+
+    webRtcPeer.processAnswer(sdpAnswer);
+  }
 }
 
-function sendMessage(message) {
-  var jsonMessage = JSON.stringify(message);
-  console.log('Senging message: ' + jsonMessage);
-  ws.send(jsonMessage);
+
+function onError(error) {
+  if(error) console.error(error);
 }
 
 function showSpinner() {
