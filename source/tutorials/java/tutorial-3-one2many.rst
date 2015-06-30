@@ -26,14 +26,25 @@ The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
 Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``kms.ws.uri`` to the Maven execution command, as follows:
+
+   .. sourcecode:: sh
+
+      mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
+
+
 Understanding this example
 ==========================
 
 There will be two types of users in this application: 1 peer sending media
-(let's call it *Master*) and N peers receiving the media from the *Master*
-(let's call them *Viewers*). Thus, the Media Pipeline is composed by 1+N
-interconnected *WebRtcEndpoints*. The following picture shows an screenshot of
-the Master's web GUI:
+(let's call it *Presenter*) and N peers receiving the media from the
+*Presenter* (let's call them *Viewers*). Thus, the Media Pipeline is composed
+by 1+N interconnected *WebRtcEndpoints*. The following picture shows an
+screenshot of the Presenter's web GUI:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
    :align:   center
@@ -42,9 +53,9 @@ the Master's web GUI:
    *One to many video call screenshot*
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by 1+N **WebRtcEndpoints**. The *Master* peer sends its stream to the rest of
-the *Viewers*. *Viewers* are configured in receive-only mode. The implemented
-media pipeline is illustrated in the following picture:
+by 1+N **WebRtcEndpoints**. The *Presenter* peer sends its stream to the rest
+of the *Viewers*. *Viewers* are configured in receive-only mode. The
+implemented media pipeline is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-pipeline.png
    :align:   center
@@ -67,16 +78,16 @@ Client and application server communicate using a signaling protocol based on
 `JSON`:term: messages over `WebSocket`:term: 's. The normal sequence between
 client and server is as follows:
 
-1. A *Master* enters in the system. There must be one and only one *Master* at
-any time. For that, if a *Master* has already present, an error message is sent
-if another user tries to become *Master*.
+1. A *Presenter* enters in the system. There must be one and only one
+*Presenter* at any time. For that, if a *Presenter* has already present, an
+error message is sent if another user tries to become *Presenter*.
 
-2. N *Viewers* connect to the master. If no *Master* is present, then an error
-is sent to the corresponding *Viewer*.
+2. N *Viewers* connect to the presenter. If no *Presenter* is present, then an
+error is sent to the corresponding *Viewer*.
 
 3. *Viewers* can leave the communication at any time.
 
-4. When the *Master* finishes the session each connected *Viewer* receives an
+4. When the *Presenter* finishes the session each connected *Viewer* receives an
 *stopCommunication* message and also terminates its session.
 
 
@@ -89,11 +100,11 @@ clients and server:
 
    *One to many video call signaling protocol*
 
-As you can see in the diagram, `SDP`:term: needs to be exchanged between client
-and server to establish the `WebRTC`:term: connection between the browser and
-Kurento. Specifically, the SDP negotiation connects the WebRtcPeer in the
-browser with the WebRtcEndpoint in the server. The complete source code of this
-demo can be found in
+As you can see in the diagram, `SDP`:term: and :term:`ICE` candidates need to be
+exchanged between client and server to establish the `WebRTC`:term: connection
+between the Kurento client and server. Specifically, the SDP negotiation
+connects the WebRtcPeer in the browser with the WebRtcEndpoint in the server.
+The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2many-call>`_.
 
 Application Server Logic
@@ -134,6 +145,7 @@ In the following figure you can see a class diagram of the server side code:
 
    One2ManyCallApp -> CallHandler;
    One2ManyCallApp -> KurentoClient;
+   CallHandler -> UserSession;
    CallHandler -> KurentoClient [constraint = false]
 
 The main class of this demo is named
@@ -151,6 +163,8 @@ the *localhost* and listening in the port 8888.
    @EnableAutoConfiguration
    public class One2ManyCallApp implements WebSocketConfigurer {
 
+      final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
+
       @Bean
       public CallHandler callHandler() {
          return new CallHandler();
@@ -158,7 +172,8 @@ the *localhost* and listening in the port 8888.
 
       @Bean
       public KurentoClient kurentoClient() {
-         return KurentoClient.create("ws://localhost:8888/kurento");
+         return KurentoClient.create(System.getProperty("kms.ws.uri",
+               DEFAULT_KMS_WS_URI));
       }
 
       public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -185,43 +200,39 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kind of incoming messages to
-the *Server* : ``master``, ``viewer``,  and ``stop``. These messages are
-treated in the *switch* clause, taking the proper steps in each case.
+the *Server* : ``presenter``, ``viewer``,  ``stop``, and ``onIceCandidate``.
+These messages are treated in the *switch* clause, taking the proper steps in
+each case.
 
 .. sourcecode:: java
 
    public class CallHandler extends TextWebSocketHandler {
 
-      private static final Logger log = LoggerFactory
-            .getLogger(CallHandler.class);
+      private static final Logger log = LoggerFactory.getLogger(CallHandler.class);
       private static final Gson gson = new GsonBuilder().create();
 
-      private ConcurrentHashMap<String, UserSession> viewers =
-            new ConcurrentHashMap<String, UserSession>();
+      private final ConcurrentHashMap<String, UserSession> viewers = new ConcurrentHashMap<String, UserSession>();
 
       @Autowired
       private KurentoClient kurento;
 
       private MediaPipeline pipeline;
-      private UserSession masterUserSession;
+      private UserSession presenterUserSession;
 
       @Override
-      public void handleTextMessage(WebSocketSession session, TextMessage message)
-            throws Exception {
-         JsonObject jsonMessage = gson.fromJson(message.getPayload(),
-               JsonObject.class);
-         log.debug("Incoming message from session '{}': {}", session.getId(),
-               jsonMessage);
+      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+         JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
+         log.debug("Incoming message from session '{}': {}", session.getId(), jsonMessage);
 
          switch (jsonMessage.get("id").getAsString()) {
-         case "master":
+         case "presenter":
             try {
-               master(session, jsonMessage);
+               presenter(session, jsonMessage);
             } catch (Throwable t) {
                stop(session);
                log.error(t.getMessage(), t);
                JsonObject response = new JsonObject();
-               response.addProperty("id", "masterResponse");
+               response.addProperty("id", "presenterResponse");
                response.addProperty("response", "rejected");
                response.addProperty("message", t.getMessage());
                session.sendMessage(new TextMessage(response.toString()));
@@ -240,6 +251,22 @@ treated in the *switch* clause, taking the proper steps in each case.
                session.sendMessage(new TextMessage(response.toString()));
             }
             break;
+         case "onIceCandidate": {
+            JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
+
+            UserSession user = null;
+            if (presenterUserSession.getSession() == session) {
+               user = presenterUserSession;
+            } else {
+               user = viewers.get(session.getId());
+            }
+            if (user != null) {
+               IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
+                     candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
+               user.addCandidate(cand);
+            }
+            break;
+         }
          case "stop":
             stop(session);
             break;
@@ -248,13 +275,11 @@ treated in the *switch* clause, taking the proper steps in each case.
          }
       }
 
-      private synchronized void master(WebSocketSession session,
-            JsonObject jsonMessage) throws IOException {
+      private synchronized void presenter(final WebSocketSession session, JsonObject jsonMessage) throws IOException {
          ...
       }
 
-      private synchronized void viewer(WebSocketSession session,
-            JsonObject jsonMessage) throws IOException {
+      private synchronized void viewer(final WebSocketSession session, JsonObject jsonMessage) throws IOException {
          ...
       }
 
@@ -263,105 +288,137 @@ treated in the *switch* clause, taking the proper steps in each case.
       }
 
       @Override
-      public void afterConnectionClosed(WebSocketSession session,
-            CloseStatus status) throws Exception {
+      public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
          stop(session);
       }
 
    }
 
-In the following snippet, we can see the ``master`` method. It creates a Media
-Pipeline and the ``WebRtcEndpoint`` for master:
+In the following snippet, we can see the ``presenter`` method. It creates a
+Media Pipeline and the ``WebRtcEndpoint`` for ``presenter``:
 
 .. sourcecode:: java
 
-   private synchronized void master(WebSocketSession session,
-         JsonObject jsonMessage) throws IOException {
-      if (masterUserSession == null) {
-         masterUserSession = new UserSession(session);
+   private synchronized void presenter(final WebSocketSession session, JsonObject jsonMessage) throws IOException {
+      if (presenterUserSession == null) {
+         presenterUserSession = new UserSession(session);
 
          pipeline = kurento.createMediaPipeline();
-         masterUserSession.setWebRtcEndpoint(new WebRtcEndpoint.Builder(
-               pipeline).build());
+         presenterUserSession.setWebRtcEndpoint(new WebRtcEndpoint.Builder(pipeline).build());
 
-         WebRtcEndpoint masterWebRtc = masterUserSession.getWebRtcEndpoint();
-         String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer")
-               .getAsString();
-         String sdpAnswer = masterWebRtc.processOffer(sdpOffer);
+         WebRtcEndpoint presenterWebRtc = presenterUserSession.getWebRtcEndpoint();
+
+         presenterWebRtc.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+
+            @Override
+            public void onEvent(OnIceCandidateEvent event) {
+               JsonObject response = new JsonObject();
+               response.addProperty("id", "iceCandidate");
+               response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+               try {
+                  synchronized (session) {
+                     session.sendMessage(new TextMessage(response.toString()));
+                  }
+               } catch (IOException e) {
+                  log.debug(e.getMessage());
+               }
+            }
+         });
+
+         String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer").getAsString();
+         String sdpAnswer = presenterWebRtc.processOffer(sdpOffer);
 
          JsonObject response = new JsonObject();
-         response.addProperty("id", "masterResponse");
+         response.addProperty("id", "presenterResponse");
          response.addProperty("response", "accepted");
          response.addProperty("sdpAnswer", sdpAnswer);
-         masterUserSession.sendMessage(response);
+
+         synchronized (session) {
+            presenterUserSession.sendMessage(response);
+         }
+         presenterWebRtc.gatherCandidates();
 
       } else {
          JsonObject response = new JsonObject();
-         response.addProperty("id", "masterResponse");
+         response.addProperty("id", "presenterResponse");
          response.addProperty("response", "rejected");
-         response.addProperty("message",
-               "Another user is currently acting as sender. Try again later ...");
+         response.addProperty("message", "Another user is currently acting as sender. Try again later ...");
          session.sendMessage(new TextMessage(response.toString()));
       }
    }
 
-The ``viewer`` method is similar, but not he *Master* WebRtcEndpoint is
+The ``viewer`` method is similar, but not he *Presenter* WebRtcEndpoint is
 connected to each of the viewers WebRtcEndpoints, otherwise an error is sent
 back to the client.
 
 .. sourcecode:: java
 
-   private synchronized void viewer(WebSocketSession session,
-         JsonObject jsonMessage) throws IOException {
-      if (masterUserSession == null
-            || masterUserSession.getWebRtcEndpoint() == null) {
+   private synchronized void viewer(final WebSocketSession session, JsonObject jsonMessage) throws IOException {
+      if (presenterUserSession == null || presenterUserSession.getWebRtcEndpoint() == null) {
          JsonObject response = new JsonObject();
          response.addProperty("id", "viewerResponse");
          response.addProperty("response", "rejected");
-         response.addProperty("message",
-               "No active sender now. Become sender or . Try again later ...");
+         response.addProperty("message", "No active sender now. Become sender or . Try again later ...");
          session.sendMessage(new TextMessage(response.toString()));
       } else {
-         if(viewers.containsKey(session.getId())){
+         if (viewers.containsKey(session.getId())) {
             JsonObject response = new JsonObject();
             response.addProperty("id", "viewerResponse");
             response.addProperty("response", "rejected");
             response.addProperty("message",
-                  "You are already viewing in this session. " + 
-                  "Use a different browser to add additional viewers.");
+                  "You are already viewing in this session. Use a different browser to add additional viewers.");
             session.sendMessage(new TextMessage(response.toString()));
             return;
          }
          UserSession viewer = new UserSession(session);
          viewers.put(session.getId(), viewer);
 
-         String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer")
-               .getAsString();
+         String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer").getAsString();
 
-         WebRtcEndpoint nextWebRtc = new WebRtcEndpoint.Builder(pipeline)
-               .build();
+         WebRtcEndpoint nextWebRtc = new WebRtcEndpoint.Builder(pipeline).build();
+
+         nextWebRtc.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+
+            @Override
+            public void onEvent(OnIceCandidateEvent event) {
+               JsonObject response = new JsonObject();
+               response.addProperty("id", "iceCandidate");
+               response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+               try {
+                  synchronized (session) {
+                     session.sendMessage(new TextMessage(response.toString()));
+                  }
+               } catch (IOException e) {
+                  log.debug(e.getMessage());
+               }
+            }
+         });
+
          viewer.setWebRtcEndpoint(nextWebRtc);
-         masterUserSession.getWebRtcEndpoint().connect(nextWebRtc);
+         presenterUserSession.getWebRtcEndpoint().connect(nextWebRtc);
          String sdpAnswer = nextWebRtc.processOffer(sdpOffer);
 
          JsonObject response = new JsonObject();
          response.addProperty("id", "viewerResponse");
          response.addProperty("response", "accepted");
          response.addProperty("sdpAnswer", sdpAnswer);
-         viewer.sendMessage(response);
+
+         synchronized (session) {
+            viewer.sendMessage(response);
+         }
+         nextWebRtc.gatherCandidates();
       }
    }
 
 Finally, the ``stop`` message finishes the communication. If this message is
-sent by the *Master*, a ``stopCommunication`` message is sent to each connected
-*Viewer*:
+sent by the *Presenter*, a ``stopCommunication`` message is sent to each
+connected *Viewer*:
 
 .. sourcecode:: java
 
    private synchronized void stop(WebSocketSession session) throws IOException {
       String sessionId = session.getId();
-      if (masterUserSession != null
-            && masterUserSession.getSession().getId().equals(sessionId)) {
+      if (presenterUserSession != null && presenterUserSession.getSession().getId().equals(sessionId)) {
          for (UserSession viewer : viewers.values()) {
             JsonObject response = new JsonObject();
             response.addProperty("id", "stopCommunication");
@@ -373,7 +430,7 @@ sent by the *Master*, a ``stopCommunication`` message is sent to each connected
             pipeline.release();
          }
          pipeline = null;
-         masterUserSession = null;
+         presenterUserSession = null;
       } else if (viewers.containsKey(sessionId)) {
          if (viewers.get(sessionId).getWebRtcEndpoint() != null) {
             viewers.get(sessionId).getWebRtcEndpoint().release();
@@ -400,12 +457,12 @@ web page, and are used in the
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are four incoming messages to client: ``masterResponse``,
-``viewerResponse``, and ``stopCommunication``. Convenient actions are taken to
-implement each step in the communication. For example, in the function
-``master`` the function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is
-used to start a WebRTC communication. Then, ``WebRtcPeer.startRecvOnly`` is
-used in the ``viewer`` function.
+Notice that there are four incoming messages to client: ``presenterResponse``,
+``viewerResponse``, ``iceCandidate``, and ``stopCommunication``. Convenient
+actions are taken to implement each step in the communication. For example, in
+the function ``presenter`` the function ``WebRtcPeer.WebRtcPeerSendonly`` of
+*kurento-utils.js* is used to start a WebRTC communication. Then,
+``WebRtcPeer.WebRtcPeerRecvonly`` is used in the ``viewer`` function.
 
 .. sourcecode:: javascript
 
@@ -416,12 +473,18 @@ used in the ``viewer`` function.
       console.info('Received message: ' + message.data);
 
       switch (parsedMessage.id) {
-      case 'masterResponse':
-         masterResponse(parsedMessage);
+      case 'presenterResponse':
+         presenterResponse(parsedMessage);
          break;
       case 'viewerResponse':
          viewerResponse(parsedMessage);
          break;
+      case 'iceCandidate':
+          webRtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
+           if (!error) return;
+            console.error("Error adding candidate: " + error);
+          });
+          break;
       case 'stopCommunication':
          dispose();
          break;
@@ -430,32 +493,38 @@ used in the ``viewer`` function.
       }
    }
 
-   function master() {
+   function presenter() {
       if (!webRtcPeer) {
-         showSpinner(videoInput, videoOutput);
+         showSpinner(video);
 
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
-            function(offerSdp) {
-               var message = {
-                  id : 'master',
-                  sdpOffer : offerSdp
-               };
-               sendMessage(message);
-            });
+         var options = {
+                  localVideo: video,
+                  onicecandidate: onIceCandidate
+                }
+         webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
+            function (error) {
+              if(error) {
+                 return console.error(error);
+              }
+              webRtcPeer.generateOffer(onOfferPresenter);
+         });
       }
    }
 
    function viewer() {
       if (!webRtcPeer) {
-         document.getElementById('videoSmall').style.display = 'none';
-         showSpinner(videoOutput);
+         showSpinner(video);
 
-         webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp) {
-            var message = {
-               id : 'viewer',
-               sdpOffer : offerSdp
-            };
-            sendMessage(message);
+         var options = {
+                  remoteVideo: video,
+                  onicecandidate: onIceCandidate
+                }
+         webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
+            function (error) {
+              if(error) {
+                 return console.error(error);
+              }
+             this.generateOffer(onOfferViewer);
          });
       }
    }
@@ -464,30 +533,31 @@ Dependencies
 ============
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
-part of the *pom.xml* is where Kurento dependencies are declared. As the
-following snippet shows, we need two dependencies: the Kurento Client Java
-dependency (*kurento-client*) and the JavaScript Kurento utility library
-(*kurento-utils*) for the client-side:
+part of the
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/pom.xml>`_
+is where Kurento dependencies are declared. As the following snippet shows, we
+need two dependencies: the Kurento Client Java dependency (*kurento-client*)
+and the JavaScript Kurento utility library (*kurento-utils*) for the
+client-side:
 
 .. sourcecode:: xml
+
+   <parent>
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-parent-pom</artifactId>
+      <version>|CLIENT_JAVA_VERSION|</version>
+   </parent>
 
    <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>[5.0.0,6.0.0)</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>[5.0.0,6.0.0)</version>
       </dependency>
    </dependencies>
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``[5.0.0,6.0.0)`` downloads the latest version of Kurento artefacts from
-Maven Central in version 5 (i.e. 5.x.x). Major versions are released when
-incompatible changes are made.
 
 .. note::
 
@@ -502,3 +572,16 @@ properties section:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
+
+Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, and *adapter.js*) are
+handled with :term:`Bower`. This dependencies are defined in the file
+`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/bower.json>`_.
+The command ``bower install`` is automatically called from Maven. Thus, Bower
+should be present in your system. It can be installed in an Ubuntu machine as
+follows:
+
+.. sourcecode:: sh
+
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
+   sudo npm install -g bower
