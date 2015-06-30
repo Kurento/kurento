@@ -14,7 +14,7 @@ public class ${complexType.name} <#if complexType.extends??>extends ${complexTyp
 
    <#list complexType.properties as property>
     <@comment property.doc />
-    private ${getJavaObjectType(property.type,false)} ${property.name};
+    private ${getJavaObjectType(property.type,property.optional)} ${property.name};
    </#list>
 
     <@comment "Create a ${complexType.name}" />
@@ -46,12 +46,12 @@ public class ${complexType.name} <#if complexType.extends??>extends ${complexTyp
 
     <#list complexType.properties as property>
     <@comment "get " + property.doc />
-    public ${getJavaObjectType(property.type,false)} get${property.name?cap_first}(){
+    public ${getJavaObjectType(property.type,property.optional)} get${property.name?cap_first}(){
     	return ${property.name};
     }
 
     <@comment "set " + property.doc />
-    public void set${property.name?cap_first}(${getJavaObjectType(property.type,false)} ${property.name}){
+    public void set${property.name?cap_first}(${getJavaObjectType(property.type,property.optional)} ${property.name}){
     	this.${property.name} = ${property.name};
     }
 
