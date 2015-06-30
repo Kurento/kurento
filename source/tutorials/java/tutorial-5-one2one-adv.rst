@@ -26,6 +26,17 @@ The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
 Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``kms.ws.uri`` to the Maven execution command, as follows:
+
+   .. sourcecode:: sh
+
+      mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
+
+
 Understanding this example
 ==========================
 
@@ -117,10 +128,11 @@ of the recorded file is carried out.
 
    *Advanced one to one video call signaling protocol*
 
-As you can see in the diagram, `SDP`:term: needs to be interchanged between
-client and server to establish the `WebRTC`:term: connection between the
-browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
-in the browser with the WebRtcEndpoint in the server.
+As you can see in the diagram, `SDP`:term: and :term:`ICE` candidates need to be
+interchanged between client and server to establish the `WebRTC`:term:
+connection between the Kurento client and server. Specifically, the SDP
+negotiation connects the WebRtcPeer in the browser with the WebRtcEndpoint in
+the server.
 
 The following sections describe in detail the server-side, the client-side, and
 how to run the demo. The complete source code of this demo can be found in
@@ -181,6 +193,9 @@ Bean.
    @EnableAutoConfiguration
    public class One2OneCallAdvApp implements WebSocketConfigurer {
 
+      final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
+      final static String DEFAULT_APP_SERVER_URL = "http://localhost:8080";
+
       @Bean
       public CallHandler callHandler() {
          return new CallHandler();
@@ -193,7 +208,8 @@ Bean.
 
       @Bean
       public KurentoClient kurentoClient() {
-         return KurentoClient.create("ws://localhost:8888/kurento");
+         return KurentoClient.create(System.getProperty("kms.ws.uri",
+               DEFAULT_KMS_WS_URI));
       }
 
       public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -219,17 +235,20 @@ method implements the actions for requests, returning responses through the
 WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
-In the designed protocol there are three different kind of incoming messages to
-the *Server* : ``register``, ``call``, ``incomingCallResponse``, and ``play``.
-These messages are treated in the *switch* clause, taking the proper steps in
-each case.
+In the designed protocol there are five different kind of incoming messages to
+the *Server* : ``register``, ``call``, ``incomingCallResponse``,
+``onIceCandidate`` and ``play``. These messages are treated in the *switch*
+clause, taking the proper steps in each case.
 
 .. sourcecode:: java
 
    public class CallHandler extends TextWebSocketHandler {
 
-      private static final Logger log = LoggerFactory.getLogger(CallHandler.class);
+      private static final Logger log = LoggerFactory
+            .getLogger(CallHandler.class);
       private static final Gson gson = new GsonBuilder().create();
+
+      private final ConcurrentHashMap<String, MediaPipeline> pipelines = new ConcurrentHashMap<String, MediaPipeline>();
 
       @Autowired
       private KurentoClient kurento;
@@ -262,8 +281,25 @@ each case.
             incomingCallResponse(user, jsonMessage);
             break;
          case "play":
-            play(session, jsonMessage);
+            play(user, jsonMessage);
             break;
+         case "onIceCandidate": {
+            JsonObject candidate = jsonMessage.get("candidate")
+                  .getAsJsonObject();
+
+            if (user != null) {
+               IceCandidate cand = new IceCandidate(candidate.get("candidate")
+                     .getAsString(), candidate.get("sdpMid").getAsString(),
+                     candidate.get("sdpMLineIndex").getAsInt());
+               user.addCandidate(cand);
+            }
+            break;
+         }
+         case "stop":
+            stopCommunication(session);
+            releasePipeline(user);
+         case "stopPlay":
+            releasePipeline(user);
          default:
             break;
          }
@@ -279,12 +315,20 @@ each case.
          ...
       }
 
-      private void incomingCallResponse(UserSession callee,
+      private void incomingCallResponse(final UserSession callee,
             JsonObject jsonMessage) throws IOException {
          ...
       }
 
-      private void play(WebSocketSession session, JsonObject jsonMessage)
+      public void stopCommunication(WebSocketSession session) throws IOException {
+         ...
+      }
+
+      public void releasePipeline(UserSession session) throws IOException {
+         ...
+      }
+
+      private void play(final UserSession session, JsonObject jsonMessage)
             throws IOException {
          ...
       }
@@ -331,27 +375,28 @@ message is sent to caller rejecting the call.
 
 .. sourcecode :: java
 
-   private void call(UserSession caller, JsonObject jsonMessage) throws IOException {
-
+   private void call(UserSession caller, JsonObject jsonMessage)
+         throws IOException {
       String to = jsonMessage.get("to").getAsString();
+      String from = jsonMessage.get("from").getAsString();
+      JsonObject response = new JsonObject();
 
       if (registry.exists(to)) {
-
          UserSession callee = registry.getByName(to);
-         caller.setSdpOffer(jsonMessage.getAsJsonPrimitive("sdpOffer").getAsString());
+         caller.setSdpOffer(jsonMessage.getAsJsonPrimitive("sdpOffer")
+               .getAsString());
          caller.setCallingTo(to);
 
-         JsonObject response = new JsonObject();
          response.addProperty("id", "incomingCall");
-         response.addProperty("from", caller.getName());
+         response.addProperty("from", from);
 
          callee.sendMessage(response);
-
+         callee.setCallingFrom(from);
       } else {
-
-         JsonObject response = new JsonObject();
          response.addProperty("id", "callResponse");
-         response.addProperty("response", "rejected: user '"+to+"' is not registered");
+         response.addProperty("response", "rejected");
+         response.addProperty("message", "user '" + to
+               + "' is not registered");
 
          caller.sendMessage(response);
       }
@@ -374,38 +419,100 @@ moment). The methods used to generate SDP are
 
 .. sourcecode :: java
 
-   private void incomingCallResponse(UserSession callee,
+   private void incomingCallResponse(final UserSession callee,
          JsonObject jsonMessage) throws IOException {
       String callResponse = jsonMessage.get("callResponse").getAsString();
       String from = jsonMessage.get("from").getAsString();
-      UserSession calleer = registry.getByName(from);
+      final UserSession calleer = registry.getByName(from);
       String to = calleer.getCallingTo();
 
       if ("accept".equals(callResponse)) {
          log.debug("Accepted call from '{}' to '{}'", from, to);
 
-         CallMediaPipeline pipeline = new CallMediaPipeline(kurento, from,
-               to);
+         CallMediaPipeline callMediaPipeline = new CallMediaPipeline(
+               kurento, from, to);
+         pipelines.put(calleer.getSessionId(),
+               callMediaPipeline.getPipeline());
+         pipelines.put(callee.getSessionId(),
+               callMediaPipeline.getPipeline());
+
          String calleeSdpOffer = jsonMessage.get("sdpOffer").getAsString();
-         String calleeSdpAnswer = pipeline
+         String calleeSdpAnswer = callMediaPipeline
                .generateSdpAnswerForCallee(calleeSdpOffer);
+
+         callee.setWebRtcEndpoint(callMediaPipeline.getCalleeWebRtcEP());
+         callMediaPipeline.getCalleeWebRtcEP().addOnIceCandidateListener(
+               new EventListener<OnIceCandidateEvent>() {
+
+                  @Override
+                  public void onEvent(OnIceCandidateEvent event) {
+                     JsonObject response = new JsonObject();
+                     response.addProperty("id", "iceCandidate");
+                     response.add("candidate", JsonUtils
+                           .toJsonObject(event.getCandidate()));
+                     try {
+                        synchronized (callee.getSession()) {
+                           callee.getSession()
+                                 .sendMessage(
+                                       new TextMessage(response
+                                             .toString()));
+                        }
+                     } catch (IOException e) {
+                        log.debug(e.getMessage());
+                     }
+                  }
+               });
 
          JsonObject startCommunication = new JsonObject();
          startCommunication.addProperty("id", "startCommunication");
          startCommunication.addProperty("sdpAnswer", calleeSdpAnswer);
-         callee.sendMessage(startCommunication);
+
+         synchronized (callee) {
+            callee.sendMessage(startCommunication);
+         }
+
+         callMediaPipeline.getCalleeWebRtcEP().gatherCandidates();
 
          String callerSdpOffer = registry.getByName(from).getSdpOffer();
-         String callerSdpAnswer = pipeline
+
+         calleer.setWebRtcEndpoint(callMediaPipeline.getCallerWebRtcEP());
+         callMediaPipeline.getCallerWebRtcEP().addOnIceCandidateListener(
+               new EventListener<OnIceCandidateEvent>() {
+
+                  @Override
+                  public void onEvent(OnIceCandidateEvent event) {
+                     JsonObject response = new JsonObject();
+                     response.addProperty("id", "iceCandidate");
+                     response.add("candidate", JsonUtils
+                           .toJsonObject(event.getCandidate()));
+                     try {
+                        synchronized (calleer.getSession()) {
+                           calleer.getSession()
+                                 .sendMessage(
+                                       new TextMessage(response
+                                             .toString()));
+                        }
+                     } catch (IOException e) {
+                        log.debug(e.getMessage());
+                     }
+                  }
+               });
+
+         String callerSdpAnswer = callMediaPipeline
                .generateSdpAnswerForCaller(callerSdpOffer);
 
          JsonObject response = new JsonObject();
          response.addProperty("id", "callResponse");
          response.addProperty("response", "accepted");
          response.addProperty("sdpAnswer", callerSdpAnswer);
-         calleer.sendMessage(response);
 
-         pipeline.record();
+         synchronized (calleer) {
+            calleer.sendMessage(response);
+         }
+
+         callMediaPipeline.getCallerWebRtcEP().gatherCandidates();
+
+         callMediaPipeline.record();
 
       } else {
          JsonObject response = new JsonObject();
@@ -421,24 +528,66 @@ streams in the Kurento Media Server.
 
 .. sourcecode :: java
 
-   private void play(WebSocketSession session, JsonObject jsonMessage)
+   private void play(final UserSession session, JsonObject jsonMessage)
          throws IOException {
       String user = jsonMessage.get("user").getAsString();
       log.debug("Playing recorded call of user '{}'", user);
 
-      PlayMediaPipeline pipeline = new PlayMediaPipeline(kurento, user,
-            session);
-      String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-      String sdpAnswer = pipeline.generateSdpAnswer(sdpOffer);
-
       JsonObject response = new JsonObject();
       response.addProperty("id", "playResponse");
-      response.addProperty("response", "accepted");
-      response.addProperty("sdpAnswer", sdpAnswer);
-      session.sendMessage(new TextMessage(response.toString()));
 
-      pipeline.play();
+      if (registry.getByName(user) != null
+            && registry.getBySession(session.getSession()) != null) {
+         PlayMediaPipeline playMediaPipeline = new PlayMediaPipeline(
+               kurento, user, session.getSession());
+         String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
 
+         session.setPlayingWebRtcEndpoint(playMediaPipeline.getWebRtc());
+
+         playMediaPipeline.getWebRtc().addOnIceCandidateListener(
+               new EventListener<OnIceCandidateEvent>() {
+
+                  @Override
+                  public void onEvent(OnIceCandidateEvent event) {
+                     JsonObject response = new JsonObject();
+                     response.addProperty("id", "iceCandidate");
+                     response.add("candidate", JsonUtils
+                           .toJsonObject(event.getCandidate()));
+                     try {
+                        synchronized (session) {
+                           session.getSession()
+                                 .sendMessage(
+                                       new TextMessage(response
+                                             .toString()));
+                        }
+                     } catch (IOException e) {
+                        log.debug(e.getMessage());
+                     }
+                  }
+               });
+
+         String sdpAnswer = playMediaPipeline.generateSdpAnswer(sdpOffer);
+
+         response.addProperty("response", "accepted");
+
+         response.addProperty("sdpAnswer", sdpAnswer);
+
+         playMediaPipeline.play();
+         pipelines.put(session.getSessionId(),
+               playMediaPipeline.getPipeline());
+         synchronized (session.getSession()) {
+            session.sendMessage(response);
+         }
+
+         playMediaPipeline.getWebRtc().gatherCandidates();
+
+      } else {
+         response.addProperty("response", "rejected");
+         response.addProperty("error", "No recording for user '" + user
+               + "'. Please type a correct user in the 'Peer' field.");
+         session.getSession().sendMessage(
+               new TextMessage(response.toString()));
+      }
    }
 
 The media logic in this demo is implemented in the classes
@@ -457,17 +606,22 @@ methods delegate to WebRtc endpoints to create the appropriate answer.
 
    public class CallMediaPipeline {
 
-      public static final String RECORDING_PATH = "file:///tmp/";
+      private static final SimpleDateFormat df = new SimpleDateFormat(
+            "yyyy-MM-dd_HH-mm-ss-S");
+      public static final String RECORDING_PATH = "file:///tmp/"
+            + df.format(new Date()) + "-";
       public static final String RECORDING_EXT = ".webm";
 
-      private WebRtcEndpoint webRtcCaller;
-      private WebRtcEndpoint webRtcCallee;
-      private RecorderEndpoint recorderCaller;
-      private RecorderEndpoint recorderCallee;
+      private final MediaPipeline pipeline;
+      private final WebRtcEndpoint webRtcCaller;
+      private final WebRtcEndpoint webRtcCallee;
+      private final RecorderEndpoint recorderCaller;
+      private final RecorderEndpoint recorderCallee;
 
       public CallMediaPipeline(KurentoClient kurento, String from, String to) {
+
          // Media pipeline
-         MediaPipeline pipeline = kurento.createMediaPipeline();
+         pipeline = kurento.createMediaPipeline();
 
          // Media Elements (WebRtcEndpoint, RecorderEndpoint, FaceOverlayFilter)
          webRtcCaller = new WebRtcEndpoint.Builder(pipeline).build();
@@ -478,17 +632,17 @@ methods delegate to WebRtc endpoints to create the appropriate answer.
          recorderCallee = new RecorderEndpoint.Builder(pipeline, RECORDING_PATH
                + to + RECORDING_EXT).build();
 
+         String appServerUrl = System.getProperty("app.server.url",
+               One2OneCallAdvApp.DEFAULT_APP_SERVER_URL);
          FaceOverlayFilter faceOverlayFilterCaller = new FaceOverlayFilter.Builder(
                pipeline).build();
-         faceOverlayFilterCaller.setOverlayedImage(
-               "http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
-               1.6F, 1.6F);
+         faceOverlayFilterCaller.setOverlayedImage(appServerUrl
+               + "/img/mario-wings.png", -0.35F, -1.2F, 1.6F, 1.6F);
 
          FaceOverlayFilter faceOverlayFilterCallee = new FaceOverlayFilter.Builder(
                pipeline).build();
          faceOverlayFilterCallee.setOverlayedImage(
-               "http://files.kurento.org/imgs/Hat.png", -0.2F, -1.35F, 1.5F,
-               1.5F);
+               appServerUrl + "/img/Hat.png", -0.2F, -1.35F, 1.5F, 1.5F);
 
          // Connections
          webRtcCaller.connect(faceOverlayFilterCaller);
@@ -513,6 +667,17 @@ methods delegate to WebRtc endpoints to create the appropriate answer.
          return webRtcCallee.processOffer(sdpOffer);
       }
 
+      public MediaPipeline getPipeline() {
+         return pipeline;
+      }
+
+      public WebRtcEndpoint getCallerWebRtcEP() {
+         return webRtcCaller;
+      }
+
+      public WebRtcEndpoint getCalleeWebRtcEP() {
+         return webRtcCallee;
+      }
    }
 
 The second media pipeline consists on a ``PlayerEndpoint`` connected to a
@@ -598,14 +763,14 @@ web page, and are used in the
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are four incoming messages to client: ``resgisterResponse``,
-``callResponse``, ``incomingCall``, ``startCommunication``, and ``play``.
-Convenient actions are taken to implement each step in the communication. On
-the one hand, in functions ``call`` and ``incomingCall`` (for caller and callee
-respectively), the function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js*
-is used to start a WebRTC communication. On the other hand in the function
-``play``, the function ``WebRtcPeer.startRecvOnly`` is called since the
-``WebRtcEndpoint`` is used in receive-only.
+Notice that there are six incoming messages to client: ``resgisterResponse``,
+``callResponse``, ``incomingCall``, ``startCommunication``, ``iceCandidate``
+and ``play``. Convenient actions are taken to implement each step in the
+communication. On the one hand, in functions ``call`` and ``incomingCall`` (for
+caller and callee respectively), the function ``WebRtcPeer.WebRtcPeerSendrecv``
+of *kurento-utils.js* is used to start a WebRTC communication. On the other
+hand in the function ``play``, the function ``WebRtcPeer.WebRtcPeerRecvonly``
+is called since the ``WebRtcEndpoint`` is used in receive-only.
 
 .. sourcecode:: javascript
 
@@ -636,16 +801,22 @@ is used to start a WebRTC communication. On the other hand in the function
          playResponse(parsedMessage);
          break;
       case 'playEnd':
-         stop();
+         playEnd();
          break;
+      case 'iceCandidate':
+          webRtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
+           if (!error) return;
+            console.error("Error adding candidate: " + error);
+          });
+          break;
       default:
          console.error('Unrecognized message', parsedMessage);
       }
    }
 
    function incomingCall(message) {
-      //If bussy just reject without disturbing user
-      if (callState != NO_CALL) {
+      // If bussy just reject without disturbing user
+      if (callState != NO_CALL && callState != POST_CALL) {
          var response = {
             id : 'incomingCallResponse',
             from : message.from,
@@ -655,21 +826,23 @@ is used to start a WebRTC communication. On the other hand in the function
          return sendMessage(response);
       }
 
-      setCallState(PROCESSING_CALL);
+      setCallState(DISABLED);
       if (confirm('User ' + message.from
             + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
-           function(offerSdp) {
-            var response = {
-               id : 'incomingCallResponse',
-               from : message.from,
-               callResponse : 'accept',
-               sdpOffer : offerSdp
-            };
-            sendMessage(response);
-            }, function(error) {
-               setCallState(NO_CALL);
+
+         from = message.from;
+         var options = {
+                  localVideo: videoInput,
+                  remoteVideo: videoOutput,
+                  onicecandidate: onIceCandidate
+                }
+          webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+            function (error) {
+              if(error) {
+                 return console.error(error);
+              }
+              this.generateOffer (onOfferIncomingCall);
             });
       } else {
          var response = {
@@ -685,52 +858,62 @@ is used to start a WebRTC communication. On the other hand in the function
 
    function call() {
       if (document.getElementById('peer').value == '') {
+         document.getElementById('peer').focus();
          window.alert("You must specify the peer name");
          return;
       }
-      setCallState(PROCESSING_CALL);
+      setCallState(DISABLED);
       showSpinner(videoInput, videoOutput);
 
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, 
-        function(offerSdp) {
-         console.log('Invoking SDP offer callback function');
-         var message = {
-            id : 'call',
-            from : document.getElementById('name').value,
-            to : document.getElementById('peer').value,
-            sdpOffer : offerSdp
-         };
-         sendMessage(message);
-      }, function(error) {
-         console.log(error);
-         setCallState(NO_CALL);
+      var options = {
+               localVideo: videoInput,
+               remoteVideo: videoOutput,
+               onicecandidate: onIceCandidate
+             }
+      webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+         function (error) {
+           if(error) {
+              return console.error(error);
+           }
+           this.generateOffer (onOfferCall);
       });
    }
 
    function play() {
+      var peer = document.getElementById('peer').value;
+      if (peer == '') {
+         window.alert("You must insert the name of the user recording to be played (field 'Peer')");
+         document.getElementById('peer').focus();
+         return;
+      }
+
       document.getElementById('videoSmall').style.display = 'none';
+      setCallState(DISABLED);
       showSpinner(videoOutput);
 
-      webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp) {
-         console.log('Invoking SDP offer callback function');
-         var message = {
-            id : 'play',
-            user : document.getElementById('peer').value,
-            sdpOffer : offerSdp
-         };
-         sendMessage(message);
+      var options = {
+               remoteVideo: videoOutput,
+               onicecandidate: onIceCandidate
+             }
+      webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
+         function (error) {
+           if(error) {
+              return console.error(error);
+           }
+           this.generateOffer (onOfferPlay);
       });
    }
 
    function stop(message) {
-      setCallState(NO_CALL);
+      var stopMessageId = (callState == IN_CALL) ? 'stop' : 'stopPlay';
+      setCallState(POST_CALL);
       if (webRtcPeer) {
          webRtcPeer.dispose();
          webRtcPeer = null;
 
          if (!message) {
             var message = {
-               id : 'stop'
+               id : stopMessageId
             }
             sendMessage(message);
          }
@@ -742,31 +925,32 @@ is used to start a WebRTC communication. On the other hand in the function
 Dependencies
 ============
 
-This Java Spring application is implementad using `Maven`:term:. The relevant
-part of the *pom.xml* is where Kurento dependencies are declared. As the
-following snippet shows, we need two dependencies: the Kurento Client Java
-dependency (*kurento-client*) and the JavaScript Kurento utility library
-(*kurento-utils*) for the client-side:
+This Java Spring application is implemented using `Maven`:term:. The relevant
+part of the
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/pom.xml>`_
+is where Kurento dependencies are declared. As the following snippet shows, we
+need two dependencies: the Kurento Client Java dependency (*kurento-client*)
+and the JavaScript Kurento utility library (*kurento-utils*) for the
+client-side:
 
 .. sourcecode:: xml
+
+   <parent>
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-parent-pom</artifactId>
+      <version>|CLIENT_JAVA_VERSION|</version>
+   </parent>
 
    <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>[5.0.0,6.0.0)</version>
       </dependency>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
-         <version>[5.0.0,6.0.0)</version>
       </dependency>
    </dependencies>
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``[5.0.0,6.0.0)`` downloads the latest version of Kurento artefacts from
-Maven Central in version 5 (i.e. 5.x.x). Major versions are released when
-incompatible changes are made.
 
 .. note::
 
@@ -781,3 +965,17 @@ properties section:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
+
+Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, *adapter.js*, and
+*draggabilly*) are handled with :term:`Bower`. This dependencies are defined in
+the file
+`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/bower.json>`_.
+The command ``bower install`` is automatically called from Maven. Thus, Bower
+should be present in your system. It can be installed in an Ubuntu machine as
+follows:
+
+.. sourcecode:: sh
+
+   curl -sL https://deb.nodesource.com/setup | sudo bash -
+   sudo apt-get install -y nodejs
+   sudo npm install -g bower
