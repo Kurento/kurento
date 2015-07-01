@@ -1,6 +1,8 @@
 package org.kurento.client.internal.client;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
@@ -330,7 +332,13 @@ public class RemoteObject {
 	}
 
 	public void fireEvent(String type, Props data) {
-		for (RemoteObjectEventListener eventListener : this.listeners.get(type)) {
+		
+		Collection<RemoteObjectEventListener> typeListeners;
+		synchronized (this.listeners) {
+			typeListeners = new ArrayList<>(this.listeners.get(type));
+		}
+		
+		for (RemoteObjectEventListener eventListener : typeListeners) {
 			try {
 				eventListener.onEvent(type, data);
 			} catch (Exception e) {
