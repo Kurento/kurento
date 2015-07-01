@@ -63,7 +63,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-	.setNameFormat("JsonRpcClientWebsocket-%d").build();
+			.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class WebSocketClientSocket {
@@ -247,9 +247,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					wsSession.setIdleTimeout(this.idleTimeout);
 
 				} catch (TimeoutException e) {
-					if (connectionListener != null) {
-						connectionListener.connectionFailed();
-					}
+
+					fireConnectionFailed();
 
 					this.closeClient();
 					throw new KurentoException(label + " Timeout of "
@@ -258,9 +257,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 							+ url);
 
 				} catch (Exception e) {
-					if (connectionListener != null) {
-						connectionListener.connectionFailed();
-					}
+
+					fireConnectionFailed();
 
 					this.closeClient();
 					throw new KurentoException(label
@@ -272,16 +270,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 					if (!latch.await(this.connectionTimeout,
 							TimeUnit.MILLISECONDS)) {
-						if (connectionListener != null) {
-							connectionListener.connectionFailed();
-						}
+
+						fireConnectionFailed();
+
 						this.closeClient();
 						throw new KurentoException(
 								label
-								+ " Timeout of "
-								+ this.connectionTimeout
-								+ "ms when waiting to connect to Websocket server "
-								+ url);
+										+ " Timeout of "
+										+ this.connectionTimeout
+										+ "ms when waiting to connect to Websocket server "
+										+ url);
 					}
 
 					if (session == null) {
@@ -300,9 +298,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 									"{} Reconnected to the same session in server {}",
 									label, url);
 
-							if (connectionListener != null) {
-								connectionListener.reconnected(true);
-							}
+							fireReconnectedSameServer();
 
 						} catch (JsonRpcErrorException e) {
 							if (e.getCode() == 40007) { // Invalid session
@@ -318,9 +314,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 										"{} Reconnected to a new session in server {}",
 										label, url);
 
-								if (connectionListener != null) {
-									connectionListener.reconnected(false);
-								}
+								fireReconnectedNewServer();
 
 							} else {
 								log.warn(
@@ -347,6 +341,39 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} finally {
 			lock.unlock();
+		}
+	}
+
+	private void fireReconnectedNewServer() {
+		if (connectionListener != null) {
+			execService.submit(new Runnable() {
+				@Override
+				public void run() {
+					connectionListener.reconnected(false);
+				}
+			});
+		}
+	}
+
+	private void fireReconnectedSameServer() {
+		if (connectionListener != null) {
+			execService.submit(new Runnable() {
+				@Override
+				public void run() {
+					connectionListener.reconnected(true);
+				}
+			});
+		}
+	}
+
+	private void fireConnectionFailed() {
+		if (connectionListener != null) {
+			execService.submit(new Runnable() {
+				@Override
+				public void run() {
+					connectionListener.connectionFailed();
+				}
+			});
 		}
 	}
 
