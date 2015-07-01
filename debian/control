@@ -9,8 +9,8 @@ Build-Depends: debhelper (>= 8.0.0),
  libboost-filesystem-dev,
  libboost-test-dev,
  libsoup2.4-dev,
- libkmsnice-dev (>= 0.1.10),
- gstreamer1.5-kmsnice,
+ libnice-dev (>= 0.1.7),
+ gstreamer1.5-nice,
  uuid-dev,
  openwebrtc-gst-plugins-dev
 Standards-Version: 3.9.4
@@ -23,7 +23,7 @@ Architecture: any
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
-  gstreamer1.5-kmsnice (>= 0.1.10),
+  gstreamer1.5-nice (>= 0.1.7),
   openwebrtc-gst-plugins,
   kms-core-6.0
 Breaks:

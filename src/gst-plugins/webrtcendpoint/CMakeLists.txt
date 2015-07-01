@@ -20,11 +20,11 @@ set_target_properties(icecandidate PROPERTIES PUBLIC_HEADER "${KMS_ICE_CANDIDATE
 set_target_properties(icecandidate PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 include_directories(
-  ${kmsnice_INCLUDE_DIRS}
+  ${nice_INCLUDE_DIRS}
 )
 
 target_link_libraries(icecandidate
-  ${kmsnice_LIBRARIES}
+  ${nice_LIBRARIES}
 )
 
 install(
@@ -63,7 +63,7 @@ include_directories(
   ${gstreamer-pbutils-1.5_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${kmsnice_INCLUDE_DIRS}
+  ${nice_INCLUDE_DIRS}
 )
 
 target_link_libraries(webrtcendpoint
@@ -72,7 +72,7 @@ target_link_libraries(webrtcendpoint
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-pbutils-1.5_LIBRARIES}
-  ${kmsnice_LIBRARIES}
+  ${nice_LIBRARIES}
 )
 
 install(

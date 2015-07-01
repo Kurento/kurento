@@ -1771,7 +1771,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
     return;
   }
 
-  g_object_set (self->priv->agent, "upnp", FALSE, "ice-tcp", FALSE, NULL);
+  g_object_set (self->priv->agent, "upnp", FALSE, /* "ice-tcp", FALSE, */ NULL);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (kms_webrtc_endpoint_gathering_done), self);
   g_signal_connect (self->priv->agent, "new-candidate",
