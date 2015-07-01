@@ -23,8 +23,8 @@ public class TimeoutReentrantLock extends ReentrantLock {
 
 	public void tryLockTimeout(String method) {
 
-		log.info("Thread {} trying to acquire lock {} in method {}", Thread
-				.currentThread().getName(), name, method);
+		// log.info("Thread {} trying to acquire lock {} in method {}", Thread
+		// .currentThread().getName(), name, method);
 
 		try {
 			if (!tryLock(timeout, TimeUnit.MILLISECONDS)) {
