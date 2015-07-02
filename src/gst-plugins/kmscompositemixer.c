@@ -425,43 +425,6 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
     return GST_PAD_PROBE_DROP;
   }
 
-  if (mixer->priv->videotestsrc == NULL) {
-    GstElement *capsfilter;
-    GstCaps *filtercaps;
-    GstPad *pad;
-
-    mixer->priv->videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
-    capsfilter = gst_element_factory_make ("capsfilter", NULL);
-
-    g_object_set (mixer->priv->videotestsrc, "is-live", TRUE, "pattern",
-        /*black */ 2, NULL);
-
-    filtercaps =
-        gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
-        "width", G_TYPE_INT, mixer->priv->output_width,
-        "height", G_TYPE_INT, mixer->priv->output_height,
-        "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
-    g_object_set (G_OBJECT (capsfilter), "caps", filtercaps, NULL);
-    gst_caps_unref (filtercaps);
-
-    gst_bin_add_many (GST_BIN (mixer), mixer->priv->videotestsrc,
-        capsfilter, NULL);
-
-    gst_element_link (mixer->priv->videotestsrc, capsfilter);
-
-    /*link capsfilter -> videomixer */
-    pad = gst_element_request_pad (mixer->priv->videomixer, sink_pad_template,
-        NULL, NULL);
-
-    gst_element_link_pads (capsfilter, NULL,
-        mixer->priv->videomixer, GST_OBJECT_NAME (pad));
-    g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, NULL);
-    g_object_unref (pad);
-
-    gst_element_sync_state_with_parent (capsfilter);
-    gst_element_sync_state_with_parent (mixer->priv->videotestsrc);
-  }
-
   data->videoscale = gst_element_factory_make ("videoscale", NULL);
   data->capsfilter = gst_element_factory_make ("capsfilter", NULL);
   data->videorate = gst_element_factory_make ("videorate", NULL);
@@ -664,6 +627,52 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
     gst_bin_add_many (GST_BIN (mixer), self->priv->videomixer, videorate_mixer,
         self->priv->mixer_video_agnostic, NULL);
 
+    if (self->priv->videotestsrc == NULL) {
+      GstElement *capsfilter;
+      GstCaps *filtercaps;
+      GstPad *pad;
+      GstPadTemplate *sink_pad_template;
+
+      sink_pad_template =
+          gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS
+          (self->priv->videomixer), "sink_%u");
+
+      if (G_UNLIKELY (sink_pad_template == NULL)) {
+        GST_ERROR_OBJECT (self, "Error taking a new pad from videomixer");
+      }
+
+      self->priv->videotestsrc =
+          gst_element_factory_make ("videotestsrc", NULL);
+      capsfilter = gst_element_factory_make ("capsfilter", NULL);
+
+      g_object_set (self->priv->videotestsrc, "is-live", TRUE, "pattern",
+          /*black */ 2, NULL);
+
+      filtercaps =
+          gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
+          "width", G_TYPE_INT, self->priv->output_width,
+          "height", G_TYPE_INT, self->priv->output_height,
+          "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
+      g_object_set (G_OBJECT (capsfilter), "caps", filtercaps, NULL);
+      gst_caps_unref (filtercaps);
+
+      gst_bin_add_many (GST_BIN (self), self->priv->videotestsrc,
+          capsfilter, NULL);
+
+      gst_element_link (self->priv->videotestsrc, capsfilter);
+
+      /*link capsfilter -> videomixer */
+      pad = gst_element_request_pad (self->priv->videomixer, sink_pad_template,
+          NULL, NULL);
+
+      gst_element_link_pads (capsfilter, NULL,
+          self->priv->videomixer, GST_OBJECT_NAME (pad));
+      g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, NULL);
+      g_object_unref (pad);
+
+      gst_element_sync_state_with_parent (capsfilter);
+      gst_element_sync_state_with_parent (self->priv->videotestsrc);
+    }
     gst_element_sync_state_with_parent (self->priv->videomixer);
     gst_element_sync_state_with_parent (videorate_mixer);
     gst_element_sync_state_with_parent (self->priv->mixer_video_agnostic);
