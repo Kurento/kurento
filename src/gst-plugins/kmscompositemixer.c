@@ -23,6 +23,7 @@
 #include <commons/kmsrefstruct.h>
 
 #define N_ELEMENTS_WIDTH 2
+#define LATENCY 250             //ms
 
 #define PLUGIN_NAME "compositemixer"
 
@@ -117,6 +118,7 @@ typedef struct _KmsCompositeMixerData
   gboolean eos_managed;
   gint probe_id;
   gint link_probe_id;
+  gint latency_probe_id;
   GstPad *video_mixer_pad;
   GstPad *videoconvert_sink_pad;
 } KmsCompositeMixerData;
@@ -214,6 +216,12 @@ remove_elements_from_pipeline (KmsCompositeMixerData * port_data)
 
   gst_element_unlink (port_data->capsfilter, self->priv->videomixer);
 
+  if (port_data->latency_probe_id > 0) {
+    gst_pad_remove_probe (port_data->video_mixer_pad,
+        port_data->latency_probe_id);
+    port_data->latency_probe_id = 0;
+  }
+
   if (port_data->video_mixer_pad != NULL) {
     gst_element_release_request_pad (self->priv->videomixer,
         port_data->video_mixer_pad);
@@ -296,6 +304,22 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   return GST_PAD_PROBE_OK;
 }
 
+static GstPadProbeReturn
+cb_latency (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  if (GST_QUERY_TYPE (GST_PAD_PROBE_INFO_QUERY (info)) != GST_QUERY_LATENCY) {
+    return GST_PAD_PROBE_OK;
+  }
+
+  GST_LOG_OBJECT (pad, "Modifing latency query. New latency %ld",
+      LATENCY * GST_MSECOND);
+
+  gst_query_set_latency (GST_PAD_PROBE_INFO_QUERY (info),
+      TRUE, LATENCY * GST_MSECOND, LATENCY * GST_MSECOND);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_composite_mixer_port_data_destroy (gpointer data)
 {
@@ -371,6 +395,11 @@ kms_composite_mixer_port_data_destroy (gpointer data)
       gst_pad_remove_probe (port_data->video_mixer_pad, port_data->probe_id);
     }
 
+    if (port_data->latency_probe_id > 0) {
+      gst_pad_remove_probe (port_data->video_mixer_pad,
+          port_data->latency_probe_id);
+    }
+
     if (port_data->link_probe_id > 0) {
       gst_pad_remove_probe (port_data->videoconvert_sink_pad,
           port_data->link_probe_id);
@@ -414,6 +443,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
   KMS_COMPOSITE_MIXER_LOCK (mixer);
 
   data->link_probe_id = 0;
+  data->latency_probe_id = 0;
 
   sink_pad_template =
       gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (mixer->priv->
@@ -454,6 +484,10 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       (GstPadProbeCallback) cb_EOS_received,
       KMS_COMPOSITE_MIXER_REF (data), (GDestroyNotify) kms_ref_struct_unref);
+
+  data->latency_probe_id = gst_pad_add_probe (data->video_mixer_pad,
+      GST_PAD_PROBE_TYPE_QUERY_UPSTREAM,
+      (GstPadProbeCallback) cb_latency, NULL, NULL);
 
   gst_element_sync_state_with_parent (data->videoscale);
   gst_element_sync_state_with_parent (data->capsfilter);
