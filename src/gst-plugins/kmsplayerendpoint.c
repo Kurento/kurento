@@ -172,6 +172,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   GstElement *appsrc = GST_ELEMENT (user_data);
   GstFlowReturn ret;
   GstSample *sample;
+  GstSegment *segment;
   GstBuffer *buffer;
   GstClockTime *base_time;
   GstPad *src, *sink;
@@ -184,6 +185,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   }
 
   buffer = gst_sample_get_buffer (sample);
+  segment = gst_sample_get_segment (sample);
 
   if (buffer == NULL) {
     ret = GST_FLOW_OK;
@@ -193,6 +195,13 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
 
   buffer = gst_buffer_make_writable (buffer);
+
+  if (GST_BUFFER_PTS_IS_VALID (buffer))
+    buffer->pts =
+        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->pts);
+  if (GST_BUFFER_DTS_IS_VALID (buffer))
+    buffer->dts =
+        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->dts);
 
   BASE_TIME_LOCK (GST_OBJECT_PARENT (appsrc));
 
@@ -209,6 +218,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
         BASE_TIME_DATA, base_time, release_gst_clock);
     *base_time =
         gst_clock_get_time (clock) - gst_element_get_base_time (appsrc);
+
     g_object_unref (clock);
     GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
   }
