@@ -152,6 +152,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   KmsUriEndpointState state;
   GstFlowReturn ret;
   GstSample *sample;
+  GstSegment *segment;
   GstBuffer *buffer;
   BaseTimeType *base_time;
 
@@ -165,6 +166,8 @@ recv_sample (GstElement * appsink, gpointer user_data)
     goto end;
   }
 
+  segment = gst_sample_get_segment (sample);
+
   g_object_get (G_OBJECT (self), "state", &state, NULL);
   if (state != KMS_URI_ENDPOINT_STATE_START) {
     GST_WARNING ("Dropping buffer received in invalid state %" GST_PTR_FORMAT,
@@ -177,6 +180,13 @@ recv_sample (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
+  if (GST_BUFFER_PTS_IS_VALID (buffer))
+    buffer->pts =
+        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->pts);
+  if (GST_BUFFER_DTS_IS_VALID (buffer))
+    buffer->dts =
+        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->dts);
+
   BASE_TIME_LOCK (self);
 
   base_time = g_object_get_data (G_OBJECT (self), BASE_TIME_DATA);
@@ -184,7 +194,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   if (base_time == NULL) {
     base_time = g_slice_new0 (BaseTimeType);
     base_time->pts = buffer->pts;
-    base_time->dts = GST_CLOCK_TIME_NONE;
+    base_time->dts = buffer->dts;
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
     g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, base_time,
@@ -196,22 +206,20 @@ recv_sample (GstElement * appsink, gpointer user_data)
     base_time->pts = buffer->pts;
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
-    base_time->dts = GST_CLOCK_TIME_NONE;
+    base_time->dts = buffer->dts;
   }
 
   if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
     if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-      if (base_time->pts > buffer->pts) {
-        buffer->pts = self->priv->paused_time;
-      } else {
-        buffer->pts -= base_time->pts + self->priv->paused_time;
-      }
+      buffer->pts -= base_time->pts + self->priv->paused_time;
     }
-  } else if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-    buffer->pts = G_GUINT64_CONSTANT (0);
   }
 
-  buffer->dts = buffer->pts;
+  if (GST_CLOCK_TIME_IS_VALID (base_time->dts)) {
+    if (GST_BUFFER_DTS_IS_VALID (buffer)) {
+      buffer->dts -= base_time->dts + self->priv->paused_time;
+    }
+  }
 
   BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
 
