@@ -464,6 +464,9 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
   mixer->priv->n_elems++;
   kms_composite_mixer_recalculate_sizes (mixer);
 
+  //Recalculate latency to avoid video freezes when an element stops to send media.
+  gst_bin_recalculate_latency (GST_BIN (mixer));
+
   KMS_COMPOSITE_MIXER_UNLOCK (mixer);
 
   return GST_PAD_PROBE_REMOVE;
