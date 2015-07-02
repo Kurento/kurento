@@ -55,24 +55,14 @@ QUnit.asyncTest('Server manager', function (assert) {
   self.kurento.getServerManager(function (error, server) {
       if (error) return onerror(error);
 
-      var mediaPipeline_id;
+      server.getInfo(function (error, info) {
+        if (error) {
+          return onerror(error)
+        }
+        assert.notEqual(info, undefined, 'Info: ' + info);
 
-      server.on('ObjectCreated', function (event) {
-        mediaPipeline_id = event.object;
-      })
-
-      setTimeout(function () {
-        self.kurento.create('MediaPipeline', function (error,
-            pipeline) {
-            if (error) return onerror(error);
-
-            assert.equal(pipeline.id, mediaPipeline_id, 'ID: ' +
-              pipeline.id);
-
-            QUnit.start();
-          })
-          .catch(onerror)
-      }, 500)
+        QUnit.start();
+      });
     })
     .catch(onerror)
 });
