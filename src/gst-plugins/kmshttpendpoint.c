@@ -188,8 +188,6 @@ kms_http_endpoint_init (KmsHttpEndpoint * self)
 {
   g_mutex_init (&self->base_time_lock);
 
-  g_object_set (self, "do-synchronization", TRUE, NULL);
-
   g_atomic_int_set (&self->method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
   self->pipeline = NULL;
   self->start = FALSE;
