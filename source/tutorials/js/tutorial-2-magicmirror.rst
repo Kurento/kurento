@@ -83,6 +83,16 @@ The media pipeline implemented is illustrated in the following picture:
 The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-magic-mirror>`_.
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the parameter ``ws_uri`` to the URL, as follows:
+
+   .. sourcecode:: sh
+
+      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
+
 JavaScript Logic
 ================
 
@@ -98,47 +108,72 @@ This web page links two Kurento JavaScript libraries:
 
 In addition, these two JavaScript libraries are also required:
 
+* **Bootstrap** : Web framework for developing responsive web sites.
+
 * **jquery.js** : Cross-platform JavaScript library designed to simplify the
   client-side scripting of HTML.
 
 * **adapter.js** : WebRTC JavaScript utility library maintained by Google that
   abstracts away browser differences.
 
+* **ekko-lightbox** : Module for Bootstrap to open modal images, videos, and
+  galleries.
+
+* **demo-console** : Custom JavaScript console.
+
 The specific logic of this demo is coded in the following JavaScript page:
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/js/index.js>`_.
-In this file, there is an ``start`` function which is called when the green
-button labeled as *Start* in the GUI is clicked.
+In this file, there is a function which is called when the green button labeled
+as *Start* in the GUI is clicked.
 
 .. sourcecode:: js
 
-   function start() {
-      showSpinner(videoInput, videoOutput);
-      webRtcPeer = 
-         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+   var startButton = document.getElementById("start");
+
+   startButton.addEventListener("click", function() {
+      var options = {
+        localVideo: videoInput,
+        remoteVideo: videoOutput
+      };
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error) {
+         if(error) return onError(error)
+         this.generateOffer(onOffer)
+      });
+
+      [...]
    }
 
-As you can see, the function *WebRtcPeer.startSendRecv* of *kurento-utils* is
-used to start a WebRTC communication, using the HTML video tag with id
-*videoInput* to show the video camera (local stream) and the video tag
-*videoOutput* to show the video processed by Kurento Media Server (remote
-stream). Then, two callback functions are used:
+The function *WebRtcPeer.WebRtcPeerSendrecv* abstracts the WebRTC internal
+details (i.e. PeerConnection and getUserStream) and makes possible to start a
+full-duplex WebRTC communication, using the HTML video tag with id *videoInput*
+to show the video camera (local stream) and the video tag *videoOutput* to show
+the remote stream provided by the Kurento Media Server.
 
-* ``onOffer`` : Callback executed if the SDP negotiation is carried out
-  correctly.
-
-* ``onError`` : Callback executed if something wrong happens.
-
-In ``onOffer`` we can found the most interesting code from a Kurento JavaScript
-Client point of view. First, we have create an instance of the *KurentoClient*
-class that will manage the connection with the Kurento Media Server. So, we
-need to provide the URI of its WebSocket endpoint:
+Inside this function, a call to *generateOffer* is performed. This function
+accepts a callback in which the SDP offer is received. In this callback we
+create an instance of the *KurentoClient* class that will manage communications
+with the Kurento Media Server. So, we need to provide the URI of its WebSocket
+endpoint. In this example, we assume it's listening in port 8888 at the same
+host than the HTTP serving the application.
 
 .. sourcecode:: js
 
-   const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+   [...]
 
-   kurentoClient(ws_uri, function(error, client) {
-     ...
+   var args = getopts(location.search,
+   {
+     default:
+     {
+       ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+       ice_servers: undefined
+     }
+   });
+
+   [...]
+
+   kurentoClient(args.ws_uri, function(error, client)
+     [...]
    };
 
 Once we have an instance of ``kurentoClient``, the following step is to create a
@@ -146,8 +181,8 @@ Once we have an instance of ``kurentoClient``, the following step is to create a
 
 .. sourcecode:: js
 
-   client.create("MediaPipeline", function(error, pipeline) {
-      ...
+   client.create("MediaPipeline", function(error, _pipeline)
+      [...]
    });
 
 If everything works correctly, we have an instance of a media pipeline (variable
@@ -157,63 +192,33 @@ If everything works correctly, we have an instance of a media pipeline (variable
 
 .. sourcecode:: js
 
-   pipeline.create('WebRtcEndpoint', function(error, webRtc) {
-      if (error) return onError(error);
+   pipeline.create('WebRtcEndpoint', function(error, webRtcEp) {
+     if (error) return onError(error);
 
-      pipeline.create('FaceOverlayFilter', function(error, filter) {
+     setIceCandidateCallbacks(webRtcPeer, webRtcEp, onError)
+
+     webRtcEp.processOffer(sdpOffer, function(error, sdpAnswer) {
+       if (error) return onError(error);
+
+       webRtcPeer.processAnswer(sdpAnswer, onError);
+     });
+     webRtcEp.gatherCandidates(onError);
+
+     pipeline.create('FaceOverlayFilter', function(error, filter) {
+       if (error) return onError(error);
+
+       filter.setOverlayedImage(args.hat_uri, -0.35, -1.2, 1.6, 1.6,
+       function(error) {
          if (error) return onError(error);
 
-         console.log("Got FaceOverlayFilter");
+       });
 
-         var offsetXPercent = -0.4;
-         var offsetYPercent = -1;
-         var widthPercent = 1.5;
-         var heightPercent = 1.5;
+       client.connect(webRtcEp, filter, webRtcEp, function(error) {
+         if (error) return onError(error);
 
-         console.log("Setting overlay image");
-
-         filter.setOverlayedImage(hat_uri, offsetXPercent,
-            offsetYPercent, widthPercent,
-            heightPercent, function(error) {
-               if (error) return onError(error);
-
-               console.log("Set overlay image");
-            });
-
-         console.log("Connecting ...");
-
-         webRtc.connect(filter, function(error) {
-            if (error) return onError(error);
-
-            console.log("WebRtcEndpoint --> filter");
-
-            filter.connect(webRtc, function(error) {
-               if (error) return onError(error);
-
-               console.log("Filter --> WebRtcEndpoint");
-            });
-         });
-
-         ...
-
-      });
-   });
-
-In WebRTC, `SDP`:term: (Session Description protocol) is used for negotiating
-media interchange between apps. Such negotiation happens based on the SDP offer
-and answer exchange mechanism. This negotiation is implemented in the second
-part of the method *processSdpAnswer*, using the SDP offer obtained from the
-browser client (using *kurentoUtils.WebRtcPeer*), and returning a SDP answer
-returned by *WebRtcEndpoint*.
-
-.. sourcecode:: js
-
-   webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-      if (error) return onError(error);
-
-      console.log("SDP answer obtained. Processing ...");
-
-      webRtcPeer.processSdpAnswer(sdpAnswer);
+         console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+       });
+     });
    });
 
 Dependencies
@@ -227,14 +232,9 @@ file, as follows:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
-      "kurento-utils": "^5.0.0"
+      "kurento-client": "|CLIENT_JS_VERSION|",
+      "kurento-utils": "|UTILS_JS_VERSION|"
    }
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``^5.0.0`` downloads the latest version of Kurento artefacts from Bower
-in version 5 (i.e. 5.x.x). Major versions are released when incompatible
-changes are made.
 
 .. note::
 
