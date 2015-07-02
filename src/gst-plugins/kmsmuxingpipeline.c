@@ -242,15 +242,10 @@ kms_muxing_pipeline_configure (KmsMuxingPipeline * self)
     GstElement *mux =
         gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
 
-    g_object_set (G_OBJECT (mux), "fragment-duration", 2000, "streamable", TRUE,
-        NULL);
-
     g_object_unref (mux);
   } else if (self->priv->profile == KMS_RECORDING_PROFILE_WEBM) {
     GstElement *mux =
         gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
-
-    g_object_set (G_OBJECT (mux), "streamable", TRUE, NULL);
 
     g_object_unref (mux);
   }
