@@ -46,6 +46,16 @@ start the HTTP server:
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the parameter ``ws_uri`` to the URL, as follows:
+
+   .. sourcecode:: sh
+
+      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
+
 Understanding this example
 ==========================
 
@@ -114,50 +124,74 @@ This web page links two Kurento JavaScript libraries:
 
 In addition, these two JavaScript libraries are also required:
 
+* **Bootstrap** : Web framework for developing responsive web sites.
+
 * **jquery.js** : Cross-platform JavaScript library designed to simplify the
   client-side scripting of HTML.
 
 * **adapter.js** : WebRTC JavaScript utility library maintained by Google that
   abstracts away browser differences.
 
+* **ekko-lightbox** : Module for Bootstrap to open modal images, videos, and
+  galleries.
+
+* **demo-console** : Custom JavaScript console.
+
+
 The specific logic of the *Hello World* JavaScript demo is coded in the
 following JavaScript file:
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`_.
-In this file, there is a ``start`` function which is called when the green
-button labeled as *Start* in the GUI is clicked.
+In this file, there is a function which is called when the green button labeled
+as *Start* in the GUI is clicked.
 
 .. sourcecode:: js
 
-   function start() {
+   var startButton = document.getElementById("start");
+
+   startButton.addEventListener("click", function() {
+      var options = {
+        localVideo: videoInput,
+        remoteVideo: videoOutput
+      };
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error) {
+         if(error) return onError(error)
+         this.generateOffer(onOffer)
+      });
+
       [...]
-      webRtcPeer = 
-         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
-The function *WebRtcPeer.startSendRecv* abstracts the WebRTC internal details
-(i.e. PeerConnection and getUserStream) and makes possible to start a
+The function *WebRtcPeer.WebRtcPeerSendrecv* abstracts the WebRTC internal
+details (i.e. PeerConnection and getUserStream) and makes possible to start a
 full-duplex WebRTC communication, using the HTML video tag with id *videoInput*
 to show the video camera (local stream) and the video tag *videoOutput* to show
-the remote stream provided by the Kurento Media Server. Two callback functions
-are used for managing application logic:
+the remote stream provided by the Kurento Media Server.
 
-* ``onOffer`` : Callback executed if the local SDP offer is generated
-  succesfully.
-
-* ``onError`` : Callback executed if something wrong happens when obtaining
-  the SDP offer.
-
-In the ``onOffer`` callback we create an instance of the *KurentoClient* class
-that will manage communications with the Kurento Media Server. So, we need to
-provide the URI of its WebSocket endpoint. In this example, we assume it's
-listening in port 8888 at the same host than the HTTP serving the application.
+Inside this function, a call to *generateOffer* is performed. This function
+accepts a callback in which the SDP offer is received. In this callback we
+create an instance of the *KurentoClient* class that will manage communications
+with the Kurento Media Server. So, we need to provide the URI of its WebSocket
+endpoint. In this example, we assume it's listening in port 8888 at the same
+host than the HTTP serving the application.
 
 .. sourcecode:: js
 
-   const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+   [...]
 
-   kurentoClient(ws_uri, function(error, kurentoClient) {
-     ...
+   var args = getopts(location.search,
+   {
+     default:
+     {
+       ws_uri: 'ws://' + location.hostname + ':8888/kurento',
+       ice_servers: undefined
+     }
+   });
+
+   [...]
+
+   kurentoClient(args.ws_uri, function(error, client)
+     [...]
    }; 
    
 Once we have an instance of ``kurentoClient``, we need to create a
@@ -165,34 +199,35 @@ Once we have an instance of ``kurentoClient``, we need to create a
 
 .. sourcecode:: js
 
-   kurentoClient.create("MediaPipeline", function(error, pipeline) {
-      ...
+   client.create("MediaPipeline", function(error, _pipeline)
+      [...]
    });
 
 If everything works correctly, we will have an instance of a media pipeline
-(variable ``pipeline`` in this example). With it, we are able to create
+(variable ``_pipeline`` in this example). With it, we are able to create
 *Media Elements*. In this example we just need a single *WebRtcEndpoint*.
 
-In WebRTC, an `SDP`:term: (Session Description protocol) is used for negotiating
-media exchanges between apps. Such negotiation happens based on the SDP offer
-and answer exchange mechanism. In this example we assume the SDP offer and
-answer contain all WebRTC ICE candidates. This negotiation is implemented in
-the second part of the method * processSdpAnswer*, using the SDP offer obtained
-from the browser client and returning a SDP answer generated by WebRtcEndpoint.
+In WebRTC, :term:`SDP` is used for negotiating media exchanges between
+applications. Such negotiation happens based on the SDP offer and answer
+exchange mechanism by gathering the :term:`ICE` candidates as follows:
 
 .. sourcecode:: js
+
+   pipeline = _pipeline;
 
    pipeline.create("WebRtcEndpoint", function(error, webRtc){
       if(error) return onError(error);
 
+      setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
       webRtc.processOffer(sdpOffer, function(error, sdpAnswer){
-         if(error) return onError(error);
+        if(error) return onError(error);
 
-         webRtcPeer.processSdpAnswer(sdpAnswer);
+        webRtcPeer.processAnswer(sdpAnswer, onError);
       });
+      webRtc.gatherCandidates(onError);
 
-      ...
-
+      [...]
    });
 
 Finally, the *WebRtcEndpoint* is connected to itself (i.e., in loopback):
@@ -216,8 +251,8 @@ file, as follows:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
-      "kurento-utils": "^5.0.0"
+      "kurento-client": "|CLIENT_JS_VERSION|",
+      "kurento-utils": "|UTILS_JS_VERSION|"
    }
 
 To get these dependencies, just run the following shell command:
@@ -225,11 +260,6 @@ To get these dependencies, just run the following shell command:
 .. sourcecode:: sh
 
    bower install
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``^5.0.0`` downloads the latest version of Kurento artefacts from Bower
-in version 5 (i.e. 5.x.x). Major versions are released when incompatible
-changes are made.
 
 .. note::
 
