@@ -124,7 +124,6 @@ start_audio_recorderendpoint ()
 
   loop = g_main_loop_new (NULL, TRUE);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -178,7 +177,6 @@ start_video_recorderendpoint ()
 
   loop = g_main_loop_new (NULL, TRUE);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -234,7 +232,6 @@ start_audio_video_recorderendpoint ()
 
   loop = g_main_loop_new (NULL, TRUE);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 

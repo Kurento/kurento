@@ -226,8 +226,6 @@ GST_START_TEST (loopback)
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
   int handler_id;
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
-
   g_object_set_data (G_OBJECT (pipeline), "loop", loop);
 
   gst_bus_add_watch (bus, gst_bus_async_signal_func, NULL);

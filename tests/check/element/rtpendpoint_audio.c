@@ -248,7 +248,6 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
       gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -404,7 +403,6 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 

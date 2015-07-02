@@ -315,8 +315,6 @@ kms_http_post_endpoint_init_pipeline (KmsHttpPostEndpoint * self)
   GstCaps *deco_caps;
 
   KMS_HTTP_ENDPOINT (self)->pipeline = gst_pipeline_new (POST_PIPELINE);
-  g_object_set (KMS_HTTP_ENDPOINT (self)->pipeline, "async-handling", TRUE,
-      NULL);
   self->priv->appsrc = gst_element_factory_make ("appsrc", NULL);
   decodebin = gst_element_factory_make ("decodebin", NULL);
 

@@ -435,7 +435,6 @@ GST_START_TEST (check_eos)
 
   loop = g_main_loop_new (NULL, FALSE);
   pipeline = gst_pipeline_new (__FUNCTION__);
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -476,7 +475,6 @@ GST_START_TEST (check_set_encoded_media)
 
   loop = g_main_loop_new (NULL, FALSE);
   pipeline = gst_pipeline_new ("pipeline_live_stream");
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   player = gst_element_factory_make ("playerendpoint", NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 

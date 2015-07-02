@@ -119,7 +119,6 @@ GST_START_TEST (check_agnostic_signal)
 
   loop = g_main_loop_new (NULL, FALSE);
   pipeline = gst_pipeline_new ("check_agnostic_signal");
-  g_object_set (pipeline, "async-handling", TRUE, NULL);
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
   player = gst_element_factory_make ("playerendpoint", NULL);

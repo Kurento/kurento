@@ -180,7 +180,6 @@ GST_START_TEST (test_dtlsenc_init_handshake_on_paused)
   cert_key_pem_file = generate_certkey_pem_file_path ();
   generate_certkey_pem_file (cert_key_pem_file);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -258,7 +257,6 @@ GST_START_TEST (test_dtls_send_recv_data)
   cert_key_pem_file = generate_certkey_pem_file_path ();
   generate_certkey_pem_file (cert_key_pem_file);
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 

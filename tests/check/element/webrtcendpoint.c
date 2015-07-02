@@ -633,7 +633,6 @@ test_audio_sendrecv (const gchar * audio_enc_name,
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -815,7 +814,6 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -988,7 +986,6 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
@@ -1175,7 +1172,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
-  g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
