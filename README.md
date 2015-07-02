@@ -37,6 +37,13 @@ curl -sL https://deb.nodesource.com/setup | sudo bash -
 sudo apt-get install -y nodejs
 ```
 
+It is recommended to update NPM to the latest version:
+
+```bash
+sudo npm install npm -g
+```
+
+
 Install node modules and bower components
 
 ```bash
