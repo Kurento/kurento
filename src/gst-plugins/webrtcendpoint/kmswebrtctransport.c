@@ -19,6 +19,7 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "kmswebrtctransport"
 
+#define FUNNEL_NAME "funnel"
 #define SRTPENC_NAME "srtp-encoder"
 #define SRTPDEC_NAME "srtp-decoder"
 #define REPLAY_WINDOW_SIZE 512
@@ -55,7 +56,7 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 {
   KmsWebRtcTransport *tr;
   gchar *str;
-  GstElement *srtpenc, *srtpdec;
+  GstElement *funnel, *srtpenc, *srtpdec;
 
   tr = g_slice_new0 (KmsWebRtcTransport);
 
@@ -73,6 +74,14 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
     GST_ERROR ("Cannot create KmsWebRtcTransport");
     kms_webrtc_transport_destroy (tr);
     return NULL;
+  }
+
+  funnel = gst_bin_get_by_name (GST_BIN (tr->dtlssrtpenc), FUNNEL_NAME);
+  if (funnel != NULL) {
+    g_object_set (funnel, "forward-sticky-events", FALSE, NULL);
+    g_object_unref (funnel);
+  } else {
+    GST_WARNING ("Cannot get funnel with name %s", FUNNEL_NAME);
   }
 
   srtpenc = gst_bin_get_by_name (GST_BIN (tr->dtlssrtpenc), SRTPENC_NAME);
