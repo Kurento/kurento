@@ -78,18 +78,16 @@ media pipeline is illustrated in the following picture:
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
-At the server-side we use a Java application server consuming the
+At the server-side we use a Java EE application server consuming the
 **Kurento Java Client** API to control **Kurento Media Server** capabilities.
 All in all, the high level architecture of this demo is three-tier. To
-communicate these entities the following technologies are used:
-
-* `REST`:term:: Communication between JavaScript client-side and Java
-  application server-side.
-
-* `WebSocket`:term:: Communication between the Kurento Java Client and the
-  Kurento Media Server. This communication is implemented by the
-  **Kurento Protocol**. For further information, please see this
-  :doc:`page <../../mastering/kurento_protocol>` of the documentation.
+communicate these entities, two WebSockets are used. First, a WebSocket is
+created between client and application server to implement a custom signaling
+protocol. Second, another WebSocket is used to perform the communication
+between the Kurento Java Client and the Kurento Media Server. This
+communication takes place using the **Kurento Protocol**. For further
+information on it, please see this
+:doc:`page <../../mastering/kurento_protocol>` of the documentation.
 
 The diagram below shows an complete sequence diagram from the interactions with
 the application interface to: i) JavaScript logic; ii) Application server logic
@@ -100,13 +98,6 @@ the application interface to: i) JavaScript logic; ii) Application server logic
    :alt:     Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo
 
    *Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo*
-
-.. note::
-
-   The communication between client and server-side does not need to be
-   REST. For simplicity, in this tutorial REST has been used. In later examples
-   a more complex signaling between client and server has been implement,
-   using WebSockets. Please see later tutorials for further information.
 
 The following sections analyze in deep the server (Java) and client-side
 (JavaScript) code of this application. The complete source code can be found in
@@ -149,9 +140,10 @@ In the following figure you can see a class diagram of the server side code:
         arrowhead = "vee"
    ]
 
-   HelloWorldApp -> HelloWorldController;
+   HelloWorldApp -> HelloWorldHandler;
    HelloWorldApp -> KurentoClient;
-   HelloWorldController -> KurentoClient [constraint = false]
+   HelloWorldHandler -> KurentoClient [constraint = false]
+   HelloWorldHandler -> UserSession;
 
 The main class of this demo is
 `HelloWorldApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_.
@@ -168,72 +160,155 @@ with Kurento Media Server and controlling its multimedia capabilities.
 
 .. sourcecode:: java
 
-   @ComponentScan
+   @Configuration
+   @EnableWebSocket
    @EnableAutoConfiguration
-   public class HelloWorldApp {
+   public class HelloWorldApp implements WebSocketConfigurer {
    
       final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
 
       @Bean
-      public KurentoClient kurentoClient() {
-         return KurentoClient.create(System.getProperty("kms.ws.uri",
-               DEFAULT_KMS_WS_URI));
+      public HelloWorldHandler handler() {
+         return new HelloWorldHandler();
       }
-   
+
+      @Bean
+      public KurentoClient kurentoClient() {
+         return KurentoClient.create(System.getProperty("kms.ws.uri", DEFAULT_KMS_WS_URI));
+      }
+
+      @Override
+      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+         registry.addHandler(handler(), "/helloworld");
+      }
+
       public static void main(String[] args) throws Exception {
          new SpringApplication(HelloWorldApp.class).run(args);
       }
    }
 
-As introduced before, we use `REST`:term: to communicate the client with the
-Java application server. Specifically, we use the Spring annotation
-*@RestController* to implement REST services in the server-side. Take a look to
-the
-`HelloWorldController <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldController.java>`_
-class:
+This web application follows *Single Page Application* architecture
+(`SPA`:term:) and uses a `WebSocket`:term: to communicate client with
+application server by means of requests and responses. Specifically, the main
+app class implements the interface ``WebSocketConfigurer`` to register a
+``WebSocketHanlder`` to process WebSocket requests in the path ``/helloworld``.
+
+`HelloWorldHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldHandler.java>`_
+class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
+The central piece of this class is the method ``handleTextMessage``. This
+method implements the actions for requests, returning responses through the
+WebSocket. In other words, it implements the server part of the signaling
+protocol depicted in the previous sequence diagram.
 
 .. sourcecode:: java
 
-   @RestController
-   public class HelloWorldController {
-   
+   public class HelloWorldHandler extends TextWebSocketHandler {
+
+      private final Logger log = LoggerFactory.getLogger(HelloWorldHandler.class);
+      private static final Gson gson = new GsonBuilder().create();
+
       @Autowired
       private KurentoClient kurento;
-   
-      @RequestMapping(value = "/helloworld", method = RequestMethod.POST)
-      private String processRequest(@RequestBody String sdpOffer)
-            throws InterruptedException {
-         // 1. Media Logic
-         MediaPipeline pipeline = kurento.createMediaPipeline();
-         WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
-               .build();
-         webRtcEndpoint.connect(webRtcEndpoint);
-         webRtcEndpoint.processOffer(sdpOffer);
-   
-         // 2. Gather candidates
-         final CountDownLatch latchCandidates = new CountDownLatch(1);
-         webRtcEndpoint
-               .addOnIceGatheringDoneListener(new EventListener<OnIceGatheringDoneEvent>() {
-                  @Override
-                  public void onEvent(OnIceGatheringDoneEvent event) {
-                     latchCandidates.countDown();
-                  }
-               });
-         webRtcEndpoint.gatherCandidates();
-         latchCandidates.await();
 
-         // 3. SDP negotiation
-         String responseSdp = webRtcEndpoint.getLocalSessionDescriptor();
-         return responseSdp;
+      private final ConcurrentHashMap<String, UserSession> users = new ConcurrentHashMap<String, UserSession>();
+
+      @Override
+      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+         JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
+
+         log.debug("Incoming message: {}", jsonMessage);
+
+         switch (jsonMessage.get("id").getAsString()) {
+         case "start":
+            start(session, jsonMessage);
+            break;
+         case "stop": {
+            UserSession user = users.remove(session.getId());
+            if (user != null) {
+               user.release();
+            }
+            break;
+         }
+         case "onIceCandidate": {
+            JsonObject jsonCandidate = jsonMessage.get("candidate").getAsJsonObject();
+
+            UserSession user = users.get(session.getId());
+            if (user != null) {
+               IceCandidate candidate = new IceCandidate(jsonCandidate.get("candidate").getAsString(),
+                     jsonCandidate.get("sdpMid").getAsString(), jsonCandidate.get("sdpMLineIndex").getAsInt());
+               user.addCandidate(candidate);
+            }
+            break;
+         }
+         default:
+            sendError(session, "Invalid message with id " + jsonMessage.get("id").getAsString());
+            break;
+         }
       }
 
+      private void start(final WebSocketSession session, JsonObject jsonMessage) {
+         try {
+            // 1. Media logic (webRtcEndpoint in loopback)
+            MediaPipeline pipeline = kurento.createMediaPipeline();
+            WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
+            webRtcEndpoint.connect(webRtcEndpoint);
+
+            // 2. Store user session
+            UserSession user = new UserSession();
+            user.setMediaPipeline(pipeline);
+            user.setWebRtcEndpoint(webRtcEndpoint);
+            users.put(session.getId(), user);
+
+            // 3. SDP negotiation
+            String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
+            String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+
+            JsonObject response = new JsonObject();
+            response.addProperty("id", "startResponse");
+            response.addProperty("sdpAnswer", sdpAnswer);
+
+            synchronized (session) {
+               session.sendMessage(new TextMessage(response.toString()));
+            }
+
+            // 4. Gather ICE candidates
+            webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+               @Override
+               public void onEvent(OnIceCandidateEvent event) {
+                  JsonObject response = new JsonObject();
+                  response.addProperty("id", "iceCandidate");
+                  response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+                  try {
+                     synchronized (session) {
+                        session.sendMessage(new TextMessage(response.toString()));
+                     }
+                  } catch (IOException e) {
+                     log.error(e.getMessage());
+                  }
+               }
+            });
+            webRtcEndpoint.gatherCandidates();
+
+         } catch (Throwable t) {
+            sendError(session, t.getMessage());
+         }
+      }
+
+      private void sendError(WebSocketSession session, String message) {
+         try {
+            JsonObject response = new JsonObject();
+            response.addProperty("id", "error");
+            response.addProperty("message", message);
+            session.sendMessage(new TextMessage(response.toString()));
+         } catch (IOException e) {
+            log.error("Exception sending message", e);
+         }
+      }
    }
 
-The application logic is implemented in the method *processRequest*. POST
-Requests to path */helloworld* will fire this method, whose execution has three
-main  parts:
+The ``start`` method performs the following actions:
 
- - **1. Configure media processing logic**: This is the part in which the
+#. **Configure media processing logic**: This is the part in which the
    application configures how Kurento has to process the media. In other words,
    the media pipeline is created here. To that aim, the object *KurentoClient*
    is used to create a *MediaPipeline* object. Using it, the media elements we
@@ -241,30 +316,32 @@ main  parts:
    *WebRtcEndpoint* for receiving the WebRTC stream and sending it back to the
    client.
 
- - **2. Gather ICE candidates**: As of version 6, Kurento fully supports the
-   :term:`Trickle ICE` protocol. For that reason, *WebRtcEndpoint* can receive
-   :term:`ICE` candidates asynchronous. To handle this, each *WebRtcEndpoint*
-   offers a listener (*addOnIceGatheringDoneListener*) that receives an event
-   when the ICE gathering process is done. In this example, the wait to this
-   process to be ended is done by means of a Java
-   `CountDownLatch <http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html>`_
+#. **Store user session**: In order to release orderly the resources in the
+   Kurento Media Server, we store the user session (i.e. *Media Pipeline* and
+   *WebRtcEndpoint*) to be able to perform a release process when the stop
+   method is called.
 
- - **3. WebRTC SDP negotiation**: In WebRTC, :term:`SDP` (Session Description
+#. **WebRTC SDP negotiation**: In WebRTC, :term:`SDP` (Session Description
    protocol) is used for negotiating media exchanges between peers. Such
    negotiation is based on the SDP offer and answer exchange mechanism. This
    negotiation is finished in the third part of the method *processRequest*,
    using the SDP offer obtained from the browser client and returning a SDP
    answer generated by *WebRtcEndpoint*.
 
+#. **Gather ICE candidates**: As of version 6, Kurento fully supports the
+   :term:`Trickle ICE` protocol. For that reason, *WebRtcEndpoint* can receive
+   :term:`ICE` candidates asynchronously. To handle this, each *WebRtcEndpoint*
+   offers a listener (*addOnIceGatheringDoneListener*) that receives an event
+   when the ICE gathering process is done.
+
 
 Client-Side Logic
 =================
 
-Let's move now to the client-side of the application, which follows
-*Single Page Application* architecture (`SPA`:term:). To call the previously
-created REST service, we use the JavaScript library `jQuery`:term:. In
-addition, we use a Kurento JavaScript utilities library called
-**kurento-utils.js** to simplify the WebRTC management in the browser. This
+Let's move now to the client-side of the application. To call the previously
+created WebSocket service in the server-side, we use the JavaScript class
+``WebSocket``. We use an specific Kurento JavaScript library called
+**kurento-utils.js** to simplify the WebRTC interaction with the server. This
 library depends on **adapter.js**, which is a JavaScript WebRTC utility
 maintained by Google that abstracts away browser differences. Finally
 **jquery.js** is also needed in this application.
@@ -273,56 +350,119 @@ These libraries are linked in the
 `index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/resources/static/index.html>`_
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/resources/static/js/index.js>`_.
-In the *start* function we can see how the function *WebRtcPeer.startSendRecv*
-of **kurento-utils.js** is used to simplify the WebRTC internal details (i.e.
-*PeerConnection* and *getUserStream*) making possible to gather ICE candidates
-and start a full-duplex WebRTC communication. In the options we specify the
-HTML video tag with id *videoInput* in which the video camera (local stream) is
-shown, and the video tag *videoOutput* in which the remote stream provided by
-the Kurento Media Server is shown. In the function *onCandidateGatheringDone*,
-the jQuery method *$.ajax* is used to send a POST request with the SDP offer to
-the path */helloworld*, where the application server REST service is listening.
+In the following snippet we can see the creation of the WebSocket (variable
+``ws``) in the path ``/helloworld``. Then, the ``onmessage`` listener of the
+WebSocket is used to implement the JSON signaling protocol in the client-side.
+Notice that there are three incoming messages to client: ``startResponse``,
+``error``, and ``iceCandidate``. Convenient actions are taken to implement each
+step in the communication. For example, in functions ``start`` the function
+``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
+WebRTC communication.
 
 .. sourcecode:: javascript
 
+   var ws = new WebSocket('ws://' + location.host + '/helloworld');
+
+   ws.onmessage = function(message) {
+      var parsedMessage = JSON.parse(message.data);
+      console.info('Received message: ' + message.data);
+
+      switch (parsedMessage.id) {
+      case 'startResponse':
+         startResponse(parsedMessage);
+         break;
+      case 'error':
+         if (state == I_AM_STARTING) {
+            setState(I_CAN_START);
+         }
+         onError('Error message from server: ' + parsedMessage.message);
+         break;
+      case 'iceCandidate':
+         webRtcPeer.addIceCandidate(parsedMessage.candidate, function(error) {
+            if (error)
+               return console.error('Error adding candidate: ' + error);
+         });
+         break;
+      default:
+         if (state == I_AM_STARTING) {
+            setState(I_CAN_START);
+         }
+         onError('Unrecognized message', parsedMessage);
+      }
+   }
+
    function start() {
       console.log('Starting video call ...');
+
+      // Disable start button
+      setState(I_AM_STARTING);
       showSpinner(videoInput, videoOutput);
+
+      console.log('Creating WebRtcPeer and generating local sdp offer ...');
 
       var options = {
          localVideo : videoInput,
          remoteVideo : videoOutput,
-         oncandidategatheringdone : onCandidateGatheringDone
+         onicecandidate : onIceCandidate
       }
-
       webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
             function(error) {
-               if (error) return console.error(error);
+               if (error)
+                  return console.error(error);
                webRtcPeer.generateOffer(onOffer);
             });
    }
 
-   function onCandidateGatheringDone() {
-      $.ajax({
-         url : location.protocol + '/helloworld',
-         type : 'POST',
-         dataType : 'text',
-         contentType : 'application/sdp',
-         data : webRtcPeer.getLocalSessionDescriptor().sdp,
-         success : function(sdpAnswer) {
-            console.log("Received sdpAnswer from server. Processing ...");
-            webRtcPeer.processAnswer(sdpAnswer, function(error) {
-               if (error) return console.error(error);
-            });
-         },
-         error : function(jqXHR, textStatus, error) {
-            console.error(error);
-         }
+   function onOffer(error, offerSdp) {
+      if (error)
+         return console.error('Error generating the offer');
+      console.info('Invoking SDP offer callback function ' + location.host);
+      var message = {
+         id : 'start',
+         sdpOffer : offerSdp
+      }
+      sendMessage(message);
+   }
+
+   function onIceCandidate(candidate) {
+      console.log('Local candidate' + JSON.stringify(candidate));
+
+      var message = {
+         id : 'onIceCandidate',
+         candidate : candidate
+      };
+      sendMessage(message);
+   }
+
+   function startResponse(message) {
+      setState(I_CAN_STOP);
+      console.log('SDP answer received from server. Processing ...');
+
+      webRtcPeer.processAnswer(message.sdpAnswer, function(error) {
+         if (error)
+            return console.error(error);
       });
    }
 
-   function onOffer(error, sdpOffer) {
-      console.info('Waiting for ICE candidates ...');
+   function stop() {
+      console.log('Stopping video call ...');
+      setState(I_CAN_START);
+      if (webRtcPeer) {
+         webRtcPeer.dispose();
+         webRtcPeer = null;
+
+         var message = {
+            id : 'stop'
+         }
+         sendMessage(message);
+      }
+      hideSpinner(videoInput, videoOutput);
+   }
+
+   function sendMessage(message) {
+      var jsonMessage = JSON.stringify(message);
+      console.log('Senging message: ' + jsonMessage);
+      ws.send(jsonMessage);
    }
 
 
@@ -381,3 +521,15 @@ follows:
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
    sudo npm install -g bower
+
+.. note::
+
+   *kurento-utils-js* can be resolved as a Java dependency but also is available on Bower. To use this
+   library from Bower, add this dependency to the file
+   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/bower.json>`_:
+
+   .. sourcecode:: js
+
+      "dependencies": {
+         "kurento-utils": "|UTILS_JS_VERSION|"
+      }
