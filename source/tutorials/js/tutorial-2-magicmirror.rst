@@ -42,6 +42,17 @@ start the HTTP server:
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the parameter ``ws_uri`` to the URL, as follows:
+
+   .. sourcecode:: sh
+
+      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
+
+
 Understanding this example
 ==========================
 
@@ -83,15 +94,6 @@ The media pipeline implemented is illustrated in the following picture:
 The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-magic-mirror>`_.
 
-.. note::
-
-   These instructions work only if Kurento Media Server is up and running in the same machine
-   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
-   the parameter ``ws_uri`` to the URL, as follows:
-
-   .. sourcecode:: sh
-
-      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
 
 JavaScript Logic
 ================
