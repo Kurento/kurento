@@ -33,11 +33,10 @@ import static org.kurento.test.TestConfiguration.TEST_PROTOCOL_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_IP_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 import java.io.Closeable;
 import java.io.File;
@@ -195,7 +194,7 @@ public class BrowserClient implements Closeable {
 
 			} else if (driverClass.equals(ChromeDriver.class)) {
 				// Chrome driver
-				new ChromeDriverManager().setup();
+				ChromeDriverManager.getInstance().setup();
 
 				// Chrome options
 				ChromeOptions options = new ChromeOptions();
@@ -227,9 +226,9 @@ public class BrowserClient implements Closeable {
 					String windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT;
 					if (platform != null
 							&& (platform == Platform.WINDOWS
-									|| platform == Platform.XP
-									|| platform == Platform.VISTA
-									|| platform == Platform.WIN8 || platform == Platform.WIN8_1)) {
+							|| platform == Platform.XP
+							|| platform == Platform.VISTA
+							|| platform == Platform.WIN8 || platform == Platform.WIN8_1)) {
 						windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 					}
 					options.addArguments("--auto-select-desktop-capture-source="
@@ -257,7 +256,7 @@ public class BrowserClient implements Closeable {
 					// cam
 					options.addArguments("--use-fake-device-for-media-stream");
 
-					if ((video != null) && isLocal()) {
+					if (video != null && isLocal()) {
 						options.addArguments("--use-file-for-fake-video-capture="
 								+ video);
 					}
@@ -361,9 +360,9 @@ public class BrowserClient implements Closeable {
 
 	public void changeTimeout(int timeoutSeconds) {
 		driver.manage().timeouts()
-				.implicitlyWait(timeoutSeconds, TimeUnit.SECONDS);
+		.implicitlyWait(timeoutSeconds, TimeUnit.SECONDS);
 		driver.manage().timeouts()
-				.setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
+		.setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
 	}
 
 	public void createSaucelabsDriver(DesiredCapabilities capabilities)
@@ -376,7 +375,7 @@ public class BrowserClient implements Closeable {
 		int commandTimeout = getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY,
 				SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
 
-		if ((sauceLabsUser == null) || (sauceLabsKey == null)) {
+		if (sauceLabsUser == null || sauceLabsKey == null) {
 			throw new RuntimeException("Invalid Saucelabs credentials: "
 					+ SAUCELAB_USER_PROPERTY + "=" + sauceLabsUser + " "
 					+ SAUCELAB_KEY_PROPERTY + "=" + sauceLabsKey);
@@ -426,10 +425,10 @@ public class BrowserClient implements Closeable {
 			}
 
 			if (!node.equals(host)
-					&& (login != null)
+					&& login != null
 					&& !login.isEmpty()
-					&& (((passwd != null) && !passwd.isEmpty()) || ((pem != null) && !pem
-							.isEmpty()))) {
+					&& (passwd != null && !passwd.isEmpty() || pem != null
+							&& !pem.isEmpty())) {
 				gridNode = new GridNode(node, browserType, browserPerInstance,
 						login, passwd, pem);
 				GridHandler.getInstance().addNode(id, gridNode);
@@ -445,19 +444,19 @@ public class BrowserClient implements Closeable {
 			GridHandler.getInstance().startNode(gridNode);
 
 			// Copy video (if necessary)
-			if ((video != null) && (browserType == BrowserType.CHROME)) {
+			if (video != null && browserType == BrowserType.CHROME) {
 				GridHandler.getInstance().copyRemoteVideo(gridNode, video);
 			}
 
 		}
 
 		// At this moment we are able to use the argument for remote video
-		if ((video != null) && (browserType == BrowserType.CHROME)) {
+		if (video != null && browserType == BrowserType.CHROME) {
 			ChromeOptions options = (ChromeOptions) capabilities
 					.getCapability(ChromeOptions.CAPABILITY);
 			options.addArguments("--use-file-for-fake-video-capture="
 					+ GridHandler.getInstance().getFirstNode(id)
-							.getRemoteVideo(video));
+					.getRemoteVideo(video));
 			capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 		}
 

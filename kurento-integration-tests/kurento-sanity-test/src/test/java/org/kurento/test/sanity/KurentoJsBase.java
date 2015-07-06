@@ -42,7 +42,7 @@ import org.springframework.core.io.ClassPathResource;
 
 /**
  * Base for kurento-js sanity tests.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -67,7 +67,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	@BeforeClass
 	public static void setupClass() {
-		new ChromeDriverManager().setup();
+		ChromeDriverManager.getInstance().setup();
 	}
 
 	@Before
@@ -84,7 +84,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 	private void createHtmlPages() {
 		try {
 			final String outputFolder = new ClassPathResource("static")
-					.getFile().getAbsolutePath() + File.separator;
+			.getFile().getAbsolutePath() + File.separator;
 
 			Configuration cfg = new Configuration(
 					Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
