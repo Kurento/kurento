@@ -30,6 +30,9 @@ typedef struct _KmsWebRtcTransport
 
   guint rtp_id; /* atomic */
   guint rtcp_id; /* atomic */
+
+  gulong src_probe;
+  gulong sink_probe;
 } KmsWebRtcTransport;
 
 KmsWebRtcTransport *kms_webrtc_transport_create (NiceAgent * agent,
