@@ -45,9 +45,9 @@ How do I...
       TURNSERVER_ENABLED=1
 
    5. Now, you have to tell the Kurento server where is the turnserver
-   installed. For this, modify the turnURL key in ``/etc/kurento/kurento.conf.json``::
+   installed. For this, modify the turnURL key in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``::
 
-      "turnURL" : "kurento:kurento@<public-ip>:3478",
+      turnURL=kurento:kurento@<public-ip>:3478
 
    The following ports should be open in the firewall:
 
@@ -60,7 +60,7 @@ How do I...
    6. The last thing to do, is to start the coturn server and the media
    server::
 
-      sudo service coturn start && sudo service kurento-media-server restart
+      sudo service coturn start && sudo service kurento-media-server-6.0 restart
 
 ...configure Kurento Media Server to use Secure WebSocket (WSS)?
 ----------------------------------------------------------------
@@ -136,7 +136,7 @@ How do I...
     Your application will need to create an Endpoint for each media stream
     flowing to (or from) the pipeline. As we said in the previous answer, each
     set of communicating partners in a channel will be in the same Media
-    Pipeline, and each of them will use one oe more Endpoints. They could use
+    Pipeline, and each of them will use one or more Endpoints. They could use
     more than one if they are recording or reproducing several streams.
 
 ...know to what client a given WebRtcEndPoint belongs or where is it coming from?
@@ -163,7 +163,7 @@ Why do I get the error...
        sudo apt-get autoremove
        sudo apt-get update
        sudo apt-get dist-upgrade
-       sudo apt-get install kurento-media-server
+       sudo apt-get install kurento-media-server-6.0
 
 
 .. Why can't I...
