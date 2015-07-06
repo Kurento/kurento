@@ -202,7 +202,7 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kinds of incoming messages to
-the *Server* : ``start``, ``onIceCandidates`` and ``stop``. These messages are
+the *Server* : ``start``, ``stop`` and ``onIceCandidates``. These messages are
 treated in the *switch* clause, taking the proper steps in each case.
 
 .. sourcecode:: java
@@ -358,8 +358,8 @@ web page, and are used in the
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/magicmirror``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are three incoming messages to client: ``iceCandidate``,
-``startResponse`` and ``error``. Convenient actions are taken to implement each
+Notice that there are three incoming messages to client: ``startResponse``,
+``error``, and ``iceCandidate``. Convenient actions are taken to implement each
 step in the communication. For example, in functions ``start`` the function
 ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
 WebRTC communication.
@@ -495,3 +495,15 @@ follows:
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
    sudo npm install -g bower
+
+.. note::
+
+   *kurento-utils-js* can be resolved as a Java dependency but also is available on Bower. To use this
+   library from Bower, add this dependency to the file
+   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/bower.json>`_:
+
+   .. sourcecode:: js
+
+      "dependencies": {
+         "kurento-utils": "|UTILS_JS_VERSION|"
+      }

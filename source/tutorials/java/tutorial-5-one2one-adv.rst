@@ -979,3 +979,15 @@ follows:
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
    sudo npm install -g bower
+
+.. note::
+
+   *kurento-utils-js* can be resolved as a Java dependency but also is available on Bower. To use this
+   library from Bower, add this dependency to the file
+   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/bower.json>`_:
+
+   .. sourcecode:: js
+
+      "dependencies": {
+         "kurento-utils": "|UTILS_JS_VERSION|"
+      }
