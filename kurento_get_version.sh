@@ -38,13 +38,13 @@ elif [ -f Makefile ]
 then
   echo "Getting version from Makefile"
   PROJECT_VERSION=$(grep "DOC_VERSION =" Makefile | cut -d "=" -f 2)
-elif [ -f $(find . -regex '.*/package.json' | sed -n 1p) ]
+elif [ $(find . -regex '.*/package.json' | sed -n 1p) ]
 then
-  echo "Getting version from package.json"
-  PROJECT_VERSION=$(grep version `find . -regex '.*/package.json' | sed -n 1p` | cut -d ":" -f 2 | cut -d "\"" -f 2)  
-elif [ -f $(find . -regex '.*/bower.json' | sed -n 1p) ]
+  echo "Getting version from package.json recursing into folders"
+  PROJECT_VERSION=$(grep version `find . -regex '.*/package.json' | sed -n 1p` | cut -d ":" -f 2 | cut -d "\"" -f 2)
+elif [ $(find . -regex '.*/bower.json' | sed -n 1p) ]
 then
-  echo "Getting version from bower"
+  echo "Getting version from bower recursing into folders"
   PROJECT_VERSION=$(grep version `find . -regex '.*/bower.json' | sed -n 1p` | cut -d ":" -f 2 | cut -d "\"" -f 2)
 else
   echo "PROJECT_VERSION not defined, need CMakeLists.txt, pom.xml, configure.ac, configure.in or package.json file"
