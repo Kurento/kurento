@@ -56,13 +56,17 @@ if [ -s debian/changelog ]
   fi
 fi
 
+# Check that release version conforms to semver
+kurento_check_semver.sh ${PROJECT_VERSION} || exit 1
+
 if [ ${CREATE_TAG} = true ]
 then
   #Create a new tag
   echo "Creating tag"
-  tag_name=v${PROJECT_VERSION}
+  tag_name=${PROJECT_VERSION}
   if git tag ${tag_name}
   then
-    git push --tags
+    echo "Push tag"
+    #git push --tags
   fi
 fi
