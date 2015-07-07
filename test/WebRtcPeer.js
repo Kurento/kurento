@@ -634,7 +634,9 @@ QUnit.test('videoEnabled', function (assert) {
 
     if (error) return onerror(error)
 
-    function onconnected() {
+    function onplaying() {
+      video.removeEventListener('playing', onplaying)
+
       setTimeout(function () {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -668,7 +670,7 @@ QUnit.test('videoEnabled', function (assert) {
       }, TIMEOUT)
     }
 
-    this.once('connected', onconnected)
+    video.addEventListener('playing', onplaying)
 
     this.generateOffer(function (error, sdpOffer, processAnswer) {
       if (error) return onerror(error)
