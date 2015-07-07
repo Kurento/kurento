@@ -93,13 +93,20 @@ typedef struct HandOffData
   /* Check KmsBaseRtpEp::request_local_key_frame end */
 } HandOffData;
 
+typedef struct OnIceCandidateData
+{
+  GstElement *peer;
+  gchar *peer_sess_id;
+} OnIceCandidateData;
+
 static void
-on_ice_candidate (GstElement * self, KmsIceCandidate * candidate,
-    GstElement * peer)
+on_ice_candidate (GstElement * self, gchar * sess_id,
+    KmsIceCandidate * candidate, OnIceCandidateData * data)
 {
   gboolean ret;
 
-  g_signal_emit_by_name (peer, "add-ice-candidate", candidate, &ret);
+  g_signal_emit_by_name (data->peer, "add-ice-candidate", data->peer_sess_id,
+      candidate, &ret);
   fail_unless (ret);
 }
 
@@ -350,6 +357,8 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *sender_sess_id, *receiver_sess_id;
+  OnIceCandidateData *sender_cand_data, *receiver_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
@@ -372,11 +381,24 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
       g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
+  /* Session creation */
+  g_signal_emit_by_name (sender, "create-session", &sender_sess_id);
+  GST_DEBUG_OBJECT (sender, "Created session with id '%s'", sender_sess_id);
+  g_signal_emit_by_name (receiver, "create-session", &receiver_sess_id);
+  GST_DEBUG_OBJECT (receiver, "Created session with id '%s'", receiver_sess_id);
+
   /* Trickle ICE management */
+  sender_cand_data = g_slice_new0 (OnIceCandidateData);
+  sender_cand_data->peer = receiver;
+  sender_cand_data->peer_sess_id = receiver_sess_id;
   g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), receiver);
+      G_CALLBACK (on_ice_candidate), sender_cand_data);
+
+  receiver_cand_data = g_slice_new0 (OnIceCandidateData);
+  receiver_cand_data->peer = sender;
+  receiver_cand_data->peer_sess_id = sender_sess_id;
   g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), sender);
+      G_CALLBACK (on_ice_candidate), receiver_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -414,19 +436,20 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
 
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (sender, "generate-offer", &offer);
+  g_signal_emit_by_name (sender, "generate-offer", sender_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   if (gather_asap) {
-    g_signal_emit_by_name (sender, "gather-candidates", &ret);
+    g_signal_emit_by_name (sender, "gather-candidates", sender_sess_id, &ret);
     fail_unless (ret);
   }
 
   mark_point ();
-  g_signal_emit_by_name (receiver, "process-offer", offer, &answer);
+  g_signal_emit_by_name (receiver, "process-offer", receiver_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
@@ -447,19 +470,19 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
 //  }
 
   mark_point ();
-  g_signal_emit_by_name (sender, "process-answer", answer);
+  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
   if (!gather_asap) {
-    g_signal_emit_by_name (sender, "gather-candidates", &ret);
+    g_signal_emit_by_name (sender, "gather-candidates", sender_sess_id, &ret);
     fail_unless (ret);
     /* FIXME: not working */
 //    g_signal_emit_by_name (receiver, "gather-candidates", &ret);
 //    fail_unless (ret);
   }
 
-  g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+  g_signal_emit_by_name (receiver, "gather-candidates", receiver_sess_id, &ret);
   fail_unless (ret);
 
   gst_bin_add (GST_BIN (pipeline), outputfakesink);
@@ -485,6 +508,10 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
+  g_free (sender_sess_id);
+  g_free (receiver_sess_id);
+  g_slice_free (OnIceCandidateData, sender_cand_data);
+  g_slice_free (OnIceCandidateData, receiver_cand_data);
 }
 
 static void
@@ -496,6 +523,8 @@ test_video_sendrecv (const gchar * video_enc_name,
   gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *offerer_sess_id, *answerer_sess_id;
+  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc_offerer =
@@ -525,11 +554,24 @@ test_video_sendrecv (const gchar * video_enc_name,
       g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
   /* Trickle ICE management */
+  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  offerer_cand_data->peer = answerer;
+  offerer_cand_data->peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer);
+      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+
+  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  answerer_cand_data->peer = offerer;
+  answerer_cand_data->peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer);
+      G_CALLBACK (on_ice_candidate), answerer_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -555,27 +597,28 @@ test_video_sendrecv (const gchar * video_enc_name,
 
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
-  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", answerer_sess_id, &ret);
   fail_unless (ret);
 
   gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
@@ -609,6 +652,10 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
+  g_slice_free (OnIceCandidateData, offerer_cand_data);
+  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 static void
@@ -619,6 +666,8 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *offerer_sess_id, *answerer_sess_id;
+  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *audiotestsrc_offerer =
@@ -653,11 +702,24 @@ test_audio_sendrecv (const gchar * audio_enc_name,
       g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
   /* Trickle ICE management */
+  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  offerer_cand_data->peer = answerer;
+  offerer_cand_data->peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer);
+      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+
+  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  answerer_cand_data->peer = offerer;
+  answerer_cand_data->peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer);
+      G_CALLBACK (on_ice_candidate), answerer_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -691,27 +753,28 @@ test_audio_sendrecv (const gchar * audio_enc_name,
 
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
-  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", answerer_sess_id, &ret);
   fail_unless (ret);
 
   gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
@@ -745,6 +808,10 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
+  g_slice_free (OnIceCandidateData, offerer_cand_data);
+  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 #define OFFERER_RECEIVES_AUDIO "offerer_receives_audio"
@@ -800,6 +867,8 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   gchar *video_codecs[] = { video_codec, NULL };
   HandOffData *hod_audio, *hod_video;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *sender_sess_id, *receiver_sess_id;
+  OnIceCandidateData *sender_cand_data, *receiver_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
@@ -836,11 +905,24 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
+  /* Session creation */
+  g_signal_emit_by_name (sender, "create-session", &sender_sess_id);
+  GST_DEBUG_OBJECT (sender, "Created session with id '%s'", sender_sess_id);
+  g_signal_emit_by_name (receiver, "create-session", &receiver_sess_id);
+  GST_DEBUG_OBJECT (receiver, "Created session with id '%s'", receiver_sess_id);
+
   /* Trickle ICE management */
+  sender_cand_data = g_slice_new0 (OnIceCandidateData);
+  sender_cand_data->peer = receiver;
+  sender_cand_data->peer_sess_id = receiver_sess_id;
   g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), receiver);
+      G_CALLBACK (on_ice_candidate), sender_cand_data);
+
+  receiver_cand_data = g_slice_new0 (OnIceCandidateData);
+  receiver_cand_data->peer = sender;
+  receiver_cand_data->peer_sess_id = sender_sess_id;
   g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), sender);
+      G_CALLBACK (on_ice_candidate), receiver_cand_data);
 
   /* Hack to avoid audio and video reception in sender(offerer) */
   g_object_set_data (G_OBJECT (pipeline), OFFERER_RECEIVES_AUDIO,
@@ -884,27 +966,28 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
 
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (sender, "generate-offer", &offer);
+  g_signal_emit_by_name (sender, "generate-offer", sender_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (receiver, "process-offer", offer, &answer);
+  g_signal_emit_by_name (receiver, "process-offer", receiver_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (sender, "process-answer", answer);
+  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_signal_emit_by_name (sender, "gather-candidates", &ret);
+  g_signal_emit_by_name (sender, "gather-candidates", sender_sess_id, &ret);
   fail_unless (ret);
-  g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+  g_signal_emit_by_name (receiver, "gather-candidates", receiver_sess_id, &ret);
   fail_unless (ret);
 
   gst_bin_add (GST_BIN (pipeline), audio_fakesink);
@@ -937,6 +1020,10 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod_audio);
   g_slice_free (HandOffData, hod_video);
+  g_free (sender_sess_id);
+  g_free (receiver_sess_id);
+  g_slice_free (OnIceCandidateData, sender_cand_data);
+  g_slice_free (OnIceCandidateData, receiver_cand_data);
 }
 
 static void
@@ -951,6 +1038,8 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   HandOffData *hod_audio_offerer, *hod_video_offerer, *hod_audio_answerer,
       *hod_video_answerer;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *offerer_sess_id, *answerer_sess_id;
+  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
@@ -1008,11 +1097,24 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
   /* Trickle ICE management */
+  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  offerer_cand_data->peer = answerer;
+  offerer_cand_data->peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer);
+      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+
+  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  answerer_cand_data->peer = offerer;
+  answerer_cand_data->peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer);
+      G_CALLBACK (on_ice_candidate), answerer_cand_data);
 
   hod_audio_offerer = g_slice_new0 (HandOffData);
   hod_audio_offerer->type = OFFERER_RECEIVES_AUDIO;
@@ -1075,27 +1177,28 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
 
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
-  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", answerer_sess_id, &ret);
   fail_unless (ret);
 
   gst_bin_add_many (GST_BIN (pipeline), audio_fakesink_offerer,
@@ -1142,6 +1245,10 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_slice_free (HandOffData, hod_video_offerer);
   g_slice_free (HandOffData, hod_audio_answerer);
   g_slice_free (HandOffData, hod_video_answerer);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
+  g_slice_free (OnIceCandidateData, offerer_cand_data);
+  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 static void
@@ -1155,6 +1262,8 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   gchar *video_codecs[] = { video_codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *offerer_sess_id, *answerer_sess_id;
+  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
@@ -1195,11 +1304,24 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
   /* Trickle ICE management */
+  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  offerer_cand_data->peer = answerer;
+  offerer_cand_data->peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer);
+      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+
+  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
+  answerer_cand_data->peer = offerer;
+  answerer_cand_data->peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer);
+      G_CALLBACK (on_ice_candidate), answerer_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = video_expected_caps;
@@ -1227,27 +1349,28 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_signal_emit_by_name (offerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
   fail_unless (ret);
-  g_signal_emit_by_name (answerer, "gather-candidates", &ret);
+  g_signal_emit_by_name (answerer, "gather-candidates", answerer_sess_id, &ret);
   fail_unless (ret);
 
   g_signal_connect (offerer, "pad-added",
@@ -1286,6 +1409,10 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
   g_slice_free (HandOffData, hod);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
+  g_slice_free (OnIceCandidateData, offerer_cand_data);
+  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 #ifdef ENABLE_DEBUGGING_TESTS
@@ -1608,6 +1735,7 @@ GST_START_TEST (test_remb_params)
 {
   GArray *codecs_array;
   gchar *codecs[] = { "VP8/90000", NULL };
+  gchar *offerer_sess_id, *answerer_sess_id;
   GstSDPMessage *offer, *answer;
   gchar *sdp_str = NULL;
   GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
@@ -1645,22 +1773,29 @@ GST_START_TEST (test_remb_params)
   fail_if (v1 != 200);
   fail_if (v2 != 500);
 
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -1690,6 +1825,8 @@ GST_START_TEST (test_remb_params)
 
   g_object_unref (offerer);
   g_object_unref (answerer);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
 }
 
 GST_END_TEST
