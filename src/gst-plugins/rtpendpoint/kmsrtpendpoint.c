@@ -65,7 +65,7 @@ kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 /* Connection management begin */
 static KmsIRtpConnection *
 kms_rtp_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    SdpMediaConfig * mconf, const gchar * name)
+    KmsSdpSession * sess, SdpMediaConfig * mconf, const gchar * name)
 {
   KmsRtpConnection *conn = kms_rtp_connection_new ();
 
@@ -74,7 +74,7 @@ kms_rtp_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
 
 static KmsIBundleConnection *
 kms_rtp_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
-    base_rtp_endpoint, const gchar * name)
+    base_rtp_endpoint, KmsSdpSession * sess, const gchar * name)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_rtp_endpoint);
 
@@ -85,12 +85,12 @@ kms_rtp_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
 
 static KmsRtpBaseConnection *
 kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
-    SdpMediaConfig * mconf)
+    KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
   KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
   KmsIRtpConnection *conn;
 
-  conn = kms_base_rtp_endpoint_get_connection (base_rtp, mconf);
+  conn = kms_base_rtp_endpoint_get_connection (base_rtp, sess, mconf);
   if (conn == NULL) {
     return NULL;
   }
@@ -133,10 +133,7 @@ kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
 
           addr_str = g_inet_address_to_string (addr);
           if (addr_str != NULL) {
-            KmsBaseSdpEndpoint *base_sdp = KMS_BASE_SDP_ENDPOINT (self);
-            KmsSdpAgent *agent = kms_base_sdp_endpoint_get_sdp_agent (base_sdp);
-
-            g_object_set (agent, "addr", addr_str, NULL);
+            g_object_set (self, "addr", addr_str, NULL);
             g_free (addr_str);
             done = TRUE;
           }
@@ -160,7 +157,7 @@ kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
 /* Configure media SDP begin */
 static gboolean
 kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
-    SdpMediaConfig * mconf)
+    KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
   KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
@@ -172,7 +169,7 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
   /* Chain up */
   ret = KMS_BASE_SDP_ENDPOINT_CLASS
-      (kms_rtp_endpoint_parent_class)->configure_media (base_sdp_endpoint,
+      (kms_rtp_endpoint_parent_class)->configure_media (base_sdp_endpoint, sess,
       mconf);
   if (ret == FALSE) {
     return FALSE;
@@ -185,7 +182,7 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
   conn =
       KMS_RTP_BASE_CONNECTION (kms_base_rtp_endpoint_get_connection (base_rtp,
-          mconf));
+          sess, mconf));
   if (conn == NULL) {
     return TRUE;
   }
@@ -209,19 +206,17 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
 static void
 kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
-    base_sdp_endpoint, gboolean offerer)
+    base_sdp_endpoint, KmsSdpSession * sess, gboolean offerer)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  SdpMessageContext *remote_ctx =
-      kms_base_sdp_endpoint_get_remote_sdp_ctx (base_sdp_endpoint);
   const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (remote_ctx);
-  const GSList *item = kms_sdp_message_context_get_medias (remote_ctx);
+      kms_sdp_message_context_get_sdp_message (sess->remote_ctx);
+  const GSList *item = kms_sdp_message_context_get_medias (sess->remote_ctx);
   const GstSDPConnection *msg_conn = gst_sdp_message_get_connection (sdp);
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->start_transport_send
-      (base_sdp_endpoint, offerer);
+      (base_sdp_endpoint, sess, offerer);
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;
@@ -249,7 +244,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
       continue;
     }
 
-    conn = kms_rtp_endpoint_media_get_connection (self, mconf);
+    conn = kms_rtp_endpoint_media_get_connection (self, sess, mconf);
     if (conn == NULL) {
       continue;
     }
