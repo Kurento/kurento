@@ -67,6 +67,6 @@ then
   if git tag ${tag_name}
   then
     echo "Push tag"
-    #git push --tags
+    git push --tags
   fi
 fi
