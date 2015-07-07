@@ -1,7 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "5.1.1-dev",
-  "description": "Kurento Browser JavaScript Tutorial 1",
+  "description": "Kurento Browser JavaScript Tutorial",
   "authors": [
     "Kurento <info@kurento.org>"
   ],
@@ -22,9 +21,8 @@
   "dependencies": {
     "adapter.js": "*",
     "bootstrap": "~3.3.0",
-    "demo-console": "master",
     "ekko-lightbox": "~3.3.0",
-    "kurento-jsonrpc": "master",
+    "demo-console": "master",
     "kurento-utils": "master"
   }
 }
