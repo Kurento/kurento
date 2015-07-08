@@ -159,6 +159,63 @@ fakesink_hand_off (GstElement * fakesink, GstBuffer * buf, GstPad * pad,
   }
 }
 
+#define RECEIVER_1_OK "offerer_receives"
+#define RECEIVER_2_OK "answerer_receives"
+
+G_LOCK_DEFINE_STATIC (check_receive_lock);
+
+static void
+receiver_1_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
+    GstPad * pad, gpointer data)
+{
+  HandOffData *hod = (HandOffData *) data;
+  GstElement *pipeline;
+
+  if (!check_caps (pad, hod)) {
+    return;
+  }
+
+  pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
+
+  G_LOCK (check_receive_lock);
+  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline), RECEIVER_2_OK))) {
+    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+    g_idle_add (quit_main_loop_idle, hod->loop);
+  } else {
+    g_object_set_data (G_OBJECT (pipeline), RECEIVER_1_OK,
+        GINT_TO_POINTER (TRUE));
+  }
+  G_UNLOCK (check_receive_lock);
+
+  g_object_unref (pipeline);
+}
+
+static void
+receiver_2_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
+    GstPad * pad, gpointer data)
+{
+  HandOffData *hod = (HandOffData *) data;
+  GstElement *pipeline;
+
+  if (!check_caps (pad, hod)) {
+    return;
+  }
+
+  pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
+
+  G_LOCK (check_receive_lock);
+  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline), RECEIVER_1_OK))) {
+    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+    g_idle_add (quit_main_loop_idle, hod->loop);
+  } else {
+    g_object_set_data (G_OBJECT (pipeline), RECEIVER_2_OK,
+        GINT_TO_POINTER (TRUE));
+  }
+  G_UNLOCK (check_receive_lock);
+
+  g_object_unref (pipeline);
+}
+
 typedef struct _KmsConnectData
 {
   GstElement *src;
@@ -416,65 +473,6 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_slice_free (HandOffData, hod);
 }
 
-#define OFFERER_RECEIVES "offerer_receives"
-#define ANSWERER_RECEIVES "answerer_receives"
-
-G_LOCK_DEFINE_STATIC (check_receive_lock);
-
-static void
-sendrecv_offerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
-    GstPad * pad, gpointer data)
-{
-  HandOffData *hod = (HandOffData *) data;
-  GstElement *pipeline;
-
-  if (!check_caps (pad, hod)) {
-    return;
-  }
-
-  pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
-
-  G_LOCK (check_receive_lock);
-  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
-              ANSWERER_RECEIVES))) {
-    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
-    g_idle_add (quit_main_loop_idle, hod->loop);
-  } else {
-    g_object_set_data (G_OBJECT (pipeline), OFFERER_RECEIVES,
-        GINT_TO_POINTER (TRUE));
-  }
-  G_UNLOCK (check_receive_lock);
-
-  g_object_unref (pipeline);
-}
-
-static void
-sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
-    GstPad * pad, gpointer data)
-{
-  HandOffData *hod = (HandOffData *) data;
-  GstElement *pipeline;
-
-  if (!check_caps (pad, hod)) {
-    return;
-  }
-
-  pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
-
-  G_LOCK (check_receive_lock);
-  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
-              OFFERER_RECEIVES))) {
-    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
-    g_idle_add (quit_main_loop_idle, hod->loop);
-  } else {
-    g_object_set_data (G_OBJECT (pipeline), ANSWERER_RECEIVES,
-        GINT_TO_POINTER (TRUE));
-  }
-  G_UNLOCK (check_receive_lock);
-
-  g_object_unref (pipeline);
-}
-
 static void
 test_video_sendrecv (const gchar * video_enc_name,
     GstStaticCaps expected_caps, gchar * codec, gboolean bundle,
@@ -525,10 +523,10 @@ test_video_sendrecv (const gchar * video_enc_name,
 
   g_object_set (G_OBJECT (fakesink_offerer), "signal-handoffs", TRUE, NULL);
   g_signal_connect (G_OBJECT (fakesink_offerer), "handoff",
-      G_CALLBACK (sendrecv_offerer_fakesink_hand_off), hod);
+      G_CALLBACK (receiver_1_fakesink_hand_off), hod);
   g_object_set (G_OBJECT (fakesink_answerer), "signal-handoffs", TRUE, NULL);
   g_signal_connect (G_OBJECT (fakesink_answerer), "handoff",
-      G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
+      G_CALLBACK (receiver_2_fakesink_hand_off), hod);
 
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
@@ -653,10 +651,10 @@ test_audio_sendrecv (const gchar * audio_enc_name,
 
   g_object_set (G_OBJECT (fakesink_offerer), "signal-handoffs", TRUE, NULL);
   g_signal_connect (G_OBJECT (fakesink_offerer), "handoff",
-      G_CALLBACK (sendrecv_offerer_fakesink_hand_off), hod);
+      G_CALLBACK (receiver_1_fakesink_hand_off), hod);
   g_object_set (G_OBJECT (fakesink_answerer), "signal-handoffs", TRUE, NULL);
   g_signal_connect (G_OBJECT (fakesink_answerer), "handoff",
-      G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
+      G_CALLBACK (receiver_2_fakesink_hand_off), hod);
 
   g_object_set (G_OBJECT (audiotestsrc_offerer), "is-live", TRUE, NULL);
   g_object_set (G_OBJECT (audiotestsrc_answerer), "is-live", TRUE, NULL);
@@ -1196,11 +1194,11 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_object_set (G_OBJECT (video_fakesink_offerer), "signal-handoffs", TRUE,
       NULL);
   g_signal_connect (G_OBJECT (video_fakesink_offerer), "handoff",
-      G_CALLBACK (sendrecv_offerer_fakesink_hand_off), hod);
+      G_CALLBACK (receiver_1_fakesink_hand_off), hod);
   g_object_set (G_OBJECT (video_fakesink_answerer), "signal-handoffs", TRUE,
       NULL);
   g_signal_connect (G_OBJECT (video_fakesink_answerer), "handoff",
-      G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
+      G_CALLBACK (receiver_2_fakesink_hand_off), hod);
 
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
