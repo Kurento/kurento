@@ -19,7 +19,6 @@
     <script src="bower_components/demo-console/index.js"></script>
     <script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
 
-    <script src="bower_components/kurento-jsonrpc/js/kurento-jsonrpc.js"></script>
     <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
 
     <script src="js/index.js"></script>
@@ -55,11 +54,11 @@
           <a href="http://www.webrtc.org/">WebRTC</a>. In other words, this is
           an implementation of a video broadcasting application. There are two
           types of users in this application: 1 peer sending media (let's call
-          it <i>Master</i>) and N peers receiving the media of the <i>Master</i>
+          it <i>Presenter</i>) and N peers receiving the media of the <i>Presenter</i>
           (let's call them <i>Viewers</i>). Thus, the <a
             href="img/pipeline.png" data-toggle="lightbox"
             data-title="Video Call 1 to N Media Pipeline"
-            data-footer="1 WebRtcEnpoint (Master) is set in SendOnly mode, and its stream is sent to N WebRtcEnpoints (Viewers), whics are set in RecvOnly mode.">Media
+            data-footer="1 WebRtcEnpoint (Presenter) is set in SendOnly mode, and its stream is sent to N WebRtcEnpoints (Viewers), whics are set in RecvOnly mode.">Media
             Pipeline</a> is composed by 1+N interconnected <i>WebRtcEndpoints</i>.
           To run this demo follow these steps:
         </p>
@@ -68,9 +67,9 @@
             Open this page with a browser compliant with WebRTC (Chrome,
             Firefox).</li>
           <li>
-            If you would like to be the <i>Master</i> of the communication,
-            click on <i>Master</i> button. There can only be one of this kind of
-            peer, and so, if the <i>Master</i> peer is already present, the
+            If you would like to be the <i>Presenter</i> of the communication,
+            click on <i>Presenter</i> button. There can only be one of this kind of
+            peer, and so, if the <i>Presenter</i> peer is already present, the
             application returns an error (see the the console).
           </li>
           <li>
@@ -79,10 +78,10 @@
           </li>
           <li>
             In a different machine (or a different tab in the same browser)
-            click on <i>Viewer</i> button to see the <i>Master</i> stream.
+            click on <i>Viewer</i> button to see the <i>Presenter</i> stream.
           </li>
           <li>
-            Click on <i>Stop</i> to finish the communication. When <i>Master</i>
+            Click on <i>Stop</i> to finish the communication. When <i>Presenter</i>
             clicks on <i>Stop</i>, the rest of <i>Viewers</i> (if any) ends the
             communication too.
           </li>
@@ -93,7 +92,7 @@
           <div class="row">
             <div class="col-md-12">
               <a id="call" href="#" class="btn btn-success">
-                <span class="glyphicon glyphicon-play"></span> Master</a>
+                <span class="glyphicon glyphicon-play"></span> Presenter</a>
               <a id="viewer" href="#" class="btn btn-primary">
                 <span class="glyphicon glyphicon-user"></span> Viewer</a>
               <a id="terminate" href="#" class="btn btn-danger">
