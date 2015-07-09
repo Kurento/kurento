@@ -50,8 +50,7 @@ http://ubuntu.kurento.org/pool/main/k/kurento-media-server-6.0/.
 
 To install packages from unstable repository you need to execute::
 
-    sudo add-apt-repository ppa:kurento/kurento
-    sudo apt-add-repository http://ubuntu.kurento.org
+    echo "deb http://ubuntu.kurento.org trusty-dev kms6" | sudo tee /etc/apt/sources.list.d/kurento-dev.list
     wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
     sudo apt-get update
     sudo apt-get install kurento-media-server-6.0
