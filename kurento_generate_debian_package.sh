@@ -95,7 +95,7 @@ for i in ../*${ver}_*.deb
 do
   kurento_upload_package.sh $DIST-dev $i || echo "Failed to upload package $i"
 
-  if [ $rc = 0 ]
+  if [ $rc = 0 ] || [ "${FORCE_RELEASE}" = "yes" ]
   then
     kurento_upload_package.sh $DIST $i || echo "Failed to upload package $i"
   fi
