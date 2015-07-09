@@ -96,6 +96,8 @@
           </#if>
         </#list>
     break;
+    case ${params_max}: console.log('All optional params are used')
+    break;
 
     default:
       var error = new RangeError('Number of params ('+arguments.length+') not in range [${params_min}-${params_max}]');
