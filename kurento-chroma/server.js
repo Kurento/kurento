@@ -1,214 +1,298 @@
-#!/usr/bin/env node
 /*
  * (C) Copyright 2014-2015 Kurento (http://kurento.org/)
  *
- * All rights reserved. This program and the accompanying materials are made
- * available under the terms of the GNU Lesser General Public License (LGPL)
- * version 2.1 which accompanies this distribution, and is available at
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
  */
 
 var path = require('path');
-var url  = require('url');
-
+var url = require('url');
+var cookieParser = require('cookie-parser')
+var express = require('express');
+var session = require('express-session')
 var minimist = require('minimist');
+var ws = require('ws');
+var kurento = require('kurento-client');
+kurento.register('kurento-module-chroma');
 
-var express   = require('express');
-var expressWs = require('express-ws');
-
-var kurentoClient = require('kurento-client');
-var RpcBuilder    = require('kurento-jsonrpc');
-
-const packer = RpcBuilder.packers.JsonRPC;
-
-
-var args = minimist(process.argv.slice(2),
-{
-  default:
-  {
-    as_uri: "http://localhost:8080/",
-    ws_uri: "ws://localhost:8888/kurento"
-  }
+var argv = minimist(process.argv.slice(2), {
+    default: {
+        as_uri: 'http://localhost:8080/',
+        ws_uri: 'ws://localhost:8888/kurento'
+    }
 });
 
-var app = expressWs(express()).app;
+var app = express();
 
+/*
+ * Management of sessions
+ */
+app.use(cookieParser());
 
-kurentoClient.register('kurento-module-chroma')
+var sessionHandler = session({
+    secret : 'none',
+    rolling : true,
+    resave : true,
+    saveUninitialized : true
+});
 
-const WindowParam = kurentoClient.register.complexTypes.WindowParam
+app.use(sessionHandler);
 
+/*
+ * Definition of global variables.
+ */
+var sessions = {};
+var candidatesQueue = {};
+var kurentoClient = null;
 
 /*
  * Server startup
  */
-
-var asUrl = url.parse(args.as_uri);
+var asUrl = url.parse(argv.as_uri);
 var port = asUrl.port;
 var server = app.listen(port, function() {
-  console.log('Kurento Tutorial started');
-  console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
+    console.log('Kurento Tutorial started');
+    console.log('Open ' + url.format(asUrl) + ' with a WebRTC capable browser');
 });
 
+var wss = new ws.Server({
+    server : server,
+    path : '/'
+});
 
 /*
  * Management of WebSocket messages
  */
-app.ws('/', function(ws)
-{
-  var pipeline
-  var webRtcEndpoint
+wss.on('connection', function(ws) {
+    var sessionId = null;
+    var request = ws.upgradeReq;
+    var response = {
+        writeHead : {}
+    };
 
-  var rpcBuilder = new RpcBuilder(packer, ws, function(request)
-  {
-    switch(request.method)
-    {
-      case 'start':
-        start(request)
-      break;
+    sessionHandler(request, response, function(err) {
+        sessionId = request.session.id;
+        console.log('Connection received with sessionId ' + sessionId);
+    });
 
-      case 'candidate':
-        processCandidate(request)
-      break;
+    ws.on('error', function(error) {
+        console.log('Connection ' + sessionId + ' error');
+        stop(sessionId);
+    });
 
-      case 'stop':
-        stop();
-      break;
+    ws.on('close', function() {
+        console.log('Connection ' + sessionId + ' closed');
+        stop(sessionId);
+    });
 
-      default:
-        console.error(request)
-        request.reply('Invalid message')
-    }
-  });
+    ws.on('message', function(_message) {
+        var message = JSON.parse(_message);
+        console.log('Connection ' + sessionId + ' received message ', message);
 
-  ws.on('error', function(error) {
-    console.log('Connection error');
-    stop();
-  });
+        switch (message.id) {
+        case 'start':
+            sessionId = request.session.id;
+            start(sessionId, ws, message.sdpOffer, function(error, sdpAnswer) {
+                if (error) {
+                    return ws.send(JSON.stringify({
+                        id : 'error',
+                        message : error
+                    }));
+                }
+                ws.send(JSON.stringify({
+                    id : 'startResponse',
+                    sdpAnswer : sdpAnswer
+                }));
+            });
+            break;
 
-  ws.on('close', function() {
-    console.log('Connection closed');
-    stop();
-  });
+        case 'stop':
+            stop(sessionId);
+            break;
 
+        case 'onIceCandidate':
+            onIceCandidate(sessionId, message.candidate);
+            break;
 
-  var candidatesQueue = []
-
-  function start(request)
-  {
-    var sdpOffer = request.params[0];
-
-    // Check if session is already transmitting
-    if (pipeline)
-      return request.reply("Close current session before starting a new one or use another browser to open a tutorial.")
-
-    kurentoClient.getSingleton(args.ws_uri, function(error, client)
-    {
-      if (error) return request.reply(error);
-
-      client.create('MediaPipeline', function(error, _pipeline)
-      {
-        if (error) return request.reply(error);
-
-        pipeline = _pipeline
-
-        function onError(error)
-        {
-          if(error)
-          {
-            request.reply(error);
-            stop();
-          }
+        default:
+            ws.send(JSON.stringify({
+                id : 'error',
+                message : 'Invalid message ' + message
+            }));
+            break;
         }
 
-        createMediaElements(pipeline, function(error, _webRtcEndpoint, chromaFilter)
-        {
-          if(error) return onError(error);
-
-          webRtcEndpoint = _webRtcEndpoint
-
-          while(candidatesQueue.length)
-          {
-            var candidate = candidatesQueue.shift()
-
-            webRtcEndpoint.addIceCandidate(candidate)
-          }
-
-          webRtcEndpoint.on('OnIceCandidate', function(event) {
-            rpcBuilder.encode('candidate', [event.candidate])
-          });
-
-          webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer)
-          {
-            if(error) return onError(error);
-
-            return request.reply(null, sdpAnswer);
-          });
-          webRtcEndpoint.gatherCandidates(onError);
-
-          chromaFilter.setBackground(url.format(asUrl) + 'img/mario.jpg', onError);
-
-          client.connect(webRtcEndpoint, chromaFilter, webRtcEndpoint, onError);
-        });
-      });
     });
-  }
-
-  function processCandidate(request)
-  {
-    var candidate = request.params[0];
-
-    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
-
-    if(webRtcEndpoint)
-      webRtcEndpoint.addIceCandidate(candidate)
-    else
-      candidatesQueue.push(candidate)
-  }
-
-  function stop()
-  {
-    if(pipeline)
-    {
-      pipeline.release();
-      pipeline = null
-    }
-  }
 });
 
 /*
  * Definition of functions
  */
 
-function createMediaElements(pipeline, callback)
-{
-  pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
-  {
-    if (error) return callback(error);
-
-    var options =
-    {
-      window: WindowParam(
-      {
-        topRightCornerX: 5,
-        topRightCornerY: 5,
-        width: 30,
-        height: 30
-      })
+// Recover kurentoClient for the first time.
+function getKurentoClient(callback) {
+    if (kurentoClient !== null) {
+        return callback(null, kurentoClient);
     }
 
-    pipeline.create('ChromaFilter', options, function(error, chromaFilter)
-    {
-      if (error) return callback(error);
+    kurento(argv.ws_uri, function(error, _kurentoClient) {
+        if (error) {
+            console.log("Could not find media server at address " + argv.ws_uri);
+            return callback("Could not find media server at address" + argv.ws_uri
+                    + ". Exiting with error " + error);
+        }
 
-      return callback(null, webRtcEndpoint, chromaFilter);
+        kurentoClient = _kurentoClient;
+        callback(null, kurentoClient);
     });
-  });
+}
+
+function start(sessionId, ws, sdpOffer, callback) {
+    if (!sessionId) {
+        return callback('Cannot use undefined sessionId');
+    }
+
+    getKurentoClient(function(error, kurentoClient) {
+        if (error) {
+            return callback(error);
+        }
+
+        kurentoClient.create('MediaPipeline', function(error, pipeline) {
+            if (error) {
+                return callback(error);
+            }
+
+            createMediaElements(pipeline, ws, function(error, webRtcEndpoint, filter) {
+                if (error) {
+                    pipeline.release();
+                    return callback(error);
+                }
+
+                if (candidatesQueue[sessionId]) {
+                    while(candidatesQueue[sessionId].length) {
+                        var candidate = candidatesQueue[sessionId].shift();
+                        webRtcEndpoint.addIceCandidate(candidate);
+                    }
+                }
+
+                connectMediaElements(webRtcEndpoint, filter, function(error) {
+                    if (error) {
+                        pipeline.release();
+                        return callback(error);
+                    }
+
+                    webRtcEndpoint.on('OnIceCandidate', function(event) {
+                        var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                        ws.send(JSON.stringify({
+                            id : 'iceCandidate',
+                            candidate : candidate
+                        }));
+                    });
+
+                    webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+                        if (error) {
+                            pipeline.release();
+                            return callback(error);
+                        }
+
+                        sessions[sessionId] = {
+                            'pipeline' : pipeline,
+                            'webRtcEndpoint' : webRtcEndpoint
+                        }
+                        return callback(null, sdpAnswer);
+                    });
+
+                    webRtcEndpoint.gatherCandidates(function(error) {
+                        if (error) {
+                            return callback(error);
+                        }
+                    });
+                });
+            });
+        });
+    });
+}
+
+function createMediaElements(pipeline, ws, callback) {
+    pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+        if (error) {
+            return callback(error);
+        }
+
+        var options = {
+            window: kurento.register.complexTypes.WindowParam({
+                topRightCornerX: 5,
+                topRightCornerY: 5,
+                width: 30,
+                height: 30
+            })
+        }
+        pipeline.create('ChromaFilter', options, function(error, filter) {
+            if (error) {
+                return callback(error);
+            }
+
+            return callback(null, webRtcEndpoint, filter);
+        });
+    });
+}
+
+function connectMediaElements(webRtcEndpoint, filter, callback) {
+    webRtcEndpoint.connect(filter, function(error) {
+        if (error) {
+            return callback(error);
+        }
+
+        filter.setBackground(url.format(asUrl) + 'img/mario.jpg', function(error) {
+            if (error) {
+                return callback(error);
+            }
+
+            filter.connect(webRtcEndpoint, function(error) {
+                if (error) {
+                    return callback(error);
+                }
+
+                return callback(null);
+            });
+        });
+    });
+}
+
+function stop(sessionId) {
+    if (sessions[sessionId]) {
+        var pipeline = sessions[sessionId].pipeline;
+        console.info('Releasing pipeline');
+        pipeline.release();
+
+        delete sessions[sessionId];
+        delete candidatesQueue[sessionId];
+    }
+}
+
+function onIceCandidate(sessionId, _candidate) {
+    var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+
+    if (sessions[sessionId]) {
+        console.info('Sending candidate');
+        var webRtcEndpoint = sessions[sessionId].webRtcEndpoint;
+        webRtcEndpoint.addIceCandidate(candidate);
+    }
+    else {
+        console.info('Queueing candidate');
+        if (!candidatesQueue[sessionId]) {
+            candidatesQueue[sessionId] = [];
+        }
+        candidatesQueue[sessionId].push(candidate);
+    }
 }
 
 app.use(express.static(path.join(__dirname, 'static')));
