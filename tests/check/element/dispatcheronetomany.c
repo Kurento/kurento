@@ -34,6 +34,15 @@ gchar *padname3, *padname4, *padname5;
 GMutex mutex;
 int connected = 0;
 
+static gboolean
+quit_main_loop_idle (gpointer data)
+{
+  GMainLoop *loop = data;
+
+  g_main_loop_quit (loop);
+  return FALSE;
+}
+
 static void
 handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
     gpointer user_data)
@@ -46,18 +55,18 @@ handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
   hubport = gst_pad_get_parent_element (peer_pad);
 
   if (hubport == hubport3) {
-    GST_INFO_OBJECT (object, "Handoff");
+    GST_INFO_OBJECT (object, "Handoff 3");
     g_object_set (G_OBJECT (object), "signal-handoffs", FALSE, NULL);
     handoff_3 = TRUE;
   }
   if (hubport == hubport4) {
-    GST_INFO_OBJECT (object, "Handoff");
+    GST_INFO_OBJECT (object, "Handoff 4");
     g_object_set (G_OBJECT (object), "signal-handoffs", FALSE, NULL);
     handoff_4 = TRUE;
   }
 
   if (hubport == hubport5) {
-    GST_INFO_OBJECT (object, "Handoff");
+    GST_INFO_OBJECT (object, "Handoff 5");
     g_object_set (G_OBJECT (object), "signal-handoffs", FALSE, NULL);
     handoff_5 = TRUE;
   }
@@ -67,7 +76,7 @@ handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
   g_object_unref (hubport);
 
   if (handoff_3 && handoff_4 && handoff_5) {
-    g_main_loop_quit (user_data);
+    g_idle_add (quit_main_loop_idle, user_data);
   }
 }
 

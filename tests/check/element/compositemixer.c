@@ -26,11 +26,20 @@ GstElement *pipeline;
 GMainLoop *loop;
 GstElement *hubport1, *hubport2, *hubport3;
 
+static gboolean
+quit_main_loop_idle (gpointer data)
+{
+  GMainLoop *loop = data;
+
+  g_main_loop_quit (loop);
+  return FALSE;
+}
+
 static void
 handoff_cb (GstElement * object, GstBuffer * arg0, GstPad * arg1,
     gpointer user_data)
 {
-  g_main_loop_quit (user_data);
+  g_idle_add (quit_main_loop_idle, user_data);
 }
 
 static void
