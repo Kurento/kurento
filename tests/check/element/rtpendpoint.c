@@ -201,6 +201,7 @@ GST_START_TEST (loopback)
   GArray *video_codecs_array;
   gchar *video_codecs[] = { "VP8/90000", NULL };
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *sender_sess_id, *receiver_sess_id;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (__FUNCTION__);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
@@ -248,16 +249,29 @@ GST_START_TEST (loopback)
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
+  /* Session creation */
+  g_signal_emit_by_name (rtpendpointsender, "create-session", &sender_sess_id);
+  GST_DEBUG_OBJECT (rtpendpointsender, "Created session with id '%s'",
+      sender_sess_id);
+  g_signal_emit_by_name (rtpendpointreceiver, "create-session",
+      &receiver_sess_id);
+  GST_DEBUG_OBJECT (rtpendpointreceiver, "Created session with id '%s'",
+      receiver_sess_id);
+
+  /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (rtpendpointsender, "generate-offer", &offer);
+  g_signal_emit_by_name (rtpendpointsender, "generate-offer", sender_sess_id,
+      &offer);
   fail_unless (offer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (rtpendpointreceiver, "process-offer", offer, &answer);
+  g_signal_emit_by_name (rtpendpointreceiver, "process-offer", receiver_sess_id,
+      offer, &answer);
   fail_unless (answer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (rtpendpointsender, "process-answer", answer);
+  g_signal_emit_by_name (rtpendpointsender, "process-answer", sender_sess_id,
+      answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -278,6 +292,8 @@ GST_START_TEST (loopback)
   gst_element_set_state (pipeline, GST_STATE_NULL);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
+  g_free (sender_sess_id);
+  g_free (receiver_sess_id);
 }
 
 GST_END_TEST
@@ -286,6 +302,7 @@ GST_START_TEST (negotiation_offerer)
   GArray *audio_codecs_array, *video_codecs_array;
   gchar *audio_codecs[] = { "OPUS/48000/1", "AMR/8000/1", NULL };
   gchar *video_codecs[] = { "H263-1998/90000", "VP8/90000", NULL };
+  gchar *offerer_sess_id, *answerer_sess_id;
   GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *answerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
@@ -306,31 +323,43 @@ GST_START_TEST (negotiation_offerer)
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
-  g_signal_emit_by_name (offerer, "generate-offer", &offer);
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
+  /* SDP negotiation */
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_object_get (offerer, "local-sdp", &offerer_local_sdp, NULL);
+  g_signal_emit_by_name (offerer, "get-local-sdp", offerer_sess_id,
+      &offerer_local_sdp);
   fail_unless (offerer_local_sdp != NULL);
-  g_object_get (offerer, "remote-sdp", &offerer_remote_sdp, NULL);
+  g_signal_emit_by_name (offerer, "get-remote-sdp", offerer_sess_id,
+      &offerer_remote_sdp);
   fail_unless (offerer_remote_sdp != NULL);
 
-  g_object_get (answerer, "local-sdp", &answerer_local_sdp, NULL);
+  g_signal_emit_by_name (answerer, "get-local-sdp", answerer_sess_id,
+      &answerer_local_sdp);
   fail_unless (answerer_local_sdp != NULL);
-  g_object_get (answerer, "remote-sdp", &answerer_remote_sdp, NULL);
+  g_signal_emit_by_name (answerer, "get-remote-sdp", answerer_sess_id,
+      &answerer_remote_sdp);
   fail_unless (answerer_remote_sdp != NULL);
 
   offerer_local_sdp_str = gst_sdp_message_as_text (offerer_local_sdp);
@@ -359,6 +388,8 @@ GST_START_TEST (negotiation_offerer)
 
   g_object_unref (offerer);
   g_object_unref (answerer);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
 }
 
 GST_END_TEST static gboolean
@@ -385,6 +416,7 @@ GST_START_TEST (process_bundle_offer)
   gchar *audio_codecs[] = { "opus/48000/1", "AMR/8000/1", NULL };
   gchar *video_codecs[] = { "H263-1998/90000", "VP8/90000", NULL };
   GstElement *rtpendpoint = gst_element_factory_make ("rtpendpoint", NULL);
+  gchar *sess_id;
   GstSDPMessage *offer = NULL, *answer = NULL;
   gchar *aux = NULL;
   guint i, len;
@@ -480,7 +512,9 @@ GST_START_TEST (process_bundle_offer)
   g_free (aux);
   aux = NULL;
 
-  g_signal_emit_by_name (rtpendpoint, "process-offer", offer, &answer);
+  g_signal_emit_by_name (rtpendpoint, "create-session", &sess_id);
+  GST_DEBUG_OBJECT (rtpendpoint, "Created session with id '%s'", sess_id);
+  g_signal_emit_by_name (rtpendpoint, "process-offer", sess_id, offer, &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (aux = gst_sdp_message_as_text (answer)));
   g_free (aux);
@@ -500,6 +534,7 @@ GST_START_TEST (process_bundle_offer)
   gst_sdp_message_free (answer);
 
   g_object_unref (rtpendpoint);
+  g_free (sess_id);
 }
 
 GST_END_TEST

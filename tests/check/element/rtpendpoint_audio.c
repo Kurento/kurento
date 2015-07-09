@@ -237,6 +237,7 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *sender_sess_id, *receiver_sess_id;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -278,17 +279,29 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   if (!play_after_negotiation)
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
+  /* Session creation */
+  g_signal_emit_by_name (rtpendpointsender, "create-session", &sender_sess_id);
+  GST_DEBUG_OBJECT (rtpendpointsender, "Created session with id '%s'",
+      sender_sess_id);
+  g_signal_emit_by_name (rtpendpointreceiver, "create-session",
+      &receiver_sess_id);
+  GST_DEBUG_OBJECT (rtpendpointreceiver, "Created session with id '%s'",
+      receiver_sess_id);
+
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (rtpendpointsender, "generate-offer", &offer);
+  g_signal_emit_by_name (rtpendpointsender, "generate-offer", sender_sess_id,
+      &offer);
   fail_unless (offer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (rtpendpointreceiver, "process-offer", offer, &answer);
+  g_signal_emit_by_name (rtpendpointreceiver, "process-offer", receiver_sess_id,
+      offer, &answer);
   fail_unless (answer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (rtpendpointsender, "process-answer", answer);
+  g_signal_emit_by_name (rtpendpointsender, "process-answer", sender_sess_id,
+      answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -320,6 +333,8 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   g_main_loop_unref (loop);
   g_object_unref (pipeline);
   g_slice_free (HandOffData, hod);
+  g_free (sender_sess_id);
+  g_free (receiver_sess_id);
 }
 
 #define OFFERER_RECEIVES_AUDIO "offerer_receives_audio"
@@ -385,6 +400,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gchar *codecs[] = { codec, NULL };
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
+  gchar *offerer_sess_id, *answerer_sess_id;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -396,10 +412,8 @@ test_audio_sendrecv (const gchar * audio_enc_name,
       gst_element_factory_make (audio_enc_name, NULL);
   GstElement *audio_enc_answerer =
       gst_element_factory_make (audio_enc_name, NULL);
-  GstElement *rtpendpoint_offerer =
-      gst_element_factory_make ("rtpendpoint", NULL);
-  GstElement *rtpendpoint_answerer =
-      gst_element_factory_make ("rtpendpoint", NULL);
+  GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
+  GstElement *answerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
 
@@ -407,9 +421,9 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
 
   codecs_array = create_codecs_array (codecs);
-  g_object_set (rtpendpoint_offerer, "num-audio-medias", 1, "audio-codecs",
+  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
       g_array_ref (codecs_array), NULL);
-  g_object_set (rtpendpoint_answerer, "num-audio-medias", 1, "audio-codecs",
+  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
       g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
@@ -425,44 +439,49 @@ test_audio_sendrecv (const gchar * audio_enc_name,
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
   /* Add elements */
-  gst_bin_add (GST_BIN (pipeline), rtpendpoint_offerer);
-  connect_sink_async (rtpendpoint_offerer, audiotestsrc_offerer,
+  gst_bin_add (GST_BIN (pipeline), offerer);
+  connect_sink_async (offerer, audiotestsrc_offerer,
       audio_enc_offerer, NULL, pipeline, "sink_audio");
 
-  gst_bin_add (GST_BIN (pipeline), rtpendpoint_answerer);
-  connect_sink_async (rtpendpoint_answerer, audiotestsrc_answerer,
+  gst_bin_add (GST_BIN (pipeline), answerer);
+  connect_sink_async (answerer, audiotestsrc_answerer,
       audio_enc_answerer, NULL, pipeline, "sink_audio");
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
   /* SDP negotiation */
   mark_point ();
-  g_signal_emit_by_name (rtpendpoint_offerer, "generate-offer", &offer);
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (rtpendpoint_answerer, "process-offer", offer, &answer);
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (rtpendpoint_offerer, "process-answer", answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
   gst_bin_add (GST_BIN (pipeline), fakesink_offerer);
-  g_object_set_data (G_OBJECT (rtpendpoint_offerer), AUDIO_SINK,
-      fakesink_offerer);
-  g_signal_connect (rtpendpoint_offerer, "pad-added",
+  g_object_set_data (G_OBJECT (offerer), AUDIO_SINK, fakesink_offerer);
+  g_signal_connect (offerer, "pad-added",
       G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-  fail_unless (kms_element_request_srcpad (rtpendpoint_offerer,
+  fail_unless (kms_element_request_srcpad (offerer,
           KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   gst_bin_add (GST_BIN (pipeline), fakesink_answerer);
-  g_object_set_data (G_OBJECT (rtpendpoint_answerer), AUDIO_SINK,
-      fakesink_answerer);
-  g_signal_connect (rtpendpoint_answerer, "pad-added",
+  g_object_set_data (G_OBJECT (answerer), AUDIO_SINK, fakesink_answerer);
+  g_signal_connect (answerer, "pad-added",
       G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-  fail_unless (kms_element_request_srcpad (rtpendpoint_answerer,
+  fail_unless (kms_element_request_srcpad (answerer,
           KMS_ELEMENT_PAD_TYPE_AUDIO));
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
@@ -482,6 +501,8 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_main_loop_unref (loop);
   g_object_unref (pipeline);
   g_slice_free (HandOffData, hod);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
 }
 
 /* OPUS tests */
