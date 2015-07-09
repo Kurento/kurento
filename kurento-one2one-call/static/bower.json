@@ -1,7 +1,6 @@
 {
   "name": "kurento-one2one-call",
-  "version": "5.1.1-dev",
-  "description": "Kurento Browser JavaScript Tutorial ",
+  "description": "Kurento Browser JavaScript Tutorial",
   "authors": [
     "Kurento <info@kurento.org>"
   ],
@@ -25,7 +24,6 @@
     "draggabilly": "~1.2.4",
     "demo-console": "master",
     "ekko-lightbox": "~3.3.0",
-    "kurento-jsonrpc": "master",
     "kurento-utils": "master"
   }
 }
