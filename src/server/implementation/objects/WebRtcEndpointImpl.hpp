@@ -62,10 +62,10 @@ private:
   gulong handlerOnIceGatheringDone = 0;
   gulong handlerOnIceComponentStateChanged = 0;
 
-  void onIceCandidate (KmsIceCandidate *candidate);
-  void onIceGatheringDone ();
-  void onIceComponentStateChanged (guint streamId, guint componentId,
-                                   guint state);
+  void onIceCandidate (gchar *sessId, KmsIceCandidate *candidate);
+  void onIceGatheringDone (gchar *sessId);
+  void onIceComponentStateChanged (gchar *sessId, guint streamId,
+                                   guint componentId, guint state);
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

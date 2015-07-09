@@ -92,7 +92,8 @@ check_support_for_h264 ()
   gst_object_unref (plugin);
 }
 
-void WebRtcEndpointImpl::onIceCandidate (KmsIceCandidate *candidate)
+void WebRtcEndpointImpl::onIceCandidate (gchar *sessId,
+    KmsIceCandidate *candidate)
 {
   try {
     std::string cand_str (kms_ice_candidate_get_candidate (candidate) );
@@ -107,7 +108,7 @@ void WebRtcEndpointImpl::onIceCandidate (KmsIceCandidate *candidate)
   }
 }
 
-void WebRtcEndpointImpl::onIceGatheringDone ()
+void WebRtcEndpointImpl::onIceGatheringDone (gchar *sessId)
 {
   try {
     OnIceGatheringDone event (shared_from_this(), OnIceGatheringDone::getName() );
@@ -117,7 +118,8 @@ void WebRtcEndpointImpl::onIceGatheringDone ()
   }
 }
 
-void WebRtcEndpointImpl::onIceComponentStateChanged (guint streamId,
+void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
+    guint streamId,
     guint componentId, guint state)
 {
   try {
@@ -169,24 +171,26 @@ void WebRtcEndpointImpl::postConstructor ()
 
   handlerOnIceCandidate = register_signal_handler (G_OBJECT (element),
                           "on-ice-candidate",
-                          std::function <void (GstElement *, KmsIceCandidate *) >
+                          std::function <void (GstElement *, gchar *, KmsIceCandidate *) >
                           (std::bind (&WebRtcEndpointImpl::onIceCandidate, this,
-                                      std::placeholders::_2) ),
+                                      std::placeholders::_2, std::placeholders::_3) ),
                           std::dynamic_pointer_cast<WebRtcEndpointImpl>
                           (shared_from_this() ) );
 
   handlerOnIceGatheringDone = register_signal_handler (G_OBJECT (element),
                               "on-ice-gathering-done",
-                              std::function <void (GstElement *) >
-                              (std::bind (&WebRtcEndpointImpl::onIceGatheringDone, this) ),
+                              std::function <void (GstElement *, gchar *) >
+                              (std::bind (&WebRtcEndpointImpl::onIceGatheringDone, this,
+                                          std::placeholders::_2) ),
                               std::dynamic_pointer_cast<WebRtcEndpointImpl>
                               (shared_from_this() ) );
 
   handlerOnIceComponentStateChanged = register_signal_handler (G_OBJECT (element),
                                       "on-ice-component-state-changed",
-                                      std::function <void (GstElement *, guint, guint, guint) >
+                                      std::function <void (GstElement *, gchar *, guint, guint, guint) >
                                       (std::bind (&WebRtcEndpointImpl::onIceComponentStateChanged, this,
-                                          std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) ),
+                                          std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
+                                          std::placeholders::_5) ),
                                       std::dynamic_pointer_cast<WebRtcEndpointImpl>
                                       (shared_from_this() ) );
 }
@@ -326,7 +330,8 @@ WebRtcEndpointImpl::gatherCandidates ()
 {
   gboolean ret;
 
-  g_signal_emit_by_name (element, "gather-candidates", &ret);
+  g_signal_emit_by_name (element, "gather-candidates", this->sessId.c_str (),
+                         &ret);
 
   if (!ret) {
     throw KurentoException (ICE_GATHER_CANDIDATES_ERROR,
@@ -344,7 +349,8 @@ WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
   KmsIceCandidate *cand = kms_ice_candidate_new (cand_str, mid_str,
                           sdp_m_line_index);
 
-  g_signal_emit_by_name (element, "add-ice-candidate", cand, &ret);
+  g_signal_emit_by_name (element, "add-ice-candidate", this->sessId.c_str (),
+                         cand, &ret);
 
   g_object_unref (cand);
 
