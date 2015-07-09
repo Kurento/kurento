@@ -5,7 +5,7 @@ echo "##################### EXECUTE: kurento_maven_deploy.sh ###################
 # Param management
 if [ $# -lt 1 ]
 then
-  echo "Usage: $0 <MAVEN_SETTINGS> [<repository> [<sign artifacts (yes|no)>]]"
+  echo "Usage: $0 <MAVEN_SETTINGS> [<repository> <sign artifacts (yes|no)>]"
   exit 1
 fi
 
@@ -29,6 +29,7 @@ if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]]; then
 	echo "Deploying SNAPSHOT version"
 	mvn --settings $MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltSnapshotDeploymentRepository=$REPOSITORY || exit 1
 else
+	OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
 	if [[ $SIGN_ARTIFACTS == yes ]]; then
 		echo "Deploying release version signing artifacts"
 		# Deploy signing artifacts
