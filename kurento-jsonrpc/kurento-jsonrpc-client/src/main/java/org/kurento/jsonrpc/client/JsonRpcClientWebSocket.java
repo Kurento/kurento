@@ -63,7 +63,7 @@ import com.google.gson.JsonObject;
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-			.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	.setNameFormat("JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class WebSocketClientSocket {
@@ -193,10 +193,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	}
 
 	@Override
-	public void closeWithReconnection() {
-		log.info("{} Closing session with reconnection", label);
+	protected void closeWithReconnection() {
+		log.info("{} Closing websocket session to force reconnection", label);
 		this.wsSession.close();
-		this.closeClient();
+		handleReconnectDisconnection(999, "ping timeout");
 	}
 
 	public void closeNativeSession() {
@@ -276,10 +276,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						this.closeClient();
 						throw new KurentoException(
 								label
-										+ " Timeout of "
-										+ this.connectionTimeout
-										+ "ms when waiting to connect to Websocket server "
-										+ url);
+								+ " Timeout of "
+								+ this.connectionTimeout
+								+ "ms when waiting to connect to Websocket server "
+								+ url);
 					}
 
 					if (session == null) {
@@ -328,8 +328,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					Thread.currentThread().interrupt();
 				}
 			}
-
-			log.debug("{} Connected webSocket client to server {}", label, url);
 
 		} catch (TimeoutRuntimeException e) {
 
@@ -597,8 +595,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		} catch (TimeoutException e) {
 			throw new TransportException(label + " Timeout of "
 					+ requestTimeout
-					+ " milliseconds waiting from response to request with id:"
-					+ request.getId(), e);
+					+ " milliseconds waiting from response to request "
+					+ jsonMessage.trim(), e);
 		}
 	}
 
