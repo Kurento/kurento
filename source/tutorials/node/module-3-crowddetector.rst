@@ -11,12 +11,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide <../../installation_guide>` for further
-information. In addition, the built-in module ``kms-crowddetector`` should be
-also installed:
+information. In addition, the built-in module ``kms-crowddetector-6.0`` should
+be also installed:
 
 .. sourcecode:: sh
 
-    sudo apt-get install kms-crowddetector
+    sudo apt-get install kms-crowddetector-6.0
 
 Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
 you can install both as follows:
@@ -45,6 +45,22 @@ clean the npm cache, and try to install them again:
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
+
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``ws_uri`` to the npm execution command, as follows:
+
+   .. sourcecode:: sh
+
+      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+
+   In this case you need to use npm version 2. To update it you can use this command:
+
+   .. sourcecode:: sh
+
+      sudo npm install npm -g
 
 Understanding this example
 ==========================
@@ -152,104 +168,125 @@ All in all, the media pipeline of this demo is is implemented as follows:
 
 .. sourcecode:: javascript
 
-   function start(sessionId, sdpOffer, callback) {
+   function start(sessionId, ws, sdpOffer, callback) {
+       if (!sessionId) {
+           return callback('Cannot use undefined sessionId');
+       }
 
-      if (!sessionId) {
-         return callback("Cannot use undefined sessionId");
-      }
-
-      // Check if session is already transmitting
-      if (pipelines[sessionId]) {
-         return callback("Close current session before starting a new one or use " +
-            "another browser to open a tutorial.")
-      }
-
-      getKurentoClient(function(error, kurentoClient) {
-         if (error) {
-            return callback(error);
-         }
-
-         kurentoClient.create('MediaPipeline', function(error, pipeline) {
-            if (error) {
+       getKurentoClient(function(error, kurentoClient) {
+           if (error) {
                return callback(error);
-            }
+           }
 
-            createMediaElements(pipeline, function(error, webRtcEndpoint,
-                  crowdDetector) {
+           kurentoClient.create('MediaPipeline', function(error, pipeline) {
                if (error) {
-                  pipeline.release();
-                  return callback(error);
+                   return callback(error);
                }
 
-               connectMediaElements(webRtcEndpoint, crowdDetector,
-                  function(error) {
-                     if (error) {
-                        pipeline.release();
-                        return callback(error);
-                     }
+               createMediaElements(pipeline, ws, function(error, webRtcEndpoint, filter) {
+                   if (error) {
+                       pipeline.release();
+                       return callback(error);
+                   }
 
-                     crowdDetector.on ('CrowdDetectorDirection', function (_data){
-                        return callback(null, 'crowdDetectorDirection', _data);
-                     });
+                   if (candidatesQueue[sessionId]) {
+                       while(candidatesQueue[sessionId].length) {
+                           var candidate = candidatesQueue[sessionId].shift();
+                           webRtcEndpoint.addIceCandidate(candidate);
+                       }
+                   }
 
-                     crowdDetector.on ('CrowdDetectorFluidity', function (_data){
-                        return callback(null, 'crowdDetectorFluidity', _data);
-                     });
-
-                     crowdDetector.on ('CrowdDetectorOccupancy', function (_data){
-                        return callback(null, 'crowdDetectorOccupancy', _data);
-                     });
-
-                     webRtcEndpoint.processOffer(sdpOffer, function(
-                           error, sdpAnswer) {
-                        if (error) {
+                   connectMediaElements(webRtcEndpoint, filter, function(error) {
+                       if (error) {
                            pipeline.release();
                            return callback(error);
-                        }
+                       }
 
-                        pipelines[sessionId] = pipeline;
-                        return callback(null, 'sdpAnswer', sdpAnswer);
-                     });
-                  });
-            });
-         });
-      });
+                       filter.on('CrowdDetectorDirection', function (_data){
+                           return callback(null, 'crowdDetectorDirection', _data);
+                       });
+
+                       filter.on('CrowdDetectorFluidity', function (_data){
+                           return callback(null, 'crowdDetectorFluidity', _data);
+                       });
+
+                       filter.on('CrowdDetectorOccupancy', function (_data){
+                           return callback(null, 'crowdDetectorOccupancy', _data);
+                       });
+
+                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           ws.send(JSON.stringify({
+                               id : 'iceCandidate',
+                               candidate : candidate
+                           }));
+                       });
+
+                       webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+
+                           sessions[sessionId] = {
+                               'pipeline' : pipeline,
+                               'webRtcEndpoint' : webRtcEndpoint
+                           }
+                           return callback(null, 'sdpAnswer', sdpAnswer);
+                       });
+
+                       webRtcEndpoint.gatherCandidates(function(error) {
+                           if (error) {
+                               return callback(error);
+                           }
+                       });
+                   });
+               });
+           });
+       });
    }
 
-   function createMediaElements(pipeline, callback) {
-      pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
-         if (error) {
-            return callback(error);
-         }
+   function createMediaElements(pipeline, ws, callback) {
+       pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+           if (error) {
+               return callback(error);
+           }
 
-         var _roi = {
-                  'id' : 'roi1',
-                  'points' : [{'x' : 0, 'y' : 0}, {'x' : 0.5, 'y' : 0},
-                        {'x' : 0.5, 'y' : 0.5}, {'x' : 0, 'y' : 0.5}],
-                  'regionOfInterestConfig' : {
-                        'occupancyLevelMin' : 10,
-                        'occupancyLevelMed' : 35,
-                        'occupancyLevelMax' : 65,
-                        'occupancyNumFramesToEvent' : 5,
-                        'fluidityLevelMin' : 10,
-                        'fluidityLevelMed' : 35,
-                        'fluidityLevelMax' : 65,
-                        'fluidityNumFramesToEvent' : 5,
-                        'sendOpticalFlowEvent' : false,
-                        'opticalFlowNumFramesToEvent' : 3,
-                        'opticalFlowNumFramesToReset' : 3,
-                        'opticalFlowAngleOffset' : 0
-                        }
-                  };
-         pipeline.create('CrowdDetectorFilter', {'rois' : [_roi]},
-               function(error, crowdDetector) {
-                  if (error) {
-                     return callback(error);
-                  }
-                  return callback(null, webRtcEndpoint,
-                                 crowdDetector);
-               });
-      });
+           var options = {
+             rois: [
+               RegionOfInterest({
+                 id: 'roi1',
+                 points: [
+                   RelativePoint({x: 0  , y: 0  }),
+                   RelativePoint({x: 0.5, y: 0  }),
+                   RelativePoint({x: 0.5, y: 0.5}),
+                   RelativePoint({x: 0  , y: 0.5})
+                 ],
+                 regionOfInterestConfig: RegionOfInterestConfig({
+                   occupancyLevelMin: 10,
+                   occupancyLevelMed: 35,
+                   occupancyLevelMax: 65,
+                   occupancyNumFramesToEvent: 5,
+                   fluidityLevelMin: 10,
+                   fluidityLevelMed: 35,
+                   fluidityLevelMax: 65,
+                   fluidityNumFramesToEvent: 5,
+                   sendOpticalFlowEvent: false,
+                   opticalFlowNumFramesToEvent: 3,
+                   opticalFlowNumFramesToReset: 3,
+                   opticalFlowAngleOffset: 0
+                 })
+               })
+             ]
+           }
+           pipeline.create('CrowdDetectorFilter', options, function(error, filter) {
+               if (error) {
+                   return callback(error);
+               }
+
+               return callback(null, webRtcEndpoint, filter);
+           });
+       });
    }
 
 Dependencies
@@ -263,7 +300,7 @@ file for managing this dependency is:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
+      "kurento-client" : "|CLIENT_JS_VERSION|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -273,11 +310,11 @@ file and pay attention to the following section:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-utils": "^5.0.0",
-      "kurento-module-crowddetector": "^1.0.0"
+      "kurento-utils" : "|UTILS_JS_VERSION|",
+      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
    }
 
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
-for *crowddetector*) downloads the latest version of Kurento artifacts from NPM
-and Bower.
+.. note::
+
+   We are in active development. You can find the latest versions at
+   `npm <http://npmsearch.com/>`_ and `Bower <http://bower.io/search/>`_.

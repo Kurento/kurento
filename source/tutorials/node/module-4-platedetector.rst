@@ -10,12 +10,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide <../../installation_guide>` for further
-information. In addition, the built-in module ``kms-platedetector`` should be
-also installed:
+information. In addition, the built-in module ``kms-platedetector-6.0`` should
+be also installed:
 
 .. sourcecode:: sh
 
-    sudo apt-get install kms-platedetector
+    sudo apt-get install kms-platedetector-6.0
 
 Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
 you can install both as follows:
@@ -44,6 +44,22 @@ clean the npm cache, and try to install them again:
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
+
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``ws_uri`` to the npm execution command, as follows:
+
+   .. sourcecode:: sh
+
+      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+
+   In this case you need to use npm version 2. To update it you can use this command:
+
+   .. sourcecode:: sh
+
+      sudo npm install npm -g
 
 Understanding this example
 ==========================
@@ -87,60 +103,90 @@ this event is printed in the console of the GUI.
 
 .. sourcecode:: javascript
 
-   function start(sessionId, sdpOffer, callback) {
+   function start(sessionId, ws, sdpOffer, callback) {
+       if (!sessionId) {
+           return callback('Cannot use undefined sessionId');
+       }
 
-      if (!sessionId) {
-         return callback("Cannot use undefined sessionId");
-      }
-
-      // Check if session is already transmitting
-      if (pipelines[sessionId]) {
-         return callback("Close current session before starting a new one or use " +
-            "another browser to open a tutorial.")
-      }
-
-      getKurentoClient(function(error, kurentoClient) {
-         if (error) {
-            return callback(error);
-         }
-
-         kurentoClient.create('MediaPipeline', function(error, pipeline) {
-            if (error) {
+       getKurentoClient(function(error, kurentoClient) {
+           if (error) {
                return callback(error);
-            }
+           }
 
-            createMediaElements(pipeline, function(error, webRtcEndpoint,
-                  plateDetectorFilter) {
+           kurentoClient.create('MediaPipeline', function(error, pipeline) {
                if (error) {
-                  pipeline.release();
-                  return callback(error);
+                   return callback(error);
                }
 
-               connectMediaElements(webRtcEndpoint, plateDetectorFilter,
-                  function(error) {
-                     if (error) {
-                        pipeline.release();
-                        return callback(error);
-                     }
+               createMediaElements(pipeline, ws, function(error, webRtcEndpoint, filter) {
+                   if (error) {
+                       pipeline.release();
+                       return callback(error);
+                   }
 
-                     plateDetectorFilter.on ('PlateDetected', function (data){
-                        return callback(null, 'plateDetected', data);
-                     });
+                   if (candidatesQueue[sessionId]) {
+                       while(candidatesQueue[sessionId].length) {
+                           var candidate = candidatesQueue[sessionId].shift();
+                           webRtcEndpoint.addIceCandidate(candidate);
+                       }
+                   }
 
-                     webRtcEndpoint.processOffer(sdpOffer, function(
-                           error, sdpAnswer) {
-                        if (error) {
+                   connectMediaElements(webRtcEndpoint, filter, function(error) {
+                       if (error) {
                            pipeline.release();
                            return callback(error);
-                        }
+                       }
 
-                        pipelines[sessionId] = pipeline;
-                        return callback(null, 'sdpAnswer', sdpAnswer);
-                     });
-                  });
-            });
-         });
-      });
+                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           ws.send(JSON.stringify({
+                               id : 'iceCandidate',
+                               candidate : candidate
+                           }));
+                       });
+
+                       filter.on('PlateDetected', function (data){
+                           return callback(null, 'plateDetected', data);
+                       });
+
+                       webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+
+                           sessions[sessionId] = {
+                               'pipeline' : pipeline,
+                               'webRtcEndpoint' : webRtcEndpoint
+                           }
+                           return callback(null, 'sdpAnswer', sdpAnswer);
+                       });
+
+                       webRtcEndpoint.gatherCandidates(function(error) {
+                           if (error) {
+                               return callback(error);
+                           }
+                       });
+                   });
+               });
+           });
+       });
+   }
+
+   function createMediaElements(pipeline, ws, callback) {
+       pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+           if (error) {
+               return callback(error);
+           }
+
+           pipeline.create('PlateDetectorFilter', function(error, filter) {
+               if (error) {
+                   return callback(error);
+               }
+
+               return callback(null, webRtcEndpoint, filter);
+           });
+       });
    }
 
 Dependencies
@@ -154,7 +200,7 @@ file for managing this dependency is:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
+      "kurento-client" : "|CLIENT_JS_VERSION|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -164,11 +210,11 @@ file and pay attention to the following section:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-utils": "^5.0.0",
-      "kurento-module-platedetector": "^1.0.0"
+      "kurento-utils" : "|UTILS_JS_VERSION|",
+      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
    }
 
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
-for *platedetector*) downloads the latest version of Kurento artifacts from NPM
-and Bower.
+.. note::
+
+   We are in active development. You can find the latest versions at
+   `npm <http://npmsearch.com/>`_ and `Bower <http://bower.io/search/>`_.

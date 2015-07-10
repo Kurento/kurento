@@ -10,12 +10,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide <../../installation_guide>` for further
-information. In addition, the built-in module ``kms-chroma`` should be also
+information. In addition, the built-in module ``kms-chroma-6.0`` should be also
 installed:
 
 .. sourcecode:: sh
 
-    sudo apt-get install kms-chroma
+    sudo apt-get install kms-chroma-6.0
 
 Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
 you can install both as follows:
@@ -44,6 +44,22 @@ clean the npm cache, and try to install them again:
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
+
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``ws_uri`` to the npm execution command, as follows:
+
+   .. sourcecode:: sh
+
+      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+
+   In this case you need to use npm version 2. To update it you can use this command:
+
+   .. sourcecode:: sh
+
+      sudo npm install npm -g
 
 Understanding this example
 ==========================
@@ -99,51 +115,117 @@ follows:
 
 .. sourcecode:: javascript
 
-   getKurentoClient(function(error, kurentoClient) {
-      if (error) {
-         return callback(error);
-      }
+   function start(sessionId, ws, sdpOffer, callback) {
+       if (!sessionId) {
+           return callback('Cannot use undefined sessionId');
+       }
 
-      kurentoClient.create('MediaPipeline', function(error, pipeline) {
-         if (error) {
-            return callback(error);
-         }
-
-         createMediaElements(pipeline, function(error, webRtcEndpoint,
-               chromaFilter) {
-            if (error) {
-               pipeline.release();
+       getKurentoClient(function(error, kurentoClient) {
+           if (error) {
                return callback(error);
-            }
+           }
 
-            connectMediaElements(webRtcEndpoint, chromaFilter,
-               function(error) {
-                  if (error) {
-                     pipeline.release();
-                     return callback(error);
-                  }
+           kurentoClient.create('MediaPipeline', function(error, pipeline) {
+               if (error) {
+                   return callback(error);
+               }
 
-                  chromaFilter.setBackground (url.format(asUrl) + 'img/mario.jpg',
-                    function(error) {
-                     if (error) {
-                        pipeline.release();
-                        return callback(error);
-                     }
-                  });
+               createMediaElements(pipeline, ws, function(error, webRtcEndpoint, filter) {
+                   if (error) {
+                       pipeline.release();
+                       return callback(error);
+                   }
 
-                  webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
-                     if (error) {
-                        pipeline.release();
-                        return callback(error);
-                     }
+                   if (candidatesQueue[sessionId]) {
+                       while(candidatesQueue[sessionId].length) {
+                           var candidate = candidatesQueue[sessionId].shift();
+                           webRtcEndpoint.addIceCandidate(candidate);
+                       }
+                   }
 
-                     pipelines[sessionId] = pipeline;
-                     return callback(null, 'sdpAnswer', sdpAnswer);
-                  });
+                   connectMediaElements(webRtcEndpoint, filter, function(error) {
+                       if (error) {
+                           pipeline.release();
+                           return callback(error);
+                       }
+
+                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           ws.send(JSON.stringify({
+                               id : 'iceCandidate',
+                               candidate : candidate
+                           }));
+                       });
+
+                       webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+
+                           sessions[sessionId] = {
+                               'pipeline' : pipeline,
+                               'webRtcEndpoint' : webRtcEndpoint
+                           }
+                           return callback(null, sdpAnswer);
+                       });
+
+                       webRtcEndpoint.gatherCandidates(function(error) {
+                           if (error) {
+                               return callback(error);
+                           }
+                       });
+                   });
                });
-         });
-      });
-   });
+           });
+       });
+   }
+
+   function createMediaElements(pipeline, ws, callback) {
+       pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+           if (error) {
+               return callback(error);
+           }
+
+           var options = {
+               window: kurento.register.complexTypes.WindowParam({
+                   topRightCornerX: 5,
+                   topRightCornerY: 5,
+                   width: 30,
+                   height: 30
+               })
+           }
+           pipeline.create('ChromaFilter', options, function(error, filter) {
+               if (error) {
+                   return callback(error);
+               }
+
+               return callback(null, webRtcEndpoint, filter);
+           });
+       });
+   }
+
+   function connectMediaElements(webRtcEndpoint, filter, callback) {
+       webRtcEndpoint.connect(filter, function(error) {
+           if (error) {
+               return callback(error);
+           }
+
+           filter.setBackground(url.format(asUrl) + 'img/mario.jpg', function(error) {
+               if (error) {
+                   return callback(error);
+               }
+
+               filter.connect(webRtcEndpoint, function(error) {
+                   if (error) {
+                       return callback(error);
+                   }
+
+                   return callback(null);
+               });
+           });
+       });
+   }
 
 Dependencies
 ============
@@ -156,7 +238,7 @@ file for managing this dependency is:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
+      "kurento-client" : "|CLIENT_JS_VERSION|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -166,11 +248,11 @@ file and pay attention to the following section:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-utils": "^5.0.0",
-      "kurento-module-chroma": "^1.0.0"
+      "kurento-utils" : "|UTILS_JS_VERSION|",
+      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
    }
 
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
-for *chroma*) downloads the latest version of Kurento artifacts from NPM and
-Bower.
+.. note::
+
+   We are in active development. You can find the latest versions at
+   `npm <http://npmsearch.com/>`_ and `Bower <http://bower.io/search/>`_.

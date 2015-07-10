@@ -10,12 +10,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide <../../installation_guide>` for further
-information. In addition, the built-in module ``kms-pointerdetector`` should be
-also installed:
+information. In addition, the built-in module ``kms-pointerdetector-6.0``
+should be also installed:
 
 .. sourcecode:: sh
 
-    sudo apt-get install kms-pointerdetector
+    sudo apt-get install kms-pointerdetector-6.0
 
 Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
 you can install both as follows:
@@ -44,6 +44,22 @@ clean the npm cache, and try to install them again:
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
+
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``ws_uri`` to the npm execution command, as follows:
+
+   .. sourcecode:: sh
+
+      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+
+   In this case you need to use npm version 2. To update it you can use this command:
+
+   .. sourcecode:: sh
+
+      sudo npm install npm -g
 
 Understanding this example
 ==========================
@@ -88,42 +104,138 @@ done by clicking on the *Calibrate* blue button of the GUI.
 After that, the color of the pointer is tracked in real time by Kurento Media
 Server. ``PointerDetectorFilter`` can also define regions in the screen called
 *windows* in which some actions are performed when the pointer is detected when
-the pointer enters (``WindowInEvent`` event) and exits (``WindowOutEvent``
-event) the windows. This is implemented in the JavaScript logic as follows:
+the pointer enters (``WindowIn`` event) and exits (``WindowOut`` event) the
+windows. This is implemented in the JavaScript logic as follows:
 
 .. sourcecode:: javascript
 
-   pipeline.create('PointerDetectorFilter', {'calibrationRegion' : {topRightCornerX: 5,
-      topRightCornerY:5, width:30, height: 30}}, function(error, _filter) {
-      if (error) return onError(error);
+   function start(sessionId, ws, sdpOffer, callback) {
+       if (!sessionId) {
+           return callback('Cannot use undefined sessionId');
+       }
 
-      filter = _filter;
+       getKurentoClient(function(error, kurentoClient) {
+           if (error) {
+               return callback(error);
+           }
 
-      webRtc.connect(filter, function(error) {
-         if (error) return onError(error);
+           kurentoClient.create('MediaPipeline', function(error, pipeline) {
+               if (error) {
+                   return callback(error);
+               }
 
-         filter.connect(webRtc, function(error) {
-            if (error) return onError(error);
+               createMediaElements(pipeline, ws, function(error, webRtcEndpoint, filter) {
+                   if (error) {
+                       pipeline.release();
+                       return callback(error);
+                   }
 
-            filter.addWindow({id: 'window0', height: 50, width:50,
-               upperRightX: 500, upperRightY: 150}, function(error) {
-                  if (error) return onError(error);
-            });
+                   if (candidatesQueue[sessionId]) {
+                       while(candidatesQueue[sessionId].length) {
+                           var candidate = candidatesQueue[sessionId].shift();
+                           webRtcEndpoint.addIceCandidate(candidate);
+                       }
+                   }
 
-            filter.addWindow({id: 'window1', height: 50, width:50,
-               upperRightX: 500, upperRightY: 250}, function(error) {
-                  if (error) return onError(error);
-            });
+                   connectMediaElements(webRtcEndpoint, filter, function(error) {
+                       if (error) {
+                           pipeline.release();
+                           return callback(error);
+                       }
 
-            filter.on ('WindowIn', function (data){
-               console.log ("Event window in detected in window " + data.windowId);
-            });
+                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           ws.send(JSON.stringify({
+                               id : 'iceCandidate',
+                               candidate : candidate
+                           }));
+                       });
 
-            filter.on ('WindowOut', function (data){
-               console.log ("Event window out detected in window " + data.windowId);
-            });
-         });
-      });
+                       filter.on('WindowIn', function (_data) {
+                           return callback(null, 'WindowIn', _data);
+                       });
+
+                       filter.on('WindowOut', function (_data) {
+                           return callback(null, 'WindowOut', _data);
+                       });
+
+                       var options1 = PointerDetectorWindowMediaParam({
+                           id: 'window0',
+                           height: 50,
+                           width: 50,
+                           upperRightX: 500,
+                           upperRightY: 150
+                       });
+                       filter.addWindow(options1, function(error) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+                       });
+
+                       var options2 = PointerDetectorWindowMediaParam({
+                           id: 'window1',
+                           height: 50,
+                           width:50,
+                           upperRightX: 500,
+                           upperRightY: 250
+                       });
+                       filter.addWindow(options2, function(error) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+                       });
+
+                       webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+
+                           sessions[sessionId] = {
+                               'pipeline' : pipeline,
+                               'webRtcEndpoint' : webRtcEndpoint,
+                               'pointerDetector' : filter
+                           }
+                           return callback(null, 'sdpAnswer', sdpAnswer);
+                       });
+
+                       webRtcEndpoint.gatherCandidates(function(error) {
+                           if (error) {
+                               return callback(error);
+                           }
+                       });
+                   });
+               });
+           });
+       });
+   }
+
+   function createMediaElements(pipeline, ws, callback) {
+       pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+           if (error) {
+               return callback(error);
+           }
+
+           var options = {
+               calibrationRegion: WindowParam({
+                   topRightCornerX: 5,
+                   topRightCornerY:5,
+                   width:30,
+                   height: 30
+               })
+           };
+
+           pipeline.create('PointerDetectorFilter', options, function(error, filter) {
+               if (error) {
+                   return callback(error);
+               }
+
+               return callback(null, webRtcEndpoint, filter);
+           });
+       });
+   }
 
 The following picture illustrates the pointer tracking in one of the defined
 windows:
@@ -139,12 +251,12 @@ In order to carry out the calibration process, this JavaScript function is used:
 .. sourcecode:: javascript
 
    function calibrate() {
-      if (filter != null) {
-         filter.trackColorFromCalibrationRegion (function(error) {
-            if (error) {
-               return onError(error);
-            }
-         });
+      if (webRtcPeer) {
+         console.log("Calibrating...");
+         var message = {
+            id : 'calibrate'
+         }
+         sendMessage(message);
       }
    }
 
@@ -159,7 +271,7 @@ file for managing this dependency is:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
+      "kurento-client" : "|CLIENT_JS_VERSION|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -169,11 +281,11 @@ file and pay attention to the following section:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-utils": "^5.0.0",
-      "kurento-module-pointerdetector": "^1.0.0"
+      "kurento-utils" : "|UTILS_JS_VERSION|",
+      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
    }
 
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
-for *pointerdetector*) downloads the latest version of Kurento artifacts from
-NPM and Bower.
+.. note::
+
+   We are in active development. You can find the latest versions at
+   `npm <http://npmsearch.com/>`_ and `Bower <http://bower.io/search/>`_.
