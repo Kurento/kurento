@@ -41,6 +41,21 @@ clean the npm cache, and try to install them again:
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``ws_uri`` to the npm execution command, as follows:
+
+   .. sourcecode:: sh
+
+      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+
+   In this case you need to use npm version 2. To update it you can use this command:
+
+   .. sourcecode:: sh
+
+      sudo npm install npm -g
 
 Understanding this example
 ==========================
@@ -96,280 +111,334 @@ The detailed message flow in a call are shown in the picture below:
 
    *One to many one call signaling protocol*
 
-As you can see in the diagram, `SDP`:term: needs to be interchanged between
-client and server to establish the `WebRTC`:term: connection between the
-browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
-in the browser with the WebRtcEndpoint in the server.
-
-The following sections describe in detail the server-side, the client-side, and
-how to run the demo. The complete source code of this demo can be found in
+As you can see in the diagram, `SDP`:term: and :term:`ICE` candidates need to be
+exchanged between client and server to establish the `WebRTC`:term: connection
+between the Kurento client and server. Specifically, the SDP negotiation
+connects the WebRtcPeer in the browser with the WebRtcEndpoint in the server.
+The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-one2one-call>`_.
 
 Application Server Logic
 ========================
 
 This demo has been developed using the **express** framework for Node.js, but
-express is not a requirement for Kurento.
-
-The main script of this demo is
+express is not a requirement for Kurento. The main script of this demo is
 `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/server.js>`_.
+
+In order to communicate the JavaScript client and the Node application server a
+WebSocket is used. The incoming messages to this WebSocket (variable ``ws`` in
+the code) are conveniently handled to implemented the signaling protocol
+depicted in the figure before (i.e. messages ``register``, ``call``,
+``incomingCallResponse``, ``stop``, and ``onIceCandidate``).
+
+.. sourcecode:: js
+
+   var ws = require('ws');
+
+   [...]
+
+   var wss = new ws.Server({
+       server : server,
+       path : '/one2one'
+   });
+
+   wss.on('connection', function(ws) {
+       var sessionId = nextUniqueId();
+       console.log('Connection received with sessionId ' + sessionId);
+
+       ws.on('error', function(error) {
+           console.log('Connection ' + sessionId + ' error');
+           stop(sessionId);
+       });
+
+       ws.on('close', function() {
+           console.log('Connection ' + sessionId + ' closed');
+           stop(sessionId);
+           userRegistry.unregister(sessionId);
+       });
+
+       ws.on('message', function(_message) {
+           var message = JSON.parse(_message);
+           console.log('Connection ' + sessionId + ' received message ', message);
+
+           switch (message.id) {
+           case 'register':
+               register(sessionId, message.name, ws);
+               break;
+
+           case 'call':
+               call(sessionId, message.to, message.from, message.sdpOffer);
+               break;
+
+           case 'incomingCallResponse':
+               incomingCallResponse(sessionId, message.from, message.callResponse, message.sdpOffer, ws);
+               break;
+
+           case 'stop':
+               stop(sessionId);
+               break;
+
+           case 'onIceCandidate':
+               onIceCandidate(sessionId, message.candidate);
+               break;
+
+           default:
+               ws.send(JSON.stringify({
+                   id : 'error',
+                   message : 'Invalid message ' + message
+               }));
+               break;
+           }
+
+       });
+   });
+
+In order to perform a call, each user (the caller and the callee) must be
+register in the system. For this reason, in the server-side there is a class
+named ``UserRegistry`` to store and locate users. Then, the ``register``
+message fires the execution of the following function:
+
+.. sourcecode:: js
+
+   // Represents registrar of users
+   function UserRegistry() {
+       this.usersById = {};
+       this.usersByName = {};
+   }
+
+   UserRegistry.prototype.register = function(user) {
+       this.usersById[user.id] = user;
+       this.usersByName[user.name] = user;
+   }
+
+   UserRegistry.prototype.unregister = function(id) {
+       var user = this.getById(id);
+       if (user) delete this.usersById[id]
+       if (user && this.getByName(user.name)) delete this.usersByName[user.name];
+   }
+
+   UserRegistry.prototype.getById = function(id) {
+       return this.usersById[id];
+   }
+
+   UserRegistry.prototype.getByName = function(name) {
+       return this.usersByName[name];
+   }
+
+   UserRegistry.prototype.removeById = function(id) {
+       var userSession = this.usersById[id];
+       if (!userSession) return;
+       delete this.usersById[id];
+       delete this.usersByName[userSession.name];
+   }
+
+   function register(id, name, ws, callback) {
+       function onError(error) {
+           ws.send(JSON.stringify({id:'registerResponse', response : 'rejected ', message: error}));
+       }
+   
+       if (!name) {
+           return onError("empty user name");
+       }
+   
+       if (userRegistry.getByName(name)) {
+           return onError("User " + name + " is already registered");
+       }
+   
+       userRegistry.register(new UserSession(id, name, ws));
+       try {
+           ws.send(JSON.stringify({id: 'registerResponse', response: 'accepted'}));
+       } catch(exception) {
+           onError(exception);
+       }
+   }
+
+In order to control the media capabilities provided by the Kurento Media Server,
+we need an instance of the *KurentoClient* in the Node application server. In
+order to create this instance, we need to specify to the client library the
+location of the Kurento Media Server. In this example, we assume it's located
+at *localhost* listening in port 8888.
 
 .. sourcecode:: js
 
    var kurento = require('kurento-client');
 
-   //...
+   var kurentoClient = null;
 
-   const ws_uri = "ws://localhost:8888/kurento";
-
-   //...
-
-   kurento(ws_uri, function(error, _kurentoClient) {
-      if (error) {
-         console.log("Could not find media server at address " + ws_uri);
-         return callback("Could not find media server at address" + ws_uri
-            + ". Exiting with error " + error);
-      }
-
-      kurentoClient = _kurentoClient;
-      callback(null, kurentoClient);
+   var argv = minimist(process.argv.slice(2), {
+       default: {
+           as_uri: 'http://localhost:8080/',
+           ws_uri: 'ws://localhost:8888/kurento'
+       }
    });
 
-This web application follows *Single Page Application* architecture
-(`SPA`:term:) and uses a `WebSocket` in the path ``/call`` to communicate
-client with applications server by beans of requests and responses.
+   [...]
 
-In the designed protocol there are three different kind of incoming messages to
-the applications server : ``register``, ``call``, ``incomingCallResponse`` and
-``stop``. These messages are treated in the *switch* clause, taking the proper
-steps in each case.
+   function getKurentoClient(callback) {
+       if (kurentoClient !== null) {
+           return callback(null, kurentoClient);
+       }
 
-The following code snippet implements the server part of the signaling protocol
-depicted in the previous sequence diagram.
+       kurento(argv.ws_uri, function(error, _kurentoClient) {
+           if (error) {
+               console.log("Could not find media server at address " + argv.ws_uri);
+               return callback("Could not find media server at address" + argv.ws_uri
+                       + ". Exiting with error " + error);
+           }
 
+           kurentoClient = _kurentoClient;
+           callback(null, kurentoClient);
+       });
+   }
+
+Once the *Kurento Client* has been instantiated, you are ready for communicating
+with Kurento Media Server. Our first operation is to create a *Media Pipeline*,
+then we need to create the *Media Elements* and connect them. In this example,
+we need two WebRtcEndpoints, i.e. one peer caller and other one for the callee.
+This media logic is implemented in the class ``CallMediaPipeline``. Note that
+the WebRtcEndpoints need to be connected twice, one for each media direction.
+This object is created in the function ``incomingCallResponse`` which is fired
+in the callee peer, after the caller executes the function ``call``:
 
 .. sourcecode:: js
 
-   wss.on('connection', function(ws) {
-
-      //...
-
-      ws.on('message', function(_message) {
-         var message = JSON.parse(_message);
-
-         switch (message.id) {
-         case 'register':
-            register(sessionId,
-            message.name, ws);
-            break;
-
-         case 'call':
-            call(sessionId, message.to,
-            message.from, message.sdpOffer); break;
-
-         case 'incomingCallResponse':
-            incomingCallResponse(sessionId,
-            message.from, message.callResponse, message.sdpOffer);
-            break;
-
-         case 'stop':
-            stop(sessionId); break;
-
-         }
-      });
-   });
-
-
-In the following snippet, we can see the ``register`` method. Basically, it
-obtains the ``name`` attribute from ``register`` message and check if there are
-a registered user with that name. If not, the new user is registered and an
-acceptance message is sent to it.
-
-.. sourcecode :: js
-
-   function register(id, name, ws, callback){
-
-      if(userRegistry.getByName(name)){
-         return onError("already registered");
-      }
-
-      userRegistry.register(new UserSession(id, name, ws));
-      ws.send(JSON.stringify({id: 'registerResponse', response: 'accepted'}));
+   function call(callerId, to, from, sdpOffer) {
+       clearCandidatesQueue(callerId);
+   
+       var caller = userRegistry.getById(callerId);
+       var rejectCause = 'User ' + to + ' is not registered';
+       if (userRegistry.getByName(to)) {
+           var callee = userRegistry.getByName(to);
+           caller.sdpOffer = sdpOffer
+           callee.peer = from;
+           caller.peer = to;
+           var message = {
+               id: 'incomingCall',
+               from: from
+           };
+           try{
+               return callee.sendMessage(message);
+           } catch(exception) {
+               rejectCause = "Error " + exception;
+           }
+       }
+       var message  = {
+           id: 'callResponse',
+           response: 'rejected: ',
+           message: rejectCause
+       };
+       caller.sendMessage(message);
    }
 
-
-In the ``call`` method, the server checks if there are a registered user with
-the name specified in ``to`` message attribute and send an ``incomingCall``
-message to it. Or, if there isn't any user with that name, a ``callResponse``
-message is sent to caller rejecting the call.
-
-.. sourcecode :: js
-
-   function call(callerId, to, from, sdpOffer){
-        var caller = userRegistry.getById(callerId);
-        var rejectCause = 'user ' + to + ' is not registered';
-        if(userRegistry.getByName(to)){
-                var callee = userRegistry.getByName(to);
-                caller.sdpOffer = sdpOffer
-                callee.peer = from;
-                caller.peer = to;
-                var message = {
-                        id: 'incomingCall',
-                        from: from
-                };
-                return callee.sendMessage(message);
-        }
-        var message  = {
-                id: 'callResponse',
-                response: 'rejected: ',
-                message: rejectCause
-        };
-        caller.sendMessage(message);
-   }
-
-
-The ``stop`` method finish the video call. This procedure can be called both by
-caller and callee in the communication. The result is that both peers release
-the Media Pipeline and ends the video communication:
-
-.. sourcecode :: js
-
-   function stop(sessionId){
-
-        var pipeline = pipelines[sessionId];
-        delete pipelines[sessionId];
-        pipeline.release();
-        var stopperUser = userRegistry.getById(sessionId);
-        var stoppedUser = userRegistry.getByName(stopperUser.peer);
-        stopperUser.peer = null;
-        if(stoppedUser){
-                stoppedUser.peer = null;
-                delete pipelines[stoppedUser.id];
-                var message = {
-                        id: 'stopCommunication',
-                        message: 'remote user hanged out'
-                }
-                stoppedUser.sendMessage(message)
-        }
-   }
-
-
-In the ``incomingCallResponse`` method, if the callee user accepts the call, it
-is established and the media elements are created to connect the caller with
-the callee in a B2B manner. Basically, the server creates a
-``CallMediaPipeline`` object, to encapsulate the media pipeline creation and
-management. Then, this object is used to negotiate media interchange with
-user's browsers.
-
-
-The negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento
-Media Server is made by means of `SDP`:term: s. An SDP answers is produced by
-WebRtcEndpoints when invoking ``generateSdpAnswerForCallee`` and
-``generateSdpAnswerForCaller`` functions:
-
-.. sourcecode :: js
-
-   function incomingCallResponse(calleeId, from, callResponse, calleeSdp){
-
-      var callee = userRegistry.getById(calleeId);
-         if(!from || !userRegistry.getByName(from)){
-            return onError(null, 'unknown from = ' + from);
-         }
-         var caller = userRegistry.getByName(from);
-
-         if(callResponse === 'accept'){
-            var pipeline = new CallMediaPipeline();
-
-            pipeline.createPipeline(function(error){
-               pipeline.generateSdpAnswerForCaller(caller.sdpOffer,
-                  function(error, callerSdpAnswer){
-                     if(error) {
-                        return onError(error, error);
-                     }
-
-                     pipeline.generateSdpAnswerForCallee(calleeSdp,
-                        function(error, calleeSdpAnswer) {
-
-                        pipelines[caller.id] = pipeline;
-                        pipelines[callee.id] = pipeline;
-
-                        var message = {
+   function incomingCallResponse(calleeId, from, callResponse, calleeSdp, ws) {
+       clearCandidatesQueue(calleeId);
+   
+       function onError(callerReason, calleeReason) {
+           if (pipeline) pipeline.release();
+           if (caller) {
+               var callerMessage = {
+                   id: 'callResponse',
+                   response: 'rejected'
+               }
+               if (callerReason) callerMessage.message = callerReason;
+               caller.sendMessage(callerMessage);
+           }
+   
+           var calleeMessage = {
+               id: 'stopCommunication'
+           };
+           if (calleeReason) calleeMessage.message = calleeReason;
+           callee.sendMessage(calleeMessage);
+       }
+   
+       var callee = userRegistry.getById(calleeId);
+       if (!from || !userRegistry.getByName(from)) {
+           return onError(null, 'unknown from = ' + from);
+       }
+       var caller = userRegistry.getByName(from);
+   
+       if (callResponse === 'accept') {
+           var pipeline = new CallMediaPipeline();
+           pipelines[caller.id] = pipeline;
+           pipelines[callee.id] = pipeline;
+   
+           pipeline.createPipeline(caller.id, callee.id, ws, function(error) {
+               if (error) {
+                   return onError(error, error);
+               }
+   
+               pipeline.generateSdpAnswer(caller.id, caller.sdpOffer, function(error, callerSdpAnswer) {
+                   if (error) {
+                       return onError(error, error);
+                   }
+   
+                   pipeline.generateSdpAnswer(callee.id, calleeSdp, function(error, calleeSdpAnswer) {
+                       if (error) {
+                           return onError(error, error);
+                       }
+   
+                       var message = {
                            id: 'startCommunication',
                            sdpAnswer: calleeSdpAnswer
-                        };
-
-                        callee.sendMessage(message);
-
-                        message = {
+                       };
+                       callee.sendMessage(message);
+   
+                       message = {
                            id: 'callResponse',
                            response : 'accepted',
                            sdpAnswer: callerSdpAnswer
-                        };
-
-                        caller.sendMessage(message);
-                     });
-                  });
-             });
-         } else {
-            var decline = {
+                       };
+                       caller.sendMessage(message);
+                   });
+               });
+           });
+       } else {
+           var decline = {
                id: 'callResponse',
                response: 'rejected',
                message: 'user declined'
-            };
-
-            caller.sendMessage(decline);
-        }
+           };
+           caller.sendMessage(decline);
+       }
    }
 
-
-The media logic is implemented in the class `CallMediaPipeline`. As you can see,
-the required media pipeline is quite simple: two ``WebRtcEndpoint`` elements
-directly interconnected. Note that the WebRtcEndpoints need to be connected
-twice, one for each media direction. Also observe how the methods
-``generateSdpAnswerForCaller`` and ``generateSdpAnswerForCallee`` described
-above are implemented.
+As of Kurento Media Server 6.0, the WebRTC negotiation is done by exchanging
+:term:`ICE` candidates between the WebRTC peers. To implement this protocol,
+the ``webRtcEndpoint`` receives candidates from the client in
+``OnIceCandidate`` function. These candidates are stored in a queue when the
+``webRtcEndpoint`` is not available yet. Then these candidates are added to the
+media element by calling to the ``addIceCandidate`` method.
 
 .. sourcecode:: js
 
-   CallMediaPipeline.prototype.createPipeline = function(callback){
-      var self = this;
+   var candidatesQueue = {};
 
-      //...
+   [...]
 
-      kurentoClient.create('MediaPipeline', function(error, pipeline){
-         pipeline.create('WebRtcEndpoint', function(error, callerWebRtcEndpoint){
-            pipeline.create('WebRtcEndpoint', function(error, calleeWebRtcEndpoint){
-               callerWebRtcEndpoint.connect(calleeWebRtcEndpoint, function(error){
-                  calleeWebRtcEndpoint.connect(callerWebRtcEndpoint, function(error){
-
-                     self._pipeline = pipeline;
-                     self._callerWebRtcEndpoint = callerWebRtcEndpoint;
-                     self._calleeWebRtcEndpoint = calleeWebRtcEndpoint;
-
-                     callback(null);
-                  });
-               });
-            });
-         });
-      });
+   function onIceCandidate(sessionId, _candidate) {
+       var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+       var user = userRegistry.getById(sessionId);
+   
+       if (pipelines[user.id] && pipelines[user.id].webRtcEndpoint && pipelines[user.id].webRtcEndpoint[user.id]) {
+           var webRtcEndpoint = pipelines[user.id].webRtcEndpoint[user.id];
+           webRtcEndpoint.addIceCandidate(candidate);
+       }
+       else {
+           if (!candidatesQueue[user.id]) {
+               candidatesQueue[user.id] = [];
+           }
+           candidatesQueue[sessionId].push(candidate);
+       }
    }
 
-   CallMediaPipeline.prototype.generateSdpAnswerForCaller = function(sdpOffer, callback){
-      this._callerWebRtcEndpoint.processOffer(sdpOffer, callback);
+   function clearCandidatesQueue(sessionId) {
+       if (candidatesQueue[sessionId]) {
+           delete candidatesQueue[sessionId];
+       }
    }
 
-   CallMediaPipeline.prototype.generateSdpAnswerForCallee = function(sdpOffer, callback){
-      this._calleeWebRtcEndpoint.processOffer(sdpOffer, callback);
-   }
-
-   CallMediaPipeline.prototype.release = function(){
-      if(this._pipeline) this._pipeline.release();
-      this._pipeline = null;
-   }
-
-
-Client-Side
-===========
+Client-Side Logic
+=================
 
 Let's move now to the client-side of the application. To call the previously
 created WebSocket service in the server-side, we use the JavaScript class
@@ -377,33 +446,33 @@ created WebSocket service in the server-side, we use the JavaScript class
 **kurento-utils.js** to simplify the WebRTC interaction with the server. This
 library depends on **adapter.js**, which is a JavaScript WebRTC utility
 maintained by Google that abstracts away browser differences. Finally
-**jquery.js** is also needed in this application.
-
-These libraries are linked in the
-`index.html <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/src/main/resources/static/index.html>`_
+**jquery.js** is also needed in this application. These libraries are linked in
+the
+`index.html <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/src/main/resources/static/js/index.js>`_.
-
+`index.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
-``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
+``ws``) in the path ``/one2one``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are four incoming messages to client: ``resgisterResponse``,
-``callResponse``, ``incomingCall``, and ``startCommunication``. Convenient
-actions are taken to implement each step in the communication. For example, in
-functions ``call`` and ``incomingCall`` (for caller and callee respectively),
-the function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to
-start a WebRTC communication.
+Notice that there are three incoming messages to client: ``startResponse``,
+``error``, and ``iceCandidate``. Convenient actions are taken to implement each
+step in the communication. For example, in functions ``start`` the function
+``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
+WebRTC communication.
 
 .. sourcecode:: javascript
 
-    var ws = new WebSocket('ws://' + location.host + '/call');
+   var ws = new WebSocket('ws://' + location.host + '/one2one');
+   var webRtcPeer;
+
+   [...]
 
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-
+   
       switch (parsedMessage.id) {
-      case 'resgisterResponse':
+      case 'registerResponse':
          resgisterResponse(parsedMessage);
          break;
       case 'callResponse':
@@ -419,38 +488,108 @@ start a WebRTC communication.
          console.info("Communication ended by remote peer");
          stop(true);
          break;
+      case 'iceCandidate':
+         webRtcPeer.addIceCandidate(parsedMessage.candidate)
+         break;
       default:
          console.error('Unrecognized message', parsedMessage);
       }
    }
 
+On the one hand, the function ``call`` is executed in the caller client-side,
+using the method ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* to
+start a WebRTC communication in duplex mode. On the other hand, the function
+``incomingCall`` in the callee client-side uses also the method
+``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* to complete the WebRTC
+call.
+
+.. sourcecode:: javascript
+
+   function call() {
+      if (document.getElementById('peer').value == '') {
+         window.alert("You must specify the peer name");
+         return;
+      }
+
+      setCallState(PROCESSING_CALL);
+
+      showSpinner(videoInput, videoOutput);
+
+      var options = {
+         localVideo : videoInput,
+         remoteVideo : videoOutput,
+         onicecandidate : onIceCandidate
+      }
+
+      webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(
+            error) {
+         if (error) {
+            console.error(error);
+            setCallState(NO_CALL);
+         }
+
+         this.generateOffer(function(error, offerSdp) {
+            if (error) {
+               console.error(error);
+               setCallState(NO_CALL);
+            }
+            var message = {
+               id : 'call',
+               from : document.getElementById('name').value,
+               to : document.getElementById('peer').value,
+               sdpOffer : offerSdp
+            };
+            sendMessage(message);
+         });
+      });
+   }
+
    function incomingCall(message) {
-      //If bussy just reject without disturbing user
-      if(callState != NO_CALL){
+      // If bussy just reject without disturbing user
+      if (callState != NO_CALL) {
          var response = {
             id : 'incomingCallResponse',
             from : message.from,
             callResponse : 'reject',
             message : 'bussy'
+   
          };
          return sendMessage(response);
       }
 
       setCallState(PROCESSING_CALL);
-      if (confirm('User ' + message.from  + ' is calling you. Do you accept the call?')) {
+      if (confirm('User ' + message.from
+            + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-           function(sdp, wp) {
-            var response = {
-               id : 'incomingCallResponse',
-               from : message.from,
-               callResponse : 'accept',
-               sdpOffer : sdp
-            };
-            sendMessage(response);
-         }, function(error){
-            setCallState(NO_CALL);
-         });
+
+         var options = {
+            localVideo : videoInput,
+            remoteVideo : videoOutput,
+            onicecandidate : onIceCandidate
+         }
+
+         webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+               function(error) {
+                  if (error) {
+                     console.error(error);
+                     setCallState(NO_CALL);
+                  }
+
+                  this.generateOffer(function(error, offerSdp) {
+                     if (error) {
+                        console.error(error);
+                        setCallState(NO_CALL);
+                     }
+                     var response = {
+                        id : 'incomingCallResponse',
+                        from : message.from,
+                        callResponse : 'accept',
+                        sdpOffer : offerSdp
+                     };
+                     sendMessage(response);
+                  });
+               });
+
       } else {
          var response = {
             id : 'incomingCallResponse',
@@ -459,68 +598,41 @@ start a WebRTC communication.
             message : 'user declined'
          };
          sendMessage(response);
-         stop();
+         stop(true);
       }
    }
-
-   function call() {
-      if(document.getElementById('peer').value == ''){
-         window.alert("You must specify the peer name");
-         return;
-      }
-      setCallState(PROCESSING_CALL);
-
-      showSpinner(videoInput, videoOutput);
-
-      kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
-         webRtcPeer = wp;
-         console.log('Invoking SDP offer callback function');
-         var message = {
-            id : 'call',
-            from : document.getElementById('name').value,
-            to : document.getElementById('peer').value,
-            sdpOffer : offerSdp
-         };
-         sendMessage(message);
-      }, function(error){
-         console.log(error);
-         setCallState(NO_CALL);
-      });
-   }
-
 
 Dependencies
 ============
 
-Dependencies of this demo are managed using npm. Our main dependency is the
-Kurento Client JavaScript (*kurento-client*). The relevant part of the
+Server-side dependencies of this demo are managed using :term:`npm`. Our main
+dependency is the Kurento Client JavaScript (*kurento-client*). The relevant
+part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/package.json>`_
 file for managing this dependency is:
 
 .. sourcecode:: js
 
    "dependencies": {
-     ...
-     "kurento-client" : "^5.0.0"
+      [...]
+      "kurento-client" : "|CLIENT_JS_VERSION|"
    }
 
-At the client side, dependencies are managed using Bower. Take a look to the
+At the client side, dependencies are managed using :term:`Bower`. Take a look to
+the
 `bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/static/bower.json>`_
 file and pay attention to the following section:
 
 .. sourcecode:: js
 
    "dependencies": {
-     "kurento-utils" : "^5.0.0"
+      [...]
+      "kurento-utils" : "|UTILS_JS_VERSION|"
    }
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``^5.0.0`` downloads the latest version of Kurento artefacts from Bower
-in version 5 (i.e. 5.x.x). Major versions are released when incompatible
-changes are made.
 
 .. note::
 
-   We are in active development. You can find the latest version of Kurento
-   JavaScript Client at `NPM <http://npmsearch.com/?q=kurento-client>`_ and
-   `Bower <http://bower.io/search/?q=kurento-client>`_.
+   We are in active development. You can find the latest version of
+   Kurento JavaScript Client at `npm <http://npmsearch.com/?q=kurento-client>`_
+   and `Bower <http://bower.io/search/?q=kurento-client>`_.
+
