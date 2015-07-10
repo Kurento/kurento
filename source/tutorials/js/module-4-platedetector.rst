@@ -10,12 +10,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide <../../installation_guide>` for further
-information. In addition, the built-in module ``kms-platedetector`` should be
-also installed:
+information. In addition, the built-in module ``kms-platedetector-6.0`` should
+be also installed:
 
 .. sourcecode:: sh
 
-    sudo apt-get install kms-platedetector
+    sudo apt-get install kms-platedetector-6.0
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
 an Ubuntu machine, you can install both as follows:
@@ -46,6 +46,16 @@ start the HTTP server:
 
 Finally access the application connecting to the URL http://localhost:8080/
 through a WebRTC capable browser (Chrome, Firefox).
+
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the parameter ``ws_uri`` to the URL, as follows:
+
+   .. sourcecode:: sh
+
+      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
 
 Understanding this example
 ==========================
@@ -89,41 +99,50 @@ this event is printed in the console of the GUI.
 
 .. sourcecode:: javascript
 
-   kurentoClient(ws_uri, function(error, client) {
+    kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
-      client.create('MediaPipeline', function(error, p) {
-         if (error) return onError(error);
+      client.create('MediaPipeline', function(error, _pipeline) {
+        if (error) return onError(error);
 
-         pipeline = p;
+        pipeline = _pipeline;
 
-         pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+        console.log("Got MediaPipeline");
+
+        pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+          if (error) return onError(error);
+
+          console.log("Got WebRtcEndpoint");
+
+          setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
+
+          webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
             if (error) return onError(error);
 
-            pipeline.create('PlateDetectorFilter', function(error, filter) {
-               if (error) return onError(error);
-               
-               webRtc.connect(filter, function(error) {
-                  if (error) return onError(error);
+            console.log("SDP answer obtained. Processing...");
 
-                  filter.connect(webRtc, function(error) {
-                     if (error) return onError(error);
+            webRtc.gatherCandidates(onError);
+            webRtcPeer.processAnswer(sdpAnswer);
+          });
 
-                     filter.on ('PlateDetected', function (data){
-                        console.log ("License plate detected " + data.plate);
-                     });
-                  });
-               });
+          pipeline.create('PlateDetectorFilter', function(error, filter) {
+            if (error) return onError(error);
 
-               webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
-                  if (error) return onError(error);
+            console.log("Got Filter");
 
-                  webRtcPeer.processSdpAnswer(sdpAnswer);
-               });
+            filter.on('PlateDetected', function (data){
+              console.log("License plate detected " + data.plate);
             });
-         });
+
+            client.connect(webRtc, filter, webRtc, function(error) {
+              if (error) return onError(error);
+
+              console.log("WebRtcEndpoint --> filter --> WebRtcEndpoint");
+            });
+          });
+        });
       });
-   });
+    });
 
 
 Dependencies
@@ -137,12 +156,17 @@ file, as follows:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "^5.0.0",
-      "kurento-utils": "^5.0.0",
-      "kurento-module-platedetector": "^1.0.0"
+      "kurento-client": "|CLIENT_JS_VERSION|",
+      "kurento-utils": "|UTILS_JS_VERSION|"
+      "kurento-module-pointerdetector": "|CLIENT_JS_VERSION|"
    }
 
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-ranges (``^5.0.0`` for *kurento-client* and *kurento-utils-js*,  and ``^1.0.0``
-for *platedetector*) downloads the latest version of Kurento artifacts from
-Bower.
+To get these dependencies, just run the following shell command:
+
+.. sourcecode:: sh
+
+   bower install
+
+.. note::
+
+   We are in active development. You can find the latest versions at `Bower <http://bower.io/search/>`_.
