@@ -25,8 +25,8 @@ transmission, processing, loading and recording. It is implemented in low level
 technologies based on :term:`GStreamer` to optimize the resource consumption.
 It provides the following features:
 
--  Networked streaming protocols, including :term:`HTTP` (working as client
-   and server), :term:`RTP` and :term:`WebRTC`.
+-  Networked streaming protocols, including :term:`HTTP`, :term:`RTP` and
+   :term:`WebRTC`.
 -  Group communications (MCUs and SFUs functionality) supporting both media
    mixing and media routing/dispatching.
 -  Generic support for computational vision and augmented reality filters.
