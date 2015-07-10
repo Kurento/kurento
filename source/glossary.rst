@@ -37,7 +37,7 @@ or :term:`kurento`.
                 Wikipedia reference of the RIFF format
 
     Bower
-        `Bower <http://http://bower.io/>`_ is a package manager for the web.
+        `Bower <http://bower.io/>`_ is a package manager for the web.
         It offers a generic solution to the problem of front-end package management,
         while exposing the package dependency model via an API that can be consumed by
         a build stack.
@@ -447,7 +447,7 @@ or :term:`kurento`.
         .. seealso:: :term:`SRTP`
 
     SRTP
-        :wikipedia:`Secure RTP <,enSecure_Real-time_Transport_Protocol>`
+        :wikipedia:`Secure RTP <en,Secure_Real-time_Transport_Protocol>`
          is a profile of RTP (`Real-time Transport Protocol <RTP>`:term:),
          intended to provide encryption, message authentication and integrity,
          and replay protection to the RTP data in both unicast and multicast
