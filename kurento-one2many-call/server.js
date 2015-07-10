@@ -33,7 +33,7 @@ var app = express();
  * Definition of global variables.
  */
 var idCounter = 0;
-var candidateQueue = {};
+var candidatesQueue = {};
 var kurentoClient = null;
 var presenter = null;
 var viewers = [];
@@ -158,7 +158,7 @@ function getKurentoClient(callback) {
 }
 
 function startPresenter(sessionId, ws, sdpOffer, callback) {
-	clearCandidateQueue(sessionId);
+	clearCandidatesQueue(sessionId);
 
 	if (presenter !== null) {
 		stop(sessionId);
@@ -207,9 +207,11 @@ function startPresenter(sessionId, ws, sdpOffer, callback) {
 
 				presenter.webRtcEndpoint = webRtcEndpoint;
 
-                while(candidateQueue[sessionId].length) {
-                    var candidate = candidateQueue[sessionId].shift();
-                    webRtcEndpoint.addIceCandidate(candidate);
+                if (candidatesQueue[sessionId]) {
+                    while(candidatesQueue[sessionId].length) {
+                        var candidate = candidatesQueue[sessionId].shift();
+                        webRtcEndpoint.addIceCandidate(candidate);
+                    }
                 }
 
                 webRtcEndpoint.on('OnIceCandidate', function(event) {
@@ -246,7 +248,7 @@ function startPresenter(sessionId, ws, sdpOffer, callback) {
 }
 
 function startViewer(sessionId, ws, sdpOffer, callback) {
-	clearCandidateQueue(sessionId);
+	clearCandidatesQueue(sessionId);
 
 	if (presenter === null) {
 		stop(sessionId);
@@ -268,9 +270,9 @@ function startViewer(sessionId, ws, sdpOffer, callback) {
 			return callback(noPresenterMessage);
 		}
 
-		if (candidateQueue[sessionId]) {
-			while(candidateQueue[sessionId].length) {
-				var candidate = candidateQueue[sessionId].shift();
+		if (candidatesQueue[sessionId]) {
+			while(candidatesQueue[sessionId].length) {
+				var candidate = candidatesQueue[sessionId].shift();
 				webRtcEndpoint.addIceCandidate(candidate);
 			}
 		}
@@ -315,9 +317,9 @@ function startViewer(sessionId, ws, sdpOffer, callback) {
 	});
 }
 
-function clearCandidateQueue(sessionId) {
-	if (candidateQueue[sessionId]) {
-		delete candidateQueue[sessionId];
+function clearCandidatesQueue(sessionId) {
+	if (candidatesQueue[sessionId]) {
+		delete candidatesQueue[sessionId];
 	}
 }
 
@@ -339,7 +341,7 @@ function stop(sessionId) {
 		delete viewers[sessionId];
 	}
 
-	clearCandidateQueue(sessionId);
+	clearCandidatesQueue(sessionId);
 }
 
 function onIceCandidate(sessionId, _candidate) {
@@ -355,10 +357,10 @@ function onIceCandidate(sessionId, _candidate) {
     }
     else {
         console.info('Queueing candidate');
-        if (!candidateQueue[sessionId]) {
-            candidateQueue[sessionId] = [];
+        if (!candidatesQueue[sessionId]) {
+            candidatesQueue[sessionId] = [];
         }
-        candidateQueue[sessionId].push(candidate);
+        candidatesQueue[sessionId].push(candidate);
     }
 }
 

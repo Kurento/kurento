@@ -49,7 +49,7 @@ app.use(sessionHandler);
  * Definition of global variables.
  */
 var sessions = {};
-var queues = {};
+var candidatesQueue = {};
 var kurentoClient = null;
 
 /*
@@ -175,9 +175,11 @@ function start(sessionId, ws, sdpOffer, callback) {
                     return callback(error);
                 }
 
-                while(queues[sessionId].length) {
-                    var candidate = queues[sessionId].shift();
-                    webRtcEndpoint.addIceCandidate(candidate);
+                if (candidatesQueue[sessionId]) {
+                    while(candidatesQueue[sessionId].length) {
+                        var candidate = candidatesQueue[sessionId].shift();
+                        webRtcEndpoint.addIceCandidate(candidate);
+                    }
                 }
 
                 connectMediaElements(webRtcEndpoint, function(error) {
@@ -244,7 +246,7 @@ function stop(sessionId) {
         pipeline.release();
 
         delete sessions[sessionId];
-        delete queues[sessionId];
+        delete candidatesQueue[sessionId];
     }
 }
 
@@ -258,10 +260,10 @@ function onIceCandidate(sessionId, _candidate) {
     }
     else {
         console.info('Queueing candidate');
-        if (!queues[sessionId]) {
-            queues[sessionId] = [];
+        if (!candidatesQueue[sessionId]) {
+            candidatesQueue[sessionId] = [];
         }
-        queues[sessionId].push(candidate);
+        candidatesQueue[sessionId].push(candidate);
     }
 }
 

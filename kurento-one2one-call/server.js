@@ -36,7 +36,7 @@ var app = express();
 var kurentoClient = null;
 var userRegistry = new UserRegistry();
 var pipelines = {};
-var candidateQueue = {};
+var candidatesQueue = {};
 var idCounter = 0;
 
 function nextUniqueId() {
@@ -117,9 +117,9 @@ CallMediaPipeline.prototype.createPipeline = function(callerId, calleeId, ws, ca
                     return callback(error);
                 }
 
-                if (candidateQueue[callerId]) {
-                    while(candidateQueue[callerId].length) {
-                        var candidate = candidateQueue[callerId].shift();
+                if (candidatesQueue[callerId]) {
+                    while(candidatesQueue[callerId].length) {
+                        var candidate = candidatesQueue[callerId].shift();
                         callerWebRtcEndpoint.addIceCandidate(candidate);
                     }
                 }
@@ -138,9 +138,9 @@ CallMediaPipeline.prototype.createPipeline = function(callerId, calleeId, ws, ca
                         return callback(error);
                     }
 
-                    if (candidateQueue[calleeId]) {
-                        while(candidateQueue[calleeId].length) {
-                            var candidate = candidateQueue[calleeId].shift();
+                    if (candidatesQueue[calleeId]) {
+                        while(candidatesQueue[calleeId].length) {
+                            var candidate = candidatesQueue[calleeId].shift();
                             calleeWebRtcEndpoint.addIceCandidate(candidate);
                         }
                     }
@@ -297,12 +297,12 @@ function stop(sessionId) {
         stoppedUser.sendMessage(message)
     }
 
-    clearCandidateQueue(sessionId);
+    clearCandidatesQueue(sessionId);
 }
 
 function incomingCallResponse(calleeId, from, callResponse, calleeSdp, ws) {
 
-    clearCandidateQueue(calleeId);
+    clearCandidatesQueue(calleeId);
 
     function onError(callerReason, calleeReason) {
         if (pipeline) pipeline.release();
@@ -374,7 +374,7 @@ function incomingCallResponse(calleeId, from, callResponse, calleeSdp, ws) {
 }
 
 function call(callerId, to, from, sdpOffer) {
-    clearCandidateQueue(callerId);
+    clearCandidatesQueue(callerId);
 
     var caller = userRegistry.getById(callerId);
     var rejectCause = 'User ' + to + ' is not registered';
@@ -422,9 +422,9 @@ function register(id, name, ws, callback) {
     }
 }
 
-function clearCandidateQueue(sessionId) {
-    if (candidateQueue[sessionId]) {
-        delete candidateQueue[sessionId];
+function clearCandidatesQueue(sessionId) {
+    if (candidatesQueue[sessionId]) {
+        delete candidatesQueue[sessionId];
     }
 }
 
@@ -437,10 +437,10 @@ function onIceCandidate(sessionId, _candidate) {
         webRtcEndpoint.addIceCandidate(candidate);
     }
     else {
-        if (!candidateQueue[user.id]) {
-            candidateQueue[user.id] = [];
+        if (!candidatesQueue[user.id]) {
+            candidatesQueue[user.id] = [];
         }
-        candidateQueue[sessionId].push(candidate);
+        candidatesQueue[sessionId].push(candidate);
     }
 }
 
