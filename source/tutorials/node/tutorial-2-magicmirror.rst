@@ -41,6 +41,22 @@ clean the npm cache, and try to install them again:
 Access the application connecting to the URL http://localhost:8080/ through a
 WebRTC capable browser (Chrome, Firefox).
 
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``ws_uri`` to the npm execution command, as follows:
+
+   .. sourcecode:: sh
+
+      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+
+   In this case you need to use npm version 2. To update it you can use this command:
+
+   .. sourcecode:: sh
+
+      sudo npm install npm -g
+
 Understanding this example
 ==========================
 
@@ -103,125 +119,275 @@ the following picture:
 
    *One to one video call signaling protocol*
 
-As you can see in the diagram, an `SDP`:term: needs to be exchanged between
-client and server to establish the `WebRTC`:term: session between the browser
-and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer at the
-browser with the WebRtcEndpoint at the server. The complete source code of this
-demo can be found in
+As you can see in the diagram, an :term:`SDP` and :term:`ICE` candidates needs
+to be exchanged between client and server to establish the :term:`WebRTC`
+session between the Kurento client and server. Specifically, the SDP
+negotiation connects the WebRtcPeer at the browser with the WebRtcEndpoint at
+the server. The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-magic-mirror>`_.
 
-Application Server Side
-=======================
+Application Server Logic
+========================
 
 This demo has been developed using the **express** framework for Node.js, but
-express is not a requirement for Kurento.
-
-The main script of this demo is
+express is not a requirement for Kurento. The main script of this demo is
 `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/server.js>`_.
 
-Once the *Kurento Client* has been instantiated, you are ready for communicating
-with Kurento Media Server and controlling its multimedia capabilities.
+In order to communicate the JavaScript client and the Node application server a
+WebSocket is used. The incoming messages to this WebSocket (variable ``ws`` in
+the code) are conveniently handled to implemented the signaling protocol
+depicted in the figure before (i.e. messages ``start``, ``stop``,
+``onIceCandidate``).
+
+.. sourcecode:: js
+
+   var ws = require('ws');
+
+   [...]
+
+   var wss = new ws.Server({
+       server : server,
+       path : '/magicmirror'
+   });
+
+   /*
+    * Management of WebSocket messages
+    */
+   wss.on('connection', function(ws) {
+       var sessionId = null;
+       var request = ws.upgradeReq;
+       var response = {
+           writeHead : {}
+       };
+
+       sessionHandler(request, response, function(err) {
+           sessionId = request.session.id;
+           console.log('Connection received with sessionId ' + sessionId);
+       });
+
+       ws.on('error', function(error) {
+           console.log('Connection ' + sessionId + ' error');
+           stop(sessionId);
+       });
+
+       ws.on('close', function() {
+           console.log('Connection ' + sessionId + ' closed');
+           stop(sessionId);
+       });
+
+       ws.on('message', function(_message) {
+           var message = JSON.parse(_message);
+           console.log('Connection ' + sessionId + ' received message ', message);
+
+           switch (message.id) {
+           case 'start':
+               sessionId = request.session.id;
+               start(sessionId, ws, message.sdpOffer, function(error, sdpAnswer) {
+                   if (error) {
+                       return ws.send(JSON.stringify({
+                           id : 'error',
+                           message : error
+                       }));
+                   }
+                   ws.send(JSON.stringify({
+                       id : 'startResponse',
+                       sdpAnswer : sdpAnswer
+                   }));
+               });
+               break;
+
+           case 'stop':
+               stop(sessionId);
+               break;
+
+           case 'onIceCandidate':
+               onIceCandidate(sessionId, message.candidate);
+               break;
+
+           default:
+               ws.send(JSON.stringify({
+                   id : 'error',
+                   message : 'Invalid message ' + message
+               }));
+               break;
+           }
+
+       });
+   });
+
+In order to control the media capabilities provided by the Kurento Media Server,
+we need an instance of the *KurentoClient* in the Node application server. In
+order to create this instance, we need to specify to the client library the
+location of the Kurento Media Server. In this example, we assume it's located
+at *localhost* listening in port 8888.
 
 .. sourcecode:: js
 
    var kurento = require('kurento-client');
 
-   //...
+   var kurentoClient = null;
 
-   const ws_uri = "ws://localhost:8888/kurento";
-
-   //...
-
-   kurento(ws_uri, function(error, _kurentoClient) {
-      if (error) {
-         console.log("Could not find media server at address " + ws_uri);
-         return callback("Could not find media server at address" + ws_uri
-            + ". Exiting with error " + error);
-      }
-
-      kurentoClient = _kurentoClient;
-      callback(null, kurentoClient);
+   var argv = minimist(process.argv.slice(2), {
+       default: {
+           as_uri: 'http://localhost:8080/',
+           ws_uri: 'ws://localhost:8888/kurento'
+       }
    });
 
+   [...]
 
-This web application follows *Single Page Application* architecture
-(`SPA`:term:) and uses a `WebSocket`:term: in the path ``/magicmirror`` to
-communicate client with application server by means of requests and responses.
+   function getKurentoClient(callback) {
+       if (kurentoClient !== null) {
+           return callback(null, kurentoClient);
+       }
 
-The following code snippet implements the server part of the signaling protocol
-depicted in the previous sequence diagram.
+       kurento(argv.ws_uri, function(error, _kurentoClient) {
+           if (error) {
+               console.log("Could not find media server at address " + argv.ws_uri);
+               return callback("Could not find media server at address" + argv.ws_uri
+                       + ". Exiting with error " + error);
+           }
 
-.. sourcecode:: js
-
-   ws.on('message', function(_message) {
-      var message = JSON.parse(_message); switch (message.id) {
-
-      case 'start':
-         start(sessionId, message.sdpOffer, function(error, sdpAnswer) {
-            if (error) {
-               return ws.send(JSON.stringify({
-                  id : 'error', message : error
-               }));
-            }
-            ws.send(JSON.stringify({
-               id : 'startResponse', sdpAnswer : sdpAnswer
-            }));
-         });
-         break;
-
-      case 'stop':
-         stop(sessionId); break;
-
-      //...
-   });
-
-In the designed protocol there are three different kinds of incoming messages to
-the *Server* : ``start`` and ``stop``. These messages are treated in the
-*switch* clause, taking the proper steps in each case.
-
-In the following snippet, we can see the ``start`` method. It creates a Media
-Pipeline, then creates the Media Elements (``WebRtcEndpoint`` and
-``FaceOverlayFilter``) and make the connections among them. A ``startResponse``
-message is sent back to the client with the SDP answer.
-
-.. sourcecode:: js
-
-   function start(sessionId, sdpOffer, callback) {
-     getKurentoClient(function(error, kurentoClient) {
-       kurentoClient.create('MediaPipeline', function(error, pipeline) {
-         createMediaElements(pipeline, function(error, webRtcEndpoint, faceOverlayFilter) {
-           connectMediaElements(webRtcEndpoint, faceOverlayFilter, function(error) {
-             webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
-               pipelines[sessionId] = pipeline; return callback(null, sdpAnswer);
-             });
-           });
-         });
+           kurentoClient = _kurentoClient;
+           callback(null, kurentoClient);
        });
-     });
    }
 
-   function createMediaElements(pipeline, callback) {
-     pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
-       pipeline.create('FaceOverlayFilter', function(error, faceOverlayFilter) {
-         faceOverlayFilter.setOverlayedImage(
-             "http://files.kurento.org/imgs/mario-wings.png",
-             -0.35, -1.2, 1.6, 1.6, function(error) {
-           return callback(null, webRtcEndpoint, faceOverlayFilter);
-         });
+Once the *Kurento Client* has been instantiated, you are ready for communicating
+with Kurento Media Server. Our first operation is to create a *Media Pipeline*,
+then we need to create the *Media Elements* and connect them. In this example,
+we need a *WebRtcEndpoint* connected to a *FaceOverlayFilter*, which is
+connected to the sink of the same *WebRtcEndpoint*. These functions are called
+in the ``start`` function, which is fired when the ``start`` message is
+received:
+
+.. sourcecode:: js
+
+   function start(sessionId, ws, sdpOffer, callback) {
+       if (!sessionId) {
+           return callback('Cannot use undefined sessionId');
+       }
+
+       getKurentoClient(function(error, kurentoClient) {
+           if (error) {
+               return callback(error);
+           }
+
+           kurentoClient.create('MediaPipeline', function(error, pipeline) {
+               if (error) {
+                   return callback(error);
+               }
+
+               createMediaElements(pipeline, ws, function(error, webRtcEndpoint) {
+                   if (error) {
+                       pipeline.release();
+                       return callback(error);
+                   }
+
+                   if (candidatesQueue[sessionId]) {
+                       while(candidatesQueue[sessionId].length) {
+                           var candidate = candidatesQueue[sessionId].shift();
+                           webRtcEndpoint.addIceCandidate(candidate);
+                       }
+                   }
+
+                   connectMediaElements(webRtcEndpoint, faceOverlayFilter, function(error) {
+                       if (error) {
+                           pipeline.release();
+                           return callback(error);
+                       }
+
+                       webRtcEndpoint.on('OnIceCandidate', function(event) {
+                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           ws.send(JSON.stringify({
+                               id : 'iceCandidate',
+                               candidate : candidate
+                           }));
+                       });
+
+                       webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+                           if (error) {
+                               pipeline.release();
+                               return callback(error);
+                           }
+
+                           sessions[sessionId] = {
+                               'pipeline' : pipeline,
+                               'webRtcEndpoint' : webRtcEndpoint
+                           }
+                           return callback(null, sdpAnswer);
+                       });
+
+                       webRtcEndpoint.gatherCandidates(function(error) {
+                           if (error) {
+                               return callback(error);
+                           }
+                       });
+                   });
+               });
+           });
        });
-     });
+   }
+
+   function createMediaElements(pipeline, ws, callback) {
+       pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+           if (error) {
+               return callback(error);
+           }
+
+           return callback(null, webRtcEndpoint);
+       });
    }
 
    function connectMediaElements(webRtcEndpoint, faceOverlayFilter, callback) {
-     webRtcEndpoint.connect(faceOverlayFilter, function(error) {
-       faceOverlayFilter.connect(webRtcEndpoint, function(error) {
-         return callback(null);
+       webRtcEndpoint.connect(faceOverlayFilter, function(error) {
+           if (error) {
+               return callback(error);
+           }
+
+           faceOverlayFilter.connect(webRtcEndpoint, function(error) {
+               if (error) {
+                   return callback(error);
+               }
+
+               return callback(null);
+           });
        });
-     });
    }
 
-Client-Side
-===========
+As of Kurento Media Server 6.0, the WebRTC negotiation is done by exchanging
+:term:`ICE` candidates between the WebRTC peers. To implement this protocol,
+the ``webRtcEndpoint`` receives candidates from the client in
+``OnIceCandidate`` function. These candidates are stored in a queue when the
+``webRtcEndpoint`` is not available yet. Then these candidates are added to the
+media element by calling to the ``addIceCandidate`` method.
+
+.. sourcecode:: js
+
+   var candidatesQueue = {};
+
+   [...]
+
+   function onIceCandidate(sessionId, _candidate) {
+       var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+
+       if (sessions[sessionId]) {
+           console.info('Sending candidate');
+           var webRtcEndpoint = sessions[sessionId].webRtcEndpoint;
+           webRtcEndpoint.addIceCandidate(candidate);
+       }
+       else {
+           console.info('Queueing candidate');
+           if (!candidatesQueue[sessionId]) {
+               candidatesQueue[sessionId] = [];
+           }
+           candidatesQueue[sessionId].push(candidate);
+       }
+   }
+
+
+Client-Side Logic
+=================
 
 Let's move now to the client-side of the application. To call the previously
 created WebSocket service in the server-side, we use the JavaScript class
@@ -229,24 +395,28 @@ created WebSocket service in the server-side, we use the JavaScript class
 **kurento-utils.js** to simplify the WebRTC interaction with the server. This
 library depends on **adapter.js**, which is a JavaScript WebRTC utility
 maintained by Google that abstracts away browser differences. Finally
-**jquery.js** is also needed in this application.
-
-These libraries are linked in the
+**jquery.js** is also needed in this application. These libraries are linked in
+the
 `index.html <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/index.html>`_
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/magicmirror``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are four incoming messages to client: ``startResponse`` and
-``error``. Convenient actions are taken to implement each step in the
-communication. For example, in functions ``start`` the function
-``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to start a WebRTC
-communication.
+Notice that there are three incoming messages to client: ``startResponse``,
+``error``, and ``iceCandidate``. Convenient actions are taken to implement each
+step in the communication.
 
 .. sourcecode:: javascript
 
    var ws = new WebSocket('ws://' + location.host + '/magicmirror');
+   var webRtcPeer;
+
+   const I_CAN_START = 0;
+   const I_CAN_STOP = 1;
+   const I_AM_STARTING = 2;
+
+   [...]
 
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
@@ -260,28 +430,64 @@ communication.
          if (state == I_AM_STARTING) {
             setState(I_CAN_START);
          }
-         console.error("Error message from server: " + parsedMessage.message);
+         onError('Error message from server: ' + parsedMessage.message);
+         break;
+      case 'iceCandidate':
+         webRtcPeer.addIceCandidate(parsedMessage.candidate)
          break;
       default:
          if (state == I_AM_STARTING) {
             setState(I_CAN_START);
          }
-         console.error('Unrecognized message', parsedMessage);
+         onError('Unrecognized message', parsedMessage);
       }
    }
 
+In the function ``start`` the method ``WebRtcPeer.WebRtcPeerSendrecv`` of
+*kurento-utils.js* is used to create the ``webRtcPeer`` object, which is used
+to handle the WebRTC communication.
+
+.. sourcecode:: javascript
+
+   videoInput = document.getElementById('videoInput');
+   videoOutput = document.getElementById('videoOutput');
+
+   [...]
+
    function start() {
-      console.log("Starting video call ...")
+      console.log('Starting video call ...')
+
       // Disable start button
       setState(I_AM_STARTING);
       showSpinner(videoInput, videoOutput);
 
-      console.log("Creating WebRtcPeer and generating local sdp offer ...");
-      webRtcPeer =
-         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+      console.log('Creating WebRtcPeer and generating local sdp offer ...');
+
+       var options = {
+         localVideo: videoInput,
+         remoteVideo: videoOutput,
+         onicecandidate : onIceCandidate
+       }
+
+       webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error) {
+           if(error) return onError(error);
+           this.generateOffer(onOffer);
+       });
    }
 
-   function onOffer(offerSdp) {
+   function onIceCandidate(candidate) {
+         console.log('Local candidate' + JSON.stringify(candidate));
+
+         var message = {
+            id : 'onIceCandidate',
+            candidate : candidate
+         };
+         sendMessage(message);
+   }
+
+   function onOffer(error, offerSdp) {
+      if(error) return onError(error);
+
       console.info('Invoking SDP offer callback function ' + location.host);
       var message = {
          id : 'start',
@@ -290,42 +496,37 @@ communication.
       sendMessage(message);
    }
 
-   function onError(error) {
-      console.error(error);
-   }
 
 Dependencies
 ============
 
-Dependencies of this demo are managed using npm. Our main dependency is the
-Kurento Client JavaScript (*kurento-client*). The relevant part of the
+Server-side dependencies of this demo are managed using :term:`npm`. Our main
+dependency is the Kurento Client JavaScript (*kurento-client*). The relevant
+part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/package.json>`_
 file for managing this dependency is:
 
 .. sourcecode:: js
 
    "dependencies": {
-     ...
-     "kurento-client" : "^5.0.0"
+      [...]
+      "kurento-client" : "|CLIENT_JS_VERSION|"
    }
 
-At the client side, dependencies are managed using Bower. Take a look to the
+At the client side, dependencies are managed using :term:`Bower`. Take a look to
+the
 `bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/bower.json>`_
 file and pay attention to the following section:
 
 .. sourcecode:: js
 
    "dependencies": {
-     "kurento-utils" : "^5.0.0"
+      [...]
+      "kurento-utils" : "|UTILS_JS_VERSION|"
    }
-
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-range ``^5.0.0`` downloads the latest version of Kurento artefacts from Bower
-in version 5 (i.e. 5.x.x). Major versions are released when incompatible
-changes are made.
 
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento JavaScript Client at `NPM <http://npmsearch.com/?q=kurento-client>`_
+   Kurento JavaScript Client at `npm <http://npmsearch.com/?q=kurento-client>`_
    and `Bower <http://bower.io/search/?q=kurento-client>`_.
