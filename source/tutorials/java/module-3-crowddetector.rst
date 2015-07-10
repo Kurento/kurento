@@ -12,12 +12,12 @@ For the impatient: running this example
 
 First of all, you should install Kurento Media Server to run this demo. Please
 visit the :doc:`installation guide <../../installation_guide>` for further
-information. In addition, the built-in module ``kms-crowddetector`` should be
-also installed:
+information. In addition, the built-in module ``kms-crowddetector-6.0`` should
+be also installed:
 
 .. sourcecode:: sh
 
-    sudo apt-get install kms-crowddetector
+    sudo apt-get install kms-crowddetector-6.0
 
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
@@ -31,6 +31,16 @@ is hosted and then run the main class, as follows:
 The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
 Firefox).
+
+.. note::
+
+   These instructions work only if Kurento Media Server is up and running in the same machine
+   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
+   the argument ``kms.ws.uri`` to the Maven execution command, as follows:
+
+   .. sourcecode:: sh
+
+      mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
 
 Understanding this example
 ==========================
@@ -142,151 +152,167 @@ All in all, the media pipeline of this demo is is implemented as follows:
 
 .. sourcecode:: java
 
-   private void start(final WebSocketSession session, JsonObject jsonMessage) {
-      try {
-         // Media Logic (Media Pipeline and Elements)
-         MediaPipeline pipeline = kurento.createMediaPipeline();
-         pipelines.put(session.getId(), pipeline);
+   // Media Logic (Media Pipeline and Elements)
+   MediaPipeline pipeline = kurento.createMediaPipeline();
+   pipelines.put(session.getId(), pipeline);
 
-         WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
-               .build();
-
-         List<RegionOfInterest> rois = new ArrayList<>();
-         List<RelativePoint> points = new ArrayList<RelativePoint>();
-
-         points.add(new RelativePoint(0, 0));
-         points.add(new RelativePoint(0.5F, 0));
-         points.add(new RelativePoint(0.5F, 0.5F));
-         points.add(new RelativePoint(0, 0.5F));
-
-         RegionOfInterestConfig config = new RegionOfInterestConfig();
-
-         config.setFluidityLevelMin(10);
-         config.setFluidityLevelMed(35);
-         config.setFluidityLevelMax(65);
-         config.setFluidityNumFramesToEvent(5);
-         config.setOccupancyLevelMin(10);
-         config.setOccupancyLevelMed(35);
-         config.setOccupancyLevelMax(65);
-         config.setOccupancyNumFramesToEvent(5);
-         config.setSendOpticalFlowEvent(false);
-         config.setOpticalFlowNumFramesToEvent(3);
-         config.setOpticalFlowNumFramesToReset(3);
-         config.setOpticalFlowAngleOffset(0);
-
-         rois.add(new RegionOfInterest(points, config, "roi0"));
-
-         CrowdDetectorFilter crowdDetectorFilter = new CrowdDetectorFilter.Builder(
-               pipeline, rois).build();
-
-         webRtcEndpoint.connect(crowdDetectorFilter);
-         crowdDetectorFilter.connect(webRtcEndpoint);
-
-         // addEventListener to crowddetector
-         crowdDetectorFilter.addCrowdDetectorDirectionListener(
-            new EventListener<CrowdDetectorDirectionEvent>() {
-                  @Override
-                  public void onEvent(CrowdDetectorDirectionEvent event) {
-                     JsonObject response = new JsonObject();
-                     response.addProperty("id", "directionEvent");
-                     response.addProperty("roiId", event.getRoiID());
-                     response.addProperty("angle",
-                           event.getDirectionAngle());
-                     try {
-                        session.sendMessage(new TextMessage(response
-                              .toString()));
-                     } catch (Throwable t) {
-                        sendError(session, t.getMessage());
-                     }
-                  }
-               });
-
-         crowdDetectorFilter.addCrowdDetectorFluidityListener(
-            new EventListener<CrowdDetectorFluidityEvent>() {
-                  @Override
-                  public void onEvent(CrowdDetectorFluidityEvent event) {
-                     JsonObject response = new JsonObject();
-                     response.addProperty("id", "fluidityEvent");
-                     response.addProperty("roiId", event.getRoiID());
-                     response.addProperty("level",
-                           event.getFluidityLevel());
-                     response.addProperty("percentage",
-                           event.getFluidityPercentage());
-                     try {
-                        session.sendMessage(new TextMessage(response
-                              .toString()));
-                     } catch (Throwable t) {
-                        sendError(session, t.getMessage());
-                     }
-                  }
-               });
-
-         crowdDetectorFilter.addCrowdDetectorOccupancyListener(
-            new EventListener<CrowdDetectorOccupancyEvent>() {
-                  @Override
-                  public void onEvent(CrowdDetectorOccupancyEvent event) {
-                     JsonObject response = new JsonObject();
-                     response.addProperty("id", "occupancyEvent");
-                     response.addProperty("roiId", event.getRoiID());
-                     response.addProperty("level",
-                           event.getOccupancyLevel());
-                     response.addProperty("percentage",
-                           event.getOccupancyPercentage());
-                     try {
-                        session.sendMessage(new TextMessage(response
-                              .toString()));
-                     } catch (Throwable t) {
-                        sendError(session, t.getMessage());
-                     }
-                  }
-               });
-
-         // SDP negotiation (offer and answer)
-         String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-         String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-
-         // Sending response back to client
+   WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
+         .build();
+   webRtcEndpoint
+      .addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+         @Override
+         public void onEvent(OnIceCandidateEvent event) {
          JsonObject response = new JsonObject();
-         response.addProperty("id", "startResponse");
-         response.addProperty("sdpAnswer", sdpAnswer);
-         session.sendMessage(new TextMessage(response.toString()));
-      } catch (Throwable t) {
-         sendError(session, t.getMessage());
+         response.addProperty("id", "iceCandidate");
+         response.add("candidate",
+            JsonUtils.toJsonObject(event.getCandidate()));
+         try {
+            synchronized (session) {
+            session.sendMessage(new TextMessage(response
+               .toString()));
+            }
+         } catch (IOException e) {
+            log.debug(e.getMessage());
+         }
+         }
+      });
+
+   List<RegionOfInterest> rois = new ArrayList<>();
+   List<RelativePoint> points = new ArrayList<RelativePoint>();
+
+   points.add(new RelativePoint(0, 0));
+   points.add(new RelativePoint(0.5F, 0));
+   points.add(new RelativePoint(0.5F, 0.5F));
+   points.add(new RelativePoint(0, 0.5F));
+
+   RegionOfInterestConfig config = new RegionOfInterestConfig();
+
+   config.setFluidityLevelMin(10);
+   config.setFluidityLevelMed(35);
+   config.setFluidityLevelMax(65);
+   config.setFluidityNumFramesToEvent(5);
+   config.setOccupancyLevelMin(10);
+   config.setOccupancyLevelMed(35);
+   config.setOccupancyLevelMax(65);
+   config.setOccupancyNumFramesToEvent(5);
+   config.setSendOpticalFlowEvent(false);
+   config.setOpticalFlowNumFramesToEvent(3);
+   config.setOpticalFlowNumFramesToReset(3);
+   config.setOpticalFlowAngleOffset(0);
+
+   rois.add(new RegionOfInterest(points, config, "roi0"));
+
+   CrowdDetectorFilter crowdDetectorFilter = new CrowdDetectorFilter.Builder(
+         pipeline, rois).build();
+
+   webRtcEndpoint.connect(crowdDetectorFilter);
+   crowdDetectorFilter.connect(webRtcEndpoint);
+
+   // addEventListener to crowddetector
+   crowdDetectorFilter.addCrowdDetectorDirectionListener(
+      new EventListener<CrowdDetectorDirectionEvent>() {
+      @Override
+      public void onEvent(CrowdDetectorDirectionEvent event) {
+         JsonObject response = new JsonObject();
+         response.addProperty("id", "directionEvent");
+         response.addProperty("roiId", event.getRoiID());
+         response.addProperty("angle",
+         event.getDirectionAngle());
+         try {
+            session.sendMessage(new TextMessage(response
+            .toString()));
+         } catch (Throwable t) {
+            sendError(session, t.getMessage());
+         }
       }
-   }
+         });
+
+   crowdDetectorFilter.addCrowdDetectorFluidityListener(
+      new EventListener<CrowdDetectorFluidityEvent>() {
+      @Override
+      public void onEvent(CrowdDetectorFluidityEvent event) {
+         JsonObject response = new JsonObject();
+         response.addProperty("id", "fluidityEvent");
+         response.addProperty("roiId", event.getRoiID());
+         response.addProperty("level",
+         event.getFluidityLevel());
+         response.addProperty("percentage",
+         event.getFluidityPercentage());
+         try {
+            session.sendMessage(new TextMessage(response
+            .toString()));
+         } catch (Throwable t) {
+            sendError(session, t.getMessage());
+         }
+      }
+         });
+
+   crowdDetectorFilter.addCrowdDetectorOccupancyListener(
+      new EventListener<CrowdDetectorOccupancyEvent>() {
+      @Override
+      public void onEvent(CrowdDetectorOccupancyEvent event) {
+         JsonObject response = new JsonObject();
+         response.addProperty("id", "occupancyEvent");
+         response.addProperty("roiId", event.getRoiID());
+         response.addProperty("level",
+         event.getOccupancyLevel());
+         response.addProperty("percentage",
+         event.getOccupancyPercentage());
+         try {
+            session.sendMessage(new TextMessage(response
+            .toString()));
+         } catch (Throwable t) {
+            sendError(session, t.getMessage());
+         }
+      }
+         });
+
+   // SDP negotiation (offer and answer)
+   String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
+   String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+
+   // Sending response back to client
+   JsonObject response = new JsonObject();
+   response.addProperty("id", "startResponse");
+   response.addProperty("sdpAnswer", sdpAnswer);
+   session.sendMessage(new TextMessage(response.toString()));
+
+   webRtcEndpoint.gatherCandidates();
 
 Dependencies
 ============
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
-part of the *pom.xml* is where Kurento dependencies are declared. As the
-following snippet shows, we need three dependencies: the Kurento Client Java
-dependency (*kurento-client*), the JavaScript Kurento utility library
-(*kurento-utils*) for the client-side, and the crowd detector module
-(*crowddetector*):
+part of the
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-crowddetector/pom.xml>`_
+is where Kurento dependencies are declared. As the following snippet shows, we
+need three dependencies: the Kurento Client Java dependency (*kurento-client*),
+the JavaScript Kurento utility library (*kurento-utils*) for the client-side,
+and the crowd detector module (*crowddetector*):
 
 .. sourcecode:: xml 
+
+   <parent>
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-parent-pom</artifactId>
+      <version>|CLIENT_JAVA_VERSION|</version>
+   </parent>
 
    <dependencies> 
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>[5.0.0,6.0.0)</version>
       </dependency> 
       <dependency> 
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId> 
-         <version>[5.0.0,6.0.0)</version>
       </dependency>
       <dependency>
          <groupId>org.kurento.module</groupId>
          <artifactId>crowddetector</artifactId>
-         <version>[1.0.0,2.0.0)</version>
       </dependency>
    </dependencies>
 
-Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
-ranges (``[5.0.0,6.0.0)`` for *kurento-client* and *kurento-utils-js*,  and
-``[1.0.0,2.0.0)`` for *crowddetector*) downloads the latest version of Kurento
-artifacts from Maven Central.
+.. note::
 
+   We are in active development. You can find the latest versions at `Maven Central <http://search.maven.org/>`_.
