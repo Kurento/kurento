@@ -45,6 +45,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -54,6 +56,7 @@ import org.kurento.test.grid.GridHandler;
 import org.kurento.test.grid.GridNode;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
@@ -79,6 +82,10 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://www.seleniumhq.org/">Selenium</a>
  */
 public class BrowserClient implements Closeable {
+
+	private static final long PING_DELAY = 20000;
+
+	private ScheduledExecutorService exec = Executors.newScheduledThreadPool(5);
 
 	public Logger log = LoggerFactory.getLogger(BrowserClient.class);
 
@@ -115,6 +122,7 @@ public class BrowserClient implements Closeable {
 	private boolean avoidProxy;
 	private String parentTunnel;
 	private List<Map<String, String>> extensions;
+	private boolean ping;
 
 	public BrowserClient(Builder builder) {
 		this.builder = builder;
@@ -146,9 +154,11 @@ public class BrowserClient implements Closeable {
 		this.avoidProxy = builder.avoidProxy;
 		this.parentTunnel = builder.parentTunnel;
 		this.extensions = builder.extensions;
+		this.ping = builder.ping;
 	}
 
 	public void init() {
+
 		Class<? extends WebDriver> driverClass = browserType.getDriverClass();
 
 		try {
@@ -315,6 +325,18 @@ public class BrowserClient implements Closeable {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
 
+		startPing();
+	}
+
+	private void startPing() {
+		if (ping) {
+			exec.scheduleAtFixedRate(new Runnable() {
+				@Override
+				public void run() {
+					driver.findElement(By.name("body"));
+				}
+			}, PING_DELAY, PING_DELAY, TimeUnit.MILLISECONDS);
+		}
 	}
 
 	public InputStream getExtensionAsInputStream(String extension) {
@@ -496,6 +518,7 @@ public class BrowserClient implements Closeable {
 	}
 
 	public static class Builder {
+		private boolean ping = true;
 		private int timeout = 60; // seconds
 		private int thresholdTime = 10; // seconds
 		private double colorDistance = 60;
@@ -646,6 +669,11 @@ public class BrowserClient implements Closeable {
 
 		public Builder host(String host) {
 			this.host = host;
+			return this;
+		}
+
+		public Builder ping(boolean ping) {
+			this.ping = ping;
 			return this;
 		}
 
