@@ -810,8 +810,8 @@ public class BrowserClient implements Closeable {
 		return host;
 	}
 
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
+	public void setTimeout(int timeoutSeconds) {
+		this.timeout = timeoutSeconds;
 	}
 
 	public Protocol getProtocol() {
