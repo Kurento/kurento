@@ -124,6 +124,8 @@ public class BrowserClient implements Closeable {
 	private List<Map<String, String>> extensions;
 	private boolean ping;
 
+	private String url;
+
 	public BrowserClient(Builder builder) {
 		this.builder = builder;
 		this.scope = builder.scope;
@@ -306,8 +308,6 @@ public class BrowserClient implements Closeable {
 			// Timeouts
 			changeTimeout(timeout);
 
-			// Launch Browser
-			String url;
 			if (protocol == Protocol.FILE) {
 				String clientPage = client.toString();
 				File clientPageFile = new File(this.getClass().getClassLoader()
@@ -336,6 +336,12 @@ public class BrowserClient implements Closeable {
 					driver.findElement(By.name("body"));
 				}
 			}, PING_DELAY, PING_DELAY, TimeUnit.MILLISECONDS);
+		}
+	}
+
+	public void reload() {
+		if (url != null) {
+			this.driver.get(url);
 		}
 	}
 
