@@ -73,9 +73,6 @@ struct _KmsWebRtcBaseConnectionClass
 
 GType kms_webrtc_base_connection_get_type (void);
 
-void
-kms_webrtc_base_connection_set_certificate_pem_file (KmsWebRtcBaseConnection *
-    self, const gchar * pem);
 gchar *kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection *
     self);
 void kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * self,

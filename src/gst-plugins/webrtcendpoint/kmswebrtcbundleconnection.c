@@ -65,13 +65,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsWebRtcBundleConnection,
     G_IMPLEMENT_INTERFACE (KMS_TYPE_I_BUNDLE_CONNECTION,
         kms_webrtc_bundle_connection_interface_init));
 
-static void
-    kms_webrtc_bundle_connection_set_certificate_pem_file
-    (KmsWebRtcBaseConnection * base_conn, const gchar * pem)
-{
-  GST_WARNING_OBJECT (base_conn, "Deprectated (using erdtls)");
-}
-
 static gchar *
 kms_webrtc_bundle_connection_get_certificate_pem (KmsWebRtcBaseConnection *
     base_conn)
@@ -322,8 +315,6 @@ kms_webrtc_bundle_connection_class_init (KmsWebRtcBundleConnectionClass * klass)
   gobject_class->get_property = kms_webrtc_bundle_connection_get_property;
 
   base_conn_class = KMS_WEBRTC_BASE_CONNECTION_CLASS (klass);
-  base_conn_class->set_certificate_pem_file =
-      kms_webrtc_bundle_connection_set_certificate_pem_file;
   base_conn_class->get_certificate_pem =
       kms_webrtc_bundle_connection_get_certificate_pem;
 
