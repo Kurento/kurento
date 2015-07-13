@@ -329,12 +329,9 @@ static KmsWebRtcBaseConnection *
 kms_webrtc_endpoint_media_get_connection (KmsWebRtcSession * webrtc_sess,
     SdpMediaConfig * mconf)
 {
-  KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (webrtc_sess->ep);
   KmsIRtpConnection *conn;
 
-  conn =
-      kms_base_rtp_endpoint_get_connection (base_rtp, webrtc_sess->parent,
-      mconf);
+  conn = kms_sdp_session_get_connection (webrtc_sess->parent, mconf);
   if (conn == NULL) {
     return NULL;
   }
@@ -407,11 +404,9 @@ kms_webrtc_endpoint_generate_fingerprint_sdp_attr (KmsWebrtcEndpoint * self,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
   gchar *fp, *ret;
-  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
 
   KmsWebRtcBaseConnection *conn =
-      KMS_WEBRTC_BASE_CONNECTION (kms_base_rtp_endpoint_get_connection
-      (base_rtp_endpoint, sess, mconf));
+      KMS_WEBRTC_BASE_CONNECTION (kms_sdp_session_get_connection (sess, mconf));
   gchar *pem = kms_webrtc_base_connection_get_certificate_pem (conn);
 
   fp = generate_fingerprint_from_pem (pem);
@@ -917,14 +912,13 @@ static void
 kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
-  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
   gboolean connected = FALSE;
   KmsIRtpConnection *conn;
   ConnectSCTPData *data;
   GstSDPMedia *media;
   gulong handler_id = 0;
 
-  conn = kms_base_rtp_endpoint_get_connection (base_rtp_endpoint, sess, mconf);
+  conn = kms_sdp_session_get_connection (sess, mconf);
 
   if (conn == NULL) {
     return;
@@ -1089,11 +1083,10 @@ static gboolean
 kms_webrtc_endpoint_add_connection (KmsWebrtcEndpoint * self,
     KmsSdpSession * sess, SdpMediaConfig * mconf, gboolean offerer)
 {
-  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
   gboolean connected, active;
   KmsIRtpConnection *conn;
 
-  conn = kms_base_rtp_endpoint_get_connection (base_rtp_endpoint, sess, mconf);
+  conn = kms_sdp_session_get_connection (sess, mconf);
   if (conn == NULL) {
     GST_ERROR_OBJECT (self, "No connection created");
     return FALSE;
@@ -1261,20 +1254,18 @@ static void
 kms_webrtc_endpoint_gathering_done (NiceAgent * agent, guint stream_id,
     KmsWebRtcSession * webrtc_sess)
 {
-  KmsBaseRtpEndpoint *base_rtp_endpoint =
-      KMS_BASE_RTP_ENDPOINT (webrtc_sess->ep);
-  GHashTable *conns;
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (webrtc_sess->ep);
+  KmsSdpSession *sess = KMS_SDP_SESSION (webrtc_sess->parent);
   GHashTableIter iter;
   gpointer key, v;
   gboolean done = TRUE;
 
-  GST_DEBUG_OBJECT (webrtc_sess->ep, "ICE gathering done for '%s' stream.",
+  GST_DEBUG_OBJECT (self, "ICE gathering done for '%s' stream.",
       nice_agent_get_stream_name (agent, stream_id));
 
-  KMS_ELEMENT_LOCK (webrtc_sess->ep);
-  conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
+  KMS_ELEMENT_LOCK (self);
 
-  g_hash_table_iter_init (&iter, conns);
+  g_hash_table_iter_init (&iter, sess->conns);
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
 
@@ -1290,10 +1281,10 @@ kms_webrtc_endpoint_gathering_done (NiceAgent * agent, guint stream_id,
   if (done) {
     kms_webrtc_endpoint_local_sdp_add_default_info (webrtc_sess);
   }
-  KMS_ELEMENT_UNLOCK (webrtc_sess->ep);
+  KMS_ELEMENT_UNLOCK (self);
 
   if (done) {
-    g_signal_emit (G_OBJECT (webrtc_sess->ep),
+    g_signal_emit (G_OBJECT (self),
         kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0,
         webrtc_sess->parent->id_str);
   }
@@ -1303,12 +1294,12 @@ static gboolean
 kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
     const gchar * sess_id)
 {
-  KmsBaseRtpEndpoint *base_rtp_endpoint = KMS_BASE_RTP_ENDPOINT (self);
-  GHashTable *conns = kms_base_rtp_endpoint_get_connections (base_rtp_endpoint);
   KmsWebRtcSession *webrtc_sess;
   GHashTableIter iter;
   gpointer key, v;
   gboolean ret = TRUE;
+
+  GST_DEBUG_OBJECT (self, "Gather candidates for session '%s'", sess_id);
 
   webrtc_sess = g_hash_table_lookup (self->priv->sessions, sess_id);
   if (webrtc_sess == NULL) {
@@ -1318,7 +1309,7 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
 
   /* TODO: get conns related with sess */
   KMS_ELEMENT_LOCK (self);
-  g_hash_table_iter_init (&iter, conns);
+  g_hash_table_iter_init (&iter, webrtc_sess->parent->conns);
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
 

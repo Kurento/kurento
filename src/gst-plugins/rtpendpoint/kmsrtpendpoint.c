@@ -87,10 +87,9 @@ static KmsRtpBaseConnection *
 kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
-  KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
   KmsIRtpConnection *conn;
 
-  conn = kms_base_rtp_endpoint_get_connection (base_rtp, sess, mconf);
+  conn = kms_sdp_session_get_connection (sess, mconf);
   if (conn == NULL) {
     return NULL;
   }
@@ -159,8 +158,6 @@ static gboolean
 kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  KmsBaseRtpEndpoint *base_rtp = KMS_BASE_RTP_ENDPOINT (self);
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   guint conn_len, c;
   guint attr_len, a;
@@ -180,9 +177,7 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     gst_sdp_media_remove_connection (media, c);
   }
 
-  conn =
-      KMS_RTP_BASE_CONNECTION (kms_base_rtp_endpoint_get_connection (base_rtp,
-          sess, mconf));
+  conn = KMS_RTP_BASE_CONNECTION (kms_sdp_session_get_connection (sess, mconf));
   if (conn == NULL) {
     return TRUE;
   }
