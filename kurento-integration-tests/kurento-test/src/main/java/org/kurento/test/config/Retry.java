@@ -64,6 +64,7 @@ public class Retry implements TestRule {
 								+ " - Execution " + (exceptions.size() + 1)
 								+ "/" + getRetryCount());
 						base.evaluate();
+						testReport.flushExtraInfoHtml();
 						testReport.appendSuccess("Test ok");
 						testReport.flushExtraInfoHtml();
 						testReport.appendLine();
