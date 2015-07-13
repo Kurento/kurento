@@ -1521,6 +1521,8 @@ webrtc_receiver_pad_added (GstElement * element, GstPad * new_pad,
 static void
 test_data_channels (gboolean bundle)
 {
+  gchar *sender_sess_id, *receiver_sess_id;
+  OnIceCandidateData *sender_cand_data, *receiver_cand_data;
   GstElement *sender = gst_element_factory_make ("webrtcendpoint", NULL);
   GstElement *receiver = gst_element_factory_make ("webrtcendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
@@ -1539,6 +1541,25 @@ test_data_channels (gboolean bundle)
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  /* Session creation */
+  g_signal_emit_by_name (sender, "create-session", &sender_sess_id);
+  GST_DEBUG_OBJECT (sender, "Created session with id '%s'", sender_sess_id);
+  g_signal_emit_by_name (receiver, "create-session", &receiver_sess_id);
+  GST_DEBUG_OBJECT (receiver, "Created session with id '%s'", receiver_sess_id);
+
+  /* Trickle ICE management */
+  sender_cand_data = g_slice_new0 (OnIceCandidateData);
+  sender_cand_data->peer = receiver;
+  sender_cand_data->peer_sess_id = receiver_sess_id;
+  g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), sender_cand_data);
+
+  receiver_cand_data = g_slice_new0 (OnIceCandidateData);
+  receiver_cand_data->peer = sender;
+  receiver_cand_data->peer_sess_id = sender_sess_id;
+  g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), receiver_cand_data);
 
   g_object_set (sender, "use-data-channels", TRUE, NULL);
   g_object_set (receiver, "use-data-channels", TRUE, NULL);
@@ -1569,38 +1590,37 @@ test_data_channels (gboolean bundle)
   GST_DEBUG ("Requested pad name %s", padname);
   g_free (padname);
 
-  /* Trickle ICE management */
-  g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), receiver);
-  g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), sender);
-
   /* SDP Negotiation */
-  g_signal_emit_by_name (sender, "generate-offer", &offer);
+  g_signal_emit_by_name (sender, "generate-offer", sender_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (receiver, "process-offer", offer, &answer);
+  g_signal_emit_by_name (receiver, "process-offer", receiver_sess_id, offer,
+      &answer);
   fail_unless (answer != NULL);
   GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (sender, "process-answer", answer);
+  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer);
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  g_object_get (sender, "local-sdp", &offerer_local_sdp, NULL);
+  g_signal_emit_by_name (sender, "get-local-sdp", sender_sess_id,
+      &offerer_local_sdp);
   fail_unless (offerer_local_sdp != NULL);
-  g_object_get (sender, "remote-sdp", &offerer_remote_sdp, NULL);
+  g_signal_emit_by_name (sender, "get-remote-sdp", sender_sess_id,
+      &offerer_remote_sdp);
   fail_unless (offerer_remote_sdp != NULL);
 
-  g_object_get (receiver, "local-sdp", &answerer_local_sdp, NULL);
+  g_signal_emit_by_name (receiver, "get-local-sdp", receiver_sess_id,
+      &answerer_local_sdp);
   fail_unless (answerer_local_sdp != NULL);
-  g_object_get (receiver, "remote-sdp", &answerer_remote_sdp, NULL);
+  g_signal_emit_by_name (receiver, "get-remote-sdp", receiver_sess_id,
+      &answerer_remote_sdp);
   fail_unless (answerer_remote_sdp != NULL);
 
   offerer_local_sdp_str = gst_sdp_message_as_text (offerer_local_sdp);
@@ -1627,10 +1647,10 @@ test_data_channels (gboolean bundle)
   gst_sdp_message_free (answerer_local_sdp);
   gst_sdp_message_free (answerer_remote_sdp);
 
-  g_signal_emit_by_name (sender, "gather-candidates", &ret);
+  g_signal_emit_by_name (sender, "gather-candidates", sender_sess_id, &ret);
   fail_unless (ret);
 
-  g_signal_emit_by_name (receiver, "gather-candidates", &ret);
+  g_signal_emit_by_name (receiver, "gather-candidates", receiver_sess_id, &ret);
   fail_unless (ret);
 
   g_main_loop_run (loop);
@@ -1645,6 +1665,10 @@ test_data_channels (gboolean bundle)
   g_object_unref (bus);
   g_object_unref (pipeline);
   g_main_loop_unref (loop);
+  g_free (sender_sess_id);
+  g_free (receiver_sess_id);
+  g_slice_free (OnIceCandidateData, sender_cand_data);
+  g_slice_free (OnIceCandidateData, receiver_cand_data);
 }
 
 GST_START_TEST (test_webrtc_data_channel)
