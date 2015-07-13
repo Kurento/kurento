@@ -560,10 +560,10 @@ static gboolean
 kms_webrtc_endpoint_local_sdp_add_default_info (KmsWebRtcSession * webrtc_sess)
 {
   KmsBaseSdpEndpoint *base_sdp_ep = KMS_BASE_SDP_ENDPOINT (webrtc_sess->ep);
-  SdpMessageContext *local_ctx = webrtc_sess->parent->local_ctx;
+  SdpMessageContext *local_sdp_ctx = webrtc_sess->parent->local_sdp_ctx;
   const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (local_ctx);
-  const GSList *item = kms_sdp_message_context_get_medias (local_ctx);
+      kms_sdp_message_context_get_sdp_message (local_sdp_ctx);
+  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
   gboolean use_ipv6;
   GstSDPConnection *conn;
 
@@ -968,8 +968,7 @@ kms_webrtc_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
     base_sdp_endpoint, KmsSdpSession * sess)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
-  const GSList *item =
-      kms_sdp_message_context_get_medias (sess->negotiated_ctx);
+  const GSList *item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
@@ -1157,9 +1156,9 @@ static void
 kms_webrtc_endpoint_configure_connections (KmsWebrtcEndpoint * self,
     KmsSdpSession * sess, gboolean offerer)
 {
-  GSList *item = kms_sdp_message_context_get_medias (sess->negotiated_ctx);
+  GSList *item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
   GSList *remote_media_list =
-      kms_sdp_message_context_get_medias (sess->remote_ctx);
+      kms_sdp_message_context_get_medias (sess->remote_sdp_ctx);
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *neg_mconf = item->data;
@@ -1189,11 +1188,10 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_endpoint);
   KmsWebRtcSession *webrtc_sess;
   const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (sess->remote_ctx);
-  const GSList *item =
-      kms_sdp_message_context_get_medias (sess->negotiated_ctx);
+      kms_sdp_message_context_get_sdp_message (sess->remote_sdp_ctx);
+  const GSList *item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
   GSList *remote_media_list =
-      kms_sdp_message_context_get_medias (sess->remote_ctx);
+      kms_sdp_message_context_get_medias (sess->remote_sdp_ctx);
   const gchar *ufrag, *pwd;
 
   webrtc_sess = g_hash_table_lookup (self->priv->sessions, sess->id_str);
@@ -1392,8 +1390,8 @@ kms_webrtc_endpoint_sdp_msg_add_ice_candidate (KmsWebRtcSession * webrtc_sess,
     NiceAgent * agent, NiceCandidate * nice_cand)
 {
   KmsWebrtcEndpoint *self = webrtc_sess->ep;
-  SdpMessageContext *local_ctx = webrtc_sess->parent->local_ctx;
-  const GSList *item = kms_sdp_message_context_get_medias (local_ctx);
+  SdpMessageContext *local_sdp_ctx = webrtc_sess->parent->local_sdp_ctx;
+  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
   GList *list = NULL, *iterator = NULL;
 
   KMS_ELEMENT_LOCK (self);
@@ -1462,19 +1460,19 @@ kms_webrtc_endpoint_set_remote_ice_candidate (KmsWebRtcSession * webrtc_sess,
     KmsIceCandidate * candidate, NiceCandidate * nice_cand)
 {
   KmsWebrtcEndpoint *self = webrtc_sess->ep;
-  SdpMessageContext *local_ctx = webrtc_sess->parent->local_ctx;
+  SdpMessageContext *local_sdp_ctx = webrtc_sess->parent->local_sdp_ctx;
   guint8 index;
   GSList *medias;
   SdpMediaConfig *mconf;
   gboolean ret;
 
-  if (local_ctx == NULL) {
+  if (local_sdp_ctx == NULL) {
     GST_INFO_OBJECT (self,
         "Cannot add candidate until local SDP is generated.");
     return TRUE;                /* We do not know if the candidate is valid until it is set */
   }
 
-  medias = kms_sdp_message_context_get_medias (local_ctx);
+  medias = kms_sdp_message_context_get_medias (local_sdp_ctx);
   index = kms_ice_candidate_get_sdp_m_line_index (candidate);
   mconf = g_slist_nth_data (medias, index);
   if (mconf == NULL) {
@@ -1520,16 +1518,16 @@ kms_webrtc_endpoint_remote_sdp_add_ice_candidate (KmsWebRtcSession *
     webrtc_sess, NiceCandidate * nice_cand, guint8 index)
 {
   KmsWebrtcEndpoint *self = webrtc_sess->ep;
-  SdpMessageContext *remote_ctx = webrtc_sess->parent->remote_ctx;
+  SdpMessageContext *remote_sdp_ctx = webrtc_sess->parent->remote_sdp_ctx;
   GSList *medias;
   SdpMediaConfig *mconf;
 
-  if (remote_ctx == NULL) {
+  if (remote_sdp_ctx == NULL) {
     GST_INFO_OBJECT (self, "Cannot update remote SDP until it is set.");
     return;
   }
 
-  medias = kms_sdp_message_context_get_medias (remote_ctx);
+  medias = kms_sdp_message_context_get_medias (remote_sdp_ctx);
   mconf = g_slist_nth_data (medias, index);
   if (mconf == NULL) {
     GST_WARNING_OBJECT (self,

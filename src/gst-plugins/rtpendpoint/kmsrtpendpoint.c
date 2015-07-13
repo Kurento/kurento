@@ -210,8 +210,9 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
   const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (sess->remote_ctx);
-  const GSList *item = kms_sdp_message_context_get_medias (sess->remote_ctx);
+      kms_sdp_message_context_get_sdp_message (sess->remote_sdp_ctx);
+  const GSList *item =
+      kms_sdp_message_context_get_medias (sess->remote_sdp_ctx);
   const GstSDPConnection *msg_conn = gst_sdp_message_get_connection (sdp);
 
   /* Chain up */
