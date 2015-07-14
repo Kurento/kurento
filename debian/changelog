@@ -1,3 +1,23 @@
+kms-jsonrpc-1.0 (1.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonSerializer: Serialize empty arrays as [] instead of as null
+  * debian: Change package name to make incompatible changes
+  * Update jsoncpp dependency
+  * JsonSerializer: Add support for std::list
+
+  [ David Fernandez ]
+  * Add int64 as data type
+
+  [ Jose Antonio Santos Cadenas ]
+  * JsonRpcUtils: Fix utils to get strings and integers
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 14:34:41 +0200
+
 kms-jsonrpc-1.0 (1.0.0~0) testing; urgency=medium
 
   * Change package name
