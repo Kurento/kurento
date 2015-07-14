@@ -1,3 +1,298 @@
+kms-elements-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * DispatcherOneToMany: Implement methods
+  * valgrind: Add exception for g_tls_certificate_new_from_file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update .gitreview to use new repo
+  * Add support for cmake versions other than 2.8
+  * Prepare for 6.0 development iteration
+  * Fix package name in changelog
+  * Change kurentoVersion to 6.0.0-dev
+
+  [ Miguel París Díaz ]
+  * kmsrtcpdemux: add useful log
+  * webrtcendpoint: use g_slice_new0
+  * webrtcendpoint: add check for request_local_key_frame
+  * rtpendpoint, webrtcenpoint: update test base on local and remote SDP
+
+  [ David Fernandez ]
+  * kmscompositemixer: Add a capsfilter in the inputs
+  * dispatcheronetomany: Fix element tests
+  * compositemixer: Fix element tests
+  * dispatcher: Add test for dispatcher element
+  * alphablending: Add test for gstreamer element
+
+  [ Miguel París Díaz ]
+  * alphablending,compositemixer: srcs as live
+  * alphablending, compositemixer: disable tests
+  * kmsicecandidate: ICE candidate representation following the standard
+  * kmsicecandidate: add kms_ice_candidate_create_nice
+  * kmsicecandidate: add getters
+  * kmswebrtcendpoint: stub for trickle ICE
+  * kmswebrtcendpoint: implement "on-ice-candidate" signal
+  * kmswebrtcendpoint: implement add_ice_candidate
+  * kmswebrtcendpoint: use kms_ice_candidate_create_nice_from_str for remote candidates
+  * kmswebrtcendpoint: remove blocking SDP negotiation mode
+  * webrtcendpoint: tests using trickle ICE
+  * WebrtcEndpoint: extend API for trickle ICE support
+  * webRtcEndpoint: test for WebRtcEp C++ element
+  * kmswebrtcendpoint: improve media_get_stream_id returning the id
+  * webrtcendpoint: add gst-plugins as include dir
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix SdpEndpoint related tests
+  * Add configuration files for WebRtcEndpoint and HttpEndpoint
+  * WebRtcEndpoint: Fix format
+  * Adapt events code to KmsEvent
+  * CompositeImpl: Remove old FIXME
+  * MixerImpl: Restore functionality deleted during migration from version 4
+  * Make icecandidate library a shared library
+
+  [ Miguel París Díaz ]
+  * WebRtcEndpoint: add STUN address and port properties
+  * kmswebrtcendpoint: allow adding candidates before process_offer
+
+  [ Jose Antonio Santos Cadenas ]
+  * HttpEpServer: Announce iface address by default
+  * Fix typo in HttpEndpoint configuration file
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: add "on-ice-component-state-changed" signal
+  * WebRtcEndpoint: add OnIceComponentStateChanged event
+
+  [ David Fernandez ]
+  * [RecorderEndpoint] Fix trace info about used recorder profile
+
+  [ Jose Antonio Santos Cadenas ]
+  * CMakeList.txt: Increase timeout of valgrind tests
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcendpoint: Fix wrong management of errors
+
+  [ Miguel París Díaz ]
+  * webrtcendpoint: fix memory leak in bus watch usage
+  * WebRtcEndpoint: add TURN URL property
+  * CMakeList:fix include dirs
+
+  [ Jose Antonio Santos Cadenas ]
+  * rtcpdemux: Improve memory management while reading packages
+
+  [ Miguel París Díaz ]
+  * kmsrtpconnection, kmswebrtcconnection: override "added" property
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmsicecandidate: Initialize log in a constructor.
+  * WebRtcEndpoint: Fix format
+  * WebrtcEndpoint: Avoid negotiating not supported codecs
+  * webRtcEndpoint: Rework test to use factories instead of instantiating elements directly
+
+  [ David Fernandez ]
+  * WebRtcEndpointImpl: Move signal logic to postConstructor function
+  * PlayerEndPoint: Move signal logic to postConstructor function
+  * HttpPostEndpoint: Move signal logic to postConstructor function
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: fix ICE controlling/controlled role
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/control: Add boost test as a build dependency
+  * Add valgrind suppressions to c++ tests
+  * WebRtcEndpoint: Fix memory leak while adding ice candidates
+
+  [ David Fernandez ]
+  * Do not release MediaSet in server tests
+  * Update gstreamer dependencies
+
+  [ Santiago Carot-Nemesio ]
+  * dtls: Rename plugins to avoid confilcts with gstreamer's ones
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable deprecation warnings while using soup library
+  * Change nice dependency to kmsnice
+  * rtpendpoint: Fix test errors when ipv6 is enabled
+
+  [ Miguel París Díaz ]
+  * kmswebrtcconnection: not set nice stream name
+  * webrtcendpoint: refactor
+  * rtpendpoint: refactor
+  * connections: use "active/passive" logic instead of "local_offer" one
+  * kmswebrtcendpoint: fix when there is not media for adding remote candidate
+  * kmswebrtcendpoint, kmsrtpendpoint: refactor start_transport_send
+  * kmswebrtcendpoint: check media is not inactive before using it
+  * webrtcendpoint: test bundle when answerer only video media
+  * WebRtcEndpoint: remove unsupported codecs from codecs lists
+  * constructors: fix test config
+  * webRTcEndpoint: fix test config
+  * kmswebrtcendpoint: remove session c= line
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcbaseconnection: Add locking macros
+  * kmswebrtcbaseconnection: add get_certificate_pem
+  * kmswebrtcendpoint: Use gst-plubings-bad 1.5 elements for bundle connections
+  * kmswebrtcrtcpmuxconnection: Use gst-plubings-bad 1.5 elements for rtcp-mux connections
+  * kmswebrtcconnection: Use gst-plubings-bad 1.5 elements for webrtc connections
+  * dtls-plugins: Delete
+
+  [ Miguel París Díaz ]
+  * dtls: disable tests
+  * webRtcEndpoint: remove console out
+  * kmswebrtcendpoint: remove tmp dir management
+  * WebRtcEndpointImpl: remove PEM certificate management
+
+  [ David Fernandez ]
+  * kmsrecorderendpoint: Change souphttpclientsink by curlhttpsink
+
+  [ Miguel París Díaz ]
+  * kmswebrtcconections: update dtlssrtpdec src pads management
+  * kms(rtp|webrtc)connections: implement sync_state_with_parent
+
+  [ Santiago Carot-Nemesio ]
+  * webRtcEndpoint: Test media flow through WebRTC
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove gnutls  dependencies
+  * Resolve CMake warnings
+
+  [ Miguel París Díaz ]
+  * kms(rtp|webrtc)connections: split sync srcs and syncs
+  * kmswebrtctransport: set "allow-repeat-tx" for srtpenc
+  * kmswebrtcendpoint: if mid exists, use it for candidates
+  * kmsrtcpdemux: increase log level when mapping
+
+  [ Jose Antonio Santos Cadenas ]
+  * valgrind: Add suppressions for some webrtc false positives
+  * Install webrtcendpoint library headers
+
+  [ David Fernandez ]
+  * kmscompositemixer: Send a flush stop event before EOS
+  * kmsalphablending: Send a flush stop event before EOS
+
+  [ Santiago Carot-Nemesio ]
+  * Enable destruction of mediaset for valgrind tests
+  * kmsrecorderendpoint: Fix memory leaks
+
+  [ Jose Antonio Santos Cadenas ]
+  * webrtcendpoint: Disable ice TCP
+
+  [ Santiago Carot-Nemesio ]
+  * KmsHttpEPServer: Remove GET handler from http server
+
+  [ Jose Antonio Santos Cadenas ]
+  * WebrtcEndpoint: Use a global fixture to initialize and destroy test
+
+  [ Santiago Carot-Nemesio ]
+  * HttpGetEndpoint: Purge media element
+  * KmsHttpEPServer: Fix memory leak
+  * WebRtcEndpointImpl: Fix memory leaks in codec garrays
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add valgrind suppressions
+
+  [ Miguel París Díaz ]
+  * webrtcendpoint: add test for rtcp-mux
+
+  [ David Fernandez ]
+  * rtpendpoint: Remove signal handler to avoid leaks in test
+  * kmshttppostendpoint: Remove bus handler to avoid memory leaks
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrtpendpoint, kmswebrtcendpoint: Use media to generate the proper handler in factories
+  * kmswebrtcbundleconnection: Provide support for data pads
+  * kmswebrtcendpoint: Connect sctp elements
+  * kmswebrtcendpoint: Set sctp port negotiated in SDP
+  * kmswebrtcendpoint: Add data srcpad
+  * kmswebrtcendpoint: Add data sink pad
+  * kmswebrtcendpoint: Manage SCTP connection in webrtcendpoint
+  * kmswebrtcendpoint: connect SCTP elements when DTLS layer is connected
+  * kmswebrtcsctpconnection: Add kmswebrtcsctpconnection class
+  * kmswebrtcendpoint: Create SCTP connections
+  * kmswebrtcendpoint: Provide data through callbacks in a safety way using ref counting
+  * webrtcendpoint: Add send data channel tests
+  * WebRtcEndpointImpl: Enable support for data channels
+  * SCTP: Add dependancies to compile with SCTP enabled
+
+  [ David Fernandez ]
+  * webRtcEndpoint: Change boost tests to add timers
+  * webrtcendpoint: Remove audio elements in a test without audio
+  * kmshttppostendpoint: Check if bus is not null before release it
+  * kmshttpendpoint: Call parent dispose even if the pipeline is null
+  * dispatcheronetomany: Change test to avoid race conditions in valgrind tests
+
+  [ Miguel París Díaz ]
+  * kmsrtpendpoint: support AVP instead of AVPF
+
+  [ David Fernandez ]
+  * WebRtcEndpoint:Change static structure for supported codecs by a std::vector
+  * WebRtcEndpoint: Add support for H264 if openh264 plugins exists
+  * valgrind.supp: Add suppresions for httpendpoint test
+  * valgrind.supp: Add suppresions for recorderendpoint test
+  * recorderendpoint: Use VALGRIND environment variable to avoid timeouts
+  * WebRtcEndpoint: Add flag to activate the data channels support
+  * Revert "kmsrtpendpoint: support AVP instead of AVPF"
+  * valgrind.supp: Add suppresions for playerendpoint test
+
+  [ Miguel París Díaz ]
+  * webrtcendpoint: test for REMB params
+  * webrtcendpoint: change uint remb params to int
+  * kmswebrtcendpoint: log as DEBUG level when media is not supported
+  * webRtcEndpoint: add test for connection state
+  * webrtcendpoint: extend test for REMB remote params
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcendpoint: Fix sctp configuration
+
+  [ David Fernandez ]
+  * kmsplayerendpoint: Send a flush after an eos to avoid an error in a next playing
+
+  [ Jose Antonio Santos Cadenas ]
+  * Do not use "do-synchronization" property
+  * playerendpoint: remove usage of do-synchronization property
+  * Do not set async-handling to bins
+  * recorderendopoint: Fix timestamps adjustement
+  * playerendpoint: Fix timestamps adjustement
+  * recorderendpoint: Fix muxer configurations
+  * Downgrade to libnice 0.1.7
+
+  [ Miguel París Díaz ]
+  * kmswebrtctransport: set "replay-window-size" for srtpenc and srtpdec
+  * kmswebrtctransport: disable "forward-sticky-events" for dtlssrtpenc funnel
+
+  [ David Fernandez ]
+  * kmscompositemixer: Create videotestsrc before change compositor to play
+  * kmscompositemixer: Recalculate the latency after connect the elements to compositor
+  * kmscompositemixer: Reduce the compositor latency
+  * recorderendpoint: Change environment variable by valgrind define
+
+  [ Jose Antonio Santos Cadenas ]
+  * Pass tests while generating debian package
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtctransport: Calculate latency of buffers
+
+  [ José Antonio Santos Cadenas ]
+  * Revert "Pass tests while generating debian package"
+
+  [ Miguel París Díaz ]
+  * tests: fix quitting loop
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtctransport: Disable calculation of buffer latencies
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 19:23:44 +0200
+
 kms-elements-6.0 (6.0.0~0) testing; urgency=medium
 
   * Prepare for release 6.0
