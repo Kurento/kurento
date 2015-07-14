@@ -1,0 +1,4 @@
+- Update dependencies for 2.0.0-SNAPSHOT
+- Update .gitreview to work with new repo
+- [maven-release-plugin] prepare for next development iteration
+- [maven-release-plugin] prepare release kurento-maven-plugin-1.0.5
