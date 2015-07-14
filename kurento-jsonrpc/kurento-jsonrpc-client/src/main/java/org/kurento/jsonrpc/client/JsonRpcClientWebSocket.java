@@ -366,6 +366,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private void fireConnectionFailed() {
 		if (connectionListener != null) {
+			createExecServiceIfNecessary();
 			execService.submit(new Runnable() {
 				@Override
 				public void run() {
