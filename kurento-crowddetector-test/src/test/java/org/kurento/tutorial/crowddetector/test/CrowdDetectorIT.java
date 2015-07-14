@@ -26,6 +26,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -49,6 +51,7 @@ public class CrowdDetectorIT {
 	protected WebDriver driver;
 
 	protected final static int TEST_TIMEOUT = 60; // seconds
+	protected final static int ALERT_TIMEOUT = 10; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 
 	@BeforeClass
@@ -75,6 +78,16 @@ public class CrowdDetectorIT {
 
 		// Start application
 		driver.findElement(By.id("start")).click();
+
+		// Check alert
+		WebDriverWait wait = new WebDriverWait(driver, ALERT_TIMEOUT);
+		if (wait.until(ExpectedConditions.alertIsPresent()) != null) {
+			driver.switchTo().alert().accept();
+			driver.findElement(By.id("address")).sendKeys("rtsp://195.55.223.100/axis-media/media.amp");
+			driver.findElement(By.id("changeFeed")).click();
+			driver.switchTo().alert().accept();
+			driver.findElement(By.id("start")).click();
+		}
 
 		// Assessment #1: Remote video tag should play media
 		waitForStream("videoOutput");
