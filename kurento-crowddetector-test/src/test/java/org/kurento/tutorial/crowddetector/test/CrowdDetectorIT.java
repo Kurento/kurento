@@ -69,17 +69,14 @@ public class CrowdDetectorIT {
 	}
 
 	@Test
-	public void testHelloWorld() throws InterruptedException {
+	public void testCrowdDetector() throws InterruptedException {
 		// Open web application
 		driver.get("http://localhost:8080/");
 
 		// Start application
 		driver.findElement(By.id("start")).click();
 
-		// Assessment #1: Local video tag should play media
-		waitForStream("videoInput");
-
-		// Assessment #2: Remote video tag should play media
+		// Assessment #1: Remote video tag should play media
 		waitForStream("videoOutput");
 
 		// Guard time to see application in action
