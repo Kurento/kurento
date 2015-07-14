@@ -1,3 +1,74 @@
+kurento-module-creator-4.0 (4.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Jesús Leganés Combarro "piranna ]
+  * [Fix bug] Do require()s only before update package.json file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update .gitreview to work with new repo
+  * Prepare for 4.0 development iteration
+  * Add compatibility for cmake 3.0
+  * Remove replaces line
+  * Fix comparation of development versions
+  * Add more test for compatible versions
+  * Use master branch by default
+  * Fix kurento-client development version for js
+
+  [ David Fernandez ]
+  * Add support for RaiseBase event in codeGenerator
+
+  [ Jose Antonio Santos Cadenas ]
+  * Upgrade kurento-maven-plugin to 2.0.0-SNAPSHOT
+
+  [ David Fernandez ]
+  * Add support for extends in complexTypes
+  * Add type field in Json for ComplexTypes
+  * Add RegisterParent heritage for register elements without parent
+  * Register complexTypes as RegisterParent elements
+  * Add map type to kmd
+
+  [ Jose Antonio Santos Cadenas ]
+  * Do not include SNAPSHOT version as upper range in maven
+
+  [ David Fernandez ]
+  * Add type "double" to code generator
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove js templates that are deprecated
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Generate .gitignore file (it's clearer when inspecting the plugin folder)
+  * Don't generate code if it's already done
+  * Publish kurento-module-creator as a npm package
+  * Updated modules dependencies
+  * Access modules using its package name instead of polluting global namespace
+  * Javascript templates only allow to generate Bower packages on external modules
+  * [npm] Removed usage of peerDependencies
+  * Updated grunt-npm2bower-sync dependency (fix empty author in package.json)
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp_templates: Do not add jsoncpp prefix to includes
+  * cpp_templates: Add missing include
+  * cpp_templates: If __type__ or __module__ are not present deduce the type
+  * cpp_templates: Do not depend on registered types when we already know the type
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Updated grunt-npm2bower-sync dependency (fix for MultiTask registration)
+
+  [ David Fernandez ]
+  * Add int64 as data type
+  * Generate empty constructor if complexType parent has parameters
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove package.json
+  * Prepare release 4.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 16:04:36 +0200
+
 kurento-module-creator-4.0 (4.0.0~0) testing; urgency=medium
 
   * Update to version 4.0
