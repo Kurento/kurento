@@ -89,7 +89,7 @@ public class KurentoTest {
 
 	@Before
 	public void setupKurentoTest() throws InterruptedException {
-		if (testScenario != null) {
+		if (testScenario != null && testScenario.getBrowserMap() != null && testScenario.getBrowserMap().size() > 0) {
 			ExecutorService executor = Executors.newFixedThreadPool(testScenario.getBrowserMap().size());
 			final AbortableCountDownLatch latch = new AbortableCountDownLatch(testScenario.getBrowserMap().size());
 			for (final String browserKey : testScenario.getBrowserMap().keySet()) {
