@@ -127,7 +127,6 @@
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.22</freemarker.version>
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
-		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<overthere.version>2.4.8</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
 		<webdrivermanager.version>1.2.0</webdrivermanager.version>
@@ -605,6 +604,46 @@
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-java</artifactId>
 				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.bonigarcia</groupId>
+				<artifactId>webdrivermanager</artifactId>
+				<version>${webdrivermanager.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.lazerycode.jmeter</groupId>
+				<artifactId>jmeter-maven-plugin</artifactId>
+				<version>${jmeter-maven-plugin.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jmeter</groupId>
+				<artifactId>ApacheJMeter_core</artifactId>
+				<version>${ApacheJMeter_core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-server</artifactId>
+				<version>${selenium-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+				<version>${xml-apis.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.freemarker</groupId>
+				<artifactId>freemarker</artifactId>
+				<version>${freemarker.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.xebialabs.overthere</groupId>
+				<artifactId>overthere</artifactId>
+				<version>${overthere.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jfree</groupId>
+				<artifactId>jfreechart</artifactId>
+				<version>${jfreechart.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
