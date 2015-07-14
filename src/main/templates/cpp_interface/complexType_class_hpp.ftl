@@ -73,6 +73,7 @@ public:
     <#lt><#if complexType.extends??> : ${complexType.extends.name} (<#rt>
       <#lt><#list complexType.parentProperties as property><#rt>
         <#lt><#if !property.optional><#rt>
+          <#assign createEmptyConstructor = true>
           <#lt><#if !first>, </#if><#rt>
           <#lt><#assign first = false><#rt>
           <#lt>${property.name}<#rt>
