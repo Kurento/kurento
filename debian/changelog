@@ -1,3 +1,14 @@
+kurento-module-creator-4.0 (4.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Update maven plugin dependency
+  * Prepare release 4.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 16:17:23 +0200
+
 kurento-module-creator-4.0 (4.0.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
