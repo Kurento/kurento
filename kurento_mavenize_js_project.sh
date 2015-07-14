@@ -6,7 +6,7 @@ echo "##################### EXECUTE: mavenice-js-module #####################"
 if [ -n "$1" ]; then
 	PROJECT_NAME=$1
 else
-	echo "Usage: $0 <project_name>"
+	echo "Usage: $0 <project_name> [<maven shell script> <assembly file>]"
 	exit 1
 fi
 
