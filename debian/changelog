@@ -1,3 +1,20 @@
+kms-cmake-utils (1.2.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix how version is got from git
+
+  [ David Fernandez ]
+  * Define an enviroment variable if the test is runing with valgrind
+
+  [ Jose Antonio Santos Cadenas ]
+  * GenericFind: Return proper error if library is not found
+  * Prepare release 1.2.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 12:38:56 +0200
+
 kms-cmake-utils (1.2.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
