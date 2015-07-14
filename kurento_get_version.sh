@@ -20,8 +20,7 @@ then
 elif [ -f pom.xml ]
 then
   echo "Getting version from pom.xml"
-  mvn help:evaluate -Dexpression=project.version
-  PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"`
+  PROJECT_VERSION=`mvn --settings $MAVEN_SETTINGS help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"`
 elif [ -f configure.ac ]
 then
   echo "Getting version from configure.ac"
