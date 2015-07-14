@@ -52,7 +52,7 @@ public class HelloWorldIT {
 
 	@BeforeClass
 	public static void setupClass() {
-		new ChromeDriverManager().setup();
+		ChromeDriverManager.getInstance().setup();
 	}
 
 	@Before

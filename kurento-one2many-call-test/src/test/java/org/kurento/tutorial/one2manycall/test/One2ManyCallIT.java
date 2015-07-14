@@ -57,7 +57,7 @@ public class One2ManyCallIT {
 
 	@BeforeClass
 	public static void setupClass() {
-		new ChromeDriverManager().setup();
+		ChromeDriverManager.getInstance().setup();
 	}
 
 	@Before

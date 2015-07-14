@@ -14,15 +14,13 @@
  */
 package org.kurento.tutorial.crowddetector.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kurento.tutorial.crowddetector.CrowdDetectorApp;
+import org.kurento.demo.CrowdDetectorApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -32,6 +30,8 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Hello World integration test.
@@ -53,7 +53,7 @@ public class CrowdDetectorIT {
 
 	@BeforeClass
 	public static void setupClass() {
-		new ChromeDriverManager().setup();
+		ChromeDriverManager.getInstance().setup();
 	}
 
 	@Before

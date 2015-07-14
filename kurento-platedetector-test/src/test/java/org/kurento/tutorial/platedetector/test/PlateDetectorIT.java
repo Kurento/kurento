@@ -53,7 +53,7 @@ public class PlateDetectorIT {
 
 	@BeforeClass
 	public static void setupClass() {
-		new ChromeDriverManager().setup();
+		ChromeDriverManager.getInstance().setup();
 	}
 
 	@Before

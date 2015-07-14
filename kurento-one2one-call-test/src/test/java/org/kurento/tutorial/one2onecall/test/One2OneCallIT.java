@@ -63,7 +63,7 @@ public class One2OneCallIT {
 
 	@BeforeClass
 	public static void setupClass() {
-		new ChromeDriverManager().setup();
+		ChromeDriverManager.getInstance().setup();
 	}
 
 	private WebDriver newWebDriver() {
