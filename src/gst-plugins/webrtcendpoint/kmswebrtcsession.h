@@ -19,6 +19,7 @@
 #include <gst/gst.h>
 #include <commons/kmsbasertpsession.h>
 #include "kmsicecandidate.h"
+#include "kmswebrtcconnection.h"
 
 G_BEGIN_DECLS
 
@@ -62,6 +63,16 @@ GType kms_webrtc_session_get_type (void);
 
 KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 					   KmsIRtpSessionManager * manager, GMainContext * context);
+
+gboolean kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self);
+
+KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, SdpMediaConfig * mconf);
+gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, SdpMediaConfig * mconf);
+gboolean kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self, SdpMediaConfig * mconf);
+void kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession * self, NiceCandidate * nice_cand, guint8 index);
+gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate * candidate, NiceCandidate * nice_cand);
+const gchar * kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self, SdpMediaConfig * mconf, NiceAgent * agent, NiceCandidate * cand);
+void kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_SESSION_H__ */

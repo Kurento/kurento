@@ -20,6 +20,7 @@
 #include <gst/rtp/gstrtcpbuffer.h>
 
 #include "kmsrtpendpoint.h"
+#include <commons/kmsbasertpsession.h>
 #include "kmsrtpconnection.h"
 #include <commons/sdp_utils.h>
 #include <commons/sdpagent/kmssdprtpavpfmediahandler.h>
@@ -87,9 +88,10 @@ static KmsRtpBaseConnection *
 kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
+  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
   KmsIRtpConnection *conn;
 
-  conn = kms_sdp_session_get_connection (sess, mconf);
+  conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
   if (conn == NULL) {
     return NULL;
   }
@@ -158,6 +160,7 @@ static gboolean
 kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
+  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   guint conn_len, c;
   guint attr_len, a;
@@ -177,7 +180,9 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     gst_sdp_media_remove_connection (media, c);
   }
 
-  conn = KMS_RTP_BASE_CONNECTION (kms_sdp_session_get_connection (sess, mconf));
+  conn =
+      KMS_RTP_BASE_CONNECTION (kms_base_rtp_session_get_connection
+      (base_rtp_sess, mconf));
   if (conn == NULL) {
     return TRUE;
   }
