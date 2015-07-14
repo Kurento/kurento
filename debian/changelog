@@ -1,3 +1,35 @@
+kms-filters-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix build dependencies for tests
+  * Add support for different cmake vesions
+  * Update .gitreview to work with new repo
+  * Prepare for 6.0 development iteration
+
+  [ David Fernandez ]
+  * Adapt events code to KmsEvent
+  * kmsimageoverlay: Protect set and get properties with locks
+  * [ImageOverlayFilter] Add new filter to allow overlay images over a video
+  * ZBarFilter: Move signal logic to postConstructor function
+  * Update gstreamer dependencies
+  * kmsimageoverlay: Progress event to parent
+  * kmslogooverlay: Not show image if it is NULL
+  * ImageOverlayFilter: Add keepAspectRatio and center parameters
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ David Fernandez ]
+  * GStreamerFilter: Add property to get the command of the filter
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 14 Jul 2015 19:26:45 +0200
+
 kms-filters-6.0 (6.0.0~0) testing; urgency=medium
 
   * Pre release of version 6.0.0
