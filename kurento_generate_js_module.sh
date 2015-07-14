@@ -1,5 +1,16 @@
 #!/bin/bash
 
+if [ $# -lt 2 ]
+then
+  echo "Usage: $0 <project_name> <branch>"
+  exit 1
+fi
+
+PATH=$PATH:$(realpath $(dirname "$0"))
+
+PROJECT_NAME=$1
+BRANCH=$2
+
 COMMIT_ID=`git rev-parse HEAD`
 mkdir -p build
 cd build
@@ -9,7 +20,7 @@ echo Project name $JS_PROJECT_NAME
 rm -rf js
 git clone ssh://jenkins@code.kurento.org:12345/${JS_PROJECT_NAME}-js.git js || (echo "Cannot clone repository, may not be public" && exit 0)
 cd js || (echo "Cannot clone repository, may not be public" && exit 0)
-git checkout -b ${BRANCH} 
+git checkout -b ${BRANCH}
 git reset --hard origin/${BRANCH} || echo
 rm -rf *
 cd ..
@@ -25,12 +36,11 @@ then
   git push origin ${BRANCH}
 fi
 
-PATH=$PATH:$(realpath $(dirname "$0"))
-PROJECT_VERSION=`kurento_get_version.sh` 
+PROJECT_VERSION=`kurento_get_version.sh`
 
 # If release version, create tag
 if [[ ${PROJECT_VERSION} != *-dev ]]; then
   echo "Creating tag ${JS_PROJECT_NAME}-${PROJECT_VERSION}"
-  git tag "v${PROJECT_VERSION}"
+  git tag "${PROJECT_VERSION}"
   git push --tags
 fi
