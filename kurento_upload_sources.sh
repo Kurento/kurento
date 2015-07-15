@@ -59,6 +59,19 @@ do
   curl --insecure --key $KEY --cert $CERT -X POST ${TARGET_REPREPRO_URL}/upload?dist=$TARGET_DIST\&comp=$COMPONENT --data-binary @$PACKAGE || exit 1
 done
 
+SOURCE="Package: $1"
+for file in $(curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${COMPONENT}/binary-amd64/Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
+do
+  wget ${ORIG_REPREPRO_URL}/$file
+done
+
+for file in $(curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${COMPONENT}/binary-amd64/Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
+do
+  PACKAGE=$(basename $file)
+  echo "Uploading package $PACKAGE to ${TARGET_REPREPRO_URL}/dists/$DEST_DIST/$COMPONENT"
+  curl --insecure --key $KEY --cert $CERT -X POST ${TARGET_REPREPRO_URL}/upload?dist=$TARGET_DIST\&comp=$COMPONENT --data-binary @$PACKAGE || exit 1
+done
+
 cd ..
 rm -rf tmp
 
