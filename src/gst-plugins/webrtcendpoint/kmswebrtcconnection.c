@@ -352,6 +352,29 @@ kms_webrtc_connection_class_init (KmsWebRtcConnectionClass * klass)
 }
 
 static void
+kms_webrtc_rtp_connection_collect_latency_stats (KmsIRtpConnection * obj,
+    gboolean enable)
+{
+  KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (obj);
+  KmsWebRtcBaseConnection *base = KMS_WEBRTC_BASE_CONNECTION (obj);
+
+  KMS_WEBRTC_BASE_CONNECTION_LOCK (self);
+
+  /* Only rtp stream is marked with metadata for statistics */
+
+  if (enable) {
+    kms_webrtc_transport_enable_latency_notification (self->priv->rtp_tr,
+        base->cb, base->user_data, NULL);
+  } else {
+    kms_webrtc_transport_disable_latency_notification (self->priv->rtp_tr);
+  }
+
+  kms_webrtc_base_connection_collect_latency_stats (obj, enable);
+
+  KMS_WEBRTC_BASE_CONNECTION_UNLOCK (self);
+}
+
+static void
 kms_webrtc_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
 {
   iface->add = kms_webrtc_rtp_connection_add;
@@ -363,4 +386,8 @@ kms_webrtc_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
   iface->request_rtp_src = kms_webrtc_rtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_webrtc_rtp_connection_request_rtcp_sink;
   iface->request_rtcp_src = kms_webrtc_rtp_connection_request_rtcp_src;
+
+  iface->set_latency_callback = kms_webrtc_base_connection_set_latency_callback;
+  iface->collect_latency_stats =
+      kms_webrtc_rtp_connection_collect_latency_stats;
 }

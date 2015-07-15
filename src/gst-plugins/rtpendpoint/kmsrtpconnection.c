@@ -399,4 +399,8 @@ kms_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
   iface->request_rtp_src = kms_rtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_rtp_connection_request_rtcp_sink;
   iface->request_rtcp_src = kms_rtp_connection_request_rtcp_src;
+
+  /* This endpoint does not support latency statistics yet */
+  iface->set_latency_callback = NULL;
+  iface->collect_latency_stats = NULL;
 }

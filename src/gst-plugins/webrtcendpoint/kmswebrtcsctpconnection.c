@@ -322,4 +322,8 @@ kms_webrtc_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
   iface->request_rtcp_src = kms_webrtc_sctp_connection_request_rtcp_src;
   iface->request_data_src = kms_webrtc_sctp_connection_request_data_src;
   iface->request_data_sink = kms_webrtc_sctp_connection_request_data_sink;
+
+  /* Statistics for data are not yet supported */
+  iface->set_latency_callback = NULL;
+  iface->collect_latency_stats = NULL;
 }

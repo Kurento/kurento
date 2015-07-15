@@ -92,6 +92,26 @@ static void
 kms_webrtc_base_connection_init (KmsWebRtcBaseConnection * self)
 {
   g_rec_mutex_init (&self->mutex);
+  self->stats_enabled = FALSE;
+}
+
+static void
+kms_webrtc_base_connection_set_latency_callback_default (KmsIRtpConnection *
+    obj, BufferLatencyCallback cb, gpointer user_data)
+{
+  KmsWebRtcBaseConnection *self = KMS_WEBRTC_BASE_CONNECTION (obj);
+
+  self->cb = cb;
+  self->user_data = user_data;
+}
+
+static void
+kms_webrtc_base_connection_collect_latency_stats_default (KmsIRtpConnection *
+    obj, gboolean enable)
+{
+  KmsWebRtcBaseConnection *self = KMS_WEBRTC_BASE_CONNECTION (obj);
+
+  self->stats_enabled = enable;
 }
 
 static void
@@ -106,6 +126,11 @@ kms_webrtc_base_connection_class_init (KmsWebRtcBaseConnectionClass * klass)
       kms_webrtc_base_connection_set_certificate_pem_file_default;
   klass->get_certificate_pem =
       kms_webrtc_base_connection_get_certificate_pem_default;
+
+  klass->set_latency_callback =
+      kms_webrtc_base_connection_set_latency_callback_default;
+  klass->collect_latency_stats =
+      kms_webrtc_base_connection_collect_latency_stats_default;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
@@ -142,4 +167,24 @@ kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
   nice_agent_set_relay_info (self->agent, self->stream_id,
       NICE_COMPONENT_TYPE_RTCP, server_ip, server_port,
       username, password, type);
+}
+
+void
+kms_webrtc_base_connection_set_latency_callback (KmsIRtpConnection * self,
+    BufferLatencyCallback cb, gpointer user_data)
+{
+  KmsWebRtcBaseConnectionClass *klass =
+      KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
+
+  klass->set_latency_callback (self, cb, user_data);
+}
+
+void
+kms_webrtc_base_connection_collect_latency_stats (KmsIRtpConnection * self,
+    gboolean enable)
+{
+  KmsWebRtcBaseConnectionClass *klass =
+      KMS_WEBRTC_BASE_CONNECTION_CLASS (G_OBJECT_GET_CLASS (self));
+
+  klass->collect_latency_stats (self, enable);
 }

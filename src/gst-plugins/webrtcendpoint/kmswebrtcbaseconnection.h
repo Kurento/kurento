@@ -52,6 +52,11 @@ struct _KmsWebRtcBaseConnection
   gboolean ice_gathering_done;
   guint stream_id;
   gchar *name;
+
+  BufferLatencyCallback cb;
+  gpointer user_data;
+
+  gboolean stats_enabled;
 };
 
 struct _KmsWebRtcBaseConnectionClass
@@ -61,6 +66,9 @@ struct _KmsWebRtcBaseConnectionClass
   void (*set_certificate_pem_file) (KmsWebRtcBaseConnection * self,
       const gchar * pem);
   gchar *(*get_certificate_pem) (KmsWebRtcBaseConnection * self);
+
+  void (*set_latency_callback) (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
+  void (*collect_latency_stats) (KmsIRtpConnection *self, gboolean enable);
 };
 
 GType kms_webrtc_base_connection_get_type (void);
@@ -76,6 +84,9 @@ void kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
 
 gboolean kms_webrtc_base_connection_configure (KmsWebRtcBaseConnection * self,
     NiceAgent * agent, const gchar * name);
+
+void kms_webrtc_base_connection_set_latency_callback (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
+void kms_webrtc_base_connection_collect_latency_stats (KmsIRtpConnection *self, gboolean enable);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_BASE_CONNECTION_H__ */
