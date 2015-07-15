@@ -1,6 +1,6 @@
 {
   "name": "kurento-jsonrpc",
-  "version": "5.0.5-dev",
+  "version": "5.0.5",
   "description": "RPC library for browser and Node.js",
   "main": "lib/index.js",
   "scripts": {
