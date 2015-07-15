@@ -6,6 +6,8 @@ then
   exit 1
 fi
 
+exec 3>&1 >/dev/tty || exec 3>&1 >./upload_sources_logs
+
 SOURCE=$1
 ORIG_DIST=$2
 DEST_DIST=$3
@@ -53,3 +55,5 @@ done
 
 cd ..
 rm -rf tmp
+
+exec >&3-
