@@ -9,7 +9,7 @@
     "express": "~4.12.4",
     "minimist": "^1.1.1",
     "ws": "~0.7.2",
-    "kurento-client": "Kurento/kurento-client-js"
+    "kurento-client": "6.0.0"
   },
   "devDependencies": {
     "bower": "^1.4.1"

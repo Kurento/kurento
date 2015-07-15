@@ -11,8 +11,8 @@
     "express-session": "~1.10.3",
     "minimist": "^1.1.1",
     "ws": "~0.7.2",
-    "kurento-client": "Kurento/kurento-client-js",
-    "kurento-module-platedetector": "Kurento/kurento-module-platedetector-js"
+    "kurento-client": "6.0.0",
+    "kurento-module-platedetector": "6.0.0"
   },
   "devDependencies": {
     "bower": "^1.4.1"
