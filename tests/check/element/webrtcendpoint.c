@@ -171,6 +171,13 @@ receiver_1_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
   HandOffData *hod = (HandOffData *) data;
   GstElement *pipeline;
 
+  if (GST_BUFFER_FLAG_IS_SET (buf, GST_BUFFER_FLAG_DELTA_UNIT)) {
+    GST_DEBUG ("It is not a keyframe");
+    return;
+  } else {
+    GST_DEBUG ("Received keyframe");
+  }
+
   if (!check_caps (pad, hod)) {
     return;
   }
@@ -196,6 +203,13 @@ receiver_2_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 {
   HandOffData *hod = (HandOffData *) data;
   GstElement *pipeline;
+
+  if (GST_BUFFER_FLAG_IS_SET (buf, GST_BUFFER_FLAG_DELTA_UNIT)) {
+    GST_DEBUG ("It is not a keyframe");
+    return;
+  } else {
+    GST_DEBUG ("Received keyframe");
+  }
 
   if (!check_caps (pad, hod)) {
     return;
