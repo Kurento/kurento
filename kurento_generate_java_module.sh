@@ -20,10 +20,10 @@ echo $OPTS
 
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
   echo "Deploying release version to ${MAVEN_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
-  mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_RELEASES} || exit 1
+  mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_RELEASES} || echo "Problem uploading package"
   if [ "$PUBLIC" == "yes" ]
   then
-    mvn --settings ${MAVEN_SETTINGS} deploy $OPTS -DaltDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1
+    mvn --settings ${MAVEN_SETTINGS} deploy $OPTS -DaltDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || echo "Problem uploading package"
   fi
 else
   echo "Deploying snapshot version to ${MAVEN_KURENTO_SNAPSHOTS}"
