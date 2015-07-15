@@ -35,15 +35,19 @@ kms_webrtc_transport_nice_agent_recv_cb (NiceAgent * agent, guint stream_id,
       "' component_id: '%" G_GUINT32_FORMAT "'", stream_id, component_id);
 }
 
-//static void
-//element_remove_probe (GstElement * e, const gchar * pad_name, gulong id)
-//{
-//  GstPad *pad;
+static void
+element_remove_probe (GstElement * e, const gchar * pad_name, gulong id)
+{
+  GstPad *pad;
 
-//  pad = gst_element_get_static_pad (e, pad_name);
-//  gst_pad_remove_probe (pad, id);
-//  g_object_unref (pad);
-//}
+  if (id == 0UL) {
+    return;
+  }
+
+  pad = gst_element_get_static_pad (e, pad_name);
+  gst_pad_remove_probe (pad, id);
+  g_object_unref (pad);
+}
 
 void
 kms_webrtc_transport_destroy (KmsWebRtcTransport * tr)
@@ -51,8 +55,9 @@ kms_webrtc_transport_destroy (KmsWebRtcTransport * tr)
   if (tr == NULL) {
     return;
   }
-//  element_remove_probe (tr->nicesrc, "src", tr->src_probe);
-//  element_remove_probe (tr->nicesink, "sink", tr->sink_probe);
+
+  element_remove_probe (tr->nicesrc, "src", tr->src_probe);
+  element_remove_probe (tr->nicesink, "sink", tr->sink_probe);
 
   g_clear_object (&tr->dtlssrtpenc);
   g_clear_object (&tr->dtlssrtpdec);
@@ -72,8 +77,6 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
   gchar *str;
   GstElement *funnel, *srtpenc, *srtpdec;
 
-//  GstPad *pad;
-
   tr = g_slice_new0 (KmsWebRtcTransport);
 
   /* TODO: improve creating elements when needed */
@@ -84,16 +87,6 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 
   tr->nicesink = gst_element_factory_make ("nicesink", NULL);
   tr->nicesrc = gst_element_factory_make ("nicesrc", NULL);
-
-//  pad = gst_element_get_static_pad (tr->nicesrc, "src");
-//  tr->src_probe = kms_utils_add_buffer_latency_meta_probe (pad, FALSE,
-//      0 /* No matter type at this point */ );
-//  g_object_unref (pad);
-
-//  pad = gst_element_get_static_pad (tr->nicesink, "sink");
-//  tr->sink_probe = kms_utils_add_buffer_latency_notification_probe (pad, NULL,
-//      NULL, NULL);
-//  g_object_unref (pad);
 
   if (tr->dtlssrtpenc == NULL || tr->dtlssrtpenc == NULL
       || tr->dtlssrtpenc == NULL || tr->dtlssrtpenc == NULL) {
@@ -141,6 +134,35 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
       "component", component_id, NULL);
 
   return tr;
+}
+
+void
+kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
+    BufferLatencyCallback cb, gpointer user_data, GDestroyNotify destroy_data)
+{
+  GstPad *pad;
+
+  element_remove_probe (tr->nicesrc, "src", tr->src_probe);
+  pad = gst_element_get_static_pad (tr->nicesrc, "src");
+  tr->src_probe = kms_utils_add_buffer_latency_meta_probe (pad, FALSE,
+      0 /* No matter type at this point */ );
+  g_object_unref (pad);
+
+  element_remove_probe (tr->nicesink, "sink", tr->sink_probe);
+  pad = gst_element_get_static_pad (tr->nicesink, "sink");
+  tr->sink_probe = kms_utils_add_buffer_latency_notification_probe (pad, cb,
+      user_data, destroy_data);
+  g_object_unref (pad);
+}
+
+void
+kms_webrtc_transport_disable_latency_notification (KmsWebRtcTransport * tr)
+{
+  element_remove_probe (tr->nicesrc, "src", tr->src_probe);
+  tr->src_probe = 0UL;
+
+  element_remove_probe (tr->nicesink, "sink", tr->sink_probe);
+  tr->sink_probe = 0UL;
 }
 
 static void init_debug (void) __attribute__ ((constructor));

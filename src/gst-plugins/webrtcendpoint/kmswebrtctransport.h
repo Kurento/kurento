@@ -18,6 +18,7 @@
 
 #include <gst/gst.h>
 #include <nice/nice.h>
+#include <commons/kmsutils.h>
 
 typedef struct _KmsWebRtcTransport
 {
@@ -42,5 +43,9 @@ void kms_webrtc_transport_destroy (KmsWebRtcTransport * tr);
 void kms_webrtc_transport_nice_agent_recv_cb (NiceAgent * agent,
     guint stream_id, guint component_id, guint len, gchar * buf,
     gpointer user_data);
+
+void kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
+  BufferLatencyCallback cb, gpointer user_data, GDestroyNotify destroy_data);
+void kms_webrtc_transport_disable_latency_notification (KmsWebRtcTransport * tr);
 
 #endif /* __KMS_WEBRTC_TRANSPORT_H__ */
