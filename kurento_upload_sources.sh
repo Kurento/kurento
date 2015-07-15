@@ -8,7 +8,7 @@ fi
 
 exec 3>&1 >/dev/tty || exec 3>&1 >./upload_sources_logs
 
-SOURCE=$1
+SOURCE="Source: $1"
 ORIG_DIST=$2
 DEST_DIST=$3
 
