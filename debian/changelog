@@ -1,3 +1,31 @@
+kms-crowddetector-6.0 (6.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Enable tests
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for 6.0.0-dev version
+  * Update .gitreview to work with new repo
+
+  [ David Fernandez ]
+  * Remove devDependencies in package.json
+  * Adapt events code to KmsEvent
+  * Move signal logic to postConstructor function
+  * Update gstreamer dependencies
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Use correct SPDX licence string
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 15 Jul 2015 10:25:46 +0200
+
 kms-crowddetector-6.0 (6.0.0~0) testing; urgency=medium
 
   * Prerelease for 6.0.0
