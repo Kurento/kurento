@@ -52,7 +52,7 @@ vercomp $localRelease $pubRelease
 different=$?
 if [ $different -eq 1 ]; then
   echo "Publishing to npm $projectName version $localVersion"
-	#npm publish || exit 1
+	npm publish || exit 1
 else
 	echo "Do not publish as public version is already greater or equal than local"
 fi
