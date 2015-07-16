@@ -50,6 +50,7 @@ public class TestConfiguration {
 	public static final int SAUCELAB_IDLE_TIMEOUT_DEFAULT = 120; // seconds
 	public static final String SAUCELAB_COMMAND_TIMEOUT_PROPERTY = "saucelab.command.timeout";
 	public static final int SAUCELAB_COMMAND_TIMEOUT_DEFAULT = 300; // seconds
+	public static final int SAUCELAB_COMMAND_TIMEOUT_MAX = 600; // seconds
 
 	// Selenium
 	public static final String SELENIUM_HUB_ADDRESS = "selenium.hub.address";
