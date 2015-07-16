@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
-	private static final Logger LOG = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(RemoteObjectInvocationHandler.class);
 
 	private static final Set<String> REMOTE_OBJECT_METHODS = ImmutableSet.of(
@@ -72,13 +72,13 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			return remoteObjectMethod.invoke(remoteObject, args);
 		}
 
-		LOG.debug("Invoking method {} on object {}", method, proxy);
+		log.trace("Invoking method {} on object {}", method, proxy);
 
 		Continuation<?> cont = null;
 		Transaction tx = null;
 		List<String> paramNames = Collections.emptyList();
 
-		if ((args != null) && (args.length > 0)) {
+		if (args != null && args.length > 0) {
 
 			paramNames = ParamAnnotationUtils.getParamNames(method);
 
@@ -88,8 +88,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 				args = Arrays.copyOf(args, args.length - 1);
 				paramNames = paramNames.subList(0, paramNames.size() - 1);
 
-			} else if ((args != null) && (args.length > 0)
-					&& (args[0] instanceof Transaction)) {
+			} else if (args != null && args.length > 0
+					&& args[0] instanceof Transaction) {
 
 				tx = (Transaction) args[0];
 				args = Arrays.copyOfRange(args, 1, args.length);
@@ -225,8 +225,9 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		try {
 
-			LOG.info("Event class '"+eventClass.getSimpleName()+" Data: "+data);
-			
+			log.info("Event class '" + eventClass.getSimpleName() + " Data: "
+					+ data);
+
 			Constructor<?> constructor = eventClass.getConstructors()[0];
 
 			data.add("source", ((KurentoObject) object).getId());
@@ -240,7 +241,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			((EventListener) listener).onEvent(e);
 
 		} catch (Exception e) {
-			LOG.error(
+			log.error(
 					"Exception while processing event '"
 							+ eventClass.getSimpleName() + "' with params '"
 							+ data + "'", e);
@@ -269,8 +270,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = (prime * result)
-				+ ((remoteObject == null) ? 0 : remoteObject.hashCode());
+		result = prime * result
+				+ (remoteObject == null ? 0 : remoteObject.hashCode());
 		return result;
 	}
 
