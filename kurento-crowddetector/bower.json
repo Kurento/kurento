@@ -22,10 +22,10 @@
   "dependencies": {
     "adapter.js": "*",
     "bootstrap": "~3.3.0",
-    "demo-console": "master",
+    "demo-console": "v1.5.1",
     "ekko-lightbox": "~3.3.0",
-    "kurento-client": "master",
-    "kurento-module-crowddetector": "master",
-    "kurento-utils": "master"
+    "kurento-client": "6.0.0",
+    "kurento-module-crowddetector": "6.0.0",
+    "kurento-utils": "6.0.1"
   }
 }
