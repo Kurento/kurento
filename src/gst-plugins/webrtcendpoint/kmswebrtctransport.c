@@ -13,7 +13,7 @@
  *
  */
 
-#include <commons/kmsutils.h>
+#include <commons/kmsstats.h>
 
 #include "kmswebrtctransport.h"
 
@@ -144,13 +144,13 @@ kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
 
   element_remove_probe (tr->nicesrc, "src", tr->src_probe);
   pad = gst_element_get_static_pad (tr->nicesrc, "src");
-  tr->src_probe = kms_utils_add_buffer_latency_meta_probe (pad, FALSE,
+  tr->src_probe = kms_stats_add_buffer_latency_meta_probe (pad, FALSE,
       0 /* No matter type at this point */ );
   g_object_unref (pad);
 
   element_remove_probe (tr->nicesink, "sink", tr->sink_probe);
   pad = gst_element_get_static_pad (tr->nicesink, "sink");
-  tr->sink_probe = kms_utils_add_buffer_latency_notification_probe (pad, cb,
+  tr->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad, cb,
       user_data, destroy_data);
   g_object_unref (pad);
 }
