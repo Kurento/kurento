@@ -101,6 +101,8 @@ set(KMS_WEBRTC_SOURCES
   kmswebrtcrtcpmuxconnection.c
   kmswebrtcbundleconnection.c
   kmswebrtcsctpconnection.c
+  kmswebrtctransportsrc.c
+  kmswebrtctransportsink.c
   kmswebrtctransport.c
   kmswebrtcsession.c
   kmswebrtcendpoint.c
