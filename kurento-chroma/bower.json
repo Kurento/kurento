@@ -1,6 +1,6 @@
 {
   "name": "kurento-chroma",
-  "version": "6.0.0-dev",
+  "version": "6.0.0",
   "description": "Kurento Browser JavaScript Tutorial: Chroma",
   "authors": [
     "Kurento <info@kurento.org>"

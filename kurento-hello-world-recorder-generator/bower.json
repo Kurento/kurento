@@ -1,6 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "6.0.0-dev",
+  "version": "6.0.0",
   "description": "Kurento Browser JavaScript Tutorial 1: Hello World (WebRTC in loopback)",
   "authors": [
     "Kurento <info@kurento.org>"

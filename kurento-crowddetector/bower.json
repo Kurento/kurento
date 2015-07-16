@@ -1,6 +1,6 @@
 {
   "name": "kurento-crowddetector",
-  "version": "6.0.0-dev",
+  "version": "6.0.0",
   "description": "Kurento Browser JavaScript Tutorial: Crowd Detector",
   "authors": [
     "Kurento <info@kurento.org>"

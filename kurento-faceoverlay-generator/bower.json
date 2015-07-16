@@ -1,6 +1,6 @@
 {
   "name": "FaceOverlayGenerator",
-  "version": "6.0.0-dev",
+  "version": "6.0.0",
   "description": "Kurento demo with FaceOverlay filter and Generators",
   "authors": [
     "Kurento <info@kurento.org>"
