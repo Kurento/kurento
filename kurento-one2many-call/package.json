@@ -1,6 +1,6 @@
 {
   "name": "kurento-one2many-call",
-  "version": "6.0.0-dev",
+  "version": "6.0.0",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
