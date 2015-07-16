@@ -1,6 +1,6 @@
 {
   "name": "kurento-client",
-  "version": "6.0.0",
+  "version": "6.0.1-dev",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.org",
   "license": "LGPL",
@@ -38,12 +38,12 @@
     "es6-promise": "^2.3.0",
     "extend": "^2.0.1",
     "inherits": "~2.0.1",
-    "kurento-client-core": "6.0.0",
-    "kurento-client-elements": "6.0.0",
-    "kurento-client-filters": "6.0.0",
+    "kurento-client-core": "Kurento/kurento-client-core-js#master",
+    "kurento-client-elements": "Kurento/kurento-client-elements-js#master",
+    "kurento-client-filters": "Kurento/kurento-client-filters-js#master",
     "kurento-jsonrpc": "5.0.5",
     "promisecallback": "0.0.4",
-    "reconnect-ws": "KurentoForks/reconnect-ws#v0.0.1"
+    "reconnect-ws": "KurentoForks/reconnect-ws"
   },
   "devDependencies": {
     "bower": "~1.4.1",
@@ -64,8 +64,8 @@
     "grunt-shell": "^1.1.2",
     "minifyify": "^7.0.2",
     "node-static": "^0.7.6",
-    "qunit-cli": "KurentoForks/qunit-cli#v0.2.1",
-    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#v1.0.3",
+    "qunit-cli": "KurentoForks/qunit-cli",
+    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "^1.18.0",
     "selenium-webdriver": "^2.46.1",
