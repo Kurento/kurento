@@ -33,8 +33,8 @@ commands to start and stop it respectively:
    sudo service kurento-media-server-6.0 stop
 
 
-Trickle ICE
-===========
+Migrating from KMS v5 to v6
+===========================
 
 The current stable version of Kurento Media Server uses the **Trickle ICE**
 protocol for WebRTC connections. :term:`Trickle ICE` is the name given to the
@@ -44,7 +44,7 @@ to send and receive candidates incrementally rather than exchanging complete
 lists. In short, Trickle ICE allows to begin WebRTC connectivity much more
 faster.
 
-This feature makes the Kurento Media Server 6 incompatible with the former
+This feature makes the Kurento Media Server 6 **incompatible** with the former
 versions. If you are using Kurento Media Server 5.1 or lower, it is strongly
 recommended to upgrade your KMS. To do that, first you need to uninstall KMS as
 follows:
