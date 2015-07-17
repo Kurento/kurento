@@ -14,12 +14,12 @@ two flavors of Kurento modules:
 
 The starting point to develop a filter is create the filter structure. For this
 task, you can use the ``kurento-module-scaffold`` tool. This tool is
-distributed with the ``kurento-media-server-dev`` package. To install this tool
-run this command in the shell:
+distributed with the ``kurento-media-server-6.0-dev`` package. To install this
+tool run this command in the shell:
 
 .. sourcecode:: sh
 
-   sudo apt-get install kurento-media-server-dev
+   sudo apt-get install kurento-media-server-6.0-dev
 
 The tool usage is different depending on the chosen flavor:
 
@@ -175,7 +175,7 @@ Examples
 
 Simple examples for both kind of modules are available in GitHub:
 
-* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample/tree/develop>`_
+* `OpenCV module <https://github.com/Kurento/kms-opencv-plugin-sample>`_
 
 * `GStreamer module <https://github.com/Kurento/kms-plugin-sample>`_
 
