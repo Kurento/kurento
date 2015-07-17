@@ -50,6 +50,23 @@ following:
      }
    }
 
+As of Kurento Media Server version 6, in addition to this general configuration
+file, the specific features of KMS are tuned as individual modules. Each of
+these modules has its own configuration file:
+
+* ``/etc/kurento/modules/kurento/MediaElement.conf.ini``: Generic parameters
+  for Media Elements.
+
+* ``/etc/kurento/modules/kurento/SdpEndpoint.conf.ini``: Audio/video
+  parameters for *SdpEndpoints* (i.e. *WebRtcEndpoint* and *RtpEndpoint*).
+
+* ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``: Specific
+  parameters for *WebRtcEndpoint*.
+
+* ``/etc/kurento/modules/kurento/HttpEndpoint.conf.ini``: Specific parameters
+  for *HttpEndpoint*.
+
+
 Verifying Kurento Media Server installation
 ===========================================
 
