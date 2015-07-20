@@ -74,5 +74,7 @@ gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, K
 const gchar * kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self, SdpMediaConfig * mconf, NiceAgent * agent, NiceCandidate * cand);
 void kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self);
 
+void kms_webrtc_session_start_transport_send (KmsWebrtcSession * self, gboolean offerer);
+
 G_END_DECLS
 #endif /* __KMS_WEBRTC_SESSION_H__ */

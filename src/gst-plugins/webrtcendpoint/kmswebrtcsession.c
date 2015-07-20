@@ -18,6 +18,7 @@
 #endif
 
 #include "kmswebrtcsession.h"
+#include <commons/sdp_utils.h>
 
 #include <string.h>
 
@@ -448,6 +449,227 @@ kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self,
 
   return TRUE;
 }
+
+/* Start Transport begin */
+
+static void
+gst_media_add_remote_candidates (SdpMediaConfig * mconf,
+    KmsWebRtcBaseConnection * conn,
+    const gchar * msg_ufrag, const gchar * msg_pwd)
+{
+  const GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  NiceAgent *agent = conn->agent;
+  guint stream_id = conn->stream_id;
+  const gchar *ufrag, *pwd;
+  guint len, i;
+
+  ufrag = gst_sdp_media_get_attribute_val (media, SDP_ICE_UFRAG_ATTR);
+  pwd = gst_sdp_media_get_attribute_val (media, SDP_ICE_PWD_ATTR);
+  if (!nice_agent_set_remote_credentials (agent, stream_id, ufrag, pwd)) {
+    GST_WARNING ("Cannot set remote media credentials (%s, %s).", ufrag, pwd);
+    if (!nice_agent_set_remote_credentials (agent, stream_id, msg_ufrag,
+            msg_pwd)) {
+      GST_WARNING ("Cannot set remote message credentials (%s, %s).", ufrag,
+          pwd);
+      return;
+    } else {
+      GST_DEBUG ("Set remote message credentials OK (%s, %s).", ufrag, pwd);
+    }
+  } else {
+    GST_DEBUG ("Set remote media credentials OK (%s, %s).", ufrag, pwd);
+  }
+
+  len = gst_sdp_media_attributes_len (media);
+  for (i = 0; i < len; i++) {
+    const GstSDPAttribute *attr;
+    NiceCandidate *cand;
+
+    attr = gst_sdp_media_get_attribute (media, i);
+    if (g_strcmp0 (SDP_CANDIDATE_ATTR, attr->key) != 0) {
+      continue;
+    }
+
+    kms_ice_candidate_create_nice_from_str (attr->value, &cand);
+    if (cand != NULL) {
+      GSList *candidates = g_slist_append (NULL, cand);
+
+      if (nice_agent_set_remote_candidates (agent, stream_id,
+              cand->component_id, candidates) < 0) {
+        GST_WARNING ("Cannot add candidate: '%s'in stream_id: %d.", attr->value,
+            stream_id);
+      } else {
+        GST_TRACE ("Candidate added: '%s' in stream_id: %d.", attr->value,
+            stream_id);
+      }
+      g_slist_free (candidates);
+      nice_candidate_free (cand);
+    }
+  }
+}
+
+static void
+kms_webrtc_session_remote_sdp_add_stored_ice_candidates (gpointer data,
+    gpointer user_data)
+{
+  KmsIceCandidate *candidate = data;
+  KmsWebrtcSession *webrtc_sess = user_data;
+  NiceCandidate *nice_cand;
+  guint8 index;
+
+  kms_ice_candidate_create_nice (candidate, &nice_cand);
+  if (nice_cand == NULL) {
+    return;
+  }
+
+  index = kms_ice_candidate_get_sdp_m_line_index (candidate);
+  kms_webrtc_session_remote_sdp_add_ice_candidate (webrtc_sess, nice_cand,
+      index);
+  nice_candidate_free (nice_cand);
+}
+
+static gboolean
+kms_webrtc_session_add_connection (KmsWebrtcSession * self,
+    KmsSdpSession * sess, SdpMediaConfig * mconf, gboolean offerer)
+{
+  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
+  gboolean connected, active;
+  KmsIRtpConnection *conn;
+
+  conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
+  if (conn == NULL) {
+    GST_ERROR_OBJECT (self, "No connection created");
+    return FALSE;
+  }
+
+  g_object_get (conn, "added", &connected, NULL);
+  if (connected) {
+    GST_DEBUG_OBJECT (self, "Conn already added");
+    return TRUE;
+  }
+
+  active =
+      sdp_utils_media_is_active (kms_sdp_media_config_get_sdp_media (mconf),
+      offerer);
+
+  kms_i_rtp_connection_add (conn, GST_BIN (self), active);
+  kms_i_rtp_connection_sink_sync_state_with_parent (conn);
+  kms_i_rtp_connection_src_sync_state_with_parent (conn);
+
+  return TRUE;
+}
+
+static gboolean
+kms_webrtc_session_configure_connection (KmsWebrtcSession * self,
+    KmsSdpSession * sess, SdpMediaConfig * neg_mconf,
+    SdpMediaConfig * remote_mconf, gboolean offerer)
+{
+  GstSDPMedia *neg_media = kms_sdp_media_config_get_sdp_media (neg_mconf);
+  const gchar *neg_proto_str = gst_sdp_media_get_proto (neg_media);
+  GstSDPMedia *remote_media = kms_sdp_media_config_get_sdp_media (remote_mconf);
+  const gchar *remote_proto_str = gst_sdp_media_get_proto (remote_media);
+
+  if (g_strcmp0 (neg_proto_str, remote_proto_str) != 0) {
+    GST_WARNING_OBJECT (self,
+        "Negotiated proto ('%s') not matching with remote proto ('%s')",
+        neg_proto_str, remote_proto_str);
+    return FALSE;
+  }
+
+  if (g_strcmp0 (neg_proto_str, "DTLS/SCTP") != 0) {
+    return FALSE;
+  }
+
+  kms_webrtc_session_add_connection (self, sess, neg_mconf, offerer);
+
+  return TRUE;
+}
+
+static void
+kms_webrtc_session_configure_connections (KmsWebrtcSession * self,
+    KmsSdpSession * sess, gboolean offerer)
+{
+  GSList *item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
+  GSList *remote_media_list =
+      kms_sdp_message_context_get_medias (sess->remote_sdp_ctx);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *neg_mconf = item->data;
+    gint mid = kms_sdp_media_config_get_id (neg_mconf);
+    SdpMediaConfig *remote_mconf;
+
+    if (kms_sdp_media_config_is_inactive (neg_mconf)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
+      continue;
+    }
+
+    remote_mconf = g_slist_nth_data (remote_media_list, mid);
+    if (remote_mconf == NULL) {
+      GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
+      continue;
+    }
+
+    kms_webrtc_session_configure_connection (self, sess, neg_mconf,
+        remote_mconf, offerer);
+  }
+}
+
+void
+kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
+    gboolean offerer)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
+  const GstSDPMessage *sdp =
+      kms_sdp_message_context_get_sdp_message (sdp_sess->remote_sdp_ctx);
+  const GSList *item =
+      kms_sdp_message_context_get_medias (sdp_sess->neg_sdp_ctx);
+  GSList *remote_media_list =
+      kms_sdp_message_context_get_medias (sdp_sess->remote_sdp_ctx);
+  const gchar *ufrag, *pwd;
+
+  /*  [rfc5245#section-5.2]
+   *  The agent that generated the offer which
+   *  started the ICE processing MUST take the controlling role, and the
+   *  other MUST take the controlled role.
+   */
+  g_object_set (self->agent, "controlling-mode", offerer, NULL);
+
+  /* Configure specific webrtc connection such as SCTP if negotiated */
+  kms_webrtc_session_configure_connections (self, sdp_sess, offerer);
+
+  ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
+  pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *neg_mconf = item->data;
+    gint mid = kms_sdp_media_config_get_id (neg_mconf);
+    SdpMediaConfig *remote_mconf;
+    KmsWebRtcBaseConnection *conn;
+
+    if (kms_sdp_media_config_is_inactive (neg_mconf)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
+      continue;
+    }
+
+    conn = kms_webrtc_session_get_connection (self, neg_mconf);
+    if (conn == NULL) {
+      continue;
+    }
+
+    remote_mconf = g_slist_nth_data (remote_media_list, mid);
+    if (remote_mconf == NULL) {
+      GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
+      continue;
+    }
+    gst_media_add_remote_candidates (remote_mconf, conn, ufrag, pwd);
+  }
+
+  kms_webrtc_session_add_stored_ice_candidates (self);
+
+  g_slist_foreach (self->remote_candidates,
+      kms_webrtc_session_remote_sdp_add_stored_ice_candidates, self);
+}
+
+/* Start Transport end */
 
 static void
 kms_webrtc_session_finalize (GObject * object)
