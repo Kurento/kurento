@@ -5,7 +5,7 @@
 # IMPORTANT: Notice that DOC_VERSION should be the same as variable "release" in conf.py,
 # so when this variable is updated, it should be also updated in conf.py
 
-DOC_VERSION = 6.0.0-dev
+DOC_VERSION = 6.0.0
 CLIENT_JAVA_VERSION = 6.0.0
 CLIENT_JS_VERSION = 6.0.0
 UTILS_JS_VERSION = 6.0.1
