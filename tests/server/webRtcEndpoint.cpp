@@ -285,15 +285,13 @@ media_state_changes ()
 }
 
 static void
-connection_state_changes ()
+connectWebrtcEndpoints (std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer,
+                        std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer)
 {
   std::atomic<bool> conn_state_changed (false);
   std::condition_variable cv;
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
-
-  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
-  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
 
   webRtcEpOfferer->signalOnIceCandidate.connect ([&] (OnIceCandidate event) {
     BOOST_TEST_MESSAGE ("Offerer: adding candidate " +
@@ -351,20 +349,74 @@ connection_state_changes ()
       ConnectionState::CONNECTED) {
     BOOST_ERROR ("Connection must be connected");
   }
+}
+
+static void
+connection_state_changes ()
+{
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+
+  connectWebrtcEndpoints (webRtcEpOfferer, webRtcEpAnswerer);
+
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
+}
+
+static void
+check_webrtc_stats ()
+{
+  std::map <std::string, std::shared_ptr<Stats>> stats;
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+  std::shared_ptr<MediaPipelineImpl> pipeline;
+
+  connectWebrtcEndpoints (webRtcEpOfferer, webRtcEpAnswerer);
+
+  /* Now webrtcEndPoints are connected it's time to get stats */
+  stats = webRtcEpAnswerer->getStats();
+
+  if (stats.find (webRtcEpAnswerer->getId() ) != stats.end() ) {
+    BOOST_ERROR ("No latency stats enabled");
+  }
+
+  /* Enable latency stats */
+  pipeline = std::dynamic_pointer_cast<MediaPipelineImpl>
+             (webRtcEpAnswerer->getMediaPipeline () );
+  pipeline->setLatencyStats (true);
+
+  stats = webRtcEpAnswerer->getStats();
+
+  if (stats.find (webRtcEpAnswerer->getId() ) == stats.end() ) {
+    BOOST_ERROR ("Stats for this element should be in stats report");
+  }
+
+  /* Disable latency stats */
+  pipeline = std::dynamic_pointer_cast<MediaPipelineImpl>
+             (webRtcEpAnswerer->getMediaPipeline () );
+  pipeline->setLatencyStats (false);
+
+  stats = webRtcEpAnswerer->getStats();
+
+  if (stats.find (webRtcEpAnswerer->getId() ) != stats.end() ) {
+    BOOST_ERROR ("No latency stats enabled");
+  }
 
   releaseWebRtc (webRtcEpOfferer);
   releaseWebRtc (webRtcEpAnswerer);
 }
 
 test_suite *
-init_unit_test_suite ( int , char* [] )
+init_unit_test_suite ( int , char *[] )
 {
   test_suite *test = BOOST_TEST_SUITE ( "WebRtcEndpoint" );
+
   test->add (BOOST_TEST_CASE ( &gathering_done ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &ice_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &stun_turn_properties ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &media_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &connection_state_changes ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &check_webrtc_stats ), 0, /* timeout */ 15);
 
   return test;
 }
