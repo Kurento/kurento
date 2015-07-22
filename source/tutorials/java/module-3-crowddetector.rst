@@ -292,24 +292,21 @@ and the crowd detector module (*crowddetector*):
 
 .. sourcecode:: xml 
 
-   <parent>
-      <groupId>org.kurento</groupId>
-      <artifactId>kurento-parent-pom</artifactId>
-      <version>|CLIENT_JAVA_VERSION|</version>
-   </parent>
-
    <dependencies> 
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
+         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency> 
       <dependency> 
          <groupId>org.kurento</groupId>
-         <artifactId>kurento-utils-js</artifactId> 
+         <artifactId>kurento-utils-js</artifactId>
+         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
          <groupId>org.kurento.module</groupId>
          <artifactId>crowddetector</artifactId>
+         <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
    </dependencies>
 
