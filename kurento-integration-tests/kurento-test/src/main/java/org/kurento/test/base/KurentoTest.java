@@ -89,19 +89,26 @@ public class KurentoTest {
 
 	@Before
 	public void setupKurentoTest() throws InterruptedException {
-		if (testScenario != null && testScenario.getBrowserMap() != null && testScenario.getBrowserMap().size() > 0) {
-			ExecutorService executor = Executors.newFixedThreadPool(testScenario.getBrowserMap().size());
-			final AbortableCountDownLatch latch = new AbortableCountDownLatch(testScenario.getBrowserMap().size());
-			for (final String browserKey : testScenario.getBrowserMap().keySet()) {
+		if (testScenario != null && testScenario.getBrowserMap() != null
+				&& testScenario.getBrowserMap().size() > 0) {
+			ExecutorService executor = Executors
+					.newFixedThreadPool(testScenario.getBrowserMap().size());
+			final AbortableCountDownLatch latch = new AbortableCountDownLatch(
+					testScenario.getBrowserMap().size());
+			for (final String browserKey : testScenario.getBrowserMap()
+					.keySet()) {
 
 				executor.execute(new Runnable() {
 
 					@Override
 					public void run() {
 						try {
-							BrowserClient browserClient = testScenario.getBrowserMap().get(browserKey);
+							BrowserClient browserClient = testScenario
+									.getBrowserMap().get(browserKey);
 
-							int timeout = getProperty(TEST_URL_TIMEOUT_PROPERTY, TEST_URL_TIMEOUT_DEFAULT);
+							int timeout = getProperty(
+									TEST_URL_TIMEOUT_PROPERTY,
+									TEST_URL_TIMEOUT_DEFAULT);
 
 							URL url = browserClient.getUrl();
 							if (!testScenario.getUrlList().contains(url)) {
@@ -111,8 +118,9 @@ public class KurentoTest {
 							initBrowserClient(browserKey, browserClient);
 							latch.countDown();
 						} catch (Throwable t) {
-							log.error("Exception setiting up test. A browser could not be initialised", t);
-							latch.abort();
+							latch.abort(
+									"Exception setting up test. A browser could not be initialised",
+									t);
 						}
 					}
 				});
@@ -122,7 +130,8 @@ public class KurentoTest {
 		}
 	}
 
-	private void initBrowserClient(String browserKey, BrowserClient browserClient) {
+	private void initBrowserClient(String browserKey,
+			BrowserClient browserClient) {
 		browserClient.setId(browserKey);
 		browserClient.setName(testName.getMethodName());
 		browserClient.init();
@@ -132,7 +141,8 @@ public class KurentoTest {
 	@After
 	public void teardownKurentoTest() {
 		if (testScenario != null) {
-			for (BrowserClient browserClient : testScenario.getBrowserMap().values()) {
+			for (BrowserClient browserClient : testScenario.getBrowserMap()
+					.values()) {
 				try {
 					browserClient.close();
 				} catch (UnreachableBrowserException e) {
@@ -169,13 +179,18 @@ public class KurentoTest {
 
 		} catch (RuntimeException e) {
 			if (testScenario.getBrowserMap().isEmpty()) {
-				throw new RuntimeException("Empty test scenario: no available browser to run tests!");
+				throw new RuntimeException(
+						"Empty test scenario: no available browser to run tests!");
 			} else {
-				String browserKey = testScenario.getBrowserMap().entrySet().iterator().next().getKey();
-				log.debug(BrowserConfig.BROWSER + " is not registered in test scenarario, instead"
-						+ " using first browser in the test scenario, i.e. " + browserKey);
+				String browserKey = testScenario.getBrowserMap().entrySet()
+						.iterator().next().getKey();
+				log.debug(BrowserConfig.BROWSER
+						+ " is not registered in test scenarario, instead"
+						+ " using first browser in the test scenario, i.e. "
+						+ browserKey);
 
-				client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
+				client.setBrowserClient(testScenario.getBrowserMap().get(
+						browserKey));
 				return client.clone();
 			}
 		}
@@ -203,7 +218,8 @@ public class KurentoTest {
 
 	private TestClient assertAndGetBrowser(String browserKey) {
 		if (!testScenario.getBrowserMap().keySet().contains(browserKey)) {
-			throw new RuntimeException(browserKey + " is not registered as browser in the test scenario");
+			throw new RuntimeException(browserKey
+					+ " is not registered as browser in the test scenario");
 		}
 
 		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
@@ -215,10 +231,12 @@ public class KurentoTest {
 	}
 
 	public void waitForHostIsReachable(URL url, int timeout) {
-		long timeoutMillis = TimeUnit.MILLISECONDS.convert(timeout, TimeUnit.SECONDS);
+		long timeoutMillis = TimeUnit.MILLISECONDS.convert(timeout,
+				TimeUnit.SECONDS);
 		long endTimeMillis = System.currentTimeMillis() + timeoutMillis;
 
-		log.debug("Waiting for {} to be reachable (timeout {} seconds)", url, timeout);
+		log.debug("Waiting for {} to be reachable (timeout {} seconds)", url,
+				timeout);
 
 		try {
 			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -228,17 +246,20 @@ public class KurentoTest {
 				}
 
 				@Override
-				public void checkClientTrusted(X509Certificate[] certs, String authType) {
+				public void checkClientTrusted(X509Certificate[] certs,
+						String authType) {
 				}
 
 				@Override
-				public void checkServerTrusted(X509Certificate[] certs, String authType) {
+				public void checkServerTrusted(X509Certificate[] certs,
+						String authType) {
 				}
 			} };
 
 			SSLContext sc = SSLContext.getInstance("SSL");
 			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			HttpsURLConnection
+					.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
 			HostnameVerifier allHostsValid = new HostnameVerifier() {
 				@Override
@@ -251,14 +272,16 @@ public class KurentoTest {
 			int responseCode = 0;
 			while (true) {
 				try {
-					HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+					HttpURLConnection connection = (HttpURLConnection) url
+							.openConnection();
 					connection.setConnectTimeout((int) timeoutMillis);
 					connection.setReadTimeout((int) timeoutMillis);
 					connection.setRequestMethod("HEAD");
 					responseCode = connection.getResponseCode();
 					break;
 				} catch (SSLHandshakeException | SocketException e) {
-					log.warn("Error {} waiting URL, trying again in 1 second", e.getMessage());
+					log.warn("Error {} waiting URL, trying again in 1 second",
+							e.getMessage());
 					// Polling to wait a consistent SSL state
 					Thread.sleep(1000);
 				}
@@ -268,11 +291,13 @@ public class KurentoTest {
 			}
 
 			if (responseCode != HttpURLConnection.HTTP_OK) {
-				Assert.fail("URL " + url + " not reachable. Response code=" + responseCode);
+				Assert.fail("URL " + url + " not reachable. Response code="
+						+ responseCode);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail("URL " + url + " not reachable in " + timeout + " seconds (" + e.getClass().getName() + ", "
+			Assert.fail("URL " + url + " not reachable in " + timeout
+					+ " seconds (" + e.getClass().getName() + ", "
 					+ e.getMessage() + ")");
 		}
 

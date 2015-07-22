@@ -31,6 +31,9 @@ public class AbortableCountDownLatch extends CountDownLatch {
 
 	private long remainingLatchesCount;
 
+	private String message;
+	private Throwable throwable;
+
 	public AbortableCountDownLatch(int count) {
 		super(count);
 	}
@@ -40,7 +43,15 @@ public class AbortableCountDownLatch extends CountDownLatch {
 	 * AbortedException. If the latch has already counted all the way down, this
 	 * method does nothing.
 	 */
-	public void abort() {
+	// public void abort() {
+	// abort(null, null);
+	// }
+
+	public void abort(String message, Throwable throwable) {
+
+		this.message = message;
+		this.throwable = throwable;
+
 		if (getCount() == 0) {
 			return;
 		}
@@ -53,10 +64,11 @@ public class AbortableCountDownLatch extends CountDownLatch {
 	}
 
 	@Override
-	public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+	public boolean await(long timeout, TimeUnit unit)
+			throws InterruptedException {
 		final boolean rtrn = super.await(timeout, unit);
 		if (aborted) {
-			throw new AbortedException();
+			throw new AbortedException(message, throwable);
 		}
 		return rtrn;
 	}
@@ -65,7 +77,7 @@ public class AbortableCountDownLatch extends CountDownLatch {
 	public void await() throws InterruptedException {
 		super.await();
 		if (aborted) {
-			throw new AbortedException();
+			throw new AbortedException(message, throwable);
 		}
 	}
 
@@ -77,11 +89,24 @@ public class AbortableCountDownLatch extends CountDownLatch {
 
 		private static final long serialVersionUID = 5426681873843162292L;
 
+		private Throwable cause;
+
 		public AbortedException() {
 		}
 
 		public AbortedException(String detailMessage) {
 			super(detailMessage);
 		}
+
+		public AbortedException(String detailMessage, Throwable cause) {
+			super(detailMessage);
+			this.cause = cause;
+		}
+
+		@Override
+		public synchronized Throwable getCause() {
+			return cause;
+		}
 	}
+
 }
