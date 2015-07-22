@@ -17,6 +17,7 @@ package org.kurento.test.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.internal.runners.model.MultipleFailureException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.0.0
  */
+@SuppressWarnings("deprecation")
 public class Retry implements TestRule {
 	private static Logger log = LoggerFactory.getLogger(Retry.class);
 	private static final String SEPARATOR = "=======================================";
@@ -55,6 +57,7 @@ public class Retry implements TestRule {
 	private Statement statement(final Statement base,
 			final Description description) {
 		return new Statement() {
+			
 			@Override
 			public void evaluate() throws Throwable {
 				Throwable caughtThrowable = null;
@@ -70,6 +73,14 @@ public class Retry implements TestRule {
 						testReport.appendLine();
 						return;
 					} catch (Throwable t) {
+						
+						if(t instanceof MultipleFailureException){
+							MultipleFailureException m = (MultipleFailureException) t;
+							for(Throwable throwable : m.getFailures()){
+								log.warn("Multiple exception element",throwable);
+							}
+						}
+						
 						exceptions.add(t);
 						if (testReport != null) {
 							testReport.appendWarning("Test failed in retry "
