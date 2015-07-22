@@ -5,7 +5,7 @@ Kurento Media Server Installation
 Kurento Media Server (KMS) has to be installed on **Ubuntu 14.04 LTS** (64 bits).
 
 In order to install the latest stable Kurento Media Server version
-(**|DOC_VERSION|**) you have to type the following commands, one at a time and
+(**|KMS_VERSION|**) you have to type the following commands, one at a time and
 in the same order as listed here. When asked for any kind of confirmation,
 reply affirmatively:
 

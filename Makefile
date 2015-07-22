@@ -5,7 +5,8 @@
 # IMPORTANT: Notice that DOC_VERSION should be the same as variable "release" in conf.py,
 # so when this variable is updated, it should be also updated in conf.py
 
-DOC_VERSION = 6.0.0
+DOC_VERSION = 6.0.1-dev
+KMS_VERSION = 6.0.0
 CLIENT_JAVA_VERSION = 6.0.0
 CLIENT_JS_VERSION = 6.0.0
 UTILS_JS_VERSION = 6.0.1
@@ -59,6 +60,7 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	find build/html -name "*.html" -exec sed -i -e "s@|DOC_VERSION|@$(DOC_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|KMS_VERSION|@$(KMS_VERSION)@" {} \;
 	find build/html -name "*.html" -exec sed -i -e "s@|CLIENT_JAVA_VERSION|@$(CLIENT_JAVA_VERSION)@" {} \;
 	find build/html -name "*.html" -exec sed -i -e "s@|CLIENT_JS_VERSION|@$(CLIENT_JS_VERSION)@" {} \;
 	find build/html -name "*.html" -exec sed -i -e "s@|UTILS_JS_VERSION|@$(UTILS_JS_VERSION)@" {} \;
