@@ -174,7 +174,7 @@ host than the HTTP serving the application.
 
    [...]
 
-   kurentoClient(args.ws_uri, function(error, client)
+   kurentoClient(args.ws_uri, function(error, client){
      [...]
    };
 
@@ -183,7 +183,7 @@ Once we have an instance of ``kurentoClient``, the following step is to create a
 
 .. sourcecode:: js
 
-   client.create("MediaPipeline", function(error, _pipeline)
+   client.create("MediaPipeline", function(error, _pipeline){
       [...]
    });
 
@@ -222,6 +222,16 @@ If everything works correctly, we have an instance of a media pipeline (variable
        });
      });
    });
+
+.. note::
+
+   The :term:`TURN` and :term:`STUN` servers to be used can be configured simple adding
+   the parameter ``ice_servers`` to the application URL, as follows:
+
+   .. sourcecode:: sh
+
+      http://localhost:8080/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
+      http://localhost:8080/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
 
 Dependencies
 ============

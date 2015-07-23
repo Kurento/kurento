@@ -255,6 +255,16 @@ All in all, the media pipeline of this demo is is implemented as follows:
       });
     });
 
+.. note::
+
+   The :term:`TURN` and :term:`STUN` servers to be used can be configured simple adding
+   the parameter ``ice_servers`` to the application URL, as follows:
+
+   .. sourcecode:: sh
+
+      http://localhost:8080/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
+      http://localhost:8080/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
+
 Dependencies
 ============
 
