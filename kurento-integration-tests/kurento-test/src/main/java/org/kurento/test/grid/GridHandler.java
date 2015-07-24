@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -82,27 +83,22 @@ public class GridHandler {
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private GridHub hub;
-	private String hubAddress = getProperty(SELENIUM_HUB_ADDRESS,
-			SELENIUM_HUB_ADDRESS_DEFAULT);
-	private int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
-			SELENIUM_HUB_PORT_DEFAULT);
+	private String hubAddress = getProperty(SELENIUM_HUB_ADDRESS, SELENIUM_HUB_ADDRESS_DEFAULT);
+	private int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY, SELENIUM_HUB_PORT_DEFAULT);
 	private CountDownLatch countDownLatch;
-	private Map<String, GridNode> nodes = new HashMap<>();
+	private Map<String, GridNode> nodes = new ConcurrentHashMap<>();
 	private List<String> nodeList;
 	private boolean hubStarted = false;
 
 	protected GridHandler() {
 		String nodesListProp = System.getProperty(SELENIUM_NODES_LIST_PROPERTY);
-		String nodesListFileProp = System
-				.getProperty(SELENIUM_NODES_FILE_LIST_PROPERTY);
+		String nodesListFileProp = System.getProperty(SELENIUM_NODES_FILE_LIST_PROPERTY);
 
 		if (nodesListFileProp != null) {
 			try {
-				nodeList = FileUtils.readLines(new File(nodesListFileProp),
-						Charset.defaultCharset());
+				nodeList = FileUtils.readLines(new File(nodesListFileProp), Charset.defaultCharset());
 			} catch (IOException e) {
-				Assert.fail("Exception reading node list file: "
-						+ e.getMessage());
+				Assert.fail("Exception reading node list file: " + e.getMessage());
 			}
 		} else if (nodesListProp != null) {
 			nodeList = new ArrayList<>(Arrays.asList(nodesListProp.split(";")));
@@ -111,33 +107,36 @@ public class GridHandler {
 					.getResourceAsStream(SELENIUM_NODES_LIST_DEFAULT);
 
 			try {
-				nodeList = CharStreams.readLines(new InputStreamReader(
-						inputStream, Charsets.UTF_8));
+				nodeList = CharStreams.readLines(new InputStreamReader(inputStream, Charsets.UTF_8));
 			} catch (IOException e) {
-				Assert.fail("Exception reading node-list.txt: "
-						+ e.getMessage());
+				Assert.fail("Exception reading node-list.txt: " + e.getMessage());
 			}
 		}
 	}
 
-	public static GridHandler getInstance() {
+	public static synchronized GridHandler getInstance() {
 		if (instance == null) {
 			instance = new GridHandler();
 		}
 		return instance;
 	}
 
-	public void stopGrid() {
+	public synchronized void stopGrid() {
+		log.info("Stopping Selenium Grid");
 		try {
 			// Stop Hub
 			if (hub != null) {
+				log.info("Stopping Hub");
 				hub.stop();
 				hubStarted = false;
 			}
 
 			// Stop Nodes
 			if (nodes != null) {
+				log.info("Number of nodes: {}", nodes.size());
+
 				for (GridNode node : nodes.values()) {
+					log.info("Stopping Node {}", node.getHost());
 					stopNode(node);
 				}
 			}
@@ -148,7 +147,7 @@ public class GridHandler {
 
 	}
 
-	public void startHub() {
+	public synchronized void startHub() {
 		try {
 			if (hubAddress != null && !hubStarted) {
 				hub = new GridHub(hubAddress, hubPort);
@@ -175,8 +174,7 @@ public class GridHandler {
 			}
 
 			if (!countDownLatch.await(TIMEOUT_NODE, TimeUnit.SECONDS)) {
-				Assert.fail("Timeout waiting nodes (" + TIMEOUT_NODE
-						+ " seconds)");
+				Assert.fail("Timeout waiting nodes (" + TIMEOUT_NODE + " seconds)");
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -190,14 +188,10 @@ public class GridHandler {
 			node.startSsh();
 
 			final String chromeDriverName = "/chromedriver";
-			final String chromeDriverSource = KurentoServicesTestHelper
-					.getTestFilesPath()
-					+ "/bin/chromedriver/2.9/linux64"
-					+ chromeDriverName;
+			final String chromeDriverSource = KurentoServicesTestHelper.getTestFilesPath()
+					+ "/bin/chromedriver/2.9/linux64" + chromeDriverName;
 			final String seleniumJarName = "/selenium-server-standalone-2.42.2.jar";
-			final String seleniumJarSource = KurentoServicesTestHelper
-					.getTestFilesPath()
-					+ "/bin/selenium-server"
+			final String seleniumJarSource = KurentoServicesTestHelper.getTestFilesPath() + "/bin/selenium-server"
 					+ seleniumJarName;
 
 			// OverThere SCP need absolute path, so home path must be known
@@ -207,30 +201,21 @@ public class GridHandler {
 			final String remoteChromeDriver = remoteFolder + chromeDriverName;
 			final String remoteSeleniumJar = remoteFolder + seleniumJarName;
 			final String remoteScript = node.getTmpFolder() + "/" + LAUNCH_SH;
-			final String remotePort = String.valueOf(node.getSshConnection()
-					.getFreePort());
+			final String remotePort = String.valueOf(node.getSshConnection().getFreePort());
 
-			if (!node.getSshConnection().exists(remoteFolder)
-					|| node.isOverwrite()) {
-				node.getSshConnection().execAndWaitCommand("mkdir", "-p",
-						remoteFolder);
+			if (!node.getSshConnection().exists(remoteFolder) || node.isOverwrite()) {
+				node.getSshConnection().execAndWaitCommand("mkdir", "-p", remoteFolder);
 			}
-			if (!node.getSshConnection().exists(remoteChromeDriver)
-					|| node.isOverwrite()) {
-				node.getSshConnection().scp(chromeDriverSource,
-						remoteChromeDriver);
-				node.getSshConnection().execAndWaitCommand("chmod", "+x",
-						remoteChromeDriver);
+			if (!node.getSshConnection().exists(remoteChromeDriver) || node.isOverwrite()) {
+				node.getSshConnection().scp(chromeDriverSource, remoteChromeDriver);
+				node.getSshConnection().execAndWaitCommand("chmod", "+x", remoteChromeDriver);
 			}
-			if (!node.getSshConnection().exists(remoteSeleniumJar)
-					|| node.isOverwrite()) {
-				node.getSshConnection().scp(seleniumJarSource,
-						remoteSeleniumJar);
+			if (!node.getSshConnection().exists(remoteSeleniumJar) || node.isOverwrite()) {
+				node.getSshConnection().scp(seleniumJarSource, remoteSeleniumJar);
 			}
 
 			// Script is always overwritten
-			createRemoteScript(node, remotePort, remoteScript, remoteFolder,
-					remoteChromeDriver, remoteSeleniumJar,
+			createRemoteScript(node, remotePort, remoteScript, remoteFolder, remoteChromeDriver, remoteSeleniumJar,
 					node.getBrowserType(), node.getMaxInstances());
 
 			// Launch node
@@ -244,14 +229,12 @@ public class GridHandler {
 		}
 	}
 
-	private void createRemoteScript(GridNode node, String remotePort,
-			String remoteScript, String remoteFolder,
-			String remoteChromeDriver, String remoteSeleniumJar,
-			BrowserType browser, int maxInstances) throws IOException {
+	private void createRemoteScript(GridNode node, String remotePort, String remoteScript, String remoteFolder,
+			String remoteChromeDriver, String remoteSeleniumJar, BrowserType browser, int maxInstances)
+					throws IOException {
 
 		// Create script for Node
-		Configuration cfg = new Configuration(
-				Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("remotePort", String.valueOf(remotePort));
@@ -276,8 +259,7 @@ public class GridHandler {
 			writer.close();
 
 		} catch (Exception e) {
-			throw new RuntimeException(
-					"Exception while creating file from template", e);
+			throw new RuntimeException("Exception while creating file from template", e);
 		}
 
 		// Copy script to remote node
@@ -289,8 +271,7 @@ public class GridHandler {
 	public void copyRemoteVideo(GridNode node, String video) {
 		try {
 			// Copy video in remote host if necessary
-			if (!node.getSshConnection().exists(node.getRemoteVideo(video))
-					|| node.isOverwrite()) {
+			if (!node.getSshConnection().exists(node.getRemoteVideo(video)) || node.isOverwrite()) {
 				node.getSshConnection().scp(video, node.getRemoteVideo(video));
 			}
 		} catch (Exception e) {
@@ -302,8 +283,7 @@ public class GridHandler {
 		log.info("Waiting for node {} to be ready...", node);
 		int responseStatusCode = 0;
 		HttpClient client = HttpClientBuilder.create().build();
-		HttpGet httpGet = new HttpGet("http://" + node + ":" + port
-				+ "/wd/hub/static/resource/hub.html");
+		HttpGet httpGet = new HttpGet("http://" + node + ":" + port + "/wd/hub/static/resource/hub.html");
 
 		// Wait for a max of TIMEOUT_NODE seconds
 		long maxSystemTime = System.currentTimeMillis() + TIMEOUT_NODE * 1000;
@@ -317,35 +297,29 @@ public class GridHandler {
 				} catch (InterruptedException ie) {
 				}
 				if (System.currentTimeMillis() > maxSystemTime) {
-					log.error("Timeout ({} sec) waiting for node {}",
-							TIMEOUT_NODE, node);
+					log.error("Timeout ({} sec) waiting for node {}", TIMEOUT_NODE, node);
 				}
 			}
 		} while (responseStatusCode != HttpStatus.SC_OK);
 
 		if (responseStatusCode == HttpStatus.SC_OK) {
-			log.info("Node {} ready (responseStatus {})", node,
-					responseStatusCode);
+			log.info("Node {} ready (responseStatus {})", node, responseStatusCode);
 			countDownLatch.countDown();
 		}
 	}
 
-	public GridNode getRandomNodeFromList(String browserKey,
-			BrowserType browserType, int maxInstances) {
+	public synchronized GridNode getRandomNodeFromList(String browserKey, BrowserType browserType, int maxInstances) {
 
 		GridNode node = null;
 		String nodeCandidate;
-		long maxSystemTime = System.currentTimeMillis() + 2 * TIMEOUT_NODE
-				* 1000;
+		long maxSystemTime = System.currentTimeMillis() + 2 * TIMEOUT_NODE * 1000;
 
 		boolean validCandidateFound = false;
 		do {
 			try {
-				nodeCandidate = nodeList.get(Randomizer.getInt(0,
-						nodeList.size()));
+				nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
 			} catch (IllegalArgumentException e) {
-				throw new RuntimeException(
-						"No valid available node(s) to perform Selenim Grid test");
+				throw new RuntimeException("No valid available node(s) to perform Selenim Grid test");
 			}
 			log.debug("Node candidate {}", nodeCandidate);
 
@@ -358,14 +332,15 @@ public class GridHandler {
 						if (xvfb != 2) {
 							log.debug("Node {} has no Xvfb", nodeCandidate);
 						} else {
-							node = new GridNode(nodeCandidate, browserType,
-									maxInstances);
+							node = new GridNode(nodeCandidate, browserType, maxInstances);
+
+							log.info(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
+
 							nodes.put(browserKey, node);
 							validCandidateFound = true;
 						}
 					} catch (Exception e) {
-						log.debug("Invalid credentials to access node {} ",
-								nodeCandidate);
+						log.debug("Invalid credentials to access node {} ", nodeCandidate);
 					} finally {
 						remoteHost.stop();
 					}
@@ -378,8 +353,7 @@ public class GridHandler {
 		} while (!validCandidateFound);
 
 		if (System.currentTimeMillis() > maxSystemTime) {
-			throw new RuntimeException("Timeout (" + 2 * TIMEOUT_NODE
-					+ " sec) selecting 1 node");
+			throw new RuntimeException("Timeout (" + 2 * TIMEOUT_NODE + " sec) selecting 1 node");
 		}
 		return node;
 
@@ -392,8 +366,7 @@ public class GridHandler {
 		}
 	}
 
-	public void runParallel(List<GridNode> nodeList, Runnable myFunc)
-			throws InterruptedException, ExecutionException {
+	public void runParallel(List<GridNode> nodeList, Runnable myFunc) throws InterruptedException, ExecutionException {
 		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
 		List<Future<?>> results = new ArrayList<>();
 		for (int i = 0; i < nodes.size(); i++) {
@@ -416,7 +389,7 @@ public class GridHandler {
 		return nodes.get(browserKey);
 	}
 
-	public void addNode(String browserKey, GridNode node) {
+	public synchronized void addNode(String browserKey, GridNode node) {
 		nodes.put(browserKey, node);
 	}
 
@@ -436,8 +409,7 @@ public class GridHandler {
 		if (nodes.containsKey(browserKey)) {
 			return nodes.get(browserKey);
 		} else {
-			return nodes.get(browserKey.substring(0,
-					browserKey.indexOf("-") + 1) + 0);
+			return nodes.get(browserKey.substring(0, browserKey.indexOf("-") + 1) + 0);
 		}
 	}
 
