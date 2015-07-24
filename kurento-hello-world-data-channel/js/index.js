@@ -86,16 +86,18 @@ window.addEventListener('load', function()
   var configuration = null;
   var peerConnection = new RTCPeerConnection(servers, configuration);
 
-  console.log("Creating sendChannel");
+  console.log("Creating channel");
   var dataConstraints = null;
-  var sendChannel = peerConnection.createDataChannel('sendDataChannel',
-  dataConstraints);
+  var channel;
 
-  sendChannel.onopen = onSendChannelStateChange;
-  sendChannel.onclose = onSendChannelStateChange;
+  channel = peerConnection.createDataChannel('sendDataChannel', dataConstraints);
+
+  channel.onopen = onSendChannelStateChange;
+  channel.onclose = onSendChannelStateChange;
+
   function onSendChannelStateChange(){
-    if(!sendChannel) return;
-    var readyState = sendChannel.readyState;
+    if(!channel) return;
+    var readyState = channel.readyState;
     console.log("sencChannel state changed to " + readyState);
     if(readyState == 'open'){
       dataChannelSend.disabled = false;
@@ -108,45 +110,28 @@ window.addEventListener('load', function()
   }
 
   var sendButton = document.getElementById('send');
-  var dataChannelSend = document.getElementById('dataChannelSend')
+  var dataChannelSend = document.getElementById('dataChannelSend');
+  var dataChannelReceive = document.getElementById('dataChannelReceive');
+
+  channel.onmessage = function (event) {
+    console.log("Received data " + event["data"]);
+    dataChannelReceive.value = event["data"];
+  };
 
   sendButton.addEventListener("click", function(){
     var data = dataChannelSend.value;
     console.log("Send button pressed. Sending data " + data);
-    sendChannel.send(data);
+    channel.send(data);
+    dataChannelSend.value = "";
   });
-
-
-  var receiveChannel;
-  peerConnection.ondatachannel = receiveChannelCallback;
-  function receiveChannelCallback(event){
-    console.log("receiveChannelCallback invoked")
-    receiveChannel = event.channel;
-    receiveChannel.onmessage = onReceiveMessageCallback;
-    function onReceiveMessageCallback(event) {
-      console.log('receiveChannel received data ' + event.data);
-      dataChannelReceive.value = event.data;
-    }
-    receiveChannel.onopen = onReceiveChannelStateChange;
-    receiveChannel.onclose = onReceiveChannelStateChange;
-    function onReceiveChannelStateChange() {
-      if(!receiveChannel) return;
-      var readyState = receiveChannel.readyState;
-      console.log('receiveChannel state changed to: ' + readyState);
-    }
-  }
 
   function closeChannels(){
 
-    if(sendChannel){
-      sendChannel.close();
+    if(channel){
+      channel.close();
       dataChannelSend.disabled = true;
       $('#send').attr('disabled', true)
-      sendChannel = null;
-    }
-    if(receiveChannel){
-      receiveChannel.close();
-      receiveChannel = null;
+      channel = null;
     }
   }
 
@@ -183,7 +168,7 @@ window.addEventListener('load', function()
 
           pipeline = _pipeline;
 
-          pipeline.create("WebRtcEndpoint", function(error, webRtc){
+          pipeline.create("WebRtcEndpoint", {useDataChannels: true}, function(error, webRtc){
             if(error) return onError(error);
 
             setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
