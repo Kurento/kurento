@@ -28,17 +28,6 @@
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
-static const gchar *pattern_offer_sdp_str = "v=0\r\n"
-    "o=- 0 0 IN IP4 0.0.0.0\r\n"
-    "s=TestSession\r\n"
-    "c=IN IP4 0.0.0.0\r\n"
-    "t=0 0\r\n"
-    "m=video 0 RTP/AVP 96 97\r\n"
-    "a=rtpmap:96 H263-1998/90000\r\n"
-    "a=rtpmap:97 VP8/90000\r\n"
-    "m=audio 0 RTP/AVP 98 99\r\n"
-    "a=rtpmap:98 OPUS/48000/1\r\n" "a=rtpmap:99 AMR/8000/1\r\n";
-
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -372,13 +361,33 @@ GST_START_TEST (negotiation_offerer)
   g_object_unref (answerer);
 }
 
-GST_END_TEST
-GST_START_TEST (process_webrtc_offer)
+GST_END_TEST static gboolean
+check_no_mid_attr (const GstSDPMedia * media)
 {
-  GstSDPMessage *pattern_sdp;
+  guint i, len;
+
+  len = gst_sdp_media_attributes_len (media);
+
+  for (i = 0; i < len; i++) {
+    const GstSDPAttribute *a;
+
+    a = gst_sdp_media_get_attribute (media, i);
+
+    fail_if (g_strcmp0 (a->key, "mid") == 0);
+  }
+
+  return TRUE;
+}
+
+GST_START_TEST (process_bundle_offer)
+{
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { "opus/48000/1", "AMR/8000/1", NULL };
+  gchar *video_codecs[] = { "H263-1998/90000", "VP8/90000", NULL };
   GstElement *rtpendpoint = gst_element_factory_make ("rtpendpoint", NULL);
   GstSDPMessage *offer = NULL, *answer = NULL;
   gchar *aux = NULL;
+  guint i, len;
 
   static const gchar *offer_str = "v=0\r\n"
       "o=- 1783800438437245920 2 IN IP4 127.0.0.1\r\n"
@@ -386,7 +395,7 @@ GST_START_TEST (process_webrtc_offer)
       "t=0 0\r\n"
       "a=group:BUNDLE audio video\r\n"
       "a=msid-semantic: WMS MediaStream0\r\n"
-      "m=audio 37426 RTP/SAVPF 111 103 9 102 0 8 106 105 13 127 126\r\n"
+      "m=audio 37426 RTP/AVPF 111 103 9 102 0 8 106 105 13 127 126\r\n"
       "c=IN IP4 5.5.5.5\r\n"
       "a=rtcp:37426 IN IP4 5.5.5.5\r\n"
       "a=candidate:1840965416 1 udp 2113937151 192.168.0.100 37426 typ host generation 0\r\n"
@@ -420,7 +429,7 @@ GST_START_TEST (process_webrtc_offer)
       "a=ssrc:4210654932 msid:MediaStream0 AudioTrack0\r\n"
       "a=ssrc:4210654932 mslabel:MediaStream0\r\n"
       "a=ssrc:4210654932 label:AudioTrack0\r\n"
-      "m=video 37426 RTP/SAVPF 100 116 117\r\n"
+      "m=video 37426 RTP/AVPF 100 116 117\r\n"
       "c=IN IP4 5.5.5.5\r\n"
       "a=rtcp:37426 IN IP4 5.5.5.5\r\n"
       "a=candidate:1840965416 1 udp 2113937151 192.168.0.100 37426 typ host generation 0\r\n"
@@ -445,20 +454,23 @@ GST_START_TEST (process_webrtc_offer)
       "a=rtcp-fb:100 goog-remb\r\n"
       "a=rtpmap:116 red/90000\r\n"
       "a=rtpmap:117 ulpfec/90000\r\n"
+      "a=rtpmap:100 H263-1998/90000\r\n"
+      "a=rtpmap:116 VP8/90000\r\n"
+      "a=rtpmap:1117 MP4V-ES/90000\r\n"
       "a=ssrc:1686396354 cname:/9kskFtadoxn1x70\r\n"
       "a=ssrc:1686396354 msid:MediaStream0 VideoTrack0\r\n"
       "a=ssrc:1686396354 mslabel:MediaStream0\r\n"
       "a=ssrc:1686396354 label:VideoTrack0\r\n";
 
-  fail_unless (gst_sdp_message_new (&pattern_sdp) == GST_SDP_OK);
-  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
-          pattern_offer_sdp_str, -1, pattern_sdp) == GST_SDP_OK);
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
 
-  g_object_set (rtpendpoint, "pattern-sdp", pattern_sdp, NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
-  g_object_get (rtpendpoint, "pattern-sdp", &pattern_sdp, NULL);
-  fail_unless (pattern_sdp != NULL);
-  fail_unless (gst_sdp_message_free (pattern_sdp) == GST_SDP_OK);
+  g_object_set (rtpendpoint, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
 
   fail_unless (gst_sdp_message_new (&offer) == GST_SDP_OK);
   fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
@@ -473,6 +485,16 @@ GST_START_TEST (process_webrtc_offer)
   GST_DEBUG ("Answer:\n%s", (aux = gst_sdp_message_as_text (answer)));
   g_free (aux);
   aux = NULL;
+
+  /* No bundle group must apper in the response */
+  fail_if (gst_sdp_message_get_attribute_val (answer, "group") != NULL);
+
+  len = gst_sdp_message_medias_len ((const GstSDPMessage *) answer);
+
+  for (i = 0; i < len; i++) {
+    check_no_mid_attr (gst_sdp_message_get_media ((const GstSDPMessage *)
+            answer, i));
+  }
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
@@ -491,13 +513,11 @@ sdp_suite (void)
   TCase *tc_chain = tcase_create ("element");
 
   suite_add_tcase (s, tc_chain);
+
   tcase_add_test (tc_chain, negotiation_offerer);
   tcase_add_test (tc_chain, loopback);
+  tcase_add_test (tc_chain, process_bundle_offer);
 
-  /* TODO: enable when bundle is available */
-  if (FALSE) {
-    tcase_add_test (tc_chain, process_webrtc_offer);
-  }
   return s;
 }
 
