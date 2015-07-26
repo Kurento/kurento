@@ -18,7 +18,7 @@ function getopts(args, opts)
   var result = opts.default || {};
   args.replace(
       new RegExp("([^?=&]+)(=([^&]*))?", "g"),
-      function($0, $1, $2, $3) { result[$1] = $3; });
+      function($0, $1, $2, $3) { result[$1] = decodeURI($3); });
 
   return result;
 };
@@ -31,12 +31,6 @@ var args = getopts(location.search,
     ice_servers: undefined
   }
 });
-
-if (args.ice_servers) {
-  console.log("Use ICE servers: " + args.ice_servers);
-  kurentoUtils.WebRtcPeer.prototype.server.iceServers = JSON.parse(args.ice_servers);
-} else
-  console.log("Use freeice")
 
 function showSpinner() {
   for (var i = 0; i < arguments.length; i++) {
@@ -121,6 +115,15 @@ window.addEventListener("load", function(event)
       localVideo: videoInput,
       remoteVideo: videoOutput
     };
+
+    if (args.ice_servers) {
+      console.log("Use ICE servers: " + args.ice_servers);
+      options.configuration = {
+        iceServers : JSON.parse(args.ice_servers)
+      };
+    } else {
+      console.log("Use freeice")
+    }
 
     webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
     {
