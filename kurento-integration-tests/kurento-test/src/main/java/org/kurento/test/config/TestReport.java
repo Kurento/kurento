@@ -62,7 +62,9 @@ public class TestReport {
 					true)));
 			if (!exists) {
 				initPage();
-				appendHtml(htmlHeader);
+				if (htmlHeader != null) {
+					appendHtml(htmlHeader);
+				}
 			}
 			appendTitle(title);
 			writer.flush();
