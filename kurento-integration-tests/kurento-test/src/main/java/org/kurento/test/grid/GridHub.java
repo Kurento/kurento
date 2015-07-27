@@ -44,7 +44,7 @@ public class GridHub {
 
 	public void start() throws Exception {
 		GridHubConfiguration config = new GridHubConfiguration();
-		config.setHost(this.ip);
+		config.setHost("0.0.0.0");
 		config.setPort(this.port);
 		config.setTimeout(getTimeout());
 
