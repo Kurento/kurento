@@ -40,7 +40,7 @@ public class Retry implements TestRule {
 	private List<Throwable> exceptions;
 	private TestReport testReport;
 	private TestScenario testScenario;
-
+	
 	public Retry(int retryCount) {
 		this.retryCount = retryCount;
 		exceptions = new ArrayList<>(retryCount);
@@ -48,6 +48,10 @@ public class Retry implements TestRule {
 
 	public void useReport(String testName) {
 		testReport = new TestReport(testName, retryCount);
+	}
+	
+	public void useReport(String testName, String htmlHeader) {
+		testReport = new TestReport(testName, retryCount, htmlHeader);
 	}
 
 	public Statement apply(Statement base, Description description) {

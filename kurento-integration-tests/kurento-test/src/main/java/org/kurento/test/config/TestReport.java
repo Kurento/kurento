@@ -46,6 +46,10 @@ public class TestReport {
 	protected int numRetries;
 
 	public TestReport(String name, int numRetries) {
+		this(name, numRetries, null);
+	}
+	
+	public TestReport(String name, int numRetries, String htmlHeader) {
 		try {
 			this.numRetries = numRetries;
 			this.extraInfoHtml = "";
@@ -58,6 +62,7 @@ public class TestReport {
 					true)));
 			if (!exists) {
 				initPage();
+				appendHtml(htmlHeader);
 			}
 			appendTitle(title);
 			writer.flush();
