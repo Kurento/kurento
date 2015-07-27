@@ -36,6 +36,31 @@ install(
 )
 # icecandidate end
 
+set(KMS_WEBRTC_DATA_PROTOCOL_SOURCES
+  kmswebrtcdatasessionbin.c
+)
+
+set(KMS_WEBRTC_DATA_PROTOCOL_HEADERS
+  kmswebrtcdatasessionbin.h
+  kmswebrtcdataproto.h
+)
+
+add_library(webrtcdataproto SHARED
+  ${KMS_WEBRTC_DATA_PROTOCOL_SOURCES}
+  ${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}
+)
+
+set_target_properties(webrtcdataproto PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}")
+set_target_properties(webrtcdataproto PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+install(
+  TARGETS webrtcdataproto
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER DESTINATION ${INCLUDE_PREFIX}
+)
+
 set(KMS_WEBRTC_SOURCES
   kmswebrtcbaseconnection.c
   kmswebrtcconnection.c
@@ -54,7 +79,7 @@ add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_
 
 add_library(webrtcendpoint MODULE ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
 
-add_dependencies(webrtcendpoint rtcpdemux)
+add_dependencies(webrtcendpoint rtcpdemux webrtcdataproto)
 
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
@@ -68,6 +93,7 @@ include_directories(
 
 target_link_libraries(webrtcendpoint
   icecandidate
+  webrtcdataproto
   ${KmsGstCommons_LIBRARIES}
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
