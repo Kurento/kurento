@@ -1,0 +1,604 @@
+/*
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <string.h>
+
+#include <gst/app/gstappsrc.h>
+#include <gst/app/gstappsink.h>
+
+#include <gst/sctp/sctpreceivemeta.h>
+#include <gst/sctp/sctpsendmeta.h>
+
+#include "kmswebrtcdatachannelbin.h"
+#include "kmswebrtcdataproto.h"
+#include "kmswebrtcdatachannelstate.h"
+#include "kmswebrtcdatachannelpriority.h"
+#include "kms-webrtc-enumtypes.h"
+
+#define PLUGIN_NAME "kmswebrtcdatachannelbin"
+
+GST_DEBUG_CATEGORY_STATIC (kms_webrtc_data_channel_bin_debug_category);
+#define GST_CAT_DEFAULT kms_webrtc_data_channel_bin_debug_category
+
+G_DEFINE_TYPE_WITH_CODE (KmsWebRtcDataChannelBin, kms_webrtc_data_channel_bin,
+    GST_TYPE_BIN,
+    GST_DEBUG_CATEGORY_INIT (kms_webrtc_data_channel_bin_debug_category,
+        PLUGIN_NAME, 0, "debug category for webrtc_data_channel_bin"));
+
+#define parent_class kms_webrtc_data_channel_bin_parent_class
+
+#define DEFAULT_ORDERED TRUE
+#define DEFAULT_MAX_PACKETS_LIFE_TIME -1
+#define DEFAULT_MAX_PACKET_RETRANSMITS -1
+#define DEFAULT_PROTOCOL ""
+#define DEFAULT_NEGOTIATED FALSE
+#define DEFAULT_ID 0
+#define DEFAULT_LABEL ""
+
+#define MAX_PACKETS_LIFE_TIME 65535
+#define MAX_PACKET_RETRANSMITS 65535
+#define MAX_CHUNK_SIZE G_MAXUSHORT
+
+#define WEBRT_DATA_CAPS "application/webrtc-data"
+
+#define KMS_WEBRTC_DATA_CHANNEL_BIN_GET_PRIVATE(obj) ( \
+  G_TYPE_INSTANCE_GET_PRIVATE (                        \
+    (obj),                                             \
+    KMS_TYPE_WEBRTC_DATA_CHANNEL_BIN,                  \
+    KmsWebRtcDataChannelBinPrivate                     \
+  )                                                    \
+ )
+
+struct _KmsWebRtcDataChannelBinPrivate
+{
+  GstElement *appsrc;
+  GstElement *appsink;
+  GRecMutex mutex;
+
+  gboolean ordered;
+  gint max_packet_life_time;
+  gint max_packet_retransmits;
+  guint priority;
+  gchar *protocol;
+  gboolean negotiated;
+  guint16 id;
+  gchar *label;
+  guint64 bytes_sent;
+
+  KmsWebRtcDataChannelState state;
+
+  guint ctrl_bytes_sent;
+};
+
+#define KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK(obj) \
+  (g_rec_mutex_lock (&KMS_WEBRTC_DATA_CHANNEL_BIN_CAST ((obj))->priv->mutex))
+#define KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK(obj) \
+  (g_rec_mutex_unlock (&KMS_WEBRTC_DATA_CHANNEL_BIN_CAST ((obj))->priv->mutex))
+
+enum
+{
+  PROP_0,
+
+  PROP_ORDERED,
+  PROP_MAX_PACKET_LIFE_TIME,
+  PROP_MAX_PACKET_RETRANSMITS,
+  PROP_PRIORITY,
+  PROP_PROTOCOL,
+  PROP_NEGOTIATED,
+  PROP_ID,
+  PROP_LABEL,
+  PROP_CHANNEL_STATE,
+  PROP_BUFFERED_AMOUNT,
+
+  N_PROPERTIES
+};
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+enum
+{
+  REQUEST_OPEN,
+  LAST_SIGNAL
+};
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
+
+static GstStaticPadTemplate sink_template = GST_STATIC_PAD_TEMPLATE ("sink",
+    GST_PAD_SINK,
+    GST_PAD_ALWAYS,
+    GST_STATIC_CAPS (WEBRT_DATA_CAPS));
+
+static GstStaticPadTemplate src_template = GST_STATIC_PAD_TEMPLATE ("src",
+    GST_PAD_SRC,
+    GST_PAD_ALWAYS,
+    GST_STATIC_CAPS (WEBRT_DATA_CAPS));
+
+static gchar *
+get_element_name (const gchar * element_name, guint assoc_id)
+{
+  return g_strdup_printf ("%s_%u", element_name, assoc_id);
+}
+
+static guint8 *
+create_datachannel_open_request (KmsDataChannelChannelType channel_type,
+    guint32 reliability_param, guint16 priority, const gchar * label,
+    guint16 label_len, const gchar * protocol, guint16 protocol_len,
+    guint32 * buf_size)
+{
+  guint8 *buf;
+
+  *buf_size = 12 + label_len + protocol_len;
+  buf = g_malloc (*buf_size);
+
+  GST_WRITE_UINT8 (buf, KMS_DATA_CHANNEL_MESSAGE_TYPE_OPEN_REQUEST);
+  GST_WRITE_UINT8 (buf + 1, channel_type);
+  GST_WRITE_UINT16_BE (buf + 2, priority);
+  GST_WRITE_UINT32_BE (buf + 4, reliability_param);
+  GST_WRITE_UINT16_BE (buf + 8, label_len);
+  GST_WRITE_UINT16_BE (buf + 10, protocol_len);
+
+  memcpy (buf + 12, label, label_len);
+  memcpy (buf + 12 + label_len, protocol, protocol_len);
+
+  return buf;
+}
+
+static void
+kms_webrtc_data_channel_bin_set_priority (KmsWebRtcDataChannelBin * self,
+    KmsWebRtcDataChannelPriority priority)
+{
+  switch (priority) {
+    case KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_BELOW_NORMAL:
+      self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_BELOW_NORMAL;
+      break;
+    case KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_NORMAL:
+      self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_NORMAL;
+      break;
+    case KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_HIGH:
+      self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_HIGH;
+      break;
+    case KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_EXTRA_HIGH:
+      self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_EXTRA_HIGH;
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "Trying to set an invalid priority value (%d)."
+          " Normal priority will be used", priority);
+      self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_NORMAL;
+  }
+}
+
+static void
+kms_webrtc_data_channel_bin_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsWebRtcDataChannelBin *self = KMS_WEBRTC_DATA_CHANNEL_BIN (object);
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  switch (property_id) {
+    case PROP_ID:
+      self->priv->id = g_value_get_uint (value);
+      break;
+    case PROP_ORDERED:
+      self->priv->ordered = g_value_get_boolean (value);
+      break;
+    case PROP_MAX_PACKET_LIFE_TIME:
+      self->priv->max_packet_life_time = g_value_get_int (value);
+      break;
+    case PROP_MAX_PACKET_RETRANSMITS:
+      self->priv->max_packet_retransmits = g_value_get_int (value);
+      break;
+    case PROP_PRIORITY:
+      kms_webrtc_data_channel_bin_set_priority (self, g_value_get_enum (value));
+      break;
+    case PROP_PROTOCOL:
+      g_free (self->priv->protocol);
+      self->priv->protocol = g_value_dup_string (value);
+      if (self->priv->protocol == NULL) {
+        self->priv->protocol = g_strdup (DEFAULT_PROTOCOL);
+      }
+      break;
+    case PROP_NEGOTIATED:
+      self->priv->negotiated = g_value_get_boolean (value);
+      break;
+    case PROP_LABEL:
+      g_free (self->priv->label);
+      self->priv->label = g_value_dup_string (value);
+      if (self->priv->label == NULL) {
+        self->priv->label = g_strdup (DEFAULT_LABEL);
+      }
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+}
+
+static KmsWebRtcDataChannelPriority
+kms_webrtc_data_channel_bin_get_priority (KmsWebRtcDataChannelBin * self)
+{
+  switch (self->priv->priority) {
+    case KMS_DATA_CHANNEL_PRIORITY_BELOW_NORMAL:
+      return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_BELOW_NORMAL;
+    case KMS_DATA_CHANNEL_PRIORITY_NORMAL:
+      return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_NORMAL;
+    case KMS_DATA_CHANNEL_PRIORITY_HIGH:
+      return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_HIGH;
+    case KMS_DATA_CHANNEL_PRIORITY_EXTRA_HIGH:
+      return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_EXTRA_HIGH;
+    default:
+      GST_WARNING_OBJECT (self, "Invalid value for property priority (%d)."
+          " Using normal priority", self->priv->priority);
+      return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_NORMAL;
+  }
+}
+
+static void
+kms_webrtc_data_channel_bin_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsWebRtcDataChannelBin *self = KMS_WEBRTC_DATA_CHANNEL_BIN (object);
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  switch (property_id) {
+    case PROP_ID:
+      g_value_set_uint (value, self->priv->id);
+      break;
+    case PROP_ORDERED:
+      g_value_set_boolean (value, self->priv->ordered);
+      break;
+    case PROP_MAX_PACKET_LIFE_TIME:
+      g_value_set_int (value, self->priv->max_packet_life_time);
+      break;
+    case PROP_MAX_PACKET_RETRANSMITS:
+      g_value_set_int (value, self->priv->max_packet_retransmits);
+      break;
+    case PROP_PRIORITY:
+      g_value_set_enum (value, kms_webrtc_data_channel_bin_get_priority (self));
+      break;
+    case PROP_PROTOCOL:
+      g_value_set_string (value, self->priv->protocol);
+      break;
+    case PROP_NEGOTIATED:
+      g_value_set_boolean (value, self->priv->negotiated);
+      break;
+    case PROP_LABEL:
+      g_value_set_string (value, self->priv->label);
+      break;
+    case PROP_CHANNEL_STATE:
+      g_value_set_enum (value, self->priv->state);
+      break;
+    case PROP_BUFFERED_AMOUNT:
+      g_value_set_uint64 (value, self->priv->bytes_sent);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+}
+
+static void
+kms_webrtc_data_channel_bin_finalize (GObject * object)
+{
+  KmsWebRtcDataChannelBin *self = KMS_WEBRTC_DATA_CHANNEL_BIN (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
+
+  g_rec_mutex_clear (&self->priv->mutex);
+  g_free (self->priv->protocol);
+  g_free (self->priv->label);
+
+  /* chain up */
+  G_OBJECT_CLASS (parent_class)->finalize (object);
+}
+
+static void
+kms_webrtc_data_channel_bin_request_open (KmsWebRtcDataChannelBin * self)
+{
+  KmsDataChannelChannelType channel_type;
+  guint32 reliability_param, buf_size;
+  GstFlowReturn flow_ret;
+  GstBuffer *gstbuf;
+  guint8 *buf;
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  if (self->priv->negotiated ||
+      self->priv->state != KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED) {
+    KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+    GST_WARNING_OBJECT (self, "Can not send open request in current state");
+    return;
+  }
+
+  self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CONNECTING;
+
+  channel_type =
+      (self->priv->ordered ? KMS_DATA_CHANNEL_CHANNEL_TYPE_RELIABLE :
+      KMS_DATA_CHANNEL_CHANNEL_TYPE_RELIABLE_UNORDERED) |
+      (self->priv->max_packet_life_time != -1 ?
+      KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_TIMED : 0) |
+      (self->priv->max_packet_retransmits != -1 ?
+      KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_REMIX : 0);
+
+  reliability_param = 0;
+
+  switch (channel_type) {
+    case KMS_DATA_CHANNEL_CHANNEL_TYPE_RELIABLE:
+    case KMS_DATA_CHANNEL_CHANNEL_TYPE_RELIABLE_UNORDERED:
+      break;
+    case KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_REMIX:
+    case KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_REMIX_UNORDERED:
+      if (self->priv->max_packet_retransmits != -1) {
+        reliability_param = self->priv->max_packet_retransmits;
+      }
+      break;
+    case KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_TIMED:
+    case KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_TIMED_UNORDERED:
+      if (self->priv->max_packet_life_time != -1) {
+        reliability_param = self->priv->max_packet_life_time;
+      }
+      break;
+    default:
+      KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+      GST_ERROR_OBJECT (self, "Unsupported channel type (%hhx)", channel_type);
+      return;
+  }
+
+  buf = create_datachannel_open_request (channel_type, reliability_param,
+      self->priv->priority, self->priv->label, strlen (self->priv->label),
+      self->priv->protocol, strlen (self->priv->protocol), &buf_size);
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  gstbuf = gst_buffer_new_wrapped (buf, buf_size);
+  gst_sctp_buffer_add_send_meta (gstbuf, KMS_DATA_CHANNEL_PPID_CONTROL, TRUE,
+      GST_SCTP_SEND_META_PARTIAL_RELIABILITY_NONE, 0);
+
+  flow_ret = gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc), gstbuf);
+
+  if (flow_ret != GST_FLOW_OK) {
+    GST_WARNING_OBJECT (self, "Failed to push data buffer: %s",
+        gst_flow_get_name (flow_ret));
+  } else {
+    KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+    self->priv->ctrl_bytes_sent += buf_size;
+    KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+  }
+}
+
+static void
+kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
+{
+  GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+  gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->set_property = kms_webrtc_data_channel_bin_set_property;
+  gobject_class->get_property = kms_webrtc_data_channel_bin_get_property;
+  gobject_class->finalize = kms_webrtc_data_channel_bin_finalize;
+
+  gst_element_class_set_details_simple (element_class,
+      "SCTP data channel management",
+      "SCTP/Bin/Data",
+      "Automatically manages WebRTC data establishment protocol",
+      "Santiago Carot-Nemesio <sancane_dot_kurento_at_gmail_dot_com>");
+
+  gst_element_class_add_pad_template (element_class,
+      gst_static_pad_template_get (&sink_template));
+  gst_element_class_add_pad_template (element_class,
+      gst_static_pad_template_get (&src_template));
+
+  obj_properties[PROP_ORDERED] =
+      g_param_spec_boolean ("ordered", "Ordered", "Send data ordered",
+      DEFAULT_ORDERED, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+
+  obj_properties[PROP_MAX_PACKET_LIFE_TIME] =
+      g_param_spec_int ("max-packet-life-time", "Max packet life time",
+      "The maximum time to try to retransmit a packet", -1,
+      MAX_PACKETS_LIFE_TIME, DEFAULT_MAX_PACKETS_LIFE_TIME,
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_MAX_PACKET_RETRANSMITS] =
+      g_param_spec_int ("max-retransmits", "Max retransmits",
+      "The maximum number of retransmits for a packet", -1,
+      MAX_PACKET_RETRANSMITS, DEFAULT_MAX_PACKET_RETRANSMITS,
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_PRIORITY] =
+      g_param_spec_enum ("priority", "Channel priority",
+      "The priority of this data channel",
+      KMS_TYPE_WEB_RTC_DATA_CHANNEL_PRIORITY,
+      KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_NORMAL,
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_PROTOCOL] =
+      g_param_spec_string ("protocol", "DataChannel protocol",
+      "Sub-protocol used for this channel", DEFAULT_PROTOCOL,
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_NEGOTIATED] =
+      g_param_spec_boolean ("negotiated", "Negotiated",
+      "Datachannel already negotiated", DEFAULT_NEGOTIATED,
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_ID] = g_param_spec_uint ("id", "Id",
+      "Channel id. Unless otherwise defined or negotiated, the id are picked based on the DTLS"
+      " role; client picks even identifiers and server picks odd. However, the application is "
+      "responsible for avoiding conflicts. In case of conflict, the channel should fail.",
+      0, G_MAXUSHORT, DEFAULT_ID, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
+      G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_LABEL] = g_param_spec_string ("label", "Label",
+      "The label of the channel.", DEFAULT_LABEL,
+      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_CHANNEL_STATE] =
+      g_param_spec_enum ("state", "Current state",
+      "The current state of the data channel",
+      KMS_TYPE_WEB_RTC_DATA_CHANNEL_STATE,
+      KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED,
+      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_BUFFERED_AMOUNT] =
+      g_param_spec_uint64 ("buffered-amount", "Buffered amount",
+      "The amount of buffered outgoing data on this data channel", 0,
+      G_MAXULONG, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (gobject_class, N_PROPERTIES,
+      obj_properties);
+
+  obj_signals[REQUEST_OPEN] =
+      g_signal_new ("request-open",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebRtcDataChannelBinClass, request_open), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  klass->request_open = kms_webrtc_data_channel_bin_request_open;
+
+  g_type_class_add_private (klass, sizeof (KmsWebRtcDataChannelBinPrivate));
+}
+
+static GstFlowReturn
+new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
+{
+  /* TODO: Process buffer */
+
+  GST_DEBUG_OBJECT (self, "Buffer received");
+
+  return GST_FLOW_OK;
+}
+
+static void
+kms_webrtc_data_channel_bin_init (KmsWebRtcDataChannelBin * self)
+{
+  GstAppSinkCallbacks callbacks;
+  GstPadTemplate *pad_template;
+  GstPad *pad, *target;
+  gchar *name;
+
+  self->priv = KMS_WEBRTC_DATA_CHANNEL_BIN_GET_PRIVATE (self);
+
+  g_rec_mutex_init (&self->priv->mutex);
+  self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED;
+
+  name = get_element_name ("datasrc", self->priv->id);
+  self->priv->appsrc = gst_element_factory_make ("appsrc", name);
+  g_free (name);
+
+  name = get_element_name ("datasink", self->priv->id);
+  self->priv->appsink = gst_element_factory_make ("appsink", name);
+  g_free (name);
+
+  callbacks.eos = NULL;
+  callbacks.new_preroll = NULL;
+  callbacks.new_sample =
+      (GstFlowReturn (*)(GstAppSink *, gpointer)) new_data_callback;
+
+  g_object_set (self->priv->appsink, "async", FALSE, "sync", FALSE,
+      "emit-signals", FALSE, "drop", FALSE, "enable-last-sample", FALSE, NULL);
+
+  gst_app_sink_set_callbacks (GST_APP_SINK (self->priv->appsink), &callbacks,
+      self, NULL);
+
+  g_object_set (self->priv->appsrc, "is-live", TRUE, "min-latency",
+      G_GINT64_CONSTANT (0), "do-timestamp", TRUE, "max-bytes", 0,
+      "emit-signals", FALSE, NULL);
+
+  gst_bin_add_many (GST_BIN (self), self->priv->appsrc, self->priv->appsink,
+      NULL);
+
+  target = gst_element_get_static_pad (self->priv->appsink, "sink");
+  pad_template = gst_static_pad_template_get (&sink_template);
+  pad = gst_ghost_pad_new_from_template ("sink", target, pad_template);
+  g_object_unref (pad_template);
+  g_object_unref (target);
+
+  gst_element_add_pad (GST_ELEMENT (self), pad);
+
+  target = gst_element_get_static_pad (self->priv->appsrc, "src");
+  pad_template = gst_static_pad_template_get (&src_template);
+  pad = gst_ghost_pad_new_from_template ("src", target, pad_template);
+  g_object_unref (pad_template);
+  g_object_unref (target);
+
+  gst_element_add_pad (GST_ELEMENT (self), pad);
+
+  gst_element_sync_state_with_parent (self->priv->appsrc);
+  gst_element_sync_state_with_parent (self->priv->appsink);
+}
+
+KmsWebRtcDataChannelBin *
+kms_webrtc_data_channel_bin_new (guint id)
+{
+  KmsWebRtcDataChannelBin *obj;
+  GstCaps *caps;
+
+  obj =
+      KMS_WEBRTC_DATA_CHANNEL_BIN (g_object_new
+      (KMS_TYPE_WEBRTC_DATA_CHANNEL_BIN, "id", id, NULL));
+
+  caps = kms_webrtc_data_channel_bin_create_caps (obj);
+  g_object_set (obj->priv->appsrc, "caps", caps, NULL);
+
+  return obj;
+}
+
+GstCaps *
+kms_webrtc_data_channel_bin_create_caps (KmsWebRtcDataChannelBin * self)
+{
+  GstCaps *caps = NULL;
+
+  g_return_val_if_fail (self != NULL, NULL);
+  g_return_val_if_fail (KMS_IS_WEBRTC_DATA_CHANNEL_BIN (self), NULL);
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  if (self->priv->max_packet_life_time != -1 &&
+      self->priv->max_packet_retransmits != -1) {
+    GST_WARNING_OBJECT (self, "Invalid parameters for creating caps");
+    goto end;
+  }
+
+  caps = gst_caps_new_simple (WEBRT_DATA_CAPS, "ordered", G_TYPE_BOOLEAN,
+      self->priv->ordered, NULL);
+
+  if (self->priv->max_packet_life_time == -1 &&
+      self->priv->max_packet_retransmits == -1) {
+    gst_caps_set_simple (caps, "partially-reliability", G_TYPE_STRING, "none",
+        "reliability-parameter", G_TYPE_UINT, 0, NULL);
+  } else if (self->priv->max_packet_retransmits >= 0) {
+    gst_caps_set_simple (caps, "partially-reliability", G_TYPE_STRING, "rtx",
+        "reliability-parameter", G_TYPE_UINT,
+        self->priv->max_packet_retransmits, NULL);
+  } else if (self->priv->max_packet_life_time >= 0) {
+    gst_caps_set_simple (caps, "partially-reliability", G_TYPE_STRING, "ttl",
+        "reliability-parameter", G_TYPE_UINT,
+        self->priv->max_packet_life_time, NULL);
+  }
+
+end:
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  return caps;
+}

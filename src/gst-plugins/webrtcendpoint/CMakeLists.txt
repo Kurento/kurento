@@ -38,11 +38,28 @@ install(
 
 set(KMS_WEBRTC_DATA_PROTOCOL_SOURCES
   kmswebrtcdatasessionbin.c
+  kmswebrtcdatachannelbin.c
 )
 
 set(KMS_WEBRTC_DATA_PROTOCOL_HEADERS
   kmswebrtcdatasessionbin.h
+  kmswebrtcdatachannelbin.h
+  kmswebrtcdatachannelstate.h
+  kmswebrtcdatachannelpriority.h
   kmswebrtcdataproto.h
+)
+
+set(KMS_WEBRTC_DATA_PROTOCOL_ENUM_HEADERS
+  kmswebrtcdatachannelstate.h
+  kmswebrtcdatachannelpriority.h
+)
+
+add_glib_enumtypes (
+  KMS_WEBRTC_DATA_PROTOCOL_SOURCES
+  KMS_WEBRTC_DATA_PROTOCOL_HEADERS
+  kms-webrtc-enumtypes
+  KMS
+  ${KMS_WEBRTC_DATA_PROTOCOL_ENUM_HEADERS}
 )
 
 add_library(webrtcdataproto SHARED
@@ -52,6 +69,13 @@ add_library(webrtcdataproto SHARED
 
 set_target_properties(webrtcdataproto PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}")
 set_target_properties(webrtcdataproto PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_link_libraries(webrtcdataproto
+  ${gstreamer-1.5_LIBRARIES}
+  ${gstreamer-base-1.5_LIBRARIES}
+  ${gstreamer-app-1.5_LIBRARIES}
+  ${gstreamer-sctp-1.5_LIBRARIES}
+)
 
 install(
   TARGETS webrtcdataproto

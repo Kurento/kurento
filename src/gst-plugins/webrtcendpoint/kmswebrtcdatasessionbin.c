@@ -17,6 +17,7 @@
 #endif
 
 #include "kmswebrtcdatasessionbin.h"
+#include "kmswebrtcdatachannelbin.h"
 
 #define PLUGIN_NAME "kmswebrtcdatasessionbin"
 
