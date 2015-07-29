@@ -54,6 +54,7 @@ import org.junit.Assert;
 import org.kurento.test.Shell;
 import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.client.BrowserType;
+import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Randomizer;
 import org.kurento.test.services.SshConnection;
@@ -308,55 +309,77 @@ public class GridHandler {
 		}
 	}
 
-	public synchronized GridNode getRandomNodeFromList(String browserKey, BrowserType browserType, int maxInstances) {
+	public synchronized GridNode getRandomNodeFromList(String browserKey, BrowserType browserType,
+			int browserPerInstance) {
 
-		GridNode node = null;
+		GridNode node = browserPerInstance > 1 ? existsNode(browserKey) : null;
 		String nodeCandidate;
 		long maxSystemTime = System.currentTimeMillis() + 2 * TIMEOUT_NODE * 1000;
 
-		boolean validCandidateFound = false;
-		do {
-			try {
-				nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
-			} catch (IllegalArgumentException e) {
-				throw new RuntimeException("No valid available node(s) to perform Selenim Grid test");
-			}
-			log.debug("Node candidate {}", nodeCandidate);
-
-			if (!nodeCandidate.isEmpty()) {
-				if (SshConnection.ping(nodeCandidate)) {
-					SshConnection remoteHost = new SshConnection(nodeCandidate);
-					try {
-						remoteHost.start();
-						int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
-						if (xvfb != 2) {
-							log.debug("Node {} has no Xvfb", nodeCandidate);
-						} else {
-							node = new GridNode(nodeCandidate, browserType, maxInstances);
-
-							log.info(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
-
-							nodes.put(browserKey, node);
-							validCandidateFound = true;
-						}
-					} catch (Exception e) {
-						log.debug("Invalid credentials to access node {} ", nodeCandidate);
-					} finally {
-						remoteHost.stop();
-					}
-
-				} else {
-					log.debug("Node {} seems to be down", nodeCandidate);
+		if (node == null) {
+			boolean validCandidateFound = false;
+			do {
+				try {
+					nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
+				} catch (IllegalArgumentException e) {
+					throw new RuntimeException("No valid available node(s) to perform Selenim Grid test");
 				}
-			}
-			nodeList.remove(nodeCandidate);
-		} while (!validCandidateFound);
+				log.debug("Node candidate {}", nodeCandidate);
 
-		if (System.currentTimeMillis() > maxSystemTime) {
-			throw new RuntimeException("Timeout (" + 2 * TIMEOUT_NODE + " sec) selecting 1 node");
+				if (!nodeCandidate.isEmpty()) {
+					if (SshConnection.ping(nodeCandidate)) {
+						SshConnection remoteHost = new SshConnection(nodeCandidate);
+						try {
+							remoteHost.start();
+							int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
+							if (xvfb != 2) {
+								log.debug("Node {} has no Xvfb", nodeCandidate);
+							} else {
+								node = new GridNode(nodeCandidate, browserType, browserPerInstance);
+
+								log.info(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
+
+								nodes.put(browserKey, node);
+								validCandidateFound = true;
+							}
+						} catch (Exception e) {
+							log.debug("Invalid credentials to access node {} ", nodeCandidate);
+						} finally {
+							remoteHost.stop();
+						}
+
+					} else {
+						log.debug("Node {} seems to be down", nodeCandidate);
+					}
+				}
+				nodeList.remove(nodeCandidate);
+			} while (!validCandidateFound);
+
+			if (System.currentTimeMillis() > maxSystemTime) {
+				throw new RuntimeException("Timeout (" + 2 * TIMEOUT_NODE + " sec) selecting 1 node");
+			}
 		}
 		return node;
 
+	}
+
+	private GridNode existsNode(String browserKey) {
+		GridNode gridNode = null;
+		int indexOfSeparator = browserKey.lastIndexOf(TestScenario.INSTANCES_SEPARATOR);
+
+		if (indexOfSeparator != -1) {
+			String browserPreffix = browserKey.substring(0, indexOfSeparator);
+
+			for (String node : nodes.keySet()) {
+				if (node.startsWith(browserPreffix)) {
+					gridNode = nodes.get(node);
+					break;
+				}
+			}
+		}
+		log.debug("Exists node {} = {}", browserKey, gridNode != null);
+
+		return gridNode;
 	}
 
 	private void stopNode(GridNode node) throws IOException {

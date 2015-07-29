@@ -51,6 +51,8 @@ public class TestScenario {
 	private final static String TEST_CONFIG_JSON_PROPERTY = "test.config.json";
 	private final static String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
 
+	public final static String INSTANCES_SEPARATOR = "-";
+
 	private static Logger log = LoggerFactory.getLogger(TestScenario.class);
 
 	private Map<String, BrowserClient> browserMap;
@@ -66,13 +68,11 @@ public class TestScenario {
 			for (int i = 0; i < browser.getNumInstances(); i++) {
 				if (browser.getBrowserPerInstance() > 1) {
 					for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
-						String browserId = id + i + "-" + j;
-						addBrowserInstance(browserId,
-								new BrowserClient(browser.getBuilder()));
+						String browserId = id + i + INSTANCES_SEPARATOR + j;
+						addBrowserInstance(browserId, new BrowserClient(browser.getBuilder()));
 					}
 				} else {
-					addBrowserInstance(id + i,
-							new BrowserClient(browser.getBuilder()));
+					addBrowserInstance(id + i, new BrowserClient(browser.getBuilder()));
 				}
 			}
 		} else {
@@ -87,9 +87,8 @@ public class TestScenario {
 	}
 
 	private void assertKeyNotExist(String key) {
-		Assert.assertFalse("'" + key
-				+ "' key already registered in browser config map", browserMap
-				.keySet().contains(key));
+		Assert.assertFalse("'" + key + "' key already registered in browser config map",
+				browserMap.keySet().contains(key));
 	}
 
 	public BrowserScope getScope(String key) {
@@ -155,8 +154,7 @@ public class TestScenario {
 			String configJson = getProperty(TEST_CONFIG_JSON_PROPERTY);
 			String jsonPath;
 			if (configJson == null) {
-				jsonPath = ConfigFileFinder.getPathInClasspath("/" + jsonFile)
-						.toString();
+				jsonPath = ConfigFileFinder.getPathInClasspath("/" + jsonFile).toString();
 			} else {
 				jsonPath = configJson;
 			}
@@ -164,9 +162,7 @@ public class TestScenario {
 			// Read JSON and transform to GSON
 			BufferedReader br = new BufferedReader(new FileReader(jsonPath));
 			Gson gson = new Gson();
-			BrowserConfig browserConfig = gson
-					.fromJson(br, BrowserConfig.class);
-
+			BrowserConfig browserConfig = gson.fromJson(br, BrowserConfig.class);
 			return browserConfig.getTestScenario();
 
 		} catch (IOException e) {
@@ -181,18 +177,12 @@ public class TestScenario {
 	public static Collection<Object[]> localChromeAndFirefox() {
 		// Test #1 : Chrome in local
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(
-				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).build());
+		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 		// Test #2 : Firefox in local
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(
-				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.FIREFOX)
-						.scope(BrowserScope.LOCAL).build());
+		test2.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
@@ -200,11 +190,8 @@ public class TestScenario {
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(
-				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -212,11 +199,8 @@ public class TestScenario {
 	public static Collection<Object[]> localFirefox() {
 		// Test: Firefox in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(
-				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.FIREFOX)
-						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -224,35 +208,22 @@ public class TestScenario {
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test: Chrome in local (presenter and viewer)
 		TestScenario test = new TestScenario();
-		test.addBrowser(
-				BrowserConfig.PRESENTER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).build());
-		test.addBrowser(
-				BrowserConfig.VIEWER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
 	public static Collection<Object[]> localPresenterAndViewerRGB() {
 		// Test: Chrome in local (presenter and viewer)
-		String videoPath = KurentoClientTest.getPathTestFiles()
-				+ "/video/15sec/rgbHD.y4m";
+		String videoPath = KurentoClientTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(
-				BrowserConfig.PRESENTER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).video(videoPath).build());
-		test.addBrowser(
-				BrowserConfig.VIEWER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder().client(Client.WEBRTC)
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
