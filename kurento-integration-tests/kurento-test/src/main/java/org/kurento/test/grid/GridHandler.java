@@ -358,6 +358,8 @@ public class GridHandler {
 			if (System.currentTimeMillis() > maxSystemTime) {
 				throw new RuntimeException("Timeout (" + 2 * TIMEOUT_NODE + " sec) selecting 1 node");
 			}
+		} else {
+			log.info(">>>> Re-using node {} for browser '{}'", node.getHost(), browserKey);
 		}
 		return node;
 
