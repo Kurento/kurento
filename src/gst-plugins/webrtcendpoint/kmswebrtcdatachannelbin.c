@@ -57,6 +57,7 @@ G_DEFINE_TYPE_WITH_CODE (KmsWebRtcDataChannelBin, kms_webrtc_data_channel_bin,
 #define WEBRT_DATA_CAPS "application/webrtc-data"
 
 #define DATA_CHANNEL_OPEN_MIN_SIZE 12   /* bytes */
+#define DATA_CHANNEL_ACK_SIZE 1 /* bytes */
 
 #define KMS_WEBRTC_DATA_CHANNEL_BIN_GET_PRIVATE(obj) ( \
   G_TYPE_INSTANCE_GET_PRIVATE (                        \
@@ -159,7 +160,7 @@ create_datachannel_open_request (KmsDataChannelChannelType channel_type,
 {
   guint8 *buf;
 
-  *buf_size = 12 + label_len + protocol_len;
+  *buf_size = DATA_CHANNEL_OPEN_MIN_SIZE + label_len + protocol_len;
   buf = g_malloc (*buf_size);
 
   GST_WRITE_UINT8 (buf, KMS_DATA_CHANNEL_MESSAGE_TYPE_OPEN_REQUEST);
@@ -169,8 +170,21 @@ create_datachannel_open_request (KmsDataChannelChannelType channel_type,
   GST_WRITE_UINT16_BE (buf + 8, label_len);
   GST_WRITE_UINT16_BE (buf + 10, protocol_len);
 
-  memcpy (buf + 12, label, label_len);
-  memcpy (buf + 12 + label_len, protocol, protocol_len);
+  memcpy (buf + DATA_CHANNEL_OPEN_MIN_SIZE, label, label_len);
+  memcpy (buf + DATA_CHANNEL_OPEN_MIN_SIZE + label_len, protocol, protocol_len);
+
+  return buf;
+}
+
+static guint8 *
+create_datachannel_ack (guint32 * buf_size)
+{
+  guint8 *buf;
+
+  buf = g_malloc (DATA_CHANNEL_ACK_SIZE);
+
+  GST_WRITE_UINT8 (buf, KMS_DATA_CHANNEL_MESSAGE_TYPE_ACK);
+  *buf_size = DATA_CHANNEL_ACK_SIZE;
 
   return buf;
 }
@@ -518,6 +532,34 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
 }
 
 static void
+kms_webrtc_data_channel_bin_send_data_channel_ack (KmsWebRtcDataChannelBin *
+    self)
+{
+  GstFlowReturn flow_ret;
+  GstBuffer *gstbuf;
+  guint32 buf_size;
+  guint8 *ackbuf;
+
+  ackbuf = create_datachannel_ack (&buf_size);
+  gstbuf = gst_buffer_new_wrapped (ackbuf, buf_size);
+  gst_sctp_buffer_add_send_meta (gstbuf, KMS_DATA_CHANNEL_PPID_CONTROL, TRUE,
+      GST_SCTP_SEND_META_PARTIAL_RELIABILITY_NONE, 0);
+
+  flow_ret = gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc), gstbuf);
+
+  if (flow_ret != GST_FLOW_OK) {
+    GST_WARNING_OBJECT (self, "Failed to push data buffer: %s",
+        gst_flow_get_name (flow_ret));
+  } else {
+    KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+    self->priv->ctrl_bytes_sent += buf_size;
+    self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_OPEN;
+    self->priv->negotiated = TRUE;
+    KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+  }
+}
+
+static void
 kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
     self, guint8 * data, guint32 size)
 {
@@ -606,13 +648,20 @@ kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
       self->priv->protocol, self->priv->label, state2str (self->priv->state));
 
   KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  kms_webrtc_data_channel_bin_send_data_channel_ack (self);
 }
 
 static void
 kms_webrtc_data_channel_bin_handle_ack (KmsWebRtcDataChannelBin *
     self, guint8 * data, guint32 size)
 {
-  GST_DEBUG_OBJECT (self, "TODO: handle ack");
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  self->priv->negotiated = TRUE;
+  self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_OPEN;
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
 }
 
 static void

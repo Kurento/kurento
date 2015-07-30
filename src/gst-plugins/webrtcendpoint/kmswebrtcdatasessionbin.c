@@ -293,10 +293,53 @@ kms_webrtc_data_session_bin_is_valid_sctp_stream_id (KmsWebRtcDataSessionBin *
   }
 }
 
+static GstElement *
+kms_webrtc_data_session_bin_create_remote_data_channel (KmsWebRtcDataSessionBin
+    * self, guint sctp_stream_id)
+{
+  GstElement *channel;
+
+  if (!kms_webrtc_data_session_bin_is_valid_sctp_stream_id (self,
+          sctp_stream_id)) {
+    GST_WARNING_OBJECT (self, "Invalid data channel requested %u",
+        sctp_stream_id);
+    return NULL;
+  }
+
+  GST_DEBUG_OBJECT (self, "Opened stream id (%u)", sctp_stream_id);
+
+  channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
+  g_hash_table_insert (self->priv->data_channels,
+      GUINT_TO_POINTER (sctp_stream_id), channel);
+
+  return channel;
+}
+
+static void
+kms_webrtc_data_session_bin_add_remote_data_channel (KmsWebRtcDataSessionBin *
+    self, GstElement * channel, GstPad * sctpdec_srcpad)
+{
+  guint sctp_stream_id;
+
+  g_object_get (channel, "id", &sctp_stream_id, NULL);
+
+  gst_bin_add (GST_BIN (self), channel);
+
+  if (!kms_webrtc_data_session_bin_link_data_channel_src (self, channel) ||
+      !kms_webrtc_data_session_bin_link_data_channel_sink (self, channel,
+          sctpdec_srcpad)) {
+    GST_ERROR_OBJECT (self, "Can not link data channel (%u)", sctp_stream_id);
+    return;
+  }
+
+  gst_element_sync_state_with_parent (channel);
+}
+
 static void
 kms_webrtc_data_session_bin_pad_added (GstElement * sctpdec, GstPad * pad,
     KmsWebRtcDataSessionBin * self)
 {
+  gboolean is_remote = FALSE;
   guint sctp_stream_id;
   GstElement *channel;
   gchar *name;
@@ -307,37 +350,30 @@ kms_webrtc_data_session_bin_pad_added (GstElement * sctpdec, GstPad * pad,
 
   KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
 
-  if (!kms_webrtc_data_session_bin_is_valid_sctp_stream_id (self,
-          sctp_stream_id)) {
-    KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
-    GST_WARNING_OBJECT (self, "Invalid data channel requested %u",
-        sctp_stream_id);
-    return;
-  }
-
   channel =
       (GstElement *) g_hash_table_lookup (self->priv->data_channels,
       GUINT_TO_POINTER (sctp_stream_id));
-  if (channel == NULL) {
-    GST_DEBUG_OBJECT (self, "New data channel opened with stream id (%u)",
+
+  is_remote = channel == NULL;
+
+  if (is_remote) {
+    channel = kms_webrtc_data_session_bin_create_remote_data_channel (self,
         sctp_stream_id);
-    channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
-    g_hash_table_insert (self->priv->data_channels,
-        GUINT_TO_POINTER (sctp_stream_id), channel);
   }
 
   KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
 
-  gst_bin_add (GST_BIN (self), channel);
+  g_return_if_fail (channel != NULL);
 
-  if (!kms_webrtc_data_session_bin_link_data_channel_src (self, channel) ||
-      !kms_webrtc_data_session_bin_link_data_channel_sink (self, channel,
-          pad)) {
-    GST_ERROR_OBJECT (self, "Can not link data channel (%u)", sctp_stream_id);
+  if (is_remote) {
+    kms_webrtc_data_session_bin_add_remote_data_channel (self, channel, pad);
     return;
   }
 
-  gst_element_sync_state_with_parent (channel);
+  /* this is a local channel, connect the sink pad to the sctpdec */
+  if (!kms_webrtc_data_session_bin_link_data_channel_sink (self, channel, pad)) {
+    GST_ERROR_OBJECT (self, "Can not link data channel (%u)", sctp_stream_id);
+  }
 }
 
 static guint
