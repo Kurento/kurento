@@ -62,8 +62,8 @@ import com.google.gson.JsonObject;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
-	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-	.setNameFormat("JsonRpcClientWebsocket-%d").build();
+	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(
+			"JsonRpcClientWebsocket-%d").build();
 
 	@WebSocket(maxTextMessageSize = 64 * 1024)
 	public class WebSocketClientSocket {
@@ -87,8 +87,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				}
 
 				@Override
-				public void sendPingResponse(Message message)
-						throws IOException {
+				public void sendPingResponse(Message message) throws IOException {
 					String jsonMessage = message.toString();
 					log.trace("{} <-Res {}", label, jsonMessage);
 					synchronized (wsSession) {
@@ -109,11 +108,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	}
 
-	public static Logger log = LoggerFactory
-			.getLogger(JsonRpcClientWebSocket.class);
+	public static Logger log = LoggerFactory.getLogger(JsonRpcClientWebSocket.class);
 
-	public long requestTimeout = PropertiesManager.getProperty(
-			"jsonRpcClientWebSocket.timeout", 60000);
+	public long requestTimeout = PropertiesManager.getProperty("jsonRpcClientWebSocket.timeout", 60000);
 
 	private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -136,22 +133,21 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private TimeoutReentrantLock lock;
 
+	private boolean sendCloseMessage = false;
+
 	public JsonRpcClientWebSocket(String url) {
 		this(url, null, null);
 	}
 
-	public JsonRpcClientWebSocket(String url,
-			SslContextFactory sslContextFactory) {
+	public JsonRpcClientWebSocket(String url, SslContextFactory sslContextFactory) {
 		this(url, null, sslContextFactory);
 	}
 
-	public JsonRpcClientWebSocket(String url,
-			JsonRpcWSConnectionListener connectionListener) {
+	public JsonRpcClientWebSocket(String url, JsonRpcWSConnectionListener connectionListener) {
 		this(url, connectionListener, null);
 	}
 
-	public JsonRpcClientWebSocket(String url,
-			JsonRpcWSConnectionListener connectionListener,
+	public JsonRpcClientWebSocket(String url, JsonRpcWSConnectionListener connectionListener,
 			SslContextFactory sslContextFactory) {
 
 		this.lock = new TimeoutReentrantLock(15000, "Server " + url);
@@ -162,17 +158,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
-			protected void internalSendRequest(
-					Request<? extends Object> request,
-					Class<JsonElement> resultClass,
+			protected void internalSendRequest(Request<? extends Object> request, Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
 
 				internalSendRequestWebSocket(request, resultClass, continuation);
 			}
 
 			@Override
-			public <P, R> Response<R> internalSendRequest(Request<P> request,
-					Class<R> resultClass) throws IOException {
+			public <P, R> Response<R> internalSendRequest(Request<P> request, Class<R> resultClass) throws IOException {
 
 				return internalSendRequestWebSocket(request, resultClass);
 			}
@@ -182,13 +175,26 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	@Override
 	public void close() throws IOException {
 
-		log.info("{} Closing JsonRpcClientWebsocket", label);
+		clientClose = true;
+		
+		log.info("{} Explicit close of JsonRpcClientWebsocket with sessionId={}", label, this.session.getSessionId());
+
+		if (sendCloseMessage) {
+			try {
+				sendRequest(JsonRpcConstants.METHOD_CLOSE);
+			} catch (Exception e) {
+				log.warn("Exception sending close message. {}:{}", e.getClass().getName(), e.getMessage());
+			}
+		}
+
 		if (wsSession != null) {
 			wsSession.close();
+		} else {
+			log.warn("Trying to close a JsonRpcClientWebSocket with wsSession=null");
 		}
 		pendingRequests.closeAllPendingRequests();
 		this.disableHeartbeat();
-		clientClose = true;
+		
 		this.closeClient();
 	}
 
@@ -216,8 +222,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			if ((wsSession == null || !wsSession.isOpen()) && !clientClose) {
 
-				log.debug("{} Connecting webSocket client to server {}", label,
-						url);
+				log.debug("{} Connecting webSocket client to server {}", label, url);
 
 				try {
 					if (client == null) {
@@ -225,9 +230,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						client.setConnectTimeout(this.connectionTimeout);
 						client.start();
 					} else {
-						log.debug(
-								"{} Using existing websocket client when session is either null or closed.",
-								label);
+						log.debug("{} Using existing websocket client when session is either null or closed.", label);
 					}
 
 					// TODO this should go in the JsonRpcClient
@@ -241,8 +244,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 					WebSocketClientSocket socket = new WebSocketClientSocket();
 					ClientUpgradeRequest request = new ClientUpgradeRequest();
-					wsSession = client.connect(socket, new URI(url), request)
-							.get(this.connectionTimeout, TimeUnit.MILLISECONDS);
+					wsSession = client.connect(socket, new URI(url), request).get(this.connectionTimeout,
+							TimeUnit.MILLISECONDS);
 
 					wsSession.setIdleTimeout(this.idleTimeout);
 
@@ -251,41 +254,31 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					fireConnectionFailed();
 
 					this.closeClient();
-					throw new KurentoException(label + " Timeout of "
-							+ this.connectionTimeout
-							+ "ms when waiting to connect to Websocket server "
-							+ url);
+					throw new KurentoException(label + " Timeout of " + this.connectionTimeout
+							+ "ms when waiting to connect to Websocket server " + url);
 
 				} catch (Exception e) {
 
 					fireConnectionFailed();
 
 					this.closeClient();
-					throw new KurentoException(label
-							+ " Exception connecting to WebSocket server "
-							+ url, e);
+					throw new KurentoException(label + " Exception connecting to WebSocket server " + url, e);
 				}
 
 				try {
 
-					if (!latch.await(this.connectionTimeout,
-							TimeUnit.MILLISECONDS)) {
+					if (!latch.await(this.connectionTimeout, TimeUnit.MILLISECONDS)) {
 
 						fireConnectionFailed();
 
 						this.closeClient();
-						throw new KurentoException(
-								label
-								+ " Timeout of "
-								+ this.connectionTimeout
-								+ "ms when waiting to connect to Websocket server "
-								+ url);
+						throw new KurentoException(label + " Timeout of " + this.connectionTimeout
+								+ "ms when waiting to connect to Websocket server " + url);
 					}
 
 					if (session == null) {
 
-						session = new ClientSession(null, null,
-								JsonRpcClientWebSocket.this);
+						session = new ClientSession(null, null, JsonRpcClientWebSocket.this);
 
 						handlerManager.afterConnectionEstablished(session);
 
@@ -294,9 +287,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						try {
 							rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
-							log.info(
-									"{} Reconnected to the same session in server {}",
-									label, url);
+							log.info("{} Reconnected to the same session in server {}", label, url);
 
 							fireReconnectedSameServer();
 
@@ -305,21 +296,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 								// exception
 
 								rsHelper.setSessionId(null);
-								rsHelper.sendRequest(METHOD_RECONNECT,
-										String.class);
+								rsHelper.sendRequest(METHOD_RECONNECT, String.class);
 
 								pendingRequests.closeAllPendingRequests();
 
-								log.info(
-										"{} Reconnected to a new session in server {}",
-										label, url);
+								log.info("{} Reconnected to a new session in server {}", label, url);
 
 								fireReconnectedNewServer();
 
 							} else {
-								log.warn(
-										"{} Error sending reconnection request to server ",
-										label, url, e);
+								log.warn("{} Error sending reconnection request to server ", label, url, e);
 							}
 						}
 					}
@@ -380,8 +366,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		return wsSession;
 	}
 
-	protected void handleReconnectDisconnection(final int statusCode,
-			final String closeReason) {
+	protected void handleReconnectDisconnection(final int statusCode, final String closeReason) {
 
 		if (!clientClose) {
 
@@ -398,13 +383,12 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						reconnecting = false;
 					} catch (KurentoException e) {
 
+						log.debug("{} WebSocket closed due to: {}", label, closeReason);
+
 						pendingRequests.closeAllPendingRequests();
 
-						handlerManager.afterConnectionClosed(session,
-								closeReason);
+						handlerManager.afterConnectionClosed(session, closeReason);
 
-						log.debug("{} WebSocket closed due to: {}", label,
-								closeReason);
 						wsSession = null;
 
 						if (connectionListener != null) {
@@ -412,9 +396,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						}
 
 					} catch (IOException e) {
-						log.warn(
-								"{} Exception trying to reconnect to server {}",
-								label, url, e);
+						log.warn("{} Exception trying to reconnect to server {}", label, url, e);
 					}
 				}
 			});
@@ -437,16 +419,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		try {
 
-			if (execService == null || execService.isShutdown()
-					|| execService.isTerminated()) {
+			if (execService == null || execService.isShutdown() || execService.isTerminated()) {
 				execService = Executors.newCachedThreadPool(threadFactory);
 			}
 
-			if (disconnectExecService == null
-					|| disconnectExecService.isShutdown()
+			if (disconnectExecService == null || disconnectExecService.isShutdown()
 					|| disconnectExecService.isTerminated()) {
-				disconnectExecService = Executors
-						.newCachedThreadPool(threadFactory);
+				disconnectExecService = Executors.newCachedThreadPool(threadFactory);
 			}
 		} finally {
 			lock.unlock();
@@ -468,11 +447,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			@Override
 			public void run() {
 				try {
-					handlerManager.handleRequest(session,
-							fromJsonRequest(message, JsonElement.class), rs);
+					handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class), rs);
 				} catch (IOException e) {
-					log.warn("{} Exception processing request {}", label,
-							message, e);
+					log.warn("{} Exception processing request {}", label, message, e);
 				}
 			}
 		});
@@ -480,8 +457,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private void handleResponseFromServer(JsonObject message) {
 
-		Response<JsonElement> response = fromJsonResponse(message,
-				JsonElement.class);
+		Response<JsonElement> response = fromJsonResponse(message, JsonElement.class);
 
 		setSessionId(response.getSessionId());
 
@@ -499,10 +475,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	protected void internalSendRequestWebSocket(
-			final Request<? extends Object> request,
-			final Class<JsonElement> resultClass,
-			final Continuation<Response<JsonElement>> continuation) {
+	protected void internalSendRequestWebSocket(final Request<? extends Object> request,
+			final Class<JsonElement> resultClass, final Continuation<Response<JsonElement>> continuation) {
 
 		createExecServiceIfNecessary();
 
@@ -511,13 +485,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			@Override
 			public void run() {
 				try {
-					Response<JsonElement> result = internalSendRequestWebSocket(
-							request, resultClass);
+					Response<JsonElement> result = internalSendRequestWebSocket(request, resultClass);
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
-						log.error("{} Exception while processing response",
-								label, e);
+						log.error("{} Exception while processing response", label, e);
 					}
 				} catch (Exception e) {
 					continuation.onError(e);
@@ -526,12 +498,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		});
 	}
 
-	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request,
-			Class<R> resultClass) throws IOException {
-
-		if (request.getMethod().equals("pull")) {
-			log.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-		}
+	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request, Class<R> resultClass)
+			throws IOException {
 
 		connectIfNecessary();
 
@@ -552,9 +520,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		if (wsSession == null) {
 			// SERVER_ERROR
-			throw new IllegalStateException(
-					"JsonRpcClient is disconnected from WebSocket server at '"
-							+ this.url + "'");
+			throw new IllegalStateException("JsonRpcClient is disconnected from WebSocket server at '" + this.url + "'");
 		}
 
 		synchronized (wsSession) {
@@ -567,8 +533,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		Response<JsonElement> responseJson;
 		try {
-			responseJson = responseFuture.get(requestTimeout,
-					TimeUnit.MILLISECONDS);
+			responseJson = responseFuture.get(requestTimeout, TimeUnit.MILLISECONDS);
 
 			if (isPing) {
 				log.trace("{} <-Res {}", label, responseJson.toString());
@@ -576,8 +541,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				log.debug("{} <-Res {}", label, responseJson.toString());
 			}
 
-			Response<R> response = MessageUtils.convertResponse(responseJson,
-					resultClass);
+			Response<R> response = MessageUtils.convertResponse(responseJson, resultClass);
 
 			if (response.getSessionId() != null) {
 				session.setSessionId(response.getSessionId());
@@ -587,30 +551,24 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
-			throw new KurentoException(label
-					+ " Interrupted while waiting for a response", e);
+			throw new KurentoException(label + " Interrupted while waiting for a response", e);
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
-			throw new KurentoException(label
-					+ " This exception shouldn't be thrown", e);
+			throw new KurentoException(label + " This exception shouldn't be thrown", e);
 		} catch (TimeoutException e) {
-			throw new TransportException(label + " Timeout of "
-					+ requestTimeout
-					+ " milliseconds waiting from response to request "
-					+ jsonMessage.trim(), e);
+			throw new TransportException(label + " Timeout of " + requestTimeout
+					+ " milliseconds waiting from response to request " + jsonMessage.trim(), e);
 		}
 	}
 
 	private void closeClient() {
 		if (client != null) {
-			log.debug("{} Stopping client", label);
+			log.debug("{} Closing client", label);
 			try {
 				client.stop();
 				client.destroy();
 			} catch (Exception e) {
-				log.debug(
-						"{} Could not properly close websocket client. Reason: {}",
-						label, e.getMessage());
+				log.debug("{} Could not properly close websocket client. Reason: {}", label, e.getMessage());
 			}
 			client = null;
 		}
@@ -619,9 +577,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			try {
 				execService.shutdown();
 			} catch (Exception e) {
-				log.debug(
-						"{} Could not properly shut down executor service. Reason: {}",
-						label, e.getMessage());
+				log.debug("{} Could not properly shut down executor service. Reason: {}", label, e.getMessage());
 			}
 			execService = null;
 		}
@@ -630,9 +586,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			try {
 				disconnectExecService.shutdown();
 			} catch (Exception e) {
-				log.debug(
-						"{} Could not properly shut down disconnect executor service. Reason: {}",
-						label, e.getMessage());
+				log.debug("{} Could not properly shut down disconnect executor service. Reason: {}", label,
+						e.getMessage());
 			}
 			disconnectExecService = null;
 		}
@@ -645,5 +600,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public long getRequestTimeout() {
 		return requestTimeout;
+	}
+
+	public void setSendCloseMessage(boolean sendCloseMessage) {
+		this.sendCloseMessage = sendCloseMessage;
+	}
+
+	public boolean isSendCloseMessage() {
+		return sendCloseMessage;
 	}
 }

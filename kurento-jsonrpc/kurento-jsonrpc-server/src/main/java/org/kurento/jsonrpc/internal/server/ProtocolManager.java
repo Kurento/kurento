@@ -15,6 +15,7 @@
 package org.kurento.jsonrpc.internal.server;
 
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_CLOSE;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG_PAYLOAD;
@@ -35,6 +36,7 @@ import org.kurento.commons.SecretGenerator;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
+import org.kurento.jsonrpc.internal.client.AbstractSession;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.server.PingWatchdogManager.NativeSessionCloser;
 import org.kurento.jsonrpc.message.Request;
@@ -179,6 +181,11 @@ public class ProtocolManager {
 		case METHOD_PING:
 			log.trace("{} Req-> {}", label, request);
 			processPingMessage(factory, request, responseSender, transportId);
+			break;
+			
+		case METHOD_CLOSE:
+			log.trace("{} Req-> {}", label, request);
+			processCloseMessage(factory, request, responseSender, transportId);
 
 			break;
 		default:
@@ -269,6 +276,16 @@ public class ProtocolManager {
 			responseSender.sendPingResponse(new Response<>(sessionId, request
 					.getId(), pongPayload));
 		}
+	}
+	
+	private void processCloseMessage(ServerSessionFactory factory, Request<JsonElement> request,
+			ResponseSender responseSender, String transportId) {
+		try {
+			responseSender.sendResponse(new Response<>(request.getId(), "bye"));
+		} catch (IOException e) {
+			log.warn("Exception sending close message response to client",e);
+		}
+		this.closeSession(sessionsManager.getByTransportId(transportId), "Client sent close message");		
 	}
 
 	private void processReconnectMessage(ServerSessionFactory factory,
@@ -411,5 +428,9 @@ public class ProtocolManager {
 
 	public void setPingWachdog(boolean pingWachdog) {
 		this.pingWachdogManager.setPingWatchdog(pingWachdog);
+	}
+
+	public AbstractSession getSessionByTransportId(String transportId) {
+		return sessionsManager.getByTransportId(transportId);
 	}
 }

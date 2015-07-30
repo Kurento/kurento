@@ -64,10 +64,11 @@ public class PendingRequests {
 	}
 
 	public void closeAllPendingRequests() {
+		log.info("Sending error to all pending requests");
 		for (BasicFuture<Response<JsonElement>> responseFuture : pendingRequests
 				.values()) {
 			responseFuture.completed(new Response<JsonElement>(
-					new ResponseError(0, "Conection closed")));
+					new ResponseError(0, "Connection with server have been closed")));
 		}
 		pendingRequests.clear();
 	}

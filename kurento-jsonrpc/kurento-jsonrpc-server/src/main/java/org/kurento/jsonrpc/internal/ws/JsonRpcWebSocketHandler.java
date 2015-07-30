@@ -16,6 +16,7 @@ package org.kurento.jsonrpc.internal.ws;
 
 import java.io.IOException;
 
+import org.kurento.jsonrpc.internal.client.AbstractSession;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
@@ -72,14 +73,22 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
 		try {
-			log.info(
-					"{} WebSocket session '{}' closed for {} (code {}, reason '{}')",
-					label, wsSession.getId(),
+			AbstractSession session = protocolManager.getSessionByTransportId(wsSession.getId());
+			
+			if(session != null){
+				log.info(
+					"{} WebSocket session {} with transportId {} closed for {} (code {}, reason '{}')",
+					label, session.getSessionId(), wsSession.getId(),
 					CloseStatusHelper.getCloseStatusType(status.getCode()),
 					status.getCode(), status.getReason());
 
-			protocolManager.closeSessionIfTimeout(wsSession.getId(),
+				protocolManager.closeSessionIfTimeout(wsSession.getId(),
 					status.getReason());
+			} else {
+				log.info("{} WebSocket session not associated to any jsonRpcSession "
+						+ "with transportId {} closed for {} (code {}, reason '{}')", label, wsSession.getId(),
+						CloseStatusHelper.getCloseStatusType(status.getCode()), status.getCode(), status.getReason());
+			}
 
 		} catch (Throwable t) {
 			log.error(
