@@ -20,6 +20,7 @@
 
 #include "kmswebrtcdatasessionbin.h"
 #include "kmswebrtcdatachannelbin.h"
+#include "kms-webrtc-data-marshal.h"
 
 #define PLUGIN_NAME "kmswebrtcdatasessionbin"
 
@@ -84,6 +85,15 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
+enum
+{
+  CREATE_DATA_CHANNEL_ACTION,
+
+  LAST_SIGNAL
+};
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
+
 static GstStaticPadTemplate sink_template = GST_STATIC_PAD_TEMPLATE ("sink",
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
@@ -93,6 +103,10 @@ static GstStaticPadTemplate src_template = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS ("application/x-sctp"));
+
+static gint
+kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
+    *);
 
 static guint
 get_sctp_association_id ()
@@ -222,6 +236,16 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
 
   g_object_class_install_properties (gobject_class, N_PROPERTIES,
       obj_properties);
+
+  obj_signals[CREATE_DATA_CHANNEL_ACTION] =
+      g_signal_new ("create-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, create_data_channel),
+      NULL, NULL, __kms_webrtc_data_marshal_INT__VOID, G_TYPE_INT, 0);
+
+  klass->create_data_channel =
+      kms_webrtc_data_session_bin_create_data_channel_action;
 
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataSessionBinPrivate));
 }
@@ -395,8 +419,9 @@ kms_webrtc_data_session_bin_pick_stream_id (KmsWebRtcDataSessionBin * self)
   return *id;
 }
 
-static void
-kms_webrtc_data_session_bin_new_data_channel (KmsWebRtcDataSessionBin * self)
+static gint
+kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
+    * self)
 {
   guint sctp_stream_id;
   GstElement *channel;
@@ -413,6 +438,7 @@ kms_webrtc_data_session_bin_new_data_channel (KmsWebRtcDataSessionBin * self)
     GST_ERROR_OBJECT (self, "Can not create data channel for stream id %u",
         sctp_stream_id);
     KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+    sctp_stream_id = -1;
   } else {
     g_hash_table_insert (self->priv->data_channels,
         GUINT_TO_POINTER (sctp_stream_id), channel);
@@ -420,6 +446,8 @@ kms_webrtc_data_session_bin_new_data_channel (KmsWebRtcDataSessionBin * self)
     gst_element_sync_state_with_parent (channel);
     g_signal_emit_by_name (channel, "request-open", NULL);
   }
+
+  return sctp_stream_id;
 }
 
 static void
@@ -430,9 +458,6 @@ kms_webrtc_data_session_bin_association_established (GstElement * sctpenc,
 
   if (connected) {
     GST_DEBUG_OBJECT (self, "SCTP association established");
-    if (self->priv->is_client) {
-      kms_webrtc_data_session_bin_new_data_channel (self);
-    }
   } else {
     GST_DEBUG_OBJECT (self, "SCTP association finished");
   }

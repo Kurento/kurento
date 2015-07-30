@@ -62,6 +62,13 @@ add_glib_enumtypes (
   ${KMS_WEBRTC_DATA_PROTOCOL_ENUM_HEADERS}
 )
 
+add_glib_marshal (
+  KMS_WEBRTC_DATA_PROTOCOL_SOURCES
+  KMS_WEBRTC_DATA_PROTOCOL_HEADERS
+  kms-webrtc-data-marshal
+  __kms_webrtc_data_marshal
+)
+
 add_library(webrtcdataproto SHARED
   ${KMS_WEBRTC_DATA_PROTOCOL_SOURCES}
   ${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}

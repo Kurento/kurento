@@ -64,6 +64,9 @@ struct _KmsWebRtcDataSessionBin
 struct _KmsWebRtcDataSessionBinClass
 {
   GstBinClass parent_class;
+
+  /* actions */
+  gint (*create_data_channel) (KmsWebRtcDataSessionBin *self);
 };
 
 GType kms_webrtc_data_session_bin_get_type (void);

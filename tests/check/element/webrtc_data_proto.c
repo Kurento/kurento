@@ -55,6 +55,7 @@ GST_START_TEST (connection)
 {
   GstElement *session1, *session2, *udpsrc1, *udpsink1, *udpsrc2, *udpsink2;
   GstElement *pipeline;
+  gint stream_id;
   GMainLoop *loop;
 
   loop = g_main_loop_new (NULL, FALSE);
@@ -90,6 +91,10 @@ GST_START_TEST (connection)
 
   g_timeout_add_seconds (1, print_timedout_pipeline, pipeline);
   g_timeout_add_seconds (1, quit_main_loop_idle, loop);
+
+  g_signal_emit_by_name (session1, "create-data-channel", &stream_id);
+
+  GST_DEBUG ("Creating data channel with stream id %d", stream_id);
 
   g_main_loop_run (loop);
 
