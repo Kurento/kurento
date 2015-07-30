@@ -8,7 +8,7 @@
 DOC_VERSION = 6.0.1-dev
 KMS_VERSION = 6.0.0
 CLIENT_JAVA_VERSION = 6.0.0
-CLIENT_JS_VERSION = 6.0.0
+CLIENT_JS_VERSION = 6.0.1
 UTILS_JS_VERSION = 6.0.1
 
 # You can set these variables from the command line.
