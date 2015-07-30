@@ -55,6 +55,7 @@ struct _KmsWebRtcDataSessionBinPrivate
 {
   guint16 assoc_id;
   gboolean is_client;
+  gboolean session_established;
   guint16 local_sctp_port;
   guint16 remote_sctp_port;
   GRecMutex mutex;
@@ -65,6 +66,8 @@ struct _KmsWebRtcDataSessionBinPrivate
   GHashTable *data_channels;
   guint even_id;
   guint odd_id;
+
+  GSList *pending;
 };
 
 #define KMS_WEBRTC_DATA_SESSION_BIN_LOCK(obj) \
@@ -189,6 +192,7 @@ kms_webrtc_data_session_bin_finalize (GObject * object)
 
   g_rec_mutex_clear (&self->priv->mutex);
   g_hash_table_unref (self->priv->data_channels);
+  g_slist_free_full (self->priv->pending, g_object_unref);
 
   /* chain up */
   G_OBJECT_CLASS (parent_class)->finalize (object);
@@ -431,6 +435,12 @@ kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
   sctp_stream_id = kms_webrtc_data_session_bin_pick_stream_id (self);
   channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
 
+  if (!self->priv->session_established) {
+    self->priv->pending = g_slist_prepend (self->priv->pending, channel);
+    KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+    return sctp_stream_id;
+  }
+
   gst_bin_add (GST_BIN (self), channel);
 
   if (!kms_webrtc_data_session_bin_link_data_channel_src (self, channel)) {
@@ -451,15 +461,46 @@ kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
 }
 
 static void
+create_pending_data_channel_cb (GstElement * channel,
+    KmsWebRtcDataSessionBin * self)
+{
+  guint sctp_stream_id;
+
+  g_object_get (G_OBJECT (channel), "id", &sctp_stream_id, NULL);
+
+  GST_DEBUG_OBJECT (self, "Creating posponed data channel for stream id %d",
+      sctp_stream_id);
+
+  gst_bin_add (GST_BIN (self), channel);
+
+  if (!kms_webrtc_data_session_bin_link_data_channel_src (self, channel)) {
+    gst_bin_remove (GST_BIN (self), channel);
+    GST_ERROR_OBJECT (self, "Can not create data channel for stream id %u",
+        sctp_stream_id);
+  } else {
+    g_hash_table_insert (self->priv->data_channels,
+        GUINT_TO_POINTER (sctp_stream_id), channel);
+    gst_element_sync_state_with_parent (channel);
+    g_signal_emit_by_name (channel, "request-open", NULL);
+  }
+}
+
+static void
 kms_webrtc_data_session_bin_association_established (GstElement * sctpenc,
     gboolean connected, KmsWebRtcDataSessionBin * self)
 {
   KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
 
+  self->priv->session_established = connected;
+
+  GST_DEBUG_OBJECT (self, "SCTP association %s",
+      (connected) ? "established" : "finished");
+
   if (connected) {
-    GST_DEBUG_OBJECT (self, "SCTP association established");
-  } else {
-    GST_DEBUG_OBJECT (self, "SCTP association finished");
+    g_slist_foreach (self->priv->pending,
+        (GFunc) create_pending_data_channel_cb, self);
+    g_slist_free (self->priv->pending);
+    self->priv->pending = NULL;
   }
 
   KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
@@ -478,6 +519,7 @@ kms_webrtc_data_session_bin_init (KmsWebRtcDataSessionBin * self)
 
   self->priv->data_channels = g_hash_table_new (g_direct_hash, g_direct_equal);
   self->priv->assoc_id = get_sctp_association_id ();
+  self->priv->session_established = FALSE;
   self->priv->even_id = 0;
   self->priv->odd_id = 1;
 
