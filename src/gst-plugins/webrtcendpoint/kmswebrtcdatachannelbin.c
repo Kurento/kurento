@@ -56,6 +56,8 @@ G_DEFINE_TYPE_WITH_CODE (KmsWebRtcDataChannelBin, kms_webrtc_data_channel_bin,
 
 #define WEBRT_DATA_CAPS "application/webrtc-data"
 
+#define DATA_CHANNEL_OPEN_MIN_SIZE 12   /* bytes */
+
 #define KMS_WEBRTC_DATA_CHANNEL_BIN_GET_PRIVATE(obj) ( \
   G_TYPE_INSTANCE_GET_PRIVATE (                        \
     (obj),                                             \
@@ -128,6 +130,21 @@ static GstStaticPadTemplate src_template = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS (WEBRT_DATA_CAPS));
 
+static const gchar *const str_state[] = {
+  "connecting",
+  "open",
+  "closing",
+  "closed"
+};
+
+static const gchar *
+state2str (KmsWebRtcDataChannelState state)
+{
+  g_return_val_if_fail (state >= 0 && state < G_N_ELEMENTS (str_state), NULL);
+
+  return str_state[state];
+}
+
 static gchar *
 get_element_name (const gchar * element_name, guint assoc_id)
 {
@@ -156,6 +173,34 @@ create_datachannel_open_request (KmsDataChannelChannelType channel_type,
   memcpy (buf + 12 + label_len, protocol, protocol_len);
 
   return buf;
+}
+
+static void
+kms_webrtc_data_channel_bin_set_protocol (KmsWebRtcDataChannelBin * self,
+    gchar * protocol)
+{
+  g_free (self->priv->protocol);
+
+  self->priv->protocol = protocol;
+
+  if (self->priv->protocol == NULL) {
+    GST_DEBUG_OBJECT (self, "Setting empty protocol");
+    self->priv->protocol = g_strdup (DEFAULT_PROTOCOL);
+  }
+}
+
+static void
+kms_webrtc_data_channel_bin_set_label (KmsWebRtcDataChannelBin * self,
+    gchar * label)
+{
+  g_free (self->priv->label);
+
+  self->priv->label = label;
+
+  if (self->priv->label == NULL) {
+    GST_DEBUG_OBJECT (self, "Setting empty label");
+    self->priv->label = g_strdup (DEFAULT_LABEL);
+  }
 }
 
 static void
@@ -207,21 +252,14 @@ kms_webrtc_data_channel_bin_set_property (GObject * object, guint property_id,
       kms_webrtc_data_channel_bin_set_priority (self, g_value_get_enum (value));
       break;
     case PROP_PROTOCOL:
-      g_free (self->priv->protocol);
-      self->priv->protocol = g_value_dup_string (value);
-      if (self->priv->protocol == NULL) {
-        self->priv->protocol = g_strdup (DEFAULT_PROTOCOL);
-      }
+      kms_webrtc_data_channel_bin_set_protocol (self,
+          g_value_dup_string (value));
       break;
     case PROP_NEGOTIATED:
       self->priv->negotiated = g_value_get_boolean (value);
       break;
     case PROP_LABEL:
-      g_free (self->priv->label);
-      self->priv->label = g_value_dup_string (value);
-      if (self->priv->label == NULL) {
-        self->priv->label = g_strdup (DEFAULT_LABEL);
-      }
+      kms_webrtc_data_channel_bin_set_label (self, g_value_dup_string (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -479,12 +517,215 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataChannelBinPrivate));
 }
 
+static void
+kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
+    self, guint8 * data, guint32 size)
+{
+  guint16 priority, label_len, protocol_len;
+  KmsDataChannelChannelType channel_type;
+  guint32 reliability_param;
+  gchar *label, *protocol;
+  guint32 msg_size;
+
+  if (size < DATA_CHANNEL_OPEN_MIN_SIZE) {
+    GST_WARNING_OBJECT (self,
+        "Invalid size of data channel control message: %u, expected > %u", size,
+        DATA_CHANNEL_OPEN_MIN_SIZE);
+    return;
+  }
+
+  channel_type = GST_READ_UINT8 (data + 1);
+  priority = GST_READ_UINT16_BE (data + 2);
+  reliability_param = GST_READ_UINT32_BE (data + 4);
+  label_len = GST_READ_UINT16_BE (data + 8);
+  protocol_len = GST_READ_UINT16_BE (data + 10);
+
+  msg_size = DATA_CHANNEL_OPEN_MIN_SIZE + label_len + protocol_len;
+
+  if (size != msg_size) {
+    GST_WARNING_OBJECT (self,
+        "Invalid size of data channel control message: %u, expected %u", size,
+        msg_size);
+    return;
+  }
+
+  switch (priority) {
+    case KMS_DATA_CHANNEL_PRIORITY_BELOW_NORMAL:
+    case KMS_DATA_CHANNEL_PRIORITY_NORMAL:
+    case KMS_DATA_CHANNEL_PRIORITY_HIGH:
+    case KMS_DATA_CHANNEL_PRIORITY_EXTRA_HIGH:
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "Invalid priority level negotiated: %d",
+          priority);
+      return;
+  }
+
+  label = g_strndup ((const gchar *) data + 12, label_len);
+  protocol = g_strndup ((const gchar *) data + 12 + label_len, protocol_len);
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  if (self->priv->state != KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED) {
+    KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+    GST_WARNING_OBJECT (self, "Data channel open request received in state %s",
+        state2str (self->priv->state));
+    return;
+  }
+
+  self->priv->priority = priority;
+  self->priv->ordered =
+      !(channel_type & KMS_DATA_CHANNEL_CHANNEL_TYPE_RELIABLE_UNORDERED);
+  self->priv->max_packet_life_time = -1;
+  self->priv->max_packet_retransmits = -1;
+  self->priv->negotiated = FALSE;
+  self->priv->bytes_sent = G_GUINT64_CONSTANT (0);
+  self->priv->ctrl_bytes_sent = 0;
+
+  kms_webrtc_data_channel_bin_set_label (self, label);
+  kms_webrtc_data_channel_bin_set_protocol (self, protocol);
+
+  if (channel_type == KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_REMIX ||
+      channel_type ==
+      KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_REMIX_UNORDERED) {
+    self->priv->max_packet_retransmits = reliability_param;
+  } else if (channel_type ==
+      KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_TIMED
+      || channel_type ==
+      KMS_DATA_CHANNEL_CHANNEL_TYPE_PARTIAL_RELIABLE_TIMED_UNORDERED) {
+    self->priv->max_packet_life_time = reliability_param;
+  }
+
+  self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CONNECTING;
+
+  GST_LOG_OBJECT (self, "Received data channel open request: stream id = %u,"
+      " ordered = %u, max_packets_life_time = %d, max_packet_retransmits = %d,"
+      " negotiated=%u, protocol = \"%s\", label= \"%s\", state = %s",
+      self->priv->id, self->priv->ordered, self->priv->max_packet_life_time,
+      self->priv->max_packet_retransmits, self->priv->negotiated,
+      self->priv->protocol, self->priv->label, state2str (self->priv->state));
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+}
+
+static void
+kms_webrtc_data_channel_bin_handle_ack (KmsWebRtcDataChannelBin *
+    self, guint8 * data, guint32 size)
+{
+  GST_DEBUG_OBJECT (self, "TODO: handle ack");
+}
+
+static void
+kms_webrtc_data_channel_bin_handle_control_message (KmsWebRtcDataChannelBin *
+    self, guint8 * data, guint32 size)
+{
+  KMSDataChannelMessageType message_type;
+
+  if (size == 0) {
+    GST_WARNING_OBJECT (self,
+        "Invalid size of data channel control message: %u, expected > 0", size);
+    return;
+  }
+
+  message_type = GST_READ_UINT8 (data);
+
+  if (message_type == KMS_DATA_CHANNEL_MESSAGE_TYPE_OPEN_REQUEST) {
+    kms_webrtc_data_channel_bin_handle_open_request (self, data, size);
+  } else if (message_type == KMS_DATA_CHANNEL_MESSAGE_TYPE_ACK) {
+    kms_webrtc_data_channel_bin_handle_ack (self, data, size);
+  } else {
+    GST_WARNING_OBJECT (self, "Received invalid data channel control message");
+  }
+}
+
+static void
+kms_webrtc_data_channel_bin_handle_string_message (KmsWebRtcDataChannelBin *
+    self, guint8 * data, guint32 size, gboolean is_empty)
+{
+  GST_DEBUG_OBJECT (self, "TODO: Handle %sstring message",
+      (is_empty) ? "empty " : "");
+}
+
+static void
+kms_webrtc_data_channel_bin_handle_binary_message (KmsWebRtcDataChannelBin *
+    self, guint8 * data, guint32 size, gboolean is_empty)
+{
+  GST_DEBUG_OBJECT (self, "TODO: Handle %sbinary message",
+      (is_empty) ? "empty " : "");
+}
+
 static GstFlowReturn
 new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
 {
-  /* TODO: Process buffer */
+  const GstMetaInfo *meta_info = GST_SCTP_RECEIVE_META_INFO;
+  gpointer state = NULL;
+  GstSample *sample;
+  GstBuffer *buffer;
+  GstMapInfo info;
+  guint16 ppid = 0;
+  GstMeta *meta;
 
-  GST_DEBUG_OBJECT (self, "Buffer received");
+  sample = gst_app_sink_pull_sample (GST_APP_SINK (self->priv->appsink));
+  g_return_val_if_fail (sample, GST_FLOW_ERROR);
+
+  buffer = gst_sample_get_buffer (sample);
+  if (buffer == NULL) {
+    gst_sample_unref (sample);
+    GST_ERROR_OBJECT (self, "No buffer got from sample");
+    return GST_FLOW_ERROR;
+  }
+
+  if (!gst_buffer_map (buffer, &info, GST_MAP_READ)) {
+    gst_sample_unref (sample);
+    GST_ERROR_OBJECT (self, "Can not read buffer");
+    return GST_FLOW_ERROR;
+  }
+
+  while ((meta = gst_buffer_iterate_meta (buffer, &state))) {
+    if (meta->info->api == meta_info->api) {
+      GstSctpReceiveMeta *sctp_receive_meta = (GstSctpReceiveMeta *) meta;
+
+      ppid = sctp_receive_meta->ppid;
+      break;
+    }
+  }
+
+  switch (ppid) {
+    case KMS_DATA_CHANNEL_PPID_CONTROL:
+      kms_webrtc_data_channel_bin_handle_control_message (self, info.data,
+          info.size);
+      break;
+    case KMS_DATA_CHANNEL_PPID_STRING:
+      kms_webrtc_data_channel_bin_handle_string_message (self, info.data,
+          info.size, FALSE);
+      break;
+    case KMS_DATA_CHANNEL_PPID_BINARY_PARTIAL:
+      GST_WARNING_OBJECT (self,
+          "PPID: DATA_CHANNEL_PPID_BINARY_PARTIAL - Deprecated - Not supported");
+      break;
+    case KMS_DATA_CHANNEL_PPID_BINARY:
+      kms_webrtc_data_channel_bin_handle_binary_message (self, info.data,
+          info.size, FALSE);
+      break;
+    case KMS_DATA_CHANNEL_PPID_STRING_PARTIAL:
+      GST_WARNING_OBJECT (self,
+          "PPID: DATA_CHANNEL_PPID_STRING_PARTIAL - Deprecated - Not supported");
+      break;
+    case KMS_DATA_CHANNEL_PPID_STRING_EMPTY:
+      kms_webrtc_data_channel_bin_handle_string_message (self, info.data,
+          info.size, TRUE);
+      break;
+    case KMS_DATA_CHANNEL_PPID_BINARY_EMPTY:
+      kms_webrtc_data_channel_bin_handle_binary_message (self, info.data,
+          info.size, TRUE);
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "Unsupported PPID received: %u", ppid);
+      break;
+  }
+
+  gst_buffer_unmap (buffer, &info);
+  gst_sample_unref (sample);
 
   return GST_FLOW_OK;
 }
