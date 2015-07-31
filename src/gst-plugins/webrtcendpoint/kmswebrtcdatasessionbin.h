@@ -17,6 +17,7 @@
 #define __KMS_WEBRTC_DATA_SESSION_BIN_H__
 
 #include <gst/gst.h>
+#include "kmswebrtcdatachannel.h"
 
 G_BEGIN_DECLS
 
@@ -64,6 +65,10 @@ struct _KmsWebRtcDataSessionBin
 struct _KmsWebRtcDataSessionBinClass
 {
   GstBinClass parent_class;
+
+  /* signals */
+  void (*data_channel_opened) (KmsWebRtcDataSessionBin *self, guint stream_id);
+  void (*data_channel_closed) (KmsWebRtcDataSessionBin *self, guint stream_id);
 
   /* actions */
   gint (*create_data_channel) (KmsWebRtcDataSessionBin *self);

@@ -51,12 +51,19 @@ print_timedout_pipeline (gpointer data)
   return FALSE;
 }
 
+static void
+data_channel_opened_cb (KmsWebRtcDataSessionBin * self, guint stream_id)
+{
+  GST_INFO_OBJECT (self, "Data channel opened with stream id %d", stream_id);
+}
+
 GST_START_TEST (connection)
 {
   GstElement *session1, *session2, *udpsrc1, *udpsink1, *udpsrc2, *udpsink2;
   GstElement *pipeline;
   gint stream_id;
   GMainLoop *loop;
+  gulong id1, id2;
 
   loop = g_main_loop_new (NULL, FALSE);
   pipeline = gst_pipeline_new ("pipeline");
@@ -64,10 +71,14 @@ GST_START_TEST (connection)
   udpsink1 = gst_element_factory_make ("udpsink", NULL);
   udpsrc1 = gst_element_factory_make ("udpsrc", NULL);
   session1 = GST_ELEMENT (kms_webrtc_data_session_bin_new (TRUE));
+  id1 = g_signal_connect (session1, "data-channel-opened",
+      G_CALLBACK (data_channel_opened_cb), NULL);
 
   udpsink2 = gst_element_factory_make ("udpsink", NULL);
   udpsrc2 = gst_element_factory_make ("udpsrc", NULL);
   session2 = GST_ELEMENT (kms_webrtc_data_session_bin_new (FALSE));
+  id2 = g_signal_connect (session2, "data-channel-opened",
+      G_CALLBACK (data_channel_opened_cb), NULL);
 
   g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
       "async", FALSE, NULL);
@@ -99,6 +110,9 @@ GST_START_TEST (connection)
   g_main_loop_run (loop);
 
   GST_DEBUG ("Finished test");
+
+  g_signal_handler_disconnect (session1, id1);
+  g_signal_handler_disconnect (session2, id2);
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (pipeline));

@@ -64,6 +64,8 @@ struct _KmsWebRtcDataSessionBinPrivate
   GstElement *sctpenc;
 
   GHashTable *data_channels;
+  GHashTable *channels;
+
   guint even_id;
   guint odd_id;
 
@@ -90,6 +92,8 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 enum
 {
+  DATA_CHANNEL_OPENED,
+  DATA_CHANNEL_CLOSED,
   CREATE_DATA_CHANNEL_ACTION,
 
   LAST_SIGNAL
@@ -191,6 +195,7 @@ kms_webrtc_data_session_bin_finalize (GObject * object)
   GST_DEBUG_OBJECT (self, "finalize");
 
   g_rec_mutex_clear (&self->priv->mutex);
+  g_hash_table_unref (self->priv->channels);
   g_hash_table_unref (self->priv->data_channels);
   g_slist_free_full (self->priv->pending, g_object_unref);
 
@@ -240,6 +245,20 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
 
   g_object_class_install_properties (gobject_class, N_PROPERTIES,
       obj_properties);
+
+  obj_signals[DATA_CHANNEL_OPENED] =
+      g_signal_new ("data-channel-opened",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, data_channel_opened),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+  obj_signals[DATA_CHANNEL_CLOSED] =
+      g_signal_new ("data-channel-closed",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, data_channel_closed),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 
   obj_signals[CREATE_DATA_CHANNEL_ACTION] =
       g_signal_new ("create-data-channel",
@@ -322,11 +341,29 @@ kms_webrtc_data_session_bin_is_valid_sctp_stream_id (KmsWebRtcDataSessionBin *
 }
 
 static void
-data_channel_negotiated_cb (GstElement * channel,
+data_channel_negotiated_cb (KmsWebRtcDataChannelBin * channel_bin,
     KmsWebRtcDataSessionBin * self)
 {
-  /* TODO: Provide mechanism to interchange buffers */
-  GST_INFO_OBJECT (self, "Negotiated channel %" GST_PTR_FORMAT, channel);
+  KmsWebRtcDataChannel *data_channel;
+  guint sctp_stream_id;
+
+  g_object_get (channel_bin, "id", &sctp_stream_id, NULL);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
+
+  data_channel =
+      (KmsWebRtcDataChannel *) g_hash_table_lookup (self->priv->channels,
+      GUINT_TO_POINTER (sctp_stream_id));
+
+  if (data_channel == NULL) {
+    data_channel = kms_webrtc_data_channel_new (channel_bin);
+    g_hash_table_insert (self->priv->channels,
+        GUINT_TO_POINTER (sctp_stream_id), data_channel);
+  }
+
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+
+  g_signal_emit (self, obj_signals[DATA_CHANNEL_OPENED], 0, sctp_stream_id);
 }
 
 static GstElement *
@@ -541,6 +578,9 @@ kms_webrtc_data_session_bin_init (KmsWebRtcDataSessionBin * self)
   g_rec_mutex_init (&self->priv->mutex);
 
   self->priv->data_channels = g_hash_table_new (g_direct_hash, g_direct_equal);
+  self->priv->channels =
+      g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL,
+      g_object_unref);
   self->priv->assoc_id = get_sctp_association_id ();
   self->priv->session_established = FALSE;
   self->priv->even_id = 0;
