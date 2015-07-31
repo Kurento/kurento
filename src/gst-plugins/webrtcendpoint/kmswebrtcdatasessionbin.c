@@ -321,6 +321,27 @@ kms_webrtc_data_session_bin_is_valid_sctp_stream_id (KmsWebRtcDataSessionBin *
   }
 }
 
+static void
+data_channel_negotiated_cb (GstElement * channel,
+    KmsWebRtcDataSessionBin * self)
+{
+  /* TODO: Provide mechanism to interchange buffers */
+  GST_INFO_OBJECT (self, "Negotiated channel %" GST_PTR_FORMAT, channel);
+}
+
+static GstElement *
+kms_webrtc_data_session_bin_create_data_channel (KmsWebRtcDataSessionBin
+    * self, guint sctp_stream_id)
+{
+  GstElement *channel;
+
+  channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
+  g_signal_connect (channel, "negotiated",
+      G_CALLBACK (data_channel_negotiated_cb), self);
+
+  return channel;
+}
+
 static GstElement *
 kms_webrtc_data_session_bin_create_remote_data_channel (KmsWebRtcDataSessionBin
     * self, guint sctp_stream_id)
@@ -336,7 +357,8 @@ kms_webrtc_data_session_bin_create_remote_data_channel (KmsWebRtcDataSessionBin
 
   GST_DEBUG_OBJECT (self, "Opened stream id (%u)", sctp_stream_id);
 
-  channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
+  channel = kms_webrtc_data_session_bin_create_data_channel (self,
+      sctp_stream_id);
   g_hash_table_insert (self->priv->data_channels,
       GUINT_TO_POINTER (sctp_stream_id), channel);
 
@@ -433,7 +455,8 @@ kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
   KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
 
   sctp_stream_id = kms_webrtc_data_session_bin_pick_stream_id (self);
-  channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
+  channel = kms_webrtc_data_session_bin_create_data_channel (self,
+      sctp_stream_id);
 
   if (!self->priv->session_established) {
     self->priv->pending = g_slist_prepend (self->priv->pending, channel);

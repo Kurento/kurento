@@ -65,6 +65,9 @@ struct _KmsWebRtcDataChannelBinClass
 {
   GstBinClass parent_class;
 
+  /* signals */
+  void (*negotiated) (KmsWebRtcDataChannelBin *self);
+
   /* actions */
   void (*request_open) (KmsWebRtcDataChannelBin *self);
 };

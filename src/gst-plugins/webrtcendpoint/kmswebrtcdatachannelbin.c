@@ -115,7 +115,12 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 enum
 {
+  /* signals */
+  SIGNAL_NEGOTIATED,
+
+  /* actions */
   REQUEST_OPEN,
+
   LAST_SIGNAL
 };
 
@@ -519,6 +524,13 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
   g_object_class_install_properties (gobject_class, N_PROPERTIES,
       obj_properties);
 
+  obj_signals[SIGNAL_NEGOTIATED] =
+      g_signal_new ("negotiated",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebRtcDataChannelBinClass, negotiated), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
   obj_signals[REQUEST_OPEN] =
       g_signal_new ("request-open",
       G_TYPE_FROM_CLASS (klass),
@@ -556,6 +568,8 @@ kms_webrtc_data_channel_bin_send_data_channel_ack (KmsWebRtcDataChannelBin *
     self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_OPEN;
     self->priv->negotiated = TRUE;
     KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+    g_signal_emit (self, obj_signals[SIGNAL_NEGOTIATED], 0);
   }
 }
 
@@ -662,6 +676,8 @@ kms_webrtc_data_channel_bin_handle_ack (KmsWebRtcDataChannelBin *
   self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_OPEN;
 
   KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  g_signal_emit (self, obj_signals[SIGNAL_NEGOTIATED], 0);
 }
 
 static void
