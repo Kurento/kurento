@@ -908,3 +908,96 @@ end:
 
   return caps;
 }
+
+GstFlowReturn
+kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
+    GstBuffer * buffer, gboolean is_binary)
+{
+  GstSctpSendMetaPartiallyReliability pr;
+  gboolean is_empty, ordered;
+  KmsDataChannelPPID ppid;
+  GstBuffer *send_buffer;
+  guint32 pr_param;
+  GstMapInfo info;
+
+  if (self == NULL || !KMS_IS_WEBRTC_DATA_CHANNEL_BIN (self)) {
+    gst_buffer_unref (buffer);
+    g_return_val_if_reached (GST_FLOW_ERROR);
+  }
+
+  if (!gst_buffer_map (buffer, &info, GST_MAP_READ)) {
+    gst_buffer_unref (buffer);
+    GST_ERROR_OBJECT (self, "Can not read buffer");
+    return GST_FLOW_ERROR;
+  }
+
+  is_empty = info.size == 0;
+  gst_buffer_unmap (buffer, &info);
+
+  if (is_empty) {
+    guint8 *zero_byte;
+
+    gst_buffer_unref (buffer);
+    zero_byte = g_new0 (guint8, 1);
+    send_buffer = gst_buffer_new_wrapped (zero_byte, 1);
+  } else {
+    send_buffer = buffer;
+  }
+
+  if (is_binary) {
+    if (is_empty) {
+      ppid = KMS_DATA_CHANNEL_PPID_BINARY_EMPTY;
+    } else {
+      ppid = KMS_DATA_CHANNEL_PPID_BINARY;
+    }
+  } else {
+    if (is_empty) {
+      ppid = KMS_DATA_CHANNEL_PPID_STRING_EMPTY;
+    } else {
+      ppid = KMS_DATA_CHANNEL_PPID_STRING;
+    }
+  }
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  ordered = self->priv->ordered;
+
+  switch (self->priv->state) {
+    case KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSING:
+    case KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED:
+      KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+      return GST_FLOW_NOT_LINKED;
+    case KMS_WEB_RTC_DATA_CHANNEL_STATE_CONNECTING:
+      /* open request has been sent but no ack is received yet */
+      ordered = TRUE;
+    case KMS_WEB_RTC_DATA_CHANNEL_STATE_OPEN:
+      break;
+    default:
+      KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+      GST_ERROR_OBJECT (self, "Channel is in an invalid state %u",
+          self->priv->state);
+      gst_buffer_unref (send_buffer);
+      return GST_FLOW_ERROR;
+  }
+
+  pr_param = 0;
+
+  if (self->priv->max_packet_life_time == -1
+      && self->priv->max_packet_retransmits == -1) {
+    pr = GST_SCTP_SEND_META_PARTIAL_RELIABILITY_NONE;
+    pr_param = 0;
+  } else if (self->priv->max_packet_life_time != -1) {
+    pr = GST_SCTP_SEND_META_PARTIAL_RELIABILITY_TTL;
+    pr_param = self->priv->max_packet_life_time;
+  } else if (self->priv->max_packet_retransmits != -1) {
+    pr = GST_SCTP_SEND_META_PARTIAL_RELIABILITY_RTX;
+    pr_param = self->priv->max_packet_retransmits;
+  }
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  gst_sctp_buffer_add_send_meta (send_buffer, ppid, ordered, pr, pr_param);
+
+  return gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc),
+      send_buffer);
+}

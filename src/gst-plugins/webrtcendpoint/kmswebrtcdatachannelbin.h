@@ -76,6 +76,8 @@ GType kms_webrtc_data_channel_bin_get_type (void);
 
 KmsWebRtcDataChannelBin * kms_webrtc_data_channel_bin_new (guint id);
 GstCaps * kms_webrtc_data_channel_bin_create_caps (KmsWebRtcDataChannelBin *self);
+GstFlowReturn kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin *self, GstBuffer *buffer, gboolean is_binary);
+
 G_END_DECLS
 
 #endif /* __KMS_WEBRTC_DATA_CHANNEL_BIN_H__ */

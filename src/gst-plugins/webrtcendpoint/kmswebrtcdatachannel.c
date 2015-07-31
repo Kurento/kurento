@@ -126,8 +126,11 @@ GstFlowReturn
 kms_webrtc_data_channel_push_buffer (KmsWebRtcDataChannel * channel,
     GstBuffer * buffer, gboolean is_binary)
 {
-  /* TODO: Push buffer */
-  gst_buffer_ref (buffer);
+  if (channel == NULL) {
+    gst_buffer_unref (buffer);
+    g_return_val_if_reached (GST_FLOW_ERROR);
+  }
 
-  return GST_FLOW_OK;
+  return kms_webrtc_data_channel_bin_push_buffer (channel->priv->channel_bin,
+      buffer, is_binary);
 }
