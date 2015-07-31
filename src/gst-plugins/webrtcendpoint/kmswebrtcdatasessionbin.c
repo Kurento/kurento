@@ -94,6 +94,8 @@ enum
 {
   DATA_CHANNEL_OPENED,
   DATA_CHANNEL_CLOSED,
+
+  GET_DATA_CHANNEL_ACTION,
   CREATE_DATA_CHANNEL_ACTION,
 
   LAST_SIGNAL
@@ -203,6 +205,22 @@ kms_webrtc_data_session_bin_finalize (GObject * object)
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
+static KmsWebRtcDataChannel *
+kms_webrtc_data_session_bin_get_data_channel_action (KmsWebRtcDataSessionBin *
+    self, guint stream_id)
+{
+  KmsWebRtcDataChannel *obj;
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
+
+  obj = (KmsWebRtcDataChannel *) g_hash_table_lookup (self->priv->channels,
+      GUINT_TO_POINTER (stream_id));
+
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+
+  return obj;
+}
+
 static void
 kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
 {
@@ -267,8 +285,18 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
       G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, create_data_channel),
       NULL, NULL, __kms_webrtc_data_marshal_INT__VOID, G_TYPE_INT, 0);
 
+  obj_signals[GET_DATA_CHANNEL_ACTION] =
+      g_signal_new ("get-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, get_data_channel),
+      NULL, NULL, __kms_webrtc_data_marshal_OBJECT__UINT,
+      KMS_TYPE_WEBRTC_DATA_CHANNEL, 1, G_TYPE_UINT);
+
   klass->create_data_channel =
       kms_webrtc_data_session_bin_create_data_channel_action;
+
+  klass->get_data_channel = kms_webrtc_data_session_bin_get_data_channel_action;
 
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataSessionBinPrivate));
 }

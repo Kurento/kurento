@@ -22,6 +22,8 @@
 #include <webrtcendpoint/kmswebrtcdataproto.h>
 #include <webrtcendpoint/kmswebrtcdatasessionbin.h>
 
+#define TEST_MESSAGE "Hello world!"
+
 static gboolean
 quit_main_loop_idle (gpointer data)
 {
@@ -51,10 +53,61 @@ print_timedout_pipeline (gpointer data)
   return FALSE;
 }
 
-static void
-data_channel_opened_cb (KmsWebRtcDataSessionBin * self, guint stream_id)
+static GstFlowReturn
+data_channel_buffer_received_cb (KmsWebRtcDataChannel * channel,
+    GstBuffer * buffer, gpointer user_data)
 {
-  GST_INFO_OBJECT (self, "Data channel opened with stream id %d", stream_id);
+  GstMapInfo info = GST_MAP_INFO_INIT;
+  gchar *msg;
+
+  GST_INFO_OBJECT (channel, "Buffer received");
+
+  if (!gst_buffer_map (buffer, &info, GST_MAP_READ)) {
+    fail ("Can not read buffer");
+    return GST_FLOW_ERROR;
+  }
+
+  fail_if (strlen (TEST_MESSAGE) != info.size);
+  msg = g_strndup ((const gchar *) info.data, info.size);
+
+  gst_buffer_unmap (buffer, &info);
+
+  GST_INFO ("Received message: \"%s\"", msg);
+
+  fail_unless (g_strcmp0 (TEST_MESSAGE, msg) == 0);
+
+  g_free (msg);
+
+  g_idle_add (quit_main_loop_idle, user_data);
+
+  return GST_FLOW_OK;
+}
+
+static void
+data_channel_opened_cb (KmsWebRtcDataSessionBin * self, guint stream_id,
+    gpointer user_data)
+{
+  KmsWebRtcDataChannel *channel;
+  gboolean is_client;
+  GstBuffer *buff;
+  gchar *msg;
+
+  g_signal_emit_by_name (self, "get-data-channel", stream_id, &channel);
+  GST_INFO_OBJECT (channel, "Data channel opened with stream id %u -- %"
+      GST_PTR_FORMAT, stream_id, self);
+
+  g_object_get (self, "dtls-client-mode", &is_client, NULL);
+
+  kms_webrtc_data_channel_set_new_buffer_callback (channel,
+      data_channel_buffer_received_cb, user_data, NULL);
+
+  if (!is_client) {
+    return;
+  }
+
+  msg = g_strdup (TEST_MESSAGE);
+  buff = gst_buffer_new_wrapped (msg, strlen (msg));
+  kms_webrtc_data_channel_push_buffer (channel, buff, FALSE);
 }
 
 GST_START_TEST (connection)
@@ -72,13 +125,13 @@ GST_START_TEST (connection)
   udpsrc1 = gst_element_factory_make ("udpsrc", NULL);
   session1 = GST_ELEMENT (kms_webrtc_data_session_bin_new (TRUE));
   id1 = g_signal_connect (session1, "data-channel-opened",
-      G_CALLBACK (data_channel_opened_cb), NULL);
+      G_CALLBACK (data_channel_opened_cb), loop);
 
   udpsink2 = gst_element_factory_make ("udpsink", NULL);
   udpsrc2 = gst_element_factory_make ("udpsrc", NULL);
   session2 = GST_ELEMENT (kms_webrtc_data_session_bin_new (FALSE));
   id2 = g_signal_connect (session2, "data-channel-opened",
-      G_CALLBACK (data_channel_opened_cb), NULL);
+      G_CALLBACK (data_channel_opened_cb), loop);
 
   g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
       "async", FALSE, NULL);

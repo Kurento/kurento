@@ -72,6 +72,7 @@ struct _KmsWebRtcDataSessionBinClass
 
   /* actions */
   gint (*create_data_channel) (KmsWebRtcDataSessionBin *self);
+  KmsWebRtcDataChannel * (*get_data_channel) (KmsWebRtcDataSessionBin *self, guint stream_id);
 };
 
 GType kms_webrtc_data_session_bin_get_type (void);
