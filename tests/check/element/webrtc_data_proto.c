@@ -54,9 +54,10 @@ print_timedout_pipeline (gpointer data)
 }
 
 static GstFlowReturn
-data_channel_buffer_received_cb (KmsWebRtcDataChannel * channel,
-    GstBuffer * buffer, gpointer user_data)
+data_channel_buffer_received_cb (GObject * obj, GstBuffer * buffer,
+    gpointer user_data)
 {
+  KmsWebRtcDataChannel *channel = KMS_WEBRTC_DATA_CHANNEL (obj);
   GstMapInfo info = GST_MAP_INFO_INIT;
   gchar *msg;
 
@@ -154,7 +155,6 @@ GST_START_TEST (connection)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   g_timeout_add_seconds (1, print_timedout_pipeline, pipeline);
-  g_timeout_add_seconds (1, quit_main_loop_idle, loop);
 
   g_signal_emit_by_name (session1, "create-data-channel", &stream_id);
 

@@ -49,6 +49,7 @@ set(KMS_WEBRTC_DATA_PROTOCOL_HEADERS
   kmswebrtcdatachannelstate.h
   kmswebrtcdatachannelpriority.h
   kmswebrtcdataproto.h
+  kmswebrtcdatachannelutil.h
 )
 
 set(KMS_WEBRTC_DATA_PROTOCOL_ENUM_HEADERS

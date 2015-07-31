@@ -54,8 +54,6 @@ typedef struct _KmsWebRtcDataChannel KmsWebRtcDataChannel;
 typedef struct _KmsWebRtcDataChannelClass KmsWebRtcDataChannelClass;
 typedef struct _KmsWebRtcDataChannelPrivate KmsWebRtcDataChannelPrivate;
 
-typedef GstFlowReturn (*DataChannelNewBuffer) (KmsWebRtcDataChannel *channel, GstBuffer *buffer, gpointer user_data);
-
 struct _KmsWebRtcDataChannel
 {
   GObject parent;

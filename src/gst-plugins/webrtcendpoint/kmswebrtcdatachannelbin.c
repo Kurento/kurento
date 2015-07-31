@@ -86,6 +86,10 @@ struct _KmsWebRtcDataChannelBinPrivate
   KmsWebRtcDataChannelState state;
 
   guint ctrl_bytes_sent;
+
+  DataChannelNewBuffer cb;
+  gpointer user_data;
+  GDestroyNotify notify;
 };
 
 #define KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK(obj) \
@@ -360,6 +364,10 @@ kms_webrtc_data_channel_bin_finalize (GObject * object)
   KmsWebRtcDataChannelBin *self = KMS_WEBRTC_DATA_CHANNEL_BIN (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
+
+  if (self->priv->notify != NULL) {
+    self->priv->notify (self->priv->user_data);
+  }
 
   g_rec_mutex_clear (&self->priv->mutex);
   g_free (self->priv->protocol);
@@ -703,27 +711,13 @@ kms_webrtc_data_channel_bin_handle_control_message (KmsWebRtcDataChannelBin *
   }
 }
 
-static void
-kms_webrtc_data_channel_bin_handle_string_message (KmsWebRtcDataChannelBin *
-    self, guint8 * data, guint32 size, gboolean is_empty)
-{
-  GST_DEBUG_OBJECT (self, "TODO: Handle %sstring message",
-      (is_empty) ? "empty " : "");
-}
-
-static void
-kms_webrtc_data_channel_bin_handle_binary_message (KmsWebRtcDataChannelBin *
-    self, guint8 * data, guint32 size, gboolean is_empty)
-{
-  GST_DEBUG_OBJECT (self, "TODO: Handle %sbinary message",
-      (is_empty) ? "empty " : "");
-}
-
 static GstFlowReturn
 new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
 {
   const GstMetaInfo *meta_info = GST_SCTP_RECEIVE_META_INFO;
+  gboolean notify = FALSE;
   gpointer state = NULL;
+  GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
   GstMapInfo info;
@@ -760,29 +754,19 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
       kms_webrtc_data_channel_bin_handle_control_message (self, info.data,
           info.size);
       break;
-    case KMS_DATA_CHANNEL_PPID_STRING:
-      kms_webrtc_data_channel_bin_handle_string_message (self, info.data,
-          info.size, FALSE);
-      break;
     case KMS_DATA_CHANNEL_PPID_BINARY_PARTIAL:
       GST_WARNING_OBJECT (self,
           "PPID: DATA_CHANNEL_PPID_BINARY_PARTIAL - Deprecated - Not supported");
-      break;
-    case KMS_DATA_CHANNEL_PPID_BINARY:
-      kms_webrtc_data_channel_bin_handle_binary_message (self, info.data,
-          info.size, FALSE);
       break;
     case KMS_DATA_CHANNEL_PPID_STRING_PARTIAL:
       GST_WARNING_OBJECT (self,
           "PPID: DATA_CHANNEL_PPID_STRING_PARTIAL - Deprecated - Not supported");
       break;
+    case KMS_DATA_CHANNEL_PPID_STRING:
+    case KMS_DATA_CHANNEL_PPID_BINARY:
     case KMS_DATA_CHANNEL_PPID_STRING_EMPTY:
-      kms_webrtc_data_channel_bin_handle_string_message (self, info.data,
-          info.size, TRUE);
-      break;
     case KMS_DATA_CHANNEL_PPID_BINARY_EMPTY:
-      kms_webrtc_data_channel_bin_handle_binary_message (self, info.data,
-          info.size, TRUE);
+      notify = TRUE;
       break;
     default:
       GST_WARNING_OBJECT (self, "Unsupported PPID received: %u", ppid);
@@ -790,9 +774,16 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
   }
 
   gst_buffer_unmap (buffer, &info);
+
+  if (notify && self->priv->cb != NULL) {
+    ret = self->priv->cb (G_OBJECT (self), buffer, self->priv->user_data);
+  } else {
+    ret = GST_FLOW_OK;
+  }
+
   gst_sample_unref (sample);
 
-  return GST_FLOW_OK;
+  return ret;
 }
 
 static void
@@ -1000,4 +991,30 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
 
   return gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc),
       send_buffer);
+}
+
+void
+kms_webrtc_data_channel_bin_set_new_buffer_callback (KmsWebRtcDataChannelBin *
+    self, DataChannelNewBuffer cb, gpointer user_data, GDestroyNotify notify)
+{
+  GDestroyNotify destroy;
+  gpointer data;
+
+  g_return_if_fail (self != NULL);
+  g_return_if_fail (KMS_IS_WEBRTC_DATA_CHANNEL_BIN (self));
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  data = self->priv->user_data;
+  destroy = self->priv->notify;
+
+  self->priv->cb = cb;
+  self->priv->notify = notify;
+  self->priv->user_data = user_data;
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  if (destroy != NULL) {
+    destroy (data);
+  }
 }

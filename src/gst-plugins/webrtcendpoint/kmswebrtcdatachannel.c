@@ -41,6 +41,7 @@ G_DEFINE_TYPE_WITH_CODE (KmsWebRtcDataChannel, kms_webrtc_data_channel,
 struct _KmsWebRtcDataChannelPrivate
 {
   KmsWebRtcDataChannelBin *channel_bin;
+  DataChannelNewBuffer cb;
   gpointer user_data;
   GDestroyNotify notify;
   GRecMutex mutex;
@@ -79,6 +80,28 @@ kms_webrtc_data_channel_class_init (KmsWebRtcDataChannelClass * klass)
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataChannelPrivate));
 }
 
+static GstFlowReturn
+kms_webrtc_data_channel_new_buffer (GObject * obj, GstBuffer * buffer,
+    gpointer user_data)
+{
+  KmsWebRtcDataChannel *self = KMS_WEBRTC_DATA_CHANNEL (user_data);
+  DataChannelNewBuffer cb;
+  gpointer data;
+
+  KMS_WEBRTC_DATA_CHANNEL_LOCK (self);
+
+  cb = self->priv->cb;
+  data = self->priv->user_data;
+
+  KMS_WEBRTC_DATA_CHANNEL_UNLOCK (self);
+
+  if (cb != NULL) {
+    return cb (G_OBJECT (self), buffer, data);
+  }
+
+  return GST_FLOW_OK;
+}
+
 static void
 kms_webrtc_data_channel_init (KmsWebRtcDataChannel * self)
 {
@@ -97,6 +120,9 @@ kms_webrtc_data_channel_new (KmsWebRtcDataChannelBin * channel_bin)
   obj->priv->channel_bin =
       KMS_WEBRTC_DATA_CHANNEL_BIN (g_object_ref (channel_bin));
 
+  kms_webrtc_data_channel_bin_set_new_buffer_callback (channel_bin,
+      kms_webrtc_data_channel_new_buffer, obj, NULL);
+
   return obj;
 }
 
@@ -114,6 +140,7 @@ kms_webrtc_data_channel_set_new_buffer_callback (KmsWebRtcDataChannel * channel,
 
   channel->priv->notify = notify;
   channel->priv->user_data = user_data;
+  channel->priv->cb = cb;
 
   KMS_WEBRTC_DATA_CHANNEL_UNLOCK (channel);
 

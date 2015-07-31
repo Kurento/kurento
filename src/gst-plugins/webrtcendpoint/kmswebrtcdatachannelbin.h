@@ -18,6 +18,8 @@
 
 #include <gst/gst.h>
 
+#include "kmswebrtcdatachannelutil.h"
+
 G_BEGIN_DECLS
 
 #define KMS_TYPE_WEBRTC_DATA_CHANNEL_BIN \
@@ -76,6 +78,7 @@ GType kms_webrtc_data_channel_bin_get_type (void);
 
 KmsWebRtcDataChannelBin * kms_webrtc_data_channel_bin_new (guint id);
 GstCaps * kms_webrtc_data_channel_bin_create_caps (KmsWebRtcDataChannelBin *self);
+void kms_webrtc_data_channel_bin_set_new_buffer_callback (KmsWebRtcDataChannelBin *self, DataChannelNewBuffer cb, gpointer user_data, GDestroyNotify notify);
 GstFlowReturn kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin *self, GstBuffer *buffer, gboolean is_binary);
 
 G_END_DECLS
