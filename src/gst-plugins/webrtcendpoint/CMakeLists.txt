@@ -39,11 +39,13 @@ install(
 set(KMS_WEBRTC_DATA_PROTOCOL_SOURCES
   kmswebrtcdatasessionbin.c
   kmswebrtcdatachannelbin.c
+  kmswebrtcdatachannel.c
 )
 
 set(KMS_WEBRTC_DATA_PROTOCOL_HEADERS
   kmswebrtcdatasessionbin.h
   kmswebrtcdatachannelbin.h
+  kmswebrtcdatachannel.h
   kmswebrtcdatachannelstate.h
   kmswebrtcdatachannelpriority.h
   kmswebrtcdataproto.h
