@@ -323,7 +323,7 @@ public class KurentoServicesTestHelper {
 		if (!folderFile.exists()) {
 			folderFile.mkdirs();
 		}
-		Shell.run("chmod", "a+w", folder);
+		Shell.runAndWait("chmod", "a+w", folder);
 	}
 
 }

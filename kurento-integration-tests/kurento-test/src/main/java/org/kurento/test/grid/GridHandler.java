@@ -266,7 +266,7 @@ public class GridHandler {
 		// Copy script to remote node
 		node.getSshConnection().scp(tmpScript, remoteScript);
 		node.getSshConnection().execAndWaitCommand("chmod", "+x", remoteScript);
-		Shell.run("rm", tmpScript);
+		Shell.runAndWait("rm", tmpScript);
 	}
 
 	public void copyRemoteVideo(GridNode node, String video) {

@@ -34,11 +34,11 @@ public class Shell {
 
 	public static Logger log = LoggerFactory.getLogger(Shell.class);
 
-	public static void run(final String... command) {
-		run(true, command);
+	public static Process run(final String... command) {
+		return run(true, command);
 	}
 
-	public static void run(boolean redirectOutputs, final String... command) {
+	public static Process run(boolean redirectOutputs, final String... command) {
 		log.debug("Running command on the shell: {}", Arrays.toString(command));
 
 		try {
@@ -47,11 +47,10 @@ public class Shell {
 			if (redirectOutputs) {
 				p.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			}
-			p.start();
+			return p.start();
 		} catch (IOException e) {
-			log.error(
-					"Exception while executing command '"
-							+ Arrays.toString(command) + "'", e);
+			throw new RuntimeException("Exception while executing command '"
+					+ Arrays.toString(command) + "'", e);
 		}
 	}
 
@@ -78,6 +77,8 @@ public class Shell {
 			String output = CharStreams.toString(new InputStreamReader(p
 					.getInputStream(), "UTF-8"));
 
+			p.destroy();
+			
 			return output;
 
 		} catch (IOException e) {
