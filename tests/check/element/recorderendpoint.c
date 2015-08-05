@@ -82,26 +82,26 @@ state2string (KmsUriEndpointState state)
 static void
 change_state (KmsUriEndpointState state)
 {
+  GstElement *testsrc;
+  GstElement *testsink;
+
   GST_DEBUG ("Setting recorder to state %s", state2string (state));
   g_object_set (G_OBJECT (recorder), "state", state, NULL);
 
   /* Add more element to the pipeline to check that this does not affect
      to the timestamps */
-  {
-    GstElement *testsrc = gst_element_factory_make ("videotestsrc", NULL);
-    GstElement *testsink = gst_element_factory_make ("fakesink", NULL);
+  testsrc = gst_element_factory_make ("videotestsrc", NULL);
+  testsink = gst_element_factory_make ("fakesink", NULL);
 
-    g_object_set (testsink, "async", FALSE, "sync", FALSE, NULL);
-    g_object_set (testsrc, "is-live", TRUE, NULL);
+  g_object_set (testsink, "async", FALSE, "sync", FALSE, NULL);
+  g_object_set (testsrc, "is-live", TRUE, NULL);
 
-    GST_ERROR ("Adding elements");
-    gst_bin_add_many (GST_BIN (GST_OBJECT_PARENT (recorder)), testsrc, testsink,
-        NULL);
-    gst_element_link (testsrc, testsink);
-    gst_element_sync_state_with_parent (testsink);
-    gst_element_sync_state_with_parent (testsrc);
-    GST_ERROR ("Adding elements done");
-  }
+  GST_DEBUG_OBJECT (recorder, "Adding more elements");
+  gst_bin_add_many (GST_BIN (GST_OBJECT_PARENT (recorder)), testsrc, testsink,
+      NULL);
+  gst_element_link (testsrc, testsink);
+  gst_element_sync_state_with_parent (testsink);
+  gst_element_sync_state_with_parent (testsrc);
 }
 
 static void
