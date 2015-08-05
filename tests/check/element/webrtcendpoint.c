@@ -599,8 +599,6 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_slice_free (HandOffData, hod);
 }
 
-#include <commons/kmsutils.h>
-
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
     GstStaticCaps expected_caps, gchar * codec, gboolean bundle)
@@ -721,8 +719,6 @@ test_audio_sendrecv (const gchar * audio_enc_name,
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
       GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_before_entering_loop");
-
-  kms_utils_debug_graph_delay (GST_BIN (pipeline), 5);
 
   mark_point ();
   g_main_loop_run (loop);
