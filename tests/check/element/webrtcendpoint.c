@@ -1830,6 +1830,28 @@ GST_START_TEST (test_remb_params)
 }
 
 GST_END_TEST
+GST_START_TEST (test_session_creation)
+{
+  gchar *sess_id;
+  gboolean ret;
+  GstElement *webrtcendpoint =
+      gst_element_factory_make ("webrtcendpoint", NULL);
+
+  g_signal_emit_by_name (webrtcendpoint, "create-session", &sess_id);
+  GST_DEBUG_OBJECT (webrtcendpoint, "Created session with id '%s'", sess_id);
+  fail_unless (sess_id != NULL);
+  g_signal_emit_by_name (webrtcendpoint, "release-session", sess_id, &ret);
+  fail_unless (ret);
+  g_free (sess_id);
+
+  g_signal_emit_by_name (webrtcendpoint, "create-session", &sess_id);
+  GST_DEBUG_OBJECT (webrtcendpoint, "Created session with id '%s'", sess_id);
+  fail_unless (sess_id == NULL);
+
+  g_object_unref (webrtcendpoint);
+}
+
+GST_END_TEST
 /*
  * End of test cases
  */
@@ -1851,6 +1873,8 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_pcmu_vp8_sendonly_recvonly);
 
   tcase_add_test (tc_chain, test_remb_params);
+
+  tcase_add_test (tc_chain, test_session_creation);
 
 #ifdef ENABLE_DEBUGGING_TESTS
   tcase_add_test (tc_chain, test_webrtc_data_channel);
