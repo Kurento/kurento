@@ -181,8 +181,7 @@ public abstract class JsonRpcRequestSenderHelper implements
 	}
 
 	public void sendRequest(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-			throws IOException {
+			Continuation<Response<JsonElement>> continuation) {
 
 		setIdIfNecessary(request);
 		internalSendRequest(request, JsonElement.class, continuation);
