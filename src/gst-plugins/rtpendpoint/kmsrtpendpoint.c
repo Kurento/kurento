@@ -20,7 +20,7 @@
 #include <gst/rtp/gstrtcpbuffer.h>
 
 #include "kmsrtpendpoint.h"
-#include <commons/kmsbasertpsession.h>
+#include "kmsrtpsession.h"
 #include "kmsrtpconnection.h"
 #include <commons/sdp_utils.h>
 #include <commons/sdpagent/kmssdprtpavpfmediahandler.h>
@@ -46,6 +46,22 @@ enum
   PROP_0
 };
 
+/* Internal session management begin */
+
+static KmsSdpSession *
+kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp_ep,
+    gint id)
+{
+  KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (base_sdp_ep);
+  KmsRtpSession *sess;
+
+  sess = kms_rtp_session_new (base_sdp_ep, id, manager);
+
+  return KMS_SDP_SESSION (sess);
+}
+
+/* Internal session management end */
+
 /* Media handler management begin */
 static void
 kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
@@ -62,44 +78,6 @@ kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 }
 
 /* Media handler management end */
-
-/* Connection management begin */
-static KmsIRtpConnection *
-kms_rtp_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    KmsSdpSession * sess, SdpMediaConfig * mconf, const gchar * name)
-{
-  KmsRtpConnection *conn = kms_rtp_connection_new ();
-
-  return KMS_I_RTP_CONNECTION (conn);
-}
-
-static KmsIBundleConnection *
-kms_rtp_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
-    base_rtp_endpoint, KmsSdpSession * sess, const gchar * name)
-{
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_rtp_endpoint);
-
-  GST_WARNING_OBJECT (self, "Not implemented");
-
-  return NULL;
-}
-
-static KmsRtpBaseConnection *
-kms_rtp_endpoint_media_get_connection (KmsRtpEndpoint * self,
-    KmsSdpSession * sess, SdpMediaConfig * mconf)
-{
-  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
-  KmsIRtpConnection *conn;
-
-  conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
-  if (conn == NULL) {
-    return NULL;
-  }
-
-  return KMS_RTP_BASE_CONNECTION (conn);
-}
-
-/* Connection management end */
 
 static void
 kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
@@ -160,7 +138,6 @@ static gboolean
 kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
-  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   guint conn_len, c;
   guint attr_len, a;
@@ -180,9 +157,7 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     gst_sdp_media_remove_connection (media, c);
   }
 
-  conn =
-      KMS_RTP_BASE_CONNECTION (kms_base_rtp_session_get_connection
-      (base_rtp_sess, mconf));
+  conn = kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
   if (conn == NULL) {
     return TRUE;
   }
@@ -245,7 +220,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
       continue;
     }
 
-    conn = kms_rtp_endpoint_media_get_connection (self, sess, mconf);
+    conn = kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
     if (conn == NULL) {
       continue;
     }
@@ -261,7 +236,6 @@ static void
 kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 {
   KmsBaseSdpEndpointClass *base_sdp_endpoint_class;
-  KmsBaseRtpEndpointClass *base_rtp_endpoint_class;
   GstElementClass *gstelement_class;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
@@ -273,6 +247,8 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
   base_sdp_endpoint_class = KMS_BASE_SDP_ENDPOINT_CLASS (klass);
+  base_sdp_endpoint_class->create_session_internal =
+      kms_rtp_endpoint_create_session_internal;
   base_sdp_endpoint_class->start_transport_send =
       kms_rtp_endpoint_start_transport_send;
 
@@ -281,13 +257,6 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
       kms_rtp_endpoint_create_media_handler;
 
   base_sdp_endpoint_class->configure_media = kms_rtp_endpoint_configure_media;
-
-  base_rtp_endpoint_class = KMS_BASE_RTP_ENDPOINT_CLASS (klass);
-  /* Connection management */
-  base_rtp_endpoint_class->create_connection =
-      kms_rtp_endpoint_create_connection;
-  base_rtp_endpoint_class->create_bundle_connection =
-      kms_rtp_endpoint_create_bundle_connection;
 }
 
 /* inmediate-TODO: not add abs-send-time extmap */
