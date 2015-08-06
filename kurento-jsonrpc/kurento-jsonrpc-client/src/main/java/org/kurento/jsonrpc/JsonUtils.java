@@ -531,12 +531,15 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 			throw new JsonParseException("Invalid JsonRpc version");
 		}
 
-		Integer id;
-		try {
-			id = Integer.valueOf(jObject.get(ID_PROPERTY).getAsInt());
-		} catch (Exception e) {
-			throw new JsonParseException("Invalid JsonRpc response " + json
-					+ ". It lacks a valid '" + ID_PROPERTY + "' field");
+		Integer id = null;
+		JsonElement idAsJsonElement = jObject.get(ID_PROPERTY);
+		if (idAsJsonElement != null) {
+			try {
+				id = Integer.valueOf(idAsJsonElement.getAsInt());
+			} catch (Exception e) {
+				throw new JsonParseException(
+						"Invalid format in '" + ID_PROPERTY + "' field in request "+json);
+			}
 		}
 
 		if (jObject.has(RESULT_PROPERTY)) {
