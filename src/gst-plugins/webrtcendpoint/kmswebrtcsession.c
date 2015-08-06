@@ -18,6 +18,9 @@
 #endif
 
 #include "kmswebrtcsession.h"
+#include "kmswebrtcrtcpmuxconnection.h"
+#include "kmswebrtcbundleconnection.h"
+#include "kmswebrtcsctpconnection.h"
 #include <commons/sdp_utils.h>
 
 #include <string.h>
@@ -47,6 +50,8 @@ kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
   return self;
 }
 
+/* Connection management begin */
+
 KmsWebRtcBaseConnection *
 kms_webrtc_session_get_connection (KmsWebrtcSession * self,
     SdpMediaConfig * mconf)
@@ -61,6 +66,55 @@ kms_webrtc_session_get_connection (KmsWebrtcSession * self,
 
   return KMS_WEBRTC_BASE_CONNECTION (conn);
 }
+
+static KmsIRtpConnection *
+kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
+    SdpMediaConfig * mconf, const gchar * name)
+{
+  KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
+  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  KmsWebRtcBaseConnection *conn;
+
+  if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
+    GST_DEBUG_OBJECT (self, "Create SCTP connection");
+    conn =
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new
+        (self->agent, self->context, name));
+  } else {
+    GST_DEBUG_OBJECT (self, "Create RTP connection");
+    conn =
+        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new
+        (self->agent, self->context, name));
+  }
+
+  return KMS_I_RTP_CONNECTION (conn);
+}
+
+static KmsIRtcpMuxConnection *
+kms_webrtc_session_create_rtcp_mux_connection (KmsBaseRtpSession *
+    base_rtp_sess, const gchar * name)
+{
+  KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
+  KmsWebRtcRtcpMuxConnection *conn;
+
+  conn = kms_webrtc_rtcp_mux_connection_new (self->agent, self->context, name);
+
+  return KMS_I_RTCP_MUX_CONNECTION (conn);
+}
+
+static KmsIBundleConnection *
+kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
+    base_rtp_sess, const gchar * name)
+{
+  KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
+  KmsWebRtcBundleConnection *conn;
+
+  conn = kms_webrtc_bundle_connection_new (self->agent, self->context, name);
+
+  return KMS_I_BUNDLE_CONNECTION (conn);
+}
+
+/* Connection management end */
 
 static guint
 kms_webrtc_session_get_stream_id (KmsWebrtcSession * self,
@@ -679,6 +733,7 @@ kms_webrtc_session_finalize (GObject * object)
   GST_DEBUG_OBJECT (self, "finalize");
 
   g_clear_object (&self->agent);
+  g_main_context_unref (self->context);
   g_slist_free_full (self->remote_candidates, g_object_unref);
 
   /* chain up */
@@ -692,6 +747,7 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
 {
   KmsBaseRtpSession *base_rtp_session = KMS_BASE_RTP_SESSION (self);
 
+  self->context = g_main_context_ref (context);
   self->agent = nice_agent_new (context, NICE_COMPATIBILITY_RFC5245);
 
   KMS_BASE_RTP_SESSION_CLASS
@@ -710,6 +766,7 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
+  KmsBaseRtpSessionClass *base_rtp_session_class;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
@@ -717,6 +774,15 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
   gobject_class->finalize = kms_webrtc_session_finalize;
 
   klass->post_constructor = kms_webrtc_session_post_constructor;
+
+  base_rtp_session_class = KMS_BASE_RTP_SESSION_CLASS (klass);
+  /* Connection management */
+  base_rtp_session_class->create_connection =
+      kms_webrtc_session_create_connection;
+  base_rtp_session_class->create_rtcp_mux_connection =
+      kms_webrtc_session_create_rtcp_mux_connection;
+  base_rtp_session_class->create_bundle_connection =
+      kms_webrtc_session_create_bundle_connection;
 
   gst_element_class_set_details_simple (gstelement_class,
       "WebrtcSession",

@@ -45,6 +45,7 @@ struct _KmsWebrtcSession
 {
   KmsBaseRtpSession parent;
 
+  GMainContext * context;
   NiceAgent *agent;
   GSList *remote_candidates;
 };

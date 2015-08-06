@@ -19,9 +19,6 @@
 
 #include "kmswebrtcendpoint.h"
 #include "kmswebrtcconnection.h"
-#include "kmswebrtcrtcpmuxconnection.h"
-#include "kmswebrtcbundleconnection.h"
-#include "kmswebrtcsctpconnection.h"
 #include "kmswebrtcsession.h"
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
@@ -190,64 +187,6 @@ kms_webrtc_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 }
 
 /* Media handler management end */
-
-/* Connection management begin */
-
-static KmsIRtpConnection *
-kms_webrtc_endpoint_create_connection (KmsBaseRtpEndpoint * base_rtp_endpoint,
-    KmsSdpSession * sess, SdpMediaConfig * mconf, const gchar * name)
-{
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
-  KmsWebrtcSession *webrtc_sess = KMS_WEBRTC_SESSION (sess);
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-  KmsWebRtcBaseConnection *conn;
-
-  if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
-    GST_DEBUG_OBJECT (self, "Create SCTP connection");
-    conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new
-        (webrtc_sess->agent, self->priv->context, name));
-  } else {
-    GST_DEBUG_OBJECT (self, "Create RTP connection");
-    conn =
-        KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new
-        (webrtc_sess->agent, self->priv->context, name));
-  }
-
-  return KMS_I_RTP_CONNECTION (conn);
-}
-
-static KmsIRtcpMuxConnection *
-kms_webrtc_endpoint_create_rtcp_mux_connection (KmsBaseRtpEndpoint *
-    base_rtp_endpoint, KmsSdpSession * sess, const gchar * name)
-{
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
-  KmsWebrtcSession *webrtc_sess = KMS_WEBRTC_SESSION (sess);
-  KmsWebRtcRtcpMuxConnection *conn;
-
-  conn =
-      kms_webrtc_rtcp_mux_connection_new (webrtc_sess->agent,
-      self->priv->context, name);
-
-  return KMS_I_RTCP_MUX_CONNECTION (conn);
-}
-
-static KmsIBundleConnection *
-kms_webrtc_endpoint_create_bundle_connection (KmsBaseRtpEndpoint *
-    base_rtp_endpoint, KmsSdpSession * sess, const gchar * name)
-{
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_rtp_endpoint);
-  KmsWebrtcSession *webrtc_sess = KMS_WEBRTC_SESSION (sess);
-  KmsWebRtcBundleConnection *conn;
-
-  conn =
-      kms_webrtc_bundle_connection_new (webrtc_sess->agent, self->priv->context,
-      name);
-
-  return KMS_I_BUNDLE_CONNECTION (conn);
-}
-
-/* Connection management end */
 
 /* Set Transport begin */
 
@@ -1022,7 +961,6 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 {
   GObjectClass *gobject_class;
   KmsBaseSdpEndpointClass *base_sdp_endpoint_class;
-  KmsBaseRtpEndpointClass *base_rtp_endpoint_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->set_property = kms_webrtc_endpoint_set_property;
@@ -1051,15 +989,6 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       kms_webrtc_endpoint_configure_media;
   base_sdp_endpoint_class->connect_input_elements =
       kms_webrtc_endpoint_connect_input_elements;
-
-  base_rtp_endpoint_class = KMS_BASE_RTP_ENDPOINT_CLASS (klass);
-  /* Connection management */
-  base_rtp_endpoint_class->create_connection =
-      kms_webrtc_endpoint_create_connection;
-  base_rtp_endpoint_class->create_rtcp_mux_connection =
-      kms_webrtc_endpoint_create_rtcp_mux_connection;
-  base_rtp_endpoint_class->create_bundle_connection =
-      kms_webrtc_endpoint_create_bundle_connection;
 
   klass->gather_candidates = kms_webrtc_endpoint_gather_candidates;
   klass->add_ice_candidate = kms_webrtc_endpoint_add_ice_candidate;
