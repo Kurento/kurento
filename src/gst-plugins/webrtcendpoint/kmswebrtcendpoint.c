@@ -146,25 +146,31 @@ connect_sctp_data_new (KmsWebrtcEndpoint * self, GstSDPMedia * media,
 
 /* Internal session management begin */
 
-static KmsSdpSession *
-kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp_ep,
-    gint id)
+static void
+kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
+    gint id, KmsSdpSession ** sess)
 {
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp_ep);
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp);
   KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (self);
-  KmsWebrtcSession *sess;
+  KmsWebrtcSession *webrtc_sess;
 
-  sess = kms_webrtc_session_new (base_sdp_ep, id, manager, self->priv->context);
+  webrtc_sess =
+      kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
 
-  g_object_set (sess->agent, "upnp", FALSE, NULL);
-  g_signal_connect (sess->agent, "candidate-gathering-done",
-      G_CALLBACK (kms_webrtc_endpoint_gathering_done), sess);
-  g_signal_connect (sess->agent, "new-candidate",
-      G_CALLBACK (kms_webrtc_endpoint_new_candidate), sess);
-  g_signal_connect (sess->agent, "component-state-changed",
-      G_CALLBACK (kms_webrtc_endpoint_component_state_change), sess);
+  g_object_set (webrtc_sess->agent, "upnp", FALSE, NULL);
+  g_signal_connect (webrtc_sess->agent, "candidate-gathering-done",
+      G_CALLBACK (kms_webrtc_endpoint_gathering_done), webrtc_sess);
+  g_signal_connect (webrtc_sess->agent, "new-candidate",
+      G_CALLBACK (kms_webrtc_endpoint_new_candidate), webrtc_sess);
+  g_signal_connect (webrtc_sess->agent, "component-state-changed",
+      G_CALLBACK (kms_webrtc_endpoint_component_state_change), webrtc_sess);
 
-  return KMS_SDP_SESSION (sess);
+  *sess = KMS_SDP_SESSION (webrtc_sess);
+
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_webrtc_endpoint_parent_class)->create_session_internal (base_sdp, id,
+      sess);
 }
 
 /* Internal session management end */

@@ -48,16 +48,18 @@ enum
 
 /* Internal session management begin */
 
-static KmsSdpSession *
-kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp_ep,
-    gint id)
+static void
+kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
+    gint id, KmsSdpSession ** sess)
 {
-  KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (base_sdp_ep);
-  KmsRtpSession *sess;
+  KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (base_sdp);
 
-  sess = kms_rtp_session_new (base_sdp_ep, id, manager);
+  *sess = KMS_SDP_SESSION (kms_rtp_session_new (base_sdp, id, manager));
 
-  return KMS_SDP_SESSION (sess);
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS
+      (kms_rtp_endpoint_parent_class)->create_session_internal (base_sdp, id,
+      sess);
 }
 
 /* Internal session management end */
