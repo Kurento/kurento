@@ -23,6 +23,8 @@
 #include "kmswebrtcsctpconnection.h"
 #include <commons/sdp_utils.h>
 
+#include "kms-webrtc-marshal.h"
+
 #include <string.h>
 
 #define GST_DEFAULT_NAME "kmswebrtcsession"
@@ -34,6 +36,14 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 
 #define BUNDLE_CONN_ADDED "bundle-conn-added"
 #define RTCP_DEMUX_PEER "rtcp-demux-peer"
+
+enum
+{
+  SIGNAL_ON_ICE_CANDIDATE,
+  LAST_SIGNAL
+};
+
+static guint kms_webrtc_session_signals[LAST_SIGNAL] = { 0 };
 
 KmsWebrtcSession *
 kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
@@ -142,7 +152,7 @@ sdp_media_add_ice_candidate (GstSDPMedia * media, NiceAgent * agent,
   g_free (str);
 }
 
-const gchar *
+static const gchar *
 kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
     SdpMediaConfig * mconf, NiceAgent * agent, NiceCandidate * cand)
 {
@@ -274,6 +284,75 @@ kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self)
     }
     nice_candidate_free (nice_cand);
   }
+}
+
+static void
+kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
+    NiceAgent * agent, NiceCandidate * nice_cand)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
+  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
+  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
+  GList *list = NULL, *iterator = NULL;
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *mconf = item->data;
+    gint idx = kms_sdp_media_config_get_id (mconf);
+    const gchar *mid;
+
+    if (kms_sdp_media_config_is_inactive (mconf)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
+      continue;
+    }
+
+    mid =
+        kms_webrtc_session_sdp_media_add_ice_candidate (self, mconf,
+        agent, nice_cand);
+    if (mid != NULL) {
+      KmsIceCandidate *candidate =
+          kms_ice_candidate_new_from_nice (agent, nice_cand, mid, idx);
+
+      list = g_list_append (list, candidate);
+    }
+  }
+
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  for (iterator = list; iterator; iterator = iterator->next) {
+    g_signal_emit (G_OBJECT (self),
+        kms_webrtc_session_signals[SIGNAL_ON_ICE_CANDIDATE], 0, iterator->data);
+  }
+
+  g_list_free_full (list, g_object_unref);
+}
+
+/* TODO: change using "new-candidate-full" of libnice 0.1.8 */
+static void
+kms_webrtc_session_new_candidate (NiceAgent * agent,
+    guint stream_id,
+    guint component_id, gchar * foundation, KmsWebrtcSession * self)
+{
+  GSList *candidates;
+  GSList *walk;
+
+  GST_TRACE_OBJECT (self,
+      "stream_id: %d, component_id: %d, foundation: %s", stream_id,
+      component_id, foundation);
+
+  candidates = nice_agent_get_local_candidates (agent, stream_id, component_id);
+
+  for (walk = candidates; walk; walk = walk->next) {
+    NiceCandidate *cand = walk->data;
+
+    if (cand->stream_id == stream_id &&
+        cand->component_id == component_id &&
+        g_strcmp0 (foundation, cand->foundation) == 0) {
+      kms_webrtc_session_sdp_msg_add_ice_candidate (self, agent, cand);
+    }
+  }
+  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
 }
 
 static gboolean
@@ -750,6 +829,9 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
   self->context = g_main_context_ref (context);
   self->agent = nice_agent_new (context, NICE_COMPATIBILITY_RFC5245);
 
+  g_signal_connect (self->agent, "new-candidate",
+      G_CALLBACK (kms_webrtc_session_new_candidate), self);
+
   KMS_BASE_RTP_SESSION_CLASS
       (kms_webrtc_session_parent_class)->post_constructor (base_rtp_session, ep,
       id, manager);
@@ -789,4 +871,19 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       "Generic",
       "Base bin to manage elements related with a WebRTC session.",
       "Miguel París Díaz <mparisdiaz@gmail.com>");
+
+  /**
+  * KmsWebrtcSession::on-ice-candidate:
+  * @self: the object which received the signal
+  * @candidate: the local candidate gathered
+  *
+  * Notify of a new gathered local candidate for a #KmsWebrtcSession.
+  */
+  kms_webrtc_session_signals[SIGNAL_ON_ICE_CANDIDATE] =
+      g_signal_new ("on-ice-candidate",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, on_ice_candidate), NULL,
+      NULL, __kms_webrtc_marshal_VOID__STRING_OBJECT, G_TYPE_NONE, 1,
+      KMS_TYPE_ICE_CANDIDATE);
 }

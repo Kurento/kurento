@@ -58,6 +58,9 @@ struct _KmsWebrtcSessionClass
   /* virtual methods */
   void (*post_constructor) (KmsWebrtcSession * self, KmsBaseSdpEndpoint * ep,
 			    guint id, KmsIRtpSessionManager * manager, GMainContext * context);
+
+  /* Signals */
+  void (*on_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);
 };
 
 GType kms_webrtc_session_get_type (void);
@@ -72,8 +75,6 @@ gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, SdpMed
 gboolean kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 void kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession * self, NiceCandidate * nice_cand, guint8 index);
 gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate * candidate, NiceCandidate * nice_cand);
-const gchar * kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self, SdpMediaConfig * mconf, NiceAgent * agent, NiceCandidate * cand);
-void kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self);
 
 void kms_webrtc_session_start_transport_send (KmsWebrtcSession * self, gboolean offerer);
 

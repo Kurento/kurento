@@ -39,9 +39,6 @@
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
 
-static void
-kms_webrtc_endpoint_new_candidate (NiceAgent * agent, guint stream_id,
-    guint component_id, gchar * foundation, KmsWebrtcSession * sess);
 static void kms_webrtc_endpoint_gathering_done (NiceAgent * agent,
     guint stream_id, KmsWebrtcSession * sess);
 static void kms_webrtc_endpoint_component_state_change (NiceAgent * agent,
@@ -147,6 +144,17 @@ connect_sctp_data_new (KmsWebrtcEndpoint * self, GstSDPMedia * media,
 /* Internal session management begin */
 
 static void
+on_ice_candidate (KmsWebrtcSession * sess, KmsIceCandidate * candidate,
+    KmsWebrtcEndpoint * self)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
+      sdp_sess->id_str, candidate);
+}
+
+static void
 kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
     gint id, KmsSdpSession ** sess)
 {
@@ -160,8 +168,8 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   g_object_set (webrtc_sess->agent, "upnp", FALSE, NULL);
   g_signal_connect (webrtc_sess->agent, "candidate-gathering-done",
       G_CALLBACK (kms_webrtc_endpoint_gathering_done), webrtc_sess);
-  g_signal_connect (webrtc_sess->agent, "new-candidate",
-      G_CALLBACK (kms_webrtc_endpoint_new_candidate), webrtc_sess);
+  g_signal_connect (webrtc_sess, "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate), self);
   g_signal_connect (webrtc_sess->agent, "component-state-changed",
       G_CALLBACK (kms_webrtc_endpoint_component_state_change), webrtc_sess);
 
@@ -694,77 +702,6 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
   return ret;
 }
 
-static void
-kms_webrtc_endpoint_sdp_msg_add_ice_candidate (KmsWebrtcSession * webrtc_sess,
-    NiceAgent * agent, NiceCandidate * nice_cand)
-{
-  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (webrtc_sess);
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (sdp_sess->ep);
-  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
-  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
-  GList *list = NULL, *iterator = NULL;
-
-  KMS_ELEMENT_LOCK (self);
-
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
-    gint idx = kms_sdp_media_config_get_id (mconf);
-    const gchar *mid;
-
-    if (kms_sdp_media_config_is_inactive (mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
-      continue;
-    }
-
-    mid =
-        kms_webrtc_session_sdp_media_add_ice_candidate (webrtc_sess, mconf,
-        agent, nice_cand);
-    if (mid != NULL) {
-      KmsIceCandidate *candidate =
-          kms_ice_candidate_new_from_nice (agent, nice_cand, mid, idx);
-
-      list = g_list_append (list, candidate);
-    }
-  }
-
-  KMS_ELEMENT_UNLOCK (self);
-
-  for (iterator = list; iterator; iterator = iterator->next) {
-    g_signal_emit (G_OBJECT (self),
-        kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
-        sdp_sess->id_str, iterator->data);
-  }
-
-  g_list_free_full (list, g_object_unref);
-}
-
-/* TODO: change using "new-candidate-full" of libnice 0.1.8 */
-static void
-kms_webrtc_endpoint_new_candidate (NiceAgent * agent,
-    guint stream_id,
-    guint component_id, gchar * foundation, KmsWebrtcSession * webrtc_sess)
-{
-  GSList *candidates;
-  GSList *walk;
-
-  GST_TRACE_OBJECT (webrtc_sess,
-      "stream_id: %d, component_id: %d, foundation: %s", stream_id,
-      component_id, foundation);
-
-  candidates = nice_agent_get_local_candidates (agent, stream_id, component_id);
-
-  for (walk = candidates; walk; walk = walk->next) {
-    NiceCandidate *cand = walk->data;
-
-    if (cand->stream_id == stream_id &&
-        cand->component_id == component_id &&
-        g_strcmp0 (foundation, cand->foundation) == 0) {
-      kms_webrtc_endpoint_sdp_msg_add_ice_candidate (webrtc_sess, agent, cand);
-    }
-  }
-  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
-}
-
 static gboolean
 kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
     const gchar * sess_id, KmsIceCandidate * candidate)
@@ -1023,6 +960,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:
   * @self: the object which received the signal
+  * @sess_id: id of the related WebRTC session
   * @candidate: the local candidate gathered
   *
   * Notify of a new gathered local candidate for a #KmsWebrtcEndpoint.
