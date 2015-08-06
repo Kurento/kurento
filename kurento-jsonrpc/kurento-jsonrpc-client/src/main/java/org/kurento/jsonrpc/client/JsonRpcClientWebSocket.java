@@ -466,12 +466,18 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private void handleWebSocketTextMessage(String message) {
 
-		JsonObject jsonMessage = fromJson(message, JsonObject.class);
+		try {
 
-		if (jsonMessage.has(JsonRpcConstants.METHOD_PROPERTY)) {
-			handleRequestFromServer(jsonMessage);
-		} else {
-			handleResponseFromServer(jsonMessage);
+			JsonObject jsonMessage = fromJson(message, JsonObject.class);
+
+			if (jsonMessage.has(JsonRpcConstants.METHOD_PROPERTY)) {
+				handleRequestFromServer(jsonMessage);
+			} else {
+				handleResponseFromServer(jsonMessage);
+			}
+
+		} catch (Exception e) {
+			log.error("{} Exception processing jsonRpc message {}", label, message, e);
 		}
 	}
 
