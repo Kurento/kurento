@@ -45,6 +45,7 @@ enum
 {
   SIGNAL_ON_ICE_CANDIDATE,
   SIGNAL_ON_ICE_GATHERING_DONE,
+  SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED,
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
   LAST_SIGNAL
@@ -526,6 +527,19 @@ kms_webrtc_session_gathering_done (NiceAgent * agent, guint stream_id,
     g_signal_emit (G_OBJECT (self),
         kms_webrtc_session_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0);
   }
+}
+
+static void
+kms_webrtc_session_component_state_change (NiceAgent * agent, guint stream_id,
+    guint component_id, NiceComponentState state, KmsWebrtcSession * self)
+{
+  GST_DEBUG_OBJECT (self,
+      "stream_id: %d, component_id: %d, state: %s",
+      stream_id, component_id, nice_component_state_to_string (state));
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_session_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
+      stream_id, component_id, state);
 }
 
 static void
@@ -1094,6 +1108,8 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
       G_CALLBACK (kms_webrtc_session_new_candidate), self);
   g_signal_connect (self->agent, "candidate-gathering-done",
       G_CALLBACK (kms_webrtc_session_gathering_done), self);
+  g_signal_connect (self->agent, "component-state-changed",
+      G_CALLBACK (kms_webrtc_session_component_state_change), self);
 
   KMS_BASE_RTP_SESSION_CLASS
       (kms_webrtc_session_parent_class)->post_constructor (base_rtp_session, ep,
@@ -1188,6 +1204,20 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, on_ice_gathering_done), NULL,
       NULL, NULL, G_TYPE_NONE, 0);
+
+  /**
+   * KmsWebrtcSession::on-component-state-changed
+   * @self: the object which received the signal
+   * @stream_id: The ID of the stream
+   * @component_id: The ID of the component
+   * @state: The #NiceComponentState of the component
+   *
+   * This signal is fired whenever a component's state changes
+   */
+  kms_webrtc_session_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED] =
+      g_signal_new ("on-ice-component-state-changed",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 
   kms_webrtc_session_signals[SIGNAL_GATHER_CANDIDATES] =
       g_signal_new ("gather-candidates",

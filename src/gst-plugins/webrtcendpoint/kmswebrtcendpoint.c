@@ -29,11 +29,6 @@
 #include <glib/gstdio.h>
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
-
-static void kms_webrtc_endpoint_component_state_change (NiceAgent * agent,
-    guint stream_id, guint component_id, NiceComponentState state,
-    KmsWebrtcSession * sess);
-
 #define PLUGIN_NAME "webrtcendpoint"
 
 #define GST_CAT_DEFAULT kms_webrtc_endpoint_debug
@@ -149,6 +144,17 @@ on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
 }
 
 static void
+on_ice_component_state_change (KmsWebrtcSession * sess, guint stream_id,
+    guint component_id, NiceComponentState state, KmsWebrtcEndpoint * self)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
+      sdp_sess->id_str, stream_id, component_id, state);
+}
+
+static void
 kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
     gint id, KmsSdpSession ** sess)
 {
@@ -174,8 +180,8 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       G_CALLBACK (on_ice_candidate), self);
   g_signal_connect (webrtc_sess, "on-ice-gathering-done",
       G_CALLBACK (on_ice_gathering_done), self);
-  g_signal_connect (webrtc_sess->agent, "component-state-changed",
-      G_CALLBACK (kms_webrtc_endpoint_component_state_change), webrtc_sess);
+  g_signal_connect (webrtc_sess, "on-ice-component-state-changed",
+      G_CALLBACK (on_ice_component_state_change), self);
 
   *sess = KMS_SDP_SESSION (webrtc_sess);
 
@@ -573,24 +579,6 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
   kms_webrtc_session_start_transport_send (webrtc_sess, offerer);
 }
 
-static void
-kms_webrtc_endpoint_component_state_change (NiceAgent * agent, guint stream_id,
-    guint component_id, NiceComponentState state,
-    KmsWebrtcSession * webrtc_sess)
-{
-  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (webrtc_sess);
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (sdp_sess->ep);
-
-  GST_DEBUG_OBJECT (self,
-      "sess_id: %d, stream_id: %d, component_id: %d, state: %s",
-      sdp_sess->id, stream_id, component_id,
-      nice_component_state_to_string (state));
-
-  g_signal_emit (G_OBJECT (self),
-      kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
-      sdp_sess->id_str, stream_id, component_id, state);
-}
-
 /* ICE candidates management begin */
 
 static gboolean
@@ -819,6 +807,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   /**
    * KmsWebrtcEndpoint::on-component-state-changed
    * @self: the object which received the signal
+   * @sess_id: id of the related WebRTC session
    * @stream_id: The ID of the stream
    * @component_id: The ID of the component
    * @state: The #NiceComponentState of the component
