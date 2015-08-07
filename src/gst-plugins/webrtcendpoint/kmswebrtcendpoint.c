@@ -18,7 +18,6 @@
 #endif
 
 #include "kmswebrtcendpoint.h"
-#include "kmswebrtcconnection.h"
 #include "kmswebrtcsession.h"
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
@@ -27,15 +26,7 @@
 #include <commons/sdpagent/kmssdprtpsavpfmediahandler.h>
 #include <commons/sdpagent/kmssdpsctpmediahandler.h>
 #include "kms-webrtc-marshal.h"
-
-#include <gio/gio.h>
-#include <stdlib.h>
 #include <glib/gstdio.h>
-#include <ftw.h>
-#include <string.h>
-#include <errno.h>
-
-#include <gst/rtp/gstrtcpbuffer.h>
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
 
