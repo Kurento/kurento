@@ -40,6 +40,7 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 enum
 {
   SIGNAL_ON_ICE_CANDIDATE,
+  SIGNAL_ON_ICE_GATHERING_DONE,
   LAST_SIGNAL
 };
 
@@ -440,7 +441,7 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
   return TRUE;
 }
 
-gboolean
+static gboolean
 kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
@@ -472,6 +473,44 @@ kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
   }
 
   return TRUE;
+}
+
+static void
+kms_webrtc_session_gathering_done (NiceAgent * agent, guint stream_id,
+    KmsWebrtcSession * self)
+{
+  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (self);
+  GHashTableIter iter;
+  gpointer key, v;
+  gboolean done = TRUE;
+
+  GST_DEBUG_OBJECT (self, "ICE gathering done for '%s' stream.",
+      nice_agent_get_stream_name (agent, stream_id));
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  g_hash_table_iter_init (&iter, base_rtp_sess->conns);
+  while (g_hash_table_iter_next (&iter, &key, &v)) {
+    KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
+
+    if (stream_id == conn->stream_id) {
+      conn->ice_gathering_done = TRUE;
+    }
+
+    if (!conn->ice_gathering_done) {
+      done = FALSE;
+    }
+  }
+
+  if (done) {
+    kms_webrtc_session_local_sdp_add_default_info (self);
+  }
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  if (done) {
+    g_signal_emit (G_OBJECT (self),
+        kms_webrtc_session_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0);
+  }
 }
 
 gboolean
@@ -831,6 +870,8 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
 
   g_signal_connect (self->agent, "new-candidate",
       G_CALLBACK (kms_webrtc_session_new_candidate), self);
+  g_signal_connect (self->agent, "candidate-gathering-done",
+      G_CALLBACK (kms_webrtc_session_gathering_done), self);
 
   KMS_BASE_RTP_SESSION_CLASS
       (kms_webrtc_session_parent_class)->post_constructor (base_rtp_session, ep,
@@ -884,6 +925,18 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, on_ice_candidate), NULL,
-      NULL, __kms_webrtc_marshal_VOID__STRING_OBJECT, G_TYPE_NONE, 1,
+      NULL, g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1,
       KMS_TYPE_ICE_CANDIDATE);
+
+  /**
+  * KmsWebrtcSession::on-candidate-gathering-done:
+  * @self: the object which received the signal
+  *
+  * Notify that all candidates have been gathered for a #KmsWebrtcSession
+  */
+  kms_webrtc_session_signals[SIGNAL_ON_ICE_GATHERING_DONE] =
+      g_signal_new ("on-ice-gathering-done",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, on_ice_gathering_done), NULL,
+      NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 0);
 }

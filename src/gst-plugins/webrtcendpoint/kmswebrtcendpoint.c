@@ -39,8 +39,6 @@
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
 
-static void kms_webrtc_endpoint_gathering_done (NiceAgent * agent,
-    guint stream_id, KmsWebrtcSession * sess);
 static void kms_webrtc_endpoint_component_state_change (NiceAgent * agent,
     guint stream_id, guint component_id, NiceComponentState state,
     KmsWebrtcSession * sess);
@@ -155,6 +153,16 @@ on_ice_candidate (KmsWebrtcSession * sess, KmsIceCandidate * candidate,
 }
 
 static void
+on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0,
+      sdp_sess->id_str);
+}
+
+static void
 kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
     gint id, KmsSdpSession ** sess)
 {
@@ -166,10 +174,10 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
 
   g_object_set (webrtc_sess->agent, "upnp", FALSE, NULL);
-  g_signal_connect (webrtc_sess->agent, "candidate-gathering-done",
-      G_CALLBACK (kms_webrtc_endpoint_gathering_done), webrtc_sess);
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
+  g_signal_connect (webrtc_sess, "on-ice-gathering-done",
+      G_CALLBACK (on_ice_gathering_done), self);
   g_signal_connect (webrtc_sess->agent, "component-state-changed",
       G_CALLBACK (kms_webrtc_endpoint_component_state_change), webrtc_sess);
 
@@ -622,47 +630,6 @@ kms_webrtc_endpoint_component_state_change (NiceAgent * agent, guint stream_id,
 
 /* ICE candidates management begin */
 
-static void
-kms_webrtc_endpoint_gathering_done (NiceAgent * agent, guint stream_id,
-    KmsWebrtcSession * webrtc_sess)
-{
-  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (webrtc_sess);
-  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (webrtc_sess);
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (sdp_sess->ep);
-  GHashTableIter iter;
-  gpointer key, v;
-  gboolean done = TRUE;
-
-  GST_DEBUG_OBJECT (self, "ICE gathering done for '%s' stream.",
-      nice_agent_get_stream_name (agent, stream_id));
-
-  KMS_ELEMENT_LOCK (self);
-
-  g_hash_table_iter_init (&iter, base_rtp_sess->conns);
-  while (g_hash_table_iter_next (&iter, &key, &v)) {
-    KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
-
-    if (stream_id == conn->stream_id) {
-      conn->ice_gathering_done = TRUE;
-    }
-
-    if (!conn->ice_gathering_done) {
-      done = FALSE;
-    }
-  }
-
-  if (done) {
-    kms_webrtc_session_local_sdp_add_default_info (webrtc_sess);
-  }
-  KMS_ELEMENT_UNLOCK (self);
-
-  if (done) {
-    g_signal_emit (G_OBJECT (self),
-        kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_GATHERING_DONE], 0,
-        sdp_sess->id_str);
-  }
-}
-
 static gboolean
 kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
     const gchar * sess_id)
@@ -976,6 +943,8 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   /**
   * KmsWebrtcEndpoint::on-candidate-gathering-done:
   * @self: the object which received the signal
+  * @sess_id: id of the related WebRTC session
+  * @stream_id: The ID of the stream
   *
   * Notify that all candidates have been gathered for a #KmsWebrtcEndpoint
   */

@@ -61,14 +61,13 @@ struct _KmsWebrtcSessionClass
 
   /* Signals */
   void (*on_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);
+  void (*on_ice_gathering_done) (KmsWebrtcSession * self);
 };
 
 GType kms_webrtc_session_get_type (void);
 
 KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 					   KmsIRtpSessionManager * manager, GMainContext * context);
-
-gboolean kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self);
 
 KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, SdpMediaConfig * mconf);
