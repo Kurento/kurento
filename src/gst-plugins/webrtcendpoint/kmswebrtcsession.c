@@ -37,14 +37,28 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 #define BUNDLE_CONN_ADDED "bundle-conn-added"
 #define RTCP_DEMUX_PEER "rtcp-demux-peer"
 
+#define DEFAULT_STUN_SERVER_IP NULL
+#define DEFAULT_STUN_SERVER_PORT 3478
+#define DEFAULT_STUN_TURN_URL NULL
+
 enum
 {
   SIGNAL_ON_ICE_CANDIDATE,
   SIGNAL_ON_ICE_GATHERING_DONE,
+  SIGNAL_GATHER_CANDIDATES,
   LAST_SIGNAL
 };
 
 static guint kms_webrtc_session_signals[LAST_SIGNAL] = { 0 };
+
+enum
+{
+  PROP_0,
+  PROP_STUN_SERVER_IP,
+  PROP_STUN_SERVER_PORT,
+  PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
+  N_PROPERTIES
+};
 
 KmsWebrtcSession *
 kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
@@ -513,6 +527,59 @@ kms_webrtc_session_gathering_done (NiceAgent * agent, guint stream_id,
   }
 }
 
+static void
+kms_webrtc_session_set_stun_server_info (KmsWebrtcSession * self,
+    KmsWebRtcBaseConnection * conn)
+{
+  if (self->stun_server_ip == NULL) {
+    return;
+  }
+
+  kms_webrtc_base_connection_set_stun_server_info (conn, self->stun_server_ip,
+      self->stun_server_port);
+}
+
+static void
+kms_webrtc_session_set_relay_info (KmsWebrtcSession * self,
+    KmsWebRtcBaseConnection * conn)
+{
+  if (self->turn_address == NULL) {
+    return;
+  }
+
+  kms_webrtc_base_connection_set_relay_info (conn, self->turn_address,
+      self->turn_port, self->turn_user, self->turn_password,
+      self->turn_transport);
+}
+
+static gboolean
+kms_webrtc_session_gather_candidates (KmsWebrtcSession * self)
+{
+  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (self);
+  GHashTableIter iter;
+  gpointer key, v;
+  gboolean ret = TRUE;
+
+  GST_DEBUG_OBJECT (self, "Gather candidates");
+
+  KMS_SDP_SESSION_LOCK (self);
+  g_hash_table_iter_init (&iter, base_rtp_sess->conns);
+  while (g_hash_table_iter_next (&iter, &key, &v)) {
+    KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
+
+    kms_webrtc_session_set_stun_server_info (self, conn);
+    kms_webrtc_session_set_relay_info (self, conn);
+    if (!nice_agent_gather_candidates (conn->agent, conn->stream_id)) {
+      GST_ERROR_OBJECT (self, "Failed to start candidate gathering for '%s'.",
+          conn->name);
+      ret = FALSE;
+    }
+  }
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  return ret;
+}
+
 gboolean
 kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self,
     SdpMediaConfig * mconf)
@@ -844,6 +911,122 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
 /* Start Transport end */
 
 static void
+kms_webrtc_session_parse_turn_url (KmsWebrtcSession * self)
+{
+  GRegex *regex;
+  GMatchInfo *match_info = NULL;
+
+  g_free (self->turn_user);
+  self->turn_user = NULL;
+  g_free (self->turn_password);
+  self->turn_password = NULL;
+  g_free (self->turn_address);
+  self->turn_address = NULL;
+
+  if ((self->turn_url == NULL)
+      || (g_strcmp0 ("", self->turn_url) == 0)) {
+    GST_INFO_OBJECT (self, "TURN server info cleared");
+    return;
+  }
+
+  regex =
+      g_regex_new
+      ("^(?<user>.+):(?<password>.+)@(?<address>[0-9.]+):(?<port>[0-9]+)(\\?transport=(?<transport>(udp|tcp|tls)))?$",
+      0, 0, NULL);
+  g_regex_match (regex, self->turn_url, 0, &match_info);
+  g_regex_unref (regex);
+
+  if (g_match_info_matches (match_info)) {
+    gchar *port_str;
+    gchar *turn_transport;
+
+    self->turn_user = g_match_info_fetch_named (match_info, "user");
+    self->turn_password = g_match_info_fetch_named (match_info, "password");
+    self->turn_address = g_match_info_fetch_named (match_info, "address");
+
+    port_str = g_match_info_fetch_named (match_info, "port");
+    self->turn_port = g_ascii_strtoll (port_str, NULL, 10);
+    g_free (port_str);
+
+    self->turn_transport = NICE_RELAY_TYPE_TURN_UDP;    /* default */
+    turn_transport = g_match_info_fetch_named (match_info, "transport");
+    if (turn_transport != NULL) {
+      if (g_strcmp0 ("tcp", turn_transport) == 0) {
+        self->turn_transport = NICE_RELAY_TYPE_TURN_TCP;
+      } else if (g_strcmp0 ("tls", turn_transport) == 0) {
+        self->turn_transport = NICE_RELAY_TYPE_TURN_TLS;
+      }
+      g_free (turn_transport);
+    }
+
+    GST_INFO_OBJECT (self, "TURN server info set (%s)", self->turn_url);
+  } else {
+    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
+        ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
+            self->turn_url),
+        ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
+            self->turn_url));
+  }
+
+  g_match_info_free (match_info);
+}
+
+static void
+kms_webrtc_session_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsWebrtcSession *self = KMS_WEBRTC_SESSION (object);
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  switch (prop_id) {
+    case PROP_STUN_SERVER_IP:
+      g_free (self->stun_server_ip);
+      self->stun_server_ip = g_value_dup_string (value);
+      break;
+    case PROP_STUN_SERVER_PORT:
+      self->stun_server_port = g_value_get_uint (value);
+      break;
+    case PROP_TURN_URL:
+      g_free (self->turn_url);
+      self->turn_url = g_value_dup_string (value);
+      kms_webrtc_session_parse_turn_url (self);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+
+  KMS_SDP_SESSION_UNLOCK (self);
+}
+
+static void
+kms_webrtc_session_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsWebrtcSession *self = KMS_WEBRTC_SESSION (object);
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  switch (prop_id) {
+    case PROP_STUN_SERVER_IP:
+      g_value_set_string (value, self->stun_server_ip);
+      break;
+    case PROP_STUN_SERVER_PORT:
+      g_value_set_uint (value, self->stun_server_port);
+      break;
+    case PROP_TURN_URL:
+      g_value_set_string (value, self->turn_url);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+
+  KMS_SDP_SESSION_UNLOCK (self);
+}
+
+static void
 kms_webrtc_session_finalize (GObject * object)
 {
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (object);
@@ -853,6 +1036,12 @@ kms_webrtc_session_finalize (GObject * object)
   g_clear_object (&self->agent);
   g_main_context_unref (self->context);
   g_slist_free_full (self->remote_candidates, g_object_unref);
+
+  g_free (self->stun_server_ip);
+  g_free (self->turn_url);
+  g_free (self->turn_user);
+  g_free (self->turn_password);
+  g_free (self->turn_address);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_session_parent_class)->finalize (object);
@@ -882,7 +1071,9 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
 static void
 kms_webrtc_session_init (KmsWebrtcSession * self)
 {
-  /* nothing to do */
+  self->stun_server_ip = DEFAULT_STUN_SERVER_IP;
+  self->stun_server_port = DEFAULT_STUN_SERVER_PORT;
+  self->turn_url = DEFAULT_STUN_TURN_URL;
 }
 
 static void
@@ -896,8 +1087,11 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       GST_DEFAULT_NAME);
 
   gobject_class->finalize = kms_webrtc_session_finalize;
+  gobject_class->set_property = kms_webrtc_session_set_property;
+  gobject_class->get_property = kms_webrtc_session_get_property;
 
   klass->post_constructor = kms_webrtc_session_post_constructor;
+  klass->gather_candidates = kms_webrtc_session_gather_candidates;
 
   base_rtp_session_class = KMS_BASE_RTP_SESSION_CLASS (klass);
   /* Connection management */
@@ -913,6 +1107,27 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       "Generic",
       "Base bin to manage elements related with a WebRTC session.",
       "Miguel París Díaz <mparisdiaz@gmail.com>");
+
+  g_object_class_install_property (gobject_class, PROP_STUN_SERVER_IP,
+      g_param_spec_string ("stun-server",
+          "StunServer",
+          "Stun Server IP Address",
+          DEFAULT_STUN_SERVER_IP, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_STUN_SERVER_PORT,
+      g_param_spec_uint ("stun-server-port",
+          "StunServerPort",
+          "Stun Server Port",
+          1, G_MAXUINT16, DEFAULT_STUN_SERVER_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_TURN_URL,
+      g_param_spec_string ("turn-url",
+          "TurnUrl",
+          "TURN server URL with this format: 'user:password@address:port(?transport=[udp|tcp|tls])'."
+          "'address' must be an IP (not a domain)."
+          "'transport' is optional (UDP by default).",
+          DEFAULT_STUN_TURN_URL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   /**
   * KmsWebrtcSession::on-ice-candidate:
@@ -940,4 +1155,11 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, on_ice_gathering_done), NULL,
       NULL, NULL, G_TYPE_NONE, 0);
+
+  kms_webrtc_session_signals[SIGNAL_GATHER_CANDIDATES] =
+      g_signal_new ("gather-candidates",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, gather_candidates), NULL, NULL,
+      __kms_webrtc_marshal_BOOLEAN__VOID, G_TYPE_BOOLEAN, 0);
 }

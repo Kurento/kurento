@@ -93,11 +93,6 @@ struct _KmsWebrtcEndpointPrivate
   gchar *stun_server_ip;
   guint stun_server_port;
   gchar *turn_url;
-  gchar *turn_user;
-  gchar *turn_password;
-  gchar *turn_address;
-  guint turn_port;
-  NiceRelayType turn_transport;
 };
 
 /* ConnectSCTPData begin */
@@ -173,6 +168,17 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   webrtc_sess =
       kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
 
+  g_object_bind_property (self, "stun-server",
+      webrtc_sess, "stun-server", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "stun-server-port",
+      webrtc_sess, "stun-server-port", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "turn-url",
+      webrtc_sess, "turn-url", G_BINDING_DEFAULT);
+
+  g_object_set (webrtc_sess, "stun-server", self->priv->stun_server_ip,
+      "stun-server-port", self->priv->stun_server_port,
+      "turn-url", self->priv->turn_url, NULL);
+
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
   g_signal_connect (webrtc_sess, "on-ice-gathering-done",
@@ -208,39 +214,6 @@ kms_webrtc_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 }
 
 /* Media handler management end */
-
-/* Set Transport begin */
-
-static void
-kms_webrtc_endpoint_set_stun_server_info (KmsWebrtcEndpoint * self,
-    KmsWebRtcBaseConnection * conn)
-{
-  KmsWebrtcEndpointPrivate *priv = self->priv;
-
-  if (priv->stun_server_ip == NULL) {
-    return;
-  }
-
-  kms_webrtc_base_connection_set_stun_server_info (conn, priv->stun_server_ip,
-      priv->stun_server_port);
-}
-
-static void
-kms_webrtc_endpoint_set_relay_info (KmsWebrtcEndpoint * self,
-    KmsWebRtcBaseConnection * conn)
-{
-  KmsWebrtcEndpointPrivate *priv = self->priv;
-
-  if (priv->turn_address == NULL) {
-    return;
-  }
-
-  kms_webrtc_base_connection_set_relay_info (conn, priv->turn_address,
-      priv->turn_port, priv->turn_user, priv->turn_password,
-      priv->turn_transport);
-}
-
-/* Set Transport end */
 
 /* Configure media SDP begin */
 
@@ -635,9 +608,7 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
 {
   KmsBaseSdpEndpoint *base_sdp_ep = KMS_BASE_SDP_ENDPOINT (self);
   KmsSdpSession *sess;
-  KmsBaseRtpSession *base_rtp_sess;
-  GHashTableIter iter;
-  gpointer key, v;
+  KmsWebrtcSession *webrtc_sess;
   gboolean ret = TRUE;
 
   GST_DEBUG_OBJECT (self, "Gather candidates for session '%s'", sess_id);
@@ -648,22 +619,8 @@ kms_webrtc_endpoint_gather_candidates (KmsWebrtcEndpoint * self,
     return FALSE;
   }
 
-  base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
-
-  KMS_ELEMENT_LOCK (self);
-  g_hash_table_iter_init (&iter, base_rtp_sess->conns);
-  while (g_hash_table_iter_next (&iter, &key, &v)) {
-    KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
-
-    kms_webrtc_endpoint_set_stun_server_info (self, conn);
-    kms_webrtc_endpoint_set_relay_info (self, conn);
-    if (!nice_agent_gather_candidates (conn->agent, conn->stream_id)) {
-      GST_ERROR_OBJECT (self, "Failed to start candidate gathering for '%s'.",
-          conn->name);
-      ret = FALSE;
-    }
-  }
-  KMS_ELEMENT_UNLOCK (self);
+  webrtc_sess = KMS_WEBRTC_SESSION (sess);
+  g_signal_emit_by_name (webrtc_sess, "gather-candidates", &ret);
 
   return ret;
 }
@@ -714,68 +671,6 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
 /* ICE candidates management end */
 
 static void
-kms_webrtc_endpoint_parse_turn_url (KmsWebrtcEndpoint * self)
-{
-  GRegex *regex;
-  GMatchInfo *match_info = NULL;
-
-  g_free (self->priv->turn_user);
-  self->priv->turn_user = NULL;
-  g_free (self->priv->turn_password);
-  self->priv->turn_password = NULL;
-  g_free (self->priv->turn_address);
-  self->priv->turn_address = NULL;
-
-  if ((self->priv->turn_url == NULL)
-      || (g_strcmp0 ("", self->priv->turn_url) == 0)) {
-    GST_INFO_OBJECT (self, "TURN server info cleared");
-    return;
-  }
-
-  regex =
-      g_regex_new
-      ("^(?<user>.+):(?<password>.+)@(?<address>[0-9.]+):(?<port>[0-9]+)(\\?transport=(?<transport>(udp|tcp|tls)))?$",
-      0, 0, NULL);
-  g_regex_match (regex, self->priv->turn_url, 0, &match_info);
-  g_regex_unref (regex);
-
-  if (g_match_info_matches (match_info)) {
-    gchar *port_str;
-    gchar *turn_transport;
-
-    self->priv->turn_user = g_match_info_fetch_named (match_info, "user");
-    self->priv->turn_password =
-        g_match_info_fetch_named (match_info, "password");
-    self->priv->turn_address = g_match_info_fetch_named (match_info, "address");
-
-    port_str = g_match_info_fetch_named (match_info, "port");
-    self->priv->turn_port = g_ascii_strtoll (port_str, NULL, 10);
-    g_free (port_str);
-
-    self->priv->turn_transport = NICE_RELAY_TYPE_TURN_UDP;      /* default */
-    turn_transport = g_match_info_fetch_named (match_info, "transport");
-    if (turn_transport != NULL) {
-      if (g_strcmp0 ("tcp", turn_transport) == 0) {
-        self->priv->turn_transport = NICE_RELAY_TYPE_TURN_TCP;
-      } else if (g_strcmp0 ("tls", turn_transport) == 0) {
-        self->priv->turn_transport = NICE_RELAY_TYPE_TURN_TLS;
-      }
-      g_free (turn_transport);
-    }
-
-    GST_INFO_OBJECT (self, "TURN server info set (%s)", self->priv->turn_url);
-  } else {
-    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
-        ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
-            self->priv->turn_url),
-        ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
-            self->priv->turn_url));
-  }
-
-  g_match_info_free (match_info);
-}
-
-static void
 kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -794,7 +689,6 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
     case PROP_TURN_URL:
       g_free (self->priv->turn_url);
       self->priv->turn_url = g_value_dup_string (value);
-      kms_webrtc_endpoint_parse_turn_url (self);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -854,10 +748,8 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
+  g_free (self->priv->stun_server_ip);
   g_free (self->priv->turn_url);
-  g_free (self->priv->turn_user);
-  g_free (self->priv->turn_password);
-  g_free (self->priv->turn_address);
 
   g_main_context_unref (self->priv->context);
 

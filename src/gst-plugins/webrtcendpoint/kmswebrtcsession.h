@@ -48,20 +48,31 @@ struct _KmsWebrtcSession
   GMainContext * context;
   NiceAgent *agent;
   GSList *remote_candidates;
+
+  gchar *stun_server_ip;
+  guint stun_server_port;
+  gchar *turn_url;
+  gchar *turn_user;
+  gchar *turn_password;
+  gchar *turn_address;
+  guint turn_port;
+  NiceRelayType turn_transport;
 };
 
 struct _KmsWebrtcSessionClass
 {
   KmsBaseRtpSessionClass parent_class;
 
-  /* private */
-  /* virtual methods */
-  void (*post_constructor) (KmsWebrtcSession * self, KmsBaseSdpEndpoint * ep,
-			    guint id, KmsIRtpSessionManager * manager, GMainContext * context);
+  gboolean (*gather_candidates) (KmsWebrtcSession * self);
 
   /* Signals */
   void (*on_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);
   void (*on_ice_gathering_done) (KmsWebrtcSession * self);
+
+  /* private */
+  /* virtual methods */
+  void (*post_constructor) (KmsWebrtcSession * self, KmsBaseSdpEndpoint * ep,
+			    guint id, KmsIRtpSessionManager * manager, GMainContext * context);
 };
 
 GType kms_webrtc_session_get_type (void);

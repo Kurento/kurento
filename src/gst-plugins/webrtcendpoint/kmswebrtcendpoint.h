@@ -48,7 +48,7 @@ struct _KmsWebrtcEndpointClass
 {
   KmsBaseRtpEndpointClass parent_class;
 
-    gboolean (*gather_candidates) (KmsWebrtcEndpoint * self, const gchar *sess_id);
+  gboolean (*gather_candidates) (KmsWebrtcEndpoint * self, const gchar *sess_id);
     gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self, const gchar * sess_id,
       KmsIceCandidate * candidate);
 
