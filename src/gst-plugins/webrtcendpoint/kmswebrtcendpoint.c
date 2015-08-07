@@ -632,8 +632,6 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   KmsBaseSdpEndpoint *base_sdp_ep = KMS_BASE_SDP_ENDPOINT (self);
   KmsSdpSession *sess;
   KmsWebrtcSession *webrtc_sess;
-  NiceCandidate *nice_cand;
-  guint8 index;
   gboolean ret;
 
   GST_DEBUG_OBJECT (self, "Gather candidates for session '%s'", sess_id);
@@ -645,25 +643,7 @@ kms_webrtc_endpoint_add_ice_candidate (KmsWebrtcEndpoint * self,
   }
 
   webrtc_sess = KMS_WEBRTC_SESSION (sess);
-  ret = kms_ice_candidate_create_nice (candidate, &nice_cand);
-  if (nice_cand == NULL) {
-    return ret;
-  }
-
-  KMS_ELEMENT_LOCK (self);
-  webrtc_sess->remote_candidates =
-      g_slist_append (webrtc_sess->remote_candidates, g_object_ref (candidate));
-
-  ret =
-      kms_webrtc_session_set_remote_ice_candidate (webrtc_sess, candidate,
-      nice_cand);
-
-  index = kms_ice_candidate_get_sdp_m_line_index (candidate);
-  kms_webrtc_session_remote_sdp_add_ice_candidate (webrtc_sess, nice_cand,
-      index);
-  KMS_ELEMENT_UNLOCK (self);
-
-  nice_candidate_free (nice_cand);
+  g_signal_emit_by_name (webrtc_sess, "add-ice-candidate", candidate, &ret);
 
   return ret;
 }

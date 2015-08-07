@@ -46,6 +46,7 @@ enum
   SIGNAL_ON_ICE_CANDIDATE,
   SIGNAL_ON_ICE_GATHERING_DONE,
   SIGNAL_GATHER_CANDIDATES,
+  SIGNAL_ADD_ICE_CANDIDATE,
   LAST_SIGNAL
 };
 
@@ -580,6 +581,37 @@ kms_webrtc_session_gather_candidates (KmsWebrtcSession * self)
   return ret;
 }
 
+static gboolean
+kms_webrtc_session_add_ice_candidate (KmsWebrtcSession * self,
+    KmsIceCandidate * candidate)
+{
+  NiceCandidate *nice_cand;
+  guint8 index;
+  gboolean ret;
+
+  GST_DEBUG_OBJECT (self, "Gather candidates");
+
+  ret = kms_ice_candidate_create_nice (candidate, &nice_cand);
+  if (nice_cand == NULL) {
+    return ret;
+  }
+
+  KMS_SDP_SESSION_LOCK (self);
+  self->remote_candidates =
+      g_slist_append (self->remote_candidates, g_object_ref (candidate));
+
+  ret =
+      kms_webrtc_session_set_remote_ice_candidate (self, candidate, nice_cand);
+
+  index = kms_ice_candidate_get_sdp_m_line_index (candidate);
+  kms_webrtc_session_remote_sdp_add_ice_candidate (self, nice_cand, index);
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  nice_candidate_free (nice_cand);
+
+  return ret;
+}
+
 gboolean
 kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self,
     SdpMediaConfig * mconf)
@@ -1092,6 +1124,7 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
 
   klass->post_constructor = kms_webrtc_session_post_constructor;
   klass->gather_candidates = kms_webrtc_session_gather_candidates;
+  klass->add_ice_candidate = kms_webrtc_session_add_ice_candidate;
 
   base_rtp_session_class = KMS_BASE_RTP_SESSION_CLASS (klass);
   /* Connection management */
@@ -1162,4 +1195,12 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, gather_candidates), NULL, NULL,
       __kms_webrtc_marshal_BOOLEAN__VOID, G_TYPE_BOOLEAN, 0);
+
+  kms_webrtc_session_signals[SIGNAL_ADD_ICE_CANDIDATE] =
+      g_signal_new ("add-ice-candidate",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, add_ice_candidate), NULL, NULL,
+      __kms_webrtc_marshal_BOOLEAN__OBJECT, G_TYPE_BOOLEAN, 1,
+      KMS_TYPE_ICE_CANDIDATE);
 }
