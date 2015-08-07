@@ -18,16 +18,15 @@
 
 #include <gst/gst.h>
 #include <nice/nice.h>
-#include <commons/kmsutils.h>
+#include "kmswebrtctransportsrc.h"
+#include "kmswebrtctransportsink.h"
 
 typedef struct _KmsWebRtcTransport
 {
   guint component_id;
 
-  GstElement *dtlssrtpenc;
-  GstElement *dtlssrtpdec;
-  GstElement *nicesink;
-  GstElement *nicesrc;
+  KmsWebrtcTransportSrc *src;
+  KmsWebrtcTransportSink *sink;
 
   guint rtp_id; /* atomic */
   guint rtcp_id; /* atomic */

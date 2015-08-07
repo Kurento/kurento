@@ -63,7 +63,8 @@ kms_webrtc_connection_get_certificate_pem (KmsWebRtcBaseConnection * base_conn)
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_conn);
   gchar *pem;
 
-  g_object_get (G_OBJECT (self->priv->rtp_tr->dtlssrtpdec), "pem", &pem, NULL);
+  g_object_get (G_OBJECT (self->priv->rtp_tr->src->dtlssrtpdec), "pem", &pem,
+      NULL);
 
   return pem;
 }
@@ -71,15 +72,10 @@ kms_webrtc_connection_get_certificate_pem (KmsWebRtcBaseConnection * base_conn)
 static void
 add_tr (KmsWebRtcTransport * tr, GstBin * bin, gboolean is_client)
 {
-  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", is_client, NULL);
+  g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "is-client", is_client, NULL);
 
-  gst_bin_add_many (bin,
-      g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
-  gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
-
-  gst_bin_add_many (bin,
-      g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
-  gst_element_link (tr->dtlssrtpenc, tr->nicesink);
+  gst_bin_add (bin, g_object_ref (tr->src));
+  gst_bin_add (bin, g_object_ref (tr->sink));
 }
 
 static void
@@ -93,27 +89,15 @@ kms_webrtc_rtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
 }
 
 static void
-sync_tr_src (KmsWebRtcTransport * tr)
-{
-  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
-  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
-}
-
-static void
 kms_webrtc_rtp_connection_src_sync_state_with_parent (KmsIRtpConnection *
     base_rtp_conn)
 {
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
+  GstElement *rtp_element = GST_ELEMENT (self->priv->rtp_tr->src);
+  GstElement *rtcp_element = GST_ELEMENT (self->priv->rtcp_tr->src);
 
-  sync_tr_src (self->priv->rtp_tr);
-  sync_tr_src (self->priv->rtcp_tr);
-}
-
-static void
-sync_tr_sink (KmsWebRtcTransport * tr)
-{
-  gst_element_sync_state_with_parent_target_state (tr->nicesink);
-  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
+  gst_element_sync_state_with_parent_target_state (rtp_element);
+  gst_element_sync_state_with_parent_target_state (rtcp_element);
 }
 
 static void
@@ -121,9 +105,11 @@ kms_webrtc_rtp_connection_sink_sync_state_with_parent (KmsIRtpConnection *
     base_rtp_conn)
 {
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
+  GstElement *rtp_element = GST_ELEMENT (self->priv->rtp_tr->sink);
+  GstElement *rtcp_element = GST_ELEMENT (self->priv->rtcp_tr->sink);
 
-  sync_tr_sink (self->priv->rtp_tr);
-  sync_tr_sink (self->priv->rtcp_tr);
+  gst_element_sync_state_with_parent_target_state (rtp_element);
+  gst_element_sync_state_with_parent_target_state (rtcp_element);
 }
 
 static GstPad *
@@ -136,7 +122,8 @@ kms_webrtc_rtp_connection_request_rtp_sink (KmsIRtpConnection * base_rtp_conn)
   str = g_strdup_printf ("rtp_sink_%d",
       g_atomic_int_add (&self->priv->rtp_tr->rtp_id, 1));
 
-  pad = gst_element_get_request_pad (self->priv->rtp_tr->dtlssrtpenc, str);
+  pad =
+      gst_element_get_request_pad (self->priv->rtp_tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -147,7 +134,7 @@ kms_webrtc_rtp_connection_request_rtp_src (KmsIRtpConnection * base_rtp_conn)
 {
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_static_pad (self->priv->rtp_tr->dtlssrtpdec,
+  return gst_element_get_static_pad (self->priv->rtp_tr->src->dtlssrtpdec,
       "rtp_src");
 }
 
@@ -161,7 +148,8 @@ kms_webrtc_rtp_connection_request_rtcp_sink (KmsIRtpConnection * base_rtp_conn)
   str = g_strdup_printf ("rtcp_sink_%d",
       g_atomic_int_add (&self->priv->rtcp_tr->rtcp_id, 1));
 
-  pad = gst_element_get_request_pad (self->priv->rtcp_tr->dtlssrtpenc, str);
+  pad =
+      gst_element_get_request_pad (self->priv->rtcp_tr->sink->dtlssrtpenc, str);
   g_free (str);
 
   return pad;
@@ -172,7 +160,7 @@ kms_webrtc_rtp_connection_request_rtcp_src (KmsIRtpConnection * base_rtp_conn)
 {
   KmsWebRtcConnection *self = KMS_WEBRTC_CONNECTION (base_rtp_conn);
 
-  return gst_element_get_static_pad (self->priv->rtcp_tr->dtlssrtpdec,
+  return gst_element_get_static_pad (self->priv->rtcp_tr->src->dtlssrtpdec,
       "rtcp_src");
 }
 
@@ -278,9 +266,9 @@ kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
     return NULL;
   }
 
-  g_signal_connect (priv->rtp_tr->dtlssrtpenc, "on-key-set",
+  g_signal_connect (priv->rtp_tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (rtp_connected_cb), conn);
-  g_signal_connect (priv->rtcp_tr->dtlssrtpenc, "on-key-set",
+  g_signal_connect (priv->rtcp_tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (rtcp_connected_cb), conn);
 
   nice_agent_attach_recv (agent, base_conn->stream_id,
