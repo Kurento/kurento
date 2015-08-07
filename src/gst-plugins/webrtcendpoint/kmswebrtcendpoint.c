@@ -12,7 +12,6 @@
  * Lesser General Public License for more details.
  *
  */
-#define _XOPEN_SOURCE 500
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -89,13 +88,6 @@ enum
 };
 
 static guint kms_webrtc_endpoint_signals[LAST_SIGNAL] = { 0 };
-
-#define IPV4 4
-#define IPV6 6
-
-#define FINGERPRINT_CHECKSUM G_CHECKSUM_SHA256
-
-#define WEBRTC_ENDPOINT "webrtc-endpoint"
 
 struct _KmsWebrtcEndpointPrivate
 {
