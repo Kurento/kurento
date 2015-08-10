@@ -18,6 +18,7 @@
 #endif
 
 #include "kmswebrtctransportsrc.h"
+#include <commons/constants.h>
 
 #define GST_DEFAULT_NAME "webrtctransportsrc"
 #define GST_CAT_DEFAULT kms_webrtc_transport_src_debug
@@ -27,7 +28,6 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 G_DEFINE_TYPE (KmsWebrtcTransportSrc, kms_webrtc_transport_src, GST_TYPE_BIN);
 
 #define SRTPDEC_NAME "srtp-decoder"
-#define REPLAY_WINDOW_SIZE 512  /* inmediate-TODO: move to constants file */
 
 static void
 kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
@@ -42,7 +42,7 @@ kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
 
   srtpdec = gst_bin_get_by_name (GST_BIN (self->dtlssrtpdec), SRTPDEC_NAME);
   if (srtpdec != NULL) {
-    g_object_set (srtpdec, "replay-window-size", REPLAY_WINDOW_SIZE, NULL);
+    g_object_set (srtpdec, "replay-window-size", RTP_RTX_SIZE, NULL);
     g_object_unref (srtpdec);
   } else {
     GST_WARNING ("Cannot get srtpdec with name %s", SRTPDEC_NAME);

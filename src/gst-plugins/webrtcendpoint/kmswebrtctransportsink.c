@@ -18,6 +18,7 @@
 #endif
 
 #include "kmswebrtctransportsink.h"
+#include <commons/constants.h>
 
 #define GST_DEFAULT_NAME "webrtctransportsink"
 #define GST_CAT_DEFAULT kms_webrtc_transport_sink_debug
@@ -28,7 +29,6 @@ G_DEFINE_TYPE (KmsWebrtcTransportSink, kms_webrtc_transport_sink, GST_TYPE_BIN);
 
 #define FUNNEL_NAME "funnel"
 #define SRTPENC_NAME "srtp-encoder"
-#define REPLAY_WINDOW_SIZE 512  /* inmediate-TODO: move to constants file */
 
 static void
 kms_webrtc_transport_sink_init (KmsWebrtcTransportSink * self)
@@ -52,7 +52,7 @@ kms_webrtc_transport_sink_init (KmsWebrtcTransportSink * self)
   srtpenc = gst_bin_get_by_name (GST_BIN (self->dtlssrtpenc), SRTPENC_NAME);
   if (srtpenc != NULL) {
     g_object_set (srtpenc, "allow-repeat-tx", TRUE, "replay-window-size",
-        REPLAY_WINDOW_SIZE, NULL);
+        RTP_RTX_SIZE, NULL);
     g_object_unref (srtpenc);
   } else {
     GST_WARNING ("Cannot get srtpenc with name %s", SRTPENC_NAME);
