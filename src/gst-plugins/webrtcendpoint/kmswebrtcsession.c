@@ -470,8 +470,7 @@ kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
 
   conn = (GstSDPConnection *) gst_sdp_message_get_connection (sdp);
   gst_sdp_connection_clear (conn);
-  /* inmediate-TODO: remove this dependency */
-  g_object_get (sdp_sess->ep, "use-ipv6", &use_ipv6, NULL);
+  use_ipv6 = kms_sdp_session_get_use_ipv6 (sdp_sess);
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;
