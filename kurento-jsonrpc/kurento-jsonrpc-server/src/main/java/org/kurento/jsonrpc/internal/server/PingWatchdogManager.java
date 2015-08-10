@@ -70,7 +70,7 @@ public class PingWatchdogManager {
 
 		private void activateSessionCloser() {
 
-			disablePrevPingWatchdog();
+			disablePingWatchdog();
 
 			lastTask = taskScheduler.schedule(closeSessionTask,
 					new Date(System.currentTimeMillis() + NUM_NO_PINGS_TO_CLOSE
@@ -83,7 +83,7 @@ public class PingWatchdogManager {
 
 		public void setTransportId(String transportId) {
 			this.transportId = transportId;
-			disablePrevPingWatchdog();
+			disablePingWatchdog();
 
 			if (pingWachdog) {
 				if (pingInterval != -1) {
@@ -97,7 +97,7 @@ public class PingWatchdogManager {
 			}
 		}
 
-		private void disablePrevPingWatchdog() {
+		public void disablePingWatchdog() {
 			if (lastTask != null) {
 				lastTask.cancel(false);
 			}
@@ -149,7 +149,10 @@ public class PingWatchdogManager {
 	public void removeSession(ServerSession session) {
 		log.info("Removed PingWatchdogSession for transportId {}",
 				session.getTransportId());
-		sessions.remove(session.getTransportId());
+		PingWatchdogSession pingSession = sessions.remove(session.getTransportId());
+		if(pingSession != null){
+			pingSession.disablePingWatchdog();
+		}
 	}
 
 	public synchronized void updateTransportId(String transportId,
@@ -175,7 +178,7 @@ public class PingWatchdogManager {
 		if (session != null) {
 			log.info("Disabling PingWatchdog for session with transportId {}",
 					transportId);
-			session.disablePrevPingWatchdog();
+			session.disablePingWatchdog();
 		} else {
 			if (pingWachdog) {
 				log.warn(
