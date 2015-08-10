@@ -261,7 +261,7 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
   base_sdp_endpoint_class->configure_media = kms_rtp_endpoint_configure_media;
 }
 
-/* inmediate-TODO: not add abs-send-time extmap */
+/* TODO: not add abs-send-time extmap */
 
 static void
 kms_rtp_endpoint_init (KmsRtpEndpoint * self)

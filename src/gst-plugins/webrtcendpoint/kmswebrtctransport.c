@@ -60,8 +60,6 @@ kms_webrtc_transport_destroy (KmsWebRtcTransport * tr)
   g_slice_free (KmsWebRtcTransport, tr);
 }
 
-/* inmediate-TODO: same pem for all transports in the same connection */
-
 KmsWebRtcTransport *
 kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
     guint component_id)
