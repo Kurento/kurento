@@ -183,14 +183,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			try {
 				sendRequest(JsonRpcConstants.METHOD_CLOSE);
 			} catch (Exception e) {
-				log.warn("Exception sending close message. {}:{}", e.getClass().getName(), e.getMessage());
+				log.warn("{} Exception sending close message. {}:{}", label, e.getClass().getName(), e.getMessage());
 			}
 		}
 
 		if (wsSession != null) {
 			wsSession.close();
 		} else {
-			log.warn("Trying to close a JsonRpcClientWebSocket with wsSession=null");
+			log.warn("{} Trying to close a JsonRpcClientWebSocket with wsSession=null", label);
 		}
 		pendingRequests.closeAllPendingRequests();
 		this.disableHeartbeat();
@@ -318,7 +318,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		} catch (TimeoutRuntimeException e) {
 
 			log.error(
-					"Timeout exception trying to acquire lock in JsonRpcWebSocket client to server {}. Closing this client.",
+					"{} Timeout exception trying to acquire lock in JsonRpcWebSocket client to server {}. Closing this client.",label,
 					url, e);
 
 			this.closeClient();
@@ -526,7 +526,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		if (wsSession == null) {
 			// SERVER_ERROR
-			throw new IllegalStateException("JsonRpcClient is disconnected from WebSocket server at '" + this.url + "'");
+			throw new IllegalStateException(label + " JsonRpcClient is disconnected from WebSocket server at '" + this.url + "'");
 		}
 
 		synchronized (wsSession) {
