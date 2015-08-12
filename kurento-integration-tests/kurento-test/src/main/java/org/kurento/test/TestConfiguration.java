@@ -55,6 +55,7 @@ public class TestConfiguration {
 	public static final int SAUCELAB_MAX_DURATION_DEFAULT = 1800; // seconds
 
 	// Selenium
+	public static final String SELENIUM_VERSION = "selenium.version";
 	public static final String SELENIUM_HUB_ADDRESS = "selenium.hub.address";
 	public static final String SELENIUM_HUB_ADDRESS_DEFAULT = "127.0.0.1";
 

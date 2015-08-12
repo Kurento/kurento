@@ -23,6 +23,7 @@ import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
 import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_PASSWD_PROPERTY;
@@ -75,7 +76,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Wrapper of Selenium Webdriver for testing Kurento applications.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 5.1.0
@@ -368,6 +369,7 @@ public class BrowserClient implements Closeable {
 		int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY, SAUCELAB_IDLE_TIMEOUT_DEFAULT);
 		int commandTimeout = getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY, SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
 		int maxDuration = getProperty(SAUCELAB_MAX_DURATION_PROPERTY, SAUCELAB_MAX_DURATION_DEFAULT);
+		String seleniumVersion = getProperty(SELENIUM_VERSION);
 
 		if (sauceLabsUser == null || sauceLabsKey == null) {
 			throw new RuntimeException("Invalid Saucelabs credentials: " + SAUCELAB_USER_PROPERTY + "=" + sauceLabsUser
@@ -377,6 +379,9 @@ public class BrowserClient implements Closeable {
 		capabilities.setCapability("version", browserVersion);
 		capabilities.setCapability("platform", platform);
 
+		if (seleniumVersion != null) {
+			capabilities.setCapability("seleniumVersion", seleniumVersion);
+		}
 		if (parentTunnel != null) {
 			capabilities.setCapability("parent-tunnel", parentTunnel);
 		}

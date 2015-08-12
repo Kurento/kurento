@@ -45,6 +45,7 @@ public class BrowserInstance {
 	private List<Map<String, String>> extensions;
 	private String saucelabsUser;
 	private String saucelabsKey;
+	private String seleniumVersion;
 	private String host;
 	private String video;
 	private boolean avoidProxy;
@@ -192,6 +193,14 @@ public class BrowserInstance {
 
 	public void setSaucelabsUser(String saucelabsUser) {
 		this.saucelabsUser = saucelabsUser;
+	}
+
+	public String getSeleniumVersion() {
+		return seleniumVersion;
+	}
+
+	public void setSeleniumVersion(String seleniumVersion) {
+		this.seleniumVersion = seleniumVersion;
 	}
 
 	public String getSaucelabsKey() {

@@ -16,6 +16,7 @@ package org.kurento.test.config;
 
 import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +28,7 @@ import org.kurento.test.client.Client;
 
 /**
  * Browser configuration based for JSON test scenarios.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
  */
@@ -123,6 +124,10 @@ public class BrowserConfig {
 				if (instance.getSaucelabsKey() != null) {
 					System.setProperty(SAUCELAB_KEY_PROPERTY,
 							instance.getSaucelabsKey());
+				}
+				if (instance.getSeleniumVersion() != null) {
+					System.setProperty(SELENIUM_VERSION,
+							instance.getSeleniumVersion());
 				}
 				if (instance.isLocal()) {
 					browserClient = builder.scope(BrowserScope.LOCAL).build();
