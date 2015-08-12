@@ -25,11 +25,15 @@ public class JsonRpcErrorException extends JsonRpcException {
 	private final ResponseError error;
 
 	public JsonRpcErrorException(int code, String message) {
-		this(code, message, null);
+		this(new ResponseError(code, message));
 	}
 
 	public JsonRpcErrorException(int code, String message, JsonElement data) {
 		this(new ResponseError(code, message, data));
+	}
+	
+	public JsonRpcErrorException(int code, String message, Exception e) {
+		this(ResponseError.newFromException(e));
 	}
 
 	public JsonRpcErrorException(ResponseError error) {

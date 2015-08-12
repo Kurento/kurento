@@ -48,12 +48,21 @@ public class ResponseError {
 	private String type;
 
 	public static ResponseError newFromException(Throwable e) {
-		return newFromException(-1, e);
+		return newFromException(-1, null, e);
+	}
+	
+	public static ResponseError newFromException(String message, Throwable e) {
+		return newFromException(-1, message, e);
 	}
 
 	public static ResponseError newFromException(int requestId, Throwable e) {
+		return newFromException(requestId, null, e);
+	}
+	
+	public static ResponseError newFromException(int requestId, String message, Throwable e) {
 
 		if (e instanceof JsonRpcErrorException) {
+			
 			JsonRpcErrorException jsonRpcError = (JsonRpcErrorException) e;
 
 			return new ResponseError(jsonRpcError.getCode(),
@@ -63,11 +72,16 @@ public class ResponseError {
 
 			StringWriter writer = new StringWriter();
 			e.printStackTrace(new PrintWriter(writer));
-			//TODO Make this configurable to avoid stacktraces in production
-			return new ResponseError(requestId, e.getClass().getSimpleName()
-					+ ":" + e.getMessage(), writer.toString());
-//			return new ResponseError(requestId, e.getClass().getSimpleName()
-//					+ ":" + e.getMessage());
+			
+			String exceptionMessage = "";
+			
+			if(message != null){
+				exceptionMessage += message;
+			} 
+			
+			exceptionMessage += e.getClass().getName() + ":" + e.getMessage();
+			
+			return new ResponseError(requestId, exceptionMessage, writer.toString());
 		}
 	}
 
