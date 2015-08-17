@@ -16,14 +16,6 @@ reply affirmatively:
    sudo apt-get update
    sudo apt-get install kurento-media-server-6.0
 
-Take into account that if your are installing Kurento Media Server in Ubuntu
-Server 14.04, the tool *add-apt-repository* is not installed by default. To
-install it, run this command:
-
-.. sourcecode:: console
-
-   sudo apt-get install software-properties-common
-
 Now, Kurento Media Server has been installed and started. Use the following
 commands to start and stop it respectively:
 
@@ -53,8 +45,21 @@ follows:
 
    sudo apt-get remove kurento-media-server
    sudo apt-get purge kurento-media-server
+   sudo apt-get autoremove
 
-After that, install Kurento Media Server 6 as depicted at the top of this page.
+Finally, the references to the Kurento Media Server in the APT sources should be
+removed:
+
+.. sourcecode:: console
+
+   # Delete any file in /etc/apt/sources.list.d folder related to kurento
+   sudo rm /etc/apt/sources.list.d/kurento*
+
+   # Edit sources.list and remove references to kurento
+   sudo vi /etc/apt/sources.list
+
+After that, install Kurento Media Server 6 as depicted at the top of
+this page.
 
 
 STUN and TURN servers
