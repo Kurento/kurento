@@ -115,7 +115,7 @@ static GstStaticPadTemplate src_template = GST_STATIC_PAD_TEMPLATE ("src",
 
 static gint
 kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
-    *);
+    *, gint, gint, const gchar *, const gchar *);
 
 static guint
 get_sctp_association_id ()
@@ -283,7 +283,8 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
       G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, create_data_channel),
-      NULL, NULL, __kms_webrtc_data_marshal_INT__VOID, G_TYPE_INT, 0);
+      NULL, NULL, __kms_webrtc_data_marshal_INT__INT_INT_STRING_STRING,
+      G_TYPE_INT, 4, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING);
 
   obj_signals[GET_DATA_CHANNEL_ACTION] =
       g_signal_new ("get-data-channel",
@@ -396,11 +397,13 @@ data_channel_negotiated_cb (KmsWebRtcDataChannelBin * channel_bin,
 
 static GstElement *
 kms_webrtc_data_session_bin_create_data_channel (KmsWebRtcDataSessionBin
-    * self, guint sctp_stream_id)
+    * self, guint sctp_stream_id, gint max_packet_life_time,
+    gint max_retransmits, const gchar * label, const gchar * protocol)
 {
   GstElement *channel;
 
-  channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id));
+  channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id,
+          max_packet_life_time, max_retransmits, label, protocol));
   g_signal_connect (channel, "negotiated",
       G_CALLBACK (data_channel_negotiated_cb), self);
 
@@ -423,7 +426,7 @@ kms_webrtc_data_session_bin_create_remote_data_channel (KmsWebRtcDataSessionBin
   GST_DEBUG_OBJECT (self, "Opened stream id (%u)", sctp_stream_id);
 
   channel = kms_webrtc_data_session_bin_create_data_channel (self,
-      sctp_stream_id);
+      sctp_stream_id, -1, -1, NULL, NULL);
   g_hash_table_insert (self->priv->data_channels,
       GUINT_TO_POINTER (sctp_stream_id), channel);
 
@@ -512,7 +515,8 @@ kms_webrtc_data_session_bin_pick_stream_id (KmsWebRtcDataSessionBin * self)
 
 static gint
 kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
-    * self)
+    * self, gint max_packet_life_time, gint max_retransmits,
+    const gchar * label, const gchar * protocol)
 {
   guint sctp_stream_id;
   GstElement *channel;
@@ -521,7 +525,7 @@ kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
 
   sctp_stream_id = kms_webrtc_data_session_bin_pick_stream_id (self);
   channel = kms_webrtc_data_session_bin_create_data_channel (self,
-      sctp_stream_id);
+      sctp_stream_id, max_packet_life_time, max_retransmits, label, protocol);
 
   if (!self->priv->session_established) {
     self->priv->pending = g_slist_prepend (self->priv->pending, channel);

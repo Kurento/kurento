@@ -71,7 +71,7 @@ struct _KmsWebRtcDataSessionBinClass
   void (*data_channel_closed) (KmsWebRtcDataSessionBin *self, guint stream_id);
 
   /* actions */
-  gint (*create_data_channel) (KmsWebRtcDataSessionBin *self);
+  gint (*create_data_channel) (KmsWebRtcDataSessionBin *self, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
   KmsWebRtcDataChannel * (*get_data_channel) (KmsWebRtcDataSessionBin *self, guint stream_id);
 };
 

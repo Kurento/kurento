@@ -76,7 +76,7 @@ struct _KmsWebRtcDataChannelBinClass
 
 GType kms_webrtc_data_channel_bin_get_type (void);
 
-KmsWebRtcDataChannelBin * kms_webrtc_data_channel_bin_new (guint id);
+KmsWebRtcDataChannelBin * kms_webrtc_data_channel_bin_new (guint id, gint max_packet_life_time, gint max_retransmits, const gchar *label, const gchar *protocol);
 GstCaps * kms_webrtc_data_channel_bin_create_caps (KmsWebRtcDataChannelBin *self);
 void kms_webrtc_data_channel_bin_set_new_buffer_callback (KmsWebRtcDataChannelBin *self, DataChannelNewBuffer cb, gpointer user_data, GDestroyNotify notify);
 GstFlowReturn kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin *self, GstBuffer *buffer, gboolean is_binary);
