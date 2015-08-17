@@ -94,6 +94,7 @@ enum
 {
   DATA_CHANNEL_OPENED,
   DATA_CHANNEL_CLOSED,
+  DATA_SESSION_ESTABLISHED,
 
   GET_DATA_CHANNEL_ACTION,
   CREATE_DATA_CHANNEL_ACTION,
@@ -277,6 +278,14 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, data_channel_closed),
       NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+  obj_signals[DATA_SESSION_ESTABLISHED] =
+      g_signal_new ("data-session-established",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, data_session_established),
+      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1,
+      G_TYPE_BOOLEAN);
 
   obj_signals[CREATE_DATA_CHANNEL_ACTION] =
       g_signal_new ("create-data-channel",
@@ -596,6 +605,8 @@ kms_webrtc_data_session_bin_association_established (GstElement * sctpenc,
   }
 
   KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+
+  g_signal_emit (self, obj_signals[DATA_SESSION_ESTABLISHED], 0, connected);
 }
 
 static void

@@ -173,6 +173,72 @@ GST_START_TEST (connection)
   g_main_loop_unref (loop);
 }
 
+GST_END_TEST static void
+data_session_established_cb (KmsWebRtcDataSessionBin * self, gboolean connected,
+    gpointer user_data)
+{
+  GST_DEBUG_OBJECT (self, "Data session %s",
+      (connected) ? "established" : "finished");
+
+  if (connected) {
+    g_idle_add (quit_main_loop_idle, user_data);
+  }
+}
+
+GST_START_TEST (data_session_established)
+{
+  GstElement *session1, *session2, *udpsrc1, *udpsink1, *udpsrc2, *udpsink2;
+  GstElement *pipeline;
+  GMainLoop *loop;
+  gulong id1;
+
+  loop = g_main_loop_new (NULL, FALSE);
+  pipeline = gst_pipeline_new ("pipeline");
+
+  udpsink1 = gst_element_factory_make ("udpsink", NULL);
+  udpsrc1 = gst_element_factory_make ("udpsrc", NULL);
+  session1 = GST_ELEMENT (kms_webrtc_data_session_bin_new (TRUE));
+
+  id1 = g_signal_connect (session1, "data-session-established",
+      G_CALLBACK (data_session_established_cb), loop);
+
+  udpsink2 = gst_element_factory_make ("udpsink", NULL);
+  udpsrc2 = gst_element_factory_make ("udpsrc", NULL);
+  session2 = GST_ELEMENT (kms_webrtc_data_session_bin_new (FALSE));
+
+  g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
+      "async", FALSE, NULL);
+  g_object_set (udpsrc1, "port", 6666, NULL);
+  g_object_set (session1, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+      NULL);
+
+  g_object_set (udpsink2, "host", "127.0.0.1", "port", 6666, "sync", FALSE,
+      "async", FALSE, NULL);
+  g_object_set (udpsrc2, "port", 5555, NULL);
+  g_object_set (session2, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+      NULL);
+
+  gst_bin_add_many (GST_BIN (pipeline), session1, session2, udpsink1, udpsrc1,
+      udpsink2, udpsrc2, NULL);
+
+  gst_element_link_many (udpsrc1, session1, udpsink1, NULL);
+  gst_element_link_many (udpsrc2, session2, udpsink2, NULL);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  g_timeout_add_seconds (1, print_timedout_pipeline, pipeline);
+
+  g_main_loop_run (loop);
+
+  GST_DEBUG ("Finished test");
+
+  g_signal_handler_disconnect (session1, id1);
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (GST_OBJECT (pipeline));
+  g_main_loop_unref (loop);
+}
+
 GST_END_TEST static Suite *
 webrtc_data_protocol_suite (void)
 {
@@ -181,6 +247,7 @@ webrtc_data_protocol_suite (void)
 
   suite_add_tcase (s, tc_chain);
 
+  tcase_add_test (tc_chain, data_session_established);
   tcase_add_test (tc_chain, connection);
 
   return s;
