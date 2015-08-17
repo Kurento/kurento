@@ -71,7 +71,7 @@ the Kurento Media Server configuration file located on at
 
 .. sourcecode:: js
 
-   stunServerAddress=<stun_ip_address> ; Only IP address are supported
+   stunServerAddress=<stun_ip_address>
    stunServerPort=<stun_port>
 
 The parameter ``stunServerAddress`` should be an IP address (not domain name).
