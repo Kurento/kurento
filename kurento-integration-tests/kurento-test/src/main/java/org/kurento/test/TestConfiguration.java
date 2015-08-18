@@ -62,9 +62,13 @@ public class TestConfiguration {
 	public static final String SELENIUM_HUB_PORT_PROPERTY = "selenium.hub.port";
 	public static final int SELENIUM_HUB_PORT_DEFAULT = 4444;
 
+	public static final String SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY = "selenium.remotedriver.timeout";
+	public static final int SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT = 120; // seconds
+
 	public static final String SELENIUM_NODES_LIST_PROPERTY = "test.nodes.list";
 	public static final String SELENIUM_NODES_LIST_DEFAULT = "node-list.txt";
 	public static final String SELENIUM_NODES_FILE_LIST_PROPERTY = "test.nodes.file.list";
+	public static final String SELENIUM_NODES_URL_PROPERTY = "test.nodes.url.list";
 
 	public static final String TEST_NODE_LOGIN_PROPERTY = "test.node.login";
 	public static final String TEST_NODE_PASSWD_PROPERTY = "test.node.passwd";
@@ -117,8 +121,7 @@ public class TestConfiguration {
 	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
 
 	public static final String KMS_RABBITMQ_ADDRESS_PROP = "kms.rabbitmq.address";
-	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address(
-			"127.0.0.1", 5672);
+	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address("127.0.0.1", 5672);
 
 	// Binary test files
 	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";

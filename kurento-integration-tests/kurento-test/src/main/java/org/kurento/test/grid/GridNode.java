@@ -32,13 +32,11 @@ public class GridNode {
 
 	private Logger log = LoggerFactory.getLogger(GridNode.class);
 
-	public final String REMOTE_FOLDER = "kurento-test";
-	public final String REMOTE_PID_FILE = "node-pid";
-
 	private String host;
 	private BrowserType browserType;
 	private int maxInstances = 1;
 	private boolean overwrite = false;
+	private boolean started = false;
 	private SshConnection ssh;
 	private String home;
 	private String tmpFolder;
@@ -50,8 +48,7 @@ public class GridNode {
 		this.ssh = new SshConnection(host);
 	}
 
-	public GridNode(String host, BrowserType browserType, int maxInstances,
-			String login, String passwd, String pem) {
+	public GridNode(String host, BrowserType browserType, int maxInstances, String login, String passwd, String pem) {
 		this.host = host;
 		this.browserType = browserType;
 		this.maxInstances = maxInstances;
@@ -61,7 +58,7 @@ public class GridNode {
 	public String getRemoteVideo(String video) {
 		String remoteVideo = null;
 		File file = new File(video);
-		remoteVideo = getHome() + "/" + REMOTE_FOLDER + "/" + file.getName();
+		remoteVideo = getHome() + "/" + GridHandler.REMOTE_FOLDER + "/" + file.getName();
 		return remoteVideo;
 	}
 
@@ -92,8 +89,7 @@ public class GridNode {
 			try {
 				home = getSshConnection().execAndWaitCommandNoBr("echo", "~");
 			} catch (IOException e) {
-				log.error("Exception reading remote home " + e.getClass()
-						+ " ... returning default home value: ~");
+				log.error("Exception reading remote home " + e.getClass() + " ... returning default home value: ~");
 				home = "~";
 			}
 		}
@@ -114,6 +110,14 @@ public class GridNode {
 
 	public boolean isOverwrite() {
 		return overwrite;
+	}
+
+	public boolean isStarted() {
+		return started;
+	}
+
+	public void setStarted(boolean started) {
+		this.started = started;
 	}
 
 }

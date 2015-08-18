@@ -23,13 +23,17 @@ import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_NODES_FILE_LIST_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_NODES_URL_PROPERTY;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,9 +47,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServlet;
+
+import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -55,14 +66,22 @@ import org.kurento.test.Shell;
 import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Randomizer;
 import org.kurento.test.services.SshConnection;
+import org.openqa.grid.selenium.GridLauncher;
+import org.openqa.jetty.http.HttpListener;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.net.NetworkUtils;
+import org.openqa.selenium.support.events.WebDriverEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
+import com.google.gson.JsonElement;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -76,12 +95,16 @@ import freemarker.template.Template;
  */
 public class GridHandler {
 
-	public Logger log = LoggerFactory.getLogger(GridHandler.class);
+	public static Logger log = LoggerFactory.getLogger(GridHandler.class);
 
-	private static GridHandler instance = null;
+	public static final String REMOTE_FOLDER = ".kurento-test";
+	public static final String REMOTE_PID_FILE = "node-pid";
+	public static final String IPS_REGEX = "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
 
 	private static final int TIMEOUT_NODE = 300; // seconds
 	private static final String LAUNCH_SH = "launch-node.sh";
+
+	private static GridHandler instance = null;
 
 	private GridHub hub;
 	private String hubAddress = getProperty(SELENIUM_HUB_ADDRESS, SELENIUM_HUB_ADDRESS_DEFAULT);
@@ -90,20 +113,43 @@ public class GridHandler {
 	private Map<String, GridNode> nodes = new ConcurrentHashMap<>();
 	private List<String> nodeList;
 	private boolean hubStarted = false;
+	private boolean nodeListFiltered = false;
 
 	protected GridHandler() {
 		String nodesListProp = System.getProperty(SELENIUM_NODES_LIST_PROPERTY);
 		String nodesListFileProp = System.getProperty(SELENIUM_NODES_FILE_LIST_PROPERTY);
+		String nodesListUrlProp = System.getProperty(SELENIUM_NODES_URL_PROPERTY);
 
-		if (nodesListFileProp != null) {
+		if (nodesListUrlProp != null) {
+			if (nodeList == null) {
+				nodeList = new ArrayList<>();
+				try {
+					log.debug("Reading node list from URL {}", nodesListUrlProp);
+					String contents = readContents(nodesListUrlProp);
+					Pattern p = Pattern.compile(IPS_REGEX);
+					Matcher m = p.matcher(contents);
+					while (m.find()) {
+						nodeList.add(m.group());
+					}
+				} catch (IOException e) {
+					Assert.fail("Exception reading URL " + nodesListUrlProp + " : " + e.getMessage());
+				}
+			}
+
+		} else if (nodesListFileProp != null) {
+			log.debug("Reading node list from file {}", nodesListFileProp);
 			try {
 				nodeList = FileUtils.readLines(new File(nodesListFileProp), Charset.defaultCharset());
 			} catch (IOException e) {
 				Assert.fail("Exception reading node list file: " + e.getMessage());
 			}
+
 		} else if (nodesListProp != null) {
+			log.debug("Reading node list from property {}", nodesListProp);
 			nodeList = new ArrayList<>(Arrays.asList(nodesListProp.split(";")));
+
 		} else {
+			log.debug("Using default node list {}", SELENIUM_NODES_LIST_DEFAULT);
 			InputStream inputStream = PerformanceTest.class.getClassLoader()
 					.getResourceAsStream(SELENIUM_NODES_LIST_DEFAULT);
 
@@ -151,7 +197,7 @@ public class GridHandler {
 	public synchronized void startHub() {
 		try {
 			if (hubAddress != null && !hubStarted) {
-				hub = new GridHub(hubAddress, hubPort);
+				hub = new GridHub(hubPort);
 				hub.start();
 				hubStarted = true;
 			}
@@ -188,19 +234,17 @@ public class GridHandler {
 			log.info("Launching node {}", node.getHost());
 			node.startSsh();
 
-			final String chromeDriverName = "/chromedriver";
-			final String chromeDriverSource = KurentoServicesTestHelper.getTestFilesPath()
-					+ "/bin/chromedriver/2.9/linux64" + chromeDriverName;
-			final String seleniumJarName = "/selenium-server-standalone-2.42.2.jar";
-			final String seleniumJarSource = KurentoServicesTestHelper.getTestFilesPath() + "/bin/selenium-server"
-					+ seleniumJarName;
+			final String chromeDriverSource = System.getProperty("webdriver.chrome.driver");
+			final Class<?>[] classpath = { GridLauncher.class, ImmutableList.class, HttpListener.class,
+					NetworkUtils.class, WebDriverException.class, LogFactory.class, HttpServlet.class,
+					ChromeDriver.class, FirefoxDriver.class, JsonElement.class, HttpEntity.class, HttpClient.class,
+					WebDriverEventListener.class, ExecuteWatchdog.class };
 
 			// OverThere SCP need absolute path, so home path must be known
 			String remoteHome = node.getHome();
 
-			final String remoteFolder = remoteHome + "/" + node.REMOTE_FOLDER;
-			final String remoteChromeDriver = remoteFolder + chromeDriverName;
-			final String remoteSeleniumJar = remoteFolder + seleniumJarName;
+			final String remoteFolder = remoteHome + "/" + REMOTE_FOLDER;
+			final String remoteChromeDriver = remoteFolder + "/chromedriver";
 			final String remoteScript = node.getTmpFolder() + "/" + LAUNCH_SH;
 			final String remotePort = String.valueOf(node.getSshConnection().getFreePort());
 
@@ -211,12 +255,23 @@ public class GridHandler {
 				node.getSshConnection().scp(chromeDriverSource, remoteChromeDriver);
 				node.getSshConnection().execAndWaitCommand("chmod", "+x", remoteChromeDriver);
 			}
-			if (!node.getSshConnection().exists(remoteSeleniumJar) || node.isOverwrite()) {
-				node.getSshConnection().scp(seleniumJarSource, remoteSeleniumJar);
+
+			String cp = "";
+			for (Class<?> clazz : classpath) {
+				if (!cp.isEmpty()) {
+					cp += ":";
+				}
+				String jarSource = getJarPath(clazz).getAbsolutePath();
+				String remoteSeleniumJar = remoteFolder + "/" + getJarPath(clazz).getName();
+				cp += remoteSeleniumJar;
+
+				if (!node.getSshConnection().exists(remoteSeleniumJar) || node.isOverwrite()) {
+					node.getSshConnection().scp(jarSource, remoteSeleniumJar);
+				}
 			}
 
 			// Script is always overwritten
-			createRemoteScript(node, remotePort, remoteScript, remoteFolder, remoteChromeDriver, remoteSeleniumJar,
+			createRemoteScript(node, remotePort, remoteScript, remoteFolder, remoteChromeDriver, cp,
 					node.getBrowserType(), node.getMaxInstances());
 
 			// Launch node
@@ -224,15 +279,31 @@ public class GridHandler {
 
 			// Wait to be available for Hub
 			waitForNode(node.getHost(), remotePort);
+
+			// Set started flag to true
+			node.setStarted(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
 
+	private File getJarPath(Class<?> aclass) {
+		URL url;
+		try {
+			url = aclass.getProtectionDomain().getCodeSource().getLocation();
+		} catch (SecurityException ex) {
+			url = aclass.getResource(aclass.getSimpleName() + ".class");
+		}
+		try {
+			return new File(url.toURI());
+		} catch (URISyntaxException ex) {
+			return new File(url.getPath());
+		}
+	}
+
 	private void createRemoteScript(GridNode node, String remotePort, String remoteScript, String remoteFolder,
-			String remoteChromeDriver, String remoteSeleniumJar, BrowserType browser, int maxInstances)
-					throws IOException {
+			String remoteChromeDriver, String classpath, BrowserType browser, int maxInstances) throws IOException {
 
 		// Create script for Node
 		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
@@ -240,13 +311,12 @@ public class GridHandler {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("remotePort", String.valueOf(remotePort));
 		data.put("maxInstances", String.valueOf(maxInstances));
-		// data.put("hubIp", hubPublicAddress);
 		data.put("hubIp", hubAddress);
 		data.put("hubPort", String.valueOf(hubPort));
 		data.put("tmpFolder", node.getTmpFolder());
 		data.put("remoteChromeDriver", remoteChromeDriver);
-		data.put("remoteSeleniumJar", remoteSeleniumJar);
-		data.put("pidFile", node.REMOTE_PID_FILE);
+		data.put("classpath", classpath);
+		data.put("pidFile", REMOTE_PID_FILE);
 		data.put("browser", browser);
 
 		cfg.setClassForTemplateLoading(PerformanceTest.class, "/templates/");
@@ -309,68 +379,96 @@ public class GridHandler {
 		}
 	}
 
+	public synchronized void filterValidNodes() {
+		if (!nodeListFiltered) {
+			log.debug("Node availables in the node list: {}", nodeList.size());
+			int nodeListSize = nodeList.size();
+			ExecutorService executor = Executors.newFixedThreadPool(nodeListSize);
+			final CountDownLatch latch = new CountDownLatch(nodeListSize);
+
+			for (final String nodeCandidate : nodeList) {
+				executor.execute(new Runnable() {
+					@Override
+					public void run() {
+						if (!nodeIsValid(nodeCandidate)) {
+							nodeList.remove(nodeCandidate);
+						}
+						latch.countDown();
+					}
+				});
+			}
+
+			try {
+				latch.await();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			nodeListFiltered = true;
+			log.debug("Node availables in the node list after filtering: {}", nodeList.size());
+		}
+	}
+
+	public boolean nodeIsValid(String nodeCandidate) {
+		boolean valid = false;
+		log.debug("Node candidate {}", nodeCandidate);
+
+		if (SshConnection.ping(nodeCandidate)) {
+			SshConnection remoteHost = new SshConnection(nodeCandidate);
+			try {
+				remoteHost.start();
+				int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
+				if (xvfb != 2) {
+					log.debug("Node {} has no Xvfb", nodeCandidate);
+				} else {
+					valid = true;
+				}
+			} catch (Exception e) {
+				log.debug("Invalid credentials to access node {} ", nodeCandidate);
+			} finally {
+				remoteHost.stop();
+			}
+
+		} else {
+			log.debug("Node {} seems to be down", nodeCandidate);
+		}
+		return valid;
+	}
+
 	public synchronized GridNode getRandomNodeFromList(String browserKey, BrowserType browserType,
 			int browserPerInstance) {
 
+		log.info("getRandomNodeFromList for browser {}", browserKey);
+
 		GridNode node = browserPerInstance > 1 ? existsNode(browserKey) : null;
-		String nodeCandidate;
-		long maxSystemTime = System.currentTimeMillis() + 2 * TIMEOUT_NODE * 1000;
-
 		if (node == null) {
-			boolean validCandidateFound = false;
-			do {
-				try {
-					nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
-				} catch (IllegalArgumentException e) {
-					throw new RuntimeException("No valid available node(s) to perform Selenim Grid test");
-				}
-				log.debug("Node candidate {}", nodeCandidate);
+			try {
 
-				if (!nodeCandidate.isEmpty()) {
-					if (SshConnection.ping(nodeCandidate)) {
-						SshConnection remoteHost = new SshConnection(nodeCandidate);
-						try {
-							remoteHost.start();
-							int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
-							if (xvfb != 2) {
-								log.debug("Node {} has no Xvfb", nodeCandidate);
-							} else {
-								node = new GridNode(nodeCandidate, browserType, browserPerInstance);
-
-								log.info(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
-
-								nodes.put(browserKey, node);
-								validCandidateFound = true;
-							}
-						} catch (Exception e) {
-							log.debug("Invalid credentials to access node {} ", nodeCandidate);
-						} finally {
-							remoteHost.stop();
-						}
-
-					} else {
-						log.debug("Node {} seems to be down", nodeCandidate);
-					}
-				}
+				String nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
+				log.info("######## Creating node {} in host {}", browserKey, nodeCandidate);
+				node = new GridNode(nodeCandidate, browserType, browserPerInstance);
+				addNode(browserKey, node);
 				nodeList.remove(nodeCandidate);
-			} while (!validCandidateFound);
+				log.info(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
 
-			if (System.currentTimeMillis() > maxSystemTime) {
-				throw new RuntimeException("Timeout (" + 2 * TIMEOUT_NODE + " sec) selecting 1 node");
+			} catch (IllegalArgumentException e) {
+				throw new RuntimeException("No valid available node(s) to perform Selenim Grid test");
 			}
+
 		} else {
 			log.info(">>>> Re-using node {} for browser '{}'", node.getHost(), browserKey);
+			node.setStarted(true);
 		}
 		return node;
 
 	}
 
-	private GridNode existsNode(String browserKey) {
+	private synchronized GridNode existsNode(String browserKey) {
 		GridNode gridNode = null;
 		int indexOfSeparator = browserKey.lastIndexOf(TestScenario.INSTANCES_SEPARATOR);
 
 		if (indexOfSeparator != -1) {
-			String browserPreffix = browserKey.substring(0, indexOfSeparator);
+			String browserPreffix = browserKey.substring(0, indexOfSeparator + 1);
+			log.debug("browserPreffix {}", browserPreffix);
 
 			for (String node : nodes.keySet()) {
 				if (node.startsWith(browserPreffix)) {
@@ -415,6 +513,7 @@ public class GridHandler {
 	}
 
 	public synchronized void addNode(String browserKey, GridNode node) {
+		log.info("Adding node {} ({}) to map", browserKey, node.getHost());
 		nodes.put(browserKey, node);
 	}
 
@@ -438,23 +537,52 @@ public class GridHandler {
 		}
 	}
 
-	public boolean containsSimilarBrowserKey(String browserKey) {
-		boolean out = false;
+	public synchronized boolean containsSimilarBrowserKey(String browserKey) {
+		boolean constainsSimilarBrowser = false;
 		int index = browserKey.indexOf("-");
+		String browser = null;
 		if (index != -1) {
 			String prefix = browserKey.substring(0, browserKey.indexOf("-"));
 			for (String key : nodes.keySet()) {
-				out |= key.startsWith(prefix);
-				if (out) {
+				constainsSimilarBrowser |= key.startsWith(prefix);
+				if (constainsSimilarBrowser) {
+					browser = key;
 					break;
 				}
 			}
 		}
-		return out;
+
+		if (constainsSimilarBrowser && !nodes.keySet().contains(browserKey) && browser != null) {
+			addNode(browserKey, nodes.get(browser));
+		}
+		return constainsSimilarBrowser;
 	}
 
 	public void setHubAddress(String hubAddress) {
 		this.hubAddress = hubAddress;
+	}
+
+	public static String readContents(String address) throws IOException {
+		StringBuilder contents = new StringBuilder(2048);
+		BufferedReader br = null;
+		try {
+			URL url = new URL(address);
+			br = new BufferedReader(new InputStreamReader(url.openStream()));
+			String line = "";
+			while (line != null) {
+				line = br.readLine();
+				contents.append(line);
+			}
+		} finally {
+			if (br != null) {
+				br.close();
+			}
+		}
+		return contents.toString();
+	}
+
+	public List<String> getNodeList() {
+		return nodeList;
 	}
 
 }

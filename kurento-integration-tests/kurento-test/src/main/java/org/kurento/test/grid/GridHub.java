@@ -31,25 +31,24 @@ public class GridHub {
 
 	private static final int DEFAULT_TIMEOUT = 60;
 
-	private String ip;
+	private String bindIp = "0.0.0.0";
 	private int port;
 	private int timeout;
 	private Hub hub;
 
-	public GridHub(String ip, int port) {
-		this.ip = ip;
+	public GridHub(int port) {
 		this.port = port;
 		this.timeout = DEFAULT_TIMEOUT; // Default timeout
 	}
 
 	public void start() throws Exception {
 		GridHubConfiguration config = new GridHubConfiguration();
-		config.setHost("0.0.0.0");
+		config.setHost(bindIp);
 		config.setPort(this.port);
 		config.setTimeout(getTimeout());
 
 		hub = new Hub(config);
-		log.info("Starting hub on {}:{}", this.ip, this.port);
+		log.info("Starting hub on {}:{}", this.bindIp, this.port);
 		hub.start();
 	}
 

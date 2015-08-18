@@ -128,7 +128,7 @@
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<overthere.version>2.4.8</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
-		<webdrivermanager.version>1.2.0</webdrivermanager.version>
+		<webdrivermanager.version>1.2.1</webdrivermanager.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->

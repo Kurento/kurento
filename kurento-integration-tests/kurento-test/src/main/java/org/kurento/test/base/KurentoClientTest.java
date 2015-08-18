@@ -47,11 +47,9 @@ public class KurentoClientTest extends KurentoTest {
 	public KurentoClientTest(TestScenario testScenario) {
 		super(testScenario);
 		// HTTP server
-		startHttpServer = !this.getClass().isAnnotationPresent(
-				WebAppConfiguration.class);
+		startHttpServer = !this.getClass().isAnnotationPresent(WebAppConfiguration.class);
 		if (startHttpServer) {
-			context = KurentoServicesTestHelper
-					.startHttpServer(BrowserKurentoClientTest.class);
+			context = KurentoServicesTestHelper.startHttpServer(BrowserKurentoClientTest.class);
 		}
 	}
 
@@ -65,8 +63,7 @@ public class KurentoClientTest extends KurentoTest {
 		KurentoServicesTestHelper.setTestCaseName(this.getClass().getName());
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
-		log.info("Starting test {}",
-				this.getClass().getName() + "." + testName.getMethodName());
+		log.info("Starting test {}", this.getClass().getName() + "." + testName.getMethodName());
 
 		// Kurento client
 		kurentoClient = KurentoClientTestFactory.createKurentoForTest();
@@ -96,8 +93,8 @@ public class KurentoClientTest extends KurentoTest {
 	}
 
 	public static String getDefaultOutputFile(String preffix) {
-		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
-				+ "/" + KurentoServicesTestHelper.getTestCaseName());
+		File fileForRecording = new File(
+				KurentoServicesTestHelper.getTestDir() + "/" + KurentoServicesTestHelper.getTestCaseName());
 		String testName = KurentoServicesTestHelper.getSimpleTestName();
 		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
 	}

@@ -14,17 +14,15 @@
  */
 package org.kurento.test.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.kurento.test.grid.GridHandler;
 import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 
 /**
  * Internal utility for killing all the processes of a user in a remote node
@@ -37,30 +35,45 @@ public class KillAllProcesses {
 
 	public static Logger log = LoggerFactory.getLogger(KillAllProcesses.class);
 
-	public static void main(String[] args) throws IOException {
-		KillAllProcesses killAllProcesses = new KillAllProcesses();
-		killAllProcesses.killAll();
-	}
+	public static void main(String[] args) throws InterruptedException {
+		List<String> nodeList = GridHandler.getInstance().getNodeList();
 
-	public void killAll() throws IOException {
+		int nodeListSize = nodeList.size();
+		log.debug("Node availables in the node list: {}", nodeListSize);
+		ExecutorService executor = Executors.newFixedThreadPool(nodeListSize);
+		final CountDownLatch latch = new CountDownLatch(nodeListSize);
 
-		InputStream inputStream = this.getClass().getClassLoader()
-				.getResourceAsStream("node-list.txt");
-		List<String> nodeList = CharStreams.readLines(new InputStreamReader(
-				inputStream, Charsets.UTF_8));
+		for (final String node : nodeList) {
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					Thread.currentThread().setName(node);
 
-		for (String node : nodeList) {
-			if (SshConnection.ping(node)) {
-				try {
-					SshConnection remoteHost = new SshConnection(node);
-					remoteHost.start();
-					remoteHost.execCommand("kill", "-9", "-1");
-				} catch (Throwable e) {
-					e.printStackTrace();
+					if (SshConnection.ping(node)) {
+						SshConnection remoteHost = null;
+						try {
+							log.info("Openning connection to node {}", node);
+							remoteHost = new SshConnection(node);
+							remoteHost.start();
+							remoteHost.execCommand("kill", "-9", "-1");
+						} catch (Throwable e) {
+							e.printStackTrace();
+						} finally {
+							if (remoteHost != null) {
+								log.info("Closing connection to node {}", node);
+								remoteHost.stop();
+							}
+						}
+					} else {
+						log.error("Node down {}", node);
+					}
+
+					latch.countDown();
 				}
-			} else {
-				log.error("Node down {}", node);
-			}
+			});
 		}
+
+		latch.await();
+		executor.shutdown();
 	}
 }

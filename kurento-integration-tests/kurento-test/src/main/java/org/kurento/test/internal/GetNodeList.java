@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -15,56 +15,33 @@
 package org.kurento.test.internal;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kurento.test.grid.GridHandler;
-import org.kurento.test.services.SshConnection;
 
 /**
- * Internal utility for killing the active processes of a user in the Selenium
- * Grid hub (for manual testing/debug purposes).
+ * Internal utility for reading a node from a URL.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.5
+ * @since 6.0.1
  */
-public class KillActiveProcesses {
-
-	private static final String REGEX = "id : http://(.*?), OS";
+public class GetNodeList {
 
 	public static void main(String[] args) throws IOException {
+		List<String> nodeList = new ArrayList<>();
 
 		for (String url : args) {
 			String contents = GridHandler.readContents(url);
-
-			Pattern p = Pattern.compile(REGEX);
+			Pattern p = Pattern.compile(GridHandler.IPS_REGEX);
 			Matcher m = p.matcher(contents);
-
-			String node;
 			while (m.find()) {
-				node = m.group();
-				node = node.substring(12, node.lastIndexOf(":"));
-
-				final String nodeFinal = node;
-				Runnable run = new Runnable() {
-					public void run() {
-						try {
-							System.out.println("Killing " + nodeFinal);
-							kill(nodeFinal);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				};
-				new Thread(run).start();
+				nodeList.add(m.group());
 			}
 		}
-	}
-
-	public static void kill(String node) throws IOException {
-		SshConnection remoteHost = new SshConnection(node);
-		remoteHost.start();
-		remoteHost.execCommand("kill", "-9", "-1");
+		System.err.println(nodeList);
 	}
 
 }

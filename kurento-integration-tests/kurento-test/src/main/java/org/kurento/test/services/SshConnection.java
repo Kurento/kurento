@@ -104,32 +104,27 @@ public class SshConnection {
 			tmpFolder = DEFAULT_TMP_FOLDER;
 		}
 
-		log.debug("Remote folder to store temporal files in node {}: {} ",
-				host, tmpFolder);
+		log.debug("Remote folder to store temporal files in node {}: {} ", host, tmpFolder);
 		return tmpFolder;
 	}
 
 	public void getFile(String targetFile, String origFile) {
-		log.debug("Getting remote file: {} (in host {}) to local file: {}",
-				origFile, host, targetFile);
+		log.debug("Getting remote file: {} (in host {}) to local file: {}", origFile, host, targetFile);
 
 		OverthereFile motd = connection.getFile(origFile);
 		if (!motd.isDirectory()) {
 			InputStream is = motd.getInputStream();
 			try {
-				Files.copy(is, Paths.get(targetFile),
-						StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(is, Paths.get(targetFile), StandardCopyOption.REPLACE_EXISTING);
 				is.close();
 			} catch (IOException e) {
-				log.error("Exception getting file: {} to {} ({})", origFile,
-						targetFile, e.getMessage());
+				log.error("Exception getting file: {} to {} ({})", origFile, targetFile, e.getMessage());
 			}
 		}
 	}
 
 	public void scp(String origFile, String targetFile) throws IOException {
-		log.debug("Copying local file: {} to remote file: {} (in host {})",
-				origFile, targetFile, host);
+		log.debug("Copying local file: {} to remote file: {} (in host {})", origFile, targetFile, host);
 
 		OverthereFile motd = connection.getFile(targetFile);
 		OutputStream w = motd.getOutputStream();
@@ -147,16 +142,13 @@ public class SshConnection {
 			options.set(ConnectionOptions.PASSWORD, passwd);
 		}
 
-		options.set(ConnectionOptions.CONNECTION_TIMEOUT_MILLIS,
-				connectionTimeout);
+		options.set(ConnectionOptions.CONNECTION_TIMEOUT_MILLIS, connectionTimeout);
 		options.set(ConnectionOptions.USERNAME, login);
 		options.set(ConnectionOptions.ADDRESS, host);
-		options.set(ConnectionOptions.OPERATING_SYSTEM,
-				OperatingSystemFamily.UNIX);
+		options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.UNIX);
 		options.set(SshConnectionBuilder.CONNECTION_TYPE, SshConnectionType.SCP);
 
-		connection = Overthere.getConnection(SshConnectionBuilder.SSH_PROTOCOL,
-				options);
+		connection = Overthere.getConnection(SshConnectionBuilder.SSH_PROTOCOL, options);
 
 	}
 
@@ -165,7 +157,7 @@ public class SshConnection {
 	}
 
 	public void stop() {
-		if (connection != null) {
+		if (isStarted()) {
 			connection.close();
 			connection = null;
 		}
@@ -190,8 +182,7 @@ public class SshConnection {
 		}
 		OverthereProcess process = connection.startProcess(cmdLine);
 
-		BufferedReader r = new BufferedReader(new InputStreamReader(
-				process.getStdout(), "UTF-8"));
+		BufferedReader r = new BufferedReader(new InputStreamReader(process.getStdout(), "UTF-8"));
 		StringBuilder sb = new StringBuilder();
 		String line = null;
 		while ((line = r.readLine()) != null) {
@@ -199,20 +190,12 @@ public class SshConnection {
 			sb.append(line).append("\r\n");
 		}
 		return sb.toString();
-
-		// return CharStreams.toString(new
-		// InputStreamReader(process.getStdout(),
-		// "UTF-8"));
 	}
 
-	public String execAndWaitCommandWithStderr(String... command)
-			throws IOException {
-		OverthereProcess process = connection.startProcess(CmdLine
-				.build(command));
-		String result = CharStreams.toString(new InputStreamReader(process
-				.getStdout(), "UTF-8"));
-		result += CharStreams.toString(new InputStreamReader(process
-				.getStderr(), "UTF-8"));
+	public String execAndWaitCommandWithStderr(String... command) throws IOException {
+		OverthereProcess process = connection.startProcess(CmdLine.build(command));
+		String result = CharStreams.toString(new InputStreamReader(process.getStdout(), "UTF-8"));
+		result += CharStreams.toString(new InputStreamReader(process.getStderr(), "UTF-8"));
 		return result;
 	}
 
@@ -247,10 +230,8 @@ public class SshConnection {
 			public void run() {
 				try {
 					String[] command = { "ping", "-c", "1", ipAddress };
-					Process p = new ProcessBuilder(command)
-							.redirectErrorStream(true).start();
-					CharStreams.toString(new InputStreamReader(p
-							.getInputStream(), "UTF-8"));
+					Process p = new ProcessBuilder(command).redirectErrorStream(true).start();
+					CharStreams.toString(new InputStreamReader(p.getInputStream(), "UTF-8"));
 					latch.countDown();
 				} catch (Exception e) {
 				}
@@ -263,8 +244,7 @@ public class SshConnection {
 		try {
 			ping = latch.await(timeout, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			log.error("Exception making ping to {} : {}", ipAddress,
-					e.getClass());
+			log.error("Exception making ping to {} : {}", ipAddress, e.getClass());
 		}
 		if (!ping) {
 			t.interrupt();

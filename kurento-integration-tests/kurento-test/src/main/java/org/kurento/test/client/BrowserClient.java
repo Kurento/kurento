@@ -23,6 +23,8 @@ import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT;
+import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
 import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
@@ -59,6 +61,7 @@ import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -303,19 +306,7 @@ public class BrowserClient implements Closeable {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
 
-		// startPing();
 	}
-
-	// private void startPing() {
-	// if (ping) {
-	// exec.scheduleAtFixedRate(new Runnable() {
-	// @Override
-	// public void run() {
-	// driver.findElement(By.name("body"));
-	// }
-	// }, PING_DELAY, PING_DELAY, TimeUnit.MILLISECONDS);
-	// }
-	// }
 
 	public void reload() {
 		if (url != null) {
@@ -407,10 +398,12 @@ public class BrowserClient implements Closeable {
 		log.info("https://saucelabs.com/tests/{}", jobId);
 	}
 
-	public void createRemoteDriver(DesiredCapabilities capabilities) throws MalformedURLException {
+	public void createRemoteDriver(final DesiredCapabilities capabilities) throws MalformedURLException {
 		assertPublicIpNotNull();
+
+		log.info("Creating remote webdriver for {}", id);
+		GridNode gridNode = null;
 		if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
-			GridNode gridNode = null;
 
 			if (login != null) {
 				System.setProperty(TEST_NODE_LOGIN_PROPERTY, login);
@@ -421,6 +414,9 @@ public class BrowserClient implements Closeable {
 			if (pem != null) {
 				System.setProperty(TEST_NODE_PEM_PROPERTY, pem);
 			}
+
+			// Filtering valid nodes (just the first time will be effective)
+			GridHandler.getInstance().filterValidNodes();
 
 			if (!node.equals(host) && login != null && !login.isEmpty()
 					&& (passwd != null && !passwd.isEmpty() || pem != null && !pem.isEmpty())) {
@@ -441,6 +437,19 @@ public class BrowserClient implements Closeable {
 				GridHandler.getInstance().copyRemoteVideo(gridNode, video);
 			}
 
+		} else {
+			// Wait for node
+			boolean started = false;
+			do {
+				gridNode = GridHandler.getInstance().getNode(id);
+				if (gridNode != null) {
+					started = gridNode.isStarted();
+				}
+				if (!started) {
+					log.debug("Node {} is not started ... waiting 1 second", id);
+					waitSeconds(1);
+				}
+			} while (!started);
 		}
 
 		// At this moment we are able to use the argument for remote video
@@ -451,10 +460,54 @@ public class BrowserClient implements Closeable {
 			capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 		}
 
-		int hubPort = GridHandler.getInstance().getHubPort();
-		String hubHost = GridHandler.getInstance().getHubHost();
+		final int hubPort = GridHandler.getInstance().getHubPort();
+		final String hubHost = GridHandler.getInstance().getHubHost();
 
-		driver = new RemoteWebDriver(new URL("http://" + hubHost + ":" + hubPort + "/wd/hub"), capabilities);
+		// driver = new RemoteWebDriver(new URL("http://" + hubHost + ":" +
+		// hubPort + "/wd/hub"), capabilities);
+
+		log.info("Creating remote webdriver of {} ({})", id, gridNode.getHost());
+		Thread t = new Thread() {
+			public void run() {
+				boolean exception = false;
+				do {
+					try {
+						driver = new RemoteWebDriver(new URL("http://" + hubHost + ":" + hubPort + "/wd/hub"),
+								capabilities);
+						exception = false;
+					} catch (MalformedURLException | WebDriverException e) {
+						log.error("Exception {} creating RemoteWebDriver ... retrying in 1 second", e.getClass());
+						waitSeconds(1);
+						exception = true;
+					}
+				} while (exception);
+			}
+		};
+		t.start();
+
+		int timeout = getProperty(SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY, SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT);
+		for (int i = 0; i < timeout; i++) {
+			if (t.isAlive()) {
+				log.info("Waiting for RemoteWebDriver {} ({})", id, gridNode.getHost());
+			} else {
+				log.info("Remote webdriver of {} ({}) created", id, gridNode.getHost());
+				return;
+			}
+			waitSeconds(1);
+		}
+
+		String exceptionMessage = "Remote webdriver of " + id + "(" + gridNode.getHost() + ") not created in " + timeout
+				+ "seconds";
+		log.error(">>>>>>>>>> " + exceptionMessage);
+		throw new RuntimeException(exceptionMessage);
+	}
+
+	private void waitSeconds(long timeInSeconds) {
+		try {
+			Thread.sleep(TimeUnit.SECONDS.toMillis(timeInSeconds));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void assertPublicIpNotNull() {
@@ -817,19 +870,21 @@ public class BrowserClient implements Closeable {
 
 	@Override
 	public void close() {
-		// Stop Selenium Grid (if necessary)
-		if (GridHandler.getInstance().useRemoteNodes()) {
-			GridHandler.getInstance().stopGrid();
-		}
-
 		// WebDriver
 		if (driver != null) {
 			try {
+				log.info("Closing webdriver of {} ", id);
 				driver.quit();
 				driver = null;
 			} catch (Throwable t) {
-				log.warn("Exception closing webdriver {} : {}", t.getClass(), t.getMessage());
+				log.warn("** Exception closing webdriver {} : {}", t.getClass(), t.getMessage());
 			}
+		}
+
+		// Stop Selenium Grid (if necessary)
+		if (GridHandler.getInstance().useRemoteNodes()) {
+			log.info("Closing Grid of {} ", id);
+			GridHandler.getInstance().stopGrid();
 		}
 	}
 

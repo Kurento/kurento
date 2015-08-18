@@ -15,8 +15,6 @@
 package org.kurento.test.internal;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.SELENIUM_HUB_ADDRESS;
-import static org.kurento.test.TestConfiguration.SELENIUM_HUB_ADDRESS_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
 
@@ -36,12 +34,9 @@ public class StartHub {
 	public Logger log = LoggerFactory.getLogger(StartHub.class);
 
 	public static void main(String[] args) throws Exception {
-		String hubAddress = getProperty(SELENIUM_HUB_ADDRESS,
-				SELENIUM_HUB_ADDRESS_DEFAULT);
-		int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY,
-				SELENIUM_HUB_PORT_DEFAULT);
+		int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY, SELENIUM_HUB_PORT_DEFAULT);
 
-		GridHub seleniumGridHub = new GridHub(hubAddress, hubPort);
+		GridHub seleniumGridHub = new GridHub(hubPort);
 		seleniumGridHub.start();
 	}
 }
