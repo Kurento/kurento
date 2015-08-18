@@ -90,6 +90,10 @@ struct _KmsWebRtcDataChannelBinPrivate
   DataChannelNewBuffer cb;
   gpointer user_data;
   GDestroyNotify notify;
+
+  ResetStreamFunc reset_cb;
+  gpointer reset_data;
+  GDestroyNotify reset_notify;
 };
 
 #define KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK(obj) \
@@ -124,6 +128,7 @@ enum
 
   /* actions */
   REQUEST_OPEN,
+  REQUEST_CLOSE,
 
   LAST_SIGNAL
 };
@@ -369,6 +374,10 @@ kms_webrtc_data_channel_bin_finalize (GObject * object)
     self->priv->notify (self->priv->user_data);
   }
 
+  if (self->priv->reset_notify != NULL) {
+    self->priv->reset_notify (self->priv->reset_data);
+  }
+
   g_rec_mutex_clear (&self->priv->mutex);
   g_free (self->priv->protocol);
   g_free (self->priv->label);
@@ -448,6 +457,31 @@ kms_webrtc_data_channel_bin_request_open (KmsWebRtcDataChannelBin * self)
     KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
     self->priv->ctrl_bytes_sent += buf_size;
     KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+  }
+}
+
+static void
+kms_webrtc_data_channel_bin_request_close (KmsWebRtcDataChannelBin * self)
+{
+  ResetStreamFunc reset_cb = NULL;
+  gpointer reset_data;
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  if (self->priv->state >= KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSING) {
+    GST_DEBUG_OBJECT (self, "Reset operation already done");
+    goto end;
+  }
+
+  self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSING;
+  reset_cb = self->priv->reset_cb;
+  reset_data = self->priv->reset_data;
+
+end:
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  if (reset_cb != NULL) {
+    reset_cb (self, reset_data);
   }
 }
 
@@ -546,7 +580,15 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
       G_STRUCT_OFFSET (KmsWebRtcDataChannelBinClass, request_open), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
+  obj_signals[REQUEST_CLOSE] =
+      g_signal_new ("request-close",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebRtcDataChannelBinClass, request_close), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
   klass->request_open = kms_webrtc_data_channel_bin_request_open;
+  klass->request_close = kms_webrtc_data_channel_bin_request_close;
 
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataChannelBinPrivate));
 }
@@ -1015,6 +1057,32 @@ kms_webrtc_data_channel_bin_set_new_buffer_callback (KmsWebRtcDataChannelBin *
   self->priv->cb = cb;
   self->priv->notify = notify;
   self->priv->user_data = user_data;
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  if (destroy != NULL) {
+    destroy (data);
+  }
+}
+
+void
+kms_webrtc_data_channel_bin_set_reset_stream_callback (KmsWebRtcDataChannelBin *
+    self, ResetStreamFunc cb, gpointer user_data, GDestroyNotify notify)
+{
+  GDestroyNotify destroy;
+  gpointer data;
+
+  g_return_if_fail (self != NULL);
+  g_return_if_fail (KMS_IS_WEBRTC_DATA_CHANNEL_BIN (self));
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  data = self->priv->reset_data;
+  destroy = self->priv->reset_notify;
+
+  self->priv->reset_cb = cb;
+  self->priv->reset_notify = notify;
+  self->priv->reset_data = user_data;
 
   KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
 

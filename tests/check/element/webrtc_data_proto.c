@@ -239,6 +239,121 @@ GST_START_TEST (data_session_established)
   g_main_loop_unref (loop);
 }
 
+GST_END_TEST typedef struct _ChannelSession
+{
+  guint stream_id;
+  GstElement *session;
+} ChannelSession;
+
+typedef struct _ExitTest
+{
+  gint count;
+  GMainLoop *loop;
+} ExitTest;
+
+static gboolean
+destroy_data_channel (ChannelSession * session)
+{
+  GST_DEBUG_OBJECT (session->session, "Destroy channel %u", session->stream_id);
+  g_signal_emit_by_name (session->session, "destroy-data-channel",
+      session->stream_id);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+destroy_data_channel_opened_cb (KmsWebRtcDataSessionBin * self, guint stream_id,
+    ChannelSession * session)
+{
+  GST_DEBUG_OBJECT (self, "Created data channel %u", stream_id);
+  session->stream_id = stream_id;
+
+  g_idle_add ((GSourceFunc) destroy_data_channel, session);
+}
+
+static void
+data_channel_closed_cb (KmsWebRtcDataSessionBin * self, guint stream_id,
+    ExitTest * exit)
+{
+  GST_DEBUG_OBJECT (self, "Closed data channel %u", stream_id);
+
+  if (g_atomic_int_dec_and_test (&exit->count)) {
+    g_idle_add (quit_main_loop_idle, exit->loop);
+  }
+}
+
+GST_START_TEST (destroy_channels)
+{
+  GstElement *session1, *session2, *udpsrc1, *udpsink1, *udpsrc2, *udpsink2;
+  ChannelSession session;
+  GstElement *pipeline;
+  gint stream_id;
+  GMainLoop *loop;
+  gulong id1, id2, id3;
+  ExitTest exit;
+
+  loop = g_main_loop_new (NULL, FALSE);
+  pipeline = gst_pipeline_new ("pipeline");
+
+  exit.count = 2;
+  exit.loop = loop;
+
+  udpsink1 = gst_element_factory_make ("udpsink", NULL);
+  udpsrc1 = gst_element_factory_make ("udpsrc", NULL);
+  session1 = GST_ELEMENT (kms_webrtc_data_session_bin_new (TRUE));
+
+  session.session = session1;
+  id1 = g_signal_connect (session1, "data-channel-opened",
+      G_CALLBACK (destroy_data_channel_opened_cb), &session);
+  id2 = g_signal_connect (session1, "data-channel-closed",
+      G_CALLBACK (data_channel_closed_cb), &exit);
+
+  udpsink2 = gst_element_factory_make ("udpsink", NULL);
+  udpsrc2 = gst_element_factory_make ("udpsrc", NULL);
+  session2 = GST_ELEMENT (kms_webrtc_data_session_bin_new (FALSE));
+  id3 = g_signal_connect (session2, "data-channel-closed",
+      G_CALLBACK (data_channel_closed_cb), &exit);
+
+  g_object_set (udpsink1, "host", "127.0.0.1", "port", 5555, "sync", FALSE,
+      "async", FALSE, NULL);
+  g_object_set (udpsrc1, "port", 6666, NULL);
+  g_object_set (session1, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+      NULL);
+
+  g_object_set (udpsink2, "host", "127.0.0.1", "port", 6666, "sync", FALSE,
+      "async", FALSE, NULL);
+  g_object_set (udpsrc2, "port", 5555, NULL);
+  g_object_set (session2, "sctp-local-port", 9999, "sctp-remote-port", 9999,
+      NULL);
+
+  gst_bin_add_many (GST_BIN (pipeline), session1, session2, udpsink1, udpsrc1,
+      udpsink2, udpsrc2, NULL);
+
+  gst_element_link_many (udpsrc1, session1, udpsink1, NULL);
+  gst_element_link_many (udpsrc2, session2, udpsink2, NULL);
+
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+  g_timeout_add_seconds (1, print_timedout_pipeline, pipeline);
+
+  g_signal_emit_by_name (session1, "create-data-channel", -1, -1, "TestChannel",
+      "webrtc-datachannel", &stream_id);
+
+  GST_DEBUG ("Creating data channel with stream id %d", stream_id);
+
+  g_main_loop_run (loop);
+
+  GST_DEBUG ("Finished test");
+
+  g_signal_handler_disconnect (session1, id1);
+  g_signal_handler_disconnect (session1, id2);
+  g_signal_handler_disconnect (session2, id3);
+
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (GST_OBJECT (pipeline));
+  g_main_loop_unref (loop);
+}
+
 GST_END_TEST static Suite *
 webrtc_data_protocol_suite (void)
 {
@@ -249,6 +364,7 @@ webrtc_data_protocol_suite (void)
 
   tcase_add_test (tc_chain, data_session_established);
   tcase_add_test (tc_chain, connection);
+  tcase_add_test (tc_chain, destroy_channels);
 
   return s;
 }

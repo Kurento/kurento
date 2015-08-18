@@ -98,6 +98,7 @@ enum
 
   GET_DATA_CHANNEL_ACTION,
   CREATE_DATA_CHANNEL_ACTION,
+  DESTROY_DATA_CHANNEL_ACTION,
 
   LAST_SIGNAL
 };
@@ -223,6 +224,26 @@ kms_webrtc_data_session_bin_get_data_channel_action (KmsWebRtcDataSessionBin *
 }
 
 static void
+kms_webrtc_data_session_bin_destroy_data_channel_action (KmsWebRtcDataSessionBin
+    * self, gint stream_id)
+{
+  GstElement *channel;
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
+
+  channel = g_hash_table_lookup (self->priv->data_channels,
+      GUINT_TO_POINTER (stream_id));
+
+  if (channel == NULL) {
+    GST_WARNING_OBJECT (self, "No data channel for stream id %u", stream_id);
+  } else {
+    g_signal_emit_by_name (channel, "request-close", NULL);
+  }
+
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+}
+
+static void
 kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
 {
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
@@ -295,6 +316,13 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
       NULL, NULL, __kms_webrtc_data_marshal_INT__INT_INT_STRING_STRING,
       G_TYPE_INT, 4, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING);
 
+  obj_signals[DESTROY_DATA_CHANNEL_ACTION] =
+      g_signal_new ("destroy-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, destroy_data_channel),
+      NULL, NULL, g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
+
   obj_signals[GET_DATA_CHANNEL_ACTION] =
       g_signal_new ("get-data-channel",
       G_TYPE_FROM_CLASS (klass),
@@ -305,7 +333,8 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
 
   klass->create_data_channel =
       kms_webrtc_data_session_bin_create_data_channel_action;
-
+  klass->destroy_data_channel =
+      kms_webrtc_data_session_bin_destroy_data_channel_action;
   klass->get_data_channel = kms_webrtc_data_session_bin_get_data_channel_action;
 
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataSessionBinPrivate));
@@ -404,6 +433,22 @@ data_channel_negotiated_cb (KmsWebRtcDataChannelBin * channel_bin,
   g_signal_emit (self, obj_signals[DATA_CHANNEL_OPENED], 0, sctp_stream_id);
 }
 
+static void
+kms_webrtc_data_session_bin_reset_channel (KmsWebRtcDataChannelBin * channel,
+    KmsWebRtcDataSessionBin * session)
+{
+  guint stream_id;
+
+  g_object_get (channel, "id", &stream_id, NULL);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (session);
+
+  GST_DEBUG_OBJECT (session, "reseting stream id %u", stream_id);
+  g_signal_emit_by_name (session->priv->sctpdec, "reset-stream", stream_id);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (session);
+}
+
 static GstElement *
 kms_webrtc_data_session_bin_create_data_channel (KmsWebRtcDataSessionBin
     * self, guint sctp_stream_id, gint max_packet_life_time,
@@ -415,6 +460,9 @@ kms_webrtc_data_session_bin_create_data_channel (KmsWebRtcDataSessionBin
           max_packet_life_time, max_retransmits, label, protocol));
   g_signal_connect (channel, "negotiated",
       G_CALLBACK (data_channel_negotiated_cb), self);
+  kms_webrtc_data_channel_bin_set_reset_stream_callback
+      (KMS_WEBRTC_DATA_CHANNEL_BIN (channel),
+      (ResetStreamFunc) kms_webrtc_data_session_bin_reset_channel, self, NULL);
 
   return channel;
 }
@@ -503,6 +551,66 @@ kms_webrtc_data_session_bin_pad_added (GstElement * sctpdec, GstPad * pad,
   }
 }
 
+static void
+kms_webrtc_data_session_bin_pad_removed (GstElement * sctpdec, GstPad * srcpad,
+    KmsWebRtcDataSessionBin * self)
+{
+  GstPad *chann_srcpad, *sctpenc_sinkpad;
+  gboolean emit_signal = FALSE;
+  GstElement *channel;
+  guint sctp_stream_id;
+  gchar *name;
+
+  name = gst_pad_get_name (srcpad);
+
+  GST_DEBUG_OBJECT (self, "Pad removed %" GST_PTR_FORMAT, srcpad);
+
+  if (!sscanf (name, "src_%u", &sctp_stream_id)) {
+    g_free (name);
+    return;
+  }
+
+  g_free (name);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
+
+  channel = (GstElement *) g_hash_table_lookup (self->priv->data_channels,
+      GUINT_TO_POINTER (sctp_stream_id));
+  g_hash_table_remove (self->priv->data_channels,
+      GUINT_TO_POINTER (sctp_stream_id));
+  g_hash_table_remove (self->priv->channels, GUINT_TO_POINTER (sctp_stream_id));
+
+  if (channel == NULL) {
+    GST_WARNING_OBJECT (self, "No data channel (%d) for pad %" GST_PTR_FORMAT,
+        sctp_stream_id, srcpad);
+    goto end;
+  }
+
+  gst_element_set_state (channel, GST_STATE_NULL);
+
+  chann_srcpad = gst_element_get_static_pad (channel, "src");
+  sctpenc_sinkpad = gst_pad_get_peer (chann_srcpad);
+
+  if (sctpenc_sinkpad != NULL) {
+    gst_pad_unlink (chann_srcpad, sctpenc_sinkpad);
+    gst_element_release_request_pad (self->priv->sctpenc, sctpenc_sinkpad);
+    g_object_unref (sctpenc_sinkpad);
+  }
+
+  g_object_unref (chann_srcpad);
+
+  gst_bin_remove (GST_BIN (self), channel);
+
+  emit_signal = TRUE;
+
+end:
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+
+  if (emit_signal) {
+    g_signal_emit (self, obj_signals[DATA_CHANNEL_CLOSED], 0, sctp_stream_id);
+  }
+}
+
 static guint
 kms_webrtc_data_session_bin_pick_stream_id (KmsWebRtcDataSessionBin * self)
 {
@@ -539,6 +647,7 @@ kms_webrtc_data_session_bin_create_data_channel_action (KmsWebRtcDataSessionBin
   if (!self->priv->session_established) {
     self->priv->pending = g_slist_prepend (self->priv->pending, channel);
     KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+
     return sctp_stream_id;
   }
 
@@ -650,6 +759,8 @@ kms_webrtc_data_session_bin_init (KmsWebRtcDataSessionBin * self)
 
   g_signal_connect (self->priv->sctpdec, "pad-added",
       G_CALLBACK (kms_webrtc_data_session_bin_pad_added), self);
+  g_signal_connect (self->priv->sctpdec, "pad-removed",
+      G_CALLBACK (kms_webrtc_data_session_bin_pad_removed), self);
   g_signal_connect (self->priv->sctpenc, "sctp-association-established",
       G_CALLBACK (kms_webrtc_data_session_bin_association_established), self);
 
