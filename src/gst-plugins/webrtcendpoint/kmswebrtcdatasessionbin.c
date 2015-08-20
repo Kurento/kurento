@@ -70,6 +70,8 @@ struct _KmsWebRtcDataSessionBinPrivate
   guint odd_id;
 
   GSList *pending;
+
+  GThreadPool *pool;
 };
 
 #define KMS_WEBRTC_DATA_SESSION_BIN_LOCK(obj) \
@@ -202,6 +204,8 @@ kms_webrtc_data_session_bin_finalize (GObject * object)
   g_hash_table_unref (self->priv->channels);
   g_hash_table_unref (self->priv->data_channels);
   g_slist_free_full (self->priv->pending, g_object_unref);
+
+  g_thread_pool_free (self->priv->pool, FALSE, FALSE);
 
   /* chain up */
   G_OBJECT_CLASS (parent_class)->finalize (object);
@@ -437,16 +441,8 @@ static void
 kms_webrtc_data_session_bin_reset_channel (KmsWebRtcDataChannelBin * channel,
     KmsWebRtcDataSessionBin * session)
 {
-  guint stream_id;
-
-  g_object_get (channel, "id", &stream_id, NULL);
-
-  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (session);
-
-  GST_DEBUG_OBJECT (session, "reseting stream id %u", stream_id);
-  g_signal_emit_by_name (session->priv->sctpdec, "reset-stream", stream_id);
-
-  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (session);
+  /* reset sctp dec asynchronously */
+  g_thread_pool_push (session->priv->pool, channel, NULL);
 }
 
 static GstElement *
@@ -719,6 +715,23 @@ kms_webrtc_data_session_bin_association_established (GstElement * sctpenc,
 }
 
 static void
+reset_stream_async (gpointer data, gpointer session)
+{
+  KmsWebRtcDataSessionBin *self = KMS_WEBRTC_DATA_SESSION_BIN (session);
+  KmsWebRtcDataChannelBin *channel = KMS_WEBRTC_DATA_CHANNEL_BIN (data);
+  guint stream_id;
+
+  g_object_get (channel, "id", &stream_id, NULL);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
+
+  GST_DEBUG_OBJECT (self, "reseting stream id %u", stream_id);
+  g_signal_emit_by_name (self->priv->sctpdec, "reset-stream", stream_id);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+}
+
+static void
 kms_webrtc_data_session_bin_init (KmsWebRtcDataSessionBin * self)
 {
   GstPadTemplate *pad_template;
@@ -737,6 +750,8 @@ kms_webrtc_data_session_bin_init (KmsWebRtcDataSessionBin * self)
   self->priv->session_established = FALSE;
   self->priv->even_id = 0;
   self->priv->odd_id = 1;
+  self->priv->pool =
+      g_thread_pool_new (reset_stream_async, self, -1, FALSE, NULL);
 
   name = get_decoder_name (self->priv->assoc_id);
   self->priv->sctpdec = gst_element_factory_make ("sctpdec", name);
