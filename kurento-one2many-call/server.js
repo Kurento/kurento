@@ -338,6 +338,7 @@ function stop(sessionId) {
 		viewers = [];
 
 	} else if (viewers[sessionId]) {
+		viewers[sessionId].webRtcEndpoint.release();
 		delete viewers[sessionId];
 	}
 
