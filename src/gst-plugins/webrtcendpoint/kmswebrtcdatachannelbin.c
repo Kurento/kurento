@@ -101,6 +101,19 @@ struct _KmsWebRtcDataChannelBinPrivate
 #define KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK(obj) \
   (g_rec_mutex_unlock (&KMS_WEBRTC_DATA_CHANNEL_BIN_CAST ((obj))->priv->mutex))
 
+#define KMS_WEBRTC_DATA_CHANNEL_RESET(obj) ({                  \
+  ResetStreamFunc _reset_cb = NULL;                            \
+  gpointer _reset_data;                                        \
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (obj);                      \
+  (obj)->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSING; \
+  _reset_cb = (obj)->priv->reset_cb;                           \
+  _reset_data = (obj)->priv->reset_data;                       \
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (obj);                    \
+  if (_reset_cb != NULL) {                                     \
+    _reset_cb ((obj), _reset_data);                            \
+  }                                                            \
+})
+
 enum
 {
   PROP_0,
@@ -612,6 +625,7 @@ kms_webrtc_data_channel_bin_send_data_channel_ack (KmsWebRtcDataChannelBin *
   if (flow_ret != GST_FLOW_OK) {
     GST_WARNING_OBJECT (self, "Failed to push data buffer: %s",
         gst_flow_get_name (flow_ret));
+    KMS_WEBRTC_DATA_CHANNEL_RESET (self);
   } else {
     KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
     self->priv->ctrl_bytes_sent += buf_size;
@@ -637,6 +651,7 @@ kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
     GST_WARNING_OBJECT (self,
         "Invalid size of data channel control message: %u, expected > %u", size,
         DATA_CHANNEL_OPEN_MIN_SIZE);
+    KMS_WEBRTC_DATA_CHANNEL_RESET (self);
     return;
   }
 
@@ -652,6 +667,7 @@ kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
     GST_WARNING_OBJECT (self,
         "Invalid size of data channel control message: %u, expected %u", size,
         msg_size);
+    KMS_WEBRTC_DATA_CHANNEL_RESET (self);
     return;
   }
 
@@ -664,6 +680,7 @@ kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
     default:
       GST_WARNING_OBJECT (self, "Invalid priority level negotiated: %d",
           priority);
+      KMS_WEBRTC_DATA_CHANNEL_RESET (self);
       return;
   }
 
@@ -739,6 +756,7 @@ kms_webrtc_data_channel_bin_handle_control_message (KmsWebRtcDataChannelBin *
   if (size == 0) {
     GST_WARNING_OBJECT (self,
         "Invalid size of data channel control message: %u, expected > 0", size);
+    KMS_WEBRTC_DATA_CHANNEL_RESET (self);
     return;
   }
 
@@ -750,6 +768,7 @@ kms_webrtc_data_channel_bin_handle_control_message (KmsWebRtcDataChannelBin *
     kms_webrtc_data_channel_bin_handle_ack (self, data, size);
   } else {
     GST_WARNING_OBJECT (self, "Received invalid data channel control message");
+    KMS_WEBRTC_DATA_CHANNEL_RESET (self);
   }
 }
 
@@ -757,7 +776,7 @@ static GstFlowReturn
 new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
 {
   const GstMetaInfo *meta_info = GST_SCTP_RECEIVE_META_INFO;
-  gboolean notify = FALSE;
+  gboolean notify = FALSE, reset = FALSE;
   gpointer state = NULL;
   GstFlowReturn ret;
   GstSample *sample;
@@ -799,10 +818,12 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
     case KMS_DATA_CHANNEL_PPID_BINARY_PARTIAL:
       GST_WARNING_OBJECT (self,
           "PPID: DATA_CHANNEL_PPID_BINARY_PARTIAL - Deprecated - Not supported");
+      reset = TRUE;
       break;
     case KMS_DATA_CHANNEL_PPID_STRING_PARTIAL:
       GST_WARNING_OBJECT (self,
           "PPID: DATA_CHANNEL_PPID_STRING_PARTIAL - Deprecated - Not supported");
+      reset = TRUE;
       break;
     case KMS_DATA_CHANNEL_PPID_STRING:
     case KMS_DATA_CHANNEL_PPID_BINARY:
@@ -812,10 +833,17 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
       break;
     default:
       GST_WARNING_OBJECT (self, "Unsupported PPID received: %u", ppid);
+      reset = TRUE;
       break;
   }
 
   gst_buffer_unmap (buffer, &info);
+
+  if (reset) {
+    KMS_WEBRTC_DATA_CHANNEL_RESET (self);
+    ret = GST_FLOW_ERROR;
+    goto end;
+  }
 
   if (notify && self->priv->cb != NULL) {
     ret = self->priv->cb (G_OBJECT (self), buffer, self->priv->user_data);
@@ -823,6 +851,7 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
     ret = GST_FLOW_OK;
   }
 
+end:
   gst_sample_unref (sample);
 
   return ret;
