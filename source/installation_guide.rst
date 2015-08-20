@@ -58,8 +58,7 @@ removed:
    # Edit sources.list and remove references to kurento
    sudo vi /etc/apt/sources.list
 
-After that, install Kurento Media Server 6 as depicted at the top of
-this page.
+After that, install Kurento Media Server 6 as depicted at the top of this page.
 
 
 STUN and TURN servers
@@ -78,6 +77,21 @@ the Kurento Media Server configuration file located on at
 
    stunServerAddress=<stun_ip_address>
    stunServerPort=<stun_port>
+
+.. note::
+
+   Be careful since comments inline (with ``;``) are not allowed for parameter such as ``stunServerAddress``.
+   Thus, the following configuration **is not correct**:
+
+   .. sourcecode:: sh
+
+       stunServerAddress=<stun_ip_address> ; Only IP address are supported
+
+   ... and must be:
+
+   .. sourcecode:: sh
+
+       stunServerAddress=<stun_ip_address>
 
 The parameter ``stunServerAddress`` should be an IP address (not domain name).
 There is plenty of public STUN servers available, for example:
