@@ -19,10 +19,10 @@
 #include <string.h>
 #include <gio/gio.h>
 #include <nice/interfaces.h>
+#include <commons/kmsloop.h>
 
 #include "KmsHttpEPServer.h"
 #include "KmsHttpPost.h"
-#include "KmsHttpLoop.h"
 #include "http-enumtypes.h"
 #include "http-marshal.h"
 
@@ -58,7 +58,7 @@ struct _KmsHttpEPServerPrivate {
   gchar *iface;
   gint port;
   GRand *rand;
-  KmsHttpLoop *loop;
+  KmsLoop *loop;
 };
 
 static GType http_t = G_TYPE_INVALID;
@@ -195,7 +195,7 @@ kms_http_ep_server_remove_timeout (KmsHttpEPServer *self, GstElement *httpep)
   }
 
   GST_DEBUG ("Remove timeout %d", *timeout_id);
-  kms_http_loop_remove (self->priv->loop, *timeout_id);
+  kms_loop_remove (self->priv->loop, *timeout_id);
   g_object_set_data_full (G_OBJECT (httpep), KEY_TIMEOUT_ID, NULL, NULL);
 }
 
@@ -259,11 +259,11 @@ emit_expiration_signal (SoupMessage *msg, GstElement *httpep)
   serv = (KmsHttpEPServer *) g_object_get_data (G_OBJECT (msg),
          KEY_HTTP_EP_SERVER);
   id = g_slice_new (guint);
-  *id = kms_http_loop_timeout_add_full (serv->priv->loop,
-                                        G_PRIORITY_DEFAULT, t_timeout * 1000,
-                                        emit_expiration_signal_cb,
-                                        g_object_ref (G_OBJECT (msg) ),
-                                        g_object_unref);
+  *id = kms_loop_timeout_add_full (serv->priv->loop,
+                                   G_PRIORITY_DEFAULT, t_timeout * 1000,
+                                   emit_expiration_signal_cb,
+                                   g_object_ref (G_OBJECT (msg) ),
+                                   g_object_unref);
   g_object_set_data_full (G_OBJECT (httpep), KEY_TIMEOUT_ID, id,
                           (GDestroyNotify) destroy_guint);
   soup_date_free (now);
@@ -517,7 +517,7 @@ destroy_tmp_data (struct tmp_data *tdata)
 {
   if (tdata->id > 0) {
     /* Remove timeout */
-    kms_http_loop_remove (tdata->server->priv->loop, tdata->id);
+    kms_loop_remove (tdata->server->priv->loop, tdata->id);
   }
 
   if (tdata->server != NULL) {
@@ -574,9 +574,9 @@ kms_http_ep_server_stop_impl (KmsHttpEPServer *self,
   tdata->data = user_data;
   tdata->server = KMS_HTTP_EP_SERVER ( g_object_ref (self) );
 
-  kms_http_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-                               (GSourceFunc) stop_http_ep_server_cb, tdata,
-                               (GDestroyNotify) destroy_tmp_data);
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+                          (GSourceFunc) stop_http_ep_server_cb, tdata,
+                          (GDestroyNotify) destroy_tmp_data);
 }
 
 static void
@@ -931,9 +931,9 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
   tdata->notify = notify;
   tdata->data = user_data;
   tdata->server = KMS_HTTP_EP_SERVER ( g_object_ref (self) );
-  tdata->id = kms_http_loop_timeout_add_full (self->priv->loop,
-              G_PRIORITY_DEFAULT_IDLE, RESOLV_TIMEOUT, (GSourceFunc) cancel_resolution,
-              cancel, g_object_unref);
+  tdata->id = kms_loop_timeout_add_full (self->priv->loop,
+                                         G_PRIORITY_DEFAULT_IDLE, RESOLV_TIMEOUT, (GSourceFunc) cancel_resolution,
+                                         cancel, g_object_unref);
 
   addr = soup_address_new (self->priv->iface, self->priv->port);
 
@@ -1029,13 +1029,13 @@ kms_http_ep_server_register_end_point_impl (KmsHttpEPServer *self,
   tdata->notify = notify;
   tdata->server = KMS_HTTP_EP_SERVER ( g_object_ref (self) );
 
-  if (KMS_HTTP_LOOP_IS_CURRENT_THREAD (self->priv->loop) ) {
+  if (KMS_LOOP_IS_CURRENT_THREAD (self->priv->loop) ) {
     register_end_point_cb (tdata);
     destroy_tmp_register_data (tdata);
   } else
-    kms_http_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-                                 (GSourceFunc) register_end_point_cb, tdata,
-                                 (GDestroyNotify) destroy_tmp_register_data);
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+                            (GSourceFunc) register_end_point_cb, tdata,
+                            (GDestroyNotify) destroy_tmp_register_data);
 
   return;
 
@@ -1116,13 +1116,13 @@ kms_http_ep_server_unregister_end_point_impl (KmsHttpEPServer *self,
   tdata->uri = g_strdup (uri);
   tdata->server = KMS_HTTP_EP_SERVER ( g_object_ref (self) );
 
-  if (KMS_HTTP_LOOP_IS_CURRENT_THREAD (self->priv->loop) ) {
+  if (KMS_LOOP_IS_CURRENT_THREAD (self->priv->loop) ) {
     unregister_end_point_cb (tdata);
     destroy_tmp_unregister_data (tdata);
   } else {
-    kms_http_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-                                 (GSourceFunc) unregister_end_point_cb, tdata,
-                                 (GDestroyNotify) destroy_tmp_unregister_data);
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+                            (GSourceFunc) unregister_end_point_cb, tdata,
+                            (GDestroyNotify) destroy_tmp_unregister_data);
   }
 }
 
@@ -1334,7 +1334,7 @@ kms_http_ep_server_init (KmsHttpEPServer *self)
                          g_free, g_object_unref);
 
   self->priv->rand = g_rand_new();
-  self->priv->loop = kms_http_loop_new ();
+  self->priv->loop = kms_loop_new ();
 }
 
 /* Virtual public methods */

@@ -10,14 +10,12 @@ include(GLibHelpers)
 SET(HTTP_EP_SOURCES
   KmsHttpEPServer.cpp
   KmsHttpPost.cpp
-  KmsHttpLoop.cpp
   HttpEndPointServer.cpp
 )
 
 SET(HTTP_EP_HEADERS
   KmsHttpEPServer.h
   KmsHttpPost.h
-  KmsHttpLoop.h
   HttpEndPointServer.hpp
 )
 
@@ -46,6 +44,7 @@ include_directories(kmshttpep
   ${uuid_INCLUDE_DIRS}
   ${gio-2.0_INCLUDE_DIRS}
   ${nice_INCLUDE_DIRS}
+  ${KmsGstCommons_INCLUDE_DIRS}
 )
 
 target_link_libraries(kmshttpep
@@ -55,4 +54,5 @@ target_link_libraries(kmshttpep
   ${uuid_LIBRARIES}
   ${gio-2.0_LIBRARIES}
   ${nice_LIBRARIES}
+  ${KmsGstCommons_LIBRARIES}
 )
