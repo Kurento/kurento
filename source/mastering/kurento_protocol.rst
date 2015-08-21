@@ -344,11 +344,9 @@ server send to client has all the information about the event:
   - **data**: Information about this specific of this type of event.
   - **source**: the object source of the event.
   - **type**: The type of the event.
-  - **subscription**: subscription ``id`` for which the event is fired.
 
 The following example shows a notification sent for server to client to notify
-an event of type ``EndOfStream`` in the object ``311861480`` with subscription
-``353be312-b7f1-4768-9117-5c2f5a087429``::
+an event of type ``EndOfStream`` in the object ``311861480``::
 
     {
       "jsonrpc": "2.0",
@@ -361,7 +359,6 @@ an event of type ``EndOfStream`` in the object ``311861480`` with subscription
               "type":"EndOfStream"
           },
           "object":"311861480",
-          "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
           "type":"EndOfStream",
         },
         "sessionId":"4f5255d5-5695-4e1c-aa2b-722e82db5260"
