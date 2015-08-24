@@ -54,7 +54,7 @@ G_DEFINE_TYPE_WITH_CODE (KmsWebRtcDataSessionBin, kms_webrtc_data_session_bin,
 struct _KmsWebRtcDataSessionBinPrivate
 {
   guint16 assoc_id;
-  gboolean is_client;
+  gboolean dtls_client_mode;
   gboolean session_established;
   guint16 local_sctp_port;
   guint16 remote_sctp_port;
@@ -151,7 +151,7 @@ kms_webrtc_data_session_bin_set_property (GObject * object, guint property_id,
 
   switch (property_id) {
     case PROP_DTLS_CLIENT_MODE:
-      self->priv->is_client = g_value_get_boolean (value);
+      self->priv->dtls_client_mode = g_value_get_boolean (value);
       break;
     case PROP_SCTP_LOCAL_PORT:
       self->priv->local_sctp_port = g_value_get_uint (value);
@@ -177,7 +177,7 @@ kms_webrtc_data_session_bin_get_property (GObject * object, guint property_id,
 
   switch (property_id) {
     case PROP_DTLS_CLIENT_MODE:
-      g_value_set_boolean (value, self->priv->is_client);
+      g_value_set_boolean (value, self->priv->dtls_client_mode);
       break;
     case PROP_SCTP_LOCAL_PORT:
       g_value_set_uint (value, self->priv->local_sctp_port);
@@ -403,8 +403,8 @@ kms_webrtc_data_session_bin_is_valid_sctp_stream_id (KmsWebRtcDataSessionBin *
     self, guint16 sctp_stream_id)
 {
   if ((sctp_stream_id == 65535) ||
-      (IS_EVEN (sctp_stream_id) && self->priv->is_client) ||
-      (!IS_EVEN (sctp_stream_id) && !self->priv->is_client)) {
+      (IS_EVEN (sctp_stream_id) && self->priv->dtls_client_mode) ||
+      (!IS_EVEN (sctp_stream_id) && !self->priv->dtls_client_mode)) {
     return FALSE;
   } else {
     return TRUE;
@@ -612,7 +612,7 @@ kms_webrtc_data_session_bin_pick_stream_id (KmsWebRtcDataSessionBin * self)
 {
   guint *id;
 
-  if (self->priv->is_client) {
+  if (self->priv->dtls_client_mode) {
     id = &self->priv->even_id;
   } else {
     id = &self->priv->odd_id;
