@@ -159,7 +159,7 @@ Object.defineProperties(${complexType.name}.prototype, {
 </#if>
 
 /**
- * Checker for {@link ${complexType_namepath}}
+ * Checker for {@link module:${complexType_namepath}}
  *
  * @memberof module:${module_namespace}
  *

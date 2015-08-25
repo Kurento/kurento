@@ -356,7 +356,7 @@ ${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator="
 
 
 /**
- * Checker for {@link ${remoteClass_namepath}}
+ * Checker for {@link module:${remoteClass_namepath}}
  *
  * @memberof module:${module_namespace}
  *
