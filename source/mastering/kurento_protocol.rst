@@ -145,9 +145,10 @@ Create messages
 
 Create message requests the creation of an object of the Kurento API. The
 parameter ``type`` specifies the type of the object to be created. The
-parameter ``constructorParams`` contains all the information needed to create the
-object. Each message needs different ``constructorParams`` to create the object.
-These parameters are defined in :doc:`Kurento API section <kurento_API>`.
+parameter ``constructorParams`` contains all the information needed to create
+the object. Each message needs different ``constructorParams`` to create the
+object. These parameters are defined in
+:doc:`Kurento API section <kurento_API>`.
 
 Finally, a ``sessionId`` parameter is included with the identifier of the
 current session. The value of this parameter is sent by Kurento Media Server to
@@ -446,7 +447,7 @@ interface of the Kurento elements. We have defined a custom IDL format based on
 JSON. From it, we generate the client code for Java and JavaScript. Kurento API
 is defined in the following IDL files:
 
-- `KMS core <https://github.com/Kurento/kms-core/blob/develop/src/server/interface/core.kmd.json>`_
+- `KMS core <https://github.com/Kurento/kms-core/blob/master/src/server/interface/core.kmd.json>`_
 
 - `KMS elements <https://github.com/Kurento/kms-elements/tree/master/src/server/interface>`_
 
