@@ -105,7 +105,7 @@ langdoc:
 	  mv $(BUILDDIR)/langdoc/kurento-java/kurento-client $(BUILDDIR)/langdoc
 	  cd $(BUILDDIR)/langdoc/kurento-client && mvn clean package -DskipTests
 	  rsync -av $(BUILDDIR)/langdoc/kurento-client/target/generated-sources/kmd/* $(BUILDDIR)/langdoc/kurento-client/src/main/java/
-	  javadoc -d $(BUILDDIR)/html/langdoc/javadoc -sourcepath $(BUILDDIR)/langdoc/*/src/main/java/ org.kurento.client org.kurento.client.factory
+	  javadoc -d $(BUILDDIR)/html/langdoc/javadoc -sourcepath $(BUILDDIR)/langdoc/*/src/main/java/ org.kurento.client
 
 	  # kurento-client-js javadoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-client-js
