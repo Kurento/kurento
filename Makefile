@@ -107,17 +107,17 @@ langdoc:
 	  rsync -av $(BUILDDIR)/langdoc/kurento-client/target/generated-sources/kmd/* $(BUILDDIR)/langdoc/kurento-client/src/main/java/
 	  javadoc -d $(BUILDDIR)/html/langdoc/javadoc -sourcepath $(BUILDDIR)/langdoc/*/src/main/java/ org.kurento.client
 
-	  # kurento-client-js javadoc
+	  # kurento-client-js jsdoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-client-js
 	  cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-client-js.git
 	  cd $(BUILDDIR)/langdoc/kurento-client-js && git checkout kurento-client-js-$(CLIENT_JS_VERSION) || git checkout $(CLIENT_JS_VERSION) || echo "Using master branch" && npm install && node_modules/.bin/grunt --force jsdoc
 	  cp -r $(BUILDDIR)/langdoc/kurento-client-js/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/kurento-client-js
 
-	  # kurento-utils-js javadoc
+	  # kurento-utils-js jsdoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-utils-js
 	  cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-utils-js.git
 	  cd $(BUILDDIR)/langdoc/kurento-utils-js && git checkout kurento-utils-js-$(UTILS_JS_VERSION) || git checkout $(UTILS_JS_VERSION) || echo "Using master branch" && npm install && node_modules/.bin/grunt --force jsdoc
-	  cp -r $(BUILDDIR)/langdoc/kurento-utils-js/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/kurento-utils-js
+	  cp -r $(BUILDDIR)/langdoc/kurento-utils-js/doc/jsdoc/kurento-utils/$(UTILS_JS_VERSION) $(BUILDDIR)/html/langdoc/jsdoc/kurento-utils-js
 
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
