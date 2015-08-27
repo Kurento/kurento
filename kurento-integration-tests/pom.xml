@@ -57,10 +57,7 @@
 		<profile>
 			<id>default</id>
 			<activation>
-				<property>
-					<name>default</name>
-					<value>true</value>
-				</property>
+                                <activeByDefault>true</activeByDefault>
 			</activation>
                         <modules>
                                 <module>kurento-jsonrpc-test</module>
