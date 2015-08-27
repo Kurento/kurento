@@ -95,6 +95,7 @@
 				<module>kurento-repository</module>
 				<module>kurento-rabbitmq</module>
                                 <module>kurento-test</module>
+				<module>kurento-integration-test</module>
 			</modules>
 		</profile>
 		<profile>
