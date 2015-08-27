@@ -46,11 +46,29 @@
 		</developer>
 	</developers>
 
-	<modules>
-		<module>kurento-jsonrpc-client</module>
-		<module>kurento-jsonrpc-server</module>
-		<module>kurento-jsonrpc-demo-server</module>
-	</modules>
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<property>
+					<name>default</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<modules>
+				<module>kurento-jsonrpc-client</module>
+				<module>kurento-jsonrpc-server</module>
+				<module>kurento-jsonrpc-demo-server</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>deploy</id>
+			<modules>
+				<module>kurento-jsonrpc-client</module>
+				<module>kurento-jsonrpc-server</module>
+			</modules>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>

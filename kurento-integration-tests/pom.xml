@@ -57,16 +57,19 @@
 		<profile>
 			<id>default</id>
 			<activation>
-                                <activeByDefault>true</activeByDefault>
+				<property>
+					<name>default</name>
+					<value>true</value>
+				</property>
 			</activation>
-                        <modules>
-                                <module>kurento-jsonrpc-test</module>
-                                <module>kurento-client-test</module>
-                                <module>kurento-repository-test</module>
-                                <module>kurento-test</module>
-                                <module>kurento-control-server-test</module>
-                                <module>kurento-sanity-test</module>
-                        </modules>
+			<modules>
+							<module>kurento-jsonrpc-test</module>
+							<module>kurento-client-test</module>
+							<module>kurento-repository-test</module>
+							<module>kurento-test</module>
+							<module>kurento-control-server-test</module>
+							<module>kurento-sanity-test</module>
+			</modules>
 			<build>
 				<plugins>
 					<plugin>
@@ -86,14 +89,26 @@
 				</plugins>
 			</build>
 		</profile>
-                <profile>
-                        <id>deploy</id>
-                        <modules>
-                                 <module>kurento-test</module>
-                        </modules>
-                </profile>
+		<profile>
+			<id>integration-tests</id>
+			<activation>
+					<activeByDefault>true</activeByDefault>
+				</activation>
+				<modules>
+								<module>kurento-jsonrpc-test</module>
+								<module>kurento-client-test</module>
+								<module>kurento-repository-test</module>
+								<module>kurento-test</module>
+								<module>kurento-control-server-test</module>
+								<module>kurento-sanity-test</module>
+				</modules>
+		</profile>
+    <profile>
+            <id>deploy</id>
+            <modules>
+                     <module>kurento-test</module>
+            </modules>
+    </profile>
 	</profiles>
 
 </project>
-
-
