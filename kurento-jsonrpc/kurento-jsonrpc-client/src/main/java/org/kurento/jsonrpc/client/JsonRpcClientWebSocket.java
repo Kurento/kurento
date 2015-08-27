@@ -176,8 +176,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	public void close() throws IOException {
 
 		clientClose = true;
-		
-		log.info("{} Explicit close of JsonRpcClientWebsocket with sessionId={}", label, this.session.getSessionId());
+
+		String sessionId = this.session != null ? this.session.getSessionId() : "";
+		log.info("{} Explicit close of JsonRpcClientWebsocket with sessionId={}", label, sessionId);
 
 		if (sendCloseMessage) {
 			try {
