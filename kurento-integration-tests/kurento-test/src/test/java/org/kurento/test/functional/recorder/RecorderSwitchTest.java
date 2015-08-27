@@ -130,9 +130,10 @@ public class RecorderSwitchTest extends FunctionalTest {
 		// Release Media Pipeline #1
 		recorderEP.stop();
 		mp.release();
+		getBrowser().close();
 
 		// Post-processing
-		Shell.runAndWait("ffmpeg", "-i", recordingPreProcess, "-c", "copy",
+		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c", "copy",
 				recordingPostProcess);
 
 		// Play the recording
