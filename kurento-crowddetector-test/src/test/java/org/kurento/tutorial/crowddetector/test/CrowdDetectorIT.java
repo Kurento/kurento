@@ -22,12 +22,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kurento.demo.CrowdDetectorApp;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -49,6 +52,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 public class CrowdDetectorIT {
 
 	protected WebDriver driver;
+	protected static final Logger log = LoggerFactory.getLogger(CrowdDetectorIT.class);
 
 	protected final static int TEST_TIMEOUT = 60; // seconds
 	protected final static int ALERT_TIMEOUT = 10; // seconds
@@ -81,12 +85,18 @@ public class CrowdDetectorIT {
 
 		// Check alert
 		WebDriverWait wait = new WebDriverWait(driver, ALERT_TIMEOUT);
-		if (wait.until(ExpectedConditions.alertIsPresent()) != null) {
-			driver.switchTo().alert().accept();
-			driver.findElement(By.id("address")).sendKeys("rtsp://195.55.223.100/axis-media/media.amp");
-			driver.findElement(By.id("changeFeed")).click();
-			driver.switchTo().alert().accept();
-			driver.findElement(By.id("start")).click();
+		try {
+			if (wait.until(ExpectedConditions.alertIsPresent()) != null) {
+				driver.switchTo().alert().accept();
+				driver.findElement(By.id("address")).sendKeys("rtsp://195.55.223.100/axis-media/media.amp");
+				driver.findElement(By.id("changeFeed")).click();
+				if (wait.until(ExpectedConditions.alertIsPresent()) != null) {
+					driver.switchTo().alert().accept();
+					driver.findElement(By.id("start")).click();
+				}
+			}
+		} catch (TimeoutException te) {
+			log.warn(te.getMessage());
 		}
 
 		// Assessment #1: Remote video tag should play media
