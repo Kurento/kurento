@@ -107,6 +107,13 @@ public class KurentoTestClient extends TestClient {
 	// ----------------------------------
 
 	/*
+	 * close
+	 */
+	public void close() {
+		browserClient.close();
+	}
+
+	/*
 	 * subscribeEvents
 	 */
 	public void subscribeEvents(String eventType) {
