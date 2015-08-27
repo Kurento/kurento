@@ -49,11 +49,27 @@
 		</developer>
 	</developers>
 
-	<modules>
-		<module>kurento-repository-internal</module>
-		<module>kurento-repository-server</module>
-	</modules>
+        <profiles>
+                <profile>
+                        <id>default</id>
+                        <activation>
+                                <activeByDefault>true</activeByDefault>
+                        </activation>
 
+			<modules>
+				<module>kurento-repository-internal</module>
+				<module>kurento-repository-server</module>
+			</modules>
+		</profile>
+
+                <profile>
+                        <id>deploy</id>
+                        <modules>
+                                <module>kurento-repository-internal</module>
+			</modules>
+		</profile>
+	</profiles>
+ 
 	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>

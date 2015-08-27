@@ -45,15 +45,6 @@
 		</developer>
 	</developers>
 
-	<modules>
-		<module>kurento-jsonrpc-test</module>
-		<module>kurento-client-test</module>
-		<module>kurento-repository-test</module>
-		<module>kurento-test</module>
-		<module>kurento-control-server-test</module>
-		<module>kurento-sanity-test</module>
-	</modules>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>
@@ -71,6 +62,14 @@
 					<value>true</value>
 				</property>
 			</activation>
+                        <modules>
+                                <module>kurento-jsonrpc-test</module>
+                                <module>kurento-client-test</module>
+                                <module>kurento-repository-test</module>
+                                <module>kurento-test</module>
+                                <module>kurento-control-server-test</module>
+                                <module>kurento-sanity-test</module>
+                        </modules>
 			<build>
 				<plugins>
 					<plugin>
@@ -90,6 +89,12 @@
 				</plugins>
 			</build>
 		</profile>
+                <profile>
+                        <id>deploy</id>
+                        <modules>
+                                 <module>kurento-test</module>
+                        </modules>
+                </profile>
 	</profiles>
 
 </project>
