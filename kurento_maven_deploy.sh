@@ -27,7 +27,7 @@ echo "Deploying version $PROJECT_VERSION"
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]]; then
 	echo "Deploying SNAPSHOT version"
-	mvn --settings $MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltSnapshotDeploymentRepository=$REPOSITORY || exit 1
+	mvn --settings $MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Pdefault $OPTS -DaltSnapshotDeploymentRepository=$REPOSITORY || exit 1
 else
 	OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
 	if [[ $SIGN_ARTIFACTS == yes ]]; then
