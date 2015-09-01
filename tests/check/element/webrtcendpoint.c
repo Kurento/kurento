@@ -358,7 +358,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
   gchar *sender_sess_id, *receiver_sess_id;
-  OnIceCandidateData *sender_cand_data, *receiver_cand_data;
+  OnIceCandidateData sender_cand_data, receiver_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc = gst_element_factory_make ("videotestsrc", NULL);
@@ -388,17 +388,15 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   GST_DEBUG_OBJECT (receiver, "Created session with id '%s'", receiver_sess_id);
 
   /* Trickle ICE management */
-  sender_cand_data = g_slice_new0 (OnIceCandidateData);
-  sender_cand_data->peer = receiver;
-  sender_cand_data->peer_sess_id = receiver_sess_id;
+  sender_cand_data.peer = receiver;
+  sender_cand_data.peer_sess_id = receiver_sess_id;
   g_signal_connect (G_OBJECT (sender), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), sender_cand_data);
+      G_CALLBACK (on_ice_candidate), &sender_cand_data);
 
-  receiver_cand_data = g_slice_new0 (OnIceCandidateData);
-  receiver_cand_data->peer = sender;
-  receiver_cand_data->peer_sess_id = sender_sess_id;
+  receiver_cand_data.peer = sender;
+  receiver_cand_data.peer_sess_id = sender_sess_id;
   g_signal_connect (G_OBJECT (receiver), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), receiver_cand_data);
+      G_CALLBACK (on_ice_candidate), &receiver_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -510,8 +508,6 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_slice_free (HandOffData, hod);
   g_free (sender_sess_id);
   g_free (receiver_sess_id);
-  g_slice_free (OnIceCandidateData, sender_cand_data);
-  g_slice_free (OnIceCandidateData, receiver_cand_data);
 }
 
 static void
@@ -524,7 +520,7 @@ test_video_sendrecv (const gchar * video_enc_name,
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
   gchar *offerer_sess_id, *answerer_sess_id;
-  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
+  OnIceCandidateData offerer_cand_data, answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *videotestsrc_offerer =
@@ -561,17 +557,15 @@ test_video_sendrecv (const gchar * video_enc_name,
   GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
 
   /* Trickle ICE management */
-  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  offerer_cand_data->peer = answerer;
-  offerer_cand_data->peer_sess_id = answerer_sess_id;
+  offerer_cand_data.peer = answerer;
+  offerer_cand_data.peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &offerer_cand_data);
 
-  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  answerer_cand_data->peer = offerer;
-  answerer_cand_data->peer_sess_id = offerer_sess_id;
+  answerer_cand_data.peer = offerer;
+  answerer_cand_data.peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &answerer_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -654,8 +648,6 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_slice_free (HandOffData, hod);
   g_free (offerer_sess_id);
   g_free (answerer_sess_id);
-  g_slice_free (OnIceCandidateData, offerer_cand_data);
-  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 static void
@@ -667,7 +659,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
   gchar *offerer_sess_id, *answerer_sess_id;
-  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
+  OnIceCandidateData offerer_cand_data, answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
   GstElement *audiotestsrc_offerer =
@@ -709,17 +701,15 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
 
   /* Trickle ICE management */
-  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  offerer_cand_data->peer = answerer;
-  offerer_cand_data->peer_sess_id = answerer_sess_id;
+  offerer_cand_data.peer = answerer;
+  offerer_cand_data.peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &offerer_cand_data);
 
-  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  answerer_cand_data->peer = offerer;
-  answerer_cand_data->peer_sess_id = offerer_sess_id;
+  answerer_cand_data.peer = offerer;
+  answerer_cand_data.peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &answerer_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = expected_caps;
@@ -810,8 +800,6 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_slice_free (HandOffData, hod);
   g_free (offerer_sess_id);
   g_free (answerer_sess_id);
-  g_slice_free (OnIceCandidateData, offerer_cand_data);
-  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 #define OFFERER_RECEIVES_AUDIO "offerer_receives_audio"
@@ -1039,7 +1027,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
       *hod_video_answerer;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
   gchar *offerer_sess_id, *answerer_sess_id;
-  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
+  OnIceCandidateData offerer_cand_data, answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
@@ -1104,17 +1092,15 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
 
   /* Trickle ICE management */
-  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  offerer_cand_data->peer = answerer;
-  offerer_cand_data->peer_sess_id = answerer_sess_id;
+  offerer_cand_data.peer = answerer;
+  offerer_cand_data.peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &offerer_cand_data);
 
-  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  answerer_cand_data->peer = offerer;
-  answerer_cand_data->peer_sess_id = offerer_sess_id;
+  answerer_cand_data.peer = offerer;
+  answerer_cand_data.peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &answerer_cand_data);
 
   hod_audio_offerer = g_slice_new0 (HandOffData);
   hod_audio_offerer->type = OFFERER_RECEIVES_AUDIO;
@@ -1247,8 +1233,6 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   g_slice_free (HandOffData, hod_video_answerer);
   g_free (offerer_sess_id);
   g_free (answerer_sess_id);
-  g_slice_free (OnIceCandidateData, offerer_cand_data);
-  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 static void
@@ -1263,7 +1247,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   HandOffData *hod;
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
   gchar *offerer_sess_id, *answerer_sess_id;
-  OnIceCandidateData *offerer_cand_data, *answerer_cand_data;
+  OnIceCandidateData offerer_cand_data, answerer_cand_data;
   GstSDPMessage *offer, *answer;
   GstElement *pipeline = gst_pipeline_new (NULL);
 
@@ -1311,17 +1295,15 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
 
   /* Trickle ICE management */
-  offerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  offerer_cand_data->peer = answerer;
-  offerer_cand_data->peer_sess_id = answerer_sess_id;
+  offerer_cand_data.peer = answerer;
+  offerer_cand_data.peer_sess_id = answerer_sess_id;
   g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), offerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &offerer_cand_data);
 
-  answerer_cand_data = g_slice_new0 (OnIceCandidateData);
-  answerer_cand_data->peer = offerer;
-  answerer_cand_data->peer_sess_id = offerer_sess_id;
+  answerer_cand_data.peer = offerer;
+  answerer_cand_data.peer_sess_id = offerer_sess_id;
   g_signal_connect (G_OBJECT (answerer), "on-ice-candidate",
-      G_CALLBACK (on_ice_candidate), answerer_cand_data);
+      G_CALLBACK (on_ice_candidate), &answerer_cand_data);
 
   hod = g_slice_new0 (HandOffData);
   hod->expected_caps = video_expected_caps;
@@ -1411,8 +1393,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_slice_free (HandOffData, hod);
   g_free (offerer_sess_id);
   g_free (answerer_sess_id);
-  g_slice_free (OnIceCandidateData, offerer_cand_data);
-  g_slice_free (OnIceCandidateData, answerer_cand_data);
 }
 
 #ifdef ENABLE_DEBUGGING_TESTS
