@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.internal.runners.model.MultipleFailureException;
@@ -36,28 +37,25 @@ public class KmsLogOnFailure extends TestWatcher {
 	protected void failed(Throwable e, Description description) {
 
 		if (KurentoServicesTestHelper.printKmsLog()) {
+			List<File> logFiles = KurentoServicesTestHelper.getServerLogFiles();
+			final String separator = "******************************************************************************";
+			for (File logFile : logFiles) {
+				if (logFile != null && logFile.exists()) {
+					System.err.println(separator);
+					System.err.println(
+							"Log file path: " + logFile.getAbsolutePath());
+					System.err.println("Content:");
 
-			File logFile = KurentoServicesTestHelper.getServerLogFile();
-
-			if (logFile != null && logFile.exists()) {
-				System.err
-						.println("******************************************************************************");
-				System.err.println("Log file path: "
-						+ logFile.getAbsolutePath());
-				System.err.println("Content:");
-
-				try {
-					for (String line : FileUtils.readLines(logFile)) {
-						System.err.println(line);
+					try {
+						for (String line : FileUtils.readLines(logFile)) {
+							System.err.println(line);
+						}
+					} catch (IOException e1) {
+						System.err.println("Error reading lines in log file");
+						e1.printStackTrace();
 					}
-				} catch (IOException e1) {
-					System.err.println("Error reading lines in log file");
-					e1.printStackTrace();
+					System.err.println(separator);
 				}
-
-				System.err
-						.println("******************************************************************************");
-
 			}
 		}
 

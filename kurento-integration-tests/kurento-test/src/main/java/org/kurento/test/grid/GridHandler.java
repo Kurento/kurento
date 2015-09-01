@@ -124,7 +124,7 @@ public class GridHandler {
 			if (nodeList == null) {
 				nodeList = new ArrayList<>();
 				try {
-					log.debug("Reading node list from URL {}", nodesListUrlProp);
+					log.trace("Reading node list from URL {}", nodesListUrlProp);
 					String contents = readContents(nodesListUrlProp);
 					Pattern p = Pattern.compile(IPS_REGEX);
 					Matcher m = p.matcher(contents);
@@ -137,7 +137,7 @@ public class GridHandler {
 			}
 
 		} else if (nodesListFileProp != null) {
-			log.debug("Reading node list from file {}", nodesListFileProp);
+			log.trace("Reading node list from file {}", nodesListFileProp);
 			try {
 				nodeList = FileUtils.readLines(new File(nodesListFileProp), Charset.defaultCharset());
 			} catch (IOException e) {
@@ -145,11 +145,11 @@ public class GridHandler {
 			}
 
 		} else if (nodesListProp != null) {
-			log.debug("Reading node list from property {}", nodesListProp);
+			log.trace("Reading node list from property {}", nodesListProp);
 			nodeList = new ArrayList<>(Arrays.asList(nodesListProp.split(";")));
 
 		} else {
-			log.debug("Using default node list {}", SELENIUM_NODES_LIST_DEFAULT);
+			log.trace("Using default node list {}", SELENIUM_NODES_LIST_DEFAULT);
 			InputStream inputStream = PerformanceTest.class.getClassLoader()
 					.getResourceAsStream(SELENIUM_NODES_LIST_DEFAULT);
 

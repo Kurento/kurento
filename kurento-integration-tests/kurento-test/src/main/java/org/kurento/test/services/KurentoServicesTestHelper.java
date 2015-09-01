@@ -51,6 +51,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
@@ -72,7 +74,7 @@ public class KurentoServicesTestHelper {
 	private static String kmsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kcsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kmsPrintLog;
-	private static File logFile;
+	private static List<File> logFiles;
 	private static ConfigurableApplicationContext appContext;
 
 	public static void startKurentoServicesIfNeccessary() throws IOException {
@@ -102,7 +104,8 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	private static void startKurentoMediaServerIfNecessary() throws IOException {
+	private static void startKurentoMediaServerIfNecessary()
+			throws IOException {
 		kmsAutostart = getProperty(KMS_AUTOSTART_PROP, KMS_AUTOSTART_DEFAULT);
 		kmsPrintLog = getProperty(KMS_PRINT_LOG_PROP, KMS_PRINT_LOG_DEFAULT);
 		testDir = getProperty(PROJECT_PATH_PROP, PROJECT_PATH_DEFAULT)
@@ -126,15 +129,6 @@ public class KurentoServicesTestHelper {
 			throw new IllegalArgumentException("The value '" + kmsAutostart
 					+ "' is not valid for property " + KMS_AUTOSTART_PROP);
 		}
-	}
-
-	public static KurentoMediaServerManager startKurentoMediaServer(
-			String wsUri, int httpPort) throws IOException {
-
-		kms = KurentoMediaServerManager.createWithWsTransport(wsUri, httpPort);
-		kms.start();
-
-		return kms;
 	}
 
 	public static KurentoMediaServerManager startKurentoMediaServer()
@@ -171,8 +165,8 @@ public class KurentoServicesTestHelper {
 	}
 
 	public static KurentoControlServerManager startKurentoControlServer() {
-		return startKurentoControlServer(getProperty(KCS_WS_URI_PROP,
-				KCS_WS_URI_DEFAULT));
+		return startKurentoControlServer(
+				getProperty(KCS_WS_URI_PROP, KCS_WS_URI_DEFAULT));
 	}
 
 	public static KurentoControlServerManager startKurentoControlServer(
@@ -191,15 +185,15 @@ public class KurentoServicesTestHelper {
 			return kcs;
 
 		} catch (URISyntaxException e) {
-			throw new KurentoException(KCS_WS_URI_PROP + " invalid format: "
-					+ wsUriProp);
+			throw new KurentoException(
+					KCS_WS_URI_PROP + " invalid format: " + wsUriProp);
 		}
 	}
 
 	public static ConfigurableApplicationContext startHttpServer(
 			Object... sources) {
-		appContext = new SpringApplication(sources).run("--server.port="
-				+ getAppHttpPort());
+		appContext = new SpringApplication(sources)
+				.run("--server.port=" + getAppHttpPort());
 		return appContext;
 	}
 
@@ -310,12 +304,15 @@ public class KurentoServicesTestHelper {
 				KMS_WS_URI_DEFAULT);
 	}
 
-	public static void setServerLogFilePath(File logFile) {
-		KurentoServicesTestHelper.logFile = logFile;
+	public static void addServerLogFilePath(File logFile) {
+		if (logFiles == null) {
+			logFiles = new ArrayList<>();
+		}
+		logFiles.add(logFile);
 	}
 
-	public static File getServerLogFile() {
-		return logFile;
+	public static List<File> getServerLogFiles() {
+		return logFiles;
 	}
 
 	private static void createFolder(String folder) {
