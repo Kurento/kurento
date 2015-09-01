@@ -1437,7 +1437,7 @@ webrtc_sender_pad_added (GstElement * element, GstPad * new_pad,
 
   g_free (padname);
 
-  gst_element_sync_state_with_parent_target_state (dummysrc);
+  gst_element_sync_state_with_parent (dummysrc);
 }
 
 static void
@@ -1495,7 +1495,7 @@ webrtc_receiver_pad_added (GstElement * element, GstPad * new_pad,
   fail_unless (gst_pad_link (new_pad, sink_pad) == GST_PAD_LINK_OK);
   g_object_unref (sink_pad);
 
-  gst_element_sync_state_with_parent_target_state (fakesink);
+  gst_element_sync_state_with_parent (fakesink);
 }
 
 static void
