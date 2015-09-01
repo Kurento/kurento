@@ -36,7 +36,8 @@ enum
 {
   PROP_0,
   PROP_ADDED,
-  PROP_CONNECTED
+  PROP_CONNECTED,
+  PROP_IS_CLIENT
 };
 
 struct _KmsRtpConnectionPrivate
@@ -51,6 +52,7 @@ struct _KmsRtpConnectionPrivate
 
   gboolean added;
   gboolean connected;
+  gboolean is_client;
 };
 
 static void
@@ -196,6 +198,8 @@ kms_rtp_connection_add (KmsIRtpConnection * base_rtp_conn, GstBin * bin,
   KmsRtpConnection *self = KMS_RTP_CONNECTION (base_rtp_conn);
   KmsRtpConnectionPrivate *priv = self->priv;
 
+  self->priv->is_client = active;
+
   gst_bin_add_many (bin, g_object_ref (priv->rtp_udpsink),
       g_object_ref (priv->rtp_udpsrc),
       g_object_ref (priv->rtcp_udpsink),
@@ -287,6 +291,9 @@ kms_rtp_connection_get_property (GObject * object,
       break;
     case PROP_CONNECTED:
       g_value_set_boolean (value, self->priv->connected);
+      break;
+    case PROP_IS_CLIENT:
+      g_value_set_boolean (value, self->priv->is_client);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -385,6 +392,7 @@ kms_rtp_connection_class_init (KmsRtpConnectionClass * klass)
 
   g_object_class_override_property (gobject_class, PROP_ADDED, "added");
   g_object_class_override_property (gobject_class, PROP_CONNECTED, "connected");
+  g_object_class_override_property (gobject_class, PROP_IS_CLIENT, "is-client");
 }
 
 static void

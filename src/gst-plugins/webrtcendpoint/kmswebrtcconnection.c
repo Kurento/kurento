@@ -33,7 +33,8 @@ enum
 {
   PROP_0,
   PROP_ADDED,
-  PROP_CONNECTED
+  PROP_CONNECTED,
+  PROP_IS_CLIENT
 };
 
 struct _KmsWebRtcConnectionPrivate
@@ -196,6 +197,14 @@ kms_webrtc_connection_get_property (GObject * object,
     case PROP_CONNECTED:
       g_value_set_boolean (value, self->priv->connected);
       break;
+    case PROP_IS_CLIENT:{
+      gboolean is_client;
+
+      g_object_get (G_OBJECT (self->priv->rtp_tr->sink->dtlssrtpenc),
+          "is-client", &is_client, NULL);
+      g_value_set_boolean (value, is_client);
+      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -328,6 +337,7 @@ kms_webrtc_connection_class_init (KmsWebRtcConnectionClass * klass)
 
   g_object_class_override_property (gobject_class, PROP_ADDED, "added");
   g_object_class_override_property (gobject_class, PROP_CONNECTED, "connected");
+  g_object_class_override_property (gobject_class, PROP_IS_CLIENT, "is-client");
 }
 
 static void
