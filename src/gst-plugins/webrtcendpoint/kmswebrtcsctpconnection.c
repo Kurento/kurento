@@ -71,6 +71,10 @@ kms_webrtc_sctp_connection_add (KmsIRtpConnection * base_conn, GstBin * bin,
     gboolean active)
 {
   KmsWebRtcSctpConnection *self = KMS_WEBRTC_SCTP_CONNECTION (base_conn);
+  KmsWebRtcSctpConnectionPrivate *priv = self->priv;
+  KmsWebRtcTransport *tr = priv->tr;
+
+  g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "is-client", active, NULL);
 
   gst_bin_add (bin, g_object_ref (self->priv->tr->src));
   gst_bin_add (bin, g_object_ref (self->priv->tr->sink));
