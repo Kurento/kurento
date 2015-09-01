@@ -276,7 +276,7 @@ QUnit.asyncTest('user rollback', function (assert) {
 });
 
 QUnit.asyncTest('transaction error', function (assert) {
-  assert.expect(11);
+  assert.expect(8);
 
   var tx = this.kurento.beginTransaction();
 
@@ -284,7 +284,6 @@ QUnit.asyncTest('transaction error', function (assert) {
   var player = pipeline.create(tx, 'PlayerEndpoint', {
     uri: URL_SMALL
   });
-
   tx.commit(function (error) {
       assert.equal(error, undefined);
 
@@ -297,14 +296,10 @@ QUnit.asyncTest('transaction error', function (assert) {
           assert.ok(error.message.contains(" not found"));
 
           tx = pipeline.beginTransaction();
-
           var filter = pipeline.create(tx, 'ZBarFilter');
           player.play(tx);
 
           return tx.commit(function (error) {
-            assert.notEqual(error, undefined);
-            assert.equal(error.code, 40101);
-            assert.ok(error.message.contains(" not found"));
 
             return filter.connect(player, function (error) {
               assert.notEqual(error, undefined);
