@@ -189,11 +189,9 @@ kms_webrtc_sctp_connection_get_property (GObject * object,
 }
 
 static void
-dtls_connected_cb (GstElement * dtlssrtpenc, gpointer data)
+dtls_connected_cb (GstElement * dtlssrtpenc, gpointer self)
 {
-  KmsWebRtcSctpConnection *self = data;
-
-  kms_i_rtp_connection_connected_signal (KMS_I_RTP_CONNECTION (self));
+  kms_i_rtp_connection_connected_signal (self);
 }
 
 KmsWebRtcSctpConnection *
