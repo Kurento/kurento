@@ -939,5 +939,5 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       g_signal_new ("on-ice-gathering-done",
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, on_ice_gathering_done), NULL,
-      NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 0);
+      NULL, NULL, G_TYPE_NONE, 0);
 }
