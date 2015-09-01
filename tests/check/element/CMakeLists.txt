@@ -1,5 +1,9 @@
 set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
 
+if (${ENABLE_DEBUGGING_TESTS})
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_DEBUGGING_TESTS")
+endif()
+
 add_test_program (test_httpendpoint httpendpoint.c)
 add_dependencies(test_httpendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_httpendpoint PRIVATE
