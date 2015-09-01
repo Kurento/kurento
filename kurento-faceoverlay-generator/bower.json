@@ -1,6 +1,6 @@
 {
   "name": "FaceOverlayGenerator",
-  "version": "6.0.1-dev",
+  "version": "6.1.0",
   "description": "Kurento demo with FaceOverlay filter and Generators",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -22,8 +22,8 @@
   "dependencies": {
     "adapter.js": "*",
     "co": "~3.0.7",
-    "demo-console": "master",
-    "kurento-client": "master",
-    "kurento-utils": "master"
+    "demo-console": "1.5.1",
+    "kurento-client": "6.1.0",
+    "kurento-utils": "6.1.0"
   }
 }
