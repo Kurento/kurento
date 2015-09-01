@@ -1,3 +1,48 @@
+kms-elements-6.0 (6.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtctransport: Allow to set and unset latency probes on nice elements
+  * kmswebrtc*connections: Enable/disable insertion of latency metadata
+  * kmswebrtcbaseconnection, kmswebrtctransport: Use stats utilities
+  * rtpendpoint: Check that rtpendpoint does not negotiate BUNDLE
+  * webRtcEndpoint: Add test to enable/disable latency stats
+
+  [ Jose Antonio Santos Cadenas ]
+  * config: Remove not supported coment at end of line in ini files
+  * config: Clarify how stun server should be configured
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcdataproto: Add protocol definitions
+  * kmswebrcdatasessionbin: Add session object to manage the data protocol
+  * kmswebrtcdatachannelbin: Add data channel bin class
+  * kmswebrtcdatasessionbin: Manage creation of data channels
+  * kmswebrtcdatachannelbin: Process open data channel control message
+  * kmswebrtcdatachannelbin: Process ack data channel control message
+  * kmswebrtcdatasessionbin: Create data channels on demmand
+  * kmswebrtcdatasessionbin: Postpone creation of data channels until sctp association is established
+  * kmswebrtcdatachannelbib: Notify negotiated data channels
+  * kmswebrtcdatachannel: Add data channel handler class
+  * kmswebrtcdatasessionbin: Notify opened data channels
+  * kmswebrtcdatasessionbin: Provide method to get the data channel object
+  * kmswebrtcdatachannelbib: Allow to send data over a data channel
+  * kmswebrtcdatachannel: Active notification of buffers received
+  * datachannels: Allow configuration of data channels
+  * kmswebrtcdatasessionbin: Add data-session-established signal
+  * kmswebrtcdatasessionbin: Allow destruction of data channels
+  * kmswebrtcdatachannelbin: Reset sctp stream when protocol errors are detected
+  * kmswebrtcdatasessionbin: Use thread pool to reset sctp decoder
+  * kmswebrtcdatasessionbin: Change name of property is_client to dtls_client_mode
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 01 Sep 2015 15:10:52 +0200
+
 kms-elements-6.0 (6.0.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
