@@ -27,6 +27,7 @@
 #include <commons/sdpagent/kmssdpsctpmediahandler.h>
 #include "kms-webrtc-marshal.h"
 #include <glib/gstdio.h>
+#include "kmswebrtcdatasessionbin.h"
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
 #define PLUGIN_NAME "webrtcendpoint"
@@ -75,7 +76,7 @@ struct _KmsWebrtcEndpointPrivate
 {
   KmsLoop *loop;
   GMainContext *context;
-
+  GstElement *data_session;
   gchar *stun_server_ip;
   guint stun_server_port;
   gchar *turn_url;
@@ -268,26 +269,34 @@ get_port_from_string (const gchar * str, gint * _ret)
   return TRUE;
 }
 
-static guint
-get_sctp_association_id ()
+static void
+kms_webrtc_endpoint_data_session_established_cb (KmsWebRtcDataSessionBin *
+    session, gboolean connected, KmsWebrtcEndpoint * self)
 {
-  static guint assoc_id = 0;
+  GST_DEBUG_OBJECT (self, "Data session %" GST_PTR_FORMAT " %s",
+      session, (connected) ? "established" : "finished");
+}
 
-  return g_atomic_int_add (&assoc_id, 1);
+static void
+kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
+    guint stream_id, KmsWebrtcEndpoint * self)
+{
+  GST_DEBUG_OBJECT (self, "Data channel with stream_id %u opened", stream_id);
+}
+
+static void
+kms_webrtc_endpoint_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
+    guint stream_id, KmsWebrtcEndpoint * self)
+{
+  GST_DEBUG_OBJECT (self, "Data channel with stream_id %u closed", stream_id);
 }
 
 static gboolean
-configure_sctp_elements (KmsWebrtcEndpoint * self, GstSDPMedia * media,
-    GstElement * sctpdec, GstElement * sctpenc)
+configure_data_session (KmsWebrtcEndpoint * self, GstSDPMedia * media)
 {
   const gchar *sctpmap_attr = NULL;
-  guint i, id, len;
   gint port = -1;
-
-  id = get_sctp_association_id ();
-  g_object_set (sctpdec, "sctp-association-id", id, NULL);
-  g_object_set (sctpenc, "sctp-association-id", id, "use-sock-stream", TRUE,
-      NULL);
+  guint i, len;
 
   len = gst_sdp_media_formats_len (media);
   if (len < 0) {
@@ -296,8 +305,8 @@ configure_sctp_elements (KmsWebrtcEndpoint * self, GstSDPMedia * media,
   }
 
   if (len > 1) {
-    GST_INFO_OBJECT (self,
-        "Only one SCTP link is supported over the same DTLS connection");
+    GST_WARNING_OBJECT (self,
+        "Only one data session is supported over the same DTLS connection");
   }
 
   for (i = 0; i < len; i++) {
@@ -322,118 +331,36 @@ configure_sctp_elements (KmsWebrtcEndpoint * self, GstSDPMedia * media,
   }
 
   if (port < 0) {
-    GST_ERROR_OBJECT (self, "SCTP can not be configured");
+    GST_ERROR_OBJECT (self, "Data session can not be configured");
     return FALSE;
   }
 
-  g_object_set (sctpdec, "local-sctp-port", port, NULL);
-  g_object_set (sctpenc, "remote-sctp-port", port, NULL);
+  g_object_set (self->priv->data_session, "sctp-local-port", port,
+      "sctp-remote-port", port, NULL);
 
   return TRUE;
 }
 
 static void
-kms_webrtc_endpoint_add_sink_data (KmsWebrtcEndpoint * self,
-    GstElement * sctpenc, guint sctp_stream_id)
+kms_webrtc_endpoint_link_pads (GstPad * src, GstPad * sink)
 {
-  GstPadTemplate *pad_template;
-  GstCaps *caps;
-  GstPad *sinkpad;
-  gchar *pad_name;
-
-  GST_DEBUG_OBJECT (self, "Create sink data pad for stream %d", sctp_stream_id);
-
-  pad_template =
-      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (sctpenc),
-      "sink_%u");
-
-  caps =
-      gst_caps_new_simple ("application/data", "ordered", G_TYPE_BOOLEAN, TRUE,
-      "ppid", G_TYPE_UINT, KMS_WEBRTC_DATA_CHANNEL_PPID_STRING,
-      "partially-reliability", G_TYPE_STRING, "none", NULL);
-
-  pad_name = g_strdup_printf ("sink_%u", sctp_stream_id);
-  sinkpad = gst_element_request_pad (sctpenc, pad_template, pad_name, caps);
-  gst_caps_unref (caps);
-  g_free (pad_name);
-
-  kms_element_connect_sink_target (KMS_ELEMENT (self), sinkpad,
-      KMS_ELEMENT_PAD_TYPE_DATA);
-
-  g_object_unref (sinkpad);
-}
-
-static void
-kms_webrtc_endpoint_src_data_pad_added (GstElement * sctpdec, GstPad * pad,
-    GstElement * sctpenc)
-{
-  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (GST_ELEMENT_PARENT (sctpdec));
-  GstElement *data_tee;
-  GstPad *sinkpad = NULL;
-  guint sctp_stream_id;
-  gchar *name;
-
-  data_tee = kms_element_get_data_tee (KMS_ELEMENT (self));
-  sinkpad = gst_element_get_static_pad (data_tee, "sink");
-
-  if (GST_PAD_IS_LINKED (sinkpad)) {
-    GST_WARNING_OBJECT (self, "Only 1 stream is supported per data channel");
-    goto end;
-  }
-
-  if (gst_pad_link (pad, sinkpad) == GST_PAD_LINK_OK) {
-    GST_DEBUG_OBJECT (self, "New data pad: %" GST_PTR_FORMAT " linked to %"
-        GST_PTR_FORMAT, pad, data_tee);
-  } else {
-    GST_ERROR_OBJECT (self, "Can not link data pad %" GST_PTR_FORMAT, pad);
-  }
-
-  name = gst_pad_get_name (pad);
-  sscanf (name, "src_%u", &sctp_stream_id);
-  g_free (name);
-
-  kms_webrtc_endpoint_add_sink_data (self, sctpenc, sctp_stream_id);
-
-end:
-  g_clear_object (&sinkpad);
-}
-
-static void
-kms_webrtc_endpoint_sctp_association_established (GstElement * sctpenc,
-    gboolean connected, KmsWebrtcEndpoint * self)
-{
-  if (!connected) {
-    GST_WARNING_OBJECT (self, "Disconnected SCTP association %" GST_PTR_FORMAT,
-        sctpenc);
-  } else {
-    GST_DEBUG_OBJECT (self, "SCTP association established");
+  if (gst_pad_link_full (src, sink, GST_PAD_LINK_CHECK_CAPS) != GST_PAD_LINK_OK) {
+    GST_ERROR ("Error linking pads (src: %" GST_PTR_FORMAT ", sink: %"
+        GST_PTR_FORMAT ")", src, sink);
   }
 }
 
 static void
-kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
+kms_webrtc_endpoint_connect_data_session (KmsWebrtcEndpoint * self,
     GstSDPMedia * media, KmsIRtpConnection * conn)
 {
-  GstElement *sctpdec = NULL, *sctpenc = NULL;
   GstPad *srcpad = NULL, *sinkpad = NULL, *tmppad;
-
-  sctpdec = gst_element_factory_make ("sctpdec", NULL);
-  if (sctpdec == NULL) {
-    GST_WARNING_OBJECT (self, "Can not create sctpdec element");
-    return;
-  }
-
-  sctpenc = gst_element_factory_make ("sctpenc", NULL);
-  if (sctpenc == NULL) {
-    GST_WARNING_OBJECT (self, "Can not create sctpenc element");
-    goto error;
-  }
 
   sinkpad = kms_i_rtp_connection_request_data_sink (conn);
 
   if (sinkpad == NULL) {
     GST_ERROR_OBJECT (self, "Can not get data sink pad");
-    goto error;
+    return;
   }
 
   srcpad = kms_i_rtp_connection_request_data_src (conn);
@@ -442,48 +369,64 @@ kms_webrtc_endpoint_connect_sctp_elements (KmsWebrtcEndpoint * self,
     goto error;
   }
 
-  if (!configure_sctp_elements (self, media, sctpdec, sctpenc)) {
+  if (!configure_data_session (self, media)) {
     goto error;
   }
 
-  g_signal_connect (sctpdec, "pad-added",
-      G_CALLBACK (kms_webrtc_endpoint_src_data_pad_added), sctpenc);
-  g_signal_connect (sctpenc, "sctp-association-established",
-      G_CALLBACK (kms_webrtc_endpoint_sctp_association_established), self);
-
-  gst_bin_add_many (GST_BIN (self), sctpdec, sctpenc, NULL);
-
-  tmppad = gst_element_get_static_pad (sctpdec, "sink");
-  gst_pad_link (srcpad, tmppad);
+  tmppad = gst_element_get_static_pad (self->priv->data_session, "sink");
+  kms_webrtc_endpoint_link_pads (srcpad, tmppad);
   g_object_unref (tmppad);
 
-  tmppad = gst_element_get_static_pad (sctpenc, "src");
-  gst_pad_link (tmppad, sinkpad);
+  tmppad = gst_element_get_static_pad (self->priv->data_session, "src");
+  kms_webrtc_endpoint_link_pads (tmppad, sinkpad);
   g_object_unref (tmppad);
 
-  g_object_unref (sinkpad);
-  g_object_unref (srcpad);
-
-  gst_element_sync_state_with_parent_target_state (sctpdec);
-  gst_element_sync_state_with_parent_target_state (sctpenc);
-
-  return;
+  gst_element_sync_state_with_parent_target_state (self->priv->data_session);
 
 error:
-  GST_ERROR_OBJECT (self, "Rtc data channels are not supported");
 
-  g_clear_object (&sctpdec);
-  g_clear_object (&sctpenc);
   g_clear_object (&sinkpad);
   g_clear_object (&srcpad);
 }
 
 static void
-kms_webrtc_endpoint_connect_sctp_elements_cb (KmsIRtpConnection * conn,
+kms_webrtc_endpoint_create_data_session (KmsWebrtcEndpoint * self,
+    GstSDPMedia * media, KmsIRtpConnection * conn)
+{
+  gboolean is_client;
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->data_session != NULL) {
+    GST_WARNING_OBJECT (self, "Data session already initialized");
+    goto end;
+  }
+
+  g_object_get (conn, "is-client", &is_client, NULL);
+
+  self->priv->data_session =
+      GST_ELEMENT (kms_webrtc_data_session_bin_new (is_client));
+  g_signal_connect (self->priv->data_session, "data-session-established",
+      G_CALLBACK (kms_webrtc_endpoint_data_session_established_cb), self);
+  g_signal_connect (self->priv->data_session, "data-channel-opened",
+      G_CALLBACK (kms_webrtc_endpoint_data_channel_opened_cb), self);
+  g_signal_connect (self->priv->data_session, "data-channel-closed",
+      G_CALLBACK (kms_webrtc_endpoint_data_channel_closed_cb), self);
+
+  gst_bin_add (GST_BIN (self), self->priv->data_session);
+  kms_webrtc_endpoint_connect_data_session (self, media, conn);
+
+end:
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_webrtc_endpoint_create_data_session_cb (KmsIRtpConnection * conn,
     ConnectSCTPData * data)
 {
   if (g_atomic_int_compare_and_exchange (&data->connected, FALSE, TRUE)) {
-    kms_webrtc_endpoint_connect_sctp_elements (data->self, data->media,
+    kms_webrtc_endpoint_create_data_session (data->self, data->media,
         data->conn);
   } else {
     GST_WARNING_OBJECT (data->self, "SCTP elements already configured");
@@ -515,7 +458,7 @@ kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
   data = connect_sctp_data_new (self, media, conn);
 
   handler_id = g_signal_connect_data (conn, "connected",
-      G_CALLBACK (kms_webrtc_endpoint_connect_sctp_elements_cb),
+      G_CALLBACK (kms_webrtc_endpoint_create_data_session_cb),
       kms_ref_struct_ref (KMS_REF_STRUCT_CAST (data)),
       (GClosureNotify) kms_ref_struct_unref, 0);
 
@@ -525,7 +468,7 @@ kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
     if (handler_id) {
       g_signal_handler_disconnect (conn, handler_id);
     }
-    kms_webrtc_endpoint_connect_sctp_elements (self,
+    kms_webrtc_endpoint_create_data_session (self,
         kms_sdp_media_config_get_sdp_media (mconf), conn);
   } else {
     GST_DEBUG_OBJECT (self, "SCTP: waiting for DTLS layer to be established");
