@@ -56,7 +56,8 @@
     var params =
     {
       object: this,
-      subscription: token
+      subscription: token.value,
+      sessionId: token.sessionId
     };
 
     this.emit('_rpc', undefined, 'unsubscribe', params, function(error)
