@@ -868,6 +868,7 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
   self->context = g_main_context_ref (context);
   self->agent = nice_agent_new (context, NICE_COMPATIBILITY_RFC5245);
 
+  g_object_set (self->agent, "upnp", FALSE, NULL);
   g_signal_connect (self->agent, "new-candidate",
       G_CALLBACK (kms_webrtc_session_new_candidate), self);
   g_signal_connect (self->agent, "candidate-gathering-done",

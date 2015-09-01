@@ -173,7 +173,6 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   webrtc_sess =
       kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
 
-  g_object_set (webrtc_sess->agent, "upnp", FALSE, NULL);
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
   g_signal_connect (webrtc_sess, "on-ice-gathering-done",
