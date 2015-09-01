@@ -1,3 +1,13 @@
+kms-pointerdetector-6.0 (6.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 01 Sep 2015 16:23:39 +0200
+
 kms-pointerdetector-6.0 (6.0.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
