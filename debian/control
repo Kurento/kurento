@@ -5,9 +5,9 @@ Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-6.0-dev,
- kms-elements-6.0-dev,
- kms-filters-6.0-dev,
+ kms-core-6.0-dev (>= 6.1.0),
+ kms-elements-6.0-dev (>= 6.1.0),
+ kms-filters-6.0-dev (>= 6.1.0),
  libopencv-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
@@ -17,6 +17,9 @@ Vcs-Browser: https://github.com/Kurento/kms-crowddetector.git
 Package: kms-crowddetector-6.0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+ kms-core-6.0 (>= 6.1.0),
+ kms-elements-6.0 (>= 6.1.0),
+ kms-filters-6.0 (>= 6.1.0)
 Breaks:
   kms-crowddetector
 Replaces:
