@@ -23,12 +23,12 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 #define NICE_COMPONENT_TYPE_SCTP 1
 
-#define KMS_WEBRTC_SCTP_CONNECTION_GET_PRIVATE(obj) (        \
-  G_TYPE_INSTANCE_GET_PRIVATE (                         \
-    (obj),                                              \
-    KMS_TYPE_WEBRTC_SCTP_CONNECTION,                         \
-    KmsWebRtcSctpConnectionPrivate                          \
-  )                                                     \
+#define KMS_WEBRTC_SCTP_CONNECTION_GET_PRIVATE(obj) ( \
+  G_TYPE_INSTANCE_GET_PRIVATE (                       \
+    (obj),                                            \
+    KMS_TYPE_WEBRTC_SCTP_CONNECTION,                  \
+    KmsWebRtcSctpConnectionPrivate                    \
+  )                                                   \
 )
 
 enum
