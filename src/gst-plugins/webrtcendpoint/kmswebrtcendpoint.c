@@ -881,6 +881,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 static void
 kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
 {
+  /* TODO: check which prop should be moved to session */
   g_object_set (G_OBJECT (self), "bundle", TRUE, "rtcp-mux", TRUE, "rtcp-nack",
       TRUE, "rtcp-remb", TRUE, NULL);
 
