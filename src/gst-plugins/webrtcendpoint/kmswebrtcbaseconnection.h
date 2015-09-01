@@ -78,6 +78,8 @@ kms_webrtc_base_connection_set_certificate_pem_file (KmsWebRtcBaseConnection *
     self, const gchar * pem);
 gchar *kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection *
     self);
+void kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * self,
+    const gchar * stun_server_ip, guint stun_server_port);
 void kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
     const gchar * server_ip, guint server_port, const gchar * username,
     const gchar * password, NiceRelayType type);

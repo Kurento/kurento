@@ -48,14 +48,14 @@ struct _KmsWebrtcEndpointClass
 {
   KmsBaseRtpEndpointClass parent_class;
 
-    gboolean (*gather_candidates) (KmsWebrtcEndpoint * self);
-    gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self,
+    gboolean (*gather_candidates) (KmsWebrtcEndpoint * self, const gchar *sess_id);
+    gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self, const gchar * sess_id,
       KmsIceCandidate * candidate);
 
   /* Signals */
-  void (*on_ice_candidate) (KmsWebrtcEndpoint * self,
+  void (*on_ice_candidate) (KmsWebrtcEndpoint * self, const gchar *sess_id,
       KmsIceCandidate * candidate);
-  void (*on_ice_gathering_done) (KmsWebrtcEndpoint * self);
+  void (*on_ice_gathering_done) (KmsWebrtcEndpoint * self, const gchar *sess_id);
 };
 
 GType kms_webrtc_endpoint_get_type (void);

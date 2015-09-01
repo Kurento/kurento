@@ -156,6 +156,13 @@ kms_webrtc_base_connection_get_certificate_pem (KmsWebRtcBaseConnection * self)
 }
 
 void
+kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * self,
+    const gchar * ip, guint port)
+{
+  g_object_set (self->agent, "stun-server", ip, "stun-server-port", port, NULL);
+}
+
+void
 kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
     const gchar * server_ip,
     guint server_port,
