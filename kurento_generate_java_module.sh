@@ -20,6 +20,7 @@ echo $OPTS
 
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
   echo "Deploying release version to ${MAVEN_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
+  echo "Deploying with options $OPTS"
   mvn --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_RELEASES} || exit 1
   if [ "$PUBLIC" == "yes" ]
   then
