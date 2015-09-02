@@ -198,8 +198,7 @@ Invoke message requests the invocation of an operation in the specified object.
 The parameter ``object`` indicates the ``id`` of the object in which the
 operation will be invoked. The parameter ``operation`` carries the name of the
 operation to be executed. Finally, the parameter ``operationParams`` has the
-parameters needed to execute the operation. The object specified has to
-understand the
+parameters needed to execute the operation.
 
 The following example shows a ``Request`` message requesting the invocation of
 the operation ``connect`` on the object ``442352747`` with parameter sink
@@ -211,7 +210,8 @@ requests in the session (except the first one)::
       "id": 2,
       "method": "invoke",
       "params": {
-        "object": "442352747", "operation": "connect",
+        "object": "442352747",
+        "operation": "connect",
         "operationParams": {
           "sink": "6829986"
         },
@@ -309,14 +309,16 @@ Unsubscribe message requests the cancellation of a previous event subscription.
 The parameter subscription contains the subscription ``id`` received from the
 server when the subscription was created.
 
-The following example shows a ``Request message`` requesting the cancellation of
-the subscription ``353be312-b7f1-4768-9117-5c2f5a087429``::
+The following example shows a ``Request`` message requesting the cancellation of
+the subscription ``353be312-b7f1-4768-9117-5c2f5a087429`` for a given
+``object``::
 
     {
       "jsonrpc":"2.0",
       "id":5,
       "method":"unsubscribe",
       "params": {
+        "object":"3e306e63-0760-4cdc-a3b3-d9e3789f7af6_kurento.MediaPipeline/cbff7437-8fc5-4324-84ce-26e0b0648dd1_kurento.WebRtcEndpoint",
         "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
         "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
       }
