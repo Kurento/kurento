@@ -94,6 +94,7 @@
 				<module>kurento-client</module>
 				<module>kurento-repository</module>
 				<module>kurento-rabbitmq</module>
+				<module>kurento-control-server</module>
 				<module>kurento-integration-tests</module>
 			</modules>
 			<build>
