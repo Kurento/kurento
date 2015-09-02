@@ -17,6 +17,8 @@
 #  include <config.h>
 #endif
 
+#include <gst/app/gstappsink.h>
+
 #include "kmswebrtcendpoint.h"
 #include "kmswebrtcsession.h"
 #include <commons/kmsloop.h>
@@ -52,6 +54,8 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
 
+#define MAX_DATA_CHANNELS 1
+
 enum
 {
   PROP_0,
@@ -76,11 +80,21 @@ enum
 
 static guint kms_webrtc_endpoint_signals[LAST_SIGNAL] = { 0 };
 
+typedef struct _DataChannel
+{
+  KmsWebRtcDataChannel *chann;
+  GstElement *appsink;
+  GstElement *appsrc;
+} DataChannel;
+
 struct _KmsWebrtcEndpointPrivate
 {
   KmsLoop *loop;
   GMainContext *context;
+
   GstElement *data_session;
+  GHashTable *data_channels;
+
   gchar *stun_server_ip;
   guint stun_server_port;
   gchar *turn_url;
@@ -96,6 +110,38 @@ typedef struct _ConnectSCTPData
   GstSDPMedia *media;
   gboolean connected;
 } ConnectSCTPData;
+
+static void
+data_channel_destroy (DataChannel * chann)
+{
+  g_slice_free (DataChannel, chann);
+}
+
+static DataChannel *
+data_channel_new (guint stream_id)
+{
+  DataChannel *chann;
+  gchar *name;
+
+  chann = g_slice_new (DataChannel);
+
+  name = g_strdup_printf ("appsrc_stream_%u", stream_id);
+  chann->appsrc = gst_element_factory_make ("appsrc", name);
+  g_free (name);
+
+  name = g_strdup_printf ("appsink_stream_%u", stream_id);
+  chann->appsink = gst_element_factory_make ("appsink", name);
+  g_free (name);
+
+  g_object_set (chann->appsink, "async", FALSE, "sync", FALSE,
+      "emit-signals", FALSE, "drop", FALSE, "enable-last-sample", FALSE, NULL);
+
+  g_object_set (chann->appsrc, "is-live", TRUE, "min-latency",
+      G_GINT64_CONSTANT (0), "do-timestamp", TRUE, "max-bytes", 0,
+      "emit-signals", FALSE, NULL);
+
+  return chann;
+}
 
 static void
 connect_sctp_data_destroy (ConnectSCTPData * data, GClosure * closure)
@@ -286,10 +332,76 @@ kms_webrtc_endpoint_data_session_established_cb (KmsWebRtcDataSessionBin *
 }
 
 static void
+kms_webrtc_endpoint_add_src_data_pad (KmsWebrtcEndpoint * self,
+    DataChannel * channel)
+{
+  GstElement *data_tee;
+
+  data_tee = kms_element_get_data_tee (KMS_ELEMENT (self));
+  gst_element_link (channel->appsrc, data_tee);
+}
+
+static void
+kms_webrtc_endpoint_add_sink_data_pad (KmsWebrtcEndpoint * self,
+    DataChannel * channel)
+{
+  GstPad *sinkpad;
+
+  sinkpad = gst_element_get_static_pad (channel->appsink, "sink");
+  kms_element_connect_sink_target (KMS_ELEMENT (self), sinkpad,
+      KMS_ELEMENT_PAD_TYPE_DATA);
+  g_object_unref (sinkpad);
+}
+
+static GstFlowReturn
+new_data_callback (GstAppSink * appsink, KmsWebrtcEndpoint * self)
+{
+  GST_WARNING_OBJECT (self, "Data received on %" GST_PTR_FORMAT, appsink);
+
+  return GST_FLOW_OK;
+}
+
+static void
 kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
     guint stream_id, KmsWebrtcEndpoint * self)
 {
+  GstAppSinkCallbacks callbacks;
+  DataChannel *channel;
+
   GST_DEBUG_OBJECT (self, "Data channel with stream_id %u opened", stream_id);
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (g_hash_table_size (self->priv->data_channels) >= MAX_DATA_CHANNELS) {
+    GST_WARNING_OBJECT (self, "No more than %u data channel are allowed",
+        MAX_DATA_CHANNELS);
+    KMS_ELEMENT_UNLOCK (self);
+    g_signal_emit_by_name (session, "destroy-data-channel", stream_id, NULL);
+
+    return;
+  }
+
+  channel = data_channel_new (stream_id);
+  g_hash_table_insert (self->priv->data_channels, GUINT_TO_POINTER (stream_id),
+      channel);
+
+  callbacks.eos = NULL;
+  callbacks.new_preroll = NULL;
+  callbacks.new_sample =
+      (GstFlowReturn (*)(GstAppSink *, gpointer)) new_data_callback;
+
+  gst_app_sink_set_callbacks (GST_APP_SINK (channel->appsink), &callbacks,
+      self, NULL);
+
+  gst_bin_add_many (GST_BIN (self), channel->appsrc, channel->appsink, NULL);
+
+  kms_webrtc_endpoint_add_src_data_pad (self, channel);
+  kms_webrtc_endpoint_add_sink_data_pad (self, channel);
+
+  gst_element_sync_state_with_parent (channel->appsrc);
+  gst_element_sync_state_with_parent (channel->appsink);
+
+  KMS_ELEMENT_UNLOCK (self);
 }
 
 static void
@@ -645,6 +757,7 @@ kms_webrtc_endpoint_dispose (GObject * object)
   KMS_ELEMENT_LOCK (self);
 
   g_clear_object (&self->priv->loop);
+  g_hash_table_unref (self->priv->data_channels);
 
   KMS_ELEMENT_UNLOCK (self);
 
@@ -854,6 +967,9 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->stun_server_ip = DEFAULT_STUN_SERVER_IP;
   self->priv->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->priv->turn_url = DEFAULT_STUN_TURN_URL;
+
+  self->priv->data_channels = g_hash_table_new_full (g_direct_hash,
+      g_direct_equal, NULL, (GDestroyNotify) data_channel_destroy);
 
   self->priv->loop = kms_loop_new ();
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);
