@@ -41,8 +41,18 @@ QUnit.load();
 
 var kurentoClient = require('..');
 
+// Get ws_port
+var ws_port = ""
+if (process.argv.length == 3) {
+  ws_port = process.argv[2];
+}
+
+if (ws_port == "") {
+  QUnit.pushFailure("The test needs a ws_port");
+}
+
 const ARGV = ['-f', './kurento.conf.json'];
-const ws_uri = 'ws://127.0.0.1:8889/kurento'
+const ws_uri = 'ws://127.0.0.1:' + ws_port + '/kurento'
 
 /**
  * Manage timeouts in an object-oriented style
