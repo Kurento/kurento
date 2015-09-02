@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 [ -n $1 ] && FULL_RELEASE=$1 || FULL_RELEASE=0
 [ -n $2 ] && PUBLIC=$2 || PUBLIC=no
