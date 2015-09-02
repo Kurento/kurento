@@ -9,6 +9,7 @@ import org.kurento.jsonrpc.test.BidirectionalTest;
 import org.kurento.jsonrpc.test.CloseSessionTest;
 import org.kurento.jsonrpc.test.ConnectionListenerTest;
 import org.kurento.jsonrpc.test.ErrorServerTest;
+import org.kurento.jsonrpc.test.LargePackageTest;
 import org.kurento.jsonrpc.test.MultipleSessionsTest;
 import org.kurento.jsonrpc.test.NewSessionTest;
 import org.kurento.jsonrpc.test.NotificationTest;
@@ -38,8 +39,7 @@ public class BootTestApplication implements JsonRpcConfigurer {
 
 		registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
 
-		registry.addHandler(new BidirectionalMultiTest.Handler(),
-				"/BidirectionalMultiTest");
+		registry.addHandler(new BidirectionalMultiTest.Handler(), "/BidirectionalMultiTest");
 
 		registry.addHandler(new ServerEventsTest.Handler(), "/serverevents");
 
@@ -47,25 +47,21 @@ public class BootTestApplication implements JsonRpcConfigurer {
 
 		registry.addHandler(new ErrorServerTest.Handler(), "/error_handler");
 
-		registry.addPerSessionHandler(MultipleSessionsTest.Handler.class,
-				"/jsonrpc_multiple");
+		registry.addPerSessionHandler(MultipleSessionsTest.Handler.class, "/jsonrpc_multiple");
 
-		registry.addPerSessionHandler("multipleJsonRpcHandler",
-				"/jsonrpc_multiple2");
+		registry.addPerSessionHandler("multipleJsonRpcHandler", "/jsonrpc_multiple2");
 
-		registry.addHandler(new NewSessionTest.Handler(),
-				"/new_session_handler");
+		registry.addHandler(new NewSessionTest.Handler(), "/new_session_handler");
 
-		registry.addHandler(new CloseSessionTest.Handler(),
-				"/close_session_handler");
+		registry.addHandler(new CloseSessionTest.Handler(), "/close_session_handler");
 
 		registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
 
-		registry.addHandler(new ReconnectionServerTest.Handler(),
-				"/reconnection2");
+		registry.addHandler(new ReconnectionServerTest.Handler(), "/reconnection2");
 
-		registry.addHandler(new ConnectionListenerTest.Handler(),
-				"/connectionlistener");
+		registry.addHandler(new ConnectionListenerTest.Handler(), "/connectionlistener");
+
+		registry.addHandler(new LargePackageTest.Handler(), "/largepackage");
 
 		registry.addHandler(new NotificationTest.Handler(), "/notification");
 
@@ -91,6 +87,8 @@ public class BootTestApplication implements JsonRpcConfigurer {
 	public ServletServerContainerFactoryBean createWebSocketContainer() {
 		ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
 		container.setMaxSessionIdleTimeout(10000);
+		container.setMaxTextMessageBufferSize(1000000);
+		container.setMaxBinaryMessageBufferSize(1000000);
 		return container;
 	}
 

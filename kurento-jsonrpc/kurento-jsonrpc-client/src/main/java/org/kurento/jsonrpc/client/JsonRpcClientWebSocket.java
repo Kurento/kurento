@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -62,10 +63,12 @@ import com.google.gson.JsonObject;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
+	private static final int MAX_PACKET_SIZE = 1000000;
+
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(
 			"JsonRpcClientWebsocket-%d").build();
 
-	@WebSocket(maxTextMessageSize = 64 * 1024)
+	@WebSocket
 	public class WebSocketClientSocket {
 
 		@OnWebSocketClose
@@ -228,8 +231,17 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				try {
 					if (client == null) {
 						client = new WebSocketClient(sslContextFactory);
+						
 						client.setConnectTimeout(this.connectionTimeout);
-						client.start();
+						
+						WebSocketPolicy policy = client.getPolicy();
+						policy.setMaxBinaryMessageBufferSize(MAX_PACKET_SIZE);
+						policy.setMaxTextMessageBufferSize(MAX_PACKET_SIZE);
+						policy.setMaxBinaryMessageSize(MAX_PACKET_SIZE);
+						policy.setMaxTextMessageSize(MAX_PACKET_SIZE);
+												
+						client.start();						
+						
 					} else {
 						log.debug("{} Using existing websocket client when session is either null or closed.", label);
 					}
