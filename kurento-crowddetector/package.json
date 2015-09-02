@@ -1,6 +1,6 @@
 {
   "name": "kurento-crowddetector",
-  "version": "6.0.1-dev",
+  "version": "6.1.0",
   "private": true,
   "scripts": {
     "postinstall": "cd static && bower install"
@@ -11,8 +11,8 @@
     "express-session": "~1.10.3",
     "minimist": "^1.1.1",
     "ws": "~0.7.2",
-    "kurento-client": "Kurento/kurento-client-js",
-    "kurento-module-crowddetector": "Kurento/kurento-module-crowddetector-js"
+    "kurento-client": "6.1.0",
+    "kurento-module-crowddetector": "6.1.0"
   },
   "devDependencies": {
     "bower": "^1.4.1"
