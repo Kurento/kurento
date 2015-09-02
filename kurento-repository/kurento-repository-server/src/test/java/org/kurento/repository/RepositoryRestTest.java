@@ -132,7 +132,7 @@ public class RepositoryRestTest {
 		File fileToUpload = new File("test-files/logo.png");
 		uploadFileWithCURL(itemRec.getUrl(), fileToUpload);
 
-		Thread.sleep(1000 * 6);
+		Thread.sleep(1000 * 10);
 
 		RepositoryItemPlayer itemPlay = restService.getReadEndpoint(itemRec
 				.getId());

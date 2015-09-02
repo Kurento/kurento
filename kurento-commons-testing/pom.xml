@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
-		<version>6.1.0</version>
+		<version>6.1.1-SNAPSHOT</version>
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
