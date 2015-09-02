@@ -52,10 +52,14 @@ struct _KmsWebrtcEndpointClass
   gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self, const gchar * sess_id,
       KmsIceCandidate * candidate);
 
+  gint (*create_data_channel) (KmsWebrtcEndpoint *self, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
+  void (*destroy_data_channel) (KmsWebrtcEndpoint *self, gint stream_id);
+
   /* Signals */
   void (*on_ice_candidate) (KmsWebrtcEndpoint * self, const gchar *sess_id,
       KmsIceCandidate * candidate);
   void (*on_ice_gathering_done) (KmsWebrtcEndpoint * self, const gchar *sess_id);
+  void (*data_session_established) (KmsWebrtcEndpoint *self, gboolean connected);
 };
 
 GType kms_webrtc_endpoint_get_type (void);

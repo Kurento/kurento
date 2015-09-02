@@ -28,6 +28,7 @@
 #include "kms-webrtc-marshal.h"
 #include <glib/gstdio.h>
 #include "kmswebrtcdatasessionbin.h"
+#include "kms-webrtc-data-marshal.h"
 
 #define KMS_WEBRTC_DATA_CHANNEL_PPID_STRING 51
 #define PLUGIN_NAME "webrtcendpoint"
@@ -67,6 +68,9 @@ enum
   SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED,
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
+  SIGNAL_DATA_SESSION_ESTABLISHED,
+  ACTION_CREATE_DATA_CHANNEL,
+  ACTION_DESTROY_DATA_CHANNEL,
   LAST_SIGNAL
 };
 
@@ -275,6 +279,10 @@ kms_webrtc_endpoint_data_session_established_cb (KmsWebRtcDataSessionBin *
 {
   GST_DEBUG_OBJECT (self, "Data session %" GST_PTR_FORMAT " %s",
       session, (connected) ? "established" : "finished");
+
+  g_signal_emit (self,
+      kms_webrtc_endpoint_signals[SIGNAL_DATA_SESSION_ESTABLISHED], 0,
+      connected);
 }
 
 static void
@@ -660,6 +668,34 @@ kms_webrtc_endpoint_finalize (GObject * object)
   G_OBJECT_CLASS (kms_webrtc_endpoint_parent_class)->finalize (object);
 }
 
+static gint
+kms_webrtc_endpoint_create_data_channel (KmsWebrtcEndpoint * self,
+    gint max_packet_life_time, gint max_retransmits, const gchar * label,
+    const gchar * protocol)
+{
+  gint stream_id = -1;
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->data_session == NULL) {
+    GST_WARNING_OBJECT (self, "Data session is not yet established");
+  } else {
+    g_signal_emit_by_name (self->priv->data_session, "create-data-channel",
+        max_packet_life_time, max_retransmits, label, protocol, &stream_id);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  return stream_id;
+}
+
+static void
+kms_webrtc_endpoint_destroy_data_channel (KmsWebrtcEndpoint * self,
+    gint stream_id)
+{
+  GST_DEBUG_OBJECT (self, "Destroy channel %u", stream_id);
+}
+
 static void
 kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 {
@@ -696,6 +732,8 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 
   klass->gather_candidates = kms_webrtc_endpoint_gather_candidates;
   klass->add_ice_candidate = kms_webrtc_endpoint_add_ice_candidate;
+  klass->create_data_channel = kms_webrtc_endpoint_create_data_channel;
+  klass->destroy_data_channel = kms_webrtc_endpoint_destroy_data_channel;
 
   g_object_class_install_property (gobject_class, PROP_STUN_SERVER_IP,
       g_param_spec_string ("stun-server",
@@ -778,6 +816,29 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcEndpointClass, gather_candidates), NULL, NULL,
       __kms_webrtc_marshal_BOOLEAN__STRING, G_TYPE_BOOLEAN, 1, G_TYPE_STRING);
+
+  kms_webrtc_endpoint_signals[SIGNAL_DATA_SESSION_ESTABLISHED] =
+      g_signal_new ("data-session-established",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, data_session_established),
+      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1,
+      G_TYPE_BOOLEAN);
+
+  kms_webrtc_endpoint_signals[ACTION_CREATE_DATA_CHANNEL] =
+      g_signal_new ("create-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, create_data_channel),
+      NULL, NULL, __kms_webrtc_data_marshal_INT__INT_INT_STRING_STRING,
+      G_TYPE_INT, 4, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING);
+
+  kms_webrtc_endpoint_signals[ACTION_DESTROY_DATA_CHANNEL] =
+      g_signal_new ("destroy-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, destroy_data_channel),
+      NULL, NULL, g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
 }
