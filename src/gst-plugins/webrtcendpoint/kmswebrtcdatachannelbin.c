@@ -105,6 +105,7 @@ struct _KmsWebRtcDataChannelBinPrivate
   ResetStreamFunc _reset_cb = NULL;                            \
   gpointer _reset_data;                                        \
   KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (obj);                      \
+  GST_DEBUG_OBJECT ((obj), "Resetting data channel");          \
   (obj)->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSING; \
   _reset_cb = (obj)->priv->reset_cb;                           \
   _reset_data = (obj)->priv->reset_data;                       \
