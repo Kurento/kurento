@@ -149,8 +149,12 @@ kms_webrtc_data_channel_set_new_buffer_callback (KmsWebRtcDataChannel * channel,
 
 GstFlowReturn
 kms_webrtc_data_channel_push_buffer (KmsWebRtcDataChannel * channel,
-    GstBuffer * buffer, gboolean is_binary)
+    GstBuffer * buff, gboolean is_binary)
 {
+  GstBuffer *buffer;
+
+  buffer = gst_buffer_ref (buff);
+
   if (channel == NULL) {
     gst_buffer_unref (buffer);
     g_return_val_if_reached (GST_FLOW_ERROR);
