@@ -1396,48 +1396,66 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 }
 
 #ifdef ENABLE_DEBUGGING_TESTS
-static void
-dummysrc_pad_added (GstElement * element, GstPad * new_pad, gpointer user_data)
+
+#define TEST_MESSAGE "Hello world!"
+
+static gboolean
+print_timedout_pipeline (gpointer data)
 {
-  GstPad *sink_pad = GST_PAD (user_data);
+  GstElement *pipeline = data;
+  gchar *pipeline_name;
+  gchar *name;
 
-  GST_DEBUG_OBJECT (element, "Added pad %" GST_PTR_FORMAT, new_pad);
+  pipeline_name = gst_element_get_name (pipeline);
+  name = g_strdup_printf ("%s_timedout", pipeline_name);
 
-  fail_unless (GST_PAD_IS_SRC (new_pad));
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, name);
 
-  GST_DEBUG ("Linking %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, new_pad,
-      sink_pad);
-  fail_unless (gst_pad_link (new_pad, sink_pad) == GST_PAD_LINK_OK);
+  g_free (name);
+  g_free (pipeline_name);
+
+  return FALSE;
+}
+
+static void
+feed_data_channel (GstElement * appsrc, guint unused_size, gpointer data)
+{
+  GstFlowReturn ret;
+  GstBuffer *buff;
+  gchar *msg;
+
+  msg = g_strdup (TEST_MESSAGE);
+  buff = gst_buffer_new_wrapped (msg, strlen (msg));
+
+  g_signal_emit_by_name (appsrc, "push-buffer", buff, &ret);
+
+  fail_if (ret != GST_FLOW_OK);
 }
 
 static void
 webrtc_sender_pad_added (GstElement * element, GstPad * new_pad,
     gpointer user_data)
 {
-  GstElement *dummysrc, *pipeline = GST_ELEMENT (user_data);
-  gchar *padname = NULL;
+  GstElement *appsrc, *pipeline = GST_ELEMENT (user_data);
+  GstPad *srcpad;
 
   GST_DEBUG_OBJECT (element, "Added pad %" GST_PTR_FORMAT, new_pad);
 
   fail_unless (GST_PAD_IS_SINK (new_pad));
 
-  dummysrc = gst_element_factory_make ("dummysrc", NULL);
-  gst_bin_add (GST_BIN (pipeline), dummysrc);
+  appsrc = gst_element_factory_make ("appsrc", NULL);
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "min-latency",
+      G_GINT64_CONSTANT (0), "max-bytes", 0, "emit-signals", TRUE, NULL);
 
-  g_signal_connect (dummysrc, "pad-added", G_CALLBACK (dummysrc_pad_added),
-      new_pad);
+  g_signal_connect (appsrc, "need-data", G_CALLBACK (feed_data_channel), NULL);
 
-  /* request src pad using action */
-  g_signal_emit_by_name (dummysrc, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_DATA, NULL, &padname);
-  fail_if (padname == NULL);
+  gst_bin_add (GST_BIN (pipeline), appsrc);
 
-  GST_DEBUG ("Pad name %s", padname);
-  g_object_set (G_OBJECT (dummysrc), "data", TRUE, NULL);
+  srcpad = gst_element_get_static_pad (appsrc, "src");
+  fail_if (gst_pad_link (srcpad, new_pad) != GST_PAD_LINK_OK);
 
-  g_free (padname);
-
-  gst_element_sync_state_with_parent (dummysrc);
+  gst_element_sync_state_with_parent (appsrc);
 }
 
 static void
@@ -1484,8 +1502,8 @@ webrtc_receiver_pad_added (GstElement * element, GstPad * new_pad,
   }
 
   fakesink = gst_element_factory_make ("fakesink", NULL);
-  g_object_set (G_OBJECT (fakesink), "sync", FALSE, "signal-handoffs", TRUE,
-      NULL);
+  g_object_set (G_OBJECT (fakesink), "sync", FALSE, "async", FALSE,
+      "signal-handoffs", TRUE, NULL);
   g_signal_connect (fakesink, "handoff", G_CALLBACK (fakesink_handoff),
       tmp->loop);
 
@@ -1496,6 +1514,25 @@ webrtc_receiver_pad_added (GstElement * element, GstPad * new_pad,
   g_object_unref (sink_pad);
 
   gst_element_sync_state_with_parent (fakesink);
+}
+
+static void
+data_session_established_cb (GstElement * self, gboolean connected,
+    gpointer data)
+{
+  GST_DEBUG_OBJECT (self, "Data session %s",
+      (connected) ? "established" : "finished");
+
+  if (connected) {
+    gint stream_id;
+
+    g_signal_emit_by_name (self, "create-data-channel", -1, -1, "TestChannel",
+        "webrtc-datachannel", &stream_id);
+
+    fail_if (stream_id < 0);
+
+    GST_DEBUG ("Requested data channel id %u", stream_id);
+  }
 }
 
 static void
@@ -1521,6 +1558,9 @@ test_data_channels (gboolean bundle)
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  g_signal_connect (sender, "data-session-established",
+      G_CALLBACK (data_session_established_cb), NULL);
 
   /* Session creation */
   g_signal_emit_by_name (sender, "create-session", &sender_sess_id);
@@ -1633,6 +1673,7 @@ test_data_channels (gboolean bundle)
   g_signal_emit_by_name (receiver, "gather-candidates", receiver_sess_id, &ret);
   fail_unless (ret);
 
+  g_timeout_add_seconds (4, print_timedout_pipeline, pipeline);
   g_main_loop_run (loop);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
