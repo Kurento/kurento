@@ -250,6 +250,9 @@ kms_webrtc_data_channel_bin_set_priority (KmsWebRtcDataChannelBin * self,
     KmsWebRtcDataChannelPriority priority)
 {
   switch (priority) {
+    case KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_IGNORED:
+      self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_IGNORED;
+      break;
     case KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_BELOW_NORMAL:
       self->priv->priority = KMS_DATA_CHANNEL_PRIORITY_BELOW_NORMAL;
       break;
@@ -315,6 +318,8 @@ static KmsWebRtcDataChannelPriority
 kms_webrtc_data_channel_bin_get_priority (KmsWebRtcDataChannelBin * self)
 {
   switch (self->priv->priority) {
+    case KMS_DATA_CHANNEL_PRIORITY_IGNORED:
+      return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_IGNORED;
     case KMS_DATA_CHANNEL_PRIORITY_BELOW_NORMAL:
       return KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_BELOW_NORMAL;
     case KMS_DATA_CHANNEL_PRIORITY_NORMAL:
@@ -541,7 +546,7 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
       g_param_spec_enum ("priority", "Channel priority",
       "The priority of this data channel",
       KMS_TYPE_WEB_RTC_DATA_CHANNEL_PRIORITY,
-      KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_NORMAL,
+      KMS_WEB_RTC_DATA_CHANNEL_PRIORITY_IGNORED,
       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   obj_properties[PROP_PROTOCOL] =
@@ -673,6 +678,7 @@ kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
   }
 
   switch (priority) {
+    case KMS_DATA_CHANNEL_PRIORITY_IGNORED:
     case KMS_DATA_CHANNEL_PRIORITY_BELOW_NORMAL:
     case KMS_DATA_CHANNEL_PRIORITY_NORMAL:
     case KMS_DATA_CHANNEL_PRIORITY_HIGH:
