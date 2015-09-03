@@ -70,7 +70,7 @@
 		<version.kurento-platedetector>6.1.1-SNAPSHOT</version.kurento-platedetector>
 		<version.kurento-pointerdetector>6.1.1-SNAPSHOT</version.kurento-pointerdetector>
 		<version.kurento-markerdetector>6.1.1-SNAPSHOT</version.kurento-markerdetector>
-		<version.kurento-crowddetector>6.1.SNAPSHOT</version.kurento-crowddetector>
+		<version.kurento-crowddetector>6.1.1-SNAPSHOT</version.kurento-crowddetector>
 		<version.kurento-facesegmentator>6.1.1-SNAPSHOT</version.kurento-facesegmentator>
 		<version.kurento-backgroundextractor>6.1.1-SNAPSHOT</version.kurento-backgroundextractor>
 		<version.kms-api-core>6.1.1-SNAPSHOT</version.kms-api-core>
