@@ -93,6 +93,8 @@ public class JsonRpcHandlerManager {
 	public void handleRequest(Session session, Request<JsonElement> request,
 			ResponseSender rs) throws IOException {
 
+		log.info("->Req {}", request);
+		
 		try {
 
 			log.info("->Req {}", request);

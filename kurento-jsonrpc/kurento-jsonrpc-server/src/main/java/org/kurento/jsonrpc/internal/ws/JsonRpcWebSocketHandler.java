@@ -142,7 +142,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 						throws IOException {
 
 					String jsonMessage = message.toString();
-					log.debug("{} <-Res {}", label, jsonMessage);
+					log.debug("{} Res<- {}", label, jsonMessage);
 					sendJsonMessage(jsonMessage);
 				}
 
@@ -151,7 +151,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 						throws IOException {
 
 					String jsonMessage = message.toString();
-					log.trace("{} <-Res {}", label, jsonMessage);
+					log.trace("{} Res<- {}", label, jsonMessage);
 					sendJsonMessage(jsonMessage);
 				}
 
