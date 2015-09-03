@@ -986,6 +986,7 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
   GstBuffer *send_buffer;
   guint32 pr_param;
   GstMapInfo info;
+  GstBuffer *buff;
 
   if (self == NULL || !KMS_IS_WEBRTC_DATA_CHANNEL_BIN (self)) {
     gst_buffer_unref (buffer);
@@ -1063,10 +1064,12 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
 
   KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
 
-  gst_sctp_buffer_add_send_meta (send_buffer, ppid, ordered, pr, pr_param);
+  /* Buffer must be writable to add meta */
+  buff = gst_buffer_make_writable (send_buffer);
 
-  return gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc),
-      send_buffer);
+  gst_sctp_buffer_add_send_meta (buff, ppid, ordered, pr, pr_param);
+
+  return gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc), buff);
 }
 
 void
