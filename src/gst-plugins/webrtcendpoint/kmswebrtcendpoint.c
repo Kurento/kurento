@@ -17,6 +17,7 @@
 #  include <config.h>
 #endif
 
+#include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
 
 #include "kmswebrtcendpoint.h"
@@ -82,6 +83,7 @@ static guint kms_webrtc_endpoint_signals[LAST_SIGNAL] = { 0 };
 
 typedef struct _DataChannel
 {
+  KmsRefStruct ref;
   KmsWebRtcDataChannel *chann;
   GstElement *appsink;
   GstElement *appsrc;
@@ -118,12 +120,14 @@ data_channel_destroy (DataChannel * chann)
 }
 
 static DataChannel *
-data_channel_new (guint stream_id)
+data_channel_new (guint stream_id, KmsWebRtcDataChannel * channel)
 {
   DataChannel *chann;
   gchar *name;
 
   chann = g_slice_new (DataChannel);
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (chann),
+      (GDestroyNotify) data_channel_destroy);
 
   name = g_strdup_printf ("appsrc_stream_%u", stream_id);
   chann->appsrc = gst_element_factory_make ("appsrc", name);
@@ -139,6 +143,8 @@ data_channel_new (guint stream_id)
   g_object_set (chann->appsrc, "is-live", TRUE, "min-latency",
       G_GINT64_CONSTANT (0), "do-timestamp", TRUE, "max-bytes", 0,
       "emit-signals", FALSE, NULL);
+
+  chann->chann = channel;
 
   return chann;
 }
@@ -354,11 +360,39 @@ kms_webrtc_endpoint_add_sink_data_pad (KmsWebrtcEndpoint * self,
 }
 
 static GstFlowReturn
-new_data_callback (GstAppSink * appsink, KmsWebrtcEndpoint * self)
+new_sample_callback (GstAppSink * appsink, DataChannel * channel)
 {
-  GST_WARNING_OBJECT (self, "Data received on %" GST_PTR_FORMAT, appsink);
+  GstFlowReturn ret;
+  GstSample *sample;
+  GstBuffer *buffer;
 
-  return GST_FLOW_OK;
+  sample = gst_app_sink_pull_sample (GST_APP_SINK (appsink));
+  g_return_val_if_fail (sample, GST_FLOW_ERROR);
+
+  buffer = gst_sample_get_buffer (sample);
+  if (buffer == NULL) {
+    gst_sample_unref (sample);
+    GST_ERROR_OBJECT (appsink, "No buffer got from sample");
+
+    return GST_FLOW_ERROR;
+  }
+
+  /* FIXME: We asume that this is a binary buffer. Infer this information */
+  /* from metadata that sctp elements set in each buffer. */
+
+  ret = kms_webrtc_data_channel_push_buffer (channel->chann, buffer, TRUE);
+  gst_sample_unref (sample);
+
+  return ret;
+}
+
+static GstFlowReturn
+data_channel_buffer_received_cb (GObject * obj, GstBuffer * buffer,
+    DataChannel * channel)
+{
+  /* buffer is tranfser full */
+  return gst_app_src_push_buffer (GST_APP_SRC (channel->appsrc),
+      gst_buffer_ref (buffer));
 }
 
 static void
@@ -366,6 +400,7 @@ kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
     guint stream_id, KmsWebrtcEndpoint * self)
 {
   GstAppSinkCallbacks callbacks;
+  KmsWebRtcDataChannel *chann;
   DataChannel *channel;
 
   GST_DEBUG_OBJECT (self, "Data channel with stream_id %u opened", stream_id);
@@ -381,17 +416,33 @@ kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
     return;
   }
 
-  channel = data_channel_new (stream_id);
+  g_signal_emit_by_name (session, "get-data-channel", stream_id, &chann);
+
+  if (chann == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get data channel with id %u", stream_id);
+    KMS_ELEMENT_UNLOCK (self);
+
+    return;
+  }
+
+  channel = data_channel_new (stream_id, chann);
+
   g_hash_table_insert (self->priv->data_channels, GUINT_TO_POINTER (stream_id),
       channel);
 
   callbacks.eos = NULL;
   callbacks.new_preroll = NULL;
   callbacks.new_sample =
-      (GstFlowReturn (*)(GstAppSink *, gpointer)) new_data_callback;
+      (GstFlowReturn (*)(GstAppSink *, gpointer)) new_sample_callback;
 
   gst_app_sink_set_callbacks (GST_APP_SINK (channel->appsink), &callbacks,
-      self, NULL);
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
+      (GDestroyNotify) kms_ref_struct_unref);
+
+  kms_webrtc_data_channel_set_new_buffer_callback (channel->chann,
+      (DataChannelNewBuffer) data_channel_buffer_received_cb,
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
+      (GDestroyNotify) kms_ref_struct_unref);
 
   gst_bin_add_many (GST_BIN (self), channel->appsrc, channel->appsink, NULL);
 
@@ -969,7 +1020,7 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
   self->priv->turn_url = DEFAULT_STUN_TURN_URL;
 
   self->priv->data_channels = g_hash_table_new_full (g_direct_hash,
-      g_direct_equal, NULL, (GDestroyNotify) data_channel_destroy);
+      g_direct_equal, NULL, (GDestroyNotify) kms_ref_struct_unref);
 
   self->priv->loop = kms_loop_new ();
   g_object_get (self->priv->loop, "context", &self->priv->context, NULL);
