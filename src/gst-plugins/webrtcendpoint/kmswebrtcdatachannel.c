@@ -64,7 +64,6 @@ kms_webrtc_data_channel_bin_finalize (GObject * object)
   }
 
   g_rec_mutex_clear (&self->priv->mutex);
-  g_clear_object (&self->priv->channel_bin);
 
   /* chain up */
   G_OBJECT_CLASS (parent_class)->finalize (object);
@@ -117,8 +116,7 @@ kms_webrtc_data_channel_new (KmsWebRtcDataChannelBin * channel_bin)
   obj = KMS_WEBRTC_DATA_CHANNEL (g_object_new (KMS_TYPE_WEBRTC_DATA_CHANNEL,
           NULL));
 
-  obj->priv->channel_bin =
-      KMS_WEBRTC_DATA_CHANNEL_BIN (g_object_ref (channel_bin));
+  obj->priv->channel_bin = channel_bin;
 
   kms_webrtc_data_channel_bin_set_new_buffer_callback (channel_bin,
       kms_webrtc_data_channel_new_buffer, obj, NULL);
