@@ -344,50 +344,45 @@ This is possible because the Kurento Protocol is implemented with websockets
 and there is a full duplex channel between client and server. The request that
 server send to client has all the information about the event:
 
-  - **data**: Information about this specific of this type of event.
   - **source**: the object source of the event.
   - **type**: The type of the event.
+  - **timestamp**: Date and time of the media server.
+  - **tags**: Media elements can be labeled using the methods
+    ``setSendTagsInEvents`` and ``addTag`` present in each element. These tags
+    are key-value metadata that can be used by developers for custom purposes.
+    Tags are returned with each event by the media server in this field.
 
 The following example shows a notification sent for server to client to notify
-an event of type ``EndOfStream`` in the object ``311861480``::
-
-    {
-      "jsonrpc": "2.0",
-      "id": 6,
-      "method": "onEvent",
-      "params": {
-        "value": {
-           "data":{
-              "source":"311861480",
-              "type":"EndOfStream"
-          },
-          "object":"311861480",
-          "type":"EndOfStream",
-        },
-        "sessionId":"4f5255d5-5695-4e1c-aa2b-722e82db5260"
-      }
-    }
-
-The ``Response`` message does not contain any information. Is only a form of
-acknowledge message. The following example shows the typical response of an
-onEvent request::
+an event of type ``EndOfStream`` for a ``PlayerEndpoint`` object::
 
     {
       "jsonrpc":"2.0",
-      "id":6,
-      "result": ""
+      "method":"onEvent",
+      "params":{
+         "value":{
+            "data":{
+               "source":"681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
+               "tags":[],
+               "timestamp":"1441277150",
+               "type":"EndOfStream"
+            },
+            "object":"681f1bc8-2d13-4189-a82a-2e2b92248a21_kurento.MediaPipeline/e983997e-ac19-4f4b-9575-3709af8c01be_kurento.PlayerEndpoint",
+            "type":"EndOfStream"
+         }
+       }
     }
 
+Notice that this message has no ``id`` field due to the fact that no
+``Response`` is required.
 
 Network issues
 ==============
 
-Resources handled by KMS are high-consumming...
-
-For this reason, KMS implements a garbage collector.
+Resources handled by KMS are high-consuming. For this reason, KMS implements a
+garbage collector.
 
 A Media Element is collected when the client is disconnected longer than 4
-minutes. After that time, these media elements are dispossed automatically.
+minutes. After that time, these media elements are disposed automatically.
 
 Therefore the websocket connection between client and KMS be active any time. In
 case of temporary network disconnection, KMS implements a mechanism to allow
@@ -586,8 +581,8 @@ command:
 
 The aim of this tools is to generate the client code and also the glue code
 needed in the server-side. For code generation it uses
-`Freemarker <http://freemarker.org/>`_ as template engine. The typicall way to
-use Kurento Module Creater is by running a command like this:
+`Freemarker <http://freemarker.org/>`_ as template engine. The typical way to
+use Kurento Module Creator is by running a command like this:
 
 .. sourcecode:: sh
 
