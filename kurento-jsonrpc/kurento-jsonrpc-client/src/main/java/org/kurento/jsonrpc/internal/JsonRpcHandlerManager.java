@@ -95,6 +95,8 @@ public class JsonRpcHandlerManager {
 
 		try {
 
+			log.info("->Req {}", request);
+
 			if (handler == null) {
 				log.warn("JsonRpcClient has received a request from server but"
 						+ " there is no JsonRpcHandler configured to manage this"
