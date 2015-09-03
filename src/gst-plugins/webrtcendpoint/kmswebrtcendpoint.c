@@ -377,10 +377,11 @@ new_sample_callback (GstAppSink * appsink, DataChannel * channel)
     return GST_FLOW_ERROR;
   }
 
-  /* FIXME: We asume that this is a binary buffer. Infer this information */
-  /* from metadata that sctp elements set in each buffer. */
+  /* By default all data received in a pipeline is binary unless they are */
+  /* sent by other data channel, in such cases, sctpencoders and decoders */
+  /* will set the appropriate ppid meta to the buffer */
 
-  ret = kms_webrtc_data_channel_push_buffer (channel->chann, buffer, TRUE);
+  ret = kms_webrtc_data_channel_push_buffer (channel->chann, buffer, FALSE);
   gst_sample_unref (sample);
 
   return ret;

@@ -982,17 +982,59 @@ end:
   return caps;
 }
 
+static gboolean
+kms_webrtc_data_channel_bin_get_ppid_from_meta (KmsWebRtcDataChannelBin * self,
+    GstSctpReceiveMeta * meta, gboolean is_empty, KmsDataChannelPPID * ppid)
+{
+  switch (meta->ppid) {
+    case KMS_DATA_CHANNEL_PPID_STRING:
+      if (is_empty) {
+        GST_WARNING_OBJECT (self, "Invalid ppid used for empty string buffers");
+        return FALSE;
+      }
+      break;
+    case KMS_DATA_CHANNEL_PPID_BINARY:
+      if (is_empty) {
+        GST_WARNING_OBJECT (self, "Invalid ppid used for empty binary buffers");
+        return FALSE;
+      }
+      break;
+    case KMS_DATA_CHANNEL_PPID_STRING_EMPTY:
+      if (!is_empty) {
+        GST_WARNING_OBJECT (self, "Invalid empty ppid set for string buffers");
+        return FALSE;
+      }
+      break;
+    case KMS_DATA_CHANNEL_PPID_BINARY_EMPTY:
+      if (!is_empty) {
+        GST_WARNING_OBJECT (self, "Invalid empty ppid set for binary buffers");
+      }
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "Can not push buffer with ppid %u", meta->ppid);
+      return FALSE;
+  }
+
+  *ppid = meta->ppid;
+
+  return TRUE;
+}
+
 GstFlowReturn
 kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
     GstBuffer * buffer, gboolean is_binary)
 {
+  const GstMetaInfo *meta_info = GST_SCTP_RECEIVE_META_INFO;
+  GstSctpReceiveMeta *sctp_receive_meta = NULL;
   GstSctpSendMetaPartiallyReliability pr;
   gboolean is_empty, ordered;
   KmsDataChannelPPID ppid;
   GstBuffer *send_buffer;
+  gpointer state = NULL;
   guint32 pr_param;
   GstMapInfo info;
   GstBuffer *buff;
+  GstMeta *meta;
 
   if (self == NULL || !KMS_IS_WEBRTC_DATA_CHANNEL_BIN (self)) {
     gst_buffer_unref (buffer);
@@ -1005,20 +1047,23 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
     return GST_FLOW_ERROR;
   }
 
+  while ((meta = gst_buffer_iterate_meta (buffer, &state))) {
+    if (meta->info->api == meta_info->api) {
+      sctp_receive_meta = (GstSctpReceiveMeta *) meta;
+      break;
+    }
+  }
+
   is_empty = info.size == 0;
   gst_buffer_unmap (buffer, &info);
 
-  if (is_empty) {
-    guint8 *zero_byte;
-
+  if (sctp_receive_meta != NULL &&
+      !kms_webrtc_data_channel_bin_get_ppid_from_meta (self,
+          sctp_receive_meta, is_empty, &ppid)) {
     gst_buffer_unref (buffer);
-    zero_byte = g_new0 (guint8, 1);
-    send_buffer = gst_buffer_new_wrapped (zero_byte, 1);
-  } else {
-    send_buffer = buffer;
-  }
 
-  if (is_binary) {
+    return GST_FLOW_ERROR;
+  } else if (is_binary) {
     if (is_empty) {
       ppid = KMS_DATA_CHANNEL_PPID_BINARY_EMPTY;
     } else {
@@ -1030,6 +1075,16 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
     } else {
       ppid = KMS_DATA_CHANNEL_PPID_STRING;
     }
+  }
+
+  if (is_empty) {
+    guint8 *zero_byte;
+
+    gst_buffer_unref (buffer);
+    zero_byte = g_new0 (guint8, 1);
+    send_buffer = gst_buffer_new_wrapped (zero_byte, 1);
+  } else {
+    send_buffer = buffer;
   }
 
   KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
