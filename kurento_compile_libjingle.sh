@@ -25,6 +25,6 @@ mv src libjingle
 
 cd libjingle
 
-sudo postpone -d -f ./build/install-build-deps.sh || exit 1
+yes | sudo postpone -d -f ./build/install-build-deps.sh || exit 1
 
 sudo ninja -C out/Debug
