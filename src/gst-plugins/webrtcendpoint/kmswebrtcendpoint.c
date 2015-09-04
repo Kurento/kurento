@@ -356,6 +356,7 @@ kms_webrtc_endpoint_add_sink_data_pad (KmsWebrtcEndpoint * self,
   sinkpad = gst_element_get_static_pad (channel->appsink, "sink");
   kms_element_connect_sink_target (KMS_ELEMENT (self), sinkpad,
       KMS_ELEMENT_PAD_TYPE_DATA);
+
   g_object_unref (sinkpad);
 }
 
@@ -457,10 +458,49 @@ kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
 }
 
 static void
+kms_webrtc_endpoint_remove_data_channel (KmsWebrtcEndpoint * self,
+    DataChannel * channel)
+{
+  kms_element_remove_sink_by_type (KMS_ELEMENT (self),
+      KMS_ELEMENT_PAD_TYPE_DATA);
+
+  g_object_ref (channel->appsrc);
+  g_object_ref (channel->appsink);
+
+  gst_element_set_state (channel->appsrc, GST_STATE_NULL);
+  gst_element_set_state (channel->appsink, GST_STATE_NULL);
+
+  gst_bin_remove_many (GST_BIN (self), channel->appsrc, channel->appsink, NULL);
+
+  g_object_unref (channel->appsrc);
+  g_object_unref (channel->appsink);
+}
+
+static void
 kms_webrtc_endpoint_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
     guint stream_id, KmsWebrtcEndpoint * self)
 {
+  DataChannel *channel;
+
   GST_DEBUG_OBJECT (self, "Data channel with stream_id %u closed", stream_id);
+
+  KMS_ELEMENT_LOCK (self);
+
+  channel = (DataChannel *) g_hash_table_lookup (self->priv->data_channels,
+      GUINT_TO_POINTER (stream_id));
+
+  if (channel == NULL) {
+    KMS_ELEMENT_UNLOCK (self);
+    return;
+  }
+
+  g_hash_table_steal (self->priv->data_channels, GUINT_TO_POINTER (stream_id));
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  kms_webrtc_endpoint_remove_data_channel (self, channel);
+
+  kms_ref_struct_unref (KMS_REF_STRUCT_CAST (channel));
 }
 
 static gboolean
