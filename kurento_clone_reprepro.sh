@@ -139,7 +139,7 @@ do
   cd $tmp_dir
   wget --no-verbose ${ORIG_REPO_URL}/$i -O package.deb
   cd -
-  kurento_upload_package.sh $DIST $tmp_dir/package.deb
+  kurento_upload_package.sh $TARGET_DIST $tmp_dir/package.deb
   if [ $? != 0 ]
   then
     print "Failed to upload package $i"
