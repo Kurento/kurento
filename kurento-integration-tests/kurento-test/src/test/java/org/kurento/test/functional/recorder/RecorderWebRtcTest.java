@@ -113,15 +113,16 @@ public class RecorderWebRtcTest extends FunctionalTest {
 		getBrowser().close();
 
 		// Post-processing
-		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c", "copy",
-				recordingPostProcess);
+		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c",
+				"copy", recordingPostProcess);
 
 		// Play the recording
-		playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME, 0,
-				0, CHROME_VIDEOTEST_COLOR);
+		playFileWithPipeline(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
+				0, 0, CHROME_VIDEOTEST_COLOR);
 
-		// Uncomment this line to play the recording with a new pipeline
-		// playFileWithPipeline(browserType, recordingPostProcess, PLAYTIME,
-		// color);
+		// Uncomment this line to play the recording as a local file
+		// playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
+		// 0, 0, CHROME_VIDEOTEST_COLOR);
+
 	}
 }

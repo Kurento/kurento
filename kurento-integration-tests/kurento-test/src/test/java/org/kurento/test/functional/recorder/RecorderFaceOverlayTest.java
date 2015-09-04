@@ -44,7 +44,8 @@ import org.kurento.test.mediainfo.AssertMedia;
  * from a PlayerEndpoint with FaceOverlayFilter through an WebRtcEndpoint.<br/>
  * <strong>Pipelines</strong>:
  * <ol>
- * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint
+ * </li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ol>
  * <strong>Pass criteria</strong>:
@@ -96,9 +97,8 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
 				recordingPreProcess).build();
 		FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
-		filter.setOverlayedImage(
-				"http://files.kurento.org/imgs/red-square.png", -0.2F, -1.2F,
-				1.6F, 1.6F);
+		filter.setOverlayedImage("http://files.kurento.org/imgs/red-square.png",
+				-0.2F, -1.2F, 1.6F, 1.6F);
 
 		playerEP.connect(filter);
 		filter.connect(webRtcEP1);
@@ -113,21 +113,21 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		getBrowser().close();
 
 		// Post-processing
-		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c", "copy",
-				recordingPostProcess);
+		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c",
+				"copy", recordingPostProcess);
 
 		// Play the recording
-		playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
+		playFileWithPipeline(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
 				EXPECTED_COLOR_X, EXPECTED_COLOR_Y, EXPECTED_COLOR);
 
-		// Uncomment this line to play the recording with a new pipeline
-		// playFileWithPipeline(browserType, recordingPostProcess, PLAYTIME,
-		// EXPECTED_COLOR_X, EXPECTED_COLOR_Y, EXPECTED_COLOR);
+		// Uncomment this line to play the recording as a local file
+		// playFileAsLocal(BrowserType.CHROME, recordingPostProcess, PLAYTIME,
+		// EXPECTED_COLOR_X, EXPECTED_COLOR_Y, EXPECTED_COLOR;
+
 	}
 
-	private void launchBrowser(WebRtcEndpoint webRtcEP,
-			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
-			throws InterruptedException {
+	private void launchBrowser(WebRtcEndpoint webRtcEP, PlayerEndpoint playerEP,
+			RecorderEndpoint recorderEP) throws InterruptedException {
 
 		getBrowser().subscribeEvents("playing");
 		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
