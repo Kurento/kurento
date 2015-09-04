@@ -1,5 +1,11 @@
 #!/bin/bash
 
+cd ..
+
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+DEPOT_PATH="$PWD/depot_tools"
+export PATH=$PATH:$DEPOT_PATH
+
 echo "solutions = [
   {
     \"managed\": False,
@@ -11,10 +17,14 @@ echo "solutions = [
   },
 ]" > .gclient
 
+mv libjingle src
+
 gclient sync
 
-cd src
+mv src libjingle
 
-sudo postpone -d -f ./build/install-build-deps.sh
+cd libjingle
 
-ninja -C out/Debug
+sudo postpone -d -f ./build/install-build-deps.sh || exit 1
+
+sudo ninja -C out/Debug
