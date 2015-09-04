@@ -22,7 +22,9 @@ then
 else
   echo "Project already cloned, using existing one"
   cd $PROJECT_NAME
+  git remote update
   git checkout $BRANCH
+  git pull origin $BRANCH
 fi
 
 if [ ! -s debian/changelog ]
