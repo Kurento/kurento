@@ -22,8 +22,8 @@
     "adapter.js": "*",
     "bootstrap": "~3.3.0",
     "draggabilly": "~1.2.4",
-    "demo-console": "1.5.1",
+    "demo-console": "master",
     "ekko-lightbox": "~3.3.0",
-    "kurento-utils": "6.1.0"
+    "kurento-utils": "master"
   }
 }

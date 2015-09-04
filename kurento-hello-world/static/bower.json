@@ -22,7 +22,7 @@
     "adapter.js": "*",
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.3.0",
-    "demo-console": "1.5.1",
-    "kurento-utils": "6.1.0"
+    "demo-console": "master",
+    "kurento-utils": "master"
   }
 }
