@@ -89,6 +89,13 @@ function getOnError(done) {
   };
 }
 
+function sleep(seconds) {
+  var e = new Date().getTime() + (seconds * 1000);
+
+  while (new Date().getTime() <= e) {;
+  }
+}
+
 Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
 
 QUnit.config.testTimeout = 30000 * Timeout.factor;
@@ -103,6 +110,9 @@ QUnit.module('reconnect', {
 
     this.server = spawn('kurento-media-server', ARGV)
       .on('error', onerror)
+
+    console.log("Waiting KMS is started...")
+    sleep(3)
 
     this.client = kurentoClient(ws_uri, options)
     this.client.create('MediaPipeline', function (error, pipeline) {
@@ -147,6 +157,9 @@ QUnit.test('MediaServer restarted', function (assert) {
 
     self.server = spawn('kurento-media-server', ARGV)
       .on('error', onerror)
+
+    console.log("Waiting KMS is started again...")
+    sleep(3)
 
     client.getMediaobjectById(pipeline.id, function (error, mediaObject) {
       assert.notEqual(error, undefined);
