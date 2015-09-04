@@ -56,7 +56,8 @@ DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
 
 . kurento_install_deb_dependencies.sh || exit 1
 
-${CUSTOM_PRE_COMMAND}
+echo ${CUSTOM_PRE_COMMAND}
+${CUSTOM_PRE_COMMAND} || exit 1
 
 PROJECT_VERSION=`kurento_get_version.sh`
 
