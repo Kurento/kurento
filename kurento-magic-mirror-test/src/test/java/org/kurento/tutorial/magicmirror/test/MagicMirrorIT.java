@@ -68,7 +68,7 @@ public class MagicMirrorIT {
 	}
 
 	@Test
-	public void testHelloWorld() throws InterruptedException {
+	public void testMagicMirror() throws InterruptedException {
 		// Open web application
 		driver.get("http://localhost:8080/");
 

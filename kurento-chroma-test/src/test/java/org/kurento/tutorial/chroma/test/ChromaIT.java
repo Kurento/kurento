@@ -69,7 +69,7 @@ public class ChromaIT {
 	}
 
 	@Test
-	public void testHelloWorld() throws InterruptedException {
+	public void testChroma() throws InterruptedException {
 		// Open web application
 		driver.get("http://localhost:8080/");
 

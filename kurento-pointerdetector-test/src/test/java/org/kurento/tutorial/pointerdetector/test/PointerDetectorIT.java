@@ -69,7 +69,7 @@ public class PointerDetectorIT {
 	}
 
 	@Test
-	public void testHelloWorld() throws InterruptedException {
+	public void testPointerDetector() throws InterruptedException {
 		// Open web application
 		driver.get("http://localhost:8080/");
 

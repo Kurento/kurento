@@ -69,7 +69,7 @@ public class PlateDetectorIT {
 	}
 
 	@Test
-	public void testHelloWorld() throws InterruptedException {
+	public void testPlateDetector() throws InterruptedException {
 		// Open web application
 		driver.get("http://localhost:8080/");
 
