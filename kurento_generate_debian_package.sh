@@ -92,7 +92,7 @@ else
 fi
 
 dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
-dpkg-buildpackage $build_args || echo "Warning, failure detecten on debian package generation"
+dpkg-buildpackage $build_args || exit 1
 
 for i in ../*${ver}_*.deb
 do
