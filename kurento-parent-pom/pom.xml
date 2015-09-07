@@ -295,6 +295,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
+				<artifactId>kurento-room-client-js</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-room-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
