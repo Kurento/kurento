@@ -126,6 +126,8 @@ public class CrowdDetectorIT {
 
 	@After
 	public void end() {
-		driver.close();
+		if (driver != null) {
+			driver.close();
+		}
 	}
 }

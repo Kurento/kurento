@@ -106,6 +106,8 @@ public class PointerDetectorIT {
 
 	@After
 	public void end() {
-		driver.close();
+		if (driver != null) {
+			driver.close();
+		}
 	}
 }

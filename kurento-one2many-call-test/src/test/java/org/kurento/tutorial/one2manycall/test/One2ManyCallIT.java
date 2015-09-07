@@ -136,8 +136,12 @@ public class One2ManyCallIT {
 	@After
 	public void end() {
 		for (WebDriver viewer : viewers) {
-			viewer.close();
+			if (viewer != null) {
+				viewer.close();
+			}
 		}
-		master.close();
+		if (master != null) {
+			master.close();
+		}
 	}
 }

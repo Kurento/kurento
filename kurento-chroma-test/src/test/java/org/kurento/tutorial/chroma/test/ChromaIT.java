@@ -106,6 +106,8 @@ public class ChromaIT {
 
 	@After
 	public void end() {
-		driver.close();
+		if (driver != null) {
+			driver.close();
+		}
 	}
 }

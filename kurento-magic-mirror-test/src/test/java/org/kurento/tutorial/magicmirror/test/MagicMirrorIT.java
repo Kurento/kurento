@@ -107,6 +107,8 @@ public class MagicMirrorIT {
 
 	@After
 	public void end() {
-		driver.close();
+		if (driver != null) {
+			driver.close();
+		}
 	}
 }

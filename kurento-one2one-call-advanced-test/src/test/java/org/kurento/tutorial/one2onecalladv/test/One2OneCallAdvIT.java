@@ -165,7 +165,11 @@ public class One2OneCallAdvIT {
 
 	@After
 	public void end() {
-		caller.close();
-		callee.close();
+		if (caller != null) {
+			caller.close();
+		}
+		if (callee != null) {
+			callee.close();
+		}
 	}
 }
