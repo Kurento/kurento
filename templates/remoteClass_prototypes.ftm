@@ -206,15 +206,7 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
       reject(error);
     };
 
-    if(self.id === null)
-    {
-      var error = new ReferenceError('MediaObject not found in server');
-          error.code = 40101;
-          error.object = self;
-
-      failure(error)
-    }
-    else if(self.id !== undefined)
+    if(self.id !== undefined)
       success(self)
     else
       self.once('_id', function(error, id)
