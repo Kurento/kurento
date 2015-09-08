@@ -91,7 +91,7 @@ else
  build_args="-k${KEY_ID}"
 fi
 
-dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
+#dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
 dpkg-buildpackage $build_args || exit 1
 
 for i in ../*${ver}_*.deb
