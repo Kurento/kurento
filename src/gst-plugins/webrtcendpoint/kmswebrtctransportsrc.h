@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
-//  *
+ *
  */
 
 #ifndef __KMS_WEBRTC_TRANSPORT_SRC_H__
