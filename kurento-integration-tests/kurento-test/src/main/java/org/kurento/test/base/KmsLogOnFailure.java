@@ -39,22 +39,25 @@ public class KmsLogOnFailure extends TestWatcher {
 		if (KurentoServicesTestHelper.printKmsLog()) {
 			List<File> logFiles = KurentoServicesTestHelper.getServerLogFiles();
 			final String separator = "******************************************************************************";
-			for (File logFile : logFiles) {
-				if (logFile != null && logFile.exists()) {
-					System.err.println(separator);
-					System.err.println(
-							"Log file path: " + logFile.getAbsolutePath());
-					System.err.println("Content:");
+			if (logFiles != null) {
+				for (File logFile : logFiles) {
+					if (logFile != null && logFile.exists()) {
+						System.err.println(separator);
+						System.err.println(
+								"Log file path: " + logFile.getAbsolutePath());
+						System.err.println("Content:");
 
-					try {
-						for (String line : FileUtils.readLines(logFile)) {
-							System.err.println(line);
+						try {
+							for (String line : FileUtils.readLines(logFile)) {
+								System.err.println(line);
+							}
+						} catch (IOException e1) {
+							System.err
+									.println("Error reading lines in log file");
+							e1.printStackTrace();
 						}
-					} catch (IOException e1) {
-						System.err.println("Error reading lines in log file");
-						e1.printStackTrace();
+						System.err.println(separator);
 					}
-					System.err.println(separator);
 				}
 			}
 		}

@@ -122,6 +122,8 @@ public class KurentoMediaServerManager {
 		String targetFolder = testDir + testClassName;
 
 		if (remoteKms != null) { // Remote KMS
+			log.info("Copying KMS logs from remote host {}",
+					remoteKms.getConnection());
 			SshConnection ssh = KurentoMediaServerManager.remoteKms;
 			List<String> ls = ssh.listFiles(kmsLogsPath, true, false);
 
@@ -133,6 +135,8 @@ public class KurentoMediaServerManager {
 						.addServerLogFilePath(new File(targetFile));
 			}
 		} else { // Local KMS
+			log.info("Copying KMS logs from local path {}", kmsLogsPath);
+
 			Collection<File> kmsFiles = FileUtils
 					.listFiles(new File(kmsLogsPath), null, true);
 
@@ -259,7 +263,6 @@ public class KurentoMediaServerManager {
 	private void startKms() throws IOException {
 		String kmsLogPath = getKmsLogPath();
 		if (isKmsRemote) {
-			// TODO test this
 			remoteKms.runAndWaitCommand("sh", "-c",
 					kmsLogPath + "kurento.sh > /dev/null");
 		} else {

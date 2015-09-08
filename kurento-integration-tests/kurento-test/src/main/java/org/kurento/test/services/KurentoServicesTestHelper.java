@@ -59,10 +59,15 @@ import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.test.Shell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class KurentoServicesTestHelper {
+
+	public static Logger log = LoggerFactory
+			.getLogger(KurentoServicesTestHelper.class);
 
 	// Attributes
 	private static KurentoMediaServerManager kms;
@@ -218,6 +223,7 @@ public class KurentoServicesTestHelper {
 	}
 
 	public static void teardownKurentoMediaServer() throws IOException {
+		log.info("Teardown KMS: kms={} kmsAutostart={}", kms, kmsAutostart);
 		if (kms != null && kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			kms.destroy();
 			kms = null;
@@ -305,6 +311,7 @@ public class KurentoServicesTestHelper {
 	}
 
 	public static void addServerLogFilePath(File logFile) {
+		log.info("Adding KMS log file: {}", logFile);
 		if (logFiles == null) {
 			logFiles = new ArrayList<>();
 		}
@@ -312,6 +319,8 @@ public class KurentoServicesTestHelper {
 	}
 
 	public static List<File> getServerLogFiles() {
+		int countKmsFiles = logFiles != null ? logFiles.size() : 0;
+		log.info("KMS logs files {}", countKmsFiles);
 		return logFiles;
 	}
 
