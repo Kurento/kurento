@@ -1,0 +1,76 @@
+# - Try to find KmsIceCandidate library
+
+#=============================================================================
+# Copyright 2015 Kurento
+#
+#=============================================================================
+
+set(PACKAGE_VERSION "@PROJECT_VERSION@")
+set(KmsIceCandidate_VERSION ${PACKAGE_VERSION})
+
+find_path(KmsIceCandidate_INCLUDE_DIR
+  NAMES
+    @FIND_HEADERS@
+  PATH_SUFFIXES
+    src/gst-plugins
+    @CUSTOM_PREFIX@
+)
+
+set(KmsIceCandidate_INCLUDE_DIRS ${KmsIceCandidate_INCLUDE_DIR}
+  CACHE INTERNAL "Include directories for KmsIceCandidate library"
+)
+
+find_library (KmsIceCandidate_LIBRARY
+  NAMES
+    kmsicecandidate
+  PATH_SUFFIXES
+    build/src/gst-plugins/webrtcendpoint
+)
+
+set (KmsIceCandidate_LIBRARIES ${KmsIceCandidate_LIBRARY}
+  CACHE INTERNAL "Libraries for KmsIceCandidate"
+)
+
+include (GenericFind)
+
+set (REQUIRED_LIBS "@REQUIRED_LIBS@")
+foreach (LIB ${REQUIRED_LIBS})
+  string(FIND ${LIB} " " POS)
+
+  if (${POS} GREATER 0)
+    string (SUBSTRING ${LIB} 0 ${POS} LIB_NAME)
+    string (SUBSTRING ${LIB} ${POS} -1 LIB_VERSION)
+    string (STRIP ${LIB_NAME} LIB_NAME)
+    string (STRIP ${LIB_VERSION} LIB_VERSION)
+    generic_find (LIBNAME ${LIB_NAME} REQUIRED VERSION "${LIB_VERSION}")
+  else ()
+    generic_find (LIBNAME ${LIB_NAME} REQUIRED)
+  endif ()
+  list (APPEND REQUIRED_LIBRARIES ${${LIB_NAME}_LIBRARIES})
+  list (APPEND REQUIRED_INCLUDE_DIRS ${${LIB_NAME}_INCLUDE_DIRS})
+
+endforeach()
+
+include (FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(KmsIceCandidate
+  FOUND_VAR
+    KmsIceCandidate_FOUND
+  REQUIRED_VARS
+    KmsIceCandidate_VERSION
+    KmsIceCandidate_INCLUDE_DIR
+    KmsIceCandidate_INCLUDE_DIRS
+    KmsIceCandidate_LIBRARY
+    KmsIceCandidate_LIBRARIES
+  VERSION_VAR
+    KmsIceCandidate_VERSION
+)
+
+mark_as_advanced(
+  KmsIceCandidate_FOUND
+  KmsIceCandidate_VERSION
+  KmsIceCandidate_INCLUDE_DIR
+  KmsIceCandidate_INCLUDE_DIRS
+  KmsIceCandidate_LIBRARY
+  KmsIceCandidate_LIBRARIES
+)

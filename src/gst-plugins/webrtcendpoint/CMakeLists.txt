@@ -5,7 +5,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CUSTOM_PREFIX "kurento")
 set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/webrtcendpoint")
 
-# icecandidate begin
+# kmsicecandidate begin
 set(KMS_ICE_CANDIDATE_SOURCES
   kmsicecandidate.c
 )
@@ -14,27 +14,42 @@ set(KMS_ICE_CANDIDATE_HEADERS
   kmsicecandidate.h
 )
 
-add_library(icecandidate SHARED ${KMS_ICE_CANDIDATE_SOURCES} ${KMS_ICE_CANDIDATE_HEADERS})
+add_library(kmsicecandidate SHARED ${KMS_ICE_CANDIDATE_SOURCES} ${KMS_ICE_CANDIDATE_HEADERS})
 
-set_target_properties(icecandidate PROPERTIES PUBLIC_HEADER "${KMS_ICE_CANDIDATE_HEADERS}")
-set_target_properties(icecandidate PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(kmsicecandidate PROPERTIES PUBLIC_HEADER "${KMS_ICE_CANDIDATE_HEADERS}")
+set_target_properties(kmsicecandidate PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 include_directories(
   ${nice_INCLUDE_DIRS}
 )
 
-target_link_libraries(icecandidate
+target_link_libraries(kmsicecandidate
   ${nice_LIBRARIES}
 )
 
 install(
-  TARGETS icecandidate
+  TARGETS kmsicecandidate
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   PUBLIC_HEADER DESTINATION ${INCLUDE_PREFIX}
 )
-# icecandidate end
+
+foreach (HEADER ${KMS_ICE_CANDIDATE_HEADERS})
+  list (APPEND FIND_HEADERS webrtcendpoint/${HEADER})
+endforeach ()
+
+set (REQUIRED_LIBS
+  "nice ${NICE_REQUIRED}"
+)
+
+configure_file(FindKmsIceCandidate.cmake.in ${CMAKE_BINARY_DIR}/FindKmsIceCandidate.cmake @ONLY)
+
+install(FILES
+  ${CMAKE_BINARY_DIR}/FindKmsIceCandidate.cmake
+  DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
+)
+# kmsicecandidate end
 
 set(KMS_WEBRTC_DATA_PROTOCOL_SOURCES
   kmswebrtcdatasessionbin.c
@@ -129,7 +144,7 @@ include_directories(
 )
 
 target_link_libraries(webrtcendpoint
-  icecandidate
+  kmsicecandidate
   webrtcdataproto
   ${KmsGstCommons_LIBRARIES}
   ${gstreamer-1.5_LIBRARIES}
