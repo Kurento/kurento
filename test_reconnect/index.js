@@ -51,7 +51,7 @@ if (ws_port == "") {
   QUnit.pushFailure("The test needs a ws_port");
 }
 
-const ARGV = ['-f', './kurento.conf.json'];
+const ARGV = ['-f', './kurento.conf.json', '--gst-debug=Kurento*:5', '2>&1'];
 const ws_uri = 'ws://127.0.0.1:' + ws_port + '/kurento'
 
 /**
@@ -111,8 +111,15 @@ QUnit.module('reconnect', {
     this.server = spawn('kurento-media-server', ARGV)
       .on('error', onerror)
 
-    console.log("Waiting KMS is started...")
-    sleep(3)
+    this.server.stdout.on('data', function (data) {
+      console.log('stdout: ' + data);
+    });
+
+    this.server.stderr.on('data', function (data) {
+      console.log('stderr: ' + data);
+    });
+
+    console.log("Waiting KMS is started... KMS pid:", this.server.pid)
 
     this.client = kurentoClient(ws_uri, options)
     this.client.create('MediaPipeline', function (error, pipeline) {
@@ -158,8 +165,16 @@ QUnit.test('MediaServer restarted', function (assert) {
     self.server = spawn('kurento-media-server', ARGV)
       .on('error', onerror)
 
-    console.log("Waiting KMS is started again...")
-    sleep(3)
+    self.server.stdout.on('data', function (data) {
+      console.log('stdout: ' + data);
+    });
+
+    self.server.stderr.on('data', function (data) {
+      console.log('stderr: ' + data);
+    });
+
+    console.log("Waiting KMS is started again... KMS pid:", self.server
+      .pid)
 
     client.getMediaobjectById(pipeline.id, function (error, mediaObject) {
       assert.notEqual(error, undefined);
