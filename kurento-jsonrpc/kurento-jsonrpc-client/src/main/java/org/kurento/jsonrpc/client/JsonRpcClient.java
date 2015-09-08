@@ -67,8 +67,7 @@ import com.google.gson.JsonObject;
  */
 public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
-	public static Logger log = LoggerFactory.getLogger(JsonRpcClient.class
-			.getName());
+	public static Logger log = LoggerFactory.getLogger(JsonRpcClient.class.getName());
 
 	private static class PingParams {
 		@SuppressWarnings("unused")
@@ -86,10 +85,10 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected int heartbeatInterval = 0;
 	private static final int DEFAULT_HEARTBEAT_INTERVAL = 5000;
 	protected boolean heartbeating;
+	private boolean closed;
 	private volatile PingParams pingParams;
 
-	private ScheduledExecutorService scheduler = Executors
-			.newSingleThreadScheduledExecutor();
+	private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 	private Future<?> heartbeat;
 
@@ -102,8 +101,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	}
 
 	@Override
-	public <R> R sendRequest(String method, Class<R> resultClass)
-			throws IOException {
+	public <R> R sendRequest(String method, Class<R> resultClass) throws IOException {
 		return rsHelper.sendRequest(method, resultClass);
 	}
 
@@ -119,8 +117,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	}
 
 	@Override
-	public JsonElement sendRequest(String method, Object params)
-			throws IOException {
+	public JsonElement sendRequest(String method, Object params) throws IOException {
 		return rsHelper.sendRequest(method, params);
 	}
 
@@ -142,21 +139,18 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	}
 
 	@Override
-	public void sendNotification(String method, Object params)
-			throws IOException {
+	public void sendNotification(String method, Object params) throws IOException {
 		rsHelper.sendNotification(method, params);
 	}
 
 	@Override
-	public Response<JsonElement> sendRequest(Request<JsonObject> request)
-			throws IOException {
+	public Response<JsonElement> sendRequest(Request<JsonObject> request) throws IOException {
 		return rsHelper.sendRequest(request);
 	}
 
 	@Override
 	public void sendRequest(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
+			Continuation<Response<JsonElement>> continuation) throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 
@@ -242,13 +236,12 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	public synchronized void enableHeartbeat(int interval) {
 
-		if (heartbeat == null || heartbeat.isCancelled()) {
+		if ((heartbeat == null) || heartbeat.isCancelled()) {
 
 			pingParams = new PingParams();
 			pingParams.interval = interval;
 
-			log.debug("{} Enabling heartbeat with an interval of {} ms", label,
-					interval);
+			log.debug("{} Enabling heartbeat with an interval of {} ms", label, interval);
 			this.heartbeating = true;
 			this.heartbeatInterval = interval;
 
@@ -260,18 +253,16 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 				@Override
 				public void run() {
 					try {
-						JsonObject response = sendRequest(METHOD_PING,
-								pingParams).getAsJsonObject();
+						JsonObject response = sendRequest(METHOD_PING, pingParams)
+								.getAsJsonObject();
 
 						pingParams = null;
 
-						if (!PONG.equals(response.get(PONG_PAYLOAD)
-								.getAsString())) {
+						if (!PONG.equals(response.get(PONG_PAYLOAD).getAsString())) {
 							closeHeartbeatOnFailure();
 						}
 					} catch (Exception e) {
-						log.warn("{} Error sending heartbeat to server", label,
-								e);
+						log.warn("{} Error sending heartbeat to server", label, e);
 						closeHeartbeatOnFailure();
 					}
 				}
@@ -283,8 +274,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	 * Cancels the heartbeat task and closes the client
 	 */
 	private final void closeHeartbeatOnFailure() {
-		log.warn(
-				"{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
+		log.warn("{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
 				label);
 
 		heartbeat.cancel(false);
@@ -294,8 +284,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		try {
 			closeWithReconnection();
 		} catch (IOException e) {
-			log.warn("{} Exception while closing client: {}", label,
-					e.getMessage());
+			log.warn("{} Exception while closing client: {}", label, e.getMessage());
 		}
 	}
 
@@ -320,8 +309,21 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	public abstract void connect() throws IOException;
 
+	/**
+	 * Closes this client.
+	 *
+	 * Once a client has been closed, it is not available for further networking
+	 * use (i.e. can't be reconnected or rebound). A new client needs to be
+	 * created.
+	 *
+	 * @exception IOException
+	 *                if an I/O error occurs when closing this client.
+	 * @see #isClosed
+	 */
 	@Override
-	public abstract void close() throws IOException;
+	public void close() throws IOException {
+		this.closed = true;
+	}
 
 	protected void closeWithReconnection() throws IOException {
 		this.close();
@@ -329,4 +331,13 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	public abstract void setRequestTimeout(long requesTimeout);
 
+	/**
+	 * Returns the closed state of the client.
+	 *
+	 * @return true if the socket has been client
+	 * @see #close
+	 */
+	public boolean isClosed() {
+		return this.closed;
+	}
 }

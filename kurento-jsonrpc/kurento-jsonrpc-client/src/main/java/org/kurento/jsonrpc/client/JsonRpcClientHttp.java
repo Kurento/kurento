@@ -50,18 +50,15 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 		this.rs = new HttpResponseSender();
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
-			public <P, R> Response<R> internalSendRequest(Request<P> request,
-					Class<R> resultClass) throws IOException {
+			public <P, R> Response<R> internalSendRequest(Request<P> request, Class<R> resultClass)
+					throws IOException {
 				return internalSendRequestHttp(request, resultClass);
 			}
 
 			@Override
-			protected void internalSendRequest(
-					Request<? extends Object> request,
-					Class<JsonElement> class1,
-					Continuation<Response<JsonElement>> continuation) {
-				throw new UnsupportedOperationException(
-						"Async client int local is unavailable");
+			protected void internalSendRequest(Request<? extends Object> request,
+					Class<JsonElement> class1, Continuation<Response<JsonElement>> continuation) {
+				throw new UnsupportedOperationException("Async client int local is unavailable");
 			}
 		};
 	}
@@ -108,26 +105,23 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
 			try {
 
-				JsonElement requestsListJsonObject = this.sendRequest(
-						Request.POLL_METHOD_NAME, rs.getResponseListToSend(),
-						JsonElement.class);
+				JsonElement requestsListJsonObject = this.sendRequest(Request.POLL_METHOD_NAME,
+						rs.getResponseListToSend(), JsonElement.class);
 
 				log.info("Response from pool: {}", requestsListJsonObject);
 
 				Type collectionType = new TypeToken<List<Request<JsonElement>>>() {
 				}.getType();
 
-				List<Request<JsonElement>> requestList = JsonUtils.fromJson(
-						requestsListJsonObject, collectionType);
+				List<Request<JsonElement>> requestList = JsonUtils.fromJson(requestsListJsonObject,
+						collectionType);
 
 				processServerRequests(requestList);
 
 			} catch (IOException e) {
 				// TODO Decide what to do in this case. If the net connection is
 				// lost, this will retry indefinitely
-				log.error(
-						"Exception when waiting for events (long-polling). Retry",
-						e);
+				log.error("Exception when waiting for events (long-polling). Retry", e);
 			}
 		}
 	}
@@ -137,23 +131,21 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 			try {
 				handlerManager.handleRequest(session, request, rs);
 			} catch (IOException e) {
-				log.error(
-						"Exception while processing request from server to client",
-						e);
+				log.error("Exception while processing request from server to client", e);
 			}
 		}
 	}
 
-	private <P, R> Response<R> internalSendRequestHttp(Request<P> request,
-			Class<R> resultClass) throws IOException {
+	private <P, R> Response<R> internalSendRequestHttp(Request<P> request, Class<R> resultClass)
+			throws IOException {
 
 		String resultJson = org.apache.http.client.fluent.Request.Post(url)
-				.bodyString(toJson(request), ContentType.APPLICATION_JSON)
-				.execute().returnContent().asString();
+				.bodyString(toJson(request), ContentType.APPLICATION_JSON).execute().returnContent()
+				.asString();
 
-		if (resultJson == null || resultJson.trim().isEmpty()) {
-			return new Response<>(request.getId(), new ResponseError(3,
-					"The server send an empty response"));
+		if ((resultJson == null) || resultJson.trim().isEmpty()) {
+			return new Response<>(request.getId(),
+					new ResponseError(3, "The server send an empty response"));
 		}
 
 		Response<R> response = fromJsonResponse(resultJson, resultClass);
@@ -169,9 +161,13 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 			log.info("Interrupted!!!");
 			this.longPoolingThread.interrupt();
 		}
-		handlerManager.afterConnectionClosed(session,
-				"Client closed connection");
+		handlerManager.afterConnectionClosed(session, "Client closed connection");
 		session = null;
+		try {
+			super.close();
+		} catch (IOException e) {
+			log.error("Exception while executing close from base class JsonRpcClient", e);
+		}
 	}
 
 	@Override

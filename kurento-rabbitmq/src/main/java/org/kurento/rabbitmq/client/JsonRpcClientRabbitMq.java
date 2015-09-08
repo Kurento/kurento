@@ -25,7 +25,7 @@ import org.kurento.rabbitmq.RabbitTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
-//import org.springframework.amqp.rabbit.core.RabbitTemplate;
+// import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,11 +33,9 @@ import com.google.gson.JsonPrimitive;
 
 public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(JsonRpcClientRabbitMq.class);
+	private static final Logger log = LoggerFactory.getLogger(JsonRpcClientRabbitMq.class);
 
-	private final ExecutorService execService = Executors
-			.newFixedThreadPool(10);
+	private final ExecutorService execService = Executors.newFixedThreadPool(10);
 
 	private RabbitMqManager rabbitMqManager;
 
@@ -50,23 +48,21 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
 		public void sendResponse(Message message) throws IOException {
-			log.warn(
-					"The broker client is trying to send the response '{}' for "
-							+ "a request from server. But with broker it is"
-							+ " not yet implemented", message);
+			log.warn("The broker client is trying to send the response '{}' for "
+					+ "a request from server. But with broker it is" + " not yet implemented",
+					message);
 		}
 
 		@Override
 		public void sendPingResponse(Message message) throws IOException {
-			log.warn(
-					"The broker client is trying to send the response '{}' for "
-							+ "a request from server. But with broker it is"
-							+ " not yet implemented", message);
+			log.warn("The broker client is trying to send the response '{}' for "
+					+ "a request from server. But with broker it is" + " not yet implemented",
+					message);
 		}
 	};
 
-	public JsonRpcClientRabbitMq(String host, String port, String username,
-			String password, String vhost) throws IOException {
+	public JsonRpcClientRabbitMq(String host, String port, String username, String password,
+			String vhost) throws IOException {
 		this(new RabbitMqManager(host, port, username, password, vhost));
 	}
 
@@ -78,8 +74,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		this(new RabbitMqManager(rabbitMqAddress));
 	}
 
-	public JsonRpcClientRabbitMq(RabbitMqManager rabbitMqManager)
-			throws IOException {
+	public JsonRpcClientRabbitMq(RabbitMqManager rabbitMqManager) throws IOException {
 		this.rabbitMqManager = rabbitMqManager;
 		this.connect();
 	}
@@ -103,19 +98,16 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 			this.rsHelper = new JsonRpcRequestSenderHelper() {
 				@Override
-				public <P, R> Response<R> internalSendRequest(
-						Request<P> request, Class<R> resultClass)
-								throws IOException {
+				public <P, R> Response<R> internalSendRequest(Request<P> request,
+						Class<R> resultClass) throws IOException {
 					return internalSendRequestBroker(request, resultClass);
 				}
 
 				@Override
-				protected void internalSendRequest(
-						Request<? extends Object> request,
+				protected void internalSendRequest(Request<? extends Object> request,
 						Class<JsonElement> resultClass,
 						Continuation<Response<JsonElement>> continuation) {
-					internalSendRequestBroker(request, resultClass,
-							continuation);
+					internalSendRequestBroker(request, resultClass, continuation);
 				}
 			};
 
@@ -128,16 +120,14 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 	private void handleRequestFromServer(String message) {
 		try {
-			handlerManager.handleRequest(session,
-					fromJsonRequest(message, JsonElement.class),
+			handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class),
 					dummyResponseSenderForEvents);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public <P, R> Response<R> internalSendRequestBroker(Request<P> request,
-			Class<R> resultClass) {
+	public <P, R> Response<R> internalSendRequestBroker(Request<P> request, Class<R> resultClass) {
 
 		connectIfNecessary();
 
@@ -158,11 +148,10 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 			Response<R> response;
 
 			if (RomJsonRpcConstants.CREATE_METHOD.equals(request.getMethod())
-					&& "MediaPipeline".equals(paramsJson.get("type")
-							.getAsString())) {
+					&& "MediaPipeline".equals(paramsJson.get("type").getAsString())) {
 
-				String responseStr = rabbitMqManager.sendAndReceive("",
-						PIPELINE_CREATION_QUEUE, request, rabbitTemplate);
+				String responseStr = rabbitMqManager.sendAndReceive("", PIPELINE_CREATION_QUEUE,
+						request, rabbitTemplate);
 
 				log.debug("<-Res {}", responseStr.trim());
 
@@ -170,11 +159,10 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 				String mediaPipelineId;
 				if (response.getResult() instanceof JsonObject) {
-					mediaPipelineId = ((JsonObject) response.getResult()).get(
-							"value").getAsString();
-				} else {
-					mediaPipelineId = ((JsonPrimitive) response.getResult())
+					mediaPipelineId = ((JsonObject) response.getResult()).get("value")
 							.getAsString();
+				} else {
+					mediaPipelineId = ((JsonPrimitive) response.getResult()).getAsString();
 				}
 
 				keepAliveManager.addId(mediaPipelineId);
@@ -187,30 +175,27 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 				if (RomJsonRpcConstants.CREATE_METHOD.equals(method)) {
 
-					JsonObject constructorParams = paramsJson.get(
-							RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS)
-							.getAsJsonObject();
+					JsonObject constructorParams = paramsJson
+							.get(RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS).getAsJsonObject();
 
 					if (constructorParams.has("mediaPipeline")) {
-						pipelineId = constructorParams.get("mediaPipeline")
-								.getAsString();
+						pipelineId = constructorParams.get("mediaPipeline").getAsString();
 					} else {
-						pipelineId = extractPipelineFromObjectId(constructorParams
-								.get("hub").getAsString());
+						pipelineId = extractPipelineFromObjectId(
+								constructorParams.get("hub").getAsString());
 					}
 
 				} else {
 
 					// All messages has the same param name for "object"
-					String objectId = paramsJson.get(
-							RomJsonRpcConstants.INVOKE_OBJECT).getAsString();
+					String objectId = paramsJson.get(RomJsonRpcConstants.INVOKE_OBJECT)
+							.getAsString();
 
 					pipelineId = extractPipelineFromObjectId(objectId);
 
 					if (RomJsonRpcConstants.SUBSCRIBE_METHOD.equals(method)) {
 						processSubscriptionRequest(paramsJson, pipelineId);
-					} else if (RomJsonRpcConstants.RELEASE_METHOD
-							.equals(method)) {
+					} else if (RomJsonRpcConstants.RELEASE_METHOD.equals(method)) {
 
 						// Remove from keepAliveManager if the released object
 						// is a MediaPipeline object
@@ -218,8 +203,8 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 					}
 				}
 
-				String responseStr = rabbitMqManager.sendAndReceive("",
-						pipelineId, request, rabbitTemplate);
+				String responseStr = rabbitMqManager.sendAndReceive("", pipelineId, request,
+						rabbitTemplate);
 
 				log.debug("<-Res {}", responseStr.trim());
 
@@ -233,8 +218,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 			return response;
 
 		} catch (Exception e) {
-			throw new RuntimeException(
-					"Exception while invoking request to server", e);
+			throw new RuntimeException("Exception while invoking request to server", e);
 		}
 	}
 
@@ -249,22 +233,17 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		}
 	}
 
-	private void processSubscriptionRequest(JsonObject paramsJson,
-			String pipeline) {
+	private void processSubscriptionRequest(JsonObject paramsJson, String pipeline) {
 
-		String eventType = paramsJson.get(RomJsonRpcConstants.SUBSCRIBE_TYPE)
-				.getAsString();
-		String element = paramsJson.get(RomJsonRpcConstants.SUBSCRIBE_OBJECT)
-				.getAsString();
+		String eventType = paramsJson.get(RomJsonRpcConstants.SUBSCRIBE_TYPE).getAsString();
+		String element = paramsJson.get(RomJsonRpcConstants.SUBSCRIBE_OBJECT).getAsString();
 
-		final String eventRoutingKey = rabbitMqManager.createRoutingKey(
-				element, eventType);
+		final String eventRoutingKey = rabbitMqManager.createRoutingKey(element, eventType);
 
-		rabbitMqManager.bindExchangeToQueue(RabbitMqManager.EVENT_QUEUE_PREFIX
-				+ pipeline, clientId, eventRoutingKey);
+		rabbitMqManager.bindExchangeToQueue(RabbitMqManager.EVENT_QUEUE_PREFIX + pipeline, clientId,
+				eventRoutingKey);
 
-		rabbitMqManager.addMessageReceiver(clientId,
-				new BrokerMessageReceiver() {
+		rabbitMqManager.addMessageReceiver(clientId, new BrokerMessageReceiver() {
 			@Override
 			public void onMessage(String message) {
 				handleRequestFromServer(message);
@@ -272,8 +251,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		});
 	}
 
-	protected void internalSendRequestBroker(
-			final Request<? extends Object> request,
+	protected void internalSendRequestBroker(final Request<? extends Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
 
@@ -284,8 +262,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 			@Override
 			public void run() {
 				try {
-					Response<JsonElement> result = internalSendRequestBroker(
-							request, resultClass);
+					Response<JsonElement> result = internalSendRequestBroker(request, resultClass);
 					try {
 						continuation.onSuccess(result);
 					} catch (Exception e) {
@@ -304,6 +281,8 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		if (rabbitMqManager != null) {
 			rabbitMqManager.destroy();
 		}
+
+		super.close();
 	}
 
 	@Override

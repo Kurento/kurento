@@ -41,8 +41,8 @@ public class KurentoClient {
 
 	protected RomManager manager;
 
-	private long requesTimeout = PropertiesManager.getProperty(
-			"kurento.client.requestTimeout", 10000);
+	private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
+			10000);
 
 	public static KurentoClient create(String websocketUrl) {
 		log.info("Connecting to kms in {}", websocketUrl);
@@ -51,11 +51,10 @@ public class KurentoClient {
 		return new KurentoClient(client);
 	}
 
-	public static KurentoClient create(String websocketUrl,
-			KurentoConnectionListener listener) {
+	public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener) {
 		log.info("Connecting to KMS in {}", websocketUrl);
-		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-				websocketUrl, JsonRpcConnectionListenerKurento.create(listener));
+		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
+				JsonRpcConnectionListenerKurento.create(listener));
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 
@@ -77,8 +76,7 @@ public class KurentoClient {
 	 * @return The media pipeline
 	 */
 	public MediaPipeline createMediaPipeline() {
-		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-				.build();
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).build();
 	}
 
 	/**
@@ -94,13 +92,11 @@ public class KurentoClient {
 	 */
 	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
 			throws KurentoException {
-		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-		.buildAsync(cont);
+		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).buildAsync(cont);
 	}
 
 	public MediaPipeline createMediaPipeline(Transaction tx) {
-		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-				.build(tx);
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).build(tx);
 	}
 
 	@PreDestroy
@@ -109,8 +105,11 @@ public class KurentoClient {
 		manager.destroy();
 	}
 
-	public static KurentoClient createFromJsonRpcClient(
-			JsonRpcClient jsonRpcClient) {
+	public boolean isClosed() {
+		return manager.getRomClient().isClosed();
+	}
+
+	public static KurentoClient createFromJsonRpcClient(JsonRpcClient jsonRpcClient) {
 		return new KurentoClient(jsonRpcClient);
 	}
 
