@@ -67,8 +67,8 @@ public class OneRecordingServerTest {
 		uploadFileWithCURL(publicWebappURL + "repository_servlet/video-upload",
 				fileToUpload);
 
-		log.info("Waiting 6 seconds to auto-termination...");
-		Thread.sleep(6 * 1000);
+		log.info("Waiting 10 seconds to auto-termination...");
+		Thread.sleep(10 * 1000);
 
 		File downloadedFile = new File("test-files/sampleDownload.txt");
 
