@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-public class LatencyController implements
-		ChangeColorEventListener<ChangeColorEvent> {
+public class LatencyController
+		implements ChangeColorEventListener<ChangeColorEvent> {
 
 	private static final int MAX_DISTANCE = 60;
 
@@ -125,7 +125,7 @@ public class LatencyController implements
 
 	public void checkLocalLatency(final long testTime,
 			final TimeUnit testTimeUnit, TestClient client)
-			throws InterruptedException, IOException {
+					throws InterruptedException, IOException {
 		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
 		long endTimeMillis = System.currentTimeMillis() + playTime;
 		int consecutiveFailCounter = 0;
@@ -159,16 +159,16 @@ public class LatencyController implements
 				}
 			}
 
-			long latencyTime = client.getCurrentTime(new VideoTag(
-					VideoTagType.REMOTE));
+			long latencyTime = client
+					.getCurrentTime(new VideoTag(VideoTagType.REMOTE));
 			latencyRegistry.setLatency(latency);
 
 			if (latency > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
 
 				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
 						.format(latencyTime);
-				client.takeScreeshot(KurentoClientTest.getDefaultOutputFile("-"
-						+ parsedtime + "-error-screenshot.png"));
+				client.takeScreeshot(KurentoClientTest.getDefaultOutputFile(
+						"-" + parsedtime + "-error-screenshot.png"));
 
 				LatencyException latencyException = new LatencyException(
 						latency, TimeUnit.MILLISECONDS);
@@ -194,7 +194,7 @@ public class LatencyController implements
 
 	public void checkLocalLatencyInBackground(final long testTime,
 			final TimeUnit testTimeUnit, final TestClient client)
-			throws InterruptedException, IOException {
+					throws InterruptedException, IOException {
 		new Thread() {
 			public void run() {
 				try {
@@ -233,9 +233,9 @@ public class LatencyController implements
 		String msgName = (name != null) ? "[" + name + "] " : "";
 
 		if (localChangeColor == null || remoteChangeColor == null) {
-			throw new RuntimeException(msgName
-					+ "Bad setup in latency controller "
-					+ " (local and remote tag of browser(s) needed");
+			throw new RuntimeException(
+					msgName + "Bad setup in latency controller "
+							+ " (local and remote tag of browser(s) needed");
 		}
 
 		try {
@@ -299,7 +299,8 @@ public class LatencyController implements
 					LatencyRegistry LatencyRegistry = new LatencyRegistry(
 							lastRemoteColor, latencyMilis);
 
-					if (latencyMilis > getLatencyThreshold(TimeUnit.MILLISECONDS)) {
+					if (latencyMilis > getLatencyThreshold(
+							TimeUnit.MILLISECONDS)) {
 						LatencyException latencyException = new LatencyException(
 								latencyMilis, testTimeUnit, parsedLocaltime,
 								parsedRemotetime, testTime, latencyMilis);
@@ -323,7 +324,8 @@ public class LatencyController implements
 		} catch (IOException e) {
 			log.debug("Finished LatencyController thread due to IO Exception");
 		} catch (InterruptedException e) {
-			log.debug("Finished LatencyController thread due to Interrupted Exception");
+			log.debug(
+					"Finished LatencyController thread due to Interrupted Exception");
 		}
 		localColorTrigger.interrupt();
 		remoteColorTrigger.interrupt();
@@ -333,9 +335,9 @@ public class LatencyController implements
 			throws InterruptedException {
 		if (!remoteEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
 			t.interrupt();
-			throw new RuntimeException(msgName
-					+ "Change color not detected in REMOTE steam after "
-					+ timeout + " " + timeoutTimeUnit);
+			throw new RuntimeException(
+					msgName + "Change color not detected in REMOTE steam after "
+							+ timeout + " " + timeoutTimeUnit);
 		}
 	}
 
@@ -344,9 +346,9 @@ public class LatencyController implements
 		if (!localEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
 			t.interrupt();
 
-			throw new RuntimeException(msgName
-					+ "Change color not detected in LOCAL steam after "
-					+ timeout + " " + timeoutTimeUnit);
+			throw new RuntimeException(
+					msgName + "Change color not detected in LOCAL steam after "
+							+ timeout + " " + timeoutTimeUnit);
 		}
 	}
 
@@ -359,10 +361,11 @@ public class LatencyController implements
 		int expectedGreen = expectedColor.getGreen();
 		int expectedBlue = expectedColor.getBlue();
 
-		double distance = Math.sqrt((realRed - expectedRed)
-				* (realRed - expectedRed) + (realGreen - expectedGreen)
-				* (realGreen - expectedGreen) + (realBlue - expectedBlue)
-				* (realBlue - expectedBlue));
+		double distance = Math
+				.sqrt((realRed - expectedRed) * (realRed - expectedRed)
+						+ (realGreen - expectedGreen)
+								* (realGreen - expectedGreen)
+				+ (realBlue - expectedBlue) * (realBlue - expectedBlue));
 		return distance <= MAX_DISTANCE;
 	}
 
@@ -468,6 +471,10 @@ public class LatencyController implements
 
 	public void setConsecutiveFailMax(int consecutiveFailMax) {
 		this.consecutiveFailMax = consecutiveFailMax;
+	}
+
+	public Map<Long, LatencyRegistry> getLatencyMap() {
+		return latencyMap;
 	}
 
 }

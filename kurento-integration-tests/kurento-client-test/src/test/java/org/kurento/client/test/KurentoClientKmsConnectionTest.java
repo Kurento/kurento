@@ -36,7 +36,7 @@ public class KurentoClientKmsConnectionTest {
 	public void errorSendingClosedKmsTest() throws Exception {
 
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer();
+				.startKurentoMediaServer(false);
 
 		String kmsUrl = kms.getLocalhostWsUrl();
 

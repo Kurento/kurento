@@ -37,11 +37,11 @@ public class ConnectionListenerTest {
 			.getLogger(ConnectionListenerTest.class);
 
 	@Test
-	public void disconnectionEventTest() throws InterruptedException,
-			IOException {
+	public void disconnectionEventTest()
+			throws InterruptedException, IOException {
 
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer();
+				.startKurentoMediaServer(false);
 
 		final CountDownLatch disconnectedLatch = new CountDownLatch(1);
 
@@ -70,7 +70,7 @@ public class ConnectionListenerTest {
 
 					@Override
 					public void reconnected(boolean sameServer) {
-												
+
 					}
 				});
 
@@ -101,7 +101,7 @@ public class ConnectionListenerTest {
 	public void reconnectTest() throws InterruptedException, IOException {
 
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer();
+				.startKurentoMediaServer(false);
 
 		String kmsUrl = kms.getLocalhostWsUrl();
 
@@ -115,7 +115,7 @@ public class ConnectionListenerTest {
 
 		Thread.sleep(3000);
 
-		kms = KurentoServicesTestHelper.startKurentoMediaServer();
+		kms = KurentoServicesTestHelper.startKurentoMediaServer(false);
 
 		MediaPipeline pipeline2 = kurentoClient.createMediaPipeline();
 

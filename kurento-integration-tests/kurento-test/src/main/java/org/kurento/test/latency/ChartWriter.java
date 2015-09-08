@@ -43,8 +43,16 @@ import org.jfree.ui.RectangleInsets;
 public class ChartWriter {
 
 	private XYDataset dataset;
+	private String xAxisLabel;
+	private String yAxisLabel;
 
-	public ChartWriter(Map<Long, LatencyRegistry> latencyMap, String chartTitle) {
+	public ChartWriter(Map<Long, LatencyRegistry> latencyMap,
+			String chartTitle) {
+		this(latencyMap, chartTitle, "Remote Tag Time (s)", "Lantecy (ms)");
+	}
+
+	public ChartWriter(Map<Long, LatencyRegistry> latencyMap, String chartTitle,
+			String xAxisLabel, String yAxisLabel) {
 
 		// Convert latencyMap to XYDataset
 		XYSeries series = new XYSeries(chartTitle);
@@ -53,13 +61,16 @@ public class ChartWriter {
 		}
 		dataset = new XYSeriesCollection();
 		((XYSeriesCollection) dataset).addSeries(series);
+
+		this.xAxisLabel = xAxisLabel;
+		this.yAxisLabel = yAxisLabel;
 	}
 
 	public void drawChart(String filename, int width, int height)
 			throws IOException {
 		// Create plot
-		NumberAxis xAxis = new NumberAxis("Remote Tag Time (s)");
-		NumberAxis yAxis = new NumberAxis("Lantecy (ms)");
+		NumberAxis xAxis = new NumberAxis(xAxisLabel);
+		NumberAxis yAxis = new NumberAxis(yAxisLabel);
 		XYSplineRenderer renderer = new XYSplineRenderer();
 		XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
 		plot.setBackgroundPaint(Color.lightGray);

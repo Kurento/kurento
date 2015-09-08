@@ -15,14 +15,20 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_LOGIN_PROP;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_PASSWD_PROP;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_PEM_PROP;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_PROP;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_DEFAULT;
 import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_SERVER_DEBUG_DEFAULT;
@@ -74,14 +80,13 @@ import freemarker.template.Template;
  */
 public class KurentoMediaServerManager {
 
-	public static SshConnection remoteKms = null;
-
 	public static Logger log = LoggerFactory
 			.getLogger(KurentoMediaServerManager.class);
 
 	private static String lastWorkspace;
-	private String workspace;
 
+	private SshConnection remoteKms = null;
+	private String workspace;
 	private int httpPort;
 	private String testClassName;
 	private String testMethodName;
@@ -89,12 +94,10 @@ public class KurentoMediaServerManager {
 	private String serverCommand;
 	private String gstPlugins;
 	private String debugOptions;
-
 	private Address rabbitMqAddress;
 	private String wsUri;
 	private String registrarUri;
 	private String registrarLocalAddress = "127.0.0.1";
-
 	private boolean isKmsRemote;
 
 	public static KurentoMediaServerManager createWithWsTransport(String wsUri,
@@ -124,13 +127,12 @@ public class KurentoMediaServerManager {
 		if (remoteKms != null) { // Remote KMS
 			log.info("Copying KMS logs from remote host {}",
 					remoteKms.getConnection());
-			SshConnection ssh = KurentoMediaServerManager.remoteKms;
-			List<String> ls = ssh.listFiles(kmsLogsPath, true, false);
+			List<String> ls = remoteKms.listFiles(kmsLogsPath, true, false);
 
 			for (String s : ls) {
 				String targetFile = targetFolder + "/" + testMethodName + "-"
 						+ s.substring(s.lastIndexOf("/") + 1);
-				ssh.getFile(targetFile, s);
+				remoteKms.getFile(targetFile, s);
 				KurentoServicesTestHelper
 						.addServerLogFilePath(new File(targetFile));
 			}
@@ -166,26 +168,39 @@ public class KurentoMediaServerManager {
 		this.testMethodName = testMethodName;
 	}
 
-	public void start() throws IOException {
+	public void start(boolean isFake) throws IOException {
+		// Properties
+		String kmsLoginProp = isFake ? FAKE_KMS_LOGIN_PROP
+				: KURENTO_KMS_LOGIN_PROP;
+		String kmsPasswdProp = isFake ? FAKE_KMS_PASSWD_PROP
+				: KURENTO_KMS_PASSWD_PROP;
+		String kmsPemProp = isFake ? FAKE_KMS_PEM_PROP
+				: KURENTO_KMS_PASSWD_PROP;
+		String kmsAutostartProp = isFake ? FAKE_KMS_AUTOSTART_PROP
+				: KMS_AUTOSTART_PROP;
+		String kmsAutostartDefaultProp = isFake ? FAKE_KMS_AUTOSTART_DEFAULT
+				: KMS_AUTOSTART_DEFAULT;
+		String kmsWsUri = isFake ? FAKE_KMS_WS_URI_PROP : KMS_WS_URI_PROP;
 
-		String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
-		String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
-		String kmsPem = getProperty(KURENTO_KMS_PEM_PROP);
+		// Values
+		String kmsLogin = getProperty(kmsLoginProp);
+		String kmsPasswd = getProperty(kmsPasswdProp);
+		String kmsPem = getProperty(kmsPemProp);
+		String wsUri = getProperty(kmsWsUri, KMS_WS_URI_DEFAULT);
 
 		isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1");
 
 		if (isKmsRemote && kmsLogin == null
 				&& (kmsPem == null || kmsPasswd == null)) {
-			String kmsAutoStart = getProperty(KMS_AUTOSTART_PROP,
-					KMS_AUTOSTART_DEFAULT);
+			String kmsAutoStart = getProperty(kmsAutostartProp,
+					kmsAutostartDefaultProp);
 			throw new RuntimeException("Bad test parameters: "
-					+ KMS_AUTOSTART_PROP + "=" + kmsAutoStart + " and "
-					+ KMS_WS_URI_PROP + "=" + wsUri
+					+ kmsAutostartProp + "=" + kmsAutoStart + " and " + kmsWsUri
+					+ "=" + wsUri
 					+ ". Remote KMS should be started but its credentials are not present: "
-					+ KURENTO_KMS_LOGIN_PROP + "=" + kmsLogin + ", "
-					+ KURENTO_KMS_PASSWD_PROP + "=" + kmsPasswd + ", "
-					+ KURENTO_KMS_PEM_PROP + "=" + kmsPem);
+					+ kmsLoginProp + "=" + kmsLogin + ", " + kmsPasswdProp + "="
+					+ kmsPasswd + ", " + kmsPemProp + "=" + kmsPem);
 		}
 
 		serverCommand = PropertiesManager.getProperty(
@@ -255,12 +270,12 @@ public class KurentoMediaServerManager {
 					remoteKms.getTmpFolder() + "/kurento.sh");
 		}
 
-		startKms();
+		startKms(wsUri);
 
 		waitForKurentoMediaServer(wsUri);
 	}
 
-	private void startKms() throws IOException {
+	private void startKms(String wsUri) throws IOException {
 		String kmsLogPath = getKmsLogPath();
 		if (isKmsRemote) {
 			remoteKms.runAndWaitCommand("sh", "-c",
@@ -269,7 +284,7 @@ public class KurentoMediaServerManager {
 			Shell.run("sh", "-c", kmsLogPath + "kurento.sh");
 		}
 
-		log.info("Kurento Media Server started in wsUri: " + this.wsUri);
+		log.info("Kurento Media Server started in wsUri: " + wsUri);
 	}
 
 	private boolean isFreePort(String wsUri) {
@@ -344,7 +359,7 @@ public class KurentoMediaServerManager {
 			}
 
 			throw new KurentoException("Timeout of " + NUM_RETRIES * WAIT_MILLIS
-					+ " millis waiting for KMS");
+					+ " millis waiting for KMS " + wsUri);
 
 		} else {
 			try {
@@ -546,7 +561,7 @@ public class KurentoMediaServerManager {
 
 	public void restart() throws IOException {
 		kmsSigKill();
-		startKms();
+		startKms(this.wsUri);
 		waitForKurentoMediaServer(wsUri);
 	}
 

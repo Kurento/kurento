@@ -102,9 +102,9 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 		addBrowserClient(browserkey, browserClient);
 
 		getBrowser(browserkey).subscribeEvents("playing");
-		browserClient.executeScript("document.getElementById('"
-				+ VideoTagType.REMOTE.getId() + "').setAttribute('src', '"
-				+ recordingFile + "');");
+		browserClient.executeScript(
+				"document.getElementById('" + VideoTagType.REMOTE.getId()
+						+ "').setAttribute('src', '" + recordingFile + "');");
 		browserClient.executeScript("document.getElementById('"
 				+ VideoTagType.REMOTE.getId() + "').load();");
 
@@ -163,15 +163,16 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 	private void makeAssertions(String browserKey, String messageAppend,
 			BrowserClient browser, int playtime, int x, int y,
 			CountDownLatch eosLatch, Color... expectedColors)
-			throws InterruptedException {
+					throws InterruptedException {
 		Assert.assertTrue(
 				"Not received media in the recording (timeout waiting playing event) "
 						+ messageAppend,
 				getBrowser(browserKey).waitForEvent("playing"));
 		for (Color color : expectedColors) {
-			Assert.assertTrue("The color of the recorded video should be "
-					+ color + " " + messageAppend, getBrowser(browserKey)
-					.similarColorAt(color, x, y));
+			Assert.assertTrue(
+					"The color of the recorded video should be " + color + " "
+							+ messageAppend,
+					getBrowser(browserKey).similarColorAt(color, x, y));
 		}
 
 		if (eosLatch != null) {

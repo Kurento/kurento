@@ -121,7 +121,8 @@ public class TestConfiguration {
 	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
 
 	public static final String KMS_RABBITMQ_ADDRESS_PROP = "kms.rabbitmq.address";
-	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address("127.0.0.1", 5672);
+	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address(
+			"127.0.0.1", 5672);
 
 	// Binary test files
 	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";
@@ -151,5 +152,13 @@ public class TestConfiguration {
 	public static final String BOWER_KURENTO_CLIENT_TAG_DEFAULT = "";
 	public static final String BOWER_KURENTO_UTILS_TAG_PROP = "bower.kurentoutils.tag";
 	public static final String BOWER_KURENTO_UTILS_TAG_DEFAULT = "";
+
+	// Fake KMS (extra clients typically in performance/load/stability tests)
+	public static final String FAKE_KMS_WS_URI_PROP = "fake.kms.ws.uri";
+	public static final String FAKE_KMS_LOGIN_PROP = "fake.kms.login";
+	public static final String FAKE_KMS_PASSWD_PROP = "fake.kms.passwd";
+	public static final String FAKE_KMS_PEM_PROP = "fake.kms.pem";
+	public static final String FAKE_KMS_AUTOSTART_PROP = "fake.kms.autostart";
+	public static final String FAKE_KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
 
 }

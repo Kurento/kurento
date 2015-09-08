@@ -38,8 +38,8 @@ public class KmsLogOnFailure extends TestWatcher {
 
 		if (KurentoServicesTestHelper.printKmsLog()) {
 			List<File> logFiles = KurentoServicesTestHelper.getServerLogFiles();
-			final String separator = "******************************************************************************";
 			if (logFiles != null) {
+				final String separator = "******************************************************************************";
 				for (File logFile : logFiles) {
 					if (logFile != null && logFile.exists()) {
 						System.err.println(separator);

@@ -24,6 +24,8 @@ import static org.kurento.test.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_DEFAUL
 import static org.kurento.test.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_PROP;
 import static org.kurento.test.TestConfiguration.BOWER_KURENTO_UTILS_TAG_DEFAULT;
 import static org.kurento.test.TestConfiguration.BOWER_KURENTO_UTILS_TAG_PROP;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
+import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
 import static org.kurento.test.TestConfiguration.KCS_AUTOSTART_DEFAULT;
 import static org.kurento.test.TestConfiguration.KCS_AUTOSTART_PROP;
 import static org.kurento.test.TestConfiguration.KCS_WS_URI_DEFAULT;
@@ -71,12 +73,14 @@ public class KurentoServicesTestHelper {
 
 	// Attributes
 	private static KurentoMediaServerManager kms;
+	private static KurentoMediaServerManager fakeKms;
 	private static KurentoControlServerManager kcs;
 
 	private static String testCaseName;
 	private static String testName;
 	private static String testDir;
 	private static String kmsAutostart = KMS_AUTOSTART_DEFAULT;
+	private static String fakeKmsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kcsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kmsPrintLog;
 	private static List<File> logFiles;
@@ -112,6 +116,8 @@ public class KurentoServicesTestHelper {
 	private static void startKurentoMediaServerIfNecessary()
 			throws IOException {
 		kmsAutostart = getProperty(KMS_AUTOSTART_PROP, KMS_AUTOSTART_DEFAULT);
+		fakeKmsAutostart = getProperty(FAKE_KMS_AUTOSTART_PROP,
+				FAKE_KMS_AUTOSTART_DEFAULT);
 		kmsPrintLog = getProperty(KMS_PRINT_LOG_PROP, KMS_PRINT_LOG_DEFAULT);
 		testDir = getProperty(PROJECT_PATH_PROP, PROJECT_PATH_DEFAULT)
 				+ "/target/surefire-reports/";
@@ -119,25 +125,38 @@ public class KurentoServicesTestHelper {
 		String logFolder = testDir + testCaseName;
 		createFolder(logFolder);
 
+		startKms(kmsAutostart, false);
+		startKms(fakeKmsAutostart, true);
+
+	}
+
+	private static void startKms(String kmsAutostart, boolean isFake)
+			throws IOException {
+
+		KurentoMediaServerManager kmsToBeStarted = isFake ? fakeKms : kms;
+
 		switch (kmsAutostart) {
 		case AUTOSTART_FALSE_VALUE:
 			break;
 		case AUTOSTART_TEST_VALUE:
-			startKurentoMediaServer();
+			startKurentoMediaServer(isFake);
 			break;
 		case AUTOSTART_TEST_SUITE_VALUE:
-			if (kms == null) {
-				startKurentoMediaServer();
+			if (kmsToBeStarted == null) {
+				startKurentoMediaServer(isFake);
 			}
 			break;
 		default:
 			throw new IllegalArgumentException("The value '" + kmsAutostart
-					+ "' is not valid for property " + KMS_AUTOSTART_PROP);
+					+ "' is not valid for property "
+					+ (isFake ? FAKE_KMS_AUTOSTART_PROP : KMS_AUTOSTART_PROP));
 		}
 	}
 
-	public static KurentoMediaServerManager startKurentoMediaServer()
-			throws IOException {
+	public static KurentoMediaServerManager startKurentoMediaServer(
+			boolean isFake) throws IOException {
+
+		KurentoMediaServerManager kmsToBeStarted = isFake ? fakeKms : kms;
 
 		String transport = PropertiesManager.getProperty(KMS_TRANSPORT_PROP,
 				KMS_TRANSPORT_DEFAULT);
@@ -147,13 +166,14 @@ public class KurentoServicesTestHelper {
 		switch (transport) {
 		case KMS_TRANSPORT_WS_VALUE:
 
-			kms = KurentoMediaServerManager.createWithWsTransport(getWsUri(),
-					httpPort);
+			kmsToBeStarted = KurentoMediaServerManager
+					.createWithWsTransport(getWsUri(), httpPort);
 			break;
 		case KMS_TRANSPORT_RABBITMQ_VALUE:
 
-			kms = KurentoMediaServerManager.createWithRabbitMqTransport(
-					getRabbitMqAddress(), httpPort);
+			kmsToBeStarted = KurentoMediaServerManager
+					.createWithRabbitMqTransport(getRabbitMqAddress(),
+							httpPort);
 			break;
 
 		default:
@@ -161,12 +181,19 @@ public class KurentoServicesTestHelper {
 					+ " is not valid for property " + KMS_TRANSPORT_PROP);
 		}
 
-		kms.setTestClassName(testCaseName);
-		kms.setTestMethodName(getSimpleTestName());
-		kms.setTestDir(testDir);
-		kms.start();
+		kmsToBeStarted.setTestClassName(testCaseName);
+		kmsToBeStarted.setTestMethodName(getSimpleTestName());
+		kmsToBeStarted.setTestDir(testDir);
+		kmsToBeStarted.start(isFake);
 
-		return kms;
+		if (isFake) {
+			fakeKms = kmsToBeStarted;
+		} else {
+			kms = kmsToBeStarted;
+		}
+
+		return kmsToBeStarted;
+
 	}
 
 	public static KurentoControlServerManager startKurentoControlServer() {
@@ -227,6 +254,10 @@ public class KurentoServicesTestHelper {
 		if (kms != null && kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			kms.destroy();
 			kms = null;
+		}
+		if (fakeKms != null && fakeKmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
+			fakeKms.destroy();
+			fakeKms = null;
 		}
 	}
 

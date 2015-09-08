@@ -142,8 +142,8 @@ public class KurentoTestClient extends TestClient {
 		addEventListener(videoTag, eventType, new BrowserEventListener() {
 			@Override
 			public void onEvent(String event) {
-				consoleLog(ConsoleLogLevel.info, "Event in " + videoTag
-						+ " tag: " + event);
+				consoleLog(ConsoleLogLevel.info,
+						"Event in " + videoTag + " tag: " + event);
 				countDownLatchEvents.get(browserName + eventType).countDown();
 			}
 		});
@@ -160,7 +160,8 @@ public class KurentoTestClient extends TestClient {
 				browserName);
 
 		if (!countDownLatchEvents.containsKey(browserName + eventType)) {
-			log.error("We cannot wait for an event without previous subscription");
+			log.error(
+					"We cannot wait for an event without previous subscription");
 			return false;
 		}
 
@@ -173,10 +174,10 @@ public class KurentoTestClient extends TestClient {
 			if (browserClient.isRemote()) {
 				Recorder.recordRemote(
 						GridHandler.getInstance()
-								.getNode(browserClient.getId()), browserClient
-								.getRecordAudio(), browserClient
-								.getAudioSampleRate(), browserClient
-								.getAudioChannel());
+								.getNode(browserClient.getId()),
+						browserClient.getRecordAudio(),
+						browserClient.getAudioSampleRate(),
+						browserClient.getAudioChannel());
 			} else {
 				Recorder.record(browserClient.getRecordAudio(),
 						browserClient.getAudioSampleRate(),
@@ -201,13 +202,13 @@ public class KurentoTestClient extends TestClient {
 				try {
 					(new WebDriverWait(browserClient.getDriver(),
 							browserClient.getTimeout()))
-							.until(new ExpectedCondition<Boolean>() {
-								public Boolean apply(WebDriver d) {
-									return d.findElement(By.id("status"))
-											.getAttribute("value")
-											.equalsIgnoreCase(eventType);
-								}
-							});
+									.until(new ExpectedCondition<Boolean>() {
+						public Boolean apply(WebDriver d) {
+							return d.findElement(By.id("status"))
+									.getAttribute("value")
+									.equalsIgnoreCase(eventType);
+						}
+					});
 					eventListener.onEvent(eventType);
 				} catch (Throwable t) {
 					log.error("~~~ Exception in addEventListener {}",
@@ -242,8 +243,8 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public void consoleLog(ConsoleLogLevel level, String message) {
 		log.info(message);
-		browserClient.executeScript("console." + level.toString() + "('"
-				+ message + "');");
+		browserClient.executeScript(
+				"console." + level.toString() + "('" + message + "');");
 	}
 
 	/*
@@ -278,10 +279,10 @@ public class KurentoTestClient extends TestClient {
 	@SuppressWarnings("deprecation")
 	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
 			final WebRtcChannel channel, final WebRtcMode mode)
-			throws InterruptedException {
+					throws InterruptedException {
 
-		webRtcEndpoint
-				.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+		webRtcEndpoint.addOnIceCandidateListener(
+				new EventListener<OnIceCandidateEvent>() {
 					@Override
 					public void onEvent(OnIceCandidateEvent event) {
 						browserClient.executeScript("addIceCandidate('"
@@ -370,8 +371,8 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public void appendStringToTitle(String webRtcMode) {
 		try {
-			browserClient.executeScript("appendStringToTitle('" + webRtcMode
-					+ "');");
+			browserClient.executeScript(
+					"appendStringToTitle('" + webRtcMode + "');");
 		} catch (WebDriverException we) {
 			log.warn(we.getMessage());
 		}

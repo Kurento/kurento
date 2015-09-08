@@ -61,7 +61,7 @@ public class WebSocketClientToKmsConnectionTest {
 		for (int i = 0; i < 2; i++) {
 
 			KurentoMediaServerManager kms = KurentoServicesTestHelper
-					.startKurentoMediaServer();
+					.startKurentoMediaServer(false);
 
 			String kmsUrl = kms.getLocalhostWsUrl();
 
@@ -72,8 +72,8 @@ public class WebSocketClientToKmsConnectionTest {
 
 			client.start();
 			ClientUpgradeRequest request = new ClientUpgradeRequest();
-			Session wsSession = client
-					.connect(socket, new URI(kmsUrl), request).get();
+			Session wsSession = client.connect(socket, new URI(kmsUrl), request)
+					.get();
 
 			wsSession.getRemote().sendString("xxxx");
 
@@ -88,7 +88,7 @@ public class WebSocketClientToKmsConnectionTest {
 	public void errorSendingClosedKmsTest() throws Exception {
 
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer();
+				.startKurentoMediaServer(false);
 
 		String kmsUrl = kms.getLocalhostWsUrl();
 
