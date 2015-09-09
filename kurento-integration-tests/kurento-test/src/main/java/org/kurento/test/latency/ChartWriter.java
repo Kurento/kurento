@@ -45,17 +45,20 @@ public class ChartWriter {
 	private XYDataset dataset;
 	private String xAxisLabel;
 	private String yAxisLabel;
+	private String chartTitle;
 
 	public ChartWriter(Map<Long, LatencyRegistry> latencyMap,
-			String chartTitle) {
-		this(latencyMap, chartTitle, "Remote Tag Time (s)", "Lantecy (ms)");
+			String seriestTitle) {
+		this(latencyMap, seriestTitle, "Latency Control", "Remote Tag Time (s)",
+				"Lantecy (ms)");
 	}
 
-	public ChartWriter(Map<Long, LatencyRegistry> latencyMap, String chartTitle,
-			String xAxisLabel, String yAxisLabel) {
+	public ChartWriter(Map<Long, LatencyRegistry> latencyMap,
+			String seriesTitle, String chartTitle, String xAxisLabel,
+			String yAxisLabel) {
 
 		// Convert latencyMap to XYDataset
-		XYSeries series = new XYSeries(chartTitle);
+		XYSeries series = new XYSeries(seriesTitle);
 		for (long time : latencyMap.keySet()) {
 			series.add(time, Math.abs(latencyMap.get(time).getLatency()));
 		}
@@ -64,6 +67,7 @@ public class ChartWriter {
 
 		this.xAxisLabel = xAxisLabel;
 		this.yAxisLabel = yAxisLabel;
+		this.chartTitle = chartTitle;
 	}
 
 	public void drawChart(String filename, int width, int height)
@@ -79,7 +83,7 @@ public class ChartWriter {
 		plot.setAxisOffset(new RectangleInsets(4, 4, 4, 4));
 
 		// Create chart
-		JFreeChart chart = new JFreeChart("Latency Control",
+		JFreeChart chart = new JFreeChart(chartTitle,
 				JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 		ChartUtilities.applyCurrentTheme(chart);
 		ChartPanel chartPanel = new ChartPanel(chart, false);

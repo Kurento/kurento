@@ -15,6 +15,7 @@
 package org.kurento.test.base;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 
@@ -32,6 +33,27 @@ import org.kurento.test.services.KurentoServicesTestHelper;
  */
 @SuppressWarnings("deprecation")
 public class KmsLogOnFailure extends TestWatcher {
+
+	@Override
+	protected void succeeded(Description description) {
+		super.succeeded(description);
+
+		// Delete logs
+		File folder = new File(KurentoServicesTestHelper.getTestDir() + "/"
+				+ KurentoServicesTestHelper.getTestCaseName());
+
+		final File[] files = folder.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(final File dir, final String name) {
+				return name.matches(".*\\.log");
+			}
+		});
+		for (final File file : files) {
+			if (!file.delete()) {
+				System.err.println("Can't remove " + file.getAbsolutePath());
+			}
+		}
+	}
 
 	@Override
 	protected void failed(Throwable e, Description description) {

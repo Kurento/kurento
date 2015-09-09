@@ -12,12 +12,14 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.stability.webrtc;
+package org.kurento.test.scalability.webrtc;
+
+import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +30,8 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.base.KurentoClientTest;
+import org.kurento.test.base.ScalabilityTest;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.Client;
@@ -43,12 +45,15 @@ import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.LatencyRegistry;
 import org.kurento.test.latency.VideoTagType;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
+
 /**
- * <strong>Description</strong>: Stability test for WebRTC in loopback during a
- * long time (configurable).<br/>
+ * <strong>Description</strong>: Stability test for WebRTC in loopback with N
+ * fake clients.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (loopback)</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> N Fake WebRtcEndpoint's</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
@@ -62,15 +67,22 @@ import org.kurento.test.latency.VideoTagType;
  * @since 6.1.1
  */
 
-public class WebRtcStabilityFakeClientsTest extends BrowserKurentoClientTest {
+public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 
-	private static final int DEFAULT_PLAYTIME = 1; // minutes
-	private static final int BANDWITH = 500;
+	private static int playTime = getProperty(
+			"test.scalability.latency.playtime", 1); // minutes
+	private static int bandWidth = getProperty(
+			"test.scalability.latency.bandwidth", 500);
+	private static int realClients = getProperty(
+			"test.scalability.latency.realclients", 2);
+	private static String[] fakeClientsArray = getProperty(
+			"test.scalability.latency.fakeclients", "0,20,40,60,80").split(",");
+
 	private static Map<Long, LatencyRegistry> latencyResult = new HashMap<>();
 
 	private int fakeClients;
 
-	public WebRtcStabilityFakeClientsTest(TestScenario testScenario,
+	public WebRtcScalabilityLatencyTest(TestScenario testScenario,
 			int fakeClients) {
 		super(testScenario);
 		this.fakeClients = fakeClients;
@@ -86,17 +98,16 @@ public class WebRtcStabilityFakeClientsTest extends BrowserKurentoClientTest {
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL).video(videoPath).build());
 
-		return Arrays.asList(new Object[][] { { test, 0 }, { test, 20 },
-				{ test, 40 }, { test, 60 }, { test, 80 }, { test, 100 },
-				{ test, 120 }, { test, 140 }, { test, 160 }, { test, 180 },
-				{ test, 200 }, { test, 220 }, { test, 240 } });
+		Collection<Object[]> out = new ArrayList<>();
+		for (String s : fakeClientsArray) {
+			out.add(new Object[] { test, Integer.parseInt(s) });
+		}
+
+		return out;
 	}
 
 	@Test
-	public void testWebRtcStabilityFakeClients() throws Exception {
-		final int playTime = Integer
-				.parseInt(System.getProperty("test.webrtcstability.playtime",
-						String.valueOf(DEFAULT_PLAYTIME)));
+	public void testWebRtcScalabilityLatency() throws Exception {
 
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -104,7 +115,7 @@ public class WebRtcStabilityFakeClientsTest extends BrowserKurentoClientTest {
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		// Fake clients
-		addFakeClients(fakeClients, BANDWITH, mp, webRtcEndpoint);
+		addFakeClients(fakeClients, bandWidth, mp, webRtcEndpoint);
 
 		// Latency control
 		LatencyController cs = new LatencyController("WebRTC in loopback");
@@ -150,8 +161,10 @@ public class WebRtcStabilityFakeClientsTest extends BrowserKurentoClientTest {
 
 		// Draw chart
 		ChartWriter chartWriter = new ChartWriter(latencyResult, "Latency avg",
+				"Latency of fake clients: " + Arrays.toString(fakeClientsArray),
 				"Number of client(s)", "Latency (ms)");
-		chartWriter.drawChart(getDefaultOutputFile("-latency.png"), 500, 207);
+		chartWriter.drawChart(getDefaultOutputFile("-latency-evolution.png"),
+				500, 270);
 	}
 
 }
