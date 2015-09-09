@@ -7,12 +7,5 @@
         "threads": 10
       }
     }
-  },
-  "modules": {
-    "kurento": {
-      "SdpEndpoint" : {
-        "sdpPattern" : "/etc/kurento/sdp_pattern.txt"
-      }
-    }
   }
 }

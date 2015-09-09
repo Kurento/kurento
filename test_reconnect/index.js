@@ -51,7 +51,9 @@ if (ws_port == "") {
   QUnit.pushFailure("The test needs a ws_port");
 }
 
-const ARGV = ['-f', './kurento.conf.json', '--gst-debug=Kurento*:5', '2>&1'];
+const ARGV = ['-f', './kurento.conf.json', '--gst-debug=Kurento*:5',
+  '--modules-config-path=/etc/kurento/modules', '2>&1'
+];
 const ws_uri = 'ws://127.0.0.1:' + ws_port + '/kurento'
 
 /**
