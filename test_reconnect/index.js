@@ -98,14 +98,15 @@ function sleep(seconds) {
 
 Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
 
-QUnit.config.testTimeout = 30000 * Timeout.factor;
+QUnit.config.testTimeout = 90000 * Timeout.factor;
 
 QUnit.module('reconnect', {
   beforeEach: function () {
     var self = this;
 
     var options = {
-      request_timeout: 5000 * Timeout.factor
+      request_timeout: 5000 * Timeout.factor,
+      failAfter: 15
     };
 
     this.server = spawn('kurento-media-server', ARGV)
@@ -204,7 +205,9 @@ QUnit.test('MediaServer closed, client disconnected', function (assert) {
   // stop MediaServer
   self.server.kill();
   self.server.on('exit', function (code, signal) {
+    console.log("Server was killed");
     client.once('disconnect', function (error) {
+      console.log("Client disconnected");
       assert.notEqual(error, undefined);
 
       assert.throws(function () {
