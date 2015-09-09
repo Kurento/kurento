@@ -29,7 +29,7 @@ DEBIAN_FRONTEND=noninteractive sudo postpone -d -f apt-get install --force-yes -
 
 # Removed package from istall: msttcorefonts
 
-ninja -C out/Debug
+ninja -C out/Release
 
 cd ..
 mv src libjingle
