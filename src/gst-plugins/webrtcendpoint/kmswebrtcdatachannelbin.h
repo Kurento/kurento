@@ -79,7 +79,7 @@ GType kms_webrtc_data_channel_bin_get_type (void);
 
 typedef void (*ResetStreamFunc) (KmsWebRtcDataChannelBin *channel, gpointer user_data);
 
-KmsWebRtcDataChannelBin * kms_webrtc_data_channel_bin_new (guint id, gint max_packet_life_time, gint max_retransmits, const gchar *label, const gchar *protocol);
+KmsWebRtcDataChannelBin * kms_webrtc_data_channel_bin_new (guint id, gboolean ordered, gint max_packet_life_time, gint max_retransmits, const gchar *label, const gchar *protocol);
 GstCaps * kms_webrtc_data_channel_bin_create_caps (KmsWebRtcDataChannelBin *self);
 void kms_webrtc_data_channel_bin_set_new_buffer_callback (KmsWebRtcDataChannelBin *self, DataChannelNewBuffer cb, gpointer user_data, GDestroyNotify notify);
 void kms_webrtc_data_channel_bin_set_reset_stream_callback (KmsWebRtcDataChannelBin *self, ResetStreamFunc cb, gpointer user_data, GDestroyNotify notify);

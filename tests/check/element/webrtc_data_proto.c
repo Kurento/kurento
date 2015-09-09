@@ -156,8 +156,8 @@ GST_START_TEST (connection)
 
   g_timeout_add_seconds (1, print_timedout_pipeline, pipeline);
 
-  g_signal_emit_by_name (session1, "create-data-channel", -1, -1, "TestChannel",
-      "webrtc-datachannel", &stream_id);
+  g_signal_emit_by_name (session1, "create-data-channel", TRUE, -1, -1,
+      "TestChannel", "webrtc-datachannel", &stream_id);
 
   GST_DEBUG ("Creating data channel with stream id %d", stream_id);
 
@@ -336,8 +336,8 @@ GST_START_TEST (destroy_channels)
 
   g_timeout_add_seconds (1, print_timedout_pipeline, pipeline);
 
-  g_signal_emit_by_name (session1, "create-data-channel", -1, -1, "TestChannel",
-      "webrtc-datachannel", &stream_id);
+  g_signal_emit_by_name (session1, "create-data-channel", TRUE, -1, -1,
+      "TestChannel", "webrtc-datachannel", &stream_id);
 
   GST_DEBUG ("Creating data channel with stream id %d", stream_id);
 

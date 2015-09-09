@@ -359,6 +359,87 @@ WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
   }
 }
 
+void
+WebRtcEndpointImpl::createDataChannel ()
+{
+  createDataChannel ("", true, -1, -1, "");
+}
+
+void
+WebRtcEndpointImpl::createDataChannel (const std::string &label)
+{
+  createDataChannel (label, true, -1, -1, "");
+}
+
+void
+WebRtcEndpointImpl::createDataChannel (const std::string &label, bool ordered)
+{
+  createDataChannel (label, ordered, -1, -1, "");
+}
+
+void
+WebRtcEndpointImpl::createDataChannel (const std::string &label, bool ordered,
+                                       int maxPacketLifeTime)
+{
+  createDataChannel (label, ordered, maxPacketLifeTime, -1, "");
+}
+
+void
+WebRtcEndpointImpl::createDataChannel (const std::string &label, bool ordered,
+                                       int maxPacketLifeTime, int maxRetransmits)
+{
+  createDataChannel (label, ordered, maxPacketLifeTime, maxRetransmits, "");
+}
+
+void
+WebRtcEndpointImpl::createDataChannel (const std::string &label, bool ordered,
+                                       int maxPacketLifeTime, int maxRetransmits, const std::string &protocol)
+{
+  gint lifeTime, retransmits, stream_id;
+
+  /* Less than one values mean that parameters are disabled */
+  if (maxPacketLifeTime < 0) {
+    maxPacketLifeTime = -1;
+  }
+
+  if (maxRetransmits < 0) {
+    maxRetransmits = -1;
+  }
+
+  if (maxPacketLifeTime != -1 && maxRetransmits != -1) {
+    /* Both values are incompatible.                                     */
+    /* http://w3c.github.io/webrtc-pc/#dom-datachannel-maxpacketlifetime */
+    throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR, "Syntax error");
+  }
+
+  if (maxPacketLifeTime > G_MAXUSHORT) {
+    GST_WARNING ("maxPacketLifeTime can not be bigger than %u. Setting it to that value",
+                 G_MAXUSHORT);
+    lifeTime = G_MAXUSHORT;
+  } else {
+    lifeTime = maxPacketLifeTime;
+  }
+
+  if (maxRetransmits > G_MAXUSHORT) {
+    GST_WARNING ("maxRetransmits can not be bigger than %u. Setting it to that value",
+                 G_MAXUSHORT);
+    retransmits = G_MAXUSHORT;
+  } else {
+    retransmits = maxRetransmits;
+  }
+
+  /* Create the data channel */
+  g_signal_emit_by_name (element, "create-data-channel", ordered, lifeTime,
+                         retransmits, label.c_str(), protocol.c_str(),
+                         &stream_id);
+
+  if (stream_id < 0) {
+    throw KurentoException (UNEXPECTED_ERROR, "Can not create data channel");
+  }
+
+  GST_DEBUG ("Creating data channel with stream id %d", stream_id);
+}
+
 MediaObjectImpl *
 WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>

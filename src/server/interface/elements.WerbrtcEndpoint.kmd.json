@@ -55,6 +55,47 @@
               "type": "IceCandidate"
             }
           ]
+        },
+        {
+          "name": "createDataChannel",
+          "doc": "Create a new data channel if data channel are supported",
+          "params": [
+            {
+              "name": "label",
+              "doc": "Channel's label attribute",
+              "type": "String",
+              "defaultValue": "",
+              "optional": true
+            },
+            {
+              "name": "ordered",
+              "doc": "If the data channel should guarantee order or not",
+              "type": "boolean",
+              "defaultValue": true,
+              "optional": true
+            },
+            {
+              "name": "maxPacketLifeTime",
+              "doc": "the length of the time window (in milliseconds) during which transmissions and retransmissions may occur in unreliable mode",
+              "type": "int",
+              "defaultValue": -1,
+              "optional": true
+            },
+            {
+              "name": "maxRetransmits",
+              "doc": "maximum number of retransmissions that are attempted in unreliable mode",
+              "type": "int",
+              "defaultValue": -1,
+              "optional": true
+            },
+            {
+              "name": "protocol",
+              "doc": "the name of the sub-protocol used",
+              "type": "String",
+              "defaultValue": "",
+              "optional": true
+            }
+          ]
         }
       ],
       "events": [

@@ -924,17 +924,18 @@ kms_webrtc_data_channel_bin_init (KmsWebRtcDataChannelBin * self)
 }
 
 KmsWebRtcDataChannelBin *
-kms_webrtc_data_channel_bin_new (guint id, gint max_packet_life_time,
-    gint max_retransmits, const gchar * label, const gchar * protocol)
+kms_webrtc_data_channel_bin_new (guint id, gboolean ordered,
+    gint max_packet_life_time, gint max_retransmits, const gchar * label,
+    const gchar * protocol)
 {
   KmsWebRtcDataChannelBin *obj;
   GstCaps *caps;
 
   obj =
       KMS_WEBRTC_DATA_CHANNEL_BIN (g_object_new
-      (KMS_TYPE_WEBRTC_DATA_CHANNEL_BIN, "id", id, "max-packet-life-time",
-          max_packet_life_time, "max-retransmits", max_retransmits, "label",
-          label, "protocol", protocol, NULL));
+      (KMS_TYPE_WEBRTC_DATA_CHANNEL_BIN, "id", id, "ordered", ordered,
+          "max-packet-life-time", max_packet_life_time, "max-retransmits",
+          max_retransmits, "label", label, "protocol", protocol, NULL));
 
   caps = kms_webrtc_data_channel_bin_create_caps (obj);
 

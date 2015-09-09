@@ -1526,8 +1526,8 @@ data_session_established_cb (GstElement * self, gboolean connected,
   if (connected) {
     gint stream_id;
 
-    g_signal_emit_by_name (self, "create-data-channel", -1, -1, "TestChannel",
-        "webrtc-datachannel", &stream_id);
+    g_signal_emit_by_name (self, "create-data-channel", TRUE, -1, -1,
+        "TestChannel", "webrtc-datachannel", &stream_id);
 
     fail_if (stream_id < 0);
 

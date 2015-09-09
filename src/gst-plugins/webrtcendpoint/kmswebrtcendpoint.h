@@ -52,7 +52,7 @@ struct _KmsWebrtcEndpointClass
   gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self, const gchar * sess_id,
       KmsIceCandidate * candidate);
 
-  gint (*create_data_channel) (KmsWebrtcEndpoint *self, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
+  gint (*create_data_channel) (KmsWebrtcEndpoint *self, gboolean ordered, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
   void (*destroy_data_channel) (KmsWebrtcEndpoint *self, gint stream_id);
 
   /* Signals */

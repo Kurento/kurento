@@ -39,6 +39,16 @@ public:
   void gatherCandidates ();
   void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
 
+  void createDataChannel ();
+  void createDataChannel (const std::string &label);
+  void createDataChannel (const std::string &label, bool ordered);
+  void createDataChannel (const std::string &label, bool ordered,
+                          int maxPacketLifeTime);
+  void createDataChannel (const std::string &label, bool ordered,
+                          int maxPacketLifeTime, int maxRetransmits);
+  void createDataChannel (const std::string &label, bool ordered,
+                          int maxPacketLifeTime, int maxRetransmits, const std::string &protocol);
+
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);

@@ -875,8 +875,8 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
 static gint
 kms_webrtc_endpoint_create_data_channel (KmsWebrtcEndpoint * self,
-    gint max_packet_life_time, gint max_retransmits, const gchar * label,
-    const gchar * protocol)
+    gboolean ordered, gint max_packet_life_time, gint max_retransmits,
+    const gchar * label, const gchar * protocol)
 {
   gint stream_id = -1;
 
@@ -886,7 +886,8 @@ kms_webrtc_endpoint_create_data_channel (KmsWebrtcEndpoint * self,
     GST_WARNING_OBJECT (self, "Data session is not yet established");
   } else {
     g_signal_emit_by_name (self->priv->data_session, "create-data-channel",
-        max_packet_life_time, max_retransmits, label, protocol, &stream_id);
+        ordered, max_packet_life_time, max_retransmits, label, protocol,
+        &stream_id);
   }
 
   KMS_ELEMENT_UNLOCK (self);
@@ -1035,8 +1036,9 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
       G_STRUCT_OFFSET (KmsWebrtcEndpointClass, create_data_channel),
-      NULL, NULL, __kms_webrtc_data_marshal_INT__INT_INT_STRING_STRING,
-      G_TYPE_INT, 4, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING);
+      NULL, NULL, __kms_webrtc_data_marshal_INT__BOOLEAN_INT_INT_STRING_STRING,
+      G_TYPE_INT, 5, G_TYPE_BOOLEAN, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING,
+      G_TYPE_STRING);
 
   kms_webrtc_endpoint_signals[ACTION_DESTROY_DATA_CHANNEL] =
       g_signal_new ("destroy-data-channel",
