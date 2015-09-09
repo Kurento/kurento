@@ -602,7 +602,8 @@ kms_webrtc_session_add_ice_candidate (KmsWebrtcSession * self,
   guint8 index;
   gboolean ret;
 
-  GST_DEBUG_OBJECT (self, "Gather candidates");
+  GST_DEBUG_OBJECT (self, "Add ICE candidate '%s'",
+      kms_ice_candidate_get_candidate (candidate));
 
   ret = kms_ice_candidate_create_nice (candidate, &nice_cand);
   if (nice_cand == NULL) {
