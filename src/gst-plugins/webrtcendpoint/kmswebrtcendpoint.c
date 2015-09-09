@@ -54,6 +54,7 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_STUN_SERVER_IP NULL
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
+#define DEFAULT_DATA_CHANNELS_SUPPORTED FALSE
 
 #define MAX_DATA_CHANNELS 1
 
@@ -63,6 +64,7 @@ enum
   PROP_STUN_SERVER_IP,
   PROP_STUN_SERVER_PORT,
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
+  PROP_DATA_CHANNEL_SUPPORTED,
   N_PROPERTIES
 };
 
@@ -839,6 +841,9 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
     case PROP_TURN_URL:
       g_value_set_string (value, self->priv->turn_url);
       break;
+    case PROP_DATA_CHANNEL_SUPPORTED:
+      g_value_set_boolean (value, self->priv->data_session != NULL);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -969,6 +974,13 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "'address' must be an IP (not a domain)."
           "'transport' is optional (UDP by default).",
           DEFAULT_STUN_TURN_URL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_DATA_CHANNEL_SUPPORTED,
+      g_param_spec_boolean ("data-channel-supported",
+          "Data channel supported",
+          "True if data channels are negotiated and supported",
+          DEFAULT_DATA_CHANNELS_SUPPORTED,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:

@@ -442,6 +442,14 @@ WebRtcEndpointImpl::createDataChannel (const std::string &label, bool ordered,
                                        int maxPacketLifeTime, int maxRetransmits, const std::string &protocol)
 {
   gint lifeTime, retransmits, stream_id;
+  gboolean supported;
+
+  g_object_get (element, "data-channel-supported", &supported, NULL);
+
+  if (!supported) {
+    throw KurentoException (MEDIA_OBJECT_OPERATION_NOT_SUPPORTED,
+                            "Data channels are not supported");
+  }
 
   /* Less than one values mean that parameters are disabled */
   if (maxPacketLifeTime < 0) {
