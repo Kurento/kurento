@@ -101,7 +101,9 @@
       "events": [
         "OnIceCandidate",
         "OnIceGatheringDone",
-        "OnIceComponentStateChanged"
+        "OnIceComponentStateChanged",
+        "OnDataChannelOpened",
+        "OnDataChannelClosed"
       ]
     }
   ],
@@ -143,6 +145,30 @@
           "name": "state",
           "doc": "The state of the component",
           "type": "IceComponentState"
+        }
+      ]
+    },
+    {
+      "name": "OnDataChannelOpened",
+      "doc": "Notify the creation of a new data channel.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "channelId",
+          "doc": "The channel identifier",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "OnDataChannelClosed",
+      "doc": "Notify the destruction of a data channel.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "channelId",
+          "doc": "The channel identifier",
+          "type": "int"
         }
       ]
     }

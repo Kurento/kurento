@@ -74,6 +74,8 @@ enum
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
   SIGNAL_DATA_SESSION_ESTABLISHED,
+  SIGNAL_DATA_CHANNEL_OPENED,
+  SIGNAL_DATA_CHANNEL_CLOSED,
   ACTION_CREATE_DATA_CHANNEL,
   ACTION_DESTROY_DATA_CHANNEL,
   LAST_SIGNAL
@@ -455,6 +457,9 @@ kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
   gst_element_sync_state_with_parent (channel->appsink);
 
   KMS_ELEMENT_UNLOCK (self);
+
+  g_signal_emit (self, kms_webrtc_endpoint_signals[SIGNAL_DATA_CHANNEL_OPENED],
+      0, stream_id);
 }
 
 static void
@@ -501,6 +506,9 @@ kms_webrtc_endpoint_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
   kms_webrtc_endpoint_remove_data_channel (self, channel);
 
   kms_ref_struct_unref (KMS_REF_STRUCT_CAST (channel));
+
+  g_signal_emit (self, kms_webrtc_endpoint_signals[SIGNAL_DATA_CHANNEL_CLOSED],
+      0, stream_id);
 }
 
 static gboolean
@@ -1030,6 +1038,20 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       G_STRUCT_OFFSET (KmsWebrtcEndpointClass, data_session_established),
       NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1,
       G_TYPE_BOOLEAN);
+
+  kms_webrtc_endpoint_signals[SIGNAL_DATA_CHANNEL_OPENED] =
+      g_signal_new ("data-channel-opened",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, data_channel_opened),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+  kms_webrtc_endpoint_signals[SIGNAL_DATA_CHANNEL_CLOSED] =
+      g_signal_new ("data-channel-closed",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcEndpointClass, data_channel_closed),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 
   kms_webrtc_endpoint_signals[ACTION_CREATE_DATA_CHANNEL] =
       g_signal_new ("create-data-channel",

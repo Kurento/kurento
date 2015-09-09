@@ -165,6 +165,28 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
   }
 }
 
+void
+WebRtcEndpointImpl::onDataChannelOpened (guint stream_id)
+{
+  try {
+    OnDataChannelOpened event (shared_from_this(), OnDataChannelOpened::getName(),
+                               stream_id);
+    signalOnDataChannelOpened (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
+void
+WebRtcEndpointImpl::onDataChannelClosed (guint stream_id)
+{
+  try {
+    OnDataChannelClosed event (shared_from_this(), OnDataChannelClosed::getName(),
+                               stream_id);
+    signalOnDataChannelClosed (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
+}
+
 void WebRtcEndpointImpl::postConstructor ()
 {
   BaseRtpEndpointImpl::postConstructor ();
@@ -193,6 +215,22 @@ void WebRtcEndpointImpl::postConstructor ()
                                           std::placeholders::_5) ),
                                       std::dynamic_pointer_cast<WebRtcEndpointImpl>
                                       (shared_from_this() ) );
+
+  handlerOnDataChannelOpened = register_signal_handler (G_OBJECT (element),
+                               "data-channel-opened",
+                               std::function <void (GstElement *, guint) >
+                               (std::bind (&WebRtcEndpointImpl::onDataChannelOpened, this,
+                                   std::placeholders::_2) ),
+                               std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                               (shared_from_this() ) );
+
+  handlerOnDataChannelClosed = register_signal_handler (G_OBJECT (element),
+                               "data-channel-closed",
+                               std::function <void (GstElement *, guint) >
+                               (std::bind (&WebRtcEndpointImpl::onDataChannelClosed, this,
+                                   std::placeholders::_2) ),
+                               std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                               (shared_from_this() ) );
 }
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
@@ -263,6 +301,14 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
 
   if (handlerOnIceComponentStateChanged > 0) {
     unregister_signal_handler (element, handlerOnIceComponentStateChanged);
+  }
+
+  if (handlerOnDataChannelOpened > 0) {
+    unregister_signal_handler (element, handlerOnDataChannelOpened);
+  }
+
+  if (handlerOnDataChannelClosed > 0) {
+    unregister_signal_handler (element, handlerOnDataChannelClosed);
   }
 }
 

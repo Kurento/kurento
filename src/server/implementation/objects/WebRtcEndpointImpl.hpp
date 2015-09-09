@@ -57,6 +57,9 @@ public:
   sigc::signal<void, OnIceGatheringDone> signalOnIceGatheringDone;
   sigc::signal<void, OnIceComponentStateChanged> signalOnIceComponentStateChanged;
 
+  sigc::signal<void, OnDataChannelOpened> signalOnDataChannelOpened;
+  sigc::signal<void, OnDataChannelClosed> signalOnDataChannelClosed;
+
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
                        Json::Value &response);
@@ -71,11 +74,15 @@ private:
   gulong handlerOnIceCandidate = 0;
   gulong handlerOnIceGatheringDone = 0;
   gulong handlerOnIceComponentStateChanged = 0;
+  gulong handlerOnDataChannelOpened = 0;
+  gulong handlerOnDataChannelClosed = 0;
 
   void onIceCandidate (gchar *sessId, KmsIceCandidate *candidate);
   void onIceGatheringDone (gchar *sessId);
   void onIceComponentStateChanged (gchar *sessId, guint streamId,
                                    guint componentId, guint state);
+  void onDataChannelOpened (guint stream_id);
+  void onDataChannelClosed (guint stream_id);
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

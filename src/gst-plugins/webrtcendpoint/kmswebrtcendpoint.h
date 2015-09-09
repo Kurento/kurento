@@ -60,6 +60,8 @@ struct _KmsWebrtcEndpointClass
       KmsIceCandidate * candidate);
   void (*on_ice_gathering_done) (KmsWebrtcEndpoint * self, const gchar *sess_id);
   void (*data_session_established) (KmsWebrtcEndpoint *self, gboolean connected);
+  void (*data_channel_opened) (KmsWebrtcEndpoint *self, guint stream_id);
+  void (*data_channel_closed) (KmsWebrtcEndpoint *self, guint stream_id);
 };
 
 GType kms_webrtc_endpoint_get_type (void);
