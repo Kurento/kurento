@@ -913,7 +913,16 @@ static void
 kms_webrtc_endpoint_destroy_data_channel (KmsWebrtcEndpoint * self,
     gint stream_id)
 {
-  GST_DEBUG_OBJECT (self, "Destroy channel %u", stream_id);
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->data_session == NULL) {
+    GST_WARNING_OBJECT (self, "Data session is not yet established");
+  } else {
+    g_signal_emit_by_name (self->priv->data_session, "destroy-data-channel",
+        stream_id);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
 }
 
 static void

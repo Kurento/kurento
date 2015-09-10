@@ -96,6 +96,17 @@
               "optional": true
             }
           ]
+        },
+        {
+          "name": "closeDataChannel",
+          "doc": "Close an opened data channel",
+          "params": [
+            {
+              "name": "channelId",
+              "doc": "The channel identifier",
+              "type": "int"
+            }
+          ]
         }
       ],
       "events": [

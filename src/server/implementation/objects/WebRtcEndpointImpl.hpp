@@ -48,6 +48,7 @@ public:
                           int maxPacketLifeTime, int maxRetransmits);
   void createDataChannel (const std::string &label, bool ordered,
                           int maxPacketLifeTime, int maxRetransmits, const std::string &protocol);
+  void closeDataChannel (int channelId);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,

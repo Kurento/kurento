@@ -494,6 +494,22 @@ WebRtcEndpointImpl::createDataChannel (const std::string &label, bool ordered,
   GST_DEBUG ("Creating data channel with stream id %d", stream_id);
 }
 
+void
+WebRtcEndpointImpl::closeDataChannel (int channelId)
+{
+  gboolean supported;
+
+  g_object_get (element, "data-channel-supported", &supported, NULL);
+
+  if (!supported) {
+    throw KurentoException (MEDIA_OBJECT_OPERATION_NOT_SUPPORTED,
+                            "Data channels are not supported");
+  }
+
+  /* Destroy the data channel */
+  g_signal_emit_by_name (element, "destroy-data-channel", channelId);
+}
+
 MediaObjectImpl *
 WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
