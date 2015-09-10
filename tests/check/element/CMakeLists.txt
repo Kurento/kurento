@@ -42,28 +42,28 @@ target_link_libraries(test_playerendpoint
                       kmstestutils)
 
 add_test_program (test_rtpendpoint rtpendpoint.c)
-add_dependencies(test_rtpendpoint kmstestutils ${LIBRARY_NAME}plugins)
+add_dependencies(test_rtpendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS})
 target_link_libraries(test_rtpendpoint
                       ${gstreamer-1.5_LIBRARIES}
+                      ${gstreamer-sdp-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
-                      ${KmsGstCommons_LIBRARIES}
-                      kmstestutils)
+                      ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_rtpendpoint_audio rtpendpoint_audio.c)
-add_dependencies(test_rtpendpoint_audio kmstestutils ${LIBRARY_NAME}plugins)
+add_dependencies(test_rtpendpoint_audio ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint_audio PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
                            ${gstreamer-check-1.5_INCLUDE_DIRS})
 target_link_libraries(test_rtpendpoint_audio
                       ${gstreamer-1.5_LIBRARIES}
+                      ${gstreamer-sdp-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
-                      ${KmsGstCommons_LIBRARIES}
-                      kmstestutils)
+                      ${KmsGstCommons_LIBRARIES})
 
 # add_test_program (test_rtpendpoint_video rtpendpoint_video.c)
 # add_dependencies(test_rtpendpoint_video kmstestutils ${LIBRARY_NAME}plugins)
@@ -78,7 +78,7 @@ target_link_libraries(test_rtpendpoint_audio
 #                       kmstestutils)
 
 add_test_program (test_webrtcendpoint webrtcendpoint.c)
-add_dependencies(test_webrtcendpoint kmstestutils ${LIBRARY_NAME}plugins)
+add_dependencies(test_webrtcendpoint ${LIBRARY_NAME}plugins)
 target_include_directories(test_webrtcendpoint PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
@@ -87,10 +87,10 @@ target_include_directories(test_webrtcendpoint PRIVATE
                            "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
 target_link_libraries(test_webrtcendpoint
                       ${gstreamer-1.5_LIBRARIES}
+                      ${gstreamer-sdp-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
                       ${nice_LIBRARIES}
-                      ${KmsGstCommons_LIBRARIES}
-                      kmstestutils)
+                      ${KmsGstCommons_LIBRARIES})
 
 #add_test_program (test_compositemixer compositemixer.c)
 #add_dependencies(test_compositemixer kmstestutils)
@@ -104,7 +104,6 @@ target_link_libraries(test_webrtcendpoint
 #                      ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_dispatcheronetomany dispatcheronetomany.c)
-add_dependencies(test_dispatcheronetomany kmstestutils)
 target_include_directories(test_dispatcheronetomany PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
@@ -115,7 +114,6 @@ target_link_libraries(test_dispatcheronetomany
                       ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_dispatcher dispatcher.c)
-add_dependencies(test_dispatcher kmstestutils)
 target_include_directories(test_dispatcher PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
@@ -159,7 +157,7 @@ if (${ENABLE_DEBUGGING_TESTS})
                                       ${gio-2.0_LIBRARIES})
 
 add_test_program (test_webrtc_data_proto webrtc_data_proto.c)
-add_dependencies(test_webrtc_data_proto kmstestutils ${LIBRARY_NAME}plugins)
+add_dependencies(test_webrtc_data_proto ${LIBRARY_NAME}plugins)
 target_include_directories(test_webrtc_data_proto PRIVATE
                            ${KmsGstCommons_INCLUDE_DIRS}
                            ${gstreamer-1.5_INCLUDE_DIRS}
@@ -171,6 +169,5 @@ target_link_libraries(test_webrtc_data_proto
                       ${gstreamer-check-1.5_LIBRARIES}
                       ${nice_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES}
-                      kmstestutils
                       webrtcdataproto)
 endif()
