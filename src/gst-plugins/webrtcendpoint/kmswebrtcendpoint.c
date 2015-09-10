@@ -612,22 +612,11 @@ error:
 }
 
 static void
-kms_webrtc_endpoint_create_data_session (KmsWebrtcEndpoint * self,
+kms_webrtc_endpoint_add_data_session (KmsWebrtcEndpoint * self,
     GstSDPMedia * media, KmsIRtpConnection * conn)
 {
-  gboolean is_client;
-
   KMS_ELEMENT_LOCK (self);
 
-  if (self->priv->data_session != NULL) {
-    GST_WARNING_OBJECT (self, "Data session already initialized");
-    goto end;
-  }
-
-  g_object_get (conn, "is-client", &is_client, NULL);
-
-  self->priv->data_session =
-      GST_ELEMENT (kms_webrtc_data_session_bin_new (is_client));
   g_signal_connect (self->priv->data_session, "data-session-established",
       G_CALLBACK (kms_webrtc_endpoint_data_session_established_cb), self);
   g_signal_connect (self->priv->data_session, "data-channel-opened",
@@ -635,21 +624,19 @@ kms_webrtc_endpoint_create_data_session (KmsWebrtcEndpoint * self,
   g_signal_connect (self->priv->data_session, "data-channel-closed",
       G_CALLBACK (kms_webrtc_endpoint_data_channel_closed_cb), self);
 
+  g_object_ref (self->priv->data_session);
   gst_bin_add (GST_BIN (self), self->priv->data_session);
   kms_webrtc_endpoint_connect_data_session (self, media, conn);
-
-end:
 
   KMS_ELEMENT_UNLOCK (self);
 }
 
 static void
-kms_webrtc_endpoint_create_data_session_cb (KmsIRtpConnection * conn,
+kms_webrtc_endpoint_add_data_session_cb (KmsIRtpConnection * conn,
     ConnectSCTPData * data)
 {
   if (g_atomic_int_compare_and_exchange (&data->connected, FALSE, TRUE)) {
-    kms_webrtc_endpoint_create_data_session (data->self, data->media,
-        data->conn);
+    kms_webrtc_endpoint_add_data_session (data->self, data->media, data->conn);
   } else {
     GST_WARNING_OBJECT (data->self, "SCTP elements already configured");
   }
@@ -676,11 +663,23 @@ kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
     return;
   }
 
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->data_session == NULL) {
+    gboolean is_client;
+
+    g_object_get (conn, "is-client", &is_client, NULL);
+    self->priv->data_session =
+        GST_ELEMENT (kms_webrtc_data_session_bin_new (is_client));
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
   gst_sdp_media_copy (kms_sdp_media_config_get_sdp_media (mconf), &media);
   data = connect_sctp_data_new (self, media, conn);
 
   handler_id = g_signal_connect_data (conn, "connected",
-      G_CALLBACK (kms_webrtc_endpoint_create_data_session_cb),
+      G_CALLBACK (kms_webrtc_endpoint_add_data_session_cb),
       kms_ref_struct_ref (KMS_REF_STRUCT_CAST (data)),
       (GClosureNotify) kms_ref_struct_unref, 0);
 
@@ -690,7 +689,7 @@ kms_webrtc_endpoint_support_sctp_stream (KmsWebrtcEndpoint * self,
     if (handler_id) {
       g_signal_handler_disconnect (conn, handler_id);
     }
-    kms_webrtc_endpoint_create_data_session (self,
+    kms_webrtc_endpoint_add_data_session (self,
         kms_sdp_media_config_get_sdp_media (mconf), conn);
   } else {
     GST_DEBUG_OBJECT (self, "SCTP: waiting for DTLS layer to be established");
@@ -862,6 +861,8 @@ kms_webrtc_endpoint_dispose (GObject * object)
   KMS_ELEMENT_LOCK (self);
 
   g_clear_object (&self->priv->loop);
+  g_clear_object (&self->priv->data_session);
+
   g_hash_table_unref (self->priv->data_channels);
 
   KMS_ELEMENT_UNLOCK (self);
