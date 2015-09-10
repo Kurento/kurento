@@ -38,9 +38,9 @@
     "es6-promise": "^2.3.0",
     "extend": "^2.0.1",
     "inherits": "~2.0.1",
-    "kurento-client-core": "6.1.0",
-    "kurento-client-elements": "6.1.0",
-    "kurento-client-filters": "6.1.0",
+    "kurento-client-core": "Kurento/kurento-client-core-js#master",
+    "kurento-client-elements": "Kurento/kurento-client-elements-js#master",
+    "kurento-client-filters": "Kurento/kurento-client-filters-js#master",
     "kurento-jsonrpc": "5.0.5",
     "promisecallback": "0.0.4",
     "reconnect-ws": "KurentoForks/reconnect-ws#master"
