@@ -73,7 +73,7 @@ public class RecorderWebRtcTest extends FunctionalTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localChromeAndFirefox();
+		return TestScenario.localChrome();
 	}
 
 	@Test
