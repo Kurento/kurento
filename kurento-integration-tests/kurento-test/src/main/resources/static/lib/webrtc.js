@@ -215,3 +215,12 @@ function hideSpinner() {
 		arguments[i].style.background = '';
 	}
 }
+
+function stop() {
+	if (webRtcPeer) {
+		webRtcPeer.dispose();
+		webRtcPeer = null;
+	}
+	hideSpinner(local, video);
+	document.getElementById('status').value = '';
+}

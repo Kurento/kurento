@@ -160,7 +160,7 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 		}
 	}
 
-	private void makeAssertions(String browserKey, String messageAppend,
+	protected void makeAssertions(String browserKey, String messageAppend,
 			BrowserClient browser, int playtime, int x, int y,
 			CountDownLatch eosLatch, Color... expectedColors)
 					throws InterruptedException {

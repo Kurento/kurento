@@ -82,10 +82,8 @@ public class KurentoTestClient extends TestClient {
 	public void setColorCoordinates(int x, int y) {
 		browserClient.getDriver().findElement(By.id("x")).clear();
 		browserClient.getDriver().findElement(By.id("y")).clear();
-		browserClient.getDriver().findElement(By.id("x"))
-				.sendKeys(String.valueOf(x));
-		browserClient.getDriver().findElement(By.id("y"))
-				.sendKeys(String.valueOf(y));
+		browserClient.getDriver().findElement(By.id("x")).sendKeys(String.valueOf(x));
+		browserClient.getDriver().findElement(By.id("y")).sendKeys(String.valueOf(y));
 		super.setColorCoordinates(x, y);
 	}
 
@@ -130,20 +128,17 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * subscribeEventsToVideoTag
 	 */
-	public void subscribeEventsToVideoTag(final String videoTag,
-			final String eventType) {
+	public void subscribeEventsToVideoTag(final String videoTag, final String eventType) {
 		CountDownLatch latch = new CountDownLatch(1);
 
 		final String browserName = browserClient.getId();
-		log.info("Subscribe event '{}' in video tag '{}' in browser '{}'",
-				eventType, videoTag, browserName);
+		log.info("Subscribe event '{}' in video tag '{}' in browser '{}'", eventType, videoTag, browserName);
 
 		countDownLatchEvents.put(browserName + eventType, latch);
 		addEventListener(videoTag, eventType, new BrowserEventListener() {
 			@Override
 			public void onEvent(String event) {
-				consoleLog(ConsoleLogLevel.info,
-						"Event in " + videoTag + " tag: " + event);
+				consoleLog(ConsoleLogLevel.info, "Event in " + videoTag + " tag: " + event);
 				countDownLatchEvents.get(browserName + eventType).countDown();
 			}
 		});
@@ -152,35 +147,27 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * waitForEvent
 	 */
-	public boolean waitForEvent(final String eventType)
-			throws InterruptedException {
+	public boolean waitForEvent(final String eventType) throws InterruptedException {
 
 		String browserName = browserClient.getId();
-		log.info("Waiting for event '{}' in browser '{}'", eventType,
-				browserName);
+		log.info("Waiting for event '{}' in browser '{}'", eventType, browserName);
 
 		if (!countDownLatchEvents.containsKey(browserName + eventType)) {
-			log.error(
-					"We cannot wait for an event without previous subscription");
+			log.error("We cannot wait for an event without previous subscription");
 			return false;
 		}
 
-		boolean result = countDownLatchEvents.get(browserName + eventType)
-				.await(browserClient.getTimeout(), TimeUnit.SECONDS);
+		boolean result = countDownLatchEvents.get(browserName + eventType).await(browserClient.getTimeout(),
+				TimeUnit.SECONDS);
 
 		// Record local audio when playing event reaches the browser
-		if (eventType.equalsIgnoreCase("playing")
-				&& browserClient.getRecordAudio() > 0) {
+		if (eventType.equalsIgnoreCase("playing") && browserClient.getRecordAudio() > 0) {
 			if (browserClient.isRemote()) {
-				Recorder.recordRemote(
-						GridHandler.getInstance()
-								.getNode(browserClient.getId()),
-						browserClient.getRecordAudio(),
-						browserClient.getAudioSampleRate(),
+				Recorder.recordRemote(GridHandler.getInstance().getNode(browserClient.getId()),
+						browserClient.getRecordAudio(), browserClient.getAudioSampleRate(),
 						browserClient.getAudioChannel());
 			} else {
-				Recorder.record(browserClient.getRecordAudio(),
-						browserClient.getAudioSampleRate(),
+				Recorder.record(browserClient.getRecordAudio(), browserClient.getAudioSampleRate(),
 						browserClient.getAudioChannel());
 			}
 		}
@@ -197,22 +184,17 @@ public class KurentoTestClient extends TestClient {
 			final BrowserEventListener eventListener) {
 		Thread t = new Thread() {
 			public void run() {
-				browserClient.executeScript(videoTag + ".addEventListener('"
-						+ eventType + "', videoEvent, false);");
+				browserClient.executeScript(videoTag + ".addEventListener('" + eventType + "', videoEvent, false);");
 				try {
-					(new WebDriverWait(browserClient.getDriver(),
-							browserClient.getTimeout()))
-									.until(new ExpectedCondition<Boolean>() {
+					(new WebDriverWait(browserClient.getDriver(), browserClient.getTimeout()))
+							.until(new ExpectedCondition<Boolean>() {
 						public Boolean apply(WebDriver d) {
-							return d.findElement(By.id("status"))
-									.getAttribute("value")
-									.equalsIgnoreCase(eventType);
+							return d.findElement(By.id("status")).getAttribute("value").equalsIgnoreCase(eventType);
 						}
 					});
 					eventListener.onEvent(eventType);
 				} catch (Throwable t) {
-					log.error("~~~ Exception in addEventListener {}",
-							t.getMessage());
+					log.error("~~~ Exception in addEventListener {}", t.getMessage());
 					t.printStackTrace();
 					this.interrupt();
 					this.stop();
@@ -234,7 +216,7 @@ public class KurentoTestClient extends TestClient {
 	/*
 	 * stop
 	 */
-	public void stop() {
+	public void stopPlay() {
 		browserClient.executeScript("terminate();");
 	}
 
@@ -243,8 +225,7 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public void consoleLog(ConsoleLogLevel level, String message) {
 		log.info(message);
-		browserClient.executeScript(
-				"console." + level.toString() + "('" + message + "');");
+		browserClient.executeScript("console." + level.toString() + "('" + message + "');");
 	}
 
 	/*
@@ -252,8 +233,8 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public double getCurrentTime() {
 		log.debug("getCurrentTime() called");
-		double currentTime = Double.parseDouble(browserClient.getDriver()
-				.findElement(By.id("currentTime")).getAttribute("value"));
+		double currentTime = Double
+				.parseDouble(browserClient.getDriver().findElement(By.id("currentTime")).getAttribute("value"));
 		log.debug("getCurrentTime() result: {}", currentTime);
 		return currentTime;
 	}
@@ -262,8 +243,7 @@ public class KurentoTestClient extends TestClient {
 	 * readConsole
 	 */
 	public String readConsole() {
-		return browserClient.getDriver().findElement(By.id("console"))
-				.getText();
+		return browserClient.getDriver().findElement(By.id("console")).getText();
 	}
 
 	/*
@@ -277,19 +257,15 @@ public class KurentoTestClient extends TestClient {
 	 * initWebRtc
 	 */
 	@SuppressWarnings("deprecation")
-	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
-			final WebRtcChannel channel, final WebRtcMode mode)
-					throws InterruptedException {
+	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel, final WebRtcMode mode)
+			throws InterruptedException {
 
-		webRtcEndpoint.addOnIceCandidateListener(
-				new EventListener<OnIceCandidateEvent>() {
-					@Override
-					public void onEvent(OnIceCandidateEvent event) {
-						browserClient.executeScript("addIceCandidate('"
-								+ JsonUtils.toJsonObject(event.getCandidate())
-								+ "');");
-					}
-				});
+		webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+			@Override
+			public void onEvent(OnIceCandidateEvent event) {
+				browserClient.executeScript("addIceCandidate('" + JsonUtils.toJsonObject(event.getCandidate()) + "');");
+			}
+		});
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		Thread t = new Thread() {
@@ -312,14 +288,30 @@ public class KurentoTestClient extends TestClient {
 	}
 
 	/*
+	 * reload
+	 */
+	public void reload() {
+		browserClient.reload();
+		browserClient.injectKurentoTestJs();
+		browserClient.executeScriptAndWaitOutput("return kurentoTest;");
+	}
+
+	/*
+	 * stopWebRtc
+	 */
+	public void stopWebRtc() {
+		browserClient.executeScript("stop();");
+		browserClient.executeScript("var kurentoTest = new KurentoTest();");
+		countDownLatchEvents.clear();
+	}
+
+	/*
 	 * initWebRtcSdpProcessor
 	 */
-	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor,
-			WebRtcChannel channel, WebRtcMode mode) {
+	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor, WebRtcChannel channel, WebRtcMode mode) {
 
 		// Append WebRTC mode (send/receive and audio/video) to identify test
-		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
-				+ KurentoServicesTestHelper.getTestName());
+		addTestName(KurentoServicesTestHelper.getTestCaseName() + "." + KurentoServicesTestHelper.getTestName());
 		appendStringToTitle(mode.toString());
 		appendStringToTitle(channel.toString());
 
@@ -339,8 +331,7 @@ public class KurentoTestClient extends TestClient {
 		browserClient.executeScript(mode.getJsFunction());
 
 		// Wait to valid sdpOffer
-		String sdpOffer = (String) browserClient
-				.executeScriptAndWaitOutput("return sdpOffer;");
+		String sdpOffer = (String) browserClient.executeScriptAndWaitOutput("return sdpOffer;");
 		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
 
 		// Uncomment this line to debug SDP offer and answer
@@ -371,8 +362,7 @@ public class KurentoTestClient extends TestClient {
 	 */
 	public void appendStringToTitle(String webRtcMode) {
 		try {
-			browserClient.executeScript(
-					"appendStringToTitle('" + webRtcMode + "');");
+			browserClient.executeScript("appendStringToTitle('" + webRtcMode + "');");
 		} catch (WebDriverException we) {
 			log.warn(we.getMessage());
 		}
