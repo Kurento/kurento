@@ -559,17 +559,22 @@ static std::shared_ptr<RTCDataChannelStats>
 createtRTCDataChannelStats (const GstStructure *stats)
 {
   KmsWebRtcDataChannelState state;
+  guint64 messages_sent, message_recv, bytes_sent, bytes_recv;
   gchar *id, *label, *protocol;
   guint channelid;
 
   gst_structure_get (stats, "channel-id", G_TYPE_UINT, &channelid, "label",
                      G_TYPE_STRING, &label, "protocol", G_TYPE_STRING, &protocol, "id",
-                     G_TYPE_STRING, &id, "state", G_TYPE_UINT, &state, NULL);
+                     G_TYPE_STRING, &id, "state", G_TYPE_UINT, &state, "bytes-sent",
+                     G_TYPE_UINT64, &bytes_sent, "bytes-recv", G_TYPE_UINT64,
+                     &bytes_recv, "messages-sent", G_TYPE_UINT64, &messages_sent,
+                     "messages-recv", G_TYPE_UINT64, &message_recv, NULL);
 
   std::shared_ptr<RTCDataChannelStats> rtcDataStats =
     std::make_shared <RTCDataChannelStats> (id,
         std::make_shared <StatsType> (StatsType::datachannel), 0.0, label,
-        protocol, channelid, getRTCDataChannelState (state), 0, 0, 0, 0);
+        protocol, channelid, getRTCDataChannelState (state), messages_sent,
+        bytes_sent, message_recv, bytes_recv);
 
   g_free (protocol);
   g_free (label);

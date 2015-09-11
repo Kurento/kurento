@@ -254,6 +254,7 @@ kms_webrtc_data_session_bin_destroy_data_channel_action (KmsWebRtcDataSessionBin
 static void
 collect_data_channel_stats (GstElement * channel, GstStructure * stats)
 {
+  guint64 messages_sent, message_recv, bytes_sent, bytes_recv;
   KmsWebRtcDataChannelState state;
   gchar *label, *protocol, *name;
   GstStructure *channel_stats;
@@ -263,12 +264,16 @@ collect_data_channel_stats (GstElement * channel, GstStructure * stats)
   id = kms_utils_get_uuid (G_OBJECT (channel));
 
   g_object_get (channel, "id", &chann_id, "label", &label, "protocol",
-      &protocol, "state", &state, NULL);
+      &protocol, "state", &state, "bytes-sent", &bytes_sent, "bytes_recv",
+      &bytes_recv, "messages-sent", &messages_sent, "messages-recv",
+      &message_recv, NULL);
 
   channel_stats = gst_structure_new ("data-channel-statistics", "id",
       G_TYPE_STRING, id, "channel-id", G_TYPE_UINT, chann_id, "label",
       G_TYPE_STRING, label, "protocol", G_TYPE_STRING, protocol, "state",
-      G_TYPE_UINT, state, NULL);
+      G_TYPE_UINT, state, "bytes-sent", G_TYPE_UINT64, bytes_sent,
+      "bytes-recv", G_TYPE_UINT64, bytes_recv, "messages-sent", G_TYPE_UINT64,
+      messages_sent, "messages-recv", G_TYPE_UINT64, message_recv, NULL);
 
   name = g_strdup_printf ("data-channel-%u", chann_id);
 

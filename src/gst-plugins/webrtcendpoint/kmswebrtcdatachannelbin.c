@@ -82,6 +82,9 @@ struct _KmsWebRtcDataChannelBinPrivate
   guint16 id;
   gchar *label;
   guint64 bytes_sent;
+  guint64 bytes_recv;
+  guint64 messages_sent;
+  guint64 messages_recv;
 
   KmsWebRtcDataChannelState state;
 
@@ -128,7 +131,10 @@ enum
   PROP_ID,
   PROP_LABEL,
   PROP_CHANNEL_STATE,
-  PROP_BUFFERED_AMOUNT,
+  PROP_BYTES_SENT,
+  PROP_BYTES_RECV,
+  PROP_MESSAGES_SENT,
+  PROP_MESSAGES_RECV,
 
   N_PROPERTIES
 };
@@ -371,8 +377,17 @@ kms_webrtc_data_channel_bin_get_property (GObject * object, guint property_id,
     case PROP_CHANNEL_STATE:
       g_value_set_enum (value, self->priv->state);
       break;
-    case PROP_BUFFERED_AMOUNT:
+    case PROP_BYTES_SENT:
       g_value_set_uint64 (value, self->priv->bytes_sent);
+      break;
+    case PROP_BYTES_RECV:
+      g_value_set_uint64 (value, self->priv->bytes_recv);
+      break;
+    case PROP_MESSAGES_SENT:
+      g_value_set_uint64 (value, self->priv->messages_sent);
+      break;
+    case PROP_MESSAGES_RECV:
+      g_value_set_uint64 (value, self->priv->messages_recv);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -577,9 +592,24 @@ kms_webrtc_data_channel_bin_class_init (KmsWebRtcDataChannelBinClass * klass)
       KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED,
       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-  obj_properties[PROP_BUFFERED_AMOUNT] =
-      g_param_spec_uint64 ("buffered-amount", "Buffered amount",
-      "The amount of buffered outgoing data on this data channel", 0,
+  obj_properties[PROP_BYTES_SENT] =
+      g_param_spec_uint64 ("bytes-sent", "Bytes sent",
+      "The amount of bytes sent on this data channel", 0,
+      G_MAXULONG, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_BYTES_RECV] =
+      g_param_spec_uint64 ("bytes-recv", "Bytes received",
+      "The amount of bytes received on this data channel", 0,
+      G_MAXULONG, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_MESSAGES_SENT] =
+      g_param_spec_uint64 ("messages-sent", "Messages sent",
+      "The number of messages sent on this data channel", 0,
+      G_MAXULONG, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  obj_properties[PROP_MESSAGES_RECV] =
+      g_param_spec_uint64 ("messages-recv", "Messages received",
+      "The number of messages received on this data channel", 0,
       G_MAXULONG, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (gobject_class, N_PROPERTIES,
@@ -709,6 +739,9 @@ kms_webrtc_data_channel_bin_handle_open_request (KmsWebRtcDataChannelBin *
   self->priv->max_packet_life_time = -1;
   self->priv->max_packet_retransmits = -1;
   self->priv->negotiated = FALSE;
+  self->priv->messages_recv = G_GUINT64_CONSTANT (0);
+  self->priv->messages_sent = G_GUINT64_CONSTANT (0);
+  self->priv->bytes_recv = G_GUINT64_CONSTANT (0);
   self->priv->bytes_sent = G_GUINT64_CONSTANT (0);
   self->priv->ctrl_bytes_sent = 0;
 
@@ -790,6 +823,7 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
   GstBuffer *buffer;
   GstMapInfo info;
   guint16 ppid = 0;
+  gsize size = 0;
   GstMeta *meta;
 
   sample = gst_app_sink_pull_sample (GST_APP_SINK (self->priv->appsink));
@@ -834,8 +868,13 @@ new_data_callback (GstAppSink * appsink, KmsWebRtcDataChannelBin * self)
       break;
     case KMS_DATA_CHANNEL_PPID_STRING:
     case KMS_DATA_CHANNEL_PPID_BINARY:
+      size = info.size;
     case KMS_DATA_CHANNEL_PPID_STRING_EMPTY:
     case KMS_DATA_CHANNEL_PPID_BINARY_EMPTY:
+      KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+      self->priv->bytes_recv += size;
+      self->priv->messages_recv++;
+      KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
       notify = TRUE;
       break;
     default:
@@ -873,6 +912,11 @@ kms_webrtc_data_channel_bin_init (KmsWebRtcDataChannelBin * self)
   gchar *name;
 
   self->priv = KMS_WEBRTC_DATA_CHANNEL_BIN_GET_PRIVATE (self);
+
+  self->priv->bytes_recv = G_GUINT64_CONSTANT (0);
+  self->priv->bytes_sent = G_GUINT64_CONSTANT (0);
+  self->priv->messages_recv = G_GUINT64_CONSTANT (0);
+  self->priv->messages_sent = G_GUINT64_CONSTANT (0);
 
   g_rec_mutex_init (&self->priv->mutex);
   self->priv->state = KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED;
@@ -1031,7 +1075,9 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
   gboolean is_empty, ordered;
   KmsDataChannelPPID ppid;
   GstBuffer *send_buffer;
+  guint64 bytes_sent = 0;
   gpointer state = NULL;
+  GstFlowReturn ret;
   guint32 pr_param;
   GstMapInfo info;
   GstBuffer *buff;
@@ -1055,7 +1101,9 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
     }
   }
 
+  bytes_sent = info.size;
   is_empty = info.size == 0;
+
   gst_buffer_unmap (buffer, &info);
 
   if (sctp_receive_meta != NULL &&
@@ -1131,7 +1179,19 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
 
   gst_sctp_buffer_add_send_meta (buff, ppid, ordered, pr, pr_param);
 
-  return gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc), buff);
+  ret = gst_app_src_push_buffer (GST_APP_SRC (self->priv->appsrc), buff);
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_LOCK (self);
+
+  if (bytes_sent > 0 && ret == GST_FLOW_OK) {
+    self->priv->bytes_sent += bytes_sent;
+  }
+
+  self->priv->messages_sent++;
+
+  KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
+
+  return ret;
 }
 
 void
