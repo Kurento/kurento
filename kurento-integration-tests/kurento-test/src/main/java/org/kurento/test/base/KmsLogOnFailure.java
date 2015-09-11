@@ -39,8 +39,8 @@ public class KmsLogOnFailure extends TestWatcher {
 		super.succeeded(description);
 
 		// Delete logs
-		File folder = new File(KurentoServicesTestHelper.getTestDir() + "/"
-				+ KurentoServicesTestHelper.getTestCaseName());
+		File folder = new File(
+				KurentoServicesTestHelper.getTestDir() + "/" + KurentoServicesTestHelper.getTestCaseName());
 
 		final File[] files = folder.listFiles(new FilenameFilter() {
 			@Override
@@ -48,9 +48,11 @@ public class KmsLogOnFailure extends TestWatcher {
 				return name.matches(".*\\.log");
 			}
 		});
-		for (final File file : files) {
-			if (!file.delete()) {
-				System.err.println("Can't remove " + file.getAbsolutePath());
+		if (files != null) {
+			for (final File file : files) {
+				if (!file.delete()) {
+					System.err.println("Can't remove " + file.getAbsolutePath());
+				}
 			}
 		}
 	}
@@ -65,8 +67,7 @@ public class KmsLogOnFailure extends TestWatcher {
 				for (File logFile : logFiles) {
 					if (logFile != null && logFile.exists()) {
 						System.err.println(separator);
-						System.err.println(
-								"Log file path: " + logFile.getAbsolutePath());
+						System.err.println("Log file path: " + logFile.getAbsolutePath());
 						System.err.println("Content:");
 
 						try {
@@ -74,8 +75,7 @@ public class KmsLogOnFailure extends TestWatcher {
 								System.err.println(line);
 							}
 						} catch (IOException e1) {
-							System.err
-									.println("Error reading lines in log file");
+							System.err.println("Error reading lines in log file");
 							e1.printStackTrace();
 						}
 						System.err.println(separator);
