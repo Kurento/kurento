@@ -11,6 +11,14 @@
 #include <SignalHandler.hpp>
 #include <webrtcendpoint/kmsicebaseagent.h>
 
+#include <StatsType.hpp>
+#include <RTCDataChannelState.hpp>
+#include <RTCDataChannelStats.hpp>
+#include <commons/kmsstats.h>
+#include <commons/kmsutils.h>
+
+#include "webrtcendpoint/kmswebrtcdatachannelstate.h"
+
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoWebRtcEndpointImpl"
@@ -515,6 +523,108 @@ WebRtcEndpointImpl::closeDataChannel (int channelId)
 
   /* Destroy the data channel */
   g_signal_emit_by_name (element, "destroy-data-channel", channelId);
+}
+
+static std::shared_ptr<RTCDataChannelState>
+getRTCDataChannelState (KmsWebRtcDataChannelState state)
+{
+  std::shared_ptr<RTCDataChannelState> rtcDataChannelState;
+
+  switch (state) {
+  case KMS_WEB_RTC_DATA_CHANNEL_STATE_CONNECTING:
+    rtcDataChannelState =  std::make_shared <RTCDataChannelState>
+                           (RTCDataChannelState::connecting);
+    break;
+
+  case KMS_WEB_RTC_DATA_CHANNEL_STATE_OPEN:
+    rtcDataChannelState = std::make_shared <RTCDataChannelState>
+                          (RTCDataChannelState::open);
+    break;
+
+  case KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSING:
+    rtcDataChannelState = std::make_shared <RTCDataChannelState>
+                          (RTCDataChannelState::closing);
+    break;
+
+  case KMS_WEB_RTC_DATA_CHANNEL_STATE_CLOSED:
+    rtcDataChannelState = std::make_shared <RTCDataChannelState>
+                          (RTCDataChannelState::closed);
+    break;
+  }
+
+  return rtcDataChannelState;
+}
+
+static std::shared_ptr<RTCDataChannelStats>
+createtRTCDataChannelStats (const GstStructure *stats)
+{
+  KmsWebRtcDataChannelState state;
+  gchar *id, *label, *protocol;
+  guint channelid;
+
+  gst_structure_get (stats, "channel-id", G_TYPE_UINT, &channelid, "label",
+                     G_TYPE_STRING, &label, "protocol", G_TYPE_STRING, &protocol, "id",
+                     G_TYPE_STRING, &id, "state", G_TYPE_UINT, &state, NULL);
+
+  std::shared_ptr<RTCDataChannelStats> rtcDataStats =
+    std::make_shared <RTCDataChannelStats> (id,
+        std::make_shared <StatsType> (StatsType::datachannel), 0.0, label,
+        protocol, channelid, getRTCDataChannelState (state), 0, 0, 0, 0);
+
+  g_free (protocol);
+  g_free (label);
+  g_free (id);
+
+  return rtcDataStats;
+}
+
+static void
+collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
+                            &statsReport, double timestamp, const GstStructure *stats)
+{
+  gint i, n;
+
+  n = gst_structure_n_fields (stats);
+
+  for (i = 0; i < n; i++) {
+    std::shared_ptr<RTCDataChannelStats> rtcDataStats;
+    const GValue *value;
+    const gchar *name;
+
+    name = gst_structure_nth_field_name (stats, i);
+    value = gst_structure_get_value (stats, name);
+
+    if (!GST_VALUE_HOLDS_STRUCTURE (value) ) {
+      gchar *str_val;
+
+      str_val = g_strdup_value_contents (value);
+      GST_WARNING ("Unexpected field type (%s) = %s", name, str_val);
+      g_free (str_val);
+
+      continue;
+    }
+
+    rtcDataStats = createtRTCDataChannelStats (gst_value_get_structure (value) );
+    rtcDataStats->setTimestamp (timestamp);
+    statsReport[rtcDataStats->getId ()] = rtcDataStats;
+  }
+}
+
+void
+WebRtcEndpointImpl::fillStatsReport (std::map
+                                     <std::string, std::shared_ptr<Stats>>
+                                     &report, const GstStructure *stats, double timestamp)
+{
+  const GstStructure *data_stats = NULL;
+
+  BaseRtpEndpointImpl::fillStatsReport (report, stats, timestamp);
+
+  data_stats = kms_utils_get_structure_by_name (stats,
+               KMS_DATA_SESSION_STATISTICS_FIELD);
+
+  if (data_stats != NULL) {
+    return collectRTCDataChannelStats (report, timestamp, data_stats);
+  }
 }
 
 MediaObjectImpl *

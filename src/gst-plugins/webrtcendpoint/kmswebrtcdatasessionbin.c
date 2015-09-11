@@ -17,10 +17,13 @@
 #endif
 
 #include <stdio.h>
+#include <commons/kmsstats.h>
+#include <commons/kmsutils.h>
 
 #include "kmswebrtcdatasessionbin.h"
 #include "kmswebrtcdatachannelbin.h"
 #include "kms-webrtc-data-marshal.h"
+#include "kmswebrtcdatachannelstate.h"
 
 #define PLUGIN_NAME "kmswebrtcdatasessionbin"
 
@@ -101,6 +104,7 @@ enum
   GET_DATA_CHANNEL_ACTION,
   CREATE_DATA_CHANNEL_ACTION,
   DESTROY_DATA_CHANNEL_ACTION,
+  STATS_ACTION,
 
   LAST_SIGNAL
 };
@@ -248,6 +252,61 @@ kms_webrtc_data_session_bin_destroy_data_channel_action (KmsWebRtcDataSessionBin
 }
 
 static void
+collect_data_channel_stats (GstElement * channel, GstStructure * stats)
+{
+  KmsWebRtcDataChannelState state;
+  gchar *label, *protocol, *name;
+  GstStructure *channel_stats;
+  const gchar *id;
+  guint chann_id;
+
+  id = kms_utils_get_uuid (G_OBJECT (channel));
+
+  g_object_get (channel, "id", &chann_id, "label", &label, "protocol",
+      &protocol, "state", &state, NULL);
+
+  channel_stats = gst_structure_new ("data-channel-statistics", "id",
+      G_TYPE_STRING, id, "channel-id", G_TYPE_UINT, chann_id, "label",
+      G_TYPE_STRING, label, "protocol", G_TYPE_STRING, protocol, "state",
+      G_TYPE_UINT, state, NULL);
+
+  name = g_strdup_printf ("data-channel-%u", chann_id);
+
+  gst_structure_set (stats, name, GST_TYPE_STRUCTURE, channel_stats, NULL);
+
+  gst_structure_free (channel_stats);
+
+  g_free (name);
+  g_free (label);
+  g_free (protocol);
+}
+
+static void
+collect_data_channel_stats_cb (gpointer key, gpointer channel, gpointer stats)
+{
+  collect_data_channel_stats (channel, stats);
+}
+
+static GstStructure *
+kms_webrtc_data_session_bin_stats_action (KmsWebRtcDataSessionBin * self)
+{
+  GstStructure *stats;
+
+  stats = gst_structure_new_empty (KMS_DATA_SESSION_STRUCT_NAME);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
+
+  g_slist_foreach (self->priv->pending, (GFunc) collect_data_channel_stats,
+      stats);
+  g_hash_table_foreach (self->priv->data_channels,
+      collect_data_channel_stats_cb, stats);
+
+  KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
+
+  return stats;
+}
+
+static void
 kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
 {
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
@@ -336,11 +395,18 @@ kms_webrtc_data_session_bin_class_init (KmsWebRtcDataSessionBinClass * klass)
       NULL, NULL, __kms_webrtc_data_marshal_OBJECT__UINT,
       KMS_TYPE_WEBRTC_DATA_CHANNEL, 1, G_TYPE_UINT);
 
+  obj_signals[STATS_ACTION] =
+      g_signal_new ("stats", G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebRtcDataSessionBinClass, stats),
+      NULL, NULL, __kms_webrtc_data_marshal_BOXED__VOID, GST_TYPE_STRUCTURE, 0);
+
   klass->create_data_channel =
       kms_webrtc_data_session_bin_create_data_channel_action;
   klass->destroy_data_channel =
       kms_webrtc_data_session_bin_destroy_data_channel_action;
   klass->get_data_channel = kms_webrtc_data_session_bin_get_data_channel_action;
+  klass->stats = kms_webrtc_data_session_bin_stats_action;
 
   g_type_class_add_private (klass, sizeof (KmsWebRtcDataSessionBinPrivate));
 }
@@ -455,6 +521,8 @@ kms_webrtc_data_session_bin_create_data_channel (KmsWebRtcDataSessionBin
 
   channel = GST_ELEMENT (kms_webrtc_data_channel_bin_new (sctp_stream_id,
           ordered, max_packet_life_time, max_retransmits, label, protocol));
+  kms_utils_set_uuid (G_OBJECT (channel));
+
   g_signal_connect (channel, "negotiated",
       G_CALLBACK (data_channel_negotiated_cb), self);
   kms_webrtc_data_channel_bin_set_reset_stream_callback

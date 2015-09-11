@@ -22,6 +22,7 @@
 
 #include "kmswebrtcendpoint.h"
 #include "kmswebrtcsession.h"
+#include <commons/constants.h>
 #include <commons/kmsloop.h>
 #include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
@@ -927,10 +928,35 @@ kms_webrtc_endpoint_destroy_data_channel (KmsWebrtcEndpoint * self,
   KMS_ELEMENT_UNLOCK (self);
 }
 
+static GstStructure *
+kms_webrtc_endpoint_stats (KmsElement * obj, gchar * selector)
+{
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (obj);
+  GstStructure *stats;
+
+  /* chain up */
+  stats =
+      KMS_ELEMENT_CLASS (kms_webrtc_endpoint_parent_class)->stats (obj,
+      selector);
+
+  if (self->priv->data_session != NULL && (selector == NULL ||
+          g_strcmp0 (selector, DATA_STREAM_NAME) == 0)) {
+    GstStructure *data_stats;
+
+    g_signal_emit_by_name (self->priv->data_session, "stats", &data_stats);
+    gst_structure_set (stats, KMS_DATA_SESSION_STATISTICS_FIELD,
+        GST_TYPE_STRUCTURE, data_stats, NULL);
+    gst_structure_free (data_stats);
+  }
+
+  return stats;
+}
+
 static void
 kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
 {
   GObjectClass *gobject_class;
+  KmsElementClass *kmselement_class;
   KmsBaseSdpEndpointClass *base_sdp_endpoint_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
@@ -938,6 +964,9 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   gobject_class->get_property = kms_webrtc_endpoint_get_property;
   gobject_class->dispose = kms_webrtc_endpoint_dispose;
   gobject_class->finalize = kms_webrtc_endpoint_finalize;
+
+  kmselement_class = KMS_ELEMENT_CLASS (klass);
+  kmselement_class->stats = GST_DEBUG_FUNCPTR (kms_webrtc_endpoint_stats);
 
   gst_element_class_set_details_simple (GST_ELEMENT_CLASS (klass),
       "WebrtcEndpoint",

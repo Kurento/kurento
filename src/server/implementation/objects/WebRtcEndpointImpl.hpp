@@ -69,6 +69,8 @@ public:
 
 protected:
   virtual void postConstructor ();
+  virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
+                                &report, const GstStructure *stats, double timestamp);
 
 private:
 
