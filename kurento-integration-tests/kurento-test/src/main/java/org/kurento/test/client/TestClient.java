@@ -82,6 +82,13 @@ public class TestClient {
 	}
 
 	/*
+	 * setThresholdTime
+	 */
+	public void setThresholdTime(int thresholdTime) {
+		browserClient.setThresholdTime(thresholdTime);
+	}
+
+	/*
 	 * setColorCoordinates
 	 */
 	public void setColorCoordinates(int x, int y) {

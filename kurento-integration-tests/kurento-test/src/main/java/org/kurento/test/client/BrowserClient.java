@@ -777,6 +777,10 @@ public class BrowserClient implements Closeable {
 		return thresholdTime;
 	}
 
+	public void setThresholdTime(int thresholdTime) {
+		this.thresholdTime = thresholdTime;
+	}
+
 	public boolean isLocal() {
 		return BrowserScope.LOCAL.equals(this.scope);
 	}

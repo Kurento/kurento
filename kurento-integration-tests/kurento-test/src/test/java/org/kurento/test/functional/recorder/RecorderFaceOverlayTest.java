@@ -66,6 +66,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderFaceOverlayTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 30; // seconds
+	private static final int THRESHOLD = 20; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
@@ -158,6 +159,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 			AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX), EXPECTED_VIDEO_CODEC,
 					EXPECTED_AUDIO_CODEC);
 		} else {
+			getBrowser().setThresholdTime(THRESHOLD);
 			double currentTime = getBrowser().getCurrentTime();
 			Assert.assertTrue("Error in play time in the recorded video (expected: " + PLAYTIME + " sec, real: "
 					+ currentTime + " sec) " + inRecording, getBrowser().compare(PLAYTIME, currentTime));
