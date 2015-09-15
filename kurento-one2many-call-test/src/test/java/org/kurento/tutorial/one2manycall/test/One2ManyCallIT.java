@@ -13,8 +13,6 @@
  */
 package org.kurento.tutorial.one2manycall.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,16 +22,18 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kurento.test.client.BrowserClient;
 import org.kurento.tutorial.one2manycall.One2ManyCallApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * One to many call integration test.
@@ -64,8 +64,7 @@ public class One2ManyCallIT {
 	public void setup() {
 		master = newWebDriver();
 
-		final int numViewers = Integer.parseInt(System.getProperty(
-				"test.num.viewers", DEFAULT_NUM_VIEWERS));
+		final int numViewers = Integer.parseInt(System.getProperty("test.num.viewers", DEFAULT_NUM_VIEWERS));
 		viewers = new ArrayList<>(numViewers);
 		for (int i = 0; i < numViewers; i++) {
 			viewers.add(newWebDriver());
@@ -80,7 +79,7 @@ public class One2ManyCallIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		return new ChromeDriver(options);
+		return BrowserClient.newChromeDriver(options);
 	}
 
 	@Test
@@ -114,8 +113,7 @@ public class One2ManyCallIT {
 		master.findElement(By.id("terminate")).click();
 	}
 
-	private static void waitForStream(WebDriver driver, String videoTagId)
-			throws InterruptedException {
+	private static void waitForStream(WebDriver driver, String videoTagId) throws InterruptedException {
 		WebElement video = driver.findElement(By.id(videoTagId));
 		int i = 0;
 		for (; i < TEST_TIMEOUT; i++) {
@@ -127,9 +125,7 @@ public class One2ManyCallIT {
 
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId
-					+ "' is not playing media after " + TEST_TIMEOUT
-					+ " seconds");
+			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
 		}
 	}
 

@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kurento.demo.CrowdDetectorApp;
+import org.kurento.test.client.BrowserClient;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -72,7 +73,7 @@ public class CrowdDetectorIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		driver = new ChromeDriver(options);
+		driver = BrowserClient.newChromeDriver(options);
 	}
 
 	@Test

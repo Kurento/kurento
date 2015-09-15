@@ -14,24 +14,24 @@
  */
 package org.kurento.tutorial.helloworld.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kurento.test.client.BrowserClient;
 import org.kurento.tutorial.helloworld.HelloWorldApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Hello World integration test.
@@ -64,7 +64,7 @@ public class HelloWorldIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		driver = new ChromeDriver(options);
+		driver = BrowserClient.newChromeDriver(options);
 	}
 
 	@Test
@@ -99,9 +99,7 @@ public class HelloWorldIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId
-					+ "' is not playing media after " + TEST_TIMEOUT
-					+ " seconds");
+			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
 		}
 	}
 

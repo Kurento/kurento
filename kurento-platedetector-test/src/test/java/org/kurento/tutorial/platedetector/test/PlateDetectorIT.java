@@ -14,24 +14,24 @@
  */
 package org.kurento.tutorial.platedetector.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kurento.test.client.BrowserClient;
 import org.kurento.tutorial.platedetector.PlateDetectorApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Plate Detector integration test.
@@ -65,7 +65,7 @@ public class PlateDetectorIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		driver = new ChromeDriver(options);
+		driver = BrowserClient.newChromeDriver(options);
 	}
 
 	@Test

@@ -14,25 +14,25 @@
  */
 package org.kurento.tutorial.one2onecalladv.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kurento.test.client.BrowserClient;
 import org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Advanced one to one call integration test.
@@ -74,7 +74,7 @@ public class One2OneCallAdvIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		return new ChromeDriver(options);
+		return BrowserClient.newChromeDriver(options);
 	}
 
 	@Test
@@ -128,8 +128,7 @@ public class One2OneCallAdvIT {
 		Thread.sleep(PLAY_TIME * 1000);
 	}
 
-	private void waitForStream(WebDriver driver, String videoTagId)
-			throws InterruptedException {
+	private void waitForStream(WebDriver driver, String videoTagId) throws InterruptedException {
 		WebElement video = driver.findElement(By.id(videoTagId));
 		int i = 0;
 		for (; i < TEST_TIMEOUT; i++) {
@@ -140,14 +139,11 @@ public class One2OneCallAdvIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId
-					+ "' is not playing media after " + TEST_TIMEOUT
-					+ " seconds");
+			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
 		}
 	}
 
-	private void waitForIncomingCallDialog(WebDriver driver)
-			throws InterruptedException {
+	private void waitForIncomingCallDialog(WebDriver driver) throws InterruptedException {
 		int i = 0;
 		for (; i < TEST_TIMEOUT; i++) {
 			try {
@@ -158,8 +154,7 @@ public class One2OneCallAdvIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			throw new RuntimeException("Timeout (" + TEST_TIMEOUT
-					+ " seconds) waiting for incoming call");
+			throw new RuntimeException("Timeout (" + TEST_TIMEOUT + " seconds) waiting for incoming call");
 		}
 	}
 
