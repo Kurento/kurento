@@ -14,10 +14,6 @@
  */
 package org.kurento.test.sanity;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
@@ -31,14 +27,18 @@ import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SanityTests;
 import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.client.BrowserClient;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Base for kurento-js sanity tests.
@@ -49,15 +49,13 @@ import org.springframework.core.io.ClassPathResource;
 @Category(SanityTests.class)
 public class KurentoJsBase extends BrowserKurentoClientTest {
 
-	protected static final Logger log = LoggerFactory
-			.getLogger(KurentoJsBase.class);
+	protected static final Logger log = LoggerFactory.getLogger(KurentoJsBase.class);
 
 	protected WebDriver driver;
 	protected String serverAddress;
 	protected int serverPort;
 	protected String kurentoUrl;
-	protected String[] kurentoLibs = { "kurento-client", "kurento-client.min",
-			"kurento-utils", "kurento-utils.min" };
+	protected String[] kurentoLibs = { "kurento-client", "kurento-client.min", "kurento-utils", "kurento-utils.min" };
 
 	protected static final String DEFAULT_KURENTO_JS_URL = "http://builds.kurento.org/release/stable/";
 
@@ -72,7 +70,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	@Before
 	public void setup() {
-		driver = new ChromeDriver();
+		driver = BrowserClient.newChromeDriver();
 
 		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();
@@ -83,11 +81,9 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	private void createHtmlPages() {
 		try {
-			final String outputFolder = new ClassPathResource("static")
-			.getFile().getAbsolutePath() + File.separator;
+			final String outputFolder = new ClassPathResource("static").getFile().getAbsolutePath() + File.separator;
 
-			Configuration cfg = new Configuration(
-					Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+			Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 			cfg.setClassForTemplateLoading(KurentoJsBase.class, "/templates/");
 			Template template = cfg.getTemplate("kurento-client.html.ftl");
 
@@ -95,8 +91,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 			data.put("kurentoUrl", kurentoUrl);
 
 			for (String lib : kurentoLibs) {
-				Writer writer = new FileWriter(new File(outputFolder + lib
-						+ ".html"));
+				Writer writer = new FileWriter(new File(outputFolder + lib + ".html"));
 				data.put("kurentoLib", lib);
 
 				if (lib.contains("utils")) {
@@ -117,17 +112,14 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	public void doTest() {
 		for (String lib : kurentoLibs) {
-			final String urlTest = "http://" + serverAddress + ":" + serverPort
-					+ "/" + lib + ".html";
+			final String urlTest = "http://" + serverAddress + ":" + serverPort + "/" + lib + ".html";
 			driver.get(urlTest);
 
 			log.debug("Launching kurento-js sanity test against {}", urlTest);
 
-			String status = driver.findElement(By.id("status")).getAttribute(
-					"value");
+			String status = driver.findElement(By.id("status")).getAttribute("value");
 
-			Assert.assertTrue("Sanity test for " + lib + " failed (" + status
-					+ ")", status.equals("Ok"));
+			Assert.assertTrue("Sanity test for " + lib + " failed (" + status + ")", status.equals("Ok"));
 		}
 	}
 

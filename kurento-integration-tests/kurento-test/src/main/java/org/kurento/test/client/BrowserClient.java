@@ -41,6 +41,8 @@ import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
 
 import java.io.Closeable;
 import java.io.File;
@@ -52,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.grid.GridHandler;
@@ -87,7 +90,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
  */
 public class BrowserClient implements Closeable {
 
-	public Logger log = LoggerFactory.getLogger(BrowserClient.class);
+	public static Logger log = LoggerFactory.getLogger(BrowserClient.class);
 
 	private WebDriver driver;
 	private String jobId;
@@ -268,7 +271,7 @@ public class BrowserClient implements Closeable {
 				} else if (scope == BrowserScope.REMOTE) {
 					createRemoteDriver(capabilities);
 				} else {
-					driver = new ChromeDriver(options);
+					driver = newChromeDriver(options);
 				}
 			} else if (driverClass.equals(InternetExplorerDriver.class)) {
 
@@ -306,6 +309,31 @@ public class BrowserClient implements Closeable {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
 
+	}
+
+	public static ChromeDriver newChromeDriver() {
+		return newChromeDriver(new ChromeOptions());
+	}
+
+	public static ChromeDriver newChromeDriver(ChromeOptions options) {
+		ChromeDriver driver = null;
+		int numDriverTries = 0;
+		final int maxDriverError = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+		final String errMessage = "Exception creating webdriver for chrome";
+		do {
+			try {
+				driver = new ChromeDriver(options);
+			} catch (Throwable t) {
+				driver = null;
+				log.warn(errMessage + " #" + numDriverTries, t);
+			} finally {
+				numDriverTries++;
+				if (numDriverTries > maxDriverError) {
+					throw new KurentoException(errMessage + " (" + maxDriverError + " times)");
+				}
+			}
+		} while (driver == null);
+		return driver;
 	}
 
 	public void reload() {

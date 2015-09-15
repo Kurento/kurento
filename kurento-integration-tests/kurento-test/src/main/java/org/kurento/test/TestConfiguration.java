@@ -78,6 +78,9 @@ public class TestConfiguration {
 	public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT = "Entire screen";
 	public static final String TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN = "Screen 1";
 
+	public static final String SELENIUM_MAX_DRIVER_ERROR_PROPERTY = "selenium.max.driver.error";
+	public static final int SELENIUM_MAX_DRIVER_ERROR_DEFAULT = 3;
+
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
 	public static final int CLIENT_RATE_DEFAULT = 5000; // milliseconds
