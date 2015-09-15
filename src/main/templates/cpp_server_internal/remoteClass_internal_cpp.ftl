@@ -116,13 +116,20 @@ ${remoteClass.name}Impl::connect (const std::string &eventType, std::shared_ptr<
 <#list remoteClass.events as event>
 
   if ("${event.name}" == eventType) {
-    sigc::connection conn = signal${event.name}.connect ([ &, handler] (${event.name} event) {
+    std::weak_ptr<EventHandler> wh = handler;
+
+    sigc::connection conn = signal${event.name}.connect ([ &, wh] (${event.name} event) {
       JsonSerializer s (true);
 
       s.Serialize ("data", event);
       s.Serialize ("object", this);
       s.JsonValue["type"] = "${event.name}";
-      handler->sendEvent (s.JsonValue);
+
+      std::shared_ptr<EventHandler> lh = wh.lock();
+
+      if (lh) {
+        lh->sendEvent (s.JsonValue);
+      }
     });
     handler->setConnection (conn);
     return true;
