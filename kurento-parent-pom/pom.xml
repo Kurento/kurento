@@ -285,31 +285,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-room-sdk</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-room-server</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-room-client-js</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-room-test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-room-demo</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
 				<artifactId>kurento-utils-js</artifactId>
 				<version>${version.kurento-utils-js}</version>
 			</dependency>
