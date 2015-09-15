@@ -152,7 +152,11 @@ public class One2OneCallIT {
 
 	@After
 	public void end() {
-		caller.close();
-		callee.close();
+		if (caller != null) {
+			caller.close();
+		}
+		if (callee != null) {
+			callee.close();
+		}
 	}
 }
