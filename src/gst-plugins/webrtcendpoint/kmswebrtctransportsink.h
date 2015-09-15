@@ -40,7 +40,7 @@ struct _KmsWebrtcTransportSink
   GstBin parent;
 
   GstElement *dtlssrtpenc;
-  GstElement *nicesink;
+  GstElement *sink;
 };
 
 struct _KmsWebrtcTransportSinkClass
@@ -51,6 +51,7 @@ struct _KmsWebrtcTransportSinkClass
 GType kms_webrtc_transport_sink_get_type (void);
 
 KmsWebrtcTransportSink * kms_webrtc_transport_sink_new ();
+void kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink *self);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_TRANSPORT_SINK_H__ */

@@ -33,13 +33,16 @@ G_DEFINE_TYPE (KmsWebrtcTransportSink, kms_webrtc_transport_sink, GST_TYPE_BIN);
 static void
 kms_webrtc_transport_sink_init (KmsWebrtcTransportSink * self)
 {
+  self->dtlssrtpenc = gst_element_factory_make ("dtlssrtpenc", NULL);
+}
+
+void
+kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink * self)
+{
   GstElement *funnel, *srtpenc;
 
-  self->dtlssrtpenc = gst_element_factory_make ("dtlssrtpenc", NULL);
-  self->nicesink = gst_element_factory_make ("nicesink", NULL);
-
-  gst_bin_add_many (GST_BIN (self), self->dtlssrtpenc, self->nicesink, NULL);
-  gst_element_link (self->dtlssrtpenc, self->nicesink);
+  gst_bin_add_many (GST_BIN (self), self->dtlssrtpenc, self->sink, NULL);
+  gst_element_link (self->dtlssrtpenc, self->sink);
 
   funnel = gst_bin_get_by_name (GST_BIN (self->dtlssrtpenc), FUNNEL_NAME);
   if (funnel != NULL) {

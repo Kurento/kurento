@@ -18,8 +18,8 @@
 
 #include <gst/gst.h>
 #include <nice/nice.h>
-#include "kmswebrtctransportsrc.h"
-#include "kmswebrtctransportsink.h"
+#include "kmswebrtctransportsrcnice.h"
+#include "kmswebrtctransportsinknice.h"
 
 typedef struct _KmsWebRtcTransport
 {

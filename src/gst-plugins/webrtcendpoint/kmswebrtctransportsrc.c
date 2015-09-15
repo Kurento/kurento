@@ -32,13 +32,16 @@ G_DEFINE_TYPE (KmsWebrtcTransportSrc, kms_webrtc_transport_src, GST_TYPE_BIN);
 static void
 kms_webrtc_transport_src_init (KmsWebrtcTransportSrc * self)
 {
+  self->dtlssrtpdec = gst_element_factory_make ("dtlssrtpdec", NULL);
+}
+
+void
+kms_webrtc_transport_src_connect_elements (KmsWebrtcTransportSrc * self)
+{
   GstElement *srtpdec;
 
-  self->nicesrc = gst_element_factory_make ("nicesrc", NULL);
-  self->dtlssrtpdec = gst_element_factory_make ("dtlssrtpdec", NULL);
-
-  gst_bin_add_many (GST_BIN (self), self->nicesrc, self->dtlssrtpdec, NULL);
-  gst_element_link (self->nicesrc, self->dtlssrtpdec);
+  gst_bin_add_many (GST_BIN (self), self->src, self->dtlssrtpdec, NULL);
+  gst_element_link (self->src, self->dtlssrtpdec);
 
   srtpdec = gst_bin_get_by_name (GST_BIN (self->dtlssrtpdec), SRTPDEC_NAME);
   if (srtpdec != NULL) {

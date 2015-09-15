@@ -51,8 +51,8 @@ kms_webrtc_transport_destroy (KmsWebRtcTransport * tr)
     return;
   }
 
-  element_remove_probe (tr->src->nicesrc, "src", tr->src_probe);
-  element_remove_probe (tr->sink->nicesink, "sink", tr->sink_probe);
+  element_remove_probe (tr->src->src, "src", tr->src_probe);
+  element_remove_probe (tr->sink->sink, "sink", tr->sink_probe);
 
   g_clear_object (&tr->src);
   g_clear_object (&tr->sink);
@@ -68,8 +68,9 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
   gchar *str;
 
   tr = g_slice_new0 (KmsWebRtcTransport);
-  tr->src = kms_webrtc_transport_src_new ();
-  tr->sink = kms_webrtc_transport_sink_new ();
+
+  tr->src = KMS_WEBRTC_TRANSPORT_SRC (kms_webrtc_transport_src_nice_new ());
+  tr->sink = KMS_WEBRTC_TRANSPORT_SINK (kms_webrtc_transport_sink_nice_new ());
 
   str =
       g_strdup_printf ("%s-%s-%" G_GUINT32_FORMAT "-%" G_GUINT32_FORMAT,
@@ -79,10 +80,10 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
   g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "connection-id", str, NULL);
   g_free (str);
 
-  g_object_set (G_OBJECT (tr->sink->nicesink), "agent", agent, "stream",
+  g_object_set (G_OBJECT (tr->sink->sink), "agent", agent, "stream",
       stream_id, "component", component_id, "sync", FALSE, "async", FALSE,
       NULL);
-  g_object_set (G_OBJECT (tr->src->nicesrc), "agent", agent, "stream",
+  g_object_set (G_OBJECT (tr->src->src), "agent", agent, "stream",
       stream_id, "component", component_id, NULL);
 
   return tr;
@@ -94,14 +95,14 @@ kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
 {
   GstPad *pad;
 
-  element_remove_probe (tr->src->nicesrc, "src", tr->src_probe);
-  pad = gst_element_get_static_pad (tr->src->nicesrc, "src");
+  element_remove_probe (tr->src->src, "src", tr->src_probe);
+  pad = gst_element_get_static_pad (tr->src->src, "src");
   tr->src_probe = kms_stats_add_buffer_latency_meta_probe (pad, FALSE,
       0 /* No matter type at this point */ );
   g_object_unref (pad);
 
-  element_remove_probe (tr->sink->nicesink, "sink", tr->sink_probe);
-  pad = gst_element_get_static_pad (tr->sink->nicesink, "sink");
+  element_remove_probe (tr->sink->sink, "sink", tr->sink_probe);
+  pad = gst_element_get_static_pad (tr->sink->sink, "sink");
   tr->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad, cb,
       user_data, destroy_data);
   g_object_unref (pad);
@@ -110,10 +111,10 @@ kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
 void
 kms_webrtc_transport_disable_latency_notification (KmsWebRtcTransport * tr)
 {
-  element_remove_probe (tr->src->nicesrc, "src", tr->src_probe);
+  element_remove_probe (tr->src->src, "src", tr->src_probe);
   tr->src_probe = 0UL;
 
-  element_remove_probe (tr->sink->nicesink, "sink", tr->sink_probe);
+  element_remove_probe (tr->sink->sink, "sink", tr->sink_probe);
   tr->sink_probe = 0UL;
 }
 

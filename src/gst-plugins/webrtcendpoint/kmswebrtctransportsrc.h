@@ -39,7 +39,7 @@ struct _KmsWebrtcTransportSrc
 {
   GstBin parent;
 
-  GstElement *nicesrc;
+  GstElement *src;
   GstElement *dtlssrtpdec;
   gulong src_probe;
 };
@@ -52,6 +52,7 @@ struct _KmsWebrtcTransportSrcClass
 GType kms_webrtc_transport_src_get_type (void);
 
 KmsWebrtcTransportSrc * kms_webrtc_transport_src_new ();
+void kms_webrtc_transport_src_connect_elements (KmsWebrtcTransportSrc *self);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_TRANSPORT_SRC_H__ */
