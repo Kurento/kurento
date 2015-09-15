@@ -23,6 +23,8 @@ import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
+import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
@@ -41,8 +43,6 @@ import static org.kurento.test.TestConfiguration.TEST_PUBLIC_PORT_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
 
 import java.io.Closeable;
 import java.io.File;
@@ -758,7 +758,12 @@ public class BrowserClient implements Closeable {
 		wait.until(new ExpectedCondition<Boolean>() {
 			@Override
 			public Boolean apply(WebDriver d) {
-				out[0] = executeScript(command);
+				try {
+					out[0] = executeScript(command);
+				} catch (WebDriverException we) {
+					log.warn("Exception executing script", we);
+					out[0] = null;
+				}
 				return out[0] != null;
 			}
 		});
