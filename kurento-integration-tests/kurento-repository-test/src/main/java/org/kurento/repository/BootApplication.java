@@ -34,8 +34,8 @@ import com.google.common.io.Files;
 @EnableAutoConfiguration
 public class BootApplication {
 
-	private static final String TEST_MONGO_URL_DEFAULT = "test.mongodb.url";
-	private static final String TEST_MONGO_URL = "mongodb://localhost";
+	private static final String TEST_MONGO_URL_DEFAULT = "mongodb://localhost";
+	private static final String TEST_MONGO_URL = "test.mongodb.url";
 
 	public static void main(String[] args) {
 		start();
