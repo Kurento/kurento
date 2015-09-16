@@ -41,6 +41,7 @@ start the HTTP server:
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-pointerdetector
+    git checkout |TUTORIAL_JS_VERSION|
     bower install
     http-server
 

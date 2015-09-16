@@ -33,6 +33,7 @@ is hosted and then install and run it, as follows:
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-crowddetector
+    git checkout |TUTORIAL_NODE_VERSION|
     npm install
 
 If you have problems installing any of the dependencies, please remove them and

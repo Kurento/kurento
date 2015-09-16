@@ -33,6 +33,7 @@ is hosted and then install and run it, as follows:
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-hello-world
+    git checkout |TUTORIAL_NODE_VERSION|
     npm install
     npm start
 

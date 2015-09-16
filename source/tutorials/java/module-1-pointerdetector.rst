@@ -25,6 +25,7 @@ is hosted and then run the main class, as follows:
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-pointerdetector
+    git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
 The web application starts on port 8080 in the localhost by default. Therefore,

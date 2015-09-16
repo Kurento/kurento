@@ -10,6 +10,9 @@ KMS_VERSION = 6.1.0
 CLIENT_JAVA_VERSION = 6.1.0
 CLIENT_JS_VERSION = 6.1.0
 UTILS_JS_VERSION = 6.1.0
+TUTORIAL_JAVA_VERSION = 6.1.0
+TUTORIAL_JS_VERSION = 6.1.0
+TUTORIAL_NODE_VERSION = 6.1.0
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -64,6 +67,9 @@ html:
 	find build/html -name "*.html" -exec sed -i -e "s@|CLIENT_JAVA_VERSION|@$(CLIENT_JAVA_VERSION)@" {} \;
 	find build/html -name "*.html" -exec sed -i -e "s@|CLIENT_JS_VERSION|@$(CLIENT_JS_VERSION)@" {} \;
 	find build/html -name "*.html" -exec sed -i -e "s@|UTILS_JS_VERSION|@$(UTILS_JS_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|TUTORIAL_JAVA_VERSION|@$(TUTORIAL_JAVA_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|TUTORIAL_JS_VERSION|@$(TUTORIAL_JS_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|TUTORIAL_NODE_VERSION|@$(TUTORIAL_NODE_VERSION)@" {} \;
 	./fixlinks.sh
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
