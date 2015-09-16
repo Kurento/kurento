@@ -101,6 +101,8 @@
 		<version.google.oauth>1.13.1-beta</version.google.oauth>
 		<version.keystone-client>3.2.1</version.keystone-client>
 
+
+		<version.javax.inject>1</version.javax.inject>
 		<version.junit>4.12</version.junit>
 		<version.mockito>1.10.19</version.mockito>
 		<version.powermock>1.6.2</version.powermock>
@@ -366,7 +368,11 @@
 			</dependency>
 
 			<!-- Other dependencies -->
-
+			<dependency>
+				<groupId>javax.inject</groupId>
+				<artifactId>javax.inject</artifactId>
+				<version>${version.javax.inject}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.woorea</groupId>
 				<artifactId>keystone-client</artifactId>
