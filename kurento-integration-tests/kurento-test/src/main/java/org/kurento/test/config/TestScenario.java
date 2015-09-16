@@ -187,6 +187,16 @@ public class TestScenario {
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
 
+	public static Collection<Object[]> localChromes(int size) {
+		// Test: Chrome(s) in local
+		TestScenario test = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test.addBrowser(BrowserConfig.BROWSER + i, new BrowserClient.Builder().client(Client.WEBRTC)
+					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+		}
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
