@@ -79,7 +79,7 @@ public class One2ManyCallIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		return BrowserClient.newChromeDriver(options);
+		return BrowserClient.newWebDriver(options);
 	}
 
 	@Test

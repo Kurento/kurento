@@ -65,7 +65,7 @@ public class PlateDetectorIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		driver = BrowserClient.newChromeDriver(options);
+		driver = BrowserClient.newWebDriver(options);
 	}
 
 	@Test
