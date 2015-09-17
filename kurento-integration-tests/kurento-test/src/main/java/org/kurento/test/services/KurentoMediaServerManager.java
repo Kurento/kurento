@@ -168,6 +168,10 @@ public class KurentoMediaServerManager {
 		this.testMethodName = testMethodName;
 	}
 
+	public void start() throws IOException {
+		start(false);
+	}
+	
 	public void start(boolean isFake) throws IOException {
 		// Properties
 		String kmsLoginProp = isFake ? FAKE_KMS_LOGIN_PROP
@@ -186,7 +190,14 @@ public class KurentoMediaServerManager {
 		String kmsLogin = getProperty(kmsLoginProp);
 		String kmsPasswd = getProperty(kmsPasswdProp);
 		String kmsPem = getProperty(kmsPemProp);
-		String wsUri = getProperty(kmsWsUri, KMS_WS_URI_DEFAULT);
+		
+		String wsUri;
+		if(this.wsUri != null){
+			wsUri = this.wsUri;
+		} else {
+			wsUri = getProperty(kmsWsUri, this.wsUri);
+		}
+		 
 
 		isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1");
