@@ -14,6 +14,7 @@
  */
 package org.kurento.jsonrpc.internal.server;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,11 +30,11 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.util.Assert;
 import org.springframework.web.socket.handler.PerConnectionWebSocketHandler;
 
-public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
-BeanFactoryAware {
+import com.google.common.collect.ImmutableList;
 
-	private static final Log logger = LogFactory
-			.getLog(PerConnectionWebSocketHandler.class);
+public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFactoryAware {
+
+	private static final Log logger = LogFactory.getLog(PerConnectionWebSocketHandler.class);
 
 	private final BeanCreatingHelper<JsonRpcHandler<T>> provider;
 
@@ -43,34 +44,32 @@ BeanFactoryAware {
 
 	private String label;
 
-	private boolean pingWachdog = false;
+	private List<String> allowedOrigins = ImmutableList.of();
+
+	private boolean pingWachdog;
 
 	public PerSessionJsonRpcHandler(String handlerName) {
 		this(handlerName, null);
 	}
 
-	public PerSessionJsonRpcHandler(
-			Class<? extends JsonRpcHandler<T>> handlerType) {
+	public PerSessionJsonRpcHandler(Class<? extends JsonRpcHandler<T>> handlerType) {
 		this(null, handlerType);
 	}
 
-	public PerSessionJsonRpcHandler(String handlerName,
-			Class<? extends JsonRpcHandler<T>> handlerType) {
+	public PerSessionJsonRpcHandler(String handlerName, Class<? extends JsonRpcHandler<T>> handlerType) {
 		this.provider = new BeanCreatingHelper<>(handlerType, handlerName);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<? extends JsonRpcHandler<T>> getHandlerType() {
-		Class<? extends JsonRpcHandler<T>> clazz = (Class<? extends JsonRpcHandler<T>>) provider
-				.getCreatedBeanType();
+		Class<? extends JsonRpcHandler<T>> clazz = (Class<? extends JsonRpcHandler<T>>) provider.getCreatedBeanType();
 
 		// FIXME this has to be done in order to obtain the type of T when the
 		// bean is created from a name
 		if (clazz == null) {
 			this.provider.createBean();
-			clazz = (Class<? extends JsonRpcHandler<T>>) provider
-					.getCreatedBeanType();
+			clazz = (Class<? extends JsonRpcHandler<T>>) provider.getCreatedBeanType();
 		}
 
 		return clazz;
@@ -82,15 +81,12 @@ BeanFactoryAware {
 	}
 
 	@Override
-	public void handleRequest(Transaction transaction, Request<T> request)
-			throws Exception {
+	public void handleRequest(Transaction transaction, Request<T> request) throws Exception {
 
 		JsonRpcHandler<T> handler = getHandler(transaction.getSession());
 
-		Assert.isTrue(handler != null,
-				"Handler of class " + provider.getClass()
-				+ " can't be created. Be sure that there"
-				+ " is a bean registered of this type");
+		Assert.isTrue(handler != null, "Handler of class " + provider.getClass()
+				+ " can't be created. Be sure that there" + " is a bean registered of this type");
 
 		try {
 			handler.handleRequest(transaction, request);
@@ -101,8 +97,7 @@ BeanFactoryAware {
 
 	private JsonRpcHandler<T> getHandler(Session session) {
 		JsonRpcHandler<T> handler = this.handlers.get(session);
-		Assert.isTrue(handler != null, "JsonRpcHandler not found for "
-				+ session);
+		Assert.isTrue(handler != null, "JsonRpcHandler not found for " + session);
 		return handler;
 	}
 
@@ -119,8 +114,7 @@ BeanFactoryAware {
 	}
 
 	@Override
-	public void afterConnectionClosed(Session session, String status)
-			throws Exception {
+	public void afterConnectionClosed(Session session, String status) throws Exception {
 		try {
 			JsonRpcHandler<T> handler = getHandler(session);
 			try {
@@ -145,8 +139,7 @@ BeanFactoryAware {
 	}
 
 	@Override
-	public void handleTransportError(Session session, Throwable exception)
-			throws Exception {
+	public void handleTransportError(Session session, Throwable exception) throws Exception {
 		JsonRpcHandler<T> handler = getHandler(session);
 		try {
 			handler.handleTransportError(session, exception);
@@ -157,9 +150,7 @@ BeanFactoryAware {
 
 	@Override
 	public void handleUncaughtException(Session session, Exception exception) {
-		logger.error(
-				"Uncaught exception while execution PerSessionJsonRpcHandler",
-				exception);
+		logger.error("Uncaught exception while execution PerSessionJsonRpcHandler", exception);
 	}
 
 	@Override
@@ -192,6 +183,17 @@ BeanFactoryAware {
 	@Override
 	public boolean isPingWatchdog() {
 		return pingWachdog;
+	}
+
+	@Override
+	public final PerSessionJsonRpcHandler<T> withAllowedOrigins(String... origins) {
+		this.allowedOrigins = ImmutableList.copyOf(origins);
+		return this;
+	}
+
+	@Override
+	public List<String> allowedOrigins() {
+		return this.allowedOrigins;
 	}
 
 }

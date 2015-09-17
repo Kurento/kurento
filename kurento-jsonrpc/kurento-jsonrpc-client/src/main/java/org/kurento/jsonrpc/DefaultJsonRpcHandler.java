@@ -14,37 +14,40 @@
  */
 package org.kurento.jsonrpc;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
+
 public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 
-	private final Logger log = LoggerFactory
-			.getLogger(DefaultJsonRpcHandler.class);
+	private final Logger log = LoggerFactory.getLogger(DefaultJsonRpcHandler.class);
 
 	private boolean useSockJs;
 	private String label;
 	private boolean pingWatchdog = false;
+
+	private List<String> allowedOrigins = ImmutableList.of();
 
 	@Override
 	public void afterConnectionEstablished(Session session) throws Exception {
 	}
 
 	@Override
-	public void afterConnectionClosed(Session session, String status)
-			throws Exception {
+	public void afterConnectionClosed(Session session, String status) throws Exception {
 	}
 
 	@Override
-	public void handleTransportError(Session session, Throwable exception)
-			throws Exception {
-		log.warn("Transport error. Exception "+exception.getClass().getName()+":"+exception.getLocalizedMessage());
+	public void handleTransportError(Session session, Throwable exception) throws Exception {
+		log.warn(
+				"Transport error. Exception " + exception.getClass().getName() + ":" + exception.getLocalizedMessage());
 	}
 
 	@Override
 	public void handleUncaughtException(Session session, Exception exception) {
-		log.warn("Uncaught exception in handler {}", this.getClass().getName(),
-				exception);
+		log.warn("Uncaught exception in handler {}", this.getClass().getName(), exception);
 	}
 
 	@Override
@@ -64,7 +67,18 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	}
 
 	@Override
-	public DefaultJsonRpcHandler<P> withLabel(String label){
+	public final DefaultJsonRpcHandler<P> withAllowedOrigins(String... origins) {
+		this.allowedOrigins = ImmutableList.copyOf(origins);
+		return this;
+	}
+
+	@Override
+	public List<String> allowedOrigins() {
+		return this.allowedOrigins;
+	}
+
+	@Override
+	public DefaultJsonRpcHandler<P> withLabel(String label) {
 		this.label = label;
 		return this;
 	}
@@ -73,13 +87,14 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 	public String getLabel() {
 		return label;
 	}
-	
+
 	public DefaultJsonRpcHandler<P> withPingWatchdog(boolean pingAsWachdog) {
 		this.pingWatchdog = pingAsWachdog;
 		return this;
 	}
-	
-	public boolean isPingWatchdog(){
+
+	@Override
+	public boolean isPingWatchdog() {
 		return pingWatchdog;
 	}
 }

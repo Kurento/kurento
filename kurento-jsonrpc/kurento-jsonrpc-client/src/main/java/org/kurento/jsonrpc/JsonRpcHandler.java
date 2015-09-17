@@ -14,6 +14,8 @@
  */
 package org.kurento.jsonrpc;
 
+import java.util.List;
+
 import org.kurento.jsonrpc.message.Request;
 
 public interface JsonRpcHandler<P> {
@@ -32,15 +34,13 @@ public interface JsonRpcHandler<P> {
 	 * @throws Exception
 	 *             this method can handle or propagate exceptions.
 	 */
-	void handleRequest(Transaction transaction, Request<P> request)
-			throws Exception;
+	void handleRequest(Transaction transaction, Request<P> request) throws Exception;
 
 	void afterConnectionEstablished(Session session) throws Exception;
 
 	void afterConnectionClosed(Session session, String status) throws Exception;
 
-	void handleTransportError(Session session, Throwable exception)
-			throws Exception;
+	void handleTransportError(Session session, Throwable exception) throws Exception;
 
 	void handleUncaughtException(Session session, Exception exception);
 
@@ -49,13 +49,17 @@ public interface JsonRpcHandler<P> {
 	/**
 	 * This method configures the handler to use sockJS
 	 */
-	 JsonRpcHandler<P> withSockJS();
+	JsonRpcHandler<P> withSockJS();
+
+	JsonRpcHandler<P> withAllowedOrigins(String... string);
 
 	boolean isSockJSEnabled();
 
-	 JsonRpcHandler<P> withLabel(String label);
+	List<String> allowedOrigins();
 
-	 String getLabel();
-	 
-	 boolean isPingWatchdog();
+	JsonRpcHandler<P> withLabel(String label);
+
+	String getLabel();
+
+	boolean isPingWatchdog();
 }

@@ -63,7 +63,8 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 	// Map<String, Object> attributes) throws Exception {
 	//
 	// log.info(
-	// "Websocket request before handshake. Request: headers={} uri={} Attributes:{},",
+	// "Websocket request before handshake. Request: headers={} uri={}
+	// Attributes:{},",
 	// request.getHeaders(), request.getURI(), attributes);
 	//
 	// return true;
@@ -75,7 +76,8 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 	// Exception exception) {
 	//
 	// log.info(
-	// "Websocket request after handshake. Request: headers={} uri={} Exception:{},",
+	// "Websocket request after handshake. Request: headers={} uri={}
+	// Exception:{},",
 	// request.getHeaders(), request.getURI(), exception);
 	// }
 	// }
@@ -117,33 +119,30 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 		Map<String, Object> urlMap = new LinkedHashMap<>();
 
-		for (DefaultJsonRpcHandlerRegistration registration : registry
-				.getRegistrations()) {
+		for (DefaultJsonRpcHandlerRegistration registration : registry.getRegistrations()) {
 
-			for (Entry<JsonRpcHandler<?>, List<String>> e : registration
-					.getHandlerMap().entrySet()) {
+			for (Entry<JsonRpcHandler<?>, List<String>> e : registration.getHandlerMap().entrySet()) {
 
 				JsonRpcHandler<?> handler = e.getKey();
 				List<String> paths = e.getValue();
 				putHandlersMappings(urlMap, handler, paths);
 			}
 
-			for (Entry<String, List<String>> e : registration
-					.getPerSessionHandlerBeanNameMap().entrySet()) {
+			for (Entry<String, List<String>> e : registration.getPerSessionHandlerBeanNameMap().entrySet()) {
 
 				String handlerBeanName = e.getKey();
-				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean(
-						"perSessionJsonRpcHandler", handlerBeanName, null);
+				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handlerBeanName,
+						null);
 				List<String> paths = e.getValue();
 				putHandlersMappings(urlMap, handler, paths);
 			}
 
-			for (Entry<Class<? extends JsonRpcHandler<?>>, List<String>> e : registration
-					.getPerSessionHandlerClassMap().entrySet()) {
+			for (Entry<Class<? extends JsonRpcHandler<?>>, List<String>> e : registration.getPerSessionHandlerClassMap()
+					.entrySet()) {
 
 				Class<? extends JsonRpcHandler<?>> handlerClass = e.getKey();
-				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean(
-						"perSessionJsonRpcHandler", null, handlerClass);
+				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null,
+						handlerClass);
 				List<String> paths = e.getValue();
 				putHandlersMappings(urlMap, handler, paths);
 			}
@@ -155,8 +154,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 		return hm;
 	}
 
-	private void putHandlersMappings(Map<String, Object> urlMap,
-			JsonRpcHandler<?> handler, List<String> paths) {
+	private void putHandlersMappings(Map<String, Object> urlMap, JsonRpcHandler<?> handler, List<String> paths) {
 
 		JsonRpcHttpRequestHandler requestHandler = new JsonRpcHttpRequestHandler(
 				(ProtocolManager) ctx.getBean("protocolManager", handler));
@@ -168,16 +166,13 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 	// ---------------- Websockets -------------------
 	@Override
-	public void registerWebSocketHandlers(
-			WebSocketHandlerRegistry wsHandlerRegistry) {
+	public void registerWebSocketHandlers(WebSocketHandlerRegistry wsHandlerRegistry) {
 
 		DefaultJsonRpcHandlerRegistry registry = getJsonRpcHandlersRegistry();
 
-		for (DefaultJsonRpcHandlerRegistration registration : registry
-				.getRegistrations()) {
+		for (DefaultJsonRpcHandlerRegistration registration : registry.getRegistrations()) {
 
-			for (Entry<JsonRpcHandler<?>, List<String>> e : registration
-					.getHandlerMap().entrySet()) {
+			for (Entry<JsonRpcHandler<?>, List<String>> e : registration.getHandlerMap().entrySet()) {
 
 				JsonRpcHandler<?> handler = e.getKey();
 				List<String> paths = e.getValue();
@@ -185,23 +180,22 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 				publishWebSocketEndpoint(wsHandlerRegistry, handler, paths);
 			}
 
-			for (Entry<String, List<String>> e : registration
-					.getPerSessionHandlerBeanNameMap().entrySet()) {
+			for (Entry<String, List<String>> e : registration.getPerSessionHandlerBeanNameMap().entrySet()) {
 
 				String handlerBeanName = e.getKey();
-				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean(
-						"perSessionJsonRpcHandler", handlerBeanName, null);
+				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", handlerBeanName,
+						null);
 				List<String> paths = e.getValue();
 
 				publishWebSocketEndpoint(wsHandlerRegistry, handler, paths);
 			}
 
-			for (Entry<Class<? extends JsonRpcHandler<?>>, List<String>> e : registration
-					.getPerSessionHandlerClassMap().entrySet()) {
+			for (Entry<Class<? extends JsonRpcHandler<?>>, List<String>> e : registration.getPerSessionHandlerClassMap()
+					.entrySet()) {
 
 				Class<? extends JsonRpcHandler<?>> handlerClass = e.getKey();
-				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean(
-						"perSessionJsonRpcHandler", null, handlerClass);
+				JsonRpcHandler<?> handler = (JsonRpcHandler<?>) ctx.getBean("perSessionJsonRpcHandler", null,
+						handlerClass);
 				List<String> paths = e.getValue();
 
 				publishWebSocketEndpoint(wsHandlerRegistry, handler, paths);
@@ -210,29 +204,24 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 		}
 	}
 
-	private void publishWebSocketEndpoint(
-			WebSocketHandlerRegistry wsHandlerRegistry,
-			JsonRpcHandler<?> handler, List<String> paths) {
+	private void publishWebSocketEndpoint(WebSocketHandlerRegistry wsHandlerRegistry, JsonRpcHandler<?> handler,
+			List<String> paths) {
 
-		ProtocolManager protocolManager = (ProtocolManager) ctx.getBean(
-				"protocolManager", handler);
+		ProtocolManager protocolManager = (ProtocolManager) ctx.getBean("protocolManager", handler);
 
-		JsonRpcWebSocketHandler wsHandler = new JsonRpcWebSocketHandler(
-				protocolManager);
+		JsonRpcWebSocketHandler wsHandler = new JsonRpcWebSocketHandler(protocolManager);
 
 		protocolManager.setPingWachdog(handler.isPingWatchdog());
 
 		for (String path : paths) {
 
-			WebSocketHandlerRegistration registration = wsHandlerRegistry
-					.addHandler(wsHandler, path);
+			WebSocketHandlerRegistration registration = wsHandlerRegistry.addHandler(wsHandler, path);
 
-			// registration.addInterceptors(new LoggerHandshakeInterceptor());
+			List<String> origins = handler.allowedOrigins();
+			registration.setAllowedOrigins(origins.toArray(new String[origins.size()]));
 
 			if (handler.isSockJSEnabled()) {
 				registration.withSockJS().setSessionCookieNeeded(false);
-				// .setClientLibraryUrl(
-				// "../../bower_components/sockjs/sockjs.js");
 			}
 
 			if (handler.getLabel() != null) {
@@ -246,8 +235,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 	@Bean
 	public TomcatEmbeddedServletContainerFactory tomcatContainerFactory() {
 		TomcatEmbeddedServletContainerFactory factory = new TomcatEmbeddedServletContainerFactory();
-		factory.setTomcatContextCustomizers(Arrays
-				.asList(new TomcatContextCustomizer[] { tomcatContextCustomizer() }));
+		factory.setTomcatContextCustomizers(Arrays.asList(new TomcatContextCustomizer[] { tomcatContextCustomizer() }));
 		return factory;
 	}
 
@@ -277,8 +265,8 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 	@Bean
 	@Scope("prototype")
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public PerSessionJsonRpcHandler<?> perSessionJsonRpcHandler(
-			String beanName, Class<? extends JsonRpcHandler<?>> beanClass) {
+	public PerSessionJsonRpcHandler<?> perSessionJsonRpcHandler(String beanName,
+			Class<? extends JsonRpcHandler<?>> beanClass) {
 		return new PerSessionJsonRpcHandler(beanName, beanClass);
 	}
 
