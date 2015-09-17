@@ -32,6 +32,7 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -70,7 +71,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	@Before
 	public void setup() {
-		driver = BrowserClient.newChromeDriver();
+		driver = BrowserClient.newWebDriver(new ChromeOptions());
 
 		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();

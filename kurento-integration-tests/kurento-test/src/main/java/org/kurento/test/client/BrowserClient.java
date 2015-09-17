@@ -196,7 +196,7 @@ public class BrowserClient implements Closeable {
 				} else if (scope == BrowserScope.REMOTE) {
 					createRemoteDriver(capabilities);
 				} else {
-					driver = new FirefoxDriver(profile);
+					driver = newWebDriver(profile);
 				}
 
 			} else if (driverClass.equals(ChromeDriver.class)) {
@@ -271,7 +271,7 @@ public class BrowserClient implements Closeable {
 				} else if (scope == BrowserScope.REMOTE) {
 					createRemoteDriver(capabilities);
 				} else {
-					driver = newChromeDriver(options);
+					driver = newWebDriver(options);
 				}
 			} else if (driverClass.equals(InternetExplorerDriver.class)) {
 
@@ -311,18 +311,18 @@ public class BrowserClient implements Closeable {
 
 	}
 
-	public static ChromeDriver newChromeDriver() {
-		return newChromeDriver(new ChromeOptions());
-	}
-
-	public static ChromeDriver newChromeDriver(ChromeOptions options) {
-		ChromeDriver driver = null;
+	public static WebDriver newWebDriver(Object options) {
+		WebDriver driver = null;
 		int numDriverTries = 0;
 		final int maxDriverError = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
 		final String errMessage = "Exception creating webdriver for chrome";
 		do {
 			try {
-				driver = new ChromeDriver(options);
+				if (options instanceof ChromeOptions) {
+					driver = new ChromeDriver((ChromeOptions) options);
+				} else if (options instanceof FirefoxProfile) {
+					driver = new FirefoxDriver((FirefoxProfile) options);
+				}
 			} catch (Throwable t) {
 				driver = null;
 				log.warn(errMessage + " #" + numDriverTries, t);
