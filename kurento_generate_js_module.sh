@@ -18,7 +18,7 @@ cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
 JS_PROJECT_NAME=`cat js_project_name`
 echo Project name $JS_PROJECT_NAME
 rm -rf js
-git clone ssh://jenkins@code.kurento.org:12345/${JS_PROJECT_NAME}-js.git js || (echo "Cannot clone repository, may not be public" && exit 0)
+git clone ssh://jenkins@code.kurento.org:12345/${JS_PROJECT_NAME}-js.git js || exit 1
 cd js || (echo "Cannot clone repository, may not be public" && exit 0)
 git checkout -b ${BRANCH}
 git reset --hard origin/${BRANCH} || echo
