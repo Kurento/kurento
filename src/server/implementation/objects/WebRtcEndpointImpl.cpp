@@ -14,6 +14,7 @@
 #include <StatsType.hpp>
 #include <RTCDataChannelState.hpp>
 #include <RTCDataChannelStats.hpp>
+#include <RTCPeerConnectionStats.hpp>
 #include <commons/kmsstats.h>
 #include <commons/kmsutils.h>
 
@@ -583,6 +584,24 @@ createtRTCDataChannelStats (const GstStructure *stats)
   return rtcDataStats;
 }
 
+static std::shared_ptr<RTCPeerConnectionStats>
+createtRTCPeerConnectionStats (const GstStructure *stats)
+{
+  guint opened, closed;
+  gchar *id;
+
+  gst_structure_get (stats, "data-channels-opened", G_TYPE_UINT, &opened,
+                     "data-channels-closed", G_TYPE_UINT, &closed,
+                     "id", G_TYPE_STRING, &id, NULL);
+
+  std::shared_ptr<RTCPeerConnectionStats> peerConnStats =
+    std::make_shared <RTCPeerConnectionStats> (id,
+        std::make_shared <StatsType> (StatsType::session), 0.0, opened, closed);
+  g_free (id);
+
+  return peerConnStats;
+}
+
 static void
 collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
                             &statsReport, double timestamp, const GstStructure *stats)
@@ -597,6 +616,11 @@ collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
     const gchar *name;
 
     name = gst_structure_nth_field_name (stats, i);
+
+    if (!g_str_has_prefix (name, "data-channel-") ) {
+      continue;
+    }
+
     value = gst_structure_get_value (stats, name);
 
     if (!GST_VALUE_HOLDS_STRUCTURE (value) ) {
@@ -613,6 +637,11 @@ collectRTCDataChannelStats (std::map <std::string, std::shared_ptr<Stats>>
     rtcDataStats->setTimestamp (timestamp);
     statsReport[rtcDataStats->getId ()] = rtcDataStats;
   }
+
+  std::shared_ptr<RTCPeerConnectionStats> peerConnStats =
+    createtRTCPeerConnectionStats (stats);
+  peerConnStats->setTimestamp (timestamp);
+  statsReport[peerConnStats->getId ()] = peerConnStats;
 }
 
 void

@@ -75,6 +75,9 @@ struct _KmsWebRtcDataSessionBinPrivate
   GSList *pending;
 
   GThreadPool *pool;
+
+  guint opened;
+  guint closed;
 };
 
 #define KMS_WEBRTC_DATA_SESSION_BIN_LOCK(obj) \
@@ -297,7 +300,10 @@ kms_webrtc_data_session_bin_stats_action (KmsWebRtcDataSessionBin * self)
 {
   GstStructure *stats;
 
-  stats = gst_structure_new_empty (KMS_DATA_SESSION_STRUCT_NAME);
+  stats = gst_structure_new (KMS_DATA_SESSION_STRUCT_NAME,
+      "data-channels-opened", G_TYPE_UINT,
+      g_atomic_int_get (&self->priv->opened), "data-channels-closed",
+      G_TYPE_UINT, g_atomic_int_get (&self->priv->closed), NULL);
 
   KMS_WEBRTC_DATA_SESSION_BIN_LOCK (self);
 
@@ -506,6 +512,8 @@ data_channel_negotiated_cb (KmsWebRtcDataChannelBin * channel_bin,
 
   KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
 
+  g_atomic_int_inc (&self->priv->opened);
+
   g_signal_emit (self, obj_signals[DATA_CHANNEL_OPENED], 0, sctp_stream_id);
 }
 
@@ -677,6 +685,7 @@ end:
   KMS_WEBRTC_DATA_SESSION_BIN_UNLOCK (self);
 
   if (emit_signal) {
+    g_atomic_int_inc (&self->priv->closed);
     g_signal_emit (self, obj_signals[DATA_CHANNEL_CLOSED], 0, sctp_stream_id);
   }
 }
@@ -816,6 +825,8 @@ kms_webrtc_data_session_bin_init (KmsWebRtcDataSessionBin * self)
 
   g_rec_mutex_init (&self->priv->mutex);
 
+  self->priv->opened = 0;
+  self->priv->closed = 0;
   self->priv->data_channels = g_hash_table_new (g_direct_hash, g_direct_equal);
   self->priv->channels =
       g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL,

@@ -942,8 +942,17 @@ kms_webrtc_endpoint_stats (KmsElement * obj, gchar * selector)
   if (self->priv->data_session != NULL && (selector == NULL ||
           g_strcmp0 (selector, DATA_STREAM_NAME) == 0)) {
     GstStructure *data_stats;
+    const gchar *id;
+
+    id = kms_utils_get_uuid (G_OBJECT (self->priv->data_session));
+
+    if (id == NULL) {
+      kms_utils_set_uuid (G_OBJECT (self->priv->data_session));
+      id = kms_utils_get_uuid (G_OBJECT (self->priv->data_session));
+    }
 
     g_signal_emit_by_name (self->priv->data_session, "stats", &data_stats);
+    gst_structure_set (data_stats, "id", G_TYPE_STRING, id, NULL);
     gst_structure_set (stats, KMS_DATA_SESSION_STATISTICS_FIELD,
         GST_TYPE_STRUCTURE, data_stats, NULL);
     gst_structure_free (data_stats);
