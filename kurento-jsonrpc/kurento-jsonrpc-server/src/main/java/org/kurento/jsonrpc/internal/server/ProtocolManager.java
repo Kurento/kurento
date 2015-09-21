@@ -372,6 +372,11 @@ public class ProtocolManager {
 	public void closeSession(ServerSession session, String reason) {
 		log.info("{} Removing session {} with transportId {} in ProtocolManager", label, session.getSessionId(),
 				session.getTransportId());
+		try {
+			session.close();
+		} catch (IOException e) {
+			log.warn("{} Could not close WsSession session {}", label, session.getSessionId(), e);
+		}
 		sessionsManager.remove(session);
 		pingWachdogManager.removeSession(session);
 		handlerManager.afterConnectionClosed(session, reason);
