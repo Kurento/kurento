@@ -19,6 +19,8 @@
 
 #include "kmswebrtctransportsrcnice.h"
 #include <commons/constants.h>
+#include "kmsiceniceagent.h"
+#include <stdlib.h>
 
 #define GST_DEFAULT_NAME "webrtctransportsrcnice"
 #define GST_CAT_DEFAULT kms_webrtc_transport_src_nice_debug
@@ -38,11 +40,27 @@ kms_webrtc_transport_src_nice_init (KmsWebrtcTransportSrcNice * self)
   kms_webrtc_transport_src_connect_elements (parent);
 }
 
+void
+kms_webrtc_transport_src_nice_configure (KmsWebrtcTransportSrc * self,
+    KmsIceBaseAgent * agent, const char *stream_id, guint component_id)
+{
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (agent);
+  guint id = atoi (stream_id);
+
+  g_object_set (G_OBJECT (self->src),
+      "agent", kms_ice_nice_agent_get_agent (nice_agent),
+      "stream", id, "component", component_id, NULL);
+}
+
 static void
 kms_webrtc_transport_src_nice_class_init (KmsWebrtcTransportSrcNiceClass *
     klass)
 {
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
+  KmsWebrtcTransportSrcClass *base_class;
+
+  base_class = KMS_WEBRTC_TRANSPORT_SRC_CLASS (klass);
+  base_class->configure = kms_webrtc_transport_src_nice_configure;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);

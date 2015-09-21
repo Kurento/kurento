@@ -78,19 +78,9 @@ kms_webrtc_transport_create (KmsIceBaseAgent * agent, char *stream_id,
   g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "connection-id", str, NULL);
   g_free (str);
 
-  if (KMS_IS_ICE_NICE_AGENT (agent)) {
-    KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (agent);
-    guint id = atoi (stream_id);
-
-    g_object_set (G_OBJECT (tr->sink->sink),
-        "agent", kms_ice_nice_agent_get_agent (nice_agent),
-        "stream", id, "component", component_id,
-        "sync", FALSE, "async", FALSE, NULL);
-
-    g_object_set (G_OBJECT (tr->src->src),
-        "agent", kms_ice_nice_agent_get_agent (nice_agent),
-        "stream", id, "component", component_id, NULL);
-  }
+  kms_webrtc_transport_src_configure (tr->src, agent, stream_id, component_id);
+  kms_webrtc_transport_sink_configure (tr->sink, agent, stream_id,
+      component_id);
 
   return tr;
 }

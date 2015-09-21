@@ -17,6 +17,7 @@
 #define __KMS_WEBRTC_TRANSPORT_SINK_H__
 
 #include <gst/gst.h>
+#include <kmsicebaseagent.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -46,12 +47,21 @@ struct _KmsWebrtcTransportSink
 struct _KmsWebrtcTransportSinkClass
 {
   GstBinClass parent_class;
+
+  /* virtual methods */
+  void (*configure) (KmsWebrtcTransportSink * self,
+                          KmsIceBaseAgent *agent,
+                          const char *stream_id,
+                          guint component_id);
 };
 
 GType kms_webrtc_transport_sink_get_type (void);
 
 KmsWebrtcTransportSink * kms_webrtc_transport_sink_new ();
 void kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink *self);
-
+void kms_webrtc_transport_sink_configure (KmsWebrtcTransportSink * self,
+                                              KmsIceBaseAgent *agent,
+                                              const char *stream_id,
+                                              guint component_id);
 G_END_DECLS
 #endif /* __KMS_WEBRTC_TRANSPORT_SINK_H__ */

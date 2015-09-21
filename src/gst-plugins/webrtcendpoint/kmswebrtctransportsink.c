@@ -62,10 +62,35 @@ kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink * self)
   }
 }
 
+void
+kms_webrtc_transport_sink_configure_default (KmsWebrtcTransportSink * self,
+    KmsIceBaseAgent * agent, const char *stream_id, guint component_id)
+{
+  KmsWebrtcTransportSinkClass *klass =
+      KMS_WEBRTC_TRANSPORT_SINK_CLASS (G_OBJECT_GET_CLASS (self));
+
+  if (klass->configure == kms_webrtc_transport_sink_configure_default) {
+    GST_WARNING_OBJECT (self,
+        "%s does not reimplement 'configure'", G_OBJECT_CLASS_NAME (klass));
+  }
+}
+
+void
+kms_webrtc_transport_sink_configure (KmsWebrtcTransportSink * self,
+    KmsIceBaseAgent * agent, const char *stream_id, guint component_id)
+{
+  KmsWebrtcTransportSinkClass *klass =
+      KMS_WEBRTC_TRANSPORT_SINK_CLASS (G_OBJECT_GET_CLASS (self));
+
+  klass->configure (self, agent, stream_id, component_id);
+}
+
 static void
 kms_webrtc_transport_sink_class_init (KmsWebrtcTransportSinkClass * klass)
 {
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
+
+  klass->configure = kms_webrtc_transport_sink_configure_default;
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
