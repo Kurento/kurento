@@ -31,8 +31,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(JsonRpcWebSocketHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(JsonRpcWebSocketHandler.class);
 
 	private final ProtocolManager protocolManager;
 
@@ -48,72 +47,59 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	}
 
 	@Override
-	public void afterConnectionEstablished(WebSocketSession session)
-			throws Exception {
+	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
 		try {
 			// We send this notification to the JsonRpcHandler when the JsonRpc
 			// session is established, not when websocket session is established
 			log.info(
 					"{} Client connection stablished from session={} uri={} headers={} acceptedProtocol={} attributes={}",
-					label, session.getRemoteAddress(), session.getUri(),
-					session.getHandshakeHeaders(),
+					label, session.getRemoteAddress(), session.getUri(), session.getHandshakeHeaders(),
 					session.getAcceptedProtocol(), session.getAttributes());
 
 		} catch (Throwable t) {
-			log.error(
-					label
-							+ "Exception processing afterConnectionEstablished in session={}",
-					session.getId(), t);
+			log.error("{} Exception processing afterConnectionEstablished in session={}", label, session.getId(), t);
 		}
 	}
 
 	@Override
-	public void afterConnectionClosed(WebSocketSession wsSession,
-			org.springframework.web.socket.CloseStatus status) throws Exception {
+	public void afterConnectionClosed(WebSocketSession wsSession, org.springframework.web.socket.CloseStatus status)
+			throws Exception {
 
 		try {
 			AbstractSession session = protocolManager.getSessionByTransportId(wsSession.getId());
-			
-			if(session != null){
-				log.info(
-					"{} WebSocket session {} with transportId {} closed for {} (code {}, reason '{}')",
-					label, session.getSessionId(), wsSession.getId(),
-					CloseStatusHelper.getCloseStatusType(status.getCode()),
-					status.getCode(), status.getReason());
 
-				protocolManager.closeSessionIfTimeout(wsSession.getId(),
-					status.getReason());
-			} else {
-				log.info("{} WebSocket session not associated to any jsonRpcSession "
-						+ "with transportId {} closed for {} (code {}, reason '{}')", label, wsSession.getId(),
+			if (session != null) {
+				log.info("{} WebSocket session {} with transportId {} closed for {} (code {}, reason '{}')", label,
+						session.getSessionId(), wsSession.getId(),
 						CloseStatusHelper.getCloseStatusType(status.getCode()), status.getCode(), status.getReason());
+
+				protocolManager.closeSessionIfTimeout(wsSession.getId(), status.getReason());
+			} else {
+				log.info(
+						"{} WebSocket session not associated to any jsonRpcSession "
+								+ "with transportId {} closed for {} (code {}, reason '{}')",
+						label, wsSession.getId(), CloseStatusHelper.getCloseStatusType(status.getCode()),
+						status.getCode(), status.getReason());
 			}
 
 		} catch (Throwable t) {
-			log.error(
-					label
-							+ "Exception processing afterConnectionClosed in session={}",
-					wsSession.getId(), t);
+			log.error("{} Exception processing afterConnectionClosed in session={}", label, wsSession.getId(), t);
 		}
 	}
 
 	@Override
-	public void handleTransportError(WebSocketSession session,
-			Throwable exception) throws Exception {
+	public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
 
 		try {
 			protocolManager.processTransportError(session.getId(), exception);
 		} catch (Throwable t) {
-			log.error(label
-					+ "Exception processing transportError in session={}",
-					session.getId(), t);
+			log.error(label + "Exception processing transportError in session={}", session.getId(), t);
 		}
 	}
 
 	@Override
-	public void handleTextMessage(final WebSocketSession wsSession,
-			TextMessage message) throws Exception {
+	public void handleTextMessage(final WebSocketSession wsSession, TextMessage message) throws Exception {
 
 		try {
 
@@ -122,24 +108,20 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 			// TODO Ensure only one register message per websocket session.
 			ServerSessionFactory factory = new ServerSessionFactory() {
 				@Override
-				public ServerSession createSession(String sessionId,
-						Object registerInfo, SessionsManager sessionsManager) {
-					return new WebSocketServerSession(sessionId, registerInfo,
-							sessionsManager, wsSession);
+				public ServerSession createSession(String sessionId, Object registerInfo,
+						SessionsManager sessionsManager) {
+					return new WebSocketServerSession(sessionId, registerInfo, sessionsManager, wsSession);
 				}
 
 				@Override
 				public void updateSessionOnReconnection(ServerSession session) {
-					((WebSocketServerSession) session)
-					.updateWebSocketSession(wsSession);
+					((WebSocketServerSession) session).updateWebSocketSession(wsSession);
 				}
 			};
 
-			protocolManager.processMessage(messageJson, factory,
-					new ResponseSender() {
+			protocolManager.processMessage(messageJson, factory, new ResponseSender() {
 				@Override
-				public void sendResponse(Message message)
-						throws IOException {
+				public void sendResponse(Message message) throws IOException {
 
 					String jsonMessage = message.toString();
 					log.debug("{} Res<- {}", label, jsonMessage);
@@ -147,20 +129,17 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 				}
 
 				@Override
-				public void sendPingResponse(Message message)
-						throws IOException {
+				public void sendPingResponse(Message message) throws IOException {
 
 					String jsonMessage = message.toString();
 					log.trace("{} Res<- {}", label, jsonMessage);
 					sendJsonMessage(jsonMessage);
 				}
 
-				private void sendJsonMessage(String jsonMessage)
-						throws IOException {
+				private void sendJsonMessage(String jsonMessage) throws IOException {
 					synchronized (wsSession) {
 						if (wsSession.isOpen()) {
-							wsSession.sendMessage(new TextMessage(
-									jsonMessage));
+							wsSession.sendMessage(new TextMessage(jsonMessage));
 						} else {
 							log.error("Trying to send a message to a closed session");
 						}
@@ -169,7 +148,8 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 			}, wsSession.getId());
 
 		} catch (Throwable t) {
-			log.error(label + "Exception processing request", t);
+			log.error("{} Exception processing request {}. Reason: {} Cause: {} Stacktrace: {}", label,
+					message.toString(), t.getMessage(), t.getCause(), t.getStackTrace());
 		}
 
 	}

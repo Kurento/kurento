@@ -265,7 +265,16 @@ public class ProtocolManager {
 		} catch (IOException e) {
 			log.warn("Exception sending close message response to client", e);
 		}
-		this.closeSession(sessionsManager.getByTransportId(transportId), "Client sent close message");
+
+		ServerSession session = sessionsManager.getByTransportId(transportId);
+
+		if (session != null) {
+			cancelCloseTimer(session);
+			this.closeSession(session, "Client sent close message");
+		} else {
+			log.warn("No server session found for transportId {}. Could not close session associated to transport. "
+					+ "Please make sure the session is closed", transportId);
+		}
 	}
 
 	private void processReconnectMessage(ServerSessionFactory factory, Request<JsonElement> request,
@@ -361,7 +370,7 @@ public class ProtocolManager {
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info(label + "Removing session {} with transportId {} in ProtocolManager", session.getSessionId(),
+		log.info("{} Removing session {} with transportId {} in ProtocolManager", label, session.getSessionId(),
 				session.getTransportId());
 		sessionsManager.remove(session);
 		pingWachdogManager.removeSession(session);
