@@ -66,6 +66,7 @@ struct _KmsWebrtcSessionClass
 
   gboolean (*gather_candidates) (KmsWebrtcSession * self);
   gboolean (*add_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);
+  void (*init_ice_agent) (KmsWebrtcSession * self);
 
   /* Signals */
   void (*on_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);

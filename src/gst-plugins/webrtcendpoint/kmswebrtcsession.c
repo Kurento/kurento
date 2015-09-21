@@ -53,6 +53,7 @@ enum
   SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED,
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
+  SIGNAL_INIT_ICE_AGENT,
   LAST_SIGNAL
 };
 
@@ -995,7 +996,18 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
 
   self->context = g_main_context_ref (context);
 
-  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (context, self));
+  KMS_BASE_RTP_SESSION_CLASS
+      (kms_webrtc_session_parent_class)->post_constructor (base_rtp_session, ep,
+      id, manager);
+}
+
+static void
+kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
+{
+  self->agent =
+      KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context, self));
+
+  kms_ice_base_agent_run_agent (self->agent);
 
   g_signal_connect (self->agent, "on-ice-candidate",
       G_CALLBACK (kms_webrtc_session_new_candidate), self);
@@ -1003,10 +1015,6 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
       G_CALLBACK (kms_webrtc_session_gathering_done), self);
   g_signal_connect (self->agent, "on-ice-component-state-changed",
       G_CALLBACK (kms_webrtc_session_component_state_change), self);
-
-  KMS_BASE_RTP_SESSION_CLASS
-      (kms_webrtc_session_parent_class)->post_constructor (base_rtp_session, ep,
-      id, manager);
 }
 
 static void
@@ -1034,6 +1042,7 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
   klass->post_constructor = kms_webrtc_session_post_constructor;
   klass->gather_candidates = kms_webrtc_session_gather_candidates;
   klass->add_ice_candidate = kms_webrtc_session_add_ice_candidate;
+  klass->init_ice_agent = kms_webrtc_session_init_ice_agent;
 
   base_rtp_session_class = KMS_BASE_RTP_SESSION_CLASS (klass);
   /* Connection management */
@@ -1126,4 +1135,11 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, add_ice_candidate), NULL, NULL,
       __kms_webrtc_marshal_BOOLEAN__OBJECT, G_TYPE_BOOLEAN, 1,
       KMS_TYPE_ICE_CANDIDATE);
+
+  kms_webrtc_session_signals[SIGNAL_INIT_ICE_AGENT] =
+      g_signal_new ("init_ice_agent",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, init_ice_agent), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }

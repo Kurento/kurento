@@ -205,7 +205,7 @@ on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
 }
 
 static void
-on_ice_component_state_change (KmsWebrtcSession * sess, gchar * stream_id,
+on_ice_component_state_change (KmsWebrtcSession * sess, const gchar * stream_id,
     guint component_id, IceState state, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
@@ -250,6 +250,8 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->create_session_internal (base_sdp, id,
       sess);
+
+  g_signal_emit_by_name (webrtc_sess, "init_ice_agent");
 }
 
 /* Internal session management end */
