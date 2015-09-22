@@ -1,7 +1,3 @@
-%%%%%%%%%%%%%%%%%
-Table of Contents
-%%%%%%%%%%%%%%%%%
-
 .. toctree::
    :glob:
    :maxdepth: 2
@@ -10,4 +6,3 @@ Table of Contents
    Admin Guide               <doc/admin_guide>
    Architecture              <doc/architecture>
    Open Specification        <doc/open_spec>
-

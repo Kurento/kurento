@@ -38,7 +38,7 @@ provides the following features:
 Documentation
 =============
 
--   `User and Programmers Guide <user_guide.rst>`_
--   `Installation and Administration Guide <admin_guide.rst>`_
--   `Open API Specification <open_spec.rst>`_
--   `Architecture Description <architecture.rst>`_
+-   User and Programmers Guide </doc/user_guide.rst>
+-   Installation and Administration Guide </doc/admin_guide.rst>
+-   Open API Specification </doc/open_spec.rst>
+-   Architecture Description </doc/architecture.rst>
