@@ -205,8 +205,8 @@ on_ice_gathering_done (KmsWebrtcSession * sess, KmsWebrtcEndpoint * self)
 }
 
 static void
-on_ice_component_state_change (KmsWebrtcSession * sess, guint stream_id,
-    guint component_id, NiceComponentState state, KmsWebrtcEndpoint * self)
+on_ice_component_state_change (KmsWebrtcSession * sess, gchar * stream_id,
+    guint component_id, IceState state, KmsWebrtcEndpoint * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
 
@@ -1035,7 +1035,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
   kms_webrtc_endpoint_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED] =
       g_signal_new ("on-ice-component-state-changed",
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
-      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT,
+      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT,
       G_TYPE_INVALID);
 
   kms_webrtc_endpoint_signals[SIGNAL_ADD_ICE_CANDIDATE] =

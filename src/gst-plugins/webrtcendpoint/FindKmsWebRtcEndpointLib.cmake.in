@@ -1,4 +1,4 @@
-# - Try to find KmsIceCandidate library
+# - Try to find KmsWebRtcEndpointLib library
 
 #=============================================================================
 # Copyright 2015 Kurento
@@ -6,9 +6,9 @@
 #=============================================================================
 
 set(PACKAGE_VERSION "@PROJECT_VERSION@")
-set(KmsIceCandidate_VERSION ${PACKAGE_VERSION})
+set(KmsWebRtcEndpointLib_VERSION ${PACKAGE_VERSION})
 
-find_path(KmsIceCandidate_INCLUDE_DIR
+find_path(KmsWebRtcEndpointLib_INCLUDE_DIR
   NAMES
     @FIND_HEADERS@
   PATH_SUFFIXES
@@ -16,19 +16,19 @@ find_path(KmsIceCandidate_INCLUDE_DIR
     @CUSTOM_PREFIX@
 )
 
-set(KmsIceCandidate_INCLUDE_DIRS ${KmsIceCandidate_INCLUDE_DIR}
-  CACHE INTERNAL "Include directories for KmsIceCandidate library"
+set(KmsWebRtcEndpointLib_INCLUDE_DIRS ${KmsWebRtcEndpointLib_INCLUDE_DIR}
+  CACHE INTERNAL "Include directories for KmsWebRtcEndpointLib library"
 )
 
-find_library (KmsIceCandidate_LIBRARY
+find_library (KmsWebRtcEndpointLib_LIBRARY
   NAMES
-    kmsicecandidate
+    kmswebrtcendpointlib
   PATH_SUFFIXES
     build/src/gst-plugins/webrtcendpoint
 )
 
-set (KmsIceCandidate_LIBRARIES ${KmsIceCandidate_LIBRARY}
-  CACHE INTERNAL "Libraries for KmsIceCandidate"
+set (KmsWebRtcEndpointLib_LIBRARIES ${KmsWebRtcEndpointLib_LIBRARY}
+  CACHE INTERNAL "Libraries for KmsWebRtcEndpointLib"
 )
 
 include (GenericFind)
@@ -53,24 +53,24 @@ endforeach()
 
 include (FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(KmsIceCandidate
+find_package_handle_standard_args(KmsWebRtcEndpointLib
   FOUND_VAR
-    KmsIceCandidate_FOUND
+    KmsWebRtcEndpointLib_FOUND
   REQUIRED_VARS
-    KmsIceCandidate_VERSION
-    KmsIceCandidate_INCLUDE_DIR
-    KmsIceCandidate_INCLUDE_DIRS
-    KmsIceCandidate_LIBRARY
-    KmsIceCandidate_LIBRARIES
+    KmsWebRtcEndpointLib_VERSION
+    KmsWebRtcEndpointLib_INCLUDE_DIR
+    KmsWebRtcEndpointLib_INCLUDE_DIRS
+    KmsWebRtcEndpointLib_LIBRARY
+    KmsWebRtcEndpointLib_LIBRARIES
   VERSION_VAR
-    KmsIceCandidate_VERSION
+    KmsWebRtcEndpointLib_VERSION
 )
 
 mark_as_advanced(
-  KmsIceCandidate_FOUND
-  KmsIceCandidate_VERSION
-  KmsIceCandidate_INCLUDE_DIR
-  KmsIceCandidate_INCLUDE_DIRS
-  KmsIceCandidate_LIBRARY
-  KmsIceCandidate_LIBRARIES
+  KmsWebRtcEndpointLib_FOUND
+  KmsWebRtcEndpointLib_VERSION
+  KmsWebRtcEndpointLib_INCLUDE_DIR
+  KmsWebRtcEndpointLib_INCLUDE_DIRS
+  KmsWebRtcEndpointLib_LIBRARY
+  KmsWebRtcEndpointLib_LIBRARIES
 )

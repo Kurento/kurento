@@ -50,7 +50,7 @@ struct _KmsWebRtcConnectionClass
 
 GType kms_webrtc_connection_get_type (void);
 
-KmsWebRtcConnection *kms_webrtc_connection_new (NiceAgent * agent,
+KmsWebRtcConnection *kms_webrtc_connection_new (KmsIceBaseAgent * agent,
     GMainContext * context, const gchar * name);
 
 G_END_DECLS

@@ -4,12 +4,12 @@
 #include "WebRtcEndpointImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
-#include <gst/gst.h>
 #include <boost/filesystem.hpp>
 #include <IceCandidate.hpp>
 #include <webrtcendpoint/kmsicecandidate.h>
 #include <IceComponentState.hpp>
 #include <SignalHandler.hpp>
+#include <webrtcendpoint/kmsicebaseagent.h>
 
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -119,34 +119,34 @@ void WebRtcEndpointImpl::onIceGatheringDone (gchar *sessId)
 }
 
 void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
-    guint streamId,
+    const gchar *streamId,
     guint componentId, guint state)
 {
   try {
     IceComponentState::type type;
 
     switch (state) {
-    case NICE_COMPONENT_STATE_DISCONNECTED:
+    case ICE_STATE_DISCONNECTED:
       type = IceComponentState::DISCONNECTED;
       break;
 
-    case NICE_COMPONENT_STATE_GATHERING:
+    case ICE_STATE_GATHERING:
       type = IceComponentState::GATHERING;
       break;
 
-    case NICE_COMPONENT_STATE_CONNECTING:
+    case ICE_STATE_CONNECTING:
       type = IceComponentState::CONNECTING;
       break;
 
-    case NICE_COMPONENT_STATE_CONNECTED:
+    case ICE_STATE_CONNECTED:
       type = IceComponentState::CONNECTED;
       break;
 
-    case NICE_COMPONENT_STATE_READY:
+    case ICE_STATE_READY:
       type = IceComponentState::READY;
       break;
 
-    case NICE_COMPONENT_STATE_FAILED:
+    case ICE_STATE_FAILED:
       type = IceComponentState::FAILED;
       break;
 
@@ -158,7 +158,8 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
     IceComponentState *componentState = new IceComponentState (type);
     OnIceComponentStateChanged event (shared_from_this(),
                                       OnIceComponentStateChanged::getName(),
-                                      streamId, componentId,  std::shared_ptr<IceComponentState> (componentState) );
+                                      atoi (streamId), componentId,
+                                      std::shared_ptr<IceComponentState> (componentState) );
 
     signalOnIceComponentStateChanged (event);
   } catch (std::bad_weak_ptr &e) {
@@ -209,7 +210,7 @@ void WebRtcEndpointImpl::postConstructor ()
 
   handlerOnIceComponentStateChanged = register_signal_handler (G_OBJECT (element),
                                       "on-ice-component-state-changed",
-                                      std::function <void (GstElement *, gchar *, guint, guint, guint) >
+                                      std::function <void (GstElement *, gchar *, gchar *, guint, guint) >
                                       (std::bind (&WebRtcEndpointImpl::onIceComponentStateChanged, this,
                                           std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
                                           std::placeholders::_5) ),

@@ -51,8 +51,7 @@ struct _KmsWebRtcRtcpMuxConnectionClass
 
 GType kms_webrtc_rtcp_mux_connection_get_type (void);
 
-KmsWebRtcRtcpMuxConnection *kms_webrtc_rtcp_mux_connection_new (NiceAgent *
-    agent, GMainContext * context, const gchar * name);
+KmsWebRtcRtcpMuxConnection *kms_webrtc_rtcp_mux_connection_new (KmsIceBaseAgent *agent, GMainContext * context, const gchar * name);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_MUX_CONNECTION_H__ */

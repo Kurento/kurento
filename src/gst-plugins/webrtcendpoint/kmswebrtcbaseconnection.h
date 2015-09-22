@@ -16,9 +16,9 @@
 #ifndef __KMS_WEBRTC_BASE_CONNECTION_H__
 #define __KMS_WEBRTC_BASE_CONNECTION_H__
 
-#include <nice/nice.h>
 #include <gst/gst.h>
 #include <commons/kmsirtpconnection.h>
+#include <kmsicebaseagent.h>
 
 G_BEGIN_DECLS
 
@@ -48,9 +48,9 @@ struct _KmsWebRtcBaseConnection
 
   GRecMutex mutex;
 
-  NiceAgent *agent;
+  KmsIceBaseAgent *agent;
   gboolean ice_gathering_done;
-  guint stream_id;
+  gchar* stream_id;
   gchar *name;
 
   BufferLatencyCallback cb;
@@ -79,10 +79,10 @@ void kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * 
     const gchar * stun_server_ip, guint stun_server_port);
 void kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
     const gchar * server_ip, guint server_port, const gchar * username,
-    const gchar * password, NiceRelayType type);
+    const gchar * password, TurnProtocol type);
 
 gboolean kms_webrtc_base_connection_configure (KmsWebRtcBaseConnection * self,
-    NiceAgent * agent, const gchar * name);
+    KmsIceBaseAgent *agent, const gchar * name);
 
 void kms_webrtc_base_connection_set_latency_callback (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
 void kms_webrtc_base_connection_collect_latency_stats (KmsIRtpConnection *self, gboolean enable);

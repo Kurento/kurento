@@ -244,7 +244,7 @@ rtcp_connected_cb (GstElement * dtlssrtpenc, gpointer data)
 }
 
 KmsWebRtcConnection *
-kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
+kms_webrtc_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
     const gchar * name)
 {
   GObject *obj;
@@ -279,12 +279,6 @@ kms_webrtc_connection_new (NiceAgent * agent, GMainContext * context,
       G_CALLBACK (rtp_connected_cb), conn);
   g_signal_connect (priv->rtcp_tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (rtcp_connected_cb), conn);
-
-  nice_agent_attach_recv (agent, base_conn->stream_id,
-      NICE_COMPONENT_TYPE_RTP, context, kms_webrtc_transport_nice_agent_recv_cb,
-      NULL);
-  nice_agent_attach_recv (agent, base_conn->stream_id, NICE_COMPONENT_TYPE_RTCP,
-      context, kms_webrtc_transport_nice_agent_recv_cb, NULL);
 
   return conn;
 }

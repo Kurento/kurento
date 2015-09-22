@@ -15,6 +15,7 @@
 
 #include "kmsicecandidate.h"
 #include <gst/gst.h>
+#include <stdlib.h>
 
 #define GST_CAT_DEFAULT kmsicecandidate
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -317,6 +318,87 @@ end:
   g_regex_unref (regex);
 
   return ret;
+}
+
+gchar *
+kms_ice_candidate_get_address (KmsIceCandidate * self)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  gchar *addr;
+
+  regex = g_regex_new ("^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)"
+      " (?<transport>(udp|UDP|tcp|TCP)) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
+      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
+      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?$",
+      0, 0, NULL);
+  g_regex_match (regex, self->priv->candidate, 0, &match_info);
+
+  if (!g_match_info_matches (match_info)) {
+    GST_WARNING ("Cannot get address from '%s'", self->priv->candidate);
+    addr = NULL;
+    goto end;
+  }
+
+  addr = g_match_info_fetch_named (match_info, "addr");
+
+end:
+  g_match_info_free (match_info);
+  g_regex_unref (regex);
+
+  return addr;
+}
+
+const guint
+kms_ice_candidate_get_port (KmsIceCandidate * self)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  gchar *port_str;
+  guint port = 0;
+
+  regex = g_regex_new ("^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)"
+      " (?<transport>(udp|UDP|tcp|TCP)) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
+      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
+      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?$",
+      0, 0, NULL);
+  g_regex_match (regex, self->priv->candidate, 0, &match_info);
+
+  if (!g_match_info_matches (match_info)) {
+    GST_WARNING ("Cannot get port from '%s'", self->priv->candidate);
+    port_str = NULL;
+    goto end;
+  }
+
+  port_str = g_match_info_fetch_named (match_info, "port");
+  port = atoi (port_str);
+  g_free (port_str);
+
+end:
+  g_match_info_free (match_info);
+  g_regex_unref (regex);
+
+  return port;
+}
+
+int
+kms_ice_candidate_get_ip_version (KmsIceCandidate * self)
+{
+  NiceCandidate *nice_cand;
+  gboolean ret;
+  int ip_version;
+
+  ret = kms_ice_candidate_create_nice (self, &nice_cand);
+
+  if (!ret) {
+    return 0;
+  }
+
+  ip_version = nice_address_ip_version (&nice_cand->addr);
+
+  nice_candidate_free (nice_cand);
+
+  return ip_version;
 }
 
 /* Utils end */

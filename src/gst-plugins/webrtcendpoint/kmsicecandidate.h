@@ -57,6 +57,9 @@ KmsIceCandidate *kms_ice_candidate_new (const gchar * candidate,
 
 const gchar * kms_ice_candidate_get_candidate (KmsIceCandidate * self);
 const gchar * kms_ice_candidate_get_sdp_mid (KmsIceCandidate * self);
+gchar * kms_ice_candidate_get_address (KmsIceCandidate * self);
+const guint kms_ice_candidate_get_port (KmsIceCandidate * self);
+int kms_ice_candidate_get_ip_version (KmsIceCandidate * self);
 guint8 kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self);
 gboolean kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand);
 

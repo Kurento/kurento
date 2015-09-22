@@ -15,26 +15,26 @@
 
 #include "kmswebrtcbaseconnection.h"
 #include <commons/kmsstats.h>
+#include <kmsiceniceagent.h>
 
 #define GST_CAT_DEFAULT kmswebrtcbaseconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "kmswebrtcbaseconnection"
-
-#define KMS_NICE_N_COMPONENTS 2
 
 G_DEFINE_TYPE (KmsWebRtcBaseConnection, kms_webrtc_base_connection,
     G_TYPE_OBJECT);
 
 gboolean
 kms_webrtc_base_connection_configure (KmsWebRtcBaseConnection * self,
-    NiceAgent * agent, const gchar * name)
+    KmsIceBaseAgent * agent, const gchar * name)
 {
   self->agent = g_object_ref (agent);
   self->name = g_strdup (name);
 
-  self->stream_id = nice_agent_add_stream (agent, KMS_NICE_N_COMPONENTS);
-  if (self->stream_id == 0) {
-    GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.", name);
+  self->stream_id = kms_ice_base_agent_add_stream (agent, self->name);
+
+  if (g_strcmp0 (self->stream_id, "0") == 0) {
+    GST_ERROR_OBJECT (self, "Cannot add stream for %s.", name);
     return FALSE;
   }
 
@@ -64,8 +64,9 @@ kms_webrtc_base_connection_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  nice_agent_remove_stream (self->agent, self->stream_id);
+  kms_ice_base_agent_remove_stream (self->agent, self->stream_id);
   g_free (self->name);
+  g_free (self->stream_id);
   g_clear_object (&self->agent);
   g_rec_mutex_clear (&self->mutex);
 
@@ -132,21 +133,30 @@ void
 kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * self,
     const gchar * ip, guint port)
 {
-  g_object_set (self->agent, "stun-server", ip, "stun-server-port", port, NULL);
+  if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
+    KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
+
+    g_object_set (kms_ice_nice_agent_get_agent (nice_agent),
+        "stun-server", ip, "stun-server-port", port, NULL);
+  }
 }
 
 void
 kms_webrtc_base_connection_set_relay_info (KmsWebRtcBaseConnection * self,
     const gchar * server_ip,
     guint server_port,
-    const gchar * username, const gchar * password, NiceRelayType type)
+    const gchar * username, const gchar * password, TurnProtocol type)
 {
-  nice_agent_set_relay_info (self->agent, self->stream_id,
-      NICE_COMPONENT_TYPE_RTP, server_ip, server_port,
-      username, password, type);
-  nice_agent_set_relay_info (self->agent, self->stream_id,
-      NICE_COMPONENT_TYPE_RTCP, server_ip, server_port,
-      username, password, type);
+  KmsIceRelayServerInfo info;
+
+  info.server_ip = server_ip;
+  info.server_port = server_port;
+  info.username = username;
+  info.password = password;
+  info.type = type;
+  info.stream_id = self->stream_id;
+
+  kms_ice_base_agent_add_relay_server (self->agent, info);
 }
 
 void

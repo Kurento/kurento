@@ -16,19 +16,11 @@
 #include <commons/kmsstats.h>
 
 #include "kmswebrtctransport.h"
+#include <stdlib.h>
 
 #define GST_CAT_DEFAULT kmswebrtctransport
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "kmswebrtctransport"
-
-void
-kms_webrtc_transport_nice_agent_recv_cb (NiceAgent * agent, guint stream_id,
-    guint component_id, guint len, gchar * buf, gpointer user_data)
-{
-  /* Nothing to do, this callback is only for negotiation */
-  GST_TRACE ("ICE data received on stream_id: '%" G_GUINT32_FORMAT
-      "' component_id: '%" G_GUINT32_FORMAT "'", stream_id, component_id);
-}
 
 static void
 element_remove_probe (GstElement * e, const gchar * pad_name, gulong id)
@@ -61,7 +53,7 @@ kms_webrtc_transport_destroy (KmsWebRtcTransport * tr)
 }
 
 KmsWebRtcTransport *
-kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
+kms_webrtc_transport_create (KmsIceBaseAgent * agent, char *stream_id,
     guint component_id)
 {
   KmsWebRtcTransport *tr;
@@ -69,22 +61,36 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
 
   tr = g_slice_new0 (KmsWebRtcTransport);
 
-  tr->src = KMS_WEBRTC_TRANSPORT_SRC (kms_webrtc_transport_src_nice_new ());
-  tr->sink = KMS_WEBRTC_TRANSPORT_SINK (kms_webrtc_transport_sink_nice_new ());
+  if (KMS_IS_ICE_NICE_AGENT (agent)) {
+    tr->src = KMS_WEBRTC_TRANSPORT_SRC (kms_webrtc_transport_src_nice_new ());
+    tr->sink =
+        KMS_WEBRTC_TRANSPORT_SINK (kms_webrtc_transport_sink_nice_new ());
+  } else {
+    GST_ERROR_OBJECT (tr, "Agent type not found");
+    return NULL;
+  }
 
   str =
-      g_strdup_printf ("%s-%s-%" G_GUINT32_FORMAT "-%" G_GUINT32_FORMAT,
+      g_strdup_printf ("%s-%s-%s-%" G_GUINT32_FORMAT,
       GST_OBJECT_NAME (tr->sink->dtlssrtpenc),
       GST_OBJECT_NAME (tr->src->dtlssrtpdec), stream_id, component_id);
   g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "connection-id", str, NULL);
   g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "connection-id", str, NULL);
   g_free (str);
 
-  g_object_set (G_OBJECT (tr->sink->sink), "agent", agent, "stream",
-      stream_id, "component", component_id, "sync", FALSE, "async", FALSE,
-      NULL);
-  g_object_set (G_OBJECT (tr->src->src), "agent", agent, "stream",
-      stream_id, "component", component_id, NULL);
+  if (KMS_IS_ICE_NICE_AGENT (agent)) {
+    KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (agent);
+    guint id = atoi (stream_id);
+
+    g_object_set (G_OBJECT (tr->sink->sink),
+        "agent", kms_ice_nice_agent_get_agent (nice_agent),
+        "stream", id, "component", component_id,
+        "sync", FALSE, "async", FALSE, NULL);
+
+    g_object_set (G_OBJECT (tr->src->src),
+        "agent", kms_ice_nice_agent_get_agent (nice_agent),
+        "stream", id, "component", component_id, NULL);
+  }
 
   return tr;
 }

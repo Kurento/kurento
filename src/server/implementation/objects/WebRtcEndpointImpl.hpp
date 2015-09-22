@@ -80,7 +80,7 @@ private:
 
   void onIceCandidate (gchar *sessId, KmsIceCandidate *candidate);
   void onIceGatheringDone (gchar *sessId);
-  void onIceComponentStateChanged (gchar *sessId, guint streamId,
+  void onIceComponentStateChanged (gchar *sessId, const gchar *streamId,
                                    guint componentId, guint state);
   void onDataChannelOpened (guint stream_id);
   void onDataChannelClosed (guint stream_id);

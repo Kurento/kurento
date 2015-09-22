@@ -222,8 +222,8 @@ connected_cb (GstElement * dtlssrtpenc, gpointer self)
 }
 
 KmsWebRtcRtcpMuxConnection *
-kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
-    const gchar * name)
+kms_webrtc_rtcp_mux_connection_new (KmsIceBaseAgent * agent,
+    GMainContext * context, const gchar * name)
 {
   GObject *obj;
   KmsWebRtcBaseConnection *base_conn;
@@ -252,10 +252,6 @@ kms_webrtc_rtcp_mux_connection_new (NiceAgent * agent, GMainContext * context,
 
   g_signal_connect (priv->tr->sink->dtlssrtpenc, "on-key-set",
       G_CALLBACK (connected_cb), conn);
-
-  nice_agent_attach_recv (agent, base_conn->stream_id,
-      NICE_COMPONENT_TYPE_RTP, context, kms_webrtc_transport_nice_agent_recv_cb,
-      NULL);
 
   return conn;
 }

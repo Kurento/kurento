@@ -27,6 +27,9 @@
 
 #include <string.h>
 
+#include "kmsiceniceagent.h"
+#include <stdlib.h>
+
 #define GST_DEFAULT_NAME "kmswebrtcsession"
 #define GST_CAT_DEFAULT kms_webrtc_session_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -40,6 +43,8 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 #define DEFAULT_STUN_SERVER_IP NULL
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
+
+#define IP_VERSION_6 6
 
 enum
 {
@@ -143,7 +148,7 @@ kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
 
 /* Connection management end */
 
-static guint
+gchar *
 kms_webrtc_session_get_stream_id (KmsWebrtcSession * self,
     SdpMediaConfig * mconf)
 {
@@ -151,54 +156,29 @@ kms_webrtc_session_get_stream_id (KmsWebrtcSession * self,
 
   conn = kms_webrtc_session_get_connection (self, mconf);
   if (conn == NULL) {
-    return -1;
+    return NULL;
   }
 
   return conn->stream_id;
 }
 
 static void
-sdp_media_add_ice_candidate (GstSDPMedia * media, NiceAgent * agent,
-    NiceCandidate * cand)
+sdp_media_add_ice_candidate (GstSDPMedia * media, KmsIceBaseAgent * agent,
+    KmsIceCandidate * cand)
 {
   gchar *str;
 
-  str = nice_agent_generate_local_candidate_sdp (agent, cand);
-  gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
-      str + SDP_CANDIDATE_ATTR_LEN);
-  g_free (str);
-}
-
-static const gchar *
-kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf, NiceAgent * agent, NiceCandidate * cand)
-{
-  guint media_stream_id;
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-  const gchar *mid;
-
-  media_stream_id = kms_webrtc_session_get_stream_id (self, mconf);
-  if (media_stream_id == -1) {
-    return NULL;
+  str = kms_ice_base_agent_generate_local_candidate_sdp (agent, cand);
+  if (str != NULL) {
+    gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
+        str + SDP_CANDIDATE_ATTR_LEN);
+    g_free (str);
   }
-
-  if (media_stream_id != cand->stream_id) {
-    return NULL;
-  }
-
-  sdp_media_add_ice_candidate (media, agent, cand);
-
-  mid = kms_sdp_media_config_get_mid (mconf);
-  if (mid == NULL) {
-    return "";
-  }
-
-  return mid;
 }
 
 void
 kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
-    self, NiceCandidate * nice_cand, guint8 index)
+    self, KmsIceCandidate * candidate, guint8 index)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
   SdpMessageContext *remote_sdp_ctx = sdp_sess->remote_sdp_ctx;
@@ -218,13 +198,13 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
   } else {
     GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
 
-    sdp_media_add_ice_candidate (media, self->agent, nice_cand);
+    sdp_media_add_ice_candidate (media, self->agent, candidate);
   }
 }
 
 gboolean
 kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
-    KmsIceCandidate * candidate, NiceCandidate * nice_cand)
+    KmsIceCandidate * candidate)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
   SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
@@ -251,29 +231,24 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
         index);
     return TRUE;
   } else {
-    GSList *candidates;
-    const gchar *cand_str;
+    gchar *stream_id;
 
-    nice_cand->stream_id = kms_webrtc_session_get_stream_id (self, mconf);
-    if (nice_cand->stream_id == -1) {
+    stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+
+    if (stream_id == NULL) {
       return FALSE;
     }
 
-    cand_str = kms_ice_candidate_get_candidate (candidate);
-    candidates = g_slist_append (NULL, nice_cand);
-
-    if (nice_agent_set_remote_candidates (self->agent,
-            nice_cand->stream_id, nice_cand->component_id, candidates) < 0) {
-      GST_WARNING_OBJECT (self, "Cannot add candidate: '%s'in stream_id: %d.",
-          cand_str, nice_cand->stream_id);
+    if (!kms_ice_base_agent_add_ice_candidate (self->agent, candidate,
+            stream_id)) {
+      GST_WARNING_OBJECT (self, "Cannot add candidate: '%s'in stream_id: %s.",
+          kms_ice_candidate_get_candidate (candidate), stream_id);
       ret = FALSE;
     } else {
-      GST_TRACE_OBJECT (self, "Candidate added: '%s' in stream_id: %d.",
-          cand_str, nice_cand->stream_id);
+      GST_TRACE_OBJECT (self, "Candidate added: '%s' in stream_id: %s.",
+          kms_ice_candidate_get_candidate (candidate), stream_id);
       ret = TRUE;
     }
-
-    g_slist_free (candidates);
   }
 
   return ret;
@@ -287,89 +262,19 @@ kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self)
 
   for (i = 0; i < len; i++) {
     KmsIceCandidate *candidate = g_slist_nth_data (self->remote_candidates, i);
-    NiceCandidate *nice_cand;
 
-    kms_ice_candidate_create_nice (candidate, &nice_cand);
-    if (nice_cand == NULL) {
+    if (!kms_webrtc_session_set_remote_ice_candidate (self, candidate)) {
       return;
     }
-
-    if (!kms_webrtc_session_set_remote_ice_candidate (self, candidate,
-            nice_cand)) {
-      nice_candidate_free (nice_cand);
-      return;
-    }
-    nice_candidate_free (nice_cand);
   }
 }
 
 static void
-kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
-    NiceAgent * agent, NiceCandidate * nice_cand)
+kms_webrtc_session_new_candidate (KmsIceBaseAgent * agent,
+    KmsIceCandidate * cand, KmsWebrtcSession * self)
 {
-  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
-  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
-  GList *list = NULL, *iterator = NULL;
-
-  KMS_SDP_SESSION_LOCK (self);
-
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
-    gint idx = kms_sdp_media_config_get_id (mconf);
-    const gchar *mid;
-
-    if (kms_sdp_media_config_is_inactive (mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
-      continue;
-    }
-
-    mid =
-        kms_webrtc_session_sdp_media_add_ice_candidate (self, mconf,
-        agent, nice_cand);
-    if (mid != NULL) {
-      KmsIceCandidate *candidate =
-          kms_ice_candidate_new_from_nice (agent, nice_cand, mid, idx);
-
-      list = g_list_append (list, candidate);
-    }
-  }
-
-  KMS_SDP_SESSION_UNLOCK (self);
-
-  for (iterator = list; iterator; iterator = iterator->next) {
-    g_signal_emit (G_OBJECT (self),
-        kms_webrtc_session_signals[SIGNAL_ON_ICE_CANDIDATE], 0, iterator->data);
-  }
-
-  g_list_free_full (list, g_object_unref);
-}
-
-/* TODO: change using "new-candidate-full" of libnice 0.1.8 */
-static void
-kms_webrtc_session_new_candidate (NiceAgent * agent,
-    guint stream_id,
-    guint component_id, gchar * foundation, KmsWebrtcSession * self)
-{
-  GSList *candidates;
-  GSList *walk;
-
-  GST_TRACE_OBJECT (self,
-      "stream_id: %d, component_id: %d, foundation: %s", stream_id,
-      component_id, foundation);
-
-  candidates = nice_agent_get_local_candidates (agent, stream_id, component_id);
-
-  for (walk = candidates; walk; walk = walk->next) {
-    NiceCandidate *cand = walk->data;
-
-    if (cand->stream_id == stream_id &&
-        cand->component_id == component_id &&
-        g_strcmp0 (foundation, cand->foundation) == 0) {
-      kms_webrtc_session_sdp_msg_add_ice_candidate (self, agent, cand);
-    }
-  }
-  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_session_signals[SIGNAL_ON_ICE_CANDIDATE], 0, cand);
 }
 
 static gboolean
@@ -377,11 +282,11 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
     SdpMediaConfig * mconf, gboolean use_ipv6)
 {
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-  NiceAgent *agent = self->agent;
-  guint stream_id;
-  NiceCandidate *rtp_default_candidate, *rtcp_default_candidate;
-  gchar rtp_addr[NICE_ADDRESS_STRING_LEN + 1];
-  gchar rtcp_addr[NICE_ADDRESS_STRING_LEN + 1];
+  KmsIceBaseAgent *agent = self->agent;
+  char *stream_id;
+  KmsIceCandidate *rtp_default_candidate, *rtcp_default_candidate;
+  gchar *rtp_addr;
+  gchar *rtcp_addr;
   const gchar *rtp_addr_type, *rtcp_addr_type;
   gboolean rtp_is_ipv6, rtcp_is_ipv6;
   guint rtp_port, rtcp_port;
@@ -390,22 +295,22 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
   guint attr_len, i;
 
   stream_id = kms_webrtc_session_get_stream_id (self, mconf);
-  if (stream_id == -1) {
+  if (stream_id == NULL) {
     return FALSE;
   }
 
   rtp_default_candidate =
-      nice_agent_get_default_local_candidate (agent, stream_id,
+      kms_ice_base_agent_get_default_local_candidate (agent, stream_id,
       NICE_COMPONENT_TYPE_RTP);
 
   if (kms_sdp_media_config_is_rtcp_mux (mconf) ||
       kms_sdp_media_config_get_group (mconf) != NULL) {
     rtcp_default_candidate =
-        nice_agent_get_default_local_candidate (agent, stream_id,
+        kms_ice_base_agent_get_default_local_candidate (agent, stream_id,
         NICE_COMPONENT_TYPE_RTP);
   } else {
     rtcp_default_candidate =
-        nice_agent_get_default_local_candidate (agent, stream_id,
+        kms_ice_base_agent_get_default_local_candidate (agent, stream_id,
         NICE_COMPONENT_TYPE_RTCP);
   }
 
@@ -415,16 +320,15 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
     return FALSE;
   }
 
-  nice_address_to_string (&rtp_default_candidate->addr, rtp_addr);
-  rtp_port = nice_address_get_port (&rtp_default_candidate->addr);
-  rtp_is_ipv6 = nice_address_ip_version (&rtp_default_candidate->addr) == IPV6;
-  nice_candidate_free (rtp_default_candidate);
+  rtp_addr = kms_ice_candidate_get_address (rtp_default_candidate);
+  rtp_port = kms_ice_candidate_get_port (rtp_default_candidate);
+  rtp_is_ipv6 =
+      kms_ice_candidate_get_ip_version (rtp_default_candidate) == IP_VERSION_6;
 
-  nice_address_to_string (&rtcp_default_candidate->addr, rtcp_addr);
-  rtcp_port = nice_address_get_port (&rtcp_default_candidate->addr);
+  rtcp_addr = kms_ice_candidate_get_address (rtcp_default_candidate);
+  rtcp_port = kms_ice_candidate_get_port (rtcp_default_candidate);
   rtcp_is_ipv6 =
-      nice_address_ip_version (&rtcp_default_candidate->addr) == IPV6;
-  nice_candidate_free (rtcp_default_candidate);
+      kms_ice_candidate_get_ip_version (rtcp_default_candidate) == IP_VERSION_6;
 
   rtp_addr_type = rtp_is_ipv6 ? "IP6" : "IP4";
   rtcp_addr_type = rtcp_is_ipv6 ? "IP6" : "IP4";
@@ -453,6 +357,12 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
       g_free (str);
     }
   }
+
+  g_free (rtp_addr);
+  g_free (rtcp_addr);
+
+  g_object_unref (rtp_default_candidate);
+  g_object_unref (rtcp_default_candidate);
 
   return TRUE;
 }
@@ -491,7 +401,7 @@ kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
 }
 
 static void
-kms_webrtc_session_gathering_done (NiceAgent * agent, guint stream_id,
+kms_webrtc_session_gathering_done (KmsIceBaseAgent * agent, gchar * stream_id,
     KmsWebrtcSession * self)
 {
   KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (self);
@@ -499,16 +409,16 @@ kms_webrtc_session_gathering_done (NiceAgent * agent, guint stream_id,
   gpointer key, v;
   gboolean done = TRUE;
 
-  GST_DEBUG_OBJECT (self, "ICE gathering done for '%s' stream.",
-      nice_agent_get_stream_name (agent, stream_id));
+  GST_DEBUG_OBJECT (self, "ICE gathering done for '%s' stream.", stream_id);
 
   KMS_SDP_SESSION_LOCK (self);
 
   g_hash_table_iter_init (&iter, base_rtp_sess->conns);
+
   while (g_hash_table_iter_next (&iter, &key, &v)) {
     KmsWebRtcBaseConnection *conn = KMS_WEBRTC_BASE_CONNECTION (v);
 
-    if (stream_id == conn->stream_id) {
+    if (g_strcmp0 (stream_id, conn->stream_id) == 0) {
       conn->ice_gathering_done = TRUE;
     }
 
@@ -529,12 +439,13 @@ kms_webrtc_session_gathering_done (NiceAgent * agent, guint stream_id,
 }
 
 static void
-kms_webrtc_session_component_state_change (NiceAgent * agent, guint stream_id,
-    guint component_id, NiceComponentState state, KmsWebrtcSession * self)
+kms_webrtc_session_component_state_change (KmsIceBaseAgent * agent,
+    char *stream_id, guint component_id, IceState state,
+    KmsWebrtcSession * self)
 {
   GST_DEBUG_OBJECT (self,
-      "stream_id: %d, component_id: %d, state: %s",
-      stream_id, component_id, nice_component_state_to_string (state));
+      "stream_id: %s, component_id: %d, state: %s",
+      stream_id, component_id, kms_ice_base_agent_state_to_string (state));
 
   g_signal_emit (G_OBJECT (self),
       kms_webrtc_session_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED], 0,
@@ -583,7 +494,8 @@ kms_webrtc_session_gather_candidates (KmsWebrtcSession * self)
 
     kms_webrtc_session_set_stun_server_info (self, conn);
     kms_webrtc_session_set_relay_info (self, conn);
-    if (!nice_agent_gather_candidates (conn->agent, conn->stream_id)) {
+    if (!kms_ice_base_agent_start_gathering_candidates (conn->agent,
+            conn->stream_id)) {
       GST_ERROR_OBJECT (self, "Failed to start candidate gathering for '%s'.",
           conn->name);
       ret = FALSE;
@@ -598,30 +510,21 @@ static gboolean
 kms_webrtc_session_add_ice_candidate (KmsWebrtcSession * self,
     KmsIceCandidate * candidate)
 {
-  NiceCandidate *nice_cand;
   guint8 index;
   gboolean ret;
 
   GST_DEBUG_OBJECT (self, "Add ICE candidate '%s'",
       kms_ice_candidate_get_candidate (candidate));
 
-  ret = kms_ice_candidate_create_nice (candidate, &nice_cand);
-  if (nice_cand == NULL) {
-    return ret;
-  }
-
   KMS_SDP_SESSION_LOCK (self);
   self->remote_candidates =
       g_slist_append (self->remote_candidates, g_object_ref (candidate));
 
-  ret =
-      kms_webrtc_session_set_remote_ice_candidate (self, candidate, nice_cand);
+  ret = kms_webrtc_session_set_remote_ice_candidate (self, candidate);
 
   index = kms_ice_candidate_get_sdp_m_line_index (candidate);
-  kms_webrtc_session_remote_sdp_add_ice_candidate (self, nice_cand, index);
+  kms_webrtc_session_remote_sdp_add_ice_candidate (self, candidate, index);
   KMS_SDP_SESSION_UNLOCK (self);
-
-  nice_candidate_free (nice_cand);
 
   return ret;
 }
@@ -639,7 +542,8 @@ kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self,
     return FALSE;
   }
 
-  nice_agent_get_local_credentials (conn->agent, conn->stream_id, &ufrag, &pwd);
+  kms_ice_base_agent_get_local_credentials (self->agent, conn->stream_id,
+      &ufrag, &pwd);
   gst_sdp_media_add_attribute (media, SDP_ICE_UFRAG_ATTR, ufrag);
   g_free (ufrag);
   gst_sdp_media_add_attribute (media, SDP_ICE_PWD_ATTR, pwd);
@@ -743,16 +647,17 @@ gst_media_add_remote_candidates (SdpMediaConfig * mconf,
     const gchar * msg_ufrag, const gchar * msg_pwd)
 {
   const GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-  NiceAgent *agent = conn->agent;
-  guint stream_id = conn->stream_id;
+  KmsIceBaseAgent *agent = conn->agent;
+  gchar *stream_id = conn->stream_id;
   const gchar *ufrag, *pwd;
   guint len, i;
 
   ufrag = gst_sdp_media_get_attribute_val (media, SDP_ICE_UFRAG_ATTR);
   pwd = gst_sdp_media_get_attribute_val (media, SDP_ICE_PWD_ATTR);
-  if (!nice_agent_set_remote_credentials (agent, stream_id, ufrag, pwd)) {
+
+  if (!kms_ice_base_agent_set_remote_credentials (agent, stream_id, ufrag, pwd)) {
     GST_WARNING ("Cannot set remote media credentials (%s, %s).", ufrag, pwd);
-    if (!nice_agent_set_remote_credentials (agent, stream_id, msg_ufrag,
+    if (!kms_ice_base_agent_set_remote_credentials (agent, stream_id, msg_ufrag,
             msg_pwd)) {
       GST_WARNING ("Cannot set remote message credentials (%s, %s).", ufrag,
           pwd);
@@ -767,28 +672,18 @@ gst_media_add_remote_candidates (SdpMediaConfig * mconf,
   len = gst_sdp_media_attributes_len (media);
   for (i = 0; i < len; i++) {
     const GstSDPAttribute *attr;
-    NiceCandidate *cand;
+    KmsIceCandidate *candidate;
+    gint idx = kms_sdp_media_config_get_id (mconf);
+    const gchar *mid = kms_sdp_media_config_get_mid (mconf);
 
     attr = gst_sdp_media_get_attribute (media, i);
     if (g_strcmp0 (SDP_CANDIDATE_ATTR, attr->key) != 0) {
       continue;
     }
 
-    kms_ice_candidate_create_nice_from_str (attr->value, &cand);
-    if (cand != NULL) {
-      GSList *candidates = g_slist_append (NULL, cand);
-
-      if (nice_agent_set_remote_candidates (agent, stream_id,
-              cand->component_id, candidates) < 0) {
-        GST_WARNING ("Cannot add candidate: '%s'in stream_id: %d.", attr->value,
-            stream_id);
-      } else {
-        GST_TRACE ("Candidate added: '%s' in stream_id: %d.", attr->value,
-            stream_id);
-      }
-      g_slist_free (candidates);
-      nice_candidate_free (cand);
-    }
+    candidate = kms_ice_candidate_new (attr->value, mid, idx);
+    kms_ice_base_agent_add_ice_candidate (agent, candidate, stream_id);
+    g_object_unref (candidate);
   }
 }
 
@@ -798,18 +693,11 @@ kms_webrtc_session_remote_sdp_add_stored_ice_candidates (gpointer data,
 {
   KmsIceCandidate *candidate = data;
   KmsWebrtcSession *webrtc_sess = user_data;
-  NiceCandidate *nice_cand;
   guint8 index;
 
-  kms_ice_candidate_create_nice (candidate, &nice_cand);
-  if (nice_cand == NULL) {
-    return;
-  }
-
   index = kms_ice_candidate_get_sdp_m_line_index (candidate);
-  kms_webrtc_session_remote_sdp_add_ice_candidate (webrtc_sess, nice_cand,
+  kms_webrtc_session_remote_sdp_add_ice_candidate (webrtc_sess, candidate,
       index);
-  nice_candidate_free (nice_cand);
 }
 
 static gboolean
@@ -916,7 +804,12 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
    *  started the ICE processing MUST take the controlling role, and the
    *  other MUST take the controlled role.
    */
-  g_object_set (self->agent, "controlling-mode", offerer, NULL);
+  if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
+    KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
+
+    g_object_set (kms_ice_nice_agent_get_agent (nice_agent), "controlling-mode",
+        offerer, NULL);
+  }
 
   /* Configure specific webrtc connection such as SCTP if negotiated */
   kms_webrtc_session_configure_connections (self, sdp_sess, offerer);
@@ -994,13 +887,13 @@ kms_webrtc_session_parse_turn_url (KmsWebrtcSession * self)
     self->turn_port = g_ascii_strtoll (port_str, NULL, 10);
     g_free (port_str);
 
-    self->turn_transport = NICE_RELAY_TYPE_TURN_UDP;    /* default */
+    self->turn_transport = TURN_PROTOCOL_UDP;   /* default */
     turn_transport = g_match_info_fetch_named (match_info, "transport");
     if (turn_transport != NULL) {
       if (g_strcmp0 ("tcp", turn_transport) == 0) {
-        self->turn_transport = NICE_RELAY_TYPE_TURN_TCP;
+        self->turn_transport = TURN_PROTOCOL_TCP;
       } else if (g_strcmp0 ("tls", turn_transport) == 0) {
-        self->turn_transport = NICE_RELAY_TYPE_TURN_TLS;
+        self->turn_transport = TURN_PROTOCOL_TLS;
       }
       g_free (turn_transport);
     }
@@ -1101,14 +994,14 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
   KmsBaseRtpSession *base_rtp_session = KMS_BASE_RTP_SESSION (self);
 
   self->context = g_main_context_ref (context);
-  self->agent = nice_agent_new (context, NICE_COMPATIBILITY_RFC5245);
 
-  g_object_set (self->agent, "upnp", FALSE, NULL);
-  g_signal_connect (self->agent, "new-candidate",
+  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (context, self));
+
+  g_signal_connect (self->agent, "on-ice-candidate",
       G_CALLBACK (kms_webrtc_session_new_candidate), self);
-  g_signal_connect (self->agent, "candidate-gathering-done",
+  g_signal_connect (self->agent, "on-ice-gathering-done",
       G_CALLBACK (kms_webrtc_session_gathering_done), self);
-  g_signal_connect (self->agent, "component-state-changed",
+  g_signal_connect (self->agent, "on-ice-component-state-changed",
       G_CALLBACK (kms_webrtc_session_component_state_change), self);
 
   KMS_BASE_RTP_SESSION_CLASS
@@ -1217,7 +1110,7 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
   kms_webrtc_session_signals[SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED] =
       g_signal_new ("on-ice-component-state-changed",
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
-      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 
   kms_webrtc_session_signals[SIGNAL_GATHER_CANDIDATES] =
       g_signal_new ("gather-candidates",

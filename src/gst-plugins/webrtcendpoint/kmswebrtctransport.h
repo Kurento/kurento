@@ -17,7 +17,7 @@
 #define __KMS_WEBRTC_TRANSPORT_H__
 
 #include <gst/gst.h>
-#include <nice/nice.h>
+#include "kmsiceniceagent.h"
 #include "kmswebrtctransportsrcnice.h"
 #include "kmswebrtctransportsinknice.h"
 
@@ -35,13 +35,9 @@ typedef struct _KmsWebRtcTransport
   gulong sink_probe;
 } KmsWebRtcTransport;
 
-KmsWebRtcTransport *kms_webrtc_transport_create (NiceAgent * agent,
-    guint stream_id, guint component_id);
+KmsWebRtcTransport *kms_webrtc_transport_create (KmsIceBaseAgent * agent,
+    char* stream_id, guint component_id);
 void kms_webrtc_transport_destroy (KmsWebRtcTransport * tr);
-
-void kms_webrtc_transport_nice_agent_recv_cb (NiceAgent * agent,
-    guint stream_id, guint component_id, guint len, gchar * buf,
-    gpointer user_data);
 
 void kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
   BufferLatencyCallback cb, gpointer user_data, GDestroyNotify destroy_data);

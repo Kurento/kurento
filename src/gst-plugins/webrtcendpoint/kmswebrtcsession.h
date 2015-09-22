@@ -19,6 +19,7 @@
 #include <gst/gst.h>
 #include <commons/kmsbasertpsession.h>
 #include "kmsicecandidate.h"
+#include "kmsicebaseagent.h"
 #include "kmswebrtcconnection.h"
 
 G_BEGIN_DECLS
@@ -46,7 +47,7 @@ struct _KmsWebrtcSession
   KmsBaseRtpSession parent;
 
   GMainContext * context;
-  NiceAgent *agent;
+  KmsIceBaseAgent *agent;
   GSList *remote_candidates;
 
   gchar *stun_server_ip;
@@ -56,7 +57,7 @@ struct _KmsWebrtcSession
   gchar *turn_password;
   gchar *turn_address;
   guint turn_port;
-  NiceRelayType turn_transport;
+  TurnProtocol turn_transport;
 };
 
 struct _KmsWebrtcSessionClass
@@ -84,8 +85,9 @@ KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 gboolean kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self, SdpMediaConfig * mconf);
-void kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession * self, NiceCandidate * nice_cand, guint8 index);
-gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate * candidate, NiceCandidate * nice_cand);
+void kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate *candidate, guint8 index);
+gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate * candidate);
+gchar * kms_webrtc_session_get_stream_id (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 
 void kms_webrtc_session_start_transport_send (KmsWebrtcSession * self, gboolean offerer);
 

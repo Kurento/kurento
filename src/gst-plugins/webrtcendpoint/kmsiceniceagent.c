@@ -14,6 +14,7 @@
  */
 
 #include "kmsiceniceagent.h"
+#include <stdlib.h>
 
 #define GST_CAT_DEFAULT kms_ice_nice_agent_debug
 #define GST_DEFAULT_NAME "kmsiceniceagent"
@@ -40,20 +41,6 @@ struct _KmsIceNiceAgentPrivate
   KmsWebrtcSession *session;
 };
 
-static gchar *
-kms_ice_nice_agent_get_stream_id (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
-{
-  KmsWebRtcBaseConnection *conn;
-
-  conn = kms_webrtc_session_get_connection (self, mconf);
-  if (conn == NULL) {
-    return NULL;
-  }
-
-  return conn->stream_id;
-}
-
 static void
 sdp_media_add_ice_candidate (GstSDPMedia * media, NiceAgent * agent,
     NiceCandidate * cand)
@@ -74,7 +61,7 @@ kms_ice_nice_agent_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   const gchar *mid;
 
-  media_stream_id = kms_ice_nice_agent_get_stream_id (self, mconf);
+  media_stream_id = kms_webrtc_session_get_stream_id (self, mconf);
   if (media_stream_id == NULL) {
     return NULL;
   }
@@ -478,7 +465,7 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
     }
 
     media_stream_id =
-        kms_ice_nice_agent_get_stream_id (nice_agent->priv->session, mconf);
+        kms_webrtc_session_get_stream_id (nice_agent->priv->session, mconf);
     if (media_stream_id == NULL) {
       return NULL;
     }
