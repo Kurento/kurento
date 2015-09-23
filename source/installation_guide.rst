@@ -83,13 +83,13 @@ the Kurento Media Server configuration file located on at
    Be careful since comments inline (with ``;``) are not allowed for parameter such as ``stunServerAddress``.
    Thus, the following configuration **is not correct**:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
        stunServerAddress=<stun_ip_address> ; Only IP address are supported
 
    ... and must be:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
        stunServerAddress=<stun_ip_address>
 

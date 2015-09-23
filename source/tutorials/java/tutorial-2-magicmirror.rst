@@ -15,7 +15,7 @@ information.
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-magic-mirror
@@ -32,7 +32,7 @@ Firefox).
    than the tutorial. However, it is possible to locate the KMS in other machine simple adding
    the argument ``kms.ws.uri`` to the Maven execution command, as follows:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
       mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
 
@@ -487,7 +487,7 @@ The command ``bower install`` is automatically called from Maven. Thus, Bower
 should be present in your system. It can be installed in an Ubuntu machine as
 follows:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs

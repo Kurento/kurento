@@ -17,7 +17,7 @@ task, you can use the ``kurento-module-scaffold`` tool. This tool is
 distributed with the ``kurento-media-server-6.0-dev`` package. To install this
 tool run this command in the shell:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    sudo apt-get install kurento-media-server-6.0-dev
 
@@ -25,13 +25,13 @@ The tool usage is different depending on the chosen flavor:
 
 1. OpenCV module:
 
-.. sourcecode:: sh
+.. sourcecode:: none
  
    kurento-module-scaffold.sh <module_name> <output_directory> opencv_filter
 
 2. Gstreamer module:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    kurento-module-scaffold.sh <module_name> <output_directory>
 
@@ -44,7 +44,7 @@ Once, ``kmd`` files are completed we can generate code. The tool
 ``kurento-module-creator`` generates glue code to server-side. From the root
 directory:
 
-.. sourcecode:: sh 
+.. sourcecode:: none 
 
    cd build
    cmake ..
@@ -57,7 +57,7 @@ OpenCV module
 
 We have four files in ``src/server/implementation``:
 
-.. sourcecode:: sh 
+.. sourcecode:: none 
 
    ModuleNameImpl.cpp
    ModuleNameImpl.hpp
@@ -79,7 +79,7 @@ In this case, we have two directories inside the ``src`` folder. The
 (the ``kurento-module-scaffold`` generates a dummy filter). Inside the
 ``server/objects`` folder you have two files:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    ModuleNameImpl.cpp
    ModuleNameImpl.hpp

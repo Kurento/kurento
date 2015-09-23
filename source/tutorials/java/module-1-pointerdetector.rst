@@ -14,14 +14,14 @@ visit the :doc:`installation guide <../../installation_guide>` for further
 information. In addition, the built-in module ``kms-pointerdetector-6.0``
 should be also installed:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     sudo apt-get install kms-pointerdetector-6.0
 
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-tutorial-java/kurento-pointerdetector
@@ -38,7 +38,7 @@ Firefox).
    than the tutorial. However, it is possible to locate the KMS in other machine simple adding
    the argument ``kms.ws.uri`` to the Maven execution command, as follows:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
       mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
 

@@ -13,14 +13,14 @@ visit the :doc:`installation guide <../../installation_guide>` for further
 information. In addition, the built-in module ``kms-pointerdetector-6.0``
 should be also installed:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     sudo apt-get install kms-pointerdetector-6.0
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
 an Ubuntu machine, you can install both as follows:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
@@ -30,14 +30,14 @@ Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
 A very simple way of doing this is by means of a HTTP Node.js server which can
 be installed using `npm`:term: :
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    sudo npm install http-server -g
 
 You also need the source code of this demo. You can clone it from GitHub. Then
 start the HTTP server:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-tutorial-js/kurento-pointerdetector
@@ -54,7 +54,7 @@ through a WebRTC capable browser (Chrome, Firefox).
    than the tutorial. However, it is possible to locate the KMS in other machine simple adding
    the parameter ``ws_uri`` to the URL, as follows:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
       http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
 
@@ -213,7 +213,7 @@ In order to carry out the calibration process, this JavaScript function is used:
    The :term:`TURN` and :term:`STUN` servers to be used can be configured simple adding
    the parameter ``ice_servers`` to the application URL, as follows:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
       http://localhost:8080/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
       http://localhost:8080/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
@@ -236,7 +236,7 @@ file, as follows:
 
 To get these dependencies, just run the following shell command:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    bower install
 

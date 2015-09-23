@@ -15,7 +15,7 @@ information.
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
 an Ubuntu machine, you can install both as follows:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
    curl -sL https://deb.nodesource.com/setup | sudo bash -
    sudo apt-get install -y nodejs
@@ -24,7 +24,7 @@ an Ubuntu machine, you can install both as follows:
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-tutorial-node/kurento-one2one-call
@@ -35,7 +35,7 @@ is hosted and then install and run it, as follows:
 If you have problems installing any of the dependencies, please remove them and
 clean the npm cache, and try to install them again:
 
-.. sourcecode:: sh
+.. sourcecode:: none
 
     rm -r node_modules
     npm cache clean
@@ -49,13 +49,13 @@ WebRTC capable browser (Chrome, Firefox).
    than the tutorial. However, it is possible to locate the KMS in other machine simple adding
    the argument ``ws_uri`` to the npm execution command, as follows:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
       npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
 
    In this case you need to use npm version 2. To update it you can use this command:
 
-   .. sourcecode:: sh
+   .. sourcecode:: none
 
       sudo npm install npm -g
 
