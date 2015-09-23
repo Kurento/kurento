@@ -114,6 +114,9 @@ add_dependencies(kmswebrtcendpointlib rtcpdemux webrtcdataproto)
 
 # install kmswebrtcendpointlib
 
+set_target_properties(kmswebrtcendpointlib PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_HEADERS}")
+set_target_properties(kmswebrtcendpointlib PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
 install(
   TARGETS kmswebrtcendpointlib
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -121,9 +124,6 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   PUBLIC_HEADER DESTINATION ${INCLUDE_PREFIX}
 )
-
-set_target_properties(kmswebrtcendpointlib PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_HEADERS}")
-set_target_properties(kmswebrtcendpointlib PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 foreach (HEADER ${KMS_WEBRTC_HEADERS})
   list (APPEND FIND_HEADERS webrtcendpoint/${HEADER})
