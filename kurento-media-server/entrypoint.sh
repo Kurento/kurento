@@ -9,4 +9,4 @@ if [ ! -z "$COTURN_PORT_3478_TCP_ADDR" ]; then
   fi
 fi
 
-exec /usr/bin/kurento-media-server "$0"
+exec /usr/bin/kurento-media-server "$@"
