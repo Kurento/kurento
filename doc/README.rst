@@ -38,7 +38,11 @@ provides the following features:
 Documentation
 =============
 
-- :doc:`Programmers Guide <user_guide>`
-- :doc:`Installation and Administration Guide <admin_guide>`
-- :doc:`Architecture Description <architecture>`
-- :doc:`Open API Specification <open_spec>`
+.. toctree::
+   :glob:
+   :maxdepth: 2
+
+   Programmers Guide <doc/user_guide>
+   Installation and Administration Guide <doc/admin_guide>
+   Architecture Description <doc/architecture>
+   Open API Specification <doc/open_spec>
