@@ -82,7 +82,6 @@ in your `pom.xml`:
 
 ::
 
-	<pre>
 	<dependencies>
 	   <dependency>
 	      <groupId>org.kurento</groupId>
@@ -90,7 +89,6 @@ in your `pom.xml`:
 	      <version>6.1.0</version>
 	   </dependency>
 	</dependencies>
-	</pre>
 
 `KurentoClient` is the Java class used to connect to Kurento Media Server. This
 class has several static factory methods to create instances from it. In the
