@@ -96,7 +96,7 @@
           </#if>
         </#list>
     break;
-    case ${params_max}: console.log('All optional params are used')
+    case ${params_max}: 
     break;
 
     default:
