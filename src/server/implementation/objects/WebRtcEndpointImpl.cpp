@@ -316,12 +316,15 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
 std::string
 WebRtcEndpointImpl::getStunServerAddress ()
 {
+  std::string stunServerAddress;
   gchar *ret;
 
   g_object_get ( G_OBJECT (element), "stun-server", &ret, NULL);
 
-  std::string stunServerAddress (ret);
-  g_free (ret);
+  if (ret != NULL) {
+    stunServerAddress = std::string (ret);
+    g_free (ret);
+  }
 
   return stunServerAddress;
 }
@@ -354,12 +357,15 @@ WebRtcEndpointImpl::setStunServerPort (int stunServerPort)
 std::string
 WebRtcEndpointImpl::getTurnUrl ()
 {
+  std::string turnUrl;
   gchar *ret;
 
   g_object_get ( G_OBJECT (element), "turn-url", &ret, NULL);
 
-  std::string turnUrl (ret);
-  g_free (ret);
+  if (ret != NULL) {
+    turnUrl = std::string (ret);
+    g_free (ret);
+  }
 
   return turnUrl;
 }
