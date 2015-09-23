@@ -251,7 +251,7 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       (kms_webrtc_endpoint_parent_class)->create_session_internal (base_sdp, id,
       sess);
 
-  g_signal_emit_by_name (webrtc_sess, "init_ice_agent");
+  g_signal_emit_by_name (webrtc_sess, "init-ice-agent");
 }
 
 /* Internal session management end */

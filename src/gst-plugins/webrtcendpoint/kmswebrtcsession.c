@@ -1137,7 +1137,7 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       KMS_TYPE_ICE_CANDIDATE);
 
   kms_webrtc_session_signals[SIGNAL_INIT_ICE_AGENT] =
-      g_signal_new ("init_ice_agent",
+      g_signal_new ("init-ice-agent",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, init_ice_agent), NULL, NULL,
