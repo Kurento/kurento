@@ -16,7 +16,15 @@ find_path(KmsWebRtcEndpointLib_INCLUDE_DIR
     @CUSTOM_PREFIX@
 )
 
-set(KmsWebRtcEndpointLib_INCLUDE_DIRS ${KmsWebRtcEndpointLib_INCLUDE_DIR}
+find_path(KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR
+  NAMES
+    webrtcendpoint/kms-webrtc-marshal.h
+  PATH_SUFFIXES
+    build/src/gst-plugins
+    @CUSTOM_PREFIX@
+)
+
+set(KmsWebRtcEndpointLib_INCLUDE_DIRS ${KmsWebRtcEndpointLib_INCLUDE_DIR} ${KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR}
   CACHE INTERNAL "Include directories for KmsWebRtcEndpointLib library"
 )
 
@@ -59,6 +67,7 @@ find_package_handle_standard_args(KmsWebRtcEndpointLib
   REQUIRED_VARS
     KmsWebRtcEndpointLib_VERSION
     KmsWebRtcEndpointLib_INCLUDE_DIR
+    KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR
     KmsWebRtcEndpointLib_INCLUDE_DIRS
     KmsWebRtcEndpointLib_LIBRARY
     KmsWebRtcEndpointLib_LIBRARIES
@@ -70,6 +79,7 @@ mark_as_advanced(
   KmsWebRtcEndpointLib_FOUND
   KmsWebRtcEndpointLib_VERSION
   KmsWebRtcEndpointLib_INCLUDE_DIR
+  KmsWebRtcEndpointLib_GENERATED_INCLUDE_DIR
   KmsWebRtcEndpointLib_INCLUDE_DIRS
   KmsWebRtcEndpointLib_LIBRARY
   KmsWebRtcEndpointLib_LIBRARIES
