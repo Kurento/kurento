@@ -5,7 +5,6 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CUSTOM_PREFIX "kurento")
 set(INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}/webrtcendpoint")
 
-# icecandidate begin
 set(KMS_ICE_SOURCES
   kmsicecandidate.c
   kmsicebaseagent.c
@@ -59,15 +58,15 @@ add_library(webrtcdataproto SHARED
   ${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}
 )
 
-set_target_properties(webrtcdataproto PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}")
-set_target_properties(webrtcdataproto PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-
 target_link_libraries(webrtcdataproto
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-app-1.5_LIBRARIES}
   ${gstreamer-sctp-1.5_LIBRARIES}
 )
+
+set_target_properties(webrtcdataproto PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_DATA_PROTOCOL_HEADERS}")
+set_target_properties(webrtcdataproto PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 install(
   TARGETS webrtcdataproto
@@ -112,7 +111,14 @@ add_glib_marshal(KMS_WEBRTC_SOURCES KMS_WEBRTC_HEADERS kms-webrtc-marshal __kms_
 add_library(kmswebrtcendpointlib SHARED ${KMS_WEBRTC_SOURCES} ${KMS_WEBRTC_HEADERS})
 add_dependencies(kmswebrtcendpointlib rtcpdemux webrtcdataproto)
 
-# install kmswebrtcendpointlib
+target_link_libraries(kmswebrtcendpointlib
+  webrtcdataproto
+  ${KmsGstCommons_LIBRARIES}
+  ${gstreamer-1.5_LIBRARIES}
+  ${gstreamer-base-1.5_LIBRARIES}
+  ${gstreamer-pbutils-1.5_LIBRARIES}
+  ${nice_LIBRARIES}
+)
 
 set_target_properties(kmswebrtcendpointlib PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_HEADERS}")
 set_target_properties(kmswebrtcendpointlib PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
@@ -139,10 +145,8 @@ install(FILES
   ${CMAKE_BINARY_DIR}/FindKmsWebRtcEndpointLib.cmake
   DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
 )
-# end install kmswebrtcendpointlib
 
 add_library(webrtcendpoint MODULE kmswebrtc.c)
-
 add_dependencies(webrtcendpoint kmswebrtcendpointlib)
 
 include_directories(
@@ -153,15 +157,6 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${nice_INCLUDE_DIRS}
-)
-
-target_link_libraries(kmswebrtcendpointlib
-  webrtcdataproto
-  ${KmsGstCommons_LIBRARIES}
-  ${gstreamer-1.5_LIBRARIES}
-  ${gstreamer-base-1.5_LIBRARIES}
-  ${gstreamer-pbutils-1.5_LIBRARIES}
-  ${nice_LIBRARIES}
 )
 
 target_link_libraries(webrtcendpoint
