@@ -122,6 +122,9 @@ install(
   PUBLIC_HEADER DESTINATION ${INCLUDE_PREFIX}
 )
 
+set_target_properties(kmswebrtcendpointlib PROPERTIES PUBLIC_HEADER "${KMS_WEBRTC_HEADERS}")
+set_target_properties(kmswebrtcendpointlib PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
 foreach (HEADER ${KMS_WEBRTC_HEADERS})
   list (APPEND FIND_HEADERS webrtcendpoint/${HEADER})
 endforeach ()
@@ -140,7 +143,7 @@ install(FILES
 
 add_library(webrtcendpoint MODULE kmswebrtc.c)
 
-add_dependencies(webrtcendpoint kmswebrtcenpointlib)
+add_dependencies(webrtcendpoint kmswebrtcendpointlib)
 
 include_directories(
   ${KmsGstCommons_INCLUDE_DIRS}
