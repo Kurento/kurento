@@ -1136,6 +1136,7 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       __kms_webrtc_marshal_BOOLEAN__OBJECT, G_TYPE_BOOLEAN, 1,
       KMS_TYPE_ICE_CANDIDATE);
 
+  /* TODO: look for a better way of doing this */
   kms_webrtc_session_signals[SIGNAL_INIT_ICE_AGENT] =
       g_signal_new ("init-ice-agent",
       G_TYPE_FROM_CLASS (klass),
