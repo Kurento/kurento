@@ -2,7 +2,7 @@
    :glob:
    :maxdepth: 2
 
-   Programmer Guide          <doc/user_guide>
-   Admin Guide               <doc/admin_guide>
-   Architecture              <doc/architecture>
-   Open Specification        <doc/open_spec>
+   Programmers Guide <doc/user_guide>
+   Installation and Administration Guide <doc/admin_guide>
+   Architecture Description <doc/architecture>
+   Open API Specification <doc/open_spec>
