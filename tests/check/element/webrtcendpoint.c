@@ -192,8 +192,9 @@ receiver_1_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
   pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
 
   G_LOCK (check_receive_lock);
+  g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+
   if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline), RECEIVER_2_OK))) {
-    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop_idle, hod->loop);
   } else {
     g_object_set_data (G_OBJECT (pipeline), RECEIVER_1_OK,
@@ -225,8 +226,9 @@ receiver_2_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
   pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
 
   G_LOCK (check_receive_lock);
+  g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+
   if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline), RECEIVER_1_OK))) {
-    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop_idle, hod->loop);
   } else {
     g_object_set_data (G_OBJECT (pipeline), RECEIVER_2_OK,
@@ -835,8 +837,9 @@ sendrecv_fakesink_hand_off (GstElement * fakesink,
 
   G_LOCK (check_receive_lock);
   g_object_set_data (G_OBJECT (pipeline), hod->type, GINT_TO_POINTER (TRUE));
+  g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+
   if (check_offerer_and_answerer_receive_audio_and_video (pipeline)) {
-    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop_idle, hod->loop);
   }
   G_UNLOCK (check_receive_lock);
