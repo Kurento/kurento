@@ -1,5 +1,5 @@
 ----------------------------------------
---- EXECUTE KURENTO REPOSITORY 6.0.x ---
+---    EXECUTE KURENTO REPOSITORY    ---
 ----------------------------------------
 
 - Build
@@ -10,26 +10,26 @@
 - Unzip distribution files
 
    cd kurento-repository-server/target
-   unzip kurento-repository-server-6.0.0-SNAPSHOT.zip
+   unzip kurento-repository-server-x.y.z.zip
    
 - Execute start script
 
-   cd kurento-repository-server-6.0.0-SNAPSHOT
+   cd kurento-repository-server-x.y.z
    ./bin/start.sh
 
 - Configure logging
 
-   vim kurento-repository-server-6.0.0-SNAPSHOT/config/kurento-repo-log4j.properties
+   vim kurento-repository-server-x.y.z/config/kurento-repo-log4j.properties
 
   << Log file by default will be located in 
-     kurento-repository-server-6.0.0-SNAPSHOT/logs/ >>
+     kurento-repository-server-x.y.z/logs/ >>
 
 - Configure server
 
-   vim kurento-repository-server-6.0.0-SNAPSHOT/config/kurento-repo.conf.json
+   vim kurento-repository-server-x.y.z/config/kurento-repo.conf.json
 
 ---------------------------------------------------------
---- START KURENTO-REPO 6.0.x AS DAEMON (kurento-repo) ---
+--- START KURENTO-REPO AS DAEMON (kurento-repo) ---------
 --- IN UBUNTU OR CENTOS ---------------------------------
 ---------------------------------------------------------
 
@@ -41,11 +41,11 @@
 - Unzip distribution files
 
    cd kurento-repository-server/target
-   unzip kurento-repository-server-6.0.0-SNAPSHOT.zip
+   unzip kurento-repository-server-x.y.z.zip
    
 - Execute install script
 
-   cd kurento-repository-server-6.0.0-SNAPSHOT
+   cd kurento-repository-server-x.y.z
    sudo ./bin/install.sh
 
   << The service (kurento-repo) will be automatically started. >>
