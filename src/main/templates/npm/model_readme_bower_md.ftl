@@ -1,13 +1,14 @@
 <#assign node_name=module.code.api.js.nodeName>
-README.md
+README_bower.md
 [![][KurentoImage]][Kurento]
 
 Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 
-${node_name}-js
+${node_name}-bower
 ===============
 
-This repository host the auto-generated JavaScript client for [Kurento] module "${module.name}".
+This repository host the auto-generated JavaScript client for [Kurento]
+module "${module.name}" to be published in [Bower].
 
 Module "${module.name}" description: ${module.code.api.js.npmDescription}
 
@@ -104,3 +105,4 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [LGPL v2.1 License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [NUBOMEDIA]: http://www.nubomedia.eu
 [StackOverflow]: http://stackoverflow.com/search?q=kurento
+[Bower]: http://bower.io/
