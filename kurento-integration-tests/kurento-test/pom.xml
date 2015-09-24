@@ -170,13 +170,4 @@
 		</pluginManagement>
 	</build>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-util</artifactId>
-				<version>9.2.5.v20141112</version>
-			</dependency>			
-		</dependencies>
-	</dependencyManagement>
 </project>
