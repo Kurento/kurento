@@ -14,7 +14,7 @@ var parseString = require('xml2js').parseString;
 
 const package_name = require('../package.json').name
 
-const PORT = 8080
+const PORT = 6060
 const REPORTS_DIR='reports'
 const TIMEOUT=20
 

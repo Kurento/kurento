@@ -409,10 +409,15 @@ QUnit.test('currentFrame', function (assert) {
             audio: false,
             fake: true,
             video: {
-              mandatory: {
-                maxWidth: 640,
-                maxFrameRate: 15,
-                minFrameRate: 15
+              width: {
+                min: 1024,
+                ideal: 1280,
+                max: 1920
+              },
+              height: {
+                min: 576,
+                ideal: 720,
+                max: 1080
               }
             }
           }
@@ -582,6 +587,7 @@ QUnit.test('videoEnabled', function (assert) {
     localVideo: video,
     mediaConstraints: {
       audio: false,
+      video: true,
       fake: true
     }
   }
