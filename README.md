@@ -113,7 +113,9 @@ Documentation
 -------------
 
 The Kurento project provides detailed [documentation] including tutorials,
-installation and development guides.
+installation and development guides. A simplified version of the documentation
+can be found on [readthedocs.org]. The [Open API specification] (a.k.a. Kurento
+Protocol) is also available on [apiary.io].
 
 Source
 ------
@@ -193,3 +195,7 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [kurento-client-js]: https://github.com/Kurento/kurento-client-js
 [kurento-utils-js]: https://github.com/Kurento/kurento-utils-js
 [Node.js]: http://nodejs.org/
+[Read-the-docs]: http://read-the-docs.readthedocs.org/
+[readthedocs.org]: http://kurento.readthedocs.org/
+[Open API specification]: http://kurento.github.io/doc-kurento/
+[apiary.io]: http://docs.streamoriented.apiary.io/
