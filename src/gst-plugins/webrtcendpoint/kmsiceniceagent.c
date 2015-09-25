@@ -444,6 +444,7 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   NiceCandidate *nice_cand;
+  KmsIceCandidate *ret = NULL;
   guint id = atoi (stream_id);
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (nice_agent->priv->session);
   SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
@@ -467,26 +468,26 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
     media_stream_id =
         kms_webrtc_session_get_stream_id (nice_agent->priv->session, mconf);
     if (media_stream_id == NULL) {
-      return NULL;
+      goto end;
     }
 
     if (media_stream_id != stream_id) {
-      return NULL;
+      goto end;
     }
 
     mid = kms_sdp_media_config_get_mid (mconf);
 
     if (mid != NULL) {
-      KmsIceCandidate *candidate =
-          kms_ice_candidate_new_from_nice (nice_agent->priv->agent, nice_cand,
+      ret = kms_ice_candidate_new_from_nice (nice_agent->priv->agent, nice_cand,
           mid, idx);
-
-      nice_candidate_free (nice_cand);
-      return candidate;
+      goto end;
     }
-    nice_candidate_free (nice_cand);
   }
-  return NULL;
+
+end:
+  nice_candidate_free (nice_cand);
+
+  return ret;
 }
 
 static void
