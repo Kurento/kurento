@@ -17,17 +17,22 @@ var local;
 var video;
 var webRtcPeer;
 var sdpOffer;
-var userMediaConstraints = {
-	fake : true
-};
 var videoStream = null;
 var audioStream = null;
 var defaultVideoConstraints = {
-	mandatory : {
-		maxWidth : 640,
-		maxFrameRate : 15,
-		minFrameRate : 15
+	width : {
+		max : 640
+	},
+	frameRate : {
+		min : 10,
+		ideal : 15,
+		max : 20
 	}
+};
+var userMediaConstraints = {
+	audio : true,
+	video : defaultVideoConstraints,
+	fake : true
 };
 
 try {
