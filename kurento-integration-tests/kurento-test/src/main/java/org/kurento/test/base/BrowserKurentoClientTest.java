@@ -30,6 +30,7 @@ import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.KurentoTestClient;
+import org.kurento.test.client.TestClient;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.Protocol;
@@ -50,7 +51,6 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 
 	public BrowserKurentoClientTest(TestScenario testScenario) {
 		super(testScenario);
-		this.setClient(new KurentoTestClient());
 	}
 
 	public BrowserKurentoClientTest() {
@@ -90,6 +90,20 @@ public class BrowserKurentoClientTest extends KurentoClientTest {
 	@Override
 	public KurentoTestClient getViewer(int index) {
 		return (KurentoTestClient) super.getViewer(index);
+	}
+
+	@Override
+	public TestClient getClient(String browserKey) {
+		KurentoTestClient client;
+		if (getClients().containsKey(browserKey)) {
+			client = (KurentoTestClient) getClients().get(browserKey);
+		} else {
+			client = new KurentoTestClient();
+			client.setBrowserClient(getTestScenario().getBrowserMap().get(browserKey));
+			getClients().put(browserKey, client);
+		}
+
+		return client;
 	}
 
 	protected void playFileAsLocal(BrowserType browserType,

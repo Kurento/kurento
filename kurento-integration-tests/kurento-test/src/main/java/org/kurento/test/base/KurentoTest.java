@@ -25,6 +25,8 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -76,14 +78,14 @@ public class KurentoTest {
 		return Arrays.asList(new Object[][] { {} });
 	}
 
-	private TestClient client;
+	private Map<String, TestClient> clients = new HashMap<>();
 	private TestScenario testScenario;
+	private String browserKey;
 
 	public KurentoTest() {
 	}
 
 	public KurentoTest(TestScenario testScenario) {
-		client = new TestClient();
 		this.testScenario = testScenario;
 	}
 
@@ -147,16 +149,12 @@ public class KurentoTest {
 	}
 
 	public int getTimeout() {
-		return client.getBrowserClient().getTimeout();
+		return clients.get(browserKey).getBrowserClient().getTimeout();
 	}
 
 	public void addBrowserClient(String browserKey, BrowserClient browserClient) {
 		testScenario.getBrowserMap().put(browserKey, browserClient);
 		initBrowserClient(browserKey, browserClient);
-	}
-
-	public void setClient(TestClient client) {
-		this.client = client;
 	}
 
 	public TestClient getBrowser(String browserKey) {
@@ -201,19 +199,28 @@ public class KurentoTest {
 	}
 
 	private TestClient assertAndGetBrowser(String browserKey) {
+
 		if (!testScenario.getBrowserMap().keySet().contains(browserKey)) {
 			throw new RuntimeException(browserKey + " is not registered as browser in the test scenario");
 		}
 
+		this.browserKey = browserKey;
 		return getClient(browserKey);
 	}
 
 	public void setTimeout(int timeoutSeconds) {
-		client.getBrowserClient().changeTimeout(timeoutSeconds);
+		clients.get(browserKey).getBrowserClient().changeTimeout(timeoutSeconds);
 	}
 
 	public TestClient getClient(String browserKey) {
-		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
+		TestClient client;
+		if (clients.containsKey(browserKey)) {
+			client = clients.get(browserKey);
+		} else {
+			client = new TestClient();
+			client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
+			clients.put(browserKey, client);
+		}
 
 		return client;
 	}
@@ -282,6 +289,10 @@ public class KurentoTest {
 		}
 
 		log.debug("URL {} already reachable", url);
+	}
+
+	public Map<String, TestClient> getClients() {
+		return clients;
 	}
 
 }

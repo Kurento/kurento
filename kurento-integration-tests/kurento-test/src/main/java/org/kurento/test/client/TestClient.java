@@ -52,10 +52,6 @@ public class TestClient {
 	public TestClient() {
 	}
 
-	public TestClient(TestClient client) {
-		this.browserClient = client.browserClient;
-	}
-
 	public BrowserClient getBrowserClient() {
 		return browserClient;
 	}

@@ -48,7 +48,6 @@ public class RepositoryFunctionalTest extends KurentoClientTest {
 
 	public RepositoryFunctionalTest(TestScenario testScenario) {
 		super(testScenario);
-		this.setClient(new KurentoTestClient());
 	}
 
 	public RepositoryFunctionalTest() {
