@@ -293,6 +293,7 @@ public class KurentoTestClient extends TestClient {
 		browserClient.reload();
 		browserClient.injectKurentoTestJs();
 		browserClient.executeScriptAndWaitOutput("return kurentoTest;");
+		setBrowserClient(browserClient);
 	}
 
 	/*
