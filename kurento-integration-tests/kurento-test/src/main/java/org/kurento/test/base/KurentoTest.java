@@ -213,9 +213,7 @@ public class KurentoTest {
 	}
 
 	public TestClient getClient(String browserKey) {
-		if (client.getBrowserClient() == null) {
-			client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
-		}
+		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
 
 		return client;
 	}
