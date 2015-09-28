@@ -80,7 +80,7 @@ exchanged between client and server.
 
 ${type.name}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    - **Description:** ${type.doc?replace("\n", " ")}
+    - **Description:** <#if type.doc??>${type.doc?replace("\n", " ")}<#else> FIXME: Add doc here</#if>
     <#if type.extends??>
     - **Extends:** ${type.extends.name}    
     </#if>
@@ -89,7 +89,7 @@ ${type.name}
     
     <#if type.properties?has_content >
     - **Methods:**
-        <#list event.properties as property>
+        <#list type.properties as property>
             - **${property.type.name}<#if property.type.list>[]</#if> ${property.name}**: ${property.doc?replace("\n", " ")}
         </#list>
     </#if>

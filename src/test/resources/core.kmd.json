@@ -1,0 +1,1724 @@
+{
+  "name": "core",
+  "version": "6.1.2-dev",
+  "code": {
+    "kmd": {
+      "java": {
+        "mavenGroupId": "org.kurento",
+        "mavenArtifactId": "kms-api-core"
+      }
+    },
+    "api": {
+      "java": {
+        "packageName": "org.kurento.client",
+        "mavenGroupId": "org.kurento",
+        "mavenArtifactId": "kurento-client"
+      },
+      "js": {
+        "nodeName": "kurento-client-core",
+        "npmDescription": "Base classes for kurento media server api",
+        "npmGit": "Kurento/kurento-client-core-js"
+      }
+    },
+    "implementation": {
+      "cppNamespace": "kurento"
+    }
+  },
+  "remoteClasses": [
+    {
+      "name": "MediaObject",
+      "doc": "Base for all objects that can be created in the media server.",
+      "abstract": true,
+      "properties": [
+        {
+          "name": "mediaPipeline",
+          "doc": ":rom:cls:`MediaPipeline` to which this MediaObject belong, or the pipeline itself if invoked over a :rom:cls:`MediaPipeline`",
+          "type": "MediaPipeline",
+          "final": true
+        },
+        {
+          "name": "parent",
+          "doc": "parent of this media object. The type of the parent depends on the type of the element. The parent of a :rom:cls:`MediaPad` is its :rom:cls:`MediaElement`; the parent of a :rom:cls:`Hub` or a :rom:cls:`MediaElement` is its :rom:cls:`MediaPipeline`. A :rom:cls:`MediaPipeline` has no parent, i.e. the property is null",
+          "type": "MediaObject",
+          "final": true
+        },
+        {
+          "name": "id",
+          "doc": "unique identifier of the mediaobject.",
+          "type": "String",
+          "final": true
+        },
+        {
+          "name": "childs",
+          "doc": "Childs of current object, all returned objects have parent set to current object",
+          "type": "MediaObject[]",
+          "readOnly": true
+        },
+        {
+          "name": "name",
+          "doc": "Object name. This is just a comodity to simplify developers life debugging, it is not used internally for indexing nor idenfiying the objects. By default is the object type followed by the object id.",
+          "type": "String"
+        },
+        {
+          "name": "sendTagsInEvents",
+          "doc": "This property allows activate/deactivate sending the element tags in all its events.",
+          "type": "boolean",
+          "defaultValue": false
+        },
+        {
+          "name": "creationTime",
+          "doc": "Number of seconds since Epoch when the element was created",
+          "type": "int",
+          "final": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "addTag",
+          "doc": "Request a SessionSpec offer.\n\n   This can be used to initiate a connection.",
+          "params": [
+            {
+              "name": "key",
+              "doc": "Key of the tag",
+              "type": "String"
+            },
+            {
+              "name": "value",
+              "doc": "Value of the tag",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "removeTag",
+          "doc": "Remove the tag (key and value) associated to a tag",
+          "params": [
+            {
+              "name": "key",
+              "doc": "Key of the tag to remove",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "getTag",
+          "doc": "Returns the value associated to the given key.",
+          "params": [
+            {
+              "name": "key",
+              "doc": "Tag key.",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "doc": "The value associated to the given key.",
+            "type": "String"
+          }
+        },
+        {
+          "name": "getTags",
+          "doc": "Returns all the MediaObject tags.",
+          "params": [],
+          "return": {
+            "doc": "An array containing all pairs key-value associated to the MediaObject.",
+            "type": "Tag[]"
+          }
+        }
+      ],
+      "events": [
+        "Error"
+      ]
+    },
+    {
+      "name": "ServerManager",
+      "doc": "This is a standalone object for managing the MediaServer",
+      "abstract": true,
+      "extends": "MediaObject",
+      "properties": [
+        {
+          "name": "info",
+          "doc": "Server information, version, modules, factories, etc",
+          "type": "ServerInfo",
+          "readOnly": true
+        },
+        {
+          "name": "pipelines",
+          "doc": "All the pipelines available in the server",
+          "type": "MediaPipeline[]",
+          "readOnly": true
+        },
+        {
+          "name": "sessions",
+          "doc": "All active sessions in the server",
+          "type": "String[]",
+          "readOnly": true
+        },
+        {
+          "name": "metadata",
+          "doc": "Metadata stored in the server",
+          "type": "String",
+          "readOnly": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getKmd",
+          "doc": "Returns the kmd associated to a module",
+          "params": [
+            {
+              "name": "moduleName",
+              "doc": "Name of the module to get its kmd file",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "doc": "The kmd file",
+            "type": "String"
+          }
+        }
+      ],
+      "events": [
+        "ObjectCreated",
+        "ObjectDestroyed"
+      ]
+    },
+    {
+      "name": "SessionEndpoint",
+      "doc": "Session based endpoint. A session is considered to be started when the media exchange starts. On the other hand, sessions terminate when a timeout, defined by the developer, takes place after the connection is lost.",
+      "abstract": true,
+      "extends": "Endpoint",
+      "events": [
+        "MediaSessionTerminated",
+        "MediaSessionStarted"
+      ]
+    },
+    {
+      "name": "Hub",
+      "extends": "MediaObject",
+      "doc": "A Hub is a routing :rom:cls:`MediaObject`. It connects several :rom:cls:`endpoints <Endpoint>` together",
+      "abstract": true
+    },
+    {
+      "name": "Filter",
+      "abstract": true,
+      "extends": "MediaElement",
+      "doc": "Base interface for all filters. This is a certain type of :rom:cls:`MediaElement`, that processes media injected through its sinks, and delivers the outcome through its sources."
+    },
+    {
+      "name": "Endpoint",
+      "abstract": true,
+      "extends": "MediaElement",
+      "doc": "Base interface for all end points. An Endpoint is a :rom:cls:`MediaElement`\nthat allow :term:`KMS` to interchange media contents with external systems,\nsupporting different transport protocols and mechanisms, such as :term:`RTP`,\n:term:`WebRTC`, :term:`HTTP`, ``file:/`` URLs... An ``Endpoint`` may\ncontain both sources and sinks for different media types, to provide\nbidirectional communication."
+    },
+    {
+      "name": "HubPort",
+      "extends": "MediaElement",
+      "doc": "This :rom:cls:`MediaElement` specifies a connection with a :rom:cls:`Hub`",
+      "constructor": {
+        "doc": "Creates a :rom:cls:`HubPort` for the given :rom:cls:`Hub`",
+        "params": [
+          {
+            "name": "hub",
+            "doc": ":rom:cls:`Hub` to which this port belongs",
+            "type": "Hub"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PassThrough",
+      "extends": "MediaElement",
+      "doc": "This :rom:cls:`MediaElement` that just passes media through",
+      "constructor": {
+        "doc": "Builder for the :rom:cls:`PassThrough`",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the element belongs",
+            "type": "MediaPipeline"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UriEndpoint",
+      "abstract": true,
+      "extends": "Endpoint",
+      "doc": "Interface for endpoints the require a URI to work. An example of this, would be a :rom:cls:`PlayerEndpoint` whose URI property could be used to locate a file to stream",
+      "properties": [
+        {
+          "name": "uri",
+          "doc": "The uri for this endpoint.",
+          "type": "String",
+          "final": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "pause",
+          "doc": "Pauses the feed",
+          "params": []
+        },
+        {
+          "name": "stop",
+          "doc": "Stops the feed",
+          "params": []
+        }
+      ]
+    },
+    {
+      "name": "MediaPipeline",
+      "extends": "MediaObject",
+      "doc": "A pipeline is a container for a collection of :rom:cls:`MediaElements<MediaElement>` and :rom:cls:`MediaMixers<MediaMixer>`. It offers the methods needed to control the creation and connection of elements inside a certain pipeline.",
+      "constructor": {
+        "doc": "Create a :rom:cls:`MediaPipeline`",
+        "params": [
+        ]
+      },
+      "properties": [
+        {
+          "name": "latencyStats",
+          "doc" : "If statistics about pipeline latency are enabled for all mediaElements",
+          "type": "boolean",
+          "defaultValue": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "getGstreamerDot",
+          "doc": "Returns a string in dot (graphviz) format that represents the gstreamer elements inside the pipeline",
+          "params": [
+            {
+              "name": "details",
+              "type": "GstreamerDotDetails",
+              "doc": "Details of graph",
+              "optional": true
+            }
+          ],
+          "return": {
+            "doc": "The dot graph",
+            "type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SdpEndpoint",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "doc": "Implements an SDP negotiation endpoint able to generate and process offers/responses and that configures resources according to negotiated Session Description",
+      "properties": [
+        {
+          "name": "maxVideoRecvBandwidth",
+          "doc": "Maximum video bandwidth for receiving.\n  Unit: kbps(kilobits per second).\n   0: unlimited.\n  Default value: 500",
+          "type": "int"
+        }
+      ],
+      "methods": [
+        {
+          "name": "generateOffer",
+          "doc": "Request a SessionSpec offer.\n\n   This can be used to initiate a connection.",
+          "params": [],
+          "return": {
+            "doc": "The SDP offer.",
+            "type": "String"
+          }
+        },
+        {
+          "name": "processOffer",
+          "doc": "Request the NetworkConnection to process the given SessionSpec offer (from the remote User Agent)",
+          "params": [
+            {
+              "name": "offer",
+              "doc": "SessionSpec offer from the remote User Agent",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "doc": "The chosen configuration from the ones stated in the SDP offer",
+            "type": "String"
+          }
+        },
+        {
+          "name": "processAnswer",
+          "doc": "Request the NetworkConnection to process the given SessionSpec answer (from the remote User Agent).",
+          "params": [
+            {
+              "name": "answer",
+              "doc": "SessionSpec answer from the remote User Agent",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "doc": "Updated SDP offer, based on the answer received.",
+            "type": "String"
+          }
+        },
+        {
+          "name": "getLocalSessionDescriptor",
+          "doc": "This method gives access to the SessionSpec offered by this NetworkConnection.\n\n.. note:: This method returns the local MediaSpec, negotiated or not. If no offer has been generated yet, it returns null. It an offer has been generated it returns the offer and if an answer has been processed it returns the negotiated local SessionSpec.",
+          "params": [],
+          "return": {
+            "doc": "The last agreed SessionSpec",
+            "type": "String"
+          }
+        },
+        {
+          "name": "getRemoteSessionDescriptor",
+          "doc": "This method gives access to the remote session description.\n\n.. note:: This method returns the media previously agreed after a complete offer-answer exchange. If no media has been agreed yet, it returns null.",
+          "params": [],
+          "return": {
+            "doc": "The last agreed User Agent session description",
+            "type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "BaseRtpEndpoint",
+      "abstract": true,
+      "extends": "SdpEndpoint",
+      "doc": "Base class to manage common RTP features.",
+      "properties": [
+        {
+          "name": "minVideoRecvBandwidth",
+          "doc": "Minimum video bandwidth for receiving.\n  Unit: kbps(kilobits per second).\n   0: unlimited.\n  Default value: 100",
+          "type": "int"
+        },
+        {
+          "name": "minVideoSendBandwidth",
+          "doc": "Minimum video bandwidth for sending.\n  Unit: kbps(kilobits per second).\n   0: unlimited.\n  Default value: 100",
+          "type": "int"
+        },
+        {
+          "name": "maxVideoSendBandwidth",
+          "doc": "Maximum video bandwidth for sending.\n  Unit: kbps(kilobits per second).\n   0: unlimited.\n  Default value: 500",
+          "type": "int"
+        },
+        {
+          "name": "mediaState",
+          "doc": "State of the media",
+          "type": "MediaState",
+          "readOnly": true
+        },
+        {
+          "name": "connectionState",
+          "doc": "State of the connection",
+          "type": "ConnectionState",
+          "readOnly": true
+        },
+        {
+          "name": "rembParams",
+          "doc": "Parameters of the congestion control algorithm",
+          "type": "RembParams"
+        }
+      ],
+      "methods": [
+      ],
+      "events": [
+        "MediaStateChanged",
+        "ConnectionStateChanged"
+      ]
+    },
+    {
+      "name": "MediaElement",
+      "abstract": true,
+      "extends": "MediaObject",
+      "doc": "Basic building blocks of the media server, that can be interconnected through the API. A :rom:cls:`MediaElement` is a module that encapsulates a specific media capability. They can be connected to create media pipelines where those capabilities are applied, in sequence, to the stream going through the pipeline.\n\n   :rom:cls:`MediaElement` objects are classified by its supported media type (audio, video, etc.)",
+      "methods": [
+        {
+          "name": "getSourceConnections",
+          "doc": "Get the connections information of the elements that are sending media to this element :rom:cls:`MediaElement`",
+          "params": [
+            {
+              "name": "mediaType",
+              "doc": "One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.VIDEO` or :rom:attr:`MediaType.DATA`",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "description",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ],
+          "return": {
+            "doc": "A list of the connections information that are sending media to this element. The list will be empty if no sources are found.",
+            "type": "ElementConnectionData[]"
+          }
+        },
+        {
+          "name": "getSinkConnections",
+          "doc": "Returns a list of the connections information of the elements that ere receiving media from this element.",
+          "params": [
+            {
+              "name": "mediaType",
+              "doc": "One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.VIDEO` or :rom:attr:`MediaType.DATA`",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "description",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ],
+          "return": {
+            "doc": "A list of the connections information that arereceiving media from this element. The list will be empty if no sinks are found.",
+            "type": "ElementConnectionData[]"
+          }
+        },
+        {
+          "name": "connect",
+          "doc": "Connects two elements, with the given restrictions, current :rom:cls:`MediaElement` will start emmit media to sink element. Connection could take place in the future, when both media element show capabilities for connecting with the given restrictions",
+          "params": [
+            {
+              "name": "sink",
+              "doc": "the target :rom:cls:`MediaElement` that will receive media",
+              "type": "MediaElement"
+            },
+            {
+              "name": "mediaType",
+              "doc": "the :rom:enum:`MediaType` of the pads that will be connected",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "sourceMediaDescription",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            },
+            {
+              "name": "sinkMediaDescription",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ]
+        },
+        {
+          "name": "disconnect",
+          "doc": "Disconnects two elements, with the given restrictions, current :rom:cls:`MediaElement` stops sending media to sink element. If the previously requested connection didn't took place it is also removed",
+          "params": [
+            {
+              "name": "sink",
+              "doc": "the target :rom:cls:`MediaElement` that will stop receiving media",
+              "type": "MediaElement"
+            },
+            {
+              "name": "mediaType",
+              "doc": "the :rom:enum:`MediaType` of the pads that will be connected",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "sourceMediaDescription",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            },
+            {
+              "name": "sinkMediaDescription",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ]
+        },
+        {
+          "name": "setAudioFormat",
+          "doc": "Sets the type of data for the audio stream. MediaElements that do not support configuration of audio capabilities will raise an exception",
+          "params": [
+            {
+              "name": "caps",
+              "doc": "The format for the stream of audio",
+              "type": "AudioCaps"
+            }
+          ]
+        },
+        {
+          "name": "setVideoFormat",
+          "doc": "Sets the type of data for the video stream. MediaElements that do not support configuration of video capabilities will raise an exception",
+          "params": [
+            {
+              "name": "caps",
+              "doc": "The format for the stream of video",
+              "type": "VideoCaps"
+            }
+          ]
+        },
+        {
+          "name": "getGstreamerDot",
+          "doc": "Returns a string in dot (graphviz) format that represents the gstreamer elements inside",
+          "params": [
+            {
+              "name": "details",
+              "type": "GstreamerDotDetails",
+              "doc": "Details of graph",
+              "optional": true
+            }
+          ],
+          "return": {
+            "doc": "The dot graph",
+            "type": "String"
+          }
+        },
+        {
+          "name": "setOutputBitrate",
+          "doc": "@deprecated\nAllows change the target bitrate for the media output, if the media is encoded using VP8 or H264. This method only works if it is called before the media starts to flow.",
+          "params": [
+            {
+              "name": "bitrate",
+              "doc": "Configure the enconding media bitrate in bps",
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "getStats",
+          "doc": "Provides statistics collected for this endpoint",
+          "params": [
+            {
+              "name": "mediaType",
+              "doc": "One of :rom:attr:`MediaType.AUDIO` or :rom:attr:`MediaType.VIDEO`",
+              "type": "MediaType",
+              "optional": true
+            }
+          ],
+          "return" : {
+            "doc": "Delivers a successful result in the form of a RTC stats report. A RTC stats report represents a map between strings, identifying the inspected objects (RTCStats.id), and their corresponding RTCStats objects.",
+            "type": "Stats<>"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "minOuputBitrate",
+          "doc": "Minimum video bandwidth for transcoding.\n  Unit: bps(bits per second).\n  Default value: 0",
+          "type": "int"
+        },
+        {
+          "name": "maxOuputBitrate",
+          "doc": "Maximum video bandwidth for transcoding.\n  Unit: bps(bits per second).\n  Default value: MAXINT",
+          "type": "int"
+        }
+      ],
+      "events": [
+        "ElementConnected",
+        "ElementDisconnected"
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "typeFormat": "REGISTER",
+      "name": "ServerInfo",
+      "doc": "Description of the mediaserver",
+      "properties": [
+        {
+          "name": "version",
+          "doc": "MediaServer version",
+          "type": "String"
+        },
+        {
+          "name": "modules",
+          "doc": "Descriptor of all modules loaded by the server",
+          "type": "ModuleInfo[]"
+        },
+        {
+          "name": "type",
+          "doc": "Describes the type of mediaserver",
+          "type": "ServerType"
+        },
+        {
+          "name": "capabilities",
+          "doc": "Describes the capabilities that this server supports",
+          "type": "String[]"
+        }
+      ]
+    },
+    {
+      "name": "ServerType",
+      "typeFormat": "ENUM",
+      "doc": "Indicates if the server is a real media server or a proxy",
+      "values": [
+        "KMS",
+        "KCS"
+      ]
+    },
+    {
+      "name": "GstreamerDotDetails",
+      "typeFormat": "ENUM",
+      "doc": "Details of gstreamer dot graphs",
+      "values": [
+        "SHOW_MEDIA_TYPE",
+        "SHOW_CAPS_DETAILS",
+        "SHOW_NON_DEFAULT_PARAMS",
+        "SHOW_STATES",
+        "SHOW_ALL"
+      ]
+    },
+    {
+      "typeFormat": "REGISTER",
+      "name": "ModuleInfo",
+      "doc": "Description of a loaded modules",
+      "properties": [
+        {
+          "name": "version",
+          "doc": "Module version",
+          "type": "String"
+        },
+        {
+          "name": "name",
+          "doc": "Module name",
+          "type": "String"
+        },
+        {
+          "name": "factories",
+          "doc": "Module available factories",
+          "type": "String[]"
+        }
+      ]
+    },
+    {
+      "name": "MediaState",
+      "typeFormat": "ENUM",
+      "doc": "State of the media.",
+      "values": [
+        "DISCONNECTED",
+        "CONNECTED"
+      ]
+    },
+    {
+      "name": "ConnectionState",
+      "typeFormat": "ENUM",
+      "doc": "State of the connection.",
+      "values": [
+        "DISCONNECTED",
+        "CONNECTED"
+      ]
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "AUDIO",
+        "DATA",
+        "VIDEO"
+      ],
+      "name": "MediaType",
+      "doc": "Type of media stream to be exchanged.\nCan take the values AUDIO, DATA or VIDEO."
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "AUDIO",
+        "AUTODETECT",
+        "VIDEO"
+      ],
+      "name": "FilterType",
+      "doc": "Type of filter to be created.\nCan take the values AUDIO, VIDEO or AUTODETECT."
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "VP8",
+        "H264",
+        "RAW"
+      ],
+      "name": "VideoCodec",
+      "doc": "Codec used for transmission of video."
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "OPUS",
+        "PCMU",
+        "RAW"
+      ],
+      "name": "AudioCodec",
+      "doc": "Codec used for transmission of audio."
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "numerator",
+          "type": "int",
+          "doc": "the numerator of the fraction"
+        },
+        {
+          "name": "denominator",
+          "type": "int",
+          "doc": "the denominator of the fraction"
+        }
+      ],
+      "name": "Fraction",
+      "doc": "Type that represents a fraction of an integer numerator over an integer denominator"
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "codec",
+          "doc": "Audio codec",
+          "type" : "AudioCodec"
+        },
+        {
+          "name": "bitrate",
+          "doc": "Bitrate",
+          "type" : "int"
+        }
+      ],
+      "name": "AudioCaps",
+      "doc": "Format for audio media"
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "codec",
+          "doc": "Video codec",
+          "type" : "VideoCodec"
+        },
+        {
+          "name": "framerate",
+          "doc": "Framerate",
+          "type" : "Fraction"
+        }
+      ],
+      "name": "VideoCaps",
+      "doc": "Format for video media"
+    },
+    {
+      "name": "ElementConnectionData",
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "source",
+          "doc": "The source element in the connection",
+          "type": "MediaElement"
+        },
+        {
+          "name": "sink",
+          "doc": "The sink element in the connection",
+          "type": "MediaElement"
+        },
+        {
+          "name": "type",
+          "doc": "MediaType of the connection",
+          "type": "MediaType"
+        },
+        {
+          "name": "sourceDescription",
+          "doc": "Description of source media. Could be emty.",
+          "type": "String"
+        },
+        {
+          "name": "sinkDescription",
+          "doc": "Description of sink media. Could be emty.",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "Tag",
+      "doc": "Pair key-value with info about a MediaObject",
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "key",
+          "doc": "Tag key",
+          "type" : "String"
+        },
+        {
+          "name": "value",
+          "doc": "Tag Value",
+          "type" : "String"
+        }
+      ]
+    },
+    {
+      "name": "StatsType",
+      "typeFormat": "ENUM",
+      "doc": "The type of the object.",
+      "values": [
+        "inboundrtp",
+        "outboundrtp",
+        "session",
+        "datachannel",
+        "track",
+        "transport",
+        "candidatepair",
+        "localcandidate",
+        "remotecandidate",
+        "element",
+        "endpoint"
+      ]
+    },
+    {
+      "name": "Stats",
+      "doc": "A dictionary that represents the stats gathered.",
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "id",
+          "doc": "A unique id that is associated with the object that was inspected to produce this Stats object.",
+          "type": "String"
+        },
+        {
+          "name": "type",
+          "doc": "The type of this object.",
+          "type": "StatsType"
+        },
+        {
+          "name": "timestamp",
+          "doc": "The timestamp associated with this object. The time is relative to the UNIX epoch (Jan 1, 1970, UTC).",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "ElementStats",
+      "doc": "A dictionary that represents the stats gathered in the media element.",
+      "typeFormat": "REGISTER",
+      "extends" : "Stats",
+      "properties": [
+        {
+          "name": "inputAudioLatency",
+          "doc": "Audio average measured on the sink pad in nano seconds",
+          "type": "double"
+        },
+        {
+          "name": "inputVideoLatency",
+          "doc": "Video average measured on the sink pad in nano seconds",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "EndpointStats",
+      "doc": "A dictionary that represents the stats gathered in the endpoint element.",
+      "typeFormat": "REGISTER",
+      "extends" : "ElementStats",
+      "properties": [
+        {
+          "name": "audioE2ELatency",
+          "doc": "End-to-end audio latency measured in nano seconds",
+          "type": "double"
+        },
+        {
+          "name": "videoE2ELatency",
+          "doc": "End-to-end video latency measured in nano seconds",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "RTCStats",
+      "doc": "An RTCStats dictionary represents the stats gathered.",
+      "typeFormat": "REGISTER",
+      "extends" : "Stats",
+      "properties": []
+    },
+    {
+      "name": "RTCRTPStreamStats",
+      "doc": "Statistics for the RTP stream",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "ssrc",
+          "doc": "The synchronized source SSRC",
+          "type": "String"
+        },
+        {
+          "name": "associateStatsId",
+          "doc": "The associateStatsId is used for looking up the corresponding (local/remote) RTCStats object for a given SSRC.",
+          "type": "String"
+        },
+        {
+          "name": "isRemote",
+          "doc": "false indicates that the statistics are measured locally, while true indicates that the measurements were done at the remote endpoint and reported in an RTCP RR/XR.",
+          "type": "boolean"
+        },
+        {
+          "name": "mediaTrackId",
+          "doc": "Track identifier.",
+          "type": "String"
+        },
+        {
+          "name": "transportId",
+          "doc": "It is a unique identifier that is associated to the object that was inspected to produce the RTCTransportStats associated with this RTP stream.",
+          "type": "String"
+        },
+        {
+          "name": "codecId",
+          "doc": "The codec identifier",
+          "type": "String"
+        },
+        {
+          "name": "firCount",
+          "doc": "Count the total number of Full Intra Request (FIR) packets received by the sender. This metric is only valid for video and is sent by receiver.",
+          "type": "int64"
+        },
+        {
+          "name": "pliCount",
+          "doc": "Count the total number of Packet Loss Indication (PLI) packets received by the sender and is sent by receiver.",
+          "type": "int64"
+        },
+        {
+          "name": "nackCount",
+          "doc": "Count the total number of Negative ACKnowledgement (NACK) packets received by the sender and is sent by receiver.",
+          "type": "int64"
+        },
+        {
+          "name": "sliCount",
+          "doc": "Count the total number of Slice Loss Indication (SLI) packets received by the sender. This metric is only valid for video and is sent by receiver.",
+          "type": "int64"
+        },
+        {
+          "name": "remb",
+          "doc": "The Receiver Estimated Maximum Bitrate (REMB). This metric is only valid for video.",
+          "type": "int64"
+        },
+        {
+          "name": "packetsLost",
+          "doc": "Total number of RTP packets lost for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "fractionLost",
+          "doc": "The fraction packet loss reported for this SSRC.",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "RTCCodec",
+      "doc": "RTC codec statistics",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "payloadType",
+          "doc": "Payload type as used in RTP encoding.",
+          "type": "int64"
+        },
+        {
+          "name": "codec",
+          "doc": "e.g., video/vp8 or equivalent.",
+          "type": "String"
+        },
+        {
+          "name": "clockRate",
+          "doc": "Represents the media sampling rate.",
+          "type": "int64"
+        },
+        {
+          "name": "channels",
+          "doc": "Use 2 for stereo, missing for most other cases.",
+          "type": "int64"
+        },
+        {
+          "name": "parameters",
+          "doc": "From the SDP description line.",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "RTCInboundRTPStreamStats",
+      "doc": "Statistics that represents the measurement metrics for the incoming media stream.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCRTPStreamStats",
+      "properties": [
+        {
+          "name": "packetsReceived",
+          "doc": "Total number of RTP packets received for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "bytesReceived",
+          "doc": "Total number of bytes received for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "jitter",
+          "doc": "Packet Jitter measured in seconds for this SSRC.",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "RTCOutboundRTPStreamStats",
+      "doc": "Statistics that represents the measurement metrics for the outgoing media stream.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCRTPStreamStats",
+      "properties": [
+        {
+          "name": "packetsSent",
+          "doc": "Total number of RTP packets sent for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "bytesSent",
+          "doc": "Total number of bytes sent for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "targetBitrate",
+          "doc": "Presently configured bitrate target of this SSRC, in bits per second.",
+          "type": "double"
+        },
+        {
+          "name": "roundTripTime",
+          "doc": "Estimated round trip time (seconds) for this SSRC based on the RTCP timestamp.",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "RTCPeerConnectionStats",
+      "doc": "Statistics related to the peer connection.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "dataChannelsOpened",
+          "doc": "Represents the number of unique datachannels opened.",
+          "type": "int64"
+        },
+        {
+          "name": "dataChannelsClosed",
+          "doc": "Represents the number of unique datachannels closed.",
+          "type": "int64"
+        }
+      ]
+    },
+    {
+      "name": "RTCMediaStreamStats",
+      "doc": "Statistics related to the media stream.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "streamIdentifier",
+          "doc": "Stream identifier.",
+          "type": "String"
+        },
+        {
+          "name": "trackIds",
+          "doc": "This is the id of the stats object, not the track.id.",
+          "type": "String[]"
+        }
+      ]
+    },
+    {
+      "name": "RTCMediaStreamTrackStats",
+      "doc": "Statistics related to the media stream.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "trackIdentifier",
+          "doc": "Represents the track.id property.",
+          "type": "String"
+        },
+        {
+          "name": "remoteSource",
+          "doc": "true indicates that this is a remote source. false in other case.",
+          "type": "boolean"
+        },
+        {
+          "name": "ssrcIds",
+          "doc": "Synchronized sources.",
+          "type": "String[]"
+        },
+        {
+          "name": "frameWidth",
+          "doc": "Only makes sense for video media streams and represents the width of the video frame for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "frameHeight",
+          "doc": "Only makes sense for video media streams and represents the height of the video frame for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "framesPerSecond",
+          "doc": "Only valid for video. It represents the nominal FPS value.",
+          "type": "double"
+        },
+        {
+          "name": "framesSent",
+          "doc": "Only valid for video. It represents the total number of frames sent for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "framesReceived",
+          "doc": "Only valid for video and when remoteSource is set to true. It represents the total number of frames received for this SSRC.",
+          "type": "int64"
+        },
+        {
+          "name": "framesDecoded",
+          "doc": "Only valid for video. It represents the total number of frames correctly decoded for this SSRC. ",
+          "type": "int64"
+        },
+        {
+          "name": "framesDropped",
+          "doc": "Only valid for video. The total number of frames dropped predecode or dropped because the frame missed its display deadline.",
+          "type": "int64"
+        },
+        {
+          "name": "framesCorrupted",
+          "doc": "Only valid for video. The total number of corrupted frames that have been detected.",
+          "type": "int64"
+        },
+        {
+          "name": "audioLevel",
+          "doc": "Only valid for audio, and the value is between 0..1 (linear), where 1.0 represents 0 dBov.",
+          "type": "double"
+        },
+        {
+          "name": "echoReturnLoss",
+          "doc": "Only present on audio tracks sourced from a microphone where echo cancellation is applied. Calculated in decibels.",
+          "type": "double"
+        },
+        {
+          "name": "echoReturnLossEnhancement",
+          "doc": "Only present on audio tracks sourced from a microphone where echo cancellation is applied.",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "RTCDataChannelState",
+      "typeFormat": "ENUM",
+      "doc": "Represents the state of the RTCDataChannel",
+      "values": [
+        "connecting",
+        "open",
+        "closing",
+        "closed"
+      ]
+    },
+    {
+      "name": "RTCDataChannelStats",
+      "doc": "Statistics related to RTC data channels.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "label",
+          "doc": "The RTCDatachannel label.",
+          "type": "String"
+        },
+        {
+          "name": "protocol",
+          "doc": "The protocol used.",
+          "type": "String"
+        },
+        {
+          "name": "datachannelid",
+          "doc": "The RTCDatachannel identifier.",
+          "type": "int64"
+        },
+        {
+          "name": "state",
+          "doc": "The state of the RTCDatachannel.",
+          "type": "RTCDataChannelState"
+        },
+        {
+          "name": "messagesSent",
+          "doc": "Represents the total number of API 'message' events sent.",
+          "type": "int64"
+        },
+        {
+          "name": "bytesSent",
+          "doc": "Represents the total number of payload bytes sent on this RTCDatachannel, i.e., not including headers or padding.",
+          "type": "int64"
+        },
+        {
+          "name": "messagesReceived",
+          "doc": "Represents the total number of API 'message' events received.",
+          "type": "int64"
+        },
+        {
+          "name": "bytesReceived",
+          "doc": "Represents the total number of bytes received on this RTCDatachannel, i.e., not including headers or padding.",
+          "type": "int64"
+        }
+      ]
+    },
+    {
+      "name": "RTCTransportStats",
+      "doc": "Statistics related to RTC data channels.",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "bytesSent",
+          "doc": "Represents the total number of payload bytes sent on this PeerConnection, i.e., not including headers or padding.",
+          "type": "int64"
+        },
+        {
+          "name": "bytesReceived",
+          "doc": "Represents the total number of bytes received on this PeerConnection, i.e., not including headers or padding.",
+          "type": "int64"
+        },
+        {
+          "name": "rtcpTransportStatsId",
+          "doc": "If RTP and RTCP are not multiplexed, this is the id of the transport that gives stats for the RTCP component, and this record has only the RTP component stats.",
+          "type": "String"
+        },
+        {
+          "name": "activeConnection",
+          "doc": "Set to true when transport is active.",
+          "type": "boolean"
+        },
+        {
+          "name": "selectedCandidatePairId",
+          "doc": "It is a unique identifier that is associated to the object that was inspected to produce the RTCIceCandidatePairStats associated with this transport.",
+          "type": "String"
+        },
+        {
+          "name": "localCertificateId",
+          "doc": "For components where DTLS is negotiated, give local certificate.",
+          "type": "String"
+        },
+        {
+          "name": "remoteCertificateId",
+          "doc": "For components where DTLS is negotiated, give remote certificate.",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "RTCStatsIceCandidateType",
+      "typeFormat": "ENUM",
+      "doc": "Types of candidates",
+      "values": [
+        "host",
+        "serverreflexive",
+        "peerreflexive",
+        "relayed"
+      ]
+    },
+    {
+      "name": "RTCIceCandidateAttributes",
+      "doc": "",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "ipAddress",
+          "doc": "It is the IP address of the candidate, allowing for IPv4 addresses, IPv6 addresses, and fully qualified domain names (FQDNs).",
+          "type": "String"
+        },
+        {
+          "name": "portNumber",
+          "doc": "It is the port number of the candidate.",
+          "type": "int64"
+        },
+        {
+          "name": "transport",
+          "doc": "Valid values for transport is one of udp and tcp. Based on the 'transport' defined in [RFC5245] section 15.1.",
+          "type": "String"
+        },
+        {
+          "name": "candidateType",
+          "doc": "The enumeration RTCStatsIceCandidateType is based on the cand-type defined in [RFC5245] section 15.1.",
+          "type": "RTCStatsIceCandidateType"
+        },
+        {
+          "name": "priority",
+          "doc": "Represents the priority of the candidate",
+          "type": "int64"
+        },
+        {
+          "name": "addressSourceUrl",
+          "doc": "The URL of the TURN or STUN server indicated in the RTCIceServers that translated this IP address.",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "RTCStatsIceCandidatePairState",
+      "typeFormat": "ENUM",
+      "doc": "Represents the state of the checklist for the local and remote candidates in a pair.",
+      "values": [
+        "frozen",
+        "waiting",
+        "inprogress",
+        "failed",
+        "succeeded",
+        "cancelled"
+      ]
+    },
+    {
+      "name": "RTCIceCandidatePairStats",
+      "doc": "",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "transportId",
+          "doc": "It is a unique identifier that is associated to the object that was inspected to produce the RTCTransportStats associated with this candidate pair.",
+          "type": "String"
+        },
+        {
+          "name": "localCandidateId",
+          "doc": "It is a unique identifier that is associated to the object that was inspected to produce the RTCIceCandidateAttributes for the local candidate associated with this candidate pair.",
+          "type": "String"
+        },
+        {
+          "name": "remoteCandidateId",
+          "doc": "It is a unique identifier that is associated to the object that was inspected to produce the RTCIceCandidateAttributes for the remote candidate associated with this candidate pair.",
+          "type": "String"
+        },
+        {
+          "name": "state",
+          "doc": "Represents the state of the checklist for the local and remote candidates in a pair.",
+          "type": "RTCStatsIceCandidatePairState"
+        },
+        {
+          "name": "priority",
+          "doc": "Calculated from candidate priorities as defined in [RFC5245] section 5.7.2.",
+          "type": "int64"
+        },
+        {
+          "name": "nominated",
+          "doc": "Related to updating the nominated flag described in Section 7.1.3.2.4 of [RFC5245].",
+          "type": "boolean"
+        },
+        {
+          "name": "writable",
+          "doc": "Has gotten ACK to an ICE request.",
+          "type": "boolean"
+        },
+        {
+          "name": "readable",
+          "doc": "Has gotten a valid incoming ICE request.",
+          "type": "boolean"
+        },
+        {
+          "name": "bytesSent",
+          "doc": "Represents the total number of payload bytes sent on this candidate pair, i.e., not including headers or padding.",
+          "type": "int64"
+        },
+        {
+          "name": "bytesReceived",
+          "doc": "Represents the total number of payload bytes received on this candidate pair, i.e., not including headers or padding.",
+          "type": "int64"
+        },
+        {
+          "name": "roundTripTime",
+          "doc": "Represents the RTT computed by the STUN connectivity checks",
+          "type": "double"
+        },
+        {
+          "name": "availableOutgoingBitrate",
+          "doc": "Measured in Bits per second, and is implementation dependent. It may be calculated by the underlying congestion control.",
+          "type": "double"
+        },
+        {
+          "name": "availableIncomingBitrate",
+          "doc": "Measured in Bits per second, and is implementation dependent. It may be calculated by the underlying congestion control.",
+          "type": "double"
+        }
+      ]
+    },
+    {
+      "name": "RTCCertificateStats",
+      "doc": "",
+      "typeFormat": "REGISTER",
+      "extends" : "RTCStats",
+      "properties": [
+        {
+          "name": "fingerprint",
+          "doc": "Only use the fingerprint value as defined in Section 5 of [RFC4572].",
+          "type": "String"
+        },
+        {
+          "name": "fingerprintAlgorithm",
+          "doc": "For instance, 'sha-256'.",
+          "type": "String"
+        },
+        {
+          "name": "base64Certificate",
+          "doc": "For example, DER-encoded, base-64 representation of a certifiate.",
+          "type": "String"
+        },
+        {
+          "name": "issuerCertificateId",
+          "doc": "",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "CodecConfiguration",
+      "doc": "Defines specific configuration for codecs",
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "name",
+          "doc": "Name of the codec defined as <encoding name>/<clock rate>[/<encoding parameters>]",
+          "type": "String"
+        },
+        {
+          "name": "properties",
+          "doc": "String used for tuning codec properties",
+          "type": "String<>",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "RembParams",
+      "doc": "Defines values for parameters of congestion control",
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "packetsRecvIntervalTop",
+          "doc": "Size of the RTP packets history to smooth fraction-lost.\nUnits: num of packets",
+          "type": "int",
+          "optional":true,
+          "defaultValue": 100
+        },
+        {
+          "name": "exponentialFactor",
+          "doc": "Factor used to increase exponentially the next REMB when it is below the threshold.\nREMB[i+1] = REMB[i] * (1 + exponentialFactor)",
+          "type": "float",
+          "optional":true,
+          "defaultValue": 0.04
+        },
+        {
+          "name": "linealFactorMin",
+          "doc": "Set the min of the factor used to increase linearly the next REMB when it is over the threshold.\nUnits: bps (bits per second).\nREMB[i+1] = REMB[i] + MIN (linealFactorMin, linealFactor)",
+          "type": "int",
+          "optional":true
+        },
+        {
+          "name": "linealFactorGrade",
+          "doc": "Determine the value of the next linearFactor based on the threshold and the current REMB. Taking into account that the frequency of updating is 500ms, the default value makes that the last REMB is reached in 60secs.\nlinealFactor = (REMB - TH) / linealFactorGrade",
+          "type": "float",
+          "optional":true,
+          "defaultValue": 30
+        },
+        {
+          "name": "decrementFactor",
+          "doc": "Determine how much is decreased the current REMB when too losses are detected.\nREMB[i+1] = REMB[i] * decrementFactor",
+          "type": "float",
+          "optional":true,
+          "defaultValue": 0.5
+        },
+        {
+          "name": "thresholdFactor",
+          "doc": "Determine the next threshold (TH) when too losses are detected.\nTH[i+1] = REMB[i] * thresholdFactor",
+          "type": "float",
+          "optional":true,
+          "defaultValue": 0.8
+        },
+        {
+          "name": "upLosses",
+          "doc": "Max fraction-lost to no determine too losses. This value is the denominator of the fraction N/256, so the default value is about 4% of losses (12/256)",
+          "type": "int",
+          "optional":true,
+          "defaultValue": 12
+        },
+        {
+          "name": "rembOnConnect",
+          "doc": "REMB propagated upstream when video sending is started in a new connected endpoint.\n  Unit: bps(bits per second)",
+          "type": "int",
+          "optional":true,
+          "defaultValue": 300000
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "RaiseBase",
+      "doc": "",
+      "properties": [
+        {
+          "name": "source",
+          "doc": "Object that raised the event",
+          "type": "MediaObject"
+        },
+        {
+          "name": "timestamp",
+          "doc": "",
+          "type": "String"
+        },
+        {
+          "name": "tags",
+          "doc": "",
+          "type": "Tag[]"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "description",
+          "doc": "Textual description of the error",
+          "type": "String"
+        },
+        {
+          "name": "errorCode",
+          "doc": "Server side integer error code",
+          "type": "int"
+        },
+        {
+          "name": "type",
+          "doc": "Integer code as a String",
+          "type": "String"
+        }
+      ],
+      "name": "Error",
+      "extends": "RaiseBase",
+      "doc": "An error related to the MediaObject has occurred"
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "MediaSessionTerminated",
+      "doc": "Event raised when a session is terminated. This event has no data."
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "MediaSessionStarted",
+      "doc": "Event raised when a session starts. This event has no data."
+    },
+    {
+      "properties": [
+        {
+          "name": "type",
+          "doc": "Type of event that was raised",
+          "type": "String"
+        }
+      ],
+      "name": "Media",
+      "extends": "RaiseBase",
+      "doc": "Base for all events raised by elements in the Kurento media server."
+    },
+    {
+      "name": "ObjectCreated",
+      "extends": "RaiseBase",
+      "doc": "Indicates that an object has been created on the mediaserver",
+      "properties": [
+        {
+          "name": "object",
+          "doc": "The object that has been created",
+          "type": "MediaObject"
+        }
+      ]
+    },
+    {
+      "name": "ObjectDestroyed",
+      "extends": "RaiseBase",
+      "doc": "Indicates that an object has been destroyed on the mediaserver",
+      "properties": [
+        {
+          "name": "objectId",
+          "doc": "The id of the object that has been destroyed",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "MediaStateChanged",
+      "extends": "Media",
+      "doc": "Indicates that the state of the media has changed",
+      "properties": [
+        {
+          "name": "oldState",
+          "doc": "The previous state",
+          "type": "MediaState"
+        },
+        {
+          "name": "newState",
+          "doc": "The new state",
+          "type": "MediaState"
+        }
+      ]
+    },
+    {
+      "name": "ConnectionStateChanged",
+      "extends": "Media",
+      "doc": "Indicates that the state of the connection has changed",
+      "properties": [
+        {
+          "name": "oldState",
+          "doc": "The previous state",
+          "type": "ConnectionState"
+        },
+        {
+          "name": "newState",
+          "doc": "The new state",
+          "type": "ConnectionState"
+        }
+      ]
+    },
+    {
+      "name": "ElementConnected",
+      "extends": "Media",
+      "doc": "Indicates that an element has been connected to other",
+      "properties": [
+        {
+          "name": "sink",
+          "doc": "sink element in new connection",
+          "type": "MediaElement"
+        },
+        {
+          "name": "mediaType",
+          "doc": "Media type of the connection",
+          "type": "MediaType"
+        },
+        {
+          "name": "sourceMediaDescription",
+          "doc": "Description of the source media",
+          "type": "String"
+        },
+        {
+          "name": "sinkMediaDescription",
+          "doc": "Description of the sink media",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "ElementDisconnected",
+      "extends": "Media",
+      "doc": "Indicates that an element has been disconnected",
+      "properties": [
+        {
+          "name": "sink",
+          "doc": "sink element in previous connection",
+          "type": "MediaElement"
+        },
+        {
+          "name": "mediaType",
+          "doc": "Media type of the previous connection",
+          "type": "MediaType"
+        },
+        {
+          "name": "sourceMediaDescription",
+          "doc": "Description of the source media",
+          "type": "String"
+        },
+        {
+          "name": "sinkMediaDescription",
+          "doc": "Description of the sink media",
+          "type": "String"
+        }
+      ]
+    }
+  ]
+}
