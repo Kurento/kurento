@@ -10,7 +10,7 @@ namespace kurento
 {
 class JsonSerializer;
 }
-${organizeDependencies(remoteClassDependencies(remoteClass),false)}
+${organizeDependencies(typeDependencies(remoteClass),false)}
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
 {

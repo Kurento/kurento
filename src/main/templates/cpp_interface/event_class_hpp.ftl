@@ -25,6 +25,7 @@ class JsonSerializer;
 void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${event.name}> &object, JsonSerializer &s);
 }
 
+${organizeDependencies(typeDependencies(event),false)}
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
 {

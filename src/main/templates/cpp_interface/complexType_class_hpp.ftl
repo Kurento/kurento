@@ -13,6 +13,7 @@ ${complexType.name}.hpp
 #include <RegisterParent.hpp>
 </#if>
 
+${organizeDependencies(typeDependencies(complexType),false)}
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
 {

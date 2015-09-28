@@ -32,7 +32,7 @@ namespace kurento
 class JsonSerializer;
 void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remoteClass.name}> &object, JsonSerializer &serializer);
 }
-${organizeDependencies(remoteClassDependencies(remoteClass),false)}
+${organizeDependencies(typeDependencies(remoteClass),false)}
 <#list module.code.implementation["cppNamespace"]?split("::") as namespace>
 namespace ${namespace}
 {

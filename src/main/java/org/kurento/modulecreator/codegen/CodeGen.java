@@ -29,7 +29,7 @@ import org.kurento.modulecreator.codegen.function.JsNamespace;
 import org.kurento.modulecreator.codegen.function.JsonCppTypeData;
 import org.kurento.modulecreator.codegen.function.OrganizeDependencies;
 import org.kurento.modulecreator.codegen.function.PackageToFolder;
-import org.kurento.modulecreator.codegen.function.RemoteClassDependencies;
+import org.kurento.modulecreator.codegen.function.TypeDependencies;
 import org.kurento.modulecreator.codegen.function.SphinxLinks;
 import org.kurento.modulecreator.definition.ModuleDefinition;
 import org.kurento.modulecreator.definition.Type;
@@ -145,7 +145,7 @@ public class CodeGen {
 		root.put("getJsonCppTypeData", new JsonCppTypeData());
 		root.put("escapeString", new EscapeString());
 		root.put("camelToUnderscore", new CamelToUnderscore());
-		root.put("remoteClassDependencies", new RemoteClassDependencies());
+		root.put("typeDependencies", new TypeDependencies());
 		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
 		root.put("sphinxLinks", new SphinxLinks(module));
 		root.put("getJsNamespace", new JsNamespace());

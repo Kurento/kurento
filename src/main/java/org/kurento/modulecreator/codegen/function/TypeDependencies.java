@@ -4,22 +4,23 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.kurento.modulecreator.definition.ComplexType;
+import org.kurento.modulecreator.definition.Event;
 import org.kurento.modulecreator.definition.Method;
 import org.kurento.modulecreator.definition.Param;
 import org.kurento.modulecreator.definition.Property;
 import org.kurento.modulecreator.definition.RemoteClass;
 import org.kurento.modulecreator.definition.Return;
 import org.kurento.modulecreator.definition.Type;
+import org.kurento.modulecreator.definition.ComplexType.TypeFormat;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 
-public class RemoteClassDependencies implements TemplateMethodModelEx {
+public class TypeDependencies implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
 		Object type = arguments.get(0);
 
@@ -51,6 +52,28 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 				types.remove(remoteClass.getExtends().getType());
 
 			types.remove(remoteClass);
+		} else if (type instanceof Event) {
+			Event event = (Event) type;
+
+			for (Property property : event.getProperties()) {
+				addDependency(types, property.getType().getType());
+			}
+
+			if (event.getExtends() != null) {
+				types.remove(event.getExtends().getType());
+			}
+		} else if (type instanceof ComplexType) {
+			ComplexType complexType = (ComplexType) type;
+
+			if (complexType.getTypeFormat() == TypeFormat.REGISTER) {
+				for (Property property : complexType.getProperties()) {
+					addDependency(types, property.getType().getType());
+				}
+
+				if (complexType.getExtends() != null) {
+					types.remove(complexType.getExtends().getType());
+				}
+			}
 		}
 
 		types = removeDuplicates(types);

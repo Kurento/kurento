@@ -5,7 +5,7 @@ ${remoteClass.name}Internal.cpp
 #include "${remoteClass.name}Internal.hpp"
 #include <KurentoException.hpp>
 #include <jsonrpc/JsonSerializer.hpp>
-<#list remoteClassDependencies(remoteClass) as dependency>
+<#list typeDependencies(remoteClass) as dependency>
 #include "${dependency.name}.hpp"
 </#list>
 
