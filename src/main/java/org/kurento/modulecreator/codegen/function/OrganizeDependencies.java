@@ -50,14 +50,7 @@ public class OrganizeDependencies implements TemplateMethodModelEx {
 					}
 				}
 
-				boolean isClass = false;
-				for (RemoteClass b : dependency.getModule().getRemoteClasses()) {
-					if (b.getName().equals(dependency.getName())) {
-						isClass = true;
-					}
-				}
-
-				if (isImpl && isClass) {
+				if (isImpl && (dependency instanceof RemoteClass)) {
 					classesText += "class " + dependency.getName() + "Impl;";
 				} else {
 					classesText += "class " + dependency.getName() + ";";
