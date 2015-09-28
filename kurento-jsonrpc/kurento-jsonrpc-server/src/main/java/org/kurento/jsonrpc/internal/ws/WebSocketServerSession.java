@@ -148,7 +148,7 @@ public class WebSocketServerSession extends ServerSession {
 		} catch (TimeoutException e) {
 			throw new TransportException("Timeout of " + TIMEOUT
 					+ " milliseconds waiting from response to request with id:"
-					+ request.getId(), e);
+					+ request.getId()+". Request: "+request, e);
 		}
 
 		return MessageUtils.convertResponse(responseJsonObject, resultClass);
