@@ -40,10 +40,8 @@ public class CustomNpmPackTest {
 		String[] addTags = { "/keywords", "/dependencies", "/peerDependencies" };
 		String[] replaceTags = { "/repository", "/bugs" };
 
-		JsonFusioner fusioner = new JsonFusioner(
-				PathUtils.getPathInClasspath("/customnpm/generated.json"),
-				PathUtils.getPathInClasspath("/customnpm/customizer.json"),
-				fusionedJson, addTags, replaceTags);
+		JsonFusioner fusioner = new JsonFusioner(PathUtils.getPathInClasspath("/customnpm/generated.json"),
+				PathUtils.getPathInClasspath("/customnpm/customizer.json"), fusionedJson, addTags, replaceTags);
 
 		fusioner.fusionJsons();
 
@@ -87,17 +85,13 @@ public class CustomNpmPackTest {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/customnpm/moduleA.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/customnpm/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakecore.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakeelements.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakefilters.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
 		modCreator.loadModulesFromKmdFiles();
 
@@ -108,13 +102,11 @@ public class CustomNpmPackTest {
 
 		Result result = modCreator.generateCode();
 
-		assertThat("Compilation error: " + result.getErrors(),
-				result.isSuccess(), is(true));
+		assertThat("Compilation error: " + result.getErrors(), result.isSuccess(), is(true));
 
 		Path packageFile = codeGenDir.resolve("package.json");
 
-		assertThat("The package.json should exist", Files.exists(packageFile),
-				is(true));
+		assertThat("The package.json should exist", Files.exists(packageFile), is(true));
 
 		printFile(packageFile);
 
@@ -147,8 +139,7 @@ public class CustomNpmPackTest {
 		assertTagValue(doc, "/keywords", "Kurento");
 	}
 
-	private void findJsonElementsPath(JsonObject node, String[] propertyName,
-			List<JsonElement> list) {
+	private void findJsonElementsPath(JsonObject node, String[] propertyName, List<JsonElement> list) {
 
 		for (Entry<String, JsonElement> entry : node.entrySet()) {
 			if (entry.getKey().equals(propertyName[0])) {
@@ -159,16 +150,14 @@ public class CustomNpmPackTest {
 					JsonElement elem = entry.getValue();
 					if (elem instanceof JsonObject) {
 						findJsonElementsPath((JsonObject) elem,
-								Arrays.copyOfRange(propertyName, 1,
-										propertyName.length), list);
+								Arrays.copyOfRange(propertyName, 1, propertyName.length), list);
 					}
 				}
 			}
 		}
 	}
 
-	private void findJsonElementsProp(JsonObject node, String propertyName,
-			List<JsonElement> list) {
+	private void findJsonElementsProp(JsonObject node, String propertyName, List<JsonElement> list) {
 
 		for (Entry<String, JsonElement> entry : node.entrySet()) {
 			if (entry.getKey().equals(propertyName)) {
@@ -182,14 +171,12 @@ public class CustomNpmPackTest {
 		}
 	}
 
-	private void assertTagValue(JsonObject node, String propertyName,
-			String value) throws XPathExpressionException {
+	private void assertTagValue(JsonObject node, String propertyName, String value) throws XPathExpressionException {
 
 		List<JsonElement> list = new ArrayList<>();
 
 		if (propertyName.startsWith("/")) {
-			findJsonElementsPath(node, propertyName.substring(1).split("/"),
-					list);
+			findJsonElementsPath(node, propertyName.substring(1).split("/"), list);
 		} else {
 			findJsonElementsProp(node, propertyName, list);
 		}
@@ -214,8 +201,7 @@ public class CustomNpmPackTest {
 
 						if (arrayElem instanceof JsonPrimitive) {
 
-							if (value.equals(((JsonPrimitive) arrayElem)
-									.getAsString())) {
+							if (value.equals(((JsonPrimitive) arrayElem).getAsString())) {
 								return;
 							}
 						}
@@ -223,24 +209,19 @@ public class CustomNpmPackTest {
 				}
 			}
 
-			fail("There is no tag '" + propertyName + "' with value '" + value
-					+ "'");
+			fail("There is no tag '" + propertyName + "' with value '" + value + "'");
 		}
 	}
 
-	private JsonObject loadJsonFile(Path jsonFile)
-			throws ParserConfigurationException, SAXException, IOException {
+	private JsonObject loadJsonFile(Path jsonFile) throws ParserConfigurationException, SAXException, IOException {
 
 		Gson gson = new GsonBuilder().create();
 
-		return (JsonObject) gson.fromJson(
-				Files.newBufferedReader(jsonFile, StandardCharsets.UTF_8),
-				JsonElement.class);
+		return (JsonObject) gson.fromJson(Files.newBufferedReader(jsonFile, StandardCharsets.UTF_8), JsonElement.class);
 	}
 
 	private void printFile(Path file) throws IOException {
-		System.out.println(new String(Files.readAllBytes(file),
-				StandardCharsets.UTF_8));
+		System.out.println(new String(Files.readAllBytes(file), StandardCharsets.UTF_8));
 	}
 
 }

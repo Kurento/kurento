@@ -37,8 +37,7 @@ public class TypeRef extends ModelElement {
 			moduleName = parts[0];
 			name = parts[1];
 		} else if (parts.length > 2) {
-			throw new KurentoModuleCreatorException(
-					"Invalid module name in type ref: '" + name + "'");
+			throw new KurentoModuleCreatorException("Invalid module name in type ref: '" + name + "'");
 		}
 
 		return new TypeRef(moduleName, name, isList, isMap);
@@ -128,8 +127,7 @@ public class TypeRef extends ModelElement {
 
 	@Override
 	public String toString() {
-		return "TypeRef [name=" + name + ", isList=" + isList + ", isMap="
-				+ isMap + ", moduleName=" + moduleName + "]";
+		return "TypeRef [name=" + name + ", isList=" + isList + ", isMap=" + isMap + ", moduleName=" + moduleName + "]";
 	}
 
 }

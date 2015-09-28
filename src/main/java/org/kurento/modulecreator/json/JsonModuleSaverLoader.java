@@ -35,29 +35,23 @@ public class JsonModuleSaverLoader {
 		gsonBuilder.registerTypeAdapter(TypeRef.class, new TypeRefAdapter());
 		gsonBuilder.registerTypeAdapter(Param.class, new DataItemAdapter());
 		gsonBuilder.registerTypeAdapter(Property.class, new DataItemAdapter());
-		gsonBuilder.registerTypeAdapter(RemoteClass.class,
-				new RemoteClassAdapter());
+		gsonBuilder.registerTypeAdapter(RemoteClass.class, new RemoteClassAdapter());
 		gsonBuilder.registerTypeAdapter(Method.class, new MethodAdapter());
 		gsonBuilder.disableHtmlEscaping();
 		gson = gsonBuilder.create();
 	}
 
-	public ModuleDefinition loadFromFile(Path file)
-			throws FileNotFoundException, IOException {
+	public ModuleDefinition loadFromFile(Path file) throws FileNotFoundException, IOException {
 		return loadFromInputStream(Files.newInputStream(file));
 	}
 
-	public ModuleDefinition loadFromClasspath(String resourceName)
-			throws IOException {
-		return loadFromInputStream(this.getClass().getResourceAsStream(
-				resourceName));
+	public ModuleDefinition loadFromClasspath(String resourceName) throws IOException {
+		return loadFromInputStream(this.getClass().getResourceAsStream(resourceName));
 	}
 
-	private ModuleDefinition loadFromInputStream(InputStream is)
-			throws IOException {
+	private ModuleDefinition loadFromInputStream(InputStream is) throws IOException {
 		String moduleString = loadTextFromInputStream(is);
-		ModuleDefinition module = gson.fromJson(moduleString,
-				ModuleDefinition.class);
+		ModuleDefinition module = gson.fromJson(moduleString, ModuleDefinition.class);
 		return module;
 	}
 
@@ -72,8 +66,7 @@ public class JsonModuleSaverLoader {
 		return sb.toString();
 	}
 
-	public void writeToFile(ModuleDefinition module, File file)
-			throws FileNotFoundException {
+	public void writeToFile(ModuleDefinition module, File file) throws FileNotFoundException {
 
 		String jsonModuleString = gson.toJson(module);
 

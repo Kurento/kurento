@@ -26,38 +26,30 @@ import freemarker.template.TemplateModelException;
  */
 public class SphinxLinks implements TemplateMethodModelEx {
 
-	private static Pattern glossary_term_1 = Pattern
-			.compile(":term:`([^`<]*?)`");
-	private static Pattern glossary_term_2 = Pattern
-			.compile(":term:`([^`<]*?)<([^`]*?)>`");
+	private static Pattern glossary_term_1 = Pattern.compile(":term:`([^`<]*?)`");
+	private static Pattern glossary_term_2 = Pattern.compile(":term:`([^`<]*?)<([^`]*?)>`");
 
 	private static String glossary_href = "<a href=\"http://www.kurento.org/docs/current/glossary.html#term-%s\">%s</a>";
 	// TODO: `<text>`, ** and *, other markup...
 
-	private List<String[]> toReplace = new ArrayList<String[]>(
-			Arrays.asList(new String[][] {
-					// wikipedia
-					{ ":wikipedia:`(.*?),(.*?)`",
-							"<a href=\"http://$1.wikipedia.org/wiki/$2\">$2</a>" },
-					{ ":wikipedia:`(.*?)<(.*?),(.*?)>`",
-							"<a href=\"http://$2.wikipedia.org/wiki/$3\">$1</a>" },
+	private List<String[]> toReplace = new ArrayList<String[]>(Arrays.asList(new String[][] {
+			// wikipedia
+			{ ":wikipedia:`(.*?),(.*?)`", "<a href=\"http://$1.wikipedia.org/wiki/$2\">$2</a>" },
+			{ ":wikipedia:`(.*?)<(.*?),(.*?)>`", "<a href=\"http://$2.wikipedia.org/wiki/$3\">$1</a>" },
 
-					// java ref
-					{ ":java:ref:`([^`]*?)<(.*?)>`", "{@link $2 $1}" },
-					{ ":java:ref:`(.*?)`", "{@link $1}" },
+			// java ref
+			{ ":java:ref:`([^`]*?)<(.*?)>`", "{@link $2 $1}" }, { ":java:ref:`(.*?)`", "{@link $1}" },
 
-					// Kurento ROM
-					{ ":rom:enum:`([^`]*?)`", "{@link $1}" },
+			// Kurento ROM
+			{ ":rom:enum:`([^`]*?)`", "{@link $1}" },
 
-					{ ":rom:evt:`([^`]*?)<([^`]*?)>`", "{@link $2 $1Event}" },
-					{ ":rom:evt:`([^`]*?)`", "{@link $1Event}" },
+			{ ":rom:evt:`([^`]*?)<([^`]*?)>`", "{@link $2 $1Event}" }, { ":rom:evt:`([^`]*?)`", "{@link $1Event}" },
 
-					// JsDoc tags
-					{ ":author:", "@author" }, { ":since:", "@since" },
+			// JsDoc tags
+			{ ":author:", "@author" }, { ":since:", "@since" },
 
-					{ "``([^`]*?)``", "<code>$1</code>" },
-					{ "\\.\\.\\s+todo::(.*?)", "<hr/><b>TODO</b>$1" },
-					{ "\\.\\.\\s+note::(.*?)", "<hr/><b>Note</b>$1" } }));
+			{ "``([^`]*?)``", "<code>$1</code>" }, { "\\.\\.\\s+todo::(.*?)", "<hr/><b>TODO</b>$1" },
+			{ "\\.\\.\\s+note::(.*?)", "<hr/><b>Note</b>$1" } }));
 
 	public SphinxLinks(ModuleDefinition module) {
 		super();
@@ -82,39 +74,31 @@ public class SphinxLinks implements TemplateMethodModelEx {
 			namePath += remoteClass.isAbstract() ? "/abstracts" : "";
 			namePath += "." + className;
 
-			toReplace.addAll(Arrays.asList(new String[][] {
-					{ ":rom:cls:`" + className + "`",
-							"{@link " + namePath + " " + className + "}" },
-					{ ":rom:cls:`([^`]*?)<" + className + ">`",
-							"{@link " + namePath + " $1}" } }));
+			toReplace.addAll(Arrays.asList(
+					new String[][] { { ":rom:cls:`" + className + "`", "{@link " + namePath + " " + className + "}" },
+							{ ":rom:cls:`([^`]*?)<" + className + ">`", "{@link " + namePath + " $1}" } }));
 		}
 	}
 
 	private void addComplexTypes(ModuleDefinition module) {
 		for (ComplexType complexType : module.getComplexTypes()) {
 			String typeName = complexType.getName();
-			String namePath = "module:" + module.getName() + "/complexTypes."
-					+ typeName;
+			String namePath = "module:" + module.getName() + "/complexTypes." + typeName;
 
-			toReplace.addAll(Arrays.asList(new String[][] {
-					{ ":rom:ref:`" + typeName + "`",
-							"{@link " + namePath + " " + typeName + "}" },
-					{ ":rom:ref:`([^`]*?)<" + typeName + ">`",
-							"{@link " + namePath + " $1}" } }));
+			toReplace.addAll(Arrays.asList(
+					new String[][] { { ":rom:ref:`" + typeName + "`", "{@link " + namePath + " " + typeName + "}" },
+							{ ":rom:ref:`([^`]*?)<" + typeName + ">`", "{@link " + namePath + " $1}" } }));
 		}
 	}
 
 	private void addEvents(ModuleDefinition module) {
 		for (Event event : module.getEvents()) {
 			String eventName = event.getName();
-			String namePath = "module:" + module.getName() + "#event:"
-					+ eventName;
+			String namePath = "module:" + module.getName() + "#event:" + eventName;
 
-			toReplace.addAll(Arrays.asList(new String[][] {
-					{ ":rom:evt:`" + eventName + "`",
-							"{@link " + namePath + " " + eventName + "}" },
-					{ ":rom:evt:`([^`]*?)<" + eventName + ">`",
-							"{@link " + namePath + " $1}" } }));
+			toReplace.addAll(Arrays.asList(
+					new String[][] { { ":rom:evt:`" + eventName + "`", "{@link " + namePath + " " + eventName + "}" },
+							{ ":rom:evt:`([^`]*?)<" + eventName + ">`", "{@link " + namePath + " $1}" } }));
 		}
 	}
 
@@ -139,31 +123,28 @@ public class SphinxLinks implements TemplateMethodModelEx {
 		String res = translate(typeName, toReplace);
 
 		// Instance properties
-		String classNamePath = arguments.size() > 1 ? "module:"
-				+ arguments.get(1).toString() : "";
+		String classNamePath = arguments.size() > 1 ? "module:" + arguments.get(1).toString() : "";
 
 		String instanceProperty = "{@link " + classNamePath + "#$1}";
 		String instancePropertyAlt = "{@link " + classNamePath + "#$2 $1}";
 
-		res = translate(res, Arrays.asList(new String[][] {
-				{ ":rom:meth:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
-				{ ":rom:meth:`([^`]*?)`", instanceProperty },
-				{ ":rom:attr:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
-				{ ":rom:attr:`([^`]*?)`", instanceProperty }, }));
+		res = translate(res,
+				Arrays.asList(new String[][] { { ":rom:meth:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
+						{ ":rom:meth:`([^`]*?)`", instanceProperty },
+						{ ":rom:attr:`([^`]*?)<([^`]*?)>`", instancePropertyAlt },
+						{ ":rom:attr:`([^`]*?)`", instanceProperty }, }));
 
 		// Glosaries
 		Matcher m2 = glossary_term_2.matcher(res);
 		while (m2.find()) {
-			res = res.substring(0, m2.start() - 1)
-					+ String.format(glossary_href, make_id(m2.group(2)),
-							m2.group(1)) + res.substring(m2.end() + 1);
+			res = res.substring(0, m2.start() - 1) + String.format(glossary_href, make_id(m2.group(2)), m2.group(1))
+					+ res.substring(m2.end() + 1);
 		}
 
 		m2 = glossary_term_1.matcher(res);
 		while (m2.find()) {
-			res = res.substring(0, m2.start())
-					+ String.format(glossary_href, make_id(m2.group(1)),
-							m2.group(1)) + res.substring(m2.end());
+			res = res.substring(0, m2.start()) + String.format(glossary_href, make_id(m2.group(1)), m2.group(1))
+					+ res.substring(m2.end());
 		}
 
 		return res;
@@ -231,8 +212,9 @@ public class SphinxLinks implements TemplateMethodModelEx {
 	// _non_id_at_ends = re.compile('^[-0-9]+|-+$')
 	String _non_id_at_ends = "^[-0-9]+|-+$";
 
-	List<String[]> _non_id_translate = Arrays.asList(new String[][] {
-			{ "\u00f8", "o" }, // o with stroke
+	List<String[]> _non_id_translate = Arrays.asList(new String[][] { { "\u00f8", "o" }, // o
+																							// with
+																							// stroke
 			{ "\u0111", "d" }, // d with stroke
 			{ "\u0127", "h" }, // h with stroke
 			{ "\u0131", "i" }, // dotless i
@@ -265,14 +247,14 @@ public class SphinxLinks implements TemplateMethodModelEx {
 			{ "\u024b", "q" }, // q with hook tail
 			{ "\u024d", "r" }, // r with stroke
 			{ "\u024f", "y" } // y with stroke
-			});
+	});
 
-	List<String[]> _non_id_translate_digraphs = Arrays.asList(new String[][] {
-			{ "\u00df", "sz" }, // ligature sz
+	List<String[]> _non_id_translate_digraphs = Arrays.asList(new String[][] { { "\u00df", "sz" }, // ligature
+																									// sz
 			{ "\u00e6", "ae" }, // ae
 			{ "\u0153", "oe" }, // ligature oe
 			{ "\u0238", "db" }, // db digraph
 			{ "\u0239", "qp" } // qp digraph
-			});
+	});
 
 }

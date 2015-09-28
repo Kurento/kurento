@@ -23,23 +23,17 @@ public class ImportModulesWithRangesTest {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/versionranges/moduleC.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/versionranges/moduleC.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/versionranges/moduleB.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/versionranges/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/versionranges/moduleA.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/versionranges/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakecore.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakeelements.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakefilters.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
 		modCreator.loadModulesFromKmdFiles();
 
@@ -67,20 +61,15 @@ public class ImportModulesWithRangesTest {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/versionranges/moduleD.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/versionranges/moduleD.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/versionranges/moduleA.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/versionranges/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakecore.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakeelements.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakefilters.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
 		try {
 

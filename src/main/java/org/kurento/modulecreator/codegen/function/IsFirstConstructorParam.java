@@ -13,13 +13,10 @@ import freemarker.template.TemplateModelException;
 public class IsFirstConstructorParam implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
-		RemoteClass thisRemoteClass = (RemoteClass) ((StringModel) arguments
-				.get(0)).getWrappedObject();
-		RemoteClass otherRemoteClass = (RemoteClass) ((StringModel) arguments
-				.get(1)).getWrappedObject();
+		RemoteClass thisRemoteClass = (RemoteClass) ((StringModel) arguments.get(0)).getWrappedObject();
+		RemoteClass otherRemoteClass = (RemoteClass) ((StringModel) arguments.get(1)).getWrappedObject();
 
 		if (otherRemoteClass.getConstructor() != null) {
 

@@ -15,8 +15,7 @@ public class JsonObjectAsMap {
 	public Map<String, Object> createMapFromJsonObject(JsonObject jsonObject) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-			map.put(entry.getKey(),
-					createObjectFromJsonElement(entry.getValue()));
+			map.put(entry.getKey(), createObjectFromJsonElement(entry.getValue()));
 		}
 		return map;
 	}

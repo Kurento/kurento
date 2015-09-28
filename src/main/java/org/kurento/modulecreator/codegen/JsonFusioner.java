@@ -25,11 +25,9 @@ import com.google.gson.JsonSyntaxException;
 
 public class JsonFusioner {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(JsonFusioner.class);
+	private static final Logger log = LoggerFactory.getLogger(JsonFusioner.class);
 
-	private static final Gson gson = new GsonBuilder().setPrettyPrinting()
-			.disableHtmlEscaping().create();
+	private static final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
 	private final Path generatedJson;
 	private final Path customizerJson;
@@ -42,17 +40,14 @@ public class JsonFusioner {
 		this(generatedJson, customizerJson, outputFile, null, null);
 	}
 
-	public JsonFusioner(Path generatedJson, Path customizerJson,
-			Path outputFile, String[] addChildrenTags,
+	public JsonFusioner(Path generatedJson, Path customizerJson, Path outputFile, String[] addChildrenTags,
 			String[] replaceChildrenTags) {
 		super();
 		this.generatedJson = generatedJson;
 		this.customizerJson = customizerJson;
 		this.outputFile = outputFile;
-		this.addChildrenTags = new HashSet<String>(
-				Arrays.asList(addChildrenTags));
-		this.replaceChildrenTags = new HashSet<String>(
-				Arrays.asList(replaceChildrenTags));
+		this.addChildrenTags = new HashSet<String>(Arrays.asList(addChildrenTags));
+		this.replaceChildrenTags = new HashSet<String>(Arrays.asList(replaceChildrenTags));
 	}
 
 	public void fusionJsons() throws IOException {
@@ -65,13 +60,11 @@ public class JsonFusioner {
 
 			writeJson(generatedJsonDoc);
 		} catch (IOException e) {
-			log.warn("Error while merging '" + generatedJson + "' with '"
-					+ customizerJson + "': " + e.getMessage());
+			log.warn("Error while merging '" + generatedJson + "' with '" + customizerJson + "': " + e.getMessage());
 		}
 	}
 
-	private void merge(JsonObject genNode, JsonObject custNode,
-			List<String> genPath) {
+	private void merge(JsonObject genNode, JsonObject custNode, List<String> genPath) {
 
 		for (Entry<String, JsonElement> entry : custNode.entrySet()) {
 
@@ -85,14 +78,12 @@ public class JsonFusioner {
 
 				if (replaceChildrenTags.contains(nodePath)) {
 
-					if (custChildNode instanceof JsonObject
-							&& genChildNode instanceof JsonObject) {
+					if (custChildNode instanceof JsonObject && genChildNode instanceof JsonObject) {
 
 						List<String> newPath = new ArrayList<String>(genPath);
 						newPath.add(entry.getKey());
 
-						merge((JsonObject) genChildNode,
-								(JsonObject) custChildNode, newPath);
+						merge((JsonObject) genChildNode, (JsonObject) custChildNode, newPath);
 					}
 
 				} else if (addChildrenTags.contains(nodePath)) {
@@ -101,14 +92,12 @@ public class JsonFusioner {
 
 				} else if (includedInReplaceOrAdd(nodePath)) {
 
-					if (custChildNode instanceof JsonObject
-							&& genChildNode instanceof JsonObject) {
+					if (custChildNode instanceof JsonObject && genChildNode instanceof JsonObject) {
 
 						List<String> newPath = new ArrayList<String>(genPath);
 						newPath.add(entry.getKey());
 
-						merge((JsonObject) genChildNode,
-								(JsonObject) custChildNode, newPath);
+						merge((JsonObject) genChildNode, (JsonObject) custChildNode, newPath);
 					}
 
 				} else {
@@ -127,8 +116,7 @@ public class JsonFusioner {
 
 	private void addChildren(JsonElement fromElement, JsonElement toElement) {
 
-		if (fromElement instanceof JsonObject
-				&& toElement instanceof JsonObject) {
+		if (fromElement instanceof JsonObject && toElement instanceof JsonObject) {
 
 			JsonObject fromObject = (JsonObject) fromElement;
 			JsonObject toObject = (JsonObject) toElement;
@@ -137,8 +125,7 @@ public class JsonFusioner {
 				toObject.add(entry.getKey(), entry.getValue());
 			}
 
-		} else if (fromElement instanceof JsonArray
-				&& toElement instanceof JsonArray) {
+		} else if (fromElement instanceof JsonArray && toElement instanceof JsonArray) {
 
 			JsonArray fromArray = (JsonArray) fromElement;
 			JsonArray toArray = (JsonArray) toElement;
@@ -174,19 +161,15 @@ public class JsonFusioner {
 		return sb.toString();
 	}
 
-	private JsonObject loadJson(Path jsonPath) throws JsonSyntaxException,
-			JsonIOException, IOException {
+	private JsonObject loadJson(Path jsonPath) throws JsonSyntaxException, JsonIOException, IOException {
 
-		return (JsonObject) gson.fromJson(
-				Files.newBufferedReader(jsonPath, StandardCharsets.UTF_8),
-				JsonElement.class);
+		return (JsonObject) gson.fromJson(Files.newBufferedReader(jsonPath, StandardCharsets.UTF_8), JsonElement.class);
 	}
 
 	private void writeJson(JsonObject doc) throws IOException {
 
 		String json = gson.toJson(doc);
-		try (Writer os = Files.newBufferedWriter(outputFile,
-				StandardCharsets.UTF_8)) {
+		try (Writer os = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {
 			os.write(json);
 		}
 	}

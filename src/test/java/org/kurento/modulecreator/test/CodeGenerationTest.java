@@ -12,18 +12,15 @@ import org.kurento.modulecreator.Result;
 
 public class CodeGenerationTest {
 
-	static String[] TEMPLATES = { "cpp_cmake_dependencies", "cpp_find_cmake",
-			"cpp_interface", "cpp_interface_internal", "cpp_module",
-			"cpp_pkgconfig", "cpp_server", "cpp_server_internal", "doc",
-			"maven", "npm" };
+	static String[] TEMPLATES = { "cpp_cmake_dependencies", "cpp_find_cmake", "cpp_interface", "cpp_interface_internal",
+			"cpp_module", "cpp_pkgconfig", "cpp_server", "cpp_server_internal", "doc", "maven", "npm" };
 
 	@Test
 	public void test() throws IOException, URISyntaxException {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/core.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/core.kmd.json"));
 
 		for (String template : TEMPLATES) {
 			System.out.println("Template:" + template);

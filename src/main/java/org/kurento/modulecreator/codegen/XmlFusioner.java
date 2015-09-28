@@ -38,20 +38,17 @@ public class XmlFusioner {
 		this(generatedXml, customizerXml, outputFile, null, null);
 	}
 
-	public XmlFusioner(Path generatedXml, Path customizerXml, Path outputFile,
-			String[] addChildrenTags, String[] replaceChildrenTags) {
+	public XmlFusioner(Path generatedXml, Path customizerXml, Path outputFile, String[] addChildrenTags,
+			String[] replaceChildrenTags) {
 		super();
 		this.generatedXml = generatedXml;
 		this.customizerXml = customizerXml;
 		this.outputFile = outputFile;
-		this.addChildrenTags = new HashSet<String>(
-				Arrays.asList(addChildrenTags));
-		this.replaceChildrenTags = new HashSet<String>(
-				Arrays.asList(replaceChildrenTags));
+		this.addChildrenTags = new HashSet<String>(Arrays.asList(addChildrenTags));
+		this.replaceChildrenTags = new HashSet<String>(Arrays.asList(replaceChildrenTags));
 	}
 
-	public void fusionXmls() throws ParserConfigurationException, SAXException,
-			IOException, TransformerException {
+	public void fusionXmls() throws ParserConfigurationException, SAXException, IOException, TransformerException {
 
 		Document generatedXmlDoc = loadXml(generatedXml);
 		Document customizedXmlDoc = loadXml(customizerXml);
@@ -94,16 +91,14 @@ public class XmlFusioner {
 				} else {
 
 					// Replace entire node
-					Node newNode = genNode.getOwnerDocument().importNode(
-							custChildNode, true);
+					Node newNode = genNode.getOwnerDocument().importNode(custChildNode, true);
 					genNode.replaceChild(newNode, genChildNode);
 				}
 
 			} else {
 
 				// Add new node
-				Node newNode = genNode.getOwnerDocument().importNode(
-						custChildNode, true);
+				Node newNode = genNode.getOwnerDocument().importNode(custChildNode, true);
 				genNode.appendChild(newNode);
 
 			}
@@ -131,16 +126,14 @@ public class XmlFusioner {
 		NodeList list = custChildNode.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {
 			Node node = list.item(i);
-			Node newNode = genChildNode.getOwnerDocument().importNode(node,
-					true);
+			Node newNode = genChildNode.getOwnerDocument().importNode(node, true);
 			genChildNode.appendChild(newNode);
 		}
 	}
 
 	private String getPath(Node node) {
 		StringBuilder sb = new StringBuilder();
-		while (node.getParentNode() != null
-				&& !(node.getParentNode() instanceof Document)) {
+		while (node.getParentNode() != null && !(node.getParentNode() instanceof Document)) {
 			sb.insert(0, "/" + node.getNodeName());
 			node = node.getParentNode();
 		}
@@ -157,30 +150,23 @@ public class XmlFusioner {
 		return null;
 	}
 
-	private Document loadXml(Path xmlPath) throws ParserConfigurationException,
-			SAXException, IOException {
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory
-				.newInstance();
+	private Document loadXml(Path xmlPath) throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		Document doc = docBuilder.parse(xmlPath.toString());
 		return doc;
 	}
 
-	private void writeXml(Document doc)
-			throws TransformerFactoryConfigurationError,
-			TransformerConfigurationException, IOException,
-			TransformerException {
+	private void writeXml(Document doc) throws TransformerFactoryConfigurationError, TransformerConfigurationException,
+			IOException, TransformerException {
 
-		TransformerFactory transformerFactory = TransformerFactory
-				.newInstance();
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
 		Transformer transformer = transformerFactory.newTransformer();
 		DOMSource source = new DOMSource(doc);
-		StreamResult result = new StreamResult(
-				Files.newOutputStream(outputFile));
+		StreamResult result = new StreamResult(Files.newOutputStream(outputFile));
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		transformer.setOutputProperty(
-				"{http://xml.apache.org/xslt}indent-amount", "2");
+		transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 		transformer.transform(source, result);
 	}
 

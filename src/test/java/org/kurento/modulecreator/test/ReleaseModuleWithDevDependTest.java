@@ -14,20 +14,15 @@ public class ReleaseModuleWithDevDependTest {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/releaseversion/moduleA.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/releaseversion/moduleA.kmd.json"));
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/releaseversion/moduleB.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/releaseversion/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakecore.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakeelements.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakefilters.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
 		try {
 
@@ -41,9 +36,7 @@ public class ReleaseModuleWithDevDependTest {
 					"Exception message should be: "
 							+ "\"All dependencies of a release version must be also release versions\""
 							+ " but it is: \"" + e.getMessage() + "\"",
-					e.getMessage()
-							.contains(
-									"All dependencies of a release version must be also release versions"));
+					e.getMessage().contains("All dependencies of a release version must be also release versions"));
 
 		}
 	}

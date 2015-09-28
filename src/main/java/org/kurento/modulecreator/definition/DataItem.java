@@ -18,8 +18,7 @@ public class DataItem extends NamedElement {
 		this.optional = optional;
 	}
 
-	public DataItem(String name, String doc, TypeRef type,
-			JsonElement defaultValue) {
+	public DataItem(String name, String doc, TypeRef type, JsonElement defaultValue) {
 		super(name, doc);
 		this.type = type;
 		this.optional = true;

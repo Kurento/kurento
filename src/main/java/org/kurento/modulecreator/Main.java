@@ -42,8 +42,7 @@ public class Main {
 	private static final String GENERATE_MAVEN = "maven";
 	private static final String GENERATE_NPM = "npm";
 
-	public static void main(String[] args) throws IOException,
-			TemplateException {
+	public static void main(String[] args) throws IOException, TemplateException {
 
 		Options options = configureOptions();
 
@@ -73,8 +72,7 @@ public class Main {
 		if (line.hasOption(TEMPLATES_DIR)) {
 			processor.setTemplatesDir(getTemplatesDir(line));
 		} else if (line.hasOption(INTERNAL_TEMPLATES)) {
-			processor.setInternalTemplates(line
-					.getOptionValue(INTERNAL_TEMPLATES));
+			processor.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
 		}
 
 		processor.setConfig(getConfigContent(line));
@@ -117,71 +115,53 @@ public class Main {
 
 		// create the Options
 		Options options = new Options();
-		options.addOption(VERBOSE, "verbose", false,
-				"Prints source code while being generated.");
+		options.addOption(VERBOSE, "verbose", false, "Prints source code while being generated.");
 
 		options.addOption(HELP, "help", false, "Prints this message.");
 
-		options.addOption(OptionBuilder
-				.withLongOpt("rom")
-				.withDescription(
-						"A space separated list of Kurento Media Element "
-								+ "Description (kmd) files or folders containing this files.")
+		options.addOption(OptionBuilder.withLongOpt("rom")
+				.withDescription("A space separated list of Kurento Media Element "
+						+ "Description (kmd) files or folders containing this files.")
 				.hasArg().withArgName("ROM_FILE").isRequired().create(ROM));
 
-		options.addOption(OptionBuilder
-				.withLongOpt("deprom")
-				.withDescription(
-						"A space separated list of Kurento Media Element "
-								+ "Description (kmd) files used as dependencies or folders containing this files.")
+		options.addOption(OptionBuilder.withLongOpt("deprom")
+				.withDescription("A space separated list of Kurento Media Element "
+						+ "Description (kmd) files used as dependencies or folders containing this files.")
 				.hasArg().withArgName("DEP_ROM_FILE").create(DEPROM));
 
-		options.addOption(OptionBuilder.withLongOpt("templates")
-				.withDescription("Directory that contains template files.")
-				.hasArg().withArgName("TEMPLATES_DIR").create(TEMPLATES_DIR));
+		options.addOption(
+				OptionBuilder.withLongOpt("templates").withDescription("Directory that contains template files.")
+						.hasArg().withArgName("TEMPLATES_DIR").create(TEMPLATES_DIR));
 
 		options.addOption(OptionBuilder.withLongOpt("internal-templates")
-				.withDescription("Directory that contains template files.")
-				.hasArg().withArgName("TEMPLATES_DIR")
+				.withDescription("Directory that contains template files.").hasArg().withArgName("TEMPLATES_DIR")
 				.create(INTERNAL_TEMPLATES));
 
-		options.addOption(OptionBuilder
-				.withLongOpt("codegen")
-				.withDescription(
-						"Destination directory for generated files "
-								+ "(required if --show-values or --output-model is not present.")
+		options.addOption(OptionBuilder.withLongOpt("codegen")
+				.withDescription("Destination directory for generated files "
+						+ "(required if --show-values or --output-model is not present.")
 				.hasArg().withArgName("CODEGEN_DIR").create(CODEGEN));
 
-		options.addOption(DELETE, "delete", false,
-				"Delete destination directory before generating files.");
+		options.addOption(DELETE, "delete", false, "Delete destination directory before generating files.");
 
 		options.addOption(LIST_GEN_FILES, "list-generated-files", false,
 				"List in the standard output the names of generated files.");
 
-		options.addOption(OptionBuilder.withLongOpt("config")
-				.withDescription("Configuration file.").hasArg()
+		options.addOption(OptionBuilder.withLongOpt("config").withDescription("Configuration file.").hasArg()
 				.withArgName("CONFIGURATION_FILE").create(CONFIG));
 
-		options.addOption(OptionBuilder
-				.withLongOpt("show-values")
-				.withDescription(
-						"Show values for provided keys in kmd.json files.")
-				.hasArgs().withArgName("LIST OF KEYS").create(SHOW_VALUES));
+		options.addOption(OptionBuilder.withLongOpt("show-values")
+				.withDescription("Show values for provided keys in kmd.json files.").hasArgs()
+				.withArgName("LIST OF KEYS").create(SHOW_VALUES));
 
-		options.addOption(OptionBuilder
-				.withLongOpt("output-model")
-				.withDescription(
-						"Directory where the final model will be written.")
-				.hasArgs().withArgName("DIR").create(OUTPUT_MODEL));
+		options.addOption(OptionBuilder.withLongOpt("output-model")
+				.withDescription("Directory where the final model will be written.").hasArgs().withArgName("DIR")
+				.create(OUTPUT_MODEL));
 
-		options.addOption(OptionBuilder
-				.withLongOpt("no-overwrite")
-				.withDescription(
-						"Do not overwrite files if they are already generated.")
-				.create(NO_OVERWRITE));
+		options.addOption(OptionBuilder.withLongOpt("no-overwrite")
+				.withDescription("Do not overwrite files if they are already generated.").create(NO_OVERWRITE));
 
-		options.addOption(GENERATE_MAVEN, "maven-pom", false,
-				"Generate pom.xml file based on base file or template.");
+		options.addOption(GENERATE_MAVEN, "maven-pom", false, "Generate pom.xml file based on base file or template.");
 
 		options.addOption(GENERATE_NPM, "npm-package", false,
 				"Generate package.json file based on base file or template.");
@@ -194,15 +174,13 @@ public class Main {
 		formatter.printHelp("kurento-module-creator", options);
 	}
 
-	private static List<Path> getDependencyKmdFiles(CommandLine line)
-			throws IOException {
+	private static List<Path> getDependencyKmdFiles(CommandLine line) throws IOException {
 
 		if (line.hasOption(DEPROM)) {
 
 			String[] kmdPathNames = line.getOptionValues(DEPROM);
 
-			List<Path> kmdFiles = PathUtils
-					.getPaths(kmdPathNames, "*.kmd.json");
+			List<Path> kmdFiles = PathUtils.getPaths(kmdPathNames, "*.kmd.json");
 
 			if (kmdFiles.isEmpty()) {
 				String paths = null;
@@ -213,8 +191,7 @@ public class Main {
 						paths = paths + ":" + path;
 					}
 				}
-				System.err.println("No dependency kmd files found in paths: "
-						+ paths);
+				System.err.println("No dependency kmd files found in paths: " + paths);
 				return Collections.emptyList();
 			}
 
@@ -225,8 +202,7 @@ public class Main {
 		}
 	}
 
-	private static JsonObject getConfigContent(CommandLine line)
-			throws JsonIOException, IOException {
+	private static JsonObject getConfigContent(CommandLine line) throws JsonIOException, IOException {
 
 		JsonObject configContents = new JsonObject();
 
@@ -234,8 +210,7 @@ public class Main {
 		if (configValue != null) {
 			Path configFile = Paths.get(configValue);
 			if (!Files.exists(configFile)) {
-				System.err.println("Config file '" + configFile
-						+ "' does not exist or is not readable");
+				System.err.println("Config file '" + configFile + "' does not exist or is not readable");
 				System.exit(1);
 			}
 			configContents = KurentoModuleCreator.loadConfigFile(configFile);
@@ -246,9 +221,7 @@ public class Main {
 
 	private static Path getCodegenDir(CommandLine line) {
 
-		if (!line.hasOption(CODEGEN)
-				&& (!line.hasOption(SHOW_VALUES) && !line
-						.hasOption(OUTPUT_MODEL))) {
+		if (!line.hasOption(CODEGEN) && (!line.hasOption(SHOW_VALUES) && !line.hasOption(OUTPUT_MODEL))) {
 			printHelp(configureOptions());
 			System.exit(1);
 		}
@@ -258,12 +231,10 @@ public class Main {
 			File codegenDir = new File(line.getOptionValue(CODEGEN));
 			if (codegenDir.exists()) {
 				if (!codegenDir.canWrite()) {
-					System.err.println("Codegen '" + codegenDir
-							+ "' is not writable");
+					System.err.println("Codegen '" + codegenDir + "' is not writable");
 					System.exit(1);
 				} else if (!codegenDir.isDirectory()) {
-					System.err.println("Codegen '" + codegenDir
-							+ "' is not a directory");
+					System.err.println("Codegen '" + codegenDir + "' is not a directory");
 					System.exit(1);
 				}
 			}
@@ -279,12 +250,10 @@ public class Main {
 		if (templatesDir.exists()) {
 
 			if (!templatesDir.canRead()) {
-				System.err.println("TemplatesDir '" + templatesDir
-						+ "' is not readable");
+				System.err.println("TemplatesDir '" + templatesDir + "' is not readable");
 				System.exit(1);
 			} else if (!templatesDir.isDirectory()) {
-				System.err.println("TemplatesDir '" + templatesDir
-						+ "' is not a directory");
+				System.err.println("TemplatesDir '" + templatesDir + "' is not a directory");
 				System.exit(1);
 			}
 
@@ -292,15 +261,13 @@ public class Main {
 
 		} else {
 
-			System.err.println("TemplatesDir '" + templatesDir
-					+ "' doesn't exist");
+			System.err.println("TemplatesDir '" + templatesDir + "' doesn't exist");
 			System.exit(1);
 			return null;
 		}
 	}
 
-	private static Path getOutputModuleFile(CommandLine line)
-			throws IOException {
+	private static Path getOutputModuleFile(CommandLine line) throws IOException {
 
 		if (!line.hasOption(OUTPUT_MODEL)) {
 			return null;
@@ -317,8 +284,7 @@ public class Main {
 		if (Files.isDirectory(outputPath) && Files.isWritable(outputPath)) {
 			return outputPath;
 		} else {
-			System.err
-					.println("Output directory option should be a writable directory");
+			System.err.println("Output directory option should be a writable directory");
 			System.exit(1);
 			return null;
 		}
@@ -330,8 +296,7 @@ public class Main {
 		List<Path> kmdFiles = PathUtils.getPaths(kmdPathNames, "*.kmd.json");
 
 		if (kmdFiles.isEmpty()) {
-			System.err.println("No kmd files found in paths: "
-					+ Arrays.toString(kmdPathNames));
+			System.err.println("No kmd files found in paths: " + Arrays.toString(kmdPathNames));
 			System.exit(1);
 		}
 

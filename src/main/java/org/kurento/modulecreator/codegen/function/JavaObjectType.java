@@ -14,8 +14,7 @@ import freemarker.template.TemplateModelException;
 public class JavaObjectType implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
 		Object type = arguments.get(0);
 
@@ -42,11 +41,9 @@ public class JavaObjectType implements TemplateMethodModelEx {
 		if (type instanceof TypeRef) {
 			TypeRef typeRef = (TypeRef) type;
 			if (typeRef.isList()) {
-				return "java.util.List<"
-						+ getTypeAsString(typeRef.getType(), true) + ">";
+				return "java.util.List<" + getTypeAsString(typeRef.getType(), true) + ">";
 			} else if (typeRef.isMap()) {
-				return "java.util.Map<String,"
-						+ getTypeAsString(typeRef.getType(), true) + ">";
+				return "java.util.Map<String," + getTypeAsString(typeRef.getType(), true) + ">";
 			} else {
 				return getTypeAsString(typeRef.getType(), asObject);
 			}
@@ -73,9 +70,7 @@ public class JavaObjectType implements TemplateMethodModelEx {
 			return typeAsString;
 		}
 
-		return type.getModule().getCode().getApi().get("java")
-				.get("packageName")
-				+ "." + typeName;
+		return type.getModule().getCode().getApi().get("java").get("packageName") + "." + typeName;
 	}
 
 	private String getTypeAsString(String typeName, boolean asObject) {
@@ -94,8 +89,8 @@ public class JavaObjectType implements TemplateMethodModelEx {
 			}
 
 		} else {
-			if (typeName.equals("int") || typeName.equals("float")
-					|| typeName.equals("boolean") || typeName.equals("double")) {
+			if (typeName.equals("int") || typeName.equals("float") || typeName.equals("boolean")
+					|| typeName.equals("double")) {
 				return typeName;
 			}
 

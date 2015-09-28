@@ -18,12 +18,10 @@ import org.kurento.modulecreator.definition.Property;
 import org.kurento.modulecreator.definition.RemoteClass;
 import org.kurento.modulecreator.definition.TypeRef;
 
-public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
-		JsonDeserializer<RemoteClass> {
+public class RemoteClassAdapter implements JsonSerializer<RemoteClass>, JsonDeserializer<RemoteClass> {
 
 	@Override
-	public JsonElement serialize(RemoteClass src, Type typeOfSrc,
-			JsonSerializationContext context) {
+	public JsonElement serialize(RemoteClass src, Type typeOfSrc, JsonSerializationContext context) {
 
 		JsonObject object = new JsonObject();
 
@@ -63,8 +61,8 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 	}
 
 	@Override
-	public RemoteClass deserialize(JsonElement json, Type typeOfT,
-			JsonDeserializationContext context) throws JsonParseException {
+	public RemoteClass deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+			throws JsonParseException {
 
 		JsonObject object = (JsonObject) json;
 
@@ -90,36 +88,30 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		}
 
 		if (object.get("extends") != null) {
-			extendsValue = context.deserialize(object.get("extends"),
-					TypeRef.class);
+			extendsValue = context.deserialize(object.get("extends"), TypeRef.class);
 		}
 
 		if (object.get("constructor") != null) {
-			constructor = context.deserialize(object.get("constructor"),
-					new TypeToken<Method>() {
-					}.getType());
+			constructor = context.deserialize(object.get("constructor"), new TypeToken<Method>() {
+			}.getType());
 		}
 
 		if (object.get("methods") != null) {
-			methods = context.deserialize(object.get("methods"),
-					new TypeToken<List<Method>>() {
-					}.getType());
+			methods = context.deserialize(object.get("methods"), new TypeToken<List<Method>>() {
+			}.getType());
 		}
 
 		if (object.get("properties") != null) {
-			properties = context.deserialize(object.get("properties"),
-					new TypeToken<List<Property>>() {
-					}.getType());
+			properties = context.deserialize(object.get("properties"), new TypeToken<List<Property>>() {
+			}.getType());
 		}
 
 		if (object.get("events") != null) {
-			events = context.deserialize(object.get("events"),
-					new TypeToken<List<TypeRef>>() {
-					}.getType());
+			events = context.deserialize(object.get("events"), new TypeToken<List<TypeRef>>() {
+			}.getType());
 		}
 
-		RemoteClass remoteClass = new RemoteClass(name, doc, extendsValue,
-				constructor, methods, properties, events);
+		RemoteClass remoteClass = new RemoteClass(name, doc, extendsValue, constructor, methods, properties, events);
 		remoteClass.setAbstract(abstractValue);
 		return remoteClass;
 	}

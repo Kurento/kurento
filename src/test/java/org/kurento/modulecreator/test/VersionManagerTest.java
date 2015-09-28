@@ -49,15 +49,11 @@ public class VersionManagerTest {
 		assertThat(convertToMavenImport(">1.0.0"), is("(1.0.0,)"));
 		assertThat(convertToMavenImport("<=1.0.0"), is("(,1.0.0]"));
 		assertThat(convertToMavenImport(">=1.0.0"), is("[1.0.0,)"));
-		assertThat(convertToMavenImport("<=0.9.9 | >=1.0.0"),
-				is("(,0.9.9],[1.0.0,)"));
-		assertThat(convertToMavenImport("<0.9.9 | >=1.0.0"),
-				is("(,0.9.9-SNAPSHOT),[1.0.0,)"));
+		assertThat(convertToMavenImport("<=0.9.9 | >=1.0.0"), is("(,0.9.9],[1.0.0,)"));
+		assertThat(convertToMavenImport("<0.9.9 | >=1.0.0"), is("(,0.9.9-SNAPSHOT),[1.0.0,)"));
 		assertThat(convertToMavenImport(">=1.2 & <=1.3"), is("[1.2.0,1.3.0]"));
-		assertThat(convertToMavenImport(">=1.0 & <2.0"),
-				is("[1.0.0,2.0.0-SNAPSHOT)"));
-		assertThat(convertToMavenImport("<=1.0 | >=1.2"),
-				is("(,1.0.0],[1.2.0,)"));
+		assertThat(convertToMavenImport(">=1.0 & <2.0"), is("[1.0.0,2.0.0-SNAPSHOT)"));
+		assertThat(convertToMavenImport("<=1.0 | >=1.2"), is("(,1.0.0],[1.2.0,)"));
 	}
 
 	@Test
@@ -72,12 +68,9 @@ public class VersionManagerTest {
 		assertThat(convertToNpmImport(null, ">1.0.0"), is(">1.0.0"));
 		assertThat(convertToNpmImport(null, "<=1.0.0"), is("<=1.0.0"));
 		assertThat(convertToNpmImport(null, ">=1.0.0"), is(">=1.0.0"));
-		assertThat(convertToNpmImport(null, ">=1.2 & <=1.3"),
-				is(">=1.2.0 <=1.3.0"));
-		assertThat(convertToNpmImport(null, ">=1.0 & <2.0"),
-				is(">=1.0.0 <2.0.0"));
-		assertThat(convertToNpmImport(null, "<=1.0 | >=1.2"),
-				is("<=1.0.0 || >=1.2.0"));
+		assertThat(convertToNpmImport(null, ">=1.2 & <=1.3"), is(">=1.2.0 <=1.3.0"));
+		assertThat(convertToNpmImport(null, ">=1.0 & <2.0"), is(">=1.0.0 <2.0.0"));
+		assertThat(convertToNpmImport(null, "<=1.0 | >=1.2"), is("<=1.0.0 || >=1.2.0"));
 	}
 
 }

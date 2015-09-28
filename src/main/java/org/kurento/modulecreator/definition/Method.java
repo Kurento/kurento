@@ -38,8 +38,8 @@ public class Method extends NamedElement {
 
 	@Override
 	public String toString() {
-		return "Method [params=" + params + ", return=" + returnProp + ", doc="
-				+ getDoc() + ", name=" + getName() + "]";
+		return "Method [params=" + params + ", return=" + returnProp + ", doc=" + getDoc() + ", name=" + getName()
+				+ "]";
 	}
 
 	@Override
@@ -47,8 +47,7 @@ public class Method extends NamedElement {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((params == null) ? 0 : params.hashCode());
-		result = prime * result
-				+ ((returnProp == null) ? 0 : returnProp.hashCode());
+		result = prime * result + ((returnProp == null) ? 0 : returnProp.hashCode());
 		return result;
 	}
 
@@ -113,8 +112,7 @@ public class Method extends NamedElement {
 				if (param.isOptional()) {
 
 					List<Param> newParams = sublistUntilParam(params, param);
-					expandedMethods.add(new Method(name, doc, newParams,
-							returnProp));
+					expandedMethods.add(new Method(name, doc, newParams, returnProp));
 				}
 			}
 
@@ -125,8 +123,7 @@ public class Method extends NamedElement {
 		}
 	}
 
-	private List<Param> sublistUntilParam(List<Param> params,
-			Param centinelParam) {
+	private List<Param> sublistUntilParam(List<Param> params, Param centinelParam) {
 
 		List<Param> newParams = new ArrayList<Param>();
 

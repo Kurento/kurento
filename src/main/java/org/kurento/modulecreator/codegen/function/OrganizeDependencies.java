@@ -16,8 +16,7 @@ import freemarker.template.TemplateModelException;
 public class OrganizeDependencies implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
 		Map<String, String> text = new HashMap<String, String>();
 
@@ -29,14 +28,12 @@ public class OrganizeDependencies implements TemplateMethodModelEx {
 			throw new TemplateModelException("Class not expected");
 		}
 		SimpleSequence seq = (SimpleSequence) arguments.get(0);
-		boolean isImpl = ((TemplateBooleanModel) arguments.get(1))
-				.getAsBoolean();
+		boolean isImpl = ((TemplateBooleanModel) arguments.get(1)).getAsBoolean();
 
 		for (Object argument : seq.toList()) {
 			if (argument instanceof Type) {
 				Type dependency = (Type) argument;
-				String namespace = dependency.getModule().getCode()
-						.getImplementation().get("cppNamespace");
+				String namespace = dependency.getModule().getCode().getImplementation().get("cppNamespace");
 				String classesText = "";
 				if (text.containsKey(namespace)) {
 					// insert new class in existing namespace

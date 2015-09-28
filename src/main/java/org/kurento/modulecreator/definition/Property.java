@@ -13,8 +13,7 @@ public class Property extends DataItem {
 		super(name, doc, type, optional);
 	}
 
-	public Property(String name, String doc, TypeRef type,
-			JsonElement defaultValue) {
+	public Property(String name, String doc, TypeRef type, JsonElement defaultValue) {
 		super(name, doc, type, defaultValue);
 	}
 

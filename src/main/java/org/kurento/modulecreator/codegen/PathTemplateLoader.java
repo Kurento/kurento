@@ -87,8 +87,7 @@ public class PathTemplateLoader implements TemplateLoader {
 	@Override
 	public Object findTemplateSource(final String name) throws IOException {
 
-		String processedName = SEP_IS_SLASH ? name : name.replace('/',
-				File.separatorChar);
+		String processedName = SEP_IS_SLASH ? name : name.replace('/', File.separatorChar);
 		Path source = baseDir.resolve(processedName);
 
 		if (!Files.exists(source) || Files.isDirectory(source)) {
@@ -102,8 +101,7 @@ public class PathTemplateLoader implements TemplateLoader {
 	public long getLastModified(final Object templateSource) {
 
 		Path templateAsPath = (Path) templateSource;
-		BasicFileAttributeView basicView = Files.getFileAttributeView(
-				templateAsPath, BasicFileAttributeView.class);
+		BasicFileAttributeView basicView = Files.getFileAttributeView(templateAsPath, BasicFileAttributeView.class);
 
 		// This attribute view is perhaps not available in this system
 		if (basicView != null) {
@@ -123,16 +121,13 @@ public class PathTemplateLoader implements TemplateLoader {
 	}
 
 	@Override
-	public Reader getReader(final Object templateSource, final String encoding)
-			throws IOException {
+	public Reader getReader(final Object templateSource, final String encoding) throws IOException {
 
 		if (!(templateSource instanceof Path)) {
-			throw new IllegalArgumentException("templateSource is a: "
-					+ templateSource.getClass().getName());
+			throw new IllegalArgumentException("templateSource is a: " + templateSource.getClass().getName());
 		}
 
-		return Files.newBufferedReader((Path) templateSource,
-				Charset.forName(encoding));
+		return Files.newBufferedReader((Path) templateSource, Charset.forName(encoding));
 	}
 
 	@Override

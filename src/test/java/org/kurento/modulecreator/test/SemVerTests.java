@@ -24,11 +24,9 @@ public class SemVerTests {
 		// Short notation - 1 which is equivalent to =1.0.0
 		// Parenthesized expression - ~1.3 | (1.4.* & !=1.4.5) | ~2
 
-		assertThat(Version.valueOf("1.0.0-beta").satisfies(">=1.0.0 & <2.0.0"),
-				is(false));
+		assertThat(Version.valueOf("1.0.0-beta").satisfies(">=1.0.0 & <2.0.0"), is(false));
 
-		assertThat(Version.valueOf("1.5.0").satisfies(">=1.0.0 & < 2.0.0"),
-				is(true));
+		assertThat(Version.valueOf("1.5.0").satisfies(">=1.0.0 & < 2.0.0"), is(true));
 
 		assertThat(Version.valueOf("1.5.0").satisfies("~1.0"), is(true));
 
@@ -125,8 +123,7 @@ public class SemVerTests {
 		Expression expr11 = parser.parse("~1.0 & (<2.0 | >2.0)");
 		assertFalse(expr11.interpret(Version.valueOf("2.5.0")));
 
-		Expression expr12 = parser
-				.parse("((>=1.0.1 & <2) | (>=3.0 & <4)) & ((1-1.5) & (~1.5))");
+		Expression expr12 = parser.parse("((>=1.0.1 & <2) | (>=3.0 & <4)) & ((1-1.5) & (~1.5))");
 		assertTrue(expr12.interpret(Version.valueOf("1.5.0")));
 		assertFalse(expr12.interpret(Version.valueOf("2.5.0")));
 	}

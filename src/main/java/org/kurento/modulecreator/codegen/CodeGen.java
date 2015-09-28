@@ -55,9 +55,8 @@ public class CodeGen {
 	private final boolean overwrite;
 	private final JsonObject config;
 
-	public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose,
-			boolean listGeneratedFiles, boolean overwrite, JsonObject config)
-			throws IOException {
+	public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose, boolean listGeneratedFiles,
+			boolean overwrite, JsonObject config) throws IOException {
 
 		this.verbose = verbose;
 		this.listGeneratedFiles = listGeneratedFiles;
@@ -103,11 +102,9 @@ public class CodeGen {
 		// 2.3.19
 	}
 
-	public void generateCode(ModuleDefinition module) throws IOException,
-			TemplateException {
+	public void generateCode(ModuleDefinition module) throws IOException, TemplateException {
 
-		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
-				templatesFolder, "*.ftl")) {
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(templatesFolder, "*.ftl")) {
 
 			for (Path path : directoryStream) {
 				String name = path.getFileName().toString();
@@ -118,8 +115,8 @@ public class CodeGen {
 		}
 	}
 
-	private void generateCode(String templateName, ModuleDefinition module,
-			String templateType) throws TemplateException, IOException {
+	private void generateCode(String templateName, ModuleDefinition module, String templateType)
+			throws TemplateException, IOException {
 
 		Template temp = cfg.getTemplate(templateName);
 
@@ -133,10 +130,8 @@ public class CodeGen {
 		} else if (templateType.equals("model")) {
 			types = null;
 		} else {
-			throw new RuntimeException(
-					"Unknown template type: '"
-							+ templateType
-							+ "'. It should be 'model', 'remoteClass', 'complexType' or 'event'");
+			throw new RuntimeException("Unknown template type: '" + templateType
+					+ "'. It should be 'model', 'remoteClass', 'complexType' or 'event'");
 		}
 
 		Map<String, Object> root = new HashMap<String, Object>();
@@ -152,8 +147,7 @@ public class CodeGen {
 		root.put("packageToFolder", new PackageToFolder());
 		root.put("organizeDependencies", new OrganizeDependencies());
 		root.put("initializePropertiesValues", new InitializePropertiesValues());
-		root.put("generateKurentoClientJsVersion",
-				new GenerateKurentoClientJsVersion());
+		root.put("generateKurentoClientJsVersion", new GenerateKurentoClientJsVersion());
 
 		root.put("module", module);
 		if (this.config != null) {
@@ -182,16 +176,14 @@ public class CodeGen {
 		}
 	}
 
-	private void generateFile(Template temp, Map<String, Object> root)
-			throws TemplateException, IOException {
+	private void generateFile(Template temp, Map<String, Object> root) throws TemplateException, IOException {
 
 		StringWriter out = new StringWriter();
 		temp.process(root, out);
 		String tempOutput = out.toString();
 
 		if (tempOutput.isEmpty()) {
-			System.out.println("No file generation because applying template '"
-					+ temp.getName() + "' is empty");
+			System.out.println("No file generation because applying template '" + temp.getName() + "' is empty");
 			return;
 		}
 
@@ -205,8 +197,7 @@ public class CodeGen {
 			outputFile.getParentFile().mkdirs();
 		}
 
-		String sourceCode = tempOutput.substring(fileName.length() + 1,
-				tempOutput.length());
+		String sourceCode = tempOutput.substring(fileName.length() + 1, tempOutput.length());
 
 		boolean generateFile = !outputFile.exists();
 		if (outputFile.exists() && overwrite) {
@@ -242,13 +233,11 @@ public class CodeGen {
 	}
 
 	public static String readFile(File file) throws IOException {
-		return new String(Files.readAllBytes(file.toPath()),
-				StandardCharsets.UTF_8.name());
+		return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8.name());
 	}
 
 	public void generateMavenPom(ModuleDefinition module, Path templatePomXml)
-			throws IOException, TemplateException,
-			ParserConfigurationException, SAXException, TransformerException {
+			throws IOException, TemplateException, ParserConfigurationException, SAXException, TransformerException {
 
 		this.generateCode(module);
 
@@ -259,44 +248,39 @@ public class CodeGen {
 
 			Path outputPomXml = outputFolder.resolve("pom.xml");
 
-			XmlFusioner fusioner = new XmlFusioner(outputPomXml,
-					templatePomXml, outputPomXml, addTags, replaceTags);
+			XmlFusioner fusioner = new XmlFusioner(outputPomXml, templatePomXml, outputPomXml, addTags, replaceTags);
 
 			fusioner.fusionXmls();
 		}
 	}
 
-	public void generateNpmPackage(ModuleDefinition module,
-			Path templatePackJson, Path templateBowerJson) throws IOException,
-			TemplateException, ParserConfigurationException, SAXException,
-			TransformerException {
+	public void generateNpmPackage(ModuleDefinition module, Path templatePackJson, Path templateBowerJson)
+			throws IOException, TemplateException, ParserConfigurationException, SAXException, TransformerException {
 
 		this.generateCode(module);
 
 		if (templatePackJson != null) {
 
-			String[] addTags = { "/keywords", "/dependencies",
-					"/devDependencies", "/peerDependencies" };
+			String[] addTags = { "/keywords", "/dependencies", "/devDependencies", "/peerDependencies" };
 			String[] replaceTags = { "/repository", "/bugs" };
 
 			Path outputPackJson = outputFolder.resolve("package.json");
 
-			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
-					templatePackJson, outputPackJson, addTags, replaceTags);
+			JsonFusioner fusioner = new JsonFusioner(outputPackJson, templatePackJson, outputPackJson, addTags,
+					replaceTags);
 
 			fusioner.fusionJsons();
 		}
 
 		if (templateBowerJson != null) {
 
-			String[] addTags = { "/keywords", "/dependencies",
-					"/peerDependencies" };
+			String[] addTags = { "/keywords", "/dependencies", "/peerDependencies" };
 			String[] replaceTags = { "/repository", "/bugs" };
 
 			Path outputPackJson = outputFolder.resolve("bower.json");
 
-			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
-					templateBowerJson, outputPackJson, addTags, replaceTags);
+			JsonFusioner fusioner = new JsonFusioner(outputPackJson, templateBowerJson, outputPackJson, addTags,
+					replaceTags);
 
 			fusioner.fusionJsons();
 		}

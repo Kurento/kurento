@@ -8,8 +8,7 @@ import freemarker.template.TemplateModelException;
 public class EscapeString implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
 		if (arguments.get(0) == null) {
 			return "";
@@ -56,11 +55,9 @@ public class EscapeString implements TemplateMethodModelEx {
 					break;
 				default:
 					if (ch > 0xf) {
-						sb.append("\\u00"
-								+ Integer.toHexString(ch).toUpperCase());
+						sb.append("\\u00" + Integer.toHexString(ch).toUpperCase());
 					} else {
-						sb.append("\\u000"
-								+ Integer.toHexString(ch).toUpperCase());
+						sb.append("\\u000" + Integer.toHexString(ch).toUpperCase());
 					}
 					break;
 				}

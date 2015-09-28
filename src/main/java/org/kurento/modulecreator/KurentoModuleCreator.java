@@ -32,8 +32,7 @@ import com.google.gson.JsonSyntaxException;
 
 public class KurentoModuleCreator {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(KurentoModuleCreator.class);
+	private static final Logger log = LoggerFactory.getLogger(KurentoModuleCreator.class);
 
 	private static final String CONFIG_FILE_NAME = "config.json";
 
@@ -130,11 +129,9 @@ public class KurentoModuleCreator {
 		return hasToGenerateCode;
 	}
 
-	private Path getInternalTemplatesDir(String internalTemplates)
-			throws IOException {
+	private Path getInternalTemplatesDir(String internalTemplates) throws IOException {
 
-		URL internalTemplatesAsURL = this.getClass().getResource(
-				"/" + internalTemplates);
+		URL internalTemplatesAsURL = this.getClass().getResource("/" + internalTemplates);
 
 		if (internalTemplatesAsURL != null) {
 
@@ -143,14 +140,12 @@ public class KurentoModuleCreator {
 
 			} catch (URISyntaxException e) {
 				throw new KurentoModuleCreatorException(
-						"Error trying to load internal templates folder '"
-								+ internalTemplates + "'", e);
+						"Error trying to load internal templates folder '" + internalTemplates + "'", e);
 			}
 
 		} else {
 			throw new KurentoModuleCreatorException(
-					"The internal templates folder '" + internalTemplates
-							+ "' doesn't exist");
+					"The internal templates folder '" + internalTemplates + "' doesn't exist");
 		}
 	}
 
@@ -183,13 +178,11 @@ public class KurentoModuleCreator {
 				Files.createDirectories(codegenDir);
 			}
 
-			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
-					listGeneratedFiles, overwrite, config);
+			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose, listGeneratedFiles, overwrite, config);
 
 			for (ModuleDefinition module : moduleManager.getModules()) {
 				if (config.has("expandMethodsWithOpsParams")
-						&& config.get("expandMethodsWithOpsParams")
-								.getAsBoolean()) {
+						&& config.get("expandMethodsWithOpsParams").getAsBoolean()) {
 					module.expandMethodsWithOpsParams();
 				}
 
@@ -198,22 +191,18 @@ public class KurentoModuleCreator {
 				}
 
 				if (outputModuleFile != null) {
-					JsonModuleSaverLoader.getInstance().writeToFile(
-							module,
-							new File(outputModuleFile.toFile(), module
-									.getName() + ".kmd.json"));
+					JsonModuleSaverLoader.getInstance().writeToFile(module,
+							new File(outputModuleFile.toFile(), module.getName() + ".kmd.json"));
 				}
 
 				if (generateMavenPom) {
 					codeGen.setTemplatesDir(getInternalTemplatesDir("maven"));
-					codeGen.generateMavenPom(module,
-							searchFiles(this.kmdFilesToGen, "pom.xml"));
+					codeGen.generateMavenPom(module, searchFiles(this.kmdFilesToGen, "pom.xml"));
 				}
 
 				if (generateNpmPackage) {
 					codeGen.setTemplatesDir(getInternalTemplatesDir("npm"));
-					codeGen.generateNpmPackage(module,
-							searchFiles(this.kmdFilesToGen, "package.json"),
+					codeGen.generateNpmPackage(module, searchFiles(this.kmdFilesToGen, "package.json"),
 							searchFiles(this.kmdFilesToGen, "bower.json"));
 				}
 			}
@@ -224,13 +213,11 @@ public class KurentoModuleCreator {
 			return new Result(new Error("Error: " + e.getMessage()));
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Result(new Error("Unexpected error: "
-					+ e.getClass().getName() + " " + e.getMessage()));
+			return new Result(new Error("Unexpected error: " + e.getClass().getName() + " " + e.getMessage()));
 		}
 	}
 
-	private Path searchFiles(List<Path> kmdFiles, String fileName)
-			throws IOException {
+	private Path searchFiles(List<Path> kmdFiles, String fileName) throws IOException {
 
 		List<Path> pomFiles = new ArrayList<Path>();
 		for (Path kmdFile : kmdFiles) {
@@ -241,9 +228,7 @@ public class KurentoModuleCreator {
 			return null;
 		} else {
 			if (pomFiles.size() > 1) {
-				log.warn("There are several '" + fileName
-						+ "' files in kmd.json folders."
-						+ " Picking the first one");
+				log.warn("There are several '" + fileName + "' files in kmd.json folders." + " Picking the first one");
 			}
 			return pomFiles.get(0);
 		}
@@ -264,34 +249,29 @@ public class KurentoModuleCreator {
 		return noDeleteFiles;
 	}
 
-	public static JsonObject loadConfigFile(Path configFile)
-			throws JsonIOException, IOException {
+	public static JsonObject loadConfigFile(Path configFile) throws JsonIOException, IOException {
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		Gson gson = gsonBuilder.create();
 		try {
-			JsonElement element = gson.fromJson(
-					Files.newBufferedReader(configFile,
-							Charset.forName("UTF-8")), JsonElement.class);
+			JsonElement element = gson.fromJson(Files.newBufferedReader(configFile, Charset.forName("UTF-8")),
+					JsonElement.class);
 			return element.getAsJsonObject();
 
 		} catch (JsonSyntaxException e) {
-			throw new KurentoModuleCreatorException("Config file '"
-					+ configFile + "' has the following formatting error:"
-					+ e.getLocalizedMessage());
+			throw new KurentoModuleCreatorException(
+					"Config file '" + configFile + "' has the following formatting error:" + e.getLocalizedMessage());
 		}
 	}
 
-	private static void overrideConfig(JsonObject configContents,
-			JsonObject newConfigContents) {
+	private static void overrideConfig(JsonObject configContents, JsonObject newConfigContents) {
 
 		for (Entry<String, JsonElement> e : newConfigContents.entrySet()) {
 			configContents.add(e.getKey(), e.getValue());
 		}
 	}
 
-	public void loadModulesFromKmdFiles() throws FileNotFoundException,
-			IOException {
+	public void loadModulesFromKmdFiles() throws FileNotFoundException, IOException {
 
 		log.debug("Loading dependencies");
 		depModuleManager = new ModuleManager();
@@ -305,21 +285,18 @@ public class KurentoModuleCreator {
 
 		log.debug("Loading dependency kmd files to generate code");
 		moduleManager = new ModuleManager();
-		moduleManager
-				.addModules(loadModuleDescriptors(dependencyKmdFilesToGen));
+		moduleManager.addModules(loadModuleDescriptors(dependencyKmdFilesToGen));
 		if (module != null) {
 			moduleManager.addModule(module);
 		}
 		moduleManager.setDependencies(depModuleManager);
 		moduleManager.resolveModules();
 
-		hasToGenerateCode = (module != null) && !module.hasKmdSection()
-				|| !dependencyKmdFilesToGen.isEmpty();
+		hasToGenerateCode = (module != null) && !module.hasKmdSection() || !dependencyKmdFilesToGen.isEmpty();
 
 	}
 
-	private ModuleDefinition fusionModuleDescriptors(
-			List<ModuleDefinition> modules) {
+	private ModuleDefinition fusionModuleDescriptors(List<ModuleDefinition> modules) {
 
 		if (modules.isEmpty()) {
 			return null;
@@ -342,8 +319,7 @@ public class KurentoModuleCreator {
 
 			log.debug("Loading kmdFile " + kmdFile);
 
-			ModuleDefinition module = JsonModuleSaverLoader.getInstance()
-					.loadFromFile(kmdFile);
+			ModuleDefinition module = JsonModuleSaverLoader.getInstance().loadFromFile(kmdFile);
 
 			modules.add(module);
 		}
@@ -351,16 +327,14 @@ public class KurentoModuleCreator {
 		return modules;
 	}
 
-	public void printValues(String[] keys) throws FileNotFoundException,
-			IOException {
+	public void printValues(String[] keys) throws FileNotFoundException, IOException {
 		if (moduleManager == null) {
 			loadModulesFromKmdFiles();
 		}
 
 		for (ModuleDefinition module : moduleManager.getModules()) {
 			for (String key : keys) {
-				System.out.println("Value: " + key + " = "
-						+ getValue(module, key));
+				System.out.println("Value: " + key + " = " + getValue(module, key));
 			}
 		}
 	}
@@ -387,9 +361,8 @@ public class KurentoModuleCreator {
 			value = ((List<?>) object).get(Integer.valueOf(currentKey));
 		} else {
 			try {
-				Method method = object.getClass().getMethod(
-						"get" + Character.toUpperCase(currentKey.charAt(0))
-								+ currentKey.substring(1));
+				Method method = object.getClass()
+						.getMethod("get" + Character.toUpperCase(currentKey.charAt(0)) + currentKey.substring(1));
 
 				value = method.invoke(object);
 			} catch (Exception e) {

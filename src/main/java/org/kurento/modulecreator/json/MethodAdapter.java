@@ -11,8 +11,7 @@ import org.kurento.modulecreator.definition.Method;
 public class MethodAdapter implements JsonSerializer<Method> {
 
 	@Override
-	public JsonElement serialize(Method src, Type typeOfSrc,
-			JsonSerializationContext context) {
+	public JsonElement serialize(Method src, Type typeOfSrc, JsonSerializationContext context) {
 
 		JsonObject object = new JsonObject();
 

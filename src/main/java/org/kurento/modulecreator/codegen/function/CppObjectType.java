@@ -26,8 +26,7 @@ public class CppObjectType implements TemplateMethodModelEx {
 	}
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
 		Object type = arguments.get(0);
 
@@ -65,33 +64,24 @@ public class CppObjectType implements TemplateMethodModelEx {
 			TypeRef typeRef = (TypeRef) type;
 			if (typeRef.isList()) {
 				if (isParam)
-					return "const std::vector<"
-							+ getTypeAsString(typeRef.getName(), false, prefix,
-									suffix) + "> &";
+					return "const std::vector<" + getTypeAsString(typeRef.getName(), false, prefix, suffix) + "> &";
 				else
-					return "std::vector<"
-							+ getTypeAsString(typeRef.getName(), false, prefix,
-									suffix) + ">";
+					return "std::vector<" + getTypeAsString(typeRef.getName(), false, prefix, suffix) + ">";
 			} else if (typeRef.isMap()) {
 				if (isParam)
-					return "const std::map <std::string,"
-							+ getTypeAsString(typeRef.getName(), false, prefix,
-									suffix) + "> &";
+					return "const std::map <std::string," + getTypeAsString(typeRef.getName(), false, prefix, suffix)
+							+ "> &";
 				else
-					return "std::map <std::string,"
-							+ getTypeAsString(typeRef.getName(), false, prefix,
-									suffix) + ">";
+					return "std::map <std::string," + getTypeAsString(typeRef.getName(), false, prefix, suffix) + ">";
 			} else {
-				return getTypeAsString(typeRef.getName(), isParam, prefix,
-						suffix);
+				return getTypeAsString(typeRef.getName(), isParam, prefix, suffix);
 			}
 		}
 
 		return getTypeAsString(type.toString(), isParam, prefix, suffix);
 	}
 
-	private String getTypeAsString(String typeName, boolean isParam,
-			String prefix, String suffix) {
+	private String getTypeAsString(String typeName, boolean isParam, String prefix, String suffix) {
 		if (typeName.equals("boolean")) {
 			if (isParam)
 				return "bool ";

@@ -8,8 +8,7 @@ import freemarker.template.TemplateModelException;
 public class GenerateKurentoClientJsVersion implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
 		String version = arguments.get(0).toString();
 

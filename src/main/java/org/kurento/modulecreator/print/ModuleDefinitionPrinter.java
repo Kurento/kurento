@@ -79,8 +79,7 @@ public class ModuleDefinitionPrinter {
 		sb.append(" }");
 	}
 
-	public static void printRemoteClass(StringBuilder sb,
-			RemoteClass remoteClass) {
+	public static void printRemoteClass(StringBuilder sb, RemoteClass remoteClass) {
 
 		if (remoteClass.isAbstract()) {
 			sb.append("abstract ");
@@ -122,8 +121,7 @@ public class ModuleDefinitionPrinter {
 		}
 	}
 
-	public static void printMethod(StringBuilder sb, Method method,
-			boolean constructor) {
+	public static void printMethod(StringBuilder sb, Method method, boolean constructor) {
 
 		Return methodReturn = method.getReturn();
 
@@ -147,8 +145,7 @@ public class ModuleDefinitionPrinter {
 		sb.append(")\n");
 	}
 
-	public static void printDataItems(StringBuilder sb,
-			List<? extends DataItem> items) {
+	public static void printDataItems(StringBuilder sb, List<? extends DataItem> items) {
 		for (DataItem item : items) {
 			printTypeRef(sb, item.getType());
 			sb.append(" ");

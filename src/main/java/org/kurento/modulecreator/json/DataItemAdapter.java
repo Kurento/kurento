@@ -12,8 +12,7 @@ import org.kurento.modulecreator.definition.Property;
 public class DataItemAdapter implements JsonSerializer<DataItem> {
 
 	@Override
-	public JsonElement serialize(DataItem src, Type typeOfSrc,
-			JsonSerializationContext context) {
+	public JsonElement serialize(DataItem src, Type typeOfSrc, JsonSerializationContext context) {
 
 		JsonObject object = new JsonObject();
 

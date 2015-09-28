@@ -22,8 +22,7 @@ public class KurentoCodeGeneration {
 	private static final String GLOBAL_FUSIONED_KMDS_PATH = "/tmp/kurento-module-creator/kmds";
 	private static final String KMS_PROJECTS_PATH = "/home/mica/Data/Kurento/git.kms";
 
-	private static final Logger log = LoggerFactory
-			.getLogger(KurentoCodeGeneration.class);
+	private static final Logger log = LoggerFactory.getLogger(KurentoCodeGeneration.class);
 
 	public static void main(String[] args) throws JsonIOException, IOException {
 
@@ -35,8 +34,7 @@ public class KurentoCodeGeneration {
 
 	}
 
-	private static void generateJavaScriptCode() throws JsonIOException,
-			IOException {
+	private static void generateJavaScriptCode() throws JsonIOException, IOException {
 
 		generateJavaScriptCodeFor("kms-core");
 		generateJavaScriptCodeFor("kms-elements");
@@ -79,8 +77,7 @@ public class KurentoCodeGeneration {
 	private static void updateGitProject(String project) throws IOException {
 
 		execAndGetResult("git fetch origin", getProjectPath(project));
-		execAndGetResult("git reset --hard origin/develop",
-				getProjectPath(project));
+		execAndGetResult("git reset --hard origin/develop", getProjectPath(project));
 
 	}
 
@@ -88,8 +85,7 @@ public class KurentoCodeGeneration {
 		return KMS_PROJECTS_PATH + "/" + project;
 	}
 
-	private static void generateJavaScriptCodeFor(String project)
-			throws IOException {
+	private static void generateJavaScriptCodeFor(String project) throws IOException {
 		log.info("----------------------------------------------------");
 		log.info("  Start Generating JavaScript code for " + project);
 		log.info("----------------------------------------------------");
@@ -106,12 +102,10 @@ public class KurentoCodeGeneration {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.setKmdFilesToGen(PathUtils.getPaths(
-				new String[] { getProjectPath(project)
-						+ "/src/server/interface" }, "*.kmd.json"));
+		modCreator.setKmdFilesToGen(
+				PathUtils.getPaths(new String[] { getProjectPath(project) + "/src/server/interface" }, "*.kmd.json"));
 
-		modCreator.setDependencyKmdFiles(PathUtils.searchFiles(
-				Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
+		modCreator.setDependencyKmdFiles(PathUtils.searchFiles(Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
 
 		modCreator.setInternalTemplates("npm");
 		modCreator.setCodeGenDir(Paths.get(npmProjectFolder));
@@ -130,8 +124,7 @@ public class KurentoCodeGeneration {
 		copyFusionedKmdToKmdsFolder(fusionedKmdFile);
 	}
 
-	private static void copyFusionedKmdToKmdsFolder(Path fusionedKmdFile)
-			throws IOException {
+	private static void copyFusionedKmdToKmdsFolder(Path fusionedKmdFile) throws IOException {
 
 		Path kmdsPath = Paths.get(GLOBAL_FUSIONED_KMDS_PATH);
 
@@ -139,21 +132,18 @@ public class KurentoCodeGeneration {
 			Files.createDirectories(kmdsPath);
 		}
 
-		try (DirectoryStream<Path> stream = Files
-				.newDirectoryStream(fusionedKmdFile)) {
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(fusionedKmdFile)) {
 
 			for (Path kmdFile : stream) {
 
 				Files.copy(kmdFile, kmdsPath.resolve(kmdFile.getFileName()),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-						java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
-						java.nio.file.LinkOption.NOFOLLOW_LINKS);
+						java.nio.file.StandardCopyOption.COPY_ATTRIBUTES, java.nio.file.LinkOption.NOFOLLOW_LINKS);
 			}
 		}
 	}
 
-	public static void generateJavaCodeFor(String project)
-			throws JsonIOException, IOException {
+	public static void generateJavaCodeFor(String project) throws JsonIOException, IOException {
 
 		log.info("----------------------------------------------------");
 		log.info("  Start Generating Java code for " + project);
@@ -185,12 +175,10 @@ public class KurentoCodeGeneration {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.setKmdFilesToGen(PathUtils.getPaths(
-				new String[] { getProjectPath(project)
-						+ "/src/server/interface" }, "*.kmd.json"));
+		modCreator.setKmdFilesToGen(
+				PathUtils.getPaths(new String[] { getProjectPath(project) + "/src/server/interface" }, "*.kmd.json"));
 
-		modCreator.setDependencyKmdFiles(PathUtils.searchFiles(
-				Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
+		modCreator.setDependencyKmdFiles(PathUtils.searchFiles(Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
 
 		modCreator.setInternalTemplates("maven");
 		modCreator.setCodeGenDir(Paths.get(mavenProjectFolder));
@@ -199,15 +187,13 @@ public class KurentoCodeGeneration {
 		if (modCreator.hasToGenerateCode()) {
 
 			modCreator.setInternalTemplates("java");
-			modCreator.setCodeGenDir(Paths.get(mavenProjectFolder
-					+ "/src/main/java"));
+			modCreator.setCodeGenDir(Paths.get(mavenProjectFolder + "/src/main/java"));
 			modCreator.generateCode();
 
 		} else {
 
 			// Copy fusioned kmd file to /META-INF/kurento/
-			Path fusionedKmdFile = Paths.get(mavenProjectFolder
-					+ "/src/main/resources/META-INF/kurento/");
+			Path fusionedKmdFile = Paths.get(mavenProjectFolder + "/src/main/resources/META-INF/kurento/");
 			modCreator.setOutputFile(fusionedKmdFile);
 			modCreator.generateCode();
 
@@ -215,13 +201,11 @@ public class KurentoCodeGeneration {
 		}
 	}
 
-	public static String execAndGetResult(final String command)
-			throws IOException {
+	public static String execAndGetResult(final String command) throws IOException {
 		return execAndGetResult(command, null);
 	}
 
-	public static String execAndGetResult(final String command, String workDir)
-			throws IOException {
+	public static String execAndGetResult(final String command, String workDir) throws IOException {
 
 		log.debug("Running command on the shell: {} in {}", command, workDir);
 
@@ -229,8 +213,7 @@ public class KurentoCodeGeneration {
 
 		String[] execCommand = { "sh", "-c", command };
 
-		ProcessBuilder processBuilder = new ProcessBuilder(execCommand)
-				.redirectErrorStream(true);
+		ProcessBuilder processBuilder = new ProcessBuilder(execCommand).redirectErrorStream(true);
 
 		if (workDir != null) {
 			processBuilder.directory(new File(workDir));
@@ -239,8 +222,7 @@ public class KurentoCodeGeneration {
 		p = processBuilder.start();
 
 		String output = null;
-		try (Scanner scanner = new Scanner(p.getInputStream(),
-				StandardCharsets.UTF_8.name())) {
+		try (Scanner scanner = new Scanner(p.getInputStream(), StandardCharsets.UTF_8.name())) {
 			try {
 				output = scanner.useDelimiter("\\A").next();
 			} catch (NoSuchElementException e) {

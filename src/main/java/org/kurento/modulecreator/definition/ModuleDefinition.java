@@ -130,10 +130,8 @@ public class ModuleDefinition {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((events == null) ? 0 : events.hashCode());
-		result = prime * result
-				+ ((remoteClasses == null) ? 0 : remoteClasses.hashCode());
-		result = prime * result
-				+ ((complexTypes == null) ? 0 : complexTypes.hashCode());
+		result = prime * result + ((remoteClasses == null) ? 0 : remoteClasses.hashCode());
+		result = prime * result + ((complexTypes == null) ? 0 : complexTypes.hashCode());
 		return result;
 	}
 
@@ -223,16 +221,14 @@ public class ModuleDefinition {
 
 	@Override
 	public String toString() {
-		return "Model [name=" + name + ", version=" + version
-				+ ", remoteClasses=" + remoteClasses + ", types="
+		return "Model [name=" + name + ", version=" + version + ", remoteClasses=" + remoteClasses + ", types="
 				+ complexTypes + ", events=" + events + "]";
 	}
 
 	public void validateModule() {
 
 		if (name == null) {
-			throw new KurentoModuleCreatorException(
-					"Name is mandatory at least in one of the files");
+			throw new KurentoModuleCreatorException("Name is mandatory at least in one of the files");
 		}
 
 		if (kurentoVersion == null) {
@@ -240,14 +236,12 @@ public class ModuleDefinition {
 				kurentoVersion = version;
 			} else {
 				throw new KurentoModuleCreatorException(
-						"Kurento version is mandatory at least in one of the files describing: "
-								+ name);
+						"Kurento version is mandatory at least in one of the files describing: " + name);
 			}
 		}
 
 		if (version == null) {
-			throw new KurentoModuleCreatorException(
-					"Version is mandatory at least in one of the files");
+			throw new KurentoModuleCreatorException("Version is mandatory at least in one of the files");
 		}
 
 		if (VersionManager.isReleaseVersion(version)) {
@@ -255,9 +249,7 @@ public class ModuleDefinition {
 				if (!VersionManager.isReleaseVersion(importInfo.getVersion())) {
 					throw new KurentoModuleCreatorException(
 							"All dependencies of a release version must be also release versions. Import '"
-									+ importInfo.getName()
-									+ "' is in non release version "
-									+ importInfo.getVersion());
+									+ importInfo.getName() + "' is in non release version " + importInfo.getVersion());
 				}
 			}
 		}
@@ -272,8 +264,7 @@ public class ModuleDefinition {
 		setModuleToTypes();
 
 		if (resolutionState == ResolutionState.IN_PROCESS) {
-			throw new KurentoModuleCreatorException(
-					"Found a dependency cycle in plugin '" + this.name + "'");
+			throw new KurentoModuleCreatorException("Found a dependency cycle in plugin '" + this.name + "'");
 		}
 
 		if (resolutionState == ResolutionState.RESOLVED) {
@@ -357,34 +348,25 @@ public class ModuleDefinition {
 			ModuleDefinition dependencyModule = null;
 
 			if (moduleManager != null) {
-				dependencyModule = moduleManager.getModule(importEntry
-						.getName());
+				dependencyModule = moduleManager.getModule(importEntry.getName());
 			}
 
 			if (dependencyModule == null) {
-				throw new KurentoModuleCreatorException("Import '"
-						+ importEntry.getName()
-						+ "' not found in dependencies in any version");
+				throw new KurentoModuleCreatorException(
+						"Import '" + importEntry.getName() + "' not found in dependencies in any version");
 			} else {
 
-				if (!VersionManager.compatibleVersion(importEntry.getVersion(),
-						dependencyModule.getVersion())) {
+				if (!VersionManager.compatibleVersion(importEntry.getVersion(), dependencyModule.getVersion())) {
 
-					if (VersionManager.devCompatibleVersion(
-							importEntry.getVersion(),
-							dependencyModule.getVersion())) {
+					if (VersionManager.devCompatibleVersion(importEntry.getVersion(), dependencyModule.getVersion())) {
 
-						log.info("[WARNING] Dependency on module '"
-								+ importEntry.getName() + "' version '"
-								+ importEntry.getVersion()
-								+ "' is satisfied with version '"
+						log.info("[WARNING] Dependency on module '" + importEntry.getName() + "' version '"
+								+ importEntry.getVersion() + "' is satisfied with version '"
 								+ dependencyModule.getVersion() + "'");
 					} else {
 
-						throw new KurentoModuleCreatorException("Import '"
-								+ importEntry.getName() + "' with version "
-								+ importEntry.getVersion()
-								+ " not found in dependencies, found version: "
+						throw new KurentoModuleCreatorException("Import '" + importEntry.getName() + "' with version "
+								+ importEntry.getVersion() + " not found in dependencies, found version: "
 								+ dependencyModule.getVersion());
 					}
 				}
@@ -394,14 +376,12 @@ public class ModuleDefinition {
 			importEntry.setModule(dependencyModule);
 
 			if (importEntry.getMavenVersion() == null) {
-				importEntry.setMavenVersion(VersionManager
-						.convertToMavenImport(importEntry.getVersion()));
+				importEntry.setMavenVersion(VersionManager.convertToMavenImport(importEntry.getVersion()));
 			}
 
 			if (importEntry.getNpmVersion() == null) {
 				importEntry.setNpmVersion(VersionManager.convertToNpmImport(
-						dependencyModule.getCode().getApi().get("js")
-								.get("npmGit"), importEntry.getVersion()));
+						dependencyModule.getCode().getApi().get("js").get("npmGit"), importEntry.getVersion()));
 			}
 		}
 	}
@@ -409,16 +389,14 @@ public class ModuleDefinition {
 	private void autoImportModules(ModuleManager moduleManager) {
 
 		if (!CORE_MODULE.equals(this.name)) {
-			this.imports.add(new Import(CORE_MODULE, kurentoVersion,
-					kurentoMavenVersion, kurentoNpmVersion));
+			this.imports.add(new Import(CORE_MODULE, kurentoVersion, kurentoMavenVersion, kurentoNpmVersion));
 
 			if (!ELEMENTS_MODULE.equals(this.name)) {
-				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion,
-						kurentoMavenVersion, kurentoNpmVersion));
+				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion, kurentoMavenVersion, kurentoNpmVersion));
 
 				if (!FILTERS_MODULE.equals(this.name)) {
-					this.imports.add(new Import(FILTERS_MODULE, kurentoVersion,
-							kurentoMavenVersion, kurentoNpmVersion));
+					this.imports
+							.add(new Import(FILTERS_MODULE, kurentoVersion, kurentoMavenVersion, kurentoNpmVersion));
 				}
 			}
 		}
@@ -432,8 +410,7 @@ public class ModuleDefinition {
 		types.put(t.getName(), t);
 	}
 
-	private void resolveTypeRefs(List<? extends ModelElement> moduleElements,
-			Map<String, Type> types) {
+	private void resolveTypeRefs(List<? extends ModelElement> moduleElements, Map<String, Type> types) {
 
 		for (ModelElement moduleElement : moduleElements) {
 
@@ -462,19 +439,16 @@ public class ModuleDefinition {
 				type = types.get(typeRef.getQualifiedName());
 
 				if (type == null) {
-					throw new KurentoModuleCreatorException("The type '"
-							+ typeRef.getName() + "' is not defined in module "
-							+ this.name
-							+ " neither in kurento. Used in module: " + name
+					throw new KurentoModuleCreatorException("The type '" + typeRef.getName()
+							+ "' is not defined in module " + this.name + " neither in kurento. Used in module: " + name
 							+ ".\nThe available types are: " + types.keySet());
 				}
 
 			} else {
 
-				throw new KurentoModuleCreatorException("The type '"
-						+ typeRef.getName() + "' is not defined in module "
-						+ typeRef.getModuleName() + ". Used in module: " + name
-						+ ".\nThe available types are: " + types.keySet());
+				throw new KurentoModuleCreatorException(
+						"The type '" + typeRef.getName() + "' is not defined in module " + typeRef.getModuleName()
+								+ ". Used in module: " + name + ".\nThe available types are: " + types.keySet());
 
 			}
 		}
@@ -483,8 +457,7 @@ public class ModuleDefinition {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends NamedElement> Map<String, T> resolveNamedElements(
-			List<? extends T> elements) {
+	private <T extends NamedElement> Map<String, T> resolveNamedElements(List<? extends T> elements) {
 
 		Map<String, T> elementsMap = new HashMap<String, T>();
 		for (NamedElement element : elements) {
@@ -494,8 +467,7 @@ public class ModuleDefinition {
 				// module name
 				elementsMap.put(element.getName(), (T) element);
 			} else {
-				elementsMap.put(this.name + "." + element.getName(),
-						(T) element);
+				elementsMap.put(this.name + "." + element.getName(), (T) element);
 			}
 		}
 		return elementsMap;
@@ -515,8 +487,7 @@ public class ModuleDefinition {
 			this.name = module.name;
 		} else {
 			if (module.name != null) {
-				throw new KurentoModuleCreatorException(
-						"Name can only be set in one kmd file");
+				throw new KurentoModuleCreatorException("Name can only be set in one kmd file");
 			}
 		}
 
@@ -524,8 +495,7 @@ public class ModuleDefinition {
 			this.kurentoVersion = module.kurentoVersion;
 		} else {
 			if (module.kurentoVersion != null) {
-				throw new KurentoModuleCreatorException(
-						"Kurento version can only be set in one kmd file");
+				throw new KurentoModuleCreatorException("Kurento version can only be set in one kmd file");
 			}
 		}
 
@@ -533,8 +503,7 @@ public class ModuleDefinition {
 			this.version = module.version;
 		} else {
 			if (module.version != null) {
-				throw new KurentoModuleCreatorException(
-						"Version can only be set in one kmd file");
+				throw new KurentoModuleCreatorException("Version can only be set in one kmd file");
 			}
 		}
 
@@ -542,8 +511,7 @@ public class ModuleDefinition {
 			this.imports = module.imports;
 		} else {
 			if (!module.imports.isEmpty()) {
-				throw new KurentoModuleCreatorException(
-						"Imports section can only be set in one kmd file");
+				throw new KurentoModuleCreatorException("Imports section can only be set in one kmd file");
 			}
 		}
 
@@ -551,8 +519,7 @@ public class ModuleDefinition {
 			this.code = module.code;
 		} else {
 			if (module.code != null) {
-				throw new KurentoModuleCreatorException(
-						"Code section can only be set in one kmd file");
+				throw new KurentoModuleCreatorException("Code section can only be set in one kmd file");
 			}
 		}
 

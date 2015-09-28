@@ -38,10 +38,8 @@ public class CustomMavenPomTest {
 		String[] addTags = { "/dependencies", "/build/plugins" };
 		String[] replaceTags = { "/properties" };
 
-		XmlFusioner fusioner = new XmlFusioner(
-				PathUtils.getPathInClasspath("/custommaven/generated.xml"),
-				PathUtils.getPathInClasspath("/custommaven/customizer.xml"),
-				fusionedXml, addTags, replaceTags);
+		XmlFusioner fusioner = new XmlFusioner(PathUtils.getPathInClasspath("/custommaven/generated.xml"),
+				PathUtils.getPathInClasspath("/custommaven/customizer.xml"), fusionedXml, addTags, replaceTags);
 
 		fusioner.fusionXmls();
 
@@ -58,27 +56,22 @@ public class CustomMavenPomTest {
 
 		// Add properties
 		assertTagValue(doc, "/project/properties/custom_prop", "custom_value");
-		assertTagValue(doc, "/project/properties/project.build.sourceEncoding",
-				"UTF-8");
+		assertTagValue(doc, "/project/properties/project.build.sourceEncoding", "UTF-8");
 
 		// Replace properties
 		assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
 
 		// Add dependencies
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"fake_dependency");
+		assertTagValue(doc, "/project/dependencies/dependency/groupId", "fake_dependency");
 
 		// Original dependencies
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"fake_plugin");
+		assertTagValue(doc, "/project/build/plugins/plugin/groupId", "fake_plugin");
 
 		// Add plugins
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"org.kurento.module");
+		assertTagValue(doc, "/project/dependencies/dependency/groupId", "org.kurento.module");
 
 		// Original plugins
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"org.kurento");
+		assertTagValue(doc, "/project/build/plugins/plugin/groupId", "org.kurento");
 
 		// Original tags
 		assertTagValue(doc, "/project/groupId", "org.kurento.module");
@@ -92,17 +85,13 @@ public class CustomMavenPomTest {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/custommaven/moduleA.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/custommaven/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakecore.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakeelements.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakefilters.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
 		modCreator.loadModulesFromKmdFiles();
 
@@ -113,8 +102,7 @@ public class CustomMavenPomTest {
 
 		Result result = modCreator.generateCode();
 
-		assertThat("Compilation error: " + result.getErrors(),
-				result.isSuccess(), is(true));
+		assertThat("Compilation error: " + result.getErrors(), result.isSuccess(), is(true));
 
 		Path pomFile = codeGenDir.resolve("pom.xml");
 
@@ -133,27 +121,22 @@ public class CustomMavenPomTest {
 
 		// Add properties
 		assertTagValue(doc, "/project/properties/custom_prop", "custom_value");
-		assertTagValue(doc, "/project/properties/project.build.sourceEncoding",
-				"UTF-8");
+		assertTagValue(doc, "/project/properties/project.build.sourceEncoding", "UTF-8");
 
 		// Replace properties
 		assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
 
 		// Add dependencies
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"fake_dependency");
+		assertTagValue(doc, "/project/dependencies/dependency/groupId", "fake_dependency");
 
 		// Original dependencies
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"fake_plugin");
+		assertTagValue(doc, "/project/build/plugins/plugin/groupId", "fake_plugin");
 
 		// Add plugins
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"org.kurento.module");
+		assertTagValue(doc, "/project/dependencies/dependency/groupId", "org.kurento.module");
 
 		// Original plugins
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"org.kurento");
+		assertTagValue(doc, "/project/build/plugins/plugin/groupId", "org.kurento");
 
 		// Original tags
 		assertTagValue(doc, "/project/groupId", "org.kurento.module");
@@ -162,8 +145,7 @@ public class CustomMavenPomTest {
 		assertTagValue(doc, "/project/name", "moduleA");
 	}
 
-	private void assertTagValue(Document doc, String tagName, String tagValue)
-			throws XPathExpressionException {
+	private void assertTagValue(Document doc, String tagName, String tagValue) throws XPathExpressionException {
 
 		NodeList list;
 
@@ -195,18 +177,15 @@ public class CustomMavenPomTest {
 
 	}
 
-	private Document loadXmlFile(Path pomFile)
-			throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory
-				.newInstance();
+	private Document loadXmlFile(Path pomFile) throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		Document doc = docBuilder.parse(pomFile.toString());
 		return doc;
 	}
 
 	private void printFile(Path pomFile) throws IOException {
-		System.out.println(new String(Files.readAllBytes(pomFile),
-				StandardCharsets.UTF_8));
+		System.out.println(new String(Files.readAllBytes(pomFile), StandardCharsets.UTF_8));
 	}
 
 }

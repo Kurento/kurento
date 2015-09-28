@@ -50,10 +50,8 @@ public class Event extends Type {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((extendsProp == null) ? 0 : extendsProp.hashCode());
-		result = prime * result
-				+ ((properties == null) ? 0 : properties.hashCode());
+		result = prime * result + ((extendsProp == null) ? 0 : extendsProp.hashCode());
+		result = prime * result + ((properties == null) ? 0 : properties.hashCode());
 		return result;
 	}
 
@@ -81,9 +79,8 @@ public class Event extends Type {
 
 	@Override
 	public String toString() {
-		return "Event [properties=" + properties + ", extendsProp="
-				+ extendsProp + ", getDoc()=" + getDoc() + ", getName()="
-				+ getName() + "]";
+		return "Event [properties=" + properties + ", extendsProp=" + extendsProp + ", getDoc()=" + getDoc()
+				+ ", getName()=" + getName() + "]";
 	}
 
 	@Override

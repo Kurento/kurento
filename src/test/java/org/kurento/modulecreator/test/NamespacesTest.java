@@ -25,23 +25,17 @@ public class NamespacesTest {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/namespaces/moduleC.kmd.json"));
+		modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/namespaces/moduleC.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/namespaces/moduleB.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/namespaces/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/namespaces/moduleA.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/namespaces/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakecore.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakeelements.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/fakefilters.kmd.json"));
+		modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
 		modCreator.loadModulesFromKmdFiles();
 

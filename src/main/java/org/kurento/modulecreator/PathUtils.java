@@ -32,8 +32,7 @@ public class PathUtils {
 		private List<Path> paths = new ArrayList<>();
 
 		Finder(String pattern) {
-			matcher = FileSystems.getDefault()
-					.getPathMatcher("glob:" + pattern);
+			matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
 		}
 
 		// Compares the glob pattern against
@@ -56,8 +55,7 @@ public class PathUtils {
 		// Invoke the pattern matching
 		// method on each directory.
 		@Override
-		public FileVisitResult preVisitDirectory(Path dir,
-				BasicFileAttributes attrs) {
+		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
 			find(dir);
 			return CONTINUE;
 		}
@@ -73,13 +71,11 @@ public class PathUtils {
 		}
 	}
 
-	public static Path getPathInClasspath(String resourceName)
-			throws IOException, URISyntaxException {
+	public static Path getPathInClasspath(String resourceName) throws IOException, URISyntaxException {
 		return getPathInClasspath(PathUtils.class.getResource(resourceName));
 	}
 
-	public static Path getPathInClasspath(URL resource) throws IOException,
-			URISyntaxException {
+	public static Path getPathInClasspath(URL resource) throws IOException, URISyntaxException {
 
 		Objects.requireNonNull(resource, "Resource URL cannot be null");
 		URI uri = resource.toURI();
@@ -102,8 +98,7 @@ public class PathUtils {
 
 		try {
 
-			fs = FileSystems.newFileSystem(fileURI,
-					Collections.<String, Object> emptyMap());
+			fs = FileSystems.newFileSystem(fileURI, Collections.<String, Object> emptyMap());
 
 		} catch (FileSystemAlreadyExistsException e) {
 			fs = FileSystems.getFileSystem(fileURI);
@@ -112,13 +107,11 @@ public class PathUtils {
 		return fs.getPath(entryName);
 	}
 
-	public static void delete(Path folder, List<String> noDeleteFiles)
-			throws IOException {
+	public static void delete(Path folder, List<String> noDeleteFiles) throws IOException {
 		delete(folder, folder, noDeleteFiles);
 	}
 
-	public static List<Path> getPaths(String[] pathNames, String globPattern)
-			throws IOException {
+	public static List<Path> getPaths(String[] pathNames, String globPattern) throws IOException {
 
 		List<Path> paths = new ArrayList<Path>();
 		for (String pathName : pathNames) {
@@ -130,16 +123,14 @@ public class PathUtils {
 		return paths;
 	}
 
-	public static List<Path> searchFiles(Path path, String globPattern)
-			throws IOException {
+	public static List<Path> searchFiles(Path path, String globPattern) throws IOException {
 
 		if (Files.isDirectory(path)) {
 			Finder finder = new Finder(globPattern);
 			Files.walkFileTree(path, finder);
 			return finder.getPaths();
 		} else {
-			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(
-					"glob:" + globPattern);
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + globPattern);
 
 			if (matcher.matches(path.getFileName())) {
 				return Arrays.asList(path);
@@ -152,22 +143,19 @@ public class PathUtils {
 	public static void deleteRecursive(Path path) throws IOException {
 		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 			@Override
-			public FileVisitResult visitFile(Path file,
-					BasicFileAttributes attrs) throws IOException {
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				Files.delete(file);
 				return FileVisitResult.CONTINUE;
 			}
 
 			@Override
-			public FileVisitResult visitFileFailed(Path file, IOException exc)
-					throws IOException {
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
 				Files.delete(file);
 				return FileVisitResult.CONTINUE;
 			}
 
 			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-					throws IOException {
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 				if (exc == null) {
 					Files.delete(dir);
 					return FileVisitResult.CONTINUE;
@@ -178,8 +166,7 @@ public class PathUtils {
 		});
 	}
 
-	public static void delete(Path basePath, Path path,
-			List<String> noDeleteFiles) throws IOException {
+	public static void delete(Path basePath, Path path, List<String> noDeleteFiles) throws IOException {
 
 		Path relativePath = basePath.relativize(path);
 
@@ -189,8 +176,7 @@ public class PathUtils {
 
 		if (Files.isDirectory(path)) {
 
-			try (DirectoryStream<Path> directoryStream = Files
-					.newDirectoryStream(path)) {
+			try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(path)) {
 				for (Path c : directoryStream) {
 					delete(basePath, c, noDeleteFiles);
 				}

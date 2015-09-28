@@ -28,8 +28,7 @@ public class VersionManager {
 		String mavenVersion = convertToMavenExpression(expression);
 
 		if (mavenVersion == null) {
-			throw new KurentoModuleCreatorException("Version '" + version
-					+ "' in import not supported");
+			throw new KurentoModuleCreatorException("Version '" + version + "' in import not supported");
 		}
 
 		return mavenVersion;
@@ -46,8 +45,7 @@ public class VersionManager {
 		} else if (expression instanceof Greater) {
 			return "(" + ((Greater) expression).getParsedVersion() + ",)";
 		} else if (expression instanceof GreaterOrEqual) {
-			return "[" + ((GreaterOrEqual) expression).getParsedVersion()
-					+ ",)";
+			return "[" + ((GreaterOrEqual) expression).getParsedVersion() + ",)";
 		} else if (expression instanceof And) {
 
 			And and = (And) expression;
@@ -88,8 +86,7 @@ public class VersionManager {
 
 		} else if (expression instanceof Or) {
 			String left = convertToMavenExpression(((Or) expression).getLeft());
-			String right = convertToMavenExpression(((Or) expression)
-					.getRight());
+			String right = convertToMavenExpression(((Or) expression).getRight());
 
 			if (left != null && right != null) {
 				return left + "," + right;
@@ -139,8 +136,7 @@ public class VersionManager {
 		String npmVersion = convertToNpmExpression(expression);
 
 		if (npmVersion == null) {
-			throw new KurentoModuleCreatorException("Version '" + version
-					+ "' in import not supported");
+			throw new KurentoModuleCreatorException("Version '" + version + "' in import not supported");
 		}
 
 		return npmVersion;
@@ -156,9 +152,7 @@ public class VersionManager {
 
 		if (version.startsWith("^")) {
 			String plainVersion = version.substring(1);
-			return ">=" + plainVersion + " & <"
-					+ (Version.valueOf(plainVersion).getMajorVersion() + 1)
-					+ ".0.0";
+			return ">=" + plainVersion + " & <" + (Version.valueOf(plainVersion).getMajorVersion() + 1) + ".0.0";
 		}
 
 		return version;
@@ -261,14 +255,12 @@ public class VersionManager {
 		int i = 0;
 		// set index to first non-equal ordinal or length of shortest version
 		// string
-		while (i < vals1.length && i < vals2.length
-				&& vals1[i].equals(vals2[i])) {
+		while (i < vals1.length && i < vals2.length && vals1[i].equals(vals2[i])) {
 			i++;
 		}
 		// compare first non-equal ordinal number
 		if (i < vals1.length && i < vals2.length) {
-			int diff = Integer.valueOf(vals1[i]).compareTo(
-					Integer.valueOf(vals2[i]));
+			int diff = Integer.valueOf(vals1[i]).compareTo(Integer.valueOf(vals2[i]));
 			return Integer.signum(diff);
 		}
 		// the strings are equal or one string is a substring of the other
@@ -278,8 +270,7 @@ public class VersionManager {
 		}
 	}
 
-	public static boolean devCompatibleVersion(String importVersion,
-			String depVersion) {
+	public static boolean devCompatibleVersion(String importVersion, String depVersion) {
 
 		if (importVersion.equals(depVersion)) {
 			return true;
@@ -308,8 +299,7 @@ public class VersionManager {
 		return sb.toString();
 	}
 
-	public static boolean compatibleVersion(String importVersion,
-			String depVersion) {
+	public static boolean compatibleVersion(String importVersion, String depVersion) {
 
 		if (importVersion.equals(depVersion)) {
 			return true;

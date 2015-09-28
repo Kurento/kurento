@@ -19,8 +19,8 @@ public class KurentoModuleCreatorException extends RuntimeException {
 		super(message, cause);
 	}
 
-	public KurentoModuleCreatorException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
+	public KurentoModuleCreatorException(String message, Throwable cause, boolean enableSuppression,
+			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
