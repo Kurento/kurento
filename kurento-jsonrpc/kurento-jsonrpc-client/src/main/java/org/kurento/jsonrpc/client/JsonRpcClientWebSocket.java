@@ -44,6 +44,7 @@ import org.kurento.commons.TimeoutReentrantLock;
 import org.kurento.commons.TimeoutRuntimeException;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcErrorException;
+import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
@@ -57,6 +58,9 @@ import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -136,6 +140,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private boolean sendCloseMessage = false;
 
+	private boolean concurrentServerRequest = false;
+
 	public JsonRpcClientWebSocket(String url) {
 		this(url, null, null);
 	}
@@ -199,6 +205,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		this.closeClient();
 
+	}
+
+	public void setConcurrentServerRequest(boolean concurrentServerRequest) {
+		this.concurrentServerRequest = concurrentServerRequest;
+	}
+
+	public boolean isConcurrentServerRequest() {
+		return concurrentServerRequest;
 	}
 
 	@Override
@@ -446,25 +460,28 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private void handleRequestFromServer(final JsonObject message) {
 
-		createExecServiceIfNecessary();
+		if (concurrentServerRequest) {
 
-		// TODO: Think better ways to do this:
-		// handleWebSocketTextMessage seems to be sequential. That is, the
-		// message waits to be processed until previous message is being
-		// processed. This behavior doesn't allow making a new request in the
-		// handler of an event. To avoid this problem, we have decided to
-		// process requests from server in a new thread (reused from
-		// ExecutorService).
-		execService.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class), rs);
-				} catch (IOException e) {
-					log.warn("{} Exception processing request {}", label, message, e);
+			createExecServiceIfNecessary();
+
+			execService.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class), rs);
+					} catch (IOException e) {
+						log.warn("{} Exception processing request {}", label, message, e);
+					}
 				}
+			});
+
+		} else {
+			try {
+				handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class), rs);
+			} catch (Exception e) {
+				log.warn("{} Exception processing request {}", label, message, e);
 			}
-		});
+		}
 	}
 
 	private void handleResponseFromServer(JsonObject message) {
@@ -493,27 +510,76 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	protected void internalSendRequestWebSocket(final Request<? extends Object> request,
-			final Class<JsonElement> resultClass, final Continuation<Response<JsonElement>> continuation) {
+	protected <P> void internalSendRequestWebSocket(final Request<P> request, final Class<JsonElement> resultClass,
+			final Continuation<Response<JsonElement>> continuation) {
 
-		createExecServiceIfNecessary();
+		try {
 
-		// FIXME: Poor man async implementation.
-		execService.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Response<JsonElement> result = internalSendRequestWebSocket(request, resultClass);
-					try {
-						continuation.onSuccess(result);
-					} catch (Exception e) {
-						log.error("{} Exception while processing response", label, e);
-					}
-				} catch (Exception e) {
-					continuation.onError(e);
-				}
+			connectIfNecessary();
+
+			ListenableFuture<Response<JsonElement>> responseFuture = null;
+
+			if (request.getId() != null) {
+				responseFuture = pendingRequests.prepareResponse(request.getId());
 			}
-		});
+
+			final boolean isPing;
+			String jsonMessage = request.toString();
+			if (METHOD_PING.equals(request.getMethod())) {
+				isPing = true;
+				log.trace("{} Req-> {}", label, jsonMessage.trim());
+			} else {
+				isPing = false;
+				log.debug("{} Req-> {}", label, jsonMessage.trim());
+			}
+
+			if (wsSession == null) {
+				// SERVER_ERROR
+				throw new IllegalStateException(
+						label + " JsonRpcClient is disconnected from WebSocket server at '" + this.url + "'");
+			}
+
+			synchronized (wsSession) {
+				wsSession.getRemote().sendString(jsonMessage);
+			}
+			
+			createExecServiceIfNecessary();
+
+			if (responseFuture != null) {
+
+				Futures.addCallback(responseFuture, new FutureCallback<Response<JsonElement>>() {
+					public void onSuccess(Response<JsonElement> responseJson) {
+
+						if (isPing) {
+							log.trace("{} <-Res {}", label, responseJson.toString());
+						} else {
+							log.debug("{} <-Res {}", label, responseJson.toString());
+						}
+
+						try {
+							Response<JsonElement> response = MessageUtils.convertResponse(responseJson, resultClass);
+
+							if (response.getSessionId() != null) {
+								session.setSessionId(response.getSessionId());
+							}
+
+							continuation.onSuccess(response);
+
+						} catch (Exception e) {
+							continuation.onError(e);
+						}
+					}
+
+					public void onFailure(Throwable thrown) {
+						continuation.onError(thrown);
+					}
+				}, execService);
+
+			}
+
+		} catch (Exception e) {
+			continuation.onError(e);
+		}
 	}
 
 	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request, Class<R> resultClass)

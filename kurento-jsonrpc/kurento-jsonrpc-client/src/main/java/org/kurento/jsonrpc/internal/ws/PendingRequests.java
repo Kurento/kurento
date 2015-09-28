@@ -16,9 +16,7 @@ package org.kurento.jsonrpc.internal.ws;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
 
-import org.apache.http.concurrent.BasicFuture;
 import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
@@ -26,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.gson.JsonElement;
 
 public class PendingRequests {
@@ -33,27 +33,26 @@ public class PendingRequests {
 	private static final Logger log = LoggerFactory
 			.getLogger(PendingRequests.class);
 
-	private final ConcurrentMap<Integer, BasicFuture<Response<JsonElement>>> pendingRequests = new ConcurrentHashMap<>();
+	private final ConcurrentMap<Integer, SettableFuture<Response<JsonElement>>> pendingRequests = new ConcurrentHashMap<>();
 
 	public void handleResponse(Response<JsonElement> response) {
 
-		BasicFuture<Response<JsonElement>> responseFuture = pendingRequests
+		SettableFuture<Response<JsonElement>> responseFuture = pendingRequests
 				.remove(response.getId());
 
 		if (responseFuture == null) {
 			// TODO It is necessary to do something else? Who is watching this?
 			log.error("Received response with an id not registered as pending request");
 		} else {
-			responseFuture.completed(response);
+			responseFuture.set(response);
 		}
 	}
 
-	public Future<Response<JsonElement>> prepareResponse(Integer id) {
+	public ListenableFuture<Response<JsonElement>> prepareResponse(Integer id) {
 
 		Preconditions.checkNotNull(id, "The request id cannot be null");
 
-		BasicFuture<Response<JsonElement>> responseFuture = new BasicFuture<>(
-				null);
+		SettableFuture<Response<JsonElement>> responseFuture = SettableFuture.create();
 
 		if (pendingRequests.putIfAbsent(id, responseFuture) != null) {
 			throw new JsonRpcException("Can not send a request with the id '"
@@ -65,9 +64,9 @@ public class PendingRequests {
 
 	public void closeAllPendingRequests() {
 		log.info("Sending error to all pending requests");
-		for (BasicFuture<Response<JsonElement>> responseFuture : pendingRequests
+		for (SettableFuture<Response<JsonElement>> responseFuture : pendingRequests
 				.values()) {
-			responseFuture.completed(new Response<JsonElement>(
+			responseFuture.set(new Response<JsonElement>(
 					new ResponseError(0, "Connection with server have been closed")));
 		}
 		pendingRequests.clear();
