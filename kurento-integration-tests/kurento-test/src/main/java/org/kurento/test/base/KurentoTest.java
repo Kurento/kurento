@@ -175,8 +175,7 @@ public class KurentoTest {
 				log.debug(BrowserConfig.BROWSER + " is not registered in test scenarario, instead"
 						+ " using first browser in the test scenario, i.e. " + browserKey);
 
-				client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
-				return client.clone();
+				return getClient(browserKey);
 			}
 		}
 	}
@@ -206,12 +205,19 @@ public class KurentoTest {
 			throw new RuntimeException(browserKey + " is not registered as browser in the test scenario");
 		}
 
-		client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
-		return client.clone();
+		return getClient(browserKey);
 	}
 
 	public void setTimeout(int timeoutSeconds) {
 		client.getBrowserClient().changeTimeout(timeoutSeconds);
+	}
+
+	public TestClient getClient(String browserKey) {
+		if (client.getBrowserClient() == null) {
+			client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
+		}
+
+		return client;
 	}
 
 	public void waitForHostIsReachable(URL url, int timeout) {

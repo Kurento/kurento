@@ -64,10 +64,9 @@ public class KurentoTestClient extends TestClient {
 	public KurentoTestClient() {
 	}
 
-	public KurentoTestClient(KurentoTestClient client) {
-		super(client);
-		this.callbackThreads = client.callbackThreads;
-		this.countDownLatchEvents = client.countDownLatchEvents;
+	@Override
+	public void setBrowserClient(BrowserClient browserClient) {
+		super.setBrowserClient(browserClient);
 
 		// By default all tests are going to track color in both video tags
 		checkColor(LOCAL_VIDEO, REMOTE_VIDEO);

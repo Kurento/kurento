@@ -64,17 +64,6 @@ public class TestClient {
 		this.browserClient = browserClient;
 	}
 
-	public TestClient clone() {
-		TestClient out = null;
-		try {
-			out = this.getClass().getDeclaredConstructor(this.getClass())
-					.newInstance(this);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return out;
-	}
-
 	public void takeScreeshot(String file) throws IOException {
 		File scrFile = ((TakesScreenshot) getBrowserClient().getDriver())
 				.getScreenshotAs(OutputType.FILE);
@@ -197,7 +186,7 @@ public class TestClient {
 		try {
 			browserClient.executeScript("kurentoTest." + jsFunction + "('"
 					+ peerConnection + "');");
-			monitor.addTestClient(this.clone());
+			monitor.addTestClient(this);
 		} catch (WebDriverException we) {
 			we.printStackTrace();
 
