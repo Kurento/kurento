@@ -92,12 +92,8 @@ public class JsonRpcHandlerManager {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void handleRequest(Session session, Request<JsonElement> request,
 			ResponseSender rs) throws IOException {
-
-		log.info("->Req {}", request);
 		
 		try {
-
-			log.info("->Req {}", request);
 
 			if (handler == null) {
 				log.warn("JsonRpcClient has received a request from server but"
