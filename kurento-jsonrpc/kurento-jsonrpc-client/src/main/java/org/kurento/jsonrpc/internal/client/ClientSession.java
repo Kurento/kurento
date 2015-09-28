@@ -92,7 +92,7 @@ public class ClientSession extends AbstractSession {
 			Continuation<JsonElement> continuation) throws IOException {
 		requestSender.sendNotification(method, params, continuation);
 	}
-
+	
 	public Response<JsonElement> sendRequest(Request<JsonObject> request)
 			throws IOException {
 		return requestSender.sendRequest(request);
@@ -102,6 +102,18 @@ public class ClientSession extends AbstractSession {
 			Continuation<Response<JsonElement>> continuation)
 			throws IOException {
 		requestSender.sendRequest(request, continuation);
+	}
+	
+	public void sendRequestHonorId(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException {
+		requestSender.sendRequestHonorId(request, continuation);
+	}
+	
+	@Override
+	public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
+			throws IOException {
+		return requestSender.sendRequestHonorId(request);
 	}
 
 	@Override

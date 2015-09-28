@@ -186,6 +186,19 @@ public abstract class JsonRpcRequestSenderHelper implements
 		setIdIfNecessary(request);
 		internalSendRequest(request, JsonElement.class, continuation);
 	}
+	
+	@Override
+	public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
+			throws IOException {
+		return internalSendRequest(request, JsonElement.class);
+	}
+	
+	@Override
+	public void sendRequestHonorId(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+					throws IOException {
+		internalSendRequest(request, JsonElement.class, continuation);
+	}
 
 	protected abstract <P, R> Response<R> internalSendRequest(
 			Request<P> request, Class<R> resultClass) throws IOException;

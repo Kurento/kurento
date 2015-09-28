@@ -36,6 +36,9 @@ public interface JsonRpcRequestSender {
 
 	Response<JsonElement> sendRequest(Request<JsonObject> request)
 			throws IOException;
+	
+	Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
+			throws IOException;
 
 	void sendNotification(String method, Object params) throws IOException;
 
@@ -45,6 +48,10 @@ public interface JsonRpcRequestSender {
 			Continuation<JsonElement> continuation);
 
 	void sendRequest(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException;
+	
+	void sendRequestHonorId(Request<JsonObject> request, 
 			Continuation<Response<JsonElement>> continuation)
 			throws IOException;
 

@@ -153,6 +153,19 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 			Continuation<Response<JsonElement>> continuation) throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
+	
+	@Override
+	public void sendRequestHonorId(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException {
+		rsHelper.sendRequestHonorId(request, continuation);
+	}
+	
+	@Override
+	public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
+			throws IOException {
+		return rsHelper.sendRequestHonorId(request);
+	}
 
 	public Session getSession() {
 		return session;
