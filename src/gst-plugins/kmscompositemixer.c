@@ -116,9 +116,9 @@ typedef struct _KmsCompositeMixerData
   gboolean input;
   gboolean removing;
   gboolean eos_managed;
-  gint probe_id;
-  gint link_probe_id;
-  gint latency_probe_id;
+  gulong probe_id;
+  gulong link_probe_id;
+  gulong latency_probe_id;
   GstPad *video_mixer_pad;
   GstPad *videoconvert_sink_pad;
 } KmsCompositeMixerData;
