@@ -32,13 +32,13 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.KurentoClientTest;
+import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.base.ScalabilityTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
@@ -91,13 +91,13 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
+		String videoPath = KurentoClientWebPageTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
 
 		for (int i = 0; i < realClients; i++) {
-			test.addBrowser(BrowserConfig.BROWSER + i, new BrowserClient.Builder().client(Client.WEBRTC)
+			test.addBrowser(BrowserConfig.BROWSER + i, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 		}
 
@@ -124,8 +124,8 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 		LatencyController cs = new LatencyController("Latency in loopback");
 
 		// WebRTC
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
 
 		// Real clients
 		ExecutorService executor = Executors.newFixedThreadPool(realClients);
@@ -135,21 +135,21 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 			WebRtcEndpoint extraWebRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 			webRtcEndpoint.connect(extraWebRtcEndpoint);
 
-			getBrowser(i).subscribeEvents("playing");
-			getBrowser(i).initWebRtc(extraWebRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+			getPage(i).subscribeEvents("playing");
+			getPage(i).initWebRtc(extraWebRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
 			final int j = i;
 			executor.execute(new Runnable() {
 				@Override
 				public void run() {
-					csB2B[j].checkRemoteLatency(playTime, TimeUnit.SECONDS, getBrowser(), getBrowser(j));
+					csB2B[j].checkRemoteLatency(playTime, TimeUnit.SECONDS, getPage(), getPage(j));
 				}
 			});
 		}
 
 		// Latency assessment
-		getBrowser().activateLatencyControl(VideoTagType.LOCAL.getId(), VideoTagType.REMOTE.getId());
-		cs.checkLocalLatency(playTime, TimeUnit.SECONDS, getBrowser());
+		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(), VideoTagType.REMOTE.getId());
+		cs.checkLocalLatency(playTime, TimeUnit.SECONDS, getPage());
 
 		// Release Media Pipeline
 		mp.release();

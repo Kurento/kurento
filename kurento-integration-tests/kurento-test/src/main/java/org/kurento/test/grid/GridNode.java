@@ -17,7 +17,7 @@ package org.kurento.test.grid;
 import java.io.File;
 import java.io.IOException;
 
-import org.kurento.test.client.BrowserType;
+import org.kurento.test.browser.BrowserType;
 import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

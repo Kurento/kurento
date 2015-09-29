@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 
-import org.kurento.test.client.BrowserClient;
+import org.kurento.test.browser.Browser;
 
 /**
  * Test report, to compile information of the test result in a HTML page.
@@ -238,7 +238,7 @@ public class TestReport {
 		appendCode(throwable.getStackTrace());
 		boolean saucelabsTitle = false;
 		if (testScenario != null) {
-			for (BrowserClient bc : testScenario.getBrowserMap().values()) {
+			for (Browser bc : testScenario.getBrowserMap().values()) {
 				if (bc.getScope() == BrowserScope.SAUCELABS) {
 					if (!saucelabsTitle) {
 						appendHtml("<b>Saucelabs job(s)</b><br>");

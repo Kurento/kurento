@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
@@ -88,13 +88,12 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
  * @since 5.1.0
  * @see <a href="http://www.seleniumhq.org/">Selenium</a>
  */
-public class BrowserClient implements Closeable {
+public class Browser implements Closeable {
 
-	public static Logger log = LoggerFactory.getLogger(BrowserClient.class);
+	public static Logger log = LoggerFactory.getLogger(Browser.class);
 
 	private WebDriver driver;
 	private String jobId;
-
 	private Builder builder;
 	private BrowserType browserType;
 	private BrowserScope scope;
@@ -118,23 +117,22 @@ public class BrowserClient implements Closeable {
 	private String node;
 	private String host;
 	private int serverPort;
-	private Client client;
+	private WebPageType webPageType;
 	private String login;
 	private String passwd;
 	private String pem;
 	private boolean avoidProxy;
 	private String parentTunnel;
 	private List<Map<String, String>> extensions;
-
 	private String url;
 
-	public BrowserClient(Builder builder) {
+	public Browser(Builder builder) {
 		this.builder = builder;
 		this.scope = builder.scope;
 		this.video = builder.video;
 		this.audio = builder.audio;
 		this.serverPort = getProperty(TEST_PORT_PROPERTY, getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort));
-		this.client = builder.client;
+		this.webPageType = builder.webPageType;
 		this.browserType = builder.browserType;
 		this.usePhysicalCam = builder.usePhysicalCam;
 		this.enableScreenCapture = builder.enableScreenCapture;
@@ -294,19 +292,18 @@ public class BrowserClient implements Closeable {
 			changeTimeout(timeout);
 
 			if (protocol == Protocol.FILE) {
-				String clientPage = client.toString();
-				File clientPageFile = new File(
-						this.getClass().getClassLoader().getResource("static" + clientPage).getFile());
-				url = protocol.toString() + clientPageFile.getAbsolutePath();
+				String webPage = webPageType.toString();
+				File webPageFile = new File(this.getClass().getClassLoader().getResource("static" + webPage).getFile());
+				url = protocol.toString() + webPageFile.getAbsolutePath();
 			} else {
 				String hostName = host != null ? host : node;
-				url = protocol.toString() + hostName + ":" + serverPort + client.toString();
+				url = protocol.toString() + hostName + ":" + serverPort + webPageType.toString();
 			}
 			log.info("*** Browsing URL with WebDriver: {}", url);
 			driver.get(url);
 
 		} catch (MalformedURLException e) {
-			log.error("MalformedURLException in BrowserClient.initDriver", e);
+			log.error("MalformedURLException in Browser.init", e);
 		}
 
 	}
@@ -551,9 +548,9 @@ public class BrowserClient implements Closeable {
 			String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
 			String kurentoTestJsPath = "./lib/kurento-test.js";
 			if (this.getProtocol() == Protocol.FILE) {
-				File clientPageFile = new File(
+				File pageFile = new File(
 						this.getClass().getClassLoader().getResource("static/lib/kurento-test.js").getFile());
-				kurentoTestJsPath = this.getProtocol().toString() + clientPageFile.getAbsolutePath();
+				kurentoTestJsPath = this.getProtocol().toString() + pageFile.getAbsolutePath();
 			}
 			kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
 			kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
@@ -575,7 +572,7 @@ public class BrowserClient implements Closeable {
 		private BrowserType browserType = BrowserType.CHROME;
 		private Protocol protocol = Protocol
 				.valueOf(getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT).toUpperCase());
-		private Client client = Client.value2Client(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
+		private WebPageType webPageType = WebPageType.value2WebPageType(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
 		private boolean usePhysicalCam = false;
 		private boolean enableScreenCapture = false;
 		private int recordAudio = 0; // seconds
@@ -659,8 +656,8 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder client(Client client) {
-			this.client = client;
+		public Builder webPageType(WebPageType webPageType) {
+			this.webPageType = webPageType;
 			return this;
 		}
 
@@ -717,8 +714,8 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public BrowserClient build() {
-			return new BrowserClient(this);
+		public Browser build() {
+			return new Browser(this);
 		}
 	}
 
@@ -742,7 +739,7 @@ public class BrowserClient implements Closeable {
 		return timeout;
 	}
 
-	public WebDriver getDriver() {
+	public WebDriver getWebDriver() {
 		return driver;
 	}
 
@@ -822,8 +819,8 @@ public class BrowserClient implements Closeable {
 		return serverPort;
 	}
 
-	public Client getClient() {
-		return client;
+	public WebPageType getWebPageType() {
+		return webPageType;
 	}
 
 	public boolean isUsePhysicalCam() {
@@ -894,7 +891,7 @@ public class BrowserClient implements Closeable {
 		String ip = this.getHost();
 		int port = this.getServerPort();
 		String protocol = this.getProtocol().toString();
-		String path = this.getClient().toString();
+		String path = this.getWebPageType().toString();
 		URL url = null;
 		try {
 			url = new URL(protocol + ip + ":" + port + path);

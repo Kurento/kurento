@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemScalabilityTests;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -25,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 6.1.1
  */
 @Category(SystemScalabilityTests.class)
-public class ScalabilityTest extends BrowserKurentoClientTest {
+public class ScalabilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	public ScalabilityTest(TestScenario testScenario) {
 		super(testScenario);

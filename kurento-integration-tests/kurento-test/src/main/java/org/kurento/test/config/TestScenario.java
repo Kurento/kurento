@@ -30,10 +30,10 @@ import java.util.TreeMap;
 
 import org.junit.Assert;
 import org.kurento.commons.ConfigFileFinder;
-import org.kurento.test.base.KurentoClientTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
+import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
 import org.openqa.selenium.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class TestScenario {
 
 	private static Logger log = LoggerFactory.getLogger(TestScenario.class);
 
-	private Map<String, BrowserClient> browserMap;
+	private Map<String, Browser> browserMap;
 	private List<URL> urlList;
 
 	public TestScenario() {
@@ -63,16 +63,16 @@ public class TestScenario {
 		urlList = new ArrayList<>();
 	}
 
-	public void addBrowser(String id, BrowserClient browser) {
+	public void addBrowser(String id, Browser browser) {
 		if (browser.getNumInstances() > 0) {
 			for (int i = 0; i < browser.getNumInstances(); i++) {
 				if (browser.getBrowserPerInstance() > 1) {
 					for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
 						String browserId = id + i + INSTANCES_SEPARATOR + j;
-						addBrowserInstance(browserId, new BrowserClient(browser.getBuilder()));
+						addBrowserInstance(browserId, new Browser(browser.getBuilder()));
 					}
 				} else {
-					addBrowserInstance(id + i, new BrowserClient(browser.getBuilder()));
+					addBrowserInstance(id + i, new Browser(browser.getBuilder()));
 				}
 			}
 		} else {
@@ -80,7 +80,7 @@ public class TestScenario {
 		}
 	}
 
-	private void addBrowserInstance(String id, BrowserClient browser) {
+	private void addBrowserInstance(String id, Browser browser) {
 		assertKeyNotExist(id);
 		browser.setId(id);
 		browserMap.put(id, browser);
@@ -177,11 +177,11 @@ public class TestScenario {
 	public static Collection<Object[]> localChromeAndFirefox() {
 		// Test #1 : Chrome in local
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test1.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 		// Test #2 : Firefox in local
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test2.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
@@ -191,7 +191,7 @@ public class TestScenario {
 		// Test: Chrome(s) in local
 		TestScenario test = new TestScenario();
 		for (int i = 0; i < size; i++) {
-			test.addBrowser(BrowserConfig.BROWSER + i, new BrowserClient.Builder().client(Client.WEBRTC)
+			test.addBrowser(BrowserConfig.BROWSER + i, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 		}
 		return Arrays.asList(new Object[][] { { test } });
@@ -200,7 +200,7 @@ public class TestScenario {
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
@@ -209,7 +209,7 @@ public class TestScenario {
 	public static Collection<Object[]> localFirefox() {
 		// Test: Firefox in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
@@ -218,9 +218,9 @@ public class TestScenario {
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test: Chrome in local (presenter and viewer)
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
@@ -228,22 +228,22 @@ public class TestScenario {
 
 	public static Collection<Object[]> localPresenterAndViewerRGB() {
 		// Test: Chrome in local (presenter and viewer)
-		String videoPath = KurentoClientTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
+		String videoPath = KurentoClientWebPageTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
-		test.addBrowser(BrowserConfig.VIEWER, new BrowserClient.Builder().client(Client.WEBRTC)
+		test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
-	public Map<String, BrowserClient> getBrowserMap() {
+	public Map<String, Browser> getBrowserMap() {
 		return browserMap;
 	}
 
-	public Map<String, BrowserClient> getBrowserMap(String... types) {
-		Map<String, BrowserClient> out = new HashMap<String, BrowserClient>();
+	public Map<String, Browser> getBrowserMap(String... types) {
+		Map<String, Browser> out = new HashMap<String, Browser>();
 		for (String key : browserMap.keySet()) {
 			for (String type : types) {
 				if (key.startsWith(type)) {

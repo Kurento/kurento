@@ -17,7 +17,7 @@ package org.kurento.test.config;
 import java.util.List;
 import java.util.Map;
 
-import org.kurento.test.client.BrowserType;
+import org.kurento.test.browser.BrowserType;
 import org.openqa.selenium.Platform;
 
 /**

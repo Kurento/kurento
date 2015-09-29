@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemCompatibilityTests;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -25,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 5.0.5
  */
 @Category(SystemCompatibilityTests.class)
-public class CompatibilityTest extends BrowserKurentoClientTest {
+public class CompatibilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	public CompatibilityTest(TestScenario testScenario) {
 		super(testScenario);

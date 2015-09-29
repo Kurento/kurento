@@ -64,7 +64,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.kurento.test.Shell;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.client.BrowserType;
+import org.kurento.test.browser.BrowserType;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.Randomizer;
 import org.kurento.test.services.SshConnection;

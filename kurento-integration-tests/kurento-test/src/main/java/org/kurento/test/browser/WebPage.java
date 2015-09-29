@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.browser;
 
 import java.awt.Color;
 import java.io.File;
@@ -43,25 +43,22 @@ import org.slf4j.LoggerFactory;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
  */
-public class TestClient {
+public class WebPage {
 
-	public static Logger log = LoggerFactory.getLogger(TestClient.class);
+	public static Logger log = LoggerFactory.getLogger(WebPage.class);
 
-	public BrowserClient browserClient;
+	public Browser browser;
 
-	public TestClient() {
+	public Browser getBrowser() {
+		return browser;
 	}
 
-	public BrowserClient getBrowserClient() {
-		return browserClient;
-	}
-
-	public void setBrowserClient(BrowserClient browserClient) {
-		this.browserClient = browserClient;
+	public void setBrowser(Browser browser) {
+		this.browser = browser;
 	}
 
 	public void takeScreeshot(String file) throws IOException {
-		File scrFile = ((TakesScreenshot) getBrowserClient().getDriver()).getScreenshotAs(OutputType.FILE);
+		File scrFile = ((TakesScreenshot) getBrowser().getWebDriver()).getScreenshotAs(OutputType.FILE);
 		FileUtils.copyFile(scrFile, new File(file));
 	}
 
@@ -69,14 +66,14 @@ public class TestClient {
 	 * setThresholdTime
 	 */
 	public void setThresholdTime(int thresholdTime) {
-		browserClient.setThresholdTime(thresholdTime);
+		browser.setThresholdTime(thresholdTime);
 	}
 
 	/*
 	 * setColorCoordinates
 	 */
 	public void setColorCoordinates(int x, int y) {
-		browserClient.executeScript("kurentoTest.setColorCoordinates(" + x + "," + y + ");");
+		browser.executeScript("kurentoTest.setColorCoordinates(" + x + "," + y + ");");
 	}
 
 	/*
@@ -90,7 +87,7 @@ public class TestClient {
 			}
 			tags += "'" + s + "'";
 		}
-		browserClient.executeScript("kurentoTest.checkColor(" + tags + ");");
+		browser.executeScript("kurentoTest.checkColor(" + tags + ");");
 	}
 
 	/*
@@ -107,7 +104,7 @@ public class TestClient {
 	 */
 	public boolean similarColor(String videoTag, Color expectedColor) {
 		boolean out;
-		final long endTimeMillis = System.currentTimeMillis() + (browserClient.getTimeout() * 1000);
+		final long endTimeMillis = System.currentTimeMillis() + (browser.getTimeout() * 1000);
 
 		while (true) {
 			out = compareColor(videoTag, expectedColor);
@@ -131,7 +128,7 @@ public class TestClient {
 	 */
 	public boolean compareColor(String videoTag, Color expectedColor) {
 		@SuppressWarnings("unchecked")
-		List<Long> realColor = (List<Long>) browserClient
+		List<Long> realColor = (List<Long>) browser
 				.executeScriptAndWaitOutput("return kurentoTest.colorInfo['" + videoTag + "'].currentColor;");
 
 		long red = realColor.get(0);
@@ -142,7 +139,7 @@ public class TestClient {
 				+ (green - expectedColor.getGreen()) * (green - expectedColor.getGreen())
 				+ (blue - expectedColor.getBlue()) * (blue - expectedColor.getBlue()));
 
-		boolean out = distance <= browserClient.getColorDistance();
+		boolean out = distance <= browser.getColorDistance();
 		if (!out) {
 			log.error("Difference in color comparision. Expected: {}, Real: {} (distance={})", expectedColor, realColor,
 					distance);
@@ -167,7 +164,7 @@ public class TestClient {
 
 	private void activateRtcStats(String jsFunction, SystemMonitorManager monitor, String peerConnection) {
 		try {
-			browserClient.executeScript("kurentoTest." + jsFunction + "('" + peerConnection + "');");
+			browser.executeScript("kurentoTest." + jsFunction + "('" + peerConnection + "');");
 			monitor.addTestClient(this);
 		} catch (WebDriverException we) {
 			we.printStackTrace();
@@ -187,7 +184,7 @@ public class TestClient {
 		final long[] out = new long[1];
 		Thread t = new Thread() {
 			public void run() {
-				Object latency = browserClient.executeScript("return kurentoTest.getLatency();");
+				Object latency = browser.executeScript("return kurentoTest.getLatency();");
 				if (latency != null) {
 					out[0] = (Long) latency;
 				} else {
@@ -197,16 +194,16 @@ public class TestClient {
 			}
 		};
 		t.start();
-		if (!latch.await(browserClient.getTimeout(), TimeUnit.SECONDS)) {
+		if (!latch.await(browser.getTimeout(), TimeUnit.SECONDS)) {
 			t.interrupt();
 			t.stop();
-			throw new LatencyException("Timeout getting latency (" + browserClient.getTimeout() + "  seconds)");
+			throw new LatencyException("Timeout getting latency (" + browser.getTimeout() + "  seconds)");
 		}
 		return out[0];
 	}
 
 	public void waitColor(long timeoutSeconds, final VideoTag videoTag, final Color color) {
-		WebDriverWait wait = new WebDriverWait(browserClient.getDriver(), timeoutSeconds);
+		WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), timeoutSeconds);
 		wait.until(new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver d) {
 				return !((JavascriptExecutor) d).executeScript(videoTag.getColor()).equals(color);
@@ -218,7 +215,7 @@ public class TestClient {
 	 * getCurrentTime
 	 */
 	public long getCurrentTime(VideoTag videoTag) {
-		Object time = browserClient.executeScript(videoTag.getTime());
+		Object time = browser.executeScript(videoTag.getTime());
 		return (time == null) ? 0 : (Long) time;
 	}
 
@@ -227,7 +224,7 @@ public class TestClient {
 	 */
 	@SuppressWarnings("unchecked")
 	public Color getCurrentColor(VideoTag videoTag) {
-		return getColor((List<Long>) browserClient.executeScript(videoTag.getColor()));
+		return getColor((List<Long>) browser.executeScript(videoTag.getColor()));
 	}
 
 	private Color getColor(List<Long> color) {
@@ -262,7 +259,7 @@ public class TestClient {
 	public Map<String, Object> getRtcStats() {
 		Map<String, Object> out = new HashMap<>();
 		try {
-			out = (Map<String, Object>) browserClient.executeScript("return kurentoTest.rtcStats;");
+			out = (Map<String, Object>) browser.executeScript("return kurentoTest.rtcStats;");
 
 			log.debug(">>>>>>>>>> kurentoTest.rtcStats {}", out);
 
@@ -278,7 +275,7 @@ public class TestClient {
 	 * activateLatencyControl
 	 */
 	public void activateLatencyControl(String localId, String remoteId) {
-		browserClient.executeScript("kurentoTest.activateLatencyControl('" + localId + "', '" + remoteId + "');");
+		browser.executeScript("kurentoTest.activateLatencyControl('" + localId + "', '" + remoteId + "');");
 
 	}
 
@@ -286,13 +283,13 @@ public class TestClient {
 	 * getTimeout
 	 */
 	public int getTimeout() {
-		return browserClient.getTimeout();
+		return browser.getTimeout();
 	}
 
 	/*
 	 * setTimeout
 	 */
 	public void setTimeout(int timeoutSeconds) {
-		browserClient.changeTimeout(timeoutSeconds);
+		browser.changeTimeout(timeoutSeconds);
 	}
 }

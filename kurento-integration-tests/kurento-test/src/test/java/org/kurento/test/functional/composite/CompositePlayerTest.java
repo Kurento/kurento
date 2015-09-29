@@ -27,8 +27,8 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -92,8 +92,8 @@ public class CompositePlayerTest extends FunctionalTest {
 		hubPort5.connect(webRtcEP);
 
 		// Test execution
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 
 		playerRed.play();
@@ -103,15 +103,15 @@ public class CompositePlayerTest extends FunctionalTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 		Assert.assertTrue("Upper left part of the video must be red",
-				getBrowser().similarColorAt(Color.RED, 0, 0));
+				getPage().similarColorAt(Color.RED, 0, 0));
 		Assert.assertTrue("Upper right part of the video must be green",
-				getBrowser().similarColorAt(Color.GREEN, 450, 0));
+				getPage().similarColorAt(Color.GREEN, 450, 0));
 		Assert.assertTrue("Lower left part of the video must be blue",
-				getBrowser().similarColorAt(Color.BLUE, 0, 450));
+				getPage().similarColorAt(Color.BLUE, 0, 450));
 		Assert.assertTrue("Lower right part of the video must be white",
-				getBrowser().similarColorAt(Color.WHITE, 450, 450));
+				getPage().similarColorAt(Color.WHITE, 450, 450));
 
 		// Guard time to see the composite result
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));

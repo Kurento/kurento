@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.base;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +37,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.jmeter.JMeter;
+import org.kurento.test.browser.BrowserEventListener;
 import org.w3c.dom.Document;
 
 import freemarker.template.Configuration;

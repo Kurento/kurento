@@ -46,7 +46,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Objects;
 
-import org.kurento.test.client.TestClient;
+import org.kurento.test.browser.WebPage;
 import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -305,7 +305,7 @@ public class SystemMonitorManager {
 	}
 
 	// TODO currently RTC stats are only supported in local monitor
-	public void addTestClient(TestClient client) {
+	public void addTestClient(WebPage client) {
 		// TODO: Deactivated statistics
 		// monitor.addTestClient(client);
 	}

@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.browser;
 
 /**
  * Interface used to execute parallel browsers.
@@ -22,6 +22,6 @@ package org.kurento.test.client;
  */
 public interface BrowserRunner {
 
-	void run(BrowserClient browser) throws Exception;
+	void run(Browser browser) throws Exception;
 
 }

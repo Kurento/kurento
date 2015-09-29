@@ -31,11 +31,11 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
@@ -76,14 +76,14 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		TestScenario test = new TestScenario();
 		test.addBrowser(
 				BrowserConfig.PRESENTER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/15sec/rgbHD.y4m")
 						.build());
 		test.addBrowser(
 				BrowserConfig.VIEWER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL).numInstances(numViewers)
 						.build());
@@ -134,7 +134,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						monitor.incrementNumClients();
 
 						// Latency control
-						String name = getViewer(i).getBrowserClient().getId();
+						String name = getViewer(i).getBrowser().getId();
 						cs[i] = new LatencyController(name, monitor);
 
 						// WebRTC

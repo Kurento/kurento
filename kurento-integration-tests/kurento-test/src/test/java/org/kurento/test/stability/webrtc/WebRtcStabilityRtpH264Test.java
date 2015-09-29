@@ -24,13 +24,13 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.RtpEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.KurentoClientTest;
+import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.base.StabilityTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
@@ -70,12 +70,12 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientTest.getPathTestFiles()
+		String videoPath = KurentoClientWebPageTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(
 				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL).video(videoPath).build());
 		return Arrays.asList(new Object[][] { { test } });
@@ -112,18 +112,18 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 		LatencyController cs = new LatencyController();
 
 		// WebRTC
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_RCV);
 
 		// Assertion: wait to playing event in browser
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 
 		// Latency assessment
-		getBrowser().activateLatencyControl(VideoTagType.LOCAL.getId(),
+		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(),
 				VideoTagType.REMOTE.getId());
-		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getBrowser());
+		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getPage());
 
 		// Release Media Pipeline
 		mp.release();

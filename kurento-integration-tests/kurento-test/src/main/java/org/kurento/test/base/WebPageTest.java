@@ -49,8 +49,8 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.TestClient;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
@@ -67,9 +67,9 @@ import org.slf4j.LoggerFactory;
  */
 
 @RunWith(Parameterized.class)
-public abstract class KurentoTest<E extends TestClient> {
+public abstract class WebPageTest<W extends WebPage> {
 
-	public static Logger log = LoggerFactory.getLogger(KurentoTest.class);
+	public static Logger log = LoggerFactory.getLogger(WebPageTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
 	@Rule
@@ -80,13 +80,13 @@ public abstract class KurentoTest<E extends TestClient> {
 		return Arrays.asList(new Object[][] { {} });
 	}
 
-	private Map<String, E> clients = new ConcurrentHashMap<>();
+	private Map<String, W> pages = new ConcurrentHashMap<>();
 	private TestScenario testScenario;
 
-	public KurentoTest() {
+	public WebPageTest() {
 	}
 
-	public KurentoTest(TestScenario testScenario) {
+	public WebPageTest(TestScenario testScenario) {
 		this.testScenario = testScenario;
 	}
 
@@ -102,16 +102,16 @@ public abstract class KurentoTest<E extends TestClient> {
 					@Override
 					public void run() {
 						try {
-							BrowserClient browserClient = testScenario.getBrowserMap().get(browserKey);
+							Browser browser = testScenario.getBrowserMap().get(browserKey);
 
 							int timeout = getProperty(TEST_URL_TIMEOUT_PROPERTY, TEST_URL_TIMEOUT_DEFAULT);
 
-							URL url = browserClient.getUrl();
+							URL url = browser.getUrl();
 							if (!testScenario.getUrlList().contains(url)) {
 								waitForHostIsReachable(url, timeout);
 								testScenario.getUrlList().add(url);
 							}
-							initBrowserClient(browserKey, browserClient);
+							initBrowser(browserKey, browser);
 							latch.countDown();
 						} catch (Throwable t) {
 							latch.abort("Exception setting up test. A browser could not be initialised", t);
@@ -125,19 +125,19 @@ public abstract class KurentoTest<E extends TestClient> {
 		}
 	}
 
-	private void initBrowserClient(String browserKey, BrowserClient browserClient) {
-		browserClient.setId(browserKey);
-		browserClient.setName(testName.getMethodName());
-		browserClient.init();
-		browserClient.injectKurentoTestJs();
+	private void initBrowser(String browserKey, Browser browser) {
+		browser.setId(browserKey);
+		browser.setName(testName.getMethodName());
+		browser.init();
+		browser.injectKurentoTestJs();
 	}
 
 	@After
 	public void teardownKurentoTest() {
 		if (testScenario != null) {
-			for (BrowserClient browserClient : testScenario.getBrowserMap().values()) {
+			for (Browser browser : testScenario.getBrowserMap().values()) {
 				try {
-					browserClient.close();
+					browser.close();
 				} catch (UnreachableBrowserException e) {
 					log.warn(e.getMessage());
 				}
@@ -149,18 +149,18 @@ public abstract class KurentoTest<E extends TestClient> {
 		return testScenario;
 	}
 
-	public void addBrowserClient(String browserKey, BrowserClient browserClient) {
-		testScenario.getBrowserMap().put(browserKey, browserClient);
-		initBrowserClient(browserKey, browserClient);
+	public void addBrowser(String browserKey, Browser browser) {
+		testScenario.getBrowserMap().put(browserKey, browser);
+		initBrowser(browserKey, browser);
 	}
 
-	public E getBrowser(String browserKey) {
-		return assertAndGetBrowser(browserKey);
+	public W getPage(String browserKey) {
+		return assertAndGetPage(browserKey);
 	}
 
-	public E getBrowser() {
+	public W getPage() {
 		try {
-			return assertAndGetBrowser(BrowserConfig.BROWSER);
+			return assertAndGetPage(BrowserConfig.BROWSER);
 
 		} catch (RuntimeException e) {
 			if (testScenario.getBrowserMap().isEmpty()) {
@@ -170,58 +170,58 @@ public abstract class KurentoTest<E extends TestClient> {
 				log.debug(BrowserConfig.BROWSER + " is not registered in test scenarario, instead"
 						+ " using first browser in the test scenario, i.e. " + browserKey);
 
-				return getClient(browserKey);
+				return getOrCreatePage(browserKey);
 			}
 		}
 	}
 
-	public E getBrowser(int index) {
-		return assertAndGetBrowser(BrowserConfig.BROWSER + index);
+	public W getPage(int index) {
+		return assertAndGetPage(BrowserConfig.BROWSER + index);
 	}
 
-	public E getPresenter() {
-		return assertAndGetBrowser(BrowserConfig.PRESENTER);
+	public W getPresenter() {
+		return assertAndGetPage(BrowserConfig.PRESENTER);
 	}
 
-	public E getPresenter(int index) {
-		return assertAndGetBrowser(BrowserConfig.PRESENTER + index);
+	public W getPresenter(int index) {
+		return assertAndGetPage(BrowserConfig.PRESENTER + index);
 	}
 
-	public E getViewer() {
-		return assertAndGetBrowser(BrowserConfig.VIEWER);
+	public W getViewer() {
+		return assertAndGetPage(BrowserConfig.VIEWER);
 	}
 
-	public E getViewer(int index) {
-		return assertAndGetBrowser(BrowserConfig.VIEWER + index);
+	public W getViewer(int index) {
+		return assertAndGetPage(BrowserConfig.VIEWER + index);
 	}
 
-	private E assertAndGetBrowser(String browserKey) {
+	private W assertAndGetPage(String browserKey) {
 		if (!testScenario.getBrowserMap().keySet().contains(browserKey)) {
 			throw new RuntimeException(browserKey + " is not registered as browser in the test scenario");
 		}
-		return getClient(browserKey);
+		return getOrCreatePage(browserKey);
 	}
 
-	public synchronized E getClient(String browserKey) {
-		E client;
-		if (clients.containsKey(browserKey)) {
-			client = clients.get(browserKey);
+	private synchronized W getOrCreatePage(String browserKey) {
+		W webPage;
+		if (pages.containsKey(browserKey)) {
+			webPage = pages.get(browserKey);
 		} else {
-			client = (E) createTestClient();
-			client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
-			clients.put(browserKey, client);
+			webPage = (W) createWebPage();
+			webPage.setBrowser(testScenario.getBrowserMap().get(browserKey));
+			pages.put(browserKey, webPage);
 		}
 
-		return client;
+		return webPage;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected E createTestClient() {
+	protected W createWebPage() {
 
 		Class<?> testClientClass = getParamType(this.getClass());
 
 		try {
-			return (E) testClientClass.newInstance();
+			return (W) testClientClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RuntimeException("Exception creating an instance of class " + testClientClass.getName(), e);
 		}
@@ -309,10 +309,6 @@ public abstract class KurentoTest<E extends TestClient> {
 		}
 
 		log.debug("URL {} already reachable", url);
-	}
-
-	public Map<String, E> getClients() {
-		return clients;
 	}
 
 }

@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.WebPageType;
 
 /**
  * Browser configuration based for JSON test scenarios.
@@ -63,10 +63,10 @@ public class BrowserConfig {
 
 			TestScenario test = new TestScenario();
 			for (String key : browser.keySet()) {
-				BrowserClient browserClient = null;
+				Browser browserClient = null;
 				BrowserInstance instance = browser.get(key);
 
-				BrowserClient.Builder builder = new BrowserClient.Builder()
+				Browser.Builder builder = new Browser.Builder()
 						.browserType(instance.getBrowserType());
 
 				if (instance.getVideo() != null) {
@@ -102,7 +102,7 @@ public class BrowserConfig {
 							.getProtocol().toUpperCase()));
 				}
 				if (instance.getPath() != null) {
-					builder = builder.client(Client.value2Client(instance
+					builder = builder.webPageType(WebPageType.value2WebPageType(instance
 							.getPath()));
 				}
 				if (instance.getHost() != null) {

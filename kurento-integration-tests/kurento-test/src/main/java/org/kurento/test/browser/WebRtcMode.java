@@ -12,40 +12,41 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
-
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.safari.SafariDriver;
+package org.kurento.test.browser;
 
 /**
- * Browser to perform automated web testing with Selenium WebDriver.
+ * WebRTC communication mode (send and receive, send only, or receive only).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @since 5.0.4
  */
-public enum BrowserType {
-	CHROME, FIREFOX, IEXPLORER, SAFARI;
+public enum WebRtcMode {
+	SEND_RCV, SEND_ONLY, RCV_ONLY;
 
-	public Class<? extends WebDriver> getDriverClass() {
+	public String getJsFunction() {
 		switch (this) {
-		case IEXPLORER:
-			return InternetExplorerDriver.class;
-		case FIREFOX:
-			return FirefoxDriver.class;
-		case SAFARI:
-			return SafariDriver.class;
-		case CHROME:
+		case SEND_RCV:
+			return "startSendRecv();";
+		case SEND_ONLY:
+			return "startSendOnly();";
+		case RCV_ONLY:
+			return "startRecvOnly();";
 		default:
-			return ChromeDriver.class;
+			throw new IllegalArgumentException();
 		}
 	}
 
 	@Override
 	public String toString() {
-		return super.toString().toLowerCase();
+		switch (this) {
+		case SEND_RCV:
+			return "(SEND & RECEIVE)";
+		case SEND_ONLY:
+			return "(SEND ONLY)";
+		case RCV_ONLY:
+			return "(RECEIVE ONLY)";
+		default:
+			throw new IllegalArgumentException();
+		}
 	}
-
 }

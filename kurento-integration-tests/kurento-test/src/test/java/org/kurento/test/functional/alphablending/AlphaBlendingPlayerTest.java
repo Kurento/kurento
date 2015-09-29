@@ -12,8 +12,8 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -78,8 +78,8 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
 		alphaBlending.setPortProperties(0F, 0F, 8, 0.2F, 0.2F, hubPort2);
 		alphaBlending.setPortProperties(0.4F, 0.4F, 7, 0.2F, 0.2F, hubPort3);
 
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.VIDEO_ONLY,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.RCV_ONLY);
 
 		playerRed.play();
@@ -88,24 +88,24 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
 
 		Thread.sleep(2000);
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 
 		Thread.sleep(2000);
 
 		// Assertions
 		Assert.assertTrue("Upper left part of the video must be blue",
-				getBrowser().similarColorAt(Color.GREEN, 0, 0));
+				getPage().similarColorAt(Color.GREEN, 0, 0));
 		Assert.assertTrue("Lower right part of the video must be red",
-				getBrowser().similarColorAt(Color.RED, 315, 235));
-		Assert.assertTrue("Center of the video must be blue", getBrowser()
+				getPage().similarColorAt(Color.RED, 315, 235));
+		Assert.assertTrue("Center of the video must be blue", getPage()
 				.similarColorAt(Color.BLUE, 160, 120));
 
 		// alphaBlending.setMaster(hubPort3, 1);
 		alphaBlending.setPortProperties(0.8F, 0.8F, 7, 0.2F, 0.2F, hubPort3);
 
 		Assert.assertTrue("Lower right part of the video must be blue",
-				getBrowser().similarColorAt(Color.BLUE, 315, 235));
-		Assert.assertTrue("Center of the video must be red", getBrowser()
+				getPage().similarColorAt(Color.BLUE, 315, 235));
+		Assert.assertTrue("Center of the video must be red", getPage()
 				.similarColorAt(Color.RED, 160, 120));
 
 		Thread.sleep(PLAYTIME * 1000);

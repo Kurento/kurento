@@ -23,8 +23,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -65,8 +65,8 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		// Start WebRTC
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_RCV);
 
 		// Guard time to play the video
@@ -74,14 +74,14 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				getBrowser().similarColor(CHROME_VIDEOTEST_COLOR));
-		double currentTime = getBrowser().getCurrentTime();
+				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

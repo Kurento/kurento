@@ -28,11 +28,11 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
@@ -75,31 +75,31 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		// Test: 5 local Chrome's
 		TestScenario test = new TestScenario();
 		test.addBrowser(BROWSER1,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.build());
 		test.addBrowser(
 				BROWSER2,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/red.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER3,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/green.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER4,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER5,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/white.y4m")
 						.build());
 		return Arrays.asList(new Object[][] { { test } });
@@ -136,30 +136,30 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		// Test execution
 
 		// WebRTC browsers
-		getBrowser(BROWSER2).initWebRtc(webRtcEPRed,
+		getPage(BROWSER2).initWebRtc(webRtcEPRed,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-		getBrowser(BROWSER3).initWebRtc(webRtcEPGreen,
+		getPage(BROWSER3).initWebRtc(webRtcEPGreen,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-		getBrowser(BROWSER4).initWebRtc(webRtcEPBlue,
+		getPage(BROWSER4).initWebRtc(webRtcEPBlue,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-		getBrowser(BROWSER5).initWebRtc(webRtcEPWhite,
+		getPage(BROWSER5).initWebRtc(webRtcEPWhite,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		getBrowser(BROWSER1).subscribeEvents("playing");
-		getBrowser(BROWSER1).initWebRtc(webRtcEPComposite,
+		getPage(BROWSER1).subscribeEvents("playing");
+		getPage(BROWSER1).initWebRtc(webRtcEPComposite,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser(BROWSER1).waitForEvent("playing"));
+				getPage(BROWSER1).waitForEvent("playing"));
 		Assert.assertTrue("Upper left part of the video must be red",
-				getBrowser(BROWSER1).similarColorAt(Color.RED, 0, 0));
+				getPage(BROWSER1).similarColorAt(Color.RED, 0, 0));
 		Assert.assertTrue("Upper right part of the video must be green",
-				getBrowser(BROWSER1).similarColorAt(Color.GREEN, 450, 0));
+				getPage(BROWSER1).similarColorAt(Color.GREEN, 450, 0));
 		Assert.assertTrue("Lower left part of the video must be blue",
-				getBrowser(BROWSER1).similarColorAt(Color.BLUE, 0, 450));
+				getPage(BROWSER1).similarColorAt(Color.BLUE, 0, 450));
 		Assert.assertTrue("Lower right part of the video must be white",
-				getBrowser(BROWSER1).similarColorAt(Color.WHITE, 450, 450));
+				getPage(BROWSER1).similarColorAt(Color.WHITE, 450, 450));
 
 		// Finally, a black & white filter is connected to one WebRTC
 		GStreamerFilter bwFilter = new GStreamerFilter.Builder(mp,
@@ -169,7 +169,7 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 		Assert.assertTrue(
 				"When connecting the filter, the upper left part of the video must be gray",
-				getBrowser(BROWSER1)
+				getPage(BROWSER1)
 						.similarColorAt(new Color(75, 75, 75), 0, 0));
 
 		// Release Media Pipeline

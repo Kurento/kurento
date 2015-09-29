@@ -23,7 +23,6 @@ import static org.kurento.test.TestConfiguration.FAKE_KMS_PEM_PROP;
 import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_PROP;
-import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
@@ -80,8 +79,7 @@ import freemarker.template.Template;
  */
 public class KurentoMediaServerManager {
 
-	public static Logger log = LoggerFactory
-			.getLogger(KurentoMediaServerManager.class);
+	public static Logger log = LoggerFactory.getLogger(KurentoMediaServerManager.class);
 
 	private static String lastWorkspace;
 
@@ -100,8 +98,7 @@ public class KurentoMediaServerManager {
 	private String registrarLocalAddress = "127.0.0.1";
 	private boolean isKmsRemote;
 
-	public static KurentoMediaServerManager createWithWsTransport(String wsUri,
-			int httpPort) {
+	public static KurentoMediaServerManager createWithWsTransport(String wsUri, int httpPort) {
 
 		KurentoMediaServerManager manager = new KurentoMediaServerManager();
 		manager.wsUri = wsUri;
@@ -109,8 +106,7 @@ public class KurentoMediaServerManager {
 		return manager;
 	}
 
-	public static KurentoMediaServerManager createWithRabbitMqTransport(
-			Address rabbitMqAddress, int httpPort) {
+	public static KurentoMediaServerManager createWithRabbitMqTransport(Address rabbitMqAddress, int httpPort) {
 		KurentoMediaServerManager manager = new KurentoMediaServerManager();
 		manager.rabbitMqAddress = rabbitMqAddress;
 		manager.httpPort = httpPort;
@@ -125,26 +121,21 @@ public class KurentoMediaServerManager {
 		String targetFolder = testDir + testClassName;
 
 		if (remoteKms != null) { // Remote KMS
-			log.info("Copying KMS logs from remote host {}",
-					remoteKms.getConnection());
+			log.info("Copying KMS logs from remote host {}", remoteKms.getConnection());
 			List<String> ls = remoteKms.listFiles(kmsLogsPath, true, false);
 
 			for (String s : ls) {
-				String targetFile = targetFolder + "/" + testMethodName + "-"
-						+ s.substring(s.lastIndexOf("/") + 1);
+				String targetFile = targetFolder + "/" + testMethodName + "-" + s.substring(s.lastIndexOf("/") + 1);
 				remoteKms.getFile(targetFile, s);
-				KurentoServicesTestHelper
-						.addServerLogFilePath(new File(targetFile));
+				KurentoServicesTestHelper.addServerLogFilePath(new File(targetFile));
 			}
 		} else { // Local KMS
 			log.info("Copying KMS logs from local path {}", kmsLogsPath);
 
-			Collection<File> kmsFiles = FileUtils
-					.listFiles(new File(kmsLogsPath), null, true);
+			Collection<File> kmsFiles = FileUtils.listFiles(new File(kmsLogsPath), null, true);
 
 			for (File f : kmsFiles) {
-				File destFile = new File(targetFolder,
-						testMethodName + "-" + f.getName());
+				File destFile = new File(targetFolder, testMethodName + "-" + f.getName());
 				FileUtils.copyFile(f, destFile);
 				KurentoServicesTestHelper.addServerLogFilePath(destFile);
 				log.debug("Log file: {}", destFile);
@@ -171,68 +162,51 @@ public class KurentoMediaServerManager {
 	public void start() throws IOException {
 		start(false);
 	}
-	
+
 	public void start(boolean isFake) throws IOException {
 		// Properties
-		String kmsLoginProp = isFake ? FAKE_KMS_LOGIN_PROP
-				: KURENTO_KMS_LOGIN_PROP;
-		String kmsPasswdProp = isFake ? FAKE_KMS_PASSWD_PROP
-				: KURENTO_KMS_PASSWD_PROP;
-		String kmsPemProp = isFake ? FAKE_KMS_PEM_PROP
-				: KURENTO_KMS_PASSWD_PROP;
-		String kmsAutostartProp = isFake ? FAKE_KMS_AUTOSTART_PROP
-				: KMS_AUTOSTART_PROP;
-		String kmsAutostartDefaultProp = isFake ? FAKE_KMS_AUTOSTART_DEFAULT
-				: KMS_AUTOSTART_DEFAULT;
+		String kmsLoginProp = isFake ? FAKE_KMS_LOGIN_PROP : KURENTO_KMS_LOGIN_PROP;
+		String kmsPasswdProp = isFake ? FAKE_KMS_PASSWD_PROP : KURENTO_KMS_PASSWD_PROP;
+		String kmsPemProp = isFake ? FAKE_KMS_PEM_PROP : KURENTO_KMS_PASSWD_PROP;
+		String kmsAutostartProp = isFake ? FAKE_KMS_AUTOSTART_PROP : KMS_AUTOSTART_PROP;
+		String kmsAutostartDefaultProp = isFake ? FAKE_KMS_AUTOSTART_DEFAULT : KMS_AUTOSTART_DEFAULT;
 		String kmsWsUri = isFake ? FAKE_KMS_WS_URI_PROP : KMS_WS_URI_PROP;
 
 		// Values
 		String kmsLogin = getProperty(kmsLoginProp);
 		String kmsPasswd = getProperty(kmsPasswdProp);
 		String kmsPem = getProperty(kmsPemProp);
-		
+
 		String wsUri;
-		if(this.wsUri != null){
+		if (this.wsUri != null) {
 			wsUri = this.wsUri;
 		} else {
 			wsUri = getProperty(kmsWsUri, this.wsUri);
 		}
-		 
 
-		isKmsRemote = !wsUri.contains("localhost")
-				&& !wsUri.contains("127.0.0.1");
+		isKmsRemote = !wsUri.contains("localhost") && !wsUri.contains("127.0.0.1");
 
-		if (isKmsRemote && kmsLogin == null
-				&& (kmsPem == null || kmsPasswd == null)) {
-			String kmsAutoStart = getProperty(kmsAutostartProp,
-					kmsAutostartDefaultProp);
-			throw new RuntimeException("Bad test parameters: "
-					+ kmsAutostartProp + "=" + kmsAutoStart + " and " + kmsWsUri
-					+ "=" + wsUri
-					+ ". Remote KMS should be started but its credentials are not present: "
-					+ kmsLoginProp + "=" + kmsLogin + ", " + kmsPasswdProp + "="
-					+ kmsPasswd + ", " + kmsPemProp + "=" + kmsPem);
+		if (isKmsRemote && kmsLogin == null && (kmsPem == null || kmsPasswd == null)) {
+			String kmsAutoStart = getProperty(kmsAutostartProp, kmsAutostartDefaultProp);
+			throw new RuntimeException("Bad test parameters: " + kmsAutostartProp + "=" + kmsAutoStart + " and "
+					+ kmsWsUri + "=" + wsUri + ". Remote KMS should be started but its credentials are not present: "
+					+ kmsLoginProp + "=" + kmsLogin + ", " + kmsPasswdProp + "=" + kmsPasswd + ", " + kmsPemProp + "="
+					+ kmsPem);
 		}
 
-		serverCommand = PropertiesManager.getProperty(
-				KURENTO_SERVER_COMMAND_PROP, KURENTO_SERVER_COMMAND_DEFAULT);
+		serverCommand = PropertiesManager.getProperty(KURENTO_SERVER_COMMAND_PROP, KURENTO_SERVER_COMMAND_DEFAULT);
 
-		gstPlugins = PropertiesManager.getProperty(KURENTO_GST_PLUGINS_PROP,
-				KURENTO_GST_PLUGINS_DEFAULT);
+		gstPlugins = PropertiesManager.getProperty(KURENTO_GST_PLUGINS_PROP, KURENTO_GST_PLUGINS_DEFAULT);
 
 		try {
 			workspace = Files.createTempDirectory("kurento-test").toString();
 			lastWorkspace = workspace;
 		} catch (IOException e) {
-			workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
-					KURENTO_WORKSPACE_DEFAULT);
-			log.error(
-					"Exception loading temporal folder; instead folder {} will be used",
-					workspace, e);
+			workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP, KURENTO_WORKSPACE_DEFAULT);
+			log.error("Exception loading temporal folder; instead folder {} will be used", workspace, e);
 		}
 
-		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP,
-				KURENTO_SERVER_DEBUG_DEFAULT);
+		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP, KURENTO_SERVER_DEBUG_DEFAULT);
 
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
@@ -245,23 +219,18 @@ public class KurentoMediaServerManager {
 							+ " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'",
 					rabbitMqAddress, serverCommand, gstPlugins, workspace);
 		} else {
-			log.info(
-					"Starting KMS with Ws uri: '{}'"
-							+ " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'",
-					wsUri, serverCommand, gstPlugins, workspace);
+			log.info("Starting KMS with Ws uri: '{}'" + " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'", wsUri,
+					serverCommand, gstPlugins, workspace);
 
 			if (!isKmsRemote && !isFreePort(wsUri)) {
-				throw new RuntimeException("KMS cannot be started in URI: "
-						+ wsUri + ". Port is not free");
+				throw new RuntimeException("KMS cannot be started in URI: " + wsUri + ". Port is not free");
 			}
 		}
 
 		if (isKmsRemote) {
-			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
-					wsUri.lastIndexOf(":"));
+			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2, wsUri.lastIndexOf(":"));
 			log.info("Using remote KMS at {}", remoteKmsStr);
-			remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd,
-					kmsPem);
+			remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd, kmsPem);
 			if (kmsPem != null) {
 				remoteKms.setPem(kmsPem);
 			}
@@ -274,11 +243,9 @@ public class KurentoMediaServerManager {
 		if (isKmsRemote) {
 			String[] filesToBeCopied = { "kurento.conf.json", "kurento.sh" };
 			for (String s : filesToBeCopied) {
-				remoteKms.scp(workspace + s,
-						remoteKms.getTmpFolder() + "/" + s);
+				remoteKms.scp(workspace + s, remoteKms.getTmpFolder() + "/" + s);
 			}
-			remoteKms.runAndWaitCommand("chmod", "+x",
-					remoteKms.getTmpFolder() + "/kurento.sh");
+			remoteKms.runAndWaitCommand("chmod", "+x", remoteKms.getTmpFolder() + "/kurento.sh");
 		}
 
 		startKms(wsUri);
@@ -289,8 +256,7 @@ public class KurentoMediaServerManager {
 	private void startKms(String wsUri) throws IOException {
 		String kmsLogPath = getKmsLogPath();
 		if (isKmsRemote) {
-			remoteKms.runAndWaitCommand("sh", "-c",
-					kmsLogPath + "kurento.sh > /dev/null");
+			remoteKms.runAndWaitCommand("sh", "-c", kmsLogPath + "kurento.sh > /dev/null");
 		} else {
 			Shell.run("sh", "-c", kmsLogPath + "kurento.sh");
 		}
@@ -303,12 +269,11 @@ public class KurentoMediaServerManager {
 		try {
 			URI wsUrl = new URI(wsUri);
 
-			String result = Shell.runAndWait("/bin/bash", "-c", "nc -z "
-					+ wsUrl.getHost() + " " + wsUrl.getPort() + "; echo $?");
+			String result = Shell.runAndWait("/bin/bash", "-c",
+					"nc -z " + wsUrl.getHost() + " " + wsUrl.getPort() + "; echo $?");
 
 			if (result.trim().equals("0")) {
-				log.warn("Port " + wsUrl.getPort()
-						+ " is used. Maybe another KMS instance is running in this port");
+				log.warn("Port " + wsUrl.getPort() + " is used. Maybe another KMS instance is running in this port");
 				return false;
 			}
 
@@ -339,28 +304,22 @@ public class KurentoMediaServerManager {
 
 		if (wsUri != null) {
 
-			javax.websocket.WebSocketContainer container = javax.websocket.ContainerProvider
-					.getWebSocketContainer();
+			javax.websocket.WebSocketContainer container = javax.websocket.ContainerProvider.getWebSocketContainer();
 
 			int NUM_RETRIES = 300;
 			int WAIT_MILLIS = 100;
 
 			for (int i = 0; i < NUM_RETRIES; i++) {
 				try {
-					Session wsSession = container.connectToServer(
-							new WebSocketClient(),
-							ClientEndpointConfig.Builder.create().build(),
-							new URI(wsUri));
+					Session wsSession = container.connectToServer(new WebSocketClient(),
+							ClientEndpointConfig.Builder.create().build(), new URI(wsUri));
 					wsSession.close();
 
-					double time = (System.nanoTime() - initTime)
-							/ (double) 1000000;
+					double time = (System.nanoTime() - initTime) / (double) 1000000;
 
-					log.debug("Connected to KMS in "
-							+ String.format("%3.2f", time) + " milliseconds");
+					log.debug("Connected to KMS in " + String.format("%3.2f", time) + " milliseconds");
 					return;
-				} catch (DeploymentException | IOException
-						| URISyntaxException e) {
+				} catch (DeploymentException | IOException | URISyntaxException e) {
 					try {
 						Thread.sleep(WAIT_MILLIS);
 					} catch (InterruptedException e1) {
@@ -369,8 +328,7 @@ public class KurentoMediaServerManager {
 				}
 			}
 
-			throw new KurentoException("Timeout of " + NUM_RETRIES * WAIT_MILLIS
-					+ " millis waiting for KMS " + wsUri);
+			throw new KurentoException("Timeout of " + NUM_RETRIES * WAIT_MILLIS + " millis waiting for KMS " + wsUri);
 
 		} else {
 			try {
@@ -382,8 +340,7 @@ public class KurentoMediaServerManager {
 	}
 
 	private void createKurentoConf() {
-		Configuration cfg = new Configuration(
-				Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 
 		// Data-model
 		Map<String, Object> data = new HashMap<String, Object>();
@@ -416,16 +373,14 @@ public class KurentoMediaServerManager {
 		data.put("workspace", getKmsLogPath());
 		data.put("httpEndpointPort", String.valueOf(httpPort));
 
-		cfg.setClassForTemplateLoading(KurentoMediaServerManager.class,
-				"/templates/");
+		cfg.setClassForTemplateLoading(KurentoMediaServerManager.class, "/templates/");
 
 		createFileFromTemplate(cfg, data, "kurento.conf.json");
 		createFileFromTemplate(cfg, data, "kurento.sh");
 		Shell.runAndWait("chmod", "+x", workspace + "kurento.sh");
 	}
 
-	private void createFileFromTemplate(Configuration cfg,
-			Map<String, Object> data, String filename) {
+	private void createFileFromTemplate(Configuration cfg, Map<String, Object> data, String filename) {
 
 		try {
 
@@ -439,8 +394,7 @@ public class KurentoMediaServerManager {
 			log.debug("Created file '" + file.getAbsolutePath() + "'");
 
 		} catch (Exception e) {
-			throw new RuntimeException(
-					"Exception while creating file from template", e);
+			throw new RuntimeException("Exception while creating file from template", e);
 		}
 	}
 
@@ -487,8 +441,7 @@ public class KurentoMediaServerManager {
 	private void kmsSigTerm() throws IOException {
 		log.trace("Sending SIGTERM to KMS process");
 		if (remoteKms != null) {
-			String kmsPid = remoteKms.execAndWaitCommandNoBr("cat",
-					remoteKms.getTmpFolder() + "/kms-pid");
+			String kmsPid = remoteKms.execAndWaitCommandNoBr("cat", remoteKms.getTmpFolder() + "/kms-pid");
 			remoteKms.runAndWaitCommand("kill", kmsPid);
 		} else {
 			Shell.runAndWait("sh", "-c", "kill `cat " + workspace + "kms-pid`");
@@ -498,12 +451,10 @@ public class KurentoMediaServerManager {
 	private void kmsSigKill() throws IOException {
 		log.trace("Sending SIGKILL to KMS process");
 		if (remoteKms != null) {
-			String kmsPid = remoteKms.execAndWaitCommandNoBr("cat",
-					remoteKms.getTmpFolder() + "/kms-pid");
+			String kmsPid = remoteKms.execAndWaitCommandNoBr("cat", remoteKms.getTmpFolder() + "/kms-pid");
 			remoteKms.runAndWaitCommand("sh", "-c", "kill -9 " + kmsPid);
 		} else {
-			Shell.runAndWait("sh", "-c",
-					"kill -9 `cat " + workspace + "kms-pid`");
+			Shell.runAndWait("sh", "-c", "kill -9 `cat " + workspace + "kms-pid`");
 		}
 	}
 
@@ -526,17 +477,14 @@ public class KurentoMediaServerManager {
 			// kms-pid file)
 
 			if (remoteKms != null) {
-				String kmsPid = remoteKms.execAndWaitCommandNoBr("cat",
-						remoteKms.getTmpFolder() + "/kms-pid");
-				result = Integer.parseInt(remoteKms.execAndWaitCommandNoBr(
-						"ps --pid " + kmsPid + " --no-headers | wc -l"));
+				String kmsPid = remoteKms.execAndWaitCommandNoBr("cat", remoteKms.getTmpFolder() + "/kms-pid");
+				result = Integer
+						.parseInt(remoteKms.execAndWaitCommandNoBr("ps --pid " + kmsPid + " --no-headers | wc -l"));
 			} else {
-				String[] command = { "sh", "-c", "ps --pid `cat " + workspace
-						+ "kms-pid` --no-headers | wc -l" };
+				String[] command = { "sh", "-c", "ps --pid `cat " + workspace + "kms-pid` --no-headers | wc -l" };
 				Process countKms = Runtime.getRuntime().exec(command);
-				String stringFromStream = CharStreams.toString(
-						new InputStreamReader(countKms.getInputStream(),
-								"UTF-8"));
+				String stringFromStream = CharStreams
+						.toString(new InputStreamReader(countKms.getInputStream(), "UTF-8"));
 				result = Integer.parseInt(stringFromStream.trim());
 			}
 		} catch (IOException e) {

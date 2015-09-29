@@ -24,8 +24,8 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -76,14 +76,14 @@ public class PlayerSwitchTest extends FunctionalTest {
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
 		// Test execution
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 
 		// red
 		playerRed.connect(webRtcEndpoint);
 		playerRed.play();
-		getBrowser().subscribeEvents("playing");
+		getPage().subscribeEvents("playing");
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
 		// green
@@ -108,11 +108,11 @@ public class PlayerSwitchTest extends FunctionalTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
-		double currentTime = getBrowser().getCurrentTime();
+				getPage().waitForEvent("playing"));
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

@@ -12,11 +12,11 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
@@ -57,25 +57,25 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
 
 		test.addBrowser(
 				BROWSER1,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).client(Client.WEBRTC)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
 						.video(getPathTestFiles() + "/video/10sec/red.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER2,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).client(Client.WEBRTC)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
 						.video(getPathTestFiles() + "/video/10sec/green.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER3,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).client(Client.WEBRTC)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
 						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
 						.build());
 		test.addBrowser(BROWSER4,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).client(Client.WEBRTC)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
 						.build());
 
 		return Arrays.asList(new Object[][] { { test } });
@@ -107,37 +107,37 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
 		alphaBlending.setPortProperties(0F, 0F, 8, 0.2F, 0.2F, hubPort2);
 		alphaBlending.setPortProperties(0.4F, 0.4F, 7, 0.2F, 0.2F, hubPort3);
 
-		getBrowser(BROWSER1).subscribeLocalEvents("playing");
-		getBrowser(BROWSER1).initWebRtc(webRtcEPRed,
+		getPage(BROWSER1).subscribeLocalEvents("playing");
+		getPage(BROWSER1).initWebRtc(webRtcEPRed,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		getBrowser(BROWSER2).subscribeLocalEvents("playing");
-		getBrowser(BROWSER2).initWebRtc(webRtcEPGreen,
+		getPage(BROWSER2).subscribeLocalEvents("playing");
+		getPage(BROWSER2).initWebRtc(webRtcEPGreen,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		getBrowser(BROWSER3).subscribeLocalEvents("playing");
-		getBrowser(BROWSER3).initWebRtc(webRtcEPBlue,
+		getPage(BROWSER3).subscribeLocalEvents("playing");
+		getPage(BROWSER3).initWebRtc(webRtcEPBlue,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		getBrowser(BROWSER4).subscribeEvents("playing");
-		getBrowser(BROWSER4).initWebRtc(webRtcEPAlphabaBlending,
+		getPage(BROWSER4).subscribeEvents("playing");
+		getPage(BROWSER4).initWebRtc(webRtcEPAlphabaBlending,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 		// Assertions
 		Assert.assertTrue("Upper left part of the video must be blue",
-				getBrowser(BROWSER4).similarColorAt(Color.GREEN, 0, 0));
+				getPage(BROWSER4).similarColorAt(Color.GREEN, 0, 0));
 		Assert.assertTrue("Lower right part of the video must be red",
-				getBrowser(BROWSER4).similarColorAt(Color.RED, 315, 235));
+				getPage(BROWSER4).similarColorAt(Color.RED, 315, 235));
 		Assert.assertTrue("Center of the video must be blue",
-				getBrowser(BROWSER4).similarColorAt(Color.BLUE, 160, 120));
+				getPage(BROWSER4).similarColorAt(Color.BLUE, 160, 120));
 
 		// alphaBlending.setMaster(hubPort3, 1);
 		alphaBlending.setPortProperties(0.8F, 0.8F, 7, 0.2F, 0.2F, hubPort3);
 
 		Assert.assertTrue("Lower right part of the video must be blue",
-				getBrowser(BROWSER4).similarColorAt(Color.BLUE, 315, 235));
+				getPage(BROWSER4).similarColorAt(Color.BLUE, 315, 235));
 		Assert.assertTrue("Center of the video must be red",
-				getBrowser(BROWSER4).similarColorAt(Color.RED, 160, 120));
+				getPage(BROWSER4).similarColorAt(Color.RED, 160, 120));
 		Thread.sleep(PLAYTIME * 1000);
 	}
 }

@@ -29,11 +29,11 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.CompatibilityTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
@@ -72,7 +72,7 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 		TestScenario test1 = new TestScenario();
 		test1.addBrowser(
 				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.SAUCELABS)
 						.platform(Platform.WIN8_1).browserVersion("39").build());
@@ -80,7 +80,7 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 		TestScenario test2 = new TestScenario();
 		test2.addBrowser(
 				BrowserConfig.BROWSER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.FIREFOX)
 						.scope(BrowserScope.SAUCELABS).platform(Platform.LINUX)
 						.browserVersion("35").build());
@@ -98,8 +98,8 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 		playerEndpoint.connect(webRtcEndpoint);
 
 		// Browser
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 		playerEndpoint.play();
 
@@ -115,17 +115,17 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 		for (Color color : EXPECTED_COLORS) {
 			Assert.assertTrue("The color of the video should be " + color,
-					getBrowser().similarColor(color));
+					getPage().similarColor(color));
 		}
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
-		double currentTime = getBrowser().getCurrentTime();
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

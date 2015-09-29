@@ -12,24 +12,16 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.base;
-
-import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.SystemFunctionalTests;
-import org.kurento.test.browser.WebRtcTestPage;
-import org.kurento.test.config.TestScenario;
+package org.kurento.test.browser;
 
 /**
- * Functional tests.
+ * Event listener to communicate client and server in tests.
  * 
- * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.5
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ * @since 4.2.3
  */
-@Category(SystemFunctionalTests.class)
-public class FunctionalTest extends KurentoClientWebPageTest<WebRtcTestPage> {
+public interface BrowserEventListener {
 
-	public FunctionalTest(TestScenario testScenario) {
-		super(testScenario);
-	}
+	void onEvent(String event);
 
 }

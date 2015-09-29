@@ -17,7 +17,7 @@ package org.kurento.test.latency;
 import java.awt.Color;
 import java.text.SimpleDateFormat;
 
-import org.kurento.test.client.TestClient;
+import org.kurento.test.browser.WebPage;
 import org.openqa.selenium.WebDriverException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +33,12 @@ public class ColorTrigger implements Runnable {
 
 	public Logger log = LoggerFactory.getLogger(ColorTrigger.class);
 	private VideoTag videoTag;
-	private TestClient testClient;
+	private WebPage testClient;
 	private Color color = Color.BLACK; // Initial color
 	private ChangeColorObservable observable;
 	private long timeoutSeconds;
 
-	public ColorTrigger(VideoTag videoTag, TestClient testClient,
+	public ColorTrigger(VideoTag videoTag, WebPage testClient,
 			ChangeColorObservable observable, long timeoutSeconds) {
 		this.videoTag = videoTag;
 		this.testClient = testClient;

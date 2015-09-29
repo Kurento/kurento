@@ -27,12 +27,12 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserRunner;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserRunner;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
@@ -78,13 +78,13 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		test.addBrowser(
 				BrowserConfig.PRESENTER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL).video(video).build());
 
 		test.addBrowser(
 				BrowserConfig.VIEWER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.numInstances(numViewers)
 						.browserPerInstance(browserPerViewer)
 						.browserType(BrowserType.CHROME)
@@ -120,13 +120,13 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
 
-		Map<String, BrowserClient> browsers = new TreeMap<>(getTestScenario()
+		Map<String, Browser> browsers = new TreeMap<>(getTestScenario()
 				.getBrowserMap());
 		browsers.remove(BrowserConfig.PRESENTER);
 		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 
 		ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
-			public void run(BrowserClient browser) throws Exception {
+			public void run(Browser browser) throws Exception {
 				String name = browser.getId();
 
 				try {
@@ -141,13 +141,13 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 					// WebRTC
 					log.debug(">>> start {}", name);
-					getBrowser(name).subscribeEvents("playing");
-					getBrowser(name).initWebRtc(viewerWebRtcEP,
+					getPage(name).subscribeEvents("playing");
+					getPage(name).initWebRtc(viewerWebRtcEP,
 							WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
 					// Latency assessment
 					cs.checkRemoteLatency(playTime, TimeUnit.MILLISECONDS,
-							getPresenter(), getBrowser(name));
+							getPresenter(), getPage(name));
 
 				} catch (Throwable e) {
 					log.error("[[[ {} ]]]", e.getCause().getMessage());

@@ -25,8 +25,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.base.KurentoClientTest;
-import org.kurento.test.client.TestClient;
+import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.browser.WebPage;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +124,7 @@ public class LatencyController
 	}
 
 	public void checkLocalLatency(final long testTime,
-			final TimeUnit testTimeUnit, TestClient client)
+			final TimeUnit testTimeUnit, WebPage client)
 					throws InterruptedException, IOException {
 		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
 		long endTimeMillis = System.currentTimeMillis() + playTime;
@@ -167,7 +167,7 @@ public class LatencyController
 
 				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
 						.format(latencyTime);
-				client.takeScreeshot(KurentoClientTest.getDefaultOutputFile(
+				client.takeScreeshot(KurentoClientWebPageTest.getDefaultOutputFile(
 						"-" + parsedtime + "-error-screenshot.png"));
 
 				LatencyException latencyException = new LatencyException(
@@ -193,7 +193,7 @@ public class LatencyController
 	}
 
 	public void checkLocalLatencyInBackground(final long testTime,
-			final TimeUnit testTimeUnit, final TestClient client)
+			final TimeUnit testTimeUnit, final WebPage client)
 					throws InterruptedException, IOException {
 		new Thread() {
 			public void run() {
@@ -211,8 +211,8 @@ public class LatencyController
 	}
 
 	public void checkRemoteLatencyInBackground(final long testTime,
-			final TimeUnit testTimeUnit, final TestClient localClient,
-			final TestClient remoteClient) {
+			final TimeUnit testTimeUnit, final WebPage localClient,
+			final WebPage remoteClient) {
 		new Thread() {
 			public void run() {
 				checkRemoteLatency(testTime, testTimeUnit, localClient,
@@ -222,8 +222,8 @@ public class LatencyController
 	}
 
 	public void checkRemoteLatency(final long testTime,
-			final TimeUnit testTimeUnit, TestClient localClient,
-			TestClient remoteClient) {
+			final TimeUnit testTimeUnit, WebPage localClient,
+			WebPage remoteClient) {
 
 		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL),
 				localClient, getName() + " " + VideoTagType.LOCAL);
@@ -370,7 +370,7 @@ public class LatencyController
 	}
 
 	public void addChangeColorEventListener(VideoTag type,
-			TestClient testClient, String name) {
+			WebPage testClient, String name) {
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
 				timeoutTimeUnit);
 

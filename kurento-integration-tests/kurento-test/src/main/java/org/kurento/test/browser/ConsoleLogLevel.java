@@ -12,16 +12,19 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.browser;
 
 /**
- * Event listener to communicate client and server in tests.
+ * JavaScript console log level.
  * 
- * @author Micael Gallego (micael.gallego@gmail.com)
- * @since 4.2.3
+ * @author Boni Garcia (bgarcia@gsyc.es)
+ * @since 5.0.4
  */
-public interface BrowserEventListener {
+public enum ConsoleLogLevel {
+	INFO, WARN, ERROR;
 
-	void onEvent(String event);
-
+	@Override
+	public String toString() {
+		return this.name().toLowerCase();
+	}
 }

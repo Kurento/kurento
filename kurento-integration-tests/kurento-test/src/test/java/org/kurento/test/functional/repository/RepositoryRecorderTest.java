@@ -20,7 +20,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
@@ -32,8 +31,8 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.test.base.RepositoryFunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -68,22 +67,18 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		return TestScenario.localChromeAndFirefox();
 	}
 
-	// FIXME correct and activate
-	@Ignore
 	@Test
 	public void testRepositoryRecorder() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/ball.webm").build();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/ball.webm")
+				.build();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
 		RepositoryItem repositoryItem = repository.createRepositoryItem();
-		RepositoryHttpRecorder recorder = repositoryItem
-				.createRepositoryHttpRecorder();
+		RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder();
 
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				recorder.getURL()).build();
+		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp, recorder.getURL()).build();
 		playerEP.connect(webRtcEP1);
 		playerEP.connect(recorderEP);
 
@@ -99,8 +94,7 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		launchBrowser(webRtcEP1, playerEP, recorderEP);
 
 		// Wait for EOS
-		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
+		Assert.assertTrue("Not received EOS event in player", eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -108,13 +102,11 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		Thread.sleep(500);
 	}
 
-	private void launchBrowser(WebRtcEndpoint webRtcEP,
-			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
+	private void launchBrowser(WebRtcEndpoint webRtcEP, PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
 			throws InterruptedException {
 
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 		playerEP.play();
 		final CountDownLatch eosLatch = new CountDownLatch(1);
 		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
@@ -129,15 +121,11 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		}
 
 		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be black",
-				getBrowser().similarColor(Color.BLACK));
-		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
-		double currentTime = getBrowser().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+		Assert.assertTrue("Not received media (timeout waiting playing event)", getPage().waitForEvent("playing"));
+		Assert.assertTrue("The color of the video should be black", getPage().similarColor(Color.BLACK));
+		Assert.assertTrue("Not received EOS event in player", eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getPage().getCurrentTime();
+		Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
+				getPage().compare(PLAYTIME, currentTime));
 	}
 }

@@ -21,13 +21,11 @@ import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
-import org.kurento.test.client.KurentoTestClient;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
 import com.google.common.io.Files;
 
@@ -38,50 +36,17 @@ import com.google.common.io.Files;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
-@Configuration
-@ComponentScan(basePackages = { "org.kurento.repository" })
-@EnableAutoConfiguration
+@ComponentScan(basePackageClasses = { org.kurento.repository.RepositoryItem.class })
 @Category(SystemFunctionalTests.class)
-public class RepositoryFunctionalTest extends KurentoClientTest {
+public class RepositoryFunctionalTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	public Repository repository;
 
+	public RepositoryFunctionalTest() {
+	}
+
 	public RepositoryFunctionalTest(TestScenario testScenario) {
 		super(testScenario);
-	}
-
-	public RepositoryFunctionalTest() {
-		super();
-	}
-
-	@Override
-	public KurentoTestClient getBrowser() {
-		return (KurentoTestClient) super.getBrowser();
-	}
-
-	@Override
-	public KurentoTestClient getBrowser(String browserKey) {
-		return (KurentoTestClient) super.getBrowser(browserKey);
-	}
-
-	@Override
-	public KurentoTestClient getPresenter() {
-		return (KurentoTestClient) super.getPresenter();
-	}
-
-	@Override
-	public KurentoTestClient getViewer() {
-		return (KurentoTestClient) super.getViewer();
-	}
-
-	@Override
-	public KurentoTestClient getPresenter(int index) {
-		return (KurentoTestClient) super.getPresenter(index);
-	}
-
-	@Override
-	public KurentoTestClient getViewer(int index) {
-		return (KurentoTestClient) super.getViewer(index);
 	}
 
 	@Bean
@@ -90,10 +55,9 @@ public class RepositoryFunctionalTest extends KurentoClientTest {
 	}
 
 	@Bean
-	public ServletRegistrationBean repositoryServletRegistrationBean(
-			RepositoryHttpServlet repositoryHttpServlet) {
-		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(
-				repositoryHttpServlet, "/repository_servlet/*");
+	public ServletRegistrationBean repositoryServletRegistrationBean(RepositoryHttpServlet repositoryHttpServlet) {
+		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(repositoryHttpServlet,
+				"/repository_servlet/*");
 		servletRegistrationBean.setLoadOnStartup(1);
 		return servletRegistrationBean;
 	}

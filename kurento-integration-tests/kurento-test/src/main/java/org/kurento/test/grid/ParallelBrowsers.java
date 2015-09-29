@@ -29,8 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserRunner;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserRunner;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,7 @@ public class ParallelBrowsers {
 	private static int holdTime = getProperty(HOLD_TIME_PROPERTY,
 			HOLD_TIME_DEFAULT);
 
-	public static void ramp(final Map<String, BrowserClient> browserClientMap,
+	public static void ramp(final Map<String, Browser> browserClientMap,
 			final SystemMonitorManager monitor,
 			final BrowserRunner browserRunner) {
 		ExecutorService internalExec = Executors
@@ -71,7 +71,7 @@ public class ParallelBrowsers {
 						if (monitor != null) {
 							monitor.incrementNumClients();
 						}
-						BrowserClient browser = browserClientMap.get(key);
+						Browser browser = browserClientMap.get(key);
 						browserRunner.run(browser);
 					} finally {
 						if (monitor != null) {

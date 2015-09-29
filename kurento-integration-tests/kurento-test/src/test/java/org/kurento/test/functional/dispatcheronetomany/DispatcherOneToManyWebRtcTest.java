@@ -12,11 +12,11 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
@@ -55,20 +55,20 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
 
 		test.addBrowser(
 				BROWSER1,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/green.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER2,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
 						.build());
 		test.addBrowser(
 				BROWSER3,
-				new BrowserClient.Builder().browserType(BrowserType.CHROME)
-						.client(Client.WEBRTC).scope(BrowserScope.LOCAL)
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
 						.video(getPathTestFiles() + "/video/10sec/red.y4m")
 						.build());
 
@@ -98,63 +98,63 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
 
 		dispatcherOneToMany.setSource(hubPort1);
 
-		getBrowser(BROWSER1).subscribeEvents("playing");
-		getBrowser(BROWSER1).initWebRtc(webRtcEP1,
+		getPage(BROWSER1).subscribeEvents("playing");
+		getPage(BROWSER1).initWebRtc(webRtcEP1,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
-		getBrowser(BROWSER2).subscribeEvents("playing");
-		getBrowser(BROWSER2).initWebRtc(webRtcEP2,
+		getPage(BROWSER2).subscribeEvents("playing");
+		getPage(BROWSER2).initWebRtc(webRtcEP2,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
-		getBrowser(BROWSER3).subscribeEvents("playing");
-		getBrowser(BROWSER3).initWebRtc(webRtcEP3,
+		getPage(BROWSER3).subscribeEvents("playing");
+		getPage(BROWSER3).initWebRtc(webRtcEP3,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 		Thread.sleep(PLAYTIME * 1000);
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser(BROWSER1).waitForEvent("playing"));
+				getPage(BROWSER1).waitForEvent("playing"));
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser(BROWSER2).waitForEvent("playing"));
+				getPage(BROWSER2).waitForEvent("playing"));
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser(BROWSER3).waitForEvent("playing"));
+				getPage(BROWSER3).waitForEvent("playing"));
 
 		Assert.assertTrue("The color of the video should be green (GREEN)",
-				getBrowser(BROWSER1).similarColor(Color.GREEN));
+				getPage(BROWSER1).similarColor(Color.GREEN));
 		Assert.assertTrue("The color of the video should be green (GREEN)",
-				getBrowser(BROWSER2).similarColor(Color.GREEN));
+				getPage(BROWSER2).similarColor(Color.GREEN));
 		Assert.assertTrue("The color of the video should be green (GREEN)",
-				getBrowser(BROWSER3).similarColor(Color.GREEN));
+				getPage(BROWSER3).similarColor(Color.GREEN));
 
 		Thread.sleep(3000);
 		dispatcherOneToMany.setSource(hubPort2);
 
 		Assert.assertTrue("The color of the video should be blue (BLUE)",
-				getBrowser(BROWSER1).similarColor(Color.BLUE));
+				getPage(BROWSER1).similarColor(Color.BLUE));
 		Assert.assertTrue("The color of the video should be blue (BLUE)",
-				getBrowser(BROWSER2).similarColor(Color.BLUE));
+				getPage(BROWSER2).similarColor(Color.BLUE));
 		Assert.assertTrue("The color of the video should be blue (BLUE)",
-				getBrowser(BROWSER3).similarColor(Color.BLUE));
+				getPage(BROWSER3).similarColor(Color.BLUE));
 
 		Thread.sleep(3000);
 		dispatcherOneToMany.setSource(hubPort3);
 
 		Assert.assertTrue("The color of the video should be red (RED)",
-				getBrowser(BROWSER1).similarColor(Color.RED));
+				getPage(BROWSER1).similarColor(Color.RED));
 		Assert.assertTrue("The color of the video should be red (RED)",
-				getBrowser(BROWSER2).similarColor(Color.RED));
+				getPage(BROWSER2).similarColor(Color.RED));
 		Assert.assertTrue("The color of the video should be red (RED)",
-				getBrowser(BROWSER3).similarColor(Color.RED));
+				getPage(BROWSER3).similarColor(Color.RED));
 
 		Thread.sleep(3000);
 		dispatcherOneToMany.removeSource();
 		Assert.assertTrue("The color of the video should be red (RED)",
-				getBrowser(BROWSER1).similarColor(Color.RED));
+				getPage(BROWSER1).similarColor(Color.RED));
 		Assert.assertTrue("The color of the video should be red (RED)",
-				getBrowser(BROWSER2).similarColor(Color.RED));
+				getPage(BROWSER2).similarColor(Color.RED));
 		Assert.assertTrue("The color of the video should be red (RED)",
-				getBrowser(BROWSER3).similarColor(Color.RED));
+				getPage(BROWSER3).similarColor(Color.RED));
 
 		Thread.sleep(2000);
 	}

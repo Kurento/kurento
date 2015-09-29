@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.browser;
 
 /**
  * Kind of client (Player, WebRTC, and so on).
@@ -20,7 +20,7 @@ package org.kurento.test.client;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public enum Client {
+public enum WebPageType {
 	PLAYER, WEBRTC, ROOM, SCREEN, ROOT;
 
 	private static final String ROOT_VALUE = "/";
@@ -45,7 +45,7 @@ public enum Client {
 		}
 	}
 
-	public static Client value2Client(String value) {
+	public static WebPageType value2WebPageType(String value) {
 		switch (value) {
 		case ROOT_VALUE:
 			return ROOT;
@@ -60,4 +60,5 @@ public enum Client {
 			return WEBRTC;
 		}
 	}
+
 }

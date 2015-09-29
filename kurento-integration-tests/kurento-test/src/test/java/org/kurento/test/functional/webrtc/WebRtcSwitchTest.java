@@ -24,12 +24,12 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.ConsoleLogLevel;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.ConsoleLogLevel;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
@@ -66,8 +66,8 @@ public class WebRtcSwitchTest extends FunctionalTest {
 	public static Collection<Object[]> data() {
 		// Test: NUM_BROWSERS local Chrome's
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
-				.client(Client.WEBRTC).browserType(BrowserType.CHROME)
+		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder()
+				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
 				.numInstances(NUM_BROWSERS).scope(BrowserScope.LOCAL).build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -83,8 +83,8 @@ public class WebRtcSwitchTest extends FunctionalTest {
 			webRtcEndpoints[i].connect(webRtcEndpoints[i]);
 
 			// Start WebRTC in loopback in each browser
-			getBrowser(i).subscribeEvents("playing");
-			getBrowser(i).initWebRtc(webRtcEndpoints[i],
+			getPage(i).subscribeEvents("playing");
+			getPage(i).initWebRtc(webRtcEndpoints[i],
 					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 			// Delay time (to avoid the same timing in videos)
@@ -93,7 +93,7 @@ public class WebRtcSwitchTest extends FunctionalTest {
 			// Wait until event playing in the remote streams
 			Assert.assertTrue(
 					"Not received media #1 (timeout waiting playing event)",
-					getBrowser(i).waitForEvent("playing"));
+					getPage(i).waitForEvent("playing"));
 
 			// Assert color
 			assertColor(i);
@@ -106,8 +106,8 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		for (int i = 0; i < NUM_BROWSERS; i++) {
 			int next = (i + 1) >= NUM_BROWSERS ? 0 : i + 1;
 			webRtcEndpoints[i].connect(webRtcEndpoints[next]);
-			getBrowser(i).consoleLog(
-					ConsoleLogLevel.info,
+			getPage(i).consoleLog(
+					ConsoleLogLevel.INFO,
 					"Switch #1: webRtcEndpoint" + i + " -> webRtcEndpoint"
 							+ next);
 			// Assert color
@@ -121,8 +121,8 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		for (int i = 0; i < NUM_BROWSERS; i++) {
 			int previous = (i - 1) < 0 ? NUM_BROWSERS - 1 : i - 1;
 			webRtcEndpoints[i].connect(webRtcEndpoints[previous]);
-			getBrowser(i).consoleLog(
-					ConsoleLogLevel.info,
+			getPage(i).consoleLog(
+					ConsoleLogLevel.INFO,
 					"Switch #2: webRtcEndpoint" + i + " -> webRtcEndpoint"
 							+ previous);
 			// Assert color
@@ -139,7 +139,7 @@ public class WebRtcSwitchTest extends FunctionalTest {
 	public void assertColor(int index) {
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				getBrowser(index).similarColor(CHROME_VIDEOTEST_COLOR));
+				getPage(index).similarColor(CHROME_VIDEOTEST_COLOR));
 
 	}
 

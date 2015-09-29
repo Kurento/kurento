@@ -25,12 +25,12 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserRunner;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserRunner;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
@@ -75,7 +75,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
 		test.addBrowser(
 				BrowserConfig.VIEWER,
-				new BrowserClient.Builder().client(Client.WEBRTC)
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.numInstances(numViewers)
 						.browserPerInstance(browserPerViewer)
 						.browserType(BrowserType.CHROME)
@@ -91,12 +91,12 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 	@Test
 	public void testWebRtcPerformanceLoopback() throws Exception {
-		Map<String, BrowserClient> browsers = getTestScenario().getBrowserMap();
+		Map<String, Browser> browsers = getTestScenario().getBrowserMap();
 
 		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 
 		ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
-			public void run(BrowserClient browser) throws Exception {
+			public void run(Browser browser) throws Exception {
 
 				long endTimeMillis = System.currentTimeMillis() + playTime;
 				String name = browser.getId();
@@ -110,12 +110,12 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 					webRtcEndpoint.connect(webRtcEndpoint);
 
 					log.debug(">>> start {}", name);
-					getBrowser(name).subscribeEvents("playing");
-					getBrowser(name).initWebRtc(webRtcEndpoint,
+					getPage(name).subscribeEvents("playing");
+					getPage(name).initWebRtc(webRtcEndpoint,
 							WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
-					getBrowser(name).activateRemoteRtcStats(monitor,
+					getPage(name).activateRemoteRtcStats(monitor,
 							"webRtcPeer.peerConnection");
-					getBrowser(name).checkLatencyUntil(monitor, endTimeMillis);
+					getPage(name).checkLatencyUntil(monitor, endTimeMillis);
 
 				} catch (Throwable e) {
 					log.error("[[[ {} ]]]", e.getCause().getMessage());

@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemQualityTests;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -25,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 5.0.5
  */
 @Category(SystemQualityTests.class)
-public class QualityTest extends BrowserKurentoClientTest {
+public class QualityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	public QualityTest(TestScenario testScenario) {
 		super(testScenario);

@@ -26,8 +26,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SanityTests;
-import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.BrowserClient;
+import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
@@ -48,7 +49,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
  * @since 4.2.5
  */
 @Category(SanityTests.class)
-public class KurentoJsBase extends BrowserKurentoClientTest {
+public class KurentoJsBase extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	protected static final Logger log = LoggerFactory.getLogger(KurentoJsBase.class);
 
@@ -71,7 +72,7 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	@Before
 	public void setup() {
-		driver = BrowserClient.newWebDriver(new ChromeOptions());
+		driver = Browser.newWebDriver(new ChromeOptions());
 
 		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();

@@ -12,14 +12,16 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.browser;
 
 /**
- * JavaScript console log level.
+ * SDP offer processor.
  * 
- * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.4
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ * @since 4.2.3
  */
-public enum ConsoleLogLevel {
-	info, warn, error;
+public interface SdpOfferProcessor {
+
+	public String processSdpOffer(String sdpOffer);
+
 }

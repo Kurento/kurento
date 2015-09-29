@@ -30,8 +30,8 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -96,29 +96,29 @@ public class DispatcherPlayerTest extends FunctionalTest {
 		});
 
 		// Test execution
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 		playerEP.play();
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be red", getBrowser()
+				getPage().waitForEvent("playing"));
+		Assert.assertTrue("The color of the video should be red", getPage()
 				.similarColor(Color.RED));
 
 		Thread.sleep(5000);
 		playerEP2.play();
 		dispatcher.connect(hubPort3, hubPort2);
-		Assert.assertTrue("The color of the video should be blue", getBrowser()
+		Assert.assertTrue("The color of the video should be blue", getPage()
 				.similarColor(Color.BLUE));
 
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
-		double currentTime = getBrowser().getCurrentTime();
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

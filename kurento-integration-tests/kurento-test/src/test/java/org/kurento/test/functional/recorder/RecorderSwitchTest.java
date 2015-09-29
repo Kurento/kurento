@@ -30,8 +30,8 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.Shell;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
@@ -95,8 +95,8 @@ public class RecorderSwitchTest extends FunctionalTest {
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp, recordingPreProcess).build();
 
 		// Test execution
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
 		// red
 		playerRed.connect(webRtcEP);
@@ -104,7 +104,7 @@ public class RecorderSwitchTest extends FunctionalTest {
 		playerRed.play();
 		recorderEP.record();
 
-		Assert.assertTrue("Not received media (timeout waiting playing event)", getBrowser().waitForEvent("playing"));
+		Assert.assertTrue("Not received media (timeout waiting playing event)", getPage().waitForEvent("playing"));
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
 		// green
@@ -124,7 +124,7 @@ public class RecorderSwitchTest extends FunctionalTest {
 		mp.release();
 
 		// Reloading browser
-		getBrowser().reload();
+		getPage().reload();
 
 		// Post-processing
 		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c", "copy", recordingPostProcess);
@@ -136,8 +136,8 @@ public class RecorderSwitchTest extends FunctionalTest {
 		playerEP2.connect(webRtcEP2);
 
 		// Playing the recording
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 		final CountDownLatch eosLatch = new CountDownLatch(1);
 		playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
 			@Override
@@ -152,17 +152,17 @@ public class RecorderSwitchTest extends FunctionalTest {
 		final int playtime = PLAYTIME;
 
 		Assert.assertTrue("Not received media in the recording (timeout waiting playing event) " + messageAppend,
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 		for (Color color : EXPECTED_COLORS) {
 			Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
-					getBrowser().similarColor(color));
+					getPage().similarColor(color));
 		}
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
-		double currentTime = getBrowser().getCurrentTime();
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time in the recorded video (expected: " + playtime + " sec, real: "
-				+ currentTime + " sec) " + messageAppend, getBrowser().compare(playtime, currentTime));
+				+ currentTime + " sec) " + messageAppend, getPage().compare(playtime, currentTime));
 
 		AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX), EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 

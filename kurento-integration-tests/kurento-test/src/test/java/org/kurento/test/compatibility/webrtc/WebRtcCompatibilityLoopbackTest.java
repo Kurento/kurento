@@ -24,11 +24,11 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.CompatibilityTest;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.BrowserType;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.Browser;
+import org.kurento.test.browser.BrowserType;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
@@ -62,9 +62,9 @@ public class WebRtcCompatibilityLoopbackTest extends CompatibilityTest {
 	public static Collection<Object[]> data() {
 		// Test: Browsers in saucelabs
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(BrowserConfig.BROWSER, new BrowserClient.Builder()
+		test1.addBrowser(BrowserConfig.BROWSER, new Browser.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
-				.client(Client.WEBRTC).platform(Platform.WIN8_1).browserVersion("39").build());
+				.webPageType(WebPageType.WEBRTC).platform(Platform.WIN8_1).browserVersion("39").build());
 
 		return Arrays.asList(new Object[][] { { test1 } });
 	}
@@ -77,8 +77,8 @@ public class WebRtcCompatibilityLoopbackTest extends CompatibilityTest {
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		// Browser
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_RCV);
 
 		// Guard time to play the video
@@ -86,14 +86,14 @@ public class WebRtcCompatibilityLoopbackTest extends CompatibilityTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 		Assert.assertTrue(
 				"The color of the video should be green (RGB #008700)",
-				getBrowser().similarColor(CHROME_VIDEOTEST_COLOR));
-		double currentTime = getBrowser().getCurrentTime();
+				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
 		mp.release();

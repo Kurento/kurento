@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemPerformanceTests;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
 
@@ -28,7 +29,7 @@ import org.kurento.test.monitor.SystemMonitorManager;
  * @since 4.2.5
  */
 @Category(SystemPerformanceTests.class)
-public class PerformanceTest extends BrowserKurentoClientTest {
+public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	protected SystemMonitorManager monitor;
 

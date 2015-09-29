@@ -16,6 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemStabilityTests;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -25,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 5.0.5
  */
 @Category(SystemStabilityTests.class)
-public class StabilityTest extends BrowserKurentoClientTest {
+public class StabilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	private static final int STABILITY_START_WAIT_MS = 10000; // ms
 
@@ -33,8 +34,7 @@ public class StabilityTest extends BrowserKurentoClientTest {
 		super(testScenario);
 
 		try {
-			log.info("Waiting {} ms before stability test startup",
-					STABILITY_START_WAIT_MS);
+			log.info("Waiting {} ms before stability test startup", STABILITY_START_WAIT_MS);
 			Thread.sleep(STABILITY_START_WAIT_MS);
 		} catch (InterruptedException e) {
 			log.warn("{} during wait of stability test startup", e.getClass());

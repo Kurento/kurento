@@ -31,9 +31,9 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.client.ZBarFilter;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.client.ConsoleLogLevel;
-import org.kurento.test.client.WebRtcChannel;
-import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.browser.ConsoleLogLevel;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -86,8 +86,8 @@ public class PlayerZBarTest extends FunctionalTest {
 		});
 
 		// Test execution
-		getBrowser().subscribeEvents("playing");
-		getBrowser().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 		playerEP.play();
 
@@ -99,7 +99,7 @@ public class PlayerZBarTest extends FunctionalTest {
 
 				if (!codeFoundEvents.contains(codeFound)) {
 					codeFoundEvents.add(codeFound);
-					getBrowser().consoleLog(ConsoleLogLevel.info,
+					getPage().consoleLog(ConsoleLogLevel.INFO,
 							"Code found: " + codeFound);
 				}
 			}
@@ -107,13 +107,13 @@ public class PlayerZBarTest extends FunctionalTest {
 
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getBrowser().waitForEvent("playing"));
+				getPage().waitForEvent("playing"));
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
-		double currentTime = getBrowser().getCurrentTime();
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",
-				getBrowser().compare(PLAYTIME, currentTime));
+				getPage().compare(PLAYTIME, currentTime));
 		Assert.assertFalse("No code found by ZBar filter",
 				codeFoundEvents.isEmpty());
 
