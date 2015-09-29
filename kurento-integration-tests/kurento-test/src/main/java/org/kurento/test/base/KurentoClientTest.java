@@ -28,6 +28,7 @@ import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.test.client.TestClient;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoClientTestFactory;
 import org.kurento.test.services.KurentoServicesTestHelper;
@@ -41,7 +42,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public class KurentoClientTest extends KurentoTest {
+public class KurentoClientTest<E extends TestClient> extends KurentoTest<E> {
 
 	protected static KurentoClient kurentoClient;
 	protected static KurentoClient fakeKurentoClient;

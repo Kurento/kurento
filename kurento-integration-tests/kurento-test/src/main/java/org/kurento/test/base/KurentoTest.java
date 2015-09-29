@@ -19,14 +19,16 @@ import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
 
 import java.awt.Color;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @RunWith(Parameterized.class)
-public class KurentoTest {
+public abstract class KurentoTest<E extends TestClient> {
 
 	public static Logger log = LoggerFactory.getLogger(KurentoTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
@@ -78,9 +80,8 @@ public class KurentoTest {
 		return Arrays.asList(new Object[][] { {} });
 	}
 
-	private Map<String, TestClient> clients = new HashMap<>();
+	private Map<String, E> clients = new ConcurrentHashMap<>();
 	private TestScenario testScenario;
-	private String browserKey;
 
 	public KurentoTest() {
 	}
@@ -148,20 +149,16 @@ public class KurentoTest {
 		return testScenario;
 	}
 
-	public int getTimeout() {
-		return clients.get(browserKey).getBrowserClient().getTimeout();
-	}
-
 	public void addBrowserClient(String browserKey, BrowserClient browserClient) {
 		testScenario.getBrowserMap().put(browserKey, browserClient);
 		initBrowserClient(browserKey, browserClient);
 	}
 
-	public TestClient getBrowser(String browserKey) {
+	public E getBrowser(String browserKey) {
 		return assertAndGetBrowser(browserKey);
 	}
 
-	public TestClient getBrowser() {
+	public E getBrowser() {
 		try {
 			return assertAndGetBrowser(BrowserConfig.BROWSER);
 
@@ -178,51 +175,74 @@ public class KurentoTest {
 		}
 	}
 
-	public TestClient getBrowser(int index) {
+	public E getBrowser(int index) {
 		return assertAndGetBrowser(BrowserConfig.BROWSER + index);
 	}
 
-	public TestClient getPresenter() {
+	public E getPresenter() {
 		return assertAndGetBrowser(BrowserConfig.PRESENTER);
 	}
 
-	public TestClient getPresenter(int index) {
+	public E getPresenter(int index) {
 		return assertAndGetBrowser(BrowserConfig.PRESENTER + index);
 	}
 
-	public TestClient getViewer() {
+	public E getViewer() {
 		return assertAndGetBrowser(BrowserConfig.VIEWER);
 	}
 
-	public TestClient getViewer(int index) {
+	public E getViewer(int index) {
 		return assertAndGetBrowser(BrowserConfig.VIEWER + index);
 	}
 
-	private TestClient assertAndGetBrowser(String browserKey) {
-
+	private E assertAndGetBrowser(String browserKey) {
 		if (!testScenario.getBrowserMap().keySet().contains(browserKey)) {
 			throw new RuntimeException(browserKey + " is not registered as browser in the test scenario");
 		}
-
-		this.browserKey = browserKey;
 		return getClient(browserKey);
 	}
 
-	public void setTimeout(int timeoutSeconds) {
-		clients.get(browserKey).getBrowserClient().changeTimeout(timeoutSeconds);
-	}
-
-	public TestClient getClient(String browserKey) {
-		TestClient client;
+	public synchronized E getClient(String browserKey) {
+		E client;
 		if (clients.containsKey(browserKey)) {
 			client = clients.get(browserKey);
 		} else {
-			client = new TestClient();
+			client = (E) createTestClient();
 			client.setBrowserClient(testScenario.getBrowserMap().get(browserKey));
 			clients.put(browserKey, client);
 		}
 
 		return client;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected E createTestClient() {
+
+		Class<?> testClientClass = getParamType(this.getClass());
+
+		try {
+			return (E) testClientClass.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeException("Exception creating an instance of class " + testClientClass.getName(), e);
+		}
+	}
+
+	public static Class<?> getParamType(Class<?> testClass) {
+
+		Type genericSuperclass = testClass.getGenericSuperclass();
+
+		if (genericSuperclass != null) {
+
+			if (genericSuperclass instanceof Class) {
+				return getParamType((Class<?>) genericSuperclass);
+			}
+
+			ParameterizedType paramClass = (ParameterizedType) genericSuperclass;
+
+			return (Class<?>) paramClass.getActualTypeArguments()[0];
+		}
+
+		throw new RuntimeException("Unable to obtain the type paramter of KurentoTest");
 	}
 
 	public void waitForHostIsReachable(URL url, int timeout) {
@@ -291,7 +311,7 @@ public class KurentoTest {
 		log.debug("URL {} already reachable", url);
 	}
 
-	public Map<String, TestClient> getClients() {
+	public Map<String, E> getClients() {
 		return clients;
 	}
 

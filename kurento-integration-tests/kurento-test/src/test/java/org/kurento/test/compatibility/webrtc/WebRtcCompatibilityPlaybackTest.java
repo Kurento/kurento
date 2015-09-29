@@ -121,7 +121,7 @@ public class WebRtcCompatibilityPlaybackTest extends CompatibilityTest {
 					getBrowser().similarColor(color));
 		}
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getBrowser().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",

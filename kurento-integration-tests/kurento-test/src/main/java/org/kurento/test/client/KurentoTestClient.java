@@ -101,8 +101,6 @@ public class KurentoTestClient extends TestClient {
 		return similarColorAt(REMOTE_VIDEO, expectedColor, x, y);
 	}
 
-	// ----------------------------------
-
 	/*
 	 * close
 	 */
@@ -334,9 +332,8 @@ public class KurentoTestClient extends TestClient {
 		String sdpOffer = (String) browserClient.executeScriptAndWaitOutput("return sdpOffer;");
 		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
 
-		// Uncomment this line to debug SDP offer and answer
-		// log.debug("**** SDP OFFER: {}", sdpOffer);
-		// log.debug("**** SDP ANSWER: {}", sdpAnswer);
+		log.trace("**** SDP OFFER: {}", sdpOffer);
+		log.trace("**** SDP ANSWER: {}", sdpAnswer);
 
 		// Encoding in Base64 to avoid parsing errors in JavaScript
 		sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));

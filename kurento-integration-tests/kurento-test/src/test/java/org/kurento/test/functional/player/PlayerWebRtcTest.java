@@ -93,7 +93,7 @@ public class PlayerWebRtcTest extends FunctionalTest {
 		Assert.assertTrue("The color of the video should be blue", getBrowser()
 				.similarColor(Color.BLUE));
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getBrowser().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",

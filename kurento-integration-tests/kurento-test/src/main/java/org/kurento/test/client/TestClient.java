@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Generic client for tests using Kurento test infrastructure.
+ * Generic web page for tests using Kurento test infrastructure.
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
@@ -61,8 +61,7 @@ public class TestClient {
 	}
 
 	public void takeScreeshot(String file) throws IOException {
-		File scrFile = ((TakesScreenshot) getBrowserClient().getDriver())
-				.getScreenshotAs(OutputType.FILE);
+		File scrFile = ((TakesScreenshot) getBrowserClient().getDriver()).getScreenshotAs(OutputType.FILE);
 		FileUtils.copyFile(scrFile, new File(file));
 	}
 
@@ -77,8 +76,7 @@ public class TestClient {
 	 * setColorCoordinates
 	 */
 	public void setColorCoordinates(int x, int y) {
-		browserClient.executeScript("kurentoTest.setColorCoordinates(" + x
-				+ "," + y + ");");
+		browserClient.executeScript("kurentoTest.setColorCoordinates(" + x + "," + y + ");");
 	}
 
 	/*
@@ -98,8 +96,7 @@ public class TestClient {
 	/*
 	 * similarColorAt
 	 */
-	public boolean similarColorAt(String videoTag, Color expectedColor, int x,
-			int y) {
+	public boolean similarColorAt(String videoTag, Color expectedColor, int x, int y) {
 		setColorCoordinates(x, y);
 		return similarColor(videoTag, expectedColor);
 
@@ -110,8 +107,7 @@ public class TestClient {
 	 */
 	public boolean similarColor(String videoTag, Color expectedColor) {
 		boolean out;
-		final long endTimeMillis = System.currentTimeMillis()
-				+ (browserClient.getTimeout() * 1000);
+		final long endTimeMillis = System.currentTimeMillis() + (browserClient.getTimeout() * 1000);
 
 		while (true) {
 			out = compareColor(videoTag, expectedColor);
@@ -123,8 +119,7 @@ public class TestClient {
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
-					log.trace("InterruptedException in guard condition ({})",
-							e.getMessage());
+					log.trace("InterruptedException in guard condition ({})", e.getMessage());
 				}
 			}
 		}
@@ -137,25 +132,20 @@ public class TestClient {
 	public boolean compareColor(String videoTag, Color expectedColor) {
 		@SuppressWarnings("unchecked")
 		List<Long> realColor = (List<Long>) browserClient
-				.executeScriptAndWaitOutput("return kurentoTest.colorInfo['"
-						+ videoTag + "'].currentColor;");
+				.executeScriptAndWaitOutput("return kurentoTest.colorInfo['" + videoTag + "'].currentColor;");
 
 		long red = realColor.get(0);
 		long green = realColor.get(1);
 		long blue = realColor.get(2);
 
-		double distance = Math.sqrt((red - expectedColor.getRed())
-				* (red - expectedColor.getRed())
-				+ (green - expectedColor.getGreen())
-				* (green - expectedColor.getGreen())
-				+ (blue - expectedColor.getBlue())
-				* (blue - expectedColor.getBlue()));
+		double distance = Math.sqrt((red - expectedColor.getRed()) * (red - expectedColor.getRed())
+				+ (green - expectedColor.getGreen()) * (green - expectedColor.getGreen())
+				+ (blue - expectedColor.getBlue()) * (blue - expectedColor.getBlue()));
 
 		boolean out = distance <= browserClient.getColorDistance();
 		if (!out) {
-			log.error(
-					"Difference in color comparision. Expected: {}, Real: {} (distance={})",
-					expectedColor, realColor, distance);
+			log.error("Difference in color comparision. Expected: {}, Real: {} (distance={})", expectedColor, realColor,
+					distance);
 		}
 
 		return out;
@@ -164,33 +154,27 @@ public class TestClient {
 	/*
 	 * activateRemoteRtcStats
 	 */
-	public void activateRemoteRtcStats(SystemMonitorManager monitor,
-			String peerConnection) {
+	public void activateRemoteRtcStats(SystemMonitorManager monitor, String peerConnection) {
 		activateRtcStats("activateRemoteRtcStats", monitor, peerConnection);
 	}
 
 	/*
 	 * activateLocalRtcStats
 	 */
-	public void activateLocalRtcStats(SystemMonitorManager monitor,
-			String peerConnection) {
+	public void activateLocalRtcStats(SystemMonitorManager monitor, String peerConnection) {
 		activateRtcStats("activateLocalRtcStats", monitor, peerConnection);
 	}
 
-	private void activateRtcStats(String jsFunction,
-			SystemMonitorManager monitor, String peerConnection) {
+	private void activateRtcStats(String jsFunction, SystemMonitorManager monitor, String peerConnection) {
 		try {
-			browserClient.executeScript("kurentoTest." + jsFunction + "('"
-					+ peerConnection + "');");
+			browserClient.executeScript("kurentoTest." + jsFunction + "('" + peerConnection + "');");
 			monitor.addTestClient(this);
 		} catch (WebDriverException we) {
 			we.printStackTrace();
 
 			// If client is not ready to gather rtc statistics, we just log it
 			// as warning (it is not an error itself)
-			log.warn(
-					"Client does not support RTC statistics (function kurentoTest.{}() not defined)",
-					jsFunction);
+			log.warn("Client does not support RTC statistics (function kurentoTest.{}() not defined)", jsFunction);
 		}
 	}
 
@@ -203,8 +187,7 @@ public class TestClient {
 		final long[] out = new long[1];
 		Thread t = new Thread() {
 			public void run() {
-				Object latency = browserClient
-						.executeScript("return kurentoTest.getLatency();");
+				Object latency = browserClient.executeScript("return kurentoTest.getLatency();");
 				if (latency != null) {
 					out[0] = (Long) latency;
 				} else {
@@ -217,20 +200,16 @@ public class TestClient {
 		if (!latch.await(browserClient.getTimeout(), TimeUnit.SECONDS)) {
 			t.interrupt();
 			t.stop();
-			throw new LatencyException("Timeout getting latency ("
-					+ browserClient.getTimeout() + "  seconds)");
+			throw new LatencyException("Timeout getting latency (" + browserClient.getTimeout() + "  seconds)");
 		}
 		return out[0];
 	}
 
-	public void waitColor(long timeoutSeconds, final VideoTag videoTag,
-			final Color color) {
-		WebDriverWait wait = new WebDriverWait(browserClient.getDriver(),
-				timeoutSeconds);
+	public void waitColor(long timeoutSeconds, final VideoTag videoTag, final Color color) {
+		WebDriverWait wait = new WebDriverWait(browserClient.getDriver(), timeoutSeconds);
 		wait.until(new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver d) {
-				return !((JavascriptExecutor) d).executeScript(
-						videoTag.getColor()).equals(color);
+				return !((JavascriptExecutor) d).executeScript(videoTag.getColor()).equals(color);
 			}
 		});
 	}
@@ -248,20 +227,18 @@ public class TestClient {
 	 */
 	@SuppressWarnings("unchecked")
 	public Color getCurrentColor(VideoTag videoTag) {
-		return getColor((List<Long>) browserClient.executeScript(videoTag
-				.getColor()));
+		return getColor((List<Long>) browserClient.executeScript(videoTag.getColor()));
 	}
 
 	private Color getColor(List<Long> color) {
-		return new Color(color.get(0).intValue(), color.get(1).intValue(),
-				color.get(2).intValue());
+		return new Color(color.get(0).intValue(), color.get(1).intValue(), color.get(2).intValue());
 	}
 
 	/*
 	 * checkLatencyUntil
 	 */
-	public void checkLatencyUntil(SystemMonitorManager monitor,
-			long endTimeMillis) throws InterruptedException, IOException {
+	public void checkLatencyUntil(SystemMonitorManager monitor, long endTimeMillis)
+			throws InterruptedException, IOException {
 		while (true) {
 			if (System.currentTimeMillis() > endTimeMillis) {
 				break;
@@ -285,16 +262,14 @@ public class TestClient {
 	public Map<String, Object> getRtcStats() {
 		Map<String, Object> out = new HashMap<>();
 		try {
-			out = (Map<String, Object>) browserClient
-					.executeScript("return kurentoTest.rtcStats;");
+			out = (Map<String, Object>) browserClient.executeScript("return kurentoTest.rtcStats;");
 
 			log.debug(">>>>>>>>>> kurentoTest.rtcStats {}", out);
 
 		} catch (WebDriverException we) {
 			// If client is not ready to gather rtc statistics, we just log it
 			// as warning (it is not an error itself)
-			log.warn("Client does not support RTC statistics"
-					+ " (variable rtcStats is not defined)");
+			log.warn("Client does not support RTC statistics" + " (variable rtcStats is not defined)");
 		}
 		return out;
 	}
@@ -303,8 +278,21 @@ public class TestClient {
 	 * activateLatencyControl
 	 */
 	public void activateLatencyControl(String localId, String remoteId) {
-		browserClient.executeScript("kurentoTest.activateLatencyControl('"
-				+ localId + "', '" + remoteId + "');");
+		browserClient.executeScript("kurentoTest.activateLatencyControl('" + localId + "', '" + remoteId + "');");
 
+	}
+
+	/*
+	 * getTimeout
+	 */
+	public int getTimeout() {
+		return browserClient.getTimeout();
+	}
+
+	/*
+	 * setTimeout
+	 */
+	public void setTimeout(int timeoutSeconds) {
+		browserClient.changeTimeout(timeoutSeconds);
 	}
 }

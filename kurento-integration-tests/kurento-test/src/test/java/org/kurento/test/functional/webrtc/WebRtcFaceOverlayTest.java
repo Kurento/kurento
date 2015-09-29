@@ -15,6 +15,7 @@
 package org.kurento.test.functional.webrtc;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,8 +27,6 @@ import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.TestScenario;
-
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * <strong>Description</strong>: WebRTC to FaceOverlayFilter test.<br/>

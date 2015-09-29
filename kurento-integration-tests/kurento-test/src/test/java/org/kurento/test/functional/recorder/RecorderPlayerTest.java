@@ -104,7 +104,7 @@ public class RecorderPlayerTest extends FunctionalTest {
 		launchBrowser(webRtcEP1, playerEP, recorderEP);
 
 		// Wait for EOS
-		Assert.assertTrue("No EOS event", eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+		Assert.assertTrue("No EOS event", eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -156,7 +156,7 @@ public class RecorderPlayerTest extends FunctionalTest {
 		Assert.assertTrue("The color of the video should be " + EXPECTED_COLOR + inRecording,
 				getBrowser().similarColor(EXPECTED_COLOR));
 		Assert.assertTrue("Not received EOS event in player" + inRecording,
-				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 		if (recorderEP != null) {
 			AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX), EXPECTED_VIDEO_CODEC,
 					EXPECTED_AUDIO_CODEC);

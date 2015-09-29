@@ -14,8 +14,10 @@
  */
 package org.kurento.test.functional.recorder;
 
+import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,8 +35,6 @@ import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
-
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -128,8 +128,21 @@ public class RecorderWebRtcTest extends FunctionalTest {
 		playerEP2.play();
 
 		// Assertions in recording
-		makeAssertions(getBrowser().getBrowserClient().getId(), "[played file with media pipeline]",
-				getBrowser().getBrowserClient(), PLAYTIME, 0, 0, eosLatch, CHROME_VIDEOTEST_COLOR);
+		final String messageAppend = "[played file with media pipeline]";
+		final Color color = CHROME_VIDEOTEST_COLOR;
+		final int playtime = PLAYTIME;
+
+		Assert.assertTrue("Not received media in the recording (timeout waiting playing event) " + messageAppend,
+				getBrowser().waitForEvent("playing"));
+		Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
+				getBrowser().similarColor(color));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
+
+		double currentTime = getBrowser().getCurrentTime();
+		Assert.assertTrue("Error in play time in the recorded video (expected: " + playtime + " sec, real: "
+				+ currentTime + " sec) " + messageAppend, getBrowser().compare(playtime, currentTime));
+
 		AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX), EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 
 		// Release Media Pipeline #2

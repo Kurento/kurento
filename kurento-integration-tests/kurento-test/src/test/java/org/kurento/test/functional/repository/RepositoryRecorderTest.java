@@ -100,7 +100,7 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 
 		// Wait for EOS
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -134,7 +134,7 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		Assert.assertTrue("The color of the video should be black",
 				getBrowser().similarColor(Color.BLACK));
 		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getBrowser().getCurrentTime();
 		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 				+ " sec, real: " + currentTime + " sec)",

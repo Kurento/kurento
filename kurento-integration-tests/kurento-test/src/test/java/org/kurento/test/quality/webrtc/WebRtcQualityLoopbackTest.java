@@ -17,6 +17,7 @@ package org.kurento.test.quality.webrtc;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -31,13 +32,11 @@ import org.kurento.test.client.BrowserType;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
+import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.Recorder;
-
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 /**
  * <strong>Description</strong>: WebRTC in loopback using custom video and audio

@@ -153,7 +153,7 @@ public class RecorderFaceOverlayTest extends FunctionalTest {
 		Assert.assertTrue("Color above the head must be red (FaceOverlayFilter)" + inRecording,
 				getBrowser().similarColorAt(EXPECTED_COLOR, EXPECTED_COLOR_X, EXPECTED_COLOR_Y));
 		Assert.assertTrue("Not received EOS event in player" + inRecording,
-				eosLatch.await(getTimeout(), TimeUnit.SECONDS));
+				eosLatch.await(getBrowser().getTimeout(), TimeUnit.SECONDS));
 
 		if (recorderEP != null) {
 			AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX), EXPECTED_VIDEO_CODEC,
