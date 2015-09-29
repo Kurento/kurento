@@ -174,7 +174,7 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
   n_columns = (gint) ceil (sqrt (self->priv->n_elems));
   n_rows = (gint) ceil ((float) self->priv->n_elems / (float) n_columns);
 
-  GST_DEBUG ("columns %d rows %d", n_columns, n_rows);
+  GST_DEBUG_OBJECT (self, "columns %d rows %d", n_columns, n_rows);
 
   width = self->priv->output_width / n_columns;
   height = self->priv->output_height / n_rows;
@@ -201,8 +201,9 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
         "alpha", 1.0, NULL);
     counter++;
 
-    GST_DEBUG ("counter %d id_port %d ", counter, port_data->id);
-    GST_DEBUG ("top %d left %d width %d height %d", top, left, width, height);
+    GST_DEBUG_OBJECT (self, "counter %d id_port %d ", counter, port_data->id);
+    GST_DEBUG_OBJECT (self, "top %d left %d width %d height %d", top, left,
+        width, height);
   }
 
   g_list_free (values);
