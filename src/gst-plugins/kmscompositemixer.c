@@ -465,7 +465,9 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info,
   gst_bin_add_many (GST_BIN (mixer), data->queue, data->videorate,
       data->videoscale, data->capsfilter, NULL);
 
-  g_object_set (data->videorate, "average-period", 200 * GST_MSECOND, NULL);
+  g_object_set (data->videoscale, "add-borders", TRUE, NULL);
+  g_object_set (data->videorate, "average-period", 500 * GST_MSECOND,
+      "drop-only", TRUE, NULL);
   g_object_set (data->queue, "flush-on-eos", TRUE, "max-size-buffers", 60,
       NULL);
 
