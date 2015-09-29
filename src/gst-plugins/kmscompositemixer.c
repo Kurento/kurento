@@ -23,7 +23,7 @@
 #include <commons/kmsrefstruct.h>
 #include <math.h>
 
-#define LATENCY 250             //ms
+#define LATENCY 600             //ms
 
 #define PLUGIN_NAME "compositemixer"
 
