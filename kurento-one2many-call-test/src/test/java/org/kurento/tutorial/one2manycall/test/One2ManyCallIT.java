@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kurento.test.client.BrowserClient;
+import org.kurento.test.browser.Browser;
 import org.kurento.tutorial.one2manycall.One2ManyCallApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -79,7 +79,7 @@ public class One2ManyCallIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		return BrowserClient.newWebDriver(options);
+		return Browser.newWebDriver(options);
 	}
 
 	@Test

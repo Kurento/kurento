@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kurento.test.client.BrowserClient;
+import org.kurento.test.browser.Browser;
 import org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
@@ -74,7 +74,7 @@ public class One2OneCallAdvIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		return BrowserClient.newWebDriver(options);
+		return Browser.newWebDriver(options);
 	}
 
 	@Test

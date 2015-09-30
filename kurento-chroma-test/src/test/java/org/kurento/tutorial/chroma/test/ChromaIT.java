@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kurento.test.client.BrowserClient;
+import org.kurento.test.browser.Browser;
 import org.kurento.tutorial.chroma.ChromaApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -65,7 +65,7 @@ public class ChromaIT {
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
 
-		driver = BrowserClient.newWebDriver(options);
+		driver = Browser.newWebDriver(options);
 	}
 
 	@Test
