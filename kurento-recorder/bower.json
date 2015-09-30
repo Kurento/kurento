@@ -1,5 +1,5 @@
 {
-  "name": "Recorder",
+  "name": "kurento-recorder",
   "version": "6.1.1-dev",
   "description": "Kurento demo with Recorder",
   "authors": [
@@ -21,6 +21,8 @@
   ],
   "dependencies": {
     "adapter.js": "*",
+    "bootstrap": "~3.3.0",
+    "ekko-lightbox": "~3.3.0",
     "demo-console": "master",
     "kurento-client": "master",
     "kurento-utils": "master"

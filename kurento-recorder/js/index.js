@@ -28,7 +28,7 @@ var args = getopts(location.search,
   default:
   {
     ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    file_uri: 'file:///tmp/recorder_demo.webm', //file to be stored in media server
+    file_uri: 'file:///tmp/recorder_demo.webm', // file to be stored in media server
     ice_servers: undefined
   }
 });
@@ -56,11 +56,9 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
 window.addEventListener('load', function(event) {
   console = new Console()
 
-  var startRecordButton = document.getElementById('startRecordButton');
-  var playButton = document.getElementById('startPlayButton');
-
+  var startRecordButton = document.getElementById('start');
   startRecordButton.addEventListener('click', startRecording);
-  playButton.addEventListener('click', startPlaying);
+
 });
 
 function startRecording() {
@@ -69,7 +67,9 @@ function startRecording() {
   var videoInput = document.getElementById("videoInput");
   var videoOutput = document.getElementById("videoOutput");
 
-  var stopRecordButton = document.getElementById("stopRecordButton")
+  showSpinner(videoInput, videoOutput);
+
+  var stopRecordButton = document.getElementById("stop")
 
   var options = {
     localVideo: videoInput,
@@ -144,6 +144,11 @@ function startRecording() {
                 webRtcPeer.dispose();
                 videoInput.src = "";
                 videoOutput.src = "";
+
+                hideSpinner(videoInput, videoOutput);
+
+                var playButton = document.getElementById('play');
+                playButton.addEventListener('click', startPlaying);
               })
             });
           });
@@ -158,7 +163,8 @@ function startPlaying()
 {
   console.log("Start playing");
 
-  var videoPlayer = document.getElementById('videoPlayer');
+  var videoPlayer = document.getElementById('videoOutput');
+  showSpinner(videoPlayer);
 
   var options = {
     remoteVideo: videoPlayer
@@ -211,6 +217,8 @@ function startPlaying()
             player.on('EndOfStream', function(event){
               pipeline.release();
               videoPlayer.src = "";
+
+              hideSpinner(videoPlayer);
             });
 
             player.connect(webRtc, function(error) {
@@ -222,11 +230,14 @@ function startPlaying()
               });
             });
 
-            document.getElementById("stopPlayButton").addEventListener("click",
+            document.getElementById("stop").addEventListener("click",
             function(event){
               pipeline.release();
               webRtcPeer.dispose();
               videoPlayer.src="";
+
+              hideSpinner(videoPlayer);
+
             })
           });
         });
@@ -238,3 +249,26 @@ function startPlaying()
 function onError(error) {
   if(error) console.log(error);
 }
+
+function showSpinner() {
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].poster = 'img/transparent-1px.png';
+    arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
+  }
+}
+
+function hideSpinner() {
+  for (var i = 0; i < arguments.length; i++) {
+    arguments[i].src = '';
+    arguments[i].poster = 'img/webrtc.png';
+    arguments[i].style.background = '';
+  }
+}
+
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
+$(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
+  event.preventDefault();
+  $(this).ekkoLightbox();
+});

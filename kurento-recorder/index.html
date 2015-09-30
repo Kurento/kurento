@@ -1,43 +1,136 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="US-ASCII">
-    <title>Recorder</title>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="img/kurento.png" type="image/png" />
 
-    <link rel="stylesheet" href="bower_components/demo-console/index.css">
+<link rel="stylesheet"
+	href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="bower_components/demo-console/index.css">
+<link rel="stylesheet"
+	href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
+<link rel="stylesheet" href="css/kurento.css">
 
-    <script src="bower_components/adapter.js/adapter.js"></script>
-    <script src="bower_components/demo-console/index.js"></script>
-    <script src="bower_components/kurento-client/js/kurento-client.js"></script>
-    <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="bower_components/demo-console/index.js"></script>
+<script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
+<script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
+<script src="bower_components/adapter.js/adapter.js"></script>
 
-    <script src="index.js"></script>
-  </head>
-  <body>
+<script src="bower_components/kurento-client/js/kurento-client.js"></script>
+<script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
 
-    <button id="startRecordButton">Click to start recording</button>
-    <button id="stopRecordButton">Click to stop recording</button>
-    <div style="clear: both;"></div>
-    <div style="float: left; border: 2px solid black; margin: 5px;">
-      <h1>Local stream</h1>
-      <video id="videoInput" autoplay></video>
-    </div>
-    <div style="float: left; border: 2px solid black; margin: 5px;">
-      <h1>Remote stream</h1>
-      <video id="videoOutput" autoplay></video>
-    </div>
+<script src="js/index.js"></script>
+<title>Kurento Tutorial: Recorder</title>
+</head>
+<body>
 
-    <div style="clear: both;"></div>
-    <br>
-    <hr>
-    <br>
-    <button id="startPlayButton">Click start playing</button>
-    <button id="stopPlayButton">Click to stop playing</button>
-    <div style="clear: both;"></div>
-    <div style="float: left; border: 2px solid black; margin: 5px;">
-      <h1>Remote stream video player</h1>
-      <video id="videoPlayer" autoplay></video>
-    </div>
+	<header>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse"></button>
+					<a class="navbar-brand" href=".">Kurento Tutorial</a>
+				</div>
+				<div class="collapse navbar-collapse"
+					id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a
+							href="https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-recorder"><span
+								class="glyphicon glyphicon-file"></span> Source Code</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
 
-  </body>
+	<div class="container">
+		<div class="page-header">
+			<h1>Tutorial: Recorder</h1>
+			<p>
+				This application shows a <i>WebRtcEndpoint</i> connected to itself
+				(loopback) with a <i>RecorderEndpoint</i>. Take a look to the <a
+					href="img/pipeline.png" data-toggle="lightbox"
+					data-title="Recorder Pipeline"
+					data-footer="WebRtcEnpoint in loopback with RecorderEndpoint">Media
+					Pipeline</a>. To run this demo follow these steps:
+			</p>
+			<ol>
+				<li>Open this page with a browser compliant with WebRTC
+					(Chrome, Firefox).</li>
+				<li>Click on <i>Start</i> button.
+				</li>
+				<li>Grant the access to the camera and microphone. After the
+					SDP negotiation the loopback should start.</li>
+				<li>Click on <i>Stop</i> to finish the communication.
+				</li>
+				<li>Click on <i>Play</i> to see the recording.
+				</li>
+			</ol>
+		</div>
+		<div class="row">
+			<div class="col-md-5">
+				<h3>Local stream</h3>
+				<video id="videoInput" autoplay width="480px" height="360px"
+					poster="img/webrtc.png"></video>
+			</div>
+			<div class="col-md-2">
+				<a id="start" href="#" class="btn btn-success"> <span
+					class="glyphicon glyphicon-play"></span> Start
+				</a> <br /> <br /> <a id="stop" href="#" class="btn btn-danger"> <span
+					class="glyphicon glyphicon-stop"></span> Stop
+				</a> <br /> <br /> <a id="play" href="#" class="btn btn-warning"> <span
+					class="glyphicon glyphicon-play"></span> Play
+				</a>
+			</div>
+			<div class="col-md-5">
+				<h3>Remote stream</h3>
+				<video id="videoOutput" autoplay width="480px" height="360px"
+					poster="img/webrtc.png"></video>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<label class="control-label" for="console">Console</label><br>
+				<br>
+				<div id="console" class="democonsole">
+					<ul></ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+		<div class="foot-fixed-bottom">
+			<div class="container text-center">
+				<hr />
+				<div class="row">&copy; 2014-2015 Kurento</div>
+				<div class="row">
+					<div class="col-md-4">
+						<a href="http://www.urjc.es"> <img src="img/urjc.gif"
+							alt="Universidad Rey Juan Carlos" height="50px" />
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="http://www.kurento.org"> <img src="img/kurento.png"
+							alt="Kurento" height="50px" />
+						</a>
+					</div>
+					<div class="col-md-4">
+						<a href="http://www.naevatec.com"> <img src="img/naevatec.png"
+							alt="Naevatec" height="50px" />
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+</body>
 </html>
