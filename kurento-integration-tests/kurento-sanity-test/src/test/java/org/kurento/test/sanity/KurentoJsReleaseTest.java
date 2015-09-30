@@ -16,11 +16,7 @@ package org.kurento.test.sanity;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.junit.Test;
-import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -31,19 +27,14 @@ import org.kurento.test.config.TestScenario;
  */
 public class KurentoJsReleaseTest extends KurentoJsBase {
 
-	public KurentoJsReleaseTest() {
-		super(new TestScenario());
+	public KurentoJsReleaseTest(TestScenario testScenario) {
+		super(testScenario);
 
 		kurentoUrl = getProperty("kurento.release.url", DEFAULT_KURENTO_JS_URL);
 		log.debug("kurentoUrl = {}", kurentoUrl);
 		if (!kurentoUrl.endsWith("/")) {
 			kurentoUrl += "/";
 		}
-	}
-
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { {} });
 	}
 
 	@Test
