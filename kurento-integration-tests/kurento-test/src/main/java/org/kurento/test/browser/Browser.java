@@ -118,6 +118,7 @@ public class Browser implements Closeable {
 	private String host;
 	private int serverPort;
 	private WebPageType webPageType;
+	private String webPagePath;
 	private String login;
 	private String passwd;
 	private String pem;
@@ -155,6 +156,8 @@ public class Browser implements Closeable {
 		this.avoidProxy = builder.avoidProxy;
 		this.parentTunnel = builder.parentTunnel;
 		this.extensions = builder.extensions;
+		this.url = builder.url;
+		this.webPagePath = builder.webPagePath;
 	}
 
 	public void init() {
@@ -291,13 +294,16 @@ public class Browser implements Closeable {
 			// Timeouts
 			changeTimeout(timeout);
 
-			if (protocol == Protocol.FILE) {
-				String webPage = webPageType.toString();
-				File webPageFile = new File(this.getClass().getClassLoader().getResource("static" + webPage).getFile());
-				url = protocol.toString() + webPageFile.getAbsolutePath();
-			} else {
-				String hostName = host != null ? host : node;
-				url = protocol.toString() + hostName + ":" + serverPort + webPageType.toString();
+			if (url == null) {
+				if (protocol == Protocol.FILE) {
+					String webPage = webPagePath != null ? webPagePath : webPageType.toString();
+					File webPageFile = new File(
+							this.getClass().getClassLoader().getResource("static" + webPage).getFile());
+					url = protocol.toString() + webPageFile.getAbsolutePath();
+				} else {
+					String hostName = host != null ? host : node;
+					url = protocol.toString() + hostName + ":" + serverPort + webPageType.toString();
+				}
 			}
 			log.info("*** Browsing URL with WebDriver: {}", url);
 			driver.get(url);
@@ -572,7 +578,8 @@ public class Browser implements Closeable {
 		private BrowserType browserType = BrowserType.CHROME;
 		private Protocol protocol = Protocol
 				.valueOf(getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT).toUpperCase());
-		private WebPageType webPageType = WebPageType.value2WebPageType(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
+		private WebPageType webPageType = WebPageType
+				.value2WebPageType(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
 		private boolean usePhysicalCam = false;
 		private boolean enableScreenCapture = false;
 		private int recordAudio = 0; // seconds
@@ -590,6 +597,8 @@ public class Browser implements Closeable {
 		private boolean avoidProxy;
 		private String parentTunnel;
 		private List<Map<String, String>> extensions;
+		private String url;
+		private String webPagePath;
 
 		public Builder browserPerInstance(int browserPerInstance) {
 			this.browserPerInstance = browserPerInstance;
@@ -711,6 +720,16 @@ public class Browser implements Closeable {
 
 		public Builder extensions(List<Map<String, String>> extensions) {
 			this.extensions = extensions;
+			return this;
+		}
+
+		public Builder url(String url) {
+			this.url = url;
+			return this;
+		}
+
+		public Builder webPagePath(String webPagePath) {
+			this.webPagePath = webPagePath;
 			return this;
 		}
 
@@ -894,7 +913,11 @@ public class Browser implements Closeable {
 		String path = this.getWebPageType().toString();
 		URL url = null;
 		try {
-			url = new URL(protocol + ip + ":" + port + path);
+			if (this.url != null) {
+				url = new URL(this.url);
+			} else {
+				url = new URL(protocol + ip + ":" + port + path);
+			}
 		} catch (MalformedURLException e) {
 			log.error("Malformed URL", e);
 			throw new RuntimeException(e);
