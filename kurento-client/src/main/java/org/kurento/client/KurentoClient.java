@@ -47,6 +47,7 @@ public class KurentoClient {
 	public static KurentoClient create(String websocketUrl) {
 		log.info("Connecting to kms in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
+		client.setConcurrentServerRequest(true);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 	}
@@ -55,6 +56,7 @@ public class KurentoClient {
 		log.info("Connecting to KMS in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
 				JsonRpcConnectionListenerKurento.create(listener));
+		client.setConcurrentServerRequest(true);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 
