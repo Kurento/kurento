@@ -1104,15 +1104,42 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
   g_type_class_add_private (klass, sizeof (KmsRecorderEndpointPrivate));
 }
 
-static gboolean
-kms_recorder_endpoint_post_error (gpointer data)
+typedef struct _ErrorData
 {
-  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
+  KmsRecorderEndpoint *self;
+  GstMessage *message;
+} ErrorData;
 
-  gchar *message = (gchar *) g_object_steal_data (G_OBJECT (self), "message");
+static ErrorData *
+create_error_data (KmsRecorderEndpoint * self, GstMessage * message)
+{
+  ErrorData *data;
 
-  GST_ELEMENT_ERROR (self, STREAM, FAILED, ("%s", message), (NULL));
-  g_free (message);
+  data = g_slice_new (ErrorData);
+  data->self = g_object_ref (self);
+  data->message = gst_message_ref (message);
+
+  return data;
+}
+
+static void
+delete_error_data (gpointer d)
+{
+  ErrorData *data = d;
+
+  g_object_unref (data->self);
+  gst_message_unref (data->message);
+
+  g_slice_free (ErrorData, data);
+}
+
+static gboolean
+kms_recorder_endpoint_post_error (gpointer d)
+{
+  ErrorData *data = d;
+
+  gst_element_post_message (GST_ELEMENT (data->self),
+      gst_message_ref (data->message));
 
   return G_SOURCE_REMOVE;
 }
@@ -1123,22 +1150,19 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
-    GError *err = NULL;
+    ErrorData *data;
 
-    GST_WARNING ("Printing pipeline");
     GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (self),
         GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (self));
     kms_muxing_pipeline_dot_file (self->priv->mux);
 
-    gst_message_parse_error (msg, &err, NULL);
     GST_ERROR_OBJECT (self, "Message %" GST_PTR_FORMAT, msg);
-    g_object_set_data_full (G_OBJECT (self), "message",
-        g_strdup (err->message), (GDestroyNotify) g_free);
 
+    data = create_error_data (self, msg);
+
+    GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-        kms_recorder_endpoint_post_error, g_object_ref (self), g_object_unref);
-
-    g_error_free (err);
+        kms_recorder_endpoint_post_error, data, delete_error_data);
   }
   return GST_BUS_PASS;
 }
