@@ -646,12 +646,42 @@ kms_player_endpoint_emit_invalid_media_signal (gpointer data)
   return G_SOURCE_REMOVE;
 }
 
-static gboolean
-kms_player_endpoint_post_media_error (gpointer data)
+typedef struct _ErrorData
 {
-  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
+  KmsPlayerEndpoint *self;
+  GstMessage *message;
+} ErrorData;
 
-  GST_ELEMENT_ERROR (self, STREAM, FORMAT, ("Wrong video format"), (NULL));
+static ErrorData *
+create_error_data (KmsPlayerEndpoint * self, GstMessage * message)
+{
+  ErrorData *data;
+
+  data = g_slice_new (ErrorData);
+  data->self = g_object_ref (self);
+  data->message = gst_message_ref (message);
+
+  return data;
+}
+
+static void
+delete_error_data (gpointer d)
+{
+  ErrorData *data = d;
+
+  g_object_unref (data->self);
+  gst_message_unref (data->message);
+
+  g_slice_free (ErrorData, data);
+}
+
+static gboolean
+kms_player_endpoint_post_media_error (gpointer d)
+{
+  ErrorData *data = d;
+
+  gst_element_post_message (GST_ELEMENT (data->self),
+      gst_message_ref (data->message));
 
   return G_SOURCE_REMOVE;
 }
@@ -676,9 +706,11 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
           kms_player_endpoint_emit_invalid_uri_signal, g_object_ref (self),
           g_object_unref);
     } else {
+      ErrorData *data = create_error_data (self, msg);
+
+      GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-          kms_player_endpoint_post_media_error, g_object_ref (self),
-          g_object_unref);
+          kms_player_endpoint_post_media_error, data, delete_error_data);
     }
   }
   return GST_BUS_PASS;
