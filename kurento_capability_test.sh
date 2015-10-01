@@ -15,8 +15,10 @@ echo "##################### EXECUTE: capability-test #####################"
 # Use ffmpeg
 [ -n "$4" ] && USE_FFMPEG="$4" || USE_FFMPEG="no"
 
-[ -n "$KMS_WS_PORT" ] || echo "Env variable \$KMS_WS_PORT not found" && exit 1
-[ -n "$KMS_HTTP_PORT" ] || echo "Env variable \$KMS_HTTP_PORT not found" && exit 1
+echo "Checking KMS_WS_PORT env variable"
+[ -n "$KMS_WS_PORT" ] || exit 1
+echo "Checking KMS_HTTP_PORT env variable"
+[ -n "$KMS_HTTP_PORT" ] || exit 1
 
 # Abort if port is not available
 echo "Checking port $SERVER_PORT"
