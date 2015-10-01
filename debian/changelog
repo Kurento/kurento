@@ -1,3 +1,139 @@
+kms-elements-6.0 (6.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Miguel París Díaz ]
+  * recorderendpoint: cosmetic changes
+  * webrtcendpoint: fix logging
+  * webrtcendpoint: do not debug unnecessary graph
+  * webrtcendpoint: improve test handoff names
+  * webrtcendpoint: force to receive keyframe to pass the tests
+  * kmswebrtcendpoint: remove unused defines
+  * kmswebrtcendpoint: adapt to use KmsSdpSession
+  * webrtcendpoint: adapt tests to use KmsSdpSession
+  * webrtcendpoint: test for session creation
+  * kmsrtpendpoint: adapt to use KmsSdpSession
+  * rtpendpoint: adapt tests to use KmsSdpSession
+  * WebRtcEndpointImpl: addapt to use session
+  * kmsrtpendpoint, kmswebrtcendpoint: fix using KmsSdpSession
+  * kmswebrtc: remove certificate_pem_file
+  * kmsrtpendpoint, kmswebrtcendpoint: manage conns from KmsSdpSession
+  * (not working)webrtcendpoint: adapt DataChannels test
+  * kmswebrtcsession: class to manage WebRTC sessions
+  * kmsrtpendpoint, kmswebrtcendpoint: use Session abstraction
+  * kmswebrtcendpoint: implement create_session_internal
+  * kmswebrtcsession: manage conns when start_transport_send
+  * kmswebrtctransport(src|sink): useful bins to manage webrtc src and sink transport
+  * kmswebrtctransport: use src and sink bins
+  * kmswebrtc(session|endpoint): move connection creation to kmswebrtcsession
+  * kmsrtp(session|endpoint): move connection creation to kmsrtpsession
+  * kms(rtp|webrtc)endpoint: create_session_internal with out param
+  * kmswebrtc(session|endpoint): move "on-ice-candidate" logic to kmswebrtcsession
+  * kmswebrtc(session|endpoint): move "on-ice-gathering-done" logic to kmswebrtcsession
+  * kmswebrtc(session|endpoint): set "upnp" NiceAgent prop into kmswebrtcsession
+  * kmswebrtcsession: fix "on-ice-gathering-done" signal declaration
+  * kmswebrtc(session|endpoint):move "gather-candidates" logic to kmswebrtcsession
+  * kmswebrtcendpoint: add TODO for checking which prop should be moved to session
+  * kmswebrtc(session|endpoint):move "add-ice-candidate" logic to kmswebrtcsession
+  * kmswebrtcendpoint: remove uneeded includes
+  * kmswebrtc(session|endpoint):move "on-ice-component-state-changed" logic to kmswebrtcsession
+  * kmswebrtctransport(src|sink): use RTP_RTX_SIZE constant macro
+  * kmswebrtcsession: get use_ipv6 from session
+  * Remove some inmediate-TODOs
+  * webrtcendpoint: use static allocation for OnIceCandidateData vars
+  * kmswebrtcsctpconnection: cosmetic changes
+  * kmswebrtcsctpconnection: remove set_certificate_pem_file impl
+  * kmswebrtcsctpconnection: set dtlssrtpenc "is-client" property
+  * kmswebrtcsctpconnection: avoid unneded casting
+  * webrtcendpoint: use gst_element_sync_state_with_parent
+
+  [ Santiago Carot-Nemesio ]
+  * CMakeLists: Enable data channel tests for webrtcendpoints
+  * kms*connections: Add is-client property
+
+  [ Miguel París Díaz ]
+  * webrtcendpoint: CMakeLists: install FindKmsIceCandidate
+
+  [ Santiago Carot-Nemesio ]
+  * KmsHttpEPServer: Do not create a new KmsLoop.
+
+  [ Miguel París Díaz ]
+  * CMakeLists: fix linking with kmsicecandidate
+  * kmswebrtctransport(src|sink): fix header comment
+  * kmswebrtc(session|endpoint): fix logging
+  * tests: remove unnecessary dependency to kmstestutils
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcendpoint: Integrate data sessions
+  * kmswebrtcendpoint: Create signals to manage data session
+  * kmswebrtcendpoint: Create element's data pads when data channels are opened
+  * kmswebrtcdatachannel: There is no need to keep an extra reference for the bin
+  * kmswebrtcdatachannel: kms_webrtc_data_channel_push_buffer must take its own buffer reference
+  * kmswebrtcdatachannelbin: Add log when any data channel is resetted
+  * kmswebrtcdatachannelbin: Make buffer writable to add sctp meta
+  * kmswebrtcendpoint: Manage transfer of data between data channels
+  * kmswebrtcdatachannels: Ignore priority parameter
+  * kmswebrtcdatachannelbin: Get ppid info from meta when it is possible
+  * webrtcendpoint: Fix data channel test
+  * kmswebrtcendpoint: Manage data channel disconnections
+  * WebRtcEndpoint: Provide method to create data channels
+  * WerbRtcEndpoint: Notify creation and destruction of data channels
+  * WebRtcEndpointImpl: Manage data channels if supported
+  * kmswebrtcendpoint: Allow creation of postponed data channels
+  * WebRtcEndpoint: Provide method to destroy data channels
+
+  [ David Fernandez ]
+  * kmswebrtctransport: Remove nice references from transport base class
+  * kmsicebaseagent: Add structure
+  * kmsiceniceagent: Add implementation for nice agent
+  * Use kmsicebaseagent instead of nice agent
+  * kmswebrtctransport: Configure elements in a generic way
+  * kmswebrtcsession: Add init_agent signal
+
+  [ Jose Antonio Santos Cadenas ]
+  * WebRtcEndpoint: Do not try to construct strings using NULL c strings
+  * CMakeLists.txt: Fix problem in webrtcendpointlib
+
+  [ Miguel París Díaz ]
+  * webrtc: fix include headers
+  * webrtc: CMake: fix declaring vars before using them
+  * webrtc: CMake: improve organization
+  * FindKmsWebRtcEndpointLib: add generated include dir
+  * kmswebrtcsession: rename signal "init_ice_agent" to "init-ice-agent"
+  * kmswebrtcsession: add TODO
+  * webrtcendpoint: fix test pass condition
+  * webrtcendpoint: force to receive keyframe to pass the tests
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+
+  [ Miguel París Díaz ]
+  * kmsiceniceagent: fix memory leak when getting default candidate
+
+  [ Santiago Carot-Nemesio ]
+  * WebRtcEndpointImpl: Collect data channel stats
+  * WebRtcEndpointImpl: Provide missed data channel stats
+  * WebRtcEndpoint: Add RTCPeerConnection for data channels
+
+  [ Boni Garcia ]
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * compositemixer: Fix probe_id types
+  * compositemixer: Improve disposition calculus
+  * compositemixer: Increase latency
+  * compositemixer: Configure transform elements to scale correctly
+  * compositemixer: Add object to debug messages
+  * playerendpoint: Post errors with more information
+  * recorderendpoint: Improve error notification
+  * Prepare release 6.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 01 Oct 2015 19:35:00 +0200
+
 kms-elements-6.0 (6.1.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
