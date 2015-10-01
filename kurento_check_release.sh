@@ -3,7 +3,7 @@
 PATH=$PATH:$(realpath $(dirname "$0"))
 
 config_files="pom.xml package.json bower.json CMakeLists.txt Makefile configure.ac configure.in"
-dev_version_suffixes="dev|SNAPSHOT|master|KurentoForks"
+dev_version_suffixes="dev|SNAPSHOT|master|KurentoForks|^"
 
 for config_file in $config_files
 do
