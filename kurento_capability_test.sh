@@ -14,13 +14,13 @@ fi
 [ -n "$2" ] && GROUP_FILTER="$2" || exit 1
 
 # SERVER_PORT
-[ -n "$2" ] && SERVER_PORT="$2"
+[ -n "$3" ] && SERVER_PORT="$3"
 
 # HTTP_PORT
-[ -n "$3" ] && HTTP_PORT="$3"
+[ -n "$4" ] && HTTP_PORT="$4"
 
 # Use ffmpeg
-[ -n "$4" ] && USE_FFMPEG="$4" || USE_FFMPEG="no"
+[ -n "$5" ] && USE_FFMPEG="$5" || USE_FFMPEG="no"
 
 echo "Checking KMS_WS_ADDR env variable"
 [ -n "$KMS_WS_ADDR" ] || KMS_WS_ADDR="127.0.0.1"
@@ -65,7 +65,7 @@ fi
 
 mavenOpts="-pl kurento-integration-tests/kurento-test"
 mavenOpts="$mavenOpts -Dgroups=$GROUP_FILTER"
-mavenOpts="$mavenOpts -Dtest=$TEST_FILTER*"
+mavenOpts="$mavenOpts -Dtest=$TEST_FILTER"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
 if [ "$KMS_WS_ADDR" == "127.0.0.1" ]; then
   mavenOpts="$mavenOpts -Dkms.autostart=test"
