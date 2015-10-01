@@ -3,30 +3,45 @@
 echo "##################### EXECUTE: capability-test #####################"
 # Parameter management
 
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <TEST_FILTER> <GROUP_FILTER> [<SERVER_PORT> <HTTP_PORT> <USE_FFMPEG>]"
+  exit 1
+fi
+
 # TEST_FILTER
 [ -n "$1" ] && TEST_FILTER="$1" || exit 1
 
+[ -n "$2" ] && GROUP_FILTER="$2" || exit 1
+
 # SERVER_PORT
-[ -n "$2" ] && SERVER_PORT="$2" || exit 1
+[ -n "$2" ] && SERVER_PORT="$2"
 
 # HTTP_PORT
-[ -n "$3" ] && HTTP_PORT="$3" || exit 1
+[ -n "$3" ] && HTTP_PORT="$3"
 
 # Use ffmpeg
 [ -n "$4" ] && USE_FFMPEG="$4" || USE_FFMPEG="no"
 
+echo "Checking KMS_WS_ADDR env variable"
+[ -n "$KMS_WS_ADDR" ] || KMS_WS_ADDR="127.0.0.1"
 echo "Checking KMS_WS_PORT env variable"
 [ -n "$KMS_WS_PORT" ] || exit 1
 echo "Checking KMS_HTTP_PORT env variable"
 [ -n "$KMS_HTTP_PORT" ] || exit 1
 
 # Abort if port is not available
-echo "Checking port $SERVER_PORT"
-netstat -tauen | grep $SERVER_PORT && exit 1
-echo "Checking port $HTTP_PORT"
-netstat -tauen | grep $HTTP_PORT && exit 1
-echo "Checking port $KMS_WS_PORT"
-netstat -tauen | grep $KMS_WS_PORT && exit 1
+if [ -n "$SERVER_PORT" ]; then
+  echo "Checking port $SERVER_PORT"
+  netstat -tauen | grep $SERVER_PORT && exit 1
+fi
+if [ -n "$HTTP_PORT" ]; then
+  echo "Checking port $HTTP_PORT"
+  netstat -tauen | grep $HTTP_PORT && exit 1
+fi
+if [ ! -n "$KMS_WS_ADDR" ]; then
+  echo "Checking port $KMS_WS_PORT"
+  netstat -tauen | grep $KMS_WS_PORT && exit 1
+fi
 echo "Checking port $KMS_HTTP_PORT"
 netstat -tauen | grep $KMS_HTTP_PORT && exit 1
 
@@ -45,20 +60,26 @@ export DISPLAY=:1
 if [ "$USE_FFMPEG" == "yes" ] ; then
   echo "***************** Start ffmpeg recording session on display 1"
   ffmpeg -video_size 1280x1024 -framerate 25 -f x11grab -i :1.0+0,0 $(pwd)/session-recording.mp4 &
-  #ffmpeg -f x11grab -vc x264 -s xga -r 30 -b 2000k -g 300 -i :1.0 session-recording.avi &
   echo $! > ffmpeg.pid
 fi
 
 mavenOpts="-pl kurento-integration-tests/kurento-test"
-mavenOpts="$mavenOpts -Dgroups=org.kurento.commons.testing.SystemFunctionalTests"
+mavenOpts="$mavenOpts -Dgroups=$GROUP_FILTER"
 mavenOpts="$mavenOpts -Dtest=$TEST_FILTER*"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
-
-mavenOpts="$mavenOpts -Dkms.autostart=test"
-mavenOpts="$mavenOpts -Dkms.ws.uri=ws://127.0.0.1:$KMS_WS_PORT/kurento"
+if [ -n "$KMS_WS_ADDR" ]; then
+  mavenOpts="$mavenOpts -Dkms.autostart=false"
+else
+  mavenOpts="$mavenOpts -Dkms.autostart=test"
+fi
+mavenOpts="$mavenOpts -Dkms.ws.uri=ws://$KMS_WS_ADDR:$KMS_WS_PORT/kurento"
 mavenOpts="$mavenOpts -Dkms.http.port=$KMS_HTTP_PORT"
-mavenOpts="$mavenOpts -Dserver.port=$SERVER_PORT"
-mavenOpts="$mavenOpts -Dhttp.port=$HTTP_PORT"
+if [ -n "$SERVER_PORT" ]; then
+  mavenOpts="$mavenOpts -Dserver.port=$SERVER_PORT"
+fi
+if [ -n "$HTTP_PORT" ]; then
+  mavenOpts="$mavenOpts -Dhttp.port=$HTTP_PORT"
+fi
 mavenOpts="$mavenOpts -Dkms.command=/usr/bin/kurento-media-server"
 
 # This is no longer needed
