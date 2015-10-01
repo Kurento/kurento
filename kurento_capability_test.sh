@@ -67,10 +67,10 @@ mavenOpts="-pl kurento-integration-tests/kurento-test"
 mavenOpts="$mavenOpts -Dgroups=$GROUP_FILTER"
 mavenOpts="$mavenOpts -Dtest=$TEST_FILTER*"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
-if [ -n "$KMS_WS_ADDR" ]; then
-  mavenOpts="$mavenOpts -Dkms.autostart=false"
-else
+if [ "$KMS_WS_ADDR" == "127.0.0.1" ]; then
   mavenOpts="$mavenOpts -Dkms.autostart=test"
+else
+  mavenOpts="$mavenOpts -Dkms.autostart=false"
 fi
 mavenOpts="$mavenOpts -Dkms.ws.uri=ws://$KMS_WS_ADDR:$KMS_WS_PORT/kurento"
 mavenOpts="$mavenOpts -Dkms.http.port=$KMS_HTTP_PORT"
