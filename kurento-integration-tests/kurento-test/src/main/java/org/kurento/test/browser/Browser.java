@@ -27,6 +27,7 @@ import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAU
 import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_REMOTE_HUB_URL_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
 import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
@@ -132,7 +133,8 @@ public class Browser implements Closeable {
 		this.scope = builder.scope;
 		this.video = builder.video;
 		this.audio = builder.audio;
-		this.serverPort = getProperty(TEST_PORT_PROPERTY, getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort));
+		this.serverPort = getProperty(TEST_PORT_PROPERTY,
+				getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort));
 		this.webPageType = builder.webPageType;
 		this.browserType = builder.browserType;
 		this.usePhysicalCam = builder.usePhysicalCam;
@@ -170,22 +172,29 @@ public class Browser implements Closeable {
 			if (driverClass.equals(FirefoxDriver.class)) {
 				FirefoxProfile profile = new FirefoxProfile();
 				// This flag avoids granting the access to the camera
-				profile.setPreference("media.navigator.permission.disabled", true);
+				profile.setPreference("media.navigator.permission.disabled",
+						true);
 
 				capabilities.setCapability(FirefoxDriver.PROFILE, profile);
-				capabilities.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
+				capabilities.setBrowserName(
+						DesiredCapabilities.firefox().getBrowserName());
 
 				// Firefox extensions
 				if (extensions != null && !extensions.isEmpty()) {
 					for (Map<String, String> extension : extensions) {
-						InputStream is = getExtensionAsInputStream(extension.values().iterator().next());
+						InputStream is = getExtensionAsInputStream(
+								extension.values().iterator().next());
 						if (is != null) {
 							try {
-								File xpi = File.createTempFile(extension.keySet().iterator().next(), ".xpi");
+								File xpi = File.createTempFile(
+										extension.keySet().iterator().next(),
+										".xpi");
 								FileUtils.copyInputStreamToFile(is, xpi);
 								profile.addExtension(xpi);
 							} catch (Throwable t) {
-								log.error("Error loading Firefox extension {} ({} : {})", extension, t.getClass(),
+								log.error(
+										"Error loading Firefox extension {} ({} : {})",
+										extension, t.getClass(),
 										t.getMessage());
 							}
 						}
@@ -210,14 +219,19 @@ public class Browser implements Closeable {
 				// Chrome extensions
 				if (extensions != null && !extensions.isEmpty()) {
 					for (Map<String, String> extension : extensions) {
-						InputStream is = getExtensionAsInputStream(extension.values().iterator().next());
+						InputStream is = getExtensionAsInputStream(
+								extension.values().iterator().next());
 						if (is != null) {
 							try {
-								File crx = File.createTempFile(extension.keySet().iterator().next(), ".crx");
+								File crx = File.createTempFile(
+										extension.keySet().iterator().next(),
+										".crx");
 								FileUtils.copyInputStreamToFile(is, crx);
 								options.addExtensions(crx);
 							} catch (Throwable t) {
-								log.error("Error loading Chrome extension {} ({} : {})", extension, t.getClass(),
+								log.error(
+										"Error loading Chrome extension {} ({} : {})",
+										extension, t.getClass(),
 										t.getMessage());
 							}
 						}
@@ -229,14 +243,17 @@ public class Browser implements Closeable {
 					options.addArguments("--enable-usermedia-screen-capturing");
 
 					String windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT;
-					if (platform != null
-							&& (platform == Platform.WINDOWS || platform == Platform.XP || platform == Platform.VISTA
-									|| platform == Platform.WIN8 || platform == Platform.WIN8_1)) {
+					if (platform != null && (platform == Platform.WINDOWS
+							|| platform == Platform.XP
+							|| platform == Platform.VISTA
+							|| platform == Platform.WIN8
+							|| platform == Platform.WIN8_1)) {
 
 						windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 					}
 					options.addArguments("--auto-select-desktop-capture-source="
-							+ getProperty(TEST_SCREEN_SHARE_TITLE_PROPERTY, windowTitle));
+							+ getProperty(TEST_SCREEN_SHARE_TITLE_PROPERTY,
+									windowTitle));
 
 				} else {
 					// This flag avoids grant the camera
@@ -260,12 +277,14 @@ public class Browser implements Closeable {
 					options.addArguments("--use-fake-device-for-media-stream");
 
 					if (video != null && isLocal()) {
-						options.addArguments("--use-file-for-fake-video-capture=" + video);
+						options.addArguments(
+								"--use-file-for-fake-video-capture=" + video);
 					}
 				}
 
 				capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-				capabilities.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+				capabilities.setBrowserName(
+						DesiredCapabilities.chrome().getBrowserName());
 
 				if (scope == BrowserScope.SAUCELABS) {
 					createSaucelabsDriver(capabilities);
@@ -277,15 +296,18 @@ public class Browser implements Closeable {
 			} else if (driverClass.equals(InternetExplorerDriver.class)) {
 
 				if (scope == BrowserScope.SAUCELABS) {
-					capabilities.setBrowserName(DesiredCapabilities.internetExplorer().getBrowserName());
-					capabilities.setCapability("ignoreProtectedModeSettings", true);
+					capabilities.setBrowserName(DesiredCapabilities
+							.internetExplorer().getBrowserName());
+					capabilities.setCapability("ignoreProtectedModeSettings",
+							true);
 					createSaucelabsDriver(capabilities);
 				}
 
 			} else if (driverClass.equals(SafariDriver.class)) {
 
 				if (scope == BrowserScope.SAUCELABS) {
-					capabilities.setBrowserName(DesiredCapabilities.safari().getBrowserName());
+					capabilities.setBrowserName(
+							DesiredCapabilities.safari().getBrowserName());
 					createSaucelabsDriver(capabilities);
 				}
 
@@ -296,13 +318,15 @@ public class Browser implements Closeable {
 
 			if (url == null) {
 				if (protocol == Protocol.FILE) {
-					String webPage = webPagePath != null ? webPagePath : webPageType.toString();
-					File webPageFile = new File(
-							this.getClass().getClassLoader().getResource("static" + webPage).getFile());
+					String webPage = webPagePath != null ? webPagePath
+							: webPageType.toString();
+					File webPageFile = new File(this.getClass().getClassLoader()
+							.getResource("static" + webPage).getFile());
 					url = protocol.toString() + webPageFile.getAbsolutePath();
 				} else {
 					String hostName = host != null ? host : node;
-					url = protocol.toString() + hostName + ":" + serverPort + webPageType.toString();
+					url = protocol.toString() + hostName + ":" + serverPort
+							+ webPageType.toString();
 				}
 			}
 			log.info("*** Browsing URL with WebDriver: {}", url);
@@ -317,7 +341,9 @@ public class Browser implements Closeable {
 	public static WebDriver newWebDriver(Object options) {
 		WebDriver driver = null;
 		int numDriverTries = 0;
-		final int maxDriverError = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+		final int maxDriverError = getProperty(
+				SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
+				SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
 		final String errMessage = "Exception creating webdriver for chrome";
 		do {
 			try {
@@ -332,7 +358,8 @@ public class Browser implements Closeable {
 			} finally {
 				numDriverTries++;
 				if (numDriverTries > maxDriverError) {
-					throw new KurentoException(errMessage + " (" + maxDriverError + " times)");
+					throw new KurentoException(
+							errMessage + " (" + maxDriverError + " times)");
 				}
 			}
 		} while (driver == null);
@@ -349,53 +376,67 @@ public class Browser implements Closeable {
 		InputStream is = null;
 
 		try {
-			log.info("Trying to locate extension in the classpath ({}) ...", extension);
+			log.info("Trying to locate extension in the classpath ({}) ...",
+					extension);
 			is = ClassLoader.getSystemResourceAsStream(extension);
 			if (is.available() < 0) {
-				log.warn("Extension {} is not located in the classpath", extension);
+				log.warn("Extension {} is not located in the classpath",
+						extension);
 				is = null;
 			} else {
-				log.info("Success. Loading extension {} from classpath", extension);
+				log.info("Success. Loading extension {} from classpath",
+						extension);
 			}
 		} catch (Throwable t) {
-			log.warn("Exception reading extension {} in the classpath ({} : {})", extension, t.getClass(),
-					t.getMessage());
+			log.warn(
+					"Exception reading extension {} in the classpath ({} : {})",
+					extension, t.getClass(), t.getMessage());
 			is = null;
 		}
 		if (is == null) {
 			try {
-				log.info("Trying to locate extension as URL ({}) ...", extension);
+				log.info("Trying to locate extension as URL ({}) ...",
+						extension);
 				URL url = new URL(extension);
 				is = url.openStream();
 				log.info("Success. Loading extension {} from URL", extension);
 			} catch (Throwable t) {
-				log.warn("Exception reading extension {} as URL ({} : {})", extension, t.getClass(), t.getMessage());
+				log.warn("Exception reading extension {} as URL ({} : {})",
+						extension, t.getClass(), t.getMessage());
 			}
 		}
 		if (is == null) {
-			throw new RuntimeException(extension + " is not a valid extension (it is not located in project"
+			throw new RuntimeException(extension
+					+ " is not a valid extension (it is not located in project"
 					+ " classpath neither is a valid URL)");
 		}
 		return is;
 	}
 
 	public void changeTimeout(int timeoutSeconds) {
-		driver.manage().timeouts().implicitlyWait(timeoutSeconds, TimeUnit.SECONDS);
-		driver.manage().timeouts().setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
+		driver.manage().timeouts().implicitlyWait(timeoutSeconds,
+				TimeUnit.SECONDS);
+		driver.manage().timeouts().setScriptTimeout(timeoutSeconds,
+				TimeUnit.SECONDS);
 	}
 
-	public void createSaucelabsDriver(DesiredCapabilities capabilities) throws MalformedURLException {
+	public void createSaucelabsDriver(DesiredCapabilities capabilities)
+			throws MalformedURLException {
 		assertPublicIpNotNull();
 		String sauceLabsUser = getProperty(SAUCELAB_USER_PROPERTY);
 		String sauceLabsKey = getProperty(SAUCELAB_KEY_PROPERTY);
-		int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY, SAUCELAB_IDLE_TIMEOUT_DEFAULT);
-		int commandTimeout = getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY, SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
-		int maxDuration = getProperty(SAUCELAB_MAX_DURATION_PROPERTY, SAUCELAB_MAX_DURATION_DEFAULT);
+		int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY,
+				SAUCELAB_IDLE_TIMEOUT_DEFAULT);
+		int commandTimeout = getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY,
+				SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
+		int maxDuration = getProperty(SAUCELAB_MAX_DURATION_PROPERTY,
+				SAUCELAB_MAX_DURATION_DEFAULT);
 		String seleniumVersion = getProperty(SELENIUM_VERSION);
 
 		if (sauceLabsUser == null || sauceLabsKey == null) {
-			throw new RuntimeException("Invalid Saucelabs credentials: " + SAUCELAB_USER_PROPERTY + "=" + sauceLabsUser
-					+ " " + SAUCELAB_KEY_PROPERTY + "=" + sauceLabsKey);
+			throw new RuntimeException("Invalid Saucelabs credentials: "
+					+ SAUCELAB_USER_PROPERTY + "=" + sauceLabsUser + " "
+					+ SAUCELAB_KEY_PROPERTY + "=" + sauceLabsKey);
 		}
 
 		capabilities.setCapability("version", browserVersion);
@@ -419,95 +460,115 @@ public class Browser implements Closeable {
 			capabilities.setCapability("name", name);
 		}
 
-		driver = new RemoteWebDriver(
-				new URL("http://" + sauceLabsUser + ":" + sauceLabsKey + "@ondemand.saucelabs.com:80/wd/hub"),
+		driver = new RemoteWebDriver(new URL("http://" + sauceLabsUser + ":"
+				+ sauceLabsKey + "@ondemand.saucelabs.com:80/wd/hub"),
 				capabilities);
 
 		jobId = ((RemoteWebDriver) driver).getSessionId().toString();
-		log.info("%%%%%%%%%%%%% Saucelabs URL job for {} ({} {} in {}) %%%%%%%%%%%%%", id, browserType, browserVersion,
-				platform);
+		log.info(
+				"%%%%%%%%%%%%% Saucelabs URL job for {} ({} {} in {}) %%%%%%%%%%%%%",
+				id, browserType, browserVersion, platform);
 		log.info("https://saucelabs.com/tests/{}", jobId);
 	}
 
-	public void createRemoteDriver(final DesiredCapabilities capabilities) throws MalformedURLException {
+	public void createRemoteDriver(final DesiredCapabilities capabilities)
+			throws MalformedURLException {
+
+		// TODO dev here
+		System.err.println("host " + host);
 		assertPublicIpNotNull();
 
-		log.info("Creating remote webdriver for {}", id);
+		String remoteHubUrl = getProperty(SELENIUM_REMOTE_HUB_URL_PROPERTY);
 		GridNode gridNode = null;
-		if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
 
-			if (login != null) {
-				System.setProperty(TEST_NODE_LOGIN_PROPERTY, login);
-			}
-			if (passwd != null) {
-				System.setProperty(TEST_NODE_PASSWD_PROPERTY, passwd);
-			}
-			if (pem != null) {
-				System.setProperty(TEST_NODE_PEM_PROPERTY, pem);
-			}
+		if (remoteHubUrl == null) {
 
-			// Filtering valid nodes (just the first time will be effective)
-			GridHandler.getInstance().filterValidNodes();
+			log.info("Creating remote webdriver for {}", id);
+			if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
 
-			if (!node.equals(host) && login != null && !login.isEmpty()
-					&& (passwd != null && !passwd.isEmpty() || pem != null && !pem.isEmpty())) {
-				gridNode = new GridNode(node, browserType, browserPerInstance, login, passwd, pem);
-				GridHandler.getInstance().addNode(id, gridNode);
+				if (login != null) {
+					System.setProperty(TEST_NODE_LOGIN_PROPERTY, login);
+				}
+				if (passwd != null) {
+					System.setProperty(TEST_NODE_PASSWD_PROPERTY, passwd);
+				}
+				if (pem != null) {
+					System.setProperty(TEST_NODE_PEM_PROPERTY, pem);
+				}
+
+				// Filtering valid nodes (just the first time will be effective)
+				GridHandler.getInstance().filterValidNodes();
+
+				if (!node.equals(host) && login != null && !login.isEmpty()
+						&& (passwd != null && !passwd.isEmpty()
+								|| pem != null && !pem.isEmpty())) {
+					gridNode = new GridNode(node, browserType,
+							browserPerInstance, login, passwd, pem);
+					GridHandler.getInstance().addNode(id, gridNode);
+				} else {
+					gridNode = GridHandler.getInstance().getRandomNodeFromList(
+							id, browserType, browserPerInstance);
+				}
+
+				// Start Hub (just the first time will be effective)
+				GridHandler.getInstance().startHub();
+
+				// Start node
+				GridHandler.getInstance().startNode(gridNode);
+
+				// Copy video (if necessary)
+				if (video != null && browserType == BrowserType.CHROME) {
+					GridHandler.getInstance().copyRemoteVideo(gridNode, video);
+				}
+
 			} else {
-				gridNode = GridHandler.getInstance().getRandomNodeFromList(id, browserType, browserPerInstance);
+				// Wait for node
+				boolean started = false;
+				do {
+					gridNode = GridHandler.getInstance().getNode(id);
+					if (gridNode != null) {
+						started = gridNode.isStarted();
+					}
+					if (!started) {
+						log.debug("Node {} is not started ... waiting 1 second",
+								id);
+						waitSeconds(1);
+					}
+				} while (!started);
 			}
 
-			// Start Hub (just the first time will be effective)
-			GridHandler.getInstance().startHub();
-
-			// Start node
-			GridHandler.getInstance().startNode(gridNode);
-
-			// Copy video (if necessary)
+			// At this moment we are able to use the argument for remote video
 			if (video != null && browserType == BrowserType.CHROME) {
-				GridHandler.getInstance().copyRemoteVideo(gridNode, video);
+				ChromeOptions options = (ChromeOptions) capabilities
+						.getCapability(ChromeOptions.CAPABILITY);
+				options.addArguments("--use-file-for-fake-video-capture="
+						+ GridHandler.getInstance().getFirstNode(id)
+								.getRemoteVideo(video));
+				capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 			}
 
-		} else {
-			// Wait for node
-			boolean started = false;
-			do {
-				gridNode = GridHandler.getInstance().getNode(id);
-				if (gridNode != null) {
-					started = gridNode.isStarted();
-				}
-				if (!started) {
-					log.debug("Node {} is not started ... waiting 1 second", id);
-					waitSeconds(1);
-				}
-			} while (!started);
+			final int hubPort = GridHandler.getInstance().getHubPort();
+			final String hubHost = GridHandler.getInstance().getHubHost();
+
+			log.info("Creating remote webdriver of {} ({})", id,
+					gridNode.getHost());
+
+			remoteHubUrl = "http://" + hubHost + ":" + hubPort + "/wd/hub";
 		}
 
-		// At this moment we are able to use the argument for remote video
-		if (video != null && browserType == BrowserType.CHROME) {
-			ChromeOptions options = (ChromeOptions) capabilities.getCapability(ChromeOptions.CAPABILITY);
-			options.addArguments("--use-file-for-fake-video-capture="
-					+ GridHandler.getInstance().getFirstNode(id).getRemoteVideo(video));
-			capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-		}
-
-		final int hubPort = GridHandler.getInstance().getHubPort();
-		final String hubHost = GridHandler.getInstance().getHubHost();
-
-		// driver = new RemoteWebDriver(new URL("http://" + hubHost + ":" +
-		// hubPort + "/wd/hub"), capabilities);
-
-		log.info("Creating remote webdriver of {} ({})", id, gridNode.getHost());
+		final String remoteHub = remoteHubUrl;
 		Thread t = new Thread() {
 			public void run() {
 				boolean exception = false;
 				do {
 					try {
-						driver = new RemoteWebDriver(new URL("http://" + hubHost + ":" + hubPort + "/wd/hub"),
+						driver = new RemoteWebDriver(new URL(remoteHub),
 								capabilities);
 						exception = false;
 					} catch (MalformedURLException | WebDriverException e) {
-						log.error("Exception {} creating RemoteWebDriver ... retrying in 1 second", e.getClass());
+						log.error(
+								"Exception {} creating RemoteWebDriver ... retrying in 1 second",
+								e.getClass());
 						waitSeconds(1);
 						exception = true;
 					}
@@ -516,19 +577,23 @@ public class Browser implements Closeable {
 		};
 		t.start();
 
-		int timeout = getProperty(SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY, SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT);
+		int timeout = getProperty(SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY,
+				SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT);
+		String nodeMsg = gridNode != null ? " (" + gridNode.getHost() + ")"
+				: "";
+
 		for (int i = 0; i < timeout; i++) {
 			if (t.isAlive()) {
-				log.info("Waiting for RemoteWebDriver {} ({})", id, gridNode.getHost());
+				log.info("Waiting for RemoteWebDriver {}{}", id, nodeMsg);
 			} else {
-				log.info("Remote webdriver of {} ({}) created", id, gridNode.getHost());
+				log.info("Remote webdriver of {}{} created", id, nodeMsg);
 				return;
 			}
 			waitSeconds(1);
 		}
 
-		String exceptionMessage = "Remote webdriver of " + id + "(" + gridNode.getHost() + ") not created in " + timeout
-				+ "seconds";
+		String exceptionMessage = "Remote webdriver of " + id + nodeMsg
+				+ " not created in " + timeout + "seconds";
 		log.error(">>>>>>>>>> " + exceptionMessage);
 		throw new RuntimeException(exceptionMessage);
 	}
@@ -543,9 +608,12 @@ public class Browser implements Closeable {
 
 	private void assertPublicIpNotNull() {
 		if (host == null) {
-			throw new RuntimeException("Public IP must be available to run remote test. "
-					+ "You can do it by adding the paramter -D" + TEST_HOST_PROPERTY
-					+ "=<public_ip> or with key 'host' in " + "the JSON configuration file.");
+			throw new RuntimeException(
+					"Public IP must be available to run remote test. "
+							+ "You can do it by adding the paramter -D"
+							+ TEST_HOST_PROPERTY
+							+ "=<public_ip> or with key 'host' in "
+							+ "the JSON configuration file.");
 		}
 	}
 
@@ -554,9 +622,10 @@ public class Browser implements Closeable {
 			String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
 			String kurentoTestJsPath = "./lib/kurento-test.js";
 			if (this.getProtocol() == Protocol.FILE) {
-				File pageFile = new File(
-						this.getClass().getClassLoader().getResource("static/lib/kurento-test.js").getFile());
-				kurentoTestJsPath = this.getProtocol().toString() + pageFile.getAbsolutePath();
+				File pageFile = new File(this.getClass().getClassLoader()
+						.getResource("static/lib/kurento-test.js").getFile());
+				kurentoTestJsPath = this.getProtocol().toString()
+						+ pageFile.getAbsolutePath();
 			}
 			kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
 			kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
@@ -573,13 +642,15 @@ public class Browser implements Closeable {
 				getProperty(TEST_PUBLIC_IP_PROPERTY, TEST_PUBLIC_IP_DEFAULT));
 		private String host = node;
 		private int serverPort = getProperty(TEST_PORT_PROPERTY,
-				getProperty(TEST_PUBLIC_PORT_PROPERTY, KurentoServicesTestHelper.getAppHttpPort()));
+				getProperty(TEST_PUBLIC_PORT_PROPERTY,
+						KurentoServicesTestHelper.getAppHttpPort()));
 		private BrowserScope scope = BrowserScope.LOCAL;
 		private BrowserType browserType = BrowserType.CHROME;
-		private Protocol protocol = Protocol
-				.valueOf(getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT).toUpperCase());
-		private WebPageType webPageType = WebPageType
-				.value2WebPageType(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
+		private Protocol protocol = Protocol.valueOf(
+				getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT)
+						.toUpperCase());
+		private WebPageType webPageType = WebPageType.value2WebPageType(
+				getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
 		private boolean usePhysicalCam = false;
 		private boolean enableScreenCapture = false;
 		private int recordAudio = 0; // seconds
@@ -695,7 +766,8 @@ public class Browser implements Closeable {
 			return this;
 		}
 
-		public Builder audio(String audio, int recordAudio, int audioSampleRate, AudioChannel audioChannel) {
+		public Builder audio(String audio, int recordAudio, int audioSampleRate,
+				AudioChannel audioChannel) {
 			this.audio = audio;
 			this.recordAudio = recordAudio;
 			this.audioSampleRate = audioSampleRate;
@@ -934,7 +1006,8 @@ public class Browser implements Closeable {
 				driver.quit();
 				driver = null;
 			} catch (Throwable t) {
-				log.warn("** Exception closing webdriver {} : {}", t.getClass(), t.getMessage());
+				log.warn("** Exception closing webdriver {} : {}", t.getClass(),
+						t.getMessage());
 			}
 		}
 

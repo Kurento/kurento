@@ -81,6 +81,8 @@ public class TestConfiguration {
 	public static final String SELENIUM_MAX_DRIVER_ERROR_PROPERTY = "selenium.max.driver.error";
 	public static final int SELENIUM_MAX_DRIVER_ERROR_DEFAULT = 3;
 
+	public static final String SELENIUM_REMOTE_HUB_URL_PROPERTY = "selenium.remote.hub.url";
+
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
 	public static final int CLIENT_RATE_DEFAULT = 5000; // milliseconds
