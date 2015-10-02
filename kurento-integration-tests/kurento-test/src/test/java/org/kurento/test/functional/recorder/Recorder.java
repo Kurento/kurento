@@ -112,6 +112,9 @@ public class Recorder extends FunctionalTest {
 
 			AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
 					expectedAudioCodec);
+			AssertMedia.assertDuration(recordingFile,
+					TimeUnit.SECONDS.toMillis(playTime),
+					TimeUnit.SECONDS.toMillis(getPage().getThresholdTime()));
 
 		} else {
 			double currentTime = getPage().getCurrentTime();

@@ -185,6 +185,9 @@ public class RecorderSwitchTest extends Recorder {
 
 		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
 				expectedAudioCodec);
+		AssertMedia.assertDuration(recordingFile,
+				TimeUnit.SECONDS.toMillis(playtime),
+				TimeUnit.SECONDS.toMillis(getPage().getThresholdTime()));
 
 		// Release Media Pipeline #2
 		mp2.release();

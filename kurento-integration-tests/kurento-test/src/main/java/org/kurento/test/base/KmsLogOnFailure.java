@@ -120,7 +120,8 @@ public class KmsLogOnFailure extends TestWatcher {
 				final File[] files = folder.listFiles(new FilenameFilter() {
 					@Override
 					public boolean accept(final File dir, final String name) {
-						return name.matches(".*\\.log");
+						return name.contains(
+								KurentoServicesTestHelper.getSimpleTestName());
 					}
 				});
 				if (files != null) {

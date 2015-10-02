@@ -18,6 +18,8 @@ import java.io.File;
 
 import org.junit.Assert;
 
+import com.google.common.base.Strings;
+
 /**
  * 
  * Utility class to assert the expected codecs in a media (video/audio) file.
@@ -41,6 +43,37 @@ public class AssertMedia {
 				videoFormat);
 		Assert.assertEquals("Wrong audio codec", expectedAudioCodec,
 				audioFormat);
+	}
+
+	public static void assertDuration(String pathToMedia,
+			long expectedDurationMs, long thresholdMs) {
+		MediaInfo info = new MediaInfo();
+		info.open(new File(pathToMedia));
+		String generalDuration = info.get(MediaInfo.StreamKind.General, 0,
+				"Duration", MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
+		String audioDuration = info.get(MediaInfo.StreamKind.Audio, 0,
+				"Duration", MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
+		info.close();
+
+		Assert.assertFalse("General duration is empty or null",
+				Strings.isNullOrEmpty(generalDuration));
+		Assert.assertFalse("Audio duration is empty or null",
+				Strings.isNullOrEmpty(audioDuration));
+
+		long generalDurationMs = Long.parseLong(generalDuration);
+		long audioDurationMs = Long.parseLong(audioDuration);
+
+		long difference = Math.abs(generalDurationMs - expectedDurationMs);
+		Assert.assertTrue(
+				"Wrong general duration (expected=" + expectedDurationMs
+						+ " ms, real= " + generalDurationMs + " ms)",
+				difference < thresholdMs);
+
+		difference = Math.abs(audioDurationMs - expectedDurationMs);
+		Assert.assertTrue(
+				"Wrong audio duration (expected=" + expectedDurationMs
+						+ " ms, real= " + audioDurationMs + " ms)",
+				difference < thresholdMs);
 	}
 
 }

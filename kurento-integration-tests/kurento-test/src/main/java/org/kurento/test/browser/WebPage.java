@@ -292,4 +292,13 @@ public class WebPage {
 	public void setTimeout(int timeoutSeconds) {
 		browser.changeTimeout(timeoutSeconds);
 	}
+
+	/*
+	 * getThresholdTime
+	 */
+	public int getThresholdTime() {
+		return browser.getThresholdTime();
+
+	}
+
 }
