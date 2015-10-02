@@ -86,6 +86,7 @@ target_include_directories(test_webrtcendpoint PRIVATE
                            ${nice_INCLUDE_DIRS}
                            "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
 target_link_libraries(test_webrtcendpoint
+                      kmswebrtcendpointlib
                       ${gstreamer-1.5_LIBRARIES}
                       ${gstreamer-sdp-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
