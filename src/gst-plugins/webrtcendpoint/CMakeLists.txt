@@ -59,6 +59,7 @@ add_library(webrtcdataproto SHARED
 )
 
 target_link_libraries(webrtcdataproto
+  ${KmsGstCommons_LIBRARIES}
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-app-1.5_LIBRARIES}
