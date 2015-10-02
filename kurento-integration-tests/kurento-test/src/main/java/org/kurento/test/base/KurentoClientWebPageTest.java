@@ -19,7 +19,6 @@ import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.kurento.client.EventListener;
@@ -41,7 +40,8 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @since 4.2.3
  */
 @EnableAutoConfiguration
-public class KurentoClientWebPageTest<W extends WebPage> extends WebPageTest<W> {
+public class KurentoClientWebPageTest<W extends WebPage>
+		extends WebPageTest<W> {
 
 	protected ConfigurableApplicationContext context;
 	protected KurentoClientManager kurentoClientManager;
@@ -55,15 +55,15 @@ public class KurentoClientWebPageTest<W extends WebPage> extends WebPageTest<W> 
 		super(testScenario);
 
 		Class<?> clazz = this.getClass();
-		while(true){
+		while (true) {
 			try {
 				clazz.getConstructor();
 				break;
-			} catch(NoSuchMethodException e){
+			} catch (NoSuchMethodException e) {
 				clazz = clazz.getSuperclass();
 			}
 		}
-		
+
 		context = KurentoServicesTestHelper.startHttpServer(clazz);
 	}
 
@@ -72,14 +72,11 @@ public class KurentoClientWebPageTest<W extends WebPage> extends WebPageTest<W> 
 
 	@Before
 	public void setupKurentoClient() throws IOException {
-		kurentoClientManager = new KurentoClientManager(testName, this.getClass());
+		kurentoClientManager = new KurentoClientManager(testName,
+				this.getClass());
 		kurentoClient = kurentoClientManager.getKurentoClient();
 		fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
-	}
-
-	@After
-	public void teardownKurentoClient() throws Exception {
-		kurentoClientManager.teardown();
+		logOnFailure.setKurentoClientManager(kurentoClientManager);
 	}
 
 	protected int getServerPort() {
@@ -95,45 +92,54 @@ public class KurentoClientWebPageTest<W extends WebPage> extends WebPageTest<W> 
 	}
 
 	public static String getDefaultOutputFile(String preffix) {
-		File fileForRecording = new File(
-				KurentoServicesTestHelper.getTestDir() + "/" + KurentoServicesTestHelper.getTestCaseName());
+		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
+				+ "/" + KurentoServicesTestHelper.getTestCaseName());
 		String testName = KurentoServicesTestHelper.getSimpleTestName();
 		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
 	}
 
-	public void addFakeClients(int numMockClients, int bandwidht, MediaPipeline mainPipeline,
-			WebRtcEndpoint webRtcEndpoint) {
+	public void addFakeClients(int numMockClients, int bandwidht,
+			MediaPipeline mainPipeline, WebRtcEndpoint webRtcEndpoint) {
 
 		if (fakeKurentoClient == null) {
-			log.warn("Fake kurentoClient is not defined. You must set the value of {} property", FAKE_KMS_WS_URI_PROP);
+			log.warn(
+					"Fake kurentoClient is not defined. You must set the value of {} property",
+					FAKE_KMS_WS_URI_PROP);
 
 		} else {
 
 			log.info("* * * Adding {} mock clients * * *", numMockClients);
 
-			MediaPipeline fakePipeline = fakeKurentoClient.createMediaPipeline();
+			MediaPipeline fakePipeline = fakeKurentoClient
+					.createMediaPipeline();
 
 			for (int i = 0; i < numMockClients; i++) {
-				final WebRtcEndpoint fakeSender = new WebRtcEndpoint.Builder(mainPipeline).build();
-				final WebRtcEndpoint fakeReceiver = new WebRtcEndpoint.Builder(fakePipeline).build();
+				final WebRtcEndpoint fakeSender = new WebRtcEndpoint.Builder(
+						mainPipeline).build();
+				final WebRtcEndpoint fakeReceiver = new WebRtcEndpoint.Builder(
+						fakePipeline).build();
 
 				fakeSender.setMaxVideoSendBandwidth(bandwidht);
 				fakeSender.setMinVideoSendBandwidth(bandwidht);
 				fakeReceiver.setMaxVideoRecvBandwidth(bandwidht);
 
-				fakeSender.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
-					@Override
-					public void onEvent(OnIceCandidateEvent event) {
-						fakeReceiver.addIceCandidate(event.getCandidate());
-					}
-				});
+				fakeSender.addOnIceCandidateListener(
+						new EventListener<OnIceCandidateEvent>() {
+							@Override
+							public void onEvent(OnIceCandidateEvent event) {
+								fakeReceiver
+										.addIceCandidate(event.getCandidate());
+							}
+						});
 
-				fakeReceiver.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
-					@Override
-					public void onEvent(OnIceCandidateEvent event) {
-						fakeSender.addIceCandidate(event.getCandidate());
-					}
-				});
+				fakeReceiver.addOnIceCandidateListener(
+						new EventListener<OnIceCandidateEvent>() {
+							@Override
+							public void onEvent(OnIceCandidateEvent event) {
+								fakeSender
+										.addIceCandidate(event.getCandidate());
+							}
+						});
 
 				String sdpOffer = fakeReceiver.generateOffer();
 				String sdpAnswer = fakeSender.processOffer(sdpOffer);

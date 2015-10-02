@@ -23,7 +23,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.internal.runners.model.MultipleFailureException;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.kurento.client.MediaPipeline;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class to print KMS log when a test fails.
@@ -34,31 +37,43 @@ import org.kurento.test.services.KurentoServicesTestHelper;
 @SuppressWarnings("deprecation")
 public class KmsLogOnFailure extends TestWatcher {
 
+	public static Logger log = LoggerFactory.getLogger(KmsLogOnFailure.class);
+
+	private KurentoClientManager kurentoClientManager;
+
+	private boolean succees = false;
+
 	@Override
 	protected void succeeded(Description description) {
 		super.succeeded(description);
-
-		// Delete logs
-		File folder = new File(
-				KurentoServicesTestHelper.getTestDir() + "/" + KurentoServicesTestHelper.getTestCaseName());
-
-		final File[] files = folder.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(final File dir, final String name) {
-				return name.matches(".*\\.log");
-			}
-		});
-		if (files != null) {
-			for (final File file : files) {
-				if (!file.delete()) {
-					System.err.println("Can't remove " + file.getAbsolutePath());
-				}
-			}
-		}
+		succees = true;
 	}
 
 	@Override
 	protected void failed(Throwable e, Description description) {
+
+		log.info("------------------ Test failed ------------------");
+
+		// Store GstreamerDot for each pipeline
+		List<MediaPipeline> pipelines = getKurentoClientManager()
+				.getKurentoClient().getServerManager().getPipelines();
+
+		log.debug("Number of media pipelines in kurentoClient: {}",
+				pipelines.size());
+
+		for (MediaPipeline pipeline : pipelines) {
+			String pipelineName = pipeline.getName();
+			log.debug("Saving GstreamerDot for pipeline {}", pipelineName);
+			String gstreamerDotFile = KurentoClientWebPageTest
+					.getDefaultOutputFile("-" + pipelineName);
+
+			try {
+				FileUtils.writeStringToFile(new File(gstreamerDotFile),
+						pipeline.getGstreamerDot());
+			} catch (IOException ioe) {
+				log.error("Exception writing GstreamerDot file", ioe);
+			}
+		}
 
 		if (KurentoServicesTestHelper.printKmsLog()) {
 			List<File> logFiles = KurentoServicesTestHelper.getServerLogFiles();
@@ -67,7 +82,8 @@ public class KmsLogOnFailure extends TestWatcher {
 				for (File logFile : logFiles) {
 					if (logFile != null && logFile.exists()) {
 						System.err.println(separator);
-						System.err.println("Log file path: " + logFile.getAbsolutePath());
+						System.err.println(
+								"Log file path: " + logFile.getAbsolutePath());
 						System.err.println("Content:");
 
 						try {
@@ -75,7 +91,8 @@ public class KmsLogOnFailure extends TestWatcher {
 								System.err.println(line);
 							}
 						} catch (IOException e1) {
-							System.err.println("Error reading lines in log file");
+							System.err
+									.println("Error reading lines in log file");
 							e1.printStackTrace();
 						}
 						System.err.println(separator);
@@ -84,6 +101,41 @@ public class KmsLogOnFailure extends TestWatcher {
 			}
 		}
 
+	}
+
+	@Override
+	protected void finished(Description description) {
+		super.finished(description);
+
+		log.info("------------------ Test finished ------------------");
+
+		try {
+			getKurentoClientManager().teardown();
+
+			if (succees) {
+				// Delete logs
+				File folder = new File(KurentoServicesTestHelper.getTestDir()
+						+ "/" + KurentoServicesTestHelper.getTestCaseName());
+
+				final File[] files = folder.listFiles(new FilenameFilter() {
+					@Override
+					public boolean accept(final File dir, final String name) {
+						return name.matches(".*\\.log");
+					}
+				});
+				if (files != null) {
+					for (final File file : files) {
+						if (!file.delete()) {
+							log.error("Can't remove {}",
+									file.getAbsolutePath());
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("Exception closing kurento client manager", e);
+		}
 	}
 
 	@SuppressWarnings({ "unused" })
@@ -98,6 +150,15 @@ public class KmsLogOnFailure extends TestWatcher {
 		} else {
 			e.printStackTrace();
 		}
+	}
+
+	public KurentoClientManager getKurentoClientManager() {
+		return kurentoClientManager;
+	}
+
+	public void setKurentoClientManager(
+			KurentoClientManager kurentoClientManager) {
+		this.kurentoClientManager = kurentoClientManager;
 	}
 
 }
