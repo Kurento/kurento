@@ -29,12 +29,8 @@ import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.browser.WebRtcChannel;
-import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  *
@@ -60,13 +56,9 @@ import org.kurento.test.mediainfo.AssertMedia;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderPlayerTest extends FunctionalTest {
+public class RecorderPlayerTest extends Recorder {
 
 	private static final int PLAYTIME = 10; // seconds
-	private static final String EXPECTED_VIDEO_CODEC_WEBM = "VP8";
-	private static final String EXPECTED_VIDEO_CODEC_MP4 = "AVC";
-	private static final String EXPECTED_AUDIO_CODEC_WEBM = "Vorbis";
-	private static final String EXPECTED_AUDIO_CODEC_MP4 = "MPEG Audio";
 	private static final Color EXPECTED_COLOR = Color.GREEN;
 
 	public RecorderPlayerTest(TestScenario testScenario) {
@@ -81,13 +73,13 @@ public class RecorderPlayerTest extends FunctionalTest {
 	@Test
 	public void testRecorderPlayerWebm() throws Exception {
 		doTest(MediaProfileSpecType.WEBM, EXPECTED_VIDEO_CODEC_WEBM,
-				EXPECTED_AUDIO_CODEC_WEBM, ".webm");
+				EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
 	}
 
 	@Test
 	public void testRecorderPlayerMp4() throws Exception {
 		doTest(MediaProfileSpecType.MP4, EXPECTED_VIDEO_CODEC_MP4,
-				EXPECTED_AUDIO_CODEC_MP4, ".mp4");
+				EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
 	}
 
 	public void doTest(MediaProfileSpecType mediaProfileSpecType,
@@ -118,8 +110,9 @@ public class RecorderPlayerTest extends FunctionalTest {
 		});
 
 		// Test execution #1. Play the video while it is recorded
-		launchBrowser(webRtcEP1, playerEP, recorderEP, expectedVideoCodec,
-				expectedAudioCodec, recordingFile);
+		launchBrowser(mp, webRtcEP1, playerEP, recorderEP, expectedVideoCodec,
+				expectedAudioCodec, recordingFile, EXPECTED_COLOR, 0, 0,
+				PLAYTIME);
 
 		// Wait for EOS
 		Assert.assertTrue("No EOS event",
@@ -139,61 +132,14 @@ public class RecorderPlayerTest extends FunctionalTest {
 		playerEP2.connect(webRtcEP2);
 
 		// Playing the recording
-		launchBrowser(webRtcEP2, playerEP2, null, expectedVideoCodec,
-				expectedAudioCodec, recordingFile);
+		launchBrowser(null, webRtcEP2, playerEP2, null, expectedVideoCodec,
+				expectedAudioCodec, recordingFile, EXPECTED_COLOR, 0, 0,
+				PLAYTIME);
 
 		// Release Media Pipeline #2
 		mp2.release();
 
-	}
-
-	private void launchBrowser(WebRtcEndpoint webRtcEP, PlayerEndpoint playerEP,
-			RecorderEndpoint recorderEP, String expectedVideoCodec,
-			String expectedAudioCodec, String recordingFile)
-					throws InterruptedException {
-
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
-		playerEP.play();
-		final CountDownLatch eosLatch = new CountDownLatch(1);
-		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosLatch.countDown();
-			}
-		});
-
-		if (recorderEP != null) {
-			recorderEP.record();
-		}
-
-		// Assertions
-		String inRecording = (recorderEP == null) ? " in the recording" : "";
-
-		Assert.assertTrue("Not received media (timeout waiting playing event)"
-				+ inRecording, getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be " + EXPECTED_COLOR
-				+ inRecording, getPage().similarColor(EXPECTED_COLOR));
-		Assert.assertTrue("Not received EOS event in player" + inRecording,
-				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
-		if (recorderEP != null) {
-			recorderEP.stop();
-
-			// Guard time to stop the recording
-			Thread.sleep(2000);
-
-			AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
-					expectedAudioCodec);
-
-		} else {
-			double currentTime = getPage().getCurrentTime();
-			Assert.assertTrue(
-					"Error in play time in the recorded video (expected: "
-							+ PLAYTIME + " sec, real: " + currentTime + " sec) "
-							+ inRecording,
-					getPage().compare(PLAYTIME, currentTime));
-		}
+		success = true;
 	}
 
 }

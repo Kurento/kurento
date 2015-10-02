@@ -29,7 +29,6 @@ import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
@@ -60,14 +59,10 @@ import org.kurento.test.mediainfo.AssertMedia;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderSwitchTest extends FunctionalTest {
+public class RecorderSwitchTest extends Recorder {
 
 	private static final int PLAYTIME = 20; // seconds
 	private static final int N_PLAYER = 3;
-	private static final String EXPECTED_VIDEO_CODEC_WEBM = "VP8";
-	private static final String EXPECTED_VIDEO_CODEC_MP4 = "AVC";
-	private static final String EXPECTED_AUDIO_CODEC_WEBM = "Vorbis";
-	private static final String EXPECTED_AUDIO_CODEC_MP4 = "MPEG Audio";
 	private static final Color[] EXPECTED_COLORS = { Color.RED, Color.GREEN,
 			Color.BLUE };
 
@@ -83,13 +78,13 @@ public class RecorderSwitchTest extends FunctionalTest {
 	@Test
 	public void testRecorderSwitchWebm() throws Exception {
 		doTest(MediaProfileSpecType.WEBM, EXPECTED_VIDEO_CODEC_WEBM,
-				EXPECTED_AUDIO_CODEC_WEBM, ".webm");
+				EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
 	}
 
 	@Test
 	public void testRecorderSwitchMp4() throws Exception {
 		doTest(MediaProfileSpecType.MP4, EXPECTED_VIDEO_CODEC_MP4,
-				EXPECTED_AUDIO_CODEC_MP4, ".mp4");
+				EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
 	}
 
 	public void doTest(MediaProfileSpecType mediaProfileSpecType,
@@ -138,6 +133,7 @@ public class RecorderSwitchTest extends FunctionalTest {
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
 		// Release Media Pipeline #1
+		saveGstreamerDot(mp);
 		recorderEP.stop();
 		mp.release();
 
@@ -193,6 +189,7 @@ public class RecorderSwitchTest extends FunctionalTest {
 		// Release Media Pipeline #2
 		mp2.release();
 
+		success = true;
 	}
 
 }
