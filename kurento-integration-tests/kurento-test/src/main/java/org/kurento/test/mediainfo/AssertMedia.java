@@ -37,12 +37,10 @@ public class AssertMedia {
 				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
 		info.close();
 
-		Assert.assertEquals("Expected video codec is " + expectedVideoCodec
-				+ " and the recorded video is " + videoFormat,
-				expectedVideoCodec, videoFormat);
-		Assert.assertEquals("Expected audio codec is " + expectedAudioCodec
-				+ " and the recorded video is " + audioFormat,
-				expectedAudioCodec, audioFormat);
+		Assert.assertEquals("Wrong video codec", expectedVideoCodec,
+				videoFormat);
+		Assert.assertEquals("Wrong audio codec", expectedAudioCodec,
+				audioFormat);
 	}
 
 }

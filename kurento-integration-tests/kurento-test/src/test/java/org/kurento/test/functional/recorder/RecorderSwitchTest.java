@@ -25,10 +25,10 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.Shell;
 import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
@@ -64,10 +64,12 @@ public class RecorderSwitchTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 20; // seconds
 	private static final int N_PLAYER = 3;
-	private static final String EXPECTED_VIDEO_CODEC = "VP8";
-	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
-	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
-	private static final Color[] EXPECTED_COLORS = { Color.RED, Color.GREEN, Color.BLUE };
+	private static final String EXPECTED_VIDEO_CODEC_WEBM = "VP8";
+	private static final String EXPECTED_VIDEO_CODEC_MP4 = "AVC";
+	private static final String EXPECTED_AUDIO_CODEC_WEBM = "Vorbis";
+	private static final String EXPECTED_AUDIO_CODEC_MP4 = "MPEG Audio";
+	private static final Color[] EXPECTED_COLORS = { Color.RED, Color.GREEN,
+			Color.BLUE };
 
 	public RecorderSwitchTest(TestScenario testScenario) {
 		super(testScenario);
@@ -79,24 +81,39 @@ public class RecorderSwitchTest extends FunctionalTest {
 	}
 
 	@Test
-	public void testRecorderSwitch() throws Exception {
+	public void testRecorderSwitchWebm() throws Exception {
+		doTest(MediaProfileSpecType.WEBM, EXPECTED_VIDEO_CODEC_WEBM,
+				EXPECTED_AUDIO_CODEC_WEBM, ".webm");
+	}
+
+	@Test
+	public void testRecorderSwitchMp4() throws Exception {
+		doTest(MediaProfileSpecType.MP4, EXPECTED_VIDEO_CODEC_MP4,
+				EXPECTED_AUDIO_CODEC_MP4, ".mp4");
+	}
+
+	public void doTest(MediaProfileSpecType mediaProfileSpecType,
+			String expectedVideoCodec, String expectedAudioCodec,
+			String extension) throws Exception {
 		// Media Pipeline #1
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/red.webm")
-				.build();
-		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/green.webm")
-				.build();
-		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/blue.webm")
-				.build();
+		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/red.webm").build();
+		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/green.webm").build();
+		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/blue.webm").build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
-		final String recordingPreProcess = Protocol.FILE + getDefaultOutputFile(PRE_PROCESS_SUFIX);
-		final String recordingPostProcess = Protocol.FILE + getDefaultFileForRecording();
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp, recordingPreProcess).build();
+		String recordingFile = getDefaultOutputFile(extension);
+		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
+				Protocol.FILE + recordingFile)
+						.withMediaProfile(mediaProfileSpecType).build();
 
 		// Test execution
 		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
 		// red
 		playerRed.connect(webRtcEP);
@@ -104,7 +121,8 @@ public class RecorderSwitchTest extends FunctionalTest {
 		playerRed.play();
 		recorderEP.record();
 
-		Assert.assertTrue("Not received media (timeout waiting playing event)", getPage().waitForEvent("playing"));
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getPage().waitForEvent("playing"));
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
 		// green
@@ -126,18 +144,17 @@ public class RecorderSwitchTest extends FunctionalTest {
 		// Reloading browser
 		getPage().reload();
 
-		// Post-processing
-		Shell.runAndWait("ffmpeg", "-y", "-i", recordingPreProcess, "-c", "copy", recordingPostProcess);
-
 		// Media Pipeline #2
 		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2, recordingPostProcess).build();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
+				Protocol.FILE + recordingFile).build();
 		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
 		playerEP2.connect(webRtcEP2);
 
 		// Playing the recording
 		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage().initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 		final CountDownLatch eosLatch = new CountDownLatch(1);
 		playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
 			@Override
@@ -151,20 +168,27 @@ public class RecorderSwitchTest extends FunctionalTest {
 		final String messageAppend = "[played file with media pipeline]";
 		final int playtime = PLAYTIME;
 
-		Assert.assertTrue("Not received media in the recording (timeout waiting playing event) " + messageAppend,
+		Assert.assertTrue(
+				"Not received media in the recording (timeout waiting playing event) "
+						+ messageAppend,
 				getPage().waitForEvent("playing"));
 		for (Color color : EXPECTED_COLORS) {
-			Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
+			Assert.assertTrue("The color of the recorded video should be "
+					+ color + " " + messageAppend,
 					getPage().similarColor(color));
 		}
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time in the recorded video (expected: " + playtime + " sec, real: "
-				+ currentTime + " sec) " + messageAppend, getPage().compare(playtime, currentTime));
+		Assert.assertTrue(
+				"Error in play time in the recorded video (expected: "
+						+ playtime + " sec, real: " + currentTime + " sec) "
+						+ messageAppend,
+				getPage().compare(playtime, currentTime));
 
-		AssertMedia.assertCodecs(getDefaultOutputFile(PRE_PROCESS_SUFIX), EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
+		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
+				expectedAudioCodec);
 
 		// Release Media Pipeline #2
 		mp2.release();
