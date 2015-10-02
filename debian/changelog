@@ -1,3 +1,20 @@
+kms-chroma-6.0 (6.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.1.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 02 Oct 2015 17:21:52 +0200
+
 kms-chroma-6.0 (6.1.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
