@@ -32,9 +32,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 
-public class RangeGetTests extends HttpRepositoryTest {
+public class RangeGetTests extends BaseRepositoryTest {
 
 	@Test
 	public void test() throws Exception {

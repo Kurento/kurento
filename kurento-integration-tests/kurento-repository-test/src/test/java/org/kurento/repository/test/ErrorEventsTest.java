@@ -29,9 +29,9 @@ import org.kurento.repository.HttpSessionStartedEvent;
 import org.kurento.repository.RepositoryHttpEventListener;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 
-public class ErrorEventsTest extends HttpRepositoryTest {
+public class ErrorEventsTest extends BaseRepositoryTest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ErrorEventsTest.class);

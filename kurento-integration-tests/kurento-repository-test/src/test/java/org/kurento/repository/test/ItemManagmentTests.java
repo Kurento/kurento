@@ -27,9 +27,9 @@ import org.junit.Test;
 import org.kurento.repository.DuplicateItemException;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 
-public class ItemManagmentTests extends HttpRepositoryTest {
+public class ItemManagmentTests extends BaseRepositoryTest {
 
 	@Test(expected = DuplicateItemException.class)
 	public void duplicateTest() throws IOException {

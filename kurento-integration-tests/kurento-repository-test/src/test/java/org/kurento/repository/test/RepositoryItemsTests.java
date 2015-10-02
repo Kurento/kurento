@@ -22,10 +22,10 @@ import java.io.File;
 import org.junit.Test;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 import org.kurento.repository.test.util.TestUtils;
 
-public class RepositoryItemsTests extends HttpRepositoryTest {
+public class RepositoryItemsTests extends BaseRepositoryTest {
 
 	@Test
 	public void testFileUpload() throws Exception {

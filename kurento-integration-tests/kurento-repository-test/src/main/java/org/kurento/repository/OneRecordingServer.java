@@ -48,7 +48,7 @@ public class OneRecordingServer {
 
 	public synchronized void startServer() throws Exception {
 		if (context == null) {
-			context = BootApplication.start();
+			context = RepositoryServer.start();
 		}
 	}
 

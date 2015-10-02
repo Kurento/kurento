@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 import org.kurento.repository.RepositoryHttpPlayer;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 
-public class TimeoutTests extends HttpRepositoryTest {
+public class TimeoutTests extends BaseRepositoryTest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(TimeoutTests.class);

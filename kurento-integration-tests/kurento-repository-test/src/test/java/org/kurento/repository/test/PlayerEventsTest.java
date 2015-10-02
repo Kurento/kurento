@@ -31,10 +31,10 @@ import org.kurento.repository.RepositoryHttpEventListener;
 import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 import org.kurento.repository.test.util.TestUtils;
 
-public class PlayerEventsTest extends HttpRepositoryTest {
+public class PlayerEventsTest extends BaseRepositoryTest {
 
 	@Test
 	public void testFileUploadAndDownload() throws Exception {

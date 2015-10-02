@@ -17,7 +17,6 @@ package org.kurento.repository;
 
 import java.util.Properties;
 
-import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
@@ -32,7 +31,7 @@ import com.google.common.io.Files;
 
 @ComponentScan
 @EnableAutoConfiguration
-public class BootApplication {
+public class RepositoryServer {
 
 	private static final String TEST_MONGO_URL_DEFAULT = "mongodb://localhost";
 	private static final String TEST_MONGO_URL = "test.mongodb.url";
@@ -70,10 +69,10 @@ public class BootApplication {
 		} else if (type.isMongoDB()) {
 			config.setMongoDatabaseName("kurento");
 			config.setMongoGridFSCollectionName("fs");
-			
-			String mongoUrlConnection = PropertiesManager.
-					getProperty(TEST_MONGO_URL, TEST_MONGO_URL_DEFAULT);
-			
+
+			String mongoUrlConnection = PropertiesManager
+					.getProperty(TEST_MONGO_URL, TEST_MONGO_URL_DEFAULT);
+
 			config.setMongoURLConnection(mongoUrlConnection);
 		}
 		config.setWebappPublicURL("http://localhost:" + port + "/");
@@ -95,7 +94,7 @@ public class BootApplication {
 		properties.put("server.port", getPort());
 
 		SpringApplication application = new SpringApplication(
-				BootApplication.class);
+				RepositoryServer.class);
 
 		application.setDefaultProperties(properties);
 

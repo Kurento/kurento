@@ -25,7 +25,7 @@ import java.util.List;
 import org.junit.Test;
 import org.kurento.repository.Repository;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
-import org.kurento.repository.test.util.HttpRepositoryTest;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
-public class FilenameAsIdTest extends HttpRepositoryTest {
+public class FilenameAsIdTest extends BaseRepositoryTest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(FilenameAsIdTest.class);

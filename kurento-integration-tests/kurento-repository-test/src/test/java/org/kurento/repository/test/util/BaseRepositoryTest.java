@@ -25,28 +25,48 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
+import org.kurento.commons.testing.RepositoryApiTests;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
+import org.kurento.repository.RepositoryServer;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
-public class HttpRepositoryTest extends ContextByTestSpringBootTest {
+@Category(RepositoryApiTests.class)
+public class BaseRepositoryTest {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(HttpRepositoryTest.class);
+			.getLogger(BaseRepositoryTest.class);
 
-	public HttpRepositoryTest() {
-		super();
+	protected static ConfigurableApplicationContext repositoryServer;
+
+	@BeforeClass
+	public static void start() throws Exception {
+		repositoryServer = RepositoryServer.start();
+	}
+
+	@AfterClass
+	public static void stop() {
+
+		log.info("Stopping RepositoryServer...");
+		repositoryServer.close();
+		log.info("RepositoryServer stopped");
 	}
 
 	@Before
@@ -57,6 +77,7 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 		tmpFolder.mkdirs();
 
 		Repository repo = getRepository();
+
 		if (repo instanceof MongoRepository) {
 			MongoRepository mrepo = (MongoRepository) repo;
 			mrepo.getGridFS().getDB().dropDatabase();
@@ -64,7 +85,19 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 	}
 
 	protected Repository getRepository() {
-		return (Repository) context.getBean("repository");
+		return (Repository) repositoryServer.getBean("repository");
+	}
+
+	protected RestTemplate getRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+			@Override
+			public void handleError(ClientHttpResponse response)
+					throws IOException {
+				log.error(response.getStatusText());
+			}
+		});
+		return restTemplate;
 	}
 
 	protected void downloadFromURL(String urlToDownload, File downloadedFile)
@@ -94,8 +127,8 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 		if (downloadedFile.exists()) {
 			boolean success = downloadedFile.delete();
 			if (!success) {
-				throw new RuntimeException("The existing file "
-						+ downloadedFile + " cannot be deleted");
+				throw new RuntimeException("The existing file " + downloadedFile
+						+ " cannot be deleted");
 			}
 		}
 
@@ -104,7 +137,8 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 		return downloadedFile;
 	}
 
-	protected void uploadFileWithMultiparts(String uploadURL, File fileToUpload) {
+	protected void uploadFileWithMultiparts(String uploadURL,
+			File fileToUpload) {
 
 		RestTemplate template = getRestTemplate();
 
@@ -142,8 +176,9 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 		return uploadFile(fileToUpload, repositoryItem);
 	}
 
-	protected String uploadFile(File fileToUpload, RepositoryItem repositoryItem)
-			throws FileNotFoundException, IOException {
+	protected String uploadFile(File fileToUpload,
+			RepositoryItem repositoryItem)
+					throws FileNotFoundException, IOException {
 
 		String id = repositoryItem.getId();
 
