@@ -38,10 +38,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-public class RangePutTests extends BaseRepositoryTest {
+public class RangePutTest extends BaseRepositoryTest {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(RangePutTests.class);
+			.getLogger(RangePutTest.class);
 
 	@Test
 	public void testFileUploadWithSeqPUTs() throws Exception {

@@ -36,10 +36,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-public class RangeGetTests extends BaseRepositoryTest {
+public class RangeGetTest extends BaseRepositoryTest {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(RangeGetTests.class);
+			.getLogger(RangeGetTest.class);
 
 	@Test
 	public void test() throws Exception {

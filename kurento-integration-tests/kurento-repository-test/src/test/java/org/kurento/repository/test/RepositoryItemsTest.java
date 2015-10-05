@@ -25,7 +25,7 @@ import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.test.util.BaseRepositoryTest;
 import org.kurento.repository.test.util.TestUtils;
 
-public class RepositoryItemsTests extends BaseRepositoryTest {
+public class RepositoryItemsTest extends BaseRepositoryTest {
 
 	@Test
 	public void testFileUpload() throws Exception {

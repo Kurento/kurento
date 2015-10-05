@@ -29,7 +29,7 @@ import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.test.util.BaseRepositoryTest;
 
-public class ItemManagmentTests extends BaseRepositoryTest {
+public class ItemManagmentTest extends BaseRepositoryTest {
 
 	@Test(expected = DuplicateItemException.class)
 	public void duplicateTest() throws IOException {
