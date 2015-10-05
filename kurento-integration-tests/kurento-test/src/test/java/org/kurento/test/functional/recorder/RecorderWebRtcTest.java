@@ -59,7 +59,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderWebRtcTest extends Recorder {
+public class RecorderWebRtcTest extends BaseRecorder {
 
 	private static final int PLAYTIME = 20; // seconds
 

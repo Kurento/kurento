@@ -54,7 +54,7 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderFaceOverlayTest extends Recorder {
+public class RecorderFaceOverlayTest extends BaseRecorder {
 
 	private static final int PLAYTIME = 30; // seconds
 	private static final int THRESHOLD = 20; // seconds

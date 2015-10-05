@@ -42,7 +42,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class Recorder extends FunctionalTest {
+public class BaseRecorder extends FunctionalTest {
 
 	protected static final String EXPECTED_VIDEO_CODEC_WEBM = "VP8";
 	protected static final String EXPECTED_VIDEO_CODEC_MP4 = "AVC";
@@ -55,7 +55,7 @@ public class Recorder extends FunctionalTest {
 	protected String gstreamerDot;
 	protected String pipelineName;
 
-	public Recorder(TestScenario testScenario) {
+	public BaseRecorder(TestScenario testScenario) {
 		super(testScenario);
 	}
 

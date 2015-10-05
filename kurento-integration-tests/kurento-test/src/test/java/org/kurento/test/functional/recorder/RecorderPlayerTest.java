@@ -56,7 +56,7 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderPlayerTest extends Recorder {
+public class RecorderPlayerTest extends BaseRecorder {
 
 	private static final int PLAYTIME = 10; // seconds
 	private static final Color EXPECTED_COLOR = Color.GREEN;
