@@ -20,22 +20,17 @@ import java.util.Properties;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
-/**
- * Kurento Repository web application (it's a Spring app).
- * 
- * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
- */
-@SpringBootApplication
+@ComponentScan
+@EnableAutoConfiguration
+@Import(RepositoryApplicationContextConfiguration.class)
 public class KurentoRepositoryServerApp {
-
-	public static void main(String[] args) {
-		start();
-	}
 
 	@Bean
 	public RepositoryHttpServlet repositoryHttpServlet() {
@@ -45,21 +40,29 @@ public class KurentoRepositoryServerApp {
 	@Bean
 	public ServletRegistrationBean repositoryServletRegistrationBean(
 			RepositoryHttpServlet repositoryHttpServlet) {
+
 		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(
 				repositoryHttpServlet, "/repository_servlet/*");
 		servletRegistrationBean.setLoadOnStartup(1);
+
 		return servletRegistrationBean;
 	}
 
 	public static ConfigurableApplicationContext start() {
-		SpringApplication application = new SpringApplication(
-				KurentoRepositoryServerApp.class);
 
 		Properties properties = new Properties();
 		properties.put("server.port",
 				RepositoryApplicationContextConfiguration.SERVER_PORT);
+
+		SpringApplication application = new SpringApplication(
+				KurentoRepositoryServerApp.class);
+
 		application.setDefaultProperties(properties);
 
 		return application.run();
+	}
+
+	public static void main(String[] args) {
+		start();
 	}
 }

@@ -34,7 +34,7 @@ import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
-import org.kurento.repository.RepositoryServer;
+import org.kurento.repository.KurentoRepositoryServerApp;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +58,7 @@ public class BaseRepositoryTest {
 
 	@BeforeClass
 	public static void start() throws Exception {
-		repositoryServer = RepositoryServer.start();
+		repositoryServer = KurentoRepositoryServerApp.start();
 	}
 
 	@AfterClass

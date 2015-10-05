@@ -35,6 +35,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class RepositoryApplicationContextConfiguration {
+
 	public static final String KEY_CONFIG_FILENAME = "kurento-repo.conf.json";
 
 	public static final String KEY_REPO_HOST = "repository.hostname";
@@ -55,7 +56,7 @@ public class RepositoryApplicationContextConfiguration {
 	public static String SERVER_HOSTNAME = getProperty(KEY_REPO_HOST,
 			"localhost");
 	public static String REPO_TYPE = getProperty(KEY_REPO_TYPE,
-			RepoType.FILESYSTEM.getTypeValue());
+			RepoType.MONGODB.getTypeValue());
 
 	private static final Logger log = LoggerFactory
 			.getLogger(RepositoryApplicationContextConfiguration.class);
@@ -87,18 +88,25 @@ public class RepositoryApplicationContextConfiguration {
 
 	@Bean
 	public RepositoryApiConfiguration repositoryApiConfiguration() {
+
 		RepositoryApiConfiguration config = new RepositoryApiConfiguration();
-		config.setWebappPublicURL("http://" + SERVER_HOSTNAME + ":"
-				+ SERVER_PORT + "/");
+
+		config.setWebappPublicURL(
+				"http://" + SERVER_HOSTNAME + ":" + SERVER_PORT + "/");
+
 		RepoType type = RepoType.parseType(REPO_TYPE);
 		config.setRepositoryType(type);
 		StringBuilder sb = new StringBuilder(type.getTypeValue());
+
 		if (type.isFilesystem()) {
+
 			String filesFolder = getProperty(KEY_FS_FOLDER,
 					config.getFileSystemFolder());
 			config.setFileSystemFolder(filesFolder);
 			sb.append("\n\t").append("folder : ").append(filesFolder);
+
 		} else if (type.isMongoDB()) {
+
 			String dbName = getProperty(KEY_MG_DB,
 					config.getMongoDatabaseName());
 			config.setMongoDatabaseName(dbName);
@@ -107,10 +115,12 @@ public class RepositoryApplicationContextConfiguration {
 					config.getMongoGridFSCollectionName());
 			config.setMongoGridFSCollectionName(grid);
 			sb.append("\n\t").append("gridName : ").append(grid);
-			String url = getProperty(KEY_MG_URL, config.getMongoURLConnection());
+			String url = getProperty(KEY_MG_URL,
+					config.getMongoURLConnection());
 			config.setMongoURLConnection(url);
 			sb.append("\n\t").append("urlConn : ").append(url);
 		}
+
 		log.info("Repository config: {}", sb.toString());
 		return config;
 	}
