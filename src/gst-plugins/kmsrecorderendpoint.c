@@ -155,6 +155,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   GstSegment *segment;
   GstBuffer *buffer;
   BaseTimeType *base_time;
+  GstClockTime offset;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -211,13 +212,23 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
     if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-      buffer->pts -= base_time->pts + self->priv->paused_time;
+      offset = base_time->pts + self->priv->paused_time;
+      if (buffer->pts > offset) {
+        buffer->pts -= offset;
+      } else {
+        buffer->pts = 0;
+      }
     }
   }
 
   if (GST_CLOCK_TIME_IS_VALID (base_time->dts)) {
     if (GST_BUFFER_DTS_IS_VALID (buffer)) {
-      buffer->dts -= base_time->dts + self->priv->paused_time;
+      offset = base_time->dts + self->priv->paused_time;
+      if (buffer->dts > offset) {
+        buffer->dts -= offset;
+      } else {
+        buffer->dts = 0;
+      }
     }
   }
 
