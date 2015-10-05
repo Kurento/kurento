@@ -23,7 +23,6 @@ import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
 
-import org.bson.types.ObjectId;
 import org.kurento.repository.DuplicateItemException;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.internal.http.RepositoryHttpManager;
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -67,7 +65,7 @@ public class MongoRepository implements RepositoryWithHttp {
 	@Override
 	public RepositoryItem findRepositoryItemById(String id) {
 
-		List<GridFSDBFile> dbFiles = gridFS.find(idQuery(id));
+		List<GridFSDBFile> dbFiles = gridFS.find(id);
 
 		if (dbFiles.size() > 0) {
 
@@ -79,13 +77,13 @@ public class MongoRepository implements RepositoryWithHttp {
 			return createRepositoryItem(dbFiles.get(0));
 		}
 
-		throw new NoSuchElementException("The repository item with id \"" + id
-				+ "\" does not exist");
+		throw new NoSuchElementException(
+				"The repository item with id \"" + id + "\" does not exist");
 	}
-
-	private DBObject idQuery(String id) {
-		return new BasicDBObject("_id", new ObjectId(id));
-	}
+	//
+	// private DBObject idQuery(String id) {
+	// return new BasicDBObject("_id", id);
+	// }
 
 	private RepositoryItem createRepositoryItem(GridFSInputFile dbFile) {
 		return new MongoRepositoryItem(this, dbFile);
@@ -116,7 +114,7 @@ public class MongoRepository implements RepositoryWithHttp {
 
 		// TODO The file is not written until outputstream is closed. There is a
 		// potentially data race with this unique test
-		if (!gridFS.find(idQuery(id)).isEmpty()) {
+		if (!gridFS.find(id).isEmpty()) {
 			throw new DuplicateItemException(id);
 		}
 
@@ -134,7 +132,7 @@ public class MongoRepository implements RepositoryWithHttp {
 	public void remove(RepositoryItem item) {
 		httpManager.disposeHttpRepoItemElemByItemId(item,
 				"Repository Item removed");
-		gridFS.remove(idQuery(item.getId()));
+		gridFS.remove(item.getId());
 	}
 
 	@Override
@@ -150,8 +148,8 @@ public class MongoRepository implements RepositoryWithHttp {
 	public List<RepositoryItem> findRepositoryItemsByAttRegex(
 			String attributeName, String regex) {
 
-		String query = "{'metadata." + attributeName + "': { $regex : '"
-				+ regex + "'}}";
+		String query = "{'metadata." + attributeName + "': { $regex : '" + regex
+				+ "'}}";
 
 		return findRepositoryItemsByQuery(query);
 	}

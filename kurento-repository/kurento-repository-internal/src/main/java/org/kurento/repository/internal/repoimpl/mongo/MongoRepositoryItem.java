@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bson.types.ObjectId;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.repository.RepositoryItemAttributes;
 import org.kurento.repository.internal.repoimpl.AbstractRepositoryItem;
@@ -61,7 +60,8 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 		return attributes;
 	}
 
-	public MongoRepositoryItem(MongoRepository repository, GridFSDBFile dbFile) {
+	public MongoRepositoryItem(MongoRepository repository,
+			GridFSDBFile dbFile) {
 		this(repository, dbFile, State.STORED);
 	}
 
@@ -102,16 +102,15 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 	}
 
 	protected void refreshAttributesOnClose() {
-		BasicDBObject query = new BasicDBObject("_id", new ObjectId(getId()));
-		dbFile = ((MongoRepository) repository).getGridFS().findOne(query);
+		dbFile = ((MongoRepository) repository).getGridFS().findOne(getId());
 		if (dbFile == null)
-			throw new KurentoException("Grid object not found for id "
-					+ getId());
+			throw new KurentoException(
+					"Grid object not found for id " + getId());
 		state = State.STORED;
 		attributes.setContentLength(dbFile.getLength());
 	}
 
-	// TODO Optimise this to use the GridFS metadata
+	// TODO Optimize this to use the GridFS metadata
 	private void putMetadataInGridFS(boolean save) {
 		DBObject metadataDBO = new BasicDBObject();
 		for (Entry<String, String> entry : metadata.entrySet()) {

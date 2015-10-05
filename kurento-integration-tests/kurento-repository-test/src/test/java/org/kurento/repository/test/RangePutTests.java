@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
@@ -44,9 +43,6 @@ public class RangePutTests extends BaseRepositoryTest {
 	private static final Logger log = LoggerFactory
 			.getLogger(RangePutTests.class);
 
-	// TODO Enable again this test. It is failing now when executed in a test
-	// suite, but not in isolate.
-	@Ignore
 	@Test
 	public void testFileUploadWithSeqPUTs() throws Exception {
 
@@ -63,8 +59,7 @@ public class RangePutTests extends BaseRepositoryTest {
 				.findRepositoryItemById(id);
 
 		File downloadedFile = new File("test-files/tmp/" + id);
-		downloadFromURL(
-				newRepositoryItem.createRepositoryHttpPlayer().getURL(),
+		downloadFromURL(newRepositoryItem.createRepositoryHttpPlayer().getURL(),
 				downloadedFile);
 
 		assertTrue("The uploaded file and downloaded one are different",
@@ -122,8 +117,7 @@ public class RangePutTests extends BaseRepositoryTest {
 					byte[] newInfo = new byte[500];
 					int newReadBytes = is.read(newInfo);
 
-					response = putContent(
-							url,
+					response = putContent(url,
 							concat(Arrays.copyOf(info, readBytes),
 									Arrays.copyOf(newInfo, newReadBytes)),
 							sentBytes - readBytes);
@@ -171,8 +165,8 @@ public class RangePutTests extends BaseRepositoryTest {
 		RestTemplate httpClient = getRestTemplate();
 
 		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.set("Content-Range", "bytes " + firstByte + "-"
-				+ (firstByte + info.length) + "/*");
+		requestHeaders.set("Content-Range",
+				"bytes " + firstByte + "-" + (firstByte + info.length) + "/*");
 		requestHeaders.set("Content-Length", Integer.toString(info.length));
 
 		HttpEntity<byte[]> requestEntity = new HttpEntity<byte[]>(info,
