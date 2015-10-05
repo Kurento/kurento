@@ -14,6 +14,7 @@ public class ConfigFileManager {
 			.getLogger(ConfigFileManager.class);
 
 	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
+	private static final String CONFIG_FILE_PATH_PROPERTY2 = "config.file";
 
 	public static void loadConfigFile() {
 		loadConfigFile("kurento.conf.json");
@@ -25,6 +26,10 @@ public class ConfigFileManager {
 
 			String configFilePath = System
 					.getProperty(CONFIG_FILE_PATH_PROPERTY);
+
+			if (configFilePath == null) {
+				configFilePath = System.getProperty(CONFIG_FILE_PATH_PROPERTY2);
+			}
 
 			Path configFile = null;
 
@@ -39,9 +44,11 @@ public class ConfigFileManager {
 					configFile = ConfigFileFinder
 							.searchConfigFileInDefaultPlaces(configFileName);
 				} else {
-					log.info("Property {} points to a valid location. Will use the config from {}", CONFIG_FILE_PATH_PROPERTY, configFilePath);
+					log.info(
+							"Property {} points to a valid location. Will use the config from {}",
+							CONFIG_FILE_PATH_PROPERTY, configFilePath);
 				}
-				
+
 			} else {
 				configFile = ConfigFileFinder
 						.searchConfigFileInDefaultPlaces(configFileName);
@@ -49,9 +56,10 @@ public class ConfigFileManager {
 
 			if (configFile != null && Files.exists(configFile)) {
 				ConfigFilePropertyHolder
-				.configurePropertiesFromConfigFile(configFile);
+						.configurePropertiesFromConfigFile(configFile);
 			} else {
-				log.warn("Config file {} not found. Using all default values", configFileName);
+				log.warn("Config file {} not found. Using all default values",
+						configFileName);
 			}
 
 		} catch (IOException e) {
