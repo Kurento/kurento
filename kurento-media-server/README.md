@@ -7,7 +7,7 @@ kurento-media-server
 
 # Supported tags
 
-* 6.1.0 ([kurento-media-server/Dockerfile](https://github.com/kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile))
+* 6.1.1 ([kurento-media-server/Dockerfile](https://github.com/kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile))
 
 # How to use this image
 
@@ -17,7 +17,8 @@ Starting a Kurento media server instance is easy. Kurento media server exposes
 port 8888 for client access. So, assuming you want to map port 8888 in the
 instance to local port 8888, you can start kurento media server with:
 
-```console $ docker run --name kms -p 8888:8888 -d
+```console
+$ docker run --name kms -p 8888:8888 -d
 kurento/kurento-media-server:6.1.0 ```
 
 To check that kurento media server is ready and listening, issue the following
@@ -70,12 +71,12 @@ Kurento
 What is Kurento
 ---------------
 
-Kurento is an open source software project providing a platform suitable 
+Kurento is an open source software project providing a platform suitable
 for creating modular applications with advanced real-time communication
 capabilities. For knowing more about Kurento, please visit the Kurento
 project website: http://www.kurento.org.
 
-Kurento is part of [FIWARE]. For further information on the relationship of 
+Kurento is part of [FIWARE]. For further information on the relationship of
 FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]
 
 Kurento is part of the [NUBOMEDIA] research initiative.
