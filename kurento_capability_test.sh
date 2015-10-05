@@ -23,9 +23,9 @@ fi
 [ -n "$5" ] && USE_FFMPEG="$5" || USE_FFMPEG="no"
 
 echo "Checking KMS_WS_ADDR env variable"
-[ -n "$KMS_WS_ADDR" ] || KMS_WS_ADDR="127.0.0.1"
+[ -n "$KMS_PORT_8888_TCP_ADDR" ] || KMS_PORT_8888_TCP_ADDR="127.0.0.1"
 echo "Checking KMS_WS_PORT env variable"
-[ -n "$KMS_WS_PORT" ] || exit 1
+[ -n "$KMS_PORT_8888_TCP_PORT" ] || exit 1
 echo "Checking KMS_HTTP_PORT env variable"
 [ -n "$KMS_HTTP_PORT" ] || exit 1
 
