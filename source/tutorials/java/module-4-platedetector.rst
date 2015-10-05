@@ -17,6 +17,12 @@ be also installed:
 
     sudo apt-get install kms-platedetector-6.0
 
+.. warning::
+
+   Plate detector module is a prototype and its results is not
+   always accurate. Consider this if you are planning to use this
+   module in a production environment.
+
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
 
@@ -40,6 +46,7 @@ Firefox).
    .. sourcecode:: none
 
       mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
+
 
 Understanding this example
 ==========================

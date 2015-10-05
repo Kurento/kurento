@@ -45,6 +45,13 @@ We classify Kurento modules into three groups, namely:
 
         sudo apt-get install kms-platedetector
 
+
+     .. warning::
+
+        Plate detector module is a prototype and its results is not
+        always accurate. Consider this if you are planning to use this
+        module in a production environment.
+
 * Custom modules. Extensions to Kurento Media Server which provides new media
   capabilities. If you are planning to develop your own custom module, please
   take a look to the following page:

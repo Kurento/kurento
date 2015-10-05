@@ -17,6 +17,12 @@ be also installed:
 
     sudo apt-get install kms-platedetector-6.0
 
+.. warning::
+
+   Plate detector module is a prototype and its results is not
+   always accurate. Consider this if you are planning to use this
+   module in a production environment.
+
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
 an Ubuntu machine, you can install both as follows:
 
