@@ -72,7 +72,7 @@ if [ "$KMS_WS_ADDR" == "127.0.0.1" ]; then
 else
   mavenOpts="$mavenOpts -Dkms.autostart=false"
 fi
-mavenOpts="$mavenOpts -Dkms.ws.uri=ws://$KMS_WS_ADDR:$KMS_WS_PORT/kurento"
+mavenOpts="$mavenOpts -Dkms.ws.uri=ws://$KMS_PORT_8888_TCP_ADDR:$KMS_PORT_8888_TCP_PORT/kurento"
 mavenOpts="$mavenOpts -Dkms.http.port=$KMS_HTTP_PORT"
 if [ -n "$SERVER_PORT" ]; then
   mavenOpts="$mavenOpts -Dserver.port=$SERVER_PORT"
