@@ -4,7 +4,7 @@ echo "##################### EXECUTE: capability-test #####################"
 # Parameter management
 
 if [ $# -lt 2 ]; then
-  echo "Usage: $0 <TEST_FILTER> <GROUP_FILTER> [<SERVER_PORT> <HTTP_PORT> <USE_FFMPEG>]"
+  echo "Usage: $0 <TEST_FILTER> <GROUP_FILTER> [<KMS_AUTOSTART> <SERVER_PORT> <HTTP_PORT>]"
   exit 1
 fi
 
@@ -13,21 +13,24 @@ fi
 
 [ -n "$2" ] && GROUP_FILTER="$2" || exit 1
 
+[ -n "$3" ] && KMS_AUTOSTART="$3" || KMS_AUTOSTART="test"
+
 # SERVER_PORT
-[ -n "$3" ] && SERVER_PORT="$3"
+[ -n "$4" ] && SERVER_PORT="$4"
 
 # HTTP_PORT
-[ -n "$4" ] && HTTP_PORT="$4"
+[ -n "$5" ] && HTTP_PORT="$5"
 
-# Use ffmpeg
-[ -n "$5" ] && USE_FFMPEG="$5" || USE_FFMPEG="no"
-
-echo "Checking KMS_WS_ADDR env variable"
+echo "Checking KMS_PORT_8888_TCP_ADDR env variable: $KMS_PORT_8888_TCP_ADDR"
 [ -n "$KMS_PORT_8888_TCP_ADDR" ] || KMS_PORT_8888_TCP_ADDR="127.0.0.1"
-echo "Checking KMS_WS_PORT env variable"
+echo "Checking KMS_PORT_8888_TCP_PORT env variable: $KMS_PORT_8888_TCP_PORT"
 [ -n "$KMS_PORT_8888_TCP_PORT" ] || exit 1
-echo "Checking KMS_HTTP_PORT env variable"
+echo "Checking KMS_HTTP_PORT env variable: $KMS_HTTP_PORT"
 [ -n "$KMS_HTTP_PORT" ] || exit 1
+
+# Check if we want to record session
+[ -n "$USE_FFMPEG" ] || USE_FFMPEG="no"
+echo "Checking USE_FFMPEG env variable: $USE_FFMPEG"
 
 # Abort if port is not available
 if [ -n "$SERVER_PORT" ]; then
@@ -38,9 +41,9 @@ if [ -n "$HTTP_PORT" ]; then
   echo "Checking port $HTTP_PORT"
   netstat -tauen | grep $HTTP_PORT && exit 1
 fi
-if [ ! -n "$KMS_WS_ADDR" ]; then
-  echo "Checking port $KMS_WS_PORT"
-  netstat -tauen | grep $KMS_WS_PORT && exit 1
+if [ ! -n "$KMS_PORT_8888_TCP_ADDR" ]; then
+  echo "Checking port $KMS_PORT_8888_TCP_PORT"
+  netstat -tauen | grep $KMS_PORT_8888_TCP_PORT && exit 1
 fi
 echo "Checking port $KMS_HTTP_PORT"
 netstat -tauen | grep $KMS_HTTP_PORT && exit 1
@@ -67,11 +70,7 @@ mavenOpts="-pl kurento-integration-tests/kurento-test"
 mavenOpts="$mavenOpts -Dgroups=$GROUP_FILTER"
 mavenOpts="$mavenOpts -Dtest=$TEST_FILTER"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
-if [ "$KMS_WS_ADDR" == "127.0.0.1" ]; then
-  mavenOpts="$mavenOpts -Dkms.autostart=test"
-else
-  mavenOpts="$mavenOpts -Dkms.autostart=false"
-fi
+mavenOpts="$mavenOpts -Dkms.autostart=$KMS_AUTOSTART"
 mavenOpts="$mavenOpts -Dkms.ws.uri=ws://$KMS_PORT_8888_TCP_ADDR:$KMS_PORT_8888_TCP_PORT/kurento"
 mavenOpts="$mavenOpts -Dkms.http.port=$KMS_HTTP_PORT"
 if [ -n "$SERVER_PORT" ]; then
