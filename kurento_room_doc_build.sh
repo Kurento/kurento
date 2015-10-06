@@ -44,7 +44,8 @@ FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$S_DIR/kurento-room-docs.tgz"
 FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$V_DIR/docs/kurento-room-docs.tgz:1"
 FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$S_DIR/docs/kurento-room-docs.tgz:1"
 
+
 PATH=$PATH:$(realpath $(dirname "$0"))
-kurento_builds_publish.sh $FILE
+kurento_builds_publish.sh "$FILE"
 
 echo "FILES=$FILE" > kurento-docs-env.properties
