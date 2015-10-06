@@ -15,9 +15,12 @@
 package org.kurento.client;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.annotation.PreDestroy;
 
+import org.kurento.client.internal.KmsUrlLoader;
 import org.kurento.client.internal.TransactionImpl;
 import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
@@ -28,11 +31,14 @@ import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.StandardSystemProperty;
+
 /**
  * Factory to create {@link MediaPipeline} in the media server.
  *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 2.0.0
  */
 public class KurentoClient {
@@ -41,18 +47,64 @@ public class KurentoClient {
 
 	protected RomManager manager;
 
-	private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
-			10000);
+	private long requesTimeout = PropertiesManager
+			.getProperty("kurento.client.requestTimeout", 10000);
+
+	private static KmsUrlLoader kmsUrlLoader;
+
+	private static synchronized String getKmsUrl(Properties properties) {
+
+		if (kmsUrlLoader == null) {
+
+			Path configFile = Paths.get(
+					StandardSystemProperty.USER_HOME.value(), ".kurento",
+					"config.properties");
+
+			kmsUrlLoader = new KmsUrlLoader(configFile);
+		}
+
+		Object load = properties.get("loadPoints");
+		if (load == null) {
+			return kmsUrlLoader.getKmsUrl();
+		} else {
+			if (load instanceof Number) {
+				return kmsUrlLoader.getKmsUrlLoad(((Number) load).intValue());
+			} else {
+				return kmsUrlLoader
+						.getKmsUrlLoad(Integer.parseInt(load.toString()));
+			}
+		}
+	}
+
+	public static KurentoClient create() {
+		return create(getKmsUrl(null));
+	}
+
+	public static KurentoClient create(Properties properties) {
+		return create(getKmsUrl(properties), properties);
+	}
 
 	public static KurentoClient create(String websocketUrl) {
+		return create(websocketUrl, new Properties());
+	}
+
+	public static KurentoClient create(String websocketUrl,
+			Properties properties) {
 		log.info("Connecting to kms in {}", websocketUrl);
-		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
+		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+				websocketUrl);
 		client.setConcurrentServerRequest(true);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 	}
 
-	public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener) {
+	public static KurentoClient create(String websocketUrl,
+			KurentoConnectionListener listener) {
+		return create(websocketUrl, listener, new Properties());
+	}
+
+	public static KurentoClient create(String websocketUrl,
+			KurentoConnectionListener listener, Properties properties) {
 		log.info("Connecting to KMS in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
 				JsonRpcConnectionListenerKurento.create(listener));
@@ -78,7 +130,8 @@ public class KurentoClient {
 	 * @return The media pipeline
 	 */
 	public MediaPipeline createMediaPipeline() {
-		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).build();
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+				.build();
 	}
 
 	/**
@@ -94,11 +147,13 @@ public class KurentoClient {
 	 */
 	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
 			throws KurentoException {
-		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).buildAsync(cont);
+		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+				.buildAsync(cont);
 	}
 
 	public MediaPipeline createMediaPipeline(Transaction tx) {
-		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).build(tx);
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+				.build(tx);
 	}
 
 	@PreDestroy
@@ -111,7 +166,8 @@ public class KurentoClient {
 		return manager.getRomClient().isClosed();
 	}
 
-	public static KurentoClient createFromJsonRpcClient(JsonRpcClient jsonRpcClient) {
+	public static KurentoClient createFromJsonRpcClient(
+			JsonRpcClient jsonRpcClient) {
 		return new KurentoClient(jsonRpcClient);
 	}
 

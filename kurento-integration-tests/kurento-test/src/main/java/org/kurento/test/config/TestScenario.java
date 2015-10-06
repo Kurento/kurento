@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.junit.Assert;
-import org.kurento.commons.ConfigFileFinder;
+import org.kurento.commons.ClassPath;
 import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
@@ -167,8 +167,7 @@ public class TestScenario {
 
 			} else {
 				// Read executions from JSON and transform to GSON
-				String jsonPath = ConfigFileFinder
-						.getPathInClasspath("/" + jsonFile).toString();
+				String jsonPath = ClassPath.get("/" + jsonFile).toString();
 				BufferedReader br = new BufferedReader(
 						new FileReader(jsonPath));
 				browserConfig = gson.fromJson(br, BrowserConfig.class);
