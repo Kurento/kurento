@@ -30,7 +30,7 @@ echo "Version built: $VERSION"
 echo "VERSION_DATE=$VERSION - `date` - `date +%Y%m%d-%H%M%S`" > kurento-room-docs.version
 
 # Extract contents
-tar -xvzf target/kurento-room-docs-$VERSION.tgz -C ./target/site/html/
+tar -cvzf ./target/kurento-room-docs-$VERSION.tgz ./target/site/html/ || exit 1
 
 # Export files to upload
 DATE=$(date +"%Y%m%d")
