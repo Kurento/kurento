@@ -15,6 +15,7 @@ public class ConfigFileManager {
 
 	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
 	private static final String CONFIG_FILE_PATH_PROPERTY2 = "config.file";
+	private static final String CONFIG_FILE_PATH_PROPERTY3 = "test.config.file";
 
 	public static void loadConfigFile() {
 		loadConfigFile("kurento.conf.json");
@@ -29,6 +30,10 @@ public class ConfigFileManager {
 
 			if (configFilePath == null) {
 				configFilePath = System.getProperty(CONFIG_FILE_PATH_PROPERTY2);
+			}
+
+			if (configFilePath == null) {
+				configFilePath = System.getProperty(CONFIG_FILE_PATH_PROPERTY3);
 			}
 
 			Path configFile = null;
