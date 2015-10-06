@@ -83,6 +83,8 @@ public class TestConfiguration {
 
 	public static final String SELENIUM_REMOTE_HUB_URL_PROPERTY = "selenium.remote.hub.url";
 
+	public static final String SELENIUM_SCOPE_PROPERTY = "selenium.scope";
+
 	// Docker
 	public static final String DOCKER_CLIENT_URL_PROPERTY = "docker.client.url";
 	public static final String DOCKER_CLIENT_URL_DEFAULT = "http://localhost:2375";

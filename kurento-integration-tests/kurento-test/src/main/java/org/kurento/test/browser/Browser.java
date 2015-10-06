@@ -38,6 +38,7 @@ import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPE
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTE_HUB_URL_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_SCOPE_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
 import static org.kurento.test.TestConfiguration.TEST_HOST_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
@@ -800,6 +801,10 @@ public class Browser implements Closeable {
 		}
 
 		public Builder scope(BrowserScope scope) {
+			String scopeProp = getProperty(SELENIUM_SCOPE_PROPERTY);
+			if (scopeProp != null) {
+				scope = BrowserScope.valueOf(scopeProp.toUpperCase());
+			}
 			this.scope = scope;
 			return this;
 		}
