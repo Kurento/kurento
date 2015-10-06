@@ -30,7 +30,9 @@ echo "Version built: $VERSION"
 echo "VERSION_DATE=$VERSION - `date` - `date +%Y%m%d-%H%M%S`" > kurento-room-docs.version
 
 # Extract contents
-tar -cvzf ./target/kurento-room-docs-$VERSION.tgz ./target/site/html/ || exit 1
+pushd ./target/site/html/
+tar -cvzf ../../kurento-room-docs-$VERSION.tgz * || exit 1
+popd
 
 # Export files to upload
 DATE=$(date +"%Y%m%d")
@@ -41,8 +43,8 @@ FILE=""
 FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$V_DIR/kurento-room-docs-$VERSION.tgz"
 FILE="$FILE kurento-room-docs.version:$S_DIR/kurento-room-docs.version"
 FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$S_DIR/kurento-room-docs.tgz"
-FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$V_DIR/docs/kurento-room-docs.tgz:1"
-FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$S_DIR/docs/kurento-room-docs.tgz:1"
+FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$V_DIR/kurento-room-docs/kurento-room-docs.tgz:1"
+FILE="$FILE target/kurento-room-docs-$VERSION.tgz:$S_DIR/kurento-room-docs/kurento-room-docs.tgz:1"
 
 
 PATH=$PATH:$(realpath $(dirname "$0"))
