@@ -83,6 +83,22 @@ public class TestConfiguration {
 
 	public static final String SELENIUM_REMOTE_HUB_URL_PROPERTY = "selenium.remote.hub.url";
 
+	// Docker
+	public static final String DOCKER_CLIENT_URL_PROPERTY = "docker.client.url";
+	public static final String DOCKER_CLIENT_URL_DEFAULT = "http://localhost:2375";
+
+	public static final String DOCKER_HUB_IMAGE_PROPERTY = "docker.hub.image";
+	public static final String DOCKER_HUB_IMAGE_DEFAULT = "selenium/hub:2.47.1";
+
+	public static final String DOCKER_NODE_CHROME_IMAGE_PROPERTY = "docker.node.chrome.image";
+	public static final String DOCKER_NODE_CHROME_IMAGE_DEFAULT = "selenium/node-chrome:2.47.1";
+
+	public static final String DOCKER_NODE_FIREFOX_IMAGE_PROPERTY = "docker.node.firefox.image";
+	public static final String DOCKER_NODE_FIREFOX_IMAGE_DEFAULT = "selenium/node-firefox:2.47.1";
+
+	public static final String DOCKER_HUB_CONTAINER_NAME_PROPERTY = "docker.hub.container.name";
+	public static final String DOCKER_HUB_CONTAINER_NAME_DEFAULT = "hub";
+
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
 	public static final int CLIENT_RATE_DEFAULT = 5000; // milliseconds

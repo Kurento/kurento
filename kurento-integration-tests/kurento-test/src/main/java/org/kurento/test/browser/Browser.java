@@ -15,6 +15,16 @@
 package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.DOCKER_CLIENT_URL_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_CLIENT_URL_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
@@ -58,6 +68,7 @@ import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
+import org.kurento.test.docker.Docker;
 import org.kurento.test.grid.GridHandler;
 import org.kurento.test.grid.GridNode;
 import org.kurento.test.services.AudioChannel;
@@ -92,6 +103,8 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 public class Browser implements Closeable {
 
 	public static Logger log = LoggerFactory.getLogger(Browser.class);
+
+	private Docker docker;
 
 	private WebDriver driver;
 	private String jobId;
@@ -205,6 +218,8 @@ public class Browser implements Closeable {
 					createSaucelabsDriver(capabilities);
 				} else if (scope == BrowserScope.REMOTE) {
 					createRemoteDriver(capabilities);
+				} else if (scope == BrowserScope.DOCKER) {
+					createDriverForDocker(capabilities);
 				} else {
 					driver = newWebDriver(profile);
 				}
@@ -290,6 +305,8 @@ public class Browser implements Closeable {
 					createSaucelabsDriver(capabilities);
 				} else if (scope == BrowserScope.REMOTE) {
 					createRemoteDriver(capabilities);
+				} else if (scope == BrowserScope.DOCKER) {
+					createDriverForDocker(capabilities);
 				} else {
 					driver = newWebDriver(options);
 				}
@@ -471,11 +488,82 @@ public class Browser implements Closeable {
 		log.info("https://saucelabs.com/tests/{}", jobId);
 	}
 
+	public void createDriverForDocker(DesiredCapabilities capabilities)
+			throws MalformedURLException {
+
+		String nodeImageId = null;
+		String browserName = capabilities.getBrowserName();
+		if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
+			// Chrome
+			nodeImageId = getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY,
+					DOCKER_NODE_CHROME_IMAGE_DEFAULT);
+
+		} else if (browserName
+				.equals(DesiredCapabilities.firefox().getBrowserName())) {
+			// Firefox
+			nodeImageId = getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY,
+					DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
+		} else {
+			throw new RuntimeException("Browser " + browserName
+					+ " is not supported currently for Docker scope");
+		}
+
+		// Start docker client for the first time
+		if (docker == null) {
+			docker = new Docker(getProperty(DOCKER_CLIENT_URL_PROPERTY,
+					DOCKER_CLIENT_URL_DEFAULT));
+		}
+
+		// Start hub (if needed)
+		String hubContainerName = getProperty(
+				DOCKER_HUB_CONTAINER_NAME_PROPERTY,
+				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
+				DOCKER_HUB_IMAGE_DEFAULT);
+		String hubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
+				getTimeoutMs());
+
+		// Start nodes: Chrome and Firefox
+		docker.startAndWaitNode(getId(), nodeImageId, hubIp);
+
+		// Create RemoteWebDriver
+		createAndWaitRemoteDriver("http://" + hubIp + ":4444/wd/hub",
+				capabilities);
+	}
+
+	private void createAndWaitRemoteDriver(String driverUrl,
+			DesiredCapabilities capabilities) {
+		int timeoutSeconds = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
+				SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+		long timeoutMs = System.currentTimeMillis()
+				+ TimeUnit.SECONDS.toMillis(timeoutSeconds);
+
+		do {
+			try {
+				driver = new RemoteWebDriver(new URL(driverUrl), capabilities);
+
+			} catch (Throwable t) {
+				driver = null;
+				// Check timeout
+				if (System.currentTimeMillis() > timeoutMs) {
+					throw new RuntimeException("Timeout of " + timeoutSeconds
+							+ " seconds waiting for RemoteWebDriver using Docker");
+				}
+
+				// Poll time
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					log.error("Exception waiting RemoteWebDriver using Docker",
+							e);
+				}
+			}
+		} while (driver == null);
+	}
+
 	public void createRemoteDriver(final DesiredCapabilities capabilities)
 			throws MalformedURLException {
 
-		// TODO dev here
-		System.err.println("host " + host);
 		assertPublicIpNotNull();
 
 		String remoteHubUrl = getProperty(SELENIUM_REMOTE_HUB_URL_PROPERTY);
@@ -830,6 +918,10 @@ public class Browser implements Closeable {
 		return timeout;
 	}
 
+	public long getTimeoutMs() {
+		return TimeUnit.SECONDS.toMillis(timeout);
+	}
+
 	public WebDriver getWebDriver() {
 		return driver;
 	}
@@ -884,6 +976,10 @@ public class Browser implements Closeable {
 
 	public boolean isSauceLabs() {
 		return BrowserScope.SAUCELABS.equals(this.scope);
+	}
+
+	public boolean isDocker() {
+		return BrowserScope.DOCKER.equals(this.scope);
 	}
 
 	public BrowserType getBrowserType() {
@@ -1015,6 +1111,15 @@ public class Browser implements Closeable {
 		if (GridHandler.getInstance().useRemoteNodes()) {
 			log.info("Closing Grid of {} ", id);
 			GridHandler.getInstance().stopGrid();
+		}
+
+		// Stop docker containers (if necessary)
+		if (docker != null) {
+			// Stop and remove hub and nodes
+			String hubContainerName = getProperty(
+					DOCKER_HUB_CONTAINER_NAME_PROPERTY,
+					DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+			docker.stopAndRemoveContainers(hubContainerName, getId());
 		}
 	}
 

@@ -113,6 +113,12 @@
 			<groupId>io.github.bonigarcia</groupId>
 			<artifactId>webdrivermanager</artifactId>
 		</dependency>
+
+		<!-- Docker -->
+		<dependency>
+			<groupId>com.github.docker-java</groupId>
+			<artifactId>docker-java</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
