@@ -52,7 +52,7 @@ public class KurentoClient {
 
 	private static KmsUrlLoader kmsUrlLoader;
 
-	private static synchronized String getKmsUrl(Properties properties) {
+	public static synchronized String getKmsUrl(Properties properties) {
 
 		if (kmsUrlLoader == null) {
 
