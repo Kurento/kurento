@@ -31,13 +31,13 @@ public class KmsUriLoaderTest {
 
 		String expectedKmsUri = "ws://test.url";
 
-		System.setProperty(KmsUrlLoader.KMS_URI_PROPERTY, expectedKmsUri);
+		System.setProperty(KmsUrlLoader.KMS_URL_PROPERTY, expectedKmsUri);
 
 		String kmsUri = new KmsUrlLoader(null).getKmsUrl();
 
 		assertEquals("Invalid kmsUri read from file", expectedKmsUri, kmsUri);
 
-		System.setProperty(KmsUrlLoader.KMS_URI_PROPERTY, "");
+		System.setProperty(KmsUrlLoader.KMS_URL_PROPERTY, "");
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class KmsUriLoaderTest {
 	@Test
 	public void testDefaultKmsUri() throws IOException {
 
-		String expectedKmsUri = KmsUrlLoader.DEFAULT_KMS_URI;
+		String expectedKmsUri = KmsUrlLoader.DEFAULT_KMS_URL;
 
 		String kmsUri = new KmsUrlLoader(
 				ClassPath.get("/non-existing.properties")).getKmsUrl();
@@ -64,7 +64,7 @@ public class KmsUriLoaderTest {
 
 	@Test
 	public void testInvalidFile() throws IOException {
-		String expectedKmsUri = KmsUrlLoader.DEFAULT_KMS_URI;
+		String expectedKmsUri = KmsUrlLoader.DEFAULT_KMS_URL;
 
 		String kmsUri = new KmsUrlLoader(ClassPath.get("/invalid.properties"))
 				.getKmsUrl();
