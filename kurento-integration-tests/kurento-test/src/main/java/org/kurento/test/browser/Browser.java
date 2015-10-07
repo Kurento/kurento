@@ -15,8 +15,8 @@
 package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.DOCKER_CLIENT_URL_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_CLIENT_URL_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
@@ -511,8 +511,8 @@ public class Browser implements Closeable {
 
 		// Start docker client for the first time
 		if (docker == null) {
-			docker = Docker.getSingleton(getProperty(DOCKER_CLIENT_URL_PROPERTY,
-					DOCKER_CLIENT_URL_DEFAULT));
+			docker = Docker.getSingleton(getProperty(DOCKER_SERVER_URL_PROPERTY,
+					DOCKER_SERVER_URL_DEFAULT));
 		}
 
 		// Start hub (if needed)
