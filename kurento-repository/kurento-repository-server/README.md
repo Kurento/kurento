@@ -38,7 +38,7 @@ Table of Contents
   - [Find repository items by metadata regex](#find-repository-items-by-metadata-regex)
   - [Get the metadata of a repository item](#get-the-metadata-of-a-repository-item)
   - [Update the metadata of a repository item](#update-the-metadata-of-a-repository-item)
-- [Java API](#java-api)
+- [Repository Rest Java API](#repository-rest-java-api)
 - [What is Kurento](#what-is-kurento)
 
 Running the server
@@ -597,11 +597,12 @@ NONE
 |200 OK|Item successfully updated.|
 |404 Not Found|Item does not exist.|
 
-Java API
---------
+Repository Rest Java API
+------------------------
 
 This API is used directly by the REST interface layer, so the Java primitives 
 mirror the REST ones.
+
 The only difference is that to use this API, it is required to include a 
 dependency on `kurento-repository-server` and to use the [Spring] framework.
 
