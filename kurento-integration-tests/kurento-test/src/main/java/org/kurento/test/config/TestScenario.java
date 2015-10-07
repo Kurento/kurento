@@ -15,10 +15,12 @@
 package org.kurento.test.config;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.TEST_CONFIG_EXECUTIONS_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_CONFIG_EXECUTIONS_PROPERTY;
+import static org.kurento.test.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,9 +50,6 @@ import com.google.gson.Gson;
  */
 public class TestScenario {
 
-	private final static String TEST_CONFIG_JSON_PROPERTY = "test.config.json";
-	private final static String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
-
 	public final static String INSTANCES_SEPARATOR = "-";
 
 	private static Logger log = LoggerFactory.getLogger(TestScenario.class);
@@ -69,10 +68,12 @@ public class TestScenario {
 				if (browser.getBrowserPerInstance() > 1) {
 					for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
 						String browserId = id + i + INSTANCES_SEPARATOR + j;
-						addBrowserInstance(browserId, new Browser(browser.getBuilder()));
+						addBrowserInstance(browserId,
+								new Browser(browser.getBuilder()));
 					}
 				} else {
-					addBrowserInstance(id + i, new Browser(browser.getBuilder()));
+					addBrowserInstance(id + i,
+							new Browser(browser.getBuilder()));
 				}
 			}
 		} else {
@@ -87,7 +88,8 @@ public class TestScenario {
 	}
 
 	private void assertKeyNotExist(String key) {
-		Assert.assertFalse("'" + key + "' key already registered in browser config map",
+		Assert.assertFalse(
+				"'" + key + "' key already registered in browser config map",
 				browserMap.keySet().contains(key));
 	}
 
@@ -150,22 +152,31 @@ public class TestScenario {
 	}
 
 	public static Collection<Object[]> json(String jsonFile) {
-		try {
-			String configJson = getProperty(TEST_CONFIG_JSON_PROPERTY);
-			String jsonPath;
-			if (configJson == null) {
-				jsonPath = ConfigFileFinder.getPathInClasspath("/" + jsonFile).toString();
-			} else {
-				jsonPath = configJson;
-			}
 
-			// Read JSON and transform to GSON
-			BufferedReader br = new BufferedReader(new FileReader(jsonPath));
+		try {
 			Gson gson = new Gson();
-			BrowserConfig browserConfig = gson.fromJson(br, BrowserConfig.class);
+			String executionsData = getProperty(
+					getProperty(TEST_CONFIG_EXECUTIONS_PROPERTY,
+							TEST_CONFIG_EXECUTIONS_DEFAULT));
+
+			BrowserConfig browserConfig = null;
+			if (executionsData != null) {
+				// Read executions from properties
+				browserConfig = gson.fromJson(executionsData,
+						BrowserConfig.class);
+
+			} else {
+				// Read executions from JSON and transform to GSON
+				String jsonPath = ConfigFileFinder
+						.getPathInClasspath("/" + jsonFile).toString();
+				BufferedReader br = new BufferedReader(
+						new FileReader(jsonPath));
+				browserConfig = gson.fromJson(br, BrowserConfig.class);
+
+			}
 			return browserConfig.getTestScenario();
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw new RuntimeException(e);
 		}
@@ -177,12 +188,16 @@ public class TestScenario {
 	public static Collection<Object[]> localChromeAndFirefox() {
 		// Test #1 : Chrome in local
 		TestScenario test1 = new TestScenario();
-		test1.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+		test1.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 		// Test #2 : Firefox in local
 		TestScenario test2 = new TestScenario();
-		test2.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
+		test2.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
@@ -191,8 +206,10 @@ public class TestScenario {
 		// Test: Chrome(s) in local
 		TestScenario test = new TestScenario();
 		for (int i = 0; i < size; i++) {
-			test.addBrowser(BrowserConfig.BROWSER + i, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+			test.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.CHROME)
+							.scope(BrowserScope.LOCAL).build());
 		}
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -200,8 +217,10 @@ public class TestScenario {
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -209,8 +228,10 @@ public class TestScenario {
 	public static Collection<Object[]> localFirefox() {
 		// Test: Firefox in local
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -218,22 +239,31 @@ public class TestScenario {
 	public static Collection<Object[]> localPresenterAndViewer() {
 		// Test: Chrome in local (presenter and viewer)
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
-		test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.PRESENTER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.VIEWER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
 	public static Collection<Object[]> localPresenterAndViewerRGB() {
 		// Test: Chrome in local (presenter and viewer)
-		String videoPath = KurentoClientWebPageTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
+		String videoPath = KurentoClientWebPageTest.getPathTestFiles()
+				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
-		test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(BrowserConfig.PRESENTER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(BrowserConfig.VIEWER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}

@@ -43,6 +43,11 @@ public class TestConfiguration {
 	public final static String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
 	public final static int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
 
+	public final static String TEST_CONFIG_JSON_PROPERTY = "test.config.file";
+	public final static String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
+	public final static String TEST_CONFIG_EXECUTIONS_PROPERTY = "test.config.executions";
+	public final static String TEST_CONFIG_EXECUTIONS_DEFAULT = "executions";
+
 	// Saucelabs
 	public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
 	public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";

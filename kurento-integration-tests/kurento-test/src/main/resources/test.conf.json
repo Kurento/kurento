@@ -1,13 +1,10 @@
 {
 	"executions" : [
 		{
-			"presenter" : {
+			"browser" : {
 				"scope" : "local",
-				"browser" : "chrome"
-			},
-			"viewer" : {
-				"scope" : "local",
-				"browser" : "chrome"
+				"browser" : "chrome",
+				"path" : "/webrtc.html"
 			}
 		}
 	]
