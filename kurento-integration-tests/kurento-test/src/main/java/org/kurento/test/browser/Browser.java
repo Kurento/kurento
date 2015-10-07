@@ -511,7 +511,7 @@ public class Browser implements Closeable {
 
 		// Start docker client for the first time
 		if (docker == null) {
-			docker = new Docker(getProperty(DOCKER_CLIENT_URL_PROPERTY,
+			docker = Docker.getSingleton(getProperty(DOCKER_CLIENT_URL_PROPERTY,
 					DOCKER_CLIENT_URL_DEFAULT));
 		}
 

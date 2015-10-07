@@ -35,11 +35,20 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
  */
 public class Docker implements Closeable {
 
+	private static Docker singleton = null;
+
 	private static final Logger log = LoggerFactory.getLogger(Docker.class);
 	private static final int WAIT_CONTAINER_POLL_TIME = 200; // milliseconds
 	private static final int WAIT_CONTAINER_POLL_TIMEOUT = 10; // seconds
 
 	private DockerClient client;
+
+	public synchronized static Docker getSingleton(String dockerServerUrl) {
+		if (singleton == null) {
+			singleton = new Docker(dockerServerUrl);
+		}
+		return singleton;
+	}
 
 	public Docker(String dockerServerUrl) {
 		client = DockerClientBuilder.getInstance(dockerServerUrl).build();
@@ -58,7 +67,7 @@ public class Docker implements Closeable {
 	public boolean existsContainer(String containerName) {
 		boolean exists = true;
 		try {
-			client.inspectContainerCmd(containerName).exec();
+			getClient().inspectContainerCmd(containerName).exec();
 			log.trace("Container {} already exist", containerName);
 
 		} catch (NotFoundException e) {
@@ -71,7 +80,7 @@ public class Docker implements Closeable {
 	public boolean existsImage(String imageName) {
 		boolean exists = true;
 		try {
-			client.inspectImageCmd(imageName).exec();
+			getClient().inspectImageCmd(imageName).exec();
 			log.trace("Image {} exists", imageName);
 
 		} catch (NotFoundException e) {
@@ -88,8 +97,8 @@ public class Docker implements Closeable {
 				log.info(
 						"Pulling Docker image {} ... please be patient until the process finishes",
 						imageId);
-				client.pullImageCmd(imageId).exec(new PullImageResultCallback())
-						.awaitSuccess();
+				getClient().pullImageCmd(imageId)
+						.exec(new PullImageResultCallback()).awaitSuccess();
 				log.info("Image {} downloaded", imageId);
 
 			} else {
@@ -97,22 +106,23 @@ public class Docker implements Closeable {
 			}
 
 			log.debug("Creating container {}", containerName);
-			client.createContainerCmd(imageId).withName(containerName)
+			getClient().createContainerCmd(imageId).withName(containerName)
 					.withEnv(cmd).exec();
+
 		} else {
 			log.debug("Container {} already exists", containerName);
 		}
 	}
 
 	public InspectContainerResponse inspectContainer(String containerName) {
-		return client.inspectContainerCmd(containerName).exec();
+		return getClient().inspectContainerCmd(containerName).exec();
 	}
 
 	public void startContainer(String containerName) {
 		if (!isRunningContainer(containerName)) {
 			log.debug("Starting container {}", containerName);
 
-			client.startContainerCmd(containerName).exec();
+			getClient().startContainerCmd(containerName).exec();
 		} else {
 			log.debug("Container {} is already started", containerName);
 		}
@@ -121,7 +131,7 @@ public class Docker implements Closeable {
 	public void close() {
 		if (client != null) {
 			try {
-				client.close();
+				getClient().close();
 			} catch (IOException e) {
 				log.error("Exception closing Docker client", e);
 			}
@@ -142,7 +152,7 @@ public class Docker implements Closeable {
 		if (isRunningContainer(containerName)) {
 			log.debug("Stopping container {}", containerName);
 
-			client.stopContainerCmd(containerName).exec();
+			getClient().stopContainerCmd(containerName).exec();
 
 		} else {
 			log.debug("Container {} is not running", containerName);
@@ -159,7 +169,7 @@ public class Docker implements Closeable {
 		if (existsContainer(containerName)) {
 			log.debug("Removing container {}", containerName);
 
-			client.removeContainerCmd(containerName).exec();
+			getClient().removeContainerCmd(containerName).exec();
 		}
 	}
 
@@ -174,7 +184,8 @@ public class Docker implements Closeable {
 		}
 	}
 
-	public String startHub(String hubName, String imageId, long timeoutMs) {
+	public synchronized String startHub(String hubName, String imageId,
+			long timeoutMs) {
 		// Create hub if not exist
 		createContainer(imageId, hubName, "GRID_TIMEOUT=" + timeoutMs);
 
@@ -228,7 +239,8 @@ public class Docker implements Closeable {
 
 				try {
 					// Wait WAIT_HUB_POLL_TIME ms
-					log.debug("Hub {} is not still running ... waiting {} ms",
+					log.debug(
+							"Container {} is not still running ... waiting {} ms",
 							containerName, WAIT_CONTAINER_POLL_TIME);
 					Thread.sleep(WAIT_CONTAINER_POLL_TIME);
 
