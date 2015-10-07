@@ -39,7 +39,7 @@ import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.kurento.repository.rest.RepositoryRestApi;
-import org.kurento.repository.rest.RestServiceProvider;
+import org.kurento.repository.rest.RepositoryRestApiProvider;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
 import org.slf4j.Logger;
@@ -80,7 +80,8 @@ public class RepositoryRestTest {
 		if (testWithFS) {
 			System.setProperty(
 					RepositoryApplicationContextConfiguration.KEY_REPO_TYPE,
-					RepositoryApiConfiguration.RepoType.FILESYSTEM.getTypeValue());
+					RepositoryApiConfiguration.RepoType.FILESYSTEM
+							.getTypeValue());
 			log.info("Filesystem has been forced as repo storage type");
 		}
 		app = KurentoRepositoryServerApp.start();
@@ -96,7 +97,7 @@ public class RepositoryRestTest {
 		String serviceUrl = "http://"
 				+ RepositoryApplicationContextConfiguration.SERVER_HOSTNAME
 				+ ":" + RepositoryApplicationContextConfiguration.SERVER_PORT;
-		restService = RestServiceProvider.create(serviceUrl).getRestService();
+		restService = RepositoryRestApiProvider.create(serviceUrl);
 		log.info("Rest service created for {}", serviceUrl);
 
 		repository = (Repository) app.getBean("repository");
@@ -121,8 +122,8 @@ public class RepositoryRestTest {
 	}
 
 	@Test
-	public void test() throws FileNotFoundException, IOException,
-	InterruptedException {
+	public void test()
+			throws FileNotFoundException, IOException, InterruptedException {
 		Map<String, String> metadata = new HashMap<String, String>();
 		metadata.put("restKey", "restValue");
 		RepositoryItemRecorder itemRec = restService
@@ -134,8 +135,8 @@ public class RepositoryRestTest {
 
 		Thread.sleep(1000 * 10);
 
-		RepositoryItemPlayer itemPlay = restService.getReadEndpoint(itemRec
-				.getId());
+		RepositoryItemPlayer itemPlay = restService
+				.getReadEndpoint(itemRec.getId());
 		assertEquals("Items' ids don't match", itemRec.getId(),
 				itemPlay.getId());
 
@@ -159,13 +160,14 @@ public class RepositoryRestTest {
 		Set<String> items = restService.simpleFindItems(metadata);
 		assertEquals(
 				"Not one exact element found based on our simple search data: "
-						+ metadata, 1, items.size());
+						+ metadata,
+				1, items.size());
 
-		assertEquals("Ids don't match", itemRec.getId(), items.iterator()
-				.next());
+		assertEquals("Ids don't match", itemRec.getId(),
+				items.iterator().next());
 
-		if (RepoType.parseType(
-				RepositoryApplicationContextConfiguration.REPO_TYPE)
+		if (RepoType
+				.parseType(RepositoryApplicationContextConfiguration.REPO_TYPE)
 				.isMongoDB()) {
 			Map<String, String> regexValues = new HashMap<String, String>();
 			regexValues.put("restKey", "restVal*");
@@ -173,10 +175,11 @@ public class RepositoryRestTest {
 			items = restService.regexFindItems(regexValues);
 			assertEquals(
 					"Not one exact element found based on our regex search data: "
-							+ regexValues, 1, items.size());
+							+ regexValues,
+					1, items.size());
 
-			assertEquals("Ids don't match", itemRec.getId(), items.iterator()
-					.next());
+			assertEquals("Ids don't match", itemRec.getId(),
+					items.iterator().next());
 		}
 
 		Map<String, String> serverMetadata = restService
@@ -186,15 +189,13 @@ public class RepositoryRestTest {
 
 		Map<String, String> updateMetadata = new HashMap<String, String>();
 		updateMetadata.put("restKey", "newVal");
-		Response response = restService.setRepositoryItemMetadata(
-				itemRec.getId(), updateMetadata);
-		assertEquals(
-				"Response status of metadata update request is not 200 OK",
+		Response response = restService
+				.setRepositoryItemMetadata(itemRec.getId(), updateMetadata);
+		assertEquals("Response status of metadata update request is not 200 OK",
 				HttpStatus.OK.value(), response.getStatus());
 
 		serverMetadata = restService.getRepositoryItemMetadata(itemRec.getId());
-		assertEquals(
-				"New local metadata doesn't match updated server metadata",
+		assertEquals("New local metadata doesn't match updated server metadata",
 				updateMetadata, serverMetadata);
 
 		response = restService.removeRepositoryItem(itemRec.getId());
@@ -203,14 +204,15 @@ public class RepositoryRestTest {
 
 		exception.expect(RetrofitError.class);
 		exception.expectMessage(CoreMatchers.containsString("404 Not Found"));
-		RepositoryItemPlayer itemFound = restService.getReadEndpoint(itemRec
-				.getId());
+		RepositoryItemPlayer itemFound = restService
+				.getReadEndpoint(itemRec.getId());
 		Assert.assertNull(itemFound);
 
 		items = restService.simpleFindItems(serverMetadata);
 		assertEquals(
 				"No items should have been found based on our simple search data: "
-						+ serverMetadata + " (was deleted)", 0, items.size());
+						+ serverMetadata + " (was deleted)",
+				0, items.size());
 
 	}
 
@@ -231,8 +233,8 @@ public class RepositoryRestTest {
 		}
 
 		long duration = System.currentTimeMillis() - startTime;
-		log.info("Finished uploading content in "
-				+ (((double) duration) / 1000) + " seconds.");
+		log.info("Finished uploading content in " + (((double) duration) / 1000)
+				+ " seconds.");
 	}
 
 	protected void downloadFromURL(String urlToDownload, File downloadedFile)
