@@ -33,8 +33,11 @@ public class StabilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 	public StabilityTest(TestScenario testScenario) {
 		super(testScenario);
 
+		logOnFailure.setDeleteLogsIfSuccess(false);
+
 		try {
-			log.info("Waiting {} ms before stability test startup", STABILITY_START_WAIT_MS);
+			log.info("Waiting {} ms before stability test startup",
+					STABILITY_START_WAIT_MS);
 			Thread.sleep(STABILITY_START_WAIT_MS);
 		} catch (InterruptedException e) {
 			log.warn("{} during wait of stability test startup", e.getClass());

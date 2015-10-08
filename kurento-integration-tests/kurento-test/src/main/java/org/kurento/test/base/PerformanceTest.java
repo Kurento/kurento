@@ -33,8 +33,12 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	protected SystemMonitorManager monitor;
 
+	protected String monitorResultPath = getDefaultOutputFile("-monitor.csv");
+
 	public PerformanceTest(TestScenario testScenario) {
 		super(testScenario);
+
+		logOnFailure.setDeleteLogsIfSuccess(false);
 	}
 
 	@Before
@@ -46,8 +50,16 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 	@After
 	public void teardownMonitor() {
 		monitor.stop();
-		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+		monitor.writeResults(monitorResultPath);
 		monitor.destroy();
+	}
+
+	public String getMonitorResultPath() {
+		return monitorResultPath;
+	}
+
+	public void setMonitorResultPath(String monitorResultPath) {
+		this.monitorResultPath = monitorResultPath;
 	}
 
 }

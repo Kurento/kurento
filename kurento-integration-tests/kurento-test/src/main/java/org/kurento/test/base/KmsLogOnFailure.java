@@ -42,6 +42,7 @@ public class KmsLogOnFailure extends TestWatcher {
 	private KurentoClientManager kurentoClientManager;
 
 	private boolean succees = false;
+	private boolean deleteLogsIfSuccess = true;
 
 	@Override
 	protected void succeeded(Description description) {
@@ -116,7 +117,7 @@ public class KmsLogOnFailure extends TestWatcher {
 				getKurentoClientManager().teardown();
 			}
 
-			if (succees) {
+			if (succees && deleteLogsIfSuccess) {
 				// Delete logs
 				File folder = new File(KurentoServicesTestHelper.getTestDir()
 						+ "/" + KurentoServicesTestHelper.getTestCaseName());
@@ -164,6 +165,14 @@ public class KmsLogOnFailure extends TestWatcher {
 	public void setKurentoClientManager(
 			KurentoClientManager kurentoClientManager) {
 		this.kurentoClientManager = kurentoClientManager;
+	}
+
+	public boolean isDeleteLogsIfSuccess() {
+		return deleteLogsIfSuccess;
+	}
+
+	public void setDeleteLogsIfSuccess(boolean deleteLogsIfSuccess) {
+		this.deleteLogsIfSuccess = deleteLogsIfSuccess;
 	}
 
 }
