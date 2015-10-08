@@ -167,6 +167,10 @@ public class BrowserInstance {
 		return BrowserScope.REMOTE.toString().equals(this.getScope());
 	}
 
+	public boolean isDocker() {
+		return BrowserScope.DOCKER.toString().equals(this.getScope());
+	}
+
 	public boolean isSauceLabs() {
 		return BrowserScope.SAUCELABS.toString().equals(this.getScope());
 	}
@@ -253,9 +257,9 @@ public class BrowserInstance {
 
 	@Override
 	public String toString() {
-		return "Browser [scope=" + scope + ", browser=" + browser
-				+ ", version=" + version + ", platform=" + platform
-				+ ", instances=" + instances + "]";
+		return "Browser [scope=" + scope + ", browser=" + browser + ", version="
+				+ version + ", platform=" + platform + ", instances="
+				+ instances + "]";
 	}
 
 }

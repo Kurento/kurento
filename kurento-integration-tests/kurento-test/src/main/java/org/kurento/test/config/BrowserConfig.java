@@ -76,8 +76,8 @@ public class BrowserConfig {
 					builder = builder.numInstances(instance.getInstances());
 				}
 				if (instance.getBrowserPerInstance() > 0) {
-					builder = builder.browserPerInstance(instance
-							.getBrowserPerInstance());
+					builder = builder.browserPerInstance(
+							instance.getBrowserPerInstance());
 				}
 				if (instance.getNode() != null) {
 					builder = builder.node(instance.getNode());
@@ -98,12 +98,12 @@ public class BrowserConfig {
 					builder = builder.enableScreenCapture();
 				}
 				if (instance.getProtocol() != null) {
-					builder = builder.protocol(Protocol.valueOf(instance
-							.getProtocol().toUpperCase()));
+					builder = builder.protocol(Protocol
+							.valueOf(instance.getProtocol().toUpperCase()));
 				}
 				if (instance.getPath() != null) {
-					builder = builder.webPageType(WebPageType.value2WebPageType(instance
-							.getPath()));
+					builder = builder.webPageType(
+							WebPageType.value2WebPageType(instance.getPath()));
 				}
 				if (instance.getHost() != null) {
 					builder = builder.host(instance.getHost());
@@ -133,6 +133,8 @@ public class BrowserConfig {
 					browserClient = builder.scope(BrowserScope.LOCAL).build();
 				} else if (instance.isRemote()) {
 					browserClient = builder.scope(BrowserScope.REMOTE).build();
+				} else if (instance.isDocker()) {
+					browserClient = builder.scope(BrowserScope.DOCKER).build();
 				} else if (instance.isSauceLabs()) {
 					if (instance.getVersion() == null
 							|| instance.getPlatformType() == null) {
