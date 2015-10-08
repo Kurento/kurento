@@ -24,12 +24,31 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 	private static Logger log = LoggerFactory
 			.getLogger(ConfigFilePropertyHolder.class);
 
+	private static Path lastLoadedconfigFilePath;
+
 	private static final Gson gson = new GsonBuilder().create();
 
 	private JsonObject configFile;
 
-	public static void configurePropertiesFromConfigFile(Path configFilePath)
-			throws JsonSyntaxException, JsonIOException, IOException {
+	public static synchronized void configurePropertiesFromConfigFile(
+			Path configFilePath)
+					throws JsonSyntaxException, JsonIOException, IOException {
+
+		if (lastLoadedconfigFilePath != null) {
+			if (lastLoadedconfigFilePath.equals(configFilePath)) {
+				log.info("Trying to load again config file {}. Ignoring it",
+						configFilePath.toAbsolutePath());
+			} else {
+				log.warn(
+						"Trying to load a second config file. The first was {} and the"
+								+ "current is {}. Ignoring it",
+						lastLoadedconfigFilePath, configFilePath);
+			}
+
+			return;
+		}
+
+		lastLoadedconfigFilePath = configFilePath;
 
 		Preconditions.checkNotNull(configFilePath,
 				"configFilePath paramter must be not null.");
@@ -37,21 +56,22 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 		log.debug("Using configuration file in path '" + configFilePath + "' ("
 				+ configFilePath.getClass().getCanonicalName() + ")");
 
-		JsonReader reader = new JsonReader(Files.newBufferedReader(
-				configFilePath, StandardCharsets.UTF_8));
+		JsonReader reader = new JsonReader(Files
+				.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
 		reader.setLenient(true);
 
 		JsonObject configFile = gson.fromJson(reader, JsonObject.class);
 
 		traceConfigContent(configFile);
 
-		PropertiesManager.setPropertyHolder(new ConfigFilePropertyHolder(
-				configFile));
+		PropertiesManager
+				.setPropertyHolder(new ConfigFilePropertyHolder(configFile));
 	}
 
 	private static void traceConfigContent(JsonObject configFile) {
 		if (log.isDebugEnabled()) {
-			Gson gs = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+			Gson gs = new GsonBuilder().setPrettyPrinting()
+					.disableHtmlEscaping().create();
 			String jsonContents = gs.toJson(configFile);
 			log.debug("Configuration content: " + jsonContents);
 		}

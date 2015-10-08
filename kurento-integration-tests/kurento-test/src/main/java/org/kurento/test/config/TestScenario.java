@@ -17,11 +17,11 @@ package org.kurento.test.config;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.TestConfiguration.TEST_CONFIG_EXECUTIONS_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_CONFIG_EXECUTIONS_PROPERTY;
-import static org.kurento.test.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -144,39 +144,36 @@ public class TestScenario {
 		return out;
 	}
 
-	/*
-	 * Configuration based on JSON file
-	 */
-	public static Collection<Object[]> json() {
-		return json(TEST_CONFIG_JSON_DEFAULT);
-	}
-
-	public static Collection<Object[]> json(String jsonFile) {
+	public static Collection<Object[]> from(String defaultBrowserConfigFile) {
 
 		try {
-			Gson gson = new Gson();
+
+			// Load executions from config file or system properties
 			String executionsData = getProperty(
 					getProperty(TEST_CONFIG_EXECUTIONS_PROPERTY,
 							TEST_CONFIG_EXECUTIONS_DEFAULT));
 
 			BrowserConfig browserConfig = null;
+			Gson gson = new Gson();
 			if (executionsData != null) {
-				// Read executions from properties
-				browserConfig = gson.fromJson(executionsData,
+				browserConfig = gson.fromJson(
+						"{\"executions\":" + executionsData + "}",
 						BrowserConfig.class);
 
 			} else {
-				// Read executions from JSON and transform to GSON
-				String jsonPath = ClassPath.get("/" + jsonFile).toString();
-				BufferedReader br = new BufferedReader(
-						new FileReader(jsonPath));
-				browserConfig = gson.fromJson(br, BrowserConfig.class);
 
+				// If there is no browserConfig in config file, load default
+				// from defaultBrowserConfigFile
+				try (BufferedReader br = Files.newBufferedReader(
+						ClassPath.get("/" + defaultBrowserConfigFile),
+						StandardCharsets.UTF_8)) {
+					browserConfig = gson.fromJson(br, BrowserConfig.class);
+				}
 			}
+
 			return browserConfig.getTestScenario();
 
 		} catch (Exception e) {
-			log.error(e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}

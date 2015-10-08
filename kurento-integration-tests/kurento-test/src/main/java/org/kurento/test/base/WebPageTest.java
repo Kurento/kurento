@@ -15,8 +15,6 @@
 package org.kurento.test.base;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
-import static org.kurento.test.TestConfiguration.TEST_CONFIG_JSON_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
 
@@ -27,7 +25,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,7 +48,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.commons.ConfigFileManager;
+import org.kurento.test.ConfigLoader;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
@@ -70,24 +67,18 @@ import org.slf4j.LoggerFactory;
  */
 
 @RunWith(Parameterized.class)
-public abstract class WebPageTest<W extends WebPage> {
+public abstract class WebPageTest<W extends WebPage> extends ConfigLoader {
 
 	public static Logger log = LoggerFactory.getLogger(WebPageTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
-	static {
-		ConfigFileManager.loadConfigFile(getProperty(TEST_CONFIG_JSON_PROPERTY,
-				TEST_CONFIG_JSON_DEFAULT));
+	@Parameters
+	public static Collection<Object[]> data() {
+		return TestScenario.from("default.conf.json");
 	}
 
 	@Rule
 	public TestName testName = new TestName();
-
-	@Parameters
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { {} });
-	}
-
 	private Map<String, W> pages = new ConcurrentHashMap<>();
 	private TestScenario testScenario;
 
