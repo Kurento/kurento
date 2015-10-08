@@ -15,17 +15,10 @@ echo "Checking KMS_PORT_8888_TCP_ADDR env variable: $KMS_PORT_8888_TCP_ADDR"
 [ -n "$KMS_PORT_8888_TCP_ADDR" ] || KMS_PORT_8888_TCP_ADDR="127.0.0.1"
 echo "Checking KMS_PORT_8888_TCP_PORT env variable: $KMS_PORT_8888_TCP_PORT"
 [ -n "$KMS_PORT_8888_TCP_PORT" ] || exit 1
-echo "Checking KMS_HTTP_PORT env variable: $KMS_HTTP_PORT"
-[ -n "$KMS_HTTP_PORT" ] || exit 1
 
 # Check if we want to record session
 [ -n "$USE_FFMPEG" ] || USE_FFMPEG="no"
 echo "Checking USE_FFMPEG env variable: $USE_FFMPEG"
-
-if [ ! -n "$KMS_PORT_8888_TCP_ADDR" ]; then
-  echo "Checking port $KMS_PORT_8888_TCP_PORT"
-  netstat -tauen | grep $KMS_PORT_8888_TCP_PORT && exit 1
-fi
 
 #Restart xvfb to avoid problems with corrupted xvfb instances
 sudo service xvfb stop
