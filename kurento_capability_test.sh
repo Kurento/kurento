@@ -4,7 +4,7 @@ echo "##################### EXECUTE: capability-test #####################"
 # Parameter management
 
 if [ $# -lt 2 ]; then
-  echo "Usage: $0 <TEST_FILTER> <GROUP_FILTER> [<KMS_AUTOSTART> <SERVER_PORT> <HTTP_PORT>]"
+  echo "Usage: $0 <TEST_FILTER> <GROUP_FILTER> <PROJECT_PATH> [<KMS_AUTOSTART> <SERVER_PORT> <HTTP_PORT>]"
   exit 1
 fi
 
@@ -13,13 +13,15 @@ fi
 
 [ -n "$2" ] && GROUP_FILTER="$2" || exit 1
 
-[ -n "$3" ] && KMS_AUTOSTART="$3" || KMS_AUTOSTART="test"
+[ -n "$3" ] && PROJECT_PATH="$3" || exit 1
+
+[ -n "$4" ] && KMS_AUTOSTART="$4" || KMS_AUTOSTART="test"
 
 # SERVER_PORT
-[ -n "$4" ] && SERVER_PORT="$4"
+[ -n "$5" ] && SERVER_PORT="$5"
 
 # HTTP_PORT
-[ -n "$5" ] && HTTP_PORT="$5"
+[ -n "$6" ] && HTTP_PORT="$6"
 
 echo "Checking KMS_PORT_8888_TCP_ADDR env variable: $KMS_PORT_8888_TCP_ADDR"
 [ -n "$KMS_PORT_8888_TCP_ADDR" ] || KMS_PORT_8888_TCP_ADDR="127.0.0.1"
@@ -66,7 +68,7 @@ if [ "$USE_FFMPEG" == "yes" ] ; then
   echo $! > ffmpeg.pid
 fi
 
-mavenOpts="-pl kurento-integration-tests/kurento-test"
+mavenOpts="-U -am -pl $PROJECT_PATH"
 mavenOpts="$mavenOpts -Dgroups=$GROUP_FILTER"
 mavenOpts="$mavenOpts -Dtest=$TEST_FILTER"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
@@ -81,13 +83,11 @@ if [ -n "$HTTP_PORT" ]; then
 fi
 mavenOpts="$mavenOpts -Dkms.command=/usr/bin/kurento-media-server"
 
-# This is no longer needed
-#mavenOpts="$mavenOpts -Dkms.gst.plugins=/usr/share/gst-kurento-plugins"
 mavenOpts="$mavenOpts -Dkurento.test.files=/var/lib/jenkins/test-files"
 mavenOpts="$mavenOpts -Dkurento.workspace=${WORKSPACE}"
-mavenOpts="$mavenOpts -Dproject.path=$WORKSPACE/kurento-integration-tests/kurento-test"
+mavenOpts="$mavenOpts -Dproject.path=$WORKSPACE/$PROJECT_PATH"
 
-mvn --settings $MAVEN_SETTINGS clean verify -U -am $mavenOpts
+mvn --settings $MAVEN_SETTINGS clean verify $mavenOpts $MAVEN_OPTS
 
 if [ "$USE_FFMPEG" == "yes" ] ; then
   echo "********************* Stop ffmpeg"
