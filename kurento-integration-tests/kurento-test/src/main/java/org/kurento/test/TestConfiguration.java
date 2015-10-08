@@ -24,6 +24,9 @@ import org.kurento.commons.Address;
  */
 public class TestConfiguration {
 
+	public final static String TEST_AUTO_CONTAINED_PROPERTY = "test.auto.contained";
+	public final static boolean TEST_AUTO_CONTAINED_DEFAULT = true;
+
 	// Host (address, port, protocol, path)
 	public static final String TEST_HOST_PROPERTY = "test.host";
 	public static final String TEST_PUBLIC_IP_PROPERTY = "test.public.ip";
@@ -104,6 +107,8 @@ public class TestConfiguration {
 
 	public static final String DOCKER_HUB_CONTAINER_NAME_PROPERTY = "docker.hub.container.name";
 	public static final String DOCKER_HUB_CONTAINER_NAME_DEFAULT = "hub";
+
+	public static final String DOCKER_TEST_CONTAINER_NAME_PROPERTY = "docker.test.container.name";
 
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";

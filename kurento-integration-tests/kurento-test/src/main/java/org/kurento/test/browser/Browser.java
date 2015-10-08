@@ -15,8 +15,6 @@
 package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
@@ -25,6 +23,8 @@ import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAUL
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
@@ -67,6 +67,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.test.TestConfiguration;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.docker.Docker;
@@ -806,6 +807,27 @@ public class Browser implements Closeable {
 				scope = BrowserScope.valueOf(scopeProp.toUpperCase());
 			}
 			this.scope = scope;
+
+			if (BrowserScope.DOCKER.equals(scope) && getProperty(
+					TestConfiguration.TEST_AUTO_CONTAINED_PROPERTY,
+					TestConfiguration.TEST_AUTO_CONTAINED_DEFAULT)) {
+
+				String thisContainer = getProperty(
+						TestConfiguration.DOCKER_TEST_CONTAINER_NAME_PROPERTY);
+
+				if (thisContainer != null) {
+
+					String ip = Docker
+							.getSingleton(
+									getProperty(DOCKER_SERVER_URL_PROPERTY,
+											DOCKER_SERVER_URL_DEFAULT))
+							.inspectContainer(thisContainer)
+							.getNetworkSettings().getIpAddress();
+
+					this.node = ip;
+				}
+			}
+
 			return this;
 		}
 
@@ -901,6 +923,7 @@ public class Browser implements Closeable {
 		public Browser build() {
 			return new Browser(this);
 		}
+
 	}
 
 	public int getRecordAudio() {
