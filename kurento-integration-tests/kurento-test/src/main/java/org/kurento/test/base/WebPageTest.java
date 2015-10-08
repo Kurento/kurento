@@ -15,6 +15,7 @@
 package org.kurento.test.base;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_CONFIG_JSON_PROPERTY;
 import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
@@ -75,7 +76,8 @@ public abstract class WebPageTest<W extends WebPage> {
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
 	static {
-		ConfigFileManager.loadConfigFile(TEST_CONFIG_JSON_PROPERTY);
+		ConfigFileManager.loadConfigFile(getProperty(TEST_CONFIG_JSON_PROPERTY,
+				TEST_CONFIG_JSON_DEFAULT));
 	}
 
 	@Rule

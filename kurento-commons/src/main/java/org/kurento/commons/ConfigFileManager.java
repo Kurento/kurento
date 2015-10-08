@@ -25,15 +25,18 @@ public class ConfigFileManager {
 
 		try {
 
+			String property = CONFIG_FILE_PATH_PROPERTY;
 			String configFilePath = System
 					.getProperty(CONFIG_FILE_PATH_PROPERTY);
 
 			if (configFilePath == null) {
 				configFilePath = System.getProperty(CONFIG_FILE_PATH_PROPERTY2);
+				property = CONFIG_FILE_PATH_PROPERTY2;
 			}
 
 			if (configFilePath == null) {
 				configFilePath = System.getProperty(CONFIG_FILE_PATH_PROPERTY3);
+				property = CONFIG_FILE_PATH_PROPERTY3;
 			}
 
 			Path configFile = null;
@@ -44,14 +47,13 @@ public class ConfigFileManager {
 				if (!Files.exists(configFile)) {
 					log.warn(
 							"Property '{}' points to an invalid location '{}'. Searching default config file '{}' in classpath and workdir",
-							CONFIG_FILE_PATH_PROPERTY, configFilePath,
-							configFileName);
+							property, configFilePath, configFileName);
 					configFile = ConfigFileFinder
 							.searchConfigFileInDefaultPlaces(configFileName);
 				} else {
 					log.info(
 							"Property {} points to a valid location. Will use the config from {}",
-							CONFIG_FILE_PATH_PROPERTY, configFilePath);
+							property, configFilePath);
 				}
 
 			} else {
