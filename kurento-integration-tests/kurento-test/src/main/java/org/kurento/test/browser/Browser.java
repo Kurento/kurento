@@ -228,7 +228,8 @@ public class Browser implements Closeable {
 
 			} else if (driverClass.equals(ChromeDriver.class)) {
 				// Chrome driver
-				ChromeDriverManager.getInstance().setup();
+				// TODO temporal workaround to avoid version 2.20
+				ChromeDriverManager.getInstance().setup("2.19");
 
 				// Chrome options
 				ChromeOptions options = new ChromeOptions();
