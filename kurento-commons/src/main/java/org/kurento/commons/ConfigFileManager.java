@@ -1,6 +1,5 @@
 package org.kurento.commons;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,7 +68,7 @@ public class ConfigFileManager {
 						configFileName);
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.warn("Exception loading config file", e);
 		}
 	}

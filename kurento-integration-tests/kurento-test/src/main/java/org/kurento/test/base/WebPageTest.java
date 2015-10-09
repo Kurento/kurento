@@ -48,7 +48,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.test.ConfigLoader;
+import org.kurento.test.ConfigFileTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @RunWith(Parameterized.class)
-public abstract class WebPageTest<W extends WebPage> extends ConfigLoader {
+public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
 
 	public static Logger log = LoggerFactory.getLogger(WebPageTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
