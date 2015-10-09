@@ -547,8 +547,12 @@ public class Browser implements Closeable {
 
 	private void createAndWaitRemoteDriver(String driverUrl,
 			DesiredCapabilities capabilities) {
+
+		log.debug("Creating remove driver in hub {}", driverUrl);
+
 		int timeoutSeconds = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
 				SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+
 		long timeoutMs = System.currentTimeMillis()
 				+ TimeUnit.SECONDS.toMillis(timeoutSeconds);
 
