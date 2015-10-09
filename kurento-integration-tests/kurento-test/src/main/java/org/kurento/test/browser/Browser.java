@@ -143,6 +143,9 @@ public class Browser implements Closeable {
 	private List<Map<String, String>> extensions;
 	private String url;
 
+	private static String thisContainerName = getProperty(
+			TestConfiguration.DOCKER_TEST_CONTAINER_NAME_PROPERTY);
+
 	public Browser(Builder builder) {
 		this.builder = builder;
 		this.scope = builder.scope;
@@ -521,13 +524,21 @@ public class Browser implements Closeable {
 		String hubContainerName = getProperty(
 				DOCKER_HUB_CONTAINER_NAME_PROPERTY,
 				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+		if (thisContainerName != null) {
+			hubContainerName = thisContainerName + hubContainerName;
+		}
+
 		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
 				DOCKER_HUB_IMAGE_DEFAULT);
 		String hubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
 				getTimeoutMs());
 
 		// Start nodes: Chrome and Firefox
-		docker.startAndWaitNode(getId(), nodeImageId, hubIp);
+		String browserContainerName = getId();
+		if (thisContainerName != null) {
+			browserContainerName = thisContainerName + browserContainerName;
+		}
+		docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
 
 		// Create RemoteWebDriver
 		createAndWaitRemoteDriver("http://" + hubIp + ":4444/wd/hub",
@@ -813,16 +824,13 @@ public class Browser implements Closeable {
 					TestConfiguration.TEST_AUTO_CONTAINED_PROPERTY,
 					TestConfiguration.TEST_AUTO_CONTAINED_DEFAULT)) {
 
-				String thisContainer = getProperty(
-						TestConfiguration.DOCKER_TEST_CONTAINER_NAME_PROPERTY);
-
-				if (thisContainer != null) {
+				if (thisContainerName != null) {
 
 					String ip = Docker
 							.getSingleton(
 									getProperty(DOCKER_SERVER_URL_PROPERTY,
 											DOCKER_SERVER_URL_DEFAULT))
-							.inspectContainer(thisContainer)
+							.inspectContainer(thisContainerName)
 							.getNetworkSettings().getIpAddress();
 
 					this.node = ip;
