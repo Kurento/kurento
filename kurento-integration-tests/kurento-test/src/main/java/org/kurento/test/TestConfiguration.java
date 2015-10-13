@@ -93,9 +93,6 @@ public class TestConfiguration {
 	public static final String SELENIUM_SCOPE_PROPERTY = "selenium.scope";
 
 	// Docker
-	public static final String DOCKER_SERVER_URL_PROPERTY = "docker.server.url";
-	public static final String DOCKER_SERVER_URL_DEFAULT = "http://localhost:2375";
-
 	public static final String DOCKER_HUB_IMAGE_PROPERTY = "docker.hub.image";
 	public static final String DOCKER_HUB_IMAGE_DEFAULT = "selenium/hub:2.47.1";
 

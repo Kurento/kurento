@@ -23,8 +23,6 @@ import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAUL
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_SERVER_URL_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
@@ -515,8 +513,7 @@ public class Browser implements Closeable {
 
 		// Start docker client for the first time
 		if (docker == null) {
-			docker = Docker.getSingleton(getProperty(DOCKER_SERVER_URL_PROPERTY,
-					DOCKER_SERVER_URL_DEFAULT));
+			docker = Docker.getSingleton();
 		}
 
 		// Start hub (if needed)
@@ -829,10 +826,7 @@ public class Browser implements Closeable {
 
 				if (thisContainerName != null) {
 
-					String ip = Docker
-							.getSingleton(
-									getProperty(DOCKER_SERVER_URL_PROPERTY,
-											DOCKER_SERVER_URL_DEFAULT))
+					String ip = Docker.getSingleton()
 							.inspectContainer(thisContainerName)
 							.getNetworkSettings().getIpAddress();
 

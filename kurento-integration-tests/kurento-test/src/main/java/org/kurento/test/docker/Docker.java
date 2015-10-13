@@ -18,6 +18,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.kurento.commons.PropertiesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,10 @@ public class Docker implements Closeable {
 	private static Docker singleton = null;
 
 	private static final Logger log = LoggerFactory.getLogger(Docker.class);
+
+	private static final String DOCKER_SERVER_URL_PROPERTY = "docker.server.url";
+	private static final String DOCKER_SERVER_URL_DEFAULT = "http://localhost:2375";
+
 	private static final int WAIT_CONTAINER_POLL_TIME = 200; // milliseconds
 	private static final int WAIT_CONTAINER_POLL_TIMEOUT = 10; // seconds
 
@@ -48,6 +53,34 @@ public class Docker implements Closeable {
 			singleton = new Docker(dockerServerUrl);
 		}
 		return singleton;
+	}
+
+	public static Docker getSingleton() {
+
+		return getSingleton(PropertiesManager.getProperty(
+				DOCKER_SERVER_URL_PROPERTY, getDefaultDockerServerUrl()));
+	}
+
+	private static String getDefaultDockerServerUrl() {
+
+		if (isRunningInContainerInternal()) {
+			return "http://" + getHostIp() + ":2375";
+		} else {
+			return DOCKER_SERVER_URL_DEFAULT;
+		}
+	}
+
+	public boolean isRunningInContainer() {
+		return isRunningInContainerInternal();
+	}
+
+	private static boolean isRunningInContainerInternal() {
+		return false;
+	}
+
+	private static String getHostIp() {
+		// TODO Read host IP from docker
+		return "127.0.0.1";
 	}
 
 	public Docker(String dockerServerUrl) {
