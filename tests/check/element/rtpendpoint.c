@@ -311,6 +311,7 @@ GST_START_TEST (negotiation_offerer)
   GstSDPMessage *answerer_local_sdp = NULL, *answerer_remote_sdp = NULL;
   gchar *answerer_local_sdp_str, *answerer_remote_sdp_str;
   gchar *sdp_str = NULL;
+  const GstSDPConnection *connection;
 
   audio_codecs_array = create_codecs_array (audio_codecs);
   video_codecs_array = create_codecs_array (video_codecs);
@@ -335,6 +336,10 @@ GST_START_TEST (negotiation_offerer)
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
   g_free (sdp_str);
   sdp_str = NULL;
+  connection = gst_sdp_message_get_connection (offer);
+
+  fail_unless (g_strcmp0 (connection->address, "0.0.0.0"));
+  fail_unless (g_strcmp0 (connection->address, "::"));
 
   g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
       &answer);
