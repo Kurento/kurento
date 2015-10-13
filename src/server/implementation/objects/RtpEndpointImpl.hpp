@@ -1,7 +1,7 @@
 #ifndef __RTP_ENDPOINT_IMPL_HPP__
 #define __RTP_ENDPOINT_IMPL_HPP__
 
-#include "SdpEndpointImpl.hpp"
+#include "BaseRtpEndpointImpl.hpp"
 #include "RtpEndpoint.hpp"
 #include <EventHandler.hpp>
 
@@ -14,7 +14,7 @@ class RtpEndpointImpl;
 void Serialize (std::shared_ptr<RtpEndpointImpl> &object,
                 JsonSerializer &serializer);
 
-class RtpEndpointImpl : public SdpEndpointImpl, public virtual RtpEndpoint
+class RtpEndpointImpl : public BaseRtpEndpointImpl, public virtual RtpEndpoint
 {
 
 public:

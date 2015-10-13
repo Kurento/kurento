@@ -17,9 +17,9 @@ namespace kurento
 
 RtpEndpointImpl::RtpEndpointImpl (const boost::property_tree::ptree &conf,
                                   std::shared_ptr<MediaPipeline> mediaPipeline)
-  : SdpEndpointImpl (conf,
-                     std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline),
-                     FACTORY_NAME)
+  : BaseRtpEndpointImpl (conf,
+                         std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline),
+                         FACTORY_NAME)
 {
 }
 
