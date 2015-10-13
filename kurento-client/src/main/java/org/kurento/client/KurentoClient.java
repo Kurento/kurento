@@ -17,6 +17,7 @@ package org.kurento.client;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 import javax.annotation.PreDestroy;
 
@@ -50,9 +51,12 @@ public class KurentoClient {
 	private long requesTimeout = PropertiesManager
 			.getProperty("kurento.client.requestTimeout", 10000);
 
+	private String id;
+
 	private static KmsUrlLoader kmsUrlLoader;
 
-	public static synchronized String getKmsUrl(Properties properties) {
+	public static synchronized String getKmsUrl(String id,
+			Properties properties) {
 
 		if (kmsUrlLoader == null) {
 
@@ -65,23 +69,31 @@ public class KurentoClient {
 
 		Object load = properties.get("loadPoints");
 		if (load == null) {
-			return kmsUrlLoader.getKmsUrl();
+			return kmsUrlLoader.getKmsUrl(id);
 		} else {
 			if (load instanceof Number) {
-				return kmsUrlLoader.getKmsUrlLoad(((Number) load).intValue());
+				return kmsUrlLoader.getKmsUrlLoad(id,
+						((Number) load).intValue());
 			} else {
-				return kmsUrlLoader
-						.getKmsUrlLoad(Integer.parseInt(load.toString()));
+				return kmsUrlLoader.getKmsUrlLoad(id,
+						Integer.parseInt(load.toString()));
 			}
 		}
 	}
 
 	public static KurentoClient create() {
-		return create(getKmsUrl(null));
+		return create(new Properties());
 	}
 
 	public static KurentoClient create(Properties properties) {
-		return create(getKmsUrl(properties), properties);
+		String id = UUID.randomUUID().toString();
+		KurentoClient client = create(getKmsUrl(id, properties), properties);
+		client.setId(id);
+		return client;
+	}
+
+	private void setId(String id) {
+		this.id = id;
 	}
 
 	public static KurentoClient create(String websocketUrl) {
@@ -160,6 +172,9 @@ public class KurentoClient {
 	public void destroy() {
 		log.info("Closing KurentoClient");
 		manager.destroy();
+		if (id != null) {
+			kmsUrlLoader.clientDestroyed(id);
+		}
 	}
 
 	public boolean isClosed() {

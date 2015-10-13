@@ -2,9 +2,9 @@ package org.kurento.repository.rest;
 
 import java.nio.file.Path;
 
-import org.kurento.commons.UrlLoader;
+import org.kurento.commons.UrlServiceLoader;
 
-public class RepositoryUrlLoader extends UrlLoader<RepositoryUrlProvider> {
+public class RepositoryUrlLoader extends UrlServiceLoader<RepositoryUrlProvider> {
 
 	public static final String REPOSITORY_URL_PROPERTY = "repository.url";
 	public static final String REPOSITORY_URL_PROVIDER_PROPERTY = "repository.url.provider";
@@ -17,7 +17,7 @@ public class RepositoryUrlLoader extends UrlLoader<RepositoryUrlProvider> {
 
 	public String getRepositoryUrl() {
 		if (getUrl() == null) {
-			return getUrlProvider().getRepositoryUrl();
+			return getServiceProvider().getRepositoryUrl();
 		} else {
 			return getUrl();
 		}

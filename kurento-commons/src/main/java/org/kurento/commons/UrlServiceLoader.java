@@ -9,20 +9,20 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class UrlLoader<P> {
+public abstract class UrlServiceLoader<P> {
 
-	private static final Logger log = LoggerFactory.getLogger(UrlLoader.class);
+	private static final Logger log = LoggerFactory.getLogger(UrlServiceLoader.class);
 
 	private String urlProperty;
 	private String urlProviderProperty;
 	private String defaultUrl;
 
-	private String urlProviderClassName;
+	private String serviceProviderClassName;
 	private String url;
 
-	private P urlProvider;
+	private P serviceProvider;
 
-	public UrlLoader(Path configFile, String urlProperty,
+	public UrlServiceLoader(Path configFile, String urlProperty,
 			String urlProviderProperty, String defaultUrl) {
 
 		this.urlProperty = urlProperty;
@@ -49,12 +49,12 @@ public abstract class UrlLoader<P> {
 					properties.load(reader);
 				}
 
-				urlProviderClassName = properties
+				serviceProviderClassName = properties
 						.getProperty(urlProviderProperty);
 
 				kmsUrl = properties.getProperty(urlProperty);
 
-				if (kmsUrl == null && urlProviderClassName == null) {
+				if (kmsUrl == null && serviceProviderClassName == null) {
 					log.warn(
 							"The file {} lacks property '{}' or '{}'. The default kms uri '{}' will be used",
 							configFile.toAbsolutePath().toString(),
@@ -85,21 +85,21 @@ public abstract class UrlLoader<P> {
 	private P createUrlProvider() {
 		try {
 
-			Class<?> providerClass = Class.forName(urlProviderClassName);
+			Class<?> providerClass = Class.forName(serviceProviderClassName);
 
 			return (P) providerClass.newInstance();
 
 		} catch (Exception e) {
 			throw new RuntimeException("Exception loading url provider class "
-					+ urlProviderClassName, e);
+					+ serviceProviderClassName, e);
 		}
 	}
 
-	protected P getUrlProvider() {
-		if (urlProvider == null) {
-			urlProvider = createUrlProvider();
+	protected P getServiceProvider() {
+		if (serviceProvider == null) {
+			serviceProvider = createUrlProvider();
 		}
-		return urlProvider;
+		return serviceProvider;
 	}
 
 }

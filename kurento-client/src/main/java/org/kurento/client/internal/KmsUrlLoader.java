@@ -2,9 +2,9 @@ package org.kurento.client.internal;
 
 import java.nio.file.Path;
 
-import org.kurento.commons.UrlLoader;
+import org.kurento.commons.UrlServiceLoader;
 
-public class KmsUrlLoader extends UrlLoader<KmsUrlProvider> {
+public class KmsUrlLoader extends UrlServiceLoader<KmsProvider> {
 
 	public static final String KMS_URL_PROPERTY = "kms.url";
 	public static final String KMS_URL_PROVIDER_PROPERTY = "kms.url.provider";
@@ -15,29 +15,35 @@ public class KmsUrlLoader extends UrlLoader<KmsUrlProvider> {
 				DEFAULT_KMS_URL);
 	}
 
-	public String getKmsUrl() {
+	public String getKmsUrl(String id) {
 		if (getUrl() == null) {
-			return loadKmsUrlFromProvider(-1);
+			return loadKmsUrlFromProvider(id, -1);
 		} else {
 			return getUrl();
 		}
 	}
 
-	public String getKmsUrlLoad(int loadPoints) {
+	public String getKmsUrlLoad(String id, int loadPoints) {
 		if (getUrl() == null) {
-			return loadKmsUrlFromProvider(loadPoints);
+			return loadKmsUrlFromProvider(id, loadPoints);
 		} else {
 			return getUrl();
 		}
 	}
 
-	private synchronized String loadKmsUrlFromProvider(int loadPoints) {
+	private synchronized String loadKmsUrlFromProvider(String id,
+			int loadPoints) {
 
+		KmsProvider kmsProvider = getServiceProvider();
 		if (loadPoints == -1) {
-			return getUrlProvider().getKmsUrl();
+			return kmsProvider.reserveKms(id);
 		} else {
-			return getUrlProvider().getKmsUrl(loadPoints);
+			return kmsProvider.reserveKms(id, loadPoints);
 		}
+	}
+
+	public void clientDestroyed(String id) {
+		getServiceProvider().releaseKms(id);
 	}
 
 }
