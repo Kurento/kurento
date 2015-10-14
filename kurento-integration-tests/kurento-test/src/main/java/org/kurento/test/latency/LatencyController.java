@@ -321,8 +321,6 @@ public class LatencyController
 
 			}
 
-		} catch (IOException e) {
-			log.debug("Finished LatencyController thread due to IO Exception");
 		} catch (InterruptedException e) {
 			log.debug(
 					"Finished LatencyController thread due to Interrupted Exception");

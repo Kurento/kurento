@@ -37,7 +37,8 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.grid.ParallelBrowsers;
 
 /**
- * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.<br/>
+ * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.
+ * <br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
@@ -73,8 +74,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
 		TestScenario test = new TestScenario();
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(
-				BrowserConfig.VIEWER,
+		test.addBrowser(BrowserConfig.VIEWER,
 				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.numInstances(numViewers)
 						.browserPerInstance(browserPerViewer)
@@ -113,8 +113,10 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 					getPage(name).subscribeEvents("playing");
 					getPage(name).initWebRtc(webRtcEndpoint,
 							WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
-					getPage(name).activateRemoteRtcStats(monitor,
-							"webRtcPeer.peerConnection");
+
+					// TODO: review this
+					// getPage(name).activateRemoteRtcStats(monitor,
+					// "webRtcPeer.peerConnection");
 					getPage(name).checkLatencyUntil(monitor, endTimeMillis);
 
 				} catch (Throwable e) {

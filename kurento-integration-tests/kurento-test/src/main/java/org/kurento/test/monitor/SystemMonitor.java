@@ -15,23 +15,13 @@
 package org.kurento.test.monitor;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,40 +33,23 @@ import java.util.concurrent.TimeUnit;
  */
 public class SystemMonitor {
 
-	private Thread thread;
-	private Map<Long, SystemInfo> infoMap;
-	private long samplingTime = 100; // Default sampling time, in milliseconds
-	private double prevTotal = 0;
-	private double prevIdle = 0;
-	private int numClients = 0;
-	private double currentLatency = 0;
-	private int latencyHints = 0;
-	private int latencyErrors = 0;
-	private boolean showLantency = false;
-
-	// TODO: Deactivated statistics
-	// private List<TestClient> testClientList;
-
-	private final static String OK = "ok";
-	private final static String ERR = "error: ";
-
 	public static final String MONITOR_PORT_PROP = "kms.monitor.port";
 	public static final int MONITOR_PORT_DEFAULT = 12345;
-	public static final int KMS_WAIT_TIMEOUT = 60; // seconds
-	public static final String OUTPUT_CSV = "/kms-monitor.csv";
+	public static final int KMS_WAIT_TIMEOUT = 10; // seconds
+
+	private static final String ERR = "error: ";
+
+	private double prevTotal = 0;
+	private double prevIdle = 0;
+	private int kmsPid;
+	private NetInfo initNetInfo;
 
 	public SystemMonitor() {
-		infoMap = Collections
-				.synchronizedSortedMap(new TreeMap<Long, SystemInfo>());
+		kmsPid = getKmsPid();
 	}
 
-	public SystemMonitor(long samplingTime) {
-		this();
-		this.samplingTime = samplingTime;
-	}
-
-	public static void main(String[] args) throws InterruptedException,
-			IOException {
+	public static void main(String[] args)
+			throws InterruptedException, IOException {
 
 		int monitorPort = args.length > 0 ? Integer.parseInt(args[0])
 				: MONITOR_PORT_DEFAULT;
@@ -87,58 +60,38 @@ public class SystemMonitor {
 		boolean run = true;
 
 		while (run) {
-			final Socket socket = server.accept();
-
-			String result = OK;
-
-			PrintWriter output = null;
+			Socket socket = server.accept();
+			Object result = null;
 			BufferedReader input = null;
+			ObjectOutputStream output = null;
+
 			try {
-				output = new PrintWriter(socket.getOutputStream(), true);
-				input = new BufferedReader(new InputStreamReader(
-						socket.getInputStream()));
+				output = new ObjectOutputStream(socket.getOutputStream());
+				input = new BufferedReader(
+						new InputStreamReader(socket.getInputStream()));
 
 				String message = input.readLine();
-				System.out.println("Message received " + message);
 
 				if (message != null) {
+					System.out.println("Message received " + message);
 					String[] commands = message.split(" ");
 					switch (commands[0]) {
-					case "start":
-						monitor.start();
-						break;
-					case "stop":
-						monitor.stop();
+					case "measureKms":
+						result = monitor.measureKms();
 						break;
 					case "destroy":
+						result = "Stopping KMS monitor";
 						run = false;
-						break;
-					case "writeResults":
-						monitor.writeResults(commands[1] + OUTPUT_CSV);
-						break;
-					case "incrementNumClients":
-						monitor.incrementNumClients();
-						break;
-					case "decrementNumClients":
-						monitor.decrementNumClients();
-						break;
-					case "addCurrentLatency":
-						monitor.addCurrentLatency(Double
-								.parseDouble(commands[1]));
-						break;
-					case "setSamplingTime":
-						monitor.setSamplingTime(Long.parseLong(commands[1]));
-						break;
-					case "incrementLatencyErrors":
-						monitor.incrementLatencyErrors();
 						break;
 					default:
 						result = ERR + "Invalid command: " + message;
 						break;
 					}
+
 					System.out.println("Sending back message " + result);
-					output.println(result);
+					output.writeObject(result);
 				}
+
 				output.close();
 				input.close();
 				socket.close();
@@ -152,83 +105,30 @@ public class SystemMonitor {
 
 	}
 
-	public void start() {
-		final long start = new Date().getTime();
-		final NetInfo initNetInfo = getInitNetInfo();
+	public KmsSystemInfo measureKms() {
+		KmsSystemInfo info = new KmsSystemInfo();
 
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Callable<Integer> callable = new Callable<Integer>() {
-			@Override
-			public Integer call() {
-				return getKmsPid();
-			}
-		};
-		final Future<Integer> future = executor.submit(callable);
+		// Bandwidth (bytes tx and rx)
+		if (initNetInfo == null) {
+			initNetInfo = getInitNetInfo();
+		}
+		NetInfo newNetInfo = getNetInfo(initNetInfo);
+		info.setNetInfo(newNetInfo);
 
-		thread = new Thread() {
-			@Override
-			public void run() {
-				// NetInfo lastNetInfo = null;
-				try {
-					int kmsPid = future.get();
-					while (true) {
-						SystemInfo info = new SystemInfo();
+		// CPU usage (%)
+		info.setCpuPercent(getCpuUsage());
 
-						// Bandwidth (bytes tx and rx)
-						NetInfo newNetInfo = getNetInfo(initNetInfo);
-						info.setNetInfo(newNetInfo);
-						// lastNetInfo = newNetInfo;
+		// Memory and swap usage (bytes)
+		double[] mem = getMemSwap();
+		info.setMem((long) mem[0]);
+		info.setSwap((long) mem[1]);
+		info.setMemPercent(mem[2]);
+		info.setSwapPercent(mem[3]);
 
-						// CPU usage (%)
-						info.setCpuPercent(getCpuUsage());
+		// Number of threads
+		info.setNumThreadsKms(getNumThreads(kmsPid));
 
-						// Memory and swap usage (bytes)
-						double[] mem = getMemSwap();
-						info.setMem((long) mem[0]);
-						info.setSwap((long) mem[1]);
-						info.setMemPercent(mem[2]);
-						info.setSwapPercent(mem[3]);
-
-						// Number of clients
-						info.setNumClients(numClients);
-
-						// Latency
-						double latency = getLatency();
-						info.setLatency(latency);
-						info.setLatencyErrors(latencyErrors);
-						if (latency > 0) {
-							showLantency = true;
-						}
-
-						// Number of threads
-						info.setNumThreadsKms(getNumThreads(kmsPid));
-
-						// TODO: Deactivated statistics
-						// Browser Statistics
-						// if (testClientList != null) {
-						// for (TestClient client : testClientList) {
-						// Map<String, Object> rtc = client.getRtcStats();
-						// info.addRtcStats(rtc);
-						// }
-						// }
-
-						infoMap.put(new Date().getTime() - start, info);
-
-						Thread.sleep(samplingTime);
-					}
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-				}
-			}
-		};
-		thread.setDaemon(true);
-		thread.start();
-	}
-
-	@SuppressWarnings("deprecation")
-	public void stop() {
-		thread.interrupt();
-		thread.stop();
+		return info;
 	}
 
 	public NetInfo getNetInfo(NetInfo initNetInfo, NetInfo lastNetInfo) {
@@ -261,96 +161,10 @@ public class SystemMonitor {
 		return getNetInfo(null, null);
 	}
 
-	public void writeResults(String csvTitle) {
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(new FileWriter(csvTitle));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		boolean header = false;
-		// TODO: Deactivated statistics
-		// String emptyStats = "";
-		// List<String> rtcHeader = null;
-
-		for (long time : infoMap.keySet()) {
-			if (!header) {
-				pw.print("time, cpu_percetage, mem_bytes, mem_percentage, swap_bytes, swap_percentage, clients_number, kms_threads_number");
-				if (showLantency) {
-					pw.print(", latency_ms_avg, latency_errors_number");
-				}
-				pw.print(infoMap.get(time).getNetInfo().parseHeaderEntry());
-
-				// TODO: Deactivated statistics
-				// Browser statistics. First entries may be empty, so we have to
-				// iterate to find values in the statistics in order to write
-				// the header in the resulting CSV
-				// if (testClientList != null) {
-				// rtcHeader = new ArrayList<>();
-				// for (SystemInfo info : infoMap.values()) {
-				// if (info.getRtcStats() != null
-				// && !info.getRtcStats().isEmpty()) {
-				// for (String rtcStatsKey : info.getRtcStats()
-				// .keySet()) {
-				// if (!rtcHeader.contains(rtcStatsKey)) {
-				// rtcHeader.add(rtcStatsKey);
-				// pw.print(", "
-				// + rtcStatsKey
-				// + StatsOperation.map().get(
-				// rtcStatsKey));
-				// emptyStats += ",";
-				// }
-				// }
-				// }
-				// }
-				// }
-
-				pw.println("");
-				header = true;
-			}
-			String parsedtime = new SimpleDateFormat("mm:ss.SSS").format(time);
-			double cpu = infoMap.get(time).getCpuPercent();
-			long mem = infoMap.get(time).getMem();
-			double memPercent = infoMap.get(time).getMemPercent();
-			long swap = infoMap.get(time).getSwap();
-			double swapPercent = infoMap.get(time).getSwapPercent();
-
-			pw.print(parsedtime + "," + cpu + "," + mem + "," + memPercent
-					+ "," + swap + "," + swapPercent + ","
-					+ infoMap.get(time).getNumClients() + ","
-					+ infoMap.get(time).getNumThreadsKms());
-
-			if (showLantency) {
-				pw.print("," + infoMap.get(time).getLatency() + ","
-						+ infoMap.get(time).getLatencyErrors());
-			}
-
-			pw.print(infoMap.get(time).getNetInfo().parseNetEntry());
-
-			// Browser statistics
-			// if (testClientList != null) {
-			// if (infoMap.get(time).getRtcStats() != null
-			// && !infoMap.get(time).getRtcStats().isEmpty()) {
-			// for (String key : rtcHeader) {
-			// pw.print(",");
-			// if (infoMap.get(time).getRtcStats().containsKey(key)) {
-			// pw.print(infoMap.get(time).getRtcStats().get(key));
-			// }
-			// }
-			// } else {
-			// pw.print(emptyStats);
-			// }
-			// }
-
-			pw.println("");
-		}
-		pw.close();
-	}
-
 	public double getCpuUsage() {
 		String[] cpu = runAndWait("/bin/sh", "-c",
 				"cat /proc/stat | grep '^cpu ' | awk '{print substr($0, index($0, $2))}'")
-				.replaceAll("\n", "").split(" ");
+						.replaceAll("\n", "").split(" ");
 
 		double idle = Double.parseDouble(cpu[3]);
 		double total = 0;
@@ -391,6 +205,8 @@ public class SystemMonitor {
 	}
 
 	private int getKmsPid() {
+		System.out.println("Looking for KMS process...");
+
 		boolean reachable = false;
 		long endTimeMillis = System.currentTimeMillis()
 				+ (KMS_WAIT_TIMEOUT * 1000);
@@ -399,7 +215,7 @@ public class SystemMonitor {
 		while (true) {
 			kmsPid = runAndWait("/bin/sh", "-c",
 					"ps axf | grep kurento-media-server | grep -v grep | awk '{print $1}'")
-					.replaceAll("\n", "");
+							.replaceAll("\n", "");
 			reachable = !kmsPid.equals("");
 			if (kmsPid.contains(" ")) {
 				throw new RuntimeException(
@@ -424,13 +240,16 @@ public class SystemMonitor {
 			throw new RuntimeException(
 					"KMS is not started in the local machine");
 		}
+
+		System.out.println(
+				"KMS process located in local machine with PID " + kmsPid);
 		return Integer.parseInt(kmsPid);
 	}
 
 	private int getNumThreads(int kmsPid) {
 		return Integer.parseInt(runAndWait("/bin/sh", "-c",
 				"cat /proc/" + kmsPid + "/stat | awk '{print $20}'")
-				.replaceAll("\n", ""));
+						.replaceAll("\n", ""));
 	}
 
 	private String runAndWait(final String... command) {
@@ -443,7 +262,8 @@ public class SystemMonitor {
 		} catch (IOException e) {
 			throw new RuntimeException(
 					"Exception executing command on the shell: "
-							+ Arrays.toString(command), e);
+							+ Arrays.toString(command),
+					e);
 		}
 	}
 
@@ -462,49 +282,5 @@ public class SystemMonitor {
 
 		return sb.toString().trim();
 	}
-
-	public int getNumClients() {
-		return numClients;
-	}
-
-	public synchronized void incrementNumClients() {
-		this.numClients++;
-	}
-
-	public synchronized void decrementNumClients() {
-		this.numClients--;
-	}
-
-	public int getLatencyErrors() {
-		return latencyErrors;
-	}
-
-	public synchronized void incrementLatencyErrors() {
-		this.latencyErrors++;
-	}
-
-	public double getLatency() {
-		double latency = (latencyHints > 0) ? currentLatency / latencyHints : 0;
-		this.currentLatency = 0;
-		this.latencyHints = 0;
-		return latency;
-	}
-
-	public synchronized void addCurrentLatency(double currentLatency) {
-		this.currentLatency += currentLatency;
-		this.latencyHints++;
-	}
-
-	public void setSamplingTime(long samplingTime) {
-		this.samplingTime = samplingTime;
-	}
-
-	// TODO: Deactivated statistics
-	// public void addTestClient(TestClient client) {
-	// if (testClientList == null) {
-	// testClientList = new CopyOnWriteArrayList<>();
-	// }
-	// testClientList.add(client);
-	// }
 
 }

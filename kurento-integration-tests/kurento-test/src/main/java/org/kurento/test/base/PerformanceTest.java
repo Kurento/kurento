@@ -49,9 +49,11 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	@After
 	public void teardownMonitor() {
-		monitor.stop();
-		monitor.writeResults(monitorResultPath);
-		monitor.destroy();
+		if (monitor != null) {
+			monitor.stop();
+			monitor.writeResults(monitorResultPath);
+			monitor.destroy();
+		}
 	}
 
 	public String getMonitorResultPath() {

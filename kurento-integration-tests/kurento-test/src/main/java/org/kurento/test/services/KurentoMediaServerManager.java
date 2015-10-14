@@ -198,6 +198,7 @@ public class KurentoMediaServerManager {
 				: KMS_AUTOSTART_PROP;
 		String kmsAutostartDefaultProp = isFake ? FAKE_KMS_AUTOSTART_DEFAULT
 				: KMS_AUTOSTART_DEFAULT;
+
 		String kmsWsUriProp = isFake ? FAKE_KMS_WS_URI_PROP : KMS_WS_URI_PROP;
 
 		// Values

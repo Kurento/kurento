@@ -14,6 +14,7 @@
  */
 package org.kurento.test.monitor;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -24,7 +25,9 @@ import java.util.TreeMap;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-public class NetInfo {
+public class NetInfo implements Serializable {
+
+	private static final long serialVersionUID = -6318529719103095127L;
 
 	private Map<String, NetInfoEntry> netInfoMap;
 
@@ -56,8 +59,8 @@ public class NetInfo {
 	public String parseHeaderEntry() {
 		String out = "";
 		for (String key : netInfoMap.keySet()) {
-			out += ", interface_" + key + "_rx_bytes_sum" + " , interface_"
-					+ key + "_tx_bytes_sum";
+			out += ",interface_" + key + "_rx_bytes_sum" + ",interface_" + key
+					+ "_tx_bytes_sum";
 		}
 		return out;
 	}
@@ -65,13 +68,16 @@ public class NetInfo {
 	public String parseNetEntry() {
 		String out = "";
 		for (String key : netInfoMap.keySet()) {
-			out += ", " + netInfoMap.get(key).getRxBytes() + ", "
+			out += "," + netInfoMap.get(key).getRxBytes() + ","
 					+ netInfoMap.get(key).getTxBytes();
 		}
 		return out;
 	}
 
-	private class NetInfoEntry {
+	private class NetInfoEntry implements Serializable {
+
+		private static final long serialVersionUID = -7279516312913824339L;
+
 		private long rxBytes;
 		private long txBytes;
 

@@ -22,6 +22,10 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Rule;
 import org.kurento.client.EventListener;
+import org.kurento.client.FaceOverlayFilter;
+import org.kurento.client.Filter;
+import org.kurento.client.FilterType;
+import org.kurento.client.GStreamerFilter;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.OnIceCandidateEvent;
@@ -29,6 +33,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -125,8 +130,23 @@ public class KurentoClientWebPageTest<W extends WebPage>
 		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
 	}
 
-	public void addFakeClients(int numMockClients, int bandwidht,
-			MediaPipeline mainPipeline, WebRtcEndpoint webRtcEndpoint) {
+	public void addFakeClients(int numFakeClients, int bandwidht,
+			MediaPipeline mainPipeline, WebRtcEndpoint senderWebRtcEndpoint) {
+		addFakeClients(numFakeClients, bandwidht, mainPipeline,
+				senderWebRtcEndpoint, 0, null, null);
+	}
+
+	public void addFakeClients(int numFakeClients, MediaPipeline mainPipeline,
+			WebRtcEndpoint senderWebRtcEndpoint, long timeBetweenClientMs,
+			SystemMonitorManager monitor, Class<? extends Filter> filter) {
+		addFakeClients(numFakeClients, -1, mainPipeline, senderWebRtcEndpoint,
+				timeBetweenClientMs, monitor, filter);
+	}
+
+	public void addFakeClients(int numFakeClients, int bandwidht,
+			MediaPipeline mainPipeline, WebRtcEndpoint senderWebRtcEndpoint,
+			long timeBetweenClientMs, SystemMonitorManager monitor,
+			Class<? extends Filter> filter) {
 
 		if (fakeKurentoClient == null) {
 			log.warn(
@@ -135,20 +155,22 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 		} else {
 
-			log.info("* * * Adding {} mock clients * * *", numMockClients);
+			log.info("* * * Adding {} fake clients * * *", numFakeClients);
 
 			MediaPipeline fakePipeline = fakeKurentoClient
 					.createMediaPipeline();
 
-			for (int i = 0; i < numMockClients; i++) {
+			for (int i = 0; i < numFakeClients; i++) {
 				final WebRtcEndpoint fakeSender = new WebRtcEndpoint.Builder(
 						mainPipeline).build();
 				final WebRtcEndpoint fakeReceiver = new WebRtcEndpoint.Builder(
 						fakePipeline).build();
 
-				fakeSender.setMaxVideoSendBandwidth(bandwidht);
-				fakeSender.setMinVideoSendBandwidth(bandwidht);
-				fakeReceiver.setMaxVideoRecvBandwidth(bandwidht);
+				if (bandwidht != -1) {
+					fakeSender.setMaxVideoSendBandwidth(bandwidht);
+					fakeSender.setMinVideoSendBandwidth(bandwidht);
+					fakeReceiver.setMaxVideoRecvBandwidth(bandwidht);
+				}
 
 				fakeSender.addOnIceCandidateListener(
 						new EventListener<OnIceCandidateEvent>() {
@@ -175,7 +197,39 @@ public class KurentoClientWebPageTest<W extends WebPage>
 				fakeSender.gatherCandidates();
 				fakeReceiver.gatherCandidates();
 
-				webRtcEndpoint.connect(fakeSender);
+				Filter filterObj = null;
+				if (filter != null) {
+					// TODO: So far only FaceOverlayFilter and GStreamerFilter
+					// are supported
+					if (filter.equals(FaceOverlayFilter.class)) {
+						filterObj = new FaceOverlayFilter.Builder(fakePipeline)
+								.build();
+					} else {
+						filterObj = new GStreamerFilter.Builder(fakePipeline,
+								"capsfilter caps=video/x-raw")
+										.withFilterType(FilterType.VIDEO)
+										.build();
+					}
+				}
+				if (filterObj != null) {
+					senderWebRtcEndpoint.connect(filterObj);
+					filterObj.connect(fakeSender);
+				} else {
+					senderWebRtcEndpoint.connect(fakeSender);
+				}
+
+				if (monitor != null) {
+					monitor.incrementNumClients();
+				}
+
+				if (timeBetweenClientMs > 0) {
+					try {
+						Thread.sleep(timeBetweenClientMs);
+					} catch (InterruptedException e) {
+						log.warn("Interrupted exception adding fake clients",
+								e);
+					}
+				}
 			}
 		}
 	}
