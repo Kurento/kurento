@@ -90,7 +90,7 @@ public class TestConfiguration {
 
 	public static final String SELENIUM_REMOTE_HUB_URL_PROPERTY = "selenium.remote.hub.url";
 
-	public static final String SELENIUM_SCOPE_PROPERTY = "selenium.scope";
+	public static final String SELENIUM_SCOPE_PROPERTY = "test.selenium.scope";
 
 	// Docker
 	public static final String DOCKER_HUB_IMAGE_PROPERTY = "docker.hub.image";
