@@ -2,7 +2,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.kurento</groupId>
+	<parent>
+		<groupId>org.kurento</groupId>
+		<artifactId>kurento-qa-pom</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../kurento-qa-pom</relativePath>
+	</parent>
+
 	<artifactId>kurento-parent-pom</artifactId>
 	<version>6.2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -140,18 +146,16 @@
 		<version.assembly.plugin>2.5.3</version.assembly.plugin>
 		<version.buildhelper.plugin>1.7</version.buildhelper.plugin>
 		<version.buildnumber.plugin>1.3</version.buildnumber.plugin>
-		<version.checkstyle.plugin>2.10</version.checkstyle.plugin>
 		<version.clean.plugin>2.6.1</version.clean.plugin>
 		<version.clover2.plugin>3.1.11</version.clover2.plugin>
 		<version.cobertura.plugin>2.6</version.cobertura.plugin>
 		<version.compiler.plugin>3.2</version.compiler.plugin>
-		<version.dependency.plugin>2.9</version.dependency.plugin>
+		<version.dependency.plugin>2.10</version.dependency.plugin>
 		<version.deploy.plugin>2.8.2</version.deploy.plugin>
-		<version.ear.plugin>2.9</version.ear.plugin>
-		<version.eclipse.plugin>2.9</version.eclipse.plugin>
+		<version.ear.plugin>2.10.1</version.ear.plugin>
+		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 		<version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
 		<version.enforcer.plugin>1.3.1</version.enforcer.plugin>
-		<version.findbugs.plugin>3.0.0</version.findbugs.plugin>
 		<version.filtering.plugin>1.3</version.filtering.plugin>
 		<version.gpg.plugin>1.4</version.gpg.plugin>
 		<version.help.plugin>2.2</version.help.plugin>
@@ -163,7 +167,6 @@
 		<version.jxr.plugin>2.5</version.jxr.plugin>
 		<version.license.plugin>1.3</version.license.plugin>
 		<version.pir.plugin>2.7</version.pir.plugin><!-- maven-project-info-reports-plugins -->
-		<version.pmd.plugin>3.3</version.pmd.plugin>
 		<version.release.plugin>2.5.1</version.release.plugin>
 		<version.resources.plugin>2.7</version.resources.plugin>
 		<version.site.plugin>3.4</version.site.plugin>
@@ -202,9 +205,6 @@
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>
 		<downloadJavadocs>true</downloadJavadocs>
-
-		<!-- maven-pmd-plugin -->
-		<targetJdk>${maven.compiler.target}</targetJdk>
 
 		<!-- maven-release-plugin -->
 		<useReleaseProfile>false</useReleaseProfile>
@@ -723,11 +723,6 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>${version.checkstyle.plugin}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>${version.clean.plugin}</version>
 				</plugin>
@@ -783,11 +778,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>${version.failsafe.plugin}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>findbugs-maven-plugin</artifactId>
-					<version>${version.findbugs.plugin}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.shared</groupId>
@@ -890,11 +880,6 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>license-maven-plugin</artifactId>
 					<version>${version.license.plugin}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-pmd-plugin</artifactId>
-					<version>${version.pmd.plugin}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
