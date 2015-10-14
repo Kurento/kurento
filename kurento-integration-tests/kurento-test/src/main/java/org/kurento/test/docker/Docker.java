@@ -181,6 +181,7 @@ public class Docker implements Closeable {
 
 	public void createContainer(String imageId, String containerName,
 			String... cmd) {
+
 		if (!existsContainer(containerName)) {
 			if (!existsImage(imageId)) {
 				log.info(
@@ -195,8 +196,11 @@ public class Docker implements Closeable {
 			}
 
 			log.debug("Creating container {}", containerName);
+
 			getClient().createContainerCmd(imageId).withName(containerName)
 					.withEnv(cmd).exec();
+
+			log.debug("Container {} started...", containerName);
 
 		} else {
 			log.debug("Container {} already exists", containerName);
@@ -379,15 +383,28 @@ public class Docker implements Closeable {
 			if (containerName == null) {
 
 				String containerId = getContainerId();
-
 				containerName = inspectContainer(containerId).getName();
-
 				containerName = containerName.substring(1);
 			}
 		}
 
 		return containerName;
 
+	}
+
+	public String getContainerIpAddress() {
+		if (isRunningInContainer()) {
+			return inspectContainer(getContainerName()).getNetworkSettings()
+					.getIpAddress();
+		} else {
+			throw new DockerClientException(
+					"Can't obtain container ip address if not running in container");
+		}
+	}
+
+	public String getHostIpForContainers() {
+		return Shell.runAndWait("sh", "-c",
+				"ip route | awk '/docker/ { print $NF }'").trim();
 	}
 
 }

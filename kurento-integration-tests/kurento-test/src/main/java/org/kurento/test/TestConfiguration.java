@@ -141,6 +141,12 @@ public class TestConfiguration {
 	public static final String KMS_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
 	public static final String KMS_TRANSPORT_DEFAULT = KMS_TRANSPORT_WS_VALUE;
 
+	public static final String KMS_DOCKER_IMAGE_NAME_PROP = "test.kms.docker.image.name";
+	public static final String KMS_DOCKER_IMAGE_NAME_DEFAULT = "kurento/kurento-media-server-dev:latest";
+
+	public static final String KMS_DOCKER_IMAGE_FORCE_PULLING_PROP = "test.kms.docker.image.forcepulling";
+	public static final boolean KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT = true;
+
 	public static final String KMS_PRINT_LOG_PROP = "kms.print.log";
 	public static final String KMS_PRINT_LOG_DEFAULT = "true";
 
@@ -168,10 +174,15 @@ public class TestConfiguration {
 	public static final String AUTOSTART_TEST_VALUE = "test";
 	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
 
-	public static final String KMS_AUTOSTART_PROP = "kms.autostart";
+	public static final String KMS_AUTOSTART_PROP = "test.kms.autostart";
 	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_TEST_VALUE;
 
-	public static final String KCS_AUTOSTART_PROP = "kcs.autostart";
+	public static final String KMS_SCOPE_PROP = "test.kms.scope";
+	public static final String KMS_SCOPE_LOCAL = "docker";
+	public static final String KMS_SCOPE_DOCKER = "docker";
+	public static final String KMS_SCOPE_DEFAULT = KMS_SCOPE_DOCKER;
+
+	public static final String KCS_AUTOSTART_PROP = "test.kcs.autostart";
 	public static final String KCS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
 
 	// Bower

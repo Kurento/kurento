@@ -38,6 +38,9 @@ import static org.kurento.test.TestConfiguration.KMS_PRINT_LOG_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_PRINT_LOG_PROP;
 import static org.kurento.test.TestConfiguration.KMS_RABBITMQ_ADDRESS_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_RABBITMQ_ADDRESS_PROP;
+import static org.kurento.test.TestConfiguration.KMS_SCOPE_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_SCOPE_DOCKER;
+import static org.kurento.test.TestConfiguration.KMS_SCOPE_PROP;
 import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_PROP;
 import static org.kurento.test.TestConfiguration.KMS_TRANSPORT_RABBITMQ_VALUE;
@@ -61,6 +64,7 @@ import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.test.Shell;
+import org.kurento.test.docker.Docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -181,6 +185,18 @@ public class KurentoServicesTestHelper {
 					+ " is not valid for property " + KMS_TRANSPORT_PROP);
 		}
 
+		boolean docker = KMS_SCOPE_DOCKER.equals(PropertiesManager
+				.getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT));
+
+		kmsToBeStarted.setDocker(docker);
+
+		if (docker) {
+			Docker dockerClient = Docker.getSingleton();
+			if (dockerClient.isRunningInContainer()) {
+				kmsToBeStarted.setDockerContainerName(
+						dockerClient.getContainerName() + "_kms");
+			}
+		}
 		kmsToBeStarted.setTestClassName(testCaseName);
 		kmsToBeStarted.setTestMethodName(getSimpleTestName());
 		kmsToBeStarted.setTestDir(testDir);

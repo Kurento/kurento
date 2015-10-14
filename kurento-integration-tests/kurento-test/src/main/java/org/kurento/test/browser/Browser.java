@@ -106,7 +106,7 @@ public class Browser implements Closeable {
 
 	private static Docker docker = Docker.getSingleton();
 
-	private static String thisContainerName = docker.getContainerName();
+	// private static String thisContainerName = docker.getContainerName();
 
 	private WebDriver driver;
 	private String jobId;
@@ -343,7 +343,20 @@ public class Browser implements Closeable {
 							.getResource("static" + webPage).getFile());
 					url = protocol.toString() + webPageFile.getAbsolutePath();
 				} else {
-					String hostName = host != null ? host : node;
+
+					String hostName;
+					if (scope == BrowserScope.DOCKER) {
+
+						if (docker.isRunningInContainer()) {
+							hostName = docker.getContainerIpAddress();
+						} else {
+							hostName = docker.getHostIpForContainers();
+						}
+
+					} else {
+						hostName = host != null ? host : node;
+					}
+
 					url = protocol.toString() + hostName + ":" + serverPort
 							+ webPageType.toString();
 				}
@@ -515,14 +528,13 @@ public class Browser implements Closeable {
 			docker = Docker.getSingleton();
 		}
 
-		thisContainerName = docker.getContainerName();
-
 		// Start hub (if needed)
 		String hubContainerName = getProperty(
 				DOCKER_HUB_CONTAINER_NAME_PROPERTY,
 				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
-		if (thisContainerName != null) {
-			hubContainerName = thisContainerName + hubContainerName;
+
+		if (docker.isRunningInContainer()) {
+			hubContainerName = docker.getContainerName() + hubContainerName;
 		}
 
 		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
@@ -532,9 +544,11 @@ public class Browser implements Closeable {
 
 		// Start nodes: Chrome and Firefox
 		String browserContainerName = getId();
-		if (thisContainerName != null) {
-			browserContainerName = thisContainerName + browserContainerName;
+		if (docker.isRunningInContainer()) {
+			browserContainerName = docker.getContainerName()
+					+ browserContainerName;
 		}
+
 		docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
 
 		// Create RemoteWebDriver
@@ -825,13 +839,10 @@ public class Browser implements Closeable {
 					TestConfiguration.TEST_AUTO_CONTAINED_PROPERTY,
 					TestConfiguration.TEST_AUTO_CONTAINED_DEFAULT)) {
 
-				if (thisContainerName != null) {
-
-					String ip = Docker.getSingleton()
-							.inspectContainer(thisContainerName)
-							.getNetworkSettings().getIpAddress();
-
-					this.node = ip;
+				if (docker.isRunningInContainer()) {
+					this.node = docker.getContainerIpAddress();
+				} else {
+					this.node = docker.getHostIpForContainers();
 				}
 			}
 
