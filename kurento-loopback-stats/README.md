@@ -5,7 +5,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-loopback-stats
 ======================
 
-Kurento Java Tutorial: WebRTC in loopback with WebRTC statistics.
+Kurento JavaScript Tutorial: WebRTC in loopback with WebRTC statistics.
 
 Running this tutorial
 ---------------------

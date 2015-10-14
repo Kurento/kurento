@@ -5,7 +5,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-hello-world
 ===================
 
-Kurento Java Tutorial: Hello World (WebRTC in loopback).
+Kurento JavaScript Tutorial: Hello World (WebRTC in loopback).
 
 Running this tutorial
 ---------------------

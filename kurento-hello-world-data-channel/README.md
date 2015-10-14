@@ -5,7 +5,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-hello-world-data-channel
 ================================
 
-Kurento Java Tutorial: WebRTC in loopback with data channels.
+Kurento JavaScript Tutorial: WebRTC in loopback with data channels.
 
 Running this tutorial
 ---------------------

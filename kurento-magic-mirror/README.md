@@ -5,7 +5,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-magic-mirror
 ====================
 
-Kurento Java Tutorial: WebRTC in loopback with faceoverlay filter (magic mirror).
+Kurento JavaScript Tutorial: WebRTC in loopback with faceoverlay filter (magic mirror).
 
 Running this tutorial
 ---------------------

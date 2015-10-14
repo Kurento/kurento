@@ -5,7 +5,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-hello-world-recorder-generator
 ======================================
 
-Kurento Java Tutorial: WebRTC in loopback with recorder and generator.
+Kurento JavaScript Tutorial: WebRTC in loopback with recorder and generator.
 
 Running this tutorial
 ---------------------
