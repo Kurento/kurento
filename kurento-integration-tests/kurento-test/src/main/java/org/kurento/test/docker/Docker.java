@@ -14,15 +14,21 @@
  */
 package org.kurento.test.docker;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.kurento.commons.PropertiesManager;
+import org.kurento.test.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -38,15 +44,23 @@ public class Docker implements Closeable {
 
 	private static Docker singleton = null;
 
+	private static Boolean isRunningInContainer;
+
 	private static final Logger log = LoggerFactory.getLogger(Docker.class);
 
 	private static final String DOCKER_SERVER_URL_PROPERTY = "docker.server.url";
 	private static final String DOCKER_SERVER_URL_DEFAULT = "http://localhost:2375";
 
+	public static final String DOCKER_CONTAINER_NAME_PROPERTY = "docker.container.name";
+
 	private static final int WAIT_CONTAINER_POLL_TIME = 200; // milliseconds
 	private static final int WAIT_CONTAINER_POLL_TIMEOUT = 10; // seconds
 
 	private DockerClient client;
+
+	private String containerName;
+
+	private static String hostIp;
 
 	public synchronized static Docker getSingleton(String dockerServerUrl) {
 		if (singleton == null) {
@@ -75,12 +89,54 @@ public class Docker implements Closeable {
 	}
 
 	private static boolean isRunningInContainerInternal() {
-		return false;
+
+		if (isRunningInContainer == null) {
+
+			try (BufferedReader br = Files.newBufferedReader(
+					Paths.get("/proc/1/cgroup"), StandardCharsets.UTF_8)) {
+
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					if (!line.endsWith("/")) {
+						return true;
+					}
+				}
+				isRunningInContainer = false;
+
+			} catch (IOException e) {
+				isRunningInContainer = false;
+			}
+		}
+
+		return isRunningInContainer;
 	}
 
 	private static String getHostIp() {
-		// TODO Read host IP from docker
-		return "127.0.0.1";
+
+		if (hostIp == null) {
+
+			if (isRunningInContainerInternal()) {
+
+				try {
+
+					String ipRoute = Shell.runAndWait("sh", "-c",
+							"/sbin/ip route");
+
+					String[] tokens = ipRoute.split("\\s");
+
+					hostIp = tokens[2];
+
+				} catch (Exception e) {
+					throw new DockerClientException(
+							"Exception executing /sbin/ip route", e);
+				}
+
+			} else {
+				hostIp = "127.0.0.1";
+			}
+		}
+
+		return hostIp;
 	}
 
 	public Docker(String dockerServerUrl) {
@@ -283,6 +339,55 @@ public class Docker implements Closeable {
 
 			}
 		} while (!isRunning);
+	}
+
+	public String getContainerId() {
+		try {
+
+			BufferedReader br = Files.newBufferedReader(
+					Paths.get("/proc/self/cgroup"), StandardCharsets.UTF_8);
+
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				log.info(line);
+				if (line.contains("docker")) {
+					return line.substring(line.lastIndexOf('/') + 1,
+							line.length());
+				}
+			}
+
+			throw new DockerClientException("Exception obtaining containerId. "
+					+ "The file /proc/self/cgroup doesn't contain a line with 'docker'");
+
+		} catch (IOException e) {
+			throw new DockerClientException("Exception obtaining containerId. "
+					+ "Exception reading file /proc/self/cgroup", e);
+		}
+	}
+
+	public String getContainerName() {
+
+		if (!isRunningInContainer()) {
+			throw new DockerClientException(
+					"Can't obtain container name if not running in container");
+		}
+
+		if (containerName == null) {
+
+			containerName = System.getProperty(DOCKER_CONTAINER_NAME_PROPERTY);
+
+			if (containerName == null) {
+
+				String containerId = getContainerId();
+
+				containerName = inspectContainer(containerId).getName();
+
+				containerName = containerName.substring(1);
+			}
+		}
+
+		return containerName;
+
 	}
 
 }

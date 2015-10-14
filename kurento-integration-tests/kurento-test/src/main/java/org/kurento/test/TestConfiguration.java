@@ -105,8 +105,6 @@ public class TestConfiguration {
 	public static final String DOCKER_HUB_CONTAINER_NAME_PROPERTY = "docker.hub.container.name";
 	public static final String DOCKER_HUB_CONTAINER_NAME_DEFAULT = "hub";
 
-	public static final String DOCKER_TEST_CONTAINER_NAME_PROPERTY = "docker.test.container.name";
-
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
 	public static final int CLIENT_RATE_DEFAULT = 5000; // milliseconds

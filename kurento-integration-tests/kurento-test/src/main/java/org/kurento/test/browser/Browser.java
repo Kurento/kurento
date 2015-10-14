@@ -104,7 +104,9 @@ public class Browser implements Closeable {
 
 	public static Logger log = LoggerFactory.getLogger(Browser.class);
 
-	private Docker docker;
+	private static Docker docker = Docker.getSingleton();
+
+	private static String thisContainerName = docker.getContainerName();
 
 	private WebDriver driver;
 	private String jobId;
@@ -140,9 +142,6 @@ public class Browser implements Closeable {
 	private String parentTunnel;
 	private List<Map<String, String>> extensions;
 	private String url;
-
-	private static String thisContainerName = getProperty(
-			TestConfiguration.DOCKER_TEST_CONTAINER_NAME_PROPERTY);
 
 	public Browser(Builder builder) {
 		this.builder = builder;
@@ -515,6 +514,8 @@ public class Browser implements Closeable {
 		if (docker == null) {
 			docker = Docker.getSingleton();
 		}
+
+		thisContainerName = docker.getContainerName();
 
 		// Start hub (if needed)
 		String hubContainerName = getProperty(
