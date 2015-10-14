@@ -56,6 +56,7 @@ How do I...
       - 49152 - 65535 UDP: As per `RFC 5766 <http://tools.ietf.org/html/rfc5766>`__, these are the ports that the
         TURN server will use to exchange media. These ports can be changed
         using the ``--max-port`` and ``--min-port`` options from the turnserver.
+        
 
    6. The last thing to do, is to start the coturn server and the media
    server::
@@ -107,16 +108,19 @@ How do I...
       sudo chown nobody defaultCertificate.pem
 
    Due to the fact that the certificate is self-signed, applications will reject it
-   by default. For this reason, you have to trust it. Regarding browser
-   applications, it can be ignored by done via HTTPS in your browser to the WSS
-   port (https://localhost:8433/ with the above configuration) and accepting the
-   certificate permanently. Regarding Java applications, follow the instructions
-   of this
-   `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_
-   (get ``InstallCert.java`` from
-   `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_).
-   Regarding Node applications, please take a look to this
-   `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
+   by default. For this reason, you have to trust it.
+
+   * Browser applications: it can be ignored by acessing, via HTTPS in your browser, to the WSS port (https://localhost:8433/ with the above configuration) and accepting the certificate permanently. 
+
+   * Java applications, follow the instructions of this `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_ (get ``InstallCert.java`` from `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_). You'll need to instruct the ``KurentoClient`` needs to be configured to allow the use of certificates. For this purpose, we need to create our own ``JsonRpcClient``::
+      
+      SslContextFactory sec = new SslContextFactory(true);
+      sec.setValidateCerts(false); 
+      JsonRpcClientWebSocket rpcClient = new JsonRpcClientWebSocket(uri, sec); 
+      KurentoClient kuretoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
+
+   * Node applications, please take a look to this
+     `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
 
 
 ...know how many Media Pipelines do I need for my Application?
