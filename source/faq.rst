@@ -40,7 +40,7 @@ How do I...
              -u kurento:kurento --no-stdout-log --external-ip $EXTERNAL_IP/$LOCAL_IP"
 
    4. Then let's enable the turnserver to run as an automatic service daemon. For this,
-   open the file ``/etc/defaults/coturn`` and uncomment the key::
+   open the file ``/etc/default/coturn`` and uncomment the key::
 
       TURNSERVER_ENABLED=1
 
