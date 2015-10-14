@@ -130,6 +130,8 @@ public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
 
 			latch.await();
 		}
+
+		log.info("--------------- Started WebPageTest ----------------");
 	}
 
 	private void initBrowser(String browserKey, Browser browser) {
@@ -141,6 +143,9 @@ public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
 
 	@After
 	public void teardownKurentoTest() {
+
+		log.info("--------------- Finished WebPageTest ----------------");
+
 		if (testScenario != null) {
 			for (Browser browser : testScenario.getBrowserMap().values()) {
 				try {

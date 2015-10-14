@@ -45,7 +45,25 @@ public class KmsLogOnFailure extends TestWatcher {
 	private boolean deleteLogsIfSuccess = true;
 
 	@Override
+	protected void starting(Description description) {
+		log.info(
+				"+--------------------------------------------------------------------------------------");
+		log.info("|       TEST STARTING: {}",
+				description.getClassName() + "." + description.getMethodName());
+		log.info(
+				"+--------------------------------------------------------------------------------------");
+	}
+
+	@Override
 	protected void succeeded(Description description) {
+
+		log.info(
+				"+--------------------------------------------------------------------------------------");
+		log.info("|       TEST SUCCEEDED: {}",
+				description.getClassName() + "." + description.getMethodName());
+		log.info(
+				"+--------------------------------------------------------------------------------------");
+
 		super.succeeded(description);
 		succees = true;
 	}
@@ -53,7 +71,12 @@ public class KmsLogOnFailure extends TestWatcher {
 	@Override
 	protected void failed(Throwable e, Description description) {
 
-		log.info("------------------ Test failed ------------------");
+		log.info(
+				"+--------------------------------------------------------------------------------------");
+		log.info("|       TEST FAILED: {}",
+				description.getClassName() + "." + description.getMethodName());
+		log.info(
+				"+--------------------------------------------------------------------------------------");
 
 		// Store GstreamerDot for each pipeline
 		if (getKurentoClientManager() != null) {
@@ -110,13 +133,7 @@ public class KmsLogOnFailure extends TestWatcher {
 	protected void finished(Description description) {
 		super.finished(description);
 
-		log.info("------------------ Test finished ------------------");
-
 		try {
-			if (getKurentoClientManager() != null) {
-				getKurentoClientManager().teardown();
-			}
-
 			if (succees && deleteLogsIfSuccess) {
 				// Delete logs
 				File folder = new File(KurentoServicesTestHelper.getTestDir()

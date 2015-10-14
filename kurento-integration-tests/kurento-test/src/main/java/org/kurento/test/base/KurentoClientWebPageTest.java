@@ -19,13 +19,14 @@ import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Rule;
 import org.kurento.client.EventListener;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
@@ -43,7 +44,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class KurentoClientWebPageTest<W extends WebPage>
 		extends WebPageTest<W> {
 
-	protected ConfigurableApplicationContext context;
+	protected static ConfigurableApplicationContext context;
+
 	protected KurentoClientManager kurentoClientManager;
 	protected KurentoClient kurentoClient;
 	protected KurentoClient fakeKurentoClient;
@@ -53,7 +55,36 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 	public KurentoClientWebPageTest(TestScenario testScenario) {
 		super(testScenario);
+	}
 
+	@Rule
+	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
+
+	@Override
+	public void setupKurentoTest() throws InterruptedException {
+
+		startHttpServer();
+
+		super.setupKurentoTest();
+
+		try {
+
+			kurentoClientManager = new KurentoClientManager(testName,
+					this.getClass());
+			kurentoClient = kurentoClientManager.getKurentoClient();
+			fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
+			logOnFailure.setKurentoClientManager(kurentoClientManager);
+
+			log.info(
+					"--------------- Started KurentoClientWebPageTest ----------------");
+
+		} catch (IOException e) {
+			throw new KurentoException(
+					"Exception creating kurentoClientManager", e);
+		}
+	}
+
+	private void startHttpServer() {
 		Class<?> clazz = this.getClass();
 		while (true) {
 			try {
@@ -63,20 +94,16 @@ public class KurentoClientWebPageTest<W extends WebPage>
 				clazz = clazz.getSuperclass();
 			}
 		}
-
 		context = KurentoServicesTestHelper.startHttpServer(clazz);
 	}
 
-	@Rule
-	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
-
-	@Before
-	public void setupKurentoClient() throws IOException {
-		kurentoClientManager = new KurentoClientManager(testName,
-				this.getClass());
-		kurentoClient = kurentoClientManager.getKurentoClient();
-		fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
-		logOnFailure.setKurentoClientManager(kurentoClientManager);
+	@After
+	public void teardownKurentoClient() throws Exception {
+		log.info(
+				"--------------- Finished KurentoClientWebPageTest ----------------");
+		if (kurentoClientManager != null) {
+			kurentoClientManager.teardown();
+		}
 	}
 
 	protected int getServerPort() {

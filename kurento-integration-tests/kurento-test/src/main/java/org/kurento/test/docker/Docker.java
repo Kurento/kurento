@@ -216,6 +216,8 @@ public class Docker implements Closeable {
 			log.debug("Starting container {}", containerName);
 
 			getClient().startContainerCmd(containerName).exec();
+
+			log.debug("Started container {}", containerName);
 		} else {
 			log.debug("Container {} is already started", containerName);
 		}

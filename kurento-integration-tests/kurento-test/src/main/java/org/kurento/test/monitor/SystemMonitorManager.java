@@ -17,14 +17,14 @@ package org.kurento.test.monitor;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.TestConfiguration.DEFAULT_MONITOR_RATE_DEFAULT;
 import static org.kurento.test.TestConfiguration.DEFAULT_MONITOR_RATE_PROPERTY;
-import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_DEFAULT;
-import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_PROP;
-import static org.kurento.test.monitor.SystemMonitor.OUTPUT_CSV;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
-import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
-import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
+import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_DEFAULT;
+import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_PROP;
+import static org.kurento.test.monitor.SystemMonitor.OUTPUT_CSV;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -66,7 +66,8 @@ public class SystemMonitorManager {
 	private SshConnection remoteKms;
 	private int monitorPort;
 
-	public SystemMonitorManager(String kmsHost, String kmsLogin, String kmsPem) {
+	public SystemMonitorManager(String kmsHost, String kmsLogin,
+			String kmsPem) {
 		try {
 			monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
 			remoteKms = new SshConnection(kmsHost, kmsLogin, null, kmsPem);
@@ -98,8 +99,8 @@ public class SystemMonitorManager {
 				String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
 						wsUri.lastIndexOf(":"));
 				log.info("Using remote KMS at {}", remoteKmsStr);
-				remoteKms = new SshConnection(remoteKmsStr, kmsLogin,
-						kmsPasswd, kmsPem);
+				remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd,
+						kmsPem);
 				remoteKms.start();
 				remoteKms.createTmpFolder();
 				copyMonitorToRemoteKms();
@@ -115,8 +116,8 @@ public class SystemMonitorManager {
 		}
 	}
 
-	private void copyMonitorToRemoteKms() throws IOException,
-			URISyntaxException {
+	private void copyMonitorToRemoteKms()
+			throws IOException, URISyntaxException {
 		final String folder = "/org/kurento/test/monitor/";
 		final String[] classesName = { "SystemMonitor.class",
 				"SystemMonitor$1.class", "SystemMonitor$2.class",
@@ -141,11 +142,9 @@ public class SystemMonitorManager {
 	}
 
 	private void startRemoteKms() throws IOException {
-		remoteKms.execCommand("sh", "-c",
-				"java -cp " + remoteKms.getTmpFolder()
-						+ " org.kurento.test.monitor.SystemMonitor "
-						+ monitorPort + " > " + remoteKms.getTmpFolder()
-						+ "/monitor.log 2>&1");
+		remoteKms.execCommand("sh", "-c", "java -cp " + remoteKms.getTmpFolder()
+				+ " org.kurento.test.monitor.SystemMonitor " + monitorPort
+				+ " > " + remoteKms.getTmpFolder() + "/monitor.log 2>&1");
 
 		// Wait for 600x100 ms = 60 seconds
 		Socket client = null;
@@ -170,13 +169,13 @@ public class SystemMonitorManager {
 		}
 	}
 
-	private Path getPathInClasspath(String resourceName) throws IOException,
-			URISyntaxException {
+	private Path getPathInClasspath(String resourceName)
+			throws IOException, URISyntaxException {
 		return getPathInClasspath(this.getClass().getResource(resourceName));
 	}
 
-	private Path getPathInClasspath(URL resource) throws IOException,
-			URISyntaxException {
+	private Path getPathInClasspath(URL resource)
+			throws IOException, URISyntaxException {
 		Objects.requireNonNull(resource, "Resource URL cannot be null");
 		URI uri = resource.toURI();
 
@@ -186,7 +185,8 @@ public class SystemMonitorManager {
 		}
 
 		if (!scheme.equals("jar")) {
-			throw new IllegalArgumentException("Cannot convert to Path: " + uri);
+			throw new IllegalArgumentException(
+					"Cannot convert to Path: " + uri);
 		}
 
 		String s = uri.toString();
@@ -276,9 +276,10 @@ public class SystemMonitorManager {
 			// log.debug("Sending message {} to {}", message,
 			// remoteKms.getHost());
 			Socket client = new Socket(remoteKms.getHost(), monitorPort);
-			PrintWriter output = new PrintWriter(client.getOutputStream(), true);
-			BufferedReader input = new BufferedReader(new InputStreamReader(
-					client.getInputStream()));
+			PrintWriter output = new PrintWriter(client.getOutputStream(),
+					true);
+			BufferedReader input = new BufferedReader(
+					new InputStreamReader(client.getInputStream()));
 			// log.debug("Sending message to remote monitor: {}", message);
 			output.println(message);
 
