@@ -1127,11 +1127,11 @@ public class Browser implements Closeable {
 		String path = this.getWebPageType().toString();
 		URL url = null;
 		try {
-			if (this.url != null) {
-				url = new URL(this.url);
-			} else {
-				url = new URL(protocol + ip + ":" + port + path);
-			}
+			// if (this.url != null) {
+			// url = new URL(this.url);
+			// } else {
+			url = new URL(protocol + ip + ":" + port + path);
+			// }
 		} catch (MalformedURLException e) {
 			log.error("Malformed URL", e);
 			throw new RuntimeException(e);
