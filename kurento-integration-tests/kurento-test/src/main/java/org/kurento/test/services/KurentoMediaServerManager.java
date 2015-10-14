@@ -208,7 +208,7 @@ public class KurentoMediaServerManager {
 		}
 
 		isKmsRemote = !wsUri.contains("localhost")
-				&& !wsUri.contains("127.0.0.1");
+				&& !wsUri.contains("127.0.0.1") && !docker;
 
 		if (isKmsRemote && kmsLogin == null
 				&& (kmsPem == null || kmsPasswd == null)) {
