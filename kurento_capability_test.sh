@@ -11,24 +11,9 @@ fi
 # TEST_FILTER
 [ -n "$1" ] && PROJECT_PATH="$1" || exit 1
 
-echo "Checking KMS_PORT_8888_TCP_ADDR env variable: $KMS_PORT_8888_TCP_ADDR"
-[ -n "$KMS_PORT_8888_TCP_ADDR" ] || KMS_PORT_8888_TCP_ADDR="127.0.0.1"
-echo "Checking KMS_PORT_8888_TCP_PORT env variable: $KMS_PORT_8888_TCP_PORT"
-[ -n "$KMS_PORT_8888_TCP_PORT" ] || exit 1
-
 # Check if we want to record session
 [ -n "$USE_FFMPEG" ] || USE_FFMPEG="no"
 echo "Checking USE_FFMPEG env variable: $USE_FFMPEG"
-
-#Restart xvfb to avoid problems with corrupted xvfb instances
-sudo service xvfb stop
-
-PID=$(pidof /usr/bin/Xvfb)
-echo "Killing Xvfb processes: $PID"
-sudo kill -9 $PID
-wait $PID
-
-sudo service xvfb start
 
 export DISPLAY=:1
 
@@ -40,7 +25,6 @@ fi
 
 mavenOpts="-U -am -pl $PROJECT_PATH"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
-#mavenOpts="$mavenOpts -Dkms.ws.uri=ws://$KMS_PORT_8888_TCP_ADDR:$KMS_PORT_8888_TCP_PORT/kurento"
 mavenOpts="$mavenOpts -Dkurento.workspace=$WORKSPACE"
 mavenOpts="$mavenOpts -Dproject.path=$WORKSPACE/$PROJECT_PATH"
 
