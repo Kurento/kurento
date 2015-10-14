@@ -36,8 +36,8 @@ import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPageType;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
+import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 import org.kurento.test.monitor.SystemMonitorManager;
@@ -74,38 +74,32 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 
 		// Test: 1 presenter + N viewers (all local Chrome's)
 		TestScenario test = new TestScenario();
-		test.addBrowser(
-				BrowserConfig.PRESENTER,
-				new Browser.Builder().webPageType(WebPageType.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/15sec/rgbHD.y4m")
-						.build());
-		test.addBrowser(
-				BrowserConfig.VIEWER,
-				new Browser.Builder().webPageType(WebPageType.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).numInstances(numViewers)
-						.build());
+		test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder()
+				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/15sec/rgbHD.y4m").build());
+		test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder()
+				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
+				.scope(BrowserScope.LOCAL).numInstances(numViewers).build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
 	@Before
 	public void setupMonitor() {
-		monitor = new SystemMonitorManager();
-		monitor.start();
+		// monitor = new SystemMonitorManager();
+		// monitor.start();
 	}
 
 	@After
 	public void teardownMonitor() {
-		monitor.stop();
-		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
-		monitor.destroy();
+		// monitor.stop();
+		// monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+		// monitor.destroy();
 	}
 
 	@Test
-	public void testWebRtcOneToManyChrome() throws InterruptedException,
-			IOException {
+	public void testWebRtcOneToManyChrome()
+			throws InterruptedException, IOException {
 		// Media Pipeline
 		final MediaPipeline mp = kurentoClient.createMediaPipeline();
 		final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp)
@@ -131,7 +125,9 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						viewerWebRtcEPs[i] = new WebRtcEndpoint.Builder(mp)
 								.build();
 						masterWebRtcEP.connect(viewerWebRtcEPs[i]);
-						monitor.incrementNumClients();
+						if (monitor != null) {
+							monitor.incrementNumClients();
+						}
 
 						// Latency control
 						String name = getViewer(i).getBrowser().getId();
@@ -141,22 +137,26 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						getViewer(i).subscribeEvents("playing");
 						getViewer(i).initWebRtc(viewerWebRtcEPs[i],
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
-						getViewer(i).activateRemoteRtcStats(monitor,
-								"webRtcPeer.peerConnection");
+						if (monitor != null) {
+							getViewer(i).activateRemoteRtcStats(monitor,
+									"webRtcPeer.peerConnection");
+						}
 
 						// Latency assessment
 						cs[i].checkRemoteLatency(PLAYTIME, TimeUnit.SECONDS,
 								getPresenter(), getViewer(i));
-						cs[i].drawChart(getDefaultOutputFile("-" + name
-								+ "-latency.png"), 500, 270);
-						cs[i].writeCsv(getDefaultOutputFile("-" + name
-								+ "-latency.csv"));
+						cs[i].drawChart(getDefaultOutputFile(
+								"-" + name + "-latency.png"), 500, 270);
+						cs[i].writeCsv(getDefaultOutputFile(
+								"-" + name + "-latency.csv"));
 						cs[i].logLatencyErrorrs();
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
 						latch.countDown();
-						monitor.decrementNumClients();
+						if (monitor != null) {
+							monitor.decrementNumClients();
+						}
 					}
 				}
 			};
