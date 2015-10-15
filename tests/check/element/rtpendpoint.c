@@ -28,6 +28,9 @@
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
+#define AUDIO_BW 30
+#define VIDEO_BW 500
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -542,7 +545,60 @@ GST_START_TEST (process_bundle_offer)
   g_free (sess_id);
 }
 
-GST_END_TEST
+GST_END_TEST;
+
+GST_START_TEST (generate_offer_bw_limited)
+{
+  GstSDPMessage *offer;
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { "opus/48000/1", "AMR/8000/1", NULL };
+  gchar *video_codecs[] = { "H264/90000", "VP8/90000", NULL };
+  GstElement *rtpendpoint = gst_element_factory_make ("rtpendpoint", NULL);
+  gchar *sess_id;
+  int i;
+
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+
+  g_object_set (rtpendpoint, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array),
+      "max-audio-recv-bandwidth", AUDIO_BW,
+      "max-video-recv-bandwidth", VIDEO_BW, NULL);
+
+  g_signal_emit_by_name (rtpendpoint, "create-session", &sess_id);
+  GST_DEBUG ("Created session with id '%s'", sess_id);
+  g_signal_emit_by_name (rtpendpoint, "generate-offer", sess_id, &offer);
+
+  for (i = 0; i < gst_sdp_message_medias_len (offer); i++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (offer, i);
+
+    if (g_strcmp0 (gst_sdp_media_get_media (media), "audio") == 0) {
+      const GstSDPBandwidth *bw;
+
+      fail_if (gst_sdp_media_bandwidths_len (media) < 1);
+
+      bw = gst_sdp_media_get_bandwidth (media, 0);
+
+      fail_if (bw == NULL);
+      fail_if (bw->bandwidth != AUDIO_BW);
+    } else if (g_strcmp0 (gst_sdp_media_get_media (media), "video") == 0) {
+      const GstSDPBandwidth *bw;
+
+      fail_if (gst_sdp_media_bandwidths_len (media) < 1);
+
+      bw = gst_sdp_media_get_bandwidth (media, 0);
+
+      fail_if (bw == NULL);
+      fail_if (bw->bandwidth != VIDEO_BW);
+    }
+  }
+
+  gst_sdp_message_free (offer);
+  g_object_unref (rtpendpoint);
+}
+
+GST_END_TEST;
 /*
  * End of test cases
  */
@@ -557,6 +613,7 @@ sdp_suite (void)
   tcase_add_test (tc_chain, negotiation_offerer);
   tcase_add_test (tc_chain, loopback);
   tcase_add_test (tc_chain, process_bundle_offer);
+  tcase_add_test (tc_chain, generate_offer_bw_limited);
 
   return s;
 }
