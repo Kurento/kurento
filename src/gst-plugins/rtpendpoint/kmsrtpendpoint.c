@@ -21,9 +21,12 @@
 
 #include "kmsrtpendpoint.h"
 #include "kmsrtpsession.h"
-#include "kmsrtpconnection.h"
+#include "kmssrtpsession.h"
 #include <commons/sdp_utils.h>
+#include <commons/sdpagent/kmssdprtpsavpfmediahandler.h>
 #include <commons/sdpagent/kmssdprtpavpfmediahandler.h>
+#include <commons/sdpagent/kmssdpsdesext.h>
+#include <commons/kmsrefstruct.h>
 
 #define PLUGIN_NAME "rtpendpoint"
 
@@ -33,7 +36,46 @@ GST_DEBUG_CATEGORY_STATIC (kms_rtp_endpoint_debug);
 #define kms_rtp_endpoint_parent_class parent_class
 G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 
+#define DEFAULT_USE_SDES FALSE
 #define MAX_RETRIES 4
+
+#define KMS_SRTP_CIPHER_AES_128_ICM 1
+#define KMS_SRTP_CIPHER_AES_256_ICM 2
+#define KMS_SRTP_AUTH_HMAC_SHA1_32 1
+#define KMS_SRTP_AUTH_HMAC_SHA1_80 2
+#define KMS_SRTP_CIPHER_AES_128_ICM_SIZE 30
+#define KMS_SRTP_CIPHER_AES_256_ICM_SIZE 46
+
+#define KMS_RTP_ENDPOINT_GET_PRIVATE(obj) (  \
+  G_TYPE_INSTANCE_GET_PRIVATE (              \
+    (obj),                                   \
+    KMS_TYPE_RTP_ENDPOINT,                   \
+    KmsRtpEndpointPrivate                    \
+  )                                          \
+)
+
+typedef struct _SdesExtData
+{
+  KmsRefStruct ref;
+  gchar *media;
+  KmsRtpEndpoint *rtpep;
+} SdesExtData;
+
+typedef struct _SdesKeys
+{
+  KmsRefStruct ref;
+  GValue local;
+  GValue remote;
+  KmsRtpBaseConnection *conn;
+  KmsISdpMediaExtension *ext;
+  gboolean offerer;
+} SdesKeys;
+
+struct _KmsRtpEndpointPrivate
+{
+  gboolean use_sdes;
+  GHashTable *sdes_keys;
+};
 
 /* Signals and args */
 enum
@@ -43,8 +85,191 @@ enum
 
 enum
 {
-  PROP_0
+  PROP_0,
+  PROP_USE_SDES
 };
+
+static void
+sdes_ext_data_destroy (SdesExtData * edata)
+{
+  g_free (edata->media);
+
+  g_slice_free (SdesExtData, edata);
+}
+
+static SdesExtData *
+sdes_ext_data_new (KmsRtpEndpoint * ep, const gchar * media)
+{
+  SdesExtData *edata;
+
+  edata = g_slice_new0 (SdesExtData);
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (edata),
+      (GDestroyNotify) sdes_ext_data_destroy);
+
+  edata->media = g_strdup (media);
+  edata->rtpep = ep;
+
+  return edata;
+}
+
+static void
+sdes_keys_destroy (SdesKeys * keys)
+{
+  g_value_unset (&keys->local);
+  g_value_unset (&keys->remote);
+
+  g_clear_object (&keys->conn);
+  g_clear_object (&keys->ext);
+
+  g_slice_free (SdesKeys, keys);
+}
+
+static SdesKeys *
+sdes_keys_new (KmsISdpMediaExtension * ext)
+{
+  SdesKeys *keys;
+
+  keys = g_slice_new0 (SdesKeys);
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (keys),
+      (GDestroyNotify) sdes_keys_destroy);
+
+  keys->ext = g_object_ref (ext);
+
+  return keys;
+}
+
+static gboolean
+get_auth_cipher_from_crypto (SrtpCryptoSuite crypto, guint * auth,
+    guint * cipher)
+{
+  switch (crypto) {
+    case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32:
+      *auth = KMS_SRTP_AUTH_HMAC_SHA1_32;
+      *cipher = KMS_SRTP_CIPHER_AES_128_ICM;
+      return TRUE;
+    case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_80:
+      *auth = KMS_SRTP_AUTH_HMAC_SHA1_80;
+      *cipher = KMS_SRTP_CIPHER_AES_128_ICM;
+      return TRUE;
+    case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_32:
+      *auth = KMS_SRTP_AUTH_HMAC_SHA1_32;
+      *cipher = KMS_SRTP_CIPHER_AES_256_ICM;
+      return TRUE;
+    case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_80:
+      *auth = KMS_SRTP_AUTH_HMAC_SHA1_80;
+      *cipher = KMS_SRTP_CIPHER_AES_256_ICM;
+      return TRUE;
+    default:
+      *auth = *cipher = 0;
+      return FALSE;
+  }
+}
+
+static void
+kms_rtp_endpoint_log_key (KmsRtpEndpoint * self, GValue * key,
+    const gchar * media, gboolean local)
+{
+  const GstStructure *str;
+
+  str = gst_value_get_structure (key);
+
+  GST_DEBUG_OBJECT (self, "Set %s %s key: %" GST_PTR_FORMAT,
+      (local) ? "local" : "remote", media, str);
+}
+
+static gboolean
+kms_rtp_endpoint_set_local_srtp_connection_key (KmsRtpEndpoint * self,
+    const gchar * media, SdesKeys * sdes_keys)
+{
+  SrtpCryptoSuite crypto;
+  guint auth, cipher;
+  gchar *key;
+
+  if (!G_IS_VALUE (&sdes_keys->local)) {
+
+    return FALSE;
+  }
+
+  if (!kms_sdp_sdes_ext_get_parameters_from_key (&sdes_keys->local,
+          KMS_SDES_KEY_FIELD, G_TYPE_STRING, &key, KMS_SDES_CRYPTO, G_TYPE_UINT,
+          &crypto, NULL)) {
+
+    return FALSE;
+  }
+
+  if (!get_auth_cipher_from_crypto (crypto, &auth, &cipher)) {
+    g_free (key);
+
+    return FALSE;
+  }
+
+  kms_srtp_connection_set_key (KMS_SRTP_CONNECTION (sdes_keys->conn),
+      key, auth, cipher, TRUE);
+  g_free (key);
+
+  kms_rtp_endpoint_log_key (self, &sdes_keys->local, media, TRUE);
+
+  return TRUE;
+}
+
+static gboolean
+kms_rtp_endpoint_set_remote_srtp_connection_key (KmsRtpEndpoint * self,
+    const gchar * media, SdesKeys * sdes_keys)
+{
+  SrtpCryptoSuite my_crypto, rem_crypto;
+  guint my_tag, rem_tag;
+  gchar *rem_key = NULL;
+  gboolean ret = FALSE;
+  guint auth, cipher;
+
+  if (!G_IS_VALUE (&sdes_keys->local) || !G_IS_VALUE (&sdes_keys->remote)) {
+    return FALSE;
+  }
+
+  if (!kms_sdp_sdes_ext_get_parameters_from_key (&sdes_keys->local,
+          KMS_SDES_TAG_FIELD, G_TYPE_UINT, &my_tag, KMS_SDES_CRYPTO,
+          G_TYPE_UINT, &my_crypto, NULL)) {
+    goto end;
+  }
+
+  if (!kms_sdp_sdes_ext_get_parameters_from_key (&sdes_keys->remote,
+          KMS_SDES_TAG_FIELD, G_TYPE_UINT, &rem_tag, KMS_SDES_CRYPTO,
+          G_TYPE_UINT, &rem_crypto, KMS_SDES_KEY_FIELD, G_TYPE_STRING, &rem_key,
+          NULL)) {
+    goto end;
+  }
+
+  if (my_tag != rem_tag || my_crypto != rem_crypto) {
+    goto end;
+  }
+
+  if (!get_auth_cipher_from_crypto (rem_crypto, &auth, &cipher)) {
+    goto end;
+  }
+
+  kms_srtp_connection_set_key (KMS_SRTP_CONNECTION (sdes_keys->conn), rem_key,
+      auth, cipher, FALSE);
+
+  kms_rtp_endpoint_log_key (self, &sdes_keys->remote, media, FALSE);
+
+  ret = TRUE;
+
+end:
+  g_free (rem_key);
+
+  return ret;
+}
+
+static KmsRtpBaseConnection *
+kms_rtp_endpoint_get_connection (KmsRtpEndpoint * self, KmsSdpSession * sess,
+    SdpMediaConfig * mconf)
+{
+  if (self->priv->use_sdes) {
+    return kms_srtp_session_get_connection (KMS_SRTP_SESSION (sess), mconf);
+  } else {
+    return kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
+  }
+}
 
 /* Internal session management begin */
 
@@ -53,8 +278,13 @@ kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
     gint id, KmsSdpSession ** sess)
 {
   KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (base_sdp);
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp);
 
-  *sess = KMS_SDP_SESSION (kms_rtp_session_new (base_sdp, id, manager));
+  if (self->priv->use_sdes) {
+    *sess = KMS_SDP_SESSION (kms_srtp_session_new (base_sdp, id, manager));
+  } else {
+    *sess = KMS_SDP_SESSION (kms_rtp_session_new (base_sdp, id, manager));
+  }
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS
@@ -65,12 +295,302 @@ kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
 /* Internal session management end */
 
 /* Media handler management begin */
+
+static gchar *
+generate_random_key (guint size)
+{
+  guint8 *buff;
+  gchar *key;
+  guint i;
+
+  buff = g_malloc0 (size);
+
+  for (i = 0; i + 4 < size; i += 4) {
+    GST_WRITE_UINT32_BE (buff + i, g_random_int ());
+  }
+
+  key = g_base64_encode (buff, size);
+  g_free (buff);
+
+  return key;
+}
+
+static guint
+get_max_key_size (SrtpCryptoSuite crypto)
+{
+  switch (crypto) {
+    case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32:
+    case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_80:
+      return KMS_SRTP_CIPHER_AES_128_ICM_SIZE;
+    case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_32:
+    case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_80:
+      return KMS_SRTP_CIPHER_AES_256_ICM_SIZE;
+    default:
+      return 0;
+  }
+}
+
+static gboolean
+create_new_random_key (GValue * key, guint tag, SrtpCryptoSuite crypto,
+    const gchar * lifetime, const guint * mki, const guint * length)
+{
+  gchar *strkey;
+  gboolean ret;
+  guint size;
+
+  size = get_max_key_size (crypto);
+  strkey = generate_random_key (size);
+
+  ret = kms_sdp_sdes_ext_create_key_detailed (tag, strkey,
+      crypto, lifetime, mki, length, key, NULL);
+
+  g_free (strkey);
+
+  return ret;
+}
+
+static void
+enhanced_g_value_copy (const GValue * src, GValue * dest)
+{
+  if (G_IS_VALUE (dest)) {
+    g_value_unset (dest);
+  }
+
+  g_value_init (dest, G_VALUE_TYPE (src));
+  g_value_copy (src, dest);
+}
+
+static GArray *
+kms_rtp_endpoint_on_offer_keys_cb (KmsSdpSdesExt * ext, SdesExtData * edata)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (edata->rtpep);
+  GValue v1 = G_VALUE_INIT;
+  SdesKeys *sdes_keys;
+  GArray *keys;
+
+  KMS_ELEMENT_LOCK (self);
+
+  sdes_keys = g_hash_table_lookup (self->priv->sdes_keys, edata->media);
+
+  if (sdes_keys == NULL) {
+    GST_ERROR_OBJECT (self, "No keys configured for media %s", edata->media);
+    KMS_ELEMENT_UNLOCK (self);
+
+    return NULL;
+  }
+
+  create_new_random_key (&v1, 1, KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32,
+      NULL, NULL, NULL);
+
+  enhanced_g_value_copy (&v1, &sdes_keys->local);
+  sdes_keys->offerer = TRUE;
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  keys = g_array_sized_new (FALSE, FALSE, sizeof (GValue), 1);
+
+  /* Sets a function to clear an element of array */
+  g_array_set_clear_func (keys, (GDestroyNotify) g_value_unset);
+
+  g_array_append_val (keys, v1);
+
+  return keys;
+}
+
+static gboolean
+is_supported_key (GValue * key)
+{
+  SrtpCryptoSuite crypto;
+
+  if (!kms_sdp_sdes_ext_get_parameters_from_key (key, KMS_SDES_CRYPTO,
+          G_TYPE_UINT, &crypto, NULL)) {
+    return FALSE;
+  }
+
+  switch (crypto) {
+    case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32:
+    case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_80:
+    case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_32:
+    case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_80:
+      return TRUE;
+    default:
+      return FALSE;
+  }
+}
+
+static GValue *
+get_supported_key (const GArray * keys)
+{
+  guint i;
+
+  for (i = 0; i < keys->len; i++) {
+    GValue *key;
+
+    key = &g_array_index (keys, GValue, 0);
+
+    if (key != NULL && is_supported_key (key)) {
+      return key;
+    }
+  }
+
+  return NULL;
+}
+
+static gboolean
+kms_rtp_endpoint_on_answer_keys_cb (KmsSdpSdesExt * ext, const GArray * keys,
+    GValue * key, SdesExtData * edata)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (edata->rtpep);
+  SdesKeys *sdes_keys;
+  GValue *offer_key;
+  gboolean ret = FALSE;
+  SrtpCryptoSuite crypto;
+  guint tag;
+
+  if (keys->len == 0) {
+    GST_ERROR_OBJECT (self, "No key provided in offer");
+    return FALSE;
+  }
+
+  offer_key = get_supported_key (keys);
+
+  if (offer_key == NULL) {
+    GST_ERROR_OBJECT (self, "No supported keys provided");
+
+    return FALSE;
+  }
+
+  KMS_ELEMENT_LOCK (self);
+
+  sdes_keys = g_hash_table_lookup (self->priv->sdes_keys, edata->media);
+
+  if (sdes_keys == NULL) {
+    GST_ERROR_OBJECT (self, "No key configured for media %s", edata->media);
+    goto end;
+  }
+
+  if (!kms_sdp_sdes_ext_get_parameters_from_key (offer_key, KMS_SDES_TAG_FIELD,
+          G_TYPE_UINT, &tag, KMS_SDES_CRYPTO, G_TYPE_UINT, &crypto, NULL)) {
+    GST_ERROR_OBJECT (self, "Invalid key offered");
+    goto end;
+  }
+
+  create_new_random_key (key, tag, crypto, NULL, NULL, NULL);
+
+  enhanced_g_value_copy (key, &sdes_keys->local);
+  enhanced_g_value_copy (offer_key, &sdes_keys->remote);
+  sdes_keys->offerer = FALSE;
+
+  ret = TRUE;
+
+end:
+  KMS_ELEMENT_UNLOCK (self);
+
+  return ret;
+}
+
+static void
+kms_rtp_endpoint_on_selected_key_cb (KmsSdpSdesExt * ext, const GValue * key,
+    SdesExtData * edata)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (edata->rtpep);
+  SdesKeys *sdes_keys;
+
+  KMS_ELEMENT_LOCK (self);
+
+  sdes_keys = g_hash_table_lookup (self->priv->sdes_keys, edata->media);
+
+  if (sdes_keys == NULL) {
+    GST_ERROR_OBJECT (self, "Can not configure keys for connection");
+    goto end;
+  }
+
+  if (!sdes_keys->offerer) {
+    goto end;
+  }
+
+  enhanced_g_value_copy (key, &sdes_keys->remote);
+
+  if (!kms_rtp_endpoint_set_remote_srtp_connection_key (self, edata->media,
+          sdes_keys)) {
+    GST_ERROR_OBJECT (self, "Can not set remote keys");
+  }
+
+end:
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static KmsSdpMediaHandler *
+kms_rtp_endpoint_provide_sdes_handler (KmsRtpEndpoint * self,
+    const gchar * media)
+{
+  KmsSdpMediaHandler *handler;
+  SdesKeys *sdes_keys;
+  SdesExtData *edata;
+  KmsSdpSdesExt *ext;
+
+  handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_savpf_media_handler_new ());
+
+  /* Let's use sdes extension */
+  ext = kms_sdp_sdes_ext_new ();
+  if (!kms_sdp_media_handler_add_media_extension (handler,
+          KMS_I_SDP_MEDIA_EXTENSION (ext))) {
+    GST_ERROR_OBJECT (self, "Can not use SDES in handler %" GST_PTR_FORMAT,
+        handler);
+    goto end;
+  }
+
+  edata = sdes_ext_data_new (self, media);
+
+  g_signal_connect_data (ext, "on-offer-keys",
+      G_CALLBACK (kms_rtp_endpoint_on_offer_keys_cb), edata,
+      (GClosureNotify) kms_ref_struct_unref, 0);
+  g_signal_connect_data (ext, "on-answer-keys",
+      G_CALLBACK (kms_rtp_endpoint_on_answer_keys_cb),
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (edata)),
+      (GClosureNotify) kms_ref_struct_unref, 0);
+  g_signal_connect_data (ext, "on-selected-key",
+      G_CALLBACK (kms_rtp_endpoint_on_selected_key_cb),
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (edata)),
+      (GClosureNotify) kms_ref_struct_unref, 0);
+
+  sdes_keys = sdes_keys_new (KMS_I_SDP_MEDIA_EXTENSION (ext));
+
+  KMS_ELEMENT_LOCK (self);
+
+  g_hash_table_insert (self->priv->sdes_keys, g_strdup (media), sdes_keys);
+
+  KMS_ELEMENT_UNLOCK (self);
+
+end:
+  return handler;
+}
+
+static KmsSdpMediaHandler *
+kms_rtp_endpoint_get_media_handler (KmsRtpEndpoint * self, const gchar * media)
+{
+  KmsSdpMediaHandler *handler;
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->use_sdes) {
+    handler = kms_rtp_endpoint_provide_sdes_handler (self, media);
+  } else {
+    handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avpf_media_handler_new ());
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  return handler;
+}
+
 static void
 kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
     const gchar * media, KmsSdpMediaHandler ** handler)
 {
   if (g_strcmp0 (media, "audio") == 0 || g_strcmp0 (media, "video") == 0) {
-    *handler = KMS_SDP_MEDIA_HANDLER (kms_sdp_rtp_avpf_media_handler_new ());
+    *handler = kms_rtp_endpoint_get_media_handler (KMS_RTP_ENDPOINT (base_sdp),
+        media);
   }
 
   /* Chain up */
@@ -135,11 +655,45 @@ kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
   }
 }
 
+static void
+kms_rtp_endpoint_configure_connection_keys (KmsRtpEndpoint * self,
+    KmsRtpBaseConnection * conn, const gchar * media)
+{
+  SdesKeys *sdes_keys;
+
+  KMS_ELEMENT_LOCK (self);
+
+  sdes_keys = g_hash_table_lookup (self->priv->sdes_keys, media);
+
+  if (sdes_keys == NULL) {
+    GST_ERROR_OBJECT (self, "No keys configured for %s connection", media);
+  } else {
+    sdes_keys->conn = g_object_ref (conn);
+  }
+
+  if (!kms_rtp_endpoint_set_local_srtp_connection_key (self, media, sdes_keys)) {
+    GST_ERROR_OBJECT (self, "Can not configure local connection key");
+    goto end;
+  }
+
+  if (sdes_keys->offerer) {
+    goto end;
+  }
+
+  if (!kms_rtp_endpoint_set_remote_srtp_connection_key (self, media, sdes_keys)) {
+    GST_ERROR_OBJECT (self, "Can not configure remote connection key");
+  }
+
+end:
+  KMS_ELEMENT_UNLOCK (self);
+}
+
 /* Configure media SDP begin */
 static gboolean
 kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     KmsSdpSession * sess, SdpMediaConfig * mconf)
 {
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   guint conn_len, c;
   guint attr_len, a;
@@ -162,7 +716,9 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     gst_sdp_media_remove_connection (media, c);
   }
 
-  conn = kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
+  conn = kms_rtp_endpoint_get_connection (KMS_RTP_ENDPOINT (base_sdp_endpoint),
+      sess, mconf);
+
   if (conn == NULL) {
     return TRUE;
   }
@@ -177,6 +733,11 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
       gst_sdp_media_remove_attribute (media, a);
       /* TODO: complete rtcp attr with addr and rtcp port */
     }
+  }
+
+  if (self->priv->use_sdes) {
+    kms_rtp_endpoint_configure_connection_keys (self, conn,
+        gst_sdp_media_get_media (media));
   }
 
   return TRUE;
@@ -225,7 +786,8 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
       continue;
     }
 
-    conn = kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
+    conn = kms_rtp_endpoint_get_connection (self, sess, mconf);
+
     if (conn == NULL) {
       continue;
     }
@@ -238,10 +800,123 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
 }
 
 static void
+kms_rtp_endpoint_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
+
+  KMS_ELEMENT_LOCK (self);
+
+  switch (prop_id) {
+    case PROP_USE_SDES:
+      self->priv->use_sdes = g_value_get_boolean (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_rtp_endpoint_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
+
+  KMS_ELEMENT_LOCK (self);
+
+  switch (prop_id) {
+    case PROP_USE_SDES:
+      g_value_set_boolean (value, self->priv->use_sdes);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_rtp_endpoint_configure_transport_key (KmsRtpEndpoint * self,
+    const GstSDPMedia * media)
+{
+  SdesKeys *sdes_keys;
+  GError *err = NULL;
+
+  sdes_keys = g_hash_table_lookup (self->priv->sdes_keys,
+      gst_sdp_media_get_media (media));
+
+  if (sdes_keys == NULL) {
+    GST_ERROR_OBJECT (self, "No keys configured for connection");
+
+    return;
+  }
+
+  if (!kms_i_sdp_media_extension_process_answer_attributes
+      (KMS_I_SDP_MEDIA_EXTENSION (sdes_keys->ext), media, &err)) {
+    GST_ERROR_OBJECT (self, "%s", err->message);
+    g_error_free (err);
+  }
+}
+
+static void
+kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, KmsSdpSession * sess)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
+  const GSList *item;
+
+  /* Chain up */
+  KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->connect_input_elements
+      (base_sdp_endpoint, sess);
+
+  if (!self->priv->use_sdes) {
+    return;
+  }
+
+  item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *mconf = item->data;
+    GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+    const gchar *media_str = gst_sdp_media_get_media (media);
+
+    if (gst_sdp_media_get_port (media) == 0) {
+      /* Media not supported */
+      GST_DEBUG_OBJECT (base_sdp_endpoint, "Media not supported: %s",
+          media_str);
+      continue;
+    }
+
+    kms_rtp_endpoint_configure_transport_key (self, media);
+  }
+}
+
+static void
+kms_rtp_endpoint_finalize (GObject * object)
+{
+  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
+
+  g_hash_table_unref (self->priv->sdes_keys);
+
+  /* chain up */
+  G_OBJECT_CLASS (parent_class)->finalize (object);
+}
+
+static void
 kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 {
+  GObjectClass *gobject_class;
   KmsBaseSdpEndpointClass *base_sdp_endpoint_class;
   GstElementClass *gstelement_class;
+
+  gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->set_property = kms_rtp_endpoint_set_property;
+  gobject_class->get_property = kms_rtp_endpoint_get_property;
+  gobject_class->finalize = kms_rtp_endpoint_finalize;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
@@ -256,12 +931,22 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
       kms_rtp_endpoint_create_session_internal;
   base_sdp_endpoint_class->start_transport_send =
       kms_rtp_endpoint_start_transport_send;
+  base_sdp_endpoint_class->connect_input_elements =
+      kms_rtp_endpoint_connect_input_elements;
 
   /* Media handler management */
   base_sdp_endpoint_class->create_media_handler =
       kms_rtp_endpoint_create_media_handler;
 
   base_sdp_endpoint_class->configure_media = kms_rtp_endpoint_configure_media;
+
+  g_object_class_install_property (gobject_class, PROP_USE_SDES,
+      g_param_spec_boolean ("use-sdes",
+          "Use SDES", "If session description protocol security descriptions "
+          "(SDES) is used or not", DEFAULT_USE_SDES,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+
+  g_type_class_add_private (klass, sizeof (KmsRtpEndpointPrivate));
 }
 
 /* TODO: not add abs-send-time extmap */
@@ -269,8 +954,13 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 static void
 kms_rtp_endpoint_init (KmsRtpEndpoint * self)
 {
+  self->priv = KMS_RTP_ENDPOINT_GET_PRIVATE (self);
+
+  self->priv->sdes_keys = g_hash_table_new_full (g_str_hash, g_str_equal,
+      g_free, (GDestroyNotify) kms_ref_struct_unref);
+
   g_object_set (G_OBJECT (self), "bundle",
-      FALSE, "rtcp-mux", FALSE, "rtcp-nack", FALSE, "rtcp-remb", FALSE,
+      FALSE, "rtcp-mux", FALSE, "rtcp-nack", TRUE, "rtcp-remb", FALSE,
       "max-video-recv-bandwidth", 0, NULL);
   /* FIXME: remove max-video-recv-bandwidth when it b=AS:X is in the SDP offer */
 
