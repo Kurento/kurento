@@ -71,7 +71,12 @@ import org.kurento.test.docker.Docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.io.CharStreams;
 
@@ -352,10 +357,22 @@ public class KurentoMediaServerManager {
 
 		log.debug("Starting kms container...");
 
-		CreateContainerResponse kmsContainer = dockerClient.getClient()
+		CreateContainerCmd createContainerCmd = dockerClient.getClient()
 				.createContainerCmd(kmsImageName).withName(dockerContainerName)
 				.withEnv("GST_DEBUG=" + debugOptions)
-				.withCmd("--gst-debug-no-color").exec();
+				.withCmd("--gst-debug-no-color");
+
+		if (dockerClient.isRunningInContainer()) {
+			createContainerCmd.withVolumesFrom(
+					new VolumesFrom(dockerClient.getContainerId()));
+		} else {
+			String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
+			Volume volume = new Volume(testFilesPath);
+			createContainerCmd.withVolumes(volume)
+					.withBinds(new Bind(testFilesPath, volume, AccessMode.ro));
+		}
+
+		CreateContainerResponse kmsContainer = createContainerCmd.exec();
 
 		dockerClient.getClient().startContainerCmd(kmsContainer.getId()).exec();
 

@@ -24,13 +24,19 @@ import java.util.concurrent.TimeUnit;
 
 import org.kurento.commons.PropertiesManager;
 import org.kurento.test.Shell;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.NotFoundException;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
@@ -180,7 +186,7 @@ public class Docker implements Closeable {
 	}
 
 	public void createContainer(String imageId, String containerName,
-			String... cmd) {
+			boolean mountTestFiles, String... env) {
 
 		if (!existsContainer(containerName)) {
 			if (!existsImage(imageId)) {
@@ -197,8 +203,22 @@ public class Docker implements Closeable {
 
 			log.debug("Creating container {}", containerName);
 
-			getClient().createContainerCmd(imageId).withName(containerName)
-					.withEnv(cmd).exec();
+			CreateContainerCmd createContainerCmd = getClient()
+					.createContainerCmd(imageId).withName(containerName)
+					.withEnv(env);
+
+			if (mountTestFiles && isRunningInContainer()) {
+				createContainerCmd
+						.withVolumesFrom(new VolumesFrom(getContainerId()));
+			} else {
+				String testFilesPath = KurentoServicesTestHelper
+						.getTestFilesPath();
+				Volume volume = new Volume(testFilesPath);
+				createContainerCmd.withVolumes(volume).withBinds(
+						new Bind(testFilesPath, volume, AccessMode.ro));
+			}
+
+			createContainerCmd.exec();
 
 			log.debug("Container {} started...", containerName);
 
@@ -282,7 +302,7 @@ public class Docker implements Closeable {
 	public synchronized String startHub(String hubName, String imageId,
 			long timeoutMs) {
 		// Create hub if not exist
-		createContainer(imageId, hubName, "GRID_TIMEOUT=" + timeoutMs);
+		createContainer(imageId, hubName, false, "GRID_TIMEOUT=" + timeoutMs);
 
 		// Start hub if stopped
 		startContainer(hubName);
@@ -296,7 +316,8 @@ public class Docker implements Closeable {
 
 	public void startNode(String nodeName, String imageId, String hubIp) {
 		// Create node if not exist
-		createContainer(imageId, nodeName, "HUB_PORT_4444_TCP_ADDR=" + hubIp);
+		createContainer(imageId, nodeName, true,
+				"HUB_PORT_4444_TCP_ADDR=" + hubIp);
 
 		// Start node if stopped
 		startContainer(nodeName);
