@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(KMS_RTPENDPOINT_SOURCES
   kmsrtpbaseconnection.c
   kmsrtpconnection.c
+  kmssrtpconnection.c
   kmsrtpsession.c
   kmsrtpendpoint.c
   kmssocketutils.c
