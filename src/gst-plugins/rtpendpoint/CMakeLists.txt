@@ -5,6 +5,7 @@ set(KMS_RTPENDPOINT_SOURCES
   kmsrtpconnection.c
   kmssrtpconnection.c
   kmsrtpsession.c
+  kmssrtpsession.c
   kmsrtpendpoint.c
   kmssocketutils.c
 )
