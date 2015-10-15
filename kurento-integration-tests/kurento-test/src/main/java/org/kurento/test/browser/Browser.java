@@ -835,9 +835,12 @@ public class Browser implements Closeable {
 			}
 			this.scope = scope;
 
-			if (BrowserScope.DOCKER.equals(scope) && getProperty(
-					TestConfiguration.TEST_AUTO_CONTAINED_PROPERTY,
-					TestConfiguration.TEST_AUTO_CONTAINED_DEFAULT)) {
+			String appAutostart = getProperty(
+					TestConfiguration.TEST_APP_AUTOSTART_PROPERTY,
+					TestConfiguration.TEST_APP_AUTOSTART_DEFAULT);
+
+			if (BrowserScope.DOCKER.equals(scope) && !appAutostart
+					.equals(TestConfiguration.AUTOSTART_FALSE_VALUE)) {
 
 				if (docker.isRunningInContainer()) {
 					this.node = docker.getContainerIpAddress();

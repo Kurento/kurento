@@ -18,7 +18,7 @@ import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.TestConfiguration.APP_HTTP_PORT_DEFAULT;
 import static org.kurento.test.TestConfiguration.APP_HTTP_PORT_PROP;
 import static org.kurento.test.TestConfiguration.AUTOSTART_FALSE_VALUE;
-import static org.kurento.test.TestConfiguration.AUTOSTART_TEST_SUITE_VALUE;
+import static org.kurento.test.TestConfiguration.AUTOSTART_TESTSUITE_VALUE;
 import static org.kurento.test.TestConfiguration.AUTOSTART_TEST_VALUE;
 import static org.kurento.test.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_DEFAULT;
 import static org.kurento.test.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_PROP;
@@ -106,7 +106,7 @@ public class KurentoServicesTestHelper {
 		case AUTOSTART_TEST_VALUE:
 			startKurentoControlServer();
 			break;
-		case AUTOSTART_TEST_SUITE_VALUE:
+		case AUTOSTART_TESTSUITE_VALUE:
 			if (kcs == null) {
 				startKurentoControlServer();
 			}
@@ -145,7 +145,7 @@ public class KurentoServicesTestHelper {
 		case AUTOSTART_TEST_VALUE:
 			startKurentoMediaServer(isFake);
 			break;
-		case AUTOSTART_TEST_SUITE_VALUE:
+		case AUTOSTART_TESTSUITE_VALUE:
 			if (kmsToBeStarted == null) {
 				startKurentoMediaServer(isFake);
 			}

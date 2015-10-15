@@ -24,9 +24,6 @@ import org.kurento.commons.Address;
  */
 public class TestConfiguration {
 
-	public final static String TEST_AUTO_CONTAINED_PROPERTY = "test.auto.contained";
-	public final static boolean TEST_AUTO_CONTAINED_DEFAULT = true;
-
 	// Host (address, port, protocol, path)
 	public static final String TEST_HOST_PROPERTY = "test.host";
 	public static final String TEST_PUBLIC_IP_PROPERTY = "test.public.ip";
@@ -172,10 +169,13 @@ public class TestConfiguration {
 	// Autostart
 	public static final String AUTOSTART_FALSE_VALUE = "false";
 	public static final String AUTOSTART_TEST_VALUE = "test";
-	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
+	public static final String AUTOSTART_TESTSUITE_VALUE = "testsuite";
 
 	public static final String KMS_AUTOSTART_PROP = "test.kms.autostart";
 	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_TEST_VALUE;
+
+	public final static String TEST_APP_AUTOSTART_PROPERTY = "test.app.autostart";
+	public final static String TEST_APP_AUTOSTART_DEFAULT = AUTOSTART_TESTSUITE_VALUE;
 
 	public static final String KMS_SCOPE_PROP = "test.kms.scope";
 	public static final String KMS_SCOPE_LOCAL = "docker";
