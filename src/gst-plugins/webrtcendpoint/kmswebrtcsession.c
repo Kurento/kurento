@@ -805,6 +805,7 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
    *  started the ICE processing MUST take the controlling role, and the
    *  other MUST take the controlled role.
    */
+  // TODO: This code should be independent of the ice implementation
   if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
     KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
 

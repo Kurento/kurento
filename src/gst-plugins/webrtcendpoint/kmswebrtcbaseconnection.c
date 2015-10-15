@@ -133,6 +133,7 @@ void
 kms_webrtc_base_connection_set_stun_server_info (KmsWebRtcBaseConnection * self,
     const gchar * ip, guint port)
 {
+  // TODO: This code should be independent of the type of ice agent
   if (KMS_IS_ICE_NICE_AGENT (self->agent)) {
     KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self->agent);
 
