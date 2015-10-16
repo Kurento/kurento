@@ -94,7 +94,7 @@ kms_socket_open (guint16 port)
   addr = g_inet_address_new_any (G_SOCKET_FAMILY_IPV4);
   bind_saddr = g_inet_socket_address_new (addr, port);
   g_object_unref (addr);
-  if (!g_socket_bind (socket, bind_saddr, TRUE, NULL)) {
+  if (!g_socket_bind (socket, bind_saddr, FALSE, NULL)) {
     g_socket_close (socket, NULL);
     g_object_unref (socket);
     socket = NULL;
