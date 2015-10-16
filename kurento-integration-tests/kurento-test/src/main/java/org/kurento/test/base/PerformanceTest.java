@@ -14,6 +14,8 @@
  */
 package org.kurento.test.base;
 
+import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -23,9 +25,10 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
 
 /**
- * Base for tests using kurento-client, Jetty Http Server and Selenium Grid.
+ * Base for performance tests.
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gsyc.es)
  * @since 4.2.5
  */
 @Category(SystemPerformanceTests.class)
@@ -44,11 +47,11 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 	@Before
 	public void setupMonitor() {
 		monitor = new SystemMonitorManager();
-		monitor.start();
+		monitor.startMonitoring();
 	}
 
 	@After
-	public void teardownMonitor() {
+	public void teardownMonitor() throws IOException {
 		if (monitor != null) {
 			monitor.stop();
 			monitor.writeResults(monitorResultPath);

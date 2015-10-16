@@ -34,18 +34,13 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * <strong>Description</strong>: Performance test for KMS.<br/>
- * <strong>Possible pipelines</strong>:
- * <ul>
- * <li>one2one</li>
- * <li>one2many</li>
- * <li>many2many</li>
- * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
  * <li>No assertion, just data gathering.</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 6.1.1
  */
 public class KmsPerformanceTest extends PerformanceTest {
@@ -57,21 +52,23 @@ public class KmsPerformanceTest extends PerformanceTest {
 	private static final String MEDIA_PROCESSING_PROPERTY = "mediaProcessing";
 	private static final String MEDIA_PROCESSING_DEFAULT = MediaProcessingType.NONE
 			.name().toLowerCase();
+
 	private static final String NUM_CLIENTS_PROPERTY = "numClients";
 	private static final int NUM_CLIENTS_DEFAULT = 1;
+
 	private static final String TIME_BEETWEEN_CLIENTS_PROPERTY = "timeBetweenClientCreation";
 	private static final int TIME_BEETWEEN_CLIENTS_DEFAULT = 0;
 
 	private static final String PERFORMANCE_TEST_TIME_PROPERTY = "performanceTestTime";
 	private static final int PERFORMANCE_TEST_TIME_DEFAULT = 10; // seconds
 
-	private static String mediaProcessing = getProperty(
+	private static String MEDIA_PROCESSING = getProperty(
 			MEDIA_PROCESSING_PROPERTY, MEDIA_PROCESSING_DEFAULT);
-	private static int numClients = getProperty(NUM_CLIENTS_PROPERTY,
+	private static int NUM_CLIENTS = getProperty(NUM_CLIENTS_PROPERTY,
 			NUM_CLIENTS_DEFAULT);
-	private static int timeBetweenClientCreation = getProperty(
+	private static int TIME_BETEEN_CLIENT_CREATION = getProperty(
 			TIME_BEETWEEN_CLIENTS_PROPERTY, TIME_BEETWEEN_CLIENTS_DEFAULT);
-	private static int testTime = getProperty(PERFORMANCE_TEST_TIME_PROPERTY,
+	private static int TEST_TIME = getProperty(PERFORMANCE_TEST_TIME_PROPERTY,
 			PERFORMANCE_TEST_TIME_DEFAULT);
 
 	public KmsPerformanceTest(TestScenario testScenario) {
@@ -87,19 +84,42 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 	@Test
 	public void testKmsPerformance() throws Exception {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
-		// Media processing
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+
+		try {
+
+			WebRtcEndpoint inputOutputEndpoint = new WebRtcEndpoint.Builder(mp)
+					.build();
+
+			Filter filter = configureMediaProcessing(mp, inputOutputEndpoint);
+
+			configureBrowserClients(inputOutputEndpoint);
+
+			configureFakeClients(mp, inputOutputEndpoint, filter);
+
+			// Test time
+			Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_TIME));
+
+		} finally {
+			if (mp != null) {
+				mp.release();
+			}
+		}
+	}
+
+	private Filter configureMediaProcessing(MediaPipeline mp,
+			WebRtcEndpoint webRtcEndpoint) {
 		MediaProcessingType mediaProcessingType;
+
 		Filter filter = null;
 		try {
 			mediaProcessingType = MediaProcessingType
-					.valueOf(mediaProcessing.toUpperCase());
+					.valueOf(MEDIA_PROCESSING.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			mediaProcessingType = MediaProcessingType.NONE;
 		}
+
 		switch (mediaProcessingType) {
 		case ENCODER:
 			filter = new GStreamerFilter.Builder(mp,
@@ -129,28 +149,32 @@ public class KmsPerformanceTest extends PerformanceTest {
 			break;
 		}
 
-		// Browser
-		getPage().subscribeEvents("playing");
+		return filter;
+	}
+
+	private void configureFakeClients(MediaPipeline mp,
+			WebRtcEndpoint webRtcEndpoint, Filter filter) {
+
+		int numFakeClients = NUM_CLIENTS - 1;
+
+		if (numFakeClients > 0) {
+			log.debug("Adding {} fake clients", numFakeClients);
+			addFakeClients(numFakeClients, mp, webRtcEndpoint,
+					TIME_BETEEN_CLIENT_CREATION, monitor, filter.getClass());
+		}
+	}
+
+	private void configureBrowserClients(WebRtcEndpoint webRtcEndpoint)
+			throws InterruptedException {
+
+		// getPage().subscribeEvents("playing");
+
 		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_RCV);
+
 		monitor.incrementNumClients();
 		getPage().activateClientRtcStats(monitor, "webRtcPeer.peerConnection");
 		monitor.setWebRtcEndpoint(webRtcEndpoint);
-
-		// Fake clients
-		if (numClients > 0) {
-			log.debug("Adding {} fake clients", numClients);
-			addFakeClients(numClients, mp, webRtcEndpoint,
-					timeBetweenClientCreation, monitor, filter.getClass());
-		}
-
-		// Test time
-		Thread.sleep(TimeUnit.SECONDS.toMillis(testTime));
-
-		// Release Media Pipeline
-		if (mp != null) {
-			mp.release();
-		}
 	}
 
 }

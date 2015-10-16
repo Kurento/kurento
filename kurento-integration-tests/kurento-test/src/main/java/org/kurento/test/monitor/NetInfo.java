@@ -74,7 +74,7 @@ public class NetInfo implements Serializable {
 		return out;
 	}
 
-	private class NetInfoEntry implements Serializable {
+	class NetInfoEntry implements Serializable {
 
 		private static final long serialVersionUID = -7279516312913824339L;
 

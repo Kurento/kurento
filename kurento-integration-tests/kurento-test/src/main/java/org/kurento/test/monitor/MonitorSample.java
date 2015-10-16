@@ -24,7 +24,7 @@ import org.kurento.client.Stats;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class MonitorResult {
+public class MonitorSample {
 
 	// Number of clients
 	private int numClients = 0;
