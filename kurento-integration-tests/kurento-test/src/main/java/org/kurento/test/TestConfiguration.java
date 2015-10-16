@@ -178,9 +178,9 @@ public class TestConfiguration {
 	public final static String TEST_APP_AUTOSTART_DEFAULT = AUTOSTART_TESTSUITE_VALUE;
 
 	public static final String KMS_SCOPE_PROP = "test.kms.scope";
-	public static final String KMS_SCOPE_LOCAL = "docker";
+	public static final String KMS_SCOPE_LOCAL = "local";
 	public static final String KMS_SCOPE_DOCKER = "docker";
-	public static final String KMS_SCOPE_DEFAULT = KMS_SCOPE_DOCKER;
+	public static final String KMS_SCOPE_DEFAULT = KMS_SCOPE_LOCAL;
 
 	public static final String KCS_AUTOSTART_PROP = "test.kcs.autostart";
 	public static final String KCS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
