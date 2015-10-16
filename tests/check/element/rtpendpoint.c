@@ -605,19 +605,26 @@ GST_START_TEST (test_port_range)
   GArray *audio_codecs_array, *video_codecs_array;
   gchar *audio_codecs[] = { "opus/48000/1", "AMR/8000/1", NULL };
   gchar *video_codecs[] = { "H264/90000", "VP8/90000", NULL };
-  gchar *offerer_sess_id;
-  GstSDPMessage *offer;
+  gchar *offerer_sess_id, *second_sess_id;
+  GstSDPMessage *offer, *second_offer;
   gchar *sdp_str = NULL;
   GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
+  GstElement *second = gst_element_factory_make ("rtpendpoint", NULL);
   guint min_port, max_port;
+  GHashTable *ports = g_hash_table_new (g_direct_hash, g_direct_equal);
   guint i;
 
   min_port = 50000;
-  max_port = 55000;
+  max_port = 50007;
 
   audio_codecs_array = create_codecs_array (audio_codecs);
   video_codecs_array = create_codecs_array (video_codecs);
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array),
+      "num-audio-medias", 1,
+      "audio-codecs", g_array_ref (audio_codecs_array),
+      "min-port", min_port, "max-port", max_port, NULL);
+  g_object_set (second, "num-video-medias", 1, "video-codecs",
       g_array_ref (video_codecs_array),
       "num-audio-medias", 1,
       "audio-codecs", g_array_ref (audio_codecs_array),
@@ -628,11 +635,20 @@ GST_START_TEST (test_port_range)
   /* Session creation */
   g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
   GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (second, "create-session", &second_sess_id);
+  GST_DEBUG_OBJECT (second, "Created session with id '%s'", second_sess_id);
 
   /* SDP negotiation */
   g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
   fail_unless (offer != NULL);
   GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  g_signal_emit_by_name (second, "generate-offer", second_sess_id,
+      &second_offer);
+  fail_unless (second_offer != NULL);
+  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (second_offer)));
   g_free (sdp_str);
   sdp_str = NULL;
 
@@ -643,14 +659,34 @@ GST_START_TEST (test_port_range)
     GST_DEBUG ("Port: %d", port);
     fail_if (min_port > port);
     fail_if (max_port < port);
+    g_hash_table_insert (ports, GINT_TO_POINTER (port), GINT_TO_POINTER (TRUE));
   }
 
-  // TODO: Check port
+  for (i = 0; i < gst_sdp_message_medias_len (second_offer); i++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (second_offer, i);
+    guint port = gst_sdp_media_get_port (media);
+
+    GST_DEBUG ("Port: %d", port);
+    fail_if (min_port > port);
+    fail_if (max_port < port);
+    g_hash_table_insert (ports, GINT_TO_POINTER (port), GINT_TO_POINTER (TRUE));
+  }
+
+  for (i = min_port; i < max_port; i++) {
+    /* Check only even ports */
+    if (!(i & 0x1)) {
+      GST_DEBUG ("Checking for port: %d", i);
+      fail_unless (g_hash_table_contains (ports, GINT_TO_POINTER (i)));
+    }
+  }
 
   gst_sdp_message_free (offer);
+  gst_sdp_message_free (second_offer);
 
   g_object_unref (offerer);
+  g_object_unref (second);
   g_free (offerer_sess_id);
+  g_free (second_sess_id);
 }
 
 GST_END_TEST;
