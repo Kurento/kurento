@@ -66,6 +66,8 @@ public class Docker implements Closeable {
 
 	private String containerName;
 
+	private String dockerServerUrl;
+
 	private static String hostIp;
 
 	public synchronized static Docker getSingleton(String dockerServerUrl) {
@@ -90,11 +92,15 @@ public class Docker implements Closeable {
 		}
 	}
 
+	public Docker(String dockerServerUrl) {
+		this.dockerServerUrl = dockerServerUrl;
+	}
+
 	public boolean isRunningInContainer() {
 		return isRunningInContainerInternal();
 	}
 
-	private static boolean isRunningInContainerInternal() {
+	private static synchronized boolean isRunningInContainerInternal() {
 
 		if (isRunningInContainer == null) {
 
@@ -117,7 +123,7 @@ public class Docker implements Closeable {
 		return isRunningInContainer;
 	}
 
-	private static String getHostIp() {
+	private static synchronized String getHostIp() {
 
 		if (hostIp == null) {
 
@@ -143,10 +149,6 @@ public class Docker implements Closeable {
 		}
 
 		return hostIp;
-	}
-
-	public Docker(String dockerServerUrl) {
-		client = DockerClientBuilder.getInstance(dockerServerUrl).build();
 	}
 
 	public boolean isRunningContainer(String containerName) {
@@ -254,6 +256,14 @@ public class Docker implements Closeable {
 	}
 
 	public DockerClient getClient() {
+		if (client == null) {
+			synchronized (this) {
+				if (client == null) {
+					client = DockerClientBuilder.getInstance(dockerServerUrl)
+							.build();
+				}
+			}
+		}
 		return client;
 	}
 
