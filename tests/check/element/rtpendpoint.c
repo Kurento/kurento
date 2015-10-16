@@ -599,6 +599,61 @@ GST_START_TEST (generate_offer_bw_limited)
 }
 
 GST_END_TEST;
+
+GST_START_TEST (test_port_range)
+{
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { "opus/48000/1", "AMR/8000/1", NULL };
+  gchar *video_codecs[] = { "H264/90000", "VP8/90000", NULL };
+  gchar *offerer_sess_id;
+  GstSDPMessage *offer;
+  gchar *sdp_str = NULL;
+  GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
+  guint min_port, max_port;
+  guint i;
+
+  min_port = 50000;
+  max_port = 55000;
+
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array),
+      "num-audio-medias", 1,
+      "audio-codecs", g_array_ref (audio_codecs_array),
+      "min-port", min_port, "max-port", max_port, NULL);
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
+
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+
+  /* SDP negotiation */
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
+  fail_unless (offer != NULL);
+  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  for (i = 0; i < gst_sdp_message_medias_len (offer); i++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (offer, i);
+    guint port = gst_sdp_media_get_port (media);
+
+    GST_DEBUG ("Port: %d", port);
+    fail_if (min_port > port);
+    fail_if (max_port < port);
+  }
+
+  // TODO: Check port
+
+  gst_sdp_message_free (offer);
+
+  g_object_unref (offerer);
+  g_free (offerer_sess_id);
+}
+
+GST_END_TEST;
 /*
  * End of test cases
  */
@@ -614,6 +669,7 @@ sdp_suite (void)
   tcase_add_test (tc_chain, loopback);
   tcase_add_test (tc_chain, process_bundle_offer);
   tcase_add_test (tc_chain, generate_offer_bw_limited);
+  tcase_add_test (tc_chain, test_port_range);
 
   return s;
 }

@@ -123,7 +123,8 @@ kms_socket_get_port (GSocket * socket)
 }
 
 static gboolean
-kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
+kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
+    guint16 min_port, guint16 max_port)
 {
   GSocket *s1, *s2;
   guint16 port1, port2;
@@ -132,7 +133,14 @@ kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
     return FALSE;
   }
 
-  s1 = kms_socket_open (0);
+  if (min_port != 0 && max_port != 0 && min_port != 1
+      && max_port != G_MAXUINT16) {
+    port1 = (guint16) g_random_int_range (min_port + 1, max_port);
+  } else {
+    port1 = 0;
+  }
+
+  s1 = kms_socket_open (port1);
 
   if (s1 == NULL) {
     return FALSE;
@@ -316,7 +324,7 @@ kms_rtp_connection_get_property (GObject * object,
 }
 
 KmsRtpConnection *
-kms_rtp_connection_new ()
+kms_rtp_connection_new (guint16 min_port, guint16 max_port)
 {
   GObject *obj;
   KmsRtpConnection *conn;
@@ -328,7 +336,7 @@ kms_rtp_connection_new ()
   priv = conn->priv;
 
   while (!kms_rtp_connection_get_rtp_rtcp_sockets
-      (&priv->rtp_socket, &priv->rtcp_socket)
+      (&priv->rtp_socket, &priv->rtcp_socket, min_port, max_port)
       && retries++ < MAX_RETRIES) {
     GST_WARNING_OBJECT (obj, "Getting ports failed, retring");
   }

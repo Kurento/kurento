@@ -50,7 +50,7 @@ struct _KmsRtpConnectionClass
 
 GType kms_rtp_connection_get_type (void);
 
-KmsRtpConnection *kms_rtp_connection_new ();
+KmsRtpConnection * kms_rtp_connection_new (guint16 min_port, guint16 max_port);
 
 G_END_DECLS
 #endif /* __KMS_RTP_CONNECTION_H__ */

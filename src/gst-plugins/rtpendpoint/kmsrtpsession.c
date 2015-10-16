@@ -62,7 +62,7 @@ kms_rtp_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
     SdpMediaConfig * mconf, const gchar * name, guint16 min_port,
     guint16 max_port)
 {
-  KmsRtpConnection *conn = kms_rtp_connection_new ();
+  KmsRtpConnection *conn = kms_rtp_connection_new (min_port, max_port);
 
   return KMS_I_RTP_CONNECTION (conn);
 }
