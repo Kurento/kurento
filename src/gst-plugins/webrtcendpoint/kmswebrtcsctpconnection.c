@@ -219,14 +219,16 @@ dtls_connected_cb (GstElement * dtlssrtpenc, gpointer self)
 
 KmsWebRtcSctpConnection *
 kms_webrtc_sctp_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
-    const gchar * name)
+    const gchar * name, guint16 min_port, guint16 max_port)
 {
   GObject *obj;
   KmsWebRtcBaseConnection *base_conn;
   KmsWebRtcSctpConnection *conn;
   KmsWebRtcSctpConnectionPrivate *priv;
 
-  obj = g_object_new (KMS_TYPE_WEBRTC_SCTP_CONNECTION, NULL);
+  obj =
+      g_object_new (KMS_TYPE_WEBRTC_SCTP_CONNECTION, "min-port", min_port,
+      "max-port", max_port, NULL);
   base_conn = KMS_WEBRTC_BASE_CONNECTION (obj);
   conn = KMS_WEBRTC_SCTP_CONNECTION (obj);
   priv = conn->priv;

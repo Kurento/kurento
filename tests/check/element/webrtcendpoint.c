@@ -1906,7 +1906,70 @@ GST_START_TEST (test_session_creation)
   g_object_unref (webrtcendpoint);
 }
 
-GST_END_TEST
+GST_END_TEST;
+
+typedef struct _CandidateRangeData
+{
+  guint min_port;
+  guint max_port;
+} CandidateRangeData;
+
+static void
+on_ice_candidate_range (GstElement * self, gchar * sess_id,
+    KmsIceCandidate * candidate, CandidateRangeData * data)
+{
+  guint port = kms_ice_candidate_get_port (candidate);
+
+  fail_if (port > data->max_port);
+  fail_if (port < data->min_port);
+  GST_DEBUG ("Candidate: %s", kms_ice_candidate_get_candidate (candidate));
+  GST_DEBUG ("Port: %u", kms_ice_candidate_get_port (candidate));
+}
+
+GST_START_TEST (test_port_range)
+{
+  GArray *codecs_array;
+  gchar *codecs[] = { "VP8/90000", NULL };
+  gchar *offerer_sess_id;
+  GstSDPMessage *offer;
+  gchar *sdp_str = NULL;
+  gboolean ret = FALSE;
+  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
+  CandidateRangeData offerer_cand_data;
+
+  offerer_cand_data.min_port = 50000;
+  offerer_cand_data.max_port = 55000;
+
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), "min-port", offerer_cand_data.min_port,
+      "max-port", offerer_cand_data.max_port, NULL);
+  g_array_unref (codecs_array);
+
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+
+  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate_range), &offerer_cand_data);
+
+  /* SDP negotiation */
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
+  fail_unless (offer != NULL);
+  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
+  fail_unless (ret);
+
+  gst_sdp_message_free (offer);
+
+  g_object_unref (offerer);
+  g_free (offerer_sess_id);
+}
+
+GST_END_TEST;
 /*
  * End of test cases
  */
@@ -1930,6 +1993,7 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_remb_params);
 
   tcase_add_test (tc_chain, test_session_creation);
+  tcase_add_test (tc_chain, test_port_range);
 
 #ifdef ENABLE_DEBUGGING_TESTS
   tcase_add_test (tc_chain, test_webrtc_data_channel);

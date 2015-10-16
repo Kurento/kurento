@@ -31,7 +31,9 @@ kms_webrtc_base_connection_configure (KmsWebRtcBaseConnection * self,
   self->agent = g_object_ref (agent);
   self->name = g_strdup (name);
 
-  self->stream_id = kms_ice_base_agent_add_stream (agent, self->name);
+  self->stream_id =
+      kms_ice_base_agent_add_stream (agent, self->name, self->min_port,
+      self->max_port);
 
   if (g_strcmp0 (self->stream_id, "0") == 0) {
     GST_ERROR_OBJECT (self, "Cannot add stream for %s.", name);

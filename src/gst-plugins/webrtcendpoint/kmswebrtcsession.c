@@ -109,11 +109,14 @@ kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   KmsWebRtcBaseConnection *conn;
 
+  self->min_port = min_port;
+  self->max_port = max_port;
+
   if (g_strcmp0 (gst_sdp_media_get_proto (media), "DTLS/SCTP") == 0) {
     GST_DEBUG_OBJECT (self, "Create SCTP connection");
     conn =
         KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new
-        (self->agent, self->context, name));
+        (self->agent, self->context, name, min_port, max_port));
   } else {
     GST_DEBUG_OBJECT (self, "Create RTP connection");
     conn =
@@ -131,7 +134,9 @@ kms_webrtc_session_create_rtcp_mux_connection (KmsBaseRtpSession *
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
   KmsWebRtcRtcpMuxConnection *conn;
 
-  conn = kms_webrtc_rtcp_mux_connection_new (self->agent, self->context, name);
+  conn =
+      kms_webrtc_rtcp_mux_connection_new (self->agent, self->context, name,
+      min_port, max_port);
 
   return KMS_I_RTCP_MUX_CONNECTION (conn);
 }
@@ -143,7 +148,9 @@ kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
   KmsWebRtcBundleConnection *conn;
 
-  conn = kms_webrtc_bundle_connection_new (self->agent, self->context, name);
+  conn =
+      kms_webrtc_bundle_connection_new (self->agent, self->context, name,
+      min_port, max_port);
 
   return KMS_I_BUNDLE_CONNECTION (conn);
 }

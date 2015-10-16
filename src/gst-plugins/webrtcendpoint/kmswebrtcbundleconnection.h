@@ -52,7 +52,7 @@ struct _KmsWebRtcBundleConnectionClass
 GType kms_webrtc_bundle_connection_get_type (void);
 
 KmsWebRtcBundleConnection *kms_webrtc_bundle_connection_new (KmsIceBaseAgent * agent,
-    GMainContext * context, const gchar * name);
+    GMainContext * context, const gchar * name, guint16 min_port, guint16 max_port);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_BUNDLE_CONNECTION_H__ */

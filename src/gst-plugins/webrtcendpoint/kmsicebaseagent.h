@@ -89,7 +89,7 @@ struct _KmsIceBaseAgentClass
 
   /* virtual methods */
   char* (*add_stream) (KmsIceBaseAgent * self,
-                      const char *stream_id);
+                      const char *stream_id, guint16 min_port, guint16 max_port);
 
   void (*remove_stream) (KmsIceBaseAgent * self,
                       const char *stream_id);
@@ -132,7 +132,8 @@ struct _KmsIceBaseAgentClass
 const gchar* kms_ice_base_agent_state_to_string (IceState state);
 
 char* kms_ice_base_agent_add_stream (KmsIceBaseAgent * self,
-                                     const char *stream_id);
+                                     const char *stream_id,
+                                     guint16 min_port, guint16 max_port);
 
 void kms_ice_base_agent_remove_stream (KmsIceBaseAgent * self,
                                        const char *stream_id);

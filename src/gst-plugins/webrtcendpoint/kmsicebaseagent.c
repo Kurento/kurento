@@ -69,9 +69,9 @@ kms_ice_base_agent_init (KmsIceBaseAgent * self)
 {
 }
 
-char *
+static char *
 kms_ice_base_agent_add_stream_default (KmsIceBaseAgent * self,
-    const char *stream_id)
+    const char *stream_id, guint16 min_port, guint16 max_port)
 {
   KmsIceBaseAgentClass *klass =
       KMS_ICE_BASE_AGENT_CLASS (G_OBJECT_GET_CLASS (self));
@@ -253,12 +253,13 @@ kms_ice_base_agent_run_agent_default (KmsIceBaseAgent * self)
 }
 
 char *
-kms_ice_base_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id)
+kms_ice_base_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
+    guint16 min_port, guint16 max_port)
 {
   KmsIceBaseAgentClass *klass =
       KMS_ICE_BASE_AGENT_CLASS (G_OBJECT_GET_CLASS (self));
 
-  return klass->add_stream (self, stream_id);
+  return klass->add_stream (self, stream_id, min_port, max_port);
 }
 
 void

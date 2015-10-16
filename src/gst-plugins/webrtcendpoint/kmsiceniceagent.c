@@ -222,7 +222,6 @@ kms_ice_nice_agent_new (GMainContext * context, KmsWebrtcSession * session)
 
   obj = g_object_new (KMS_TYPE_ICE_NICE_AGENT, NULL);
   agent_object = KMS_ICE_NICE_AGENT (obj);
-  agent_object->priv = KMS_ICE_NICE_AGENT_GET_PRIVATE (agent_object);
   agent_object->priv->context = context;
 
   agent_object->priv->agent =
@@ -258,15 +257,26 @@ kms_ice_nice_agent_finalize (GObject * object)
 static void
 kms_ice_nice_agent_init (KmsIceNiceAgent * self)
 {
+  self->priv = KMS_ICE_NICE_AGENT_GET_PRIVATE (self);
 }
 
 static char *
-kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id)
+kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
+    guint16 min_port, guint16 max_port)
 {
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   guint id =
       nice_agent_add_stream (nice_agent->priv->agent, KMS_NICE_N_COMPONENTS);
   char buff[33];
+  int i;
+
+  if (min_port != 0 && max_port != 0 && min_port != 1
+      && max_port != G_MAXUINT16) {
+    for (i = 1; i <= KMS_NICE_N_COMPONENTS; i++) {
+      nice_agent_set_port_range (nice_agent->priv->agent, id, i, min_port,
+          max_port);
+    }
+  }
 
   if (id == 0) {
     GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.", stream_id);
