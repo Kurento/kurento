@@ -32,6 +32,7 @@ import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
+import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_DEFAULT;
 import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_SERVER_DEBUG_DEFAULT;
@@ -192,8 +193,7 @@ public class KurentoMediaServerManager {
 				: KURENTO_KMS_LOGIN_PROP;
 		String kmsPasswdProp = isFake ? FAKE_KMS_PASSWD_PROP
 				: KURENTO_KMS_PASSWD_PROP;
-		String kmsPemProp = isFake ? FAKE_KMS_PEM_PROP
-				: KURENTO_KMS_PASSWD_PROP;
+		String kmsPemProp = isFake ? FAKE_KMS_PEM_PROP : KURENTO_KMS_PEM_PROP;
 		String kmsAutostartProp = isFake ? FAKE_KMS_AUTOSTART_PROP
 				: KMS_AUTOSTART_PROP;
 		String kmsAutostartDefaultProp = isFake ? FAKE_KMS_AUTOSTART_DEFAULT
