@@ -1163,7 +1163,7 @@ public class Browser implements Closeable {
 		}
 
 		// Stop docker containers (if necessary)
-		if (docker != null) {
+		if (scope == BrowserScope.DOCKER) {
 			// Stop and remove hub and nodes
 			String hubContainerName = getProperty(
 					DOCKER_HUB_CONTAINER_NAME_PROPERTY,
