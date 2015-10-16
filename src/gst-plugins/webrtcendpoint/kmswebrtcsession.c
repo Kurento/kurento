@@ -102,7 +102,8 @@ kms_webrtc_session_get_connection (KmsWebrtcSession * self,
 
 static KmsIRtpConnection *
 kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
-    SdpMediaConfig * mconf, const gchar * name)
+    SdpMediaConfig * mconf, const gchar * name, guint16 min_port,
+    guint16 max_port)
 {
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
   GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
@@ -125,7 +126,7 @@ kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
 
 static KmsIRtcpMuxConnection *
 kms_webrtc_session_create_rtcp_mux_connection (KmsBaseRtpSession *
-    base_rtp_sess, const gchar * name)
+    base_rtp_sess, const gchar * name, guint16 min_port, guint16 max_port)
 {
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
   KmsWebRtcRtcpMuxConnection *conn;
@@ -137,7 +138,7 @@ kms_webrtc_session_create_rtcp_mux_connection (KmsBaseRtpSession *
 
 static KmsIBundleConnection *
 kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
-    base_rtp_sess, const gchar * name)
+    base_rtp_sess, const gchar * name, guint16 min_port, guint16 max_port)
 {
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
   KmsWebRtcBundleConnection *conn;

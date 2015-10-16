@@ -56,6 +56,9 @@ struct _KmsWebRtcBaseConnection
   BufferLatencyCallback cb;
   gpointer user_data;
 
+  guint min_port;
+  guint max_port;
+
   gboolean stats_enabled;
 };
 

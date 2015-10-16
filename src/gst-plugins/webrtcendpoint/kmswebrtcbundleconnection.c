@@ -34,7 +34,9 @@ enum
   PROP_0,
   PROP_ADDED,
   PROP_CONNECTED,
-  PROP_IS_CLIENT
+  PROP_IS_CLIENT,
+  PROP_MAX_PORT,
+  PROP_MIN_PORT
 };
 
 struct _KmsWebRtcBundleConnectionPrivate
@@ -207,6 +209,12 @@ kms_webrtc_bundle_connection_set_property (GObject * object, guint prop_id,
     case PROP_CONNECTED:
       self->priv->connected = g_value_get_boolean (value);
       break;
+    case PROP_MIN_PORT:
+      self->parent.min_port = g_value_get_uint (value);
+      break;
+    case PROP_MAX_PORT:
+      self->parent.max_port = g_value_get_uint (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -234,6 +242,12 @@ kms_webrtc_bundle_connection_get_property (GObject * object,
       g_value_set_boolean (value, is_client);
       break;
     }
+    case PROP_MIN_PORT:
+      g_value_set_uint (value, self->parent.min_port);
+      break;
+    case PROP_MAX_PORT:
+      g_value_set_uint (value, self->parent.max_port);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -325,6 +339,9 @@ kms_webrtc_bundle_connection_class_init (KmsWebRtcBundleConnectionClass * klass)
   g_object_class_override_property (gobject_class, PROP_ADDED, "added");
   g_object_class_override_property (gobject_class, PROP_CONNECTED, "connected");
   g_object_class_override_property (gobject_class, PROP_IS_CLIENT, "is-client");
+  g_object_class_override_property (gobject_class, PROP_MAX_PORT, "max-port");
+  g_object_class_override_property (gobject_class, PROP_MIN_PORT, "min-port");
+
 }
 
 static void

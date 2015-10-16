@@ -37,6 +37,9 @@ typedef struct _KmsRtpBaseConnectionClass KmsRtpBaseConnectionClass;
 struct _KmsRtpBaseConnection
 {
   GObject parent;
+
+  guint min_port;
+  guint max_port;
 };
 
 struct _KmsRtpBaseConnectionClass
