@@ -20,7 +20,7 @@
 #define GST_CAT_DEFAULT kmsrtpconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
-#define MAX_RETRIES 4
+#define MAX_RETRIES 10
 
 #define GST_DEFAULT_NAME "kmsrtpconnection"
 
