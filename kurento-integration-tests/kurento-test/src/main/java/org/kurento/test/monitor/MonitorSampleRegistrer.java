@@ -3,60 +3,43 @@ package org.kurento.test.monitor;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
-
-import org.kurento.client.Stats;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MonitorSampleRegistrer {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(MonitorSampleRegistrer.class);
-
-	private Map<Long, MonitorSample> infoMap = new TreeMap<>();
-
-	private NumberFormat formatter = new DecimalFormat("#0.00");
+	private Map<Long, MonitorSample> samples = new TreeMap<>();
 
 	private boolean showLantency = false;
 
 	public void addSample(long time, MonitorSample sample) {
-		infoMap.put(time, sample);
+		samples.put(time, sample);
 	}
 
 	public void writeResults(String csvFile) throws IOException {
 
 		try (PrintWriter pw = new PrintWriter(new FileWriter(csvFile))) {
 
-			String emptyStats = "";
-			List<String> rtcClientHeader = new ArrayList<>();
-			List<String> rtcServerHeader = new ArrayList<>();
+			printKmsProcessHeaders(pw);
+			Map<String, List<String>> headers = printWebRtcHeaders(pw);
 
-			emptyStats = printHeader(pw, emptyStats, rtcClientHeader,
-					rtcServerHeader);
+			pw.println("");
 
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
 					"mm:ss.SSS");
 
-			for (long time : infoMap.keySet()) {
+			for (long time : samples.keySet()) {
 
-				MonitorSample sample = infoMap.get(time);
+				MonitorSample sample = samples.get(time);
 
 				pw.print(simpleDateFormat.format(time) + ",");
 
 				printKmsProcessStats(pw, sample);
-				printPeerConnectionStats(pw, emptyStats, rtcClientHeader,
-						sample);
-				printWebRtcEndpointStats(pw, emptyStats, rtcServerHeader,
-						sample);
+				printWebRtcStats(pw, headers, sample);
 
 				pw.println("");
 
@@ -64,32 +47,32 @@ public class MonitorSampleRegistrer {
 		}
 	}
 
-	private void printKmsProcessStats(PrintWriter pw, MonitorSample sample) {
+	private void printWebRtcStats(PrintWriter pw,
+			Map<String, List<String>> headers, MonitorSample sample) {
 
-		KmsSystemInfo systemInfo = sample.getSystemInfo();
+		pw.print(",");
 
-		double cpu = systemInfo.getCpuPercent();
-		long mem = systemInfo.getMem();
-		double memPercent = systemInfo.getMemPercent();
-		long swap = systemInfo.getSwap();
-		double swapPercent = systemInfo.getSwapPercent();
+		for (Entry<String, List<String>> e : headers.entrySet()) {
 
-		pw.print(sample.getNumClients() + "," + systemInfo.getNumThreadsKms()
-				+ "," + formatter.format(cpu) + "," + mem + ","
-				+ formatter.format(memPercent) + "," + swap + ","
-				+ formatter.format(swapPercent));
+			WebRtcStats stats = sample.getWebRtcStats(e.getKey());
 
-		if (showLantency) {
-			pw.print("," + sample.getLatency() + ","
-					+ sample.getLatencyErrors());
+			if (stats != null) {
+				for (Object value : stats.calculateValues(e.getValue())) {
+					if (value != null) {
+						pw.print(value);
+					}
+					pw.print(",");
+
+				}
+			} else {
+				for (int i = 0; i < e.getValue().size(); i++) {
+					pw.print(",");
+				}
+			}
 		}
-
-		pw.print(systemInfo.getNetInfo().parseNetEntry());
 	}
 
-	private String printHeader(PrintWriter pw, String emptyStats,
-			List<String> rtcClientHeader, List<String> rtcServerHeader) {
-
+	private void printKmsProcessHeaders(PrintWriter pw) {
 		pw.print("time,clients_number,kms_threads_number");
 		pw.print(",cpu_percetage,mem_bytes,mem_percentage");
 		pw.print(",swap_bytes,swap_percentage");
@@ -98,121 +81,69 @@ public class MonitorSampleRegistrer {
 			pw.print(",latency_ms_avg,latency_errors_number");
 		}
 
-		MonitorSample firstSample = infoMap.entrySet().iterator().next()
+		MonitorSample firstSample = samples.entrySet().iterator().next()
 				.getValue();
 
-		pw.print(firstSample.getSystemInfo().getNetInfo().parseHeaderEntry());
+		pw.print(firstSample.getSystemInfo().getNetInfo().createHeader());
 
-		for (MonitorSample info : infoMap.values()) {
-			Map<String, Object> clientRtcStats = info.getClientRtcStats();
-			if (clientRtcStats != null && !clientRtcStats.isEmpty()) {
-				for (String rtcStatsKey : clientRtcStats.keySet()) {
-					if (!rtcClientHeader.contains(rtcStatsKey)) {
-						rtcClientHeader.add(rtcStatsKey);
-						pw.print("," + rtcStatsKey);
-						emptyStats += ",";
-					}
-				}
-			}
+		pw.print(",");
+	}
+
+	private void printKmsProcessStats(PrintWriter pw, MonitorSample sample) {
+
+		KmsSystemInfo systemInfo = sample.getSystemInfo();
+
+		int numClients = sample.getNumClients();
+		int numThreadsKms = systemInfo.getNumThreadsKms();
+		double cpu = systemInfo.getCpuPercent();
+		long mem = systemInfo.getMem();
+		double memPercent = systemInfo.getMemPercent();
+		long swap = systemInfo.getSwap();
+		double swapPercent = systemInfo.getSwapPercent();
+
+		pw.format(
+				Locale.ENGLISH, numClients + "," + numThreadsKms + ",%.2f,"
+						+ mem + ",%.2f," + swap + ",%.2f",
+				cpu, memPercent, swapPercent);
+
+		if (showLantency) {
+			pw.print("," + sample.getLatency() + ","
+					+ sample.getLatencyErrors());
 		}
 
-		for (MonitorSample info : infoMap.values()) {
-			Map<String, Stats> serverRtcStats = info.getServerRtcStats();
-			if (serverRtcStats != null && !serverRtcStats.isEmpty()) {
-				for (String rtcStatsKey : serverRtcStats.keySet()) {
-					Object object = serverRtcStats.get(rtcStatsKey);
-					for (Method method : object.getClass().getMethods()) {
-						if (isGetter(method)) {
-							String keyList = rtcStatsKey + "_"
-									+ getGetterName(method);
-							if (!rtcServerHeader.contains(keyList)) {
-								rtcServerHeader.add(keyList);
-								pw.print("," + keyList);
-								emptyStats += ",";
-							}
+		pw.print(systemInfo.getNetInfo().createEntries());
+	}
+
+	private Map<String, List<String>> printWebRtcHeaders(PrintWriter pw) {
+
+		Map<String, List<String>> headers = new TreeMap<>();
+
+		for (MonitorSample info : samples.values()) {
+
+			Map<String, WebRtcStats> statsMap = info.getStats();
+
+			for (Entry<String, WebRtcStats> stats : statsMap.entrySet()) {
+				List<String> prevHeaders = headers.get(stats.getKey());
+				List<String> newHeaders = stats.getValue().calculateHeaders();
+				if (prevHeaders == null) {
+					headers.put(stats.getKey(), newHeaders);
+				} else {
+					for (String newHeader : newHeaders) {
+						if (!prevHeaders.contains(newHeader)) {
+							prevHeaders.add(newHeader);
 						}
 					}
 				}
 			}
 		}
 
-		pw.println("");
-		return emptyStats;
-	}
-
-	private void printWebRtcEndpointStats(PrintWriter pw, String emptyStats,
-			List<String> rtcServerHeader, MonitorSample sample) {
-
-		Map<String, Stats> serverRtcStats = sample.getServerRtcStats();
-
-		if (serverRtcStats != null) {
-
-			Map<String, Object> rtcServerStatsValues = new HashMap<>();
-
-			if (serverRtcStats != null && !serverRtcStats.isEmpty()) {
-				for (String rtcStatsKey : serverRtcStats.keySet()) {
-					Object object = serverRtcStats.get(rtcStatsKey);
-					for (Method method : object.getClass().getMethods()) {
-						if (isGetter(method)) {
-							Object value = null;
-							try {
-								value = method.invoke(object);
-							} catch (Exception e) {
-								log.error("Exception invoking method", e);
-							}
-
-							String keyList = rtcStatsKey + "_"
-									+ getGetterName(method);
-							rtcServerStatsValues.put(keyList, value);
-						}
-					}
-				}
-
-				for (String rtcHeader : rtcServerHeader) {
-					pw.print(",");
-					if (rtcServerStatsValues.get(rtcHeader) != null) {
-						pw.print(rtcServerStatsValues.get(rtcHeader));
-					}
-				}
-
-			}
-		} else {
-			pw.print(emptyStats);
-		}
-	}
-
-	private void printPeerConnectionStats(PrintWriter pw, String emptyStats,
-			List<String> rtcClientHeader, MonitorSample sample) {
-
-		Map<String, Object> clientRtcStats = sample.getClientRtcStats();
-		if (clientRtcStats != null) {
-			if (clientRtcStats != null && !clientRtcStats.isEmpty()) {
-				for (String key : rtcClientHeader) {
-					pw.print(",");
-					if (clientRtcStats.containsKey(key)) {
-						pw.print(clientRtcStats.get(key));
-					}
-				}
-			} else {
-				pw.print(emptyStats);
+		for (Entry<String, List<String>> bHeaders : headers.entrySet()) {
+			for (String h : bHeaders.getValue()) {
+				pw.print(bHeaders.getKey() + "_" + h + ", ");
 			}
 		}
-	}
 
-	private boolean isGetter(Method method) {
-		return (method.getName().startsWith("get")
-				|| method.getName().startsWith("is"))
-				&& !method.getName().equals("getClass");
-	}
-
-	private String getGetterName(Method method) {
-		String name = method.getName();
-		if (name.startsWith("get")) {
-			name = name.substring(3);
-		} else if (name.startsWith("is")) {
-			name = name.substring(2);
-		}
-		return name;
+		return headers;
 	}
 
 }

@@ -14,9 +14,8 @@
  */
 package org.kurento.test.monitor;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import org.kurento.client.Stats;
 
 /**
  * Monitor results.
@@ -32,15 +31,26 @@ public class MonitorSample {
 	// KMS information
 	private KmsSystemInfo kmsInfo;
 
-	// RTC stats (client and srever)
-	private Map<String, Object> clientRtcStats;
-	private Map<String, Stats> serverRtcStats;
+	// WebRtcStats
+	private Map<String, WebRtcStats> stats = new HashMap<>();
 
 	// Latency
 	private double currentLatency = 0;
 	private int latencyHints = 0;
 	private int latencyErrors = 0;
 	private boolean showLantency = false;
+
+	public void addWebRtcStats(WebRtcStats webRtcStats) {
+		stats.put(webRtcStats.getId(), webRtcStats);
+	}
+
+	public WebRtcStats getWebRtcStats(String id) {
+		return stats.get(id);
+	}
+
+	public Map<String, WebRtcStats> getStats() {
+		return stats;
+	}
 
 	public int getNumClients() {
 		return numClients;
@@ -56,22 +66,6 @@ public class MonitorSample {
 
 	public void setSystemInfo(KmsSystemInfo kmsInfo) {
 		this.kmsInfo = kmsInfo;
-	}
-
-	public Map<String, Object> getClientRtcStats() {
-		return clientRtcStats;
-	}
-
-	public void setClientRtcStats(Map<String, Object> clientRtcStats) {
-		this.clientRtcStats = clientRtcStats;
-	}
-
-	public Map<String, Stats> getServerRtcStats() {
-		return serverRtcStats;
-	}
-
-	public void setServerRtcStats(Map<String, Stats> serverRtcStats) {
-		this.serverRtcStats = serverRtcStats;
 	}
 
 	public double getCurrentLatency() {

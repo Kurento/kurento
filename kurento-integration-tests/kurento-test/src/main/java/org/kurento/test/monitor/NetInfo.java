@@ -56,22 +56,22 @@ public class NetInfo implements Serializable {
 		this.netInfoMap = netInfoMap;
 	}
 
-	public String parseHeaderEntry() {
-		String out = "";
+	public String createHeader() {
+		StringBuilder sb = new StringBuilder();
 		for (String key : netInfoMap.keySet()) {
-			out += ",interface_" + key + "_rx_bytes_sum" + ",interface_" + key
-					+ "_tx_bytes_sum";
+			sb.append(",interface_" + key + "_rx_bytes_sum" + ",interface_"
+					+ key + "_tx_bytes_sum");
 		}
-		return out;
+		return sb.toString();
 	}
 
-	public String parseNetEntry() {
-		String out = "";
+	public String createEntries() {
+		StringBuilder sb = new StringBuilder();
 		for (String key : netInfoMap.keySet()) {
-			out += "," + netInfoMap.get(key).getRxBytes() + ","
-					+ netInfoMap.get(key).getTxBytes();
+			sb.append("," + netInfoMap.get(key).getRxBytes() + ","
+					+ netInfoMap.get(key).getTxBytes());
 		}
-		return out;
+		return sb.toString();
 	}
 
 	class NetInfoEntry implements Serializable {

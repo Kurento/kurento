@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-public class SystemMonitor {
+public class KmsMonitor {
 
 	public static final String MONITOR_PORT_PROP = "kms.monitor.port";
 	public static final int MONITOR_PORT_DEFAULT = 12345;
@@ -44,7 +44,7 @@ public class SystemMonitor {
 	private int kmsPid;
 	private NetInfo initNetInfo;
 
-	public SystemMonitor() {
+	public KmsMonitor() {
 		kmsPid = getKmsPid();
 	}
 
@@ -53,7 +53,7 @@ public class SystemMonitor {
 
 		int monitorPort = args.length > 0 ? Integer.parseInt(args[0])
 				: MONITOR_PORT_DEFAULT;
-		final SystemMonitor monitor = new SystemMonitor();
+		final KmsMonitor monitor = new KmsMonitor();
 
 		ServerSocket server = new ServerSocket(monitorPort);
 		System.out.println("Waiting for incoming messages...");

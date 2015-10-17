@@ -22,8 +22,8 @@ import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
-import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_DEFAULT;
-import static org.kurento.test.monitor.SystemMonitor.MONITOR_PORT_PROP;
+import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_DEFAULT;
+import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_PROP;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -66,7 +66,7 @@ public class SystemMonitorManager {
 	public static final String INBOUND = "serverside_inbound";
 	public static final String OUTBOUND = "serverside_outbound";
 
-	private SystemMonitor monitor;
+	private KmsMonitor monitor;
 	private SshConnection remoteKms;
 	private int monitorPort;
 	private long samplingTime = getProperty(DEFAULT_MONITOR_RATE_PROPERTY,
@@ -93,7 +93,7 @@ public class SystemMonitorManager {
 			remoteKms.createTmpFolder();
 			copyMonitorToRemoteKms();
 			startRemoteProcessMonitor();
-			monitor = new SystemMonitor();
+			monitor = new KmsMonitor();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -116,7 +116,7 @@ public class SystemMonitorManager {
 				startRemoteMonitor(wsUri, kmsLogin, kmsPasswd, kmsPem);
 
 			} else {
-				monitor = new SystemMonitor();
+				monitor = new KmsMonitor();
 			}
 
 		} catch (Exception e) {
@@ -152,7 +152,7 @@ public class SystemMonitorManager {
 	private void copyMonitorToRemoteKms()
 			throws IOException, URISyntaxException {
 
-		copyClassesToRemote(new Class<?>[] { SystemMonitor.class, NetInfo.class,
+		copyClassesToRemote(new Class<?>[] { KmsMonitor.class, NetInfo.class,
 				NetInfo.NetInfoEntry.class, KmsSystemInfo.class });
 	}
 
@@ -180,9 +180,10 @@ public class SystemMonitorManager {
 
 	private void startRemoteProcessMonitor() throws IOException {
 
-		remoteKms.execCommand("sh", "-c", "java -cp " + remoteKms.getTmpFolder()
-				+ " org.kurento.test.monitor.SystemMonitor " + monitorPort
-				+ " > " + remoteKms.getTmpFolder() + "/monitor.log 2>&1");
+		remoteKms.execCommand("sh", "-c",
+				"java -cp " + remoteKms.getTmpFolder() + " "
+						+ KmsMonitor.class.getName() + " " + monitorPort + " > "
+						+ remoteKms.getTmpFolder() + "/monitor.log 2>&1");
 
 		boolean connected = waitForReady();
 
@@ -256,12 +257,17 @@ public class SystemMonitorManager {
 		sample.setCurrentLatency(currentLatency);
 
 		// RTC stats
+		PeerConnectionStats pcStats = null;
 		if (webPage != null) {
-			sample.setClientRtcStats(webPage.getRtcStats());
+			pcStats = webPage.getRtcStats();
 		}
+
+		WebRtcEndpointStats webRtcEpStats = null;
 		if (webRtcEndpoint != null) {
-			sample.setServerRtcStats(getStats(webRtcEndpoint));
+			webRtcEpStats = getStats(webRtcEndpoint);
 		}
+
+		sample.addWebRtcStats(new WebRtcStats("", pcStats, webRtcEpStats));
 
 		// Client number
 		sample.setNumClients(numClients);
@@ -289,7 +295,7 @@ public class SystemMonitorManager {
 		registrer.writeResults(csvFile);
 	}
 
-	private Map<String, Stats> getStats(WebRtcEndpoint webRtcEndpoint) {
+	private WebRtcEndpointStats getStats(WebRtcEndpoint webRtcEndpoint) {
 		Map<String, Stats> stats = new HashMap<>();
 		MediaType[] types = { MediaType.VIDEO, MediaType.AUDIO,
 				MediaType.DATA };
@@ -302,7 +308,7 @@ public class SystemMonitorManager {
 			}
 		}
 
-		return stats;
+		return new WebRtcEndpointStats(stats);
 	}
 
 	private String getRtcStatsType(Class<?> clazz) {

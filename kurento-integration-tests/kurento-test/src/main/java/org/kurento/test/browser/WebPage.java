@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTag;
+import org.kurento.test.monitor.PeerConnectionStats;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -282,7 +283,7 @@ public class WebPage {
 	 * getRtcStats
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> getRtcStats() {
+	public PeerConnectionStats getRtcStats() {
 		Map<String, Object> out = new HashMap<>();
 		try {
 			out = (Map<String, Object>) browser
@@ -296,7 +297,7 @@ public class WebPage {
 			log.warn("Client does not support RTC statistics"
 					+ " (variable rtcStats is not defined)");
 		}
-		return out;
+		return new PeerConnectionStats(out);
 	}
 
 	/*
