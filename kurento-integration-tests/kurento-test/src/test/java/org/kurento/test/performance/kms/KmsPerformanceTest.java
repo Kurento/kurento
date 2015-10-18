@@ -79,7 +79,7 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localChrome();
+		return TestScenario.localChromes(2);
 	}
 
 	@Test
@@ -89,14 +89,20 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 		try {
 
-			WebRtcEndpoint inputOutputEndpoint = new WebRtcEndpoint.Builder(mp)
+			WebRtcEndpoint inputEndpoint = new WebRtcEndpoint.Builder(mp)
 					.build();
 
-			Filter filter = configureMediaProcessing(mp, inputOutputEndpoint);
+			WebRtcEndpoint outputEndpoint = new WebRtcEndpoint.Builder(mp)
+					.build();
 
-			configureBrowserClients(inputOutputEndpoint);
+			Filter filter = configureMediaProcessing(mp, inputEndpoint,
+					outputEndpoint);
 
-			configureFakeClients(mp, inputOutputEndpoint, filter);
+			configureInputBrowserClient(inputEndpoint);
+
+			configureOutputBrowserClient(outputEndpoint);
+
+			configureFakeClients(mp, inputEndpoint, filter);
 
 			// Test time
 			Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_TIME));
@@ -109,7 +115,8 @@ public class KmsPerformanceTest extends PerformanceTest {
 	}
 
 	private Filter configureMediaProcessing(MediaPipeline mp,
-			WebRtcEndpoint webRtcEndpoint) {
+			WebRtcEndpoint inputEndpoint, WebRtcEndpoint outputEndpoint) {
+
 		MediaProcessingType mediaProcessingType;
 
 		Filter filter = null;
@@ -125,8 +132,9 @@ public class KmsPerformanceTest extends PerformanceTest {
 			filter = new GStreamerFilter.Builder(mp,
 					"capsfilter caps=video/x-raw")
 							.withFilterType(FilterType.VIDEO).build();
-			webRtcEndpoint.connect(filter);
-			filter.connect(webRtcEndpoint);
+
+			inputEndpoint.connect(filter);
+			filter.connect(outputEndpoint);
 
 			log.debug(
 					"Pipeline: WebRtcEndpoint -> GStreamerFilter -> WebRtcEndpoint");
@@ -134,8 +142,9 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 		case FILTER:
 			filter = new FaceOverlayFilter.Builder(mp).build();
-			webRtcEndpoint.connect(filter);
-			filter.connect(webRtcEndpoint);
+
+			inputEndpoint.connect(filter);
+			filter.connect(outputEndpoint);
 
 			log.debug(
 					"Pipeline: WebRtcEndpoint -> FaceOverlayFilter -> WebRtcEndpoint");
@@ -143,7 +152,8 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 		case NONE:
 		default:
-			webRtcEndpoint.connect(webRtcEndpoint);
+
+			inputEndpoint.connect(outputEndpoint);
 
 			log.debug("Pipeline: WebRtcEndpoint -> WebRtcEndpoint");
 			break;
@@ -164,17 +174,36 @@ public class KmsPerformanceTest extends PerformanceTest {
 		}
 	}
 
-	private void configureBrowserClients(WebRtcEndpoint webRtcEndpoint)
+	// private void configureBrowserClients(WebRtcEndpoint webRtcEndpoint)
+	// throws InterruptedException {
+	//
+	// getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+	// WebRtcMode.SEND_RCV);
+	//
+	// monitor.incrementNumClients();
+	// getPage().activateClientRtcStats(monitor, "webRtcPeer.peerConnection");
+	// monitor.setWebRtcEndpoint(webRtcEndpoint);
+	// }
+
+	private void configureInputBrowserClient(WebRtcEndpoint inputEndpoint)
 			throws InterruptedException {
 
-		// getPage().subscribeEvents("playing");
+		getPage(0).initWebRtc(inputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
 
-		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.SEND_RCV);
+	}
+
+	private void configureOutputBrowserClient(WebRtcEndpoint inputEndpoint)
+			throws InterruptedException {
+
+		getPage(1).initWebRtc(inputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
 		monitor.incrementNumClients();
+
 		getPage().activateClientRtcStats(monitor, "webRtcPeer.peerConnection");
-		monitor.setWebRtcEndpoint(webRtcEndpoint);
+
+		monitor.setWebRtcEndpoint(inputEndpoint);
 	}
 
 }
