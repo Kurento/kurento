@@ -66,8 +66,6 @@ struct _KmsWebRtcBaseConnectionClass
 {
   GObjectClass parent_class;
 
-  void (*set_certificate_pem_file) (KmsWebRtcBaseConnection * self,
-      const gchar * pem);
   gchar *(*get_certificate_pem) (KmsWebRtcBaseConnection * self);
 
   void (*set_latency_callback) (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
