@@ -36,14 +36,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-import org.kurento.client.MediaType;
-import org.kurento.client.RTCInboundRTPStreamStats;
-import org.kurento.client.RTCOutboundRTPStreamStats;
-import org.kurento.client.Stats;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.ClassPath;
 import org.kurento.test.browser.WebPage;
@@ -63,8 +59,6 @@ public class SystemMonitorManager {
 			.getLogger(SystemMonitorManager.class);
 
 	public static final String OUTPUT_CSV = "/kms-monitor.csv";
-	public static final String INBOUND = "serverside_inbound";
-	public static final String OUTBOUND = "serverside_outbound";
 
 	private KmsMonitor monitor;
 	private SshConnection remoteKms;
@@ -80,9 +74,7 @@ public class SystemMonitorManager {
 
 	private MonitorSampleRegistrer registrer = new MonitorSampleRegistrer();
 
-	// TODO so far only a single web page and WebRtcEndpoint is supported
-	private WebPage webPage;
-	private WebRtcEndpoint webRtcEndpoint;
+	private List<WebRtcClient> clients = new ArrayList<>();
 
 	public SystemMonitorManager(String kmsHost, String kmsLogin,
 			String kmsPem) {
@@ -257,17 +249,9 @@ public class SystemMonitorManager {
 		sample.setCurrentLatency(currentLatency);
 
 		// RTC stats
-		PeerConnectionStats pcStats = null;
-		if (webPage != null) {
-			pcStats = webPage.getRtcStats();
+		for (WebRtcClient client : clients) {
+			sample.addWebRtcStats(client.getWebRtcStats());
 		}
-
-		WebRtcEndpointStats webRtcEpStats = null;
-		if (webRtcEndpoint != null) {
-			webRtcEpStats = getStats(webRtcEndpoint);
-		}
-
-		sample.addWebRtcStats(new WebRtcStats("", pcStats, webRtcEpStats));
 
 		// Client number
 		sample.setNumClients(numClients);
@@ -293,32 +277,6 @@ public class SystemMonitorManager {
 
 	public void writeResults(String csvFile) throws IOException {
 		registrer.writeResults(csvFile);
-	}
-
-	private WebRtcEndpointStats getStats(WebRtcEndpoint webRtcEndpoint) {
-		Map<String, Stats> stats = new HashMap<>();
-		MediaType[] types = { MediaType.VIDEO, MediaType.AUDIO,
-				MediaType.DATA };
-
-		for (MediaType type : types) {
-			Map<String, Stats> trackStats = webRtcEndpoint.getStats(type);
-			for (Stats track : trackStats.values()) {
-				stats.put(type.name().toLowerCase() + "_"
-						+ getRtcStatsType(track.getClass()), track);
-			}
-		}
-
-		return new WebRtcEndpointStats(stats);
-	}
-
-	private String getRtcStatsType(Class<?> clazz) {
-		String type = clazz.getSimpleName();
-		if (clazz.equals(RTCInboundRTPStreamStats.class)) {
-			type = INBOUND;
-		} else if (clazz.equals(RTCOutboundRTPStreamStats.class)) {
-			type = OUTBOUND;
-		}
-		return type;
 	}
 
 	private Object sendMessage(String message) {
@@ -378,12 +336,27 @@ public class SystemMonitorManager {
 		this.latencyHints++;
 	}
 
-	public void setWebPage(WebPage webPage) {
-		this.webPage = webPage;
+	public void addWebRtcClientAndActivate(WebRtcEndpoint webRtcEndpoint,
+			WebPage page, String peerConnectionId) {
+
+		page.activatePeerConnectionStats(peerConnectionId);
+
+		addWebRtcClient("client", webRtcEndpoint, page);
 	}
 
-	public void setWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint) {
-		this.webRtcEndpoint = webRtcEndpoint;
+	public void addWebRtcClientAndActivate(String id,
+			WebRtcEndpoint webRtcEndpoint, WebPage page,
+			String peerConnectionId) {
+
+		page.activatePeerConnectionStats(peerConnectionId);
+
+		addWebRtcClient(id, webRtcEndpoint, page);
+	}
+
+	public void addWebRtcClient(String id, WebRtcEndpoint webRtcEndpoint,
+			WebPage page) {
+
+		this.clients.add(new WebRtcClient(id, webRtcEndpoint, page));
 	}
 
 }

@@ -28,8 +28,10 @@ import org.kurento.client.GStreamerFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
+import org.kurento.test.base.WebRtcConnector;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -54,7 +56,7 @@ public class KmsPerformanceTest extends PerformanceTest {
 			.name().toLowerCase();
 
 	private static final String NUM_CLIENTS_PROPERTY = "numClients";
-	private static final int NUM_CLIENTS_DEFAULT = 1;
+	private static final int NUM_CLIENTS_DEFAULT = 2;
 
 	private static final String TIME_BEETWEEN_CLIENTS_PROPERTY = "timeBetweenClientCreation";
 	private static final int TIME_BEETWEEN_CLIENTS_DEFAULT = 0;
@@ -71,38 +73,47 @@ public class KmsPerformanceTest extends PerformanceTest {
 	private static int TEST_TIME = getProperty(PERFORMANCE_TEST_TIME_PROPERTY,
 			PERFORMANCE_TEST_TIME_DEFAULT);
 
+	private MediaPipeline mp;
+
+	private MediaProcessingType mediaProcessingType;
+
 	public KmsPerformanceTest(TestScenario testScenario) {
 		super(testScenario);
 
 		setMonitorResultPath("./kms-results.csv");
+
+		try {
+			mediaProcessingType = MediaProcessingType
+					.valueOf(MEDIA_PROCESSING.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			mediaProcessingType = MediaProcessingType.NONE;
+		}
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localChromes(2);
+		int numBrowsers = NUM_CLIENTS < 2 ? 2 : 3;
+		return TestScenario.localChromes(numBrowsers);
 	}
 
 	@Test
 	public void testKmsPerformance() throws Exception {
 
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		mp = kurentoClient.createMediaPipeline();
 
 		try {
 
-			WebRtcEndpoint inputEndpoint = new WebRtcEndpoint.Builder(mp)
-					.build();
+			WebRtcEndpoint inputEndpoint = createInputBrowserClient(getPage(0));
 
-			WebRtcEndpoint outputEndpoint = new WebRtcEndpoint.Builder(mp)
-					.build();
+			createOutputBrowserClient("client1", getPage(1), inputEndpoint);
 
-			Filter filter = configureMediaProcessing(mp, inputEndpoint,
-					outputEndpoint);
+			if (NUM_CLIENTS > 1) {
 
-			configureInputBrowserClient(inputEndpoint);
+				configureFakeClients(inputEndpoint);
 
-			configureOutputBrowserClient(outputEndpoint);
+				createOutputBrowserClient("clientN", getPage(2), inputEndpoint);
 
-			configureFakeClients(mp, inputEndpoint, filter);
+			}
 
 			// Test time
 			Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_TIME));
@@ -114,96 +125,81 @@ public class KmsPerformanceTest extends PerformanceTest {
 		}
 	}
 
-	private Filter configureMediaProcessing(MediaPipeline mp,
-			WebRtcEndpoint inputEndpoint, WebRtcEndpoint outputEndpoint) {
-
-		MediaProcessingType mediaProcessingType;
-
-		Filter filter = null;
-		try {
-			mediaProcessingType = MediaProcessingType
-					.valueOf(MEDIA_PROCESSING.toUpperCase());
-		} catch (IllegalArgumentException e) {
-			mediaProcessingType = MediaProcessingType.NONE;
-		}
+	private void connectWithMediaProcessing(WebRtcEndpoint inputEndpoint,
+			WebRtcEndpoint outputEndpoint) {
 
 		switch (mediaProcessingType) {
 		case ENCODER:
-			filter = new GStreamerFilter.Builder(mp,
+			Filter filter = new GStreamerFilter.Builder(mp,
 					"capsfilter caps=video/x-raw")
 							.withFilterType(FilterType.VIDEO).build();
-
 			inputEndpoint.connect(filter);
 			filter.connect(outputEndpoint);
-
 			log.debug(
 					"Pipeline: WebRtcEndpoint -> GStreamerFilter -> WebRtcEndpoint");
 			break;
 
 		case FILTER:
 			filter = new FaceOverlayFilter.Builder(mp).build();
-
 			inputEndpoint.connect(filter);
 			filter.connect(outputEndpoint);
-
 			log.debug(
 					"Pipeline: WebRtcEndpoint -> FaceOverlayFilter -> WebRtcEndpoint");
 			break;
 
 		case NONE:
 		default:
-
 			inputEndpoint.connect(outputEndpoint);
-
 			log.debug("Pipeline: WebRtcEndpoint -> WebRtcEndpoint");
 			break;
 		}
-
-		return filter;
 	}
 
-	private void configureFakeClients(MediaPipeline mp,
-			WebRtcEndpoint webRtcEndpoint, Filter filter) {
+	private void configureFakeClients(WebRtcEndpoint inputWebRtc) {
 
-		int numFakeClients = NUM_CLIENTS - 1;
+		int numFakeClients = NUM_CLIENTS - 2;
 
 		if (numFakeClients > 0) {
 			log.debug("Adding {} fake clients", numFakeClients);
-			addFakeClients(numFakeClients, mp, webRtcEndpoint,
-					TIME_BETEEN_CLIENT_CREATION, monitor, filter.getClass());
+			addFakeClients(numFakeClients, mp, inputWebRtc,
+					TIME_BETEEN_CLIENT_CREATION, monitor,
+					new WebRtcConnector() {
+						public void connect(WebRtcEndpoint inputEndpoint,
+								WebRtcEndpoint outputEndpoint) {
+							connectWithMediaProcessing(inputEndpoint,
+									outputEndpoint);
+						}
+					});
 		}
 	}
 
-	// private void configureBrowserClients(WebRtcEndpoint webRtcEndpoint)
-	// throws InterruptedException {
-	//
-	// getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-	// WebRtcMode.SEND_RCV);
-	//
-	// monitor.incrementNumClients();
-	// getPage().activateClientRtcStats(monitor, "webRtcPeer.peerConnection");
-	// monitor.setWebRtcEndpoint(webRtcEndpoint);
-	// }
-
-	private void configureInputBrowserClient(WebRtcEndpoint inputEndpoint)
+	private WebRtcEndpoint createInputBrowserClient(WebRtcTestPage page)
 			throws InterruptedException {
 
-		getPage(0).initWebRtc(inputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+		WebRtcEndpoint inputEndpoint = new WebRtcEndpoint.Builder(mp).build();
+
+		page.initWebRtc(inputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_ONLY);
 
+		return inputEndpoint;
 	}
 
-	private void configureOutputBrowserClient(WebRtcEndpoint inputEndpoint)
-			throws InterruptedException {
+	private WebRtcEndpoint createOutputBrowserClient(String id,
+			WebRtcTestPage page, WebRtcEndpoint inputWebRtc)
+					throws InterruptedException {
 
-		getPage(1).initWebRtc(inputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+		WebRtcEndpoint outputEndpoint = new WebRtcEndpoint.Builder(mp).build();
+
+		connectWithMediaProcessing(inputWebRtc, outputEndpoint);
+
+		page.initWebRtc(outputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 
 		monitor.incrementNumClients();
 
-		getPage().activateClientRtcStats(monitor, "webRtcPeer.peerConnection");
+		monitor.addWebRtcClientAndActivate(id, outputEndpoint, page,
+				"webRtcPeer.peerConnection");
 
-		monitor.setWebRtcEndpoint(inputEndpoint);
+		return outputEndpoint;
 	}
-
 }

@@ -159,31 +159,13 @@ public class WebPage {
 		return out;
 	}
 
-	// TODO review this
-	/*
-	 * activateRemoteRtcStats
-	 */
-	public void activateRemoteRtcStats(SystemMonitorManager monitor,
-			String peerConnection) {
-		activateClientRtcStats("activateRemoteRtcStats", monitor,
-				peerConnection);
-	}
+	public void activatePeerConnectionStats(String peerConnectionId) {
 
-	/*
-	 * activateLocalRtcStats
-	 */
-	public void activateClientRtcStats(SystemMonitorManager monitor,
-			String peerConnection) {
-		activateClientRtcStats("activateLocalRtcStats", monitor,
-				peerConnection);
-	}
-
-	private void activateClientRtcStats(String jsFunction,
-			SystemMonitorManager monitor, String peerConnection) {
 		try {
-			browser.executeScript("kurentoTest." + jsFunction + "('"
-					+ peerConnection + "');");
-			monitor.setWebPage(this);
+
+			browser.executeScript("kurentoTest." + "activateLocalRtcStats"
+					+ "('" + peerConnectionId + "');");
+
 		} catch (WebDriverException we) {
 			we.printStackTrace();
 
@@ -191,7 +173,7 @@ public class WebPage {
 			// as warning (it is not an error itself)
 			log.warn(
 					"Client does not support RTC statistics (function kurentoTest.{}() not defined)",
-					jsFunction);
+					"activateLocalRtcStats");
 		}
 	}
 

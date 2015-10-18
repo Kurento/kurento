@@ -81,8 +81,10 @@ public class WebRtcTestPage extends WebPage {
 	public void setColorCoordinates(int x, int y) {
 		browser.getWebDriver().findElement(By.id("x")).clear();
 		browser.getWebDriver().findElement(By.id("y")).clear();
-		browser.getWebDriver().findElement(By.id("x")).sendKeys(String.valueOf(x));
-		browser.getWebDriver().findElement(By.id("y")).sendKeys(String.valueOf(y));
+		browser.getWebDriver().findElement(By.id("x"))
+				.sendKeys(String.valueOf(x));
+		browser.getWebDriver().findElement(By.id("y"))
+				.sendKeys(String.valueOf(y));
 		super.setColorCoordinates(x, y);
 	}
 
@@ -125,17 +127,20 @@ public class WebRtcTestPage extends WebPage {
 	/*
 	 * subscribeEventsToVideoTag
 	 */
-	public void subscribeEventsToVideoTag(final String videoTag, final String eventType) {
+	public void subscribeEventsToVideoTag(final String videoTag,
+			final String eventType) {
 		CountDownLatch latch = new CountDownLatch(1);
 
 		final String browserName = browser.getId();
-		log.info("Subscribe event '{}' in video tag '{}' in browser '{}'", eventType, videoTag, browserName);
+		log.info("Subscribe event '{}' in video tag '{}' in browser '{}'",
+				eventType, videoTag, browserName);
 
 		countDownLatchEvents.put(browserName + eventType, latch);
 		addEventListener(videoTag, eventType, new BrowserEventListener() {
 			@Override
 			public void onEvent(String event) {
-				consoleLog(ConsoleLogLevel.INFO, "Event in " + videoTag + " tag: " + event);
+				consoleLog(ConsoleLogLevel.INFO,
+						"Event in " + videoTag + " tag: " + event);
 				countDownLatchEvents.get(browserName + eventType).countDown();
 			}
 		});
@@ -144,27 +149,33 @@ public class WebRtcTestPage extends WebPage {
 	/*
 	 * waitForEvent
 	 */
-	public boolean waitForEvent(final String eventType) throws InterruptedException {
+	public boolean waitForEvent(final String eventType)
+			throws InterruptedException {
 
 		String browserName = browser.getId();
-		log.info("Waiting for event '{}' in browser '{}'", eventType, browserName);
+		log.info("Waiting for event '{}' in browser '{}'", eventType,
+				browserName);
 
 		if (!countDownLatchEvents.containsKey(browserName + eventType)) {
-			log.error("We cannot wait for an event without previous subscription");
+			log.error(
+					"We cannot wait for an event without previous subscription");
 			return false;
 		}
 
-		boolean result = countDownLatchEvents.get(browserName + eventType).await(browser.getTimeout(),
-				TimeUnit.SECONDS);
+		boolean result = countDownLatchEvents.get(browserName + eventType)
+				.await(browser.getTimeout(), TimeUnit.SECONDS);
 
 		// Record local audio when playing event reaches the browser
-		if (eventType.equalsIgnoreCase("playing") && browser.getRecordAudio() > 0) {
+		if (eventType.equalsIgnoreCase("playing")
+				&& browser.getRecordAudio() > 0) {
 			if (browser.isRemote()) {
-				Recorder.recordRemote(GridHandler.getInstance().getNode(browser.getId()),
+				Recorder.recordRemote(
+						GridHandler.getInstance().getNode(browser.getId()),
 						browser.getRecordAudio(), browser.getAudioSampleRate(),
 						browser.getAudioChannel());
 			} else {
-				Recorder.record(browser.getRecordAudio(), browser.getAudioSampleRate(),
+				Recorder.record(browser.getRecordAudio(),
+						browser.getAudioSampleRate(),
 						browser.getAudioChannel());
 			}
 		}
@@ -181,17 +192,22 @@ public class WebRtcTestPage extends WebPage {
 			final BrowserEventListener eventListener) {
 		Thread t = new Thread() {
 			public void run() {
-				browser.executeScript(videoTag + ".addEventListener('" + eventType + "', videoEvent, false);");
+				browser.executeScript(videoTag + ".addEventListener('"
+						+ eventType + "', videoEvent, false);");
 				try {
-					(new WebDriverWait(browser.getWebDriver(), browser.getTimeout()))
-							.until(new ExpectedCondition<Boolean>() {
+					(new WebDriverWait(browser.getWebDriver(),
+							browser.getTimeout()))
+									.until(new ExpectedCondition<Boolean>() {
 						public Boolean apply(WebDriver d) {
-							return d.findElement(By.id("status")).getAttribute("value").equalsIgnoreCase(eventType);
+							return d.findElement(By.id("status"))
+									.getAttribute("value")
+									.equalsIgnoreCase(eventType);
 						}
 					});
 					eventListener.onEvent(eventType);
 				} catch (Throwable t) {
-					log.error("~~~ Exception in addEventListener {}", t.getMessage());
+					log.error("~~~ Exception in addEventListener {}",
+							t.getMessage());
 					t.printStackTrace();
 					this.interrupt();
 					this.stop();
@@ -222,7 +238,8 @@ public class WebRtcTestPage extends WebPage {
 	 */
 	public void consoleLog(ConsoleLogLevel level, String message) {
 		log.info(message);
-		browser.executeScript("console." + level.toString() + "('" + message + "');");
+		browser.executeScript(
+				"console." + level.toString() + "('" + message + "');");
 	}
 
 	/*
@@ -230,8 +247,8 @@ public class WebRtcTestPage extends WebPage {
 	 */
 	public double getCurrentTime() {
 		log.debug("getCurrentTime() called");
-		double currentTime = Double
-				.parseDouble(browser.getWebDriver().findElement(By.id("currentTime")).getAttribute("value"));
+		double currentTime = Double.parseDouble(browser.getWebDriver()
+				.findElement(By.id("currentTime")).getAttribute("value"));
 		log.debug("getCurrentTime() result: {}", currentTime);
 		return currentTime;
 	}
@@ -254,15 +271,19 @@ public class WebRtcTestPage extends WebPage {
 	 * initWebRtc
 	 */
 	@SuppressWarnings("deprecation")
-	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel, final WebRtcMode mode)
-			throws InterruptedException {
+	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
+			final WebRtcChannel channel, final WebRtcMode mode)
+					throws InterruptedException {
 
-		webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
-			@Override
-			public void onEvent(OnIceCandidateEvent event) {
-				browser.executeScript("addIceCandidate('" + JsonUtils.toJsonObject(event.getCandidate()) + "');");
-			}
-		});
+		webRtcEndpoint.addOnIceCandidateListener(
+				new EventListener<OnIceCandidateEvent>() {
+					@Override
+					public void onEvent(OnIceCandidateEvent event) {
+						browser.executeScript("addIceCandidate('"
+								+ JsonUtils.toJsonObject(event.getCandidate())
+								+ "');");
+					}
+				});
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		Thread t = new Thread() {
@@ -306,10 +327,12 @@ public class WebRtcTestPage extends WebPage {
 	/*
 	 * initWebRtcSdpProcessor
 	 */
-	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor, WebRtcChannel channel, WebRtcMode mode) {
+	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor,
+			WebRtcChannel channel, WebRtcMode mode) {
 
 		// Append WebRTC mode (send/receive and audio/video) to identify test
-		addTestName(KurentoServicesTestHelper.getTestCaseName() + "." + KurentoServicesTestHelper.getTestName());
+		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
+				+ KurentoServicesTestHelper.getTestName());
 		appendStringToTitle(mode.toString());
 		appendStringToTitle(channel.toString());
 
@@ -329,7 +352,8 @@ public class WebRtcTestPage extends WebPage {
 		browser.executeScript(mode.getJsFunction());
 
 		// Wait to valid sdpOffer
-		String sdpOffer = (String) browser.executeScriptAndWaitOutput("return sdpOffer;");
+		String sdpOffer = (String) browser
+				.executeScriptAndWaitOutput("return sdpOffer;");
 		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
 
 		log.trace("**** SDP OFFER: {}", sdpOffer);

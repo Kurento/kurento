@@ -118,9 +118,9 @@ public class MonitorSampleRegistrer {
 
 		Map<String, List<String>> headers = new TreeMap<>();
 
-		for (MonitorSample info : samples.values()) {
+		for (MonitorSample sample : samples.values()) {
 
-			Map<String, WebRtcStats> statsMap = info.getStats();
+			Map<String, WebRtcStats> statsMap = sample.getStats();
 
 			for (Entry<String, WebRtcStats> stats : statsMap.entrySet()) {
 				List<String> prevHeaders = headers.get(stats.getKey());

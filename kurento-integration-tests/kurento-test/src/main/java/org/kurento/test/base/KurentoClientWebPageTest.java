@@ -22,10 +22,6 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Rule;
 import org.kurento.client.EventListener;
-import org.kurento.client.FaceOverlayFilter;
-import org.kurento.client.Filter;
-import org.kurento.client.FilterType;
-import org.kurento.client.GStreamerFilter;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.OnIceCandidateEvent;
@@ -138,15 +134,15 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 	public void addFakeClients(int numFakeClients, MediaPipeline mainPipeline,
 			WebRtcEndpoint senderWebRtcEndpoint, long timeBetweenClientMs,
-			SystemMonitorManager monitor, Class<? extends Filter> filter) {
+			SystemMonitorManager monitor, WebRtcConnector connector) {
 		addFakeClients(numFakeClients, -1, mainPipeline, senderWebRtcEndpoint,
-				timeBetweenClientMs, monitor, filter);
+				timeBetweenClientMs, monitor, connector);
 	}
 
 	public void addFakeClients(int numFakeClients, int bandwidht,
-			MediaPipeline mainPipeline, WebRtcEndpoint senderWebRtcEndpoint,
+			MediaPipeline mainPipeline, WebRtcEndpoint inputWebRtc,
 			long timeBetweenClientMs, SystemMonitorManager monitor,
-			Class<? extends Filter> filter) {
+			WebRtcConnector connector) {
 
 		if (fakeKurentoClient == null) {
 			log.warn(
@@ -161,61 +157,46 @@ public class KurentoClientWebPageTest<W extends WebPage>
 					.createMediaPipeline();
 
 			for (int i = 0; i < numFakeClients; i++) {
-				final WebRtcEndpoint fakeSender = new WebRtcEndpoint.Builder(
+				final WebRtcEndpoint fakeOutputWebRtc = new WebRtcEndpoint.Builder(
 						mainPipeline).build();
-				final WebRtcEndpoint fakeReceiver = new WebRtcEndpoint.Builder(
+				final WebRtcEndpoint fakeBrowser = new WebRtcEndpoint.Builder(
 						fakePipeline).build();
 
 				if (bandwidht != -1) {
-					fakeSender.setMaxVideoSendBandwidth(bandwidht);
-					fakeSender.setMinVideoSendBandwidth(bandwidht);
-					fakeReceiver.setMaxVideoRecvBandwidth(bandwidht);
+					fakeOutputWebRtc.setMaxVideoSendBandwidth(bandwidht);
+					fakeOutputWebRtc.setMinVideoSendBandwidth(bandwidht);
+					fakeBrowser.setMaxVideoRecvBandwidth(bandwidht);
 				}
 
-				fakeSender.addOnIceCandidateListener(
+				fakeOutputWebRtc.addOnIceCandidateListener(
 						new EventListener<OnIceCandidateEvent>() {
 							@Override
 							public void onEvent(OnIceCandidateEvent event) {
-								fakeReceiver
+								fakeBrowser
 										.addIceCandidate(event.getCandidate());
 							}
 						});
 
-				fakeReceiver.addOnIceCandidateListener(
+				fakeBrowser.addOnIceCandidateListener(
 						new EventListener<OnIceCandidateEvent>() {
 							@Override
 							public void onEvent(OnIceCandidateEvent event) {
-								fakeSender
+								fakeOutputWebRtc
 										.addIceCandidate(event.getCandidate());
 							}
 						});
 
-				String sdpOffer = fakeReceiver.generateOffer();
-				String sdpAnswer = fakeSender.processOffer(sdpOffer);
-				fakeReceiver.processAnswer(sdpAnswer);
+				String sdpOffer = fakeBrowser.generateOffer();
+				String sdpAnswer = fakeOutputWebRtc.processOffer(sdpOffer);
+				fakeBrowser.processAnswer(sdpAnswer);
 
-				fakeSender.gatherCandidates();
-				fakeReceiver.gatherCandidates();
+				fakeOutputWebRtc.gatherCandidates();
+				fakeBrowser.gatherCandidates();
 
-				Filter filterObj = null;
-				if (filter != null) {
-					// TODO: So far only FaceOverlayFilter and GStreamerFilter
-					// are supported
-					if (filter.equals(FaceOverlayFilter.class)) {
-						filterObj = new FaceOverlayFilter.Builder(fakePipeline)
-								.build();
-					} else {
-						filterObj = new GStreamerFilter.Builder(fakePipeline,
-								"capsfilter caps=video/x-raw")
-										.withFilterType(FilterType.VIDEO)
-										.build();
-					}
-				}
-				if (filterObj != null) {
-					senderWebRtcEndpoint.connect(filterObj);
-					filterObj.connect(fakeSender);
+				if (connector == null) {
+					inputWebRtc.connect(fakeOutputWebRtc);
 				} else {
-					senderWebRtcEndpoint.connect(fakeSender);
+					connector.connect(inputWebRtc, fakeOutputWebRtc);
 				}
 
 				if (monitor != null) {
