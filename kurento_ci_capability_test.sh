@@ -8,8 +8,8 @@ then
   exit 1
 fi
 
-GROUPS=$1
-TEST=$2
+TEST_GROUP=$1
+TEST_PREFIX=$2
 
 # Set constants and environment
 PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
@@ -29,8 +29,8 @@ MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=test"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.scope=docker"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.name=kurento/kurento-media-server-dev:latest"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.scope=docker"
-MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$GROUPS"
-MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST*"
+MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$TEST_GROUP"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_PREFIX*"
 
 # Execute Presenter test
 docker run --rm \
