@@ -174,6 +174,11 @@ public class TestScenario {
 		}
 	}
 
+	public static Collection<Object[]> noBrowsers() {
+		TestScenario test = new TestScenario();
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	/*
 	 * Local browsers
 	 */

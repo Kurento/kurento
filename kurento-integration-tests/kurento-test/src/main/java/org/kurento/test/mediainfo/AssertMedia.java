@@ -46,7 +46,7 @@ public class AssertMedia {
 	}
 
 	public static void assertDuration(String pathToMedia,
-			long expectedDurationMs, long thresholdMs) {
+			double expectedDurationMs, double thresholdMs) {
 		MediaInfo info = new MediaInfo();
 		info.open(new File(pathToMedia));
 		String generalDuration = info.get(MediaInfo.StreamKind.General, 0,
@@ -63,7 +63,7 @@ public class AssertMedia {
 		long generalDurationMs = Long.parseLong(generalDuration);
 		long audioDurationMs = Long.parseLong(audioDuration);
 
-		long difference = Math.abs(generalDurationMs - expectedDurationMs);
+		double difference = Math.abs(generalDurationMs - expectedDurationMs);
 		Assert.assertTrue(
 				"Wrong general duration (expected=" + expectedDurationMs
 						+ " ms, real= " + generalDurationMs + " ms)",
