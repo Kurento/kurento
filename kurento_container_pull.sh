@@ -10,6 +10,7 @@ docker pull mongo:2.6.11
 docker pull selenium/hub:2.47.1
 docker pull selenium/node-chrome:2.47.1
 docker pull selenium/node-firefox:2.47.1
+docker pull softsam/vncrecorder:latest
 
 docker images > container_images.txt
 
