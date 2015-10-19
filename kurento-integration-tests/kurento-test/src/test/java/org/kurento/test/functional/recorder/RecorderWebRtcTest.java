@@ -14,7 +14,6 @@
  */
 package org.kurento.test.functional.recorder;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +49,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>Color of the video should be the expected</li>
  * <li>Browser ends before default timeout</li>
  * <li>Media should be received in the video tag (in the recording)</li>
- * <li>Color of the video should be the expected (in the recording)</li>
  * <li>Ended event should arrive to player (in the recording)</li>
  * <li>Play time should be the expected (in the recording)</li>
  * <li>Codecs should be as expected (in the recording)</li>
@@ -69,7 +67,7 @@ public class RecorderWebRtcTest extends BaseRecorder {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localChrome();
+		return TestScenario.localChromeAndFirefox();
 	}
 
 	@Test
@@ -142,15 +140,12 @@ public class RecorderWebRtcTest extends BaseRecorder {
 
 		// Assertions in recording
 		final String messageAppend = "[played file with media pipeline]";
-		final Color color = CHROME_VIDEOTEST_COLOR;
 		final int playtime = PLAYTIME;
 
 		Assert.assertTrue(
 				"Not received media in the recording (timeout waiting playing event) "
 						+ messageAppend,
 				getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the recorded video should be " + color
-				+ " " + messageAppend, getPage().similarColor(color));
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
