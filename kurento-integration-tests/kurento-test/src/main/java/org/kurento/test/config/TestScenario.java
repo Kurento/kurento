@@ -37,8 +37,6 @@ import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPageType;
 import org.openqa.selenium.Platform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
@@ -51,8 +49,6 @@ import com.google.gson.Gson;
 public class TestScenario {
 
 	public final static String INSTANCES_SEPARATOR = "-";
-
-	private static Logger log = LoggerFactory.getLogger(TestScenario.class);
 
 	private Map<String, Browser> browserMap;
 	private List<URL> urlList;
