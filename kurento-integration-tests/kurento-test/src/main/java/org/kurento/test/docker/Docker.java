@@ -17,8 +17,10 @@ package org.kurento.test.docker;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
@@ -35,9 +37,11 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
 /**
@@ -438,6 +442,46 @@ public class Docker implements Closeable {
 	public String getHostIpForContainers() {
 		return Shell.runAndWait("sh", "-c",
 				"ip route | awk '/docker/ { print $NF }'").trim();
+	}
+
+	public void downloadLogs(String containerName, Path file)
+			throws IOException {
+
+		LogContainerRetrieverCallback loggingCallback = new LogContainerRetrieverCallback(
+				file);
+
+		getClient().logContainerCmd(containerName).withStdErr().withStdOut()
+				.exec(loggingCallback);
+
+		try {
+			loggingCallback.awaitCompletion();
+		} catch (InterruptedException e) {
+			log.warn("Interrupted while downloading logs for container {}",
+					containerName);
+		}
+	}
+
+	public static class LogContainerRetrieverCallback
+			extends LogContainerResultCallback {
+
+		private PrintWriter pw;
+
+		public LogContainerRetrieverCallback(Path file) throws IOException {
+			pw = new PrintWriter(
+					Files.newBufferedWriter(file, StandardCharsets.UTF_8));
+		}
+
+		@Override
+		public void onNext(Frame frame) {
+			pw.append(new String(frame.getPayload()));
+			super.onNext(frame);
+		}
+
+		@Override
+		public void onComplete() {
+			pw.close();
+			super.onComplete();
+		}
 	}
 
 }

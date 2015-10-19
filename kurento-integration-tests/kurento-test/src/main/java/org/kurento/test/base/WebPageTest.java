@@ -54,7 +54,6 @@ import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
-import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,8 +149,9 @@ public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
 			for (Browser browser : testScenario.getBrowserMap().values()) {
 				try {
 					browser.close();
-				} catch (UnreachableBrowserException e) {
-					log.warn(e.getMessage());
+				} catch (Exception e) {
+					log.warn("Exception closing browser {}", browser.getId(),
+							e);
 				}
 			}
 		}

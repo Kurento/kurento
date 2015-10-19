@@ -56,9 +56,11 @@ import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERT
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +68,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.TestConfiguration;
+import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.docker.Docker;
@@ -142,6 +145,9 @@ public class Browser implements Closeable {
 	private String parentTunnel;
 	private List<Map<String, String>> extensions;
 	private String url;
+
+	private String hubContainerName;
+	private String browserContainerName;
 
 	public Browser(Builder builder) {
 		this.builder = builder;
@@ -506,6 +512,20 @@ public class Browser implements Closeable {
 	public void createDriverForDocker(DesiredCapabilities capabilities)
 			throws MalformedURLException {
 
+		// Start docker client for the first time
+		if (docker == null) {
+			docker = Docker.getSingleton();
+		}
+
+		calculateHubContainerName();
+		calculateBrowserContainerName();
+
+		// Start hub (if needed)
+		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
+				DOCKER_HUB_IMAGE_DEFAULT);
+		String hubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
+				getTimeoutMs());
+
 		String nodeImageId = null;
 		String browserName = capabilities.getBrowserName();
 		if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
@@ -523,32 +543,7 @@ public class Browser implements Closeable {
 					+ " is not supported currently for Docker scope");
 		}
 
-		// Start docker client for the first time
-		if (docker == null) {
-			docker = Docker.getSingleton();
-		}
-
-		// Start hub (if needed)
-		String hubContainerName = getProperty(
-				DOCKER_HUB_CONTAINER_NAME_PROPERTY,
-				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
-
-		if (docker.isRunningInContainer()) {
-			hubContainerName = docker.getContainerName() + hubContainerName;
-		}
-
-		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
-				DOCKER_HUB_IMAGE_DEFAULT);
-		String hubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
-				getTimeoutMs());
-
 		// Start nodes: Chrome and Firefox
-		String browserContainerName = getId();
-		if (docker.isRunningInContainer()) {
-			browserContainerName = docker.getContainerName()
-					+ browserContainerName;
-		}
-
 		docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
 
 		// Create RemoteWebDriver
@@ -556,10 +551,39 @@ public class Browser implements Closeable {
 				capabilities);
 	}
 
+	private String calculateBrowserContainerName() {
+
+		if (browserContainerName == null) {
+
+			browserContainerName = getId();
+			if (docker.isRunningInContainer()) {
+				browserContainerName = docker.getContainerName()
+						+ browserContainerName;
+			}
+		}
+
+		return browserContainerName;
+	}
+
+	private String calculateHubContainerName() {
+
+		if (hubContainerName == null) {
+
+			hubContainerName = getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY,
+					DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+
+			if (docker.isRunningInContainer()) {
+				hubContainerName = docker.getContainerName() + hubContainerName;
+			}
+		}
+
+		return hubContainerName;
+	}
+
 	private void createAndWaitRemoteDriver(String driverUrl,
 			DesiredCapabilities capabilities) {
 
-		log.debug("Creating remove driver in hub {}", driverUrl);
+		log.debug("Creating remote driver in hub {}", driverUrl);
 
 		int timeoutSeconds = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
 				SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
@@ -1164,11 +1188,33 @@ public class Browser implements Closeable {
 
 		// Stop docker containers (if necessary)
 		if (scope == BrowserScope.DOCKER) {
-			// Stop and remove hub and nodes
-			String hubContainerName = getProperty(
-					DOCKER_HUB_CONTAINER_NAME_PROPERTY,
-					DOCKER_HUB_CONTAINER_NAME_DEFAULT);
-			docker.stopAndRemoveContainers(hubContainerName, getId());
+
+			downloadLogsForContainers(hubContainerName, browserContainerName);
+
+			docker.stopAndRemoveContainers(hubContainerName,
+					browserContainerName);
+
+		}
+	}
+
+	private void downloadLogsForContainers(String... containers) {
+
+		for (String container : containers) {
+
+			if (docker.existsContainer(container)) {
+
+				log.debug("Downloading logs for container {}", container);
+
+				try {
+					docker.downloadLogs(container,
+							Paths.get(KurentoClientWebPageTest
+									.getDefaultOutputFile(
+											"-" + container + ".log")));
+				} catch (IOException e) {
+					log.warn("Exception writing logs for container {}",
+							container, e);
+				}
+			}
 		}
 	}
 

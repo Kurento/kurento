@@ -119,11 +119,11 @@ public class KurentoClientWebPageTest<W extends WebPage>
 		return getDefaultOutputFile(".webm");
 	}
 
-	public static String getDefaultOutputFile(String preffix) {
+	public static String getDefaultOutputFile(String suffix) {
 		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
 				+ "/" + KurentoServicesTestHelper.getTestCaseName());
 		String testName = KurentoServicesTestHelper.getSimpleTestName();
-		return fileForRecording.getAbsolutePath() + "/" + testName + preffix;
+		return fileForRecording.getAbsolutePath() + "/" + testName + suffix;
 	}
 
 	public void addFakeClients(int numFakeClients, int bandwidht,

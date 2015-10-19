@@ -78,35 +78,25 @@ public class KmsLogOnFailure extends TestWatcher {
 		log.info(
 				"+--------------------------------------------------------------------------------------");
 
-		// Store GstreamerDot for each pipeline
-		if (getKurentoClientManager() != null) {
-			List<MediaPipeline> pipelines = getKurentoClientManager()
-					.getKurentoClient().getServerManager().getPipelines();
+		retrieveGstreamerDots();
 
-			log.debug("Number of media pipelines in kurentoClient: {}",
-					pipelines.size());
+		printKmsLogs();
+	}
 
-			for (MediaPipeline pipeline : pipelines) {
-				String pipelineName = pipeline.getName();
-				log.debug("Saving GstreamerDot for pipeline {}", pipelineName);
-				String gstreamerDotFile = KurentoClientWebPageTest
-						.getDefaultOutputFile("-" + pipelineName);
-
-				try {
-					FileUtils.writeStringToFile(new File(gstreamerDotFile),
-							pipeline.getGstreamerDot());
-				} catch (IOException ioe) {
-					log.error("Exception writing GstreamerDot file", ioe);
-				}
-			}
-		}
+	private void printKmsLogs() {
 
 		if (KurentoServicesTestHelper.printKmsLog()) {
+
 			List<File> logFiles = KurentoServicesTestHelper.getServerLogFiles();
+
 			if (logFiles != null) {
+
 				final String separator = "******************************************************************************";
+
 				for (File logFile : logFiles) {
+
 					if (logFile != null && logFile.exists()) {
+
 						System.err.println(separator);
 						System.err.println(
 								"Log file path: " + logFile.getAbsolutePath());
@@ -126,11 +116,40 @@ public class KmsLogOnFailure extends TestWatcher {
 				}
 			}
 		}
+	}
 
+	private void retrieveGstreamerDots() {
+
+		if (getKurentoClientManager() != null) {
+
+			List<MediaPipeline> pipelines = getKurentoClientManager()
+					.getKurentoClient().getServerManager().getPipelines();
+
+			log.debug("Retrieving GStreamerDots for all pipelines in KMS ({})",
+					pipelines.size());
+
+			for (MediaPipeline pipeline : pipelines) {
+
+				String pipelineName = pipeline.getName();
+				log.debug("Saving GstreamerDot for pipeline {}", pipelineName);
+
+				String gstreamerDotFile = KurentoClientWebPageTest
+						.getDefaultOutputFile("-" + pipelineName);
+
+				try {
+					FileUtils.writeStringToFile(new File(gstreamerDotFile),
+							pipeline.getGstreamerDot());
+
+				} catch (IOException ioe) {
+					log.error("Exception writing GstreamerDot file", ioe);
+				}
+			}
+		}
 	}
 
 	@Override
 	protected void finished(Description description) {
+
 		super.finished(description);
 
 		try {

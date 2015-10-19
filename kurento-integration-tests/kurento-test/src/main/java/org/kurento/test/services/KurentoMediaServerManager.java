@@ -135,35 +135,52 @@ public class KurentoMediaServerManager {
 	}
 
 	public void copyLogs() throws IOException {
+
 		String kmsLogsPath = getKmsLogPath() + "logs";
 		String targetFolder = testDir + testClassName;
 
-		if (remoteKms != null) { // Remote KMS
+		if (isRemote()) {
+
 			log.info("Copying KMS logs from remote host {}",
 					remoteKms.getConnection());
-			List<String> ls = remoteKms.listFiles(kmsLogsPath, true, false);
+			List<String> remoteLogFiles = remoteKms.listFiles(kmsLogsPath, true,
+					false);
 
-			for (String s : ls) {
-				String targetFile = targetFolder + "/" + testMethodName + "-"
-						+ s.substring(s.lastIndexOf("/") + 1);
-				remoteKms.getFile(targetFile, s);
+			for (String remoteLogFile : remoteLogFiles) {
+
+				String localLogFile = targetFolder + "/" + testMethodName + "-"
+						+ remoteLogFile
+								.substring(remoteLogFile.lastIndexOf("/") + 1);
+
+				remoteKms.getFile(localLogFile, remoteLogFile);
+
 				KurentoServicesTestHelper
-						.addServerLogFilePath(new File(targetFile));
+						.addServerLogFilePath(new File(localLogFile));
+				log.debug("Log file: {}", localLogFile);
 			}
-		} else { // Local KMS
+
+		} else {
+
 			log.info("Copying KMS logs from local path {}", kmsLogsPath);
 
-			Collection<File> kmsFiles = FileUtils
+			Collection<File> logFiles = FileUtils
 					.listFiles(new File(kmsLogsPath), null, true);
 
-			for (File f : kmsFiles) {
+			for (File logFile : logFiles) {
+
 				File destFile = new File(targetFolder,
-						testMethodName + "-" + f.getName());
-				FileUtils.copyFile(f, destFile);
+						testMethodName + "-" + logFile.getName());
+
+				FileUtils.copyFile(logFile, destFile);
+
 				KurentoServicesTestHelper.addServerLogFilePath(destFile);
 				log.debug("Log file: {}", destFile);
 			}
 		}
+	}
+
+	private boolean isRemote() {
+		return remoteKms != null;
 	}
 
 	public String getKmsLogPath() {
@@ -537,52 +554,57 @@ public class KurentoMediaServerManager {
 
 		if (docker) {
 
+			// copyLogs();
+
 			Docker.getSingleton().stopAndRemoveContainer(dockerContainerName);
 
 		} else {
 
-			int numKmsProcesses = 0;
-			// Max timeout waiting kms ending: 5 seconds
-			long timeout = System.currentTimeMillis() + 5000;
-			do {
-				// If timeout, break the loop
-				if (System.currentTimeMillis() > timeout) {
-					break;
-				}
+			killKmsProcesses();
 
-				// Sending SIGTERM signal to KMS process
-				kmsSigTerm();
-
-				// Wait 100 msec to order kms termination
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				numKmsProcesses = countKmsProcesses();
-
-			} while (numKmsProcesses > 0);
-
-			if (numKmsProcesses > 0) {
-				// If at this point there is still kms process (after trying to
-				// kill it with SIGTERM during 5 seconds), we send the SIGKILL
-				// signal to the process
-				kmsSigKill();
-			}
-
-			// Copy KMS logs
 			copyLogs();
 
-			// Stop remote KMS
-			if (remoteKms != null) {
+			if (isRemote()) {
 				remoteKms.stop();
 			}
 		}
 	}
 
+	private void killKmsProcesses() throws IOException {
+
+		int numKmsProcesses = 0;
+		// Max timeout waiting kms ending: 5 seconds
+		long timeout = System.currentTimeMillis() + 5000;
+		do {
+			// If timeout, break the loop
+			if (System.currentTimeMillis() > timeout) {
+				break;
+			}
+
+			// Sending SIGTERM signal to KMS process
+			kmsSigTerm();
+
+			// Wait 100 msec to order kms termination
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			numKmsProcesses = countKmsProcesses();
+
+		} while (numKmsProcesses > 0);
+
+		if (numKmsProcesses > 0) {
+			// If at this point there is still kms process (after trying to
+			// kill it with SIGTERM during 5 seconds), we send the SIGKILL
+			// signal to the process
+			kmsSigKill();
+		}
+	}
+
 	private void kmsSigTerm() throws IOException {
 		log.trace("Sending SIGTERM to KMS process");
-		if (remoteKms != null) {
+		if (isRemote()) {
 			String kmsPid = remoteKms.execAndWaitCommandNoBr("cat",
 					remoteKms.getTmpFolder() + "/kms-pid");
 			remoteKms.runAndWaitCommand("kill", kmsPid);
@@ -593,7 +615,7 @@ public class KurentoMediaServerManager {
 
 	private void kmsSigKill() throws IOException {
 		log.trace("Sending SIGKILL to KMS process");
-		if (remoteKms != null) {
+		if (isRemote()) {
 			String kmsPid = remoteKms.execAndWaitCommandNoBr("cat",
 					remoteKms.getTmpFolder() + "/kms-pid");
 			remoteKms.runAndWaitCommand("sh", "-c", "kill -9 " + kmsPid);
@@ -621,7 +643,7 @@ public class KurentoMediaServerManager {
 			// This command counts number of process (given its PID, stored in
 			// kms-pid file)
 
-			if (remoteKms != null) {
+			if (isRemote()) {
 				String kmsPid = remoteKms.execAndWaitCommandNoBr("cat",
 						remoteKms.getTmpFolder() + "/kms-pid");
 				result = Integer.parseInt(remoteKms.execAndWaitCommandNoBr(
