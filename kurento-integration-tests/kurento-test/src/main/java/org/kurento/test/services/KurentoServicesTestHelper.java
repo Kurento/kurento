@@ -82,7 +82,8 @@ public class KurentoServicesTestHelper {
 
 	private static String testCaseName;
 	private static String testName;
-	private static String testDir;
+	private static String testDir = getProperty(PROJECT_PATH_PROP,
+			PROJECT_PATH_DEFAULT) + "/target/surefire-reports/";
 	private static String kmsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String fakeKmsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kcsAutostart = KMS_AUTOSTART_DEFAULT;
@@ -123,8 +124,6 @@ public class KurentoServicesTestHelper {
 		fakeKmsAutostart = getProperty(FAKE_KMS_AUTOSTART_PROP,
 				FAKE_KMS_AUTOSTART_DEFAULT);
 		kmsPrintLog = getProperty(KMS_PRINT_LOG_PROP, KMS_PRINT_LOG_DEFAULT);
-		testDir = getProperty(PROJECT_PATH_PROP, PROJECT_PATH_DEFAULT)
-				+ "/target/surefire-reports/";
 
 		String logFolder = testDir + testCaseName;
 		createFolder(logFolder);

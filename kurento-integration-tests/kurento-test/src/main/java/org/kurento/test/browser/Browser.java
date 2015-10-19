@@ -19,10 +19,18 @@ import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAU
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
 import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY;
+import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_DEFAULT;
+import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
@@ -33,6 +41,8 @@ import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
+import static org.kurento.test.TestConfiguration.SELENIUM_RECORD_DEFAULT;
+import static org.kurento.test.TestConfiguration.SELENIUM_RECORD_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTE_HUB_URL_PROPERTY;
@@ -54,12 +64,16 @@ import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
 
+import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +106,8 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.dockerjava.api.command.CreateContainerCmd;
 
 import io.github.bonigarcia.wdm.ChromeDriverManager;
 
@@ -148,6 +164,7 @@ public class Browser implements Closeable {
 
 	private String hubContainerName;
 	private String browserContainerName;
+	private String vncrecorderContainerName;
 
 	public Browser(Builder builder) {
 		this.builder = builder;
@@ -517,67 +534,153 @@ public class Browser implements Closeable {
 			docker = Docker.getSingleton();
 		}
 
-		calculateHubContainerName();
-		calculateBrowserContainerName();
+		calculateContainerNames();
 
 		// Start hub (if needed)
 		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
 				DOCKER_HUB_IMAGE_DEFAULT);
+
 		String hubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
 				getTimeoutMs());
 
-		String nodeImageId = null;
-		String browserName = capabilities.getBrowserName();
-		if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
-			// Chrome
-			nodeImageId = getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY,
-					DOCKER_NODE_CHROME_IMAGE_DEFAULT);
+		boolean record = getProperty(SELENIUM_RECORD_PROPERTY,
+				SELENIUM_RECORD_DEFAULT);
 
-		} else if (browserName
-				.equals(DesiredCapabilities.firefox().getBrowserName())) {
-			// Firefox
-			nodeImageId = getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY,
-					DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
-		} else {
-			throw new RuntimeException("Browser " + browserName
-					+ " is not supported currently for Docker scope");
-		}
+		String nodeImageId = calculateBrowserImageName(capabilities, record);
 
 		// Start nodes: Chrome and Firefox
 		docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
+
+		if (record) {
+
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			createVncRecorderContainer();
+		}
 
 		// Create RemoteWebDriver
 		createAndWaitRemoteDriver("http://" + hubIp + ":4444/wd/hub",
 				capabilities);
 	}
 
-	private String calculateBrowserContainerName() {
+	private void createVncRecorderContainer() {
 
-		if (browserContainerName == null) {
+		try {
 
-			browserContainerName = getId();
-			if (docker.isRunningInContainer()) {
-				browserContainerName = docker.getContainerName()
-						+ browserContainerName;
+			String vncrecordImageId = getProperty(
+					DOCKER_VNCRECORDER_IMAGE_PROPERTY,
+					DOCKER_VNCRECORDER_IMAGE_DEFAULT);
+
+			if (!docker.existsContainer(vncrecorderContainerName)) {
+
+				String secretFile = createSecretFile();
+
+				docker.pullImageIfNecessary(vncrecordImageId);
+
+				log.debug("Creating container {}", vncrecorderContainerName);
+
+				String browserIp = docker.inspectContainer(browserContainerName)
+						.getNetworkSettings().getIpAddress();
+
+				String videoFile = Paths
+						.get(KurentoClientWebPageTest
+								.getDefaultOutputFile("-record.flv"))
+						.toAbsolutePath().toString();
+
+				CreateContainerCmd createContainerCmd = docker.getClient()
+						.createContainerCmd(vncrecordImageId)
+						.withName(vncrecorderContainerName).withCmd("-o",
+								videoFile, "-P", secretFile, browserIp, "5900");
+
+				docker.mountDefaultFolders(createContainerCmd);
+
+				createContainerCmd.exec();
+
+				docker.startContainer(vncrecorderContainerName);
+
+				log.debug("Container {} started...", vncrecorderContainerName);
+
+			} else {
+				log.debug("Container {} already exists",
+						vncrecorderContainerName);
 			}
-		}
 
-		return browserContainerName;
+		} catch (Exception e) {
+			log.warn("Exception creating vncRecorder container");
+		}
 	}
 
-	private String calculateHubContainerName() {
+	private String createSecretFile() throws IOException {
+		Path secretFile = Paths
+				.get(KurentoServicesTestHelper.getTestDir() + "vnc-passwd");
 
-		if (hubContainerName == null) {
-
-			hubContainerName = getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY,
-					DOCKER_HUB_CONTAINER_NAME_DEFAULT);
-
-			if (docker.isRunningInContainer()) {
-				hubContainerName = docker.getContainerName() + hubContainerName;
-			}
+		try (BufferedWriter bw = Files.newBufferedWriter(secretFile,
+				StandardCharsets.UTF_8)) {
+			bw.write("secret");
 		}
 
-		return hubContainerName;
+		return secretFile.toAbsolutePath().toString();
+	}
+
+	private String calculateBrowserImageName(DesiredCapabilities capabilities,
+			boolean record) {
+
+		String browserName = capabilities.getBrowserName();
+
+		if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
+
+			// Chrome
+			if (record) {
+				return getProperty(DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY,
+						DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT);
+			} else {
+				return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY,
+						DOCKER_NODE_CHROME_IMAGE_DEFAULT);
+			}
+
+		} else if (browserName
+				.equals(DesiredCapabilities.firefox().getBrowserName())) {
+
+			// Firefox
+			if (record) {
+				return getProperty(DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY,
+						DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT);
+			} else {
+				return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY,
+						DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
+			}
+
+		} else {
+			throw new RuntimeException("Browser " + browserName
+					+ " is not supported currently for Docker scope");
+		}
+	}
+
+	private void calculateContainerNames() {
+
+		hubContainerName = getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY,
+				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+
+		browserContainerName = getId();
+
+		vncrecorderContainerName = browserContainerName + "-"
+				+ getProperty(DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY,
+						DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
+
+		if (docker.isRunningInContainer()) {
+
+			String containerName = docker.getContainerName();
+
+			browserContainerName = containerName + "-" + browserContainerName;
+			hubContainerName = containerName + "-" + hubContainerName;
+			vncrecorderContainerName = containerName + "-"
+					+ vncrecorderContainerName;
+		}
 	}
 
 	private void createAndWaitRemoteDriver(String driverUrl,
@@ -1189,10 +1292,14 @@ public class Browser implements Closeable {
 		// Stop docker containers (if necessary)
 		if (scope == BrowserScope.DOCKER) {
 
-			downloadLogsForContainers(hubContainerName, browserContainerName);
+			// TODO Stop recording
+			// docker kill -s INT vncrecorder
+
+			downloadLogsForContainers(hubContainerName, browserContainerName,
+					vncrecorderContainerName);
 
 			docker.stopAndRemoveContainers(hubContainerName,
-					browserContainerName);
+					browserContainerName, vncrecorderContainerName);
 
 		}
 	}

@@ -89,9 +89,15 @@ public class TestConfiguration {
 
 	public static final String SELENIUM_SCOPE_PROPERTY = "test.selenium.scope";
 
+	public static final String SELENIUM_RECORD_PROPERTY = "test.selenium.record";
+	public static final boolean SELENIUM_RECORD_DEFAULT = true;
+
 	// Docker
 	public static final String DOCKER_HUB_IMAGE_PROPERTY = "docker.hub.image";
 	public static final String DOCKER_HUB_IMAGE_DEFAULT = "selenium/hub:2.47.1";
+
+	public static final String DOCKER_VNCRECORDER_IMAGE_PROPERTY = "docker.vncrecorder.image";
+	public static final String DOCKER_VNCRECORDER_IMAGE_DEFAULT = "softsam/vncrecorder";
 
 	public static final String DOCKER_NODE_CHROME_IMAGE_PROPERTY = "docker.node.chrome.image";
 	public static final String DOCKER_NODE_CHROME_IMAGE_DEFAULT = "selenium/node-chrome:2.47.1";
@@ -99,8 +105,17 @@ public class TestConfiguration {
 	public static final String DOCKER_NODE_FIREFOX_IMAGE_PROPERTY = "docker.node.firefox.image";
 	public static final String DOCKER_NODE_FIREFOX_IMAGE_DEFAULT = "selenium/node-firefox:2.47.1";
 
+	public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY = "docker.node.chrome-debug.image";
+	public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT = "selenium/node-chrome-debug:2.47.1";
+
+	public static final String DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY = "docker.node.firefox-debug.image";
+	public static final String DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT = "selenium/node-firefox-debug:2.47.1";
+
 	public static final String DOCKER_HUB_CONTAINER_NAME_PROPERTY = "docker.hub.container.name";
 	public static final String DOCKER_HUB_CONTAINER_NAME_DEFAULT = "hub";
+
+	public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY = "docker.vncrecorder.container.name";
+	public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT = "vncrecorder";
 
 	// Parallel browsers
 	public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";

@@ -192,20 +192,11 @@ public class Docker implements Closeable {
 	}
 
 	public void createContainer(String imageId, String containerName,
-			boolean mountTestFiles, String... env) {
+			boolean mountFolders, String... env) {
 
 		if (!existsContainer(containerName)) {
-			if (!existsImage(imageId)) {
-				log.info(
-						"Pulling Docker image {} ... please be patient until the process finishes",
-						imageId);
-				getClient().pullImageCmd(imageId)
-						.exec(new PullImageResultCallback()).awaitSuccess();
-				log.info("Image {} downloaded", imageId);
 
-			} else {
-				log.debug("Image {} already exists", imageId);
-			}
+			pullImageIfNecessary(imageId);
 
 			log.debug("Creating container {}", containerName);
 
@@ -213,15 +204,8 @@ public class Docker implements Closeable {
 					.createContainerCmd(imageId).withName(containerName)
 					.withEnv(env);
 
-			if (mountTestFiles && isRunningInContainer()) {
-				createContainerCmd
-						.withVolumesFrom(new VolumesFrom(getContainerId()));
-			} else {
-				String testFilesPath = KurentoServicesTestHelper
-						.getTestFilesPath();
-				Volume volume = new Volume(testFilesPath);
-				createContainerCmd.withVolumes(volume).withBinds(
-						new Bind(testFilesPath, volume, AccessMode.ro));
+			if (mountFolders) {
+				mountDefaultFolders(createContainerCmd);
 			}
 
 			createContainerCmd.exec();
@@ -230,6 +214,44 @@ public class Docker implements Closeable {
 
 		} else {
 			log.debug("Container {} already exists", containerName);
+		}
+	}
+
+	public void mountDefaultFolders(CreateContainerCmd createContainerCmd) {
+		if (isRunningInContainer()) {
+
+			createContainerCmd
+					.withVolumesFrom(new VolumesFrom(getContainerId()));
+
+		} else {
+
+			String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
+			Volume testFilesVolume = new Volume(testFilesPath);
+
+			String workspacePath = Paths
+					.get(KurentoServicesTestHelper.getTestDir())
+					.toAbsolutePath().toString();
+			Volume workspaceVolume = new Volume(workspacePath);
+
+			createContainerCmd.withVolumes(testFilesVolume)
+					.withBinds(new Bind(testFilesPath, testFilesVolume,
+							AccessMode.ro))
+					.withVolumes(workspaceVolume).withBinds(new Bind(
+							workspacePath, workspaceVolume, AccessMode.rw));
+		}
+	}
+
+	public void pullImageIfNecessary(String imageId) {
+		if (!existsImage(imageId)) {
+			log.info(
+					"Pulling Docker image {} ... please be patient until the process finishes",
+					imageId);
+			getClient().pullImageCmd(imageId)
+					.exec(new PullImageResultCallback()).awaitSuccess();
+			log.info("Image {} downloaded", imageId);
+
+		} else {
+			log.debug("Image {} already exists", imageId);
 		}
 	}
 

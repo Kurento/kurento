@@ -66,8 +66,6 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 		startHttpServer();
 
-		super.setupKurentoTest();
-
 		try {
 
 			kurentoClientManager = new KurentoClientManager(testName,
@@ -78,6 +76,8 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 			log.info(
 					"--------------- Started KurentoClientWebPageTest ----------------");
+
+			super.setupKurentoTest();
 
 		} catch (IOException e) {
 			throw new KurentoException(

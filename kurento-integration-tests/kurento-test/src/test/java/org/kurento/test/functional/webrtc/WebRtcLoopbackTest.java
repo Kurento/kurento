@@ -59,6 +59,7 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 
 	@Test
 	public void testWebRtcLoopbackChrome() throws InterruptedException {
+
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -79,8 +80,9 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 				"The color of the video should be green (RGB #008700)",
 				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
