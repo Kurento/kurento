@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Test autostart KMS
+
+if [ $# -lt 2 ]
+then
+  echo "Usage: $0 <groups> <test>"
+  exit 1
+fi
+
+GROUPS=$1
+TEST=$2
+
+# Set constants and environment
+PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+
+# Create test files container
+TEST_FILES_NAME="$BUILD_TAG-TEST-FILES"
+docker create \
+	--name $TEST_FILES_NAME \
+    -v /var/lib/test-files \
+     kurento/test-files:1.0.0 /bin/true
+
+# Craete Integration container
+TEST_HOME=/opt/kurento-java
+
+MAVEN_OPTS=""
+MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=test"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.scope=docker"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.name=kurento/kurento-media-server-dev:latest"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.scope=docker"
+MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$GROUPS"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST*"
+
+# Execute Presenter test
+docker run --rm \
+  --name $BUILD_TAG-INTEGRATION \
+  --volumes-from $TEST_FILES_NAME \
+  -v $MAVEN_SETTINGS:/opt/kurento-settings.xml \
+  -v $KURENTO_SCRIPTS_HOME:/opt/adm-scripts \
+  -v $WORKSPACE:$TEST_HOME \
+  -e "WORKSPACE=$TEST_HOME" \
+  -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
+  -e "MAVEN_OPTS=$MAVEN_OPTS" \
+  -w $TEST_HOME \
+  -u "root" \
+  kurento/dev-integration:jdk-8-node-0.12 \
+  /opt/adm-scripts/kurento_capability_test.sh kurento-integration-tests/kurento-test || status=$?
+
+exit $status
