@@ -39,9 +39,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.ClassPath;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
@@ -74,7 +76,7 @@ public class SystemMonitorManager {
 
 	private MonitorSampleRegistrer registrer = new MonitorSampleRegistrer();
 
-	private List<WebRtcClient> clients = new ArrayList<>();
+	private List<WebRtcClient> clients = new CopyOnWriteArrayList<>();
 
 	public SystemMonitorManager(String kmsHost, String kmsLogin,
 			String kmsPem) {
@@ -218,7 +220,7 @@ public class SystemMonitorManager {
 						registerSample(startTime);
 						Thread.sleep(samplingTime);
 					}
-				} catch (InterruptedException ie) {
+				} catch (InterruptedException | KurentoException re) {
 					log.warn(
 							"Monitoring thread interrupted. Finishing execution");
 				} catch (Exception e) {
@@ -336,19 +338,29 @@ public class SystemMonitorManager {
 		this.latencyHints++;
 	}
 
-	public void addWebRtcClientAndActivate(WebRtcEndpoint webRtcEndpoint,
-			WebPage page, String peerConnectionId) {
-
-		page.activatePeerConnectionStats(peerConnectionId);
-
-		addWebRtcClient("client", webRtcEndpoint, page);
+	public void addWebRtcClientAndActivateStats(String id,
+			WebRtcEndpoint webRtcEndpoint, WebPage page,
+			String peerConnectionId) {
+		addWebRtcClientAndActivateInboundStats(id, webRtcEndpoint, page,
+				peerConnectionId);
+		addWebRtcClientAndActivateOutboundStats(id, webRtcEndpoint, page,
+				peerConnectionId);
 	}
 
-	public void addWebRtcClientAndActivate(String id,
+	public void addWebRtcClientAndActivateOutboundStats(String id,
 			WebRtcEndpoint webRtcEndpoint, WebPage page,
 			String peerConnectionId) {
 
-		page.activatePeerConnectionStats(peerConnectionId);
+		page.activatePeerConnectionOutboundStats(peerConnectionId);
+
+		addWebRtcClient(id, webRtcEndpoint, page);
+	}
+
+	public void addWebRtcClientAndActivateInboundStats(String id,
+			WebRtcEndpoint webRtcEndpoint, WebPage page,
+			String peerConnectionId) {
+
+		page.activatePeerConnectionInboundStats(peerConnectionId);
 
 		addWebRtcClient(id, webRtcEndpoint, page);
 	}

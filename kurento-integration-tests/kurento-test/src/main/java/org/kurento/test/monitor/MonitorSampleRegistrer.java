@@ -50,8 +50,6 @@ public class MonitorSampleRegistrer {
 	private void printWebRtcStats(PrintWriter pw,
 			Map<String, List<String>> headers, MonitorSample sample) {
 
-		pw.print(",");
-
 		for (Entry<String, List<String>> e : headers.entrySet()) {
 
 			WebRtcStats stats = sample.getWebRtcStats(e.getKey());
@@ -59,10 +57,10 @@ public class MonitorSampleRegistrer {
 			if (stats != null) {
 				for (Object value : stats.calculateValues(e.getValue())) {
 					if (value != null) {
-						pw.print(value);
+						pw.print("," + value);
+					} else {
+						pw.print(",");
 					}
-					pw.print(",");
-
 				}
 			} else {
 				for (int i = 0; i < e.getValue().size(); i++) {
@@ -86,7 +84,6 @@ public class MonitorSampleRegistrer {
 
 		pw.print(firstSample.getSystemInfo().getNetInfo().createHeader());
 
-		pw.print(",");
 	}
 
 	private void printKmsProcessStats(PrintWriter pw, MonitorSample sample) {
@@ -139,7 +136,7 @@ public class MonitorSampleRegistrer {
 
 		for (Entry<String, List<String>> bHeaders : headers.entrySet()) {
 			for (String h : bHeaders.getValue()) {
-				pw.print(bHeaders.getKey() + "_" + h + ", ");
+				pw.print("," + bHeaders.getKey() + "_" + h);
 			}
 		}
 

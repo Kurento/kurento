@@ -12,8 +12,8 @@ import org.kurento.test.browser.WebPage;
 
 public class WebRtcClient {
 
-	public static final String INBOUND = "serverside_inbound";
-	public static final String OUTBOUND = "serverside_outbound";
+	public static final String INBOUND = "webrtcendpoint_inbound";
+	public static final String OUTBOUND = "webrtcendpoint_outbound";
 
 	private String id;
 	private WebPage webPage;

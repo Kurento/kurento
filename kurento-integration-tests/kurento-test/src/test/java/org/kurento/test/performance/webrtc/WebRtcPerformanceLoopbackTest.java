@@ -114,9 +114,10 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 					getPage(name).initWebRtc(webRtcEndpoint,
 							WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
 
-					// TODO: review this
-					// getPage(name).activateRemoteRtcStats(monitor,
-					// "webRtcPeer.peerConnection");
+					monitor.addWebRtcClientAndActivateStats(
+							getPage(name).getBrowser().getId(), webRtcEndpoint,
+							getPage(name), "webRtcPeer.peerConnection");
+
 					getPage(name).checkLatencyUntil(monitor, endTimeMillis);
 
 				} catch (Throwable e) {

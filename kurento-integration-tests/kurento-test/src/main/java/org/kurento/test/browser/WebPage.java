@@ -159,12 +159,29 @@ public class WebPage {
 		return out;
 	}
 
-	public void activatePeerConnectionStats(String peerConnectionId) {
+	/*
+	 * activatePeerConnectionInboundStats
+	 */
+	public void activatePeerConnectionInboundStats(String peerConnectionId) {
+		activatePeerConnectionStats("activateInboundRtcStats",
+				peerConnectionId);
+	}
+
+	/*
+	 * activatePeerConnectionOutboundStats
+	 */
+	public void activatePeerConnectionOutboundStats(String peerConnectionId) {
+		activatePeerConnectionStats("activateOutboundRtcStats",
+				peerConnectionId);
+	}
+
+	private void activatePeerConnectionStats(String jsFunction,
+			String peerConnectionId) {
 
 		try {
 
-			browser.executeScript("kurentoTest." + "activateLocalRtcStats"
-					+ "('" + peerConnectionId + "');");
+			browser.executeScript("kurentoTest." + jsFunction + "('"
+					+ peerConnectionId + "');");
 
 		} catch (WebDriverException we) {
 			we.printStackTrace();
@@ -271,7 +288,8 @@ public class WebPage {
 			out = (Map<String, Object>) browser
 					.executeScript("return kurentoTest.rtcStats;");
 
-			log.debug(">>>>>>>>>> kurentoTest.rtcStats {}", out);
+			log.debug(">>>>>>>>>> kurentoTest.rtcStats {} {}", browser.getId(),
+					out);
 
 		} catch (WebDriverException we) {
 			// If client is not ready to gather rtc statistics, we just log it

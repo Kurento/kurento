@@ -114,6 +114,9 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		getPresenter().subscribeLocalEvents("playing");
 		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
+		monitor.addWebRtcClientAndActivateOutboundStats(
+				getPresenter().getBrowser().getId(), masterWebRtcEP,
+				getPresenter(), "webRtcPeer.peerConnection");
 
 		// Viewers
 		ExecutorService exec = Executors.newFixedThreadPool(numViewers);
@@ -138,8 +141,10 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						getViewer(i).initWebRtc(viewerWebRtcEPs[i],
 								WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 						if (monitor != null) {
-							monitor.addWebRtcClientAndActivate(viewerWebRtcEPs[i],
-									getViewer(i), "webRtcPeer.peerConnection");
+							monitor.addWebRtcClientAndActivateInboundStats(
+									getViewer(i).getBrowser().getId(),
+									viewerWebRtcEPs[i], getViewer(i),
+									"webRtcPeer.peerConnection");
 						}
 
 						// Latency assessment

@@ -181,6 +181,9 @@ public class KmsPerformanceTest extends PerformanceTest {
 		page.initWebRtc(inputEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_ONLY);
 
+		monitor.addWebRtcClientAndActivateOutboundStats("sender", inputEndpoint,
+				page, "webRtcPeer.peerConnection");
+
 		return inputEndpoint;
 	}
 
@@ -197,7 +200,7 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 		monitor.incrementNumClients();
 
-		monitor.addWebRtcClientAndActivate(id, outputEndpoint, page,
+		monitor.addWebRtcClientAndActivateInboundStats(id, outputEndpoint, page,
 				"webRtcPeer.peerConnection");
 
 		return outputEndpoint;
