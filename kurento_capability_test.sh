@@ -1,15 +1,5 @@
 #!/bin/bash -x
 
-cleanup() {
-  echo "Clean capability test before exit"
-  if [ "$RECORD_TEST" == "true" ] ; then
-    echo "********************* Stop recording"
-    FFMPEG_PID=$(cat ffmpeg.pid 2>/dev/null)
-    [ -n "$FFMPEG_PID" ] && kill $FFMPEG_PID && wait $FFMPEG_PID
-  fi
-}
-
-trap cleanup EXIT
 echo "##################### EXECUTE: capability-test #####################"
 # This tool uses a set of variables expected to be exported by tester
 # PROJECT_PATH string
@@ -44,12 +34,6 @@ fi
 mavenOpts="$mavenOpts -Dkurento.workspace=$WORKSPACE"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
 mavenOpts="$mavenOpts -U"
-
-if [ "$RECORD_TEST" = "true" ]; then
-  echo "***************** Recording session to  $WORKSPACE/session-recording.mp4"
-  ffmpeg -video_size 800x600 -framerate 2 -f x11grab -i :1.0+0,0 $WORKSPACE/session-recording.mp4 &
-  echo $! > ffmpeg.pid
-fi
 
 # Compile kurento-java if directory is present
 [ -d $WORKSPACE/kurento-java ] &&  \
