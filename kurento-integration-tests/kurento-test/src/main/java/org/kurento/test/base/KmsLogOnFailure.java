@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.junit.internal.runners.model.MultipleFailureException;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -122,27 +123,34 @@ public class KmsLogOnFailure extends TestWatcher {
 
 		if (getKurentoClientManager() != null) {
 
-			List<MediaPipeline> pipelines = getKurentoClientManager()
-					.getKurentoClient().getServerManager().getPipelines();
+			try {
+				List<MediaPipeline> pipelines = getKurentoClientManager()
+						.getKurentoClient().getServerManager().getPipelines();
 
-			log.debug("Retrieving GStreamerDots for all pipelines in KMS ({})",
-					pipelines.size());
+				log.debug(
+						"Retrieving GStreamerDots for all pipelines in KMS ({})",
+						pipelines.size());
 
-			for (MediaPipeline pipeline : pipelines) {
+				for (MediaPipeline pipeline : pipelines) {
 
-				String pipelineName = pipeline.getName();
-				log.debug("Saving GstreamerDot for pipeline {}", pipelineName);
+					String pipelineName = pipeline.getName();
+					log.debug("Saving GstreamerDot for pipeline {}",
+							pipelineName);
 
-				String gstreamerDotFile = KurentoClientWebPageTest
-						.getDefaultOutputFile("-" + pipelineName);
+					String gstreamerDotFile = KurentoClientWebPageTest
+							.getDefaultOutputFile("-" + pipelineName);
 
-				try {
-					FileUtils.writeStringToFile(new File(gstreamerDotFile),
-							pipeline.getGstreamerDot());
+					try {
+						FileUtils.writeStringToFile(new File(gstreamerDotFile),
+								pipeline.getGstreamerDot());
 
-				} catch (IOException ioe) {
-					log.error("Exception writing GstreamerDot file", ioe);
+					} catch (IOException ioe) {
+						log.error("Exception writing GstreamerDot file", ioe);
+					}
 				}
+			} catch (WebSocketException e) {
+				log.warn("WebSocket exception while reading existing pipelines",
+						e);
 			}
 		}
 	}
