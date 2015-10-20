@@ -170,7 +170,7 @@ public class TestConfiguration {
 			"127.0.0.1", 5672);
 
 	// Binary test files
-	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";
+	public static final String KURENTO_TESTFILES_PROP = "test.files";
 	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
 
 	// KCS properties
