@@ -78,6 +78,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
@@ -166,6 +167,8 @@ public class Browser implements Closeable {
 	private String browserContainerName;
 	private String vncrecorderContainerName;
 
+	private static AtomicInteger numBrowsers = new AtomicInteger();
+
 	public Browser(Builder builder) {
 		this.builder = builder;
 		this.scope = builder.scope;
@@ -203,6 +206,8 @@ public class Browser implements Closeable {
 	public void init() {
 
 		log.info("Starting browser {}", getId());
+
+		numBrowsers.incrementAndGet();
 
 		Class<? extends WebDriver> driverClass = browserType.getDriverClass();
 
@@ -1315,17 +1320,17 @@ public class Browser implements Closeable {
 		// Stop docker containers (if necessary)
 		if (scope == BrowserScope.DOCKER) {
 
-			// TODO Stop recording
-			// docker kill -s INT vncrecorder
-
-			downloadLogsForContainer(hubContainerName, "hub");
 			downloadLogsForContainer(browserContainerName, id);
 			downloadLogsForContainer(vncrecorderContainerName,
 					id + "-recorder");
 
 			docker.stopAndRemoveContainers(hubContainerName,
-					browserContainerName, vncrecorderContainerName);
+					vncrecorderContainerName, browserContainerName);
 
+			if (numBrowsers.decrementAndGet() == 0) {
+				downloadLogsForContainer(hubContainerName, "hub");
+				docker.stopAndRemoveContainers(hubContainerName);
+			}
 		}
 	}
 
