@@ -78,10 +78,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.commons.net.RemoteService;
 import org.kurento.test.TestConfiguration;
 import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.config.BrowserScope;
@@ -589,14 +591,6 @@ public class Browser implements Closeable {
 		docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
 
 		if (record) {
-
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 			createVncRecorderContainer();
 		}
 
@@ -609,6 +603,17 @@ public class Browser implements Closeable {
 
 		try {
 
+			String browserIp = docker.inspectContainer(browserContainerName)
+					.getNetworkSettings().getIpAddress();
+
+			try {
+				RemoteService.waitForReady(browserIp, 5900, 10,
+						TimeUnit.SECONDS);
+			} catch (TimeoutException e) {
+				throw new RuntimeException(
+						"Timeout when connecting to browser VNC");
+			}
+
 			String vncrecordImageId = getProperty(
 					DOCKER_VNCRECORDER_IMAGE_PROPERTY,
 					DOCKER_VNCRECORDER_IMAGE_DEFAULT);
@@ -618,9 +623,6 @@ public class Browser implements Closeable {
 				String secretFile = createSecretFile();
 
 				docker.pullImageIfNecessary(vncrecordImageId);
-
-				String browserIp = docker.inspectContainer(browserContainerName)
-						.getNetworkSettings().getIpAddress();
 
 				String videoFile = Paths
 						.get(KurentoClientWebPageTest
