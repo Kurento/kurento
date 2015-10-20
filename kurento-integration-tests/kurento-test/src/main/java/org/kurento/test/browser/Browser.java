@@ -356,6 +356,14 @@ public class Browser implements Closeable {
 			options.addArguments("--use-fake-device-for-media-stream");
 
 			if (video != null && (isLocal() || isDocker())) {
+
+				if (!Files.exists(Paths.get(video))) {
+					throw new RuntimeException(
+							"Trying to create a browser using video file "
+									+ video + ", but this file doesn't exist.");
+				}
+
+				log.debug("Using video {} in browser {}", video, id);
 				options.addArguments(
 						"--use-file-for-fake-video-capture=" + video);
 			}
