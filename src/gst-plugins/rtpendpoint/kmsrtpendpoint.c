@@ -151,6 +151,9 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
       (kms_rtp_endpoint_parent_class)->configure_media (base_sdp_endpoint, sess,
       mconf);
   if (ret == FALSE) {
+    media->port = 0;
+    GST_WARNING_OBJECT (base_sdp_endpoint,
+        "Setting port to 0 because connection could not be created");
     return FALSE;
   }
 
