@@ -739,11 +739,18 @@ public class Browser implements Closeable {
 				driver = new RemoteWebDriver(new URL(driverUrl), capabilities);
 
 			} catch (Throwable t) {
+
+				log.debug(
+						"Exception creating RemoteWebDriver {}:{}. Retrying...",
+						t.getClass().getName(), t.getMessage());
+
 				driver = null;
 				// Check timeout
 				if (System.currentTimeMillis() > timeoutMs) {
-					throw new RuntimeException("Timeout of " + timeoutSeconds
-							+ " seconds waiting for RemoteWebDriver using Docker");
+					throw new RuntimeException(
+							"Timeout of " + timeoutSeconds
+									+ " seconds waiting for RemoteWebDriver using Docker",
+							t);
 				}
 
 				// Poll time
