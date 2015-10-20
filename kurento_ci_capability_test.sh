@@ -26,6 +26,7 @@ TEST_HOME=/opt/kurento-java
 
 MAVEN_OPTS=""
 MAVEN_OPTS="$MAVEN_OPTS -Djava.awt.headless=true"
+MAVEN_OPTS="$MAVEN_OPTS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=test"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.scope=docker"
 MAVEN_OPTS="$MAVEN_OPTS -Dproject.path=$TEST_HOME/kurento-integration-tests/kurento-test"
