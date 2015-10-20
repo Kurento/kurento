@@ -582,8 +582,6 @@ public class Browser implements Closeable {
 
 				docker.pullImageIfNecessary(vncrecordImageId);
 
-				log.debug("Creating container {}", vncrecorderContainerName);
-
 				String browserIp = docker.inspectContainer(browserContainerName)
 						.getNetworkSettings().getIpAddress();
 
@@ -591,6 +589,11 @@ public class Browser implements Closeable {
 						.get(KurentoClientWebPageTest
 								.getDefaultOutputFile("-record.flv"))
 						.toAbsolutePath().toString();
+
+				log.debug(
+						"Creating container {} for recording video from browser {} in file {}",
+						vncrecorderContainerName, browserContainerName,
+						videoFile);
 
 				CreateContainerCmd createContainerCmd = docker.getClient()
 						.createContainerCmd(vncrecordImageId)
@@ -1310,13 +1313,16 @@ public class Browser implements Closeable {
 
 			if (docker.existsContainer(container)) {
 
-				log.debug("Downloading logs for container {}", container);
-
 				try {
-					docker.downloadLogs(container,
-							Paths.get(KurentoClientWebPageTest
-									.getDefaultOutputFile(
-											"-" + container + ".log")));
+
+					Path logFile = Paths.get(KurentoClientWebPageTest
+							.getDefaultOutputFile("-" + container + ".log"));
+
+					log.debug("Downloading logs for container {} in folder {}",
+							container, logFile.toAbsolutePath());
+
+					docker.downloadLog(container, logFile);
+
 				} catch (IOException e) {
 					log.warn("Exception writing logs for container {}",
 							container, e);

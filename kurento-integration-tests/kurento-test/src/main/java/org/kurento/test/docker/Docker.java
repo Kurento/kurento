@@ -466,7 +466,7 @@ public class Docker implements Closeable {
 				"ip route | awk '/docker/ { print $NF }'").trim();
 	}
 
-	public void downloadLogs(String containerName, Path file)
+	public void downloadLog(String containerName, Path file)
 			throws IOException {
 
 		LogContainerRetrieverCallback loggingCallback = new LogContainerRetrieverCallback(
