@@ -132,7 +132,7 @@ public class TestConfiguration {
 	public static final String KMS_WS_URI_PROP = "kms.ws.uri";
 	public static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
 
-	public static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
+	public static final String KURENTO_WORKSPACE_PROP = "test.workspace";
 	public static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
 	public static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
