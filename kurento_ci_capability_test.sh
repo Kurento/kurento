@@ -27,7 +27,7 @@ TEST_HOME=/opt/kurento-java
 MAVEN_OPTS=""
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=test"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.scope=docker"
-MAVEN_OPTS="$MAVEN_OPTS -Dproject.path=$WORKSPACE/kurento-integration-tests/kurento-test"
+MAVEN_OPTS="$MAVEN_OPTS -Dproject.path=/opt/kurento-java/kurento-integration-tests/kurento-test"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.name=kurento/kurento-media-server-dev:latest"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.scope=docker"
 MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$TEST_GROUP"
