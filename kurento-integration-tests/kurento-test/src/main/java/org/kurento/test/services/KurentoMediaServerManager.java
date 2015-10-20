@@ -48,6 +48,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -132,51 +133,6 @@ public class KurentoMediaServerManager {
 	}
 
 	private KurentoMediaServerManager() {
-	}
-
-	public void copyLogs() throws IOException {
-
-		String kmsLogsPath = getKmsLogPath() + "logs";
-		String targetFolder = testDir + testClassName;
-
-		if (isRemote()) {
-
-			log.info("Copying KMS logs from remote host {}",
-					remoteKms.getConnection());
-			List<String> remoteLogFiles = remoteKms.listFiles(kmsLogsPath, true,
-					false);
-
-			for (String remoteLogFile : remoteLogFiles) {
-
-				String localLogFile = targetFolder + "/" + testMethodName + "-"
-						+ remoteLogFile
-								.substring(remoteLogFile.lastIndexOf("/") + 1);
-
-				remoteKms.getFile(localLogFile, remoteLogFile);
-
-				KurentoServicesTestHelper
-						.addServerLogFilePath(new File(localLogFile));
-				log.debug("Log file: {}", localLogFile);
-			}
-
-		} else {
-
-			log.info("Copying KMS logs from local path {}", kmsLogsPath);
-
-			Collection<File> logFiles = FileUtils
-					.listFiles(new File(kmsLogsPath), null, true);
-
-			for (File logFile : logFiles) {
-
-				File destFile = new File(targetFolder,
-						testMethodName + "-" + logFile.getName());
-
-				FileUtils.copyFile(logFile, destFile);
-
-				KurentoServicesTestHelper.addServerLogFilePath(destFile);
-				log.debug("Log file: {}", destFile);
-			}
-		}
 	}
 
 	private boolean isRemote() {
@@ -554,20 +510,75 @@ public class KurentoMediaServerManager {
 
 		if (docker) {
 
-			// copyLogs();
+			Docker dockerClient = Docker.getSingleton();
 
-			Docker.getSingleton().stopAndRemoveContainer(dockerContainerName);
+			dockerClient.downloadLog(dockerContainerName, Paths.get(
+					getDefaultOutputFolder(), testMethodName + "-kms.log"));
+
+			dockerClient.stopAndRemoveContainer(dockerContainerName);
 
 		} else {
 
 			killKmsProcesses();
 
-			copyLogs();
+			retrieveLogs();
 
 			if (isRemote()) {
 				remoteKms.stop();
 			}
 		}
+	}
+
+	public void retrieveLogs() throws IOException {
+
+		String targetFolder = getDefaultOutputFolder();
+
+		String kmsLogsPath = getKmsLogPath() + "logs";
+
+		if (isRemote()) {
+
+			log.info("Copying KMS logs from remote host {} to {}",
+					remoteKms.getConnection(), targetFolder);
+
+			List<String> remoteLogFiles = remoteKms.listFiles(kmsLogsPath, true,
+					false);
+
+			for (String remoteLogFile : remoteLogFiles) {
+
+				String localLogFile = targetFolder + "/" + testMethodName + "-"
+						+ remoteLogFile
+								.substring(remoteLogFile.lastIndexOf("/") + 1);
+
+				remoteKms.getFile(localLogFile, remoteLogFile);
+
+				KurentoServicesTestHelper
+						.addServerLogFilePath(new File(localLogFile));
+				log.debug("Log file: {}", localLogFile);
+			}
+
+		} else {
+
+			log.info("Copying KMS logs from local path {} to {}", kmsLogsPath,
+					targetFolder);
+
+			Collection<File> logFiles = FileUtils
+					.listFiles(new File(kmsLogsPath), null, true);
+
+			for (File logFile : logFiles) {
+
+				File destFile = new File(targetFolder,
+						testMethodName + "-" + logFile.getName());
+
+				FileUtils.copyFile(logFile, destFile);
+
+				KurentoServicesTestHelper.addServerLogFilePath(destFile);
+				log.debug("Log file: {}", destFile);
+			}
+		}
+	}
+
+	private String getDefaultOutputFolder() {
+		return testDir + testClassName;
 	}
 
 	private void killKmsProcesses() throws IOException {
