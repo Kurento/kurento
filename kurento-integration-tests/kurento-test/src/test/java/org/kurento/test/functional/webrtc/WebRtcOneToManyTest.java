@@ -114,9 +114,10 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		getPresenter().subscribeLocalEvents("playing");
 		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
-		monitor.addWebRtcClientAndActivateOutboundStats(
-				getPresenter().getBrowser().getId(), masterWebRtcEP,
-				getPresenter(), "webRtcPeer.peerConnection");
+
+		// monitor.addWebRtcClientAndActivateOutboundStats(
+		// getPresenter().getBrowser().getId(), masterWebRtcEP,
+		// getPresenter(), "webRtcPeer.peerConnection");
 
 		// Viewers
 		ExecutorService exec = Executors.newFixedThreadPool(numViewers);
