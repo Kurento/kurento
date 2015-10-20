@@ -1343,8 +1343,8 @@ public class Browser implements Closeable {
 			downloadLogsForContainer(vncrecorderContainerName,
 					id + "-recorder");
 
-			docker.stopAndRemoveContainers(hubContainerName,
-					vncrecorderContainerName, browserContainerName);
+			docker.stopAndRemoveContainers(vncrecorderContainerName,
+					browserContainerName);
 
 			if (numBrowsers.decrementAndGet() == 0) {
 				downloadLogsForContainer(hubContainerName, "hub");
