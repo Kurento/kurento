@@ -607,7 +607,7 @@ public class Browser implements Closeable {
 
 				String videoFile = Paths
 						.get(KurentoClientWebPageTest
-								.getDefaultOutputFile("-record.flv"))
+								.getDefaultOutputFile("-" + id + "-record.flv"))
 						.toAbsolutePath().toString();
 
 				log.debug(
@@ -1318,8 +1318,10 @@ public class Browser implements Closeable {
 			// TODO Stop recording
 			// docker kill -s INT vncrecorder
 
-			downloadLogsForContainers(hubContainerName, browserContainerName,
-					vncrecorderContainerName);
+			downloadLogsForContainer(hubContainerName, "hub");
+			downloadLogsForContainer(browserContainerName, id);
+			downloadLogsForContainer(vncrecorderContainerName,
+					id + "-recorder");
 
 			docker.stopAndRemoveContainers(hubContainerName,
 					browserContainerName, vncrecorderContainerName);
@@ -1327,26 +1329,23 @@ public class Browser implements Closeable {
 		}
 	}
 
-	private void downloadLogsForContainers(String... containers) {
+	private void downloadLogsForContainer(String container, String name) {
 
-		for (String container : containers) {
+		if (docker.existsContainer(container)) {
 
-			if (docker.existsContainer(container)) {
+			try {
 
-				try {
+				Path logFile = Paths.get(KurentoClientWebPageTest
+						.getDefaultOutputFile("-" + name + ".log"));
 
-					Path logFile = Paths.get(KurentoClientWebPageTest
-							.getDefaultOutputFile("-" + container + ".log"));
+				log.debug("Downloading log for container {} in file {}",
+						container, logFile.toAbsolutePath());
 
-					log.debug("Downloading logs for container {} in folder {}",
-							container, logFile.toAbsolutePath());
+				docker.downloadLog(container, logFile);
 
-					docker.downloadLog(container, logFile);
-
-				} catch (IOException e) {
-					log.warn("Exception writing logs for container {}",
-							container, e);
-				}
+			} catch (IOException e) {
+				log.warn("Exception writing logs for container {}", container,
+						e);
 			}
 		}
 	}
