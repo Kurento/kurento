@@ -202,139 +202,21 @@ public class Browser implements Closeable {
 
 	public void init() {
 
+		log.info("Starting browser {}", getId());
+
 		Class<? extends WebDriver> driverClass = browserType.getDriverClass();
 
 		try {
 			DesiredCapabilities capabilities = new DesiredCapabilities();
 
 			if (driverClass.equals(FirefoxDriver.class)) {
-				FirefoxProfile profile = new FirefoxProfile();
-				// This flag avoids granting the access to the camera
-				profile.setPreference("media.navigator.permission.disabled",
-						true);
 
-				capabilities.setCapability(FirefoxDriver.PROFILE, profile);
-				capabilities.setBrowserName(
-						DesiredCapabilities.firefox().getBrowserName());
-
-				// Firefox extensions
-				if (extensions != null && !extensions.isEmpty()) {
-					for (Map<String, String> extension : extensions) {
-						InputStream is = getExtensionAsInputStream(
-								extension.values().iterator().next());
-						if (is != null) {
-							try {
-								File xpi = File.createTempFile(
-										extension.keySet().iterator().next(),
-										".xpi");
-								FileUtils.copyInputStreamToFile(is, xpi);
-								profile.addExtension(xpi);
-							} catch (Throwable t) {
-								log.error(
-										"Error loading Firefox extension {} ({} : {})",
-										extension, t.getClass(),
-										t.getMessage());
-							}
-						}
-					}
-				}
-
-				if (scope == BrowserScope.SAUCELABS) {
-					createSaucelabsDriver(capabilities);
-				} else if (scope == BrowserScope.REMOTE) {
-					createRemoteDriver(capabilities);
-				} else if (scope == BrowserScope.DOCKER) {
-					createDriverForDocker(capabilities);
-				} else {
-					driver = newWebDriver(profile);
-				}
+				createFirefoxBrowser(capabilities);
 
 			} else if (driverClass.equals(ChromeDriver.class)) {
-				// Chrome driver
-				ChromeDriverManager.getInstance().setup();
 
-				// Chrome options
-				ChromeOptions options = new ChromeOptions();
+				createChromeBrowser(capabilities);
 
-				// Chrome extensions
-				if (extensions != null && !extensions.isEmpty()) {
-					for (Map<String, String> extension : extensions) {
-						InputStream is = getExtensionAsInputStream(
-								extension.values().iterator().next());
-						if (is != null) {
-							try {
-								File crx = File.createTempFile(
-										extension.keySet().iterator().next(),
-										".crx");
-								FileUtils.copyInputStreamToFile(is, crx);
-								options.addExtensions(crx);
-							} catch (Throwable t) {
-								log.error(
-										"Error loading Chrome extension {} ({} : {})",
-										extension, t.getClass(),
-										t.getMessage());
-							}
-						}
-					}
-				}
-
-				if (enableScreenCapture) {
-					// This flag enables the screen sharing
-					options.addArguments("--enable-usermedia-screen-capturing");
-
-					String windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT;
-					if (platform != null && (platform == Platform.WINDOWS
-							|| platform == Platform.XP
-							|| platform == Platform.VISTA
-							|| platform == Platform.WIN8
-							|| platform == Platform.WIN8_1)) {
-
-						windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
-					}
-					options.addArguments("--auto-select-desktop-capture-source="
-							+ getProperty(TEST_SCREEN_SHARE_TITLE_PROPERTY,
-									windowTitle));
-
-				} else {
-					// This flag avoids grant the camera
-					options.addArguments("--use-fake-ui-for-media-stream");
-				}
-
-				// This flag avoids warning in Chrome. See:
-				// https://code.google.com/p/chromedriver/issues/detail?id=799
-				options.addArguments("--test-type");
-
-				if (protocol == Protocol.FILE) {
-					// This flag allows reading local files in video tags
-					options.addArguments("--allow-file-access-from-files");
-				}
-
-				if (!usePhysicalCam) {
-					// This flag makes using a synthetic video (green with
-					// spinner) in WebRTC. Or it is needed to combine with
-					// use-file-for-fake-video-capture to use a file faking the
-					// cam
-					options.addArguments("--use-fake-device-for-media-stream");
-
-					if (video != null && isLocal()) {
-						options.addArguments(
-								"--use-file-for-fake-video-capture=" + video);
-					}
-				}
-
-				capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-				capabilities.setBrowserName(
-						DesiredCapabilities.chrome().getBrowserName());
-
-				if (scope == BrowserScope.SAUCELABS) {
-					createSaucelabsDriver(capabilities);
-				} else if (scope == BrowserScope.REMOTE) {
-					createRemoteDriver(capabilities);
-				} else if (scope == BrowserScope.DOCKER) {
-					createDriverForDocker(capabilities);
-				} else {
-					driver = newWebDriver(options);
-				}
 			} else if (driverClass.equals(InternetExplorerDriver.class)) {
 
 				if (scope == BrowserScope.SAUCELABS) {
@@ -352,39 +234,17 @@ public class Browser implements Closeable {
 							DesiredCapabilities.safari().getBrowserName());
 					createSaucelabsDriver(capabilities);
 				}
-
 			}
 
 			// Timeouts
 			changeTimeout(timeout);
 
-			if (url == null) {
-				if (protocol == Protocol.FILE) {
-					String webPage = webPagePath != null ? webPagePath
-							: webPageType.toString();
-					File webPageFile = new File(this.getClass().getClassLoader()
-							.getResource("static" + webPage).getFile());
-					url = protocol.toString() + webPageFile.getAbsolutePath();
-				} else {
+			log.info("Browser {} started", getId());
 
-					String hostName;
-					if (scope == BrowserScope.DOCKER) {
+			calculateUrl();
 
-						if (docker.isRunningInContainer()) {
-							hostName = docker.getContainerIpAddress();
-						} else {
-							hostName = docker.getHostIpForContainers();
-						}
+			log.info("Browser {} loading url {}", getId(), url);
 
-					} else {
-						hostName = host != null ? host : node;
-					}
-
-					url = protocol.toString() + hostName + ":" + serverPort
-							+ webPageType.toString();
-				}
-			}
-			log.info("*** Browsing URL with WebDriver: {}", url);
 			driver.get(url);
 
 		} catch (MalformedURLException e) {
@@ -393,8 +253,167 @@ public class Browser implements Closeable {
 
 	}
 
-	public static WebDriver newWebDriver(Object options) {
-		WebDriver driver = null;
+	private void calculateUrl() {
+		if (url == null) {
+			if (protocol == Protocol.FILE) {
+				String webPage = webPagePath != null ? webPagePath
+						: webPageType.toString();
+				File webPageFile = new File(this.getClass().getClassLoader()
+						.getResource("static" + webPage).getFile());
+				url = protocol.toString() + webPageFile.getAbsolutePath();
+			} else {
+
+				String hostName;
+				if (scope == BrowserScope.DOCKER) {
+
+					if (docker.isRunningInContainer()) {
+						hostName = docker.getContainerIpAddress();
+					} else {
+						hostName = docker.getHostIpForContainers();
+					}
+
+				} else {
+					hostName = host != null ? host : node;
+				}
+
+				url = protocol.toString() + hostName + ":" + serverPort
+						+ webPageType.toString();
+			}
+		}
+	}
+
+	private void createChromeBrowser(DesiredCapabilities capabilities)
+			throws MalformedURLException {
+
+		// Chrome driver
+		log.info("Calling to ChromeDriverManager.getInstance().setup()");
+		ChromeDriverManager.getInstance().setup();
+		log.info("Returned from ChromeDriverManager.getInstance().setup()");
+
+		// Chrome options
+		ChromeOptions options = new ChromeOptions();
+
+		// Chrome extensions
+		if (extensions != null && !extensions.isEmpty()) {
+
+			for (Map<String, String> extension : extensions) {
+				InputStream is = getExtensionAsInputStream(
+						extension.values().iterator().next());
+				if (is != null) {
+					try {
+						File crx = File.createTempFile(
+								extension.keySet().iterator().next(), ".crx");
+						FileUtils.copyInputStreamToFile(is, crx);
+						options.addExtensions(crx);
+					} catch (Throwable t) {
+						log.error("Error loading Chrome extension {} ({} : {})",
+								extension, t.getClass(), t.getMessage());
+					}
+				}
+			}
+		}
+
+		if (enableScreenCapture) {
+			// This flag enables the screen sharing
+			options.addArguments("--enable-usermedia-screen-capturing");
+
+			String windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT;
+			if (platform != null && (platform == Platform.WINDOWS
+					|| platform == Platform.XP || platform == Platform.VISTA
+					|| platform == Platform.WIN8
+					|| platform == Platform.WIN8_1)) {
+
+				windowTitle = TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
+			}
+			options.addArguments(
+					"--auto-select-desktop-capture-source=" + getProperty(
+							TEST_SCREEN_SHARE_TITLE_PROPERTY, windowTitle));
+
+		} else {
+			// This flag avoids grant the camera
+			options.addArguments("--use-fake-ui-for-media-stream");
+		}
+
+		// This flag avoids warning in Chrome. See:
+		// https://code.google.com/p/chromedriver/issues/detail?id=799
+		options.addArguments("--test-type");
+
+		if (protocol == Protocol.FILE) {
+			// This flag allows reading local files in video tags
+			options.addArguments("--allow-file-access-from-files");
+		}
+
+		if (!usePhysicalCam) {
+			// This flag makes using a synthetic video (green with
+			// spinner) in WebRTC. Or it is needed to combine with
+			// use-file-for-fake-video-capture to use a file faking the
+			// cam
+			options.addArguments("--use-fake-device-for-media-stream");
+
+			if (video != null && isLocal()) {
+				options.addArguments(
+						"--use-file-for-fake-video-capture=" + video);
+			}
+		}
+
+		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+		capabilities
+				.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+
+		createDriver(capabilities, options);
+	}
+
+	private void createFirefoxBrowser(DesiredCapabilities capabilities)
+			throws MalformedURLException {
+		FirefoxProfile profile = new FirefoxProfile();
+		// This flag avoids granting the access to the camera
+		profile.setPreference("media.navigator.permission.disabled", true);
+
+		capabilities.setCapability(FirefoxDriver.PROFILE, profile);
+		capabilities
+				.setBrowserName(DesiredCapabilities.firefox().getBrowserName());
+
+		// Firefox extensions
+		if (extensions != null && !extensions.isEmpty()) {
+			for (Map<String, String> extension : extensions) {
+				InputStream is = getExtensionAsInputStream(
+						extension.values().iterator().next());
+				if (is != null) {
+					try {
+						File xpi = File.createTempFile(
+								extension.keySet().iterator().next(), ".xpi");
+						FileUtils.copyInputStreamToFile(is, xpi);
+						profile.addExtension(xpi);
+					} catch (Throwable t) {
+						log.error(
+								"Error loading Firefox extension {} ({} : {})",
+								extension, t.getClass(), t.getMessage());
+					}
+				}
+			}
+		}
+
+		createDriver(capabilities, profile);
+	}
+
+	private void createDriver(DesiredCapabilities capabilities, Object options)
+			throws MalformedURLException {
+
+		log.debug("Creating driver in scope {} for browser {}", scope, id);
+
+		if (scope == BrowserScope.SAUCELABS) {
+			createSaucelabsDriver(capabilities);
+		} else if (scope == BrowserScope.REMOTE) {
+			createRemoteDriver(capabilities);
+		} else if (scope == BrowserScope.DOCKER) {
+			createDockerDriver(capabilities);
+		} else {
+			createLocalDriver(options);
+		}
+	}
+
+	private void createLocalDriver(Object options) {
+
 		int numDriverTries = 0;
 		final int maxDriverError = getProperty(
 				SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
@@ -402,11 +421,13 @@ public class Browser implements Closeable {
 		final String errMessage = "Exception creating webdriver for chrome";
 		do {
 			try {
+
 				if (options instanceof ChromeOptions) {
 					driver = new ChromeDriver((ChromeOptions) options);
 				} else if (options instanceof FirefoxProfile) {
 					driver = new FirefoxDriver((FirefoxProfile) options);
 				}
+
 			} catch (Throwable t) {
 				driver = null;
 				log.warn(errMessage + " #" + numDriverTries, t);
@@ -418,7 +439,6 @@ public class Browser implements Closeable {
 				}
 			}
 		} while (driver == null);
-		return driver;
 	}
 
 	public void reload() {
@@ -526,7 +546,7 @@ public class Browser implements Closeable {
 		log.info("https://saucelabs.com/tests/{}", jobId);
 	}
 
-	public void createDriverForDocker(DesiredCapabilities capabilities)
+	public void createDockerDriver(DesiredCapabilities capabilities)
 			throws MalformedURLException {
 
 		// Start docker client for the first time

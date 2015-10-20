@@ -52,10 +52,6 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
  */
 public class Docker implements Closeable {
 
-	private static Docker singleton = null;
-
-	private static Boolean isRunningInContainer;
-
 	private static final Logger log = LoggerFactory.getLogger(Docker.class);
 
 	private static final String DOCKER_SERVER_URL_PROPERTY = "docker.server.url";
@@ -66,17 +62,24 @@ public class Docker implements Closeable {
 	private static final int WAIT_CONTAINER_POLL_TIME = 200; // milliseconds
 	private static final int WAIT_CONTAINER_POLL_TIMEOUT = 10; // seconds
 
-	private DockerClient client;
-
-	private String containerName;
-
-	private String dockerServerUrl;
-
+	private static Docker singleton = null;
+	private static Boolean isRunningInContainer;
 	private static String hostIp;
 
-	public synchronized static Docker getSingleton(String dockerServerUrl) {
+	private DockerClient client;
+	private String containerName;
+	private String dockerServerUrl;
+
+	public static Docker getSingleton(String dockerServerUrl) {
 		if (singleton == null) {
-			singleton = new Docker(dockerServerUrl);
+			synchronized (Docker.class) {
+				if (singleton == null) {
+					log.debug("Connecting to docker in url {}",
+							dockerServerUrl);
+					singleton = new Docker(dockerServerUrl);
+					log.debug("Connected to docker in url {}", dockerServerUrl);
+				}
+			}
 		}
 		return singleton;
 	}
