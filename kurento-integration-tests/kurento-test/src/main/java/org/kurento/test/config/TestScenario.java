@@ -199,6 +199,21 @@ public class TestScenario {
 		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
 	}
 
+	public static Collection<Object[]> localChromePlusFirefox() {
+		// Test #1 : Firefox and Chrome in local
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.BROWSER + 0,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.BROWSER + 1,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
+
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
 	public static Collection<Object[]> localChromes(int size) {
 		// Test: Chrome(s) in local
 		TestScenario test = new TestScenario();
