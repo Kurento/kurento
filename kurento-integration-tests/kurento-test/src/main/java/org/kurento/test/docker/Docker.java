@@ -236,11 +236,12 @@ public class Docker implements Closeable {
 					.toAbsolutePath().toString();
 			Volume workspaceVolume = new Volume(workspacePath);
 
-			createContainerCmd.withVolumes(testFilesVolume)
-					.withBinds(new Bind(testFilesPath, testFilesVolume,
-							AccessMode.ro))
-					.withVolumes(workspaceVolume).withBinds(new Bind(
-							workspacePath, workspaceVolume, AccessMode.rw));
+			createContainerCmd.withVolumes(testFilesVolume, workspaceVolume)
+					.withBinds(
+							new Bind(testFilesPath, testFilesVolume,
+									AccessMode.ro),
+							new Bind(workspacePath, workspaceVolume,
+									AccessMode.rw));
 		}
 	}
 

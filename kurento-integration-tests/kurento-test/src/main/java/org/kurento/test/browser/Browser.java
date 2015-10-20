@@ -350,7 +350,7 @@ public class Browser implements Closeable {
 			// cam
 			options.addArguments("--use-fake-device-for-media-stream");
 
-			if (video != null && isLocal()) {
+			if (video != null && (isLocal() || isDocker())) {
 				options.addArguments(
 						"--use-file-for-fake-video-capture=" + video);
 			}
