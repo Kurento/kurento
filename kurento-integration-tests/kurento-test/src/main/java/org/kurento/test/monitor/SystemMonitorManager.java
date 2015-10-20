@@ -28,10 +28,8 @@ import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_PROP;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.Socket;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,10 +37,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.ClassPath;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.commons.net.RemoteService;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.services.SshConnection;
 import org.slf4j.Logger;
@@ -178,34 +179,13 @@ public class SystemMonitorManager {
 						+ KmsMonitor.class.getName() + " " + monitorPort + " > "
 						+ remoteKms.getTmpFolder() + "/monitor.log 2>&1");
 
-		boolean connected = waitForReady();
-
-		if (!connected) {
-			throw new RuntimeException("Socket in remote KMS not available");
+		try {
+			RemoteService.waitForReady(remoteKms.getHost(), monitorPort, 60,
+					TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			throw new RuntimeException(
+					"Monitor in remote KMS is not available");
 		}
-	}
-
-	private boolean waitForReady() throws UnknownHostException, IOException {
-		// Wait for 600x100 ms = 60 seconds
-		Socket client = null;
-		int i = 0;
-		final int max = 600;
-		for (; i < max; i++) {
-			try {
-				client = new Socket(remoteKms.getHost(), monitorPort);
-				break;
-			} catch (ConnectException ce) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-				}
-			}
-		}
-		if (client != null) {
-			client.close();
-		}
-
-		return i != max;
 	}
 
 	public void startMonitoring() {
