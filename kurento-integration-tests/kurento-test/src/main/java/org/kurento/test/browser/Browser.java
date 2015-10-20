@@ -413,11 +413,13 @@ public class Browser implements Closeable {
 		} else if (scope == BrowserScope.DOCKER) {
 			createDockerDriver(capabilities);
 		} else {
-			createLocalDriver(options);
+			driver = newWebDriver(options);
 		}
 	}
 
-	private void createLocalDriver(Object options) {
+	public static WebDriver newWebDriver(Object options) {
+
+		WebDriver driver = null;
 
 		int numDriverTries = 0;
 		final int maxDriverError = getProperty(
@@ -444,6 +446,8 @@ public class Browser implements Closeable {
 				}
 			}
 		} while (driver == null);
+
+		return driver;
 	}
 
 	public void reload() {
