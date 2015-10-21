@@ -41,4 +41,4 @@ mavenOpts="$mavenOpts -U"
 
 # Execute capability test
 mvn --settings $MAVEN_SETTINGS clean compile -DskipTests=true
-mvn --settings $MAVEN_SETTINGS clean verify $mavenOpts $MAVEN_OPTS
+mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS
