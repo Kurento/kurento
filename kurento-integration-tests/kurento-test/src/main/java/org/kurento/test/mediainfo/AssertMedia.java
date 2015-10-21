@@ -65,15 +65,13 @@ public class AssertMedia {
 		long audioDurationMs = Long.parseLong(audioDuration);
 
 		double difference = Math.abs(generalDurationMs - expectedDurationMs);
-		Assert.assertTrue(
-				"Wrong general duration (expected=" + expectedDurationMs
-						+ " ms, real= " + generalDurationMs + " ms)",
-				difference < thresholdMs);
+		Assert.assertTrue("Wrong general duration (expected="
+				+ expectedDurationMs + " ms, real= " + generalDurationMs
+				+ " ms) in " + pathToMedia, difference < thresholdMs);
 
 		difference = Math.abs(audioDurationMs - expectedDurationMs);
-		Assert.assertTrue(
-				"Wrong audio duration (expected=" + expectedDurationMs
-						+ " ms, real= " + audioDurationMs + " ms)",
+		Assert.assertTrue("Wrong audio duration (expected=" + expectedDurationMs
+				+ " ms, real= " + audioDurationMs + " ms) in " + pathToMedia,
 				difference < thresholdMs);
 	}
 
