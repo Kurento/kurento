@@ -39,10 +39,10 @@ public class AssertMedia {
 				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
 		info.close();
 
-		Assert.assertEquals("Wrong video codec", expectedVideoCodec,
-				videoFormat);
-		Assert.assertEquals("Wrong audio codec", expectedAudioCodec,
-				audioFormat);
+		Assert.assertEquals("Wrong video codec in " + pathToMedia,
+				expectedVideoCodec, videoFormat);
+		Assert.assertEquals("Wrong audio codec in " + pathToMedia,
+				expectedAudioCodec, audioFormat);
 	}
 
 	public static void assertDuration(String pathToMedia,
@@ -55,9 +55,10 @@ public class AssertMedia {
 				"Duration", MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
 		info.close();
 
-		Assert.assertFalse("General duration is empty or null",
+		Assert.assertFalse(
+				"General duration is empty or null in " + pathToMedia,
 				Strings.isNullOrEmpty(generalDuration));
-		Assert.assertFalse("Audio duration is empty or null",
+		Assert.assertFalse("Audio duration is empty or null in " + pathToMedia,
 				Strings.isNullOrEmpty(audioDuration));
 
 		long generalDurationMs = Long.parseLong(generalDuration);

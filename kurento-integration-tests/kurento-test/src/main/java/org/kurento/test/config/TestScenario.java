@@ -226,6 +226,27 @@ public class TestScenario {
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
+	public static Collection<Object[]> localChromesAndFirefoxs(int size) {
+		// Test #1 : Chrome's in local
+		TestScenario test1 = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test1.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.CHROME)
+							.scope(BrowserScope.LOCAL).build());
+		}
+		// Test #2 : Firefox's in local
+		TestScenario test2 = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test2.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.FIREFOX)
+							.scope(BrowserScope.LOCAL).build());
+		}
+
+		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
+	}
+
 	public static Collection<Object[]> localChrome() {
 		// Test: Chrome in local
 		TestScenario test = new TestScenario();
