@@ -74,10 +74,7 @@ public class Docker implements Closeable {
 		if (singleton == null) {
 			synchronized (Docker.class) {
 				if (singleton == null) {
-					log.debug("Connecting to docker in url {}",
-							dockerServerUrl);
 					singleton = new Docker(dockerServerUrl);
-					log.debug("Connected to docker in url {}", dockerServerUrl);
 				}
 			}
 		}
