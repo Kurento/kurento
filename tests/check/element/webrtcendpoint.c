@@ -1970,6 +1970,79 @@ GST_START_TEST (test_port_range)
 }
 
 GST_END_TEST;
+GST_START_TEST (test_not_enough_ports)
+{
+  GArray *codecs_array;
+  gchar *codecs[] = { "VP8/90000", NULL };
+  gchar *offerer_sess_id, *second_offerer_sess_id;
+  GstSDPMessage *offer, *second_offer;
+  gchar *sdp_str = NULL;
+  gboolean ret = FALSE;
+  GstElement *offerer = gst_element_factory_make ("webrtcendpoint", NULL);
+  GstElement *second_offerer =
+      gst_element_factory_make ("webrtcendpoint", NULL);
+  CandidateRangeData offerer_cand_data;
+
+  offerer_cand_data.min_port = 55000;
+  offerer_cand_data.max_port = 55002;
+
+  codecs_array = create_codecs_array (codecs);
+  g_object_set (offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), "min-port", offerer_cand_data.min_port,
+      "max-port", offerer_cand_data.max_port, NULL);
+  g_object_set (second_offerer, "num-video-medias", 1, "video-codecs",
+      g_array_ref (codecs_array), "min-port", offerer_cand_data.min_port,
+      "max-port", offerer_cand_data.max_port, NULL);
+  g_array_unref (codecs_array);
+
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+
+  g_signal_emit_by_name (second_offerer, "create-session",
+      &second_offerer_sess_id);
+  GST_DEBUG_OBJECT (second_offerer, "Created session with id '%s'",
+      second_offerer_sess_id);
+
+  g_signal_connect (G_OBJECT (offerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate_range), &offerer_cand_data);
+
+  g_signal_connect (G_OBJECT (second_offerer), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate_range), &offerer_cand_data);
+
+  /* SDP negotiation */
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
+  fail_unless (offer != NULL);
+  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  g_signal_emit_by_name (second_offerer, "generate-offer",
+      second_offerer_sess_id, &second_offer);
+  fail_unless (second_offer != NULL);
+  GST_DEBUG ("Second offer:\n%s", (sdp_str =
+          gst_sdp_message_as_text (second_offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  g_signal_emit_by_name (offerer, "gather-candidates", offerer_sess_id, &ret);
+  fail_unless (ret);
+
+  g_signal_emit_by_name (second_offerer, "gather-candidates",
+      second_offerer_sess_id, &ret);
+  /* Candidates should not be get due to lack of ports */
+  fail_if (ret);
+
+  gst_sdp_message_free (offer);
+  gst_sdp_message_free (second_offer);
+
+  g_object_unref (offerer);
+  g_object_unref (second_offerer);
+  g_free (offerer_sess_id);
+  g_free (second_offerer_sess_id);
+}
+
+GST_END_TEST;
 /*
  * End of test cases
  */
@@ -1994,6 +2067,7 @@ webrtcendpoint_test_suite (void)
 
   tcase_add_test (tc_chain, test_session_creation);
   tcase_add_test (tc_chain, test_port_range);
+  tcase_add_test (tc_chain, test_not_enough_ports);
 
 #ifdef ENABLE_DEBUGGING_TESTS
   tcase_add_test (tc_chain, test_webrtc_data_channel);
