@@ -3,28 +3,22 @@
 echo "##################### EXECUTE: kurento-js-sanity-checks #####################"
 
 # Param management
-
-# Kurento Websockets URL
-[ -n "$1" ] && WS_URI=$1 || exit 1
+if [ $# -lt 1 ]
+then
+  echo "Usage: $0 <kurento_js_release_url>"
+  exit 1
+fi
 
 # Kurento js release URL
-[ -n "$2" ] && KURENTO_JS_RELEASE_URL=$2 || exit 1
+[ -n "$1" ] && KURENTO_JS_RELEASE_URL=$1 || exit 1
 
-if [ -z "$MAVEN_SETTINGS"]; then
+if [ -z "$MAVEN_SETTINGS" ]; then
   echo "MAVEN_SETTINGS must be available as an environment variable"
 fi
 
 echo "Building $KURENTO_JS_RELEASE_URL"
 
-#!/bin/bash
-
 # Test autostart KMS
-
-if [ $# -lt 2 ]
-then
-  echo "Usage: $0 <groups> <test>"
-  exit 1
-fi
 
 TEST_GROUP="org.kurento.commons.testing.SanityTests"
 
