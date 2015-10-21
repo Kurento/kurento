@@ -104,6 +104,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -123,6 +124,8 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
  * @see <a href="http://www.seleniumhq.org/">Selenium</a>
  */
 public class Browser implements Closeable {
+
+	private static final int MAX_RETRIES = 5;
 
 	public static Logger log = LoggerFactory.getLogger(Browser.class);
 
@@ -587,16 +590,36 @@ public class Browser implements Closeable {
 
 		String nodeImageId = calculateBrowserImageName(capabilities, record);
 
-		// Start nodes: Chrome and Firefox
-		docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
+		int retries = 0;
+		try {
 
-		if (record) {
-			createVncRecorderContainer();
+			// Start nodes: Chrome and Firefox
+			docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
+
+			// Create RemoteWebDriver
+			createAndWaitRemoteDriver("http://" + hubIp + ":4444/wd/hub",
+					capabilities);
+
+			if (record) {
+				createVncRecorderContainer();
+			}
+
+		} catch (UnreachableBrowserException t) {
+			retries++;
+			if (retries > MAX_RETRIES) {
+				throw new RuntimeException(
+						"Selenium exception when creating browser \"" + id
+								+ "\" after " + retries + " retries",
+						t);
+			} else {
+
+				log.warn(
+						"Selenium exception creating browser \"{}\". Retrying {}...",
+						id, retries);
+
+				docker.removeContainer(browserContainerName);
+			}
 		}
-
-		// Create RemoteWebDriver
-		createAndWaitRemoteDriver("http://" + hubIp + ":4444/wd/hub",
-				capabilities);
 	}
 
 	private void createVncRecorderContainer() {
@@ -738,29 +761,30 @@ public class Browser implements Closeable {
 
 		do {
 			try {
+
 				driver = new RemoteWebDriver(new URL(driverUrl), capabilities);
 
-			} catch (Throwable t) {
+			} catch (MalformedURLException e) {
+				throw new Error("Hub URL is malformed", e);
+
+			} catch (UnreachableBrowserException t) {
+
+				driver = null;
+				// Check timeout
+				if (System.currentTimeMillis() > timeoutMs) {
+					throw t;
+				}
 
 				log.debug(
 						"Exception creating RemoteWebDriver {}:{}. Retrying...",
 						t.getClass().getName(), t.getMessage());
 
-				driver = null;
-				// Check timeout
-				if (System.currentTimeMillis() > timeoutMs) {
-					throw new RuntimeException(
-							"Timeout of " + timeoutSeconds
-									+ " seconds waiting for RemoteWebDriver using Docker",
-							t);
-				}
-
 				// Poll time
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
-					log.error("Exception waiting RemoteWebDriver using Docker",
-							e);
+					Thread.currentThread().interrupt();
+					return;
 				}
 			}
 		} while (driver == null);
