@@ -618,7 +618,7 @@ public class Browser implements Closeable {
 						"Selenium exception creating browser \"{}\". Retrying {}...",
 						id, retries);
 
-				docker.removeContainer(browserContainerName);
+				docker.stopAndRemoveContainers(browserContainerName);
 			}
 		}
 	}
