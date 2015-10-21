@@ -43,7 +43,7 @@ public class KmsLogOnFailure extends TestWatcher {
 	private KurentoClientManager kurentoClientManager;
 
 	private boolean succees = false;
-	private boolean deleteLogsIfSuccess = false;
+	private boolean deleteLogsIfSuccess = true;
 
 	@Override
 	protected void starting(Description description) {
