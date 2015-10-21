@@ -604,13 +604,14 @@ public class Browser implements Closeable {
 				createVncRecorderContainer();
 			}
 
-		} catch (UnreachableBrowserException t) {
+		} catch (org.openqa.grid.common.exception.GridException
+				| org.openqa.selenium.WebDriverException e) {
 			retries++;
 			if (retries > MAX_RETRIES) {
 				throw new RuntimeException(
 						"Selenium exception when creating browser \"" + id
 								+ "\" after " + retries + " retries",
-						t);
+						e);
 			} else {
 
 				log.warn(
