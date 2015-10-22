@@ -123,31 +123,30 @@ web server in the application and thus simplify the development process.
 
 In the following figure you can see a class diagram of the server side code:
 
-.. digraph:: MagicMirror
-   :caption: Server-side class diagram of the MagicMirror app
+.. figure:: ../../images/digraphs/One2Many.png
+   :align: center
+   :alt:   Server-side class diagram of the One2Many app
 
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
+   *Server-side class diagram of the One2Many app*
+
+..
+ digraph:: One2Many
+   :caption: Server-side class diagram of the One2Many app
+
+   size="12,8"; fontname = "Bitstream Vera Sans" fontsize = 8
 
    node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
+        fontname = "Bitstream Vera Sans" fontsize = 8 shape = "record"
          style=filled
         fillcolor = "#E7F2FA"
    ]
 
    edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowhead = "vee"
+        fontname = "Bitstream Vera Sans" fontsize = 8 arrowhead = "vee"
    ]
 
-   One2ManyCallApp -> CallHandler;
-   One2ManyCallApp -> KurentoClient;
-   CallHandler -> UserSession;
-   CallHandler -> KurentoClient [constraint = false]
+   One2ManyCallApp -> CallHandler; One2ManyCallApp -> KurentoClient;
+   CallHandler -> UserSession; CallHandler -> KurentoClient [constraint = false]
 
 The main class of this demo is named
 `One2ManyCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/java/org/kurento/tutorial/one2manycall/One2ManyCallApp.java>`_.
@@ -586,8 +585,7 @@ follows:
 .. note::
 
    *kurento-utils-js* can be resolved as a Java dependency but also is available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/bower.json>`_:
+   library from Bower, add this dependency to the file bower.json:
 
    .. sourcecode:: js
 

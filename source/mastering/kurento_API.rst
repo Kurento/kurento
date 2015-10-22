@@ -75,7 +75,14 @@ classes, inheriting operations from parent classes to children ones.
 The following class diagram shows some of the relationships of the main classes
 in the Kurento API.
 
-.. digraph:: Media_Objects
+.. figure:: ../images/digraphs/Media_Objects.png
+   :align: center
+   :alt:   Class diagram of main classes in Kurento API
+
+   *Class diagram of main classes in Kurento API*
+
+..
+ digraph:: Media_Objects
    :caption: Class diagram of main classes in Kurento API
 
    size="12,8";
@@ -172,7 +179,14 @@ pads for audio and video.
 
 The following class diagram shows the relationships of the main endpoint classes.
 
-.. digraph:: Endpoints
+.. figure:: ../images/digraphs/Endpoints.png
+   :align: center
+   :alt:   Class diagram of main Endpoints in Kurento API
+
+   *Class diagram of main Endpoints in Kurento API*
+
+..
+ digraph:: Endpoints
    :caption: Class diagram of Endpoints in Kurento API
 
    size="12,8";
@@ -239,7 +253,14 @@ filter in Kurento Media Pipelines.
 
 The following class diagram shows the relationships of the main filter classes.
 
-.. digraph:: Filters
+.. figure:: ../images/digraphs/Filters.png
+   :align: center
+   :alt:   Class diagram of main Filters in Kurento API
+
+   *Class diagram of main Filters in Kurento API*
+
+..
+ digraph:: Filters
    :caption: Class diagram of Filters in Kurento API
 
     size="12,8";
@@ -293,7 +314,14 @@ HubPort pairs.
 
 The following class diagram shows the relationships of the hubs.
 
-.. digraph:: Hubs
+.. figure:: ../images/digraphs/Hubs.png
+   :align: center
+   :alt:   Class diagram of main Hubs in Kurento API
+
+   *Class diagram of main Hubs in Kurento API*
+
+..
+ digraph:: Hubs
    :caption: Class diagram of Hubs in Kurento API
 
     size="12,8";

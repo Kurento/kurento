@@ -118,34 +118,32 @@ web server in the application and thus simplify the development process.
 
 In the following figure you can see a class diagram of the server side code:
 
-.. digraph:: One2OneCall
+.. figure:: ../../images/digraphs/One2OneCall.png
+   :align: center
+   :alt:   Server-side class diagram of the one to one video call app
+
+   *Server-side class diagram of the one to one video call app*
+
+..
+ digraph:: One2OneCall
    :caption: Server-side class diagram of the one to one video call app
 
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
+   size="12,8"; fontname = "Bitstream Vera Sans" fontsize = 8
 
    node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
-        style=filled
-        fillcolor = "#E7F2FA"
+        fontname = "Bitstream Vera Sans" fontsize = 8 shape = "record"
+        style=filled fillcolor = "#E7F2FA"
         
    ]
 
    edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowhead = "vee"
+        fontname = "Bitstream Vera Sans" fontsize = 8 arrowhead = "vee"
    ]
 
-   One2OneCallApp -> UserRegistry;
-   One2OneCallApp -> CallHandler;
-   One2OneCallApp -> KurentoClient; 
-   One2OneCallApp -> CallMediaPipeline;
-   CallHandler -> KurentoClient [constraint = false]
-   UserRegistry -> UserSession [headlabel="*",  labelangle=60]
+   One2OneCallApp -> UserRegistry; One2OneCallApp -> CallHandler;
+   One2OneCallApp -> KurentoClient; One2OneCallApp -> CallMediaPipeline;
+   CallHandler -> KurentoClient [constraint = false] UserRegistry ->
+   UserSession [headlabel="*",  labelangle=60]
 
 The main class of this demo is named
 `One2OneCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/One2OneCallApp.java>`_.
@@ -746,8 +744,7 @@ follows:
 .. note::
 
    *kurento-utils-js* can be resolved as a Java dependency but also is available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/bower.json>`_:
+   library from Bower, add this dependency to the file bower.json:
 
    .. sourcecode:: js
 

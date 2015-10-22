@@ -120,31 +120,31 @@ web server in the application and thus simplify the development process.
 
 In the following figure you can see a class diagram of the server side code:
 
-.. digraph:: HelloWorld
+.. figure:: ../../images/digraphs/HelloWorld.png
+   :align: center
+   :alt:   Server-side class diagram of the HelloWorld app
+
+   *Server-side class diagram of the HelloWorld app*
+
+..
+ digraph:: HelloWorld
    :caption: Server-side class diagram of the HelloWorld app
 
-   size="12,8";
-   fontname = "Bitstream Vera Sans"
-   fontsize = 8
+   size="12,8"; fontname = "Bitstream Vera Sans" fontsize = 8
 
    node [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        shape = "record"
+        fontname = "Bitstream Vera Sans" fontsize = 8 shape = "record"
          style=filled
         fillcolor = "#E7F2FA"
    ]
 
    edge [
-        fontname = "Bitstream Vera Sans"
-        fontsize = 8
-        arrowhead = "vee"
+        fontname = "Bitstream Vera Sans" fontsize = 8 arrowhead = "vee"
    ]
 
-   HelloWorldApp -> HelloWorldHandler;
-   HelloWorldApp -> KurentoClient;
-   HelloWorldHandler -> KurentoClient [constraint = false]
-   HelloWorldHandler -> UserSession;
+   HelloWorldApp -> HelloWorldHandler; HelloWorldApp -> KurentoClient;
+   HelloWorldHandler -> KurentoClient [constraint = false] HelloWorldHandler ->
+   UserSession;
 
 The main class of this demo is
 `HelloWorldApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_.
