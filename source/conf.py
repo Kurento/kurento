@@ -27,7 +27,7 @@ needs_sphinx = '1.2' # For html_extra_path to javadoc, jsdoc, ...
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['javasphinx', 'sphinx.ext.graphviz', 'sphinx.ext.todo', 'domains']
+extensions = ['sphinx.ext.graphviz', 'sphinx.ext.todo', 'domains']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
