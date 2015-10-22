@@ -48,7 +48,7 @@ docker run --rm \
   -v $MAVEN_SETTINGS:/opt/kurento-settings.xml \
   -v $KURENTO_SCRIPTS_HOME:/opt/adm-scripts \
   -v $WORKSPACE:$TEST_HOME \
-  -v $TEST_WORKSPACE:$TEST_HOME/tmp
+  -v $TEST_WORKSPACE:$TEST_HOME/tmp \
   -e "WORKSPACE=$TEST_HOME" \
   -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
   -e "MAVEN_OPTS=$MAVEN_OPTS" \
