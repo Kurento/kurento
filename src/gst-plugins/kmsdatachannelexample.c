@@ -2,11 +2,14 @@
 #include <gst/gst.h>
 
 #include "kmsshowdata.h"
+#include "kmssenddata.h"
 
 static gboolean
 init (GstPlugin * plugin)
 {
   if (!kms_show_data_plugin_init (plugin))
+    return FALSE;
+  if (!kms_send_data_plugin_init (plugin))
     return FALSE;
 
   return TRUE;

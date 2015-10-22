@@ -15,6 +15,22 @@
           }
         ]
       }
+    },
+    {
+      "name": "KmsSendData",
+      "extends": "MediaElement",
+      "doc": "KmsSendData interface. Documentation about the module",
+      "constructor": {
+        "doc": "Create an element",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the parent :rom:cls:`MediaPipeline`",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
+      }
     }
   ]
 }

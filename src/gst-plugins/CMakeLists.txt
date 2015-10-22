@@ -8,6 +8,8 @@ set(KMS_DATA_CHANNEL_EXAMPLE_SOURCES
   kmsdatachannelexample.c
   kmsshowdata.c
   kmsshowdata.h
+  kmssenddata.c
+  kmssenddata.h
 )
 
 add_library(kmsdatachannelexample MODULE ${KMS_DATA_CHANNEL_EXAMPLE_SOURCES})
