@@ -22,6 +22,7 @@ include (GenericFind)
 
 set (GST_REQUIRED ~1.5.0)
 set (GLIB_REQUIRED ^2.42)
+set (OPENCV_REQUIRED ^2.0.0)
 
 #gst-plugins dependencies
 generic_find (LIBNAME gstreamer-1.5 VERSION ${GST_REQUIRED} REQUIRED)
@@ -29,6 +30,7 @@ generic_find (LIBNAME gstreamer-base-1.5 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find (LIBNAME gstreamer-video-1.5 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find (LIBNAME gstreamer-check-1.5 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find (LIBNAME KmsGstCommons REQUIRED)
+generic_find (LIBNAME opencv VERSION ${OPENCV_REQUIRED} REQUIRED)
 
 set (VERSION ${PROJECT_VERSION})
 set (PACKAGE ${PROJECT_NAME})

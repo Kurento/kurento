@@ -3,6 +3,8 @@
 
 #include "kmsshowdata.h"
 #include "kmssenddata.h"
+#include "kmsimageoverlaymetadata.h"
+#include "kmsfacedetectormetadata.h"
 
 static gboolean
 init (GstPlugin * plugin)
@@ -10,6 +12,10 @@ init (GstPlugin * plugin)
   if (!kms_show_data_plugin_init (plugin))
     return FALSE;
   if (!kms_send_data_plugin_init (plugin))
+    return FALSE;
+  if (!kms_image_overlay_plugin_init (plugin))
+    return FALSE;
+  if (!kms_face_detector_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
