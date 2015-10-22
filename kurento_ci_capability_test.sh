@@ -29,6 +29,7 @@ mkdir $TEST_WORKSPACE
 TEST_HOME=/opt/kurento-java
 
 MAVEN_OPTS=""
+MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.forcepulling=false"
 MAVEN_OPTS="$MAVEN_OPTS -Djava.awt.headless=true"
 MAVEN_OPTS="$MAVEN_OPTS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=test"
