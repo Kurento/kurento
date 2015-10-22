@@ -188,9 +188,8 @@ or :term:`kurento`.
         `Maven <http://maven.apache.org/>`_ is a build automation tool used primarily for Java projects.
 
     Media Element
-        A :java:type:`MediaElement` is a module that encapsulates a specific
-        media capability.  For example, a :java:type:`RecorderEndpoint`,
-        a Video :java:type:`PlayerEndpoint`
+        A **Media Element** is a module that encapsulates a specific
+        media capability.  For example **RecorderEndpoint**, **PlayerEndpoint**, etc.
 
     Media Pipeline
         A :index:`Media Pipeline <single: Media; Pipeline>` is a chain of media elements, where the output
@@ -314,9 +313,6 @@ or :term:`kurento`.
 
             GStreamer `Pad <http://hackage.haskell.org/package/gstreamer-0.12.1.1/docs/Media-Streaming-GStreamer-Core-Pad.html>`__
                 Definition of the Pad structure in GStreamer
-
-            Kurento :java:type:`MediaPad`
-                Kurento Media API Java interface for the MediaPad
 
     PubNub
         `PubNub <http://www.pubnub.com/>`__ is a publish/subscribe cloud service for

@@ -297,11 +297,6 @@ epub_copyright = u'2015, Kurento'
 # Allow duplicate toc entries.
 #epub_tocdup = True
 
-# For javasphinx search
-javadoc_url_map = {
-    'org.kurento.client': ('kurento-java-client', 'sphinx'),
-}
-
 graphviz_output_format = 'svg'
 
 todo_include_todos = 'dev'
