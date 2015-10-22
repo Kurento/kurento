@@ -15,22 +15,6 @@
 package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_DEFAULT;
 import static org.kurento.test.TestConfiguration.SAUCELAB_COMMAND_TIMEOUT_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_IDLE_TIMEOUT_DEFAULT;
@@ -41,8 +25,6 @@ import static org.kurento.test.TestConfiguration.SAUCELAB_MAX_DURATION_PROPERTY;
 import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_RECORD_DEFAULT;
-import static org.kurento.test.TestConfiguration.SELENIUM_RECORD_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY;
 import static org.kurento.test.TestConfiguration.SELENIUM_REMOTE_HUB_URL_PROPERTY;
@@ -64,26 +46,21 @@ import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_DEFAULT_WIN;
 import static org.kurento.test.TestConfiguration.TEST_SCREEN_SHARE_TITLE_PROPERTY;
 
-import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.commons.net.RemoteService;
 import org.kurento.test.TestConfiguration;
 import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.config.BrowserScope;
@@ -104,14 +81,11 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.dockerjava.api.command.CreateContainerCmd;
 
 import io.github.bonigarcia.wdm.ChromeDriverManager;
 
@@ -125,13 +99,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
  */
 public class Browser implements Closeable {
 
-	private static final int MAX_RETRIES = 5;
-
 	public static Logger log = LoggerFactory.getLogger(Browser.class);
-
-	private static Docker docker = Docker.getSingleton();
-
-	// private static String thisContainerName = docker.getContainerName();
 
 	private WebDriver driver;
 	private String jobId;
@@ -168,13 +136,11 @@ public class Browser implements Closeable {
 	private List<Map<String, String>> extensions;
 	private String url;
 
-	private String hubContainerName;
-	private String browserContainerName;
-	private String vncrecorderContainerName;
-
-	private static AtomicInteger numBrowsers = new AtomicInteger();
+	private static volatile DockerBrowserManager dockerManager;
+	private static Docker docker = Docker.getSingleton();
 
 	public Browser(Builder builder) {
+
 		this.builder = builder;
 		this.scope = builder.scope;
 		this.video = builder.video;
@@ -212,8 +178,6 @@ public class Browser implements Closeable {
 
 		log.info("Starting browser {}", getId());
 
-		numBrowsers.incrementAndGet();
-
 		Class<? extends WebDriver> driverClass = browserType.getDriverClass();
 
 		try {
@@ -249,13 +213,15 @@ public class Browser implements Closeable {
 			// Timeouts
 			changeTimeout(timeout);
 
-			log.info("Browser {} started", getId());
+			log.debug("Browser {} started", getId());
 
 			calculateUrl();
 
-			log.info("Browser {} loading url {}", getId(), url);
+			log.debug("Browser {} loading url {}", getId(), url);
 
 			driver.get(url);
+
+			log.info("Browser {} initialized", getId());
 
 		} catch (MalformedURLException e) {
 			log.error("MalformedURLException in Browser.init", e);
@@ -296,9 +262,7 @@ public class Browser implements Closeable {
 			throws MalformedURLException {
 
 		// Chrome driver
-		log.info("Calling to ChromeDriverManager.getInstance().setup()");
 		ChromeDriverManager.getInstance().setup();
-		log.info("Returned from ChromeDriverManager.getInstance().setup()");
 
 		// Chrome options
 		ChromeOptions options = new ChromeOptions();
@@ -378,6 +342,10 @@ public class Browser implements Closeable {
 		capabilities
 				.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
 
+		if (scope == BrowserScope.DOCKER) {
+			capabilities.setCapability("applicationName", id);
+		}
+
 		createDriver(capabilities, options);
 	}
 
@@ -424,10 +392,35 @@ public class Browser implements Closeable {
 		} else if (scope == BrowserScope.REMOTE) {
 			createRemoteDriver(capabilities);
 		} else if (scope == BrowserScope.DOCKER) {
-			createDockerDriver(capabilities);
+			driver = getDockerManager().createDockerDriver(id, capabilities);
 		} else {
 			driver = newWebDriver(options);
 		}
+	}
+
+	private DockerBrowserManager getDockerManager() {
+		if (dockerManager == null) {
+			synchronized (Browser.class) {
+				if (dockerManager == null) {
+					dockerManager = new DockerBrowserManager();
+
+					Path logFile = Paths.get(
+							KurentoClientWebPageTest.getDefaultOutputFile(""));
+
+					try {
+						if (!Files.exists(logFile)) {
+							Files.createDirectories(logFile);
+						}
+						dockerManager.setDownloadLogsPath(logFile);
+					} catch (IOException e) {
+						log.warn("Exception creating path {} for logs",
+								logFile);
+					}
+				}
+			}
+		}
+
+		return dockerManager;
 	}
 
 	public static WebDriver newWebDriver(Object options) {
@@ -473,7 +466,7 @@ public class Browser implements Closeable {
 		InputStream is = null;
 
 		try {
-			log.info("Trying to locate extension in the classpath ({}) ...",
+			log.debug("Trying to locate extension in the classpath ({}) ...",
 					extension);
 			is = ClassLoader.getSystemResourceAsStream(extension);
 			if (is.available() < 0) {
@@ -481,7 +474,7 @@ public class Browser implements Closeable {
 						extension);
 				is = null;
 			} else {
-				log.info("Success. Loading extension {} from classpath",
+				log.debug("Success. Loading extension {} from classpath",
 						extension);
 			}
 		} catch (Throwable t) {
@@ -492,11 +485,11 @@ public class Browser implements Closeable {
 		}
 		if (is == null) {
 			try {
-				log.info("Trying to locate extension as URL ({}) ...",
+				log.debug("Trying to locate extension as URL ({}) ...",
 						extension);
 				URL url = new URL(extension);
 				is = url.openStream();
-				log.info("Success. Loading extension {} from URL", extension);
+				log.debug("Success. Loading extension {} from URL", extension);
 			} catch (Throwable t) {
 				log.warn("Exception reading extension {} as URL ({} : {})",
 						extension, t.getClass(), t.getMessage());
@@ -562,233 +555,10 @@ public class Browser implements Closeable {
 				capabilities);
 
 		jobId = ((RemoteWebDriver) driver).getSessionId().toString();
-		log.info(
+		log.debug(
 				"%%%%%%%%%%%%% Saucelabs URL job for {} ({} {} in {}) %%%%%%%%%%%%%",
 				id, browserType, browserVersion, platform);
 		log.info("https://saucelabs.com/tests/{}", jobId);
-	}
-
-	public void createDockerDriver(DesiredCapabilities capabilities)
-			throws MalformedURLException {
-
-		// Start docker client for the first time
-		if (docker == null) {
-			docker = Docker.getSingleton();
-		}
-
-		calculateContainerNames();
-
-		// Start hub (if needed)
-		String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
-				DOCKER_HUB_IMAGE_DEFAULT);
-
-		String hubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
-				getTimeoutMs());
-
-		boolean record = getProperty(SELENIUM_RECORD_PROPERTY,
-				SELENIUM_RECORD_DEFAULT);
-
-		String nodeImageId = calculateBrowserImageName(capabilities, record);
-
-		int retries = 0;
-		try {
-
-			// Start nodes: Chrome and Firefox
-			docker.startAndWaitNode(browserContainerName, nodeImageId, hubIp);
-
-			// Create RemoteWebDriver
-			createAndWaitRemoteDriver("http://" + hubIp + ":4444/wd/hub",
-					capabilities);
-
-			if (record) {
-				createVncRecorderContainer();
-			}
-
-		} catch (org.openqa.grid.common.exception.GridException
-				| org.openqa.selenium.WebDriverException e) {
-			retries++;
-			if (retries > MAX_RETRIES) {
-				throw new RuntimeException(
-						"Selenium exception when creating browser \"" + id
-								+ "\" after " + retries + " retries",
-						e);
-			} else {
-
-				log.warn(
-						"Selenium exception creating browser \"{}\". Retrying {}...",
-						id, retries);
-
-				docker.stopAndRemoveContainers(browserContainerName);
-			}
-		}
-	}
-
-	private void createVncRecorderContainer() {
-
-		try {
-
-			String browserIp = docker.inspectContainer(browserContainerName)
-					.getNetworkSettings().getIpAddress();
-
-			try {
-				RemoteService.waitForReady(browserIp, 5900, 10,
-						TimeUnit.SECONDS);
-			} catch (TimeoutException e) {
-				throw new RuntimeException(
-						"Timeout when connecting to browser VNC");
-			}
-
-			String vncrecordImageId = getProperty(
-					DOCKER_VNCRECORDER_IMAGE_PROPERTY,
-					DOCKER_VNCRECORDER_IMAGE_DEFAULT);
-
-			if (!docker.existsContainer(vncrecorderContainerName)) {
-
-				String secretFile = createSecretFile();
-
-				docker.pullImageIfNecessary(vncrecordImageId);
-
-				String videoFile = Paths
-						.get(KurentoClientWebPageTest
-								.getDefaultOutputFile("-" + id + "-record.flv"))
-						.toAbsolutePath().toString();
-
-				log.debug(
-						"Creating container {} for recording video from browser {} in file {}",
-						vncrecorderContainerName, browserContainerName,
-						videoFile);
-
-				CreateContainerCmd createContainerCmd = docker.getClient()
-						.createContainerCmd(vncrecordImageId)
-						.withName(vncrecorderContainerName).withCmd("-o",
-								videoFile, "-P", secretFile, browserIp, "5900");
-
-				docker.mountDefaultFolders(createContainerCmd);
-
-				createContainerCmd.exec();
-
-				docker.startContainer(vncrecorderContainerName);
-
-				log.debug("Container {} started...", vncrecorderContainerName);
-
-			} else {
-				log.debug("Container {} already exists",
-						vncrecorderContainerName);
-			}
-
-		} catch (Exception e) {
-			log.warn("Exception creating vncRecorder container");
-		}
-	}
-
-	private String createSecretFile() throws IOException {
-		Path secretFile = Paths
-				.get(KurentoServicesTestHelper.getTestDir() + "vnc-passwd");
-
-		try (BufferedWriter bw = Files.newBufferedWriter(secretFile,
-				StandardCharsets.UTF_8)) {
-			bw.write("secret");
-		}
-
-		return secretFile.toAbsolutePath().toString();
-	}
-
-	private String calculateBrowserImageName(DesiredCapabilities capabilities,
-			boolean record) {
-
-		String browserName = capabilities.getBrowserName();
-
-		if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
-
-			// Chrome
-			if (record) {
-				return getProperty(DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY,
-						DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT);
-			} else {
-				return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY,
-						DOCKER_NODE_CHROME_IMAGE_DEFAULT);
-			}
-
-		} else if (browserName
-				.equals(DesiredCapabilities.firefox().getBrowserName())) {
-
-			// Firefox
-			if (record) {
-				return getProperty(DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY,
-						DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT);
-			} else {
-				return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY,
-						DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
-			}
-
-		} else {
-			throw new RuntimeException("Browser " + browserName
-					+ " is not supported currently for Docker scope");
-		}
-	}
-
-	private void calculateContainerNames() {
-
-		hubContainerName = getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY,
-				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
-
-		browserContainerName = getId();
-
-		vncrecorderContainerName = browserContainerName + "-"
-				+ getProperty(DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY,
-						DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
-
-		if (docker.isRunningInContainer()) {
-
-			String containerName = docker.getContainerName();
-
-			browserContainerName = containerName + "-" + browserContainerName;
-			hubContainerName = containerName + "-" + hubContainerName;
-			vncrecorderContainerName = containerName + "-"
-					+ vncrecorderContainerName;
-		}
-	}
-
-	private void createAndWaitRemoteDriver(String driverUrl,
-			DesiredCapabilities capabilities) {
-
-		log.debug("Creating remote driver in hub {}", driverUrl);
-
-		int timeoutSeconds = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
-				SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
-
-		long timeoutMs = System.currentTimeMillis()
-				+ TimeUnit.SECONDS.toMillis(timeoutSeconds);
-
-		do {
-			try {
-
-				driver = new RemoteWebDriver(new URL(driverUrl), capabilities);
-
-			} catch (MalformedURLException e) {
-				throw new Error("Hub URL is malformed", e);
-
-			} catch (UnreachableBrowserException t) {
-
-				driver = null;
-				// Check timeout
-				if (System.currentTimeMillis() > timeoutMs) {
-					throw t;
-				}
-
-				log.debug(
-						"Exception creating RemoteWebDriver {}:{}. Retrying...",
-						t.getClass().getName(), t.getMessage());
-
-				// Poll time
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					return;
-				}
-			}
-		} while (driver == null);
 	}
 
 	public void createRemoteDriver(final DesiredCapabilities capabilities)
@@ -801,7 +571,7 @@ public class Browser implements Closeable {
 
 		if (remoteHubUrl == null) {
 
-			log.info("Creating remote webdriver for {}", id);
+			log.debug("Creating remote webdriver for {}", id);
 			if (!GridHandler.getInstance().containsSimilarBrowserKey(id)) {
 
 				if (login != null) {
@@ -868,7 +638,7 @@ public class Browser implements Closeable {
 			final int hubPort = GridHandler.getInstance().getHubPort();
 			final String hubHost = GridHandler.getInstance().getHubHost();
 
-			log.info("Creating remote webdriver of {} ({})", id,
+			log.debug("Creating remote webdriver of {} ({})", id,
 					gridNode.getHost());
 
 			remoteHubUrl = "http://" + hubHost + ":" + hubPort + "/wd/hub";
@@ -902,9 +672,9 @@ public class Browser implements Closeable {
 
 		for (int i = 0; i < timeout; i++) {
 			if (t.isAlive()) {
-				log.info("Waiting for RemoteWebDriver {}{}", id, nodeMsg);
+				log.debug("Waiting for RemoteWebDriver {}{}", id, nodeMsg);
 			} else {
-				log.info("Remote webdriver of {}{} created", id, nodeMsg);
+				log.debug("Remote webdriver of {}{} created", id, nodeMsg);
 				return;
 			}
 			waitSeconds(1);
@@ -950,202 +720,6 @@ public class Browser implements Closeable {
 			kurentoTestJs += "return true;";
 			this.executeScript(kurentoTestJs);
 		}
-	}
-
-	public static class Builder {
-		private int timeout = 60; // seconds
-		private int thresholdTime = 10; // seconds
-		private double colorDistance = 60;
-		private String node = getProperty(TEST_HOST_PROPERTY,
-				getProperty(TEST_PUBLIC_IP_PROPERTY, TEST_PUBLIC_IP_DEFAULT));
-		private String host = node;
-		private int serverPort = getProperty(TEST_PORT_PROPERTY,
-				getProperty(TEST_PUBLIC_PORT_PROPERTY,
-						KurentoServicesTestHelper.getAppHttpPort()));
-		private BrowserScope scope = BrowserScope.LOCAL;
-		private BrowserType browserType = BrowserType.CHROME;
-		private Protocol protocol = Protocol.valueOf(
-				getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT)
-						.toUpperCase());
-		private WebPageType webPageType = WebPageType.value2WebPageType(
-				getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
-		private boolean usePhysicalCam = false;
-		private boolean enableScreenCapture = false;
-		private int recordAudio = 0; // seconds
-		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
-		private AudioChannel audioChannel; // stereo, mono
-		private int numInstances = 0;
-		private int browserPerInstance = 1;
-		private String video;
-		private String audio;
-		private String browserVersion;
-		private Platform platform;
-		private String login;
-		private String passwd;
-		private String pem;
-		private boolean avoidProxy;
-		private String parentTunnel;
-		private List<Map<String, String>> extensions;
-		private String url;
-		private String webPagePath;
-
-		public Builder browserPerInstance(int browserPerInstance) {
-			this.browserPerInstance = browserPerInstance;
-			return this;
-		}
-
-		public Builder login(String login) {
-			this.login = login;
-			return this;
-		}
-
-		public Builder passwd(String passwd) {
-			this.passwd = passwd;
-			return this;
-		}
-
-		public Builder pem(String pem) {
-			this.pem = pem;
-			return this;
-		}
-
-		public Builder protocol(Protocol protocol) {
-			this.protocol = protocol;
-			return this;
-		}
-
-		public Builder numInstances(int numInstances) {
-			this.numInstances = numInstances;
-			return this;
-		}
-
-		public Builder serverPort(int serverPort) {
-			this.serverPort = serverPort;
-			return this;
-		}
-
-		public Builder node(String node) {
-			this.node = node;
-			return this;
-		}
-
-		public Builder scope(BrowserScope scope) {
-			String scopeProp = getProperty(SELENIUM_SCOPE_PROPERTY);
-			if (scopeProp != null) {
-				scope = BrowserScope.valueOf(scopeProp.toUpperCase());
-			}
-			this.scope = scope;
-
-			String appAutostart = getProperty(
-					TestConfiguration.TEST_APP_AUTOSTART_PROPERTY,
-					TestConfiguration.TEST_APP_AUTOSTART_DEFAULT);
-
-			if (BrowserScope.DOCKER.equals(scope) && !appAutostart
-					.equals(TestConfiguration.AUTOSTART_FALSE_VALUE)) {
-
-				if (docker.isRunningInContainer()) {
-					this.node = docker.getContainerIpAddress();
-				} else {
-					this.node = docker.getHostIpForContainers();
-				}
-			}
-
-			return this;
-		}
-
-		public Builder timeout(int timeout) {
-			this.timeout = timeout;
-			return this;
-		}
-
-		public Builder thresholdTime(int thresholdTime) {
-			this.thresholdTime = thresholdTime;
-			return this;
-		}
-
-		public Builder colorDistance(double colorDistance) {
-			this.colorDistance = colorDistance;
-			return this;
-		}
-
-		public Builder video(String video) {
-			this.video = video;
-			return this;
-		}
-
-		public Builder webPageType(WebPageType webPageType) {
-			this.webPageType = webPageType;
-			return this;
-		}
-
-		public Builder browserType(BrowserType browser) {
-			this.browserType = browser;
-			return this;
-		}
-
-		public Builder usePhysicalCam() {
-			this.usePhysicalCam = true;
-			return this;
-		}
-
-		public Builder avoidProxy() {
-			this.avoidProxy = true;
-			return this;
-		}
-
-		public Builder parentTunnel(String parentTunnel) {
-			this.parentTunnel = parentTunnel;
-			return this;
-		}
-
-		public Builder enableScreenCapture() {
-			this.enableScreenCapture = true;
-			return this;
-		}
-
-		public Builder audio(String audio, int recordAudio, int audioSampleRate,
-				AudioChannel audioChannel) {
-			this.audio = audio;
-			this.recordAudio = recordAudio;
-			this.audioSampleRate = audioSampleRate;
-			this.audioChannel = audioChannel;
-			return this;
-		}
-
-		public Builder browserVersion(String browserVersion) {
-			this.browserVersion = browserVersion;
-			return this;
-		}
-
-		public Builder platform(Platform platform) {
-			this.platform = platform;
-			return this;
-		}
-
-		public Builder host(String host) {
-			this.host = host;
-			return this;
-		}
-
-		public Builder extensions(List<Map<String, String>> extensions) {
-			this.extensions = extensions;
-			return this;
-		}
-
-		public Builder url(String url) {
-			this.url = url;
-			return this;
-		}
-
-		public Builder webPagePath(String webPagePath) {
-			this.webPagePath = webPagePath;
-			return this;
-		}
-
-		public Browser build() {
-			return new Browser(this);
-		}
-
 	}
 
 	public int getRecordAudio() {
@@ -1348,7 +922,7 @@ public class Browser implements Closeable {
 		// WebDriver
 		if (driver != null) {
 			try {
-				log.info("Closing webdriver of {} ", id);
+				log.debug("Closing webdriver of {} ", id);
 				driver.quit();
 				driver = null;
 			} catch (Throwable t) {
@@ -1359,45 +933,13 @@ public class Browser implements Closeable {
 
 		// Stop Selenium Grid (if necessary)
 		if (GridHandler.getInstance().useRemoteNodes()) {
-			log.info("Closing Grid of {} ", id);
+			log.debug("Closing Grid of {} ", id);
 			GridHandler.getInstance().stopGrid();
 		}
 
 		// Stop docker containers (if necessary)
 		if (scope == BrowserScope.DOCKER) {
-
-			downloadLogsForContainer(browserContainerName, id);
-			downloadLogsForContainer(vncrecorderContainerName,
-					id + "-recorder");
-
-			docker.stopAndRemoveContainers(vncrecorderContainerName,
-					browserContainerName);
-
-			if (numBrowsers.decrementAndGet() == 0) {
-				downloadLogsForContainer(hubContainerName, "hub");
-				docker.stopAndRemoveContainers(hubContainerName);
-			}
-		}
-	}
-
-	private void downloadLogsForContainer(String container, String name) {
-
-		if (docker.existsContainer(container)) {
-
-			try {
-
-				Path logFile = Paths.get(KurentoClientWebPageTest
-						.getDefaultOutputFile("-" + name + ".log"));
-
-				log.debug("Downloading log for container {} in file {}",
-						container, logFile.toAbsolutePath());
-
-				docker.downloadLog(container, logFile);
-
-			} catch (IOException e) {
-				log.warn("Exception writing logs for container {}", container,
-						e);
-			}
+			getDockerManager().closeDriver(id);
 		}
 	}
 
@@ -1405,4 +947,200 @@ public class Browser implements Closeable {
 		return jobId;
 	}
 
+	public static class Builder {
+
+		private int timeout = 60; // seconds
+		private int thresholdTime = 10; // seconds
+		private double colorDistance = 60;
+		private String node = getProperty(TEST_HOST_PROPERTY,
+				getProperty(TEST_PUBLIC_IP_PROPERTY, TEST_PUBLIC_IP_DEFAULT));
+		private String host = node;
+		private int serverPort = getProperty(TEST_PORT_PROPERTY,
+				getProperty(TEST_PUBLIC_PORT_PROPERTY,
+						KurentoServicesTestHelper.getAppHttpPort()));
+		private BrowserScope scope = BrowserScope.LOCAL;
+		private BrowserType browserType = BrowserType.CHROME;
+		private Protocol protocol = Protocol.valueOf(
+				getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT)
+						.toUpperCase());
+		private WebPageType webPageType = WebPageType.value2WebPageType(
+				getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
+		private boolean usePhysicalCam = false;
+		private boolean enableScreenCapture = false;
+		private int recordAudio = 0; // seconds
+		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
+		private AudioChannel audioChannel; // stereo, mono
+		private int numInstances = 0;
+		private int browserPerInstance = 1;
+		private String video;
+		private String audio;
+		private String browserVersion;
+		private Platform platform;
+		private String login;
+		private String passwd;
+		private String pem;
+		private boolean avoidProxy;
+		private String parentTunnel;
+		private List<Map<String, String>> extensions;
+		private String url;
+		private String webPagePath;
+
+		public Builder browserPerInstance(int browserPerInstance) {
+			this.browserPerInstance = browserPerInstance;
+			return this;
+		}
+
+		public Builder login(String login) {
+			this.login = login;
+			return this;
+		}
+
+		public Builder passwd(String passwd) {
+			this.passwd = passwd;
+			return this;
+		}
+
+		public Builder pem(String pem) {
+			this.pem = pem;
+			return this;
+		}
+
+		public Builder protocol(Protocol protocol) {
+			this.protocol = protocol;
+			return this;
+		}
+
+		public Builder numInstances(int numInstances) {
+			this.numInstances = numInstances;
+			return this;
+		}
+
+		public Builder serverPort(int serverPort) {
+			this.serverPort = serverPort;
+			return this;
+		}
+
+		public Builder node(String node) {
+			this.node = node;
+			return this;
+		}
+
+		public Builder scope(BrowserScope scope) {
+			String scopeProp = getProperty(SELENIUM_SCOPE_PROPERTY);
+			if (scopeProp != null) {
+				scope = BrowserScope.valueOf(scopeProp.toUpperCase());
+			}
+			this.scope = scope;
+
+			String appAutostart = getProperty(
+					TestConfiguration.TEST_APP_AUTOSTART_PROPERTY,
+					TestConfiguration.TEST_APP_AUTOSTART_DEFAULT);
+
+			if (BrowserScope.DOCKER.equals(scope) && !appAutostart
+					.equals(TestConfiguration.AUTOSTART_FALSE_VALUE)) {
+
+				if (docker.isRunningInContainer()) {
+					this.node = docker.getContainerIpAddress();
+				} else {
+					this.node = docker.getHostIpForContainers();
+				}
+			}
+
+			return this;
+		}
+
+		public Builder timeout(int timeout) {
+			this.timeout = timeout;
+			return this;
+		}
+
+		public Builder thresholdTime(int thresholdTime) {
+			this.thresholdTime = thresholdTime;
+			return this;
+		}
+
+		public Builder colorDistance(double colorDistance) {
+			this.colorDistance = colorDistance;
+			return this;
+		}
+
+		public Builder video(String video) {
+			this.video = video;
+			return this;
+		}
+
+		public Builder webPageType(WebPageType webPageType) {
+			this.webPageType = webPageType;
+			return this;
+		}
+
+		public Builder browserType(BrowserType browser) {
+			this.browserType = browser;
+			return this;
+		}
+
+		public Builder usePhysicalCam() {
+			this.usePhysicalCam = true;
+			return this;
+		}
+
+		public Builder avoidProxy() {
+			this.avoidProxy = true;
+			return this;
+		}
+
+		public Builder parentTunnel(String parentTunnel) {
+			this.parentTunnel = parentTunnel;
+			return this;
+		}
+
+		public Builder enableScreenCapture() {
+			this.enableScreenCapture = true;
+			return this;
+		}
+
+		public Builder audio(String audio, int recordAudio, int audioSampleRate,
+				AudioChannel audioChannel) {
+			this.audio = audio;
+			this.recordAudio = recordAudio;
+			this.audioSampleRate = audioSampleRate;
+			this.audioChannel = audioChannel;
+			return this;
+		}
+
+		public Builder browserVersion(String browserVersion) {
+			this.browserVersion = browserVersion;
+			return this;
+		}
+
+		public Builder platform(Platform platform) {
+			this.platform = platform;
+			return this;
+		}
+
+		public Builder host(String host) {
+			this.host = host;
+			return this;
+		}
+
+		public Builder extensions(List<Map<String, String>> extensions) {
+			this.extensions = extensions;
+			return this;
+		}
+
+		public Builder url(String url) {
+			this.url = url;
+			return this;
+		}
+
+		public Builder webPagePath(String webPagePath) {
+			this.webPagePath = webPagePath;
+			return this;
+		}
+
+		public Browser build() {
+			return new Browser(this);
+		}
+
+	}
 }

@@ -18,14 +18,19 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.concurrent.TimeUnit;
 
 import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.Shell;
+import org.kurento.test.TestConfiguration;
+import org.kurento.test.browser.BrowserType;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +43,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -218,10 +224,39 @@ public class Docker implements Closeable {
 	}
 
 	public void mountDefaultFolders(CreateContainerCmd createContainerCmd) {
+		mountDefaultFolders(createContainerCmd, null);
+	}
+
+	public void mountDefaultFolders(CreateContainerCmd createContainerCmd,
+			String configFilePath) {
+
 		if (isRunningInContainer()) {
 
 			createContainerCmd
 					.withVolumesFrom(new VolumesFrom(getContainerId()));
+
+			if (configFilePath != null) {
+
+				String workspace = PropertiesManager.getProperty(
+						TestConfiguration.KURENTO_WORKSPACE_PROP,
+						TestConfiguration.KURENTO_WORKSPACE_DEFAULT);
+
+				String workspaceHost = PropertiesManager.getProperty(
+						TestConfiguration.KURENTO_WORKSPACE_HOST_PROP,
+						TestConfiguration.KURENTO_WORKSPACE_HOST_DEFAULT);
+
+				String hostConfigFilePath = Paths.get(workspaceHost)
+						.resolve(Paths.get(workspace)
+								.relativize(Paths.get(configFilePath)))
+						.toString();
+
+				log.info("Config file volume {}", hostConfigFilePath);
+
+				Volume configVol = new Volume("/opt/selenium/config.json");
+
+				createContainerCmd.withVolumes(configVol)
+						.withBinds(new Bind(hostConfigFilePath, configVol));
+			}
 
 		} else {
 
@@ -233,12 +268,28 @@ public class Docker implements Closeable {
 					.toAbsolutePath().toString();
 			Volume workspaceVolume = new Volume(workspacePath);
 
-			createContainerCmd.withVolumes(testFilesVolume, workspaceVolume)
-					.withBinds(
-							new Bind(testFilesPath, testFilesVolume,
-									AccessMode.ro),
-							new Bind(workspacePath, workspaceVolume,
-									AccessMode.rw));
+			Volume configVol = new Volume("/opt/selenium/config.json");
+
+			if (configFilePath != null) {
+
+				createContainerCmd
+						.withVolumes(testFilesVolume, workspaceVolume,
+								configVol)
+						.withBinds(
+								new Bind(testFilesPath, testFilesVolume,
+										AccessMode.ro),
+								new Bind(workspacePath, workspaceVolume,
+										AccessMode.rw),
+								new Bind(configFilePath, configVol));
+			} else {
+
+				createContainerCmd.withVolumes(testFilesVolume, workspaceVolume)
+						.withBinds(
+								new Bind(testFilesPath, testFilesVolume,
+										AccessMode.ro),
+								new Bind(workspacePath, workspaceVolume,
+										AccessMode.rw));
+			}
 		}
 	}
 
@@ -321,7 +372,8 @@ public class Docker implements Closeable {
 		if (existsContainer(containerName)) {
 			log.debug("Removing container {}", containerName);
 
-			getClient().removeContainerCmd(containerName).exec();
+			getClient().removeContainerCmd(containerName)
+					.withRemoveVolumes(true).exec();
 		}
 	}
 
@@ -351,18 +403,90 @@ public class Docker implements Closeable {
 		return hubIp;
 	}
 
-	public void startNode(String nodeName, String imageId, String hubIp) {
+	public void startNode(String id, BrowserType browserType, String nodeName,
+			String imageId, String hubIp) {
 		// Create node if not exist
-		createContainer(imageId, nodeName, true,
-				"HUB_PORT_4444_TCP_ADDR=" + hubIp);
+		if (!existsContainer(nodeName)) {
+
+			pullImageIfNecessary(imageId);
+
+			log.debug("Creating container {}", nodeName);
+
+			CreateContainerCmd createContainerCmd = getClient()
+					.createContainerCmd(imageId).withName(nodeName).withEnv(
+							new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp });
+
+			String configFile = generateConfigFile(id, browserType);
+
+			mountDefaultFolders(createContainerCmd, configFile);
+
+			createContainerCmd.exec();
+
+			log.debug("Container {} started...", nodeName);
+
+		} else {
+			log.debug("Container {} already exists", nodeName);
+		}
 
 		// Start node if stopped
 		startContainer(nodeName);
 	}
 
-	public void startAndWaitNode(String nodeName, String imageId,
-			String hubIp) {
-		startNode(nodeName, imageId, hubIp);
+	private String generateConfigFile(String id, BrowserType browserType) {
+
+		try {
+
+			String workspace = PropertiesManager.getProperty(
+					TestConfiguration.KURENTO_WORKSPACE_PROP,
+					TestConfiguration.KURENTO_WORKSPACE_DEFAULT);
+
+			Path config = Files.createTempFile(Paths.get(workspace), "",
+					"-config.json", PosixFilePermissions.asFileAttribute(
+							PosixFilePermissions.fromString("rw-r--r--")));
+
+			String browserName1;
+			String browserName2;
+
+			if (browserType == BrowserType.CHROME) {
+				browserName1 = "*googlechrome";
+				browserName2 = "chrome";
+			} else if (browserType == BrowserType.FIREFOX) {
+				browserName1 = "*firefox";
+				browserName2 = "firefox";
+			} else {
+				throw new KurentoException(
+						"Unsupported browser type: " + browserType);
+			}
+
+			try (Writer w = Files.newBufferedWriter(config,
+					StandardCharsets.UTF_8)) {
+				w.write("{\n" + "  \"capabilities\": [\n" + "    {\n"
+						+ "      \"browserName\": \"" + browserName1 + "\",\n"
+						+ "      \"maxInstances\": 1,\n"
+						+ "      \"seleniumProtocol\": \"Selenium\",\n"
+						+ "      \"applicationName\": \"" + id + "\"\n"
+						+ "    },\n" + "    {\n" + "      \"browserName\": \""
+						+ browserName2 + "\",\n"
+						+ "      \"maxInstances\": 1,\n"
+						+ "      \"seleniumProtocol\": \"WebDriver\",\n"
+						+ "      \"applicationName\": \"" + id + "\"\n"
+						+ "    }\n" + "  ],\n" + "  \"configuration\": {\n"
+						+ "    \"proxy\": \"org.openqa.grid.selenium.proxy.DefaultRemoteProxy\",\n"
+						+ "    \"maxSession\": 1,\n" + "    \"port\": 5555,\n"
+						+ "    \"register\": true,\n"
+						+ "    \"registerCycle\": 5000\n" + "  }\n" + "}");
+			}
+
+			return config.toAbsolutePath().toString();
+
+		} catch (IOException e) {
+			throw new KurentoException("Exception creating config file", e);
+		}
+	}
+
+	public void startAndWaitNode(String id, BrowserType browserType,
+			String nodeName, String imageId, String hubIp) {
+		startNode(id, browserType, nodeName, imageId, hubIp);
 		waitForContainer(nodeName);
 	}
 
@@ -504,6 +628,18 @@ public class Docker implements Closeable {
 		public void onComplete() {
 			pw.close();
 			super.onComplete();
+		}
+	}
+
+	public Statistics getStatistics(String containerId) {
+		FirstObjectResultCallback<Statistics> resultCallback = new FirstObjectResultCallback<>();
+
+		try {
+			return getClient().statsCmd().withContainerId(containerId)
+					.exec(resultCallback).waitForObject();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(
+					"Interrupted while waiting for statistics");
 		}
 	}
 
