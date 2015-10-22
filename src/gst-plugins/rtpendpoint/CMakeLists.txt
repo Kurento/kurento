@@ -15,6 +15,13 @@ set(KMS_RTPENDPOINT_HEADERS
   kmssocketutils.h
 )
 
+set(ENUM_HEADERS
+  kmsrtpsdescryptosuite.h
+)
+
+list(APPEND KMS_RTPENDPOINT_HEADERS ${ENUM_HEADERS})
+add_glib_enumtypes(KMS_RTPENDPOINT_SOURCES KMS_RTPENDPOINT_HEADERS kms-rtp-enumtypes KMS ${ENUM_HEADERS})
+
 add_library(rtpendpoint MODULE ${KMS_RTPENDPOINT_SOURCES} ${KMS_RTPENDPOINT_HEADERS})
 
 add_dependencies(rtpendpoint rtcpdemux)

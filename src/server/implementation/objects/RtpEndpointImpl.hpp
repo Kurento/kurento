@@ -20,7 +20,8 @@ class RtpEndpointImpl : public BaseRtpEndpointImpl, public virtual RtpEndpoint
 public:
 
   RtpEndpointImpl (const boost::property_tree::ptree &conf,
-                   std::shared_ptr<MediaPipeline> mediaPipeline);
+                   std::shared_ptr<MediaPipeline> mediaPipeline,
+                   std::shared_ptr<SDES> crypto);
 
   virtual ~RtpEndpointImpl () {};
 

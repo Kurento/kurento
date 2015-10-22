@@ -16,6 +16,7 @@
 #  include <config.h>
 #endif
 
+#include <string.h>
 #include <nice/interfaces.h>
 #include <gst/rtp/gstrtcpbuffer.h>
 
@@ -27,6 +28,8 @@
 #include <commons/sdpagent/kmssdprtpavpfmediahandler.h>
 #include <commons/sdpagent/kmssdpsdesext.h>
 #include <commons/kmsrefstruct.h>
+#include "kms-rtp-enumtypes.h"
+#include "kmsrtpsdescryptosuite.h"
 
 #define PLUGIN_NAME "rtpendpoint"
 
@@ -37,6 +40,10 @@ GST_DEBUG_CATEGORY_STATIC (kms_rtp_endpoint_debug);
 G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 
 #define DEFAULT_USE_SDES FALSE
+#define DEFAULT_MASTER_KEY NULL
+#define DEFAULT_CRYPTO_SUITE KMS_RTP_SDES_CRYPTO_SUITE_NONE
+#define DEFAULT_KEY_TAG 1
+
 #define MAX_RETRIES 4
 
 #define KMS_SRTP_CIPHER_AES_128_ICM 1
@@ -75,6 +82,9 @@ struct _KmsRtpEndpointPrivate
 {
   gboolean use_sdes;
   GHashTable *sdes_keys;
+
+  gchar *master_key;
+  KmsRtpSDESCryptoSuite crypto;
 };
 
 /* Signals and args */
@@ -86,7 +96,9 @@ enum
 enum
 {
   PROP_0,
-  PROP_USE_SDES
+  PROP_USE_SDES,
+  PROP_MASTER_KEY,
+  PROP_CRYPTO_SUITE
 };
 
 static void
@@ -330,25 +342,6 @@ get_max_key_size (SrtpCryptoSuite crypto)
   }
 }
 
-static gboolean
-create_new_random_key (GValue * key, guint tag, SrtpCryptoSuite crypto,
-    const gchar * lifetime, const guint * mki, const guint * length)
-{
-  gchar *strkey;
-  gboolean ret;
-  guint size;
-
-  size = get_max_key_size (crypto);
-  strkey = generate_random_key (size);
-
-  ret = kms_sdp_sdes_ext_create_key_detailed (tag, strkey,
-      crypto, lifetime, mki, length, key, NULL);
-
-  g_free (strkey);
-
-  return ret;
-}
-
 static void
 enhanced_g_value_copy (const GValue * src, GValue * dest)
 {
@@ -360,11 +353,29 @@ enhanced_g_value_copy (const GValue * src, GValue * dest)
   g_value_copy (src, dest);
 }
 
+static gboolean
+kms_rtp_endpoint_create_new_key (KmsRtpEndpoint * self, guint tag, GValue * key)
+{
+  if (self->priv->crypto == KMS_RTP_SDES_CRYPTO_SUITE_NONE) {
+    return FALSE;
+  }
+
+  if (self->priv->master_key == NULL) {
+    guint size;
+
+    size = get_max_key_size ((SrtpCryptoSuite) self->priv->crypto);
+    self->priv->master_key = generate_random_key (size);
+  }
+
+  return kms_sdp_sdes_ext_create_key_detailed (tag, self->priv->master_key,
+      (SrtpCryptoSuite) self->priv->crypto, NULL, NULL, NULL, key, NULL);
+}
+
 static GArray *
 kms_rtp_endpoint_on_offer_keys_cb (KmsSdpSdesExt * ext, SdesExtData * edata)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (edata->rtpep);
-  GValue v1 = G_VALUE_INIT;
+  GValue key = G_VALUE_INIT;
   SdesKeys *sdes_keys;
   GArray *keys;
 
@@ -379,10 +390,15 @@ kms_rtp_endpoint_on_offer_keys_cb (KmsSdpSdesExt * ext, SdesExtData * edata)
     return NULL;
   }
 
-  create_new_random_key (&v1, 1, KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_32,
-      NULL, NULL, NULL);
+  if (!kms_rtp_endpoint_create_new_key (self, DEFAULT_KEY_TAG, &key)) {
+    GST_ERROR_OBJECT (self, "Can not generate master key for media %s",
+        edata->media);
+    KMS_ELEMENT_UNLOCK (self);
 
-  enhanced_g_value_copy (&v1, &sdes_keys->local);
+    return NULL;
+  }
+
+  enhanced_g_value_copy (&key, &sdes_keys->local);
   sdes_keys->offerer = TRUE;
 
   KMS_ELEMENT_UNLOCK (self);
@@ -392,13 +408,13 @@ kms_rtp_endpoint_on_offer_keys_cb (KmsSdpSdesExt * ext, SdesExtData * edata)
   /* Sets a function to clear an element of array */
   g_array_set_clear_func (keys, (GDestroyNotify) g_value_unset);
 
-  g_array_append_val (keys, v1);
+  g_array_append_val (keys, key);
 
   return keys;
 }
 
 static gboolean
-is_supported_key (GValue * key)
+kms_rtp_endpoint_is_supported_key (KmsRtpEndpoint * self, GValue * key)
 {
   SrtpCryptoSuite crypto;
 
@@ -412,14 +428,14 @@ is_supported_key (GValue * key)
     case KMS_SDES_EXT_AES_CM_128_HMAC_SHA1_80:
     case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_32:
     case KMS_SDES_EXT_AES_256_CM_HMAC_SHA1_80:
-      return TRUE;
+      return (SrtpCryptoSuite) self->priv->crypto == crypto;
     default:
       return FALSE;
   }
 }
 
 static GValue *
-get_supported_key (const GArray * keys)
+kms_rtp_endpoint_get_supported_key (KmsRtpEndpoint * self, const GArray * keys)
 {
   guint i;
 
@@ -428,7 +444,7 @@ get_supported_key (const GArray * keys)
 
     key = &g_array_index (keys, GValue, 0);
 
-    if (key != NULL && is_supported_key (key)) {
+    if (key != NULL && kms_rtp_endpoint_is_supported_key (self, key)) {
       return key;
     }
   }
@@ -444,7 +460,6 @@ kms_rtp_endpoint_on_answer_keys_cb (KmsSdpSdesExt * ext, const GArray * keys,
   SdesKeys *sdes_keys;
   GValue *offer_key;
   gboolean ret = FALSE;
-  SrtpCryptoSuite crypto;
   guint tag;
 
   if (keys->len == 0) {
@@ -452,15 +467,14 @@ kms_rtp_endpoint_on_answer_keys_cb (KmsSdpSdesExt * ext, const GArray * keys,
     return FALSE;
   }
 
-  offer_key = get_supported_key (keys);
+  KMS_ELEMENT_LOCK (self);
+
+  offer_key = kms_rtp_endpoint_get_supported_key (self, keys);
 
   if (offer_key == NULL) {
     GST_ERROR_OBJECT (self, "No supported keys provided");
-
-    return FALSE;
+    goto end;
   }
-
-  KMS_ELEMENT_LOCK (self);
 
   sdes_keys = g_hash_table_lookup (self->priv->sdes_keys, edata->media);
 
@@ -470,12 +484,16 @@ kms_rtp_endpoint_on_answer_keys_cb (KmsSdpSdesExt * ext, const GArray * keys,
   }
 
   if (!kms_sdp_sdes_ext_get_parameters_from_key (offer_key, KMS_SDES_TAG_FIELD,
-          G_TYPE_UINT, &tag, KMS_SDES_CRYPTO, G_TYPE_UINT, &crypto, NULL)) {
+          G_TYPE_UINT, &tag, NULL)) {
     GST_ERROR_OBJECT (self, "Invalid key offered");
     goto end;
   }
 
-  create_new_random_key (key, tag, crypto, NULL, NULL, NULL);
+  if (!kms_rtp_endpoint_create_new_key (self, tag, key)) {
+    GST_ERROR_OBJECT (self, "Can not generate master key for media %s",
+        edata->media);
+    goto end;
+  }
 
   enhanced_g_value_copy (key, &sdes_keys->local);
   enhanced_g_value_copy (offer_key, &sdes_keys->remote);
@@ -808,8 +826,33 @@ kms_rtp_endpoint_set_property (GObject * object, guint prop_id,
   KMS_ELEMENT_LOCK (self);
 
   switch (prop_id) {
-    case PROP_USE_SDES:
-      self->priv->use_sdes = g_value_get_boolean (value);
+    case PROP_MASTER_KEY:{
+      gchar *key;
+      guint len;
+
+      key = g_value_dup_string (value);
+      if (key == NULL) {
+        break;
+      }
+
+      len = strlen (key);
+
+      if (len < KMS_SRTP_CIPHER_AES_128_ICM_SIZE ||
+          len > KMS_SRTP_CIPHER_AES_256_ICM_SIZE) {
+        GST_ERROR_OBJECT (self, "key size out of range");
+        g_free (key);
+        break;
+      }
+
+      g_free (self->priv->master_key);
+      self->priv->master_key = g_base64_encode ((guchar *) key, len);
+      g_free (key);
+      break;
+    }
+    case PROP_CRYPTO_SUITE:
+      self->priv->crypto = g_value_get_enum (value);
+      self->priv->use_sdes =
+          self->priv->crypto != KMS_RTP_SDES_CRYPTO_SUITE_NONE;
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -830,6 +873,12 @@ kms_rtp_endpoint_get_property (GObject * object, guint prop_id,
   switch (prop_id) {
     case PROP_USE_SDES:
       g_value_set_boolean (value, self->priv->use_sdes);
+      break;
+    case PROP_MASTER_KEY:
+      g_value_set_string (value, self->priv->master_key);
+      break;
+    case PROP_CRYPTO_SUITE:
+      g_value_set_enum (value, self->priv->crypto);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -900,6 +949,7 @@ kms_rtp_endpoint_finalize (GObject * object)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
 
+  g_free (self->priv->master_key);
   g_hash_table_unref (self->priv->sdes_keys);
 
   /* chain up */
@@ -944,6 +994,19 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
       g_param_spec_boolean ("use-sdes",
           "Use SDES", "If session description protocol security descriptions "
           "(SDES) is used or not", DEFAULT_USE_SDES,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_MASTER_KEY,
+      g_param_spec_string ("master-key",
+          "Master key", "Master key (minimum of 30 and maximum of 46 bytes)",
+          DEFAULT_MASTER_KEY,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_CRYPTO_SUITE,
+      g_param_spec_enum ("crypto-suite",
+          "Crypto suite",
+          "Describes the encryption and authentication algorithms",
+          KMS_TYPE_RTP_SDES_CRYPTO_SUITE, DEFAULT_CRYPTO_SUITE,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   g_type_class_add_private (klass, sizeof (KmsRtpEndpointPrivate));
