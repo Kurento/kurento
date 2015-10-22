@@ -31,7 +31,6 @@ if [ -n "$PROJECT_PATH" ]; then
   mavenOpts="$mavenOpts -am -pl $PROJECT_PATH"
   mavenOpts="$mavenOpts -Dproject.path=$WORKSPACE/$PROJECT_PATH"
 fi
-mavenOpts="$mavenOpts -Dkurento.workspace=$WORKSPACE"
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
 mavenOpts="$mavenOpts -U"
 
