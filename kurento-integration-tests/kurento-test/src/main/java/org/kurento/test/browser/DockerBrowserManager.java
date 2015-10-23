@@ -60,7 +60,7 @@ import com.google.gson.JsonObject;
 
 public class DockerBrowserManager {
 
-	private static final long CONTAINER_CREATION_TIMEOUT = 20000;
+	private static final long REMOTE_WEBDRIVER_TIMEOUT = 3600_000;
 
 	private static Logger log = LoggerFactory
 			.getLogger(DockerBrowserManager.class);
@@ -423,7 +423,7 @@ public class DockerBrowserManager {
 					DOCKER_HUB_IMAGE_DEFAULT);
 
 			dockerHubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
-					CONTAINER_CREATION_TIMEOUT);
+					REMOTE_WEBDRIVER_TIMEOUT);
 
 			hubUrl = "http://" + dockerHubIp + ":4444";
 
