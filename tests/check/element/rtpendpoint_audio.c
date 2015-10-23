@@ -26,6 +26,12 @@
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
+#define KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_32 0
+#define KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_80 1
+#define KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_32 2
+#define KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80 3
+#define KMS_RTP_SDES_CRYPTO_SUITE_NONE 4
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -396,7 +402,7 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps expected_caps, gchar * codec)
+    GstStaticCaps expected_caps, gchar * codec, guint crypto)
 {
   GArray *codecs_array;
   gchar *codecs[] = { codec, NULL };
@@ -419,6 +425,12 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
   gboolean answer_ok;
+
+  if (crypto != KMS_RTP_SDES_CRYPTO_SUITE_NONE) {
+    /* Use random key */
+    g_object_set (offerer, "crypto-suite", crypto, NULL);
+    g_object_set (answerer, "crypto-suite", crypto, NULL);
+  }
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
@@ -535,7 +547,16 @@ GST_START_TEST (test_opus_sendonly_play_after_negotiation)
 GST_END_TEST
 GST_START_TEST (test_opus_sendrecv)
 {
-  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1");
+  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
+      KMS_RTP_SDES_CRYPTO_SUITE_NONE);
+  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_32);
+  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_80);
+  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_32);
+  test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80);
 }
 
 GST_END_TEST
