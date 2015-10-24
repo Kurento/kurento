@@ -4,15 +4,22 @@
 
 if [ $# -lt 2 ]
 then
-  echo "Usage: $0 <groups> <test>"
+  echo "Usage: $0 <groups> <test> [<record_tests>]"
   exit 1
 fi
 
 TEST_GROUP=$1
 TEST_PREFIX=$2
 
+if [ -n "$3" ]; then
+  TEST_SELENIUM_RECORD=$3
+else
+  TEST_SELENIUM_RECORD="false"
+fi
+
 # Set constants and environment
 PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+echo "Found public IP: $PUBLIC_IP"
 
 # Create test files container
 TEST_FILES_NAME="$BUILD_TAG-TEST-FILES"
@@ -40,6 +47,7 @@ MAVEN_OPTS="$MAVEN_OPTS -Dtest.workspace.host=$TEST_WORKSPACE"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.files=/var/lib/test-files/kurento"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.name=kurento/kurento-media-server-dev:latest"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.scope=docker"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.record=$TEST_SELENIUM_RECORD"
 MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$TEST_GROUP"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_PREFIX*"
 
