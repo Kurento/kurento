@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.testing.SystemTests;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.internal.AbortableCountDownLatch;
@@ -21,12 +24,16 @@ import org.slf4j.LoggerFactory;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 
+@Category(SystemTests.class)
 public class BrowserCreationTest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(BrowserCreationTest.class);
 
-	private static final int NUM_BROWSERS = 10;
+	private static final int NUM_BROWSERS = PropertiesManager
+			.getProperty("test.BrowserCreationTest.numBrowsers", 10);
+	private static final int NUM_ITERATIONS = PropertiesManager
+			.getProperty("test.BrowserCreationTest.numIterations", 2);
 
 	@Test
 	public void test() throws InterruptedException, IOException {
@@ -35,8 +42,9 @@ public class BrowserCreationTest {
 
 		initTestFolder();
 
-		createBrowsers(NUM_BROWSERS);
-		createBrowsers(NUM_BROWSERS);
+		for (int i = 0; i < NUM_ITERATIONS; i++) {
+			createBrowsers(NUM_BROWSERS);
+		}
 	}
 
 	private void createBrowsers(int numBrowsers) throws InterruptedException {
