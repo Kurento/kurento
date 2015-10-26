@@ -5,10 +5,12 @@ set(KMS_RTPENDPOINT_SOURCES
   kmsrtpconnection.c
   kmsrtpsession.c
   kmsrtpendpoint.c
+  kmssocketutils.c
 )
 
 set(KMS_RTPENDPOINT_HEADERS
   kmsrtpendpoint.h
+  kmssocketutils.h
 )
 
 add_library(rtpendpoint MODULE ${KMS_RTPENDPOINT_SOURCES} ${KMS_RTPENDPOINT_HEADERS})
