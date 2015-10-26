@@ -239,6 +239,9 @@ public class KurentoServicesTestHelper {
 
 	public static ConfigurableApplicationContext startHttpServer(
 			Object... sources) {
+
+		System.setProperty("java.security.egd", "file:/dev/./urandom");
+
 		appContext = new SpringApplication(sources)
 				.run("--server.port=" + getAppHttpPort());
 		return appContext;
