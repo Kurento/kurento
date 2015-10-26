@@ -145,9 +145,11 @@ public class KurentoClientWebPageTest<W extends WebPage>
 			WebRtcConnector connector) {
 
 		if (fakeKurentoClient == null) {
-			log.warn(
-					"Fake kurentoClient is not defined. You must set the value of {} property",
-					FAKE_KMS_WS_URI_PROP);
+
+			throw new KurentoException(
+					"Fake kurentoClient is not defined. You must set the '"
+							+ FAKE_KMS_WS_URI_PROP
+							+ "' property with KMS uri to fake clients");
 
 		} else {
 
@@ -157,6 +159,9 @@ public class KurentoClientWebPageTest<W extends WebPage>
 					.createMediaPipeline();
 
 			for (int i = 0; i < numFakeClients; i++) {
+
+				log.info("* * * Adding fake client {} * * *", i);
+
 				final WebRtcEndpoint fakeOutputWebRtc = new WebRtcEndpoint.Builder(
 						mainPipeline).build();
 				final WebRtcEndpoint fakeBrowser = new WebRtcEndpoint.Builder(
