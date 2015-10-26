@@ -24,6 +24,7 @@ import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.junit.internal.runners.model.MultipleFailureException;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
@@ -124,8 +125,11 @@ public class KmsLogOnFailure extends TestWatcher {
 		if (getKurentoClientManager() != null) {
 
 			try {
-				List<MediaPipeline> pipelines = getKurentoClientManager()
-						.getKurentoClient().getServerManager().getPipelines();
+				KurentoClient kurentoClient = getKurentoClientManager()
+						.getKurentoClient();
+
+				List<MediaPipeline> pipelines = kurentoClient.getServerManager()
+						.getPipelines();
 
 				log.debug(
 						"Retrieving GStreamerDots for all pipelines in KMS ({})",
@@ -149,8 +153,9 @@ public class KmsLogOnFailure extends TestWatcher {
 					}
 				}
 			} catch (WebSocketException e) {
-				log.warn("WebSocket exception while reading existing pipelines",
-						e);
+				log.warn(
+						"WebSocket exception while reading existing pipelines. Maybe KMS is closed: {}:{}",
+						e.getClass().getName(), e.getMessage());
 			}
 		}
 	}
