@@ -214,7 +214,7 @@ public class KmsMonitor {
 		String kmsPid;
 		while (true) {
 			kmsPid = runAndWait("/bin/sh", "-c",
-					"ps axf | grep kurento-media-server | grep -v grep | awk '{print $1}'")
+					"ps axf | grep /usr/bin/kurento-media-server | grep -v grep | awk '{print $1}'")
 							.replaceAll("\n", "");
 			reachable = !kmsPid.equals("");
 			if (kmsPid.contains(" ")) {
