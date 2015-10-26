@@ -35,7 +35,7 @@ mavenOpts="$mavenOpts -U"
 
 # Compile kurento-java if directory is present
 [ -d $WORKSPACE/kurento-java ] &&  \
-  (cd kurento-java &&  mvn --settings $MAVEN_SETTINGS clean install -Pdeploy -U -Dmaven.test.skip=true)
+  (cd kurento-java &&  mvn --settings $MAVEN_SETTINGS clean install -Pdeploy -U -Dmaven.test.skip=true && cd ..)
 
 # Execute capability test
 mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS
