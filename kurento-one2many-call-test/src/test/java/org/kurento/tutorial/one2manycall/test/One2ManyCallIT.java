@@ -89,7 +89,7 @@ public class One2ManyCallIT {
 		master.get(APP_URL);
 
 		// Start application as master
-		master.findElement(By.id("call")).click();
+		master.findElement(By.id("presenter")).click();
 
 		// Assessment #1: Master video tag should play media
 		waitForStream(master, "video");
@@ -110,7 +110,7 @@ public class One2ManyCallIT {
 		Thread.sleep(PLAY_TIME * 1000);
 
 		// Stop application (master)
-		master.findElement(By.id("terminate")).click();
+		master.findElement(By.id("stop")).click();
 	}
 
 	private static void waitForStream(WebDriver driver, String videoTagId) throws InterruptedException {
