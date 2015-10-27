@@ -37,13 +37,17 @@ public class PendingRequests {
 
 	public void handleResponse(Response<JsonElement> response) {
 
+		log.debug("Processing response {}", response);
+
 		SettableFuture<Response<JsonElement>> responseFuture = pendingRequests
 				.remove(response.getId());
 
 		if (responseFuture == null) {
 			// TODO It is necessary to do something else? Who is watching this?
-			log.error("Received response with an id not registered as pending request");
+			log.error(
+					"Received response with an id not registered as pending request");
 		} else {
+			log.debug("Just to set response in request {}", response.getId());
 			responseFuture.set(response);
 		}
 	}
@@ -52,11 +56,15 @@ public class PendingRequests {
 
 		Preconditions.checkNotNull(id, "The request id cannot be null");
 
-		SettableFuture<Response<JsonElement>> responseFuture = SettableFuture.create();
+		SettableFuture<Response<JsonElement>> responseFuture = SettableFuture
+				.create();
 
 		if (pendingRequests.putIfAbsent(id, responseFuture) != null) {
 			throw new JsonRpcException("Can not send a request with the id '"
-					+ id + "'. There is already a pending request with this id");
+					+ id
+					+ "'. There is already a pending request with this id");
+		} else {
+			log.debug("Setted SettableFuture for request {}", id);
 		}
 
 		return responseFuture;
@@ -66,8 +74,8 @@ public class PendingRequests {
 		log.info("Sending error to all pending requests");
 		for (SettableFuture<Response<JsonElement>> responseFuture : pendingRequests
 				.values()) {
-			responseFuture.set(new Response<JsonElement>(
-					new ResponseError(0, "Connection with server have been closed")));
+			responseFuture.set(new Response<JsonElement>(new ResponseError(0,
+					"Connection with server have been closed")));
 		}
 		pendingRequests.clear();
 	}

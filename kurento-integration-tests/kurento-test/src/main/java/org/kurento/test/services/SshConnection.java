@@ -190,9 +190,36 @@ public class SshConnection {
 		}
 	}
 
-	public void execCommand(String... command) throws IOException {
+	public void execCommand(final String... command) throws IOException {
 		if (connection.canStartProcess()) {
-			connection.startProcess(CmdLine.build(command));
+
+			final OverthereProcess process = connection
+					.startProcess(CmdLine.build(command));
+
+			// Thread t = new Thread(new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			//
+			// BufferedReader r;
+			// try {
+			// r = new BufferedReader(new InputStreamReader(
+			// process.getStdout(), "UTF-8"));
+			//
+			// String line = null;
+			// while ((line = r.readLine()) != null) {
+			// log.debug(line);
+			// }
+			//
+			// } catch (IOException e) {
+			// log.warn("Exception reading remote process {}", command,
+			// e);
+			// }
+			// }
+			// });
+			//
+			// t.setDaemon(true);
+			// t.start();
 		}
 	}
 
@@ -214,7 +241,7 @@ public class SshConnection {
 		StringBuilder sb = new StringBuilder();
 		String line = null;
 		while ((line = r.readLine()) != null) {
-			System.out.println(line);
+			log.debug(line);
 			sb.append(line).append("\r\n");
 		}
 		return sb.toString();
