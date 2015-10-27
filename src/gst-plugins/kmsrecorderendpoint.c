@@ -649,6 +649,7 @@ set_caps (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
   GstEvent *event = gst_pad_probe_info_get_event (info);
   GstElement *appsrc = data;
+  GstElement *appsink;
   GstCaps *caps;
 
   if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
@@ -659,6 +660,13 @@ set_caps (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   GST_DEBUG_OBJECT (appsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
 
   g_object_set (appsrc, "caps", caps, NULL);
+
+  appsink = gst_pad_get_parent_element (pad);
+
+  if (appsink) {
+    g_object_set (appsink, "caps", caps, NULL);
+    g_object_unref (appsink);
+  }
 
   return GST_PAD_PROBE_OK;
 }
