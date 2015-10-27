@@ -22,7 +22,7 @@ include (GenericFind)
 
 generic_find (LIBNAME Boost REQUIRED COMPONENTS unit_test_framework)
 
-set (GST_REQUIRED ~1.5.0)
+set (GST_REQUIRED ^1.5.0)
 set (GLIB_REQUIRED ^2.38)
 set (SOUP_REQUIRED ^2.40)
 set (NICE_REQUIRED ^0.1.7)
