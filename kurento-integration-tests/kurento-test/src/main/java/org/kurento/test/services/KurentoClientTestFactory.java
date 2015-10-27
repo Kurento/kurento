@@ -35,8 +35,8 @@ public class KurentoClientTestFactory {
 
 	public static KurentoClient createKurentoForTest(
 			KurentoConnectionListener listener) throws IOException {
-		return KurentoClient.createFromJsonRpcClient(createJsonRpcClient(
-				"client", listener));
+		return KurentoClient.createFromJsonRpcClient(
+				createJsonRpcClient("client", listener));
 	}
 
 	public static JsonRpcClient createJsonRpcClient(String prefix) {
@@ -75,7 +75,8 @@ public class KurentoClientTestFactory {
 
 				String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
 
-				log.info("Connecting to kms with websockets to uri '{}'", wsUri);
+				log.info("Connecting to kms with websockets to uri '{}'",
+						wsUri);
 
 				return new JsonRpcClientWebSocket(wsUri);
 
@@ -110,7 +111,8 @@ public class KurentoClientTestFactory {
 
 			@SuppressWarnings("unchecked")
 			Class<? extends JsonRpcClient> clazz = (Class<? extends JsonRpcClient>) Class
-					.forName("org.kurento.rabbitmq.client.JsonRpcClientRabbitMq");
+					.forName(
+							"org.kurento.rabbitmq.client.JsonRpcClientRabbitMq");
 
 			Constructor<? extends JsonRpcClient> constructor = clazz
 					.getConstructor(Address.class);

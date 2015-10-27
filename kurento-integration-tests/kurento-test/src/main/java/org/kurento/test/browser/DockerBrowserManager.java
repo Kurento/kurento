@@ -34,9 +34,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,8 +51,6 @@ import org.kurento.commons.net.RemoteService;
 import org.kurento.test.base.KurentoClientWebPageTest;
 import org.kurento.test.docker.Docker;
 import org.kurento.test.services.KurentoServicesTestHelper;
-import org.openqa.grid.common.exception.GridException;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.SessionId;
@@ -62,11 +65,14 @@ public class DockerBrowserManager {
 
 	private static final long REMOTE_WEBDRIVER_TIMEOUT = 3600_000;
 
+	public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
+
 	private static Logger log = LoggerFactory
 			.getLogger(DockerBrowserManager.class);
 
 	private class DockerBrowser {
 
+		private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT = 10;
 		private static final int WAIT_POOL_TIME = 1000;
 		private String id;
 		private String browserContainerName;
@@ -160,15 +166,48 @@ public class DockerBrowserManager {
 			BrowserType type = BrowserType
 					.valueOf(capabilities.getBrowserName().toUpperCase());
 
-			docker.startAndWaitNode(id, type, browserContainerName, nodeImageId,
-					dockerHubIp);
+			int numRetries = 0;
 
-			browserContainerIp = docker.inspectContainer(browserContainerName)
-					.getNetworkSettings().getIpAddress();
+			do {
+				try {
 
-			waitForNodeRegisteredInHub();
+					docker.startAndWaitNode(browserContainerName, type,
+							browserContainerName, nodeImageId, dockerHubIp);
 
-			createAndWaitRemoteDriver(hubUrl + "/wd/hub", capabilities);
+					browserContainerIp = docker
+							.inspectContainer(browserContainerName)
+							.getNetworkSettings().getIpAddress();
+
+					waitForNodeRegisteredInHub();
+
+					createAndWaitRemoteDriver(hubUrl + "/wd/hub", capabilities);
+
+				} catch (TimeoutException e) {
+
+					if (numRetries == REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES) {
+						throw new KurentoException("Timeout of "
+								+ (REMOTE_WEB_DRIVER_CREATION_TIMEOUT
+										* REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES)
+								+ " seconds trying to create a RemoteWebDriver after"
+								+ REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES
+								+ "retries");
+					}
+
+					log.warn(
+							"Timeout of {} seconds creating RemoteWebDriver. Retrying {}...",
+							REMOTE_WEB_DRIVER_CREATION_TIMEOUT, numRetries);
+
+					docker.stopAndRemoveContainer(browserContainerName);
+
+					browserContainerName += "r";
+
+					capabilities.setCapability("applicationName",
+							browserContainerName);
+
+					numRetries++;
+				}
+
+			} while (driver == null);
 
 			log.debug("RemoteWebDriver for browser {} created", id);
 
@@ -177,8 +216,9 @@ public class DockerBrowserManager {
 			}
 		}
 
-		private void createAndWaitRemoteDriver(String driverUrl,
-				DesiredCapabilities capabilities) {
+		private void createAndWaitRemoteDriver(final String driverUrl,
+				final DesiredCapabilities capabilities)
+						throws TimeoutException {
 
 			log.debug("Creating remote driver for browser {} in hub {}", id,
 					driverUrl);
@@ -190,20 +230,31 @@ public class DockerBrowserManager {
 					+ TimeUnit.SECONDS.toMillis(timeoutSeconds);
 
 			do {
+
+				Future<RemoteWebDriver> fDriver = null;
+
 				try {
 
-					RemoteWebDriver rDriver = new RemoteWebDriver(
-							new URL(driverUrl), capabilities);
+					RemoteWebDriver rDriver;
+
+					fDriver = exec.submit(new Callable<RemoteWebDriver>() {
+						@Override
+						public RemoteWebDriver call() throws Exception {
+							return new RemoteWebDriver(new URL(driverUrl),
+									capabilities);
+						}
+					});
+
+					rDriver = fDriver.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT,
+							TimeUnit.SECONDS);
 
 					SessionId sessionId = rDriver.getSessionId();
 					String nodeIp = obtainBrowserNodeIp(sessionId);
 
 					if (!nodeIp.equals(browserContainerIp)) {
-						log.warn("*****************************************");
 						log.warn(
 								"Browser {} is not created in its container. Container IP: {} Browser IP:{}",
 								id, browserContainerIp, nodeIp);
-						log.warn("*****************************************");
 					}
 
 					log.debug(
@@ -212,29 +263,43 @@ public class DockerBrowserManager {
 
 					driver = rDriver;
 
-				} catch (MalformedURLException e) {
-					throw new Error("Hub URL is malformed", e);
+				} catch (TimeoutException e) {
 
-				} catch (GridException | WebDriverException t) {
+					fDriver.cancel(true);
+					throw e;
 
-					driver = null;
+				} catch (InterruptedException e) {
+
+					throw new RuntimeException(
+							"Interrupted exception waiting for RemoteWebDriver",
+							e);
+
+				} catch (ExecutionException e) {
+
+					log.warn("Exception creating RemoveWebDriver", e);
+
 					// Check timeout
 					if (System.currentTimeMillis() > timeoutMs) {
-						throw t;
+						throw new KurentoException(
+								"Timeout of " + timeoutMs
+										+ " millis waiting to create a RemoteWebDriver",
+								e.getCause());
 					}
 
 					log.debug(
 							"Exception creating RemoteWebDriver for browser \"{}\". Retrying...",
-							id);
+							id, e.getCause());
 
 					// Poll time
 					try {
-						Thread.sleep(3000);
-					} catch (InterruptedException e) {
+						Thread.sleep(500);
+					} catch (InterruptedException t) {
 						Thread.currentThread().interrupt();
 						return;
 					}
+
 				}
+
 			} while (driver == null);
 		}
 
@@ -334,6 +399,7 @@ public class DockerBrowserManager {
 	private String dockerHubIp;
 	private String hubContainerName;
 	private String hubUrl;
+	private ExecutorService exec = Executors.newFixedThreadPool(10);
 
 	private ConcurrentMap<String, DockerBrowser> browsers = new ConcurrentHashMap<>();
 
@@ -398,7 +464,7 @@ public class DockerBrowserManager {
 		}
 	}
 
-	private void closeHub() {
+	private synchronized void closeHub() {
 
 		if (hubContainerName == null) {
 			log.warn("Trying to close Hub, but it is not created");
@@ -417,17 +483,20 @@ public class DockerBrowserManager {
 
 		if (firstBrowser) {
 
-			log.debug("Creating hub...");
+			synchronized (this) {
 
-			String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
-					DOCKER_HUB_IMAGE_DEFAULT);
+				log.debug("Creating hub...");
 
-			dockerHubIp = docker.startAndWaitHub(hubContainerName, hubImageId,
-					REMOTE_WEBDRIVER_TIMEOUT);
+				String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
+						DOCKER_HUB_IMAGE_DEFAULT);
 
-			hubUrl = "http://" + dockerHubIp + ":4444";
+				dockerHubIp = docker.startAndWaitHub(hubContainerName,
+						hubImageId, REMOTE_WEBDRIVER_TIMEOUT);
 
-			hubStarted.countDown();
+				hubUrl = "http://" + dockerHubIp + ":4444";
+
+				hubStarted.countDown();
+			}
 
 		} else {
 

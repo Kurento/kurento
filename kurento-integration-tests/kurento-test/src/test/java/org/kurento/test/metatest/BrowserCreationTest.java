@@ -36,18 +36,44 @@ public class BrowserCreationTest {
 			.getProperty("test.BrowserCreationTest.numIterations", 2);
 
 	@Test
-	public void test() throws InterruptedException, IOException {
+	public void testParallelBrowser() throws InterruptedException, IOException {
 
 		System.setProperty("test.selenium.record", "false");
 
-		initTestFolder();
+		initTestFolder("testParallelBrowser");
 
 		for (int i = 0; i < NUM_ITERATIONS; i++) {
-			createBrowsers(NUM_BROWSERS);
+			createParallelBrowsers(NUM_BROWSERS);
 		}
 	}
 
-	private void createBrowsers(int numBrowsers) throws InterruptedException {
+	@Test
+	public void testSerialBrowser() throws InterruptedException, IOException {
+
+		// System.setProperty("test.selenium.record", "false");
+
+		initTestFolder("testSerialBrowser");
+
+		for (int i = 0; i < NUM_ITERATIONS; i++) {
+
+			for (int j = 0; j < NUM_BROWSERS; j++) {
+
+				log.info("Created browser {}-{}", i, j);
+
+				Browser browser = new Browser.Builder()
+						.scope(BrowserScope.DOCKER).build();
+
+				browser.setId("browser_" + i + "_" + j);
+
+				browser.init();
+
+				browser.close();
+			}
+		}
+	}
+
+	private void createParallelBrowsers(int numBrowsers)
+			throws InterruptedException {
 		long startTime = System.currentTimeMillis();
 
 		@SuppressWarnings("unchecked")
@@ -142,10 +168,10 @@ public class BrowserCreationTest {
 		}
 	}
 
-	private void initTestFolder() throws IOException {
+	private void initTestFolder(String testName) throws IOException {
 
 		KurentoServicesTestHelper.setTestCaseName("BrowserCreationTest");
-		KurentoServicesTestHelper.setTestName("test");
+		KurentoServicesTestHelper.setTestName(testName);
 
 		log.info("Tests dir {}", KurentoServicesTestHelper.getTestDir());
 
