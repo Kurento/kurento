@@ -229,36 +229,26 @@ each case.
             try {
                presenter(session, jsonMessage);
             } catch (Throwable t) {
-               stop(session);
-               log.error(t.getMessage(), t);
-               JsonObject response = new JsonObject();
-               response.addProperty("id", "presenterResponse");
-               response.addProperty("response", "rejected");
-               response.addProperty("message", t.getMessage());
-               session.sendMessage(new TextMessage(response.toString()));
+               handleErrorResponse(t, session, "presenterResponse");
             }
             break;
          case "viewer":
             try {
                viewer(session, jsonMessage);
             } catch (Throwable t) {
-               stop(session);
-               log.error(t.getMessage(), t);
-               JsonObject response = new JsonObject();
-               response.addProperty("id", "viewerResponse");
-               response.addProperty("response", "rejected");
-               response.addProperty("message", t.getMessage());
-               session.sendMessage(new TextMessage(response.toString()));
+               handleErrorResponse(t, session, "viewerResponse");
             }
             break;
          case "onIceCandidate": {
             JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
 
             UserSession user = null;
-            if (presenterUserSession.getSession() == session) {
-               user = presenterUserSession;
-            } else {
-               user = viewers.get(session.getId());
+            if (presenterUserSession != null) {
+               if (presenterUserSession.getSession() == session) {
+                  user = presenterUserSession;
+               } else {
+                  user = viewers.get(session.getId());
+               }
             }
             if (user != null) {
                IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
@@ -273,6 +263,17 @@ each case.
          default:
             break;
          }
+      }
+
+      private void handleErrorResponse(Throwable t, WebSocketSession session,
+            String responseId) throws IOException {
+         stop(session);
+         log.error(t.getMessage(), t);
+         JsonObject response = new JsonObject();
+         response.addProperty("id", responseId);
+         response.addProperty("response", "rejected");
+         response.addProperty("message", t.getMessage());
+         session.sendMessage(new TextMessage(response.toString()));
       }
 
       private synchronized void presenter(final WebSocketSession session, JsonObject jsonMessage) throws IOException {

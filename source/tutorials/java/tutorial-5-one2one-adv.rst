@@ -295,7 +295,7 @@ clause, taking the proper steps in each case.
             break;
          }
          case "stop":
-            stopCommunication(session);
+            stop(session);
             releasePipeline(user);
          case "stopPlay":
             releasePipeline(user);
@@ -319,7 +319,7 @@ clause, taking the proper steps in each case.
          ...
       }
 
-      public void stopCommunication(WebSocketSession session) throws IOException {
+      public void stop(WebSocketSession session) throws IOException {
          ...
       }
 
@@ -335,6 +335,7 @@ clause, taking the proper steps in each case.
       @Override
       public void afterConnectionClosed(WebSocketSession session,
             CloseStatus status) throws Exception {
+         stop(session);
          registry.removeBySession(session);
       }
 
@@ -537,11 +538,22 @@ streams in the Kurento Media Server.
 
       if (registry.getByName(user) != null
             && registry.getBySession(session.getSession()) != null) {
-         PlayMediaPipeline playMediaPipeline = new PlayMediaPipeline(
+         final PlayMediaPipeline playMediaPipeline = new PlayMediaPipeline(
                kurento, user, session.getSession());
          String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
 
          session.setPlayingWebRtcEndpoint(playMediaPipeline.getWebRtc());
+
+         playMediaPipeline.getPlayer().addEndOfStreamListener(
+               new EventListener<EndOfStreamEvent>() {
+                  @Override
+                  public void onEvent(EndOfStreamEvent event) {
+                     UserSession user = registry
+                           .getBySession(session.getSession());
+                     releasePipeline(user);
+                     playMediaPipeline.sendPlayEnd(session.getSession());
+                  }
+               });
 
          playMediaPipeline.getWebRtc().addOnIceCandidateListener(
                new EventListener<OnIceCandidateEvent>() {
@@ -715,12 +727,6 @@ in receive-only mode.
                sendPlayEnd(session);
             }
          });
-         player.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-            @Override
-            public void onEvent(EndOfStreamEvent event) {
-               sendPlayEnd(session);
-            }
-         });
       }
 
       public void sendPlayEnd(WebSocketSession session) {
@@ -739,6 +745,18 @@ in receive-only mode.
 
       public String generateSdpAnswer(String sdpOffer) {
          return webRtc.processOffer(sdpOffer);
+      }
+
+      public MediaPipeline getPipeline() {
+         return pipeline;
+      }
+
+      public WebRtcEndpoint getWebRtc() {
+         return webRtc;
+      }
+
+      public PlayerEndpoint getPlayer() {
+         return player;
       }
 
    }

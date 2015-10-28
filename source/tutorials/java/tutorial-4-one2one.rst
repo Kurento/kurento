@@ -206,52 +206,42 @@ clause, taking the proper steps in each case.
 .. sourcecode:: java
 
    public class CallHandler extends TextWebSocketHandler {
-   
+
       private static final Logger log = LoggerFactory.getLogger(CallHandler.class);
       private static final Gson gson = new GsonBuilder().create();
-   
+
       private final ConcurrentHashMap<String, CallMediaPipeline> pipelines = new ConcurrentHashMap<String, CallMediaPipeline>();
-   
+
       @Autowired
       private KurentoClient kurento;
-   
+
       @Autowired
       private UserRegistry registry;
-   
+
       @Override
       public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
          JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
          UserSession user = registry.getBySession(session);
-   
+
          if (user != null) {
             log.debug("Incoming message from user '{}': {}", user.getName(), jsonMessage);
          } else {
             log.debug("Incoming message from new user: {}", jsonMessage);
          }
-   
+
          switch (jsonMessage.get("id").getAsString()) {
          case "register":
             try {
                register(session, jsonMessage);
             } catch (Throwable t) {
-               log.error(t.getMessage(), t);
-               JsonObject response = new JsonObject();
-               response.addProperty("id", "resgisterResponse");
-               response.addProperty("response", "rejected");
-               response.addProperty("message", t.getMessage());
-               session.sendMessage(new TextMessage(response.toString()));
+               handleErrorResponse(t, session, "registerResponse");
             }
             break;
          case "call":
             try {
                call(user, jsonMessage);
             } catch (Throwable t) {
-               log.error(t.getMessage(), t);
-               JsonObject response = new JsonObject();
-               response.addProperty("id", "callResponse");
-               response.addProperty("response", "rejected");
-               response.addProperty("message", t.getMessage());
-               session.sendMessage(new TextMessage(response.toString()));
+               handleErrorResponse(t, session, "callResponse");
             }
             break;
          case "incomingCallResponse":
@@ -273,28 +263,40 @@ clause, taking the proper steps in each case.
             break;
          }
       }
-   
+
+      private void handleErrorResponse(Throwable t, WebSocketSession session,
+            String responseId) throws IOException {
+         stop(session);
+         log.error(t.getMessage(), t);
+         JsonObject response = new JsonObject();
+         response.addProperty("id", responseId);
+         response.addProperty("response", "rejected");
+         response.addProperty("message", t.getMessage());
+         session.sendMessage(new TextMessage(response.toString()));
+      }
+
       private void register(WebSocketSession session, JsonObject jsonMessage) throws IOException {
          ...
       }
-   
+
       private void call(UserSession caller, JsonObject jsonMessage) throws IOException {
          ...
       }
-   
+
       private void incomingCallResponse(final UserSession callee, JsonObject jsonMessage) throws IOException {
          ...
       }
-   
+
       public void stop(WebSocketSession session) throws IOException {
          ...
       }
-   
+
       @Override
       public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+         stop(session);
          registry.removeBySession(session);
       }
-   
+
    }
 
 In the following snippet, we can see the ``register`` method. Basically, it
@@ -369,12 +371,22 @@ the Media Pipeline and ends the video communication:
          // Both users can stop the communication. A 'stopCommunication'
          // message will be sent to the other peer.
          UserSession stopperUser = registry.getBySession(session);
-         UserSession stoppedUser = (stopperUser.getCallingFrom() != null)
-               ? registry.getByName(stopperUser.getCallingFrom()) : registry.getByName(stopperUser.getCallingTo());
+         if (stopperUser != null) {
+            UserSession stoppedUser = (stopperUser.getCallingFrom() != null)
+                  ? registry.getByName(stopperUser.getCallingFrom())
+                  : stopperUser.getCallingTo() != null
+                        ? registry.getByName(stopperUser.getCallingTo())
+                        : null;
 
-         JsonObject message = new JsonObject();
-         message.addProperty("id", "stopCommunication");
-         stoppedUser.sendMessage(message);
+            if (stoppedUser != null) {
+               JsonObject message = new JsonObject();
+               message.addProperty("id", "stopCommunication");
+               stoppedUser.sendMessage(message);
+               stoppedUser.clear();
+            }
+            stopperUser.clear();
+         }
+
       }
    }
 
