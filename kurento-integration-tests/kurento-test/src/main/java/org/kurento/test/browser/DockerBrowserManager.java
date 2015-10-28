@@ -63,17 +63,17 @@ import com.google.gson.JsonObject;
 
 public class DockerBrowserManager {
 
-	private static final long REMOTE_WEBDRIVER_TIMEOUT = 3600_000;
-
 	public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
+	private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 10;
+
+	private static final int HUB_CREATION_WAIT_POOL_TIME_MS = 1000;
+	private static final int HUB_CREATION_TIMEOUT_MS = 30000;
 
 	private static Logger log = LoggerFactory
 			.getLogger(DockerBrowserManager.class);
 
 	private class DockerBrowser {
 
-		private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT = 10;
-		private static final int WAIT_POOL_TIME = 1000;
 		private String id;
 		private String browserContainerName;
 		private String vncrecorderContainerName;
@@ -111,6 +111,8 @@ public class DockerBrowserManager {
 
 		private void waitForNodeRegisteredInHub() {
 
+			long timeoutMs = System.currentTimeMillis()
+					+ HUB_CREATION_TIMEOUT_MS;
 			while (true) {
 
 				try {
@@ -126,24 +128,30 @@ public class DockerBrowserManager {
 						return;
 					} else {
 						log.debug(
-								"Node {} not registered in hub. Waiting 1s...",
-								id);
+								"Node {} not registered in hub. Waiting {} ms...",
+								id, HUB_CREATION_WAIT_POOL_TIME_MS);
 					}
 
-					waitPoolTime();
+					waitPoolTime(timeoutMs, "node registration in hub");
 
 				} catch (MalformedURLException e) {
 					throw new Error(e);
 				} catch (IOException e) {
-					log.debug("Hub is not ready. Waiting 1s...");
-					waitPoolTime();
+					log.debug("Hub is not ready. Waiting {} ms...",
+							HUB_CREATION_WAIT_POOL_TIME_MS);
+					waitPoolTime(timeoutMs, "hub service ready");
 				}
 			}
 		}
 
-		private void waitPoolTime() {
+		private void waitPoolTime(long timeoutMs, String message) {
+			if (System.currentTimeMillis() > timeoutMs) {
+				throw new RuntimeException(
+						"Timeout of " + HUB_CREATION_TIMEOUT_MS
+								+ " ms waiting for " + message);
+			}
 			try {
-				Thread.sleep(WAIT_POOL_TIME);
+				Thread.sleep(HUB_CREATION_WAIT_POOL_TIME_MS);
 			} catch (InterruptedException e1) {
 			}
 		}
@@ -189,7 +197,7 @@ public class DockerBrowserManager {
 
 					if (numRetries == REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES) {
 						throw new KurentoException("Timeout of "
-								+ (REMOTE_WEB_DRIVER_CREATION_TIMEOUT
+								+ (REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S
 										* REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES)
 								+ " seconds trying to create a RemoteWebDriver after"
 								+ REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES
@@ -198,7 +206,7 @@ public class DockerBrowserManager {
 
 					log.warn(
 							"Timeout of {} seconds creating RemoteWebDriver. Retrying {}...",
-							REMOTE_WEB_DRIVER_CREATION_TIMEOUT, numRetries);
+							REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, numRetries);
 
 					docker.stopAndRemoveContainer(browserContainerName);
 
@@ -248,7 +256,7 @@ public class DockerBrowserManager {
 						}
 					});
 
-					rDriver = fDriver.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT,
+					rDriver = fDriver.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S,
 							TimeUnit.SECONDS);
 
 					SessionId sessionId = rDriver.getSessionId();
@@ -494,7 +502,7 @@ public class DockerBrowserManager {
 						DOCKER_HUB_IMAGE_DEFAULT);
 
 				dockerHubIp = docker.startAndWaitHub(hubContainerName,
-						hubImageId, REMOTE_WEBDRIVER_TIMEOUT);
+						hubImageId);
 
 				hubUrl = "http://" + dockerHubIp + ":4444";
 

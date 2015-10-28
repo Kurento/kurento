@@ -388,10 +388,9 @@ public class Docker implements Closeable {
 		}
 	}
 
-	public synchronized String startHub(String hubName, String imageId,
-			long timeoutMs) {
+	public synchronized String startHub(String hubName, String imageId) {
 		// Create hub if not exist
-		createContainer(imageId, hubName, false, "GRID_TIMEOUT=" + timeoutMs);
+		createContainer(imageId, hubName, false, "GRID_TIMEOUT=3600000");
 
 		// Start hub if stopped
 		startContainer(hubName);
@@ -490,9 +489,8 @@ public class Docker implements Closeable {
 		waitForContainer(nodeName);
 	}
 
-	public String startAndWaitHub(String hubName, String imageId,
-			long timeoutMs) {
-		String hubIp = startHub(hubName, imageId, timeoutMs);
+	public String startAndWaitHub(String hubName, String imageId) {
+		String hubIp = startHub(hubName, imageId);
 		waitForContainer(hubName);
 		return hubIp;
 	}

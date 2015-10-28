@@ -31,9 +31,9 @@ public class BrowserCreationTest {
 			.getLogger(BrowserCreationTest.class);
 
 	private static final int NUM_BROWSERS = PropertiesManager
-			.getProperty("test.BrowserCreationTest.numBrowsers", 1);
+			.getProperty("test.BrowserCreationTest.numBrowsers", 5);
 	private static final int NUM_ITERATIONS = PropertiesManager
-			.getProperty("test.BrowserCreationTest.numIterations", 1);
+			.getProperty("test.BrowserCreationTest.numIterations", 3);
 
 	@Test
 	public void testParallelBrowser() throws InterruptedException, IOException {
