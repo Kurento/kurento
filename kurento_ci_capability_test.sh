@@ -23,10 +23,12 @@ echo "Found public IP: $PUBLIC_IP"
 
 # Create test files container
 TEST_FILES_NAME="$BUILD_TAG-TEST-FILES"
-docker create \
+docker run \
+  --rm \
 	--name $TEST_FILES_NAME \
-    -v /var/lib/test-files \
-     kurento/test-files:1.0.0 /bin/true
+    -v /var/lib/jenkins/test-files:/var/lib/jenkins/test-files \
+    -w /var/lib/jenkins/test-files \
+     kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento
 
 # Create temporary folder for container
 TEST_WORKSPACE=$WORKSPACE/tmp
@@ -54,7 +56,7 @@ MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_PREFIX*"
 # Execute Presenter test
 docker run --rm \
   --name $BUILD_TAG-INTEGRATION \
-  --volumes-from $TEST_FILES_NAME \
+  -v /var/lib/jenkins/test-files:/var/lib/test-files \
   -v $MAVEN_SETTINGS:/opt/kurento-settings.xml \
   -v $KURENTO_SCRIPTS_HOME:/opt/adm-scripts \
   -v $WORKSPACE:$TEST_HOME \
