@@ -110,7 +110,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		@OnWebSocketMessage
 		public void onMessage(String message) {
-			log.debug(">>>>>>>>>>>>>>>>>>>>> {}", message);
 			handleWebSocketTextMessage(message);
 		}
 

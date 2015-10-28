@@ -37,8 +37,6 @@ public class PendingRequests {
 
 	public void handleResponse(Response<JsonElement> response) {
 
-		log.debug("Processing response {}", response);
-
 		SettableFuture<Response<JsonElement>> responseFuture = pendingRequests
 				.remove(response.getId());
 
@@ -47,7 +45,6 @@ public class PendingRequests {
 			log.error(
 					"Received response with an id not registered as pending request");
 		} else {
-			log.debug("Just to set response in request {}", response.getId());
 			responseFuture.set(response);
 		}
 	}
@@ -63,8 +60,6 @@ public class PendingRequests {
 			throw new JsonRpcException("Can not send a request with the id '"
 					+ id
 					+ "'. There is already a pending request with this id");
-		} else {
-			log.debug("Setted SettableFuture for request {}", id);
 		}
 
 		return responseFuture;
