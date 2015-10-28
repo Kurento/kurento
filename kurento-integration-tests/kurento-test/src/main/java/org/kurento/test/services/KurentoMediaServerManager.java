@@ -679,7 +679,7 @@ public class KurentoMediaServerManager {
 		return lastWorkspace;
 	}
 
-	public String getLocalhostWsUrl() {
+	public String getWsUri() {
 		return wsUri;
 	}
 

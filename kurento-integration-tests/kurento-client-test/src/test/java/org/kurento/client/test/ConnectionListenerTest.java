@@ -45,7 +45,7 @@ public class ConnectionListenerTest {
 
 		final CountDownLatch disconnectedLatch = new CountDownLatch(1);
 
-		String kmsUrl = kms.getLocalhostWsUrl();
+		String kmsUrl = kms.getWsUri();
 
 		log.info("Connecting to KMS in " + kmsUrl);
 
@@ -103,7 +103,7 @@ public class ConnectionListenerTest {
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
 				.startKurentoMediaServer(false);
 
-		String kmsUrl = kms.getLocalhostWsUrl();
+		String kmsUrl = kms.getWsUri();
 
 		log.info("Connecting to KMS in " + kmsUrl);
 

@@ -63,7 +63,7 @@ public class WebSocketClientToKmsConnectionTest {
 			KurentoMediaServerManager kms = KurentoServicesTestHelper
 					.startKurentoMediaServer(false);
 
-			String kmsUrl = kms.getLocalhostWsUrl();
+			String kmsUrl = kms.getWsUri();
 
 			log.info("Connecting to KMS in " + kmsUrl);
 
@@ -90,7 +90,7 @@ public class WebSocketClientToKmsConnectionTest {
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
 				.startKurentoMediaServer(false);
 
-		String kmsUrl = kms.getLocalhostWsUrl();
+		String kmsUrl = kms.getWsUri();
 
 		log.info("Connecting to KMS in " + kmsUrl);
 

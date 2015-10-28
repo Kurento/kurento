@@ -38,7 +38,7 @@ public class KurentoClientKmsConnectionTest {
 		KurentoMediaServerManager kms = KurentoServicesTestHelper
 				.startKurentoMediaServer(false);
 
-		String kmsUrl = kms.getLocalhostWsUrl();
+		String kmsUrl = kms.getWsUri();
 
 		KurentoClient kurento = KurentoClient.create(kmsUrl,
 				new KurentoConnectionListener() {
