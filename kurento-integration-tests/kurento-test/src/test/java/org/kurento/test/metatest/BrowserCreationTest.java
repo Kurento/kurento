@@ -31,9 +31,9 @@ public class BrowserCreationTest {
 			.getLogger(BrowserCreationTest.class);
 
 	private static final int NUM_BROWSERS = PropertiesManager
-			.getProperty("test.BrowserCreationTest.numBrowsers", 10);
+			.getProperty("test.BrowserCreationTest.numBrowsers", 1);
 	private static final int NUM_ITERATIONS = PropertiesManager
-			.getProperty("test.BrowserCreationTest.numIterations", 2);
+			.getProperty("test.BrowserCreationTest.numIterations", 1);
 
 	@Test
 	public void testParallelBrowser() throws InterruptedException, IOException {
@@ -50,7 +50,7 @@ public class BrowserCreationTest {
 	@Test
 	public void testSerialBrowser() throws InterruptedException, IOException {
 
-		// System.setProperty("test.selenium.record", "false");
+		System.setProperty("test.selenium.record", "false");
 
 		initTestFolder("testSerialBrowser");
 
@@ -170,7 +170,8 @@ public class BrowserCreationTest {
 
 	private void initTestFolder(String testName) throws IOException {
 
-		KurentoServicesTestHelper.setTestCaseName("BrowserCreationTest");
+		KurentoServicesTestHelper
+				.setTestCaseName(this.getClass().getSimpleName());
 		KurentoServicesTestHelper.setTestName(testName);
 
 		log.info("Tests dir {}", KurentoServicesTestHelper.getTestDir());
@@ -179,9 +180,11 @@ public class BrowserCreationTest {
 				"BrowserCreationTest");
 
 		if (Files.exists(testFolder)) {
+			log.debug("Deleting test folder {}", testFolder);
 			FileUtils.forceDelete(testFolder.toFile());
 		}
-		Files.deleteIfExists(testFolder);
+
+		log.debug("Creating test folder {}", testFolder);
 		Files.createDirectories(testFolder);
 	}
 

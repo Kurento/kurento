@@ -342,10 +342,6 @@ public class Browser implements Closeable {
 		capabilities
 				.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
 
-		if (scope == BrowserScope.DOCKER) {
-			capabilities.setCapability("applicationName", id);
-		}
-
 		createDriver(capabilities, options);
 	}
 
@@ -403,19 +399,6 @@ public class Browser implements Closeable {
 			synchronized (Browser.class) {
 				if (dockerManager == null) {
 					dockerManager = new DockerBrowserManager();
-
-					Path logFile = Paths.get(
-							KurentoClientWebPageTest.getDefaultOutputFile(""));
-
-					try {
-						if (!Files.exists(logFile)) {
-							Files.createDirectories(logFile);
-						}
-						dockerManager.setDownloadLogsPath(logFile);
-					} catch (IOException e) {
-						log.warn("Exception creating path {} for logs",
-								logFile);
-					}
 				}
 			}
 		}
@@ -939,6 +922,20 @@ public class Browser implements Closeable {
 
 		// Stop docker containers (if necessary)
 		if (scope == BrowserScope.DOCKER) {
+
+			Path logFile = Paths
+					.get(KurentoClientWebPageTest.getDefaultOutputFile(""));
+
+			try {
+				if (!Files.exists(logFile)) {
+					Files.createDirectories(logFile);
+				}
+				getDockerManager().setDownloadLogsPath(logFile);
+
+			} catch (IOException e) {
+				log.warn("Exception creating path {} for logs", logFile);
+			}
+
 			getDockerManager().closeDriver(id);
 		}
 	}

@@ -84,7 +84,10 @@ public class DockerBrowserManager {
 		public DockerBrowser(String id, DesiredCapabilities capabilities) {
 			this.id = id;
 			this.capabilities = capabilities;
+
 			calculateContainerNames();
+
+			capabilities.setCapability("applicationName", browserContainerName);
 		}
 
 		private void calculateContainerNames() {
