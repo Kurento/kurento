@@ -512,8 +512,13 @@ public class KurentoMediaServerManager {
 
 			Docker dockerClient = Docker.getSingleton();
 
-			dockerClient.downloadLog(dockerContainerName, Paths.get(
-					getDefaultOutputFolder(), testMethodName + "-kms.log"));
+			if (testMethodName != null) {
+				dockerClient.downloadLog(dockerContainerName, Paths.get(
+						getDefaultOutputFolder(), testMethodName + "-kms.log"));
+			} else {
+				log.warn(
+						"KMS logs cannot be retrived because testMethodName is not set in KurentoMediaServerManager");
+			}
 
 			dockerClient.stopAndRemoveContainer(dockerContainerName);
 
