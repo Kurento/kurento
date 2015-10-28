@@ -39,40 +39,59 @@ public class AssertMedia {
 				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
 		info.close();
 
-		Assert.assertEquals("Wrong video codec in " + pathToMedia,
-				expectedVideoCodec, videoFormat);
-		Assert.assertEquals("Wrong audio codec in " + pathToMedia,
-				expectedAudioCodec, audioFormat);
+		if (expectedVideoCodec != null) {
+			Assert.assertEquals("Wrong video codec in " + pathToMedia,
+					expectedVideoCodec, videoFormat);
+		}
+		if (expectedAudioCodec != null) {
+			Assert.assertEquals("Wrong audio codec in " + pathToMedia,
+					expectedAudioCodec, audioFormat);
+		}
 	}
 
 	public static void assertDuration(String pathToMedia,
 			double expectedDurationMs, double thresholdMs) {
+		assertAudioDuration(pathToMedia, expectedDurationMs, thresholdMs);
+		assertGeneralDuration(pathToMedia, expectedDurationMs, thresholdMs);
+	}
+
+	public static void assertAudioDuration(String pathToMedia,
+			double expectedDurationMs, double thresholdMs) {
+		MediaInfo info = new MediaInfo();
+		info.open(new File(pathToMedia));
+		String audioDuration = info.get(MediaInfo.StreamKind.Audio, 0,
+				"Duration", MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
+		info.close();
+
+		Assert.assertFalse("Audio duration is empty or null in " + pathToMedia,
+				Strings.isNullOrEmpty(audioDuration));
+
+		long audioDurationMs = Long.parseLong(audioDuration);
+		double difference = Math.abs(audioDurationMs - expectedDurationMs);
+
+		Assert.assertTrue("Wrong audio duration (expected=" + expectedDurationMs
+				+ " ms, real= " + audioDurationMs + " ms) in " + pathToMedia,
+				difference < thresholdMs);
+	}
+
+	public static void assertGeneralDuration(String pathToMedia,
+			double expectedDurationMs, double thresholdMs) {
 		MediaInfo info = new MediaInfo();
 		info.open(new File(pathToMedia));
 		String generalDuration = info.get(MediaInfo.StreamKind.General, 0,
-				"Duration", MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
-		String audioDuration = info.get(MediaInfo.StreamKind.Audio, 0,
 				"Duration", MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
 		info.close();
 
 		Assert.assertFalse(
 				"General duration is empty or null in " + pathToMedia,
 				Strings.isNullOrEmpty(generalDuration));
-		Assert.assertFalse("Audio duration is empty or null in " + pathToMedia,
-				Strings.isNullOrEmpty(audioDuration));
 
 		long generalDurationMs = Long.parseLong(generalDuration);
-		long audioDurationMs = Long.parseLong(audioDuration);
-
 		double difference = Math.abs(generalDurationMs - expectedDurationMs);
+
 		Assert.assertTrue("Wrong general duration (expected="
 				+ expectedDurationMs + " ms, real= " + generalDurationMs
 				+ " ms) in " + pathToMedia, difference < thresholdMs);
-
-		difference = Math.abs(audioDurationMs - expectedDurationMs);
-		Assert.assertTrue("Wrong audio duration (expected=" + expectedDurationMs
-				+ " ms, real= " + audioDurationMs + " ms) in " + pathToMedia,
-				difference < thresholdMs);
 	}
 
 }
