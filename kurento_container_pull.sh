@@ -4,7 +4,6 @@
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-7-node-0.12
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-0.12
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/test-files:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0
 
