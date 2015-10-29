@@ -99,7 +99,7 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 				Protocol.FILE + recordingFile)
 						.withMediaProfile(mediaProfileSpecType).build();
 		FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
-		filter.setOverlayedImage("http://files.kurento.org/imgs/red-square.png",
+		filter.setOverlayedImage("http://files.kurento.org/img/red-square.png",
 				-0.2F, -1.2F, 1.6F, 1.6F);
 
 		playerEP.connect(filter);
