@@ -39,18 +39,18 @@
 
 #define MAX_WIDTH 320
 
-GST_DEBUG_CATEGORY_STATIC (kms_face_detector_debug_category);
-#define GST_CAT_DEFAULT kms_face_detector_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_face_detector_metadata_debug_category);
+#define GST_CAT_DEFAULT kms_face_detector_metadata_debug_category
 
-#define KMS_FACE_DETECTOR_GET_PRIVATE(obj) (    \
+#define KMS_FACE_DETECTOR_METADATA_GET_PRIVATE(obj) (    \
   G_TYPE_INSTANCE_GET_PRIVATE (                 \
     (obj),                                      \
-    KMS_TYPE_FACE_DETECTOR,                     \
-    KmsFaceDetectorPrivate                      \
+    KMS_TYPE_FACE_DETECTOR_METADATA,                     \
+    KmsFaceDetectorMetadataPrivate                      \
   )                                             \
 )
 
-struct _KmsFaceDetectorPrivate
+struct _KmsFaceDetectorMetadataPrivate
 {
   IplImage *cvImage;
   IplImage *cvResizedImage;
@@ -85,13 +85,14 @@ enum
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsFaceDetector, kms_face_detector,
+G_DEFINE_TYPE_WITH_CODE (KmsFaceDetectorMetadata, kms_face_detector_metadata,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_face_detector_debug_category, PLUGIN_NAME,
-        0, "debug category for facedetector element"));
+    GST_DEBUG_CATEGORY_INIT (kms_face_detector_metadata_debug_category,
+        PLUGIN_NAME, 0, "debug category for facedetector element"));
 
 static void
-kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
+kms_face_detector_metadata_initialize_classifiers (KmsFaceDetectorMetadata *
+    facedetector)
 {
   GST_DEBUG ("Loading classifier: %s",
       HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
@@ -100,10 +101,10 @@ kms_face_detector_initialize_classifiers (KmsFaceDetector * facedetector)
 }
 
 static void
-kms_face_detector_set_property (GObject * object, guint property_id,
+kms_face_detector_metadata_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (object);
+  KmsFaceDetectorMetadata *facedetector = KMS_FACE_DETECTOR_METADATA (object);
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -119,10 +120,10 @@ kms_face_detector_set_property (GObject * object, guint property_id,
 }
 
 static void
-kms_face_detector_get_property (GObject * object, guint property_id,
+kms_face_detector_metadata_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (object);
+  KmsFaceDetectorMetadata *facedetector = KMS_FACE_DETECTOR_METADATA (object);
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -138,8 +139,8 @@ kms_face_detector_get_property (GObject * object, guint property_id,
 }
 
 static void
-kms_face_detector_initialize_images (KmsFaceDetector * facedetector,
-    GstVideoFrame * frame)
+kms_face_detector_metadata_initialize_images (KmsFaceDetectorMetadata *
+    facedetector, GstVideoFrame * frame)
 {
   if (facedetector->priv->cvImage == NULL) {
     int target_width =
@@ -177,8 +178,8 @@ kms_face_detector_initialize_images (KmsFaceDetector * facedetector,
 }
 
 static void
-kms_face_detector_send_metadata (KmsFaceDetector * facedetector,
-    GstVideoFrame * frame)
+kms_face_detector_metadata_send_metadata (KmsFaceDetectorMetadata *
+    facedetector, GstVideoFrame * frame)
 {
   GstStructure *faces;
   GstStructure *timestamp;
@@ -194,8 +195,8 @@ kms_face_detector_send_metadata (KmsFaceDetector * facedetector,
 
   for (i = 0;
       i <
-      (facedetector->priv->pFaceRectSeq ? facedetector->priv->pFaceRectSeq->
-          total : 0); i++) {
+      (facedetector->priv->pFaceRectSeq ? facedetector->priv->
+          pFaceRectSeq->total : 0); i++) {
     CvRect *r;
     GstStructure *face;
     gchar *id = NULL;
@@ -219,10 +220,10 @@ kms_face_detector_send_metadata (KmsFaceDetector * facedetector,
 }
 
 static GstFlowReturn
-kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
+kms_face_detector_metadata_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
 {
-  KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (filter);
+  KmsFaceDetectorMetadata *facedetector = KMS_FACE_DETECTOR_METADATA (filter);
   GstMapInfo info;
 
   if ((facedetector->priv->haar_detector)
@@ -230,7 +231,7 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
     return GST_FLOW_OK;
   }
 
-  kms_face_detector_initialize_images (facedetector, frame);
+  kms_face_detector_metadata_initialize_images (facedetector, frame);
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
 
   facedetector->priv->cvImage->imageData = (char *) info.data;
@@ -265,7 +266,7 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
 
 send:
   if (facedetector->priv->pFaceRectSeq->total != 0) {
-    kms_face_detector_send_metadata (facedetector, frame);
+    kms_face_detector_metadata_send_metadata (facedetector, frame);
   }
 
   gst_buffer_unmap (frame->buffer, &info);
@@ -274,9 +275,9 @@ send:
 }
 
 static void
-kms_face_detector_finalize (GObject * object)
+kms_face_detector_metadata_finalize (GObject * object)
 {
-  KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (object);
+  KmsFaceDetectorMetadata *facedetector = KMS_FACE_DETECTOR_METADATA (object);
 
   cvReleaseImageHeader (&facedetector->priv->cvImage);
   cvReleaseImage (&facedetector->priv->cvResizedImage);
@@ -291,13 +292,13 @@ kms_face_detector_finalize (GObject * object)
 
   g_mutex_clear (&facedetector->priv->mutex);
 
-  G_OBJECT_CLASS (kms_face_detector_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_face_detector_metadata_parent_class)->finalize (object);
 }
 
 static void
-kms_face_detector_init (KmsFaceDetector * facedetector)
+kms_face_detector_metadata_init (KmsFaceDetectorMetadata * facedetector)
 {
-  facedetector->priv = KMS_FACE_DETECTOR_GET_PRIVATE (facedetector);
+  facedetector->priv = KMS_FACE_DETECTOR_METADATA_GET_PRIVATE (facedetector);
 
   facedetector->priv->pCascadeFace = NULL;
   facedetector->priv->pStorageFace = cvCreateMemStorage (0);
@@ -312,13 +313,14 @@ kms_face_detector_init (KmsFaceDetector * facedetector)
   facedetector->priv->cvResizedImage = NULL;
   g_mutex_init (&facedetector->priv->mutex);
 
-  kms_face_detector_initialize_classifiers (facedetector);
+  kms_face_detector_metadata_initialize_classifiers (facedetector);
 }
 
 static gboolean
-kms_face_detector_src_eventfunc (GstBaseTransform * trans, GstEvent * event)
+kms_face_detector_metadata_src_eventfunc (GstBaseTransform * trans,
+    GstEvent * event)
 {
-  KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (trans);
+  KmsFaceDetectorMetadata *facedetector = KMS_FACE_DETECTOR_METADATA (trans);
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_QOS:
@@ -359,7 +361,7 @@ kms_face_detector_src_eventfunc (GstBaseTransform * trans, GstEvent * event)
 }
 
 static void
-kms_face_detector_class_init (KmsFaceDetectorClass * klass)
+kms_face_detector_metadata_class_init (KmsFaceDetectorMetadataClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstVideoFilterClass *video_filter_class = GST_VIDEO_FILTER_CLASS (klass);
@@ -379,12 +381,12 @@ kms_face_detector_class_init (KmsFaceDetectorClass * klass)
       "Face Detector element", "Video/Filter",
       "Detect faces in an image", "David Fernandez <d.fernandezlop@gmail.com>");
 
-  gobject_class->set_property = kms_face_detector_set_property;
-  gobject_class->get_property = kms_face_detector_get_property;
-  gobject_class->finalize = kms_face_detector_finalize;
+  gobject_class->set_property = kms_face_detector_metadata_set_property;
+  gobject_class->get_property = kms_face_detector_metadata_get_property;
+  gobject_class->finalize = kms_face_detector_metadata_finalize;
 
   video_filter_class->transform_frame_ip =
-      GST_DEBUG_FUNCPTR (kms_face_detector_transform_frame_ip);
+      GST_DEBUG_FUNCPTR (kms_face_detector_metadata_transform_frame_ip);
 
   /* Properties initialization */
   g_object_class_install_property (gobject_class, PROP_SHOW_DEBUG_INFO,
@@ -397,14 +399,14 @@ kms_face_detector_class_init (KmsFaceDetectorClass * klass)
           TRUE, G_PARAM_READWRITE));
 
   klass->base_facedetector_class.parent_class.src_event =
-      GST_DEBUG_FUNCPTR (kms_face_detector_src_eventfunc);
+      GST_DEBUG_FUNCPTR (kms_face_detector_metadata_src_eventfunc);
 
-  g_type_class_add_private (klass, sizeof (KmsFaceDetectorPrivate));
+  g_type_class_add_private (klass, sizeof (KmsFaceDetectorMetadataPrivate));
 }
 
 gboolean
-kms_face_detector_plugin_init (GstPlugin * plugin)
+kms_face_detector_metadata_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_FACE_DETECTOR);
+      KMS_TYPE_FACE_DETECTOR_METADATA);
 }

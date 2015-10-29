@@ -39,14 +39,14 @@
 
 #define PLUGIN_NAME "imageoverlaymetadata"
 
-GST_DEBUG_CATEGORY_STATIC (kms_image_overlay_debug_category);
-#define GST_CAT_DEFAULT kms_image_overlay_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_image_overlay_metadata_debug_category);
+#define GST_CAT_DEFAULT kms_image_overlay_metadata_debug_category
 
-#define KMS_IMAGE_OVERLAY_GET_PRIVATE(obj) ( \
+#define KMS_IMAGE_OVERLAY_METADATA_GET_PRIVATE(obj) ( \
   G_TYPE_INSTANCE_GET_PRIVATE (              \
     (obj),                                   \
-    KMS_TYPE_IMAGE_OVERLAY,                  \
-    KmsImageOverlayPrivate                   \
+    KMS_TYPE_IMAGE_OVERLAY_METADATA,                  \
+    KmsImageOverlayMetadataPrivate                   \
   )                                          \
 )
 
@@ -56,7 +56,7 @@ enum
   PROP_SHOW_DEBUG_INFO
 };
 
-struct _KmsImageOverlayPrivate
+struct _KmsImageOverlayMetadataPrivate
 {
   IplImage *cvImage;
 
@@ -74,16 +74,16 @@ struct _KmsImageOverlayPrivate
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsImageOverlay, kms_image_overlay,
+G_DEFINE_TYPE_WITH_CODE (KmsImageOverlayMetadata, kms_image_overlay_metadata,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_image_overlay_debug_category, PLUGIN_NAME,
-        0, "debug category for imageoverlay element"));
+    GST_DEBUG_CATEGORY_INIT (kms_image_overlay_metadata_debug_category,
+        PLUGIN_NAME, 0, "debug category for imageoverlay element"));
 
 static void
-kms_image_overlay_set_property (GObject * object, guint property_id,
+kms_image_overlay_metadata_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+  KmsImageOverlayMetadata *imageoverlay = KMS_IMAGE_OVERLAY_METADATA (object);
 
   GST_OBJECT_LOCK (imageoverlay);
 
@@ -99,10 +99,10 @@ kms_image_overlay_set_property (GObject * object, guint property_id,
 }
 
 static void
-kms_image_overlay_get_property (GObject * object, guint property_id,
+kms_image_overlay_metadata_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+  KmsImageOverlayMetadata *imageoverlay = KMS_IMAGE_OVERLAY_METADATA (object);
 
   GST_DEBUG_OBJECT (imageoverlay, "get_property");
 
@@ -120,8 +120,8 @@ kms_image_overlay_get_property (GObject * object, guint property_id,
 }
 
 static void
-kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
-    imageoverlay, const GSList * faces_list)
+    kms_image_overlay_metadata_display_detections_overlay_img
+    (KmsImageOverlayMetadata * imageoverlay, const GSList * faces_list)
 {
   const GSList *iterator = NULL;
 
@@ -135,8 +135,8 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
 }
 
 static void
-kms_image_overlay_initialize_images (KmsImageOverlay * imageoverlay,
-    GstVideoFrame * frame)
+kms_image_overlay_metadata_initialize_images (KmsImageOverlayMetadata *
+    imageoverlay, GstVideoFrame * frame)
 {
   if (imageoverlay->priv->cvImage == NULL) {
     imageoverlay->priv->cvImage =
@@ -194,17 +194,17 @@ cvrect_free (gpointer data)
 }
 
 static GstFlowReturn
-kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
+kms_image_overlay_metadata_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (filter);
+  KmsImageOverlayMetadata *imageoverlay = KMS_IMAGE_OVERLAY_METADATA (filter);
   GstMapInfo info;
   GSList *faces_list;
   KmsSerializableMeta *metadata;
 
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
 
-  kms_image_overlay_initialize_images (imageoverlay, frame);
+  kms_image_overlay_metadata_initialize_images (imageoverlay, frame);
   imageoverlay->priv->cvImage->imageData = (char *) info.data;
 
   GST_OBJECT_LOCK (imageoverlay);
@@ -218,7 +218,8 @@ kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
   faces_list = get_faces (metadata->data);
 
   if (faces_list != NULL) {
-    kms_image_overlay_display_detections_overlay_img (imageoverlay, faces_list);
+    kms_image_overlay_metadata_display_detections_overlay_img (imageoverlay,
+        faces_list);
     g_slist_free_full (faces_list, cvrect_free);
   }
 
@@ -231,35 +232,35 @@ end:
 }
 
 static void
-kms_image_overlay_dispose (GObject * object)
+kms_image_overlay_metadata_dispose (GObject * object)
 {
   /* clean up as possible.  may be called multiple times */
 
-  G_OBJECT_CLASS (kms_image_overlay_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_image_overlay_metadata_parent_class)->dispose (object);
 }
 
 static void
-kms_image_overlay_finalize (GObject * object)
+kms_image_overlay_metadata_finalize (GObject * object)
 {
-  KmsImageOverlay *imageoverlay = KMS_IMAGE_OVERLAY (object);
+  KmsImageOverlayMetadata *imageoverlay = KMS_IMAGE_OVERLAY_METADATA (object);
 
   if (imageoverlay->priv->cvImage != NULL)
     cvReleaseImage (&imageoverlay->priv->cvImage);
 
-  G_OBJECT_CLASS (kms_image_overlay_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_image_overlay_metadata_parent_class)->finalize (object);
 }
 
 static void
-kms_image_overlay_init (KmsImageOverlay * imageoverlay)
+kms_image_overlay_metadata_init (KmsImageOverlayMetadata * imageoverlay)
 {
-  imageoverlay->priv = KMS_IMAGE_OVERLAY_GET_PRIVATE (imageoverlay);
+  imageoverlay->priv = KMS_IMAGE_OVERLAY_METADATA_GET_PRIVATE (imageoverlay);
 
   imageoverlay->priv->show_debug_info = FALSE;
   imageoverlay->priv->cvImage = NULL;
 }
 
 static void
-kms_image_overlay_class_init (KmsImageOverlayClass * klass)
+kms_image_overlay_metadata_class_init (KmsImageOverlayMetadataClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstVideoFilterClass *video_filter_class = GST_VIDEO_FILTER_CLASS (klass);
@@ -282,25 +283,25 @@ kms_image_overlay_class_init (KmsImageOverlayClass * klass)
       "Set a defined image in a defined position",
       "David Fernandez <d.fernandezlop@gmail.com>");
 
-  gobject_class->set_property = kms_image_overlay_set_property;
-  gobject_class->get_property = kms_image_overlay_get_property;
-  gobject_class->dispose = kms_image_overlay_dispose;
-  gobject_class->finalize = kms_image_overlay_finalize;
+  gobject_class->set_property = kms_image_overlay_metadata_set_property;
+  gobject_class->get_property = kms_image_overlay_metadata_get_property;
+  gobject_class->dispose = kms_image_overlay_metadata_dispose;
+  gobject_class->finalize = kms_image_overlay_metadata_finalize;
 
   video_filter_class->transform_frame_ip =
-      GST_DEBUG_FUNCPTR (kms_image_overlay_transform_frame_ip);
+      GST_DEBUG_FUNCPTR (kms_image_overlay_metadata_transform_frame_ip);
 
   /* Properties initialization */
   g_object_class_install_property (gobject_class, PROP_SHOW_DEBUG_INFO,
       g_param_spec_boolean ("show-debug-region", "show debug region",
           "show evaluation regions over the image", FALSE, G_PARAM_READWRITE));
 
-  g_type_class_add_private (klass, sizeof (KmsImageOverlayPrivate));
+  g_type_class_add_private (klass, sizeof (KmsImageOverlayMetadataPrivate));
 }
 
 gboolean
-kms_image_overlay_plugin_init (GstPlugin * plugin)
+kms_image_overlay_metadata_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_IMAGE_OVERLAY);
+      KMS_TYPE_IMAGE_OVERLAY_METADATA);
 }

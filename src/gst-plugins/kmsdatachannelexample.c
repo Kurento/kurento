@@ -13,9 +13,9 @@ init (GstPlugin * plugin)
     return FALSE;
   if (!kms_send_data_plugin_init (plugin))
     return FALSE;
-  if (!kms_image_overlay_plugin_init (plugin))
+  if (!kms_image_overlay_metadata_plugin_init (plugin))
     return FALSE;
-  if (!kms_face_detector_plugin_init (plugin))
+  if (!kms_face_detector_metadata_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
