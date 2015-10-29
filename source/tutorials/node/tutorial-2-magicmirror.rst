@@ -85,7 +85,7 @@ composed by the following `Media Element`:term: s:
 - **FaceOverlay filter**: Computer vision filter that detects faces in the
   video stream and puts an image on top of them. In this demo the filter is
   configured to put a
-  `Super Mario hat <http://files.kurento.org/imgs/mario-wings.png>`_).
+  `Super Mario hat <http://files.kurento.org/img/mario-wings.png>`_).
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
