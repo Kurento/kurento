@@ -16,7 +16,11 @@ package org.kurento.test.functional.recorder;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.kurento.client.MediaProfileSpecType.MP4;
+import static org.kurento.client.MediaProfileSpecType.MP4_AUDIO_ONLY;
+import static org.kurento.client.MediaProfileSpecType.MP4_VIDEO_ONLY;
 import static org.kurento.client.MediaProfileSpecType.WEBM;
+import static org.kurento.client.MediaProfileSpecType.WEBM_AUDIO_ONLY;
+import static org.kurento.client.MediaProfileSpecType.WEBM_VIDEO_ONLY;
 import static org.kurento.test.browser.WebRtcChannel.AUDIO_AND_VIDEO;
 import static org.kurento.test.browser.WebRtcChannel.AUDIO_ONLY;
 import static org.kurento.test.browser.WebRtcChannel.VIDEO_ONLY;
@@ -96,25 +100,27 @@ public class RecorderWebRtcTest extends BaseRecorder {
 
 	@Test
 	public void testRecorderWebRtcChromeVideoOnlyWebm() throws Exception {
-		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, null, EXTENSION_WEBM);
+		doTest(WEBM_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_WEBM, null,
+				EXTENSION_WEBM);
 	}
 
 	@Ignore
 	@Test
 	public void testRecorderWebRtcChromeVideoOnlyMp4() throws Exception {
-		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, null, EXTENSION_MP4);
+		doTest(MP4_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_MP4, null, EXTENSION_MP4);
 	}
 
 	@Ignore
 	@Test
 	public void testRecorderWebRtcChromeAudioOnlyWebm() throws Exception {
-		doTest(WEBM, null, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+		doTest(WEBM_AUDIO_ONLY, null, EXPECTED_AUDIO_CODEC_WEBM,
+				EXTENSION_WEBM);
 	}
 
 	@Ignore
 	@Test
 	public void testRecorderWebRtcChromeAudioOnlyMp4() throws Exception {
-		doTest(MP4, null, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+		doTest(MP4_AUDIO_ONLY, null, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
 	}
 
 	public void doTest(MediaProfileSpecType mediaProfileSpecType,
@@ -145,6 +151,7 @@ public class RecorderWebRtcTest extends BaseRecorder {
 		getPage().subscribeEvents("playing");
 		getPage().initWebRtc(webRtcEP, webRtcChannel, WebRtcMode.SEND_RCV);
 		recorderEP.record();
+		saveGstreamerDot(mp);
 
 		// Wait until event playing in the remote stream
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
