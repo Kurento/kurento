@@ -114,8 +114,19 @@ Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${comp
     if (!s.JsonValue.isMember ("__type__") || !s.JsonValue["__type__"].isConvertibleTo (Json::ValueType::stringValue) || !s.JsonValue.isMember ("__module__") || !s.JsonValue["__module__"].isConvertibleTo (Json::ValueType::stringValue)) {
       object.reset (new ${module.code.implementation["cppNamespace"]}::${complexType.name}() );
     } else {
-      object.reset (dynamic_cast <${module.code.implementation["cppNamespace"]}::${complexType.name}*>
-        (kurento::RegisterParent::createRegister (s.JsonValue["__module__"].asString () + "." + s.JsonValue["__type__"].asString ())));
+      auto ptr = kurento::RegisterParent::createRegister (s.JsonValue["__module__"].asString () + "." + s.JsonValue["__type__"].asString ());
+
+      if (!ptr) {
+        throw KurentoException (UNEXPECTED_ERROR,
+                                "Type " + s.JsonValue["__type__"].asString () + " does not exist in module " + s.JsonValue["__module__"].asString ());
+      }
+
+      object.reset (dynamic_cast <${module.code.implementation["cppNamespace"]}::${complexType.name}*> (ptr));
+
+      if (!object) {
+        delete ptr;
+        throw KurentoException (UNEXPECTED_ERROR, "Type " + s.JsonValue["__type__"].asString () + " is not compatible");
+      }
     }
  <#else>
     object.reset (new ${module.code.implementation["cppNamespace"]}::${complexType.name}() );
