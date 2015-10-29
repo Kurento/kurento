@@ -61,7 +61,7 @@ public class BaseRecorder extends FunctionalTest {
 
 	@After
 	public void storeGStreamerDot() throws IOException {
-		if (!success) {
+		if (!success && gstreamerDot != null) {
 			String gstreamerDotFile = getDefaultOutputFile(
 					"-before-stop-recording-" + pipelineName);
 			FileUtils.writeStringToFile(new File(gstreamerDotFile),
@@ -105,6 +105,7 @@ public class BaseRecorder extends FunctionalTest {
 		if (recorderEP != null) {
 
 			saveGstreamerDot(mp);
+
 			recorderEP.stop();
 
 			// Guard time to stop the recording
