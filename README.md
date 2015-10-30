@@ -147,7 +147,7 @@ file from its URL and stream it over HTTP :
 
    ```Javascript
    pipeline.create('PlayerEndpoint',
-   {uri: "https://ci.kurento.com/video/small.webm"},
+   {uri: "https://ci.kurento.com/video/format/small.webm"},
    function(error, player)
    {
      …

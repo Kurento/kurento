@@ -13,11 +13,12 @@
  *
  */
 
-URL_BARCODES = "http://files.kurento.org/video/barcodes.webm";
-URL_FIWARECUT = "http://files.kurento.org/video/fiwarecut.webm";
-URL_PLATES = "http://files.kurento.org/video/plates.webm";
-URL_POINTER_DETECTOR = "http://files.kurento.org/video/pointerDetector.mp4";
-URL_SMALL = "http://files.kurento.org/video/small.webm";
+URL_VIDEO_FILES = "http://files.kurento.org/video/";
+URL_BARCODES = URL_VIDEO_FILES + "filter/barcodes.webm";
+URL_FIWARECUT = URL_VIDEO_FILES + "filter/fiwarecut.webm";
+URL_PLATES = URL_VIDEO_FILES + "filter/plates.webm";
+URL_POINTER_DETECTOR = URL_VIDEO_FILES + "filter/pointerDetector.mp4";
+URL_SMALL = URL_VIDEO_FILES + "format/small.webm";
 
 /**
  * Set an assert error and re-start the test so it can fail
