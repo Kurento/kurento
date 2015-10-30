@@ -380,18 +380,24 @@ kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
         self->priv->encodebin, self->priv->sink);
   }
 
-  if (!gst_element_link_pads (self->priv->videosrc, "src",
-          self->priv->encodebin, "video_%u")) {
-    GST_ERROR_OBJECT (self, "Could not link elements: %"
-        GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
-        self->priv->videosrc, self->priv->encodebin);
+  if (kms_recording_profile_supports_type (self->priv->profile,
+          KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+    if (!gst_element_link_pads (self->priv->videosrc, "src",
+            self->priv->encodebin, "video_%u")) {
+      GST_ERROR_OBJECT (self,
+          "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
+          self->priv->videosrc, self->priv->encodebin);
+    }
   }
 
-  if (!gst_element_link_pads (self->priv->audiosrc, "src",
-          self->priv->encodebin, "audio_%u")) {
-    GST_ERROR_OBJECT (self, "Could not link elements: %"
-        GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
-        self->priv->audiosrc, self->priv->encodebin);
+  if (kms_recording_profile_supports_type (self->priv->profile,
+          KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+    if (!gst_element_link_pads (self->priv->audiosrc, "src",
+            self->priv->encodebin, "audio_%u")) {
+      GST_ERROR_OBJECT (self,
+          "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
+          self->priv->audiosrc, self->priv->encodebin);
+    }
   }
 }
 
