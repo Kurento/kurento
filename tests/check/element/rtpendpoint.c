@@ -215,6 +215,7 @@ GST_START_TEST (loopback)
   GstElement *rtpendpointreceiver =
       gst_element_factory_make ("rtpendpoint", "receiver");
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
   int handler_id;
@@ -274,7 +275,8 @@ GST_START_TEST (loopback)
 
   mark_point ();
   g_signal_emit_by_name (rtpendpointsender, "process-answer", sender_sess_id,
-      answer);
+      answer, &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -315,6 +317,7 @@ GST_START_TEST (negotiation_offerer)
   gchar *answerer_local_sdp_str, *answerer_remote_sdp_str;
   gchar *sdp_str = NULL;
   const GstSDPConnection *connection;
+  gboolean answer_ok;
 
   audio_codecs_array = create_codecs_array (audio_codecs);
   video_codecs_array = create_codecs_array (video_codecs);
@@ -351,7 +354,9 @@ GST_START_TEST (negotiation_offerer)
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);

@@ -248,6 +248,7 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   GstElement *rtpendpointreceiver =
       gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
+  gboolean answer_ok;
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
@@ -301,7 +302,8 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
 
   mark_point ();
   g_signal_emit_by_name (rtpendpointsender, "process-answer", sender_sess_id,
-      answer);
+      answer, &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -416,6 +418,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstElement *answerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
+  gboolean answer_ok;
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
@@ -466,7 +469,9 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   fail_unless (answer != NULL);
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 

@@ -377,6 +377,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
   gchar *sdp_str = NULL;
   gboolean ret;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -477,7 +478,9 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
 //  }
 
   mark_point ();
-  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer);
+  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -546,6 +549,7 @@ test_video_sendrecv (const gchar * video_enc_name,
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
   gchar *sdp_str = NULL;
   gboolean ret;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -615,7 +619,9 @@ test_video_sendrecv (const gchar * video_enc_name,
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -690,6 +696,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstCaps *caps;
   gchar *sdp_str = NULL;
   gboolean ret;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -767,7 +774,9 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -886,6 +895,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   GstCaps *caps;
   gchar *sdp_str = NULL;
   gboolean ret;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -979,7 +989,9 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer);
+  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -1078,6 +1090,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   GstCaps *caps;
   gchar *sdp_str = NULL;
   gboolean ret;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -1188,7 +1201,9 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -1280,6 +1295,7 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 
   gchar *sdp_str = NULL;
   gboolean ret;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -1356,7 +1372,9 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   sdp_str = NULL;
 
   mark_point ();
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
@@ -1563,6 +1581,7 @@ test_data_channels (gboolean bundle)
   gchar *padname = NULL;
   gboolean ret;
   TmpCallbackData tmp;
+  gboolean answer_ok;
 
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 
@@ -1634,7 +1653,9 @@ test_data_channels (gboolean bundle)
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer);
+  g_signal_emit_by_name (sender, "process-answer", sender_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
@@ -1798,6 +1819,7 @@ GST_START_TEST (test_remb_params)
   GstStructure *remb_params_in = gst_structure_new_empty ("remb-params");
   GstStructure *remb_params_out;
   guint v1, v2;
+  gboolean answer_ok;
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
@@ -1850,7 +1872,9 @@ GST_START_TEST (test_remb_params)
   g_free (sdp_str);
   sdp_str = NULL;
 
-  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer);
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
