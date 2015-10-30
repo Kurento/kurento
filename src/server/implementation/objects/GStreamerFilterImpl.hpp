@@ -41,10 +41,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
-  GstElement *filter = NULL;
   std::string cmd;
-
-  void setCommandProperties (const std::string &rest_token);
 
   class StaticConstructor
   {

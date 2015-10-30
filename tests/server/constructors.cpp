@@ -23,6 +23,7 @@
 #include <gst/gst.h>
 #include <config.h>
 #include <FilterType.hpp>
+#include <MediaElementImpl.hpp>
 
 boost::property_tree::ptree config;
 
@@ -45,7 +46,8 @@ testGStreamerFilter (kurento::ModuleManager &moduleManager,
                      std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
-  std::string command ("videobox");
+  std::string command ("capsfilter "
+                       "caps=video/x-raw,pixel-aspect-ratio=(fraction)1/1,width=(int)640,framerate=(fraction)4/1");
   std::shared_ptr <kurento::FilterType> filter (new kurento::FilterType (
         kurento::FilterType::VIDEO) );
 
@@ -56,6 +58,7 @@ testGStreamerFilter (kurento::ModuleManager &moduleManager,
   std::shared_ptr <kurento::MediaObjectImpl >  object =
     moduleManager.getFactory ("GStreamerFilter")->createObject (config, "",
         w.JsonValue);
+
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
