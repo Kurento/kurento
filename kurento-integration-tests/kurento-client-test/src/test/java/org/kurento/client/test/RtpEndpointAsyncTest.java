@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_BARCODES;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +40,7 @@ import org.kurento.client.test.util.SdpAsyncBaseTest;
  * Events tested:
  * <ul>
  * <li>{@link RtpEndpoint#addMediaSessionStartedListener(EventListener)}
- * <li>
- * {@link RtpEndpoint#addMediaSessionTerminatedListener(EventListener)}
+ * <li>{@link RtpEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -82,8 +79,7 @@ public class RtpEndpointAsyncTest extends SdpAsyncBaseTest<RtpEndpoint> {
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
 				+ "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
 				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
-				+ "a=rtpmap:96 H264/90000\r\n"
-				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n" + "a=rtpmap:97 MP4V-ES/90000\r\n"
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 

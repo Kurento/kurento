@@ -71,7 +71,7 @@ public class PlayerZBarTest extends FunctionalTest {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/barcodes.webm").build();
+				"http://files.kurento.org/video/filter/barcodes.webm").build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 		ZBarFilter zBarFilter = new ZBarFilter.Builder(mp).build();
 		playerEP.connect(zBarFilter);
@@ -111,8 +111,9 @@ public class PlayerZBarTest extends FunctionalTest {
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 		Assert.assertFalse("No code found by ZBar filter",
 				codeFoundEvents.isEmpty());

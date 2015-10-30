@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test.util;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_BARCODES;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,8 +26,8 @@ import org.kurento.client.SdpEndpoint;
  * @param <T>
  *
  */
-public abstract class SdpBaseTest<T extends SdpEndpoint> extends
-		MediaPipelineBaseTest {
+public abstract class SdpBaseTest<T extends SdpEndpoint>
+		extends MediaPipelineBaseTest {
 
 	protected T sdp;
 	protected T sdp2;
@@ -56,8 +54,7 @@ public abstract class SdpBaseTest<T extends SdpEndpoint> extends
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
 				+ "s=-\r\n" + "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
 				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
-				+ "a=rtpmap:96 H264/90000\r\n"
-				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n" + "a=rtpmap:97 MP4V-ES/90000\r\n"
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 		sdp.processOffer(offer);
@@ -76,8 +73,7 @@ public abstract class SdpBaseTest<T extends SdpEndpoint> extends
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
 				+ "s=-\r\n" + "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
 				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
-				+ "a=rtpmap:96 H264/90000\r\n"
-				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n" + "a=rtpmap:97 MP4V-ES/90000\r\n"
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 		String ret = sdp.processOffer(offer);
@@ -96,15 +92,14 @@ public abstract class SdpBaseTest<T extends SdpEndpoint> extends
 	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES)
-				.build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_BARCODES).build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
 				+ "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
 				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
-				+ "a=rtpmap:96 H264/90000\r\n"
-				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n" + "a=rtpmap:97 MP4V-ES/90000\r\n"
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 

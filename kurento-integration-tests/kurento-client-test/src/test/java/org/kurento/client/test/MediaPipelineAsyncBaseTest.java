@@ -27,14 +27,13 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.testing.KurentoClientTests;
-import org.kurento.test.base.KurentoClientTest;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
  *
  */
 @Category(KurentoClientTests.class)
-public abstract class MediaPipelineAsyncBaseTest extends KurentoClientTest {
+public abstract class MediaPipelineAsyncBaseTest extends BaseApiTest {
 
 	protected MediaPipeline pipeline;
 

@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_BARCODES;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,8 +37,7 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  * Events tested:
  * <ul>
  * <li>{@link HttpEndpoint#addMediaSessionStartListener(EventListener)}
- * <li>
- * {@link HttpEndpoint#addMediaSessionTerminatedListener(EventListener)}
+ * <li>{@link HttpEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -65,8 +62,8 @@ public class ZBarFilterTest extends MediaPipelineBaseTest {
 	@Test
 	public void testCodeFoundEvent() throws InterruptedException {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES)
-				.build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_BARCODES).build();
 		player.connect(zbar);
 
 		AsyncEventManager<CodeFoundEvent> async = new AsyncEventManager<>(

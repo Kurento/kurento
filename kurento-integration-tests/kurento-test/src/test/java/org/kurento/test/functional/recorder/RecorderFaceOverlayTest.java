@@ -90,7 +90,7 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 		// Media Pipeline #1
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/fiwarecut.mp4").build();
+				"http://files.kurento.org/video/filter/fiwarecut.mp4").build();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
 		String recordingFile = getDefaultOutputFile(extension);

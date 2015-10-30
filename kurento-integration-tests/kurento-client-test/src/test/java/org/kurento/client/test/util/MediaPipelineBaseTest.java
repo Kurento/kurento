@@ -18,11 +18,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.test.BaseApiTest;
 import org.kurento.commons.testing.KurentoClientTests;
-import org.kurento.test.base.KurentoClientTest;
 
 @Category(KurentoClientTests.class)
-public abstract class MediaPipelineBaseTest extends KurentoClientTest {
+public abstract class MediaPipelineBaseTest extends BaseApiTest {
 
 	protected MediaPipeline pipeline;
 

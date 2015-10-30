@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_POINTER_DETECTOR;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,8 +45,8 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<FaceOverlayFilter> async = new AsyncResultManager<>(
 				"FaceOverlayFilter creation");
 
-		new FaceOverlayFilter.Builder(pipeline).buildAsync(async
-				.getContinuation());
+		new FaceOverlayFilter.Builder(pipeline)
+				.buildAsync(async.getContinuation());
 
 		overlayFilter = async.waitForResult();
 	}

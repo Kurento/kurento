@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_SMALL;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,8 +47,8 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<RecorderEndpoint> async = new AsyncResultManager<>(
 				"RecorderEndpoint creation");
 
-		new RecorderEndpoint.Builder(pipeline, URL_SMALL).buildAsync(async
-				.getContinuation());
+		new RecorderEndpoint.Builder(pipeline, URL_SMALL)
+				.buildAsync(async.getContinuation());
 
 		recorder = async.waitForResult();
 

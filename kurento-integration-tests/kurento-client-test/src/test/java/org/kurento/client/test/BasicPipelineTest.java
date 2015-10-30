@@ -27,23 +27,25 @@ public class BasicPipelineTest extends MediaPipelineBaseTest {
 	public void basicPipelineTest() {
 
 		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				"http://files.kurento.org/video/small.webm").build();
+				"http://files.kurento.org/video/format/small.webm").build();
 
 		HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline)
 				.build();
 
 		player.connect(httpEndpoint);
-		
-		for(int i=0; i<100; i++){
-		
-		WebRtcEndpoint webRtc = new WebRtcEndpoint.Builder(pipeline).build();
-		
-		player.connect(webRtc);
-		
+
+		for (int i = 0; i < 100; i++) {
+
+			WebRtcEndpoint webRtc = new WebRtcEndpoint.Builder(pipeline)
+					.build();
+
+			player.connect(webRtc);
+
 		}
 
-		System.out.println("Dot length: "+pipeline.getGstreamerDot().getBytes().length);
-		
+		System.out.println(
+				"Dot length: " + pipeline.getGstreamerDot().getBytes().length);
+
 		String url = httpEndpoint.getUrl();
 
 		player.release();

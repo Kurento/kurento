@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_SMALL;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -59,8 +57,8 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<PlayerEndpoint> async = new AsyncResultManager<>(
 				"PlayerEndpoint creation");
 
-		new PlayerEndpoint.Builder(pipeline, URL_SMALL).buildAsync(async
-				.getContinuation());
+		new PlayerEndpoint.Builder(pipeline, URL_SMALL)
+				.buildAsync(async.getContinuation());
 
 		player = async.waitForResult();
 		Assert.assertNotNull(player);

@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test;
 
-import static org.kurento.client.test.RtpEndpoint2Test.URL_PLATES;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
