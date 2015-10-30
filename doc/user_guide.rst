@@ -125,7 +125,7 @@ created:
 	RtpEndpoint rtpEndpoint = new RtpEndpoint.Builder(pipeline).build();
 
 	// Media repository
-	PlayerEndpoint playerEndpoint = new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/fiwarecut.mp4").build();
+	PlayerEndpoint playerEndpoint = new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/filter/fiwarecut.mp4").build();
 
 	RecorderEndpoint recorderEndpoint = new RecorderEndpoint.Builder(pipeline, "file:///tmp/recording.webm").build();
 
@@ -230,7 +230,7 @@ create several media elements:
 	});
 
 	// Media repository
-	pipeline.create('PlayerEndpoint', {uri : 'http://files.kurento.org/video/fiwarecut.mp4'}, function(error, playerEndpoint) {
+	pipeline.create('PlayerEndpoint', {uri : 'http://files.kurento.org/video/filter/fiwarecut.mp4'}, function(error, playerEndpoint) {
 	   if (error) {
 	      // Error creating PlayerEndpoint
 	   }
