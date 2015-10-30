@@ -9,3 +9,5 @@ target
 *backup
 *Backup
 log.xml
+.externalToolBuilders
+*.pyc

@@ -190,7 +190,7 @@ $ sudo ./bin/install.sh
 
 The service **kurento-repo** will be automatically started.
 
-Now, you can configure the respository as stated in the 
+Now, you can configure the repository as stated in the 
 [previous section](#configuration) and restart the service.
 
 ```

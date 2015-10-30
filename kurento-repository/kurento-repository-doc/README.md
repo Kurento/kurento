@@ -2,28 +2,32 @@
 
 Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 
-kurento-repository
-==================
+kurento-repository-doc
+================
 
-Kurento Repository project allows clients to manage media repositories based
-on filesystem or [MongoDB][mongo].
+Kurento Repository project documentation. Made with [Sphinx] and [Read-the-docs] 
+theme.
 
-This project is organized into several modules:
+To install the Sphinx software requirements in Ubuntu 14.04 LTS:
 
-  * `kurento-repository-internal`: core Java library of repository. 
-    Plain Java mostly, but with [Spring][Spring] dependencies.
-  * `kurento-repository-server`: Wrapper for the library, 
-    offering a simpler Java API and a Http REST API. Contains a 
-    [Spring Boot][SpringBoot] application, very easy to setup and run.
-  * `kurento-repository-doc`: Documentation in [Sphinx] of the repository
-    project.
+```
+$ sudo apt-get install sphinx3
+$ sudo apt-get install python-sphinx
+$ sudo apt-get install python-pip python-dev build-essential
+$ sudo apt-get install graphviz
+```
 
-Instructions on running the server and the required dependencies are found 
-in its own [README][server-readme].
+The documentation will be generated during the *package* phase of a Maven build
+of this project:
 
-There is a Kurento Java [tutorial application][helloworld-repository] that 
-connects to a running instance of the **repository server** to record and play 
-media over HTTP using the capabilities of the Kurento Media Server.
+```
+$ cd kurento-repository-doc
+$ mvn clean package
+```
+
+The resulting HTML files will be located in the folder
+`kurento-repository-doc/target/site/html` (`index.html` should be opened with a
+web browser).
 
 What is Kurento
 ---------------
@@ -124,9 +128,4 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [readthedocs.org]: http://kurento.readthedocs.org/
 [Open API specification]: http://kurento.github.io/doc-kurento/
 [apiary.io]: http://docs.streamoriented.apiary.io/
-[mongo]: https://www.mongodb.org/
-[Spring]: https://spring.io/
-[SpringBoot]: http://projects.spring.io/spring-boot/
-[server-readme]: kurento-repository-server/README.md
-[helloworld-repository]: https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-hello-world-recording
 [Sphinx]: http://sphinx-doc.org/
