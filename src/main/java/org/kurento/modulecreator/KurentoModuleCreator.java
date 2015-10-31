@@ -9,6 +9,8 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +18,10 @@ import java.util.Map.Entry;
 
 import org.kurento.modulecreator.codegen.CodeGen;
 import org.kurento.modulecreator.codegen.Error;
+import org.kurento.modulecreator.definition.ComplexType;
+import org.kurento.modulecreator.definition.Event;
 import org.kurento.modulecreator.definition.ModuleDefinition;
+import org.kurento.modulecreator.definition.RemoteClass;
 import org.kurento.modulecreator.json.JsonModuleSaverLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -366,6 +371,44 @@ public class KurentoModuleCreator {
 						"Value: " + key + " = " + getValue(module, key));
 			}
 		}
+	}
+
+	public void printSimpleKmd() throws FileNotFoundException, IOException,
+			NoSuchAlgorithmException {
+		if (moduleManager == null) {
+			loadModulesFromKmdFiles();
+		}
+
+		MessageDigest digest = MessageDigest.getInstance("MD5");
+
+		for (ModuleDefinition module : moduleManager.getModules()) {
+			for (RemoteClass klass : module.getRemoteClasses()) {
+				System.out.println("RemoteClass:\t" + klass.getName());
+				digest.update(klass.getName().getBytes());
+			}
+			for (Event event : module.getEvents()) {
+				System.out.println("Event:\t" + event.getName());
+				digest.update(event.getName().getBytes());
+			}
+			for (ComplexType complexType : module.getComplexTypes()) {
+				System.out.println("ComplexType:\t" + complexType.getName());
+				digest.update(complexType.getName().getBytes());
+			}
+		}
+
+		System.out.print("Digest: ");
+		for (byte b : digest.digest()) {
+			String s = Integer.toHexString(b & 0xFF);
+			if (s.length() < 1) {
+				s = "00";
+			} else if (s.length() < 2) {
+				s = "0" + s;
+			}
+
+			System.out.print(s);
+		}
+
+		System.out.println("");
 	}
 
 	private static String getValue(Object object, String key) {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +39,8 @@ public class Main {
 	private static final String INTERNAL_TEMPLATES = "it";
 	private static final String SHOW_VALUES = "s";
 	private static final String OUTPUT_MODEL = "o";
+
+	private static final String PRINT_SIMPLE_KMD = "p";
 
 	private static final String GENERATE_MAVEN = "maven";
 	private static final String GENERATE_NPM = "npm";
@@ -86,6 +89,7 @@ public class Main {
 		processor.setGenerateNpmPackage(line.hasOption(GENERATE_NPM));
 
 		showValues(processor, line);
+		printSimpleKmd(processor, line);
 
 		processor.setCodeGenDir(getCodegenDir(line));
 
@@ -109,6 +113,20 @@ public class Main {
 		String[] keys = line.getOptionValues(SHOW_VALUES);
 
 		krp.printValues(keys);
+		System.exit(0);
+	}
+
+	private static void printSimpleKmd(KurentoModuleCreator krp,
+			CommandLine line) throws FileNotFoundException, IOException {
+		if (!line.hasOption(PRINT_SIMPLE_KMD)) {
+			return;
+		}
+
+		try {
+			krp.printSimpleKmd();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
 		System.exit(0);
 	}
 
@@ -182,6 +200,9 @@ public class Main {
 
 		options.addOption(GENERATE_NPM, "npm-package", false,
 				"Generate package.json file based on base file or template.");
+
+		options.addOption(PRINT_SIMPLE_KMD, "print-simple-kmd", false,
+				"Print events, complex types and remote classes present on kmd");
 
 		return options;
 	}
