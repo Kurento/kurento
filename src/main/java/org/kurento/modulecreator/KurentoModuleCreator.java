@@ -381,7 +381,6 @@ public class KurentoModuleCreator {
 		}
 
 		MessageDigest digest = MessageDigest.getInstance("MD5");
-		MessageDigest dependencyDigest = MessageDigest.getInstance("MD5");
 
 		for (ModuleDefinition module : moduleManager.getModules()) {
 			for (RemoteClass klass : module.getRemoteClasses()) {
@@ -399,7 +398,7 @@ public class KurentoModuleCreator {
 			for (Import dep : module.getImports()) {
 				String depDesc = dep.getName() + " " + dep.getVersion();
 				System.out.println("Dep: " + depDesc);
-				dependencyDigest.update(depDesc.getBytes());
+				digest.update(depDesc.getBytes());
 			}
 		}
 
@@ -416,21 +415,6 @@ public class KurentoModuleCreator {
 		}
 
 		System.out.println("");
-
-		System.out.print("DepDigest: ");
-		for (byte b : dependencyDigest.digest()) {
-			String s = Integer.toHexString(b & 0xFF);
-			if (s.length() < 1) {
-				s = "00";
-			} else if (s.length() < 2) {
-				s = "0" + s;
-			}
-
-			System.out.print(s);
-		}
-
-		System.out.println("");
-
 	}
 
 	private static String getValue(Object object, String key) {
