@@ -8,7 +8,8 @@ public class Param extends DataItem {
 		super(name, doc, type, optional);
 	}
 
-	public Param(String name, String doc, TypeRef type, JsonElement defaultValue) {
+	public Param(String name, String doc, TypeRef type,
+			JsonElement defaultValue) {
 		super(name, doc, type, defaultValue);
 	}
 

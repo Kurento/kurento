@@ -12,10 +12,12 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class TypeRefAdapter implements JsonSerializer<TypeRef>, JsonDeserializer<TypeRef> {
+public class TypeRefAdapter
+		implements JsonSerializer<TypeRef>, JsonDeserializer<TypeRef> {
 
 	@Override
-	public JsonElement serialize(TypeRef src, Type typeOfSrc, JsonSerializationContext context) {
+	public JsonElement serialize(TypeRef src, Type typeOfSrc,
+			JsonSerializationContext context) {
 		String name = src.getName();
 		if (src.isList()) {
 			name += "[]";
@@ -26,8 +28,8 @@ public class TypeRefAdapter implements JsonSerializer<TypeRef>, JsonDeserializer
 	}
 
 	@Override
-	public TypeRef deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-			throws JsonParseException {
+	public TypeRef deserialize(JsonElement json, Type typeOfT,
+			JsonDeserializationContext context) throws JsonParseException {
 
 		String typeRefString = json.getAsString();
 

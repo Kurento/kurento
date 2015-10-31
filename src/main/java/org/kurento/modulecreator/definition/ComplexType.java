@@ -20,7 +20,8 @@ public class ComplexType extends Type {
 
 	private List<String> values;
 
-	public ComplexType(String name, String doc, List<Property> properties, List<String> values) {
+	public ComplexType(String name, String doc, List<Property> properties,
+			List<String> values) {
 		super(name, doc);
 		this.properties = properties;
 		this.values = values;
@@ -29,7 +30,8 @@ public class ComplexType extends Type {
 		} else if (values != null) {
 			typeFormat = TypeFormat.ENUM;
 		} else {
-			new AssertionError("Properties or values have to have a non null value");
+			new AssertionError(
+					"Properties or values have to have a non null value");
 		}
 	}
 
@@ -98,9 +100,12 @@ public class ComplexType extends Type {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((extendsProp == null) ? 0 : extendsProp.hashCode());
-		result = prime * result + ((properties == null) ? 0 : properties.hashCode());
-		result = prime * result + ((typeFormat == null) ? 0 : typeFormat.hashCode());
+		result = prime * result
+				+ ((extendsProp == null) ? 0 : extendsProp.hashCode());
+		result = prime * result
+				+ ((properties == null) ? 0 : properties.hashCode());
+		result = prime * result
+				+ ((typeFormat == null) ? 0 : typeFormat.hashCode());
 		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}

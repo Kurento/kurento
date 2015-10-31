@@ -206,7 +206,8 @@ public class Version implements Comparable<Version> {
 			int result = v1.compareTo(v2);
 			if (result == 0) {
 				result = v1.build.compareTo(v2.build);
-				if (v1.build == MetadataVersion.NULL || v2.build == MetadataVersion.NULL) {
+				if (v1.build == MetadataVersion.NULL
+						|| v2.build == MetadataVersion.NULL) {
 					/**
 					 * Build metadata should have a higher precedence than the
 					 * associated normal version which is the opposite compared
@@ -253,7 +254,8 @@ public class Version implements Comparable<Version> {
 	 * @param build
 	 *            the build metadata
 	 */
-	Version(NormalVersion normal, MetadataVersion preRelease, MetadataVersion build) {
+	Version(NormalVersion normal, MetadataVersion preRelease,
+			MetadataVersion build) {
 		this.normal = normal;
 		this.preRelease = preRelease;
 		this.build = build;
@@ -373,7 +375,8 @@ public class Version implements Comparable<Version> {
 	 *             is a special case of {@code ParseException}
 	 */
 	public Version incrementMajorVersion(String preRelease) {
-		return new Version(normal.incrementMajor(), VersionParser.parsePreRelease(preRelease));
+		return new Version(normal.incrementMajor(),
+				VersionParser.parsePreRelease(preRelease));
 	}
 
 	/**
@@ -399,7 +402,8 @@ public class Version implements Comparable<Version> {
 	 *             is a special case of {@code ParseException}
 	 */
 	public Version incrementMinorVersion(String preRelease) {
-		return new Version(normal.incrementMinor(), VersionParser.parsePreRelease(preRelease));
+		return new Version(normal.incrementMinor(),
+				VersionParser.parsePreRelease(preRelease));
 	}
 
 	/**
@@ -425,7 +429,8 @@ public class Version implements Comparable<Version> {
 	 *             is a special case of {@code ParseException}
 	 */
 	public Version incrementPatchVersion(String preRelease) {
-		return new Version(normal.incrementPatch(), VersionParser.parsePreRelease(preRelease));
+		return new Version(normal.incrementPatch(),
+				VersionParser.parsePreRelease(preRelease));
 	}
 
 	/**

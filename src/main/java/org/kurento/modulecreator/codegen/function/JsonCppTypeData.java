@@ -36,7 +36,8 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
 	}
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments)
+			throws TemplateModelException {
 
 		Object type = arguments.get(0);
 
@@ -83,7 +84,8 @@ public class JsonCppTypeData implements TemplateMethodModelEx {
 				data.jsonValueType = "booleanValue";
 				data.typeDescription = "boolean";
 				return data;
-			} else if (typeRef.getName().equals("double") || typeRef.getName().equals("float")) {
+			} else if (typeRef.getName().equals("double")
+					|| typeRef.getName().equals("float")) {
 				JsonTypeData data = new JsonTypeData();
 				data.jsonMethod = "Double";
 				data.jsonValueType = "realValue";

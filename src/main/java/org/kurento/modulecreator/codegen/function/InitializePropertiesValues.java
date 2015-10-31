@@ -12,10 +12,12 @@ import freemarker.template.TemplateModelException;
 public class InitializePropertiesValues implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments)
+			throws TemplateModelException {
 
 		if (arguments.size() != 1) {
-			throw new TemplateModelException("This function expects 1 parameter");
+			throw new TemplateModelException(
+					"This function expects 1 parameter");
 		}
 		Object type = arguments.get(0);
 		String ret = "";
@@ -31,7 +33,8 @@ public class InitializePropertiesValues implements TemplateMethodModelEx {
 			TypeRef typeRef = (TypeRef) type;
 			if (typeRef.getName().equals("boolean")) {
 				ret = "= false";
-			} else if (typeRef.getName().equals("float") || typeRef.getName().equals("int")) {
+			} else if (typeRef.getName().equals("float")
+					|| typeRef.getName().equals("int")) {
 				ret = "= 0";
 			}
 		} else {

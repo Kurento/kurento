@@ -101,7 +101,8 @@ public class UnexpectedTokenException extends ParseException {
 	public String toString() {
 		String message = String.format("Unexpected token '%s'", unexpected);
 		if (expected.length > 0) {
-			message += String.format(", expecting '%s'", Arrays.toString(expected));
+			message += String.format(", expecting '%s'",
+					Arrays.toString(expected));
 		}
 		return message;
 	}

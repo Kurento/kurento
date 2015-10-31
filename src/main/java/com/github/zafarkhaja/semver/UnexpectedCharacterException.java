@@ -76,7 +76,8 @@ public class UnexpectedCharacterException extends ParseException {
 	 * @param expected
 	 *            an array of the expected character types
 	 */
-	UnexpectedCharacterException(Character unexpected, int position, CharType... expected) {
+	UnexpectedCharacterException(Character unexpected, int position,
+			CharType... expected) {
 		this.unexpected = unexpected;
 		this.position = position;
 		this.expected = expected;
@@ -118,10 +119,12 @@ public class UnexpectedCharacterException extends ParseException {
 	 */
 	@Override
 	public String toString() {
-		String message = String.format("Unexpected character '%s(%s)' at position '%d'",
+		String message = String.format(
+				"Unexpected character '%s(%s)' at position '%d'",
 				CharType.forCharacter(unexpected), unexpected, position);
 		if (expected.length > 0) {
-			message += String.format(", expecting '%s'", Arrays.toString(expected));
+			message += String.format(", expecting '%s'",
+					Arrays.toString(expected));
 		}
 		return message;
 	}

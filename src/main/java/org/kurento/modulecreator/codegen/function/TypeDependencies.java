@@ -20,7 +20,8 @@ import freemarker.template.TemplateModelException;
 public class TypeDependencies implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments)
+			throws TemplateModelException {
 
 		Object type = arguments.get(0);
 

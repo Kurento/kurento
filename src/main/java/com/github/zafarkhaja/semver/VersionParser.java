@@ -500,7 +500,8 @@ class VersionParser implements Parser<Version> {
 		Character la1 = chars.lookahead(1);
 		Character la2 = chars.lookahead(2);
 		if (la1 != null && la1 == '0' && DIGIT.isMatchedBy(la2)) {
-			throw new ParseException("Numeric identifier MUST NOT contain leading zeroes");
+			throw new ParseException(
+					"Numeric identifier MUST NOT contain leading zeroes");
 		}
 	}
 
@@ -514,9 +515,11 @@ class VersionParser implements Parser<Version> {
 	 */
 	private void checkForEmptyIdentifier() {
 		Character la = chars.lookahead(1);
-		if (DOT.isMatchedBy(la) || PLUS.isMatchedBy(la) || EOL.isMatchedBy(la)) {
+		if (DOT.isMatchedBy(la) || PLUS.isMatchedBy(la)
+				|| EOL.isMatchedBy(la)) {
 			throw new ParseException("Identifiers MUST NOT be empty",
-					new UnexpectedCharacterException(la, chars.currentOffset(), DIGIT, LETTER, HYPHEN));
+					new UnexpectedCharacterException(la, chars.currentOffset(),
+							DIGIT, LETTER, HYPHEN));
 		}
 	}
 
@@ -547,7 +550,8 @@ class VersionParser implements Parser<Version> {
 	 */
 	private void ensureValidLookahead(CharType... expected) {
 		if (!chars.positiveLookahead(expected)) {
-			throw new UnexpectedCharacterException(chars.lookahead(1), chars.currentOffset(), expected);
+			throw new UnexpectedCharacterException(chars.lookahead(1),
+					chars.currentOffset(), expected);
 		}
 	}
 }

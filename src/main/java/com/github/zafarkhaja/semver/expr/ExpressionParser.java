@@ -239,11 +239,13 @@ public class ExpressionParser implements Parser<Expression> {
 		consumeNextToken(DOT);
 		int minor = intOf(consumeNextToken(NUMERIC).lexeme);
 		if (!tokens.positiveLookahead(DOT)) {
-			return new And(new GreaterOrEqual(versionOf(major, minor, 0)), new Less(versionOf(major + 1, 0, 0)));
+			return new And(new GreaterOrEqual(versionOf(major, minor, 0)),
+					new Less(versionOf(major + 1, 0, 0)));
 		}
 		consumeNextToken(DOT);
 		int patch = intOf(consumeNextToken(NUMERIC).lexeme);
-		return new And(new GreaterOrEqual(versionOf(major, minor, patch)), new Less(versionOf(major, minor + 1, 0)));
+		return new And(new GreaterOrEqual(versionOf(major, minor, patch)),
+				new Less(versionOf(major, minor + 1, 0)));
 	}
 
 	/**
@@ -274,12 +276,14 @@ public class ExpressionParser implements Parser<Expression> {
 		consumeNextToken(DOT);
 		if (tokens.positiveLookahead(STAR)) {
 			tokens.consume();
-			return new And(new GreaterOrEqual(versionOf(major, 0, 0)), new Less(versionOf(major + 1, 0, 0)));
+			return new And(new GreaterOrEqual(versionOf(major, 0, 0)),
+					new Less(versionOf(major + 1, 0, 0)));
 		}
 		int minor = intOf(consumeNextToken(NUMERIC).lexeme);
 		consumeNextToken(DOT);
 		consumeNextToken(STAR);
-		return new And(new GreaterOrEqual(versionOf(major, minor, 0)), new Less(versionOf(major, minor + 1, 0)));
+		return new And(new GreaterOrEqual(versionOf(major, minor, 0)),
+				new Less(versionOf(major, minor + 1, 0)));
 	}
 
 	/**

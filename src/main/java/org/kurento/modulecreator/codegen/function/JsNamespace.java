@@ -14,9 +14,11 @@ import freemarker.template.TemplateModelException;
 public class JsNamespace implements TemplateMethodModelEx {
 
 	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
+	public Object exec(@SuppressWarnings("rawtypes") List arguments)
+			throws TemplateModelException {
 
-		RemoteClass remoteClass = (RemoteClass) ((StringModel) arguments.get(0)).getWrappedObject();
+		RemoteClass remoteClass = (RemoteClass) ((StringModel) arguments.get(0))
+				.getWrappedObject();
 
 		Set<String> baseClassNames = new HashSet<String>();
 		baseClassNames.add("Filter");

@@ -63,7 +63,8 @@ class NormalVersion implements Comparable<NormalVersion> {
 	 */
 	NormalVersion(int major, int minor, int patch) {
 		if (major < 0 || minor < 0 || patch < 0) {
-			throw new IllegalArgumentException("Major, minor and patch versions MUST be non-negative integers.");
+			throw new IllegalArgumentException(
+					"Major, minor and patch versions MUST be non-negative integers.");
 		}
 		this.major = major;
 		this.minor = minor;

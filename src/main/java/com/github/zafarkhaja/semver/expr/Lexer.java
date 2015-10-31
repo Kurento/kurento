@@ -47,10 +47,15 @@ class Lexer {
 		 */
 		enum Type implements Stream.ElementType<Token> {
 
-			NUMERIC("0|[1-9][0-9]*"), DOT("\\."), HYPHEN("-"), EQUAL("="), NOT_EQUAL("!="), GREATER(
-					">(?!=)"), GREATER_EQUAL(">="), LESS("<(?!=)"), LESS_EQUAL("<="), TILDE("~"), STAR("\\*"), AND(
-							"&"), OR("\\|"), NOT("!(?!=)"), LEFT_PAREN("\\("), RIGHT_PAREN("\\)"), WHITESPACE(
-									"\\s+"), EOL("?!");
+			NUMERIC("0|[1-9][0-9]*"), DOT("\\."), HYPHEN("-"), EQUAL(
+					"="), NOT_EQUAL("!="), GREATER(">(?!=)"), GREATER_EQUAL(
+							">="), LESS("<(?!=)"), LESS_EQUAL("<="), TILDE(
+									"~"), STAR("\\*"), AND("&"), OR("\\|"), NOT(
+											"!(?!=)"), LEFT_PAREN(
+													"\\("), RIGHT_PAREN(
+															"\\)"), WHITESPACE(
+																	"\\s+"), EOL(
+																			"?!");
 
 			/**
 			 * A pattern matching this type.
@@ -135,7 +140,8 @@ class Lexer {
 				return false;
 			}
 			Token token = (Token) other;
-			return type.equals(token.type) && lexeme.equals(token.lexeme) && position == token.position;
+			return type.equals(token.type) && lexeme.equals(token.lexeme)
+					&& position == token.position;
 		}
 
 		/**
@@ -157,7 +163,8 @@ class Lexer {
 		 */
 		@Override
 		public String toString() {
-			return String.format("%s(%s) at position %d", type.name(), lexeme, position);
+			return String.format("%s(%s) at position %d", type.name(), lexeme,
+					position);
 		}
 	}
 
@@ -188,7 +195,8 @@ class Lexer {
 					matched = true;
 					input = matcher.replaceFirst("");
 					if (tokenType != Token.Type.WHITESPACE) {
-						tokens.add(new Token(tokenType, matcher.group(), tokenPos));
+						tokens.add(new Token(tokenType, matcher.group(),
+								tokenPos));
 					}
 					tokenPos += matcher.end();
 					break;

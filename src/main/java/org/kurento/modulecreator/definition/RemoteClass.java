@@ -23,8 +23,9 @@ public class RemoteClass extends Type {
 		this.events = new ArrayList<TypeRef>();
 	}
 
-	public RemoteClass(String name, String doc, TypeRef extendsProp, Method constructor, List<Method> methods,
-			List<Property> properties, List<TypeRef> events) {
+	public RemoteClass(String name, String doc, TypeRef extendsProp,
+			Method constructor, List<Method> methods, List<Property> properties,
+			List<TypeRef> events) {
 		super(name, doc);
 		this.extendsProp = extendsProp;
 		this.constructor = constructor;
@@ -94,7 +95,8 @@ public class RemoteClass extends Type {
 			return true;
 		} else {
 			if (getExtends() != null) {
-				return ((RemoteClass) getExtends().getType()).isAssignableTo(remoteClassName);
+				return ((RemoteClass) getExtends().getType())
+						.isAssignableTo(remoteClassName);
 			} else {
 				return false;
 			}
@@ -118,8 +120,9 @@ public class RemoteClass extends Type {
 
 	@Override
 	public String toString() {
-		return "RemoteClass [extends=" + extendsProp + ", constructor=" + constructor + ", methods=" + methods
-				+ ", doc=" + getDoc() + ", name=" + getName() + "]";
+		return "RemoteClass [extends=" + extendsProp + ", constructor="
+				+ constructor + ", methods=" + methods + ", doc=" + getDoc()
+				+ ", name=" + getName() + "]";
 	}
 
 	@Override
@@ -127,9 +130,11 @@ public class RemoteClass extends Type {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (abstractClass ? 1231 : 1237);
-		result = prime * result + ((constructor == null) ? 0 : constructor.hashCode());
+		result = prime * result
+				+ ((constructor == null) ? 0 : constructor.hashCode());
 		result = prime * result + ((events == null) ? 0 : events.hashCode());
-		result = prime * result + ((extendsProp == null) ? 0 : extendsProp.hashCode());
+		result = prime * result
+				+ ((extendsProp == null) ? 0 : extendsProp.hashCode());
 		result = prime * result + ((methods == null) ? 0 : methods.hashCode());
 		return result;
 	}
