@@ -20,6 +20,7 @@ import org.kurento.modulecreator.codegen.CodeGen;
 import org.kurento.modulecreator.codegen.Error;
 import org.kurento.modulecreator.definition.ComplexType;
 import org.kurento.modulecreator.definition.Event;
+import org.kurento.modulecreator.definition.Import;
 import org.kurento.modulecreator.definition.ModuleDefinition;
 import org.kurento.modulecreator.definition.RemoteClass;
 import org.kurento.modulecreator.json.JsonModuleSaverLoader;
@@ -380,6 +381,7 @@ public class KurentoModuleCreator {
 		}
 
 		MessageDigest digest = MessageDigest.getInstance("MD5");
+		MessageDigest dependencyDigest = MessageDigest.getInstance("MD5");
 
 		for (ModuleDefinition module : moduleManager.getModules()) {
 			for (RemoteClass klass : module.getRemoteClasses()) {
@@ -393,6 +395,11 @@ public class KurentoModuleCreator {
 			for (ComplexType complexType : module.getComplexTypes()) {
 				System.out.println("ComplexType:\t" + complexType.getName());
 				digest.update(complexType.getName().getBytes());
+			}
+			for (Import dep : module.getImports()) {
+				String depDesc = dep.getName() + " " + dep.getVersion();
+				System.out.println("Dep: " + depDesc);
+				dependencyDigest.update(depDesc.getBytes());
 			}
 		}
 
@@ -409,6 +416,21 @@ public class KurentoModuleCreator {
 		}
 
 		System.out.println("");
+
+		System.out.print("DepDigest: ");
+		for (byte b : dependencyDigest.digest()) {
+			String s = Integer.toHexString(b & 0xFF);
+			if (s.length() < 1) {
+				s = "00";
+			} else if (s.length() < 2) {
+				s = "0" + s;
+			}
+
+			System.out.print(s);
+		}
+
+		System.out.println("");
+
 	}
 
 	private static String getValue(Object object, String key) {
