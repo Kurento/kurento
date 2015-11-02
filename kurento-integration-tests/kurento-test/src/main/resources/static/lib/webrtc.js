@@ -19,6 +19,7 @@ var webRtcPeer;
 var sdpOffer;
 var videoStream = null;
 var audioStream = null;
+var iceCandidates = [];
 var defaultVideoConstraints = {
 	width : {
 		max : 640
@@ -84,6 +85,11 @@ function setCustomAudio(audioUrl) {
 	audioStream = mixedOutput.stream;
 }
 
+function onIceCandidate(candidate) {
+	console.log('Local candidate' + JSON.stringify(candidate));
+	iceCandidates.push(JSON.stringify(candidate));
+}
+
 function startSendRecv() {
 	console.log("Starting WebRTC in SendRecv mode...");
 	showSpinner(local, video);
@@ -92,7 +98,7 @@ function startSendRecv() {
       localVideo: local,
       remoteVideo: video,
       mediaConstraints: userMediaConstraints,
-      oncandidategatheringdone: onCandidateGatheringDone
+      onicecandidate : onIceCandidate
     }
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
@@ -110,8 +116,7 @@ function startSendOnly() {
 
     var options = {
       localVideo: local,
-      mediaConstraints: userMediaConstraints,
-      oncandidategatheringdone: onCandidateGatheringDone
+      mediaConstraints: userMediaConstraints
     }
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
@@ -129,8 +134,7 @@ function startRecvOnly() {
 
     var options = {
       remoteVideo: video,
-      mediaConstraints: userMediaConstraints,
-      oncandidategatheringdone: onCandidateGatheringDone
+      mediaConstraints: userMediaConstraints
     }
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
@@ -148,6 +152,7 @@ function onError(error) {
 
 function onOffer(error, offer) {
 	console.info("SDP offer:");
+	sdpOffer = offer;
 }
 
 function addIceCandidate (serverCandidate) {
@@ -158,12 +163,6 @@ function addIceCandidate (serverCandidate) {
 	     return;
 	   }
 	});
-}
-
-function onCandidateGatheringDone(error) {
-	console.log("Candidates generated");
-	sdpOffer = webRtcPeer.getLocalSessionDescriptor().sdp;
-	console.info(sdpOffer);
 }
 
 function processSdpAnswer(answer) {

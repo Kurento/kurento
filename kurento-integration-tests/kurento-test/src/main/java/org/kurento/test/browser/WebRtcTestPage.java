@@ -25,8 +25,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.kurento.client.EventListener;
+import org.kurento.client.IceCandidate;
 import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.VideoTagType;
@@ -37,6 +39,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Specific client for tests within kurento-test project. This logic is linked
@@ -270,7 +275,7 @@ public class WebRtcTestPage extends WebPage {
 	/*
 	 * initWebRtc
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("unchecked")
 	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
 			final WebRtcChannel channel, final WebRtcMode mode)
 					throws InterruptedException {
@@ -285,50 +290,38 @@ public class WebRtcTestPage extends WebPage {
 					}
 				});
 
-		final CountDownLatch latch = new CountDownLatch(1);
-		Thread t = new Thread() {
+		// ICE candidates
+		final List<Boolean> searchCandidates = new ArrayList<Boolean>();
+		searchCandidates.add(true);
+		Thread t1 = new Thread() {
 			public void run() {
-				initWebRtcSdpProcessor(new SdpOfferProcessor() {
-					@Override
-					public String processSdpOffer(String sdpOffer) {
-						return webRtcEndpoint.processOffer(sdpOffer);
+				JsonParser parser = new JsonParser();
+				int numCandidate = 0;
+				while (!searchCandidates.isEmpty()) {
+					ArrayList<Object> iceCandidates = (ArrayList<Object>) browser
+							.executeScriptAndWaitOutput(
+									"return iceCandidates;");
+
+					for (int i = numCandidate; i < iceCandidates.size(); i++) {
+						JsonObject jsonCandidate = (JsonObject) parser
+								.parse(iceCandidates.get(i).toString());
+						IceCandidate candidate = new IceCandidate(
+								jsonCandidate.get("candidate").getAsString(),
+								jsonCandidate.get("sdpMid").getAsString(),
+								jsonCandidate.get("sdpMLineIndex").getAsInt());
+						log.debug("Adding candidate {}: {}", i, jsonCandidate);
+						webRtcEndpoint.addIceCandidate(candidate);
+						numCandidate++;
 					}
-				}, channel, mode);
-				latch.countDown();
+					try {
+						// Poll 300 ms
+						Thread.sleep(300);
+					} catch (InterruptedException e) {
+					}
+				}
 			}
 		};
-		t.start();
-		if (!latch.await(browser.getTimeout(), TimeUnit.SECONDS)) {
-			t.interrupt();
-			t.stop();
-		}
-		webRtcEndpoint.gatherCandidates();
-	}
-
-	/*
-	 * reload
-	 */
-	public void reload() {
-		browser.reload();
-		browser.injectKurentoTestJs();
-		browser.executeScriptAndWaitOutput("return kurentoTest;");
-		setBrowser(browser);
-	}
-
-	/*
-	 * stopWebRtc
-	 */
-	public void stopWebRtc() {
-		browser.executeScript("stop();");
-		browser.executeScript("var kurentoTest = new KurentoTest();");
-		countDownLatchEvents.clear();
-	}
-
-	/*
-	 * initWebRtcSdpProcessor
-	 */
-	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor,
-			WebRtcChannel channel, WebRtcMode mode) {
+		t1.start();
 
 		// Append WebRTC mode (send/receive and audio/video) to identify test
 		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
@@ -351,20 +344,59 @@ public class WebRtcTestPage extends WebPage {
 		// Execute JavaScript kurentoUtils.WebRtcPeer
 		browser.executeScript(mode.getJsFunction());
 
-		// Wait to valid sdpOffer
-		String sdpOffer = (String) browser
-				.executeScriptAndWaitOutput("return sdpOffer;");
-		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
+		// SDP offer/answer
+		final CountDownLatch latch = new CountDownLatch(1);
+		Thread t2 = new Thread() {
+			public void run() {
+				// Wait to valid sdpOffer
+				String sdpOffer = (String) browser
+						.executeScriptAndWaitOutput("return sdpOffer;");
+				String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
-		log.trace("**** SDP OFFER: {}", sdpOffer);
-		log.trace("**** SDP ANSWER: {}", sdpAnswer);
+				log.trace("SDP offer: {}", sdpOffer);
+				log.trace("SDP answer: {}", sdpAnswer);
 
-		// Encoding in Base64 to avoid parsing errors in JavaScript
-		sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
+				// Encoding in Base64 to avoid parsing errors in JavaScript
+				sdpAnswer = new String(
+						Base64.encodeBase64(sdpAnswer.getBytes()));
 
-		// Process sdpAnswer
-		browser.executeScript("processSdpAnswer('" + sdpAnswer + "');");
+				// Process sdpAnswer
+				browser.executeScript("processSdpAnswer('" + sdpAnswer + "');");
 
+				latch.countDown();
+			}
+		};
+		t2.start();
+
+		if (!latch.await(browser.getTimeout(), TimeUnit.SECONDS)) {
+			throw new KurentoException("ICE negotiation not finished in "
+					+ browser.getTimeout() + " seconds");
+		}
+
+		searchCandidates.clear();
+		t1.interrupt();
+		t2.interrupt();
+
+		webRtcEndpoint.gatherCandidates();
+	}
+
+	/*
+	 * reload
+	 */
+	public void reload() {
+		browser.reload();
+		browser.injectKurentoTestJs();
+		browser.executeScriptAndWaitOutput("return kurentoTest;");
+		setBrowser(browser);
+	}
+
+	/*
+	 * stopWebRtc
+	 */
+	public void stopWebRtc() {
+		browser.executeScript("stop();");
+		browser.executeScript("var kurentoTest = new KurentoTest();");
+		countDownLatchEvents.clear();
 	}
 
 	/*
