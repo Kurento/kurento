@@ -1,4 +1,4 @@
-package org.kurento.repository.rest;
+package org.kurento.repository;
 
 public interface RepositoryUrlProvider {
 

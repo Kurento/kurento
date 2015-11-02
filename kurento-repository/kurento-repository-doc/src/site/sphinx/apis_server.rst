@@ -2,8 +2,14 @@
 Server APIs
 %%%%%%%%%%%
 
-This section details the two API through which an application can communicate
+This section details the REST API through which an application can communicate
 with the Kurento Repository server.
+
+There's also the possibility to integrate the server as a Spring component and
+in this case the class ``org.kurento.repository.RepositoryService`` can be used 
+to control the Repository as an instance local to the application. The REST API
+maps over the service's one, so the methods and parameters involved are the 
+exact same ones. 
 
 .. _server-rest-api:
 
@@ -345,12 +351,3 @@ Update the metadata of a repository item
  +---------------+----------------------------+
  | 404 Not Found | Item does not exist.       |
  +---------------+----------------------------+
-
-Repository Rest Java API
-------------------------
-
-This API is used directly by the REST interface layer, so the Java primitives 
-mirror the REST ones.
-
-The only difference is that to use this API, it is required to include a 
-dependency on ``kurento-repository-server`` and to use the Spring framework.

@@ -15,14 +15,12 @@
 
 package org.kurento.repository.service.pojo;
 
-import org.kurento.repository.RepositoryItem;
-
 /**
- * <em>POJO</em> representing an Http endpoint of a {@link RepositoryItem} that
- * can be used for playing (retrieving) multimedia.
+ * <em>POJO</em> representing an Http endpoint of a RepositoryItem that
+ * can be used for recording multimedia.
  * 
- * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>m
+ * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
-public class RepositoryItemPlayer extends RepositoryItemEndpoint {
+public class RepositoryItemRecorder extends RepositoryItemEndpoint {
 
 }

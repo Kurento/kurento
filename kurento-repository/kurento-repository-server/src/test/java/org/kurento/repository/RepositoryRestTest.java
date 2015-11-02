@@ -35,11 +35,11 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.kurento.repository.RepositoryClient;
+import org.kurento.repository.RepositoryClientProvider;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
-import org.kurento.repository.rest.RepositoryRestApi;
-import org.kurento.repository.rest.RepositoryRestApiProvider;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
 import org.slf4j.Logger;
@@ -65,7 +65,7 @@ public class RepositoryRestTest {
 	private static final Logger log = LoggerFactory
 			.getLogger(RepositoryRestTest.class);
 
-	private RepositoryRestApi restService;
+	private RepositoryClient restService;
 
 	private Repository repository;
 
@@ -97,7 +97,7 @@ public class RepositoryRestTest {
 		String serviceUrl = "http://"
 				+ RepositoryApplicationContextConfiguration.SERVER_HOSTNAME
 				+ ":" + RepositoryApplicationContextConfiguration.SERVER_PORT;
-		restService = RepositoryRestApiProvider.create(serviceUrl);
+		restService = RepositoryClientProvider.create(serviceUrl);
 		log.info("Rest service created for {}", serviceUrl);
 
 		repository = (Repository) app.getBean("repository");
