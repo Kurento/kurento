@@ -71,17 +71,15 @@ public class PlayerSwitchTest extends FunctionalTest {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/red.webm").build();
+				"http://files.kurento.org/video/format/chrome.mp4").build();
 		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/green.webm").build();
+				"http://files.kurento.org/video/format/fiware.mkv").build();
 		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/blue.webm").build();
+				"http://files.kurento.org/video/format/sintel.webm").build();
 		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/ball.webm").build();
-		PlayerEndpoint playerRtsp = new PlayerEndpoint.Builder(
-				mp,
-				"rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp")
-				.build();
+				"http://files.kurento.org/video/format/rabbit.mov").build();
+		PlayerEndpoint playerRtsp = new PlayerEndpoint.Builder(mp,
+				"rtsp://195.55.223.100/axis-media/media.amp").build();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
 		// Test execution
@@ -105,12 +103,12 @@ public class PlayerSwitchTest extends FunctionalTest {
 		playerBlue.play();
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-		// smpte
+		// ball
 		playerBall.connect(webRtcEndpoint);
 		playerBall.play();
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-		// ball
+		// rtsp
 		playerRtsp.connect(webRtcEndpoint);
 		playerRtsp.play();
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
@@ -119,8 +117,9 @@ public class PlayerSwitchTest extends FunctionalTest {
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
