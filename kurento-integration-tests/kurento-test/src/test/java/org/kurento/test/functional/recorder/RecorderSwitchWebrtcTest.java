@@ -196,6 +196,7 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
 
 		// Playing the recording
 		WebRtcTestPage checkPage = getPage(BROWSER4);
+		checkPage.setThresholdTime(checkPage.getThresholdTime() * 2);
 		checkPage.subscribeEvents("playing");
 		checkPage.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
