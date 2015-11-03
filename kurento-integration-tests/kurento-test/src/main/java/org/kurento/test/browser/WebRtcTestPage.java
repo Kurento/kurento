@@ -275,7 +275,7 @@ public class WebRtcTestPage extends WebPage {
 	/*
 	 * initWebRtc
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
 			final WebRtcChannel channel, final WebRtcMode mode)
 					throws InterruptedException {
@@ -291,32 +291,37 @@ public class WebRtcTestPage extends WebPage {
 				});
 
 		// ICE candidates
-		final List<Boolean> searchCandidates = new ArrayList<Boolean>();
-		searchCandidates.add(true);
 		Thread t1 = new Thread() {
 			public void run() {
 				JsonParser parser = new JsonParser();
 				int numCandidate = 0;
-				while (!searchCandidates.isEmpty()) {
-					ArrayList<Object> iceCandidates = (ArrayList<Object>) browser
-							.executeScriptAndWaitOutput(
-									"return iceCandidates;");
-
-					for (int i = numCandidate; i < iceCandidates.size(); i++) {
-						JsonObject jsonCandidate = (JsonObject) parser
-								.parse(iceCandidates.get(i).toString());
-						IceCandidate candidate = new IceCandidate(
-								jsonCandidate.get("candidate").getAsString(),
-								jsonCandidate.get("sdpMid").getAsString(),
-								jsonCandidate.get("sdpMLineIndex").getAsInt());
-						log.debug("Adding candidate {}: {}", i, jsonCandidate);
-						webRtcEndpoint.addIceCandidate(candidate);
-						numCandidate++;
-					}
+				while (true) {
 					try {
+						ArrayList<Object> iceCandidates = (ArrayList<Object>) browser
+								.executeScript("return iceCandidates;");
+
+						for (int i = numCandidate; i < iceCandidates
+								.size(); i++) {
+							JsonObject jsonCandidate = (JsonObject) parser
+									.parse(iceCandidates.get(i).toString());
+							IceCandidate candidate = new IceCandidate(
+									jsonCandidate.get("candidate")
+											.getAsString(),
+									jsonCandidate.get("sdpMid").getAsString(),
+									jsonCandidate.get("sdpMLineIndex")
+											.getAsInt());
+							log.debug("Adding candidate {}: {}", i,
+									jsonCandidate);
+							webRtcEndpoint.addIceCandidate(candidate);
+							numCandidate++;
+						}
+
 						// Poll 300 ms
 						Thread.sleep(300);
-					} catch (InterruptedException e) {
+
+					} catch (Throwable e) {
+						log.debug("Exiting gather candidates thread");
+						break;
 					}
 				}
 			}
@@ -369,14 +374,13 @@ public class WebRtcTestPage extends WebPage {
 		t2.start();
 
 		if (!latch.await(browser.getTimeout(), TimeUnit.SECONDS)) {
+			t1.interrupt();
+			t1.stop();
+			t2.interrupt();
+			t2.stop();
 			throw new KurentoException("ICE negotiation not finished in "
 					+ browser.getTimeout() + " seconds");
 		}
-
-		searchCandidates.clear();
-		t1.interrupt();
-		t2.interrupt();
-
 		webRtcEndpoint.gatherCandidates();
 	}
 
