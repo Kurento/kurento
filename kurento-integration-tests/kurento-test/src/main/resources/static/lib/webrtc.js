@@ -116,7 +116,8 @@ function startSendOnly() {
 
     var options = {
       localVideo: local,
-      mediaConstraints: userMediaConstraints
+      mediaConstraints: userMediaConstraints,
+      onicecandidate : onIceCandidate
     }
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
@@ -124,7 +125,7 @@ function startSendOnly() {
 		  if(error) {
 			  onError(error);
 		  }
-		  webRtcPeer.generateOffer (onOffer);
+		  webRtcPeer.generateOffer(onOffer);
 		});
 }
 
@@ -134,7 +135,8 @@ function startRecvOnly() {
 
     var options = {
       remoteVideo: video,
-      mediaConstraints: userMediaConstraints
+      mediaConstraints: userMediaConstraints,
+      onicecandidate : onIceCandidate
     }
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
@@ -142,7 +144,7 @@ function startRecvOnly() {
 		  if(error) {
 			  onError(error);
 		  }
-		  webRtcPeer.generateOffer (onOffer);
+		  webRtcPeer.generateOffer(onOffer);
 		});
 }
 
