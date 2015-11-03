@@ -75,18 +75,18 @@ npm start -- --ws_uri=ws://example.com:8888/kurento
 ```
 
 It also accept an optional parameter with the URI of the application server root
-that will serve the overlay image, being by default at http://localhost:8080/.
+that will serve the overlay image, being by default at https://localhost:8080/.
 You can define its value by using the ```as_uri``` flag:
 
 ```bash
-npm start -- --as_uri=http://example.org:8080/
+npm start -- --as_uri=https://example.org:8080/
 ```
 
 For example, if you would like to start the node server in the localhost using
 the port 8081, then the command is the following:
 
 ```bash
-npm start -- --as_uri=http://localhost:8081/
+npm start -- --as_uri=https://localhost:8081/
 ```
 
 Please notice that the double dash separator (```--```) is [on
