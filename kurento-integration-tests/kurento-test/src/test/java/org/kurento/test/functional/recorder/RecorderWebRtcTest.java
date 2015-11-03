@@ -82,7 +82,6 @@ public class RecorderWebRtcTest extends BaseRecorder {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		// return TestScenario.localChrome();
 		return TestScenario.localChromeAndFirefox();
 	}
 
@@ -110,14 +109,12 @@ public class RecorderWebRtcTest extends BaseRecorder {
 		doTest(MP4_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_MP4, null, EXTENSION_MP4);
 	}
 
-	@Ignore
 	@Test
 	public void testRecorderWebRtcChromeAudioOnlyWebm() throws Exception {
 		doTest(WEBM_AUDIO_ONLY, null, EXPECTED_AUDIO_CODEC_WEBM,
 				EXTENSION_WEBM);
 	}
 
-	@Ignore
 	@Test
 	public void testRecorderWebRtcChromeAudioOnlyMp4() throws Exception {
 		doTest(MP4_AUDIO_ONLY, null, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
