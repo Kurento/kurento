@@ -29,16 +29,25 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * <strong>Description</strong>: Test of a N Players.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>5xPlayerEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>Play time should be the expected</li>
- * </ul>
+ * Test of N PlayerEndpoints connected to the same WebRtcEndpoint. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) N PlayerEndpoints switch media to a WebRtcEndpoint<br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · Play time in remote video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

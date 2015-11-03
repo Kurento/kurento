@@ -37,18 +37,27 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * <strong>Description</strong>: Test of a Player with ZBar Filter.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>PlayerEndpoint -> ZBarFilter -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
- * <li>CodeFound events received</li>
- * </ul>
+ * Test of a PlayerEndpoint with a ZBarFilter. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint -> ZBarFilter -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) PlayerEndpoints streams media to ZBarFilter and subscribes to
+ * CodeFoundEvent <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Codes are detected in the media (CodeFound event) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · EOS event should arrive to player <br>
+ * · Play time in remote video should be as expected <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

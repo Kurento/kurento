@@ -33,19 +33,29 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
+ * Test of a PlayerEndpoint with different types of media sources (WEBM, MKV,
+ * etc) connected to a WebRtcEndpoint. <br>
  *
- * <strong>Description</strong>: Test of a Player.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>PlayerEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
- * <li>Color of the video should be the expected</li>
- * </ul>
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) PlayerEndpoint reads media source and connects to a WebRtcEndpoint
+ * <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · The color of the received video should be as expected <br>
+ * · EOS event should arrive to player <br>
+ * · Play time in remote video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -90,13 +100,14 @@ public class PlayerWebRtcTest extends FunctionalTest {
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be blue", getPage()
-				.similarColor(Color.BLUE));
+		Assert.assertTrue("The color of the video should be blue",
+				getPage().similarColor(Color.BLUE));
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline
