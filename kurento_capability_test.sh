@@ -6,30 +6,25 @@ echo "##################### EXECUTE: capability-test #####################"
 #    Identifies the module to execute within a reactor project.
 #
 # WORKSPACE path
+#    Mandatory
 #    Jenkins workspace path. This variable is expected to be exported by
 #    script caller.
 #
 # MAVEN_SETTINGS path
+#     Mandatory
 #     Location of the settings.xml file used by maven
 #
 # MAVEN_OPTS string
+#     Optional
 #     All settings defined in this varible will be added to mvn command line
-#
-# RECORD_TEST [ true | false ]
-#    Activates session recording in case ffmpeg is available
-#    DEFAULT: false
 #
 
 # Get CLI parameter for backward compatibility
 [ -n "$1" ] && PROJECT_PATH=$1
 
 # Set default environment if required
-export DISPLAY=:1
 mavenOpts=""
 [ -z "$WORKSPACE" ] && WORKSPACE="."
-if [ -n "$PROJECT_PATH" ]; then
-  mavenOpts="$mavenOpts -Dproject.path=$WORKSPACE/$PROJECT_PATH"
-fi
 mavenOpts="$mavenOpts -DfailIfNoTests=false"
 mavenOpts="$mavenOpts -U"
 
@@ -38,4 +33,5 @@ mavenOpts="$mavenOpts -U"
   (cd kurento-java &&  mvn --settings $MAVEN_SETTINGS clean install -Pdeploy -U -Dmaven.test.skip=true && cd ..)
 
 # Execute capability test
+echo "{ "allow_root": true }" >> ~/.bowerrc
 mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS
