@@ -30,8 +30,8 @@ var args = getopts(location.search,
 {
   default:
   {
-    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    logo_uri: 'http://' + location.host + '/img/kurento-logo.png',
+    ws_uri: 'wss://' + location.hostname + ':8433/kurento',
+    logo_uri: 'https://' + location.host + '/img/kurento-logo.png',
     ice_servers: undefined
   }
 });

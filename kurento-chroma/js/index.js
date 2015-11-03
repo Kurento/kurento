@@ -27,8 +27,8 @@ var args = getopts(location.search,
 {
   default:
   {
-    ws_uri: 'ws://' + location.hostname + ':8888/kurento',
-    bg_uri: 'http://' + location.host + '/img/mario.jpg',
+    ws_uri: 'wss://' + location.hostname + ':8433/kurento',
+    bg_uri: 'https://' + location.host + '/img/mario.jpg',
     ice_servers: undefined
   }
 });

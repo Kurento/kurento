@@ -41,10 +41,10 @@ sudo npm install -g http-server
 Then, in each demo folder execute this command:
 
 ```bash
-http-server
+http-server -S -C keys/server.crt -K keys/server.key
 ```
 
-Finally, open http://localhost:8080/ in your browser to access to the demo.
+Finally, open https://localhost:8080/ in your browser to access to the demo.
 
 Take into account that demos with Generators (kurento-faceoverlay-generator,
 kurento-recorder-filter-generator, and so on) require [co] (generator based
@@ -64,14 +64,14 @@ add them to the query string in the same way you would add them to the [Node.js]
 executable on your command line:
 
 ```
-http://example.com/index.html?ws_uri=ws://example.org/kurento
+https://example.com/index.html?ws_uri=wss://example.org/kurento
 ```
 
 All the demos accept the parameters:
 
 * *ws_uri*: the WebSocket Kurento MediaServer endpoint. By default it connects
-  to a Kurento MediaServer instance listening on the port 8888 on the same
-  machine where it's being hosted the demo.
+  to a Kurento MediaServer instance listening on the port 8433 on the same
+  machine where it's being hosted the demo. The KMS must allow WSS (WebSocket Secure).
 * *ice_servers*: the TURN and STUN servers to use, formatted as a JSON string
   holding an array of [RTCIceServer] objects (the same structure used when
   configuring a [PeerConnection] object), or an empty array to disabled them
@@ -79,8 +79,8 @@ All the demos accept the parameters:
   network). By default it use some random servers from a pre-defined list.
 
   ```
-  http://example.com/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
-  http://example.com/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
+  https://example.com/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
+  https://example.com/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
   ```
 
 Other parameters specific to each demo can be found defined at the top of their
