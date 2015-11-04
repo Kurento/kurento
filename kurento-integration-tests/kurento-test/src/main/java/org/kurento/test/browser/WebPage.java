@@ -152,16 +152,21 @@ public class WebPage {
 				+ (blue - expectedColor.getBlue())
 						* (blue - expectedColor.getBlue()));
 
+		String expectedColorStr = "[R=" + expectedColor.getRed() + ", G="
+				+ expectedColor.getGreen() + ", B=" + expectedColor.getBlue()
+				+ "]";
+		String realColorStr = "[R=" + red + ", G=" + green + ", B=" + blue
+				+ "]";
 		boolean out = distance <= browser.getColorDistance();
 		if (!out) {
 			if (logWarn) {
-				log.error(
-						"Difference in color comparision. Expected: {}, Real: {}",
-						expectedColor, realColor);
+				log.warn(
+						"Color NOT detected in video stream. Expected: {}, Real: {}",
+						expectedColorStr, realColorStr);
 			}
 		} else {
-			log.debug("Found color in media. Expected: {}, Real: {}",
-					expectedColor, realColor);
+			log.debug("Detected color in video stream. Expected: {}, Real: {}",
+					expectedColorStr, realColorStr);
 		}
 
 		return out;
