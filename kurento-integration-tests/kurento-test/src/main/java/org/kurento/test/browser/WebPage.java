@@ -111,8 +111,9 @@ public class WebPage {
 		final long endTimeMillis = System.currentTimeMillis()
 				+ (browser.getTimeout() * 1000);
 
+		boolean logWarn = true;
 		while (true) {
-			out = compareColor(videoTag, expectedColor);
+			out = compareColor(videoTag, expectedColor, logWarn);
 			if (out || System.currentTimeMillis() > endTimeMillis) {
 				break;
 			} else {
@@ -125,6 +126,7 @@ public class WebPage {
 							e.getMessage());
 				}
 			}
+			logWarn = false;
 		}
 		return out;
 	}
@@ -132,7 +134,8 @@ public class WebPage {
 	/*
 	 * compareColor
 	 */
-	public boolean compareColor(String videoTag, Color expectedColor) {
+	public boolean compareColor(String videoTag, Color expectedColor,
+			boolean logWarn) {
 		@SuppressWarnings("unchecked")
 		List<Long> realColor = (List<Long>) browser
 				.executeScriptAndWaitOutput("return kurentoTest.colorInfo['"
@@ -151,9 +154,14 @@ public class WebPage {
 
 		boolean out = distance <= browser.getColorDistance();
 		if (!out) {
-			log.error(
-					"Difference in color comparision. Expected: {}, Real: {} (distance={})",
-					expectedColor, realColor, distance);
+			if (logWarn) {
+				log.error(
+						"Difference in color comparision. Expected: {}, Real: {}",
+						expectedColor, realColor);
+			}
+		} else {
+			log.debug("Found color in media. Expected: {}, Real: {}",
+					expectedColor, realColor);
 		}
 
 		return out;

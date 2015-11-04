@@ -33,8 +33,9 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a PlayerEndpoint with different types of media sources (WEBM, MKV,
- * etc) connected to a WebRtcEndpoint. <br>
+ * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV,
+ * MOV, MP4, MKV, AVI, 3GP ... all with video and audio) connected to a
+ * WebRtcEndpoint. <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint -> WebRtcEndpoint <br>
@@ -44,8 +45,8 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) PlayerEndpoint reads media source and connects to a WebRtcEndpoint
- * <br>
+ * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects
+ * to a WebRtcEndpoint <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -57,13 +58,11 @@ import org.kurento.test.config.TestScenario;
  * Secondary assertion(s): <br>
  * -- <br>
  *
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
 public class PlayerWebRtcTest extends FunctionalTest {
-
-	private static final int PLAYTIME = 10; // seconds
 
 	public PlayerWebRtcTest(TestScenario testScenario) {
 		super(testScenario);
@@ -75,11 +74,99 @@ public class PlayerWebRtcTest extends FunctionalTest {
 	}
 
 	@Test
-	public void testPlayer() throws Exception {
+	public void testPlayerWebRtcHttpWebm() throws Exception {
+		doTestWithSmallFile("http", "webm");
+	}
+
+	@Test
+	public void testPlayerWebRtcHttpMp4() throws Exception {
+		doTestWithSmallFile("http", "mp4");
+	}
+
+	@Test
+	public void testPlayerWebRtcHttpMov() throws Exception {
+		doTestWithSmallFile("http", "mov");
+	}
+
+	@Test
+	public void testPlayerWebRtcHttpAvi() throws Exception {
+		doTestWithSmallFile("http", "avi");
+	}
+
+	@Test
+	public void testPlayerWebRtcHttpMkv() throws Exception {
+		doTestWithSmallFile("http", "mkv");
+	}
+
+	@Test
+	public void testPlayerWebRtcHttpOgv() throws Exception {
+		doTestWithSmallFile("http", "ogv");
+	}
+
+	@Test
+	public void testPlayerWebRtcHttp3gp() throws Exception {
+		doTestWithSmallFile("http", "3gp");
+	}
+
+	@Test
+	public void testPlayerWebRtcFileWebm() throws Exception {
+		doTestWithSmallFile("file", "webm");
+	}
+
+	@Test
+	public void testPlayerWebRtcFileMp4() throws Exception {
+		doTestWithSmallFile("file", "mp4");
+	}
+
+	@Test
+	public void testPlayerWebRtcFileMov() throws Exception {
+		doTestWithSmallFile("file", "mov");
+	}
+
+	@Test
+	public void testPlayerWebRtcFileAvi() throws Exception {
+		doTestWithSmallFile("file", "avi");
+	}
+
+	@Test
+	public void testPlayerWebRtcFileMkv() throws Exception {
+		doTestWithSmallFile("file", "mkv");
+	}
+
+	@Test
+	public void testPlayerWebRtcFileOgv() throws Exception {
+		doTestWithSmallFile("file", "ogv");
+	}
+
+	@Test
+	public void testPlayerWebRtcFile3gp() throws Exception {
+		doTestWithSmallFile("file", "3gp");
+	}
+
+	@Test
+	public void testPlayerWebRtcRtsp() throws Exception {
+		doTest("rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
+				19, 50, 50, Color.WHITE);
+	}
+
+	public void doTestWithSmallFile(String protocol, String extension)
+			throws InterruptedException {
+		// Reduce threshold time per test (small video lasts 5 seconds)
+		getPage().setThresholdTime(2); // seconds
+
+		String mediaUrl = protocol.equalsIgnoreCase("http")
+				? "http://files.kurento.org" : "file://" + getPathTestFiles();
+		mediaUrl += "/video/format/small." + extension;
+		log.debug("Playing small file located on {}", mediaUrl);
+		doTest(mediaUrl, 5, 50, 50, new Color(99, 65, 40));
+	}
+
+	public void doTest(String mediaUrl, int playtime, int x, int y,
+			Color expectedColor) throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/blue.webm").build();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl)
+				.build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 		playerEP.connect(webRtcEP);
 
@@ -100,15 +187,15 @@ public class PlayerWebRtcTest extends FunctionalTest {
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be blue",
-				getPage().similarColor(Color.BLUE));
+		Assert.assertTrue("The color of the video should be " + expectedColor,
+				getPage().similarColorAt(expectedColor, x, y));
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue(
-				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+				"Error in play time (expected: " + playtime + " sec, real: "
 						+ currentTime + " sec)",
-				getPage().compare(PLAYTIME, currentTime));
+				getPage().compare(playtime, currentTime));
 
 		// Release Media Pipeline
 		mp.release();
