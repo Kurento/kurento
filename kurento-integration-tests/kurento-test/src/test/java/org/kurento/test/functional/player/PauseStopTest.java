@@ -14,13 +14,14 @@
  */
 package org.kurento.test.functional.player;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
@@ -30,7 +31,7 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the pause feature for a PlayerEndpoint. <br>
+ * Test of a the stop feature for a PlayerEndpoint. <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint -> WebRtcEndpoint <br>
@@ -41,12 +42,12 @@ import org.kurento.test.config.TestScenario;
  *
  * Test logic: <br>
  * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a
- * WebRtcEndpoint, the PlayerEndpoint is paused and then resumed <br>
+ * WebRtcEndpoint, the PlayerEndpoint is stopped <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
- * · Color or the video should remain when a video is paused <br>
- * · After the pause, the color or the video should change <br>
+ * · EndOfStream event cannot be received since the stop is done before the end
+ * of the video <br>
  *
  * Secondary assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
@@ -54,9 +55,9 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class PlayerPauseTest extends FunctionalTest {
+public class PauseStopTest extends FunctionalTest {
 
-	public PlayerPauseTest(TestScenario testScenario) {
+	public PauseStopTest(TestScenario testScenario) {
 		super(testScenario);
 	}
 
@@ -66,11 +67,10 @@ public class PlayerPauseTest extends FunctionalTest {
 	}
 
 	@Test
-	public void testPlayerPause() throws Exception {
+	public void testPlayerStop() throws Exception {
 		// Test data
-		final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.webm";
-		final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
-		final int pauseTimeSeconds = 10;
+		final String mediaUrl = "http://files.kurento.org/video/format/small.webm";
+		final int guardTimeSeconds = 10;
 
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -78,6 +78,18 @@ public class PlayerPauseTest extends FunctionalTest {
 				.build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 		playerEP.connect(webRtcEP);
+
+		// Subscription to EOS event
+		final boolean[] eos = new boolean[1];
+		eos[0] = false;
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				log.error("EOS event received: {} {}", event.getType(),
+						event.getTimestamp());
+				eos[0] = true;
+			}
+		});
 
 		// WebRTC in receive-only mode
 		getPage().subscribeEvents("playing");
@@ -87,22 +99,15 @@ public class PlayerPauseTest extends FunctionalTest {
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
 
-		// Assert initial color, pause stream and wait x seconds
-		Assert.assertTrue(
-				"At the beginning, the color of the video should be "
-						+ expectedColors[0],
-				getPage().similarColor(expectedColors[0]));
-		playerEP.pause();
-		Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
+		// Stop stream and wait x seconds
+		playerEP.stop();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(guardTimeSeconds));
 
-		// Resume video after the pause, video color should be as expected
-		playerEP.play();
-		for (Color expectedColor : expectedColors) {
-			Assert.assertTrue(
-					"After the pause, the color of the video should be "
-							+ expectedColor,
-					getPage().similarColor(expectedColor));
-		}
+		// Verify that EOS event has not being received
+		Assert.assertFalse(
+				"EOS event has been received. "
+						+ "This should not be happenning because the stream has been stopped",
+				eos[0]);
 
 		// Release Media Pipeline
 		mp.release();
