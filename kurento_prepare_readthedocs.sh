@@ -19,7 +19,7 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 # Build
 kurento_clone_repo.sh $DOC_PROJECT $BRANCH
 pushd $DOC_PROJECT
-COMMIT_ID=`git rev-parse HEAD`
+COMMIT_MSG=$(git log -1 --pretty=format:%s)
 sed -e "s@mvn@mvn --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
 make -f Makefile.jenkins clean readthedocs
 
@@ -33,7 +33,7 @@ cp -r $DOC_PROJECT/* $READTHEDOCS_PROJECT/
 
 pushd $READTHEDOCS_PROJECT
 git add .
-git ci -m "$COMMIT_ID"
+git ci -m "$COMMIT_MSG"
 
 # Build
 sed -e "s@mvn@mvn --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
