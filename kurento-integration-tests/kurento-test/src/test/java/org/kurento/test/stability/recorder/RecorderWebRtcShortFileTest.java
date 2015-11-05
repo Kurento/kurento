@@ -45,7 +45,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  * <strong>Description</strong>: Stability test for Recorder. Record 100 files
- * (1 second) from the same WebRTC Ep.<br>
+ * (2 seconds) from the same WebRTC Ep.<br>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> N WebRtcEndpoint X RecorderEndpoint</li>
@@ -61,8 +61,8 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderWebRtcShortFileTest extends StabilityTest {
 
 	private static final int NUM_RECORDERS = 100;
-	private static final int RECORD_MS = 1000; // ms
-	private static final int THRESHOLD_MS = 5000; // ms
+	private static final int RECORD_MS = 2000; // ms
+	private static final int THRESHOLD_MS = 8000; // ms
 	private static int numRecorders;
 
 	public RecorderWebRtcShortFileTest(TestScenario testScenario) {
@@ -105,6 +105,8 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 		getPage().subscribeLocalEvents("playing");
 		getPage().initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_ONLY);
+		Assert.assertTrue("Not received media in sender",
+				getPage().waitForEvent("playing"));
 
 		ExecutorService executor = Executors.newFixedThreadPool(numRecorders);
 		final CountDownLatch latch = new CountDownLatch(numRecorders);
@@ -130,6 +132,9 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 						// Wait play time
 						Thread.sleep(RECORD_MS);
 
+						// Stop record
+						recorder[i].stop();
+
 					} catch (Throwable e) {
 						log.error("Exception in receiver " + i, e);
 
@@ -143,32 +148,7 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 		// Wait to finish all recorders
 		latch.await();
 
-		// Stop recorders
-		final CountDownLatch stopLatch = new CountDownLatch(numRecorders);
-		for (int j = 0; j < numRecorders; j++) {
-			final int i = j;
-			executor.execute(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						// Stop record
-						recorder[i].stop();
-
-					} finally {
-						stopLatch.countDown();
-					}
-				}
-			});
-		}
-
-		// Wait to finish all stops
-		stopLatch.await();
-
-		// Assessments
-		Assert.assertTrue("Not received media in sender",
-				getPage().waitForEvent("playing"));
-
+		// Assessment
 		for (int j = 0; j < numRecorders; j++) {
 			AssertMedia.assertCodecs(recordingFile[j], expectedVideoCodec,
 					expectedAudioCodec);
