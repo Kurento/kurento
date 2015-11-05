@@ -50,7 +50,7 @@ struct _KmsMuxingPipelinePrivate
 {
   GstElement *videosrc;
   GstElement *audiosrc;
-  GstElement *encodebin;
+  GstElement *mux;
   GstElement *sink;
   GstElement *pipeline;
   GstClockTime lastVideoPts;
@@ -201,56 +201,6 @@ kms_muxing_pipeline_init (KmsMuxingPipeline * self)
   self->priv->lastAudioPts = G_GUINT64_CONSTANT (0);
 }
 
-static void
-kms_muxing_pipeline_configure (KmsMuxingPipeline * self)
-{
-  GstEncodingContainerProfile *cprof;
-  const GList *profiles, *l;
-  GstElement *appsrc;
-
-  cprof =
-      kms_recording_profile_create_profile (self->priv->profile, TRUE, TRUE);
-
-  profiles = gst_encoding_container_profile_get_profiles (cprof);
-
-  for (l = profiles; l != NULL; l = l->next) {
-    GstEncodingProfile *prof = l->data;
-    GstCaps *caps;
-
-    if (GST_IS_ENCODING_AUDIO_PROFILE (prof)) {
-      appsrc = self->priv->audiosrc;
-    } else if (GST_IS_ENCODING_VIDEO_PROFILE (prof)) {
-      appsrc = self->priv->videosrc;
-    } else
-      continue;
-
-    caps = gst_encoding_profile_get_input_caps (prof);
-
-    g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
-        "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-        G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
-
-    gst_caps_unref (caps);
-  }
-
-  g_object_set (G_OBJECT (self->priv->encodebin), "profile", cprof,
-      "audio-jitter-tolerance", 100 * GST_MSECOND,
-      "avoid-reencoding", TRUE, NULL);
-  gst_encoding_profile_unref (cprof);
-
-  if (self->priv->profile == KMS_RECORDING_PROFILE_MP4) {
-    GstElement *mux =
-        gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
-
-    g_object_unref (mux);
-  } else if (self->priv->profile == KMS_RECORDING_PROFILE_WEBM) {
-    GstElement *mux =
-        gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
-
-    g_object_unref (mux);
-  }
-}
-
 static gboolean
 kms_muxing_pipeline_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
 {
@@ -358,45 +308,64 @@ kms_muxing_pipeline_add_injector_probe (KmsMuxingPipeline * self,
   g_object_unref (src);
 }
 
+static GstElement *
+kms_muxing_pipeline_create_muxer (KmsMuxingPipeline * self)
+{
+  switch (self->priv->profile) {
+    case KMS_RECORDING_PROFILE_WEBM:
+    case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
+      return gst_element_factory_make ("webmmux", NULL);
+    case KMS_RECORDING_PROFILE_MP4:
+    case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
+    case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:
+      return gst_element_factory_make ("qtmux", NULL);
+    default:
+      GST_ERROR_OBJECT (self, "No valid recording profile set");
+      return NULL;
+  }
+}
+
 static void
 kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
 {
   self->priv->pipeline = gst_pipeline_new (KMS_MUXING_PIPELINE_NAME);
   self->priv->videosrc = gst_element_factory_make ("appsrc", "videoSrc");
   self->priv->audiosrc = gst_element_factory_make ("appsrc", "audioSrc");
-  self->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
+
+  g_object_set (self->priv->videosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
+  g_object_set (self->priv->audiosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
 
   kms_muxing_pipeline_add_injector_probe (self, self->priv->videosrc);
   kms_muxing_pipeline_add_injector_probe (self, self->priv->audiosrc);
 
-  kms_muxing_pipeline_configure (self);
+  self->priv->mux = kms_muxing_pipeline_create_muxer (self);
 
   gst_bin_add_many (GST_BIN (self->priv->pipeline), self->priv->videosrc,
-      self->priv->audiosrc, self->priv->encodebin, self->priv->sink, NULL);
+      self->priv->audiosrc, self->priv->mux, self->priv->sink, NULL);
 
-  if (!gst_element_link (self->priv->encodebin, self->priv->sink)) {
+  if (!gst_element_link (self->priv->mux, self->priv->sink)) {
     GST_ERROR_OBJECT (self, "Could not link elements: %"
-        GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
-        self->priv->encodebin, self->priv->sink);
+        GST_PTR_FORMAT ", %" GST_PTR_FORMAT, self->priv->mux, self->priv->sink);
   }
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_VIDEO)) {
     if (!gst_element_link_pads (self->priv->videosrc, "src",
-            self->priv->encodebin, "video_%u")) {
+            self->priv->mux, "video_%u")) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
-          self->priv->videosrc, self->priv->encodebin);
+          self->priv->videosrc, self->priv->mux);
     }
   }
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_AUDIO)) {
     if (!gst_element_link_pads (self->priv->audiosrc, "src",
-            self->priv->encodebin, "audio_%u")) {
+            self->priv->mux, "audio_%u")) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
-          self->priv->audiosrc, self->priv->encodebin);
+          self->priv->audiosrc, self->priv->mux);
     }
   }
 }
