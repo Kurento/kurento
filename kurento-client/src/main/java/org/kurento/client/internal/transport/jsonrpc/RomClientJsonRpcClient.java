@@ -245,7 +245,9 @@ public class RomClientJsonRpcClient implements RomClient {
 			return null;
 
 		} catch (IOException e) {
-			throw new KurentoServerTransportException("Error connecting with server", e);
+			String messageError = "Error connecting with server";
+			log.error(messageError, e);
+			throw new KurentoServerTransportException(messageError, e);
 		} catch (JsonRpcErrorException e) {
 			throw new KurentoServerException(e.getError());
 		}
