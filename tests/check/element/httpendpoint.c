@@ -24,7 +24,7 @@
 
 #define WAIT_TIMEOUT 3
 //#define LOCATION "http://ci.kurento.com/downloads/sintel_trailer-480p.webm"
-#define VIDEO_PATH BINARY_LOCATION "/video/small.webm"
+#define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
 
 static GMainLoop *loop = NULL;
 static KmsHttpEndpointMethod method;

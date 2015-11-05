@@ -22,9 +22,9 @@
 
 #include <kmstestutils.h>
 
-#define VIDEO_PATH BINARY_LOCATION "/video/fiwarecut.webm"
-#define VIDEO_PATH2 BINARY_LOCATION "/video/sintel.webm"
-#define VIDEO_PATH3 BINARY_LOCATION "/video/small.webm"
+#define VIDEO_PATH BINARY_LOCATION "/video/filter/fiwarecut.webm"
+#define VIDEO_PATH2 BINARY_LOCATION "/video/format/sintel.webm"
+#define VIDEO_PATH3 BINARY_LOCATION "/video/format/small.webm"
 
 #define KMS_ELEMENT_PAD_TYPE_DATA 0
 #define KMS_ELEMENT_PAD_TYPE_AUDIO 1
