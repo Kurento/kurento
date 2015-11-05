@@ -50,9 +50,6 @@
 [ -z "$RECORD_TEST" ] && RECORD_TEST="false"
 [ -z "$KMS_AUTOSTART" ] && KMS_AUTOSTART="test"
 [ -z "$KMS_SCOPE" ] && KMS_SCOPE="docker"
-[ -z "$DOCKER_HUB_IMAGE" ] && DOCKER_HUB_IMAGE="selenium/hub:2.47.1"
-[ -z "$DOCKER_NODE_CHROME_IMAGE" ] && DOCKER_NODE_CHROME_IMAGE="selenium/node-chrome-debug:2.47.1"
-[ -z "$DOCKER_NODE_FIREFOX_IMAGE" ] && DOCKER_NODE_FIREFOX_IMAGE="selenium/node-firefox-debug:2.47.1"
 
 # Set constants and environment
 
