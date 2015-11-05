@@ -50,6 +50,9 @@
 [ -z "$RECORD_TEST" ] && RECORD_TEST="false"
 [ -z "$KMS_AUTOSTART" ] && KMS_AUTOSTART="test"
 [ -z "$KMS_SCOPE" ] && KMS_SCOPE="docker"
+[ -z "$DOCKER_HUB_IMAGE" ] && DOCKER_HUB_IMAGE="selenium/hub:2.47.1"
+[ -z "$DOCKER_NODE_CHROME_IMAGE" ] && DOCKER_NODE_CHROME_IMAGE="selenium/node-chrome-debug:2.47.1"
+[ -z "$DOCKER_NODE_FIREFOX_IMAGE" ] && DOCKER_NODE_FIREFOX_IMAGE="selenium/node-firefox-debug:2.47.1"
 
 # Set constants and environment
 
@@ -82,6 +85,9 @@ MAVEN_OPTS="$MAVEN_OPTS -Dtest.workspace.host=$TEST_WORKSPACE"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.files=/var/lib/test-files/kurento"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.name=kurento/kurento-media-server-dev:latest"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.scope=docker"
+[ -n "$DOCKER_HUB_IMAGE" ] && MAVEN_OPTS="$MAVEN_OPTS -Ddocker.hub.image=$DOCKER_HUB_IMAGE"
+[ -n "$DOCKER_NODE_CHROME_IMAGE" ] && MAVEN_OPTS="$MAVEN_OPTS -Ddocker.node.chrome.image=$DOCKER_NODE_CHROME_IMAGE"
+[ -n "$DOCKER_NODE_FIREFOX_IMAGE" ] && MAVEN_OPTS="$MAVEN_OPTS -Ddocker.node.firefox.image=$DOCKER_NODE_FIREFOX_IMAGE"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.record=$RECORD_TEST"
 [ -n "$TEST_GROUP" ] && MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$TEST_GROUP"
 [ -n "$TEST_NAME" ] && MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_NAME"
