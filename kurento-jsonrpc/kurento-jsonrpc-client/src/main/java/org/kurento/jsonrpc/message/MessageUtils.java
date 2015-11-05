@@ -74,6 +74,10 @@ public class MessageUtils {
 			return null;
 		}
 
+		if (resultClass == null) {
+			return null;
+		}
+
 		R resultR = null;
 		if (resultClass == String.class || resultClass == Boolean.class
 				|| resultClass == Character.class
@@ -108,8 +112,9 @@ public class MessageUtils {
 			} else if (resultJsonObject.isJsonArray()) {
 				JsonArray array = (JsonArray) resultJsonObject;
 				if (array.size() > 1) {
-					log.warn("Converting an array with {} elements in a value "
-							+ "of type {}. Selecting first element",
+					log.warn(
+							"Converting an array with {} elements in a value "
+									+ "of type {}. Selecting first element",
 							Integer.valueOf(array.size()), resultClass);
 
 				}

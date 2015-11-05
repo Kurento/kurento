@@ -44,6 +44,7 @@ import org.kurento.commons.TimeoutReentrantLock;
 import org.kurento.commons.TimeoutRuntimeException;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcErrorException;
+import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
@@ -76,6 +77,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		@OnWebSocketClose
 		public void onClose(int statusCode, String closeReason) {
+			log.debug("Websocket disconnected by {} (status code {})",
+					closeReason, statusCode);
 			handleReconnectDisconnection(statusCode, closeReason);
 		}
 
@@ -143,6 +146,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private boolean sendCloseMessage = false;
 
 	private boolean concurrentServerRequest = true;
+
+	private long keepAliveTime = PropertiesManager
+			.getProperty("jsonRpcClientWebSocket.keepAliveTime", 0);
 
 	public JsonRpcClientWebSocket(String url) {
 		this(url, null, null);
@@ -246,6 +252,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		connectIfNecessary();
 	}
 
+	public void setKeepAliveTime(long keepAliveTime) {
+		this.keepAliveTime = keepAliveTime;
+	}
+
+	public long getKeepAliveTime() {
+		return keepAliveTime;
+	}
+
 	public void connectIfNecessary() throws IOException {
 
 		lock.tryLockTimeout("connectIfNecessary()");
@@ -270,6 +284,17 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						policy.setMaxTextMessageSize(MAX_PACKET_SIZE);
 
 						client.start();
+
+						if (keepAliveManager == null && keepAliveTime != 0) {
+							synchronized (this) {
+								if (keepAliveManager == null) {
+									keepAliveManager = new KeepAliveManager(
+											this, keepAliveTime,
+											KeepAliveManager.Mode.PER_CLIENT);
+									keepAliveManager.start();
+								}
+							}
+						}
 
 					} else {
 						log.debug(
@@ -717,7 +742,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	private void closeClient() {
+	private synchronized void closeClient() {
 		if (client != null) {
 			log.debug("{} Closing client", label);
 			try {
@@ -729,6 +754,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						label, e.getMessage());
 			}
 			client = null;
+		}
+
+		if (keepAliveManager != null) {
+			keepAliveManager.stop();
+			keepAliveManager = null;
 		}
 
 		if (execService != null) {

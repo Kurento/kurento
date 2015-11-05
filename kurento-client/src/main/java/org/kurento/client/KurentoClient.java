@@ -44,6 +44,8 @@ import com.google.common.base.StandardSystemProperty;
  */
 public class KurentoClient {
 
+	private static final long KEEPALIVE_TIME = 4 * 60 * 1000;
+
 	private static Logger log = LoggerFactory.getLogger(KurentoClient.class);
 
 	protected RomManager manager;
@@ -105,6 +107,7 @@ public class KurentoClient {
 		log.info("Connecting to kms in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
 				websocketUrl);
+		client.setKeepAliveTime(KEEPALIVE_TIME);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 	}
@@ -119,6 +122,7 @@ public class KurentoClient {
 		log.info("Connecting to KMS in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
 				JsonRpcConnectionListenerKurento.create(listener));
+		client.setKeepAliveTime(KEEPALIVE_TIME);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 
@@ -127,6 +131,9 @@ public class KurentoClient {
 	KurentoClient(JsonRpcClient client) {
 		this.manager = new RomManager(new RomClientJsonRpcClient(client));
 		client.setRequestTimeout(requesTimeout);
+		if (client instanceof JsonRpcClientWebSocket) {
+			((JsonRpcClientWebSocket) client).setKeepAliveTime(KEEPALIVE_TIME);
+		}
 		try {
 			client.connect();
 		} catch (IOException e) {

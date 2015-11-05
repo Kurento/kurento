@@ -31,7 +31,8 @@ public class PropertiesManager {
 		return propertyHolder.getProperty(property);
 	}
 
-	public static String getPropertyOrException(String property, String exceptionMessage) {
+	public static String getPropertyOrException(String property,
+			String exceptionMessage) {
 
 		String value = getProperty(property);
 
@@ -69,12 +70,20 @@ public class PropertiesManager {
 
 	public static int getProperty(String property, int defaultValue) {
 		String systemValue = propertyHolder.getProperty(property);
-		return systemValue != null ? Integer.parseInt(systemValue) : defaultValue;
+		return systemValue != null ? Integer.parseInt(systemValue)
+				: defaultValue;
+	}
+
+	public static double getProperty(String property, double defaultValue) {
+		String systemValue = propertyHolder.getProperty(property);
+		return systemValue != null ? Double.parseDouble(systemValue)
+				: defaultValue;
 	}
 
 	public static long getProperty(String property, long defaultValue) {
 		String systemValue = propertyHolder.getProperty(property);
-		return systemValue != null ? Integer.parseInt(systemValue) : defaultValue;
+		return systemValue != null ? Integer.parseInt(systemValue)
+				: defaultValue;
 	}
 
 	public static String getProperty(String property, String defaultValue) {
@@ -86,14 +95,15 @@ public class PropertiesManager {
 		}
 	}
 
-	public static <T extends JsonElement> T getPropertyJson(String property, String defaultValue,
-			Class<T> clazz) {
+	public static <T extends JsonElement> T getPropertyJson(String property,
+			String defaultValue, Class<T> clazz) {
 		String value = getProperty(property, defaultValue);
 		initGson();
 		return gson.fromJson(value, clazz);
 	}
 
-	public static <T> T getPropertyJson(String property, String defaultValue, Type classOfT) {
+	public static <T> T getPropertyJson(String property, String defaultValue,
+			Type classOfT) {
 		String value = getProperty(property, defaultValue);
 		initGson();
 		return gson.fromJson(value, classOfT);
@@ -111,7 +121,8 @@ public class PropertiesManager {
 
 	public static boolean getProperty(String property, boolean defaultValue) {
 		String systemValue = propertyHolder.getProperty(property);
-		return systemValue != null ? Boolean.parseBoolean(systemValue) : defaultValue;
+		return systemValue != null ? Boolean.parseBoolean(systemValue)
+				: defaultValue;
 	}
 
 	private static String createWithPrefix(String prefix, String property) {
@@ -122,15 +133,18 @@ public class PropertiesManager {
 		}
 	}
 
-	public static int getProperty(String prefix, String property, int defaultValue) {
+	public static int getProperty(String prefix, String property,
+			int defaultValue) {
 		return getProperty(createWithPrefix(prefix, property), defaultValue);
 	}
 
-	public static String getProperty(String prefix, String property, String defaultValue) {
+	public static String getProperty(String prefix, String property,
+			String defaultValue) {
 		return getProperty(createWithPrefix(prefix, property), defaultValue);
 	}
 
-	public static Address getProperty(String prefix, String property, Address defaultValue) {
+	public static Address getProperty(String prefix, String property,
+			Address defaultValue) {
 		return getProperty(createWithPrefix(prefix, property), defaultValue);
 	}
 }
