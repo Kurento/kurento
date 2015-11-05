@@ -644,8 +644,84 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
   kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_PAUSE);
 }
 
+static void
+set_appsrc_caps (GstElement * appsrc, const GstCaps * caps)
+{
+  GValue framerate = G_VALUE_INIT;
+  GstStructure *str;
+  GstCaps *srccaps, *prevcaps;
+
+  g_object_get (appsrc, "caps", &prevcaps, NULL);
+
+  if (prevcaps != NULL) {
+    /* Do not change internal caps */
+    GST_DEBUG_OBJECT (appsrc, "Previous_ caps %" GST_PTR_FORMAT, prevcaps);
+    gst_caps_unref (prevcaps);
+
+    return;
+  }
+
+  srccaps = gst_caps_copy (caps);
+
+  str = gst_caps_get_structure (srccaps, 0);
+
+  if (str == NULL) {
+    GST_ERROR_OBJECT (appsrc,
+        "Can not get caps at index 0 from %" GST_PTR_FORMAT, srccaps);
+    goto end;
+  }
+
+  /* Set variable framerate 0/1 */
+
+  g_value_init (&framerate, GST_TYPE_FRACTION);
+  gst_value_set_fraction (&framerate, 0, 1);
+  gst_structure_set_value (str, "framerate", &framerate);
+  g_value_reset (&framerate);
+
+  GST_DEBUG_OBJECT (appsrc, "Setting source caps %" GST_PTR_FORMAT, srccaps);
+  g_object_set (appsrc, "caps", srccaps, NULL);
+
+end:
+
+  gst_caps_unref (srccaps);
+}
+
+static void
+set_appsink_caps (GstElement * appsink, const GstCaps * caps)
+{
+  GstStructure *str;
+  GstCaps *sinkcaps;
+
+  sinkcaps = gst_caps_copy (caps);
+
+  str = gst_caps_get_structure (sinkcaps, 0);
+
+  if (str == NULL) {
+    GST_ERROR_OBJECT (appsink,
+        "Can not get caps at index 0 from %" GST_PTR_FORMAT, sinkcaps);
+    goto end;
+  }
+
+  if (!gst_structure_has_field (str, "framerate")) {
+    GST_DEBUG_OBJECT (appsink, "No framerate in caps %" GST_PTR_FORMAT,
+        sinkcaps);
+  } else {
+    GST_DEBUG_OBJECT (appsink, "Removing framerate from caps %" GST_PTR_FORMAT,
+        sinkcaps);
+    gst_structure_remove_field (str, "framerate");
+  }
+
+  GST_DEBUG_OBJECT (appsink, "Setting sink caps %" GST_PTR_FORMAT, sinkcaps);
+  g_object_set (appsink, "caps", sinkcaps, NULL);
+
+end:
+
+  gst_caps_unref (sinkcaps);
+}
+
 static GstPadProbeReturn
-set_caps (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
+    gpointer data)
 {
   GstEvent *event = gst_pad_probe_info_get_event (info);
   GstElement *appsrc = data;
@@ -657,14 +733,24 @@ set_caps (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   gst_event_parse_caps (event, &caps);
 
-  GST_DEBUG_OBJECT (appsrc, "Setting caps to: %" GST_PTR_FORMAT, caps);
+  GST_DEBUG_OBJECT (appsrc, "Processing caps event %" GST_PTR_FORMAT, caps);
 
-  g_object_set (appsrc, "caps", caps, NULL);
+  if (gst_caps_get_size (caps) == 0) {
+    GST_ERROR_OBJECT (pad, "Invalid event %" GST_PTR_FORMAT, event);
+
+    return GST_PAD_PROBE_OK;
+  }
+
+  if (!gst_caps_is_fixed (caps)) {
+    GST_WARNING_OBJECT (pad, "Not fixed caps in event %" GST_PTR_FORMAT, event);
+  }
+
+  set_appsrc_caps (appsrc, caps);
 
   appsink = gst_pad_get_parent_element (pad);
 
   if (appsink) {
-    g_object_set (appsink, "caps", caps, NULL);
+    set_appsink_caps (appsink, caps);
     g_object_unref (appsink);
   }
 
@@ -709,7 +795,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      set_caps, g_object_ref (appsrc), g_object_unref);
+      configure_pipeline_capabilities, g_object_ref (appsrc), g_object_unref);
 
   gst_element_sync_state_with_parent (appsink);
 
