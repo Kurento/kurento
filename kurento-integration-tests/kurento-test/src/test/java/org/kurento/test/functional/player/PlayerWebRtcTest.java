@@ -146,7 +146,7 @@ public class PlayerWebRtcTest extends FunctionalTest {
 	@Test
 	public void testPlayerWebRtcRtsp() throws Exception {
 		doTest("rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
-				19, 50, 50, Color.WHITE);
+				0, 50, 50, Color.WHITE);
 	}
 
 	public void doTestWithSmallFile(String protocol, String extension)
@@ -192,10 +192,12 @@ public class PlayerWebRtcTest extends FunctionalTest {
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue(
-				"Error in play time (expected: " + playtime + " sec, real: "
-						+ currentTime + " sec)",
-				getPage().compare(playtime, currentTime));
+		if (playtime > 0) {
+			Assert.assertTrue(
+					"Error in play time (expected: " + playtime + " sec, real: "
+							+ currentTime + " sec)",
+					getPage().compare(playtime, currentTime));
+		}
 
 		// Release Media Pipeline
 		mp.release();
