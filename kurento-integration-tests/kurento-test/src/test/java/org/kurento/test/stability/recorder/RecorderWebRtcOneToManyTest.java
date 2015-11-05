@@ -63,7 +63,7 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 
 	private static final int NUM_VIEWERS = 3;
 	private static final int PLAYTIME_MS = 10000; // ms
-	private static final int THRESHOLD_MS = 5000; // ms
+	private static final int THRESHOLD_MS = 8000; // ms
 	private static int numViewers;
 
 	public RecorderWebRtcOneToManyTest(TestScenario testScenario) {
@@ -107,6 +107,8 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 		getPage(0).subscribeLocalEvents("playing");
 		getPage(0).initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_ONLY);
+		Assert.assertTrue("Not received media in sender",
+				getPage(0).waitForEvent("playing"));
 
 		ExecutorService executor = Executors.newFixedThreadPool(numViewers);
 		final CountDownLatch latch = new CountDownLatch(numViewers);
@@ -135,12 +137,21 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 						getPage(i).initWebRtc(webRtcReceiver[i - 1],
 								WebRtcChannel.AUDIO_AND_VIDEO,
 								WebRtcMode.RCV_ONLY);
+						Assert.assertTrue("Not received media in receiver " + i,
+								getPage(i).waitForEvent("playing"));
 
 						// Start record
 						recorder[i - 1].record();
 
 						// Wait play time
 						Thread.sleep(PLAYTIME_MS);
+
+						// Stop record
+						recorder[i - 1].stop();
+
+						// Guard time to stop recording
+						Thread.sleep(2000);
+
 					} catch (InterruptedException e) {
 						log.error("InterruptedException in receiver " + i, e);
 					}
@@ -153,30 +164,8 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 		// Wait to finish all receivers
 		latch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
 
-		// Stop recorders
-		final CountDownLatch stopLatch = new CountDownLatch(numViewers);
-		for (int j = 0; j < numViewers; j++) {
-			final int i = j;
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					// Stop record
-					recorder[i].stop();
-					stopLatch.countDown();
-				}
-			});
-		}
-
-		// Wait to finish all stops
-		stopLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
-
 		// Assessments
-		Assert.assertTrue("Not received media in sender",
-				getPage(0).waitForEvent("playing"));
-
 		for (int j = 1; j <= numViewers; j++) {
-			Assert.assertTrue("Not received media in receiver " + j,
-					getPage(j).waitForEvent("playing"));
 			AssertMedia.assertCodecs(recordingFile[j - 1], expectedVideoCodec,
 					expectedAudioCodec);
 			AssertMedia.assertDuration(recordingFile[j - 1], PLAYTIME_MS,

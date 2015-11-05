@@ -95,6 +95,8 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
 		getPage().subscribeLocalEvents("playing");
 		getPage().initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_ONLY);
+		Assert.assertTrue("Not received media in sender webrtc",
+				getPage().waitForEvent("playing"));
 
 		// Recorder
 		String recordingFile = getDefaultOutputFile(extension);
@@ -112,9 +114,10 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
 		// Stop recorder
 		recorder.stop();
 
+		// Guard time to stop recording
+		Thread.sleep(2000);
+
 		// Assessments
-		Assert.assertTrue("Not received media in sender webrtc",
-				getPage().waitForEvent("playing"));
 		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
 				expectedAudioCodec);
 		AssertMedia.assertDuration(recordingFile, RECORD_MS, THRESHOLD_MS);

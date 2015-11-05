@@ -124,6 +124,12 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 						// Wait play time
 						Thread.sleep(PLAYTIME_MS);
 
+						// Stop record
+						recorder[i].stop();
+
+						// Guard time to stop recording
+						Thread.sleep(2000);
+
 					} catch (Throwable t) {
 						log.error("Exception in receiver " + i, t);
 					}
@@ -135,28 +141,6 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 
 		// Wait to finish all recordings
 		latch.await();
-
-		// Stop recorders
-		final CountDownLatch stopLatch = new CountDownLatch(numViewers);
-		for (int j = 0; j < numViewers; j++) {
-			final int i = j;
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						// Stop record
-						recorder[i].stop();
-
-					} catch (Throwable t) {
-						log.error("Exception in receiver " + i, t);
-					}
-					stopLatch.countDown();
-				}
-			});
-		}
-
-		// Wait to finish all stops
-		stopLatch.await();
 
 		// Assessments
 		for (int j = 0; j < numViewers; j++) {
