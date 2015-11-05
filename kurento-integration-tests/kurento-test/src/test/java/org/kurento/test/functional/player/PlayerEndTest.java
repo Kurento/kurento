@@ -31,7 +31,7 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the stop feature for a PlayerEndpoint. <br>
+ * Test of a the stop/release features for a PlayerEndpoint. <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint -> WebRtcEndpoint <br>
@@ -42,7 +42,7 @@ import org.kurento.test.config.TestScenario;
  *
  * Test logic: <br>
  * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a
- * WebRtcEndpoint, the PlayerEndpoint is stopped <br>
+ * WebRtcEndpoint, the PlayerEndpoint is stopped/released <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -55,9 +55,9 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class PauseStopTest extends FunctionalTest {
+public class PlayerEndTest extends FunctionalTest {
 
-	public PauseStopTest(TestScenario testScenario) {
+	public PlayerEndTest(TestScenario testScenario) {
 		super(testScenario);
 	}
 
@@ -66,8 +66,21 @@ public class PauseStopTest extends FunctionalTest {
 		return TestScenario.localChromeAndFirefox();
 	}
 
+	private enum PlayerOperation {
+		STOP, RELEASE;
+	}
+
 	@Test
 	public void testPlayerStop() throws Exception {
+		doTest(PlayerOperation.STOP);
+	}
+
+	@Test
+	public void testPlayerRelease() throws Exception {
+		doTest(PlayerOperation.RELEASE);
+	}
+
+	public void doTest(PlayerOperation playerOperation) throws Exception {
 		// Test data
 		final String mediaUrl = "http://files.kurento.org/video/format/small.webm";
 		final int guardTimeSeconds = 10;
@@ -99,8 +112,15 @@ public class PauseStopTest extends FunctionalTest {
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
 
-		// Stop stream and wait x seconds
-		playerEP.stop();
+		// Stop/release stream and wait x seconds
+		switch (playerOperation) {
+		case STOP:
+			playerEP.stop();
+			break;
+		case RELEASE:
+			playerEP.release();
+			break;
+		}
 		Thread.sleep(TimeUnit.SECONDS.toMillis(guardTimeSeconds));
 
 		// Verify that EOS event has not being received
