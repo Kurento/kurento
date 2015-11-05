@@ -151,8 +151,8 @@ public class PlayerWebRtcTest extends FunctionalTest {
 
 	public void doTestWithSmallFile(String protocol, String extension)
 			throws InterruptedException {
-		// Reduce threshold time per test (small video lasts 5 seconds)
-		getPage().setThresholdTime(2); // seconds
+		// Reduce threshold time per test
+		getPage().setThresholdTime(5); // seconds
 
 		String mediaUrl = protocol.equalsIgnoreCase("http")
 				? "http://files.kurento.org" : "file://" + getPathTestFiles();
