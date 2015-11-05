@@ -7,16 +7,15 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0
 
-# Selenium chrome beta images
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta:2.47.1
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta-debug:2.47.1
-
 # Selenium images
-docker pull selenium/hub:2.47.1
-docker pull selenium/node-chrome:2.47.1
-docker pull selenium/node-firefox:2.47.1
-docker pull selenium/node-chrome-debug:2.47.1
-docker pull selenium/node-firefox-debug:2.47.1
+[ -z SELENIUM_VERSION ] && SELENIUM_VERSION=2.47.1
+docker pull selenium/hub:$SELENIUM_VERSION
+docker pull selenium/node-chrome:$SELENIUM_VERSION
+docker pull selenium/node-firefox:$SELENIUM_VERSION
+docker pull selenium/node-chrome-debug:$SELENIUM_VERSION
+docker pull selenium/node-firefox-debug:$SELENIUM_VERSION
+docker pull kurento/node-chrome-beta:$SELENIUM_VERSION
+docker pull kurento/node-chrome-beta-debug:$SELENIUM_VERSION
 
 # Image to record vnc sessions
 docker pull softsam/vncrecorder:latest
