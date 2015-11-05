@@ -85,53 +85,48 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
 		MediaPipeline mp = null;
 
-		try {
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			PlayerEndpoint playerEP1 = new PlayerEndpoint.Builder(mp,
-					"http://files.kurento.org/video/60sec/ball.webm").build();
-			PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
-					"http://files.kurento.org/video/60sec/smpte.webm").build();
+		// Media Pipeline
+		mp = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP1 = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/60sec/ball.webm").build();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/60sec/smpte.webm").build();
 
-			String recordingFile = getDefaultOutputFile(extension);
-			RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-					Protocol.FILE + recordingFile)
-							.withMediaProfile(mediaProfileSpecType).build();
+		String recordingFile = getDefaultOutputFile(extension);
+		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
+				Protocol.FILE + recordingFile)
+						.withMediaProfile(mediaProfileSpecType).build();
 
-			// Start play and record
-			playerEP1.play();
-			playerEP2.play();
-			recorderEP.record();
+		// Start play and record
+		playerEP1.play();
+		playerEP2.play();
+		recorderEP.record();
 
-			// Switch players
-			for (int i = 0; i < SWITCH_TIMES; i++) {
-				if (i % 2 == 0) {
-					playerEP1.connect(recorderEP);
-				} else {
-					playerEP2.connect(recorderEP);
-				}
-
-				Thread.sleep(SWITCH_RATE_MS);
+		// Switch players
+		for (int i = 0; i < SWITCH_TIMES; i++) {
+			if (i % 2 == 0) {
+				playerEP1.connect(recorderEP);
+			} else {
+				playerEP2.connect(recorderEP);
 			}
 
-			// Stop play and record
-			playerEP1.stop();
-			playerEP2.stop();
-			recorderEP.stop();
+			Thread.sleep(SWITCH_RATE_MS);
+		}
 
-			// Assessments
-			long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
-			AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
-					expectedAudioCodec);
-			AssertMedia.assertDuration(recordingFile, expectedTimeMs,
-					THRESHOLD_MS);
+		// Stop play and record
+		playerEP1.stop();
+		playerEP2.stop();
+		recorderEP.stop();
 
-		} finally {
+		// Assessments
+		long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
+		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
+				expectedAudioCodec);
+		AssertMedia.assertDuration(recordingFile, expectedTimeMs, THRESHOLD_MS);
 
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
-			}
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 
 	}

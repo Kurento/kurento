@@ -92,88 +92,83 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 
 		MediaPipeline mp = null;
 
-		try {
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			final PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-					"http://files.kurento.org/video/60sec/ball.webm").build();
-			final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
-			final String recordingFile[] = new String[numViewers];
-			playerEP.play();
+		// Media Pipeline
+		mp = kurentoClient.createMediaPipeline();
+		final PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/60sec/ball.webm").build();
+		final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
+		final String recordingFile[] = new String[numViewers];
+		playerEP.play();
 
-			ExecutorService executor = Executors.newFixedThreadPool(numViewers);
-			final CountDownLatch latch = new CountDownLatch(numViewers);
-			final MediaPipeline pipeline = mp;
-			for (int j = 0; j < numViewers; j++) {
-				final int i = j;
-				executor.execute(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							// N recorders
-							recordingFile[i] = getDefaultOutputFile(
-									"-recorder" + i + extension);
-							recorder[i] = new RecorderEndpoint.Builder(pipeline,
-									Protocol.FILE + recordingFile[i])
-											.withMediaProfile(
-													mediaProfileSpecType)
-											.build();
-							playerEP.connect(recorder[i]);
+		ExecutorService executor = Executors.newFixedThreadPool(numViewers);
+		final CountDownLatch latch = new CountDownLatch(numViewers);
+		final MediaPipeline pipeline = mp;
+		for (int j = 0; j < numViewers; j++) {
+			final int i = j;
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						// N recorders
+						recordingFile[i] = getDefaultOutputFile(
+								"-recorder" + i + extension);
+						recorder[i] = new RecorderEndpoint.Builder(pipeline,
+								Protocol.FILE + recordingFile[i])
+										.withMediaProfile(mediaProfileSpecType)
+										.build();
+						playerEP.connect(recorder[i]);
 
-							// Start record
-							recorder[i].record();
+						// Start record
+						recorder[i].record();
 
-							// Wait play time
-							Thread.sleep(PLAYTIME_MS);
+						// Wait play time
+						Thread.sleep(PLAYTIME_MS);
 
-						} catch (Throwable t) {
-							log.error("Exception in receiver " + i, t);
-						}
-
-						latch.countDown();
+					} catch (Throwable t) {
+						log.error("Exception in receiver " + i, t);
 					}
-				});
-			}
 
-			// Wait to finish all recordings
-			latch.await();
+					latch.countDown();
+				}
+			});
+		}
 
-			// Stop recorders
-			final CountDownLatch stopLatch = new CountDownLatch(numViewers);
-			for (int j = 0; j < numViewers; j++) {
-				final int i = j;
-				executor.execute(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							// Stop record
-							recorder[i].stop();
+		// Wait to finish all recordings
+		latch.await();
 
-						} catch (Throwable t) {
-							log.error("Exception in receiver " + i, t);
-						}
-						stopLatch.countDown();
+		// Stop recorders
+		final CountDownLatch stopLatch = new CountDownLatch(numViewers);
+		for (int j = 0; j < numViewers; j++) {
+			final int i = j;
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						// Stop record
+						recorder[i].stop();
+
+					} catch (Throwable t) {
+						log.error("Exception in receiver " + i, t);
 					}
-				});
-			}
+					stopLatch.countDown();
+				}
+			});
+		}
 
-			// Wait to finish all stops
-			stopLatch.await();
+		// Wait to finish all stops
+		stopLatch.await();
 
-			// Assessments
-			for (int j = 0; j < numViewers; j++) {
-				AssertMedia.assertCodecs(recordingFile[j], expectedVideoCodec,
-						expectedAudioCodec);
-				AssertMedia.assertDuration(recordingFile[j], PLAYTIME_MS,
-						THRESHOLD_MS);
-			}
+		// Assessments
+		for (int j = 0; j < numViewers; j++) {
+			AssertMedia.assertCodecs(recordingFile[j], expectedVideoCodec,
+					expectedAudioCodec);
+			AssertMedia.assertDuration(recordingFile[j], PLAYTIME_MS,
+					THRESHOLD_MS);
+		}
 
-		} finally {
-
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
-			}
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 
 	}

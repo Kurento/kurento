@@ -86,46 +86,42 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
 
 		MediaPipeline mp = null;
 
-		try {
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp)
-					.build();
+		// Media Pipeline
+		mp = kurentoClient.createMediaPipeline();
+		final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp)
+				.build();
 
-			// WebRTC sender negotiation
-			getPage().subscribeLocalEvents("playing");
-			getPage().initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
+		// WebRTC sender negotiation
+		getPage().subscribeLocalEvents("playing");
+		getPage().initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
 
-			// Recorder
-			String recordingFile = getDefaultOutputFile(extension);
-			RecorderEndpoint recorder = new RecorderEndpoint.Builder(mp,
-					Protocol.FILE + recordingFile)
-							.withMediaProfile(mediaProfileSpecType).build();
-			webRtcSender.connect(recorder);
+		// Recorder
+		String recordingFile = getDefaultOutputFile(extension);
+		RecorderEndpoint recorder = new RecorderEndpoint.Builder(mp,
+				Protocol.FILE + recordingFile)
+						.withMediaProfile(mediaProfileSpecType).build();
+		webRtcSender.connect(recorder);
 
-			// Start recorder
-			recorder.record();
+		// Start recorder
+		recorder.record();
 
-			// Wait recording time
-			Thread.sleep(RECORD_MS);
+		// Wait recording time
+		Thread.sleep(RECORD_MS);
 
-			// Stop recorder
-			recorder.stop();
+		// Stop recorder
+		recorder.stop();
 
-			// Assessments
-			Assert.assertTrue("Not received media in sender webrtc",
-					getPage().waitForEvent("playing"));
-			AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
-					expectedAudioCodec);
-			AssertMedia.assertDuration(recordingFile, RECORD_MS, THRESHOLD_MS);
+		// Assessments
+		Assert.assertTrue("Not received media in sender webrtc",
+				getPage().waitForEvent("playing"));
+		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
+				expectedAudioCodec);
+		AssertMedia.assertDuration(recordingFile, RECORD_MS, THRESHOLD_MS);
 
-		} finally {
-
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
-			}
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 
 	}

@@ -95,102 +95,97 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 
 		MediaPipeline mp = null;
 
-		try {
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp)
-					.build();
-			final WebRtcEndpoint[] webRtcReceiver = new WebRtcEndpoint[numViewers];
-			final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
-			final String recordingFile[] = new String[numViewers];
+		// Media Pipeline
+		mp = kurentoClient.createMediaPipeline();
+		final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp)
+				.build();
+		final WebRtcEndpoint[] webRtcReceiver = new WebRtcEndpoint[numViewers];
+		final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
+		final String recordingFile[] = new String[numViewers];
 
-			// WebRTC sender negotiation
-			getPage(0).subscribeLocalEvents("playing");
-			getPage(0).initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
+		// WebRTC sender negotiation
+		getPage(0).subscribeLocalEvents("playing");
+		getPage(0).initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
 
-			ExecutorService executor = Executors.newFixedThreadPool(numViewers);
-			final CountDownLatch latch = new CountDownLatch(numViewers);
-			final MediaPipeline pipeline = mp;
-			for (int j = 1; j <= numViewers; j++) {
-				final int i = j;
-				executor.execute(new Runnable() {
-					@Override
-					public void run() {
-						// N Receiver WebRTC and Recorder
-						webRtcReceiver[i - 1] = new WebRtcEndpoint.Builder(
-								pipeline).build();
-						recordingFile[i - 1] = getDefaultOutputFile(
-								"-receiver" + i + extension);
-						recorder[i - 1] = new RecorderEndpoint.Builder(pipeline,
-								Protocol.FILE + recordingFile[i - 1])
-										.withMediaProfile(mediaProfileSpecType)
-										.build();
+		ExecutorService executor = Executors.newFixedThreadPool(numViewers);
+		final CountDownLatch latch = new CountDownLatch(numViewers);
+		final MediaPipeline pipeline = mp;
+		for (int j = 1; j <= numViewers; j++) {
+			final int i = j;
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					// N Receiver WebRTC and Recorder
+					webRtcReceiver[i - 1] = new WebRtcEndpoint.Builder(pipeline)
+							.build();
+					recordingFile[i - 1] = getDefaultOutputFile(
+							"-receiver" + i + extension);
+					recorder[i - 1] = new RecorderEndpoint.Builder(pipeline,
+							Protocol.FILE + recordingFile[i - 1])
+									.withMediaProfile(mediaProfileSpecType)
+									.build();
 
-						webRtcSender.connect(webRtcReceiver[i - 1]);
-						webRtcSender.connect(recorder[i - 1]);
+					webRtcSender.connect(webRtcReceiver[i - 1]);
+					webRtcSender.connect(recorder[i - 1]);
 
-						try {
-							// WebRTC receiver negotiation
-							getPage(i).subscribeEvents("playing");
-							getPage(i).initWebRtc(webRtcReceiver[i - 1],
-									WebRtcChannel.AUDIO_AND_VIDEO,
-									WebRtcMode.RCV_ONLY);
+					try {
+						// WebRTC receiver negotiation
+						getPage(i).subscribeEvents("playing");
+						getPage(i).initWebRtc(webRtcReceiver[i - 1],
+								WebRtcChannel.AUDIO_AND_VIDEO,
+								WebRtcMode.RCV_ONLY);
 
-							// Start record
-							recorder[i - 1].record();
+						// Start record
+						recorder[i - 1].record();
 
-							// Wait play time
-							Thread.sleep(PLAYTIME_MS);
-						} catch (InterruptedException e) {
-							log.error("InterruptedException in receiver " + i,
-									e);
-						}
-
-						latch.countDown();
+						// Wait play time
+						Thread.sleep(PLAYTIME_MS);
+					} catch (InterruptedException e) {
+						log.error("InterruptedException in receiver " + i, e);
 					}
-				});
-			}
 
-			// Wait to finish all receivers
-			latch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
+					latch.countDown();
+				}
+			});
+		}
 
-			// Stop recorders
-			final CountDownLatch stopLatch = new CountDownLatch(numViewers);
-			for (int j = 0; j < numViewers; j++) {
-				final int i = j;
-				executor.execute(new Runnable() {
-					@Override
-					public void run() {
-						// Stop record
-						recorder[i].stop();
-						stopLatch.countDown();
-					}
-				});
-			}
+		// Wait to finish all receivers
+		latch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
 
-			// Wait to finish all stops
-			stopLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
+		// Stop recorders
+		final CountDownLatch stopLatch = new CountDownLatch(numViewers);
+		for (int j = 0; j < numViewers; j++) {
+			final int i = j;
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					// Stop record
+					recorder[i].stop();
+					stopLatch.countDown();
+				}
+			});
+		}
 
-			// Assessments
-			Assert.assertTrue("Not received media in sender",
-					getPage(0).waitForEvent("playing"));
+		// Wait to finish all stops
+		stopLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
 
-			for (int j = 1; j <= numViewers; j++) {
-				Assert.assertTrue("Not received media in receiver " + j,
-						getPage(j).waitForEvent("playing"));
-				AssertMedia.assertCodecs(recordingFile[j - 1],
-						expectedVideoCodec, expectedAudioCodec);
-				AssertMedia.assertDuration(recordingFile[j - 1], PLAYTIME_MS,
-						THRESHOLD_MS);
-			}
+		// Assessments
+		Assert.assertTrue("Not received media in sender",
+				getPage(0).waitForEvent("playing"));
 
-		} finally {
+		for (int j = 1; j <= numViewers; j++) {
+			Assert.assertTrue("Not received media in receiver " + j,
+					getPage(j).waitForEvent("playing"));
+			AssertMedia.assertCodecs(recordingFile[j - 1], expectedVideoCodec,
+					expectedAudioCodec);
+			AssertMedia.assertDuration(recordingFile[j - 1], PLAYTIME_MS,
+					THRESHOLD_MS);
+		}
 
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
-			}
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 
 	}

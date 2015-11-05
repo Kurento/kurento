@@ -88,60 +88,55 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 
 		MediaPipeline mp = null;
 
-		try {
-			// Media Pipeline
-			mp = kurentoClient.createMediaPipeline();
-			WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-			WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+		// Media Pipeline
+		mp = kurentoClient.createMediaPipeline();
+		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
 
-			String recordingFile = getDefaultOutputFile(extension);
-			RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-					Protocol.FILE + recordingFile)
-							.withMediaProfile(mediaProfileSpecType).build();
+		String recordingFile = getDefaultOutputFile(extension);
+		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
+				Protocol.FILE + recordingFile)
+						.withMediaProfile(mediaProfileSpecType).build();
 
-			// WebRTC negotiation
-			getPage(0).subscribeLocalEvents("playing");
-			getPage(0).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
-			getPage(1).subscribeLocalEvents("playing");
-			getPage(1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_ONLY);
+		// WebRTC negotiation
+		getPage(0).subscribeLocalEvents("playing");
+		getPage(0).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
+		getPage(1).subscribeLocalEvents("playing");
+		getPage(1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
 
-			// Start record
-			recorderEP.record();
+		// Start record
+		recorderEP.record();
 
-			// Switch webrtcs
-			for (int i = 0; i < SWITCH_TIMES; i++) {
-				if (i % 2 == 0) {
-					webRtcEP1.connect(recorderEP);
-				} else {
-					webRtcEP2.connect(recorderEP);
-				}
-
-				Thread.sleep(SWITCH_RATE_MS);
+		// Switch webrtcs
+		for (int i = 0; i < SWITCH_TIMES; i++) {
+			if (i % 2 == 0) {
+				webRtcEP1.connect(recorderEP);
+			} else {
+				webRtcEP2.connect(recorderEP);
 			}
 
-			// Stop record
-			recorderEP.stop();
+			Thread.sleep(SWITCH_RATE_MS);
+		}
 
-			// Assessment
-			Assert.assertTrue("Not received media in browser 1",
-					getPage(0).waitForEvent("playing"));
-			Assert.assertTrue("Not received media in browser 2",
-					getPage(1).waitForEvent("playing"));
+		// Stop record
+		recorderEP.stop();
 
-			long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
-			AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
-					expectedAudioCodec);
-			AssertMedia.assertDuration(recordingFile, expectedTimeMs,
-					THRESHOLD_MS);
+		// Assessment
+		Assert.assertTrue("Not received media in browser 1",
+				getPage(0).waitForEvent("playing"));
+		Assert.assertTrue("Not received media in browser 2",
+				getPage(1).waitForEvent("playing"));
 
-		} finally {
+		long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
+		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
+				expectedAudioCodec);
+		AssertMedia.assertDuration(recordingFile, expectedTimeMs, THRESHOLD_MS);
 
-			// Release Media Pipeline
-			if (mp != null) {
-				mp.release();
-			}
+		// Release Media Pipeline
+		if (mp != null) {
+			mp.release();
 		}
 
 	}
