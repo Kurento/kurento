@@ -242,6 +242,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
   if (g_ascii_strcasecmp ("tcp", transport) == 0) {
     GST_INFO ("TCP transport not supported");
     g_free (transport);
+    ret = FALSE;
     goto end;
   }
 
@@ -254,26 +255,32 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
 
   if (foundation == NULL) {
     GST_WARNING ("Candidate: cannot get 'foundation'");
+    ret = FALSE;
     goto free;
   }
   if (cid_str == NULL) {
     GST_WARNING ("Candidate: cannot get 'cid'");
+    ret = FALSE;
     goto free;
   }
   if (prio_str == NULL) {
     GST_WARNING ("Candidate: cannot get 'prio'");
+    ret = FALSE;
     goto free;
   }
   if (addr == NULL) {
     GST_WARNING ("Candidate: cannot get 'addr'");
+    ret = FALSE;
     goto free;
   }
   if (port_str == NULL) {
     GST_WARNING ("Candidate: cannot get 'port'");
+    ret = FALSE;
     goto free;
   }
   if (type_str == NULL) {
     GST_WARNING ("Candidate: cannot get 'type'");
+    ret = FALSE;
     goto free;
   }
 
@@ -288,6 +295,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
     type = NICE_CANDIDATE_TYPE_RELAYED;
   } else {
     GST_WARNING ("Candidate type '%s' not supported", type_str);
+    ret = FALSE;
     goto free;
   }
 
@@ -300,6 +308,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
     GST_WARNING ("Cannot set address '%s' to candidate", addr);
     nice_candidate_free (*cand);
     *cand = NULL;
+    ret = FALSE;
     goto free;
   }
   nice_address_set_port (&(*cand)->addr, g_ascii_strtoll (port_str, NULL, 10));
