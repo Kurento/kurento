@@ -100,6 +100,32 @@ struct _KmsRecorderEndpointPrivate
   GstPad *video_target;
 };
 
+typedef struct _DataEvtProbe
+{
+  GstElement *appsrc;
+  KmsRecordingProfile profile;
+} DataEvtProbe;
+
+static void
+data_evt_probe_destroy (DataEvtProbe * data)
+{
+  g_clear_object (&data->appsrc);
+  g_slice_free (DataEvtProbe, data);
+}
+
+static DataEvtProbe *
+data_evt_probe_new (GstElement * appsrc, KmsRecordingProfile profile)
+{
+  DataEvtProbe *data;
+
+  data = g_slice_new0 (DataEvtProbe);
+
+  data->appsrc = g_object_ref (appsrc);
+  data->profile = profile;
+
+  return data;
+}
+
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndpoint, kms_recorder_endpoint,
@@ -649,17 +675,7 @@ set_appsrc_caps (GstElement * appsrc, const GstCaps * caps)
 {
   GValue framerate = G_VALUE_INIT;
   GstStructure *str;
-  GstCaps *srccaps, *prevcaps;
-
-  g_object_get (appsrc, "caps", &prevcaps, NULL);
-
-  if (prevcaps != NULL) {
-    /* Do not change internal caps */
-    GST_DEBUG_OBJECT (appsrc, "Previous_ caps %" GST_PTR_FORMAT, prevcaps);
-    gst_caps_unref (prevcaps);
-
-    return;
-  }
+  GstCaps *srccaps;
 
   srccaps = gst_caps_copy (caps);
 
@@ -687,7 +703,8 @@ end:
 }
 
 static void
-set_appsink_caps (GstElement * appsink, const GstCaps * caps)
+set_appsink_caps (GstElement * appsink, const GstCaps * caps,
+    KmsRecordingProfile profile)
 {
   GstStructure *str;
   GstCaps *sinkcaps;
@@ -711,6 +728,18 @@ set_appsink_caps (GstElement * appsink, const GstCaps * caps)
     gst_structure_remove_field (str, "framerate");
   }
 
+  switch (profile) {
+    case KMS_RECORDING_PROFILE_WEBM:
+    case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
+      /* Allow renegotiation of width and height because webmmux supports it */
+      gst_structure_remove_field (str, "width");
+      gst_structure_remove_field (str, "height");
+      break;
+    default:
+      /* No to allow height and width renegotiation */
+      break;
+  }
+
   GST_DEBUG_OBJECT (appsink, "Setting sink caps %" GST_PTR_FORMAT, sinkcaps);
   g_object_set (appsink, "caps", sinkcaps, NULL);
 
@@ -721,10 +750,11 @@ end:
 
 static GstPadProbeReturn
 configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
-    gpointer data)
+    gpointer user_data)
 {
   GstEvent *event = gst_pad_probe_info_get_event (info);
-  GstElement *appsrc = data;
+  DataEvtProbe *data = user_data;
+  GstElement *appsrc = data->appsrc;
   GstElement *appsink;
   GstCaps *caps;
 
@@ -750,7 +780,7 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
   appsink = gst_pad_get_parent_element (pad);
 
   if (appsink) {
-    set_appsink_caps (appsink, caps);
+    set_appsink_caps (appsink, caps, data->profile);
     g_object_unref (appsink);
   }
 
@@ -765,6 +795,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   GstPad *sinkpad;
   const gchar *appsink_name, *appsrc_name;
   GstPad **target_pad;
+  DataEvtProbe *data;
 
   switch (type) {
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
@@ -793,9 +824,12 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
   g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
 
+  data = data_evt_probe_new (appsrc, self->priv->profile);
+
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      configure_pipeline_capabilities, g_object_ref (appsrc), g_object_unref);
+      configure_pipeline_capabilities, data,
+      (GDestroyNotify) data_evt_probe_destroy);
 
   gst_element_sync_state_with_parent (appsink);
 
