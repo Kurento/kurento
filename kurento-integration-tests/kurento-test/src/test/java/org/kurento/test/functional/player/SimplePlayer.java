@@ -110,20 +110,26 @@ public class SimplePlayer extends FunctionalTest {
 		playerEP.play();
 
 		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
+		Assert.assertTrue(
+				"Not received media (timeout waiting playing event): "
+						+ mediaUrl + " " + webRtcChannel,
 				getPage().waitForEvent("playing"));
 		if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
 			Assert.assertTrue(
-					"The color of the video should be " + expectedColor,
+					"The color of the video should be " + expectedColor + ": "
+							+ mediaUrl + " " + webRtcChannel,
 					getPage().similarColorAt(expectedColor, x, y));
 		}
-		Assert.assertTrue("Not received EOS event in player",
+		Assert.assertTrue(
+				"Not received EOS event in player: " + mediaUrl + " "
+						+ webRtcChannel,
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
 		if (playtime > 0) {
 			Assert.assertTrue(
 					"Error in play time (expected: " + playtime + " sec, real: "
-							+ currentTime + " sec)",
+							+ currentTime + " sec): " + mediaUrl + " "
+							+ webRtcChannel,
 					getPage().compare(playtime, currentTime));
 		}
 
