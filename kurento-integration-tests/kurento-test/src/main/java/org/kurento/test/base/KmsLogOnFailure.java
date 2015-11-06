@@ -180,7 +180,12 @@ public class KmsLogOnFailure extends TestWatcher {
 				});
 				if (files != null) {
 					for (final File file : files) {
-						if (!file.delete()) {
+						if (file.isDirectory()) {
+							FileUtils.deleteDirectory(file);
+						} else {
+							file.delete();
+						}
+						if (file.exists()) {
 							log.error("Can't remove {}",
 									file.getAbsolutePath());
 						}
