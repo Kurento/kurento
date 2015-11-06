@@ -20,6 +20,9 @@
 #include <gst/pbutils/encoding-profile.h>
 #include <libsoup/soup.h>
 
+#include <gst/app/gstappsrc.h>
+#include <gst/app/gstappsink.h>
+
 #include <commons/kmsagnosticcaps.h>
 #include "kmsrecorderendpoint.h"
 #include <commons/kmsuriendpointstate.h>
@@ -170,11 +173,11 @@ release_base_time_type (gpointer data)
 }
 
 static GstFlowReturn
-recv_sample (GstElement * appsink, gpointer user_data)
+recv_sample (GstAppSink * appsink, gpointer user_data)
 {
   KmsRecorderEndpoint *self =
       KMS_RECORDER_ENDPOINT (GST_OBJECT_PARENT (appsink));
-  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstAppSrc *appsrc = GST_APP_SRC (user_data);
   KmsUriEndpointState state;
   GstFlowReturn ret;
   GstSample *sample;
@@ -265,9 +268,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
     GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
 
-  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
-
-  gst_buffer_unref (buffer);
+  ret = gst_app_src_push_buffer (appsrc, buffer);
 
   if (ret != GST_FLOW_OK) {
     /* something wrong */
@@ -276,14 +277,15 @@ recv_sample (GstElement * appsink, gpointer user_data)
   }
 
 end:
-  if (sample != NULL)
+  if (sample != NULL) {
     gst_sample_unref (sample);
+  }
 
   return ret;
 }
 
 static void
-recv_eos (GstElement * appsink, gpointer user_data)
+recv_eos (GstAppSink * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
 
@@ -791,6 +793,7 @@ static void
 kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
     KmsElementPadType type)
 {
+  GstAppSinkCallbacks callbacks;
   GstElement *appsink, *appsrc;
   GstPad *sinkpad;
   const gchar *appsink_name, *appsrc_name;
@@ -814,15 +817,18 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
 
   appsink = gst_element_factory_make ("appsink", appsink_name);
 
-  g_object_set (appsink, "emit-signals", TRUE, "async", FALSE,
+  g_object_set (appsink, "emit-signals", FALSE, "async", FALSE,
       "sync", FALSE, "qos", FALSE, NULL);
+
+  callbacks.eos = recv_eos;
+  callbacks.new_preroll = NULL;
+  callbacks.new_sample = recv_sample;
 
   gst_bin_add (GST_BIN (self), appsink);
 
   g_object_get (self->priv->mux, appsrc_name, &appsrc, NULL);
 
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
-  g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
+  gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc, NULL);
 
   data = data_evt_probe_new (appsrc, self->priv->profile);
 
