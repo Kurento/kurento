@@ -14,22 +14,23 @@
  */
 package org.kurento.test.functional.player;
 
-import java.awt.Color;
-import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import static org.kurento.test.browser.WebRtcChannel.AUDIO_AND_VIDEO;
+import static org.kurento.test.browser.WebRtcChannel.AUDIO_ONLY;
+import static org.kurento.test.browser.WebRtcChannel.VIDEO_ONLY;
+import static org.kurento.test.config.Protocol.FILE;
+import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.VideoFormat.AVI;
+import static org.kurento.test.config.VideoFormat.MKV;
+import static org.kurento.test.config.VideoFormat.MOV;
+import static org.kurento.test.config.VideoFormat.MP4;
+import static org.kurento.test.config.VideoFormat.OGV;
+import static org.kurento.test.config.VideoFormat.THIRDGP;
+import static org.kurento.test.config.VideoFormat.WEBM;
 
-import org.junit.Assert;
+import java.util.Collection;
+
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.client.EndOfStreamEvent;
-import org.kurento.client.EventListener;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.browser.WebRtcChannel;
-import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -47,7 +48,8 @@ import org.kurento.test.config.TestScenario;
  * Test logic: <br>
  * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects
  * to a WebRtcEndpoint <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media. WebRtcPeer can be
+ * configured to receive both video and audio, only video, or only audio <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
@@ -62,7 +64,7 @@ import org.kurento.test.config.TestScenario;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public class PlayerWebRtcTest extends FunctionalTest {
+public class PlayerWebRtcTest extends SimplePlayer {
 
 	public PlayerWebRtcTest(TestScenario testScenario) {
 		super(testScenario);
@@ -74,133 +76,228 @@ public class PlayerWebRtcTest extends FunctionalTest {
 	}
 
 	@Test
-	public void testPlayerWebRtcHttpWebm() throws Exception {
-		doTestWithSmallFile("http", "webm");
+	public void testPlayerWebRtcAudioAndVideoHttp3gp() throws Exception {
+		testPlayerWithSmallFile(HTTP, THIRDGP, AUDIO_AND_VIDEO);
 	}
 
 	@Test
-	public void testPlayerWebRtcHttpMp4() throws Exception {
-		doTestWithSmallFile("http", "mp4");
+	public void testPlayerWebRtcVideoOnlyHttp3gp() throws Exception {
+		testPlayerWithSmallFile(HTTP, THIRDGP, VIDEO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcHttpMov() throws Exception {
-		doTestWithSmallFile("http", "mov");
+	public void testPlayerWebRtcAudioOnlyHttp3gp() throws Exception {
+		testPlayerWithSmallFile(HTTP, THIRDGP, AUDIO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcHttpAvi() throws Exception {
-		doTestWithSmallFile("http", "avi");
+	public void testPlayerWebRtcAudioAndVideoHttpAvi() throws Exception {
+		testPlayerWithSmallFile(HTTP, AVI, AUDIO_AND_VIDEO);
 	}
 
 	@Test
-	public void testPlayerWebRtcHttpMkv() throws Exception {
-		doTestWithSmallFile("http", "mkv");
+	public void testPlayerWebRtcVideoOnlyHttpAvi() throws Exception {
+		testPlayerWithSmallFile(HTTP, AVI, VIDEO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcHttpOgv() throws Exception {
-		doTestWithSmallFile("http", "ogv");
+	public void testPlayerWebRtcAudioOnlyHttpAvi() throws Exception {
+		testPlayerWithSmallFile(HTTP, AVI, AUDIO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcHttp3gp() throws Exception {
-		doTestWithSmallFile("http", "3gp");
+	public void testPlayerWebRtcAudioAndVideoHttpMkv() throws Exception {
+		testPlayerWithSmallFile(HTTP, MKV, AUDIO_AND_VIDEO);
 	}
 
 	@Test
-	public void testPlayerWebRtcFileWebm() throws Exception {
-		doTestWithSmallFile("file", "webm");
+	public void testPlayerWebRtcVideoOnlyHttpMkv() throws Exception {
+		testPlayerWithSmallFile(HTTP, MKV, VIDEO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcFileMp4() throws Exception {
-		doTestWithSmallFile("file", "mp4");
+	public void testPlayerWebRtcAudioOnlyHttpMkv() throws Exception {
+		testPlayerWithSmallFile(HTTP, MKV, AUDIO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcFileMov() throws Exception {
-		doTestWithSmallFile("file", "mov");
+	public void testPlayerWebRtcAudioAndVideoHttpMov() throws Exception {
+		testPlayerWithSmallFile(HTTP, MOV, AUDIO_AND_VIDEO);
 	}
 
 	@Test
-	public void testPlayerWebRtcFileAvi() throws Exception {
-		doTestWithSmallFile("file", "avi");
+	public void testPlayerWebRtcVideoOnlyHttpMov() throws Exception {
+		testPlayerWithSmallFile(HTTP, MOV, VIDEO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcFileMkv() throws Exception {
-		doTestWithSmallFile("file", "mkv");
+	public void testPlayerWebRtcAudioOnlyHttpMov() throws Exception {
+		testPlayerWithSmallFile(HTTP, MOV, AUDIO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcFileOgv() throws Exception {
-		doTestWithSmallFile("file", "ogv");
+	public void testPlayerWebRtcAudioAndVideoHttpMp4() throws Exception {
+		testPlayerWithSmallFile(HTTP, MP4, AUDIO_AND_VIDEO);
 	}
 
 	@Test
-	public void testPlayerWebRtcFile3gp() throws Exception {
-		doTestWithSmallFile("file", "3gp");
+	public void testPlayerWebRtcVideoOnlyHttpMp4() throws Exception {
+		testPlayerWithSmallFile(HTTP, MP4, VIDEO_ONLY);
 	}
 
 	@Test
-	public void testPlayerWebRtcRtsp() throws Exception {
-		doTest("rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
-				0, 50, 50, Color.WHITE);
+	public void testPlayerWebRtcAudioOnlyHttpMp4() throws Exception {
+		testPlayerWithSmallFile(HTTP, MP4, AUDIO_ONLY);
 	}
 
-	public void doTestWithSmallFile(String protocol, String extension)
-			throws InterruptedException {
-		// Reduce threshold time per test
-		getPage().setThresholdTime(5); // seconds
-
-		String mediaUrl = protocol.equalsIgnoreCase("http")
-				? "http://files.kurento.org" : "file://" + getPathTestFiles();
-		mediaUrl += "/video/format/small." + extension;
-		log.debug("Playing small file located on {}", mediaUrl);
-		doTest(mediaUrl, 5, 50, 50, new Color(99, 65, 40));
+	@Test
+	public void testPlayerWebRtcAudioAndVideoHttpOgv() throws Exception {
+		testPlayerWithSmallFile(HTTP, OGV, AUDIO_AND_VIDEO);
 	}
 
-	public void doTest(String mediaUrl, int playtime, int x, int y,
-			Color expectedColor) throws InterruptedException {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl)
-				.build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-		playerEP.connect(webRtcEP);
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpOgv() throws Exception {
+		testPlayerWithSmallFile(HTTP, OGV, VIDEO_ONLY);
+	}
 
-		final CountDownLatch eosLatch = new CountDownLatch(1);
-		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosLatch.countDown();
-			}
-		});
+	@Test
+	public void testPlayerWebRtcAudioOnlyHttpOgv() throws Exception {
+		testPlayerWithSmallFile(HTTP, OGV, AUDIO_ONLY);
+	}
 
-		// Test execution
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
-		playerEP.play();
+	@Test
+	public void testPlayerWebRtcAudioAndVideoHttpWebm() throws Exception {
+		testPlayerWithSmallFile(HTTP, WEBM, AUDIO_AND_VIDEO);
+	}
 
-		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be " + expectedColor,
-				getPage().similarColorAt(expectedColor, x, y));
-		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
-		double currentTime = getPage().getCurrentTime();
-		if (playtime > 0) {
-			Assert.assertTrue(
-					"Error in play time (expected: " + playtime + " sec, real: "
-							+ currentTime + " sec)",
-					getPage().compare(playtime, currentTime));
-		}
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpWebm() throws Exception {
+		testPlayerWithSmallFile(HTTP, WEBM, VIDEO_ONLY);
+	}
 
-		// Release Media Pipeline
-		mp.release();
+	@Test
+	public void testPlayerWebRtcAudioOnlyHttpWebm() throws Exception {
+		testPlayerWithSmallFile(HTTP, WEBM, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFile3gp() throws Exception {
+		testPlayerWithSmallFile(FILE, THIRDGP, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFile3gp() throws Exception {
+		testPlayerWithSmallFile(FILE, THIRDGP, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFile3gp() throws Exception {
+		testPlayerWithSmallFile(FILE, THIRDGP, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFileAvi() throws Exception {
+		testPlayerWithSmallFile(FILE, AVI, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileAvi() throws Exception {
+		testPlayerWithSmallFile(FILE, AVI, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFileAvi() throws Exception {
+		testPlayerWithSmallFile(FILE, AVI, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFileMkv() throws Exception {
+		testPlayerWithSmallFile(FILE, MKV, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileMkv() throws Exception {
+		testPlayerWithSmallFile(FILE, MKV, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFileMkv() throws Exception {
+		testPlayerWithSmallFile(FILE, MKV, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFileMov() throws Exception {
+		testPlayerWithSmallFile(FILE, MOV, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileMov() throws Exception {
+		testPlayerWithSmallFile(FILE, MOV, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFileMov() throws Exception {
+		testPlayerWithSmallFile(FILE, MOV, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFileMp4() throws Exception {
+		testPlayerWithSmallFile(FILE, MP4, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileMp4() throws Exception {
+		testPlayerWithSmallFile(FILE, MP4, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFileMp4() throws Exception {
+		testPlayerWithSmallFile(FILE, MP4, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFileOgv() throws Exception {
+		testPlayerWithSmallFile(FILE, OGV, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileOgv() throws Exception {
+		testPlayerWithSmallFile(FILE, OGV, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFileOgv() throws Exception {
+		testPlayerWithSmallFile(FILE, OGV, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoFileWebm() throws Exception {
+		testPlayerWithSmallFile(FILE, WEBM, AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileWebm() throws Exception {
+		testPlayerWithSmallFile(FILE, WEBM, VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyFileWebm() throws Exception {
+		testPlayerWithSmallFile(FILE, WEBM, AUDIO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioAndVideoRtsp() throws Exception {
+		testPlayerWithRtsp(AUDIO_AND_VIDEO);
+	}
+
+	@Test
+	public void testPlayerWebRtcVideoOnlyRtsp() throws Exception {
+		testPlayerWithRtsp(VIDEO_ONLY);
+	}
+
+	@Test
+	public void testPlayerWebRtcAudioOnlyRtsp() throws Exception {
+		testPlayerWithRtsp(AUDIO_ONLY);
 	}
 
 }
