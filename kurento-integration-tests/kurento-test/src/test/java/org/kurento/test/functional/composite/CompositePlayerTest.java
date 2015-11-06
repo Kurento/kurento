@@ -32,19 +32,26 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * 
- * <strong>Description</strong>: Four synthetic videos are played by four
- * PlayerEndpoint and mixed by a Composite. The resulting video is played in an
- * WebRtcEndpoint.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>4xPlayerEndpoint -> Composite -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Browser starts before default timeout</li>
- * <li>Color of the video should be the expected (red, green, blue, and white)</li>
- * </ul>
+ * Four synthetic videos are played by four PlayerEndpoint and mixed by a
+ * Composite. The resulting video is played in an WebRtcEndpoint <br>
+ *
+ * Media Pipeline(s): <br>
+ * · 4xPlayerEndpoint -> Composite -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Media server implements a grid with the media from 4 PlayerEndpoints
+ * <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Color of the video should be the expected in the right position (grid) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

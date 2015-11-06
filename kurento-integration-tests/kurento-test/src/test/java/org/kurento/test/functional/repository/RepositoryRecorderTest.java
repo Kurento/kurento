@@ -36,20 +36,30 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
+ * Test of a Recorder in the repository, using the stream source from a
+ * PlayerEndpoint through an WebRtcEndpoint <br>
  *
- * <strong>Description</strong>: Test of a Recorder in the repository, using the
- * stream source from a PlayerEndpoint through an WebRtcEndpoint.<br/>
- * <strong>Pipelines</strong>:
- * <ol>
- * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
- * </ol>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
- * <li>Color of the video should be the expected</li>
- * </ul>
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Media server switchs the media from two WebRtcEndpoint using a
+ * Dispatcher, streaming the result through antoher WebRtcEndpoint<br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · The color of the received video should be as expected (green and the blue)
+ * <br>
+ * · EOS event should arrive to player <br>
+ * · Play time in remote video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
@@ -71,14 +81,16 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 	public void testRepositoryRecorder() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/ball.webm")
-				.build();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/10sec/ball.webm").build();
 		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
 		RepositoryItem repositoryItem = repository.createRepositoryItem();
-		RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder();
+		RepositoryHttpRecorder recorder = repositoryItem
+				.createRepositoryHttpRecorder();
 
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp, recorder.getURL()).build();
+		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
+				recorder.getURL()).build();
 		playerEP.connect(webRtcEP1);
 		playerEP.connect(recorderEP);
 
@@ -94,7 +106,8 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		launchBrowser(webRtcEP1, playerEP, recorderEP);
 
 		// Wait for EOS
-		Assert.assertTrue("Not received EOS event in player", eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -102,11 +115,12 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		Thread.sleep(500);
 	}
 
-	private void launchBrowser(WebRtcEndpoint webRtcEP, PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
-			throws InterruptedException {
+	private void launchBrowser(WebRtcEndpoint webRtcEP, PlayerEndpoint playerEP,
+			RecorderEndpoint recorderEP) throws InterruptedException {
 
 		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 		playerEP.play();
 		final CountDownLatch eosLatch = new CountDownLatch(1);
 		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
@@ -121,11 +135,16 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 		}
 
 		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)", getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be black", getPage().similarColor(Color.BLACK));
-		Assert.assertTrue("Not received EOS event in player", eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getPage().waitForEvent("playing"));
+		Assert.assertTrue("The color of the video should be black",
+				getPage().similarColor(Color.BLACK));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 	}
 }

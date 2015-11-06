@@ -35,20 +35,29 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * 
- * <strong>Description</strong>: A PlayerEndpoint is connected to a
- * WebRtcEndpoint through a Dispatcher.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>PlayerEndpoint -> Dispatcher -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>EOS event should arrive to player</li>
- * <li>Play time should be the expected</li>
- * <li>Color of the video should be the expected</li>
- * </ul>
+ * A PlayerEndpoint is connected to a WebRtcEndpoint through a Dispatcher <br>
+ *
+ * Media Pipeline(s): <br>
+ * · 2xPlayerEndpoint -> Dispatcher -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Media server switchs the media from two PlayerEndpoint using a
+ * Dispatcher, streaming the result through a WebRtcEndpoint<br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · The color of the received video should be as expected (red and the blue)
+ * <br>
+ * · EOS event should arrive to player <br>
+ * · Play time in remote video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -104,20 +113,21 @@ public class DispatcherPlayerTest extends FunctionalTest {
 		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
-		Assert.assertTrue("The color of the video should be red", getPage()
-				.similarColor(Color.RED));
+		Assert.assertTrue("The color of the video should be red",
+				getPage().similarColor(Color.RED));
 
 		Thread.sleep(5000);
 		playerEP2.play();
 		dispatcher.connect(hubPort3, hubPort2);
-		Assert.assertTrue("The color of the video should be blue", getPage()
-				.similarColor(Color.BLUE));
+		Assert.assertTrue("The color of the video should be blue",
+				getPage().similarColor(Color.BLUE));
 
 		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 
 		// Release Media Pipeline

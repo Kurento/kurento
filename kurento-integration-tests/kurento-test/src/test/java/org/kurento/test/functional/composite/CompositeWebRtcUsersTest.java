@@ -36,23 +36,25 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * 
- * <strong>Description</strong>: Four synthetic videos are played by four
- * WebRtcEndpoint and mixed by a Composite. The resulting video is played in an
- * WebRtcEndpoint.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>4xWebRtcEndpoint -> Composite -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Browser starts before default timeout</li>
- * <li>First, composite mixes a red and a green videos</li>
- * <li>In the second stage, composite only shows a red video</li>
- * <li>In the third stage, composite mixes a red and a white videos</li>
- * <li>Finally color of the video should be the expected (red, blue, green, and
- * white)</li>
- * </ul>
+ * Four synthetic videos are played by four WebRtcEndpoint and mixed by a
+ * Composite. The resulting video is played in an WebRtcEndpoint <br>
+ *
+ * Media Pipeline(s): <br>
+ * · 4xWebRtcEndpoint -> Composite -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · 5 x Chrome <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Media server implements a grid with the media from 4 WebRtcEndpoints
+ * and sends the resulting media to another WebRtcEndpoint <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Color of the video should be the expected in the right position (grid) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
@@ -78,32 +80,24 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 		TestScenario test = new TestScenario();
 		test.addBrowser(BROWSER1,
 				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.build());
-		test.addBrowser(
-				BROWSER2,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/red.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER3,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/green.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER4,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER5,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/white.y4m")
-						.build());
+						.webPageType(WebPageType.WEBRTC)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BROWSER2, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/10sec/red.y4m").build());
+		test.addBrowser(BROWSER3, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/10sec/green.y4m").build());
+		test.addBrowser(BROWSER4, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/10sec/blue.y4m").build());
+		test.addBrowser(BROWSER5, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/10sec/white.y4m").build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
@@ -130,8 +124,8 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 		hubPort5.connect(webRtcEPComposite);
 
 		// Test execution
-		getPage(BROWSER2).initWebRtc(webRtcEPRed,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+		getPage(BROWSER2).initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
 		getPage(BROWSER3).initWebRtc(webRtcEPGreen,
 				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 		getPage(BROWSER4).initWebRtc(webRtcEPBlue,
@@ -154,8 +148,8 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 		hubPort2.release();
 		Thread.sleep(3000);
 
-		Assert.assertTrue("All the video must be red", getPage(BROWSER1)
-				.similarColorAt(Color.RED, 300, 200));
+		Assert.assertTrue("All the video must be red",
+				getPage(BROWSER1).similarColorAt(Color.RED, 300, 200));
 
 		webRtcEPWhite.connect(hubPort4);
 		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));

@@ -36,18 +36,29 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * 
- * <strong>Description</strong>: A WebRtcEndpoint is connected to another
- * WebRtcEndpoint through a Dispatcher.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> Dispatcher -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>Color of the video should be the expected</li>
- * </ul>
+ * A WebRtcEndpoint is connected to another WebRtcEndpoint through a Dispatcher
+ * <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> Dispatcher -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · 3 x Chrome <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Media server switchs the media from two WebRtcEndpoint using a
+ * Dispatcher, streaming the result through antoher WebRtcEndpoint<br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · The color of the received video should be as expected (green and the blue)
+ * <br>
+ * · EOS event should arrive to player <br>
+ * · Play time in remote video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -69,20 +80,16 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 
 		test.addBrowser(BROWSER1,
 				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.build());
-		test.addBrowser(
-				BROWSER2,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/green.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER3,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
-						.build());
+						.webPageType(WebPageType.WEBRTC)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BROWSER2, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/10sec/green.y4m").build());
+		test.addBrowser(BROWSER3, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getPathTestFiles() + "/video/10sec/blue.y4m").build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
