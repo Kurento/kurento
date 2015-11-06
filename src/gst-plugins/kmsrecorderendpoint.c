@@ -28,6 +28,7 @@
 #include <commons/kmsuriendpointstate.h>
 #include <commons/kmsutils.h>
 #include <commons/kmsloop.h>
+#include <commons/kmsstats.h>
 #include <commons/kmsrecordingprofile.h>
 #include <commons/kms-core-enumtypes.h>
 #include "kmsmuxingpipeline.h"
@@ -101,6 +102,12 @@ struct _KmsRecorderEndpointPrivate
 
   GstPad *audio_target;
   GstPad *video_target;
+
+  GstElement *sink;
+  gulong sink_probe;
+  gboolean stats_enabled;
+  gdouble vi;
+  gdouble ai;
 };
 
 typedef struct _DataEvtProbe
@@ -428,6 +435,7 @@ kms_recorder_endpoint_finalize (GObject * object)
   GST_DEBUG_OBJECT (self, "finalize");
 
   kms_recorder_endpoint_release_pending_requests (self);
+  g_clear_object (&self->priv->sink);
 
   G_OBJECT_CLASS (kms_recorder_endpoint_parent_class)->finalize (object);
 }
@@ -876,6 +884,101 @@ kms_recorder_endpoint_create_sink (KmsRecorderEndpoint * self)
   return sink;
 }
 
+static gchar *
+str_media_type (KmsMediaType type)
+{
+  switch (type) {
+    case KMS_MEDIA_TYPE_VIDEO:
+      return "video";
+    case KMS_MEDIA_TYPE_AUDIO:
+      return "audio";
+    case KMS_MEDIA_TYPE_DATA:
+      return "data";
+    default:
+      return "<unsupported>";
+  }
+}
+
+static void
+kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
+    GstClockTimeDiff t, gpointer user_data)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  gdouble *prev;
+
+  switch (type) {
+    case KMS_MEDIA_TYPE_AUDIO:
+      prev = &self->priv->ai;
+      break;
+    case KMS_MEDIA_TYPE_VIDEO:
+      prev = &self->priv->vi;
+      break;
+    default:
+      GST_DEBUG_OBJECT (pad, "No stast calculated for media (%s)",
+          str_media_type (type));
+      return;
+  }
+
+  *prev = KMS_STATS_CALCULATE_LATENCY_AVG (t, *prev);
+}
+
+static void
+kms_recorder_endpoint_enable_media_stats (KmsRecorderEndpoint * self)
+{
+  GstPad *pad;
+
+  if (self->priv->sink == NULL) {
+    GST_DEBUG_OBJECT (self, "There is no sink selected yet");
+    return;
+  }
+
+  pad = gst_element_get_static_pad (self->priv->sink, "sink");
+
+  if (pad == NULL) {
+    GST_WARNING_OBJECT (self, "Can not get sink pad of %" GST_PTR_FORMAT,
+        self->priv->sink);
+    return;
+  }
+
+  self->priv->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad,
+      kms_recorder_endpoint_latency_cb, self, NULL);
+  g_object_unref (pad);
+}
+
+static void
+kms_recorder_endpoint_disable_media_stats (KmsRecorderEndpoint * self)
+{
+  GstPad *pad;
+
+  if (self->priv->sink == NULL || self->priv->sink_probe == 0UL) {
+    goto end;
+  }
+
+  pad = gst_element_get_static_pad (self->priv->sink, "sink");
+
+  if (pad == NULL) {
+    GST_WARNING_OBJECT (self, "Can not get sink pad of %" GST_PTR_FORMAT,
+        self->priv->sink);
+    goto end;
+  }
+
+  gst_pad_remove_probe (pad, self->priv->sink_probe);
+  g_object_unref (pad);
+
+end:
+  self->priv->sink_probe = 0UL;
+}
+
+static void
+kms_recorder_endpoint_update_media_stats (KmsRecorderEndpoint * self)
+{
+  kms_recorder_endpoint_disable_media_stats (self);
+
+  if (self->priv->stats_enabled) {
+    kms_recorder_endpoint_enable_media_stats (self);
+  }
+}
+
 static void
 kms_recorder_endpoint_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -892,14 +995,15 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
         self->priv->profile = g_value_get_enum (value);
 
         if (self->priv->profile != KMS_RECORDING_PROFILE_NONE) {
-          GstElement *sink;
           GstBus *bus;
 
-          sink = kms_recorder_endpoint_create_sink (self);
+          self->priv->sink = kms_recorder_endpoint_create_sink (self);
           self->priv->mux =
               kms_muxing_pipeline_new (KMS_MUXING_PIPELINE_PROFILE,
-              self->priv->profile, KMS_MUXING_PIPELINE_SINK, sink, NULL);
-          g_object_unref (sink);
+              self->priv->profile, KMS_MUXING_PIPELINE_SINK, self->priv->sink,
+              NULL);
+
+          kms_recorder_endpoint_update_media_stats (self);
 
           bus = kms_muxing_pipeline_get_bus (self->priv->mux);
           gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
@@ -1207,6 +1311,43 @@ kms_recorder_endpoint_sink_query (KmsElement * self, GstPad * pad,
 }
 
 static void
+kms_recorder_endpoint_collect_media_stats (KmsElement * obj, gboolean enable)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+
+  KMS_ELEMENT_LOCK (self);
+
+  self->priv->stats_enabled = enable;
+  kms_recorder_endpoint_update_media_stats (self);
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  KMS_ELEMENT_CLASS
+      (kms_recorder_endpoint_parent_class)->collect_media_stats (obj, enable);
+}
+
+static GstStructure *
+kms_recorder_endpoint_stats (KmsElement * obj, gchar * selector)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  GstStructure *stats;
+
+  /* chain up */
+  stats =
+      KMS_ELEMENT_CLASS (kms_recorder_endpoint_parent_class)->stats (obj,
+      selector);
+
+  /* Add end to end latency */
+  gst_structure_set (stats, "video-e2e-latency", G_TYPE_UINT64,
+      (guint64) self->priv->vi, "audio-e2e-latency", G_TYPE_UINT64,
+      (guint64) self->priv->ai, NULL);
+
+  GST_DEBUG_OBJECT (self, "Stats: %" GST_PTR_FORMAT, stats);
+
+  return stats;
+}
+
+static void
 kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
 {
   KmsUriEndpointClass *urienpoint_class = KMS_URI_ENDPOINT_CLASS (klass);
@@ -1227,6 +1368,9 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
   kms_element_class = KMS_ELEMENT_CLASS (klass);
   kms_element_class->sink_query =
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_sink_query);
+  kms_element_class->collect_media_stats =
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_collect_media_stats);
+  kms_element_class->stats = GST_DEBUG_FUNCPTR (kms_recorder_endpoint_stats);
 
   gobject_class->set_property =
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_set_property);
@@ -1328,6 +1472,9 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->video_target = NULL;
   self->priv->audio_target = NULL;
+
+  self->priv->ai = 0.0;
+  self->priv->vi = 0.0;
 
   g_cond_init (&self->priv->state_manager.cond);
 }

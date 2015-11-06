@@ -39,6 +39,9 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
+                                &report, const GstStructure *stats, double timestamp);
 private:
 
   class StaticConstructor

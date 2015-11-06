@@ -8,6 +8,11 @@
 #include <gst/gst.h>
 #include <commons/kmsrecordingprofile.h>
 
+#include "StatsType.hpp"
+#include "EndpointStats.hpp"
+#include <commons/kmsutils.h>
+#include <commons/kmsstats.h>
+
 #define GST_CAT_DEFAULT kurento_recorder_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoRecorderEndpointImpl"
@@ -102,6 +107,40 @@ RecorderEndpointImpl::~RecorderEndpointImpl()
 void RecorderEndpointImpl::record ()
 {
   start();
+}
+
+static void
+collectEndpointStats (std::map <std::string, std::shared_ptr<Stats>>
+                      &statsReport, std::string id, const GstStructure *stats,
+                      double timestamp)
+{
+  std::shared_ptr<Stats> endpointStats;
+  guint64 v_e2e, a_e2e;
+
+  gst_structure_get (stats, "video-e2e-latency", G_TYPE_UINT64, &v_e2e,
+                     "audio-e2e-latency", G_TYPE_UINT64, &a_e2e, NULL);
+
+  endpointStats = std::make_shared <EndpointStats> (id,
+                  std::make_shared <StatsType> (StatsType::endpoint), timestamp, 0.0, 0.0,
+                  a_e2e, v_e2e);
+
+  statsReport[id] = endpointStats;
+}
+
+void
+RecorderEndpointImpl::fillStatsReport (std::map
+                                       <std::string, std::shared_ptr<Stats>>
+                                       &report, const GstStructure *stats, double timestamp)
+{
+  const GstStructure *e_stats;
+
+  e_stats = kms_utils_get_structure_by_name (stats, KMS_MEDIA_ELEMENT_FIELD);
+
+  if (e_stats != NULL) {
+    collectEndpointStats (report, getId (), e_stats, timestamp);
+  }
+
+  UriEndpointImpl::fillStatsReport (report, stats, timestamp);
 }
 
 MediaObjectImpl *
