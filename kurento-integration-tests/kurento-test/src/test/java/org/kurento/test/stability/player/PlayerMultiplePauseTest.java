@@ -24,10 +24,10 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.functional.player.SimplePlayer;
 
 /**
  * Test of multiple pauses in a PlayerEndpoint. <br>
@@ -53,7 +53,7 @@ import org.kurento.test.functional.player.SimplePlayer;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class PlayerMultiplePauseTest extends SimplePlayer {
+public class PlayerMultiplePauseTest extends StabilityTest {
 
 	public PlayerMultiplePauseTest(TestScenario testScenario) {
 		super(testScenario);

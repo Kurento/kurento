@@ -30,7 +30,9 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 import java.util.Collection;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.commons.testing.SystemStabilityTests;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
@@ -67,6 +69,7 @@ import org.kurento.test.functional.player.SimplePlayer;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
+@Category(SystemStabilityTests.class)
 public class PlayerMultiplePlayTest extends SimplePlayer {
 
 	public PlayerMultiplePlayTest(TestScenario testScenario) {
