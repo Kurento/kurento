@@ -223,10 +223,15 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
     GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
   }
 
-  if (GST_BUFFER_PTS_IS_VALID (buffer))
-    buffer->pts += *base_time;
-  if (GST_BUFFER_DTS_IS_VALID (buffer))
+  if (GST_BUFFER_DTS_IS_VALID (buffer)) {
     buffer->dts += *base_time;
+  }
+
+  if (GST_BUFFER_PTS_IS_VALID (buffer)) {
+    buffer->pts += *base_time;
+  } else {
+    buffer->pts = buffer->dts;
+  }
 
   BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsrc));
 
@@ -313,7 +318,7 @@ kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
       G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
 
