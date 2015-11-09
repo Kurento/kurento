@@ -40,15 +40,24 @@ import org.kurento.test.grid.ParallelBrowsers;
 import org.kurento.test.latency.LatencyController;
 
 /**
- * <strong>Description</strong>: WebRTC (one to many) test with Selenium Grid.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> N x WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>No assertion, just data gathering.</li>
- * </ul>
+ * WebRTC (one to many) test with Selenium Grid. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> N x WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint one to many <br>
+ * 2. (Browser) N WebRtcPeers in rcv-only receive media <br>
+ *
+ * Main assertion(s): <br>
+ * · No assertion, just data gathering <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
@@ -76,14 +85,12 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
 		TestScenario test = new TestScenario();
 		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(
-				BrowserConfig.PRESENTER,
+		test.addBrowser(BrowserConfig.PRESENTER,
 				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL).video(video).build());
 
-		test.addBrowser(
-				BrowserConfig.VIEWER,
+		test.addBrowser(BrowserConfig.VIEWER,
 				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.numInstances(numViewers)
 						.browserPerInstance(browserPerViewer)
@@ -109,7 +116,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 	}
 
 	@Test
-	public void test() throws InterruptedException {
+	public void testWebRtcPerformanceOneToMany() throws InterruptedException {
 		// Media Pipeline
 		final MediaPipeline mp = kurentoClient.createMediaPipeline();
 		final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp)
@@ -120,8 +127,8 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
 
-		Map<String, Browser> browsers = new TreeMap<>(getTestScenario()
-				.getBrowserMap());
+		Map<String, Browser> browsers = new TreeMap<>(
+				getTestScenario().getBrowserMap());
 		browsers.remove(BrowserConfig.PRESENTER);
 		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 

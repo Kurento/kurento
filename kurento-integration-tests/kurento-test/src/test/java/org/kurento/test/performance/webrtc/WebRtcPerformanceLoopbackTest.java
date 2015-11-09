@@ -37,16 +37,24 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.grid.ParallelBrowsers;
 
 /**
- * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.
- * <br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>No assertion, just data gathering.</li>
- * </ul>
+ * WebRTC (in loopback) test with Selenium Grid. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint in loopback <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · No assertion, just data gathering <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
