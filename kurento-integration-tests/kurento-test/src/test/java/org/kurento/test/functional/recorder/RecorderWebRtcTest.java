@@ -48,25 +48,36 @@ import org.kurento.test.mediainfo.AssertMedia;
 import com.google.common.base.Strings;
 
 /**
+ * Test of a recorder, using the stream source from a WebRtcEndpoint. Tests
+ * recording with audio and video, only audio or only video. <br>
  *
- * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
- * source from a WebRtcEndpoint in loopback. Tests recording with audio and
- * video, only audio or only video<br/>
- * <strong>Pipelines</strong>:
- * <ol>
- * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li>
- * <li>PlayerEndpoint -> WebRtcEndpoint</li>
- * </ol>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Browser starts before default timeout</li>
- * <li>Color of the video should be the expected</li>
- * <li>Browser ends before default timeout</li>
- * <li>Media should be received in the video tag (in the recording)</li>
- * <li>Ended event should arrive to player (in the recording)</li>
- * <li>Play time should be the expected (in the recording)</li>
- * <li>Codecs should be as expected (in the recording)</li>
- * </ul>
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint <br>
+ * ·PlayerEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint
+ * (recording) and then PlayerEndpoint -> WebRtcEndpoint (play of the
+ * recording). <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag (in the recording)
+ * <br>
+ * · The color of the received video should be as expected (in the recording)
+ * <br>
+ * · EOS event should arrive to player (in the recording) <br>
+ * · Play time in remote video should be as expected (in the recording) <br>
+ * · Codecs should be as expected (in the recording) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag (in the playing) <br>
+ * · The color of the received video should be as expected (in the playing) <br>
+ * · EOS event should arrive to player (in the playing) <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author Ivan Gracia (igracia@kurento.org)
@@ -86,37 +97,37 @@ public class RecorderWebRtcTest extends BaseRecorder {
 	}
 
 	@Test
-	public void testRecorderWebRtcChromeWebm() throws Exception {
+	public void testRecorderWebRtcVideoAndAudioWebm() throws Exception {
 		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
 				EXTENSION_WEBM);
 	}
 
 	@Test
-	public void testRecorderWebRtcChromeMp4() throws Exception {
+	public void testRecorderWebRtcVideoAndAudioMp4() throws Exception {
 		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
 				EXTENSION_MP4);
 	}
 
 	@Test
-	public void testRecorderWebRtcChromeVideoOnlyWebm() throws Exception {
+	public void testRecorderWebRtcVideoOnlyWebm() throws Exception {
 		doTest(WEBM_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_WEBM, null,
 				EXTENSION_WEBM);
 	}
 
 	@Ignore
 	@Test
-	public void testRecorderWebRtcChromeVideoOnlyMp4() throws Exception {
+	public void testRecorderWebRtcVideoOnlyMp4() throws Exception {
 		doTest(MP4_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_MP4, null, EXTENSION_MP4);
 	}
 
 	@Test
-	public void testRecorderWebRtcChromeAudioOnlyWebm() throws Exception {
+	public void testRecorderWebRtcAudioOnlyWebm() throws Exception {
 		doTest(WEBM_AUDIO_ONLY, null, EXPECTED_AUDIO_CODEC_WEBM,
 				EXTENSION_WEBM);
 	}
 
 	@Test
-	public void testRecorderWebRtcChromeAudioOnlyMp4() throws Exception {
+	public void testRecorderWebRtcAudioOnlyMp4() throws Exception {
 		doTest(MP4_AUDIO_ONLY, null, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
 	}
 

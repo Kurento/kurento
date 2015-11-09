@@ -14,6 +14,9 @@
  */
 package org.kurento.test.functional.recorder;
 
+import static org.kurento.client.MediaProfileSpecType.MP4;
+import static org.kurento.client.MediaProfileSpecType.WEBM;
+
 import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
@@ -36,25 +39,35 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
+ * Test of a Recorder switching sources from PlayerEndpoint. <br>
  *
- * <strong>Description</strong>: Test of a Recorder switching sources from
- * PlayerEndpoint.<br/>
- * <strong>Pipelines</strong>:
- * <ol>
- * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
- * <li>PlayerEndpoint -> WebRtcEndpoint</li>
- * </ol>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>EOS event should arrive to player</li>
- * <li>Color of the video should be the expected</li>
- * <li>Media should be received in the video tag (in the recording)</li>
- * <li>Color of the video should be the expected (in the recording)</li>
- * <li>Ended event should arrive to player (in the recording)</li>
- * <li>Play time should be the expected (in the recording)</li>
- * <li>Codecs should be as expected (in the recording)</li>
- * </ul>
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint <br>
+ * · PlayerEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint
+ * (recording) and then PlayerEndpoint -> WebRtcEndpoint (play of the
+ * recording). <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag (in the recording)
+ * <br>
+ * · The color of the received video should be as expected (in the recording)
+ * <br>
+ * · EOS event should arrive to player (in the recording) <br>
+ * · Play time in remote video should be as expected (in the recording) <br>
+ * · Codecs should be as expected (in the recording) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag (in the playing) <br>
+ * · The color of the received video should be as expected (in the playing) <br>
+ * · EOS event should arrive to player (in the playing) <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -62,9 +75,6 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderSwitchPlayerTest extends BaseRecorder {
 
 	private static final int PLAYTIME = 20; // seconds
-	private static final int N_PLAYER = 3;
-	private static final Color[] EXPECTED_COLORS = { Color.RED, Color.GREEN,
-			Color.BLUE };
 
 	public RecorderSwitchPlayerTest(TestScenario testScenario) {
 		super(testScenario);
@@ -76,28 +86,67 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 	}
 
 	@Test
-	public void testRecorderSwitchPlayerWebm() throws Exception {
-		doTest(MediaProfileSpecType.WEBM, EXPECTED_VIDEO_CODEC_WEBM,
+	public void testRecorderSwitchSameFormatPlayerWebm() throws Exception {
+		doTestSameFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM,
 				EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
 	}
 
 	@Test
-	public void testRecorderSwitchPlayerMp4() throws Exception {
-		doTest(MediaProfileSpecType.MP4, EXPECTED_VIDEO_CODEC_MP4,
+	public void testRecorderSwitchSameFormatPlayerMp4() throws Exception {
+		doTestSameFormats(MP4, EXPECTED_VIDEO_CODEC_MP4,
 				EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+	}
+
+	@Test
+	public void testRecorderSwitchDifferentFormatPlayerWebm() throws Exception {
+		doTestDifferentFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM,
+				EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+	}
+
+	@Test
+	public void testRecorderSwitchDifferentFormatPlayerMp4() throws Exception {
+		doTestDifferentFormats(MP4, EXPECTED_VIDEO_CODEC_MP4,
+				EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+	}
+
+	public void doTestSameFormats(MediaProfileSpecType mediaProfileSpecType,
+			String expectedVideoCodec, String expectedAudioCodec,
+			String extension) throws Exception {
+		String[] mediaUrls = { "http://files.kurento.org/video/10sec/red.webm",
+				"http://files.kurento.org/video/10sec/green.webm",
+				"http://files.kurento.org/video/10sec/blue.webm" };
+		Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
+
+		doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec,
+				extension, mediaUrls, expectedColors);
+	}
+
+	public void doTestDifferentFormats(
+			MediaProfileSpecType mediaProfileSpecType,
+			String expectedVideoCodec, String expectedAudioCodec,
+			String extension) throws Exception {
+		String[] mediaUrls = { "http://files.kurento.org/video/10sec/ball.mkv",
+				"http://files.kurento.org/video/10sec/white.webm",
+				"http://files.kurento.org/video/10sec/blue.m4v" };
+		Color[] expectedColors = { Color.BLACK, Color.WHITE, Color.BLUE };
+
+		doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec,
+				extension, mediaUrls, expectedColors);
 	}
 
 	public void doTest(MediaProfileSpecType mediaProfileSpecType,
 			String expectedVideoCodec, String expectedAudioCodec,
-			String extension) throws Exception {
+			String extension, String mediaUrls[], Color[] expectedColors)
+					throws Exception {
 		// Media Pipeline #1
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/red.webm").build();
-		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/green.webm").build();
-		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/blue.webm").build();
+		int numPlayers = mediaUrls.length;
+		PlayerEndpoint[] players = new PlayerEndpoint[numPlayers];
+
+		for (int i = 0; i < numPlayers; i++) {
+			players[i] = new PlayerEndpoint.Builder(mp, mediaUrls[i]).build();
+		}
+
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
 		String recordingFile = getDefaultOutputFile(extension);
@@ -110,27 +159,22 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.RCV_ONLY);
 
-		// red
-		playerRed.connect(webRtcEP);
-		playerRed.connect(recorderEP);
-		playerRed.play();
-		recorderEP.record();
+		boolean startRecord = false;
+		for (int i = 0; i < numPlayers; i++) {
+			players[i].connect(webRtcEP);
+			players[i].connect(recorderEP);
+			players[i].play();
 
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+			if (!startRecord) {
+				Assert.assertTrue(
+						"Not received media (timeout waiting playing event)",
+						getPage().waitForEvent("playing"));
+				recorderEP.record();
+				startRecord = true;
+			}
 
-		// green
-		playerGreen.connect(webRtcEP);
-		playerGreen.connect(recorderEP);
-		playerGreen.play();
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
-
-		// blue
-		playerBlue.connect(webRtcEP);
-		playerBlue.connect(recorderEP);
-		playerBlue.play();
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+			waitSeconds(PLAYTIME / numPlayers);
+		}
 
 		// Release Media Pipeline #1
 		saveGstreamerDot(mp);
@@ -161,16 +205,12 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 		playerEP2.play();
 
 		// Assertions in recording
-		final String messageAppend = "[played file with media pipeline]";
-		final int playtime = PLAYTIME;
-
 		Assert.assertTrue(
-				"Not received media in the recording (timeout waiting playing event) "
-						+ messageAppend,
+				"Not received media in the recording (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
-		for (Color color : EXPECTED_COLORS) {
-			Assert.assertTrue("The color of the recorded video should be "
-					+ color + " " + messageAppend,
+		for (Color color : expectedColors) {
+			Assert.assertTrue(
+					"The color of the recorded video should be " + color,
 					getPage().similarColor(color));
 		}
 		Assert.assertTrue("Not received EOS event in player",
@@ -179,14 +219,13 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue(
 				"Error in play time in the recorded video (expected: "
-						+ playtime + " sec, real: " + currentTime + " sec) "
-						+ messageAppend,
-				getPage().compare(playtime, currentTime));
+						+ PLAYTIME + " sec, real: " + currentTime + " sec) ",
+				getPage().compare(PLAYTIME, currentTime));
 
 		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
 				expectedAudioCodec);
 		AssertMedia.assertDuration(recordingFile,
-				TimeUnit.SECONDS.toMillis(playtime),
+				TimeUnit.SECONDS.toMillis(PLAYTIME),
 				TimeUnit.SECONDS.toMillis(getPage().getThresholdTime()));
 
 		// Release Media Pipeline #2

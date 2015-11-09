@@ -16,6 +16,9 @@
  */
 package org.kurento.test.functional.recorder;
 
+import static org.kurento.client.MediaProfileSpecType.MP4;
+import static org.kurento.client.MediaProfileSpecType.WEBM;
+
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,28 +48,36 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
+ * Test of a Recorder switching sources from WebRtcEndpoint. <br>
  *
- * <strong>Description</strong>: Test of a Recorder switching sources from
- * WebRtcEndpoint.<br/>
- * <strong>Pipelines</strong>:
- * <ol>
- * <li>Browser -> WebRtcEndpoint -> RecorderEndpoint</li>
- * <li>Browser -> WebRtcEndpoint -> RecorderEndpoint</li>
- * <li>Browser -> WebRtcEndpoint -> RecorderEndpoint</li>
- * <li>RecorderEndpoint -> WebRtcEndpoint -> Browser</li>
- * </ol>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag in all four browsers</li>
- * <li>EOS event should arrive to player</li>
- * <li>Color of the video should be the expected</li>
- * <li>Media should be received in the video tag (in the recording)</li>
- * <li>Color of the video should be the expected (in the recording)</li>
- * <li>Ended event should arrive to player (in the recording)</li>
- * <li>Play time should be the expected (in the recording)</li>
- * <li>Codecs should be as expected (in the recording)</li>
- * </ul>
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint <br>
+ * ·PlayerEndpoint -> WebRtcEndpoint <br>
  *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint
+ * (recording) and then PlayerEndpoint -> WebRtcEndpoint (play of the
+ * recording). <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag (in the recording)
+ * <br>
+ * · The color of the received video should be as expected (in the recording)
+ * <br>
+ * · EOS event should arrive to player (in the recording) <br>
+ * · Play time in remote video should be as expected (in the recording) <br>
+ * · Codecs should be as expected (in the recording) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag (in the playing) <br>
+ * · The color of the received video should be as expected (in the playing) <br>
+ * · EOS event should arrive to player (in the playing) <br>
+ * 
  * @author Ivan Gracia (igracia@kurento.org)
  * @since 6.1.1
  */
@@ -110,15 +121,15 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
 
 	@Test
 	public void testRecorderSwitchWebRtcWebm() throws Exception {
-		doTest(MediaProfileSpecType.WEBM, EXPECTED_VIDEO_CODEC_WEBM,
-				EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
+				EXTENSION_WEBM);
 	}
 
 	@Ignore
 	@Test
 	public void testRecorderSwitchWebRtcMp4() throws Exception {
-		doTest(MediaProfileSpecType.MP4, EXPECTED_VIDEO_CODEC_MP4,
-				EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
+				EXTENSION_MP4);
 	}
 
 	public void doTest(MediaProfileSpecType mediaProfileSpecType,
