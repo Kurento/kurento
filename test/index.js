@@ -15,18 +15,26 @@
 
 
 var nodeunit = require('nodeunit');
-
 var EventTarget = require('eventtarget');
 
 var RpcBuilder = require("..");
+var JsonRpcClient = RpcBuilder.clients.JsonRpcClient;
 var packer = RpcBuilder.packers.JsonRPC;
 
+var ws_uri = "ws://localhost:8888/kurento";
 
 const METHOD = 'test';
 
 
 function noop(error, result){};
 
+function connectCallback(){
+  connected = true;
+}
+
+function disconnectCallback(){
+  connected = false;
+}
 
 exports['encode JsonRPC 2.0'] =
 {
@@ -43,7 +51,6 @@ exports['encode JsonRPC 2.0'] =
 
     callback();
   },
-
 
   'notification': function(test)
   {
@@ -457,5 +464,36 @@ exports['encode JsonRPC 2.0'] =
       })
     };
     transport.dispatchEvent(event);
+  },
+
+  'create JsonRpcClientWs with WS': function(test)
+  {
+    test.expect(1);
+
+    var configuration = {
+      sendCloseMessage : false,
+      ws : {
+        uri : ws_uri,
+        useSockJS: false,
+        onconnected : connectCallback,
+        ondisconnect : disconnectCallback,
+        onreconnecting : disconnectCallback,
+        onreconnected : connectCallback
+      },
+      rpc : {
+        requestTimeout : 15000
+      }
+    };
+
+    var jsonRpcClientWs = new JsonRpcClient(configuration);
+
+    test.ok(jsonRpcClientWs instanceof JsonRpcClient);
+
+    setTimeout(function()
+    {
+      jsonRpcClientWs.close();
+      test.done();
+    }, 4*1000)
+
   }
 };
