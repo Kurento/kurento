@@ -39,24 +39,30 @@ import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.Recorder;
 
 /**
- * <strong>Description</strong>: WebRTC in loopback using custom video and audio
- * files.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Browser should start before default timeout</li>
- * <li>Play time should be as expected</li>
- * <li>Color received by client should be as expected</li>
- * <li>Perceived audio quality should be fair (PESQMOS)</li>
- * </ul>
+ * WebRTC in loopback using custom video and audio files.<br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint in loopback <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Perceived audio quality should be fair (PESQMOS) <br>
+ *
+ * Secondary assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · Play time in remote video should be as expected <br>
+ * · The color of the received video should be as expected <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-
 public class WebRtcQualityLoopbackTest extends QualityTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
@@ -73,21 +79,17 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 				+ "/video/10sec/red.y4m";
 		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
 		TestScenario test = new TestScenario();
-		test.addBrowser(
-				BrowserConfig.BROWSER,
-				new Browser.Builder()
-						.webPageType(WebPageType.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL)
-						.video(videoPath)
-						.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE,
-								AudioChannel.MONO).build());
+		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder()
+				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
+				.scope(BrowserScope.LOCAL).video(videoPath)
+				.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE, AudioChannel.MONO)
+				.build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 
 	@Ignore
 	@Test
-	public void testWebRtcQualityChrome() throws InterruptedException {
+	public void testWebRtcQualityLoopback() throws InterruptedException {
 		doTest(BrowserType.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
 				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
 				Color.RED);
@@ -113,8 +115,9 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 
 		// Assert play time
 		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue("Error in play time of player (expected: " + PLAYTIME
-				+ " sec, real: " + currentTime + " sec)",
+		Assert.assertTrue(
+				"Error in play time of player (expected: " + PLAYTIME
+						+ " sec, real: " + currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
 
 		// Assert color
@@ -125,8 +128,8 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 
 		// Assert audio quality
 		if (audioUrl != null) {
-			float realPesqMos = Recorder
-					.getPesqMos(audioUrl, AUDIO_SAMPLE_RATE);
+			float realPesqMos = Recorder.getPesqMos(audioUrl,
+					AUDIO_SAMPLE_RATE);
 			Assert.assertTrue(
 					"Bad perceived audio quality: PESQ MOS too low (expected="
 							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
