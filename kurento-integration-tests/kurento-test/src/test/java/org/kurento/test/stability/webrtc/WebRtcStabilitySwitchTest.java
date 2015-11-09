@@ -30,25 +30,32 @@ import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.VideoTagType;
 
 /**
- * <strong>Description</strong>: Stability test for switching 2 WebRTC (looback
- * to back-2-back) a configurable number of times (each switch holds 1 second).<br/>
- * <strong>Pipeline(s)</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (loopback)</li>
- * <li>... to:</li>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (back to back)</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Color change should be detected on local/remote video tag of browsers</li>
- * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected
- * </li>
- * </ul>
+ * Stability test for switching 2 WebRTC (looback to back-2-back) a configurable
+ * number of times (each switch holds 1 second). <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint (loopback) <br>
+ * ... to: <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint (back to back) <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint in loopback to WebRtcEndpoint in B2B. <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Color change should be detected on local/remote video tag of browsers <br>
+ * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected
+ * <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-
 public class WebRtcStabilitySwitchTest extends StabilityTest {
 
 	/**
@@ -71,9 +78,9 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 
 	@Test
 	public void testWebRtcStabilitySwitch() throws Exception {
-		final int numSwitch = Integer.parseInt(System.getProperty(
-				"test.webrtcstability.switch",
-				String.valueOf(DEFAULT_NUM_SWITCH)));
+		final int numSwitch = Integer
+				.parseInt(System.getProperty("test.webrtcstability.switch",
+						String.valueOf(DEFAULT_NUM_SWITCH)));
 
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -106,16 +113,16 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					log.debug("[{}.1] Latency control of browser1 to browser1",
 							i);
 
-					cs1.checkLocalLatency(PLAYTIME_PER_SWITCH,
-							TimeUnit.SECONDS, getPresenter());
+					cs1.checkLocalLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS,
+							getPresenter());
 
 					log.debug("[{}.2] Latency control of browser2 to browser2",
 							i);
 					getViewer().activateLatencyControl(
 							VideoTagType.LOCAL.getId(),
 							VideoTagType.REMOTE.getId());
-					cs2.checkLocalLatency(PLAYTIME_PER_SWITCH,
-							TimeUnit.SECONDS, getViewer());
+					cs2.checkLocalLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS,
+							getViewer());
 
 				} else {
 					log.debug("Switch #" + i + ": B2B");

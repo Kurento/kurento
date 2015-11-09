@@ -14,7 +14,6 @@
  */
 package org.kurento.test.stability.webrtc;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -29,23 +28,29 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 
 /**
- * <strong>Description</strong>: Stability test for switching a WebRTC in one to
- * one communication.<br/>
- * <strong>Pipeline(s)</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (back-to-back)(x2)</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Color change should be detected on local/remote video tag of browsers</li>
- * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected
- * </li>
- * </ul>
+ * Stability test for switching a WebRTC in one to one communication. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint (back-to-back)(x2) <br>
+ *
+ * Browser(s): <br>
+ * · 2 x Chrome (presenter and viewer) <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint presenter and viewer <br>
+ * 2. (Browser) WebRtcPeer viewer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Color change should be detected on local/remote video tag of browsers <br>
+ * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected
+ * <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
  */
-
 public class WebRtcStabilityBack2BackTest extends StabilityTest {
 
 	private static final int DEFAULT_PLAYTIME = 30; // minutes
@@ -60,11 +65,10 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 	}
 
 	@Test
-	public void testWebRtcSwitchChrome() throws InterruptedException,
-			IOException {
-		final int playTime = Integer.parseInt(System.getProperty(
-				"test.webrtc.stability.back2back.playtime",
-				String.valueOf(DEFAULT_PLAYTIME)));
+	public void testWebRtcStabilityBack2Back() throws Exception {
+		final int playTime = Integer.parseInt(
+				System.getProperty("test.webrtc.stability.back2back.playtime",
+						String.valueOf(DEFAULT_PLAYTIME)));
 
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
