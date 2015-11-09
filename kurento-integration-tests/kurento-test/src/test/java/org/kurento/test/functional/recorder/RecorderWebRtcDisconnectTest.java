@@ -59,7 +59,8 @@ import org.kurento.test.mediainfo.AssertMedia;
  * 1. (KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint
  * (recording) and then PlayerEndpoint -> WebRtcEndpoint (play of the
  * recording). <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ * 2. (Browser) First a WebRtcPeer in send-only sends media. Second, other
+ * WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag (in the recording)

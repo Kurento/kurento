@@ -45,6 +45,28 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
+ * Stability test for Recorder. WebRTC one to many with recorders. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> N x (WebRtcEndpoint -> RecorderEndpoint) <br>
+ *
+ * Browser(s): <br>
+ * · N x Chrome <br>
+ * · N x Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (Browser) WebRtcPeer in send-only sends media to KMS <br>
+ * 2. (KMS) N WebRtcEndpoints receives media and it is recorded by N
+ * RecorderEndpoints. <br>
+ *
+ * Main assertion(s): <br>
+ * · Recorded files are OK (seekable, length, content)
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
+ * 
+ * 
+ * 
  * <strong>Description</strong>: Stability test for Recorder. WebRTC one to many
  * with recorders.<br>
  * <strong>Pipeline</strong>:

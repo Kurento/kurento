@@ -46,7 +46,7 @@ import org.kurento.test.latency.VideoTagType;
  *
  * Test logic: <br>
  * 1. (KMS) WebRtcEndpoint in loopback. <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ * 2. (Browser) WebRtcPeer in send-receive mode sends and receives media <br>
  *
  * Main assertion(s): <br>
  * · Color change should be detected on local/remote video tag of browsers <br>

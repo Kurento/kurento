@@ -53,7 +53,7 @@ import org.kurento.test.sdp.SdpUtils;
  * Test logic: <br>
  * 1. (KMS) WebRtcEndpoint to RtpEndpoint. RtpEndpoint to RtpEndpoint.
  * RtpEndpoint to WebRtcEndpoint. <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ * 2. (Browser) WebRtcPeer in send-receive mode sends and receives media <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag <br>

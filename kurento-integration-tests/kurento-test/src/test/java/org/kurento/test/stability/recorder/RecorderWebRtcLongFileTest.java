@@ -40,16 +40,25 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * <strong>Description</strong>: Stability test for Recorder. Record for 5
- * minutes.<br>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> RecorderEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Recorded files are OK (seekable, length, content)</li>
- * </ul>
+ * Stability test for Recorder. Record for 5 minutes. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> RecorderEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (Browser) WebRtcPeer in send-only sends media to KMS <br>
+ * 2. (KMS) WebRtcEndpoint receives media and it is recorded by
+ * RecorderEndpoint. <br>
+ *
+ * Main assertion(s): <br>
+ * · Recorded files are OK (seekable, length, content)
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1

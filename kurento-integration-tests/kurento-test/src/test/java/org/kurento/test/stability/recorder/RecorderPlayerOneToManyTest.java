@@ -41,16 +41,23 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * <strong>Description</strong>: Stability test for Recorder. Player one to many
- * recorders.<br>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>PlayerEndpoint -> N RecorderEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Recorded files are OK (seekable, length, content)</li>
- * </ul>
+ * Stability test for Recorder. Player one to many recorders. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint -> N RecorderEndpoint <br>
+ *
+ * Browser(s): <br>
+ * -- <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) N RecorderEndpoints recording media from 1 PlayerEndpoint. <br>
+ * 2. (Browser) -- <br>
+ *
+ * Main assertion(s): <br>
+ * · Recorded files are OK (seekable, length, content)
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1

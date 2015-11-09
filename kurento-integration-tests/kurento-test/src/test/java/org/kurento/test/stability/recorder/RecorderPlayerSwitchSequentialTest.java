@@ -37,21 +37,28 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * <strong>Description</strong>: Stability test for Recorder. Switch 100 times
- * (each 1/2 second) between two players.<br>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>PlayerEndpoint x 2 -> RecorderEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Recorded file is OK (seekable, length, content)</li>
- * </ul>
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) between two
+ * players. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · PlayerEndpoint x 2 -> RecorderEndpoint <br>
+ *
+ * Browser(s): <br>
+ * -- <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) 1 RecorderEndpoint recording media from 2 PlayerEndpoint. <br>
+ * 2. (Browser) -- <br>
+ *
+ * Main assertion(s): <br>
+ * · Recorded files are OK (seekable, length, content)
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-
 public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
 	private static final int SWITCH_TIMES = 100;

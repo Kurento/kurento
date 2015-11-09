@@ -54,7 +54,8 @@ import org.kurento.test.monitor.SystemMonitorManager;
  *
  * Test logic: <br>
  * 1. (KMS) WebRtcEndpoint presenter connected to N viewers<br>
- * 2. (Browser) N WebRtcPeer in rcv-only receives media <br>
+ * 2. (Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only
+ * receives media <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag of the viewers<br>

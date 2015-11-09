@@ -40,16 +40,25 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * <strong>Description</strong>: Stability test for Recorder. Switch 100 times
- * (each 1/2 second) with two WebRTC's.<br>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint x 2 -> RecorderEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Recorded file is OK (seekable, length, content)</li>
- * </ul>
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) with two
+ * WebRTC's. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint x 2 -> RecorderEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome and Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (Browser) 2 WebRtcPeer in send-only mode sends media to KMS <br>
+ * 2. (KMS) 2 WebRtcEndpoints receive media and it is recorded by 1
+ * RecorderEndpoint. <br>
+ *
+ * Main assertion(s): <br>
+ * · Recorded files are OK (seekable, length, content)
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -66,7 +75,6 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		// return TestScenario.localChromes(2);
 		return TestScenario.localChromePlusFirefox();
 	}
 

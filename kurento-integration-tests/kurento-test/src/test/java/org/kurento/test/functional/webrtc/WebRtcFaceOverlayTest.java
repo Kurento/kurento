@@ -39,7 +39,7 @@ import org.kurento.test.config.TestScenario;
  *
  * Test logic: <br>
  * 1. (KMS) WebRtcEndpoint in loopback with a FaceOverlayFilter <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ * 2. (Browser) WebRtcPeer in send-receive mode and receives media <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
