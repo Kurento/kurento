@@ -43,15 +43,24 @@ import org.kurento.test.latency.LatencyController;
 import org.kurento.test.monitor.SystemMonitorManager;
 
 /**
- * <strong>Description</strong>: WebRTC one to many test.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag of viewers</li>
- * </ul>
+ * WebRTC one to many test. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> N X WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint presenter connected to N viewers<br>
+ * 2. (Browser) N WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag of the viewers<br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5

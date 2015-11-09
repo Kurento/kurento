@@ -14,9 +14,7 @@
  */
 package org.kurento.test.functional.webrtc;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,31 +22,36 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.browser.Browser;
-import org.kurento.test.browser.BrowserType;
-import org.kurento.test.browser.WebPageType;
 import org.kurento.test.browser.ConsoleLogLevel;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.BrowserConfig;
-import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * <strong>Description</strong>: Back-To-Back WebRTC switch. Three clients:
- * A,B,C sets up WebRTC send-recv with audio/video. Switch between following
- * scenarios: A<->B, A<->C, B<->C. At least two rounds. <br/>
- * <strong>Pipeline(s)</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>Color of the video should be the expected</li>
- * </ul>
+ * Back-To-Back WebRTC switch. Three clients: A,B,C sets up WebRTC send-recv
+ * with audio/video. Switch between following scenarios: A<->B, A<->C, B<->C.
+ * <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint in loopback <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · Play time in remote video should be as expected <br>
+ * · The color of the received video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -64,16 +67,11 @@ public class WebRtcSwitchTest extends FunctionalTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		// Test: NUM_BROWSERS local Chrome's
-		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder()
-				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-				.numInstances(NUM_BROWSERS).scope(BrowserScope.LOCAL).build());
-		return Arrays.asList(new Object[][] { { test } });
+		return TestScenario.localChromesAndFirefoxs(NUM_BROWSERS);
 	}
 
 	@Test
-	public void testWebRtcSwitchChrome() throws InterruptedException {
+	public void testWebRtcSwitch() throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoints[] = new WebRtcEndpoint[NUM_BROWSERS];
@@ -88,7 +86,7 @@ public class WebRtcSwitchTest extends FunctionalTest {
 					WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
 			// Delay time (to avoid the same timing in videos)
-			Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+			waitSeconds(1);
 
 			// Wait until event playing in the remote streams
 			Assert.assertTrue(
@@ -100,14 +98,13 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		}
 
 		// Guard time to see switching #0
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+		waitSeconds(PLAYTIME);
 
 		// Switching (round #1)
 		for (int i = 0; i < NUM_BROWSERS; i++) {
 			int next = (i + 1) >= NUM_BROWSERS ? 0 : i + 1;
 			webRtcEndpoints[i].connect(webRtcEndpoints[next]);
-			getPage(i).consoleLog(
-					ConsoleLogLevel.INFO,
+			getPage(i).consoleLog(ConsoleLogLevel.INFO,
 					"Switch #1: webRtcEndpoint" + i + " -> webRtcEndpoint"
 							+ next);
 			// Assert color
@@ -115,14 +112,13 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		}
 
 		// Guard time to see switching #1
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+		waitSeconds(PLAYTIME);
 
 		// Switching (round #2)
 		for (int i = 0; i < NUM_BROWSERS; i++) {
 			int previous = (i - 1) < 0 ? NUM_BROWSERS - 1 : i - 1;
 			webRtcEndpoints[i].connect(webRtcEndpoints[previous]);
-			getPage(i).consoleLog(
-					ConsoleLogLevel.INFO,
+			getPage(i).consoleLog(ConsoleLogLevel.INFO,
 					"Switch #2: webRtcEndpoint" + i + " -> webRtcEndpoint"
 							+ previous);
 			// Assert color
@@ -130,17 +126,15 @@ public class WebRtcSwitchTest extends FunctionalTest {
 		}
 
 		// Guard time to see switching #2
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+		waitSeconds(PLAYTIME);
 
 		// Release Media Pipeline
 		mp.release();
 	}
 
 	public void assertColor(int index) {
-		Assert.assertTrue(
-				"The color of the video should be green (RGB #008700)",
+		Assert.assertTrue("The color of the video should be green",
 				getPage(index).similarColor(CHROME_VIDEOTEST_COLOR));
-
 	}
 
 }

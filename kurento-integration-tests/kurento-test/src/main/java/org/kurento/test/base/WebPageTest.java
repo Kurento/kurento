@@ -343,4 +343,12 @@ public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
 		log.debug("URL {} already reachable", url);
 	}
 
+	public void waitSeconds(int waitTime) {
+		try {
+			Thread.sleep(TimeUnit.SECONDS.toMillis(waitTime));
+		} catch (InterruptedException e) {
+			log.warn("InterruptedException waiting {} seconds", waitTime, e);
+		}
+	}
+
 }

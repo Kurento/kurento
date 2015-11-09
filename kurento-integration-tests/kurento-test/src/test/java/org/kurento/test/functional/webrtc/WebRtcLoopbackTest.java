@@ -15,7 +15,6 @@
 package org.kurento.test.functional.webrtc;
 
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,17 +27,26 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * <strong>Description</strong>: WebRTC in loopback.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
- * </ul>
- * <strong>Pass criteria</strong>:
- * <ul>
- * <li>Media should be received in the video tag</li>
- * <li>Play time should be as expected</li>
- * <li>Color of the video should be the expected</li>
- * </ul>
+ * WebRTC in loopback. <br>
+ *
+ * Media Pipeline(s): <br>
+ * · WebRtcEndpoint -> WebRtcEndpoint <br>
+ *
+ * Browser(s): <br>
+ * · Chrome <br>
+ * · Firefox <br>
+ *
+ * Test logic: <br>
+ * 1. (KMS) WebRtcEndpoint in loopback <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
+ *
+ * Main assertion(s): <br>
+ * · Playing event should be received in remote video tag <br>
+ * · Play time in remote video should be as expected <br>
+ * · The color of the received video should be as expected <br>
+ *
+ * Secondary assertion(s): <br>
+ * -- <br>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -54,36 +62,35 @@ public class WebRtcLoopbackTest extends FunctionalTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.localChrome();
+		return TestScenario.localChromeAndFirefox();
 	}
 
 	@Test
-	public void testWebRtcLoopbackChrome() throws InterruptedException {
+	public void testWebRtcLoopback() throws InterruptedException {
 
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
-		// Start WebRTC
+		// Start WebRTC and wait for playing event
 		getPage().subscribeEvents("playing");
 		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 				WebRtcMode.SEND_RCV);
-
-		// Guard time to play the video
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
-
-		// Assertions
 		Assert.assertTrue("Not received media (timeout waiting playing event)",
 				getPage().waitForEvent("playing"));
-		Assert.assertTrue(
-				"The color of the video should be green (RGB #008700)",
-				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
+
+		// Guard time to play the video
+		waitSeconds(PLAYTIME);
+
+		// Assertions
 		double currentTime = getPage().getCurrentTime();
 		Assert.assertTrue(
 				"Error in play time (expected: " + PLAYTIME + " sec, real: "
 						+ currentTime + " sec)",
 				getPage().compare(PLAYTIME, currentTime));
+		Assert.assertTrue("The color of the video should be green",
+				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 
 		// Release Media Pipeline
 		mp.release();
