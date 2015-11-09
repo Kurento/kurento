@@ -342,8 +342,12 @@ public class KurentoMediaServerManager {
 		} else {
 			String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
 			Volume volume = new Volume(testFilesPath);
-			createContainerCmd.withVolumes(volume)
-					.withBinds(new Bind(testFilesPath, volume, AccessMode.ro));
+			String targetPath = Paths.get(getDefaultOutputFolder())
+					.toAbsolutePath().toString();
+			Volume volumeTest = new Volume(targetPath);
+			createContainerCmd.withVolumes(volume, volumeTest).withBinds(
+					new Bind(testFilesPath, volume, AccessMode.ro),
+					new Bind(targetPath, volumeTest, AccessMode.rw));
 		}
 
 		CreateContainerResponse kmsContainer = createContainerCmd.exec();
