@@ -26,6 +26,7 @@
 #include <opencv2/opencv.hpp>
 #include <memory>
 #include "OpenCVProcess.hpp"
+#include <KurentoException.hpp>
 
 #define PLUGIN_NAME "opencvfilter"
 
@@ -162,7 +163,33 @@ kms_opencv_filter_transform_frame_ip (GstVideoFilter *filter,
 
   kms_opencv_filter_initialize_images (opencv_filter, frame, info);
 
-  opencv_filter->priv->object->process (* (opencv_filter->priv->cv_image) );
+  try {
+    opencv_filter->priv->object->process (* (opencv_filter->priv->cv_image) );
+  } catch (kurento::KurentoException e) {
+    GstMessage *message;
+    GError *err = g_error_new (g_quark_from_string (e.getType ().c_str () ),
+                               e.getCode (), "%s", GST_ELEMENT_NAME (opencv_filter) );
+
+    message = gst_message_new_error (GST_OBJECT (opencv_filter),
+                                     err, e.getMessage ().c_str () );
+
+    gst_element_post_message (GST_ELEMENT (opencv_filter),
+                              message);
+
+    g_clear_error (&err);
+  } catch (...) {
+    GstMessage *message;
+    GError *err = g_error_new (g_quark_from_string ("UNDEFINED_EXCEPTION"),
+                               0, "%s", GST_ELEMENT_NAME (opencv_filter) );
+
+    message = gst_message_new_error (GST_OBJECT (opencv_filter),
+                                     err, "Undefined filter error");
+
+    gst_element_post_message (GST_ELEMENT (opencv_filter),
+                              message);
+
+    g_clear_error (&err);
+  }
 
   gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
