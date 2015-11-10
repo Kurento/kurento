@@ -8,7 +8,7 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0
 
 # Selenium images
-[ -n SELENIUM_VERSION ] || SELENIUM_VERSION=2.48.2
+[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.48.2"
 echo "Pulling images for selenium version $SELENIUM_VERSION"
 docker pull selenium/hub:$SELENIUM_VERSION
 docker pull selenium/node-chrome:$SELENIUM_VERSION
