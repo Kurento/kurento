@@ -72,7 +72,7 @@ TEST_HOME=/opt/kurento-java
 MAVEN_OPTS=""
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.forcepulling=false"
 MAVEN_OPTS="$MAVEN_OPTS -Djava.awt.headless=true"
-MAVEN_OPTS="$MAVEN_OPTS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
+MAVEN_OPTS="$MAVEN_OPTS -Dwdm.chromeDriverUrl=http://193.147.51.43/"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=$KMS_AUTOSTART"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.scope=$KMS_SCOPE"
 [ -n "$KMS_WS_URI" ] && MAVEN_OPTS="$MAVEN_OPTS -Dkms.ws.uri=$KMS_WS_URI"
