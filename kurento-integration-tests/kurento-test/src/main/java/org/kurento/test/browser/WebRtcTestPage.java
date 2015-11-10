@@ -26,6 +26,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.kurento.client.EventListener;
 import org.kurento.client.IceCandidate;
+import org.kurento.client.MediaStateChangedEvent;
 import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
@@ -284,9 +285,23 @@ public class WebRtcTestPage extends WebPage {
 				new EventListener<OnIceCandidateEvent>() {
 					@Override
 					public void onEvent(OnIceCandidateEvent event) {
-						browser.executeScript("addIceCandidate('"
-								+ JsonUtils.toJsonObject(event.getCandidate())
-								+ "');");
+						JsonObject candidate = JsonUtils
+								.toJsonObject(event.getCandidate());
+						log.debug("OnIceCandidateEvent on {}: {}",
+								webRtcEndpoint.getId(), candidate);
+						browser.executeScript(
+								"addIceCandidate('" + candidate + "');");
+					}
+				});
+
+		webRtcEndpoint.addMediaStateChangedListener(
+				new EventListener<MediaStateChangedEvent>() {
+					@Override
+					public void onEvent(MediaStateChangedEvent event) {
+						log.debug(
+								"MediaStateChangedEvent from {} to {} on {} at {}",
+								event.getOldState(), event.getNewState(),
+								webRtcEndpoint.getId(), event.getTimestamp());
 					}
 				});
 
@@ -310,8 +325,8 @@ public class WebRtcTestPage extends WebPage {
 									jsonCandidate.get("sdpMid").getAsString(),
 									jsonCandidate.get("sdpMLineIndex")
 											.getAsInt());
-							log.debug("Adding candidate {}: {}", i,
-									jsonCandidate);
+							log.debug("Adding candidate {} in {}: {}", i,
+									webRtcEndpoint.getId(), jsonCandidate);
 							webRtcEndpoint.addIceCandidate(candidate);
 							numCandidate++;
 						}
@@ -356,10 +371,12 @@ public class WebRtcTestPage extends WebPage {
 				// Wait to valid sdpOffer
 				String sdpOffer = (String) browser
 						.executeScriptAndWaitOutput("return sdpOffer;");
-				String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
-				log.trace("SDP offer: {}", sdpOffer);
-				log.trace("SDP answer: {}", sdpAnswer);
+				log.debug("SDP offer on {}: {}", webRtcEndpoint.getId(),
+						sdpOffer);
+				String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+				log.debug("SDP answer on {}: {}", webRtcEndpoint.getId(),
+						sdpAnswer);
 
 				// Encoding in Base64 to avoid parsing errors in JavaScript
 				sdpAnswer = new String(
