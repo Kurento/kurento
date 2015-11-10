@@ -81,7 +81,7 @@ TEST_HOME=/opt/kurento-java
 
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.forcepulling=false"
 MAVEN_OPTS="$MAVEN_OPTS -Djava.awt.headless=true"
-MAVEN_OPTS="$MAVEN_OPTS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
+MAVEN_OPTS="$MAVEN_OPTS -Dwdm.chromeDriverUrl=http://193.147.51.43/"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.autostart=$KMS_AUTOSTART"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.scope=$KMS_SCOPE"
 [ -n "$KMS_WS_URI" ] && MAVEN_OPTS="$MAVEN_OPTS -Dkms.ws.uri=$KMS_WS_URI"
@@ -110,10 +110,9 @@ docker run \
   -e "WORKSPACE=$TEST_HOME" \
   -e "PROJECT_PATH=$PROJECT_PATH" \
   -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
-  -e "MAVEN_OPTS=$MAVEN_OPTS" \
   -w $TEST_HOME \
   -u "root" \
     kurento/dev-integration:jdk-8-node-0.12 \
-      mvn --settings $MAVEN_SETTINGS $MAVEN_GOALS $MAVEN_OPTS || status=$?
+      mvn --settings /opt/kurento-settings.xml $MAVEN_GOALS $MAVEN_OPTS || status=$?
 
 exit $status
