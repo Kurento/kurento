@@ -64,7 +64,7 @@ import com.google.gson.JsonObject;
 public class DockerBrowserManager {
 
 	public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
-	private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 10;
+	private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 20;
 
 	private static final int HUB_CREATION_WAIT_POOL_TIME_MS = 1000;
 	private static final int HUB_CREATION_TIMEOUT_MS = 30000;
