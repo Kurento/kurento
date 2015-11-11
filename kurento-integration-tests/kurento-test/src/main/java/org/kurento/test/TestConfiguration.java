@@ -106,7 +106,7 @@ public class TestConfiguration {
 	public static final String DOCKER_NODE_FIREFOX_IMAGE_DEFAULT = "selenium/node-firefox:2.48.2";
 
 	public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY = "docker.node.chrome-debug.image";
-	public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT = "selenium/node-chrome-debug:2.48.2";
+	public static final String DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT = "selenium/node-chrome-debug:2.48.1";
 
 	public static final String DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY = "docker.node.firefox-debug.image";
 	public static final String DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT = "selenium/node-firefox-debug:2.48.2";
