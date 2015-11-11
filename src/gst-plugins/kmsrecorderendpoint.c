@@ -1330,15 +1330,25 @@ static GstStructure *
 kms_recorder_endpoint_stats (KmsElement * obj, gchar * selector)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
-  GstStructure *stats;
+  GstStructure *stats, *e_stats;
 
   /* chain up */
   stats =
       KMS_ELEMENT_CLASS (kms_recorder_endpoint_parent_class)->stats (obj,
       selector);
 
+  if (!self->priv->stats_enabled) {
+    return stats;
+  }
+
+  e_stats = kms_stats_get_element_stats (stats);
+
+  if (e_stats == NULL) {
+    return stats;
+  }
+
   /* Add end to end latency */
-  gst_structure_set (stats, "video-e2e-latency", G_TYPE_UINT64,
+  gst_structure_set (e_stats, "video-e2e-latency", G_TYPE_UINT64,
       (guint64) self->priv->vi, "audio-e2e-latency", G_TYPE_UINT64,
       (guint64) self->priv->ai, NULL);
 
