@@ -18,6 +18,7 @@ set(KMS_ELEMENTS_SOURCES
   kmscompositemixer.c
   kmsalphablending.c
   kmsmuxingpipeline.c
+  kmsbasemediamuxer.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -32,6 +33,7 @@ set(KMS_ELEMENTS_HEADERS
   kmscompositemixer.h
   kmsalphablending.h
   kmsmuxingpipeline.h
+  kmsbasemediamuxer.h
 )
 
 set(ENUM_HEADERS
