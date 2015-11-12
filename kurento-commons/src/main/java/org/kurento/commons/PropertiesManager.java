@@ -95,6 +95,18 @@ public class PropertiesManager {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <E extends Enum<E>> E getProperty(String property,
+			E defaultValue) {
+		String value = propertyHolder.getProperty(property);
+		if (value != null) {
+			return Enum.valueOf((Class<E>) defaultValue.getClass(),
+					value.toUpperCase());
+		} else {
+			return defaultValue;
+		}
+	}
+
 	public static <T extends JsonElement> T getPropertyJson(String property,
 			String defaultValue, Class<T> clazz) {
 		String value = getProperty(property, defaultValue);
