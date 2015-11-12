@@ -16,6 +16,7 @@
 #define _KMS_MUXING_PIPELINE_H_
 
 #include <gst/gst.h>
+#include "kmsbasemediamuxer.h"
 
 G_BEGIN_DECLS
 #define KMS_TYPE_MUXING_PIPELINE               \
@@ -47,7 +48,7 @@ typedef struct _KmsMuxingPipelinePrivate KmsMuxingPipelinePrivate;
 
 struct _KmsMuxingPipeline
 {
-  GObject parent;
+  KmsBaseMediaMuxer parent;
 
   /*< private > */
   KmsMuxingPipelinePrivate *priv;
@@ -55,16 +56,12 @@ struct _KmsMuxingPipeline
 
 struct _KmsMuxingPipelineClass
 {
-  GObjectClass parent_class;
+  KmsBaseMediaMuxerClass parent_class;
 };
 
+GType kms_muxing_pipeline_get_type ();
+
 KmsMuxingPipeline * kms_muxing_pipeline_new (const char *optname1, ...);
-GstStateChangeReturn kms_muxing_pipeline_set_state (KmsMuxingPipeline *obj,
-  GstState state);
-GstState kms_muxing_pipeline_get_state (KmsMuxingPipeline *obj);
-GstClock * kms_muxing_pipeline_get_clock (KmsMuxingPipeline *obj);
-GstBus * kms_muxing_pipeline_get_bus (KmsMuxingPipeline *obj);
-void kms_muxing_pipeline_dot_file (KmsMuxingPipeline *obj);
 
 G_END_DECLS
 #endif

@@ -31,6 +31,8 @@
 #include <commons/kmsstats.h>
 #include <commons/kmsrecordingprofile.h>
 #include <commons/kms-core-enumtypes.h>
+
+#include "kmsbasemediamuxer.h"
 #include "kmsmuxingpipeline.h"
 
 #define PLUGIN_NAME "recorderendpoint"
@@ -97,7 +99,7 @@ struct _KmsRecorderEndpointPrivate
   gboolean use_dvr;
   struct state_controller state_manager;
   KmsLoop *loop;
-  KmsMuxingPipeline *mux;
+  KmsBaseMediaMuxer *mux;
   GMutex base_time_lock;
 
   GstPad *audio_target;
@@ -347,12 +349,12 @@ kms_recorder_endpoint_send_eos_to_appsrcs (KmsRecorderEndpoint * self)
       &videosrc, NULL);
 
   if (audiosrc == NULL && videosrc == NULL) {
-    kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_NULL);
+    kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
     kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
     return;
   }
 
-  kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_PLAYING);
+  kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_PLAYING);
 
   if (audiosrc != NULL) {
     send_eos (audiosrc);
@@ -374,7 +376,7 @@ set_to_null_state_on_EOS (gpointer data)
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
 
-  kms_muxing_pipeline_set_state (recorder->priv->mux, GST_STATE_NULL);
+  kms_base_media_muxer_set_state (recorder->priv->mux, GST_STATE_NULL);
 
   kms_recorder_endpoint_state_changed (recorder, KMS_URI_ENDPOINT_STATE_STOP);
 
@@ -393,12 +395,12 @@ kms_recorder_endpoint_dispose (GObject * object)
   g_clear_object (&self->priv->loop);
 
   if (self->priv->mux != NULL) {
-    if (kms_muxing_pipeline_get_state (self->priv->mux) != GST_STATE_NULL) {
+    if (kms_base_media_muxer_get_state (self->priv->mux) != GST_STATE_NULL) {
       GST_ELEMENT_WARNING (self, RESOURCE, BUSY,
           ("Recorder may have buffers to save"),
           ("Disposing recorder when it isn't stopped."));
     }
-    kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_NULL);
+    kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
     g_clear_object (&self->priv->mux);
   }
 
@@ -622,10 +624,10 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 
   BASE_TIME_UNLOCK (self);
 
-  if (kms_muxing_pipeline_get_state (self->priv->mux) >= GST_STATE_PAUSED) {
+  if (kms_base_media_muxer_get_state (self->priv->mux) >= GST_STATE_PAUSED) {
     kms_recorder_endpoint_send_eos_to_appsrcs (self);
   } else {
-    kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_NULL);
+    kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
     kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
   }
 }
@@ -638,13 +640,13 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
   kms_recorder_endpoint_change_state (self);
 
   /* Set internal pipeline to playing */
-  kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_PLAYING);
+  kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_PLAYING);
 
   BASE_TIME_LOCK (self);
 
   if (GST_CLOCK_TIME_IS_VALID (self->priv->paused_start)) {
     self->priv->paused_time +=
-        gst_clock_get_time (kms_muxing_pipeline_get_clock (self->priv->mux)) -
+        gst_clock_get_time (kms_base_media_muxer_get_clock (self->priv->mux)) -
         self->priv->paused_start;
     self->priv->paused_start = GST_CLOCK_TIME_NONE;
   }
@@ -668,12 +670,12 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
   kms_recorder_endpoint_remove_pads (self);
 
   /* Set internal pipeline to GST_STATE_PAUSED */
-  kms_muxing_pipeline_set_state (self->priv->mux, GST_STATE_PAUSED);
+  kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_PAUSED);
 
   KMS_ELEMENT_LOCK (self);
 
   self->priv->paused_start =
-      gst_clock_get_time (kms_muxing_pipeline_get_clock (self->priv->mux));
+      gst_clock_get_time (kms_base_media_muxer_get_clock (self->priv->mux));
 
   KMS_ELEMENT_UNLOCK (self);
 
@@ -999,13 +1001,14 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
 
           self->priv->sink = kms_recorder_endpoint_create_sink (self);
           self->priv->mux =
-              kms_muxing_pipeline_new (KMS_MUXING_PIPELINE_PROFILE,
-              self->priv->profile, KMS_MUXING_PIPELINE_SINK, self->priv->sink,
-              NULL);
+              KMS_BASE_MEDIA_MUXER (kms_muxing_pipeline_new
+              (KMS_MUXING_PIPELINE_PROFILE, self->priv->profile,
+                  KMS_MUXING_PIPELINE_SINK, self->priv->sink, NULL));
 
           kms_recorder_endpoint_update_media_stats (self);
 
-          bus = kms_muxing_pipeline_get_bus (self->priv->mux);
+          bus = kms_base_media_muxer_get_bus (self->priv->mux);
+
           gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
           g_object_unref (bus);
 
@@ -1453,7 +1456,7 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 
     GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (self),
         GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (self));
-    kms_muxing_pipeline_dot_file (self->priv->mux);
+    kms_base_media_muxer_dot_file (self->priv->mux);
 
     GST_ERROR_OBJECT (self, "Message %" GST_PTR_FORMAT, msg);
 

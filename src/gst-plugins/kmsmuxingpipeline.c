@@ -41,18 +41,12 @@ GST_DEBUG_CATEGORY_STATIC (kms_muxing_pipeline_debug_category);
   )                                             \
 )
 
-#define KMS_MUXING_PIPELINE_LOCK(elem) \
-  (g_mutex_lock (&KMS_MUXING_PIPELINE_CAST ((elem))->priv->mutex))
-#define KMS_MUXING_PIPELINE_UNLOCK(elem) \
-  (g_mutex_unlock (&KMS_MUXING_PIPELINE_CAST ((elem))->priv->mutex))
-
 struct _KmsMuxingPipelinePrivate
 {
   GstElement *videosrc;
   GstElement *audiosrc;
   GstElement *mux;
   GstElement *sink;
-  GstElement *pipeline;
   GstClockTime lastVideoPts;
   GstClockTime lastAudioPts;
   KmsRecordingProfile profile;
@@ -65,7 +59,8 @@ typedef struct _BufferListItData
   GstElement *elem;
 } BufferListItData;
 
-G_DEFINE_TYPE_WITH_CODE (KmsMuxingPipeline, kms_muxing_pipeline, G_TYPE_OBJECT,
+G_DEFINE_TYPE_WITH_CODE (KmsMuxingPipeline, kms_muxing_pipeline,
+    KMS_TYPE_BASE_MEDIA_MUXER,
     GST_DEBUG_CATEGORY_INIT (kms_muxing_pipeline_debug_category, OBJECT_NAME,
         0, "debug category for muxing pipeline object"));
 
@@ -128,40 +123,31 @@ kms_muxing_pipeline_get_property (GObject * object, guint property_id,
   }
 }
 
-static void
-kms_muxing_pipeline_dispose (GObject * object)
+GstStateChangeReturn
+kms_muxing_pipeline_set_state (KmsBaseMediaMuxer * obj, GstState state)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (object);
+  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (obj);
 
-  GST_DEBUG_OBJECT (self, "dispose");
+  if (state == GST_STATE_NULL || state == GST_STATE_READY) {
+    self->priv->lastAudioPts = 0;
+    self->priv->lastVideoPts = 0;
+  }
 
-  gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-  g_clear_object (&self->priv->pipeline);
-
-  G_OBJECT_CLASS (parent_class)->finalize (object);
-}
-
-static void
-kms_muxing_pipeline_finalize (GObject * object)
-{
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (object);
-
-  GST_DEBUG_OBJECT (self, "finalize");
-
-  g_mutex_clear (&self->priv->mutex);
-
-  G_OBJECT_CLASS (parent_class)->dispose (object);
+  return KMS_BASE_MEDIA_MUXER_CLASS (parent_class)->set_state (obj, state);
 }
 
 static void
 kms_muxing_pipeline_class_init (KmsMuxingPipelineClass * klass)
 {
-  GObjectClass *objclass = G_OBJECT_CLASS (klass);
+  KmsBaseMediaMuxerClass *basemediamuxerclass;
+  GObjectClass *objclass;
 
-  objclass->finalize = kms_muxing_pipeline_finalize;
-  objclass->dispose = kms_muxing_pipeline_dispose;
+  objclass = G_OBJECT_CLASS (klass);
   objclass->set_property = kms_muxing_pipeline_set_property;
   objclass->get_property = kms_muxing_pipeline_get_property;
+
+  basemediamuxerclass = KMS_BASE_MEDIA_MUXER_CLASS (klass);
+  basemediamuxerclass->set_state = kms_muxing_pipeline_set_state;
 
   /* Install properties */
   obj_properties[PROP_VIDEO_APPSRC] =
@@ -194,8 +180,6 @@ static void
 kms_muxing_pipeline_init (KmsMuxingPipeline * self)
 {
   self->priv = KMS_MUXING_PIPELINE_GET_PRIVATE (self);
-
-  g_mutex_init (&self->priv->mutex);
 
   self->priv->lastVideoPts = G_GUINT64_CONSTANT (0);
   self->priv->lastAudioPts = G_GUINT64_CONSTANT (0);
@@ -233,9 +217,9 @@ kms_muxing_pipeline_injector (KmsMuxingPipeline * self, GstElement * elem,
   if (G_LIKELY (lastPts)) {
     gboolean ret;
 
-    KMS_MUXING_PIPELINE_LOCK (self);
+    KMS_BASE_MEDIA_MUXER_LOCK (self);
     ret = kms_muxing_pipeline_check_pts (buffer, lastPts);
-    KMS_MUXING_PIPELINE_UNLOCK (self);
+    KMS_BASE_MEDIA_MUXER_UNLOCK (self);
 
     return ret;
   }
@@ -329,7 +313,6 @@ kms_muxing_pipeline_create_muxer (KmsMuxingPipeline * self)
 static void
 kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
 {
-  self->priv->pipeline = gst_pipeline_new (KMS_MUXING_PIPELINE_NAME);
   self->priv->videosrc = gst_element_factory_make ("appsrc", "videoSrc");
   self->priv->audiosrc = gst_element_factory_make ("appsrc", "audioSrc");
 
@@ -341,8 +324,9 @@ kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
 
   self->priv->mux = kms_muxing_pipeline_create_muxer (self);
 
-  gst_bin_add_many (GST_BIN (self->priv->pipeline), self->priv->videosrc,
-      self->priv->audiosrc, self->priv->mux, self->priv->sink, NULL);
+  gst_bin_add_many (GST_BIN (KMS_BASE_MEDIA_MUXER_PIPELINE (self)),
+      self->priv->videosrc, self->priv->audiosrc, self->priv->mux,
+      self->priv->sink, NULL);
 
   if (!gst_element_link (self->priv->mux, self->priv->sink)) {
     GST_ERROR_OBJECT (self, "Could not link elements: %"
@@ -385,48 +369,4 @@ kms_muxing_pipeline_new (const char *optname1, ...)
   kms_muxing_pipeline_prepare_pipeline (obj);
 
   return obj;
-}
-
-GstStateChangeReturn
-kms_muxing_pipeline_set_state (KmsMuxingPipeline * obj, GstState state)
-{
-  g_return_val_if_fail (obj != NULL, GST_STATE_CHANGE_FAILURE);
-
-  if (state == GST_STATE_NULL || state == GST_STATE_READY) {
-    obj->priv->lastAudioPts = 0;
-    obj->priv->lastVideoPts = 0;
-  }
-
-  return gst_element_set_state (obj->priv->pipeline, state);
-}
-
-GstState
-kms_muxing_pipeline_get_state (KmsMuxingPipeline * obj)
-{
-  return GST_STATE (obj->priv->pipeline);
-}
-
-GstClock *
-kms_muxing_pipeline_get_clock (KmsMuxingPipeline * obj)
-{
-  g_return_val_if_fail (obj != NULL, GST_CLOCK_TIME_NONE);
-
-  return GST_ELEMENT (obj->priv->pipeline)->clock;
-}
-
-GstBus *
-kms_muxing_pipeline_get_bus (KmsMuxingPipeline * obj)
-{
-  g_return_val_if_fail (obj != NULL, NULL);
-
-  return gst_pipeline_get_bus (GST_PIPELINE (obj->priv->pipeline));
-}
-
-void
-kms_muxing_pipeline_dot_file (KmsMuxingPipeline * obj)
-{
-  g_return_if_fail (obj != NULL);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (obj->priv->pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (obj->priv->pipeline));
 }
