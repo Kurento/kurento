@@ -53,6 +53,12 @@ import com.google.gson.JsonParser;
  */
 public class WebRtcTestPage extends WebPage {
 
+	public interface WebRtcConfigurer {
+		public void addIceCandidate(IceCandidate candidate);
+
+		public String processOffer(String sdpOffer);
+	}
+
 	protected static final String LOCAL_VIDEO = "local";
 	protected static final String REMOTE_VIDEO = "video";
 
@@ -273,10 +279,13 @@ public class WebRtcTestPage extends WebPage {
 		return Math.abs(j - i) <= browser.getThresholdTime();
 	}
 
+	protected void addIceCandidate(JsonObject candidate) {
+		browser.executeScript("addIceCandidate('" + candidate + "');");
+	}
+
 	/*
 	 * initWebRtc
 	 */
-	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
 			final WebRtcChannel channel, final WebRtcMode mode)
 					throws InterruptedException {
@@ -289,8 +298,7 @@ public class WebRtcTestPage extends WebPage {
 								.toJsonObject(event.getCandidate());
 						log.debug("OnIceCandidateEvent on {}: {}",
 								webRtcEndpoint.getId(), candidate);
-						browser.executeScript(
-								"addIceCandidate('" + candidate + "');");
+						addIceCandidate(candidate);
 					}
 				});
 
@@ -305,6 +313,26 @@ public class WebRtcTestPage extends WebPage {
 					}
 				});
 
+		WebRtcConfigurer webRtcConfigurer = new WebRtcConfigurer() {
+			@Override
+			public void addIceCandidate(IceCandidate candidate) {
+				webRtcEndpoint.addIceCandidate(candidate);
+			}
+
+			public String processOffer(String sdpOffer) {
+				String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+				webRtcEndpoint.gatherCandidates();
+				return sdpAnswer;
+			}
+		};
+
+		initWebRtc(webRtcConfigurer, channel, mode);
+	}
+
+	@SuppressWarnings({ "unchecked", "deprecation" })
+	protected void initWebRtc(final WebRtcConfigurer webRtcConfigurer,
+			final WebRtcChannel channel, final WebRtcMode mode)
+					throws InterruptedException {
 		// ICE candidates
 		Thread t1 = new Thread() {
 			public void run() {
@@ -325,9 +353,9 @@ public class WebRtcTestPage extends WebPage {
 									jsonCandidate.get("sdpMid").getAsString(),
 									jsonCandidate.get("sdpMLineIndex")
 											.getAsInt());
-							log.debug("Adding candidate {} in {}: {}", i,
-									webRtcEndpoint.getId(), jsonCandidate);
-							webRtcEndpoint.addIceCandidate(candidate);
+							log.debug("Adding candidate {}: {}", i,
+									jsonCandidate);
+							webRtcConfigurer.addIceCandidate(candidate);
 							numCandidate++;
 						}
 
@@ -372,11 +400,9 @@ public class WebRtcTestPage extends WebPage {
 				String sdpOffer = (String) browser
 						.executeScriptAndWaitOutput("return sdpOffer;");
 
-				log.debug("SDP offer on {}: {}", webRtcEndpoint.getId(),
-						sdpOffer);
-				String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-				log.debug("SDP answer on {}: {}", webRtcEndpoint.getId(),
-						sdpAnswer);
+				log.debug("SDP offer: {}", sdpOffer);
+				String sdpAnswer = webRtcConfigurer.processOffer(sdpOffer);
+				log.debug("SDP answer: {}", sdpAnswer);
 
 				// Encoding in Base64 to avoid parsing errors in JavaScript
 				sdpAnswer = new String(
@@ -398,7 +424,6 @@ public class WebRtcTestPage extends WebPage {
 			throw new KurentoException("ICE negotiation not finished in "
 					+ browser.getTimeout() + " seconds");
 		}
-		webRtcEndpoint.gatherCandidates();
 	}
 
 	/*
