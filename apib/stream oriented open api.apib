@@ -1,0 +1,379 @@
+FORMAT: 1A
+HOST: http://kurento.lab.fiware.org:8888
+
+# Stream-oriented GE Open API
+
+The Stream Oriented API is a resource-oriented API accessed via WebSockets that uses JSON-RPC V2.0 based representations for information exchange. An RPC call is represented by sending a Request message to a server. The Request message has the following members:
+
+* `jsonrpc`: a string specifying the version of the JSON-RPC protocol. It must be exactly `2.0`.
+* `id`: an unique identifier established by the client that contains a string or number. The server must reply with the same value in the Response message. This member is used to correlate the context between both messages.
+* `method`: a string containing the name of the method to be invoked.
+* `params`: a structured value that holds the parameter values to be used during the invocation of the method.
+
+When an RPC call is made by a client, the server replies with a response object. In the case of a success, the response object contains the following members:
+
+* `jsonrpc`: it must be exactly `2.0`.
+* `id`: it must match the value of the id member in the request object.
+* `result`: structured value which contains the invocation result.
+
+In the case of an error, the response object contains the following members:
+
+* `jsonrpc`: it must be exactly `2.0`.
+* `id`: it must match the value of the id member in the request object.
+* `error`: object describing the error through the following members:.
+    * `code`: integer number that indicates the error type that occurred
+    * `message`: string providing a short description of the error.
+    * `data`: primitive or structured value that contains additional information about the error. It may be omitted. The value of this member is defined by the server.
+
+## Group WebSocket Connection
+
+To establish a WebSocket connection, the client sends a WebSocket handshake request, for which the media server returns a WebSocket handshake response.
+
+## WebSocket Handshake [/kurento]
+
+### Handshake [GET]
+
++ Request
+
+    + Headers
+    
+            Upgrade: websocket
+            Connection: Upgrade
+            Sec-WebSocket-Key: daecIhfhHeDfYP4rJivWjQ==
+            Sec-WebSocket-Version: 13
+
++ Response 101
+
+## Group Create
+
+Create message requests the creation of an element of the toolbox. The parameter type specifies the type of the object to be created. The parameter `constructorParams` contains all the information needed to create the object. Each message needs different constructorParams to create the object.
+
+A `sessionId` parameter is included with the identifier of the current session. The value of this parameter is sent by Kurento Media Server to the client in each response. Only the first request from client to server is allowed to not include the `sessionId` (because at this point is unknown for the client).
+
+### Request
+
+A `create` request contains the following parameters:
+
+* `method` (required, string). Value: `create`.
+* `params` (required, object). Parameters for the invocation of the create message, containing these members:
+    * type (required, string). Media element to be created. Allowed Values:
+        * `WebRtcEndpoint`: This Endpoint offers media streaming using WebRTC.
+        * `RtpEndpoint`: Endpoint that provides bidirectional content delivery capabilities with remote networked peers through RTP protocol. It contains paired sink and source MediaPad for audio and video.
+        * `HttpPostEndpoint`: This type of Endpoint provide unidirectional communications. Its MediaSource are related to HTTP POST method. It contains sink MediaPad for audio and video, which provide access to an HTTP file upload function.
+        * `PlayerEndpoint`: It provides function to retrieve contents from seekable sources in reliable mode (does not discard media information) and inject them into KMS. It contains one MediaSource for each media type detected.
+        * `RecorderEndpoint`: Provides function to store contents in reliable mode (doesn't discard data). It contains MediaSink pads for audio and video.
+        * `FaceOverlayFilter`: It detects faces in a video feed. The face is then overlaid with an image.
+        * `ZBarFilter`: This Filter detects QR and bar codes in a video feed. When a code is found, the filter raises a CodeFound.
+        * `GStreamerFilter`: This is a generic Filter interface, that creates GStreamer filters in the media server.
+        * `Composite`: A Hub that mixes the audio stream of its connected sources and constructs a grid with the video streams of its connected sources into its sink.
+        * `Dispatcher`: A Hub that allows routing between arbitrary port pairs.
+        * `DispatcherOneToMany`: A Hub that sends a given source to all the connected sinks.
+    * `constructorParams` (required, object). Additional parameters. As minimum, the identifier of the media pipeline should be included here.
+    * `sessionId` (required, string). Session identifier.
+
+The following example shows a Request message requesting the creation of an object of the type `PlayerEndpoint` within the pipeline `6829986` and the parameter uri:`http://host/app/video.mp4` in the session `c93e5bf0-4fd0-4888-9411-765ff5d89b93`:
+
++ Body (application/json)
+    
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "create",
+          "params": {
+            "type": "PlayerEndPoint",
+            "constructorParams": {
+              "pipeline": "6829986",
+              "uri": "http://host/app/video.mp4"
+            },
+            "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+### Response
+
+The response message contains the id of the new object in the field value. This message `id` has to be used in other requests of the protocol (as we will describe later). As stated before, the `sessionId` is also returned in each response.
+
+A `create` response contains the following parameters:
+
+* `result` (required, object). Result of the create invocation:
+    * `value` (required, number). Identifier of the created media element.
+    * `sessionId` (required, string). Session identifier.
+
+The following example shows a typical response to a create message:
+
++ Body (application/json)
+
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "value": "442352747",
+            "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+## Group Invoke
+
+Invoke message requests the invocation of an operation in the specified object. The parameter object indicates the id of the object in which the operation will be invoked. The parameter operation carries the name of the operation to be executed. Finally, the parameter operationParams has the parameters needed to execute the operation. The object specified has to understand the
+
+### Request
+
+An `invoke` request contains the following parameters:
+
+* `method` (required, string). Value is `invoke`.
+* `params` (required, object)
+    * `object` (required, number). Identifier of the source media element.
+        * `operation` (required, string). Operation invoked. Allowed Values:
+            * `connect`. Connect two media elements.
+            * `play`. Start the play of a media (PlayerEndPoint).
+            * `record`. Start the record of a media (RecorderEndPoint).
+    * `operationParams` (optional, object). 
+        * `sink` (required, number). Identifier of the sink media element.
+        * `sessionId` (required, string). Session identifier.
+
+The following example shows a Request message requesting the invocation of the operation connect on the object `442352747` with parameter sink `6829986`. The `sessionId` is also included as is mandatory for all requests in the session (except the first one):
+
++ Body (application/json)
+
+        {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "method": "invoke",
+          "params": {
+            "object": "442352747", "operation": "connect",
+            "operationParams": {
+              "sink": "6829986"
+            },
+            "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+### Response
+
+The response message contains the value returned while executing the operation invoked in the object or nothing if the operation doesn’t return any value.
+
+An `invoke` response contains the following parameters:
+
+* `result` (required, object)
+    * `sessionId` (required, string). Session identifier.
+
+The following example shows a typical response while invoking the operation connect (that doesn’t return anything):
+
++ Body (application/json)
+
+        {
+          "jsonrpc": "2.0",
+          "result": {
+            "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          },
+          "id": 2
+        }
+
+## Group Release
+
+Release message requests the release of the specified object. The parameter `object` indicates the id of the object to be released:
+
+### Request
+
+A `release` request contains the following parameters:
+
+* `method` (required, string). Value is `release`.
+* `params` (required, object). 
+    * `object` (required, number). Identifier of the media element to be released.
+        * `sessionId` (required, string). Session identifier.
+
++ Body (application/json)
+
+        {
+          "jsonrpc": "2.0",
+          "id": 3,
+          "method": "release",
+          "params": {
+            "object": "442352747",
+            "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+### Response
+
+A `release` response contains the following parameters:
+
+* `result` (required, object)
+    * `sessionId` (required, string). Session identifier.
+
+The response message only contains the `sessionID`. The following example shows the typical response of a release request:
+
++ Body (application/json)
+
+        {
+          "jsonrpc":"2.0",
+          "id":3,
+          "result": {
+            "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+## Group Subscribe
+
+Subscribe message requests the subscription to a certain kind of events in the specified object. The parameter object indicates the id of the object to subscribe for events. The parameter type specifies the type of the events. If a client is subscribed for a certain type of events in an object, each time an event is fired in this object, a request with method onEvent is sent from Kurento Media Server to the client. This kind of request is described few sections later.
+
+### Request
+
+A `subscribe` reqest contains the following parameters:
+
+* `method` (required, string). Value is `subscribe`.
+* `params` (required, object). Parameters for the invocation of the create message, containing these members:
+    * `constructorParams` (required, object). Additional parameters. As minimum, the identifier of the media pipeline should be included here.
+        * `type` (required, string). Media event to be subscribed. Allowed Values:
+            * `CodeFound Event`: raised by a ZBarFilter when a code is found in the data being streamed.
+            * `ConnectionStateChanged`: Indicates that the state of the connection has changed.
+            * `ElementConnected`: Indicates that an element has been connected to other.
+            * `ElementDisconnected`: Indicates that an element has been disconnected.
+            * `EndOfStream`: Event raised when the stream that the element sends out is finished.
+            * `Error`: An error related to the MediaObject has occurred.
+            * `MediaSessionStarted`: Event raised when a session starts. This event has no data.
+            * `MediaSessionTerminated`: Event raised when a session is terminated. This event has no data.
+            * `MediaStateChanged`: Indicates that the state of the media has changed.
+            * `ObjectCreated`: Indicates that an object has been created on the mediaserver.
+            * `ObjectDestroyed`: Indicates that an object has been destroyed on the mediaserver.
+            * `OnIceCandidate`: Notify of a new gathered local candidate.
+            * `OnIceComponentStateChanged`: Notify about the change of an ICE component state.
+            * `OnIceGatheringDone`: Notify that all candidates have been gathered.
+    * `sessionId` (required, string). Session identifier.
+
+The following example shows a request message requesting the subscription of the event type `EndOfStream` on the object `311861480`. The `sessionId` is also included:
+
++ Body (application/json)
+
+        {
+          "jsonrpc":"2.0",
+          "id":4,
+          "method":"subscribe",
+          "params":{
+            "object":"311861480",
+            "type":"EndOfStream",
+            "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+### Response
+
+The response message contains the subscription identifier. This value can be used later to remove this `subscription`.
+
+A `subscribe` response contains the following parameters:
+
+* `result` (required, object). Result of the subscription invocation. This object contains the following members:
+* `value` (required, number). Identifier of the media event.
+* `sessionId` (required, string). Session identifier.
+
+The following example shows the response of subscription request. The `value` attribute contains the subscription id:
+
++ Body (application/json)
+
+        {
+          "jsonrpc":"2.0",
+          "id":4,
+          "result": {
+            "value":"353be312-b7f1-4768-9117-5c2f5a087429",
+            "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+## Group Unsubscribe
+
+Unsubscribe message requests the cancellation of a previous event subscription. The parameter `subscription` contains the subscription id received from the server when the subscription was created.
+
+### Request
+
+An `unsubscribe` request contains the following parameters:
+
+* `method` (required, string). Value is `unsubscribe`.
+* `params` (required, object). 
+    * `object` (required, string). Media element in which the subscription is placed.
+        * `subscription` (required, number). Subscription identifier.
+* `sessionId` (required, string). Session identifier.
+
+The following example shows a Request message requesting the cancellation of the `subscription` `353be312-b7f1-4768-9117-5c2f5a087429`:
+
++ Body (application/json)
+
+        {
+          "jsonrpc":"2.0",
+          "id":5,
+          "method":"unsubscribe",
+          "params": {
+            "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
+            "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+### Response
+
+The response message only contains the `sessionID`. The following example shows the typical response of an unsubscription request:
+
+An `unsubscribe` response contains the following parameters:
+
+* `result` (required, object)
+    * `sessionId` (required, string). Session identifier.
+
+For example:
+
++ Body (application/json)
+
+        {
+          "jsonrpc":"2.0",
+          "id":5,
+          "result": {
+            "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+          }
+        }
+
+## Group OnEvent
+
+When a client is `subscribed` to a type of events in an object, the server sends an onEvent request each time an event of that type is fired in the object. This is possible because the Stream Oriented open API is implemented with websockets and there is a full duplex channel between client and server. The request that server send to client has all the information about the event:
+
+* `data`: Information about this specific of this type of event.
+* `source`: the object source of the event.
+* `type`: The type of the event.
+* `subscription`: subscription id for which the event is fired.
+
+### Request
+
+An `OnEvent` request contains the following parameters:
+
+* `method` (required, string). Value is `onEvent`.
+* `params` (required, object). 
+    * `value` (required, object)
+        * `data` (required, object)
+            * `object` (optional, string). Media element target.
+            * `source` (optional, string). Media element source.
+            * `tags` (optional, string). Media element metadata.
+            * `timestamp` (optional, number). Media server time and date.
+    * `object` (required, object).Media element identifier.
+    * `type` (required, string). Same type identifier described on `subscribe` message (i.e.: `CodeFound`, `ConnectionStateChanged`, `ElementConnected`, `ElementDisconnected`, `EndOfStream`, `Error`, `MediaSessionStarted`, `MediaSessionTerminated`, `MediaStateChanged`, `ObjectCreated`, `ObjectDestroyed`, `OnIceCandidate`, `OnIceComponentStateChanged`, `OnIceGatheringDone`)
+
+The following example shows a notification sent for server to client to notify an event of type `EndOfStream` in the object `311861480` with `subscription` `353be312-b7f1-4768-9117-5c2f5a087429`:
+
++ Body (application/json)
+
+        {
+          "jsonrpc": "2.0",
+          "id": 6,
+          "method": "onEvent",
+          "params": {
+            "value": {
+               "data":{
+                  "source":"311861480",
+                  "type":"EndOfStream"
+              },
+              "object":"311861480",
+              "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
+              "type":"EndOfStream",
+            },
+            "sessionId":"4f5255d5-5695-4e1c-aa2b-722e82db5260"
+          }
+        }
+
+### Response
+
+There is no response to the `onEvent` message.
