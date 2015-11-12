@@ -177,7 +177,7 @@ public class KurentoClient {
 	public void destroy() {
 		log.info("Closing KurentoClient");
 		manager.destroy();
-		if (id != null) {
+		if (kmsUrlLoader != null) {
 			kmsUrlLoader.clientDestroyed(id);
 		}
 	}

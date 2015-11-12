@@ -43,7 +43,9 @@ public class KmsUrlLoader extends UrlServiceLoader<KmsProvider> {
 	}
 
 	public void clientDestroyed(String id) {
-		getServiceProvider().releaseKms(id);
+		if (getUrl() == null) {
+			getServiceProvider().releaseKms(id);
+		}
 	}
 
 }
