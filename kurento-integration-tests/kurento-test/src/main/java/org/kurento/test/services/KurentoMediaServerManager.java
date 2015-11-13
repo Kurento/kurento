@@ -15,6 +15,7 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.AUTOSTART_FALSE_VALUE;
 import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
 import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
 import static org.kurento.test.TestConfiguration.FAKE_KMS_LOGIN_PROP;
@@ -27,6 +28,8 @@ import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_
 import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_PROP;
 import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_NAME_DEFAULT;
 import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_NAME_PROP;
+import static org.kurento.test.TestConfiguration.KMS_LOG_PATH_DEFAULT;
+import static org.kurento.test.TestConfiguration.KMS_LOG_PATH_PROP;
 import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
 import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
@@ -98,7 +101,7 @@ public class KurentoMediaServerManager {
 
 	private static String lastWorkspace;
 
-	private SshConnection remoteKms = null;
+	private static SshConnection remoteKms = null;
 	private String workspace;
 	private int httpPort;
 	private String testClassName;
@@ -111,9 +114,32 @@ public class KurentoMediaServerManager {
 	private String wsUri;
 	private String registrarUri;
 	private String registrarLocalAddress = "127.0.0.1";
-	private boolean isKmsRemote;
-	private boolean docker;
-	private String dockerContainerName = "kms";
+	private static boolean isKmsRemote;
+	private static boolean docker;
+	private static String dockerContainerName = "kms";
+	private boolean kmsAutostarted = false;
+
+	public static KurentoMediaServerManager kmsAlreadyStarted(String wsUri) {
+		KurentoMediaServerManager manager = new KurentoMediaServerManager();
+		manager.wsUri = wsUri;
+
+		checkIfKmsIsRemote(wsUri);
+
+		if (isKmsRemote) {
+			String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
+			String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
+			String kmsPem = getProperty(KURENTO_KMS_PEM_PROP);
+			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
+					wsUri.lastIndexOf(":"));
+			remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd,
+					kmsPem);
+			if (kmsPem != null) {
+				remoteKms.setPem(kmsPem);
+			}
+		}
+
+		return manager;
+	}
 
 	public static KurentoMediaServerManager createWithWsTransport(String wsUri,
 			int httpPort) {
@@ -140,7 +166,13 @@ public class KurentoMediaServerManager {
 	}
 
 	public String getKmsLogPath() {
-		return isKmsRemote ? remoteKms.getTmpFolder() + "/" : workspace;
+		String kmsAutoStart = getProperty(KMS_AUTOSTART_PROP,
+				KMS_AUTOSTART_DEFAULT);
+		String kmsLogPath = getProperty(KMS_LOG_PATH_PROP,
+				KMS_LOG_PATH_DEFAULT);
+
+		return kmsAutoStart.equals(AUTOSTART_FALSE_VALUE) ? kmsLogPath
+				: isKmsRemote ? remoteKms.getTmpFolder() + "/" : workspace;
 	}
 
 	public void setTestDir(String testDir) {
@@ -186,8 +218,7 @@ public class KurentoMediaServerManager {
 			wsUri = getProperty(kmsWsUriProp, this.wsUri);
 		}
 
-		isKmsRemote = !wsUri.contains("localhost")
-				&& !wsUri.contains("127.0.0.1") && !docker;
+		checkIfKmsIsRemote(wsUri);
 
 		if (isKmsRemote && kmsLogin == null
 				&& (kmsPem == null || kmsPasswd == null)) {
@@ -207,24 +238,26 @@ public class KurentoMediaServerManager {
 		gstPlugins = PropertiesManager.getProperty(KURENTO_GST_PLUGINS_PROP,
 				KURENTO_GST_PLUGINS_DEFAULT);
 
-		try {
-			workspace = Files.createTempDirectory("kurento-test").toString();
-			lastWorkspace = workspace;
-		} catch (IOException e) {
-			workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
-					KURENTO_WORKSPACE_DEFAULT);
-			log.error(
-					"Exception loading temporal folder; instead folder {} will be used",
-					workspace, e);
+		if (!docker) {
+			try {
+				workspace = Files.createTempDirectory("kurento-test")
+						.toString();
+				lastWorkspace = workspace;
+			} catch (IOException e) {
+				workspace = PropertiesManager.getProperty(
+						KURENTO_WORKSPACE_PROP, KURENTO_WORKSPACE_DEFAULT);
+				log.error(
+						"Exception loading temporal folder; instead folder {} will be used",
+						workspace, e);
+			}
+			if (!workspace.endsWith("/")) {
+				workspace += "/";
+			}
+			log.debug("Local folder to store temporal files: {}", workspace);
 		}
 
 		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP,
 				KURENTO_SERVER_DEBUG_DEFAULT);
-
-		if (!workspace.endsWith("/")) {
-			workspace += "/";
-		}
-		log.debug("Local folder to store temporal files: {}", workspace);
 
 		if (rabbitMqAddress != null) {
 			log.info(
@@ -264,7 +297,9 @@ public class KurentoMediaServerManager {
 			remoteKms.createTmpFolder();
 		}
 
-		createKurentoConf();
+		if (!docker) {
+			createKurentoConf();
+		}
 
 		if (isKmsRemote) {
 			String[] filesToBeCopied = { "kurento.conf.json", "kurento.sh" };
@@ -279,6 +314,11 @@ public class KurentoMediaServerManager {
 		startKms(wsUri);
 
 		waitForKurentoMediaServer(this.wsUri);
+	}
+
+	private static void checkIfKmsIsRemote(String wsUri) {
+		isKmsRemote = !wsUri.contains("localhost")
+				&& !wsUri.contains("127.0.0.1") && !docker;
 	}
 
 	private void startKms(String wsUri) throws IOException {
@@ -300,6 +340,8 @@ public class KurentoMediaServerManager {
 			Shell.run("sh", "-c", kmsLogPath + "kurento.sh");
 			log.info("Kurento Media Server started in wsUri: " + wsUri);
 		}
+
+		kmsAutostarted = true;
 	}
 
 	private void startDockerizedKms() {
@@ -511,9 +553,27 @@ public class KurentoMediaServerManager {
 	}
 
 	public void destroy() throws IOException {
+		if (docker) {
+			Docker dockerClient = Docker.getSingleton();
+			dockerClient.stopAndRemoveContainer(dockerContainerName);
+
+		} else {
+			killKmsProcesses();
+			if (isRemote()) {
+				remoteKms.stop();
+			}
+		}
+	}
+
+	public void retrieveLogs() throws IOException {
+		String targetFolder = getDefaultOutputFolder();
+		String kmsLogsPath = getKmsLogPath();
+
+		if (kmsAutostarted) {
+			kmsLogsPath += "logs/";
+		}
 
 		if (docker) {
-
 			Docker dockerClient = Docker.getSingleton();
 
 			if (testMethodName != null) {
@@ -524,30 +584,15 @@ public class KurentoMediaServerManager {
 						"KMS logs cannot be retrived because testMethodName is not set in KurentoMediaServerManager");
 			}
 
-			dockerClient.stopAndRemoveContainer(dockerContainerName);
-
-		} else {
-
-			killKmsProcesses();
-
-			retrieveLogs();
-
-			if (isRemote()) {
-				remoteKms.stop();
-			}
 		}
-	}
 
-	public void retrieveLogs() throws IOException {
+		else if (isRemote()) {
 
-		String targetFolder = getDefaultOutputFolder();
-
-		String kmsLogsPath = getKmsLogPath() + "logs";
-
-		if (isRemote()) {
-
-			log.info("Copying KMS logs from remote host {} to {}",
-					remoteKms.getConnection(), targetFolder);
+			if (!remoteKms.isStarted()) {
+				remoteKms.start();
+			}
+			log.info("Copying KMS logs located on {} from remote host {} to {}",
+					kmsLogsPath, remoteKms.getConnection(), targetFolder);
 
 			List<String> remoteLogFiles = remoteKms.listFiles(kmsLogsPath, true,
 					false);
@@ -571,7 +616,7 @@ public class KurentoMediaServerManager {
 					targetFolder);
 
 			Collection<File> logFiles = FileUtils
-					.listFiles(new File(kmsLogsPath), null, true);
+					.listFiles(new File(kmsLogsPath), null, false);
 
 			for (File logFile : logFiles) {
 
@@ -714,12 +759,16 @@ public class KurentoMediaServerManager {
 		waitForKurentoMediaServer(wsUri);
 	}
 
-	public void setDocker(boolean docker) {
-		this.docker = docker;
+	public void setDocker(boolean dock) {
+		docker = dock;
 	}
 
 	public void setDockerContainerName(String containerName) {
-		this.dockerContainerName = containerName;
+		dockerContainerName = containerName;
+	}
+
+	public static String getDockerContainerName() {
+		return dockerContainerName;
 	}
 
 }

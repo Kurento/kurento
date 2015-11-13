@@ -192,34 +192,7 @@ public class SshConnection {
 
 	public void execCommand(final String... command) throws IOException {
 		if (connection.canStartProcess()) {
-
-			final OverthereProcess process = connection
-					.startProcess(CmdLine.build(command));
-
-			// Thread t = new Thread(new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			//
-			// BufferedReader r;
-			// try {
-			// r = new BufferedReader(new InputStreamReader(
-			// process.getStdout(), "UTF-8"));
-			//
-			// String line = null;
-			// while ((line = r.readLine()) != null) {
-			// log.debug(line);
-			// }
-			//
-			// } catch (IOException e) {
-			// log.warn("Exception reading remote process {}", command,
-			// e);
-			// }
-			// }
-			// });
-			//
-			// t.setDaemon(true);
-			// t.start();
+			connection.startProcess(CmdLine.build(command));
 		}
 	}
 

@@ -140,6 +140,13 @@ public class KurentoServicesTestHelper {
 
 		switch (kmsAutostart) {
 		case AUTOSTART_FALSE_VALUE:
+			if (kms == null) {
+				kms = alreadyStartedKurentoMediaServer();
+				kms.setTestClassName(testCaseName);
+				kms.setTestMethodName(getSimpleTestName());
+				kms.setTestDir(testDir);
+			}
+
 			break;
 		case AUTOSTART_TEST_VALUE:
 			startKurentoMediaServer(isFake);
@@ -154,6 +161,12 @@ public class KurentoServicesTestHelper {
 					+ "' is not valid for property "
 					+ (isFake ? FAKE_KMS_AUTOSTART_PROP : KMS_AUTOSTART_PROP));
 		}
+	}
+
+	public static KurentoMediaServerManager alreadyStartedKurentoMediaServer()
+			throws IOException {
+
+		return KurentoMediaServerManager.kmsAlreadyStarted(getWsUri());
 	}
 
 	public static KurentoMediaServerManager startKurentoMediaServer(
@@ -268,10 +281,14 @@ public class KurentoServicesTestHelper {
 	}
 
 	public static void teardownKurentoMediaServer() throws IOException {
-		log.info("Teardown KMS: kms={} kmsAutostart={}", kms, kmsAutostart);
-		if (kms != null && kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
-			kms.destroy();
-			kms = null;
+		log.debug("Teardown KMS: kms={} kmsAutostart={}", kms, kmsAutostart);
+		if (kms != null) {
+			kms.retrieveLogs();
+
+			if (kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
+				kms.destroy();
+				kms = null;
+			}
 		}
 		if (fakeKms != null && fakeKmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			fakeKms.destroy();
@@ -379,6 +396,10 @@ public class KurentoServicesTestHelper {
 			folderFile.mkdirs();
 		}
 		Shell.runAndWait("chmod", "a+w", folder);
+	}
+
+	public static KurentoMediaServerManager getKms() {
+		return kms;
 	}
 
 }

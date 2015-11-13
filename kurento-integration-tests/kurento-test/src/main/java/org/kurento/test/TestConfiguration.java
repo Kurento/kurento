@@ -132,6 +132,9 @@ public class TestConfiguration {
 	public static final String KMS_WS_URI_PROP = "kms.ws.uri";
 	public static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
 
+	public static final String KMS_LOG_PATH_PROP = "kms.log.path";
+	public static final String KMS_LOG_PATH_DEFAULT = "/var/log/kurento-media-server/";
+
 	public static final String KURENTO_WORKSPACE_PROP = "test.workspace";
 	public static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
