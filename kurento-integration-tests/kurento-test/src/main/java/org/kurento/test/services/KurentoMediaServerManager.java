@@ -623,10 +623,15 @@ public class KurentoMediaServerManager {
 				File destFile = new File(targetFolder,
 						testMethodName + "-" + logFile.getName());
 
-				FileUtils.copyFile(logFile, destFile);
+				try {
+					FileUtils.copyFile(logFile, destFile);
 
-				KurentoServicesTestHelper.addServerLogFilePath(destFile);
-				log.debug("Log file: {}", destFile);
+					KurentoServicesTestHelper.addServerLogFilePath(destFile);
+					log.debug("Log file: {}", destFile);
+				} catch (Throwable e) {
+					log.warn("Exception copy KMS file {} {}", e.getClass(),
+							e.getMessage());
+				}
 			}
 		}
 	}
