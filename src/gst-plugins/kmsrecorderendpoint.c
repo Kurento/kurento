@@ -105,11 +105,15 @@ struct _KmsRecorderEndpointPrivate
   GstPad *audio_target;
   GstPad *video_target;
 
-  GstElement *sink;
-  gulong sink_probe;
+  GSList *sink_probes;
+  GHashTable *srcs;
+
   gboolean stats_enabled;
   gdouble vi;
   gdouble ai;
+
+  gulong audio_probe;
+  gulong video_probe;
 };
 
 typedef struct _DataEvtProbe
@@ -147,12 +151,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndpoint, kms_recorder_endpoint,
 
 static GstBusSyncReply bus_sync_signal_handler (GstBus * bus, GstMessage * msg,
     gpointer data);
-
-static void
-destroy_ulong (gpointer data)
-{
-  g_slice_free (gulong, data);
-}
 
 static void
 send_eos (GstElement * appsrc)
@@ -339,50 +337,28 @@ kms_recorder_endpoint_state_changed (KmsRecorderEndpoint * self,
 }
 
 static void
+send_eos_cb (gchar * id, GstElement * appsrc, gpointer user_data)
+{
+  send_eos (appsrc);
+}
+
+static void
 kms_recorder_endpoint_send_eos_to_appsrcs (KmsRecorderEndpoint * self)
 {
-  GstElement *audiosrc, *videosrc;
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
-  g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
-      &audiosrc, NULL);
-  g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
-      &videosrc, NULL);
-
-  if (audiosrc == NULL && videosrc == NULL) {
+  if (g_hash_table_size (self->priv->srcs) == 0) {
     kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
     kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
-    return;
+    goto end;
   }
 
   kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_PLAYING);
 
-  if (audiosrc != NULL) {
-    send_eos (audiosrc);
-    g_object_unref (audiosrc);
-  }
+  g_hash_table_foreach (self->priv->srcs, (GHFunc) send_eos_cb, NULL);
 
-  if (videosrc != NULL) {
-    send_eos (videosrc);
-    g_object_unref (videosrc);
-  }
-}
-
-static gboolean
-set_to_null_state_on_EOS (gpointer data)
-{
-  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (data);
-
-  GST_DEBUG ("Received EOS in pipeline, setting NULL state");
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
-
-  kms_base_media_muxer_set_state (recorder->priv->mux, GST_STATE_NULL);
-
-  kms_recorder_endpoint_state_changed (recorder, KMS_URI_ENDPOINT_STATE_STOP);
-
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-
-  return G_SOURCE_REMOVE;
+end:
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
 static void
@@ -434,147 +410,16 @@ kms_recorder_endpoint_finalize (GObject * object)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
 
-  GST_DEBUG_OBJECT (self, "finalize");
+  GST_DEBUG_OBJECT (self, "releasing resources...");
 
   kms_recorder_endpoint_release_pending_requests (self);
-  g_clear_object (&self->priv->sink);
+  g_slist_free_full (self->priv->sink_probes,
+      (GDestroyNotify) kms_stats_probe_destroy);
+  g_hash_table_unref (self->priv->srcs);
+
+  GST_DEBUG_OBJECT (self, "finalized");
 
   G_OBJECT_CLASS (kms_recorder_endpoint_parent_class)->finalize (object);
-}
-
-static GstElement *
-kms_recorder_endpoint_get_sink_fallback (KmsRecorderEndpoint * self)
-{
-  GstElement *sink = NULL;
-  gchar *prot;
-
-  prot = gst_uri_get_protocol (KMS_URI_ENDPOINT (self)->uri);
-
-  if ((g_strcmp0 (prot, HTTP_PROTO) == 0)
-      || (g_strcmp0 (prot, HTTPS_PROTO) == 0)) {
-
-    if (kms_is_valid_uri (KMS_URI_ENDPOINT (self)->uri)) {
-      /* We use souphttpclientsink */
-      sink = gst_element_factory_make ("curlhttpsink", NULL);
-      g_object_set (sink, "blocksize", MEGA_BYTES (1), "qos", FALSE,
-          "async", FALSE, NULL);
-    } else {
-      GST_ERROR ("URL not valid");
-    }
-
-  }
-
-  g_free (prot);
-
-  /* Add more if required */
-  return sink;
-}
-
-static GstElement *
-kms_recorder_endpoint_get_sink (KmsRecorderEndpoint * self)
-{
-  GObjectClass *sink_class;
-  GstElement *sink = NULL;
-  GParamSpec *pspec;
-  GError *err = NULL;
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
-
-  if (KMS_URI_ENDPOINT (self)->uri == NULL)
-    goto no_uri;
-
-  if (!gst_uri_is_valid (KMS_URI_ENDPOINT (self)->uri))
-    goto invalid_uri;
-
-  sink = gst_element_make_from_uri (GST_URI_SINK, KMS_URI_ENDPOINT (self)->uri,
-      NULL, &err);
-  if (sink == NULL) {
-    /* Some elements have no URI handling capabilities though they can */
-    /* handle them. We try to find such element before failing to attend */
-    /* this request */
-    sink = kms_recorder_endpoint_get_sink_fallback (self);
-    if (sink == NULL)
-      goto no_sink;
-    g_clear_error (&err);
-  }
-
-  /* Try to configure the sink element */
-  sink_class = G_OBJECT_GET_CLASS (sink);
-
-  pspec = g_object_class_find_property (sink_class, "location");
-  if (pspec != NULL && G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_STRING) {
-    if (g_strcmp0 (GST_OBJECT_NAME (gst_element_get_factory (sink)),
-            "filesink") == 0) {
-      /* Work around for filesink elements */
-      gchar *location = gst_uri_get_location (KMS_URI_ENDPOINT (self)->uri);
-
-      GST_DEBUG_OBJECT (sink, "filesink location=%s", location);
-      g_object_set (sink, "location", location, NULL);
-      g_free (location);
-    } else {
-      GST_DEBUG_OBJECT (sink, "configuring location=%s",
-          KMS_URI_ENDPOINT (self)->uri);
-      g_object_set (sink, "location", KMS_URI_ENDPOINT (self)->uri, NULL);
-    }
-  }
-
-  goto end;
-
-no_uri:
-  {
-    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
-        ("No URI specified to record to."), GST_ERROR_SYSTEM);
-    goto end;
-  }
-invalid_uri:
-  {
-    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS, ("Invalid URI \"%s\".",
-            KMS_URI_ENDPOINT (self)->uri), GST_ERROR_SYSTEM);
-    g_clear_error (&err);
-    goto end;
-  }
-no_sink:
-  {
-    /* whoops, could not create the sink element, dig a little deeper to
-     * figure out what might be wrong. */
-    if (err != NULL && err->code == GST_URI_ERROR_UNSUPPORTED_PROTOCOL) {
-      gchar *prot;
-
-      prot = gst_uri_get_protocol (KMS_URI_ENDPOINT (self)->uri);
-      if (prot == NULL)
-        goto invalid_uri;
-
-      GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
-          ("No URI handler implemented for \"%s\".", prot), GST_ERROR_SYSTEM);
-
-      g_free (prot);
-    } else {
-      GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS, ("%s",
-              (err) ? err->message : "URI was not accepted by any element"),
-          GST_ERROR_SYSTEM);
-    }
-
-    g_clear_error (&err);
-    goto end;
-  }
-end:
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-  return sink;
-}
-
-static GstPadProbeReturn
-stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
-    gpointer user_data)
-{
-  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (user_data);
-
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
-    return GST_PAD_PROBE_OK;
-
-  kms_loop_idle_add_full (recorder->priv->loop, G_PRIORITY_HIGH_IDLE,
-      set_to_null_state_on_EOS, g_object_ref (recorder), g_object_unref);
-
-  return GST_PAD_PROBE_OK;
 }
 
 static void
@@ -799,26 +644,100 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
   return GST_PAD_PROBE_OK;
 }
 
+static gchar *
+get_id_from_proxy_pad (GstProxyPad * peer)
+{
+  GstProxyPad *internal;
+  gchar *id;
+
+  internal = gst_proxy_pad_get_internal (peer);
+  id = gst_pad_get_name (internal);
+  g_object_unref (internal);
+
+  return id;
+}
+
+static void
+link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  GstAppSinkCallbacks callbacks;
+  GstElement *appsink, *appsrc;
+  KmsRecordingProfile profile;
+  DataEvtProbe *data;
+  KmsMediaType type;
+  gulong *probe;
+  gchar *id;
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+  if (pad == self->priv->audio_target) {
+    type = KMS_MEDIA_TYPE_AUDIO;
+    probe = &self->priv->audio_probe;
+  } else if (pad == self->priv->video_target) {
+    type = KMS_MEDIA_TYPE_VIDEO;
+    probe = &self->priv->video_probe;
+  } else {
+    GST_ERROR_OBJECT (self, "Invalid pad %" GST_PTR_FORMAT " connected %"
+        GST_PTR_FORMAT, pad, peer);
+    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+    return;
+  }
+
+  profile = self->priv->profile;
+
+  GST_DEBUG_OBJECT (pad, "linked to %" GST_PTR_FORMAT, peer);
+
+  id = get_id_from_proxy_pad (GST_PROXY_PAD (peer));
+  appsrc = kms_base_media_muxer_add_src (self->priv->mux, type, id);
+
+  if (appsrc == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get appsrc for pad %" GST_PTR_FORMAT, pad);
+    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+    return;
+  }
+
+  g_hash_table_insert (self->priv->srcs, id, g_object_ref (appsrc));
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  if (*probe != 0UL) {
+    gst_pad_remove_probe (pad, *probe);
+  }
+
+  callbacks.eos = recv_eos;
+  callbacks.new_preroll = NULL;
+  callbacks.new_sample = recv_sample;
+
+  appsink = gst_pad_get_parent_element (pad);
+  gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc, NULL);
+  g_object_unref (appsink);
+
+  data = data_evt_probe_new (appsrc, profile);
+  *probe = gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      configure_pipeline_capabilities, data,
+      (GDestroyNotify) data_evt_probe_destroy);
+
+}
+
 static void
 kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
     KmsElementPadType type)
 {
-  GstAppSinkCallbacks callbacks;
-  GstElement *appsink, *appsrc;
+  GstElement *appsink;
   GstPad *sinkpad;
-  const gchar *appsink_name, *appsrc_name;
+  const gchar *appsink_name;
   GstPad **target_pad;
-  DataEvtProbe *data;
 
   switch (type) {
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
       appsink_name = AUDIO_APPSINK;
-      appsrc_name = KMS_MUXING_PIPELINE_AUDIO_APPSRC;
       target_pad = &self->priv->audio_target;
       break;
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
       appsink_name = VIDEO_APPSINK;
-      appsrc_name = KMS_MUXING_PIPELINE_VIDEO_APPSRC;
       target_pad = &self->priv->video_target;
       break;
     default:
@@ -830,60 +749,17 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   g_object_set (appsink, "emit-signals", FALSE, "async", FALSE,
       "sync", FALSE, "qos", FALSE, NULL);
 
-  callbacks.eos = recv_eos;
-  callbacks.new_preroll = NULL;
-  callbacks.new_sample = recv_sample;
-
   gst_bin_add (GST_BIN (self), appsink);
 
-  g_object_get (self->priv->mux, appsrc_name, &appsrc, NULL);
-
-  gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc, NULL);
-
-  data = data_evt_probe_new (appsrc, self->priv->profile);
-
   sinkpad = gst_element_get_static_pad (appsink, "sink");
-  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      configure_pipeline_capabilities, data,
-      (GDestroyNotify) data_evt_probe_destroy);
+
+  g_signal_connect (sinkpad, "linked", G_CALLBACK (link_sinkpad_cb), self);
 
   gst_element_sync_state_with_parent (appsink);
 
   *target_pad = sinkpad;
 
   g_object_unref (sinkpad);
-  g_object_unref (appsrc);
-}
-
-static GstElement *
-kms_recorder_endpoint_create_sink (KmsRecorderEndpoint * self)
-{
-  gulong *probe_id;
-  GstElement *sink;
-  GstPad *sinkpad;
-
-  sink = kms_recorder_endpoint_get_sink (self);
-
-  if (sink == NULL) {
-    sink = gst_element_factory_make ("fakesink", NULL);
-    GST_ELEMENT_ERROR (self, STREAM, WRONG_TYPE, ("No available sink"), (NULL));
-    return sink;
-  }
-
-  sinkpad = gst_element_get_static_pad (sink, "sink");
-  if (sinkpad == NULL) {
-    GST_WARNING ("No sink pad available for element %" GST_PTR_FORMAT, sink);
-    return sink;
-  }
-
-  probe_id = g_slice_new0 (gulong);
-  *probe_id = gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      stop_notification_cb, self, NULL);
-  g_object_set_data_full (G_OBJECT (sinkpad), KEY_RECORDER_PAD_PROBE_ID,
-      probe_id, destroy_ulong);
-  g_object_unref (sinkpad);
-
-  return sink;
 }
 
 static gchar *
@@ -925,59 +801,99 @@ kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
 }
 
 static void
-kms_recorder_endpoint_enable_media_stats (KmsRecorderEndpoint * self)
+kms_recorder_endpoint_enable_media_stats (KmsStatsProbe * sprobe,
+    KmsRecorderEndpoint * self)
 {
-  GstPad *pad;
-
-  if (self->priv->sink == NULL) {
-    GST_DEBUG_OBJECT (self, "There is no sink selected yet");
-    return;
-  }
-
-  pad = gst_element_get_static_pad (self->priv->sink, "sink");
-
-  if (pad == NULL) {
-    GST_WARNING_OBJECT (self, "Can not get sink pad of %" GST_PTR_FORMAT,
-        self->priv->sink);
-    return;
-  }
-
-  self->priv->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad,
-      kms_recorder_endpoint_latency_cb, self, NULL);
-  g_object_unref (pad);
+  kms_stats_probe_add_latency (sprobe, kms_recorder_endpoint_latency_cb, self,
+      NULL);
 }
 
 static void
-kms_recorder_endpoint_disable_media_stats (KmsRecorderEndpoint * self)
+kms_recorder_endpoint_disable_media_stats (KmsStatsProbe * sprobe,
+    KmsRecorderEndpoint * self)
 {
-  GstPad *pad;
-
-  if (self->priv->sink == NULL || self->priv->sink_probe == 0UL) {
-    goto end;
-  }
-
-  pad = gst_element_get_static_pad (self->priv->sink, "sink");
-
-  if (pad == NULL) {
-    GST_WARNING_OBJECT (self, "Can not get sink pad of %" GST_PTR_FORMAT,
-        self->priv->sink);
-    goto end;
-  }
-
-  gst_pad_remove_probe (pad, self->priv->sink_probe);
-  g_object_unref (pad);
-
-end:
-  self->priv->sink_probe = 0UL;
+  kms_stats_probe_remove (sprobe);
 }
 
 static void
 kms_recorder_endpoint_update_media_stats (KmsRecorderEndpoint * self)
 {
-  kms_recorder_endpoint_disable_media_stats (self);
+  g_slist_foreach (self->priv->sink_probes,
+      (GFunc) kms_recorder_endpoint_disable_media_stats, self);
 
   if (self->priv->stats_enabled) {
-    kms_recorder_endpoint_enable_media_stats (self);
+    g_slist_foreach (self->priv->sink_probes,
+        (GFunc) kms_recorder_endpoint_enable_media_stats, self);
+  }
+}
+
+static void
+kms_recorder_endpoint_on_eos (KmsBaseMediaMuxer * obj, gpointer user_data)
+{
+  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (user_data);
+
+  GST_DEBUG_OBJECT (recorder,
+      "Received EOS in muxing pipeline, setting NULL state");
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
+
+  kms_base_media_muxer_set_state (recorder->priv->mux, GST_STATE_NULL);
+  kms_recorder_endpoint_state_changed (recorder, KMS_URI_ENDPOINT_STATE_STOP);
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
+}
+
+static void
+kms_recorder_endpoint_on_sink_added (KmsBaseMediaMuxer * obj,
+    GstElement * sink, gpointer user_data)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  KmsStatsProbe *sprobe;
+  GstPad *sinkpad;
+
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  sprobe = kms_stats_probe_new (sinkpad, 0 /* Does not matter media type */ );
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+  self->priv->sink_probes = g_slist_append (self->priv->sink_probes, sprobe);
+
+  if (self->priv->stats_enabled) {
+    kms_stats_probe_add_latency (sprobe, kms_recorder_endpoint_latency_cb, self,
+        NULL);
+  }
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
+kms_recorder_endpoint_new_media_muxer (KmsRecorderEndpoint * self)
+{
+  GstBus *bus;
+
+  self->priv->mux =
+      KMS_BASE_MEDIA_MUXER (kms_muxing_pipeline_new
+      (KMS_MUXING_PIPELINE_PROFILE, self->priv->profile,
+          KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
+
+  g_signal_connect (self->priv->mux, "on-eos",
+      G_CALLBACK (kms_recorder_endpoint_on_eos), self);
+  g_signal_connect (self->priv->mux, "on-sink-added",
+      G_CALLBACK (kms_recorder_endpoint_on_sink_added), self);
+
+  kms_recorder_endpoint_update_media_stats (self);
+  bus = kms_base_media_muxer_get_bus (self->priv->mux);
+  gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
+  g_object_unref (bus);
+
+  if (kms_recording_profile_supports_type (self->priv->profile,
+          KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+    kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_AUDIO);
+  }
+
+  if (kms_recording_profile_supports_type (self->priv->profile,
+          KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+    kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_VIDEO);
   }
 }
 
@@ -997,32 +913,7 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
         self->priv->profile = g_value_get_enum (value);
 
         if (self->priv->profile != KMS_RECORDING_PROFILE_NONE) {
-          GstBus *bus;
-
-          self->priv->sink = kms_recorder_endpoint_create_sink (self);
-          self->priv->mux =
-              KMS_BASE_MEDIA_MUXER (kms_muxing_pipeline_new
-              (KMS_MUXING_PIPELINE_PROFILE, self->priv->profile,
-                  KMS_MUXING_PIPELINE_SINK, self->priv->sink, NULL));
-
-          kms_recorder_endpoint_update_media_stats (self);
-
-          bus = kms_base_media_muxer_get_bus (self->priv->mux);
-
-          gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
-          g_object_unref (bus);
-
-          if (kms_recording_profile_supports_type (self->priv->profile,
-                  KMS_ELEMENT_PAD_TYPE_AUDIO)) {
-            kms_recorder_endpoint_add_appsink (self,
-                KMS_ELEMENT_PAD_TYPE_AUDIO);
-          }
-
-          if (kms_recording_profile_supports_type (self->priv->profile,
-                  KMS_ELEMENT_PAD_TYPE_VIDEO)) {
-            kms_recorder_endpoint_add_appsink (self,
-                KMS_ELEMENT_PAD_TYPE_VIDEO);
-          }
+          kms_recorder_endpoint_new_media_muxer (self);
         }
       } else {
         GST_ERROR_OBJECT (self, "Profile can only be configured once");
@@ -1135,14 +1026,11 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (element);
   GstCaps *allowed = NULL, *caps = NULL;
   GstCaps *filter, *result, *tcaps;
-  GstElement *appsrc;
 
   gst_query_parse_caps (query, &filter);
 
   switch (kms_element_get_pad_type (element, pad)) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
-          &appsrc, NULL);
       allowed =
           kms_recorder_endpoint_allowed_caps (element,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
@@ -1152,8 +1040,6 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
       result = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
-      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
-          &appsrc, NULL);
       allowed =
           kms_recorder_endpoint_allowed_caps (element,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
@@ -1187,10 +1073,28 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
   if (caps == NULL) {
     GST_ERROR_OBJECT (self, "No caps from profile");
   } else {
+    GstElement *appsrc;
     GstPad *srcpad;
+    gchar *id;
+
+    id = gst_pad_get_name (pad);
+
+    KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+    appsrc = g_hash_table_lookup (self->priv->srcs, id);
+    g_free (id);
+
+    if (appsrc == NULL) {
+      KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+      GST_ERROR_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
+          pad);
+      goto filter_caps;
+    }
+    srcpad = gst_element_get_static_pad (appsrc, "src");
+
+    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
     /* Get encodebin's caps filtering by profile */
-    srcpad = gst_element_get_static_pad (appsrc, "src");
     tcaps = gst_pad_peer_query_caps (srcpad, caps);
     if (tcaps != NULL) {
       /* Filter against filtered encodebin's caps */
@@ -1209,10 +1113,11 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
       gst_caps_unref (result);
       result = aux;
     }
+
     g_object_unref (srcpad);
   }
 
-  g_object_unref (appsrc);
+filter_caps:
 
   /* filter against the query filter when needed */
   if (filter != NULL) {
@@ -1241,19 +1146,14 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (element);
   GstCaps *caps, *accept;
-  GstElement *appsrc;
   gboolean ret = TRUE;
 
   switch (kms_element_get_pad_type (element, pad)) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_VIDEO_APPSRC,
-          &appsrc, NULL);
       caps = kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
-      g_object_get (self->priv->mux, KMS_MUXING_PIPELINE_AUDIO_APPSRC,
-          &appsrc, NULL);
       caps = kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
       break;
@@ -1265,7 +1165,6 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
   if (caps == NULL) {
     GST_ERROR_OBJECT (self, "Can not accept caps without profile");
     gst_query_set_accept_caps_result (query, FALSE);
-    g_object_unref (appsrc);
     return TRUE;
   }
 
@@ -1274,17 +1173,36 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
   ret = gst_caps_can_intersect (accept, caps);
 
   if (ret) {
+    GstElement *appsrc;
     GstPad *srcpad;
+    gchar *id;
 
+    id = gst_pad_get_name (pad);
+
+    KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+    appsrc = g_hash_table_lookup (self->priv->srcs, id);
+    g_free (id);
+
+    if (appsrc == NULL) {
+      KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+      GST_ERROR_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
+          pad);
+      goto end;
+    }
     srcpad = gst_element_get_static_pad (appsrc, "src");
+
+    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
     ret = gst_pad_peer_query_accept_caps (srcpad, accept);
     gst_object_unref (srcpad);
   } else {
     GST_ERROR_OBJECT (self, "Incompatbile caps %" GST_PTR_FORMAT, caps);
   }
 
+end:
+
   gst_caps_unref (caps);
-  g_object_unref (appsrc);
 
   gst_query_set_accept_caps_result (query, ret);
 
@@ -1476,6 +1394,8 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   g_mutex_init (&self->priv->base_time_lock);
 
+  self->priv->srcs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+      g_object_unref);
   self->priv->loop = kms_loop_new ();
 
   self->priv->profile = KMS_RECORDING_PROFILE_NONE;
@@ -1488,6 +1408,9 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->ai = 0.0;
   self->priv->vi = 0.0;
+
+  self->priv->audio_probe = 0UL;
+  self->priv->video_probe = 0UL;
 
   g_cond_init (&self->priv->state_manager.cond);
 }

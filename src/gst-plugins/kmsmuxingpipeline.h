@@ -37,10 +37,7 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_CLASS_TYPE((klass),             \
   KMS_TYPE_MUXING_PIPELINE))
 
-#define KMS_MUXING_PIPELINE_VIDEO_APPSRC "video-appsrc"
-#define KMS_MUXING_PIPELINE_AUDIO_APPSRC "audio-appsrc"
 #define KMS_MUXING_PIPELINE_PROFILE "profile"
-#define KMS_MUXING_PIPELINE_SINK "sink"
 
 typedef struct _KmsMuxingPipeline KmsMuxingPipeline;
 typedef struct _KmsMuxingPipelineClass KmsMuxingPipelineClass;

@@ -29,6 +29,7 @@
 #define KMS_MUXING_PIPELINE_NAME OBJECT_NAME
 
 #define parent_class kms_muxing_pipeline_parent_class
+#define KEY_MUXING_PIPELINE_PAD_PROBE_ID "kms-muxing-pipeline-key-probe-id"
 
 GST_DEBUG_CATEGORY_STATIC (kms_muxing_pipeline_debug_category);
 #define GST_CAT_DEFAULT kms_muxing_pipeline_debug_category
@@ -49,8 +50,9 @@ struct _KmsMuxingPipelinePrivate
   GstElement *sink;
   GstClockTime lastVideoPts;
   GstClockTime lastAudioPts;
-  KmsRecordingProfile profile;
-  GMutex mutex;
+  GstTaskPool *tasks;
+
+  gboolean sink_signaled;
 };
 
 typedef struct _BufferListItData
@@ -64,63 +66,21 @@ G_DEFINE_TYPE_WITH_CODE (KmsMuxingPipeline, kms_muxing_pipeline,
     GST_DEBUG_CATEGORY_INIT (kms_muxing_pipeline_debug_category, OBJECT_NAME,
         0, "debug category for muxing pipeline object"));
 
-/* Object properties */
-enum
-{
-  PROP_0,
-  PROP_VIDEO_APPSRC,
-  PROP_AUDIO_APPSRC,
-  PROP_SINK,
-  PROP_PROFILE,
-  N_PROPERTIES
-};
-
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
-
-#define KMS_MUXING_PIPELINE_DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
-
 static void
-kms_muxing_pipeline_set_property (GObject * object, guint property_id,
-    const GValue * value, GParamSpec * pspec)
+destroy_ulong (gpointer data)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (object);
-
-  switch (property_id) {
-    case PROP_SINK:
-      self->priv->sink = gst_object_ref (g_value_get_object (value));
-      break;
-    case PROP_PROFILE:
-      self->priv->profile = g_value_get_enum (value);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
+  g_slice_free (gulong, data);
 }
 
 static void
-kms_muxing_pipeline_get_property (GObject * object, guint property_id,
-    GValue * value, GParamSpec * pspec)
+kms_muxing_pipeline_finalize (GObject * obj)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (object);
+  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (obj);
 
-  switch (property_id) {
-    case PROP_VIDEO_APPSRC:
-      g_value_set_object (value, self->priv->videosrc);
-      break;
-    case PROP_AUDIO_APPSRC:
-      g_value_set_object (value, self->priv->audiosrc);
-      break;
-    case PROP_SINK:
-      g_value_set_object (value, self->priv->sink);
-      break;
-    case PROP_PROFILE:
-      g_value_set_enum (value, self->priv->profile);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
+  gst_task_pool_cleanup (self->priv->tasks);
+  gst_object_unref (self->priv->tasks);
+
+  G_OBJECT_CLASS (parent_class)->finalize (obj);
 }
 
 GstStateChangeReturn
@@ -136,6 +96,42 @@ kms_muxing_pipeline_set_state (KmsBaseMediaMuxer * obj, GstState state)
   return KMS_BASE_MEDIA_MUXER_CLASS (parent_class)->set_state (obj, state);
 }
 
+static GstElement *
+kms_muxing_pipeline_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
+    const gchar * id)
+{
+  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (obj);
+  GstElement *sink = NULL, *appsrc = NULL;
+
+  KMS_BASE_MEDIA_MUXER_LOCK (self);
+
+  switch (type) {
+    case KMS_MEDIA_TYPE_AUDIO:
+      appsrc = self->priv->audiosrc;
+      break;
+    case KMS_MEDIA_TYPE_VIDEO:
+      appsrc = self->priv->videosrc;
+      break;
+    default:
+      GST_WARNING_OBJECT (obj, "Unsupported media type %u", type);
+  }
+
+  if (appsrc != NULL && !self->priv->sink_signaled) {
+    sink = g_object_ref (self->priv->sink);
+    self->priv->sink_signaled = TRUE;
+  }
+
+  KMS_BASE_MEDIA_MUXER_UNLOCK (self);
+
+  if (sink != NULL) {
+    KMS_BASE_MEDIA_MUXER_GET_CLASS (self)->emit_on_sink_added
+        (KMS_BASE_MEDIA_MUXER (self), sink);
+    g_object_unref (sink);
+  }
+
+  return appsrc;
+}
+
 static void
 kms_muxing_pipeline_class_init (KmsMuxingPipelineClass * klass)
 {
@@ -143,35 +139,11 @@ kms_muxing_pipeline_class_init (KmsMuxingPipelineClass * klass)
   GObjectClass *objclass;
 
   objclass = G_OBJECT_CLASS (klass);
-  objclass->set_property = kms_muxing_pipeline_set_property;
-  objclass->get_property = kms_muxing_pipeline_get_property;
+  objclass->finalize = kms_muxing_pipeline_finalize;
 
   basemediamuxerclass = KMS_BASE_MEDIA_MUXER_CLASS (klass);
   basemediamuxerclass->set_state = kms_muxing_pipeline_set_state;
-
-  /* Install properties */
-  obj_properties[PROP_VIDEO_APPSRC] =
-      g_param_spec_object (KMS_MUXING_PIPELINE_VIDEO_APPSRC,
-      "Video appsrc element", "Video media input for the pipeline",
-      GST_TYPE_ELEMENT, (G_PARAM_READABLE));
-
-  obj_properties[PROP_AUDIO_APPSRC] =
-      g_param_spec_object (KMS_MUXING_PIPELINE_AUDIO_APPSRC,
-      "Audio appsrc element", "Audio media input for the pipeline",
-      GST_TYPE_ELEMENT, (G_PARAM_READABLE));
-
-  obj_properties[PROP_SINK] =
-      g_param_spec_object (KMS_MUXING_PIPELINE_SINK, "Sink element",
-      "Sink element", GST_TYPE_ELEMENT,
-      (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
-
-  obj_properties[PROP_PROFILE] = g_param_spec_enum (KMS_MUXING_PIPELINE_PROFILE,
-      "Recording profile",
-      "The profile used to encapsulate media",
-      KMS_TYPE_RECORDING_PROFILE, KMS_MUXING_PIPELINE_DEFAULT_RECORDING_PROFILE,
-      (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
-
-  g_object_class_install_properties (objclass, N_PROPERTIES, obj_properties);
+  basemediamuxerclass->add_src = kms_muxing_pipeline_add_src;
 
   g_type_class_add_private (klass, sizeof (KmsMuxingPipelinePrivate));
 }
@@ -179,10 +151,20 @@ kms_muxing_pipeline_class_init (KmsMuxingPipelineClass * klass)
 static void
 kms_muxing_pipeline_init (KmsMuxingPipeline * self)
 {
+  GError *err = NULL;
+
   self->priv = KMS_MUXING_PIPELINE_GET_PRIVATE (self);
 
   self->priv->lastVideoPts = G_GUINT64_CONSTANT (0);
   self->priv->lastAudioPts = G_GUINT64_CONSTANT (0);
+  self->priv->tasks = gst_task_pool_new ();
+
+  gst_task_pool_prepare (self->priv->tasks, &err);
+
+  if (G_UNLIKELY (err != NULL)) {
+    g_warning ("%s", err->message);
+    g_error_free (err);
+  }
 }
 
 static gboolean
@@ -295,7 +277,7 @@ kms_muxing_pipeline_add_injector_probe (KmsMuxingPipeline * self,
 static GstElement *
 kms_muxing_pipeline_create_muxer (KmsMuxingPipeline * self)
 {
-  switch (self->priv->profile) {
+  switch (KMS_BASE_MEDIA_MUXER_GET_PROFILE (self)) {
     case KMS_RECORDING_PROFILE_WEBM:
     case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_WEBM_AUDIO_ONLY:
@@ -311,10 +293,64 @@ kms_muxing_pipeline_create_muxer (KmsMuxingPipeline * self)
 }
 
 static void
+kms_muxing_pipeline_emit_on_eos (KmsBaseMediaMuxer * obj)
+{
+  KMS_BASE_MEDIA_MUXER_GET_CLASS (obj)->emit_on_eos (obj);
+}
+
+static GstPadProbeReturn
+stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
+    gpointer user_data)
+{
+  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (user_data);
+  GError *err = NULL;
+
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
+    return GST_PAD_PROBE_OK;
+
+  /* Use diferent thread to emit the signal */
+  gst_task_pool_push (self->priv->tasks,
+      (GstTaskPoolFunction) kms_muxing_pipeline_emit_on_eos, self, &err);
+
+  if (err != NULL) {
+    GST_ERROR_OBJECT (self, "%s", err->message);
+    g_error_free (err);
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+kms_muxing_pipeline_configure_EOS (KmsMuxingPipeline * self)
+{
+  gulong *probe_id;
+  GstPad *sinkpad;
+
+  sinkpad = gst_element_get_static_pad (self->priv->sink, "sink");
+  if (sinkpad == NULL) {
+    GST_WARNING ("No sink pad available for element %" GST_PTR_FORMAT,
+        self->priv->sink);
+    return;
+  }
+
+  probe_id = g_slice_new0 (gulong);
+  *probe_id = gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      stop_notification_cb, self, NULL);
+  g_object_set_data_full (G_OBJECT (sinkpad), KEY_MUXING_PIPELINE_PAD_PROBE_ID,
+      probe_id, destroy_ulong);
+  g_object_unref (sinkpad);
+}
+
+static void
 kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
 {
   self->priv->videosrc = gst_element_factory_make ("appsrc", "videoSrc");
   self->priv->audiosrc = gst_element_factory_make ("appsrc", "audioSrc");
+
+  self->priv->sink =
+      KMS_BASE_MEDIA_MUXER_GET_CLASS (self)->create_sink (KMS_BASE_MEDIA_MUXER
+      (self), KMS_BASE_MEDIA_MUXER_GET_URI (self));
+  kms_muxing_pipeline_configure_EOS (self);
 
   g_object_set (self->priv->videosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
   g_object_set (self->priv->audiosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
@@ -324,7 +360,7 @@ kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
 
   self->priv->mux = kms_muxing_pipeline_create_muxer (self);
 
-  gst_bin_add_many (GST_BIN (KMS_BASE_MEDIA_MUXER_PIPELINE (self)),
+  gst_bin_add_many (GST_BIN (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self)),
       self->priv->videosrc, self->priv->audiosrc, self->priv->mux,
       self->priv->sink, NULL);
 
@@ -333,20 +369,20 @@ kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
         GST_PTR_FORMAT ", %" GST_PTR_FORMAT, self->priv->mux, self->priv->sink);
   }
 
-  if (kms_recording_profile_supports_type (self->priv->profile,
-          KMS_ELEMENT_PAD_TYPE_VIDEO)) {
-    if (!gst_element_link_pads (self->priv->videosrc, "src",
-            self->priv->mux, "video_%u")) {
+  if (kms_recording_profile_supports_type (KMS_BASE_MEDIA_MUXER_GET_PROFILE
+          (self), KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+    if (!gst_element_link_pads (self->priv->videosrc, "src", self->priv->mux,
+            "video_%u")) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
           self->priv->videosrc, self->priv->mux);
     }
   }
 
-  if (kms_recording_profile_supports_type (self->priv->profile,
-          KMS_ELEMENT_PAD_TYPE_AUDIO)) {
-    if (!gst_element_link_pads (self->priv->audiosrc, "src",
-            self->priv->mux, "audio_%u")) {
+  if (kms_recording_profile_supports_type (KMS_BASE_MEDIA_MUXER_GET_PROFILE
+          (self), KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+    if (!gst_element_link_pads (self->priv->audiosrc, "src", self->priv->mux,
+            "audio_%u")) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
           self->priv->audiosrc, self->priv->mux);
