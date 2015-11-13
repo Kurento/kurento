@@ -50,6 +50,12 @@ elif [ $(find . -regex '.*/bower.json' | sed -n 1p) ]
 then
   echo "Getting version from bower recursing into folders"
   PROJECT_VERSION=$(grep version `find . -regex '.*/bower.json' | sed -n 1p` | cut -d ":" -f 2 | cut -d "\"" -f 2)
+elif [ -f GNUmakefile ]
+then
+  echo "Getting version from GNUMakeFile"
+  PROJECT_VERSION_MAJOR=$(grep 'LIBS3_VER_MAJOR ?=' GNUmakefile | cut -d "=" -f 2 | cut -d " " -f 2)
+  PROJECT_VERSION_MINOR=$(grep 'LIBS3_VER_MINOR ?=' GNUmakefile | cut -d "=" -f 2 | cut -d " " -f 2)
+  PROJECT_VERSION="$PROJECT_VERSION_MAJOR.$PROJECT_VERSION_MINOR"
 else
   echo "PROJECT_VERSION not defined, need CMakeLists.txt, pom.xml, configure.ac, configure.in or package.json file"
   exit 1
