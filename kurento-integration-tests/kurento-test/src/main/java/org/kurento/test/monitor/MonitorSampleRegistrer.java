@@ -3,6 +3,9 @@ package org.kurento.test.monitor;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +24,11 @@ public class MonitorSampleRegistrer {
 	}
 
 	public void writeResults(String csvFile) throws IOException {
+
+		Path path = Paths.get(csvFile);
+		if (!Files.exists(path.getParent())) {
+			Files.createDirectories(path.getParent());
+		}
 
 		try (PrintWriter pw = new PrintWriter(new FileWriter(csvFile))) {
 

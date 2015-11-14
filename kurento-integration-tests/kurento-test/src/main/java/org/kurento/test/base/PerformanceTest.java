@@ -36,7 +36,7 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	protected SystemMonitorManager monitor;
 
-	protected String monitorResultPath = getDefaultOutputFile("-monitor.csv");
+	protected String monitorResultPath;
 
 	public PerformanceTest(TestScenario testScenario) {
 		super(testScenario);
@@ -46,6 +46,7 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 
 	@Before
 	public void setupMonitor() {
+		monitorResultPath = getDefaultOutputFile("-monitor.csv");
 		monitor = new SystemMonitorManager();
 		monitor.startMonitoring();
 	}
