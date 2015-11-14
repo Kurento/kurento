@@ -20,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,8 +48,6 @@ import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.LatencyRegistry;
 import org.kurento.test.latency.VideoTagType;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-
 /**
  * <strong>Description</strong>: Stability test for WebRTC in loopback with N
  * fake clients.<br/>
@@ -74,31 +73,41 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 	private static final int WIDTH = 500;
 	private static final int HEIGHT = 270;
 
-	private static int playTime = getProperty("test.scalability.latency.playtime", 30); // seconds
-	private static int bandWidth = getProperty("test.scalability.latency.bandwidth", 500);
-	private static int realClients = getProperty("test.scalability.latency.realclients", 1);
-	private static String[] fakeClientsArray = getProperty("test.scalability.latency.fakeclients", "0,20,40,60,80,100")
-			.split(",");
+	private static int playTime = getProperty(
+			"test.scalability.latency.playtime", 30); // seconds
+	private static int bandWidth = getProperty(
+			"test.scalability.latency.bandwidth", 500);
+	private static int realClients = getProperty(
+			"test.scalability.latency.realclients", 1);
+	private static String[] fakeClientsArray = getProperty(
+			"test.scalability.latency.fakeclients", "0,20,40,60,80,100")
+					.split(",");
 
 	private static Map<Long, LatencyRegistry> latencyResult = new HashMap<>();
 
 	private int fakeClients;
 
-	public WebRtcScalabilityLatencyTest(TestScenario testScenario, int fakeClients) {
+	public WebRtcScalabilityLatencyTest(TestScenario testScenario,
+			int fakeClients) {
 		super(testScenario);
 		this.fakeClients = fakeClients;
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientWebPageTest.getPathTestFiles() + "/video/15sec/rgbHD.y4m";
+		String videoPath = KurentoClientWebPageTest.getPathTestFiles()
+				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
 
 		for (int i = 0; i < realClients; i++) {
-			test.addBrowser(BrowserConfig.BROWSER + i, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-					.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+			test.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.CHROME)
+							.scope(BrowserScope.LOCAL).build());
 		}
 
 		Collection<Object[]> out = new ArrayList<>();
@@ -125,38 +134,47 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 
 		// WebRTC
 		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_RCV);
 
 		// Real clients
 		ExecutorService executor = Executors.newFixedThreadPool(realClients);
 		final LatencyController csB2B[] = new LatencyController[realClients];
 		for (int i = 0; i < realClients; i++) {
 			csB2B[i] = new LatencyController("Latency in back2back " + i);
-			WebRtcEndpoint extraWebRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+			WebRtcEndpoint extraWebRtcEndpoint = new WebRtcEndpoint.Builder(mp)
+					.build();
 			webRtcEndpoint.connect(extraWebRtcEndpoint);
 
 			getPage(i).subscribeEvents("playing");
-			getPage(i).initWebRtc(extraWebRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+			getPage(i).initWebRtc(extraWebRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+					WebRtcMode.RCV_ONLY);
 
 			final int j = i;
 			executor.execute(new Runnable() {
 				@Override
 				public void run() {
-					csB2B[j].checkRemoteLatency(playTime, TimeUnit.SECONDS, getPage(), getPage(j));
+					csB2B[j].checkRemoteLatency(playTime, TimeUnit.SECONDS,
+							getPage(), getPage(j));
 				}
 			});
 		}
 
 		// Latency assessment
-		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(), VideoTagType.REMOTE.getId());
+		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(),
+				VideoTagType.REMOTE.getId());
 		cs.checkLocalLatency(playTime, TimeUnit.SECONDS, getPage());
 
 		// Release Media Pipeline
 		mp.release();
 
 		// Latency results in loopback (PNG chart and CSV file)
-		cs.drawChart(getDefaultOutputFile("-loopback-fakeClients" + fakeClients + ".png"), WIDTH, HEIGHT);
-		cs.writeCsv(getDefaultOutputFile("-loopback-fakeClients" + fakeClients + ".csv"));
+		cs.drawChart(
+				getDefaultOutputFile(
+						"-loopback-fakeClients" + fakeClients + ".png"),
+				WIDTH, HEIGHT);
+		cs.writeCsv(getDefaultOutputFile(
+				"-loopback-fakeClients" + fakeClients + ".csv"));
 		cs.logLatencyErrorrs();
 
 		// Latency average
@@ -168,12 +186,15 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 		}
 
 		for (int i = 0; i < realClients; i++) {
-			csB2B[i].drawChart(getDefaultOutputFile("-back2back" + i + "-fakeClients" + fakeClients + ".png"), WIDTH,
-					HEIGHT);
-			csB2B[i].writeCsv(getDefaultOutputFile("-back2back" + i + "-fakeClients" + fakeClients + ".csv"));
+			csB2B[i].drawChart(getDefaultOutputFile(
+					"-back2back" + i + "-fakeClients" + fakeClients + ".png"),
+					WIDTH, HEIGHT);
+			csB2B[i].writeCsv(getDefaultOutputFile(
+					"-back2back" + i + "-fakeClients" + fakeClients + ".csv"));
 			csB2B[i].logLatencyErrorrs();
 
-			Map<Long, LatencyRegistry> remoteLatencyMap = csB2B[i].getLatencyMap();
+			Map<Long, LatencyRegistry> remoteLatencyMap = csB2B[i]
+					.getLatencyMap();
 			for (LatencyRegistry lr : remoteLatencyMap.values()) {
 				avgLatency += lr.getLatency();
 			}
@@ -187,7 +208,8 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 	@AfterClass
 	public static void teardown() throws IOException {
 		// Write csv
-		PrintWriter pw = new PrintWriter(new FileWriter(getDefaultOutputFile("-latency.csv")));
+		PrintWriter pw = new PrintWriter(
+				new FileWriter(getDefaultOutputFile("-latency.csv")));
 		for (long time : latencyResult.keySet()) {
 			pw.println(time + "," + latencyResult.get(time).getLatency());
 		}
@@ -195,8 +217,10 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 
 		// Draw chart
 		ChartWriter chartWriter = new ChartWriter(latencyResult, "Latency avg",
-				"Latency of fake clients: " + Arrays.toString(fakeClientsArray), "Number of client(s)", "Latency (ms)");
-		chartWriter.drawChart(getDefaultOutputFile("-latency-evolution.png"), WIDTH, HEIGHT);
+				"Latency of fake clients: " + Arrays.toString(fakeClientsArray),
+				"Number of client(s)", "Latency (ms)");
+		chartWriter.drawChart(getDefaultOutputFile("-latency-evolution.png"),
+				WIDTH, HEIGHT);
 	}
 
 }

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,8 +22,6 @@ import org.kurento.test.internal.AbortableCountDownLatch;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 @Category(SystemTests.class)
 public class BrowserCreationTest {
@@ -76,7 +75,6 @@ public class BrowserCreationTest {
 			throws InterruptedException {
 		long startTime = System.currentTimeMillis();
 
-		@SuppressWarnings("unchecked")
 		final List<Browser> browsers = Collections
 				.synchronizedList(new ArrayList<Browser>());
 
