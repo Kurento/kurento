@@ -578,6 +578,10 @@ public class DockerBrowserManager {
 
 				Path logFile = downloadLogsPath.resolve(logName + ".log");
 
+				if (Files.exists(logFile.getParent())) {
+					Files.createDirectories(logFile.getParent());
+				}
+
 				log.debug("Downloading log for container {} in file {}",
 						container, logFile.toAbsolutePath());
 
