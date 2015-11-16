@@ -31,7 +31,7 @@ if [ -z "$BUILD_COMMAND" ]; then
   if [ "$KMS_AUTOSTART" = "false" ]; then
     BUILD_COMMAND="node --version && npm --version && npm -d install && npm test && node_modules/.bin/grunt && node_modules/.bin/grunt sync:bower"
   else
-    BUILD_COMMAND="node --version && npm --version && npm -d install && npm test -- --ws.uri=ws://kms:8888/kurento --timeout_factor=3 && node_modules/.bin/grunt && node_modules/.bin/grunt sync:bower"
+    BUILD_COMMAND="node --version && npm --version && npm -d install && npm test -- --ws_uri=ws://kms:8888/kurento --timeout_factor=3 && node_modules/.bin/grunt && node_modules/.bin/grunt sync:bower"
   fi
 fi
 
