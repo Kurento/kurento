@@ -51,6 +51,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
@@ -568,6 +569,11 @@ public class KurentoMediaServerManager {
 	public void retrieveLogs() throws IOException {
 		String targetFolder = getDefaultOutputFolder();
 		String kmsLogsPath = getKmsLogPath();
+
+		Path defaultOutput = Paths.get(getDefaultOutputFolder());
+		if (!Files.exists(defaultOutput)) {
+			Files.createDirectories(defaultOutput);
+		}
 
 		if (kmsAutostarted) {
 			kmsLogsPath += "logs/";
