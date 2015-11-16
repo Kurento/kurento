@@ -51,7 +51,7 @@ struct _KmsWebRtcConnectionClass
 GType kms_webrtc_connection_get_type (void);
 
 KmsWebRtcConnection *kms_webrtc_connection_new (KmsIceBaseAgent * agent,
-    GMainContext * context, const gchar * name);
+    GMainContext * context, const gchar * name, guint16 min_port, guint16 max_port);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_CONNECTION_H__ */

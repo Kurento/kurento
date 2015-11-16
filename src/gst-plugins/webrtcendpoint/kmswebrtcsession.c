@@ -121,7 +121,7 @@ kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
     GST_DEBUG_OBJECT (self, "Create RTP connection");
     conn =
         KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new
-        (self->agent, self->context, name));
+        (self->agent, self->context, name, min_port, max_port));
   }
 
   return KMS_I_RTP_CONNECTION (conn);
