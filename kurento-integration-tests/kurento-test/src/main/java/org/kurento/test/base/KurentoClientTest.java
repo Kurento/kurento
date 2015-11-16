@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
  */
 public class KurentoClientTest {
 
-	protected static Logger log = LoggerFactory.getLogger(KurentoClientTest.class);
+	protected static Logger log = LoggerFactory
+			.getLogger(KurentoClientTest.class);
 
 	@Rule
 	public TestName testName = new TestName();
@@ -44,7 +45,8 @@ public class KurentoClientTest {
 
 	@Before
 	public void setupKurentoClient() throws IOException {
-		kurentoClientManager = new KurentoClientManager(testName, this.getClass());
+		kurentoClientManager = new KurentoClientManager(testName,
+				this.getClass());
 		kurentoClient = kurentoClientManager.getKurentoClient();
 		fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
 	}

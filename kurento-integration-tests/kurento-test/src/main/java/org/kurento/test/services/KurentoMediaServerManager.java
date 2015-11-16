@@ -367,9 +367,10 @@ public class KurentoMediaServerManager {
 		}
 
 		if (dockerClient.existsContainer(dockerContainerName)) {
-			throw new KurentoException(
-					"Tryint to create a new container named '"
-							+ dockerContainerName + "' but it already exist");
+			log.warn("Trying to create a new container named '"
+					+ dockerContainerName
+					+ "' but it already exist. Stopping and removing existing one and creating it again.");
+			dockerClient.stopAndRemoveContainer(dockerContainerName);
 		}
 
 		log.debug("Starting kms container...");
