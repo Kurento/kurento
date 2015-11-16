@@ -33,5 +33,4 @@ mavenOpts="$mavenOpts -U"
   (cd kurento-java &&  mvn --settings $MAVEN_SETTINGS clean install -Pdeploy -U -Dmaven.test.skip=true && cd ..)
 
 # Execute capability test
-echo "{ "allow_root": true }" >> ~/.bowerrc
 mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS
