@@ -23,26 +23,26 @@
 #include <commons/kmsutils.h>
 #include <commons/kmsagnosticcaps.h>
 
-#include "kmsmuxingpipeline.h"
+#include "kmsavmuxer.h"
 
-#define OBJECT_NAME "muxingpipeline"
-#define KMS_MUXING_PIPELINE_NAME OBJECT_NAME
+#define OBJECT_NAME "avmuxer"
+#define KMS_AV_MUXER_NAME OBJECT_NAME
 
-#define parent_class kms_muxing_pipeline_parent_class
-#define KEY_MUXING_PIPELINE_PAD_PROBE_ID "kms-muxing-pipeline-key-probe-id"
+#define parent_class kms_av_muxer_parent_class
+#define KEY_AV_MUXER_PAD_PROBE_ID "kms-muxing-pipeline-key-probe-id"
 
-GST_DEBUG_CATEGORY_STATIC (kms_muxing_pipeline_debug_category);
-#define GST_CAT_DEFAULT kms_muxing_pipeline_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_av_muxer_debug_category);
+#define GST_CAT_DEFAULT kms_av_muxer_debug_category
 
-#define KMS_MUXING_PIPELINE_GET_PRIVATE(obj) (  \
-  G_TYPE_INSTANCE_GET_PRIVATE (                 \
-    (obj),                                      \
-    KMS_TYPE_MUXING_PIPELINE,                   \
-    KmsMuxingPipelinePrivate                    \
-  )                                             \
+#define KMS_AV_MUXER_GET_PRIVATE(obj) (  \
+  G_TYPE_INSTANCE_GET_PRIVATE (          \
+    (obj),                               \
+    KMS_TYPE_AV_MUXER,                   \
+    KmsAVMuxerPrivate                    \
+  )                                      \
 )
 
-struct _KmsMuxingPipelinePrivate
+struct _KmsAVMuxerPrivate
 {
   GstElement *videosrc;
   GstElement *audiosrc;
@@ -57,13 +57,13 @@ struct _KmsMuxingPipelinePrivate
 
 typedef struct _BufferListItData
 {
-  KmsMuxingPipeline *self;
+  KmsAVMuxer *self;
   GstElement *elem;
 } BufferListItData;
 
-G_DEFINE_TYPE_WITH_CODE (KmsMuxingPipeline, kms_muxing_pipeline,
+G_DEFINE_TYPE_WITH_CODE (KmsAVMuxer, kms_av_muxer,
     KMS_TYPE_BASE_MEDIA_MUXER,
-    GST_DEBUG_CATEGORY_INIT (kms_muxing_pipeline_debug_category, OBJECT_NAME,
+    GST_DEBUG_CATEGORY_INIT (kms_av_muxer_debug_category, OBJECT_NAME,
         0, "debug category for muxing pipeline object"));
 
 static void
@@ -73,9 +73,9 @@ destroy_ulong (gpointer data)
 }
 
 static void
-kms_muxing_pipeline_finalize (GObject * obj)
+kms_av_muxer_finalize (GObject * obj)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (obj);
+  KmsAVMuxer *self = KMS_AV_MUXER (obj);
 
   gst_task_pool_cleanup (self->priv->tasks);
   gst_object_unref (self->priv->tasks);
@@ -84,9 +84,9 @@ kms_muxing_pipeline_finalize (GObject * obj)
 }
 
 GstStateChangeReturn
-kms_muxing_pipeline_set_state (KmsBaseMediaMuxer * obj, GstState state)
+kms_av_muxer_set_state (KmsBaseMediaMuxer * obj, GstState state)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (obj);
+  KmsAVMuxer *self = KMS_AV_MUXER (obj);
 
   if (state == GST_STATE_NULL || state == GST_STATE_READY) {
     self->priv->lastAudioPts = 0;
@@ -97,10 +97,10 @@ kms_muxing_pipeline_set_state (KmsBaseMediaMuxer * obj, GstState state)
 }
 
 static GstElement *
-kms_muxing_pipeline_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
+kms_av_muxer_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
     const gchar * id)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (obj);
+  KmsAVMuxer *self = KMS_AV_MUXER (obj);
   GstElement *sink = NULL, *appsrc = NULL;
 
   KMS_BASE_MEDIA_MUXER_LOCK (self);
@@ -133,27 +133,27 @@ kms_muxing_pipeline_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
 }
 
 static void
-kms_muxing_pipeline_class_init (KmsMuxingPipelineClass * klass)
+kms_av_muxer_class_init (KmsAVMuxerClass * klass)
 {
   KmsBaseMediaMuxerClass *basemediamuxerclass;
   GObjectClass *objclass;
 
   objclass = G_OBJECT_CLASS (klass);
-  objclass->finalize = kms_muxing_pipeline_finalize;
+  objclass->finalize = kms_av_muxer_finalize;
 
   basemediamuxerclass = KMS_BASE_MEDIA_MUXER_CLASS (klass);
-  basemediamuxerclass->set_state = kms_muxing_pipeline_set_state;
-  basemediamuxerclass->add_src = kms_muxing_pipeline_add_src;
+  basemediamuxerclass->set_state = kms_av_muxer_set_state;
+  basemediamuxerclass->add_src = kms_av_muxer_add_src;
 
-  g_type_class_add_private (klass, sizeof (KmsMuxingPipelinePrivate));
+  g_type_class_add_private (klass, sizeof (KmsAVMuxerPrivate));
 }
 
 static void
-kms_muxing_pipeline_init (KmsMuxingPipeline * self)
+kms_av_muxer_init (KmsAVMuxer * self)
 {
   GError *err = NULL;
 
-  self->priv = KMS_MUXING_PIPELINE_GET_PRIVATE (self);
+  self->priv = KMS_AV_MUXER_GET_PRIVATE (self);
 
   self->priv->lastVideoPts = G_GUINT64_CONSTANT (0);
   self->priv->lastAudioPts = G_GUINT64_CONSTANT (0);
@@ -168,7 +168,7 @@ kms_muxing_pipeline_init (KmsMuxingPipeline * self)
 }
 
 static gboolean
-kms_muxing_pipeline_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
+kms_av_muxer_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
 {
   if (G_UNLIKELY (!GST_BUFFER_PTS_IS_VALID ((*buffer)))) {
     return TRUE;
@@ -185,7 +185,7 @@ kms_muxing_pipeline_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
 }
 
 static gboolean
-kms_muxing_pipeline_injector (KmsMuxingPipeline * self, GstElement * elem,
+kms_av_muxer_injector (KmsAVMuxer * self, GstElement * elem,
     GstBuffer ** buffer)
 {
   GstClockTime *lastPts = NULL;
@@ -200,7 +200,7 @@ kms_muxing_pipeline_injector (KmsMuxingPipeline * self, GstElement * elem,
     gboolean ret;
 
     KMS_BASE_MEDIA_MUXER_LOCK (self);
-    ret = kms_muxing_pipeline_check_pts (buffer, lastPts);
+    ret = kms_av_muxer_check_pts (buffer, lastPts);
     KMS_BASE_MEDIA_MUXER_UNLOCK (self);
 
     return ret;
@@ -210,16 +210,16 @@ kms_muxing_pipeline_injector (KmsMuxingPipeline * self, GstElement * elem,
 }
 
 static gboolean
-kms_muxing_pipeline_injector_probe_it (GstBuffer ** buffer, guint idx,
+kms_av_muxer_injector_probe_it (GstBuffer ** buffer, guint idx,
     gpointer user_data)
 {
   BufferListItData *data = user_data;
 
-  return kms_muxing_pipeline_injector (data->self, data->elem, buffer);
+  return kms_av_muxer_injector (data->self, data->elem, buffer);
 }
 
 static GstPadProbeReturn
-kms_muxing_pipeline_injector_probe (GstPad * pad, GstPadProbeInfo * info,
+kms_av_muxer_injector_probe (GstPad * pad, GstPadProbeInfo * info,
     gpointer self)
 {
   GstElement *elem;
@@ -241,13 +241,13 @@ kms_muxing_pipeline_injector_probe (GstPad * pad, GstPadProbeInfo * info,
     itData.elem = elem;
 
     if (G_UNLIKELY (!gst_buffer_list_foreach (list,
-                kms_muxing_pipeline_injector_probe_it, &itData))) {
+                kms_av_muxer_injector_probe_it, &itData))) {
       ret = GST_PAD_PROBE_DROP;
     }
   } else if (info->type & GST_PAD_PROBE_TYPE_BUFFER) {
     GstBuffer **buffer = (GstBuffer **) & info->data;
 
-    if (G_UNLIKELY (!kms_muxing_pipeline_injector (self, elem, buffer))) {
+    if (G_UNLIKELY (!kms_av_muxer_injector (self, elem, buffer))) {
       ret = GST_PAD_PROBE_DROP;
     }
   }
@@ -258,8 +258,7 @@ kms_muxing_pipeline_injector_probe (GstPad * pad, GstPadProbeInfo * info,
 }
 
 static void
-kms_muxing_pipeline_add_injector_probe (KmsMuxingPipeline * self,
-    GstElement * appsrc)
+kms_av_muxer_add_injector_probe (KmsAVMuxer * self, GstElement * appsrc)
 {
   GstPad *src;
 
@@ -269,13 +268,13 @@ kms_muxing_pipeline_add_injector_probe (KmsMuxingPipeline * self,
 
   gst_pad_add_probe (src,
       GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_BUFFER_LIST,
-      kms_muxing_pipeline_injector_probe, self, NULL);
+      kms_av_muxer_injector_probe, self, NULL);
 
   g_object_unref (src);
 }
 
 static GstElement *
-kms_muxing_pipeline_create_muxer (KmsMuxingPipeline * self)
+kms_av_muxer_create_muxer (KmsAVMuxer * self)
 {
   switch (KMS_BASE_MEDIA_MUXER_GET_PROFILE (self)) {
     case KMS_RECORDING_PROFILE_WEBM:
@@ -293,7 +292,7 @@ kms_muxing_pipeline_create_muxer (KmsMuxingPipeline * self)
 }
 
 static void
-kms_muxing_pipeline_emit_on_eos (KmsBaseMediaMuxer * obj)
+kms_av_muxer_emit_on_eos (KmsBaseMediaMuxer * obj)
 {
   KMS_BASE_MEDIA_MUXER_GET_CLASS (obj)->emit_on_eos (obj);
 }
@@ -302,7 +301,7 @@ static GstPadProbeReturn
 stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
     gpointer user_data)
 {
-  KmsMuxingPipeline *self = KMS_MUXING_PIPELINE (user_data);
+  KmsAVMuxer *self = KMS_AV_MUXER (user_data);
   GError *err = NULL;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
@@ -310,7 +309,7 @@ stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
 
   /* Use diferent thread to emit the signal */
   gst_task_pool_push (self->priv->tasks,
-      (GstTaskPoolFunction) kms_muxing_pipeline_emit_on_eos, self, &err);
+      (GstTaskPoolFunction) kms_av_muxer_emit_on_eos, self, &err);
 
   if (err != NULL) {
     GST_ERROR_OBJECT (self, "%s", err->message);
@@ -321,7 +320,7 @@ stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
 }
 
 static void
-kms_muxing_pipeline_configure_EOS (KmsMuxingPipeline * self)
+kms_av_muxer_configure_EOS (KmsAVMuxer * self)
 {
   gulong *probe_id;
   GstPad *sinkpad;
@@ -336,13 +335,13 @@ kms_muxing_pipeline_configure_EOS (KmsMuxingPipeline * self)
   probe_id = g_slice_new0 (gulong);
   *probe_id = gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       stop_notification_cb, self, NULL);
-  g_object_set_data_full (G_OBJECT (sinkpad), KEY_MUXING_PIPELINE_PAD_PROBE_ID,
+  g_object_set_data_full (G_OBJECT (sinkpad), KEY_AV_MUXER_PAD_PROBE_ID,
       probe_id, destroy_ulong);
   g_object_unref (sinkpad);
 }
 
 static void
-kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
+kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
 {
   self->priv->videosrc = gst_element_factory_make ("appsrc", "videoSrc");
   self->priv->audiosrc = gst_element_factory_make ("appsrc", "audioSrc");
@@ -350,15 +349,15 @@ kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
   self->priv->sink =
       KMS_BASE_MEDIA_MUXER_GET_CLASS (self)->create_sink (KMS_BASE_MEDIA_MUXER
       (self), KMS_BASE_MEDIA_MUXER_GET_URI (self));
-  kms_muxing_pipeline_configure_EOS (self);
+  kms_av_muxer_configure_EOS (self);
 
   g_object_set (self->priv->videosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
   g_object_set (self->priv->audiosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
 
-  kms_muxing_pipeline_add_injector_probe (self, self->priv->videosrc);
-  kms_muxing_pipeline_add_injector_probe (self, self->priv->audiosrc);
+  kms_av_muxer_add_injector_probe (self, self->priv->videosrc);
+  kms_av_muxer_add_injector_probe (self, self->priv->audiosrc);
 
-  self->priv->mux = kms_muxing_pipeline_create_muxer (self);
+  self->priv->mux = kms_av_muxer_create_muxer (self);
 
   gst_bin_add_many (GST_BIN (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self)),
       self->priv->videosrc, self->priv->audiosrc, self->priv->mux,
@@ -390,19 +389,18 @@ kms_muxing_pipeline_prepare_pipeline (KmsMuxingPipeline * self)
   }
 }
 
-KmsMuxingPipeline *
-kms_muxing_pipeline_new (const char *optname1, ...)
+KmsAVMuxer *
+kms_av_muxer_new (const char *optname1, ...)
 {
-  KmsMuxingPipeline *obj;
+  KmsAVMuxer *obj;
 
   va_list ap;
 
   va_start (ap, optname1);
-  obj = KMS_MUXING_PIPELINE (g_object_new_valist (KMS_TYPE_MUXING_PIPELINE,
-          optname1, ap));
+  obj = KMS_AV_MUXER (g_object_new_valist (KMS_TYPE_AV_MUXER, optname1, ap));
   va_end (ap);
 
-  kms_muxing_pipeline_prepare_pipeline (obj);
+  kms_av_muxer_prepare_pipeline (obj);
 
   return obj;
 }

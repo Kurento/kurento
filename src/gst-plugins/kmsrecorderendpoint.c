@@ -33,7 +33,7 @@
 #include <commons/kms-core-enumtypes.h>
 
 #include "kmsbasemediamuxer.h"
-#include "kmsmuxingpipeline.h"
+#include "kmsavmuxer.h"
 
 #define PLUGIN_NAME "recorderendpoint"
 
@@ -872,8 +872,8 @@ kms_recorder_endpoint_new_media_muxer (KmsRecorderEndpoint * self)
   GstBus *bus;
 
   self->priv->mux =
-      KMS_BASE_MEDIA_MUXER (kms_muxing_pipeline_new
-      (KMS_MUXING_PIPELINE_PROFILE, self->priv->profile,
+      KMS_BASE_MEDIA_MUXER (kms_av_muxer_new
+      (KMS_BASE_MEDIA_MUXER_PROFILE, self->priv->profile,
           KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
 
   g_signal_connect (self->priv->mux, "on-eos",
