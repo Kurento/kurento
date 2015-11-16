@@ -67,7 +67,7 @@ else
     -w $TEST_HOME \
     -u "root" \
       kurento/dev-integration:jdk-8-node-0.12 \
-        bash -c $BUILD_COMMAND || status=$?
+        bash -c "$BUILD_COMMAND" || status=$?
 fi
 
 
