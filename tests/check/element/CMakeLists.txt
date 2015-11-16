@@ -16,17 +16,17 @@ target_link_libraries(test_httpendpoint
                       ${gstreamer-check-1.5_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES})
 
-add_test_program (test_recorderendpoint recorderendpoint.c)
-add_dependencies(test_recorderendpoint ${LIBRARY_NAME}plugins)
-target_include_directories(test_recorderendpoint PRIVATE
-                           ${KmsGstCommons_INCLUDE_DIRS}
-                           ${gstreamer-1.5_INCLUDE_DIRS}
-                           ${gstreamer-check-1.5_INCLUDE_DIRS}
-                           "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
-target_link_libraries(test_recorderendpoint
-                      ${gstreamer-1.5_LIBRARIES}
-                      ${gstreamer-check-1.5_LIBRARIES}
-                      ${KmsGstCommons_LIBRARIES})
+#add_test_program (test_recorderendpoint recorderendpoint.c)
+#add_dependencies(test_recorderendpoint ${LIBRARY_NAME}plugins)
+#target_include_directories(test_recorderendpoint PRIVATE
+#                           ${KmsGstCommons_INCLUDE_DIRS}
+#                           ${gstreamer-1.5_INCLUDE_DIRS}
+#                           ${gstreamer-check-1.5_INCLUDE_DIRS}
+#                           "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
+#target_link_libraries(test_recorderendpoint
+#                      ${gstreamer-1.5_LIBRARIES}
+#                      ${gstreamer-check-1.5_LIBRARIES}
+#                      ${KmsGstCommons_LIBRARIES})
 
 add_test_program (test_playerendpoint playerendpoint.c)
 add_dependencies(test_playerendpoint kmstestutils ${LIBRARY_NAME}plugins)
