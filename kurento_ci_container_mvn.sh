@@ -19,6 +19,10 @@
 #    Jenkins workspace path. This variable is expected to be exported by
 #    script caller.
 #
+# BUILD_TAG string
+#    Mandatory
+#    A name to uniquely identify containers created within this job
+#
 # MAVEN_SETTINGS path
 #     Mandatory
 #     Location of the settings.xml file used by maven
