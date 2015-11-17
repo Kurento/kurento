@@ -124,7 +124,7 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
 		recorder.stop();
 
 		// Guard time to stop recording
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Assessments
 		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,

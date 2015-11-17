@@ -132,7 +132,7 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 		recorderEP.stop();
 
 		// Guard time to stop recording
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Assessment
 		Assert.assertTrue("Not received media in browser 1",

@@ -146,7 +146,7 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 						recorder[i].stop();
 
 						// Guard time to stop recording
-						Thread.sleep(2000);
+						Thread.sleep(4000);
 
 					} catch (Throwable e) {
 						log.error("Exception in receiver " + i, e);

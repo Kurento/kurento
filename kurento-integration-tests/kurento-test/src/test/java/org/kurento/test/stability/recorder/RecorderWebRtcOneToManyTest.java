@@ -172,7 +172,7 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 						recorder[i - 1].stop();
 
 						// Guard time to stop recording
-						Thread.sleep(2000);
+						Thread.sleep(4000);
 
 					} catch (InterruptedException e) {
 						log.error("InterruptedException in receiver " + i, e);

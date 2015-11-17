@@ -126,7 +126,7 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 		recorderEP.stop();
 
 		// Guard time to stop recording
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Assessments
 		long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
