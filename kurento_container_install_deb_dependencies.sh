@@ -7,6 +7,7 @@ fi
 
 if [ $(dpkg -l | grep postpone | wc -l) -lt 1 ]
 then
+  DEBIAN_FRONTEND=noninteractive apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get install --force-yes -y postpone
 fi
 
