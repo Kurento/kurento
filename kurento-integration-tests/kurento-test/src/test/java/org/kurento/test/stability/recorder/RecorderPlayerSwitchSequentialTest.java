@@ -109,9 +109,6 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 		playerEP2.play();
 		recorderEP.record();
 
-		// Guard time to stop recording
-		Thread.sleep(2000);
-
 		// Switch players
 		for (int i = 0; i < SWITCH_TIMES; i++) {
 			if (i % 2 == 0) {
@@ -127,6 +124,9 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 		playerEP1.stop();
 		playerEP2.stop();
 		recorderEP.stop();
+
+		// Guard time to stop recording
+		Thread.sleep(2000);
 
 		// Assessments
 		long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
