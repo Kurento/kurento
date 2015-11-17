@@ -180,8 +180,11 @@ QUnit.test('MediaServer restarted', function (assert) {
       .pid)
 
     client.getMediaobjectById(pipeline.id, function (error, mediaObject) {
-      console.log("Info on client.getMediaObjectById: error->", error);
-      console.log("Info on client.getMediaObjectById: client.sessionId(", client.sessionId, ") == ", sessionId);
+      console.log("Info on client.getMediaObjectById: error->",
+        error);
+      console.log(
+        "Info on client.getMediaObjectById: client.sessionId(",
+        client.sessionId, ") == ", sessionId);
       assert.notEqual(error, undefined);
       assert.strictEqual(error.code, 40101);
 
