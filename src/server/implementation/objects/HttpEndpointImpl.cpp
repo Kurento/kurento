@@ -4,6 +4,7 @@
 #include <KurentoException.hpp>
 #include <gst/gst.h>
 #include "HttpServer/HttpEndPointServer.hpp"
+#include <condition_variable>
 
 #define GST_CAT_DEFAULT kurento_http_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -21,7 +22,7 @@ action_requested_adaptor_function (KmsHttpEPServer *server, const gchar *uri,
                                    KmsHttpEndPointAction action, gpointer data)
 {
   auto handler =
-    reinterpret_cast < std::function < void (const gchar * uri,
+    reinterpret_cast < std::function < void (const gchar *uri,
         KmsHttpEndPointAction action) > * >
     (data);
 
@@ -100,8 +101,8 @@ void
 HttpEndpointImpl::unregister_end_point ()
 {
   std::string uri = getUriFromUrl (url);
-  Glib::Cond cond;
-  Glib::Mutex mutex;
+  std::condition_variable cond;
+  std::mutex mutex;
   bool finish = FALSE;
 
   if (!urlSet) {
@@ -116,29 +117,27 @@ HttpEndpointImpl::unregister_end_point ()
     url = "";
     urlSet = false;
 
-    mutex.lock ();
+    std::unique_lock<std::mutex> lock (mutex);
+
     finish = TRUE;
-    cond.signal();
-    mutex.unlock ();
+    cond.notify_all ();
   };
 
   server->unregisterEndPoint (uri, unregister_end_point_adaptor_function,
                               &aux, NULL);
 
-  mutex.lock ();
+  std::unique_lock<std::mutex> lock (mutex);
 
   while (!finish) {
-    cond.wait (mutex);
+    cond.wait (lock);
   }
-
-  mutex.unlock ();
 }
 
 void
 HttpEndpointImpl::register_end_point ()
 {
-  Glib::Mutex mutex;
-  Glib::Cond cond;
+  std::condition_variable cond;
+  std::mutex mutex;
   bool done = FALSE;
 
   std::function <void (const gchar *, GError *err) > aux = [&] (const gchar * uri,
@@ -174,22 +173,23 @@ HttpEndpointImpl::register_end_point ()
     urlSet = true;
 
 do_signal:
-    mutex.lock ();
+
+    std::unique_lock<std::mutex> lock (mutex);
+
     done = TRUE;
-    cond.signal();
-    mutex.unlock ();
+    cond.notify_all ();
+
   };
 
   server->registerEndPoint (element,
                             disconnectionTimeout, register_end_point_adaptor_function,
                             &aux, NULL);
-  mutex.lock ();
+
+  std::unique_lock<std::mutex> lock (mutex);
 
   while (!done) {
-    cond.wait (mutex);
+    cond.wait (lock);
   }
-
-  mutex.unlock ();
 }
 
 bool

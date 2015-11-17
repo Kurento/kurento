@@ -18,7 +18,7 @@
 
 #include <gst/gst.h>
 #include <string>
-#include <glibmm.h>
+#include <mutex>
 #include <memory>
 
 #include "KmsHttpEPServer.h"
@@ -50,7 +50,7 @@ public:
 
 private:
   static std::shared_ptr<HttpEndPointServer> instance;
-  static Glib::Threads::RecMutex mutex;
+  static std::recursive_mutex mutex;
   static uint port;
   static std::string interface;
   static std::string announcedAddr;

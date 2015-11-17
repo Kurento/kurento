@@ -19,13 +19,11 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "HttpEndPointServer"
 
-using namespace Glib::Threads;
-
 namespace kurento
 {
 
 std::shared_ptr<HttpEndPointServer> HttpEndPointServer::instance = 0;
-RecMutex HttpEndPointServer::mutex;
+std::recursive_mutex HttpEndPointServer::mutex;
 
 uint HttpEndPointServer::port;
 std::string HttpEndPointServer::interface;
@@ -43,7 +41,7 @@ std::shared_ptr<HttpEndPointServer>
 HttpEndPointServer::getHttpEndPointServer (const uint port,
     const std::string &iface, const std::string &addr)
 {
-  RecMutex::Lock lock (mutex);
+  std::unique_lock <std::recursive_mutex> lock (mutex);
   uint finalPort = port;
 
 
