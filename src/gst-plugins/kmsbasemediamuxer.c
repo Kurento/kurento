@@ -95,7 +95,7 @@ kms_base_media_muxer_get_state_impl (KmsBaseMediaMuxer * obj)
 GstClock *
 kms_base_media_muxer_get_clock_impl (KmsBaseMediaMuxer * obj)
 {
-  g_return_val_if_fail (obj != NULL, GST_CLOCK_TIME_NONE);
+  g_return_val_if_fail (obj != NULL, NULL);
 
   return GST_ELEMENT (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (obj))->clock;
 }
