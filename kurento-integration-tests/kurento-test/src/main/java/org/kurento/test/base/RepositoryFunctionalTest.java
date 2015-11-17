@@ -23,6 +23,7 @@ import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -36,39 +37,44 @@ import com.google.common.io.Files;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
-@ComponentScan(basePackageClasses = { org.kurento.repository.RepositoryItem.class })
 @Category(SystemFunctionalTests.class)
-public class RepositoryFunctionalTest extends KurentoClientWebPageTest<WebRtcTestPage> {
+public class RepositoryFunctionalTest
+		extends KurentoClientWebPageTest<WebRtcTestPage> {
+
+	@ComponentScan(basePackageClasses = {
+			org.kurento.repository.RepositoryItem.class })
+	public static class RepositoryWebServer extends WebServer {
+
+		@Bean
+		public RepositoryHttpServlet repositoryHttpServlet() {
+			return new RepositoryHttpServlet();
+		}
+
+		@Bean
+		public ServletRegistrationBean repositoryServletRegistrationBean(
+				RepositoryHttpServlet repositoryHttpServlet) {
+			ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(
+					repositoryHttpServlet, "/repository_servlet/*");
+			servletRegistrationBean.setLoadOnStartup(1);
+			return servletRegistrationBean;
+		}
+
+		@Bean
+		public RepositoryApiConfiguration repositoryApiConfiguration() {
+			RepositoryApiConfiguration config = new RepositoryApiConfiguration();
+			config.setWebappPublicURL("http://localhost:"
+					+ KurentoServicesTestHelper.getAppHttpPort() + "/");
+			config.setFileSystemFolder(Files.createTempDir().toString());
+			config.setRepositoryType(RepoType.FILESYSTEM);
+			return config;
+		}
+	}
 
 	public Repository repository;
 
-	public RepositoryFunctionalTest() {
-	}
-
 	public RepositoryFunctionalTest(TestScenario testScenario) {
 		super(testScenario);
-	}
-
-	@Bean
-	public RepositoryHttpServlet repositoryHttpServlet() {
-		return new RepositoryHttpServlet();
-	}
-
-	@Bean
-	public ServletRegistrationBean repositoryServletRegistrationBean(RepositoryHttpServlet repositoryHttpServlet) {
-		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(repositoryHttpServlet,
-				"/repository_servlet/*");
-		servletRegistrationBean.setLoadOnStartup(1);
-		return servletRegistrationBean;
-	}
-
-	@Bean
-	public RepositoryApiConfiguration repositoryApiConfiguration() {
-		RepositoryApiConfiguration config = new RepositoryApiConfiguration();
-		config.setWebappPublicURL("http://localhost:" + getServerPort() + "/");
-		config.setFileSystemFolder(Files.createTempDir().toString());
-		config.setRepositoryType(RepoType.FILESYSTEM);
-		return config;
+		setWebServerClass(RepositoryWebServer.class);
 	}
 
 	@Before

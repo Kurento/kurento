@@ -27,6 +27,7 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.test.base.RepositoryFunctionalTest.RepositoryWebServer;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
@@ -41,9 +42,12 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-@EnableAutoConfiguration
 public class KurentoClientWebPageTest<W extends WebPage>
 		extends WebPageTest<W> {
+
+	@EnableAutoConfiguration
+	public static class WebServer {
+	}
 
 	protected static ConfigurableApplicationContext context;
 
@@ -51,7 +55,8 @@ public class KurentoClientWebPageTest<W extends WebPage>
 	protected KurentoClient kurentoClient;
 	protected KurentoClient fakeKurentoClient;
 
-	public KurentoClientWebPageTest() {
+	public KurentoClientWebPageTest(Class<?> webServerClass) {
+		this.webServerClass = webServerClass;
 	}
 
 	public KurentoClientWebPageTest(TestScenario testScenario) {
@@ -60,6 +65,13 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 	@Rule
 	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
+
+	private Class<?> webServerClass = WebServer.class;
+
+	protected void setWebServerClass(
+			Class<RepositoryWebServer> webServerClass) {
+		this.webServerClass = webServerClass;
+	}
 
 	@Override
 	public void setupKurentoTest() throws InterruptedException {
@@ -86,16 +98,7 @@ public class KurentoClientWebPageTest<W extends WebPage>
 	}
 
 	private void startHttpServer() {
-		Class<?> clazz = this.getClass();
-		while (true) {
-			try {
-				clazz.getConstructor();
-				break;
-			} catch (NoSuchMethodException e) {
-				clazz = clazz.getSuperclass();
-			}
-		}
-		context = KurentoServicesTestHelper.startHttpServer(clazz);
+		context = KurentoServicesTestHelper.startHttpServer(webServerClass);
 	}
 
 	@After

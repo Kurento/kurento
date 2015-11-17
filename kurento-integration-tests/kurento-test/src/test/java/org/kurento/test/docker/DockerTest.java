@@ -5,9 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.test.ConfigFileTest;
+import org.kurento.test.KurentoTest;
 
-public class DockerTest extends ConfigFileTest {
+public class DockerTest extends KurentoTest {
 
 	@Test
 	public void executionContainerized() {

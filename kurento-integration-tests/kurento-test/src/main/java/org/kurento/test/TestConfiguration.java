@@ -220,4 +220,12 @@ public class TestConfiguration {
 	public static final String FAKE_KMS_AUTOSTART_PROP = "fake.kms.autostart";
 	public static final String FAKE_KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
 
+	// Retries
+	public static final String TEST_NUMRETRIES_PROPERTY = "test.num.retries";
+	public static final int TEST_NUM_NUMRETRIES_DEFAULT = 1;
+
+	// Test report
+	public static final String TEST_REPORT_PROPERTY = "test.report";
+	public static final String TEST_REPORT_DEFAULT = "target/report.html";
+
 }

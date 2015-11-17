@@ -15,6 +15,8 @@
 package org.kurento.test.config;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.TestConfiguration.TEST_REPORT_DEFAULT;
+import static org.kurento.test.TestConfiguration.TEST_REPORT_PROPERTY;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,7 +25,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.browser.Browser;
+import org.kurento.test.docker.Docker;
 
 /**
  * Test report, to compile information of the test result in a HTML page.
@@ -33,8 +37,8 @@ import org.kurento.test.browser.Browser;
  */
 public class TestReport {
 
-	protected final static String TEST_REPORT_PROPERTY = "test.report";
-	protected final static String TEST_REPORT_DEFAULT = "target/report.html";
+	private static TestReport singleton = null;
+
 	protected String testReport = getProperty(TEST_REPORT_PROPERTY,
 			TEST_REPORT_DEFAULT);
 	protected final static String RETURN = "\r\n";
@@ -45,10 +49,29 @@ public class TestReport {
 	protected String extraErrorHtml;
 	protected int numRetries;
 
-	public TestReport(String name, int numRetries) {
-		this(name, numRetries, null);
+	public static TestReport getSingleton(String name, int numRetries) {
+		if (singleton == null) {
+			synchronized (Docker.class) {
+				if (singleton == null) {
+					singleton = new TestReport(name, numRetries, null);
+				}
+			}
+		}
+		return singleton;
 	}
-	
+
+	public static TestReport getSingleton(String name, int numRetries,
+			String htmlHeader) {
+		if (singleton == null) {
+			synchronized (Docker.class) {
+				if (singleton == null) {
+					singleton = new TestReport(name, numRetries, htmlHeader);
+				}
+			}
+		}
+		return singleton;
+	}
+
 	public TestReport(String name, int numRetries, String htmlHeader) {
 		try {
 			this.numRetries = numRetries;
@@ -58,8 +81,8 @@ public class TestReport {
 					: name;
 			File file = new File(testReport);
 			boolean exists = file.exists();
-			writer = new PrintWriter(new BufferedWriter(new FileWriter(file,
-					true)));
+			writer = new PrintWriter(
+					new BufferedWriter(new FileWriter(file, true)));
 			if (!exists) {
 				initPage();
 				if (htmlHeader != null) {
@@ -69,34 +92,48 @@ public class TestReport {
 			appendTitle(title);
 			writer.flush();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new KurentoException(e);
 		}
 	}
 
 	public void initPage() {
-		appendHtml("<script src='//cdn.rawgit.com/eligrey/FileSaver.js/master/FileSaver.js'></script>");
+		String kurentoLogoPng = "http://files.kurento.org/img/kurento.png";
+		appendHtml("<link rel='shortcut icon' href='" + kurentoLogoPng
+				+ "' type='image/png' />");
+		appendHtml(
+				"<script src='https://cdn.rawgit.com/eligrey/FileSaver.js/master/FileSaver.js'></script>");
+		appendHtml(
+				"<script src='https://code.jquery.com/jquery-1.11.3.min.js'></script>");
 		appendHtml("<script>");
 		appendHtml("window.onload = function() {");
-		appendHtml("var allTextPage = document.documentElement.innerText;");
+		appendHtml("var allTextPage = $('body').text();");
 		appendHtml("var ok = (allTextPage.match(/Test ok/g) || []).length;");
-		appendHtml("var retries = (allTextPage.match(/Test failed in retry/g) || []).length;");
-		appendHtml("var errors = (allTextPage.match(/TEST ERROR/g) || []).length;");
+		appendHtml(
+				"var retries = (allTextPage.match(/Test failed in retry/g) || []).length;");
+		appendHtml(
+				"var errors = (allTextPage.match(/TEST ERROR/g) || []).length;");
 		appendHtml("var summary = document.getElementById('summary');");
 		appendHtml("var executions = ok + retries;");
 		appendHtml("var tests = ok + errors;");
 		appendHtml("var retriesOk = retries - errors*" + numRetries + ";");
-		appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \"</p>\";");
-		appendHtml("if (tests != executions) summary.innerHTML += \"Number of test(s) executions: \" + executions + \"</p>\";");
-		appendHtml("if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Number of test(s) ok: \" + ok + \"</p>\";");
-		appendHtml("if (retries > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) with retry: \" + retries + \"</p>\";");
-		appendHtml("if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) retried and succeeded: \" + retriesOk + \"</p>\";");
-		appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after "
-				+ numRetries + " retries): \" + errors + \"</p>\";");
+		appendHtml(
+				"summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \"</p>\";");
+		appendHtml(
+				"if (tests != executions) summary.innerHTML += \"Number of test(s) executions: \" + executions + \"</p>\";");
+		appendHtml(
+				"if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Number of test(s) ok: \" + ok + \"</p>\";");
+		appendHtml(
+				"if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) retried and succeeded: \" + retriesOk + \"</p>\";");
+		appendHtml(
+				"if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after "
+						+ numRetries + " retries): \" + errors + \"</p>\";");
 		appendHtml("}");
 		appendHtml("</script>");
-		appendHtml("<div style='width:"
-				+ WIDTH_PERCENTAGE
-				+ "%; border: 1px solid grey;' id='summary'><h1>Test report summary</h1><hr></div>");
+		appendHtml("<body>");
+		appendHtml("<div style='width:" + WIDTH_PERCENTAGE
+				+ "%; border: 1px solid grey;' id='summary'><h1><img src='"
+				+ kurentoLogoPng
+				+ "' style='vertical-align:middle'>Kurento Test Framework Report</h1><hr></div>");
 	}
 
 	public void appendTitle(String text) {
@@ -115,16 +152,15 @@ public class TestReport {
 	}
 
 	public void appendLine() {
-		writer.println("<hr style='margin-left:0; width:" + WIDTH_PERCENTAGE
-				+ "%;'>");
+		writer.println(
+				"<hr style='margin-left:0; width:" + WIDTH_PERCENTAGE + "%;'>");
 		writer.flush();
 	}
 
 	public String getCode(String text) {
-		String code = "<button type='button' onclick=\"saveAs(new Blob([nextSibling.value], "
-				+ "{type: 'text/plain;charset=utf-8'}), previousSibling.innerText ? "
-				+ "previousSibling.innerText : previousSibling.previousSibling.innerText "
-				+ "+ '.log');\">Save</button>";
+		String code = "<button type='button' onclick=\"saveAs(new Blob([$(this).next().val()], "
+				+ "{type: 'text/plain;charset=utf-8'}), ($(this).prev().text() ? "
+				+ "$(this).prev().text() : $(this).prev().prev().text()) + '.log');\">Save</button>";
 		code += "<textarea readonly style='width:" + WIDTH_PERCENTAGE
 				+ "%; height:150px;' wrap='off'>";
 		code += text;
@@ -230,7 +266,8 @@ public class TestReport {
 		return builder.toString();
 	}
 
-	public void appendException(Throwable throwable, TestScenario testScenario) {
+	public void appendException(Throwable throwable,
+			TestScenario testScenario) {
 		appendHtml("<b>Error description</b>");
 		appendCode(throwable.getClass().getName() + " : "
 				+ throwable.getMessage());

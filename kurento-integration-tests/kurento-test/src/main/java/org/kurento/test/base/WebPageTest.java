@@ -43,12 +43,10 @@ import javax.net.ssl.X509TrustManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.test.ConfigFileTest;
+import org.kurento.test.KurentoTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
@@ -58,15 +56,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base for Kurento tests.
+ * Base for Kurento tests that use browsers.
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-
 @RunWith(Parameterized.class)
-public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
+public abstract class WebPageTest<W extends WebPage> extends KurentoTest {
 
 	public static Logger log = LoggerFactory.getLogger(WebPageTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
@@ -76,8 +73,6 @@ public abstract class WebPageTest<W extends WebPage> extends ConfigFileTest {
 		return TestScenario.from("default.conf.json");
 	}
 
-	@Rule
-	public TestName testName = new TestName();
 	private Map<String, W> pages = new ConcurrentHashMap<>();
 	private TestScenario testScenario;
 
