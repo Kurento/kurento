@@ -46,7 +46,7 @@ public class BaseRecorder extends FunctionalTest {
 
 	public static final String EXPECTED_VIDEO_CODEC_WEBM = "VP8";
 	public static final String EXPECTED_VIDEO_CODEC_MP4 = "AVC";
-	public static final String EXPECTED_AUDIO_CODEC_WEBM = "Vorbis";
+	public static final String EXPECTED_AUDIO_CODEC_WEBM = "Opus";
 	public static final String EXPECTED_AUDIO_CODEC_MP4 = "MPEG Audio";
 	public static final String EXTENSION_WEBM = ".webm";
 	public static final String EXTENSION_MP4 = ".mp4";
