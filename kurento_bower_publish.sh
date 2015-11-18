@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-echo "##################### EXECUTE: bower-publish #####################"
+echo "##################### EXECUTE: kurento_bower-publish #####################"
 # Parameter management
 # BOWER_REPOSITORY string
 #   URL of repository where bower code is located. This is regarded as binary

@@ -1,5 +1,5 @@
 #!/bin/bash -x
-echo "##################### EXECUTE: merge_js_project #####################"
+echo "##################### EXECUTE: kurento_merge_js_project #####################"
 
 # KURENTO_PROJECT string
 #   Name of the project to be merged
