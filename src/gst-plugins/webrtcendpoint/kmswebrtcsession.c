@@ -323,7 +323,7 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
         NICE_COMPONENT_TYPE_RTCP);
   }
 
-  if (rtcp_default_candidate == NULL || rtcp_default_candidate == NULL) {
+  if (rtp_default_candidate == NULL || rtcp_default_candidate == NULL) {
     GST_WARNING_OBJECT (self,
         "Error getting ICE candidates. Network can be unavailable.");
     return FALSE;
