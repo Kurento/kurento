@@ -47,6 +47,8 @@ pubRelease=$(echo $pubVersion | awk -F"-" '{print $1}') || exit 1
 echo "Local version found, V: $localVersion, R: $localRelease"
 echo "Public version found, V: $pubVersion, R: $pubRelease"
 
+[[ $localRelease != $localVersion ]] && { echo "Do not publish development versions"; exit 0; }
+
 # Publish release only if greater than published
 vercomp $localRelease $pubRelease
 different=$?

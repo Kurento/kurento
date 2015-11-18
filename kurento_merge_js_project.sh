@@ -38,6 +38,9 @@ export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
 kurento_maven_deploy.sh
 
+# Deploy to NPM
+kurento_npm_publish.sh
+
 # Deploy to bower repository
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
 # Select files to be moved to bower repository
