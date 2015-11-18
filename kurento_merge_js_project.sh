@@ -57,4 +57,5 @@ FILES="$FILES dist/$BASE_NAME.map:js/$BASE_NAME.map"
 
 export BOWER_REPOSITORY
 export FILES
+export CREATE_TAG=true
 kurento_bower_publish.sh
