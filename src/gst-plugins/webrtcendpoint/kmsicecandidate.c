@@ -219,8 +219,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
   GRegex *regex;
   GMatchInfo *match_info;
   NiceCandidateType type;
-  gchar *foundation, *cid_str, *transport, *prio_str, *addr, *port_str,
-      *type_str;
+  gchar *foundation, *cid_str, *prio_str, *addr, *port_str, *type_str;
   gboolean ret = TRUE;
 
   *cand = NULL;
@@ -234,14 +233,6 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
 
   if (!g_match_info_matches (match_info)) {
     GST_WARNING ("Cannot create nice candidate from '%s'", str);
-    ret = FALSE;
-    goto end;
-  }
-
-  transport = g_match_info_fetch_named (match_info, "transport");
-  if (g_ascii_strcasecmp ("tcp", transport) == 0) {
-    GST_INFO ("TCP transport not supported");
-    g_free (transport);
     ret = FALSE;
     goto end;
   }
@@ -316,7 +307,6 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
 free:
   g_free (addr);
   g_free (foundation);
-  g_free (transport);
   g_free (cid_str);
   g_free (prio_str);
   g_free (port_str);
