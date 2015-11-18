@@ -87,8 +87,8 @@ kms_rtp_connection_set_remote_info (KmsRtpBaseConnection * base_conn,
   KmsRtpConnection *self = KMS_RTP_CONNECTION (base_conn);
   KmsRtpConnectionPrivate *priv = self->priv;
 
-  g_object_set (priv->rtp_udpsink, "host", host, "port", rtp_port, NULL);
-  g_object_set (priv->rtcp_udpsink, "host", host, "port", rtcp_port, NULL);
+  g_signal_emit_by_name (priv->rtp_udpsink, "add", host, rtp_port, NULL);
+  g_signal_emit_by_name (priv->rtcp_udpsink, "add", host, rtcp_port, NULL);
 }
 
 static void
@@ -237,13 +237,13 @@ kms_rtp_connection_new (guint16 min_port, guint16 max_port)
     return NULL;
   }
 
-  priv->rtp_udpsink = gst_element_factory_make ("udpsink", NULL);
+  priv->rtp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
   priv->rtp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
   g_object_set (priv->rtp_udpsink, "socket", priv->rtp_socket,
       "sync", FALSE, "async", FALSE, NULL);
   g_object_set (priv->rtp_udpsrc, "socket", priv->rtp_socket, NULL);
 
-  priv->rtcp_udpsink = gst_element_factory_make ("udpsink", NULL);
+  priv->rtcp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
   priv->rtcp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
   g_object_set (priv->rtcp_udpsink, "socket", priv->rtcp_socket,
       "sync", FALSE, "async", FALSE, NULL);
