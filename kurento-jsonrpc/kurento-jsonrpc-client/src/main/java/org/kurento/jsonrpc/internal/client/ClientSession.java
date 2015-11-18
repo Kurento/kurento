@@ -31,13 +31,21 @@ import com.google.gson.JsonObject;
 
 public class ClientSession extends AbstractSession {
 
-	private final JsonRpcRequestSender requestSender;
+	private JsonRpcRequestSender requestSender;
 	private volatile ConcurrentMap<String, Object> attributes;
 
 	public ClientSession(String sessionId, Object registerInfo,
 			JsonRpcRequestSender jsonRpcRequestSender) {
 		super(sessionId, registerInfo);
 		this.requestSender = jsonRpcRequestSender;
+	}
+
+	public ClientSession(String sessionId, Object registerInfo) {
+		super(sessionId, registerInfo);
+	}
+
+	public void setRequestSender(JsonRpcRequestSender requestSender) {
+		this.requestSender = requestSender;
 	}
 
 	@Override
@@ -92,7 +100,7 @@ public class ClientSession extends AbstractSession {
 			Continuation<JsonElement> continuation) throws IOException {
 		requestSender.sendNotification(method, params, continuation);
 	}
-	
+
 	public Response<JsonElement> sendRequest(Request<JsonObject> request)
 			throws IOException {
 		return requestSender.sendRequest(request);
@@ -100,16 +108,16 @@ public class ClientSession extends AbstractSession {
 
 	public void sendRequest(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-			throws IOException {
+					throws IOException {
 		requestSender.sendRequest(request, continuation);
 	}
-	
+
 	public void sendRequestHonorId(Request<JsonObject> request,
 			Continuation<Response<JsonElement>> continuation)
-			throws IOException {
+					throws IOException {
 		requestSender.sendRequestHonorId(request, continuation);
 	}
-	
+
 	@Override
 	public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
 			throws IOException {
