@@ -18,10 +18,10 @@ echo "##################### EXECUTE: bower-publish #####################"
 #   Whether a TAG must be created in bower repository. Default value is false
 
 # Validate mandatory parameters
-[ -z "$BOWER_REPOSITORY" && exit 1
-[ -z "$FILES" && exit 1
-[ -z "$REFSPEC" && REFSPEC=master
-[ -z "$CREATE_TAG" && CREATE_TAG=false
+[ -z "$BOWER_REPOSITORY" ] && exit 1
+[ -z "$FILES" ] && exit 1
+[ -z "$REFSPEC" ] && REFSPEC=master
+[ -z "$CREATE_TAG" ] && CREATE_TAG=false
 
 # Checkout to reference in source code repository
 git checkout $REFSPEC || git checkout -b $REFSPEC origin/$REFSPEC || exit 1
