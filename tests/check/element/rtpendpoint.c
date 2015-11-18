@@ -616,11 +616,10 @@ GST_START_TEST (test_port_range)
   GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *second = gst_element_factory_make ("rtpendpoint", NULL);
   guint min_port, max_port;
-  GHashTable *ports = g_hash_table_new (g_direct_hash, g_direct_equal);
   guint i;
 
   min_port = 50000;
-  max_port = 50007;
+  max_port = 50020;
 
   audio_codecs_array = create_codecs_array (audio_codecs);
   video_codecs_array = create_codecs_array (video_codecs);
@@ -664,7 +663,6 @@ GST_START_TEST (test_port_range)
     GST_DEBUG ("Port: %d", port);
     fail_if (min_port > port);
     fail_if (max_port < port);
-    g_hash_table_insert (ports, GINT_TO_POINTER (port), GINT_TO_POINTER (TRUE));
   }
 
   for (i = 0; i < gst_sdp_message_medias_len (second_offer); i++) {
@@ -674,15 +672,6 @@ GST_START_TEST (test_port_range)
     GST_DEBUG ("Port: %d", port);
     fail_if (min_port > port);
     fail_if (max_port < port);
-    g_hash_table_insert (ports, GINT_TO_POINTER (port), GINT_TO_POINTER (TRUE));
-  }
-
-  for (i = min_port; i < max_port; i++) {
-    /* Check only even ports */
-    if (!(i & 0x1)) {
-      GST_DEBUG ("Checking for port: %d", i);
-      fail_unless (g_hash_table_contains (ports, GINT_TO_POINTER (i)));
-    }
   }
 
   gst_sdp_message_free (offer);
