@@ -2,18 +2,25 @@
 
 echo "##################### EXECUTE: mavenice-js-module #####################"
 
-# Verify parameters
-if [ -n "$1" ]; then
-	PROJECT_NAME=$1
-else
-	echo "Usage: $0 <project_name> [<maven shell script> <assembly file>]"
-	exit 1
-fi
+# PROJECT_NAME string
+#		Project name used in pom.xml
+#
+# MAVEN_SHELL_SCRIPT string
+#		Script to be included in maven shell plugin
+#
+# ASSEMBLY_FILE path
+#		Location of the assembly file to be used by maven. If not present a new
+#		one will be created
 
+# Get input parameters for backward compatibility
+[ -n "$1" ] && PROJECT_NAME=$1
 [ -n "$2" ] && MAVEN_SHELL_SCRIPT=$2 || MAVEN_SHELL_SCRIPT="cd \${basedir} ; npm -d install || exit 1 ; node_modules/.bin/grunt || exit 1 ; node_modules/.bin/grunt sync:bower || exit 1 ; mkdir -p src/main/resources/META-INF/resources/js/ || exit 1 ; cp dist/* src/main/resources/META-INF/resources/js/"
-
 [ -n "$3" ] && ASSEMBLY_FILE=$3 || ASSEMBLY_FILE="assembly.xml"
 
+# Validate parameters
+[ -z "$PROJECT_NAME" ] && exit 1
+
+# Validate project structure
 [ -f package.json ] || exit 1
 
 # Build maven version from package.json
@@ -126,7 +133,7 @@ EOF
 [ -n $ASSEMBLY_FILE ] && exit 0
 
 # Add assembly file
-cat > assembly.xml <<-EOF
+cat > $ASSEMBLY_FILE <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <assembly
 	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
