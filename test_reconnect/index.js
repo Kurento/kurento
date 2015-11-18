@@ -179,6 +179,15 @@ QUnit.test('MediaServer restarted', function (assert) {
     console.log("Waiting KMS is started again... KMS pid:", self.server
       .pid)
 
+    var grep = spawn('grep', ['kurento']);
+    var ps = spawn('ps', ['au']);
+
+    ps.stdout.pipe(grep.stdin);
+
+    grep.stdout.on('data', function (data) {
+      console.log("ps aux | grep kurento =>", data.toString("utf8"));
+    });
+
     client.getMediaobjectById(pipeline.id, function (error, mediaObject) {
       console.log("Info on client.getMediaObjectById: error->",
         error);
