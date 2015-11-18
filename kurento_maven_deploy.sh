@@ -1,23 +1,30 @@
 #!/bin/bash -x
 
 echo "##################### EXECUTE: kurento_maven_deploy.sh #####################"
+# MAVEN_STTINGS path
+#   Path to settings.xml file used by maven
+#
+# SNAPSHOT_REPOSITORY url
+#   Repository used to deploy snapshot artifacts. Deployment is cancelled when
+#   not provided
+#
+# RELEASE_REPOSITORY url
+#   Repository used to deploy release artifacts. Depployment is cancelled when
+#   not provided
+#
+# SIGN_ARTIFACTS true | false
+#   Wheter to sign artifacts before deployment. Default value is true
 
-# Param management
-if [ $# -lt 1 ]
-then
-  echo "Usage: $0 <MAVEN_SETTINGS> [<repository> <sign artifacts (yes|no)>]"
-  exit 1
-fi
+# Get command line parameters for backward compatibility
+[ -n "$1" ] && MAVEN_SETTINGS=$1
+[ -n "$2" ] && SNAPSHOT_REPOSITORY=$2
+[ -n "$2" ] && RELEASE_REPOSITORY=$2
+[ -n "$3" ] && SIGN_ARTIFACTS=$3
 
-
-# Maven settins
-[ -n "$1" ] && MAVEN_SETTINGS=$1 || exit 1
-
-# Maven repository
-[ -n "$2" ] && REPOSITORY=$2 || REPOSITORY=$MAVEN_KURENTO_SNAPSHOTS
-
-# Sign artifacts (no, yes). We never sign SNAPSHOT artifacts
-[ -n "$3" ] && SIGN_ARTIFACTS=$3 || SIGN_ARTIFACTS="yes"
+# Validate parameters
+[ -z "$MAVEN_SETTINGS" ] || exit 1
+[ -z "$SNAPSHOT_REPOSITORY" ] && SNAPSHOT_REPOSITORY=$MAVEN_KURENTO_SNAPSHOTS
+[ -z "$SIGN_ARTIFACTS" ] && SIGN_ARTIFACTS="true"
 
 # Maven options
 OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
@@ -25,15 +32,15 @@ OPTS="-Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.
 PROJECT_VERSION=$(kurento_get_version.sh)
 echo "Deploying version $PROJECT_VERSION"
 
-if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]]; then
+if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
 	echo "Deploying SNAPSHOT version"
-	mvn --settings $MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Pdefault $OPTS -DaltSnapshotDeploymentRepository=$REPOSITORY || exit 1
-else
+	mvn --settings $MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Pdefault $OPTS -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || exit 1
+elif [ -n "$RELEASE_REPOSITORY" ]; then
 	OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
-	if [[ $SIGN_ARTIFACTS == yes ]]; then
+	if [[ $SIGN_ARTIFACTS == "true" ]]; then
 		echo "Deploying release version signing artifacts"
 		# Deploy signing artifacts
-		mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=$REPOSITORY || exit 1
+		mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
 
 		#Verify signed files (if any)
 		SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
@@ -52,6 +59,6 @@ else
 	else
 		echo "Deploying release version without signing artifacts"
 		# Deploy without signing artifacts
-		mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -U $OPTS -DaltReleaseDeploymentRepository=$REPOSITORY || exit 1
+		mvn --settings $MAVEN_SETTINGS clean package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -U $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
 	fi
 fi
