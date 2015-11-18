@@ -73,7 +73,7 @@ if [ $(git status --porcelain|wc -l) -gt 0 ]; then
 fi
 
 # Check if a version has to be generated
-if [ ${CREATE_TAG} = true ]; then
+if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
   echo "Add Tag version: $VERSION"
 
   # If tag already exists terminate silently
