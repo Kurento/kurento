@@ -405,10 +405,11 @@ void
 WebRtcEndpointImpl::addIceCandidate (std::shared_ptr<IceCandidate> candidate)
 {
   gboolean ret;
-  const char *cand_str = candidate->getCandidate().c_str ();
-  const char *mid_str = candidate->getSdpMid().c_str ();
+  std::string cand_str = candidate->getCandidate();
+  std::string mid_str = candidate->getSdpMid ();
   guint8 sdp_m_line_index = candidate->getSdpMLineIndex ();
-  KmsIceCandidate *cand = kms_ice_candidate_new (cand_str, mid_str,
+  KmsIceCandidate *cand = kms_ice_candidate_new (cand_str.c_str(),
+                          mid_str.c_str(),
                           sdp_m_line_index);
 
   g_signal_emit_by_name (element, "add-ice-candidate", this->sessId.c_str (),
