@@ -15,8 +15,8 @@
 package org.kurento.test.config;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.TEST_REPORT_DEFAULT;
-import static org.kurento.test.TestConfiguration.TEST_REPORT_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_REPORT_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_REPORT_PROPERTY;
 
 import java.io.BufferedWriter;
 import java.io.File;

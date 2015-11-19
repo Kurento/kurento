@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.test.KurentoTest;
+import org.kurento.test.base.KurentoTest;
 
 public class DockerTest extends KurentoTest {
 

@@ -15,8 +15,8 @@
 package org.kurento.test.base;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
-import static org.kurento.test.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
 
 import java.awt.Color;
 import java.lang.reflect.ParameterizedType;
@@ -46,14 +46,11 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.test.KurentoTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base for Kurento tests that use browsers.
@@ -65,7 +62,6 @@ import org.slf4j.LoggerFactory;
 @RunWith(Parameterized.class)
 public abstract class WebPageTest<W extends WebPage> extends KurentoTest {
 
-	public static Logger log = LoggerFactory.getLogger(WebPageTest.class);
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
 	@Parameters
@@ -130,7 +126,7 @@ public abstract class WebPageTest<W extends WebPage> extends KurentoTest {
 
 	private void initBrowser(String browserKey, Browser browser) {
 		browser.setId(browserKey);
-		browser.setName(testName.getMethodName());
+		browser.setName(getTestMethodName());
 		browser.init();
 		browser.injectKurentoTestJs();
 	}

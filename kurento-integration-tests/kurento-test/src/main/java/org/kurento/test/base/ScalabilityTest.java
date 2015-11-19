@@ -31,7 +31,7 @@ public class ScalabilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 	public ScalabilityTest(TestScenario testScenario) {
 		super(testScenario);
 
-		logOnFailure.setDeleteLogsIfSuccess(false);
+		setDeleteLogsIfSuccess(false);
 	}
 
 }

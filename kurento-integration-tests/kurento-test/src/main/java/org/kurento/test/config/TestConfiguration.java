@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test;
+package org.kurento.test.config;
 
 import org.kurento.commons.Address;
 
@@ -165,9 +165,6 @@ public class TestConfiguration {
 	public static final String KMS_DOCKER_IMAGE_FORCE_PULLING_PROP = "test.kms.docker.image.forcepulling";
 	public static final boolean KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT = true;
 
-	public static final String KMS_PRINT_LOG_PROP = "kms.print.log";
-	public static final String KMS_PRINT_LOG_DEFAULT = "true";
-
 	public static final String KMS_HTTP_PORT_PROP = "kms.http.port";
 	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
 
@@ -182,10 +179,6 @@ public class TestConfiguration {
 	// KCS properties
 	public static final String KCS_WS_URI_PROP = "kcs.ws.uri";
 	public static final String KCS_WS_URI_DEFAULT = "ws://localhost:8889/kurento";
-
-	// Project
-	public static final String PROJECT_PATH_PROP = "project.path";
-	public static final String PROJECT_PATH_DEFAULT = ".";
 
 	// Autostart
 	public static final String AUTOSTART_FALSE_VALUE = "false";
@@ -220,12 +213,17 @@ public class TestConfiguration {
 	public static final String FAKE_KMS_AUTOSTART_PROP = "fake.kms.autostart";
 	public static final String FAKE_KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
 
-	// Retries
+	// Testing services
 	public static final String TEST_NUMRETRIES_PROPERTY = "test.num.retries";
 	public static final int TEST_NUM_NUMRETRIES_DEFAULT = 1;
 
-	// Test report
 	public static final String TEST_REPORT_PROPERTY = "test.report";
 	public static final String TEST_REPORT_DEFAULT = "target/report.html";
+
+	public static final String TEST_PRINT_LOG_PROP = "test.print.log";
+	public static final boolean TEST_PRINT_LOG_DEFAULT = true;
+
+	public static final String TEST_PROJECT_PATH_PROP = "test.project.path";
+	public static final String TEST_PROJECT_PATH_DEFAULT = "target/surefire-reports/";
 
 }

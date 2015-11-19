@@ -15,9 +15,9 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
-import static org.kurento.test.TestConfiguration.TEST_NODE_PASSWD_PROPERTY;
-import static org.kurento.test.TestConfiguration.TEST_NODE_PEM_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_NODE_PASSWD_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_NODE_PEM_PROPERTY;
 
 import java.io.BufferedReader;
 import java.io.IOException;

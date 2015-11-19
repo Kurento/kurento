@@ -15,33 +15,33 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.AUTOSTART_FALSE_VALUE;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_LOGIN_PROP;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_PASSWD_PROP;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_PEM_PROP;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
-import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_DEFAULT;
-import static org.kurento.test.TestConfiguration.KMS_AUTOSTART_PROP;
-import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT;
-import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_PROP;
-import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_NAME_DEFAULT;
-import static org.kurento.test.TestConfiguration.KMS_DOCKER_IMAGE_NAME_PROP;
-import static org.kurento.test.TestConfiguration.KMS_LOG_PATH_DEFAULT;
-import static org.kurento.test.TestConfiguration.KMS_LOG_PATH_PROP;
-import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
-import static org.kurento.test.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_DEFAULT;
-import static org.kurento.test.TestConfiguration.KURENTO_SERVER_COMMAND_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_SERVER_DEBUG_DEFAULT;
-import static org.kurento.test.TestConfiguration.KURENTO_SERVER_DEBUG_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_WORKSPACE_DEFAULT;
-import static org.kurento.test.TestConfiguration.KURENTO_WORKSPACE_PROP;
+import static org.kurento.test.config.TestConfiguration.AUTOSTART_FALSE_VALUE;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_LOGIN_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PASSWD_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PEM_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_AUTOSTART_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_AUTOSTART_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_NAME_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_NAME_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_LOG_PATH_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_LOG_PATH_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_GST_PLUGINS_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KURENTO_GST_PLUGINS_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_PEM_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_SERVER_COMMAND_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KURENTO_SERVER_COMMAND_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_SERVER_DEBUG_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KURENTO_SERVER_DEBUG_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_WORKSPACE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KURENTO_WORKSPACE_PROP;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -72,7 +72,7 @@ import org.apache.commons.io.FileUtils;
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.test.Shell;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,9 +105,6 @@ public class KurentoMediaServerManager {
 	private static SshConnection remoteKms = null;
 	private String workspace;
 	private int httpPort;
-	private String testClassName;
-	private String testMethodName;
-	private String testDir;
 	private String serverCommand;
 	private String gstPlugins;
 	private String debugOptions;
@@ -174,18 +171,6 @@ public class KurentoMediaServerManager {
 
 		return kmsAutoStart.equals(AUTOSTART_FALSE_VALUE) ? kmsLogPath
 				: isKmsRemote ? remoteKms.getTmpFolder() + "/" : workspace;
-	}
-
-	public void setTestDir(String testDir) {
-		this.testDir = testDir;
-	}
-
-	public void setTestClassName(String testClassName) {
-		this.testClassName = testClassName;
-	}
-
-	public void setTestMethodName(String testMethodName) {
-		this.testMethodName = testMethodName;
 	}
 
 	public void start() throws IOException {
@@ -386,7 +371,8 @@ public class KurentoMediaServerManager {
 		} else {
 			String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
 			Volume volume = new Volume(testFilesPath);
-			String targetPath = Paths.get(getDefaultOutputFolder())
+			String targetPath = Paths
+					.get(KurentoTest.getDefaultOutputFolder().toURI())
 					.toAbsolutePath().toString();
 			Volume volumeTest = new Volume(targetPath);
 			createContainerCmd.withVolumes(volume, volumeTest).withBinds(
@@ -568,10 +554,10 @@ public class KurentoMediaServerManager {
 	}
 
 	public void retrieveLogs() throws IOException {
-		String targetFolder = getDefaultOutputFolder();
+		File targetFolder = KurentoTest.getDefaultOutputFolder();
 		String kmsLogsPath = getKmsLogPath();
 
-		Path defaultOutput = Paths.get(getDefaultOutputFolder());
+		Path defaultOutput = Paths.get(targetFolder.toURI());
 		if (!Files.exists(defaultOutput)) {
 			Files.createDirectories(defaultOutput);
 		}
@@ -580,12 +566,15 @@ public class KurentoMediaServerManager {
 			kmsLogsPath += "logs/";
 		}
 
+		String testMethodName = KurentoTest.getSimpleTestName();
+
 		if (docker) {
 			Docker dockerClient = Docker.getSingleton();
 
 			if (testMethodName != null) {
-				dockerClient.downloadLog(dockerContainerName, Paths.get(
-						getDefaultOutputFolder(), testMethodName + "-kms.log"));
+				dockerClient.downloadLog(dockerContainerName,
+						Paths.get(targetFolder.getAbsolutePath(),
+								testMethodName + "-kms.log"));
 			} else {
 				log.warn(
 						"KMS logs cannot be retrived because testMethodName is not set in KurentoMediaServerManager");
@@ -612,8 +601,7 @@ public class KurentoMediaServerManager {
 
 				remoteKms.getFile(localLogFile, remoteLogFile);
 
-				KurentoServicesTestHelper
-						.addServerLogFilePath(new File(localLogFile));
+				KurentoTest.addLogFile(new File(localLogFile));
 				log.debug("Log file: {}", localLogFile);
 			}
 
@@ -633,7 +621,7 @@ public class KurentoMediaServerManager {
 				try {
 					FileUtils.copyFile(logFile, destFile);
 
-					KurentoServicesTestHelper.addServerLogFilePath(destFile);
+					KurentoTest.addLogFile(destFile);
 					log.debug("Log file: {}", destFile);
 				} catch (Throwable e) {
 					log.warn("Exception copy KMS file {} {}", e.getClass(),
@@ -641,10 +629,6 @@ public class KurentoMediaServerManager {
 				}
 			}
 		}
-	}
-
-	private String getDefaultOutputFolder() {
-		return testDir + testClassName;
 	}
 
 	private void killKmsProcesses() throws IOException {

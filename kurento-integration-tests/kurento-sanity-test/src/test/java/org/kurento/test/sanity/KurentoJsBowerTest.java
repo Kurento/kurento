@@ -20,9 +20,9 @@ import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.kurento.test.Shell;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.services.Shell;
 import org.springframework.core.io.ClassPathResource;
 
 /**

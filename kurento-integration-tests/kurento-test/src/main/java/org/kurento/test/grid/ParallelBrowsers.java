@@ -15,10 +15,10 @@
 package org.kurento.test.grid;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.CLIENT_RATE_DEFAULT;
-import static org.kurento.test.TestConfiguration.CLIENT_RATE_PROPERTY;
-import static org.kurento.test.TestConfiguration.HOLD_TIME_DEFAULT;
-import static org.kurento.test.TestConfiguration.HOLD_TIME_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.CLIENT_RATE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.CLIENT_RATE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.HOLD_TIME_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.HOLD_TIME_PROPERTY;
 
 import java.util.Map;
 import java.util.concurrent.Callable;

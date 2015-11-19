@@ -16,14 +16,14 @@
 package org.kurento.test.grid;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.SELENIUM_HUB_ADDRESS;
-import static org.kurento.test.TestConfiguration.SELENIUM_HUB_ADDRESS_DEFAULT;
-import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_DEFAULT;
-import static org.kurento.test.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_NODES_FILE_LIST_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_DEFAULT;
-import static org.kurento.test.TestConfiguration.SELENIUM_NODES_LIST_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_NODES_URL_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_HUB_ADDRESS;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_HUB_ADDRESS_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_HUB_PORT_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_HUB_PORT_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_NODES_FILE_LIST_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_NODES_LIST_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_NODES_LIST_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_NODES_URL_PROPERTY;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,11 +62,11 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
-import org.kurento.test.Shell;
 import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.browser.BrowserType;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.services.Randomizer;
+import org.kurento.test.services.Shell;
 import org.kurento.test.services.SshConnection;
 import org.openqa.grid.selenium.GridLauncher;
 import org.openqa.jetty.http.HttpListener;

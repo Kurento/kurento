@@ -28,10 +28,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.test.Shell;
-import org.kurento.test.TestConfiguration;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.browser.BrowserType;
+import org.kurento.test.config.TestConfiguration;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.services.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -263,8 +264,7 @@ public class Docker implements Closeable {
 			String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
 			Volume testFilesVolume = new Volume(testFilesPath);
 
-			String workspacePath = Paths
-					.get(KurentoServicesTestHelper.getTestDir())
+			String workspacePath = Paths.get(KurentoTest.getTestDir())
 					.toAbsolutePath().toString();
 			Volume workspaceVolume = new Volume(workspacePath);
 

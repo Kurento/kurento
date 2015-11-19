@@ -14,9 +14,9 @@
  */
 package org.kurento.test.config;
 
-import static org.kurento.test.TestConfiguration.SAUCELAB_KEY_PROPERTY;
-import static org.kurento.test.TestConfiguration.SAUCELAB_USER_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_VERSION;
+import static org.kurento.test.config.TestConfiguration.SAUCELAB_KEY_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SAUCELAB_USER_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_VERSION;
 
 import java.util.ArrayList;
 import java.util.Collection;

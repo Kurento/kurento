@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,25 +12,18 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.base;
+package org.kurento.test.services;
 
-import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.SystemStabilityTests;
-import org.kurento.test.browser.WebRtcTestPage;
-import org.kurento.test.config.TestScenario;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * Stability tests.
+ * Custom annotation for finished tests.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.5
+ * @since 6.1.1
  */
-@Category(SystemStabilityTests.class)
-public class StabilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
-
-	public StabilityTest(TestScenario testScenario) {
-		super(testScenario);
-		setDeleteLogsIfSuccess(false);
-	}
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FinishedTest {
 
 }

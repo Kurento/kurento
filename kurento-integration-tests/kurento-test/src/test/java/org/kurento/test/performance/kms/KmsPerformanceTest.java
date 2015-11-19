@@ -28,11 +28,11 @@ import org.kurento.client.GStreamerFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.PerformanceTest;
-import org.kurento.test.base.WebRtcConnector;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.services.WebRtcConnector;
 
 /**
  * <strong>Description</strong>: Performance test for KMS.<br/>

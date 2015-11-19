@@ -16,10 +16,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.testing.SystemTests;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.internal.AbortableCountDownLatch;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,13 +168,12 @@ public class BrowserCreationTest {
 
 	private void initTestFolder(String testName) throws IOException {
 
-		KurentoServicesTestHelper
-				.setTestCaseName(this.getClass().getSimpleName());
-		KurentoServicesTestHelper.setTestName(testName);
+		KurentoTest.setTestClassName(this.getClass().getSimpleName());
+		KurentoTest.setTestMethodName(testName);
 
-		log.info("Tests dir {}", KurentoServicesTestHelper.getTestDir());
+		log.info("Tests dir {}", KurentoTest.getTestDir());
 
-		Path testFolder = Paths.get(KurentoServicesTestHelper.getTestDir(),
+		Path testFolder = Paths.get(KurentoTest.getTestDir(),
 				"BrowserCreationTest");
 
 		if (Files.exists(testFolder)) {

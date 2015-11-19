@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test;
+package org.kurento.test.services;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

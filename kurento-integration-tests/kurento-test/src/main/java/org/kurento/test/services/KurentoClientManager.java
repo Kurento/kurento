@@ -12,17 +12,14 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.base;
+package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 
 import java.io.IOException;
 
-import org.junit.rules.TestName;
 import org.kurento.client.KurentoClient;
-import org.kurento.test.services.KurentoClientTestFactory;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,18 +32,15 @@ import org.slf4j.LoggerFactory;
  */
 public class KurentoClientManager {
 
-	protected static Logger log = LoggerFactory.getLogger(KurentoClientManager.class);
+	protected static Logger log = LoggerFactory
+			.getLogger(KurentoClientManager.class);
 
 	protected KurentoClient kurentoClient;
 	protected KurentoClient fakeKurentoClient;
 
-	public KurentoClientManager(TestName testName, Class<?> clazz) throws IOException {
+	public KurentoClientManager() throws IOException {
 		// Kurento services
-		KurentoServicesTestHelper.setTestName(testName.getMethodName());
-		KurentoServicesTestHelper.setTestCaseName(clazz.getName());
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
-
-		log.info("Starting test {}", clazz.getName() + "." + testName.getMethodName());
 
 		// Kurento client
 		kurentoClient = KurentoClientTestFactory.createKurentoForTest();

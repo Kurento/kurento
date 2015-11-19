@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.kurento.client.KurentoClient;
+import org.kurento.test.services.KurentoClientManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +46,7 @@ public class KurentoClientTest {
 
 	@Before
 	public void setupKurentoClient() throws IOException {
-		kurentoClientManager = new KurentoClientManager(testName,
-				this.getClass());
+		kurentoClientManager = new KurentoClientManager();
 		kurentoClient = kurentoClientManager.getKurentoClient();
 		fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
 	}

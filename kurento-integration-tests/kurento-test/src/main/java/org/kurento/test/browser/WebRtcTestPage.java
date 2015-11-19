@@ -31,9 +31,9 @@ import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.VideoTagType;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Recorder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -372,8 +372,8 @@ public class WebRtcTestPage extends WebPage {
 		t1.start();
 
 		// Append WebRTC mode (send/receive and audio/video) to identify test
-		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
-				+ KurentoServicesTestHelper.getTestName());
+		addTestName(KurentoTest.getTestClassName() + "."
+				+ KurentoTest.getTestMethodName());
 		appendStringToTitle(mode.toString());
 		appendStringToTitle(channel.toString());
 

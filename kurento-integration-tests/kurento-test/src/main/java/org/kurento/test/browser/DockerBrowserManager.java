@@ -1,26 +1,26 @@
 package org.kurento.test.browser;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
-import static org.kurento.test.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
-import static org.kurento.test.TestConfiguration.SELENIUM_RECORD_DEFAULT;
-import static org.kurento.test.TestConfiguration.SELENIUM_RECORD_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_IMAGE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_PROPERTY;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -49,8 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.net.RemoteService;
 import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
-import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.SessionId;
@@ -526,8 +526,7 @@ public class DockerBrowserManager {
 	}
 
 	private String createSecretFile() throws IOException {
-		Path secretFile = Paths
-				.get(KurentoServicesTestHelper.getTestDir() + "vnc-passwd");
+		Path secretFile = Paths.get(KurentoTest.getTestDir() + "vnc-passwd");
 
 		try (BufferedWriter bw = Files.newBufferedWriter(secretFile,
 				StandardCharsets.UTF_8)) {

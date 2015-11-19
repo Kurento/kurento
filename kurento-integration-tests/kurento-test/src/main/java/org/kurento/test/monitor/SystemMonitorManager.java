@@ -15,13 +15,13 @@
 package org.kurento.test.monitor;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.DEFAULT_MONITOR_RATE_DEFAULT;
-import static org.kurento.test.TestConfiguration.DEFAULT_MONITOR_RATE_PROPERTY;
-import static org.kurento.test.TestConfiguration.KMS_WS_URI_DEFAULT;
-import static org.kurento.test.TestConfiguration.KMS_WS_URI_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
-import static org.kurento.test.TestConfiguration.KURENTO_KMS_PEM_PROP;
+import static org.kurento.test.config.TestConfiguration.DEFAULT_MONITOR_RATE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.DEFAULT_MONITOR_RATE_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
+import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_PEM_PROP;
 import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_DEFAULT;
 import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_PROP;
 

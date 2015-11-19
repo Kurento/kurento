@@ -14,13 +14,15 @@
  */
 package org.kurento.test.base;
 
-import static org.kurento.test.TestConfiguration.FAKE_KMS_WS_URI_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.junit.After;
-import org.junit.Rule;
 import org.kurento.client.EventListener;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
@@ -31,7 +33,10 @@ import org.kurento.test.base.RepositoryFunctionalTest.RepositoryWebServer;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
+import org.kurento.test.services.FailedTest;
+import org.kurento.test.services.KurentoClientManager;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.services.WebRtcConnector;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -50,8 +55,8 @@ public class KurentoClientWebPageTest<W extends WebPage>
 	}
 
 	protected static ConfigurableApplicationContext context;
+	protected static KurentoClientManager kurentoClientManager;
 
-	protected KurentoClientManager kurentoClientManager;
 	protected KurentoClient kurentoClient;
 	protected KurentoClient fakeKurentoClient;
 
@@ -63,14 +68,48 @@ public class KurentoClientWebPageTest<W extends WebPage>
 		super(testScenario);
 	}
 
-	@Rule
-	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
-
 	private Class<?> webServerClass = WebServer.class;
 
 	protected void setWebServerClass(
 			Class<RepositoryWebServer> webServerClass) {
 		this.webServerClass = webServerClass;
+	}
+
+	@FailedTest
+	public static void retrieveGstreamerDots() {
+		if (kurentoClientManager != null) {
+			try {
+				KurentoClient kurentoClient = kurentoClientManager
+						.getKurentoClient();
+				List<MediaPipeline> pipelines = kurentoClient.getServerManager()
+						.getPipelines();
+				log.debug(
+						"Retrieving GStreamerDots for all pipelines in KMS ({})",
+						pipelines.size());
+
+				for (MediaPipeline pipeline : pipelines) {
+
+					String pipelineName = pipeline.getName();
+					log.debug("Saving GstreamerDot for pipeline {}",
+							pipelineName);
+
+					String gstreamerDotFile = KurentoClientWebPageTest
+							.getDefaultOutputFile("-" + pipelineName);
+
+					try {
+						FileUtils.writeStringToFile(new File(gstreamerDotFile),
+								pipeline.getGstreamerDot());
+
+					} catch (IOException ioe) {
+						log.error("Exception writing GstreamerDot file", ioe);
+					}
+				}
+			} catch (WebSocketException e) {
+				log.warn(
+						"WebSocket exception while reading existing pipelines. Maybe KMS is closed: {}:{}",
+						e.getClass().getName(), e.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -80,14 +119,12 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 		try {
 
-			kurentoClientManager = new KurentoClientManager(testName,
-					this.getClass());
+			kurentoClientManager = new KurentoClientManager();
 			kurentoClient = kurentoClientManager.getKurentoClient();
 			fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
-			logOnFailure.setKurentoClientManager(kurentoClientManager);
 
 			log.info(
-					"--------------- Started KurentoClientWebPageTest ----------------");
+					"--------------- Started KurentoClientWebPageTest ---------------");
 
 			super.setupKurentoTest();
 
@@ -104,7 +141,7 @@ public class KurentoClientWebPageTest<W extends WebPage>
 	@After
 	public void teardownKurentoClient() throws Exception {
 		log.info(
-				"--------------- Finished KurentoClientWebPageTest ----------------");
+				"--------------- Finished KurentoClientWebPageTest ---------------");
 		if (kurentoClientManager != null) {
 			kurentoClientManager.teardown();
 		}
@@ -116,17 +153,6 @@ public class KurentoClientWebPageTest<W extends WebPage>
 
 	public static String getPathTestFiles() {
 		return KurentoServicesTestHelper.getTestFilesPath();
-	}
-
-	public String getDefaultFileForRecording() {
-		return getDefaultOutputFile(".webm");
-	}
-
-	public static String getDefaultOutputFile(String suffix) {
-		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
-				+ "/" + KurentoServicesTestHelper.getTestCaseName());
-		String testName = KurentoServicesTestHelper.getSimpleTestName();
-		return fileForRecording.getAbsolutePath() + "/" + testName + suffix;
 	}
 
 	public void addFakeClients(int numFakeClients, int bandwidht,

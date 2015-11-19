@@ -41,7 +41,7 @@ public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
 	public PerformanceTest(TestScenario testScenario) {
 		super(testScenario);
 
-		logOnFailure.setDeleteLogsIfSuccess(false);
+		setDeleteLogsIfSuccess(false);
 	}
 
 	@Before

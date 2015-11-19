@@ -15,8 +15,8 @@
 package org.kurento.test.config;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.TestConfiguration.TEST_CONFIG_EXECUTIONS_DEFAULT;
-import static org.kurento.test.TestConfiguration.TEST_CONFIG_EXECUTIONS_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_EXECUTIONS_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_EXECUTIONS_PROPERTY;
 
 import java.io.BufferedReader;
 import java.net.URL;
