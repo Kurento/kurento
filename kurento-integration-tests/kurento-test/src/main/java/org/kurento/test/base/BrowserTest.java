@@ -60,7 +60,7 @@ import org.kurento.test.internal.AbortableCountDownLatch;
  * @since 4.2.3
  */
 @RunWith(Parameterized.class)
-public abstract class WebPageTest<W extends WebPage> extends KurentoTest {
+public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
@@ -72,10 +72,10 @@ public abstract class WebPageTest<W extends WebPage> extends KurentoTest {
 	private Map<String, W> pages = new ConcurrentHashMap<>();
 	private TestScenario testScenario;
 
-	public WebPageTest() {
+	public BrowserTest() {
 	}
 
-	public WebPageTest(TestScenario testScenario) {
+	public BrowserTest(TestScenario testScenario) {
 		this.testScenario = testScenario;
 	}
 

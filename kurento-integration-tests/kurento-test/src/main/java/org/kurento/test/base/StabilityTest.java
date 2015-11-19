@@ -26,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 5.0.5
  */
 @Category(SystemStabilityTests.class)
-public class StabilityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
+public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	public StabilityTest(TestScenario testScenario) {
 		super(testScenario);

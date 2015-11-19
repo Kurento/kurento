@@ -24,7 +24,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.RtpEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
@@ -79,7 +79,7 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientWebPageTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.BROWSER,

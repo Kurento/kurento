@@ -32,7 +32,7 @@ import java.util.TreeMap;
 
 import org.junit.Assert;
 import org.kurento.commons.ClassPath;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPageType;
@@ -286,7 +286,7 @@ public class TestScenario {
 
 	public static Collection<Object[]> localPresenterAndViewerRGB() {
 		// Test: Chrome in local (presenter and viewer)
-		String videoPath = KurentoClientWebPageTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.PRESENTER,

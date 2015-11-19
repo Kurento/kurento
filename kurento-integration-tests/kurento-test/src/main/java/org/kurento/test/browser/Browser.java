@@ -61,7 +61,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestConfiguration;
@@ -924,7 +924,7 @@ public class Browser implements Closeable {
 		if (scope == BrowserScope.DOCKER) {
 
 			Path logFile = Paths
-					.get(KurentoClientWebPageTest.getDefaultOutputFile(""));
+					.get(KurentoClientBrowserTest.getDefaultOutputFile(""));
 
 			try {
 				if (!Files.exists(logFile)) {

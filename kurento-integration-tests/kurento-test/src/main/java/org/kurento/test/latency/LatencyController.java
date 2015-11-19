@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.monitor.SystemMonitorManager;
 import org.slf4j.Logger;
@@ -167,7 +167,7 @@ public class LatencyController
 
 				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
 						.format(latencyTime);
-				client.takeScreeshot(KurentoClientWebPageTest.getDefaultOutputFile(
+				client.takeScreeshot(KurentoClientBrowserTest.getDefaultOutputFile(
 						"-" + parsedtime + "-error-screenshot.png"));
 
 				LatencyException latencyException = new LatencyException(

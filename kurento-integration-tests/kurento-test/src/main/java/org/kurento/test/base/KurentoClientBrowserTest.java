@@ -47,8 +47,8 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public class KurentoClientWebPageTest<W extends WebPage>
-		extends WebPageTest<W> {
+public class KurentoClientBrowserTest<W extends WebPage>
+		extends BrowserTest<W> {
 
 	@EnableAutoConfiguration
 	public static class WebServer {
@@ -60,11 +60,11 @@ public class KurentoClientWebPageTest<W extends WebPage>
 	protected KurentoClient kurentoClient;
 	protected KurentoClient fakeKurentoClient;
 
-	public KurentoClientWebPageTest(Class<?> webServerClass) {
+	public KurentoClientBrowserTest(Class<?> webServerClass) {
 		this.webServerClass = webServerClass;
 	}
 
-	public KurentoClientWebPageTest(TestScenario testScenario) {
+	public KurentoClientBrowserTest(TestScenario testScenario) {
 		super(testScenario);
 	}
 
@@ -93,7 +93,7 @@ public class KurentoClientWebPageTest<W extends WebPage>
 					log.debug("Saving GstreamerDot for pipeline {}",
 							pipelineName);
 
-					String gstreamerDotFile = KurentoClientWebPageTest
+					String gstreamerDotFile = KurentoClientBrowserTest
 							.getDefaultOutputFile("-" + pipelineName);
 
 					try {

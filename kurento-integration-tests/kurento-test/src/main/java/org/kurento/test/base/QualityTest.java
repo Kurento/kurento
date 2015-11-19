@@ -26,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 5.0.5
  */
 @Category(SystemQualityTests.class)
-public class QualityTest extends KurentoClientWebPageTest<WebRtcTestPage> {
+public class QualityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	public QualityTest(TestScenario testScenario) {
 		super(testScenario);

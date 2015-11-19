@@ -39,7 +39,7 @@ import com.google.common.io.Files;
  */
 @Category(SystemFunctionalTests.class)
 public class RepositoryFunctionalTest
-		extends KurentoClientWebPageTest<WebRtcTestPage> {
+		extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	@ComponentScan(basePackageClasses = {
 			org.kurento.repository.RepositoryItem.class })

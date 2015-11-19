@@ -21,7 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 import org.openqa.selenium.By;
@@ -32,7 +32,7 @@ import org.openqa.selenium.WebElement;
  * @since 6.1.1
  */
 
-public class MetaTest1Test extends KurentoClientWebPageTest<WebRtcTestPage> {
+public class MetaTest1Test extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	public MetaTest1Test(TestScenario testScenario) {
 		super(testScenario);

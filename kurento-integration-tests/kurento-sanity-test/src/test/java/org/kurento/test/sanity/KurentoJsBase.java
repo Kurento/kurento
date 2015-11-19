@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.commons.testing.SanityTests;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPage;
@@ -49,7 +49,7 @@ import freemarker.template.Template;
  * @since 4.2.5
  */
 @Category(SanityTests.class)
-public class KurentoJsBase extends KurentoClientWebPageTest<WebPage> {
+public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 
 	protected static final Logger log = LoggerFactory.getLogger(KurentoJsBase.class);
 

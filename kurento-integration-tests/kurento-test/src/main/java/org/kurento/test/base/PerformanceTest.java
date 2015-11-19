@@ -32,7 +32,7 @@ import org.kurento.test.monitor.SystemMonitorManager;
  * @since 4.2.5
  */
 @Category(SystemPerformanceTests.class)
-public class PerformanceTest extends KurentoClientWebPageTest<WebRtcTestPage> {
+public class PerformanceTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	protected SystemMonitorManager monitor;
 

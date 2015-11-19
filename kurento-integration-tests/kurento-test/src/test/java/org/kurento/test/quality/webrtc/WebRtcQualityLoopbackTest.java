@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.base.QualityTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
@@ -75,7 +75,7 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientWebPageTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
 				+ "/video/10sec/red.y4m";
 		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
 		TestScenario test = new TestScenario();

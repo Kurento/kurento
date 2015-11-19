@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.net.RemoteService;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -358,7 +358,7 @@ public class DockerBrowserManager {
 				docker.pullImageIfNecessary(vncrecordImageId);
 
 				String videoFile = Paths
-						.get(KurentoClientWebPageTest
+						.get(KurentoClientBrowserTest
 								.getDefaultOutputFile("-" + id + "-record.flv"))
 						.toAbsolutePath().toString();
 

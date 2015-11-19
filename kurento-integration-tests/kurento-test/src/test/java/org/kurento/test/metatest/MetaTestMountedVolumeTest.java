@@ -26,7 +26,7 @@ import org.kurento.client.ErrorEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.test.base.KurentoClientWebPageTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
 
@@ -36,7 +36,7 @@ import org.kurento.test.config.TestScenario;
  */
 
 public class MetaTestMountedVolumeTest
-		extends KurentoClientWebPageTest<WebRtcTestPage> {
+		extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	public MetaTestMountedVolumeTest(TestScenario testScenario) {
 		super(testScenario);

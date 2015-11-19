@@ -26,7 +26,7 @@ import org.kurento.test.config.TestScenario;
  * @since 5.0.5
  */
 @Category(SystemFunctionalTests.class)
-public class FunctionalTest extends KurentoClientWebPageTest<WebRtcTestPage> {
+public class FunctionalTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	public FunctionalTest(TestScenario testScenario) {
 		super(testScenario);
