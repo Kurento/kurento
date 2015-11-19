@@ -59,3 +59,31 @@ export BOWER_REPOSITORY
 export FILES
 export CREATE_TAG=true
 kurento_bower_publish.sh
+
+# Deploy to builds only when it is release
+PROJECT_VERSION=$(kurento_get_version.sh)
+if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
+  V_DIR=/release/${PROJECT_VERSION}
+  S_DIR=/release/stable
+
+  # Create kws version file
+  echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > $KURENTO_PROJECT.version
+
+  # Create kws environment file
+  FILES=""
+  FILES="$FILES dist/$BASE_NAME.js:upload/$V_DIR/js/$BASE_NAME.js"
+  FILES="$FILES dist/$BASE_NAME.js:upload/$S_DIR/js/$BASE_NAME.js"
+  FILES="$FILES dist/$BASE_NAME.min.js:upload/$V_DIR/js/$BASE_NAME.min.js"
+  FILES="$FILES dist/$BASE_NAME.min.js:upload/$S_DIR/js/$BASE_NAME.min.js"
+  FILES="$FILES dist/$BASE_NAME.map:upload/$V_DIR/js/$BASE_NAME.map"
+  FILES="$FILES dist/$BASE_NAME.map:upload/$S_DIR/js/$BASE_NAME.map"
+  FILES="$FILES target/$KURENTO_PROJECT-$VERSION.zip:upload/$V_DIR/$KURENTO_PROJECT-$VERSION.zip"
+  FILES="$FILES target/$KURENTO_PROJECT-$VERSION.zip:upload/$S_DIR/$KURENTO_PROJECT.zip"
+  FILES="$FILES LICENSE:upload/$V_DIR/LICENSE"
+  FILES="$FILES LICENSE:upload/$S_DIR/LICENSE"
+  FILES="$FILES $KURENTO_PROJECT.version:upload/$V_DIR/$KURENTO_PROJECT.version"
+  FILES="$FILES $KURENTO_PROJECT.version:upload/$S_DIR/$KURENTO_PROJECT.version"
+
+  export FILES
+  kurento_http_publish.sh
+fi
