@@ -64,7 +64,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderPlayerOneToManyTest extends StabilityTest {
 
-	private static final int NUM_RECORDERS = 5;
+	private static final int NUM_RECORDERS = 2;
 	private static final int PLAYTIME_MS = 10000; // ms
 	private static final int THRESHOLD_MS = 5000; // ms
 	private static int numViewers;
