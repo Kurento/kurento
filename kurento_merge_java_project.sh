@@ -14,4 +14,4 @@ kurento_maven_deploy.sh
 
 # Upload to builds
 VERSION=$(kurento_get_version.sh)
-echo "$VERSION - $(date) - $(date +'%Y%m%d-%H%M%S')" > project-version.txt
+echo "$VERSION" > project-version.txt
