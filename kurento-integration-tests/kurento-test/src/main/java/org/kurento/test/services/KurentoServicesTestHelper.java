@@ -26,10 +26,6 @@ import static org.kurento.test.config.TestConfiguration.BOWER_KURENTO_UTILS_TAG_
 import static org.kurento.test.config.TestConfiguration.BOWER_KURENTO_UTILS_TAG_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
-import static org.kurento.test.config.TestConfiguration.KCS_AUTOSTART_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.KCS_AUTOSTART_PROP;
-import static org.kurento.test.config.TestConfiguration.KCS_WS_URI_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.KCS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_AUTOSTART_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_AUTOSTART_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_HTTP_PORT_DEFAULT;
@@ -49,13 +45,9 @@ import static org.kurento.test.config.TestConfiguration.KURENTO_TESTFILES_DEFAUL
 import static org.kurento.test.config.TestConfiguration.KURENTO_TESTFILES_PROP;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.commons.exception.KurentoException;
-import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.test.docker.Docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,48 +57,24 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class KurentoServicesTestHelper {
 
 	public static Logger log = LoggerFactory
-			.getLogger(KurentoServicesTestHelper.class);
+	        .getLogger(KurentoServicesTestHelper.class);
 
 	// Attributes
 	private static KurentoMediaServerManager kms;
 	private static KurentoMediaServerManager fakeKms;
-	private static KurentoControlServerManager kcs;
 	private static String kmsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String fakeKmsAutostart = KMS_AUTOSTART_DEFAULT;
-	private static String kcsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static ConfigurableApplicationContext appContext;
 
 	public static void startKurentoServicesIfNeccessary() throws IOException {
 		startKurentoMediaServerIfNecessary();
-		startKurentoControlServerIfNecessary();
-	}
-
-	private static void startKurentoControlServerIfNecessary() {
-
-		kcsAutostart = getProperty(KCS_AUTOSTART_PROP, KCS_AUTOSTART_DEFAULT);
-
-		switch (kcsAutostart) {
-		case AUTOSTART_FALSE_VALUE:
-			break;
-		case AUTOSTART_TEST_VALUE:
-			startKurentoControlServer();
-			break;
-		case AUTOSTART_TESTSUITE_VALUE:
-			if (kcs == null) {
-				startKurentoControlServer();
-			}
-			break;
-		default:
-			throw new IllegalArgumentException("The value '" + kcsAutostart
-					+ "' is not valid for property " + KCS_AUTOSTART_PROP);
-		}
 	}
 
 	private static void startKurentoMediaServerIfNecessary()
-			throws IOException {
+	        throws IOException {
 		kmsAutostart = getProperty(KMS_AUTOSTART_PROP, KMS_AUTOSTART_DEFAULT);
 		fakeKmsAutostart = getProperty(FAKE_KMS_AUTOSTART_PROP,
-				FAKE_KMS_AUTOSTART_DEFAULT);
+		        FAKE_KMS_AUTOSTART_DEFAULT);
 
 		startKms(kmsAutostart, false);
 		startKms(fakeKmsAutostart, true);
@@ -114,7 +82,7 @@ public class KurentoServicesTestHelper {
 	}
 
 	private static void startKms(String kmsAutostart, boolean isFake)
-			throws IOException {
+	        throws IOException {
 
 		KurentoMediaServerManager kmsToBeStarted = isFake ? fakeKms : kms;
 
@@ -135,24 +103,24 @@ public class KurentoServicesTestHelper {
 			break;
 		default:
 			throw new IllegalArgumentException("The value '" + kmsAutostart
-					+ "' is not valid for property "
-					+ (isFake ? FAKE_KMS_AUTOSTART_PROP : KMS_AUTOSTART_PROP));
+			        + "' is not valid for property "
+			        + (isFake ? FAKE_KMS_AUTOSTART_PROP : KMS_AUTOSTART_PROP));
 		}
 	}
 
 	public static KurentoMediaServerManager alreadyStartedKurentoMediaServer()
-			throws IOException {
+	        throws IOException {
 
 		return KurentoMediaServerManager.kmsAlreadyStarted(getWsUri());
 	}
 
 	public static KurentoMediaServerManager startKurentoMediaServer(
-			boolean isFake) throws IOException {
+	        boolean isFake) throws IOException {
 
 		KurentoMediaServerManager kmsToBeStarted = isFake ? fakeKms : kms;
 
 		String transport = PropertiesManager.getProperty(KMS_TRANSPORT_PROP,
-				KMS_TRANSPORT_DEFAULT);
+		        KMS_TRANSPORT_DEFAULT);
 
 		int httpPort = getKmsHttpPort();
 
@@ -160,22 +128,22 @@ public class KurentoServicesTestHelper {
 		case KMS_TRANSPORT_WS_VALUE:
 
 			kmsToBeStarted = KurentoMediaServerManager
-					.createWithWsTransport(getWsUri(), httpPort);
+			        .createWithWsTransport(getWsUri(), httpPort);
 			break;
 		case KMS_TRANSPORT_RABBITMQ_VALUE:
 
 			kmsToBeStarted = KurentoMediaServerManager
-					.createWithRabbitMqTransport(getRabbitMqAddress(),
-							httpPort);
+			        .createWithRabbitMqTransport(getRabbitMqAddress(),
+			                httpPort);
 			break;
 
 		default:
 			throw new IllegalArgumentException("The value " + transport
-					+ " is not valid for property " + KMS_TRANSPORT_PROP);
+			        + " is not valid for property " + KMS_TRANSPORT_PROP);
 		}
 
 		boolean docker = KMS_SCOPE_DOCKER.equals(PropertiesManager
-				.getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT));
+		        .getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT));
 
 		kmsToBeStarted.setDocker(docker);
 
@@ -183,7 +151,7 @@ public class KurentoServicesTestHelper {
 			Docker dockerClient = Docker.getSingleton();
 			if (dockerClient.isRunningInContainer()) {
 				kmsToBeStarted.setDockerContainerName(
-						dockerClient.getContainerName() + "_kms");
+				        dockerClient.getContainerName() + "_kms");
 			}
 		}
 		kmsToBeStarted.start(isFake);
@@ -198,59 +166,25 @@ public class KurentoServicesTestHelper {
 
 	}
 
-	public static KurentoControlServerManager startKurentoControlServer() {
-		return startKurentoControlServer(
-				getProperty(KCS_WS_URI_PROP, KCS_WS_URI_DEFAULT));
-	}
-
-	public static KurentoControlServerManager startKurentoControlServer(
-			String wsUriProp) {
-
-		JsonRpcClient client = KurentoClientTestFactory
-				.createJsonRpcClient("kcs");
-
-		try {
-
-			URI wsUri = new URI(wsUriProp);
-			int port = wsUri.getPort();
-			String path = wsUri.getPath();
-			kcs = new KurentoControlServerManager(client, port, path);
-
-			return kcs;
-
-		} catch (URISyntaxException e) {
-			throw new KurentoException(
-					KCS_WS_URI_PROP + " invalid format: " + wsUriProp);
-		}
-	}
-
 	public static ConfigurableApplicationContext startHttpServer(
-			Object... sources) {
+	        Object... sources) {
 
 		System.setProperty("java.security.egd", "file:/dev/./urandom");
 
 		appContext = new SpringApplication(sources)
-				.run("--server.port=" + getAppHttpPort());
+		        .run("--server.port=" + getAppHttpPort());
 		return appContext;
 	}
 
 	public static void teardownServices() throws IOException {
 		teardownHttpServer();
 		teardownKurentoMediaServer();
-		teardownKurentoControlServer();
 	}
 
 	public static void teardownHttpServer() {
 		if (appContext != null) {
 			appContext.stop();
 			appContext.close();
-		}
-	}
-
-	public static void teardownKurentoControlServer() {
-		if (kcs != null && kcsAutostart.equals(AUTOSTART_TEST_VALUE)) {
-			kcs.destroy();
-			kcs = null;
 		}
 	}
 
@@ -272,27 +206,27 @@ public class KurentoServicesTestHelper {
 
 	public static int getKmsHttpPort() {
 		return PropertiesManager.getProperty(KMS_HTTP_PORT_PROP,
-				KMS_HTTP_PORT_DEFAULT);
+		        KMS_HTTP_PORT_DEFAULT);
 	}
 
 	public static int getAppHttpPort() {
 		return PropertiesManager.getProperty(APP_HTTP_PORT_PROP,
-				APP_HTTP_PORT_DEFAULT);
+		        APP_HTTP_PORT_DEFAULT);
 	}
 
 	public static String getBowerKurentoClientTag() {
 		return PropertiesManager.getProperty(BOWER_KURENTO_CLIENT_TAG_PROP,
-				BOWER_KURENTO_CLIENT_TAG_DEFAULT);
+		        BOWER_KURENTO_CLIENT_TAG_DEFAULT);
 	}
 
 	public static String getBowerKurentoUtilsTag() {
 		return PropertiesManager.getProperty(BOWER_KURENTO_UTILS_TAG_PROP,
-				BOWER_KURENTO_UTILS_TAG_DEFAULT);
+		        BOWER_KURENTO_UTILS_TAG_DEFAULT);
 	}
 
 	public static String getTestFilesPath() {
 		return PropertiesManager.getProperty(KURENTO_TESTFILES_PROP,
-				KURENTO_TESTFILES_DEFAULT);
+		        KURENTO_TESTFILES_DEFAULT);
 	}
 
 	public static Address getRabbitMqAddress() {
@@ -301,7 +235,7 @@ public class KurentoServicesTestHelper {
 
 	public static Address getRabbitMqAddress(String prefix) {
 		return PropertiesManager.getProperty(prefix, KMS_RABBITMQ_ADDRESS_PROP,
-				KMS_RABBITMQ_ADDRESS_DEFAULT);
+		        KMS_RABBITMQ_ADDRESS_DEFAULT);
 	}
 
 	public static String getWsUri() {
@@ -310,7 +244,7 @@ public class KurentoServicesTestHelper {
 
 	public static String getWsUri(String prefix) {
 		return PropertiesManager.getProperty(prefix, KMS_WS_URI_PROP,
-				KMS_WS_URI_DEFAULT);
+		        KMS_WS_URI_DEFAULT);
 	}
 
 }

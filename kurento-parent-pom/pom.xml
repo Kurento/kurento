@@ -293,11 +293,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-rabbitmq</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
 				<artifactId>kurento-repository</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -319,11 +314,6 @@
 			<dependency>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
-				<artifactId>kurento-control-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
