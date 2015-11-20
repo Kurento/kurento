@@ -671,7 +671,7 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
           /*black */ 2, NULL);
 
       filtercaps =
-          gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
+          gst_caps_new_simple ("video/x-raw",
           "width", G_TYPE_INT, self->priv->output_width,
           "height", G_TYPE_INT, self->priv->output_height,
           "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
