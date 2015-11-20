@@ -180,7 +180,7 @@ QUnit.test('MediaServer restarted', function (assert) {
       .pid)
 
     var grep = spawn('grep', ['kurento']);
-    var ps = spawn('ps', ['au']);
+    var ps = spawn('ps', ['aux']);
 
     ps.stdout.pipe(grep.stdin);
 
