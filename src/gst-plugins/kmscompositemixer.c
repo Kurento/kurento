@@ -639,16 +639,13 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   KMS_COMPOSITE_MIXER_LOCK (self);
 
   if (self->priv->videomixer == NULL) {
-    GstElement *videorate_mixer;
-
-    videorate_mixer = gst_element_factory_make ("videorate", NULL);
     self->priv->videomixer = gst_element_factory_make ("compositor", NULL);
     g_object_set (G_OBJECT (self->priv->videomixer), "background",
         1 /*black */ , "start-time-selection", 1 /*first */ , NULL);
     self->priv->mixer_video_agnostic =
         gst_element_factory_make ("agnosticbin", NULL);
 
-    gst_bin_add_many (GST_BIN (mixer), self->priv->videomixer, videorate_mixer,
+    gst_bin_add_many (GST_BIN (mixer), self->priv->videomixer,
         self->priv->mixer_video_agnostic, NULL);
 
     if (self->priv->videotestsrc == NULL) {
@@ -699,11 +696,9 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
       gst_element_sync_state_with_parent (self->priv->videotestsrc);
     }
     gst_element_sync_state_with_parent (self->priv->videomixer);
-    gst_element_sync_state_with_parent (videorate_mixer);
     gst_element_sync_state_with_parent (self->priv->mixer_video_agnostic);
 
-    gst_element_link_many (self->priv->videomixer, videorate_mixer,
-        self->priv->mixer_video_agnostic, NULL);
+    gst_element_link (self->priv->videomixer, self->priv->mixer_video_agnostic);
   }
 
   if (self->priv->audiomixer == NULL) {
