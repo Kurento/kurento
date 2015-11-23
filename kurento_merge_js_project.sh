@@ -61,9 +61,9 @@ export CREATE_TAG=true
 kurento_bower_publish.sh
 
 # Deploy to builds only when it is release
-PROJECT_VERSION=$(kurento_get_version.sh)
-if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
-  V_DIR=/release/${PROJECT_VERSION}
+VERSION=$(kurento_get_version.sh)
+if [[ $VERSION != *-SNAPSHOT ]]; then
+  V_DIR=/release/$VERSION
   S_DIR=/release/stable
 
   # Create kws version file
