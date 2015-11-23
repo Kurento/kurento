@@ -87,7 +87,7 @@ for file in `git diff-index --cached --name-only HEAD --diff-filter=ACMR| grep "
     newfile=`mktemp /tmp/${nf}.XXXXXX` || exit 1
     if [ "$(echo "$file" | grep -e "\.\(\(cpp\)\|\(hpp\)\)$")" ]; then
       astyle ${ASTYLE_PARAMS} < ${nf} > ${newfile} 2>> /dev/null
-      FIX_COMMAND="astyle ${ASTYLE_PARAMS} $file; git add $file; git commit"
+      FIX_COMMAND="astyle ${ASTYLE_PARAMS} $file"
     else
       $INDENT ${INDENT_PARAMETERS} \
           $nf -o $newfile 2>> /dev/null
@@ -96,7 +96,7 @@ for file in `git diff-index --cached --name-only HEAD --diff-filter=ACMR| grep "
       $INDENT ${INDENT_PARAMETERS} \
           $newfile 2>> /dev/null
 
-      FIX_COMMAND="$INDENT ${INDENT_PARAMETERS} $file; git add $file; git commit"
+      FIX_COMMAND="$INDENT ${INDENT_PARAMETERS} $file"
     fi
     a=$(<${newfile})
     printf '%s\n' "$a" > ${newfile}
