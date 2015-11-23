@@ -55,5 +55,5 @@ docker run \
   -e "KURENTO_GIT_REPOSITORY=$KURENTO_GIT_REPOSITORY" \
   -w /opt/kurento \
     $DOCKER_IMAGE \
-      bash -c \
+      bash -cx \
       	"$COMMAND"
