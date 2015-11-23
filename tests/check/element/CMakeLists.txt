@@ -172,3 +172,16 @@ target_link_libraries(test_webrtc_data_proto
                       ${KmsGstCommons_LIBRARIES}
                       webrtcdataproto)
 endif()
+
+add_test_program (test_srtp srtp.c)
+add_dependencies(test_srtp ${LIBRARY_NAME}plugins)
+target_include_directories(test_srtp PRIVATE
+                           ${gstreamer-1.5_INCLUDE_DIRS}
+                           ${gstreamer-rtp-1.5_INCLUDE_DIRS}
+                           ${gstreamer-check-1.5_INCLUDE_DIRS}
+                           ${KmsGstCommons_INCLUDE_DIRS})
+target_link_libraries(test_srtp
+                      ${gstreamer-1.5_LIBRARIES}
+                      ${gstreamer-rtp-1.5_LIBRARIES}
+                      ${gstreamer-check-1.5_LIBRARIES}
+                      ${KmsGstCommons_LIBRARIES})
