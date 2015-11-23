@@ -6,6 +6,9 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-7
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-7
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-8
 
 # Selenium images
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.48.2"
