@@ -44,10 +44,16 @@ RtpEndpointImpl::RtpEndpointImpl (const boost::property_tree::ptree &conf,
   case CryptoSuite::AES_128_CM_HMAC_SHA1_32:
   case CryptoSuite::AES_128_CM_HMAC_SHA1_80:
     len = MIN_KEY_LENGTH;
+    break;
 
   case CryptoSuite::AES_256_CM_HMAC_SHA1_32:
   case CryptoSuite::AES_256_CM_HMAC_SHA1_80:
     len = MAX_KEY_LENGTH;
+    break;
+
+  default:
+    throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
+                            "Invalid crypto suite");
   }
 
   if (key.length () != len) {
