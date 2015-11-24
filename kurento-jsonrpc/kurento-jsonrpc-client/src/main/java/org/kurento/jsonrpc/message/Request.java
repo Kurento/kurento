@@ -14,7 +14,6 @@
  */
 package org.kurento.jsonrpc.message;
 
-
 /**
  *
  * Java representation for JSON RPC request. This class holds the information
@@ -22,7 +21,8 @@ package org.kurento.jsonrpc.message;
  *
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
- * @param <P>
+ * @param
+ * 			<P>
  */
 public class Request<P> extends Message {
 
@@ -110,6 +110,10 @@ public class Request<P> extends Message {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public boolean isNotification() {
+		return id == null;
 	}
 
 }
