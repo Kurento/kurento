@@ -27,7 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcHandler;
-import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSender;
@@ -68,7 +67,7 @@ import com.google.gson.JsonObject;
 public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	public static Logger log = LoggerFactory
-			.getLogger(JsonRpcClient.class.getName());
+	        .getLogger(JsonRpcClient.class.getName());
 
 	private static class PingParams {
 		@SuppressWarnings("unused")
@@ -79,7 +78,6 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected JsonRpcRequestSenderHelper rsHelper;
 	protected Object registerInfo;
 	protected ClientSession session;
-	protected volatile KeepAliveManager keepAliveManager;
 	protected String label = "";
 	protected int connectionTimeout = 15000;
 	protected int idleTimeout = 300000;
@@ -90,7 +88,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	private volatile PingParams pingParams;
 
 	private ScheduledExecutorService scheduler = Executors
-			.newSingleThreadScheduledExecutor();
+	        .newSingleThreadScheduledExecutor();
 
 	private Future<?> heartbeat;
 
@@ -104,13 +102,13 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	@Override
 	public <R> R sendRequest(String method, Class<R> resultClass)
-			throws IOException {
+	        throws IOException {
 		return rsHelper.sendRequest(method, resultClass);
 	}
 
 	@Override
 	public <R> R sendRequest(String method, Object params, Class<R> resultClass)
-			throws IOException {
+	        throws IOException {
 		return rsHelper.sendRequest(method, params, resultClass);
 	}
 
@@ -121,13 +119,13 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	@Override
 	public JsonElement sendRequest(String method, Object params)
-			throws IOException {
+	        throws IOException {
 		return rsHelper.sendRequest(method, params);
 	}
 
 	@Override
 	public void sendRequest(String method, JsonObject params,
-			Continuation<JsonElement> continuation) {
+	        Continuation<JsonElement> continuation) {
 		rsHelper.sendRequest(method, params, continuation);
 	}
 
@@ -138,39 +136,39 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
 	@Override
 	public void sendNotification(String method, Object params,
-			Continuation<JsonElement> continuation) throws IOException {
+	        Continuation<JsonElement> continuation) throws IOException {
 		rsHelper.sendNotification(method, params, continuation);
 	}
 
 	@Override
 	public void sendNotification(String method, Object params)
-			throws IOException {
+	        throws IOException {
 		rsHelper.sendNotification(method, params);
 	}
 
 	@Override
 	public Response<JsonElement> sendRequest(Request<JsonObject> request)
-			throws IOException {
+	        throws IOException {
 		return rsHelper.sendRequest(request);
 	}
 
 	@Override
 	public void sendRequest(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
+	        Continuation<Response<JsonElement>> continuation)
+	                throws IOException {
 		rsHelper.sendRequest(request, continuation);
 	}
 
 	@Override
 	public void sendRequestHonorId(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
+	        Continuation<Response<JsonElement>> continuation)
+	                throws IOException {
 		rsHelper.sendRequestHonorId(request, continuation);
 	}
 
 	@Override
 	public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
-			throws IOException {
+	        throws IOException {
 		return rsHelper.sendRequestHonorId(request);
 	}
 
@@ -262,7 +260,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 			pingParams.interval = interval;
 
 			log.debug("{} Enabling heartbeat with an interval of {} ms", label,
-					interval);
+			        interval);
 			this.heartbeating = true;
 			this.heartbeatInterval = interval;
 
@@ -275,17 +273,17 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 				public void run() {
 					try {
 						JsonObject response = sendRequest(METHOD_PING,
-								pingParams).getAsJsonObject();
+			                    pingParams).getAsJsonObject();
 
 						pingParams = null;
 
 						if (!PONG.equals(
-								response.get(PONG_PAYLOAD).getAsString())) {
+			                    response.get(PONG_PAYLOAD).getAsString())) {
 							closeHeartbeatOnFailure();
 						}
 					} catch (Exception e) {
 						log.warn("{} Error sending heartbeat to server", label,
-								e);
+			                    e);
 						closeHeartbeatOnFailure();
 					}
 				}
@@ -298,8 +296,8 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	 */
 	private final void closeHeartbeatOnFailure() {
 		log.warn(
-				"{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
-				label);
+		        "{} Stopping heartbeat and closing client: failure during heartbeat mechanism",
+		        label);
 
 		heartbeat.cancel(false);
 		heartbeat = null;
@@ -309,7 +307,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 			closeWithReconnection();
 		} catch (IOException e) {
 			log.warn("{} Exception while closing client: {}", label,
-					e.getMessage());
+			        e.getMessage());
 		}
 	}
 
@@ -322,14 +320,6 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 			}
 			scheduler.shutdownNow();
 		}
-	}
-
-	public KeepAliveManager getKeepAliveManager() {
-		return keepAliveManager;
-	}
-
-	public void setKeepAliveManager(KeepAliveManager keepAliveManager) {
-		this.keepAliveManager = keepAliveManager;
 	}
 
 	public abstract void connect() throws IOException;

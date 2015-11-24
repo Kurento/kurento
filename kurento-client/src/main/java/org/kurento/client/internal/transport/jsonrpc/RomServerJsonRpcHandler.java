@@ -7,18 +7,10 @@ import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.INVOKE_OBJECT;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.INVOKE_OPERATION_NAME;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.INVOKE_OPERATION_PARAMS;
-import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.KEEPALIVE_METHOD;
-import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.KEEPALIVE_OBJECT;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.RELEASE_METHOD;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.RELEASE_OBJECT;
 
 import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import org.kurento.client.internal.server.ProtocolException;
 import org.kurento.client.internal.server.RomServer;
@@ -27,11 +19,16 @@ import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private static Logger LOG = LoggerFactory
-			.getLogger(RomServerJsonRpcHandler.class);
+	        .getLogger(RomServerJsonRpcHandler.class);
 
 	private final RomServer server;
 
@@ -41,7 +38,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Override
 	public void handleRequest(Transaction transaction,
-			Request<JsonObject> request) throws Exception {
+	        Request<JsonObject> request) throws Exception {
 
 		try {
 
@@ -50,33 +47,29 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			switch (method) {
 			case INVOKE_METHOD:
 				String objectRef = getAsString(params, INVOKE_OBJECT,
-						"object reference");
+				        "object reference");
 
 				String operationName = getAsString(params,
-						INVOKE_OPERATION_NAME, "method to be invoked");
+				        INVOKE_OPERATION_NAME, "method to be invoked");
 
 				JsonObject operationParams = params
-						.getAsJsonObject(INVOKE_OPERATION_PARAMS);
+				        .getAsJsonObject(INVOKE_OPERATION_PARAMS);
 
 				handleInvokeCommand(transaction, objectRef, operationName,
-						operationParams);
+				        operationParams);
 				break;
 			case RELEASE_METHOD:
 				String objectReleaseRef = getAsString(params, RELEASE_OBJECT,
-						"object reference to be released");
+				        "object reference to be released");
 
 				handleReleaseCommand(transaction, objectReleaseRef);
 				break;
 			case CREATE_METHOD:
 				String type = getAsString(params, CREATE_TYPE,
-						"RemoteClass of the object to be created");
+				        "RemoteClass of the object to be created");
 
 				handleCreateCommand(transaction, type,
-						params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
-				break;
-			case KEEPALIVE_METHOD:
-				LOG.info("Received a keepAlive request for object {}",
-						params.get(KEEPALIVE_OBJECT));
+				        params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
 				break;
 			default:
 				LOG.warn("Unknown request method '{}'", method);
@@ -94,7 +87,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private String getAsString(JsonObject jsonObject, String propName,
-			String propertyDescription) {
+	        String propertyDescription) {
 
 		if (jsonObject == null) {
 			throw new ProtocolException("There are no params in the request");
@@ -103,31 +96,32 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonElement element = jsonObject.get(propName);
 		if (element == null) {
 			throw new ProtocolException("It is necessary a property '"
-					+ propName + "' with " + propertyDescription);
+			        + propName + "' with " + propertyDescription);
 		} else {
 			return element.getAsString();
 		}
 	}
 
 	private void handleCreateCommand(Transaction transaction, String type,
-			JsonObject constructorParams) throws IOException {
+	        JsonObject constructorParams) throws IOException {
 
 		Object result = server.create(type,
-				JsonUtils.fromJson(constructorParams, Props.class));
+		        JsonUtils.fromJson(constructorParams, Props.class));
 
 		transaction.sendResponse(result);
 	}
 
-	private void handleReleaseCommand(Transaction transaction, String objectRef) {
+	private void handleReleaseCommand(Transaction transaction,
+	        String objectRef) {
 		server.release(objectRef);
 	}
 
 	private void handleInvokeCommand(Transaction transaction, String objectRef,
-			String operationName, JsonObject operationParams)
-			throws IOException {
+	        String operationName, JsonObject operationParams)
+	                throws IOException {
 
 		Object result = server.invoke(objectRef, operationName,
-				JsonUtils.fromJson(operationParams, Props.class), Object.class);
+		        JsonUtils.fromJson(operationParams, Props.class), Object.class);
 
 		transaction.sendResponse(result);
 	}

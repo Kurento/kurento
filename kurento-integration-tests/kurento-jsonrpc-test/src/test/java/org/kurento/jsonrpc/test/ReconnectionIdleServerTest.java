@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ReconnectionIdleServerTest extends JsonRpcConnectorBaseTest {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(ReconnectionIdleServerTest.class);
+	        .getLogger(ReconnectionIdleServerTest.class);
 
 	@Test
 	public void test() throws IOException, InterruptedException {
@@ -21,10 +21,10 @@ public class ReconnectionIdleServerTest extends JsonRpcConnectorBaseTest {
 		log.info("Client started");
 
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-				"ws://localhost:" + getPort() + "/jsonrpc");
+		        "ws://localhost:" + getPort() + "/jsonrpc");
 
 		client.setIdleTimeout(5000);
-		client.setKeepAliveTime(4000);
+		client.enableHeartbeat(4000);
 
 		for (int i = 0; i < 5; i++) {
 

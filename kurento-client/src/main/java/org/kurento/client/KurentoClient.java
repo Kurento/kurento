@@ -44,27 +44,27 @@ import com.google.common.base.StandardSystemProperty;
  */
 public class KurentoClient {
 
-	private static final long KEEPALIVE_TIME = 4 * 60 * 1000;
+	private static final int KEEPALIVE_TIME = 4 * 60 * 1000;
 
 	private static Logger log = LoggerFactory.getLogger(KurentoClient.class);
 
 	protected RomManager manager;
 
 	private long requesTimeout = PropertiesManager
-			.getProperty("kurento.client.requestTimeout", 10000);
+	        .getProperty("kurento.client.requestTimeout", 10000);
 
 	private String id;
 
 	private static KmsUrlLoader kmsUrlLoader;
 
 	public static synchronized String getKmsUrl(String id,
-			Properties properties) {
+	        Properties properties) {
 
 		if (kmsUrlLoader == null) {
 
 			Path configFile = Paths.get(
-					StandardSystemProperty.USER_HOME.value(), ".kurento",
-					"config.properties");
+			        StandardSystemProperty.USER_HOME.value(), ".kurento",
+			        "config.properties");
 
 			kmsUrlLoader = new KmsUrlLoader(configFile);
 		}
@@ -75,10 +75,10 @@ public class KurentoClient {
 		} else {
 			if (load instanceof Number) {
 				return kmsUrlLoader.getKmsUrlLoad(id,
-						((Number) load).intValue());
+				        ((Number) load).intValue());
 			} else {
 				return kmsUrlLoader.getKmsUrlLoad(id,
-						Integer.parseInt(load.toString()));
+				        Integer.parseInt(load.toString()));
 			}
 		}
 	}
@@ -103,26 +103,26 @@ public class KurentoClient {
 	}
 
 	public static KurentoClient create(String websocketUrl,
-			Properties properties) {
+	        Properties properties) {
 		log.info("Connecting to kms in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-				websocketUrl);
-		client.setKeepAliveTime(KEEPALIVE_TIME);
+		        websocketUrl);
+		client.enableHeartbeat(KEEPALIVE_TIME);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 	}
 
 	public static KurentoClient create(String websocketUrl,
-			KurentoConnectionListener listener) {
+	        KurentoConnectionListener listener) {
 		return create(websocketUrl, listener, new Properties());
 	}
 
 	public static KurentoClient create(String websocketUrl,
-			KurentoConnectionListener listener, Properties properties) {
+	        KurentoConnectionListener listener, Properties properties) {
 		log.info("Connecting to KMS in {}", websocketUrl);
 		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
-				JsonRpcConnectionListenerKurento.create(listener));
-		client.setKeepAliveTime(KEEPALIVE_TIME);
+		        JsonRpcConnectionListenerKurento.create(listener));
+		client.enableHeartbeat(KEEPALIVE_TIME);
 		client.setLabel("KurentoClient");
 		return new KurentoClient(client);
 
@@ -132,7 +132,7 @@ public class KurentoClient {
 		this.manager = new RomManager(new RomClientJsonRpcClient(client));
 		client.setRequestTimeout(requesTimeout);
 		if (client instanceof JsonRpcClientWebSocket) {
-			((JsonRpcClientWebSocket) client).setKeepAliveTime(KEEPALIVE_TIME);
+			((JsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
 		}
 		try {
 			client.connect();
@@ -148,7 +148,7 @@ public class KurentoClient {
 	 */
 	public MediaPipeline createMediaPipeline() {
 		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-				.build();
+		        .build();
 	}
 
 	/**
@@ -163,14 +163,14 @@ public class KurentoClient {
 	 *
 	 */
 	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
-			throws KurentoException {
+	        throws KurentoException {
 		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-				.buildAsync(cont);
+		        .buildAsync(cont);
 	}
 
 	public MediaPipeline createMediaPipeline(Transaction tx) {
 		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
-				.build(tx);
+		        .build(tx);
 	}
 
 	@PreDestroy
@@ -187,7 +187,7 @@ public class KurentoClient {
 	}
 
 	public static KurentoClient createFromJsonRpcClient(
-			JsonRpcClient jsonRpcClient) {
+	        JsonRpcClient jsonRpcClient) {
 		return new KurentoClient(jsonRpcClient);
 	}
 
