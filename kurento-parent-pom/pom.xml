@@ -344,11 +344,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-orion</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
 				<artifactId>kms-api-core</artifactId>
 				<version>${version.kms-api-core}</version>
 			</dependency>
