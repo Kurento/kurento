@@ -59,14 +59,17 @@ public class ProtocolManager {
 	private static final String INTERVAL_PROPERTY = "interval";
 
 	public interface ServerSessionFactory {
-		ServerSession createSession(String sessionId, Object registerInfo, SessionsManager sessionsManager);
+		ServerSession createSession(String sessionId, Object registerInfo,
+				SessionsManager sessionsManager);
 
 		void updateSessionOnReconnection(ServerSession session);
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(ProtocolManager.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(ProtocolManager.class);
 
-	private static final SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss,S");
+	private static final SimpleDateFormat format = new SimpleDateFormat(
+			"MM-dd-yyyy hh:mm:ss,S");
 
 	protected SecretGenerator secretGenerator = new SecretGenerator();
 
@@ -91,7 +94,8 @@ public class ProtocolManager {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
 	}
 
-	public ProtocolManager(JsonRpcHandler<?> handler, SessionsManager sessionsManager, TaskScheduler taskScheduler) {
+	public ProtocolManager(JsonRpcHandler<?> handler,
+			SessionsManager sessionsManager, TaskScheduler taskScheduler) {
 		this.handlerManager = new JsonRpcHandlerManager(handler);
 		this.sessionsManager = sessionsManager;
 		this.taskScheduler = taskScheduler;
@@ -104,28 +108,35 @@ public class ProtocolManager {
 		NativeSessionCloser nativeSessionCloser = new NativeSessionCloser() {
 			@Override
 			public void closeSession(String transportId) {
-				ServerSession serverSession = sessionsManager.getByTransportId(transportId);
+				ServerSession serverSession = sessionsManager
+						.getByTransportId(transportId);
 				if (serverSession != null) {
-					serverSession.closeNativeSession("Close for not receive ping from client");
+					serverSession.closeNativeSession(
+							"Close for not receive ping from client");
 				} else {
-					log.warn("Ping wachdog trying to close a non-registered ServerSession");
+					log.warn(
+							"Ping wachdog trying to close a non-registered ServerSession");
 				}
 			}
 		};
 
-		this.pingWachdogManager = new PingWatchdogManager(taskScheduler, nativeSessionCloser);
+		this.pingWachdogManager = new PingWatchdogManager(taskScheduler,
+				nativeSessionCloser);
 	}
 
 	public void setLabel(String label) {
 		this.label = "[" + label + "] ";
 	}
 
-	public void processMessage(String messageJson, ServerSessionFactory factory, ResponseSender responseSender,
-			String internalSessionId) throws IOException {
+	public void processMessage(String messageJson, ServerSessionFactory factory,
+			ResponseSender responseSender, String internalSessionId)
+					throws IOException {
 
-		JsonObject messagetJsonObject = JsonUtils.fromJson(messageJson, JsonObject.class);
+		JsonObject messagetJsonObject = JsonUtils.fromJson(messageJson,
+				JsonObject.class);
 
-		processMessage(messagetJsonObject, factory, responseSender, internalSessionId);
+		processMessage(messagetJsonObject, factory, responseSender,
+				internalSessionId);
 	}
 
 	/**
@@ -138,11 +149,13 @@ public class ProtocolManager {
 	 * @param internalSessionId
 	 * @throws IOException
 	 */
-	public void processMessage(JsonObject messagetJsonObject, ServerSessionFactory factory,
-			ResponseSender responseSender, String internalSessionId) throws IOException {
+	public void processMessage(JsonObject messagetJsonObject,
+			ServerSessionFactory factory, ResponseSender responseSender,
+			String internalSessionId) throws IOException {
 
 		if (messagetJsonObject.has(Request.METHOD_FIELD_NAME)) {
-			processRequestMessage(factory, messagetJsonObject, responseSender, internalSessionId);
+			processRequestMessage(factory, messagetJsonObject, responseSender,
+					internalSessionId);
 		} else {
 			processResponseMessage(messagetJsonObject, internalSessionId);
 		}
@@ -152,16 +165,19 @@ public class ProtocolManager {
 	// entity "RequestContext" or similar. In this way, there are less
 	// parameters
 	// and the implementation is easier
-	private void processRequestMessage(ServerSessionFactory factory, JsonObject requestJsonObject,
-			ResponseSender responseSender, String transportId) throws IOException {
+	private void processRequestMessage(ServerSessionFactory factory,
+			JsonObject requestJsonObject, ResponseSender responseSender,
+			String transportId) throws IOException {
 
-		Request<JsonElement> request = JsonUtils.fromJsonRequest(requestJsonObject, JsonElement.class);
+		Request<JsonElement> request = JsonUtils
+				.fromJsonRequest(requestJsonObject, JsonElement.class);
 
 		switch (request.getMethod()) {
 		case METHOD_RECONNECT:
 
 			log.debug("{} Req-> {}", label, request);
-			processReconnectMessage(factory, request, responseSender, transportId);
+			processReconnectMessage(factory, request, responseSender,
+					transportId);
 			break;
 		case METHOD_PING:
 			log.trace("{} Req-> {}", label, request);
@@ -177,8 +193,8 @@ public class ProtocolManager {
 
 			ServerSession session = getSession(factory, transportId, request);
 
-			log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]", label, request, session.getSessionId(),
-					transportId);
+			log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]",
+					label, request, session.getSessionId(), transportId);
 
 			// TODO, Take out this an put in Http specific handler. The main
 			// reason is to wait for request before responding to the client.
@@ -188,7 +204,8 @@ public class ProtocolManager {
 				Type collectionType = new TypeToken<List<Response<JsonElement>>>() {
 				}.getType();
 
-				List<Response<JsonElement>> responseList = JsonUtils.fromJson(request.getParams(), collectionType);
+				List<Response<JsonElement>> responseList = JsonUtils
+						.fromJson(request.getParams(), collectionType);
 
 				for (Response<JsonElement> response : responseList) {
 					session.handleResponse(response);
@@ -200,7 +217,8 @@ public class ProtocolManager {
 				// TODO Allow send empty responses. Now you have to send at
 				// least an
 				// empty string
-				responseSender.sendResponse(new Response<Object>(request.getId(), Collections.emptyList()));
+				responseSender.sendResponse(new Response<Object>(
+						request.getId(), Collections.emptyList()));
 
 			} else {
 				handlerManager.handleRequest(session, request, responseSender);
@@ -210,16 +228,28 @@ public class ProtocolManager {
 
 	}
 
-	private ServerSession getSession(ServerSessionFactory factory, String transportId, Request<JsonElement> request) {
+	private ServerSession getSession(ServerSessionFactory factory,
+			String transportId, Request<JsonElement> request) {
 
 		ServerSession session = null;
 
-		if (request.getSessionId() != null) {
-			session = sessionsManager.get(request.getSessionId());
+		String reqSessionId = request.getSessionId();
+
+		if (reqSessionId != null) {
+
+			session = sessionsManager.get(reqSessionId);
 
 			if (session == null) {
-				log.warn(label + "There is no session with specified id '{}'." + "Creating a new one.",
-						request.getSessionId());
+
+				session = createSessionAsOldIfKnowByHandler(factory,
+						reqSessionId);
+
+				if (session == null) {
+					log.warn(
+							label + "There is no session with specified id '{}'."
+									+ "Creating a new one.",
+							reqSessionId);
+				}
 			}
 
 		} else if (transportId != null) {
@@ -227,7 +257,7 @@ public class ProtocolManager {
 		}
 
 		if (session == null) {
-			session = createSession(factory, session);
+			session = createSession(factory, null);
 			handlerManager.afterConnectionEstablished(session);
 		} else {
 			session.setNew(false);
@@ -236,8 +266,26 @@ public class ProtocolManager {
 		return session;
 	}
 
-	private void processPingMessage(ServerSessionFactory factory, Request<JsonElement> request,
-			ResponseSender responseSender, String transportId) throws IOException {
+	private ServerSession createSessionAsOldIfKnowByHandler(
+			ServerSessionFactory factory, String reqSessionId) {
+
+		ServerSession session = null;
+
+		JsonRpcHandler<?> handler = handlerManager.getHandler();
+		if (handler instanceof NativeSessionHandler) {
+			NativeSessionHandler nativeHandler = (NativeSessionHandler) handler;
+			if (nativeHandler.isSessionKnown(reqSessionId)) {
+				session = createSession(factory, null, reqSessionId);
+				session.setNew(false);
+				nativeHandler.processNewCreatedSession(session);
+			}
+		}
+		return session;
+	}
+
+	private void processPingMessage(ServerSessionFactory factory,
+			Request<JsonElement> request, ResponseSender responseSender,
+			String transportId) throws IOException {
 		if ((maxHeartbeats == 0) || (maxHeartbeats > ++heartbeats)) {
 
 			long interval = -1;
@@ -254,12 +302,14 @@ public class ProtocolManager {
 			String sessionId = request.getSessionId();
 			JsonObject pongPayload = new JsonObject();
 			pongPayload.add(PONG_PAYLOAD, new JsonPrimitive(PONG));
-			responseSender.sendPingResponse(new Response<>(sessionId, request.getId(), pongPayload));
+			responseSender.sendPingResponse(
+					new Response<>(sessionId, request.getId(), pongPayload));
 		}
 	}
 
-	private void processCloseMessage(ServerSessionFactory factory, Request<JsonElement> request,
-			ResponseSender responseSender, String transportId) {
+	private void processCloseMessage(ServerSessionFactory factory,
+			Request<JsonElement> request, ResponseSender responseSender,
+			String transportId) {
 		try {
 			responseSender.sendResponse(new Response<>(request.getId(), "bye"));
 		} catch (IOException e) {
@@ -272,13 +322,16 @@ public class ProtocolManager {
 			cancelCloseTimer(session);
 			this.closeSession(session, "Client sent close message");
 		} else {
-			log.warn("No server session found for transportId {}. Could not close session associated to transport. "
-					+ "Please make sure the session is closed", transportId);
+			log.warn(
+					"No server session found for transportId {}. Could not close session associated to transport. "
+							+ "Please make sure the session is closed",
+					transportId);
 		}
 	}
 
-	private void processReconnectMessage(ServerSessionFactory factory, Request<JsonElement> request,
-			ResponseSender responseSender, String transportId) throws IOException {
+	private void processReconnectMessage(ServerSessionFactory factory,
+			Request<JsonElement> request, ResponseSender responseSender,
+			String transportId) throws IOException {
 
 		String sessionId = request.getSessionId();
 
@@ -286,7 +339,8 @@ public class ProtocolManager {
 
 			ServerSession session = getSession(factory, transportId, request);
 
-			responseSender.sendResponse(new Response<>(session.getSessionId(), request.getId(), "OK"));
+			responseSender.sendResponse(new Response<>(session.getSessionId(),
+					request.getId(), "OK"));
 
 		} else {
 
@@ -296,86 +350,119 @@ public class ProtocolManager {
 				String oldTransportId = session.getTransportId();
 				session.setTransportId(transportId);
 				factory.updateSessionOnReconnection(session);
-				pingWachdogManager.updateTransportId(transportId, oldTransportId);
+				pingWachdogManager.updateTransportId(transportId,
+						oldTransportId);
 				sessionsManager.updateTransportId(session, oldTransportId);
 
 				// FIXME: Possible race condition if session is disposed when
 				// reconnect method has arrived
 				cancelCloseTimer(session);
 
-				responseSender.sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
+				responseSender.sendResponse(new Response<>(sessionId,
+						request.getId(), RECONNECTION_SUCCESSFUL));
+
 			} else {
 
-				responseSender
-						.sendResponse(new Response<>(request.getId(), new ResponseError(40007, RECONNECTION_ERROR)));
+				session = createSessionAsOldIfKnowByHandler(factory, sessionId);
+
+				if (session != null) {
+					responseSender.sendResponse(new Response<>(sessionId,
+							request.getId(), RECONNECTION_SUCCESSFUL));
+				} else {
+					responseSender.sendResponse(new Response<>(request.getId(),
+							new ResponseError(40007, RECONNECTION_ERROR)));
+				}
 			}
 		}
 	}
 
-	private ServerSession createSession(ServerSessionFactory factory, Object registerInfo) {
+	private ServerSession createSession(ServerSessionFactory factory,
+			Object registerInfo, String sessionId) {
 
-		String sessionId = secretGenerator.nextSecret();
+		ServerSession session = factory.createSession(sessionId, registerInfo,
+				sessionsManager);
 
-		ServerSession session = factory.createSession(sessionId, registerInfo, sessionsManager);
-
-		pingWachdogManager.associateSessionId(session.getTransportId(), sessionId);
+		pingWachdogManager.associateSessionId(session.getTransportId(),
+				sessionId);
 
 		sessionsManager.put(session);
 
 		return session;
 	}
 
-	private void processResponseMessage(JsonObject messagetJsonObject, String internalSessionId) {
+	private ServerSession createSession(ServerSessionFactory factory,
+			Object registerInfo) {
 
-		Response<JsonElement> response = JsonUtils.fromJsonResponse(messagetJsonObject, JsonElement.class);
+		String sessionId = secretGenerator.nextSecret();
 
-		ServerSession session = sessionsManager.getByTransportId(internalSessionId);
+		return createSession(factory, registerInfo, sessionId);
+	}
+
+	private void processResponseMessage(JsonObject messagetJsonObject,
+			String internalSessionId) {
+
+		Response<JsonElement> response = JsonUtils
+				.fromJsonResponse(messagetJsonObject, JsonElement.class);
+
+		ServerSession session = sessionsManager
+				.getByTransportId(internalSessionId);
 
 		if (session != null) {
 			session.handleResponse(response);
 		} else {
-			log.debug("Processing response {} for non-existent session {}", response.toString(), internalSessionId);
+			log.debug("Processing response {} for non-existent session {}",
+					response.toString(), internalSessionId);
 		}
 	}
 
-	public void closeSessionIfTimeout(final String transportId, final String reason) {
+	public void closeSessionIfTimeout(final String transportId,
+			final String reason) {
 
-		final ServerSession session = sessionsManager.getByTransportId(transportId);
+		final ServerSession session = sessionsManager
+				.getByTransportId(transportId);
 
 		if (session != null) {
 
 			try {
 
-				Date closeTime = new Date(System.currentTimeMillis() + session.getReconnectionTimeoutInMillis());
+				Date closeTime = new Date(System.currentTimeMillis()
+						+ session.getReconnectionTimeoutInMillis());
 
-				log.info(label + "Configuring close timeout for session: {} transportId: {} at {}",
-						session.getSessionId(), transportId, format.format(closeTime));
+				log.info(
+						label + "Configuring close timeout for session: {} transportId: {} at {}",
+						session.getSessionId(), transportId,
+						format.format(closeTime));
 
-				ScheduledFuture<?> lastStartedTimerFuture = taskScheduler.schedule(new Runnable() {
-					@Override
-					public void run() {
-						closeSession(session, reason);
-					}
-				}, closeTime);
+				ScheduledFuture<?> lastStartedTimerFuture = taskScheduler
+						.schedule(new Runnable() {
+							@Override
+							public void run() {
+								closeSession(session, reason);
+							}
+						}, closeTime);
 
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
 				pingWachdogManager.disablePingWatchdogForSession(transportId);
 
 			} catch (TaskRejectedException e) {
-				log.warn(label + "Close timeout for session {} with transportId {} can not be set "
-						+ "because the scheduler is shutdown", session.getSessionId(), transportId);
+				log.warn(
+						label + "Close timeout for session {} with transportId {} can not be set "
+								+ "because the scheduler is shutdown",
+						session.getSessionId(), transportId);
 			}
 		}
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info("{} Removing session {} with transportId {} in ProtocolManager", label, session.getSessionId(),
-				session.getTransportId());
+		log.info(
+				"{} Removing session {} with transportId {} in ProtocolManager",
+				label, session.getSessionId(), session.getTransportId());
 		try {
 			session.close();
 		} catch (IOException e) {
-			log.warn("{} Could not close WsSession session {}", label, session.getSessionId(), e);
+			log.warn("{} Could not close WsSession session {}", label,
+					session.getSessionId(), e);
 		}
 		sessionsManager.remove(session);
 		pingWachdogManager.removeSession(session);
@@ -389,7 +476,8 @@ public class ProtocolManager {
 	}
 
 	public void processTransportError(String transportId, Throwable exception) {
-		final ServerSession session = sessionsManager.getByTransportId(transportId);
+		final ServerSession session = sessionsManager
+				.getByTransportId(transportId);
 		handlerManager.handleTransportError(session, exception);
 	}
 

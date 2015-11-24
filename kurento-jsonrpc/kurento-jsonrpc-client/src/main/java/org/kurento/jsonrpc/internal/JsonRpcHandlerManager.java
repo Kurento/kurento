@@ -207,4 +207,8 @@ public class JsonRpcHandlerManager {
 			}
 		}
 	}
+	
+	public JsonRpcHandler<?> getHandler() {
+		return handler;
+	}
 }
