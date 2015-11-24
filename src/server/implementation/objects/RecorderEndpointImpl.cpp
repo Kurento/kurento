@@ -22,6 +22,23 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
+bool RecorderEndpointImpl::support_ksr;
+
+static bool
+check_support_for_ksr ()
+{
+  GstPlugin *plugin = NULL;
+  bool supported;
+
+  plugin = gst_plugin_load_by_name ("kmsrecorder");
+
+  supported = plugin != NULL;
+
+  g_clear_object (&plugin);
+
+  return supported;
+}
+
 RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     &conf,
     std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
@@ -67,6 +84,16 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     g_object_set ( G_OBJECT (element), "profile",
                    KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY, NULL);
     GST_INFO ("Set MP4 AUDIO ONLY profile");
+    break;
+
+  case MediaProfileSpecType::KURENTO_SPLIT_RECORDER:
+    if (!RecorderEndpointImpl::support_ksr) {
+      throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,
+                              "Kurento Split Recorder not supported");
+    }
+
+    g_object_set ( G_OBJECT (element), "profile", KMS_RECORDING_PROFILE_KSR, NULL);
+    GST_INFO ("Set KSR profile");
     break;
   }
 }
@@ -158,6 +185,8 @@ RecorderEndpointImpl::StaticConstructor RecorderEndpointImpl::staticConstructor;
 
 RecorderEndpointImpl::StaticConstructor::StaticConstructor()
 {
+  RecorderEndpointImpl::support_ksr = check_support_for_ksr();
+
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
                            GST_DEFAULT_NAME);
 }
