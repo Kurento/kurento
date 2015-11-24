@@ -307,7 +307,7 @@ public class ProtocolManager {
 			} else {
 
 				responseSender
-						.sendResponse(new Response<>(request.getId(), new ResponseError(99999, RECONNECTION_ERROR)));
+						.sendResponse(new Response<>(request.getId(), new ResponseError(40007, RECONNECTION_ERROR)));
 			}
 		}
 	}
