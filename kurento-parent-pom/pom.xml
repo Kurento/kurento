@@ -174,7 +174,7 @@
 		<version.surefire.plugin>2.18.1</version.surefire.plugin>
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
 		<version.versions.plugin>2.2</version.versions.plugin>
-		<version.wagon.plugin>2.0</version.wagon.plugin>
+		<version.wagon.plugin>2.10</version.wagon.plugin>
 		<version.war.plugin>2.6</version.war.plugin>
 
 		<!-- ************** -->
