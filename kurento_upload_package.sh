@@ -35,4 +35,4 @@ fi
 
 KEY=$ID_RSA_FILE
 
-curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST\&comp=$COMPONENT --data-binary @$PACKAGE || exit 1
+curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST\&comp=$COMPONENT\&name=$(basename $PACKAGE) --data-binary @$PACKAGE || exit 1
