@@ -1,6 +1,6 @@
 {
   "name": "kurento-utils",
-  "version": "6.1.1-dev",
+  "version": "6.2.0",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.org",
   "license": "LGPL-2.1",
@@ -48,7 +48,7 @@
     "minifyify": "~7.0.1",
     "node-static": "^0.7.6",
     "qunit-assert-canvas": "^1.0.6",
-    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit",
+    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#1.0.3",
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "^1.18.0",
     "selenium-webdriver": "2.46.1",
