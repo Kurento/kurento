@@ -1,3 +1,24 @@
+kurento-module-creator-4.0 (4.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * complexType_class_cpp: Fix sever crash
+
+  [ Jose Antonio Santos Cadenas ]
+  * Format source to 80 character length
+  * Main: Add option to print classes, events and complex types
+  * KurentoModuleCreator: Print dependencies in simple kmd
+  * KurentoModuleCreator: Use just one digest
+  * Copy opencv templates to a different folder
+  * debian: Install cmake also in cmake 3.2 folder
+  * Prepare release 4.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 15:38:10 +0100
+
 kurento-module-creator-4.0 (4.0.2) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
