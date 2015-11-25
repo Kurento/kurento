@@ -1,3 +1,22 @@
+kms-filters-6.0 (6.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeLists: Fix gstreamer version
+
+  [ David Fernandez ]
+  * kmsopencvfilter: Convert KurentoExceptions in bus messages
+
+  [ Jose Antonio Santos Cadenas ]
+  * GStreamerFilter: user gst_parse_launch to generate element
+  * pre-commit-hook: Fix to work newer versions of astyle
+  * pre-commit.hook: Do not print git add and git commit in fix command
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 12:41:36 +0100
+
 kms-filters-6.0 (6.1.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
