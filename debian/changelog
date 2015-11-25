@@ -1,3 +1,20 @@
+kms-jsonrpc-1.0 (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Boni Garcia ]
+  * Updated README.md according to FIWARE guidelines
+  * Added links to readthedocs.org and apiary.io in README
+  * Fixed broken links in README
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 12:05:22 +0100
+
 kms-jsonrpc-1.0 (1.0.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
