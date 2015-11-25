@@ -1,6 +1,6 @@
 {
   "name": "elements",
-  "version": "6.2.0",
+  "version": "6.2.1-dev",
   "kurentoVersion": "^6.1.0",
   "code": {
     "kmd": {
