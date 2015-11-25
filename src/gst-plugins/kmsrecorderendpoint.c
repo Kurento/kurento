@@ -34,6 +34,7 @@
 
 #include "kmsbasemediamuxer.h"
 #include "kmsavmuxer.h"
+#include "kmsksrmuxer.h"
 
 #define PLUGIN_NAME "recorderendpoint"
 
@@ -867,14 +868,29 @@ kms_recorder_endpoint_on_sink_added (KmsBaseMediaMuxer * obj,
 }
 
 static void
+kms_recorder_endpoint_create_base_media_muxer (KmsRecorderEndpoint * self)
+{
+  KmsBaseMediaMuxer *mux;
+
+  if (self->priv->profile == KMS_RECORDING_PROFILE_KSR) {
+    mux = KMS_BASE_MEDIA_MUXER (kms_ksr_muxer_new
+        (KMS_BASE_MEDIA_MUXER_PROFILE, self->priv->profile,
+            KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
+  } else {
+    mux = KMS_BASE_MEDIA_MUXER (kms_av_muxer_new
+        (KMS_BASE_MEDIA_MUXER_PROFILE, self->priv->profile,
+            KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
+  }
+
+  self->priv->mux = mux;
+}
+
+static void
 kms_recorder_endpoint_new_media_muxer (KmsRecorderEndpoint * self)
 {
   GstBus *bus;
 
-  self->priv->mux =
-      KMS_BASE_MEDIA_MUXER (kms_av_muxer_new
-      (KMS_BASE_MEDIA_MUXER_PROFILE, self->priv->profile,
-          KMS_BASE_MEDIA_MUXER_URI, KMS_URI_ENDPOINT (self)->uri, NULL));
+  kms_recorder_endpoint_create_base_media_muxer (self);
 
   g_signal_connect (self->priv->mux, "on-eos",
       G_CALLBACK (kms_recorder_endpoint_on_eos), self);
