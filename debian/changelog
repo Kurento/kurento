@@ -1,3 +1,93 @@
+kms-elements-6.0 (6.2.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * webrtcdataproto: Fix missing symbol problem
+  * webrtcendpoint: Fix possible linking problems in tests
+  * rtpendpoint: Avoid sending buffers with negative pts or dts
+  * RtpEndpoint: Make inherit from BaseRtpEndpoint
+  * rtpendpoint: Check that offers does not have default address
+  * rtpendpoint: Add test for bandwith limits
+  * Add TODOs about NiceAgent implementation
+  * (rtp|webrtc)session,(rtp|webrtc)connection: Adapt to changes in core
+  * webrtcendpoint: Honour min-port and max-port parameters
+  * rtpendpoint: Honour min-port and max-port parameters
+  * rtpconnection: Do not allow reuse address for opening sockets
+  * rtpconnection: Increase the number of retries for getting a port
+
+  [ Miguel París Díaz ]
+  * kmswebrtcbaseconnection: remove uneded set_certificate_pem_file
+
+  [ Jose Antonio Santos Cadenas ]
+  * rtpendpoint: Test with a narrow range to test all ports in the range
+  * rtpendpoint: Set port to 0 if there are not enough free ports
+  * webrtendpoint: Add tests with not enough ports
+
+  [ Santiago Carot-Nemesio ]
+  * CMakeLists: Fix gstreamer version
+
+  [ Jose Antonio Santos Cadenas ]
+  * rtpconnection: Move socket management to an external file
+  * recorderendpoint: Set caps to appsink once they are negotiated
+  * rtptests: Fix process-answer calls adding return value
+  * muxingpipeline: Do not try to link appsrc elements when there are no needed
+  * Fix path of video used for tests
+
+  [ Santiago Carot-Nemesio ]
+  * kmssrtpconnection: Add a new class to manage srtp
+  * kmssrtpsession: Add srtp session
+  * kmsrtpendpoint: Enable SDES support
+  * RtpEndpoint: Provide API to configure SDES encryption
+  * rtpendpoint_audio: Add SDES encryption tests
+  * kmsrecorderendpoint: Force negotiation of flexible famerates
+  * kmsmuxingpipeline: Get rid of encodebin
+  * kmsrecorderendpoint: Allow renegotiation of height and width parameters for webm
+  * kmsrecorderendpoint: Improve recorder efficency using callbacks instead of signals
+  * RecorderEndpoint: Add ent-to-end latency stats
+
+  [ Jose Antonio Santos Cadenas ]
+  * playerendpoint: set timestamps correctly when the player is not providing them
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrecorderendpoint: Fix end to end latencies
+
+  [ Miguel París Díaz ]
+  * webrtcconnection: add min and max port args in the constructor
+
+  [ Santiago Carot-Nemesio ]
+  * recorderendpoint: Disable tests
+  * kmsbasemediamuxer: Add base class to mix media
+  * kmsmuxingpipeline: Inherit from kmsbasemediamuxer
+  * kmsrecorderendpoint: Integrate into new architecture
+  * recorderendpoint: Enable tests
+  * kmsmuxingpipeline: Renamed to kmsavmuxer
+
+  [ David Fernandez ]
+  * kmsicecandidate: Return false when nice_candidate is null
+  * kmscompositemixer: Reduce the number of elements into composite
+
+  [ Jose Antonio Santos Cadenas ]
+  * HttpEndPointServer: change glibmm mutex by stdlib mutex
+  * basemediamuxer: Return correct value on failure
+  * rtpendpoint: Make tests less sensitive to statistic failure
+  * WebRtcEndpoint: Do not use c_str() pointer from temporal string.
+  * webrtcsession: Check rtp candidate (copy/paste bug)
+  * icecandidate: Do not raise error when a tcp candidate is received
+
+  [ David Fernandez ]
+  * kmsrtpconnection: Change udpsink for multiudpsink
+
+  [ Jose Antonio Santos Cadenas ]
+  * .gitreview: Add editors temporal files
+  * compositemixer: Remove videorate from output
+  * compositemixer: Do not force AYUV for videotestsrc
+  * RtpEndpointImpl: Add missing break
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 25 Nov 2015 12:33:44 +0100
+
 kms-elements-6.0 (6.1.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
