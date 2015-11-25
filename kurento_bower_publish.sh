@@ -33,18 +33,19 @@ COMMIT_MSG=$(echo $COMMIT_LOG|cut -d' ' -f2-)
 MESSAGE="Generated code from $KURENTO_PROJECT:$COMMIT_ID"
 VERSION=$(xmlstarlet sel -N x=http://maven.apache.org/POM/4.0.0 -t -v "/x:project/x:version" pom.xml)
 
-# Fail if a tag for that version already exists
-if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
-  # If tag already exists terminate silently
-  git ls-remote --tags|grep -q "$VERSION" && exit 0
-fi
-
 # Checkout bower repo
 BOWER_DIR="bower_code"
 [ -d $BOWER_DIR ] && rm -rf $BOWER_DIR
 # Do not declare error if bower repository does not exists
 git clone $BOWER_REPOSITORY $BOWER_DIR || exit 0
 cd $BOWER_DIR || exit 1
+
+# Fail if a tag for that version already exists
+if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
+  # If tag already exists terminate silently
+  git ls-remote --tags|grep -q "$VERSION" && exit 0
+fi
+
 git checkout $REFSPEC || git checkout -b $REFSPEC || exit 1
 git pull origin $REFSPEC || exit 1
 # Remove all files checked out except git ones
