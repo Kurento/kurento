@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>6.1.1-SNAPSHOT</version>
+		<version>6.2.0</version>
 	</parent>
 
 	<artifactId>kurento-test</artifactId>
@@ -127,7 +127,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
