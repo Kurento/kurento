@@ -99,7 +99,7 @@ struct _KmsRecorderEndpointPrivate
   GstClockTime paused_start;
   gboolean use_dvr;
   struct state_controller state_manager;
-  KmsLoop *loop;
+  GstTaskPool *pool;
   KmsBaseMediaMuxer *mux;
   GMutex base_time_lock;
 
@@ -369,8 +369,6 @@ kms_recorder_endpoint_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
-  g_clear_object (&self->priv->loop);
-
   if (self->priv->mux != NULL) {
     if (kms_base_media_muxer_get_state (self->priv->mux) != GST_STATE_NULL) {
       GST_ELEMENT_WARNING (self, RESOURCE, BUSY,
@@ -401,6 +399,9 @@ kms_recorder_endpoint_release_pending_requests (KmsRecorderEndpoint * self)
     self->priv->state_manager.locked--;
   }
   g_mutex_unlock (&self->priv->state_manager.mutex);
+
+  gst_task_pool_cleanup (self->priv->pool);
+  gst_object_unref (self->priv->pool);
 
   g_cond_clear (&self->priv->state_manager.cond);
   g_mutex_clear (&self->priv->state_manager.mutex);
@@ -1367,7 +1368,7 @@ delete_error_data (gpointer d)
   g_slice_free (ErrorData, data);
 }
 
-static gboolean
+static void
 kms_recorder_endpoint_post_error (gpointer d)
 {
   ErrorData *data = d;
@@ -1375,17 +1376,15 @@ kms_recorder_endpoint_post_error (gpointer d)
   gst_element_post_message (GST_ELEMENT (data->self),
       gst_message_ref (data->message));
 
-  return G_SOURCE_REMOVE;
+  delete_error_data (data);
 }
 
-static gboolean
+static void
 kms_recorder_endpoint_on_eos_message (gpointer data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
 
   kms_recorder_endpoint_on_eos (self->priv->mux, self);
-
-  return G_SOURCE_REMOVE;
 }
 
 static GstBusSyncReply
@@ -1405,11 +1404,12 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
     data = create_error_data (self, msg);
 
     GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
-    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-        kms_recorder_endpoint_post_error, data, delete_error_data);
+
+    gst_task_pool_push (self->priv->pool, kms_recorder_endpoint_post_error,
+        data, NULL);
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
-    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-        kms_recorder_endpoint_on_eos_message, self, NULL);
+    gst_task_pool_push (self->priv->pool, kms_recorder_endpoint_on_eos_message,
+        self, NULL);
   }
   return GST_BUS_PASS;
 }
@@ -1417,13 +1417,14 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 static void
 kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 {
+  GError *err = NULL;
+
   self->priv = KMS_RECORDER_ENDPOINT_GET_PRIVATE (self);
 
   g_mutex_init (&self->priv->base_time_lock);
 
   self->priv->srcs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
       g_object_unref);
-  self->priv->loop = kms_loop_new ();
 
   self->priv->profile = KMS_RECORDING_PROFILE_NONE;
 
@@ -1440,6 +1441,14 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
   self->priv->video_probe = 0UL;
 
   g_cond_init (&self->priv->state_manager.cond);
+
+  self->priv->pool = gst_task_pool_new ();
+  gst_task_pool_prepare (self->priv->pool, &err);
+
+  if (G_UNLIKELY (err != NULL)) {
+    g_warning ("%s", err->message);
+    g_error_free (err);
+  }
 }
 
 gboolean
