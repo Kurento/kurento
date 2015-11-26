@@ -27,7 +27,7 @@
 #define SET_CALIBRATION_AREA "calibration-area"
 
 #define IMG_PATH BINARY_LOCATION "/imgs/mario.jpg"
-#define VIDEO_PATH BINARY_LOCATION "/video/small.webm"
+#define VIDEO_PATH BINARY_LOCATION "/video/format/small.webm"
 
 #define KMS_VIDEO_PREFIX "video_src_"
 #define KMS_AUDIO_PREFIX "audio_src_"
