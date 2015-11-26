@@ -311,11 +311,29 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		}
 	}
 
+	/**
+	 * Disables the heratbeat mechanism. The scheduler running the task will be
+	 * shut down after the task has been cancelled. This method DOES NOT cancel
+	 * the task if it's already running
+	 */
 	public void disableHeartbeat() {
+		disableHeartbeat(false);
+	}
+
+	/**
+	 * Disables the heratbeat mechanism. The scheduler running the task will be
+	 * shut down after the task has been cancelled.
+	 *
+	 * @param mayInterruptIfRunning
+	 *            Signals the task to interrupt even if it is already running
+	 */
+	public void disableHeartbeat(boolean mayInterruptIfRunning) {
 		if (heartbeating) {
+			log.debug("Disabling heartbeat. Interrupt if running is {}",
+			        mayInterruptIfRunning);
 			this.heartbeating = false;
 			if (heartbeat != null) {
-				heartbeat.cancel(false);
+				heartbeat.cancel(mayInterruptIfRunning);
 				heartbeat = null;
 			}
 			scheduler.shutdownNow();
@@ -325,7 +343,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public abstract void connect() throws IOException;
 
 	/**
-	 * Closes this client.
+	 * Closes this client. This method disables the heartbeat mechanism
 	 *
 	 * Once a client has been closed, it is not available for further networking
 	 * use (i.e. can't be reconnected or rebound). A new client needs to be
@@ -337,7 +355,9 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	 */
 	@Override
 	public void close() throws IOException {
+		log.debug("Closing JsonRpcClient");
 		this.closed = true;
+		this.disableHeartbeat(true);
 	}
 
 	protected void closeWithReconnection() throws IOException {

@@ -221,7 +221,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			        label);
 		}
 		pendingRequests.closeAllPendingRequests();
-		this.disableHeartbeat();
 
 		this.closeClient();
 
@@ -736,10 +735,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				        label, e.getMessage());
 			}
 			client = null;
-		}
-
-		if (this.heartbeating) {
-			this.disableHeartbeat();
 		}
 
 		if (execService != null) {
