@@ -50,7 +50,6 @@ struct _KmsAVMuxerPrivate
   GstElement *sink;
   GstClockTime lastVideoPts;
   GstClockTime lastAudioPts;
-  GstTaskPool *tasks;
 
   gboolean sink_signaled;
 };
@@ -65,17 +64,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsAVMuxer, kms_av_muxer,
     KMS_TYPE_BASE_MEDIA_MUXER,
     GST_DEBUG_CATEGORY_INIT (kms_av_muxer_debug_category, OBJECT_NAME,
         0, "debug category for muxing pipeline object"));
-
-static void
-kms_av_muxer_finalize (GObject * obj)
-{
-  KmsAVMuxer *self = KMS_AV_MUXER (obj);
-
-  gst_task_pool_cleanup (self->priv->tasks);
-  gst_object_unref (self->priv->tasks);
-
-  G_OBJECT_CLASS (parent_class)->finalize (obj);
-}
 
 GstStateChangeReturn
 kms_av_muxer_set_state (KmsBaseMediaMuxer * obj, GstState state)
@@ -130,10 +118,6 @@ static void
 kms_av_muxer_class_init (KmsAVMuxerClass * klass)
 {
   KmsBaseMediaMuxerClass *basemediamuxerclass;
-  GObjectClass *objclass;
-
-  objclass = G_OBJECT_CLASS (klass);
-  objclass->finalize = kms_av_muxer_finalize;
 
   basemediamuxerclass = KMS_BASE_MEDIA_MUXER_CLASS (klass);
   basemediamuxerclass->set_state = kms_av_muxer_set_state;
@@ -145,20 +129,10 @@ kms_av_muxer_class_init (KmsAVMuxerClass * klass)
 static void
 kms_av_muxer_init (KmsAVMuxer * self)
 {
-  GError *err = NULL;
-
   self->priv = KMS_AV_MUXER_GET_PRIVATE (self);
 
   self->priv->lastVideoPts = G_GUINT64_CONSTANT (0);
   self->priv->lastAudioPts = G_GUINT64_CONSTANT (0);
-  self->priv->tasks = gst_task_pool_new ();
-
-  gst_task_pool_prepare (self->priv->tasks, &err);
-
-  if (G_UNLIKELY (err != NULL)) {
-    g_warning ("%s", err->message);
-    g_error_free (err);
-  }
 }
 
 static gboolean

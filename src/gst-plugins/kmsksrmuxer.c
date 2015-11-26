@@ -64,8 +64,6 @@ kms_ksr_muxer_finalize (GObject * obj)
   GST_DEBUG_OBJECT (self, "finalize");
 
   g_hash_table_unref (self->priv->tracks);
-  gst_task_pool_cleanup (self->priv->tasks);
-  gst_object_unref (self->priv->tasks);
 
   G_OBJECT_CLASS (parent_class)->finalize (obj);
 }
@@ -139,8 +137,6 @@ kms_ksr_muxer_class_init (KmsKSRMuxerClass * klass)
 static void
 kms_ksr_muxer_init (KmsKSRMuxer * self)
 {
-  GError *err = NULL;
-
   self->priv = KMS_KSR_MUXER_GET_PRIVATE (self);
 
   self->priv->tracks = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
@@ -157,15 +153,6 @@ kms_ksr_muxer_init (KmsKSRMuxer * self)
 
   g_object_bind_property (self, "uri", self->priv->mux, "uri",
       G_BINDING_DEFAULT);
-
-  self->priv->tasks = gst_task_pool_new ();
-
-  gst_task_pool_prepare (self->priv->tasks, &err);
-
-  if (G_UNLIKELY (err != NULL)) {
-    g_warning ("%s", err->message);
-    g_error_free (err);
-  }
 
   gst_bin_add (GST_BIN (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self)),
       self->priv->mux);
