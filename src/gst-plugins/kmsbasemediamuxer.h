@@ -81,7 +81,6 @@ struct _KmsBaseMediaMuxerClass
 
   /* <protected> */
   GstElement * (*create_sink) (KmsBaseMediaMuxer *obj, const gchar *uri);
-  void (*emit_on_eos) (KmsBaseMediaMuxer *obj);
   void (*emit_on_sink_added) (KmsBaseMediaMuxer *obj, GstElement *sink);
 
   /* <public> */
@@ -95,7 +94,6 @@ struct _KmsBaseMediaMuxerClass
   GstElement * (*add_src) (KmsBaseMediaMuxer *obj, KmsMediaType type, const gchar *id);
 
   /* <signals> */
-  void (*on_eos) (KmsBaseMediaMuxer *obj);
   void (*on_sink_added) (KmsBaseMediaMuxer *obj, GstElement *sink);
 };
 

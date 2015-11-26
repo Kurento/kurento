@@ -55,7 +55,6 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 enum
 {
   /* signals */
-  SIGNAL_ON_EOS,
   SIGNAL_ON_SINK_ADDED,
   LAST_SIGNAL
 };
@@ -252,12 +251,6 @@ kms_base_media_muxer_create_sink_impl (KmsBaseMediaMuxer * self,
 }
 
 static void
-kms_base_media_muxer_emit_on_eos_impl (KmsBaseMediaMuxer * obj)
-{
-  g_signal_emit (obj, obj_signals[SIGNAL_ON_EOS], 0);
-}
-
-static void
 kms_base_media_muxer_emit_on_sink_added_impl (KmsBaseMediaMuxer * obj,
     GstElement * sink)
 {
@@ -321,7 +314,6 @@ kms_base_media_muxer_class_init (KmsBaseMediaMuxerClass * klass)
   objclass->get_property = kms_base_media_muxer_get_property;
 
   klass->create_sink = kms_base_media_muxer_create_sink_impl;
-  klass->emit_on_eos = kms_base_media_muxer_emit_on_eos_impl;
   klass->emit_on_sink_added = kms_base_media_muxer_emit_on_sink_added_impl;
 
   klass->set_state = kms_base_media_muxer_set_state_impl;
@@ -341,13 +333,6 @@ kms_base_media_muxer_class_init (KmsBaseMediaMuxerClass * klass)
       (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 
   g_object_class_install_properties (objclass, N_PROPERTIES, obj_properties);
-
-  obj_signals[SIGNAL_ON_EOS] =
-      g_signal_new ("on-eos",
-      G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsBaseMediaMuxerClass, on_eos), NULL, NULL,
-      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   obj_signals[SIGNAL_ON_SINK_ADDED] =
       g_signal_new ("on-sink-added",

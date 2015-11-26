@@ -892,8 +892,6 @@ kms_recorder_endpoint_new_media_muxer (KmsRecorderEndpoint * self)
 
   kms_recorder_endpoint_create_base_media_muxer (self);
 
-  g_signal_connect (self->priv->mux, "on-eos",
-      G_CALLBACK (kms_recorder_endpoint_on_eos), self);
   g_signal_connect (self->priv->mux, "on-sink-added",
       G_CALLBACK (kms_recorder_endpoint_on_sink_added), self);
 
@@ -1380,6 +1378,16 @@ kms_recorder_endpoint_post_error (gpointer d)
   return G_SOURCE_REMOVE;
 }
 
+static gboolean
+kms_recorder_endpoint_on_eos_message (gpointer data)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
+
+  kms_recorder_endpoint_on_eos (self->priv->mux, self);
+
+  return G_SOURCE_REMOVE;
+}
+
 static GstBusSyncReply
 bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 {
@@ -1399,6 +1407,9 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
     GST_ERROR_OBJECT (self, "Error: %" GST_PTR_FORMAT, msg);
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
         kms_recorder_endpoint_post_error, data, delete_error_data);
+  } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+        kms_recorder_endpoint_on_eos_message, self, NULL);
   }
   return GST_BUS_PASS;
 }
