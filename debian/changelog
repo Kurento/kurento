@@ -1,3 +1,24 @@
+kms-datachannelexample (6.2.0) testing; urgency=medium
+
+  [ David Fernandez ]
+  * Add .gitreview
+  * Add KmsShowData media element
+  * Add KmsSendData media element
+  * Add KmsDetectFaces and KmsShowFaces media elements
+
+  [ Jose Antonio Santos Cadenas ]
+  * CMakeLists: Fix gstreamer version
+
+  [ David Fernandez ]
+  * Change class names to avoid problem with existing filters
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.2.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 26 Nov 2015 12:35:20 +0100
+
 kms-datachannelexample (0.0.1~rc1) testing; urgency=medium
 
   * Initial release.
