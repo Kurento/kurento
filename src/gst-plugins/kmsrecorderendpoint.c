@@ -429,20 +429,27 @@ kms_recorder_endpoint_finalize (GObject * object)
 }
 
 static void
+connect_pad_signals_cb (GstPad * pad, gpointer data)
+{
+  g_signal_connect (pad, "linked", G_CALLBACK (link_sinkpad_cb), data);
+  g_signal_connect (pad, "unlinked", G_CALLBACK (unlink_sinkpad_cb), data);
+}
+
+static void
 kms_recorder_generate_pads (KmsRecorderEndpoint * self)
 {
   KmsElement *elem = KMS_ELEMENT (self);
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_AUDIO)) {
-    kms_element_connect_sink_target (elem, self->priv->audio_target,
-        KMS_ELEMENT_PAD_TYPE_AUDIO);
+    kms_element_connect_sink_target_full (elem, self->priv->audio_target,
+        KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, connect_pad_signals_cb, self);
   }
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_VIDEO)) {
-    kms_element_connect_sink_target (elem, self->priv->video_target,
-        KMS_ELEMENT_PAD_TYPE_VIDEO);
+    kms_element_connect_sink_target_full (elem, self->priv->video_target,
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, connect_pad_signals_cb, self);
   }
 }
 
@@ -647,19 +654,6 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
   return GST_PAD_PROBE_OK;
 }
 
-static gchar *
-get_id_from_proxy_pad (GstProxyPad * peer)
-{
-  GstProxyPad *internal;
-  gchar *id;
-
-  internal = gst_proxy_pad_get_internal (peer);
-  id = gst_pad_get_name (internal);
-  g_object_unref (internal);
-
-  return id;
-}
-
 static void
 link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 {
@@ -669,21 +663,25 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   KmsRecordingProfile profile;
   DataEvtProbe *data;
   KmsMediaType type;
+  GstPad *target;
   gulong *probe;
   gchar *id;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
-  if (pad == self->priv->audio_target) {
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target == self->priv->audio_target) {
     type = KMS_MEDIA_TYPE_AUDIO;
     probe = &self->priv->audio_probe;
-  } else if (pad == self->priv->video_target) {
+  } else if (target == self->priv->video_target) {
     type = KMS_MEDIA_TYPE_VIDEO;
     probe = &self->priv->video_probe;
   } else {
     GST_ERROR_OBJECT (self, "Invalid pad %" GST_PTR_FORMAT " connected %"
         GST_PTR_FORMAT, pad, peer);
     KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+    g_clear_object (&target);
 
     return;
   }
@@ -692,13 +690,14 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   GST_DEBUG_OBJECT (pad, "linked to %" GST_PTR_FORMAT, peer);
 
-  id = get_id_from_proxy_pad (GST_PROXY_PAD (peer));
+  id = gst_pad_get_name (pad);
 
   appsrc = kms_base_media_muxer_add_src (self->priv->mux, type, id);
 
   if (appsrc == NULL) {
     GST_ERROR_OBJECT (self, "Can not get appsrc for pad %" GST_PTR_FORMAT, pad);
     KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+    g_object_unref (target);
     g_free (id);
 
     return;
@@ -709,21 +708,22 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
   if (*probe != 0UL) {
-    gst_pad_remove_probe (pad, *probe);
+    gst_pad_remove_probe (target, *probe);
   }
 
   callbacks.eos = recv_eos;
   callbacks.new_preroll = NULL;
   callbacks.new_sample = recv_sample;
 
-  appsink = gst_pad_get_parent_element (pad);
+  appsink = gst_pad_get_parent_element (target);
   gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc, NULL);
   g_object_unref (appsink);
 
   data = data_evt_probe_new (appsrc, profile);
-  *probe = gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+  *probe = gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       configure_pipeline_capabilities, data,
       (GDestroyNotify) data_evt_probe_destroy);
+  g_object_unref (target);
 }
 
 static void
@@ -734,7 +734,7 @@ unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
-  id = get_id_from_proxy_pad (GST_PROXY_PAD (peer));
+  id = gst_pad_get_name (pad);
 
   if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
     g_hash_table_remove (self->priv->srcs, id);
@@ -775,9 +775,6 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   gst_bin_add (GST_BIN (self), appsink);
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
-
-  g_signal_connect (sinkpad, "linked", G_CALLBACK (link_sinkpad_cb), self);
-  g_signal_connect (sinkpad, "unlinked", G_CALLBACK (unlink_sinkpad_cb), self);
 
   gst_element_sync_state_with_parent (appsink);
 
