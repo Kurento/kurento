@@ -44,7 +44,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_ksr_muxer_debug_category);
 struct _KmsKSRMuxerPrivate
 {
   GstElement *mux;
-  GstTaskPool *tasks;
+  GstTaskPool *pool;
 
   GHashTable *tracks;
   guint video_id;
@@ -62,6 +62,9 @@ kms_ksr_muxer_finalize (GObject * obj)
   KmsKSRMuxer *self = KMS_KSR_MUXER (obj);
 
   GST_DEBUG_OBJECT (self, "finalize");
+
+  gst_task_pool_cleanup (self->priv->pool);
+  gst_object_unref (self->priv->pool);
 
   g_hash_table_unref (self->priv->tracks);
 
@@ -111,6 +114,95 @@ end:
 }
 
 static void
+remove_appsrc_func (GstElement * appsrc)
+{
+  GstElement *parent = GST_ELEMENT_CAST (GST_OBJECT_PARENT (appsrc));
+
+  if (parent == NULL) {
+    GST_DEBUG_OBJECT (appsrc, "No parent got");
+    goto end;
+  }
+
+  GST_DEBUG_OBJECT (parent, "Remove %" GST_PTR_FORMAT, appsrc);
+
+  gst_element_set_locked_state (appsrc, TRUE);
+  gst_element_set_state (appsrc, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (parent), appsrc);
+
+end:
+  g_object_unref (appsrc);
+}
+
+static void
+kms_ksr_muxer_remove_appsrc (KmsKSRMuxer * self, GstElement * appsrc)
+{
+  GError *err = NULL;
+
+  if (appsrc == NULL) {
+    return;
+  }
+
+  gst_task_pool_push (self->priv->pool,
+      (GstTaskPoolFunction) remove_appsrc_func, appsrc, &err);
+
+  if (err != NULL) {
+    GST_ERROR_OBJECT (self, "%s", err->message);
+    g_error_free (err);
+  }
+}
+
+static gboolean
+kms_ksr_muxer_remove_src (KmsBaseMediaMuxer * obj, const gchar * id)
+{
+  KmsKSRMuxer *self = KMS_KSR_MUXER (obj);
+  GstPad *srcpad = NULL, *sinkpad = NULL;
+  gchar *padname;
+  gboolean ret = FALSE;
+
+  KMS_BASE_MEDIA_MUXER_LOCK (self);
+
+  padname = g_hash_table_lookup (self->priv->tracks, id);
+
+  if (padname == NULL) {
+    goto end;
+  }
+
+  sinkpad = gst_element_get_static_pad (self->priv->mux, padname);
+
+  if (sinkpad == NULL) {
+    GST_WARNING_OBJECT (self, "Element %" GST_PTR_FORMAT
+        " does not have pad %s", self->priv->mux, padname);
+    goto end;
+  }
+
+  srcpad = gst_pad_get_peer (sinkpad);
+
+  if (srcpad == NULL) {
+    GST_WARNING_OBJECT (self, "Pad %" GST_PTR_FORMAT " has not got any peer.",
+        sinkpad);
+  } else {
+    GstElement *appsrc;
+
+    gst_pad_unlink (srcpad, sinkpad);
+    appsrc = gst_pad_get_parent_element (srcpad);
+    kms_ksr_muxer_remove_appsrc (self, appsrc);
+    g_object_unref (srcpad);
+  }
+
+  GST_DEBUG_OBJECT (self, "Releasing pad %" GST_PTR_FORMAT, sinkpad);
+
+  gst_element_release_request_pad (self->priv->mux, sinkpad);
+  ret = TRUE;
+
+end:
+  KMS_BASE_MEDIA_MUXER_UNLOCK (self);
+
+  g_clear_object (&sinkpad);
+
+  return ret;
+}
+
+static void
 on_sink_added_cb (GstElement * mux, GstElement * sink, gpointer data)
 {
   KmsKSRMuxer *self = KMS_KSR_MUXER (data);
@@ -130,6 +222,7 @@ kms_ksr_muxer_class_init (KmsKSRMuxerClass * klass)
 
   basemediamuxerclass = KMS_BASE_MEDIA_MUXER_CLASS (klass);
   basemediamuxerclass->add_src = kms_ksr_muxer_add_src;
+  basemediamuxerclass->remove_src = kms_ksr_muxer_remove_src;
 
   g_type_class_add_private (klass, sizeof (KmsKSRMuxerPrivate));
 }
@@ -137,6 +230,8 @@ kms_ksr_muxer_class_init (KmsKSRMuxerClass * klass)
 static void
 kms_ksr_muxer_init (KmsKSRMuxer * self)
 {
+  GError *err = NULL;
+
   self->priv = KMS_KSR_MUXER_GET_PRIVATE (self);
 
   self->priv->tracks = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
@@ -156,6 +251,14 @@ kms_ksr_muxer_init (KmsKSRMuxer * self)
 
   gst_bin_add (GST_BIN (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self)),
       self->priv->mux);
+
+  self->priv->pool = gst_task_pool_new ();
+  gst_task_pool_prepare (self->priv->pool, &err);
+
+  if (G_UNLIKELY (err != NULL)) {
+    g_warning ("%s", err->message);
+    g_error_free (err);
+  }
 }
 
 KmsKSRMuxer *

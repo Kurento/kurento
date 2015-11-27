@@ -398,3 +398,11 @@ kms_base_media_muxer_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
 
   return KMS_BASE_MEDIA_MUXER_GET_CLASS (obj)->add_src (obj, type, id);
 }
+
+gboolean
+kms_base_media_muxer_remove_src (KmsBaseMediaMuxer * obj, const gchar * id)
+{
+  g_return_val_if_fail (KMS_IS_BASE_MEDIA_MUXER (obj), NULL);
+
+  return KMS_BASE_MEDIA_MUXER_GET_CLASS (obj)->remove_src (obj, id);
+}

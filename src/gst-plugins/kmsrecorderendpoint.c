@@ -74,6 +74,9 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
   g_mutex_unlock (&KMS_RECORDER_ENDPOINT(obj)->priv->base_time_lock)    \
 )
 
+static void link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data);
+static void unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data);
+
 enum
 {
   PROP_0,
@@ -376,7 +379,6 @@ kms_recorder_endpoint_dispose (GObject * object)
           ("Disposing recorder when it isn't stopped."));
     }
     kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
-    g_clear_object (&self->priv->mux);
   }
 
   g_mutex_clear (&self->priv->base_time_lock);
@@ -401,6 +403,8 @@ kms_recorder_endpoint_release_pending_requests (KmsRecorderEndpoint * self)
   g_mutex_unlock (&self->priv->state_manager.mutex);
 
   gst_task_pool_cleanup (self->priv->pool);
+
+  g_clear_object (&self->priv->mux);
   gst_object_unref (self->priv->pool);
 
   g_cond_clear (&self->priv->state_manager.cond);
@@ -458,7 +462,6 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 
   kms_recorder_endpoint_change_state (self);
 
-  /* Close valves */
   kms_recorder_endpoint_remove_pads (self);
 
   // Reset base time data
@@ -500,7 +503,6 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
 
   BASE_TIME_UNLOCK (self);
 
-  /* Open valves */
   kms_recorder_generate_pads (self);
 
   kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_START);
@@ -513,7 +515,6 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 
   kms_recorder_endpoint_change_state (self);
 
-  /* Close valves */
   kms_recorder_endpoint_remove_pads (self);
 
   /* Set internal pipeline to GST_STATE_PAUSED */
@@ -692,11 +693,13 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   GST_DEBUG_OBJECT (pad, "linked to %" GST_PTR_FORMAT, peer);
 
   id = get_id_from_proxy_pad (GST_PROXY_PAD (peer));
+
   appsrc = kms_base_media_muxer_add_src (self->priv->mux, type, id);
 
   if (appsrc == NULL) {
     GST_ERROR_OBJECT (self, "Can not get appsrc for pad %" GST_PTR_FORMAT, pad);
     KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+    g_free (id);
 
     return;
   }
@@ -721,7 +724,25 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   *probe = gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       configure_pipeline_capabilities, data,
       (GDestroyNotify) data_evt_probe_destroy);
+}
 
+static void
+unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  gchar *id = NULL;
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+  id = get_id_from_proxy_pad (GST_PROXY_PAD (peer));
+
+  if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
+    g_hash_table_remove (self->priv->srcs, id);
+  }
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  g_free (id);
 }
 
 static void
@@ -756,6 +777,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   sinkpad = gst_element_get_static_pad (appsink, "sink");
 
   g_signal_connect (sinkpad, "linked", G_CALLBACK (link_sinkpad_cb), self);
+  g_signal_connect (sinkpad, "unlinked", G_CALLBACK (unlink_sinkpad_cb), self);
 
   gst_element_sync_state_with_parent (appsink);
 

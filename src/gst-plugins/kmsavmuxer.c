@@ -114,6 +114,13 @@ kms_av_muxer_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
   return appsrc;
 }
 
+static gboolean
+kms_av_muxer_remove_src (KmsBaseMediaMuxer * obj, const gchar * id)
+{
+  /* Nothing to remove */
+  return FALSE;
+}
+
 static void
 kms_av_muxer_class_init (KmsAVMuxerClass * klass)
 {
@@ -122,6 +129,7 @@ kms_av_muxer_class_init (KmsAVMuxerClass * klass)
   basemediamuxerclass = KMS_BASE_MEDIA_MUXER_CLASS (klass);
   basemediamuxerclass->set_state = kms_av_muxer_set_state;
   basemediamuxerclass->add_src = kms_av_muxer_add_src;
+  basemediamuxerclass->remove_src = kms_av_muxer_remove_src;
 
   g_type_class_add_private (klass, sizeof (KmsAVMuxerPrivate));
 }
