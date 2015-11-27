@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +23,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.kurento.test.base.KurentoTest;
+import org.kurento.test.config.AudioChannel;
 import org.kurento.test.grid.GridNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,36 +37,33 @@ import org.slf4j.LoggerFactory;
  * @see <a href="https://www.ffmpeg.org/">FFMPEG</a>
  * @see <a href="http://en.wikipedia.org/wiki/PESQ">PESQ</a>
  */
-public class Recorder {
+public class Ffmpeg {
 
-	private static Logger log = LoggerFactory.getLogger(Recorder.class);
+	private static Logger log = LoggerFactory.getLogger(Ffmpeg.class);
 
 	private static final String HTTP_TEST_FILES = "http://files.kurento.org";
 	private static final String PESQ_RESULTS = "pesq_results.txt";
-	private static final String RECORDED_WAV = KurentoMediaServerManager
-			.getWorkspace() + "recorded.wav";
+	private static final String RECORDED_WAV = KurentoTest
+			.getDefaultOutputFile("recorded.wav");
 
 	public static void recordRemote(GridNode node, int seconds, int sampleRate,
 			AudioChannel audioChannel) {
-		try {
-			node.getSshConnection().execCommand("ffmpeg", "-y", "-t",
-					String.valueOf(seconds), "-f", "alsa", "-i", "pulse",
-					"-q:a", "0", "-ac", audioChannel.toString(), "-ar",
-					String.valueOf(sampleRate), RECORDED_WAV);
-		} catch (IOException e) {
-			log.error("IOException recording audio in remote node "
-					+ node.getHost());
-		}
+		node.getSshConnection().execCommand("ffmpeg", "-y", "-t",
+				String.valueOf(seconds), "-f", "alsa", "-i", "pulse", "-q:a",
+				"0", "-ac", audioChannel.toString(), "-ar",
+				String.valueOf(sampleRate), RECORDED_WAV);
 	}
 
 	public static void record(int seconds, int sampleRate,
 			AudioChannel audioChannel) {
-		Shell.run("sh", "-c", "ffmpeg -y -t " + seconds
-				+ " -f alsa -i pulse -q:a 0 -ac " + audioChannel + " -ar "
-				+ sampleRate + " " + RECORDED_WAV);
+		Shell.run("sh", "-c",
+				"ffmpeg -y -t " + seconds + " -f alsa -i pulse -q:a 0 -ac "
+						+ audioChannel + " -ar " + sampleRate + " "
+						+ RECORDED_WAV);
 	}
 
-	public static float getRemotePesqMos(GridNode node, String audio, int sampleRate) {
+	public static float getRemotePesqMos(GridNode node, String audio,
+			int sampleRate) {
 		node.getSshConnection().getFile(RECORDED_WAV, RECORDED_WAV);
 		return getPesqMos(audio, sampleRate);
 	}
@@ -73,16 +72,14 @@ public class Recorder {
 		float pesqmos = 0;
 
 		try {
-			String pesq = KurentoServicesTestHelper.getTestFilesPath()
-					+ "/bin/pesq/PESQ";
+			String pesq = KurentoTest.getTestFilesPath() + "/bin/pesq/PESQ";
 			String origWav = "";
 			if (audio.startsWith(HTTP_TEST_FILES)) {
-				origWav = KurentoServicesTestHelper.getTestFilesPath()
+				origWav = KurentoTest.getTestFilesPath()
 						+ audio.replace(HTTP_TEST_FILES, "");
 			} else {
 				// Download URL
-				origWav = KurentoMediaServerManager.getWorkspace()
-						+ "/downloaded.wav";
+				origWav = KurentoTest.getDefaultOutputFile("downloaded.wav");
 				URL url = new URL(audio);
 				ReadableByteChannel rbc = Channels.newChannel(url.openStream());
 				FileOutputStream fos = new FileOutputStream(origWav);

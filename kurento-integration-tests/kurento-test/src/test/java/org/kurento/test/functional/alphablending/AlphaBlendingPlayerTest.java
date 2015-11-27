@@ -39,10 +39,6 @@ import org.kurento.test.config.TestScenario;
 public class AlphaBlendingPlayerTest extends FunctionalTest {
 	private static final int PLAYTIME = 5; // seconds
 
-	public AlphaBlendingPlayerTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChrome();
@@ -97,16 +93,16 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
 				getPage().similarColorAt(Color.GREEN, 0, 0));
 		Assert.assertTrue("Lower right part of the video must be red",
 				getPage().similarColorAt(Color.RED, 315, 235));
-		Assert.assertTrue("Center of the video must be blue", getPage()
-				.similarColorAt(Color.BLUE, 160, 120));
+		Assert.assertTrue("Center of the video must be blue",
+				getPage().similarColorAt(Color.BLUE, 160, 120));
 
 		// alphaBlending.setMaster(hubPort3, 1);
 		alphaBlending.setPortProperties(0.8F, 0.8F, 7, 0.2F, 0.2F, hubPort3);
 
 		Assert.assertTrue("Lower right part of the video must be blue",
 				getPage().similarColorAt(Color.BLUE, 315, 235));
-		Assert.assertTrue("Center of the video must be red", getPage()
-				.similarColorAt(Color.RED, 160, 120));
+		Assert.assertTrue("Center of the video must be red",
+				getPage().similarColorAt(Color.RED, 160, 120));
 
 		Thread.sleep(PLAYTIME * 1000);
 	}

@@ -70,10 +70,6 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 	private static final String BROWSER2 = "browser2";
 	private static final String BROWSER3 = "browser3";
 
-	public DispatcherWebRtcTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		TestScenario test = new TestScenario();
@@ -85,11 +81,11 @@ public class DispatcherWebRtcTest extends FunctionalTest {
 		test.addBrowser(BROWSER2, new Browser.Builder()
 				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/10sec/green.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/green.y4m").build());
 		test.addBrowser(BROWSER3, new Browser.Builder()
 				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/10sec/blue.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/blue.y4m").build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}

@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.kurento.test.grid.GridHandler;
-import org.kurento.test.services.SshConnection;
+import org.kurento.test.utils.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

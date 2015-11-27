@@ -14,7 +14,7 @@
  */
 package org.kurento.test.browser;
 
-import org.kurento.test.services.Shell;
+import org.kurento.test.utils.Shell;
 
 /**
  * Fake cam singleton.

@@ -60,10 +60,6 @@ public class CompositePlayerTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5; // seconds
 
-	public CompositePlayerTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

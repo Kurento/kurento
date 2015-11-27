@@ -31,8 +31,8 @@ import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPageType;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.BrowserConfig;
+import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.VideoTagType;
@@ -73,13 +73,9 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 	private static final String[] REMOVE_CODECS = { "H263-1998", "VP8",
 			"MP4V-ES" };
 
-	public WebRtcStabilityRtpH264Test(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.BROWSER,

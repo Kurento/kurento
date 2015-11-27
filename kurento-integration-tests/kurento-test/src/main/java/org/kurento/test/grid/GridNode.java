@@ -15,10 +15,10 @@
 package org.kurento.test.grid;
 
 import java.io.File;
-import java.io.IOException;
 
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.browser.BrowserType;
-import org.kurento.test.services.SshConnection;
+import org.kurento.test.utils.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,8 @@ public class GridNode {
 		this.ssh = new SshConnection(host);
 	}
 
-	public GridNode(String host, BrowserType browserType, int maxInstances, String login, String passwd, String pem) {
+	public GridNode(String host, BrowserType browserType, int maxInstances,
+			String login, String passwd, String pem) {
 		this.host = host;
 		this.browserType = browserType;
 		this.maxInstances = maxInstances;
@@ -58,7 +59,8 @@ public class GridNode {
 	public String getRemoteVideo(String video) {
 		String remoteVideo = null;
 		File file = new File(video);
-		remoteVideo = getHome() + "/" + GridHandler.REMOTE_FOLDER + "/" + file.getName();
+		remoteVideo = getHome() + "/" + GridHandler.REMOTE_FOLDER + "/"
+				+ file.getName();
 		return remoteVideo;
 	}
 
@@ -88,8 +90,9 @@ public class GridNode {
 			// OverThere SCP need absolute path, so home path must be known
 			try {
 				home = getSshConnection().execAndWaitCommandNoBr("echo", "~");
-			} catch (IOException e) {
-				log.error("Exception reading remote home " + e.getClass() + " ... returning default home value: ~");
+			} catch (KurentoException e) {
+				log.error("Exception reading remote home " + e.getClass()
+						+ " ... returning default home value: ~");
 				home = "~";
 			}
 		}

@@ -57,10 +57,6 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerEndTest extends FunctionalTest {
 
-	public PlayerEndTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

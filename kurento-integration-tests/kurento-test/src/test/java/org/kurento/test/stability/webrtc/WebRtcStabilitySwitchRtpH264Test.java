@@ -73,13 +73,9 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 	private static final String[] REMOVE_CODECS = { "H263-1998", "VP8",
 			"MP4V-ES" };
 
-	public WebRtcStabilitySwitchRtpH264Test(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.BROWSER,

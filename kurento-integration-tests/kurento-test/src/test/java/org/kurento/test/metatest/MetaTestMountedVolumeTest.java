@@ -38,10 +38,6 @@ import org.kurento.test.config.TestScenario;
 public class MetaTestMountedVolumeTest
 		extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	public MetaTestMountedVolumeTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChrome();
@@ -53,7 +49,7 @@ public class MetaTestMountedVolumeTest
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-		String videoPath = "file://" + getPathTestFiles()
+		String videoPath = "file://" + getTestFilesPath()
 				+ "/video/filter/barcodes.webm";
 
 		PlayerEndpoint p = new PlayerEndpoint.Builder(mp, videoPath).build();

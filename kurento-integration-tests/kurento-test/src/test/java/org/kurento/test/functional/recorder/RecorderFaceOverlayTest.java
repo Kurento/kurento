@@ -75,10 +75,6 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 	private static final int EXPECTED_COLOR_X = 420;
 	private static final int EXPECTED_COLOR_Y = 45;
 
-	public RecorderFaceOverlayTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

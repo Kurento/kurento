@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.utils;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.TEST_NODE_LOGIN_PROPERTY;
@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.kurento.commons.exception.KurentoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +93,7 @@ public class SshConnection {
 	}
 
 	public List<String> listFiles(String folder, boolean recursive,
-			boolean includeFolders) throws IOException {
+			boolean includeFolders) {
 
 		String[] command = null;
 		if (recursive && includeFolders) {
@@ -108,7 +109,7 @@ public class SshConnection {
 		return Arrays.asList(execAndWaitCommand(command).split("\r\n"));
 	}
 
-	public void mkdirs(String dir) throws IOException {
+	public void mkdirs(String dir) {
 		execAndWaitCommand("mkdir", "-p", dir);
 	}
 
@@ -145,16 +146,22 @@ public class SshConnection {
 		}
 	}
 
-	public void scp(String origFile, String targetFile) throws IOException {
+	public void scp(String origFile, String targetFile) {
 		log.debug("Copying local file: {} to remote file: {} (in host {})",
 				origFile, targetFile, host);
 
 		OverthereFile motd = connection.getFile(targetFile);
 		OutputStream w = motd.getOutputStream();
 
-		byte[] origBytes = Files.readAllBytes(Paths.get(origFile));
-		w.write(origBytes);
-		w.close();
+		try {
+			byte[] origBytes = Files.readAllBytes(Paths.get(origFile));
+			w.write(origBytes);
+			w.close();
+		} catch (IOException e) {
+			throw new KurentoException(
+					"Exception in SCP " + origFile + " " + targetFile, e);
+		}
+
 	}
 
 	public void start() {
@@ -190,17 +197,17 @@ public class SshConnection {
 		}
 	}
 
-	public void execCommand(final String... command) throws IOException {
+	public void execCommand(final String... command) {
 		if (connection.canStartProcess()) {
 			connection.startProcess(CmdLine.build(command));
 		}
 	}
 
-	public int runAndWaitCommand(String... command) throws IOException {
+	public int runAndWaitCommand(String... command) {
 		return connection.execute(CmdLine.build(command));
 	}
 
-	public String execAndWaitCommand(String... command) throws IOException {
+	public String execAndWaitCommand(String... command) {
 		log.info("execAndWaitCommand: {} ", Arrays.toString(command));
 
 		CmdLine cmdLine = new CmdLine();
@@ -209,14 +216,21 @@ public class SshConnection {
 		}
 		OverthereProcess process = connection.startProcess(cmdLine);
 
-		BufferedReader r = new BufferedReader(
-				new InputStreamReader(process.getStdout(), "UTF-8"));
 		StringBuilder sb = new StringBuilder();
-		String line = null;
-		while ((line = r.readLine()) != null) {
-			log.debug(line);
-			sb.append(line).append("\r\n");
+		try {
+			BufferedReader r = new BufferedReader(
+					new InputStreamReader(process.getStdout(), "UTF-8"));
+			String line = null;
+			while ((line = r.readLine()) != null) {
+				log.debug(line);
+				sb.append(line).append("\r\n");
+			}
+		} catch (Exception e) {
+			throw new KurentoException(
+					"Exception executing command " + Arrays.toString(command),
+					e);
 		}
+
 		return sb.toString();
 	}
 
@@ -231,7 +245,7 @@ public class SshConnection {
 		return result;
 	}
 
-	public String execAndWaitCommandNoBr(String... command) throws IOException {
+	public String execAndWaitCommandNoBr(String... command) {
 		return execAndWaitCommand(command).replace("\n", "").replace("\r", "");
 	}
 

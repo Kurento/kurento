@@ -57,10 +57,6 @@ public class PlayerSwitchTest extends FunctionalTest {
 	private static final int PLAYTIME = 30; // seconds
 	private static final int N_PLAYER = 5;
 
-	public PlayerSwitchTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

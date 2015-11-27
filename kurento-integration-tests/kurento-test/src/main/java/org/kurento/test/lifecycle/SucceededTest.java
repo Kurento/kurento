@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,24 +12,18 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.lifecycle;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * Kind of audio (stereo, mono).
+ * Custom annotation for succeeded tests.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.11
+ * @since 6.1.1
  */
-public enum AudioChannel {
-	STEREO, MONO;
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SucceededTest {
 
-	public String toString() {
-		switch (this) {
-		case MONO:
-			return "1";
-		case STEREO:
-		default:
-			return "2";
-		}
-	}
 }

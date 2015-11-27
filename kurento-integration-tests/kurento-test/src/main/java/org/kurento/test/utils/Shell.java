@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.utils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,8 +38,9 @@ public class Shell {
 		return run(true, command);
 	}
 
-	public static Process run(boolean redirectOutputs, final String... command) {
-		log.debug("Running command on the shell: {}", Arrays.toString(command));
+	public static Process run(boolean redirectOutputs,
+			final String... command) {
+		log.trace("Running command on the shell: {}", Arrays.toString(command));
 
 		try {
 			ProcessBuilder p = new ProcessBuilder(command);
@@ -59,9 +60,9 @@ public class Shell {
 	}
 
 	public static String runAndWaitArray(final String[] command) {
-		log.debug("Running command on the shell: {}", Arrays.toString(command));
+		log.trace("Running command on the shell: {}", Arrays.toString(command));
 		String result = runAndWaitNoLog(command);
-		log.debug("Result:" + result);
+		log.trace("Result:" + result);
 		return result;
 	}
 
@@ -74,17 +75,18 @@ public class Shell {
 		try {
 			p = new ProcessBuilder(command).redirectErrorStream(true).start();
 
-			String output = CharStreams.toString(new InputStreamReader(p
-					.getInputStream(), "UTF-8"));
+			String output = CharStreams.toString(
+					new InputStreamReader(p.getInputStream(), "UTF-8"));
 
 			p.destroy();
-			
+
 			return output;
 
 		} catch (IOException e) {
 			throw new KurentoException(
 					"Exception executing command on the shell: "
-							+ Arrays.toString(command), e);
+							+ Arrays.toString(command),
+					e);
 		}
 	}
 

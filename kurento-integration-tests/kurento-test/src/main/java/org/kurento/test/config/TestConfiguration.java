@@ -14,8 +14,6 @@
  */
 package org.kurento.test.config;
 
-import org.kurento.commons.Address;
-
 /**
  * Test properties.
  *
@@ -130,34 +128,24 @@ public class TestConfiguration {
 
 	// KMS
 	public static final String KMS_WS_URI_PROP = "kms.ws.uri";
+	public static final String KMS_WS_URI_PROP_EXPORT = "kms.url";
 	public static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
 
 	public static final String KMS_LOG_PATH_PROP = "kms.log.path";
 	public static final String KMS_LOG_PATH_DEFAULT = "/var/log/kurento-media-server/";
 
-	public static final String KURENTO_WORKSPACE_PROP = "test.workspace";
-	public static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
+	public static final String KSM_GST_PLUGINS_PROP = "kms.gst.plugins";
+	public static final String KMS_GST_PLUGINS_DEFAULT = "";
 
-	public static final String KURENTO_WORKSPACE_HOST_PROP = "test.workspace.host";
-	public static final String KURENTO_WORKSPACE_HOST_DEFAULT = "/tmp";
+	public static final String KMS_SERVER_COMMAND_PROP = "kms.command";
+	public static final String KMS_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento-media-server";
 
-	public static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
-	public static final String KURENTO_GST_PLUGINS_DEFAULT = "";
+	public static final String KMS_SERVER_DEBUG_PROP = "kms.debug";
+	public static final String KMS_SERVER_DEBUG_DEFAULT = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
 
-	public static final String KURENTO_SERVER_COMMAND_PROP = "kms.command";
-	public static final String KURENTO_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento-media-server";
-
-	public static final String KURENTO_SERVER_DEBUG_PROP = "kms.debug";
-	public static final String KURENTO_SERVER_DEBUG_DEFAULT = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
-
-	public static final String KURENTO_KMS_LOGIN_PROP = "kms.login";
-	public static final String KURENTO_KMS_PASSWD_PROP = "kms.passwd";
-	public static final String KURENTO_KMS_PEM_PROP = "kms.pem";
-
-	public static final String KMS_TRANSPORT_PROP = "kms.transport";
-	public static final String KMS_TRANSPORT_WS_VALUE = "ws";
-	public static final String KMS_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
-	public static final String KMS_TRANSPORT_DEFAULT = KMS_TRANSPORT_WS_VALUE;
+	public static final String KMS_LOGIN_PROP = "kms.login";
+	public static final String KMS_PASSWD_PROP = "kms.passwd";
+	public static final String KMS_PEM_PROP = "kms.pem";
 
 	public static final String KMS_DOCKER_IMAGE_NAME_PROP = "test.kms.docker.image.name";
 	public static final String KMS_DOCKER_IMAGE_NAME_DEFAULT = "kurento/kurento-media-server-dev:latest";
@@ -168,21 +156,10 @@ public class TestConfiguration {
 	public static final String KMS_HTTP_PORT_PROP = "kms.http.port";
 	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
 
-	public static final String KMS_RABBITMQ_ADDRESS_PROP = "kms.rabbitmq.address";
-	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address(
-			"127.0.0.1", 5672);
-
-	// Binary test files
-	public static final String KURENTO_TESTFILES_PROP = "test.files";
-	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
-
-	// KCS properties
-	public static final String KCS_WS_URI_PROP = "kcs.ws.uri";
-	public static final String KCS_WS_URI_DEFAULT = "ws://localhost:8889/kurento";
-
 	// Autostart
 	public static final String AUTOSTART_FALSE_VALUE = "false";
 	public static final String AUTOSTART_TEST_VALUE = "test";
+	public static final String AUTOSTART_TESTCLASS_VALUE = "testclass";
 	public static final String AUTOSTART_TESTSUITE_VALUE = "testsuite";
 
 	public static final String KMS_AUTOSTART_PROP = "test.kms.autostart";
@@ -196,16 +173,7 @@ public class TestConfiguration {
 	public static final String KMS_SCOPE_DOCKER = "docker";
 	public static final String KMS_SCOPE_DEFAULT = KMS_SCOPE_LOCAL;
 
-	public static final String KCS_AUTOSTART_PROP = "test.kcs.autostart";
-	public static final String KCS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
-
-	// Bower
-	public static final String BOWER_KURENTO_CLIENT_TAG_PROP = "bower.kurentoclient.tag";
-	public static final String BOWER_KURENTO_CLIENT_TAG_DEFAULT = "";
-	public static final String BOWER_KURENTO_UTILS_TAG_PROP = "bower.kurentoutils.tag";
-	public static final String BOWER_KURENTO_UTILS_TAG_DEFAULT = "";
-
-	// Fake KMS (extra clients typically in performance/load/stability tests)
+	// Fake KMS
 	public static final String FAKE_KMS_WS_URI_PROP = "fake.kms.ws.uri";
 	public static final String FAKE_KMS_LOGIN_PROP = "fake.kms.login";
 	public static final String FAKE_KMS_PASSWD_PROP = "fake.kms.passwd";
@@ -213,7 +181,13 @@ public class TestConfiguration {
 	public static final String FAKE_KMS_AUTOSTART_PROP = "fake.kms.autostart";
 	public static final String FAKE_KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
 
-	// Testing services
+	// Bower
+	public static final String BOWER_KURENTO_CLIENT_TAG_PROP = "bower.kurentoclient.tag";
+	public static final String BOWER_KURENTO_CLIENT_TAG_DEFAULT = "";
+	public static final String BOWER_KURENTO_UTILS_TAG_PROP = "bower.kurentoutils.tag";
+	public static final String BOWER_KURENTO_UTILS_TAG_DEFAULT = "";
+
+	// Test services
 	public static final String TEST_NUMRETRIES_PROPERTY = "test.num.retries";
 	public static final int TEST_NUM_NUMRETRIES_DEFAULT = 1;
 
@@ -223,7 +197,16 @@ public class TestConfiguration {
 	public static final String TEST_PRINT_LOG_PROP = "test.print.log";
 	public static final boolean TEST_PRINT_LOG_DEFAULT = true;
 
+	public static final String TEST_FILES_PROP = "test.files";
+	public static final String TEST_FILES_DEFAULT = "/var/lib/jenkins/test-files";
+
 	public static final String TEST_PROJECT_PATH_PROP = "test.project.path";
 	public static final String TEST_PROJECT_PATH_DEFAULT = "target/surefire-reports/";
+
+	public static final String TEST_WORKSPACE_PROP = "test.workspace";
+	public static final String TEST_WORKSPACE_DEFAULT = "/tmp";
+
+	public static final String TEST_WORKSPACE_HOST_PROP = "test.workspace.host";
+	public static final String TEST_WORKSPACE_HOST_DEFAULT = "/tmp";
 
 }

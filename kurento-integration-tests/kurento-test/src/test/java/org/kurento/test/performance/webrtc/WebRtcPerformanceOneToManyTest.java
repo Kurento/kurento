@@ -73,10 +73,6 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 	private static int numViewers;
 	private static int browserPerViewer;
 
-	public WebRtcPerformanceOneToManyTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		numViewers = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
@@ -84,7 +80,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 				BROWSER_PER_VIEWER_DEFAULT);
 
 		TestScenario test = new TestScenario();
-		String video = getPathTestFiles() + "/video/15sec/rgbHD.y4m";
+		String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
 		test.addBrowser(BrowserConfig.PRESENTER,
 				new Browser.Builder().webPageType(WebPageType.WEBRTC)
 						.browserType(BrowserType.CHROME)

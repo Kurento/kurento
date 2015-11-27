@@ -65,13 +65,9 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 	private static final int SWITCH_RATE_MS = 500; // ms
 	private static final int THRESHOLD_MS = 5000; // ms
 
-	public RecorderPlayerSwitchSequentialTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return TestScenario.noBrowsers();
+		return TestScenario.empty();
 	}
 
 	@Test

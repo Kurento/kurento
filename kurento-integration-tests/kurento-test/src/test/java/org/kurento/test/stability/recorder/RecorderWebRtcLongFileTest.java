@@ -68,10 +68,6 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
 	private static final int RECORD_MS = 5 * 60 * 1000; // ms
 	private static final int THRESHOLD_MS = 5000; // ms
 
-	public RecorderWebRtcLongFileTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

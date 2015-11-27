@@ -12,18 +12,18 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.lifecycle;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Custom annotation for failed tests.
+ * Custom annotation for started tests.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FailedTest {
+public @interface StartedTest {
 
 }

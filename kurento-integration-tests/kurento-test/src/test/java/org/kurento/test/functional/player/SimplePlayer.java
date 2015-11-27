@@ -30,7 +30,6 @@ import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
-import org.kurento.test.config.TestScenario;
 import org.kurento.test.config.VideoFormat;
 
 /**
@@ -40,10 +39,6 @@ import org.kurento.test.config.VideoFormat;
  * @since 6.1.1
  */
 public class SimplePlayer extends FunctionalTest {
-
-	public SimplePlayer(TestScenario testScenario) {
-		super(testScenario);
-	}
 
 	public void testPlayerWithRtsp(WebRtcChannel webRtcChannel)
 			throws Exception {
@@ -71,7 +66,7 @@ public class SimplePlayer extends FunctionalTest {
 		getPage().setThresholdTime(5); // seconds
 
 		String mediaUrl = protocol.toString();
-		mediaUrl += protocol == HTTP ? "files.kurento.org" : getPathTestFiles();
+		mediaUrl += protocol == HTTP ? "files.kurento.org" : getTestFilesPath();
 		mediaUrl += "/video/format/";
 		mediaUrl += videoOnly ? "small_video_only." : "small.";
 		mediaUrl += videoFormat.toString();

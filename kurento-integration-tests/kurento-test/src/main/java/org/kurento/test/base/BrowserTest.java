@@ -25,7 +25,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -43,9 +42,6 @@ import javax.net.ssl.X509TrustManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
@@ -59,28 +55,14 @@ import org.kurento.test.internal.AbortableCountDownLatch;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-@RunWith(Parameterized.class)
 public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
 	public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
-	@Parameters
-	public static Collection<Object[]> data() {
-		return TestScenario.from("default.conf.json");
-	}
-
 	private Map<String, W> pages = new ConcurrentHashMap<>();
-	private TestScenario testScenario;
-
-	public BrowserTest() {
-	}
-
-	public BrowserTest(TestScenario testScenario) {
-		this.testScenario = testScenario;
-	}
 
 	@Before
-	public void setupKurentoTest() throws InterruptedException {
+	public void setupBrowserTest() throws InterruptedException {
 		if (testScenario != null && testScenario.getBrowserMap() != null
 				&& testScenario.getBrowserMap().size() > 0) {
 			ExecutorService executor = Executors
@@ -120,8 +102,6 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
 			latch.await();
 		}
-
-		log.info("--------------- Started WebPageTest ----------------");
 	}
 
 	private void initBrowser(String browserKey, Browser browser) {
@@ -132,10 +112,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 	}
 
 	@After
-	public void teardownKurentoTest() {
-
-		log.info("--------------- Finished WebPageTest ----------------");
-
+	public void teardownBrowserTest() {
 		if (testScenario != null) {
 			for (Browser browser : testScenario.getBrowserMap().values()) {
 				try {

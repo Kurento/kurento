@@ -22,21 +22,17 @@ import org.junit.Test;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.KurentoConnectionListener;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.test.services.KurentoMediaServerManager;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.base.KurentoClientTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KurentoClientKmsConnectionTest {
+public class KurentoClientKmsConnectionTest extends KurentoClientTest {
 
 	private static Logger log = LoggerFactory
 			.getLogger(KurentoClientKmsConnectionTest.class);
 
 	@Test
 	public void errorSendingClosedKmsTest() throws Exception {
-
-		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer(false);
 
 		String kmsUrl = kms.getWsUri();
 
@@ -63,7 +59,7 @@ public class KurentoClientKmsConnectionTest {
 
 		kurento.createMediaPipeline();
 
-		kms.destroy();
+		kms.stopKms();
 
 		try {
 			kurento.createMediaPipeline();

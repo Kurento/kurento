@@ -137,26 +137,4 @@ public class PropertiesManager {
 				: defaultValue;
 	}
 
-	private static String createWithPrefix(String prefix, String property) {
-		if (prefix == null) {
-			return property;
-		} else {
-			return prefix + "." + property;
-		}
-	}
-
-	public static int getProperty(String prefix, String property,
-			int defaultValue) {
-		return getProperty(createWithPrefix(prefix, property), defaultValue);
-	}
-
-	public static String getProperty(String prefix, String property,
-			String defaultValue) {
-		return getProperty(createWithPrefix(prefix, property), defaultValue);
-	}
-
-	public static Address getProperty(String prefix, String property,
-			Address defaultValue) {
-		return getProperty(createWithPrefix(prefix, property), defaultValue);
-	}
 }

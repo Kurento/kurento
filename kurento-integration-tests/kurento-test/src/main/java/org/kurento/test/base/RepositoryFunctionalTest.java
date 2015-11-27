@@ -14,7 +14,6 @@
  */
 package org.kurento.test.base;
 
-import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
@@ -22,8 +21,8 @@ import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.kurento.test.browser.WebRtcTestPage;
-import org.kurento.test.config.TestScenario;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.services.WebServerService;
+import org.kurento.test.services.WebServerService.WebServer;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -63,7 +62,7 @@ public class RepositoryFunctionalTest
 		public RepositoryApiConfiguration repositoryApiConfiguration() {
 			RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 			config.setWebappPublicURL("http://localhost:"
-					+ KurentoServicesTestHelper.getAppHttpPort() + "/");
+					+ WebServerService.getAppHttpPort() + "/");
 			config.setFileSystemFolder(Files.createTempDir().toString());
 			config.setRepositoryType(RepoType.FILESYSTEM);
 			return config;
@@ -72,13 +71,9 @@ public class RepositoryFunctionalTest
 
 	public Repository repository;
 
-	public RepositoryFunctionalTest(TestScenario testScenario) {
-		super(testScenario);
-		setWebServerClass(RepositoryWebServer.class);
+	public RepositoryFunctionalTest() {
+		webServer.setWebServerClass(RepositoryWebServer.class);
+		repository = (Repository) webServer.getContext().getBean("repository");
 	}
 
-	@Before
-	public void setupHttpServer() throws Exception {
-		repository = (Repository) context.getBean("repository");
-	}
 }

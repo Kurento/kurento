@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.lifecycle;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * Test watcher for tests.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @since 6.1.1
  */
 public class KurentoTestWatcher extends TestWatcher {
 
@@ -42,42 +42,28 @@ public class KurentoTestWatcher extends TestWatcher {
 	private static boolean succees = false;
 
 	@Override
-	protected void starting(Description description) {
-		String methodName = description.getMethodName();
-
-		logMessage("|       TEST STARTING: " + description.getClassName() + "."
-				+ methodName);
-
-		KurentoTest.setTestMethodName(methodName);
-	}
-
-	@Override
 	protected void succeeded(Description description) {
-		logMessage("|       TEST SUCCEEDED: " + description.getClassName() + "."
-				+ description.getMethodName());
+		KurentoTest.logMessage(
+				"|       TEST SUCCEEDED: " + description.getClassName() + "."
+						+ description.getMethodName());
 
-		super.succeeded(description);
+		invokeMethodsAnnotatedWith(SucceededTest.class,
+				description.getTestClass(), null, description);
 		succees = true;
 	}
 
 	@Override
 	protected void failed(Throwable e, Description description) {
-		logMessage("|       TEST FAILED: " + description.getClassName() + "."
-				+ description.getMethodName());
+		KurentoTest
+				.logMessage("|       TEST FAILED: " + description.getClassName()
+						+ "." + description.getMethodName());
 
 		invokeMethodsAnnotatedWith(FailedTest.class, description.getTestClass(),
 				e, description);
+		succees = false;
 	}
 
-	@Override
-	protected void finished(Description description) {
-		super.finished(description);
-
-		invokeMethodsAnnotatedWith(FinishedTest.class,
-				description.getTestClass(), null, description);
-	}
-
-	private void invokeMethodsAnnotatedWith(
+	public static void invokeMethodsAnnotatedWith(
 			Class<? extends Annotation> annotation, Class<?> testClass,
 			Throwable throwable, Description description) {
 		List<Method> methods = getMethodsAnnotatedWith(testClass, annotation);
@@ -88,7 +74,7 @@ public class KurentoTestWatcher extends TestWatcher {
 		return succees;
 	}
 
-	public void invokeMethods(List<Method> methods,
+	public static void invokeMethods(List<Method> methods,
 			Class<? extends Annotation> annotation, Throwable throwable,
 			Description description) {
 		for (Method method : methods) {
@@ -167,7 +153,7 @@ public class KurentoTestWatcher extends TestWatcher {
 		}
 	}
 
-	public List<Method> getMethodsAnnotatedWith(Class<?> clazz,
+	public static List<Method> getMethodsAnnotatedWith(Class<?> clazz,
 			Class<? extends Annotation> annotation) {
 		List<Method> methods = new ArrayList<>();
 		while (clazz != Object.class) {
@@ -179,12 +165,6 @@ public class KurentoTestWatcher extends TestWatcher {
 			clazz = clazz.getSuperclass();
 		}
 		return methods;
-	}
-
-	private void logMessage(String message) {
-		log.info(KurentoTest.SEPARATOR);
-		log.info(message);
-		log.info(KurentoTest.SEPARATOR);
 	}
 
 }

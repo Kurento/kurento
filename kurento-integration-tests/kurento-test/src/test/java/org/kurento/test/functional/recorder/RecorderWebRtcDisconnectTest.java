@@ -88,17 +88,13 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
 	private static final String BROWSER1 = "browser1";
 	private static final String BROWSER2 = "browser2";
 
-	public RecorderWebRtcDisconnectTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		TestScenario test = new TestScenario();
 		test.addBrowser(BROWSER1, new Browser.Builder()
 				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
 				.webPageType(WebPageType.WEBRTC)
-				.video(getPathTestFiles() + "/video/10sec/red.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/red.y4m").build());
 		test.addBrowser(BROWSER2,
 				new Browser.Builder().browserType(BrowserType.CHROME)
 						.scope(BrowserScope.LOCAL)

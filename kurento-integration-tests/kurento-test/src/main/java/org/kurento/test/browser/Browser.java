@@ -62,14 +62,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoClientBrowserTest;
+import org.kurento.test.config.AudioChannel;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestConfiguration;
 import org.kurento.test.docker.Docker;
 import org.kurento.test.grid.GridHandler;
 import org.kurento.test.grid.GridNode;
-import org.kurento.test.services.AudioChannel;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.services.WebServerService;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
@@ -954,7 +954,7 @@ public class Browser implements Closeable {
 		private String host = node;
 		private int serverPort = getProperty(TEST_PORT_PROPERTY,
 				getProperty(TEST_PUBLIC_PORT_PROPERTY,
-						KurentoServicesTestHelper.getAppHttpPort()));
+						WebServerService.getAppHttpPort()));
 		private BrowserScope scope = BrowserScope.LOCAL;
 		private BrowserType browserType = BrowserType.CHROME;
 		private Protocol protocol = Protocol.valueOf(

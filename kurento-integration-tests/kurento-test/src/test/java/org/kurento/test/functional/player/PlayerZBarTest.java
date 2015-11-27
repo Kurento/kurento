@@ -66,10 +66,6 @@ public class PlayerZBarTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 13; // seconds
 
-	public PlayerZBarTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

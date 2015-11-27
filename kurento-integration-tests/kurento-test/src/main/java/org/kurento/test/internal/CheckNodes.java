@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kurento.test.services.SshConnection;
+import org.kurento.test.utils.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

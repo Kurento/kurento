@@ -33,7 +33,7 @@ import org.kurento.commons.testing.KurentoClientTests;
  *
  */
 @Category(KurentoClientTests.class)
-public abstract class MediaPipelineAsyncBaseTest extends BaseApiTest {
+public abstract class MediaPipelineAsyncBaseTest extends ApiBase {
 
 	protected MediaPipeline pipeline;
 

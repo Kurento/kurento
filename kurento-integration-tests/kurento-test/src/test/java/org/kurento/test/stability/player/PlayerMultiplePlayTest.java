@@ -72,10 +72,6 @@ import org.kurento.test.functional.player.SimplePlayer;
 @Category(SystemStabilityTests.class)
 public class PlayerMultiplePlayTest extends SimplePlayer {
 
-	public PlayerMultiplePlayTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

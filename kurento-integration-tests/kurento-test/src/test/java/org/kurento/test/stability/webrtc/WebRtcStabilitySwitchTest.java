@@ -68,10 +68,6 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 	private static final int DEFAULT_NUM_SWITCH = 60;
 	private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
-	public WebRtcStabilitySwitchTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localPresenterAndViewerRGB();

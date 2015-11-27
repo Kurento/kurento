@@ -26,12 +26,11 @@ import org.kurento.client.KurentoClient;
 import org.kurento.client.KurentoConnectionListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.test.services.KurentoMediaServerManager;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.base.KurentoClientTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectionListenerTest {
+public class ConnectionListenerTest extends KurentoClientTest {
 
 	private static Logger log = LoggerFactory
 			.getLogger(ConnectionListenerTest.class);
@@ -39,9 +38,6 @@ public class ConnectionListenerTest {
 	@Test
 	public void disconnectionEventTest()
 			throws InterruptedException, IOException {
-
-		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer(false);
 
 		final CountDownLatch disconnectedLatch = new CountDownLatch(1);
 
@@ -85,7 +81,7 @@ public class ConnectionListenerTest {
 		player.connect(httpEndpoint);
 
 		try {
-			kms.destroy();
+			kms.stopKms();
 		} catch (Exception e) {
 			fail("Exception thrown when destroying kms. " + e);
 		}
@@ -100,25 +96,22 @@ public class ConnectionListenerTest {
 	@Test
 	public void reconnectTest() throws InterruptedException, IOException {
 
-		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer(false);
-
 		String kmsUrl = kms.getWsUri();
 
 		log.info("Connecting to KMS in " + kmsUrl);
 
 		KurentoClient kurentoClient = KurentoClient.create(kmsUrl);
 
-		MediaPipeline pipeline1 = kurentoClient.createMediaPipeline();
+		kurentoClient.createMediaPipeline();
 
-		kms.destroy();
+		kms.stopKms();
 
 		Thread.sleep(3000);
 
-		kms = KurentoServicesTestHelper.startKurentoMediaServer(false);
+		kms.start();
 
-		MediaPipeline pipeline2 = kurentoClient.createMediaPipeline();
+		kurentoClient.createMediaPipeline();
 
-		kms.destroy();
+		kms.stopKms();
 	}
 }

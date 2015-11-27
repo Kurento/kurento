@@ -56,10 +56,6 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 
 	private static final int DEFAULT_PLAYTIME = 30; // minutes
 
-	public WebRtcStabilityBack2BackTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localPresenterAndViewerRGB();

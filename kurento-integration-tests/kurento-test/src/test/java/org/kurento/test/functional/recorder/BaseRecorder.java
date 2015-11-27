@@ -32,7 +32,6 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
@@ -54,10 +53,6 @@ public class BaseRecorder extends FunctionalTest {
 	protected boolean success = false;
 	protected String gstreamerDot;
 	protected String pipelineName;
-
-	public BaseRecorder(TestScenario testScenario) {
-		super(testScenario);
-	}
 
 	@After
 	public void storeGStreamerDot() throws IOException {

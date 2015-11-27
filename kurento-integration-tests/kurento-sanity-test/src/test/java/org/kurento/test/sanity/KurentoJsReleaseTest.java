@@ -17,7 +17,6 @@ package org.kurento.test.sanity;
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import org.junit.Test;
-import org.kurento.test.config.TestScenario;
 
 /**
  * Sanity test for kurento-js releases.
@@ -27,8 +26,7 @@ import org.kurento.test.config.TestScenario;
  */
 public class KurentoJsReleaseTest extends KurentoJsBase {
 
-	public KurentoJsReleaseTest(TestScenario testScenario) {
-		super(testScenario);
+	public KurentoJsReleaseTest() {
 
 		kurentoUrl = getProperty("kurento.release.url", DEFAULT_KURENTO_JS_URL);
 		log.debug("kurentoUrl = {}", kurentoUrl);

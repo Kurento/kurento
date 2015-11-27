@@ -51,10 +51,6 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerOnlyAudioTrackTest extends SimplePlayer {
 
-	public PlayerOnlyAudioTrackTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();
@@ -98,38 +94,38 @@ public class PlayerOnlyAudioTrackTest extends SimplePlayer {
 
 	@Test
 	public void testPlayerOnlyAudioTrackFileMp3() throws Exception {
-		testPlayer("file://" + getPathTestFiles() + "/audio/10sec/birds.mp3",
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/birds.mp3",
 				AUDIO_ONLY, 10);
 	}
 
 	@Test
 	public void testPlayerOnlyAudioTrackFileWav() throws Exception {
-		testPlayer("file://" + getPathTestFiles() + "/audio/10sec/counter.wav",
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/counter.wav",
 				AUDIO_ONLY, 10);
 	}
 
 	@Test
 	public void testPlayerOnlyAudioTrackFileFlac() throws Exception {
-		testPlayer("file://" + getPathTestFiles() + "/audio/10sec/cinema.flac",
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/cinema.flac",
 				AUDIO_ONLY, 10);
 	}
 
 	@Test
 	public void testPlayerOnlyAudioTrackFileOgg() throws Exception {
-		testPlayer("file://" + getPathTestFiles() + "/audio/10sec/fiware.ogg",
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/fiware.ogg",
 				AUDIO_ONLY, 10);
 	}
 
 	@Test
 	public void testPlayerOnlyAudioTrackFileM4a() throws Exception {
 		testPlayer(
-				"file://" + getPathTestFiles() + "/audio/10sec/left-right.m4a",
+				"file://" + getTestFilesPath() + "/audio/10sec/left-right.m4a",
 				AUDIO_ONLY, 10);
 	}
 
 	@Test
 	public void testPlayerOnlyAudioTrackFileWma() throws Exception {
-		testPlayer("file://" + getPathTestFiles() + "/audio/10sec/meet.wma",
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/meet.wma",
 				AUDIO_ONLY, 10);
 	}
 

@@ -12,18 +12,22 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.client.test;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.kurento.test.base.KurentoClientTest;
 
 /**
- * Custom annotation for finished tests.
+ * Base for API tests.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface FinishedTest {
+public class ApiBase extends KurentoClientTest {
+
+	public static final String URL_BARCODES = "http://files.kurento.org/video/filter/barcodes.webm";
+	public static final String URL_FIWARECUT = "http://files.kurento.org/video/filter/fiwarecut.webm";
+	public static final String URL_SMALL = "http://files.kurento.org/video/format/small.webm";
+	public static final String URL_PLATES = "http://files.kurento.org/video/filter/plates.webm";
+	public static final String URL_POINTER_DETECTOR = "http://files.kurento.org/video/filter/pointerDetector.mp4";
 
 }

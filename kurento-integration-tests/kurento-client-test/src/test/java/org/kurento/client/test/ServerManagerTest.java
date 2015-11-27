@@ -21,7 +21,6 @@ import org.kurento.client.ObjectCreatedEvent;
 import org.kurento.client.ServerManager;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.KurentoClientTest;
-import org.kurento.test.services.KurentoClientTestFactory;
 
 public class ServerManagerTest extends KurentoClientTest {
 
@@ -41,16 +40,17 @@ public class ServerManagerTest extends KurentoClientTest {
 
 		final Exchanger<MediaObject> exchanger = new Exchanger<>();
 
-		server.addObjectCreatedListener(new EventListener<ObjectCreatedEvent>() {
-			@Override
-			public void onEvent(ObjectCreatedEvent event) {
-				try {
-					exchanger.exchange(event.getObject());
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		server.addObjectCreatedListener(
+				new EventListener<ObjectCreatedEvent>() {
+					@Override
+					public void onEvent(ObjectCreatedEvent event) {
+						try {
+							exchanger.exchange(event.getObject());
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				});
 
 		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
@@ -91,8 +91,7 @@ public class ServerManagerTest extends KurentoClientTest {
 
 		new WebRtcEndpoint.Builder(pipeline).build();
 
-		KurentoClient otherKurentoClient = KurentoClientTestFactory
-				.createKurentoForTest();
+		KurentoClient otherKurentoClient = kms.createKurentoClient();
 
 		ServerManager serverManager = otherKurentoClient.getServerManager();
 

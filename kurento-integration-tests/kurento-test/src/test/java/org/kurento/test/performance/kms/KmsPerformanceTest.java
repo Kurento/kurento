@@ -32,7 +32,7 @@ import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.services.WebRtcConnector;
+import org.kurento.test.utils.WebRtcConnector;
 
 /**
  * <strong>Description</strong>: Performance test for KMS.<br/>
@@ -77,8 +77,7 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 	private MediaProcessingType mediaProcessingType;
 
-	public KmsPerformanceTest(TestScenario testScenario) {
-		super(testScenario);
+	public KmsPerformanceTest() {
 
 		setMonitorResultPath("./kms-results.csv");
 

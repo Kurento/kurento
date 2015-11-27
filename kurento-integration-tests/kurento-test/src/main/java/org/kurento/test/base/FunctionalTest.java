@@ -17,7 +17,6 @@ package org.kurento.test.base;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.test.browser.WebRtcTestPage;
-import org.kurento.test.config.TestScenario;
 
 /**
  * Functional tests.
@@ -27,9 +26,5 @@ import org.kurento.test.config.TestScenario;
  */
 @Category(SystemFunctionalTests.class)
 public class FunctionalTest extends KurentoClientBrowserTest<WebRtcTestPage> {
-
-	public FunctionalTest(TestScenario testScenario) {
-		super(testScenario);
-	}
 
 }

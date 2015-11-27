@@ -87,15 +87,13 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 
 	private int fakeClients;
 
-	public WebRtcScalabilityLatencyTest(TestScenario testScenario,
-			int fakeClients) {
-		super(testScenario);
+	public WebRtcScalabilityLatencyTest(int fakeClients) {
 		this.fakeClients = fakeClients;
 	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.BROWSER,

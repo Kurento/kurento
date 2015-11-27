@@ -73,10 +73,6 @@ public class CompositeWebRtcTest extends FunctionalTest {
 
 	private static int PLAYTIME = 5;
 
-	public CompositeWebRtcTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		// Test: 5 local Chrome's
@@ -88,19 +84,19 @@ public class CompositeWebRtcTest extends FunctionalTest {
 		test.addBrowser(BROWSER2, new Browser.Builder()
 				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/10sec/red.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/red.y4m").build());
 		test.addBrowser(BROWSER3, new Browser.Builder()
 				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/10sec/green.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/green.y4m").build());
 		test.addBrowser(BROWSER4, new Browser.Builder()
 				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/10sec/blue.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/blue.y4m").build());
 		test.addBrowser(BROWSER5, new Browser.Builder()
 				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/10sec/white.y4m").build());
+				.video(getTestFilesPath() + "/video/10sec/white.y4m").build());
 		return Arrays.asList(new Object[][] { { test } });
 	}
 

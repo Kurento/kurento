@@ -66,10 +66,6 @@ public class DispatcherPlayerTest extends FunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
 
-	public DispatcherPlayerTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

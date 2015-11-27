@@ -61,10 +61,6 @@ public class WebRtcSwitchTest extends FunctionalTest {
 	private static final int PLAYTIME = 5; // seconds
 	private static final int NUM_BROWSERS = 3;
 
-	public WebRtcSwitchTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromesAndFirefoxs(NUM_BROWSERS);

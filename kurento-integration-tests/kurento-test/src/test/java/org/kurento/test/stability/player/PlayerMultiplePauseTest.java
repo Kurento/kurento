@@ -55,10 +55,6 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerMultiplePauseTest extends StabilityTest {
 
-	public PlayerMultiplePauseTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

@@ -14,16 +14,12 @@
  */
 package org.kurento.test.base;
 
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
 import org.kurento.client.KurentoClient;
-import org.kurento.test.services.KurentoClientManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kurento.test.services.FakeKmsService;
+import org.kurento.test.services.KmsService;
+import org.kurento.test.services.Service;
 
 /**
  * Base for tests using kurento-client.
@@ -32,28 +28,28 @@ import org.slf4j.LoggerFactory;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 6.1.1
  */
-public class KurentoClientTest {
+public class KurentoClientTest extends KurentoTest {
 
-	protected static Logger log = LoggerFactory
-			.getLogger(KurentoClientTest.class);
+	public static @Service KmsService kms = new KmsService();
+	public static @Service KmsService fakeKms = new FakeKmsService();
 
-	@Rule
-	public TestName testName = new TestName();
-
-	protected KurentoClientManager kurentoClientManager;
 	protected KurentoClient kurentoClient;
 	protected KurentoClient fakeKurentoClient;
 
 	@Before
-	public void setupKurentoClient() throws IOException {
-		kurentoClientManager = new KurentoClientManager();
-		kurentoClient = kurentoClientManager.getKurentoClient();
-		fakeKurentoClient = kurentoClientManager.getFakeKurentoClient();
+	public void setupKurentoClient() {
+		kurentoClient = kms.getKurentoClient();
+		fakeKurentoClient = fakeKms.getKurentoClient();
 	}
 
 	@After
 	public void teardownKurentoClient() throws Exception {
-		kurentoClientManager.teardown();
+		if (kurentoClient != null) {
+			kurentoClient.destroy();
+		}
+		if (fakeKurentoClient != null) {
+			fakeKurentoClient.destroy();
+		}
 	}
 
 }

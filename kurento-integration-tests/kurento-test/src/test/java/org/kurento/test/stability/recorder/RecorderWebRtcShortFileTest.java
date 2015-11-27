@@ -75,10 +75,6 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 	private static final int THRESHOLD_MS = 8000; // ms
 	private static int numRecorders;
 
-	public RecorderWebRtcShortFileTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		numRecorders = getProperty("recorder.stability.shortfiles.numrecorders",

@@ -47,36 +47,26 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
 	private static final String BROWSER3 = "browser3";
 	private static final String BROWSER4 = "browser4";
 
-	public AlphaBlendingWebRtcTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		TestScenario test = new TestScenario();
 
-		test.addBrowser(
-				BROWSER1,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
-						.video(getPathTestFiles() + "/video/10sec/red.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER2,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
-						.video(getPathTestFiles() + "/video/10sec/green.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER3,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
-						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
-						.build());
+		test.addBrowser(BROWSER1, new Browser.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.webPageType(WebPageType.WEBRTC)
+				.video(getTestFilesPath() + "/video/10sec/red.y4m").build());
+		test.addBrowser(BROWSER2, new Browser.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.webPageType(WebPageType.WEBRTC)
+				.video(getTestFilesPath() + "/video/10sec/green.y4m").build());
+		test.addBrowser(BROWSER3, new Browser.Builder()
+				.browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
+				.webPageType(WebPageType.WEBRTC)
+				.video(getTestFilesPath() + "/video/10sec/blue.y4m").build());
 		test.addBrowser(BROWSER4,
 				new Browser.Builder().browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC)
-						.build());
+						.scope(BrowserScope.LOCAL)
+						.webPageType(WebPageType.WEBRTC).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -108,8 +98,8 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
 		alphaBlending.setPortProperties(0.4F, 0.4F, 7, 0.2F, 0.2F, hubPort3);
 
 		getPage(BROWSER1).subscribeLocalEvents("playing");
-		getPage(BROWSER1).initWebRtc(webRtcEPRed,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+		getPage(BROWSER1).initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_ONLY);
 
 		getPage(BROWSER2).subscribeLocalEvents("playing");
 		getPage(BROWSER2).initWebRtc(webRtcEPGreen,

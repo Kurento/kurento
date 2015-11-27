@@ -78,10 +78,6 @@ public class RecorderStopTest extends BaseRecorder {
 	private static final int PLAYTIME = 10; // seconds
 	private static final Color EXPECTED_COLOR = Color.GREEN;
 
-	public RecorderStopTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

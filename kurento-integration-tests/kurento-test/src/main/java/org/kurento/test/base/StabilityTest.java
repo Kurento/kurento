@@ -17,7 +17,6 @@ package org.kurento.test.base;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemStabilityTests;
 import org.kurento.test.browser.WebRtcTestPage;
-import org.kurento.test.config.TestScenario;
 
 /**
  * Stability tests.
@@ -28,8 +27,7 @@ import org.kurento.test.config.TestScenario;
 @Category(SystemStabilityTests.class)
 public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	public StabilityTest(TestScenario testScenario) {
-		super(testScenario);
+	public StabilityTest() {
 		setDeleteLogsIfSuccess(false);
 	}
 

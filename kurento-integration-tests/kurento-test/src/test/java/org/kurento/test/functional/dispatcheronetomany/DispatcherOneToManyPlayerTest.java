@@ -52,26 +52,22 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
 	private static final String BROWSER2 = "browser2";
 	private static final String BROWSER3 = "browser3";
 
-	public DispatcherOneToManyPlayerTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		TestScenario test = new TestScenario();
 
 		test.addBrowser(BROWSER1,
 				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.build());
+						.webPageType(WebPageType.WEBRTC)
+						.scope(BrowserScope.LOCAL).build());
 		test.addBrowser(BROWSER2,
 				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.build());
+						.webPageType(WebPageType.WEBRTC)
+						.scope(BrowserScope.LOCAL).build());
 		test.addBrowser(BROWSER3,
 				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.build());
+						.webPageType(WebPageType.WEBRTC)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -110,19 +106,19 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
 				eosLatch.countDown();
 			}
 		});
-		
+
 		// Test execution
 		getPage(BROWSER1).subscribeEvents("playing");
-		getPage(BROWSER1).initWebRtc(webRtcEP2,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
 		getPage(BROWSER2).subscribeEvents("playing");
-		getPage(BROWSER2).initWebRtc(webRtcEP1,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
 		getPage(BROWSER3).subscribeEvents("playing");
-		getPage(BROWSER3).initWebRtc(webRtcEP3,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
 		playerEP.play();
 

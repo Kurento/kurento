@@ -31,8 +31,7 @@ import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.browser.BrowserType;
 import org.kurento.test.config.TestConfiguration;
-import org.kurento.test.services.KurentoServicesTestHelper;
-import org.kurento.test.services.Shell;
+import org.kurento.test.utils.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,12 +238,12 @@ public class Docker implements Closeable {
 			if (configFilePath != null) {
 
 				String workspace = PropertiesManager.getProperty(
-						TestConfiguration.KURENTO_WORKSPACE_PROP,
-						TestConfiguration.KURENTO_WORKSPACE_DEFAULT);
+						TestConfiguration.TEST_WORKSPACE_PROP,
+						TestConfiguration.TEST_WORKSPACE_DEFAULT);
 
 				String workspaceHost = PropertiesManager.getProperty(
-						TestConfiguration.KURENTO_WORKSPACE_HOST_PROP,
-						TestConfiguration.KURENTO_WORKSPACE_HOST_DEFAULT);
+						TestConfiguration.TEST_WORKSPACE_HOST_PROP,
+						TestConfiguration.TEST_WORKSPACE_HOST_DEFAULT);
 
 				String hostConfigFilePath = Paths.get(workspaceHost)
 						.resolve(Paths.get(workspace)
@@ -261,7 +260,7 @@ public class Docker implements Closeable {
 
 		} else {
 
-			String testFilesPath = KurentoServicesTestHelper.getTestFilesPath();
+			String testFilesPath = KurentoTest.getTestFilesPath();
 			Volume testFilesVolume = new Volume(testFilesPath);
 
 			String workspacePath = Paths.get(KurentoTest.getTestDir())
@@ -436,8 +435,8 @@ public class Docker implements Closeable {
 		try {
 
 			String workspace = PropertiesManager.getProperty(
-					TestConfiguration.KURENTO_WORKSPACE_PROP,
-					TestConfiguration.KURENTO_WORKSPACE_DEFAULT);
+					TestConfiguration.TEST_WORKSPACE_PROP,
+					TestConfiguration.TEST_WORKSPACE_DEFAULT);
 
 			Path config = Files.createTempFile(Paths.get(workspace), "",
 					"-config.json", PosixFilePermissions.asFileAttribute(

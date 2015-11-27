@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kurento.test.grid.GridHandler;
-import org.kurento.test.services.SshConnection;
+import org.kurento.test.utils.SshConnection;
 
 /**
  * Internal utility for killing the active processes of a user in the Selenium

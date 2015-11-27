@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.utils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

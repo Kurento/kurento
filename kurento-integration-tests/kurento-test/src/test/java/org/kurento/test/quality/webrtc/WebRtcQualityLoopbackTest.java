@@ -32,11 +32,11 @@ import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPageType;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
+import org.kurento.test.config.AudioChannel;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.services.AudioChannel;
-import org.kurento.test.services.Recorder;
+import org.kurento.test.utils.Ffmpeg;
 
 /**
  * WebRTC in loopback using custom video and audio files.<br>
@@ -69,13 +69,9 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
 	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
-	public WebRtcQualityLoopbackTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
 				+ "/video/10sec/red.y4m";
 		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
 		TestScenario test = new TestScenario();
@@ -90,7 +86,7 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 	@Ignore
 	@Test
 	public void testWebRtcQualityLoopback() throws InterruptedException {
-		doTest(BrowserType.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
+		doTest(BrowserType.CHROME, getTestFilesPath() + "/video/10sec/red.y4m",
 				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
 				Color.RED);
 	}
@@ -128,8 +124,7 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 
 		// Assert audio quality
 		if (audioUrl != null) {
-			float realPesqMos = Recorder.getPesqMos(audioUrl,
-					AUDIO_SAMPLE_RATE);
+			float realPesqMos = Ffmpeg.getPesqMos(audioUrl, AUDIO_SAMPLE_RATE);
 			Assert.assertTrue(
 					"Bad perceived audio quality: PESQ MOS too low (expected="
 							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",

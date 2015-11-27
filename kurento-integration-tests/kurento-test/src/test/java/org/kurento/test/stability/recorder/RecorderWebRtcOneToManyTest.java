@@ -88,10 +88,6 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 	private static final int THRESHOLD_MS = 8000; // ms
 	private static int numViewers;
 
-	public RecorderWebRtcOneToManyTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		numViewers = getProperty("recorder.stability.one2many.numviewers",

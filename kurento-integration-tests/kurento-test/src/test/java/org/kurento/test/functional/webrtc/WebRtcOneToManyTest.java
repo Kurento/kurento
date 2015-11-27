@@ -73,10 +73,6 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 	private static int numViewers;
 	private SystemMonitorManager monitor;
 
-	public WebRtcOneToManyTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		numViewers = getProperty("webrtc.one2many.numviewers",
@@ -87,7 +83,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder()
 				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
 				.scope(BrowserScope.LOCAL)
-				.video(getPathTestFiles() + "/video/15sec/rgbHD.y4m").build());
+				.video(getTestFilesPath() + "/video/15sec/rgbHD.y4m").build());
 		test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder()
 				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
 				.scope(BrowserScope.LOCAL).numInstances(numViewers).build());

@@ -88,10 +88,6 @@ public class RecorderWebRtcTest extends BaseRecorder {
 
 	private static final int PLAYTIME = 20; // seconds
 
-	public RecorderWebRtcTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

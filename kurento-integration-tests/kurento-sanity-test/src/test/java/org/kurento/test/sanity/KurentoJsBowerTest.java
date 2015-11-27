@@ -14,15 +14,19 @@
  */
 package org.kurento.test.sanity;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.config.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.BOWER_KURENTO_CLIENT_TAG_PROP;
+import static org.kurento.test.config.TestConfiguration.BOWER_KURENTO_UTILS_TAG_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.BOWER_KURENTO_UTILS_TAG_PROP;
+
 import java.io.File;
 import java.io.IOException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.kurento.test.config.TestScenario;
-import org.kurento.test.services.KurentoServicesTestHelper;
-import org.kurento.test.services.Shell;
+import org.kurento.test.utils.Shell;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -33,15 +37,16 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class KurentoJsBowerTest extends KurentoJsBase {
 
-	public KurentoJsBowerTest(TestScenario testScenario) {
-		super(testScenario);
+	public KurentoJsBowerTest() {
 		kurentoUrl = "./";
 	}
 
 	@BeforeClass
 	public static void runBower() throws IOException {
-		String bowerClientTag = KurentoServicesTestHelper.getBowerKurentoClientTag();
-		String bowerUtilsTag = KurentoServicesTestHelper.getBowerKurentoUtilsTag();
+		String bowerClientTag = getProperty(BOWER_KURENTO_CLIENT_TAG_PROP,
+				BOWER_KURENTO_CLIENT_TAG_DEFAULT);
+		String bowerUtilsTag = getProperty(BOWER_KURENTO_UTILS_TAG_PROP,
+				BOWER_KURENTO_UTILS_TAG_DEFAULT);
 		if (!bowerClientTag.isEmpty()) {
 			bowerClientTag = "#" + bowerClientTag;
 		}
@@ -49,17 +54,26 @@ public class KurentoJsBowerTest extends KurentoJsBase {
 			bowerUtilsTag = "#" + bowerUtilsTag;
 		}
 
-		log.debug("Using bower to download kurento-client" + bowerClientTag + "\n"
-				+ Shell.runAndWait("sh", "-c", "bower install kurento-client" + bowerClientTag));
+		log.debug("Using bower to download kurento-client" + bowerClientTag
+				+ "\n" + Shell.runAndWait("sh", "-c",
+						"bower install kurento-client" + bowerClientTag));
 		log.debug("Using bower to download kurento-utils" + bowerUtilsTag + "\n"
-				+ Shell.runAndWait("sh", "-c", "bower install kurento-utils" + bowerUtilsTag));
+				+ Shell.runAndWait("sh", "-c",
+						"bower install kurento-utils" + bowerUtilsTag));
 
-		final String outputFolder = new ClassPathResource("static").getFile().getAbsolutePath() + File.separator;
+		final String outputFolder = new ClassPathResource("static").getFile()
+				.getAbsolutePath() + File.separator;
 
-		log.debug("Copying files from bower_components/kurento-utils/js to " + outputFolder
-				+ Shell.runAndWait("sh", "-c", "cp -r bower_components/kurento-utils/js " + outputFolder));
-		log.debug("Copying files from bower_components/kurento-client/js to " + outputFolder
-				+ Shell.runAndWait("sh", "-c", "cp -r bower_components/kurento-client/js " + outputFolder));
+		log.debug("Copying files from bower_components/kurento-utils/js to "
+				+ outputFolder
+				+ Shell.runAndWait("sh", "-c",
+						"cp -r bower_components/kurento-utils/js "
+								+ outputFolder));
+		log.debug("Copying files from bower_components/kurento-client/js to "
+				+ outputFolder
+				+ Shell.runAndWait("sh", "-c",
+						"cp -r bower_components/kurento-client/js "
+								+ outputFolder));
 	}
 
 	@AfterClass

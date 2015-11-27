@@ -26,12 +26,11 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.junit.Test;
-import org.kurento.test.services.KurentoMediaServerManager;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.base.KurentoClientTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WebSocketClientToKmsConnectionTest {
+public class WebSocketClientToKmsConnectionTest extends KurentoClientTest {
 
 	private static Logger log = LoggerFactory
 			.getLogger(WebSocketClientToKmsConnectionTest.class);
@@ -60,9 +59,6 @@ public class WebSocketClientToKmsConnectionTest {
 
 		for (int i = 0; i < 2; i++) {
 
-			KurentoMediaServerManager kms = KurentoServicesTestHelper
-					.startKurentoMediaServer(false);
-
 			String kmsUrl = kms.getWsUri();
 
 			log.info("Connecting to KMS in " + kmsUrl);
@@ -77,18 +73,17 @@ public class WebSocketClientToKmsConnectionTest {
 
 			wsSession.getRemote().sendString("xxxx");
 
-			kms.destroy();
+			kms.stopKms();
 
 			Thread.sleep(3000);
+
+			kms.start();
 
 		}
 	}
 
 	@Test
 	public void errorSendingClosedKmsTest() throws Exception {
-
-		KurentoMediaServerManager kms = KurentoServicesTestHelper
-				.startKurentoMediaServer(false);
 
 		String kmsUrl = kms.getWsUri();
 
@@ -104,7 +99,7 @@ public class WebSocketClientToKmsConnectionTest {
 
 		wsSession.getRemote().sendString("xxxx");
 
-		kms.destroy();
+		kms.stopKms();
 
 		Thread.sleep(3000);
 

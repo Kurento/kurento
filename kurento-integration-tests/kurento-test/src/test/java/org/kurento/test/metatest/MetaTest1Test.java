@@ -34,10 +34,6 @@ import org.openqa.selenium.WebElement;
 
 public class MetaTest1Test extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	public MetaTest1Test(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChrome();

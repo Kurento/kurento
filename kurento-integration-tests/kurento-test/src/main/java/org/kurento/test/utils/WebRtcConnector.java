@@ -1,4 +1,4 @@
-package org.kurento.test.services;
+package org.kurento.test.utils;
 
 import org.kurento.client.WebRtcEndpoint;
 

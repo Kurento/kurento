@@ -18,10 +18,6 @@ import org.kurento.test.base.FunctionalTest;
 
 public class EventTagTest extends FunctionalTest {
 
-	public EventTagTest() {
-		super(null);
-	}
-
 	private static int TAG_SIZE = 3;
 	private static long TIMEOUT = 15; // seconds
 

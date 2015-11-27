@@ -34,7 +34,7 @@ import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.VideoTagType;
-import org.kurento.test.services.Recorder;
+import org.kurento.test.utils.Ffmpeg;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -181,12 +181,12 @@ public class WebRtcTestPage extends WebPage {
 		if (eventType.equalsIgnoreCase("playing")
 				&& browser.getRecordAudio() > 0) {
 			if (browser.isRemote()) {
-				Recorder.recordRemote(
+				Ffmpeg.recordRemote(
 						GridHandler.getInstance().getNode(browser.getId()),
 						browser.getRecordAudio(), browser.getAudioSampleRate(),
 						browser.getAudioChannel());
 			} else {
-				Recorder.record(browser.getRecordAudio(),
+				Ffmpeg.record(browser.getRecordAudio(),
 						browser.getAudioSampleRate(),
 						browser.getAudioChannel());
 			}

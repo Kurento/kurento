@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemPerformanceTests;
 import org.kurento.test.browser.WebRtcTestPage;
-import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
 
 /**
@@ -38,9 +37,7 @@ public class PerformanceTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	protected String monitorResultPath;
 
-	public PerformanceTest(TestScenario testScenario) {
-		super(testScenario);
-
+	public PerformanceTest() {
 		setDeleteLogsIfSuccess(false);
 	}
 

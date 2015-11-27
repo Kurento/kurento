@@ -69,16 +69,12 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 	private static final int THRESHOLD_MS = 5000; // ms
 	private static int numViewers;
 
-	public RecorderPlayerOneToManyTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		numViewers = getProperty(
 				"recorder.stability.player.one2many.numrecorders",
 				NUM_RECORDERS);
-		return TestScenario.noBrowsers();
+		return TestScenario.empty();
 	}
 
 	@Test

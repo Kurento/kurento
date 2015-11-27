@@ -68,10 +68,6 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 
 	private static final int PLAYTIME = 10; // seconds
 
-	public RepositoryRecorderTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

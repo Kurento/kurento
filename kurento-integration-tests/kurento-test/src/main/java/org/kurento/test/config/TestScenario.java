@@ -174,7 +174,7 @@ public class TestScenario {
 		}
 	}
 
-	public static Collection<Object[]> noBrowsers() {
+	public static Collection<Object[]> empty() {
 		TestScenario test = new TestScenario();
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -286,7 +286,7 @@ public class TestScenario {
 
 	public static Collection<Object[]> localPresenterAndViewerRGB() {
 		// Test: Chrome in local (presenter and viewer)
-		String videoPath = KurentoClientBrowserTest.getPathTestFiles()
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
 				+ "/video/15sec/rgbHD.y4m";
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.PRESENTER,

@@ -51,23 +51,22 @@ import freemarker.template.Template;
 @Category(SanityTests.class)
 public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 
-	protected static final Logger log = LoggerFactory.getLogger(KurentoJsBase.class);
+	protected static final Logger log = LoggerFactory
+			.getLogger(KurentoJsBase.class);
 
 	protected static final String DEFAULT_KURENTO_JS_URL = "http://builds.kurento.org/dev/master/latest/";
 
-	protected String[] kurentoLibs = { "kurento-client", "kurento-client.min", "kurento-utils", "kurento-utils.min" };
+	protected String[] kurentoLibs = { "kurento-client", "kurento-client.min",
+			"kurento-utils", "kurento-utils.min" };
 
 	protected String kurentoUrl;
-
-	public KurentoJsBase(TestScenario testScenario) {
-		super(testScenario);
-	}
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		TestScenario test = new TestScenario();
 		test.addBrowser(BrowserConfig.BROWSER,
-				new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+				new Browser.Builder().browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -75,9 +74,11 @@ public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 	@Before
 	public void setup() {
 		try {
-			final String outputFolder = new ClassPathResource("static").getFile().getAbsolutePath() + File.separator;
+			final String outputFolder = new ClassPathResource("static")
+					.getFile().getAbsolutePath() + File.separator;
 
-			Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+			Configuration cfg = new Configuration(
+					Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 			cfg.setClassForTemplateLoading(KurentoJsBase.class, "/templates/");
 			Template template = cfg.getTemplate("kurento-client.html.ftl");
 
@@ -85,7 +86,8 @@ public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 			data.put("kurentoUrl", kurentoUrl);
 
 			for (String lib : kurentoLibs) {
-				Writer writer = new FileWriter(new File(outputFolder + lib + ".html"));
+				Writer writer = new FileWriter(
+						new File(outputFolder + lib + ".html"));
 				data.put("kurentoLib", lib);
 
 				if (lib.contains("utils")) {
@@ -105,7 +107,8 @@ public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 	}
 
 	public void doTest() {
-		String defaultUrl = getPage().getBrowser().getWebDriver().getCurrentUrl();
+		String defaultUrl = getPage().getBrowser().getWebDriver()
+				.getCurrentUrl();
 
 		for (String lib : kurentoLibs) {
 			String urlTest = defaultUrl + lib + ".html";
@@ -113,9 +116,12 @@ public class KurentoJsBase extends KurentoClientBrowserTest<WebPage> {
 
 			log.debug("Launching kurento-js sanity test against {}", urlTest);
 
-			String status = getPage().getBrowser().getWebDriver().findElement(By.id("status")).getAttribute("value");
+			String status = getPage().getBrowser().getWebDriver()
+					.findElement(By.id("status")).getAttribute("value");
 
-			Assert.assertTrue("Sanity test for " + lib + " failed (" + status + ")", status.equals("Ok"));
+			Assert.assertTrue(
+					"Sanity test for " + lib + " failed (" + status + ")",
+					status.equals("Ok"));
 		}
 	}
 

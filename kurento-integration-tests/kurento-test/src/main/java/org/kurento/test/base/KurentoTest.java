@@ -16,6 +16,8 @@ package org.kurento.test.base;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_NUMRETRIES_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_NUM_NUMRETRIES_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_DEFAULT;
@@ -26,17 +28,26 @@ import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_PROP;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.kurento.commons.ConfigFileManager;
 import org.kurento.test.config.Retry;
 import org.kurento.test.config.TestReport;
-import org.kurento.test.services.FailedTest;
-import org.kurento.test.services.FinishedTest;
-import org.kurento.test.services.KurentoTestWatcher;
+import org.kurento.test.config.TestScenario;
+import org.kurento.test.lifecycle.FailedTest;
+import org.kurento.test.lifecycle.FinishedTest;
+import org.kurento.test.lifecycle.KurentoBlockJUnit4ClassRunnerWithParametersFactory;
+import org.kurento.test.lifecycle.KurentoTestRunner;
+import org.kurento.test.lifecycle.KurentoTestWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +58,8 @@ import org.slf4j.LoggerFactory;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 6.1.1
  */
+@RunWith(KurentoTestRunner.class)
+@UseParametersRunnerFactory(KurentoBlockJUnit4ClassRunnerWithParametersFactory.class)
 public class KurentoTest {
 
 	@Rule
@@ -54,6 +67,14 @@ public class KurentoTest {
 
 	@Rule
 	public KurentoTestWatcher watcher = new KurentoTestWatcher();
+
+	@Parameter
+	public TestScenario testScenario;
+
+	@Parameters
+	public static Collection<Object[]> data() {
+		return TestScenario.empty();
+	}
 
 	protected static int numRetries = getProperty(TEST_NUMRETRIES_PROPERTY,
 			TEST_NUM_NUMRETRIES_DEFAULT);
@@ -70,7 +91,7 @@ public class KurentoTest {
 	protected static List<File> logFiles;
 	protected static boolean deleteLogsIfSuccess;
 
-	public static final String SEPARATOR = "+----------------------------------------------------------";
+	public static final String SEPARATOR = "+" + StringUtils.repeat("-", 70);
 
 	static {
 		ConfigFileManager.loadConfigFile(TEST_CONFIG_JSON_DEFAULT);
@@ -123,7 +144,6 @@ public class KurentoTest {
 				for (final File file : files) {
 					try {
 						if (file.isDirectory()) {
-
 							FileUtils.deleteDirectory(file);
 						} else {
 							file.delete();
@@ -139,8 +159,19 @@ public class KurentoTest {
 				}
 			}
 		}
-
 	}
+
+	// @Before
+	// public void setupKurentoTest() {
+	// logMessage("| TEST STARTING: " + getTestClassName() + "."
+	// + getTestMethodName());
+	// }
+	//
+	// @After
+	// public void teardownKurentoTest() {
+	// logMessage("| TEST FINISHED: " + getTestClassName() + "."
+	// + getTestMethodName());
+	// }
 
 	public TestReport getTestReport() {
 		return retry.getTestReport();
@@ -159,10 +190,6 @@ public class KurentoTest {
 	public static String getDefaultOutputFile(String suffix) {
 		return getDefaultOutputFolder().getAbsolutePath() + File.separator
 				+ getSimpleTestName() + suffix;
-	}
-
-	protected String getDefaultFileForRecording() {
-		return getDefaultOutputFile(".webm");
 	}
 
 	public static String getSimpleTestName() {
@@ -225,6 +252,16 @@ public class KurentoTest {
 		int countFiles = logFiles != null ? logFiles.size() : 0;
 		log.info("Logs files {}", countFiles);
 		return logFiles;
+	}
+
+	public static String getTestFilesPath() {
+		return getProperty(TEST_FILES_PROP, TEST_FILES_DEFAULT);
+	}
+
+	public static void logMessage(String message) {
+		log.info(SEPARATOR);
+		log.info(message);
+		log.info(SEPARATOR);
 	}
 
 }

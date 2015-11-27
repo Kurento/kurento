@@ -45,32 +45,22 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
 	private static final String BROWSER2 = "browser2";
 	private static final String BROWSER3 = "browser3";
 
-	public DispatcherOneToManyWebRtcTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		TestScenario test = new TestScenario();
 
-		test.addBrowser(
-				BROWSER1,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/green.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER2,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
-						.build());
-		test.addBrowser(
-				BROWSER3,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL)
-						.video(getPathTestFiles() + "/video/10sec/red.y4m")
-						.build());
+		test.addBrowser(BROWSER1, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getTestFilesPath() + "/video/10sec/green.y4m").build());
+		test.addBrowser(BROWSER2, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getTestFilesPath() + "/video/10sec/blue.y4m").build());
+		test.addBrowser(BROWSER3, new Browser.Builder()
+				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+				.scope(BrowserScope.LOCAL)
+				.video(getTestFilesPath() + "/video/10sec/red.y4m").build());
 
 		return Arrays.asList(new Object[][] { { test } });
 	}
@@ -99,16 +89,16 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
 		dispatcherOneToMany.setSource(hubPort1);
 
 		getPage(BROWSER1).subscribeEvents("playing");
-		getPage(BROWSER1).initWebRtc(webRtcEP1,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+		getPage(BROWSER1).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
 		getPage(BROWSER2).subscribeEvents("playing");
-		getPage(BROWSER2).initWebRtc(webRtcEP2,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+		getPage(BROWSER2).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
 		getPage(BROWSER3).subscribeEvents("playing");
-		getPage(BROWSER3).initWebRtc(webRtcEP3,
-				WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+		getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
 
 		Thread.sleep(PLAYTIME * 1000);
 

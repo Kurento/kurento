@@ -76,10 +76,6 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
 	private static final int PLAYTIME = 20; // seconds
 
-	public RecorderSwitchPlayerTest(TestScenario testScenario) {
-		super(testScenario);
-	}
-
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
 		return TestScenario.localChromeAndFirefox();

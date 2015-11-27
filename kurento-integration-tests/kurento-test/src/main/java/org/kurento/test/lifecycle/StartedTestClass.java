@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,21 +12,19 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.services;
+package org.kurento.test.lifecycle;
 
-import java.util.Random;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * Random number generator.
+ * Custom annotation for started test class (called before any tests have been
+ * run).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.5
+ * @since 6.1.1
  */
-public class Randomizer {
-
-	public static int getInt(int lowerbound, int upperbound) {
-		Random rand = new Random(System.nanoTime());
-		return rand.nextInt(upperbound - lowerbound) + lowerbound;
-	}
+@Retention(RetentionPolicy.RUNTIME)
+public @interface StartedTestClass {
 
 }

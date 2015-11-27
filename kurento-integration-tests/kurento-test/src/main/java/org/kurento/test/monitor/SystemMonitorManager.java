@@ -19,9 +19,9 @@ import static org.kurento.test.config.TestConfiguration.DEFAULT_MONITOR_RATE_DEF
 import static org.kurento.test.config.TestConfiguration.DEFAULT_MONITOR_RATE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
-import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_LOGIN_PROP;
-import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_PASSWD_PROP;
-import static org.kurento.test.config.TestConfiguration.KURENTO_KMS_PEM_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_LOGIN_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_PASSWD_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_PEM_PROP;
 import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_DEFAULT;
 import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_PROP;
 
@@ -45,7 +45,7 @@ import org.kurento.commons.ClassPath;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.net.RemoteService;
 import org.kurento.test.browser.WebPage;
-import org.kurento.test.services.SshConnection;
+import org.kurento.test.utils.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,9 +103,9 @@ public class SystemMonitorManager {
 
 			if (isKmsRemote) {
 
-				String kmsLogin = getProperty(KURENTO_KMS_LOGIN_PROP);
-				String kmsPasswd = getProperty(KURENTO_KMS_PASSWD_PROP);
-				String kmsPem = getProperty(KURENTO_KMS_PEM_PROP);
+				String kmsLogin = getProperty(KMS_LOGIN_PROP);
+				String kmsPasswd = getProperty(KMS_PASSWD_PROP);
+				String kmsPem = getProperty(KMS_PEM_PROP);
 
 				startRemoteMonitor(wsUri, kmsLogin, kmsPasswd, kmsPem);
 
