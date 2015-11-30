@@ -47,6 +47,10 @@
 #    URL where kms can be reached. Only needed when KMS_AUTOSTART==false.
 #    KMS should be reacheble from within the containers.
 #
+# MAVEN_LOCAL_REPOSITORY
+#    Optional
+#    A folder to host the maven local repository. Will be mounted as
+#    a volume within the container
 
 # Test autostart KMS
 
@@ -56,6 +60,7 @@
 [ -n "$3" ] && RECORD_TEST=$3
 
 [ -z "$RECORD_TEST" ] && RECORD_TEST="false"
+[ -z "$MAVEN_LOCAL_REPOSITORY" ] && MAVEN_LOCAL_REPOSITORY="$WORKSPACE/m2"
 
 # Set constants and environment
 PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
@@ -97,6 +102,7 @@ MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_PREFIX*"
 docker run --rm \
   --name $BUILD_TAG-INTEGRATION \
   -v /var/lib/jenkins/test-files:/var/lib/test-files \
+  -v $MAVEN_LOCAL_REPOSITORY:/root/.m2 \
   -v $MAVEN_SETTINGS:/opt/kurento-settings.xml \
   -v $KURENTO_SCRIPTS_HOME:/opt/adm-scripts \
   -v $WORKSPACE:$TEST_HOME \
