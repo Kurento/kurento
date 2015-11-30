@@ -35,7 +35,7 @@ mavenOpts="$mavenOpts -U"
 # Execute capability test
 
 POM_FILE=$WORKSPACE/$PROJECT_PATH/pom.xml
-if [ -f $POM_FILE ]; then
+if [ -n $PROJECT_PATH -a -f $POM_FILE ]; then
   mvn --settings $MAVEN_SETTINGS -pl $PROJECT_PATH -am verify $mavenOpts $MAVEN_OPTS
 else
   mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS

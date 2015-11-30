@@ -117,6 +117,6 @@ docker run --rm \
   -w $TEST_HOME \
   -u "root" \
   kurento/dev-integration:jdk-8-node-0.12 \
-  /opt/adm-scripts/kurento_capability_test.sh $PROJECT_PATH || status=$?
+  /opt/adm-scripts/kurento_capability_test.sh || status=$?
 
 exit $status
