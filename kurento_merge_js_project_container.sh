@@ -4,6 +4,11 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 # KURENTO_PROJECT string
 #   Name of the project to be merged
 #
+# BASE_NAME
+#   Optional
+#   Name of the artifact.
+#   Default: PROJECT_NAME
+#
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
@@ -23,6 +28,8 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 [ -z "$KURENTO_PROJECT" ] && exit 1
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
 
+[ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
+
 # Verify project structure
 [ -f package.json ] || exit 1
 
@@ -35,6 +42,7 @@ docker run \
   -v $KEY:/opt/id_rsa \
   -v $CERT:/opt/jenkins.crt \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
+  -e "BASE_NAME=$BASE_NAME" \
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
   -e "MAVEN_KURENTO_SNAPSHOTS=$MAVEN_KURENTO_SNAPSHOTS" \
   -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
