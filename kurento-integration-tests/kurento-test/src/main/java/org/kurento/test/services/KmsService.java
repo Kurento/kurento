@@ -139,6 +139,8 @@ public class KmsService extends TestService {
 		this.kmsAutostartProp = KMS_AUTOSTART_PROP;
 		this.kmsAutostartDefault = KMS_AUTOSTART_DEFAULT;
 		this.kmsWsUriProp = KMS_WS_URI_PROP;
+		
+		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));		
 	}
 
 	public KmsService(String kmsLoginProp, String kmsPasswdProp,
@@ -148,15 +150,13 @@ public class KmsService extends TestService {
 		this.kmsPemProp = kmsPemProp;
 		this.kmsAutostartProp = kmsAutostartProp;
 		this.kmsWsUriProp = kmsWsUriProp;
+		
+		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
 
 	@Override
 	public void start() {
 		super.start();
-
-		if (wsUri == null) {
-			setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
-		}
 
 		isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1") && !isKmsDocker;
@@ -795,6 +795,9 @@ public class KmsService extends TestService {
 	}
 
 	public void setWsUri(String wsUri) {
+		
+		log.debug("---------> Setting property "+KMS_WS_URI_PROP_EXPORT+"="+wsUri);
+		
 		System.setProperty(KMS_WS_URI_PROP_EXPORT, wsUri);
 		this.wsUri = wsUri;
 	}
