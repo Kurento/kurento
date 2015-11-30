@@ -62,10 +62,6 @@
 [ -z "$RECORD_TEST" ] && RECORD_TEST="false"
 [ -z "$MAVEN_LOCAL_REPOSITORY" ] && MAVEN_LOCAL_REPOSITORY="$WORKSPACE/m2"
 
-# Set constants and environment
-PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-echo "Found public IP: $PUBLIC_IP"
-
 # Create test files container
 TEST_FILES_NAME="$BUILD_TAG-TEST-FILES"
 docker run \
