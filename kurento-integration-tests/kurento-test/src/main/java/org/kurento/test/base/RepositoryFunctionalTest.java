@@ -14,6 +14,7 @@
  */
 package org.kurento.test.base;
 
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
@@ -71,7 +72,8 @@ public class RepositoryFunctionalTest
 
 	public Repository repository;
 
-	public RepositoryFunctionalTest() {
+	@Before
+	public void setupRepository() {
 		webServer.setWebServerClass(RepositoryWebServer.class);
 		repository = (Repository) webServer.getContext().getBean("repository");
 	}

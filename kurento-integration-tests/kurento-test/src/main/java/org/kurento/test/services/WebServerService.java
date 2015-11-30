@@ -70,7 +70,7 @@ public class WebServerService extends TestService {
 
 	private void stopContext() {
 		if (context != null && context.isRunning()) {
-			context.close();
+			context.stop();
 			context.close();
 		}
 	}
