@@ -71,9 +71,10 @@ docker run \
     -w /var/lib/jenkins/test-files \
      kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento
 
-# Create temporary folder for container
+# Create temporary folders
 TEST_WORKSPACE=$WORKSPACE/tmp
-[ -d $TEST_WORKSPACE] || mkdir $TEST_WORKSPACE
+[ -d $TEST_WORKSPACE] || mkdir -p $TEST_WORKSPACE
+[ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
 
 # Craete Integration container
 TEST_HOME=/opt/kurento-java
