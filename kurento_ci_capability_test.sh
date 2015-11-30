@@ -92,7 +92,7 @@ MAVEN_OPTS="$MAVEN_OPTS -Dtest.kms.docker.image.name=kurento/kurento-media-serve
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.scope=docker"
 MAVEN_OPTS="$MAVEN_OPTS -Dtest.selenium.record=$RECORD_TEST"
 MAVEN_OPTS="$MAVEN_OPTS -Dgroups=$TEST_GROUP"
-MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_PREFIX*"
+MAVEN_OPTS="$MAVEN_OPTS -Dtest=$TEST_NAME"
 
 # Execute Presenter test
 docker run --rm \
