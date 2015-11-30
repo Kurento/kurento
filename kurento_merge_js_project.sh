@@ -24,6 +24,8 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 # Verify mandatory parameters
 [ -z "$KURENTO_PROJECT" ] && exit 1
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
+[ -z "$KEY" ] && echo "No key specified"
+[ -z "$CERT" ] && echo "No cert specified"
 
 # Verify project structure
 [ -f package.json ] || exit 1
@@ -32,6 +34,8 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 kurento_check_version.sh true
 kurento_mavenize_js_project.sh $KURENTO_PROJECT
 # Deploy to snapshot or kurento release
+export KEY
+export CERT
 export SNAPSHOT_REPOSITORY=$MAVEN_KURENTO_SNAPSHOTS
 export RELEASE_REPOSITORY=$MAVEN_KURENTO_RELEASES
 kurento_maven_deploy.sh

@@ -52,4 +52,6 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \
-      /opt/adm-scripts/kurento_merge_js_project.sh
+      /opt/adm-scripts/kurento_merge_js_project.sh || status=$?
+
+exit $status
