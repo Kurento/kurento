@@ -11,7 +11,7 @@
 
 if [ -n $WORKSPACE ]; then
   echo "Making all files in $WORKSPACE owned by jenkins"
-  chown -R jenkins:jenkins $WORKSPACE
+  sudo chown -R jenkins:jenkins $WORKSPACE
 else
   echo "No WORKSPACE env variable defined"
 fi
