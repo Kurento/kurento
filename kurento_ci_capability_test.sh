@@ -1,15 +1,64 @@
 #!/bin/bash
 
+# This tool uses a set of variables expected to be exported by tester
+# TEST_GROUP string
+#    Mandatory
+#    Identifies the test category to run
+#
+# TEST_NAME regexp
+#    Optional
+#    Identifies the tests within the category to run. Wildcards can be used.
+#    When no present, all tests within the category are run
+#
+# PROJECT_PATH string
+#    Optional
+#    Identifies the module to execute within a reactor project.
+#
+# WORKSPACE path
+#    Mandatory
+#    Jenkins workspace path. This variable is expected to be exported by
+#    script caller.
+#
+# BUILD_TAG string
+#    Mandatory
+#    A name to uniquely identify containers created within this job
+#
+# MAVEN_SETTINGS path
+#     Mandatory
+#     Location of the settings.xml file used by maven
+#
+# RECORD_TEST [ true | false ]
+#    Optional
+#    Activates session recording in case ffmpeg is available
+#    DEFAULT: false
+#
+# KMS_AUTOSTART [ false | test | testsuite ]
+#    Optional
+#    How will kms be managed from tests
+#    DEFAULT: test
+#
+# KMS_SCOPE [ local | docker ]
+#    Optional
+#    The scope for kms when KMS_AUTOSTART==test || KMS_AUTOSTART==testsuite
+#    DEFAULT: docker
+#
+# KMS_WS_URI url
+#    Optional
+#    URL where kms can be reached. Only needed when KMS_AUTOSTART==false.
+#    KMS should be reacheble from within the containers.
+#
+
 # Test autostart KMS
 
+# For backwards compatibility
 if [ $# -lt 2 ]
 then
   echo "Usage: $0 <groups> <test> [<record_tests>]"
   exit 1
 fi
 
-TEST_GROUP=$1
-TEST_PREFIX=$2
+[ -n $1 ] && TEST_GROUP=$1
+[ -n $2 ] && TEST_PREFIX=$2
 
 if [ -n "$3" ]; then
   TEST_SELENIUM_RECORD=$3
@@ -64,9 +113,10 @@ docker run --rm \
   -e "WORKSPACE=$TEST_HOME" \
   -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
   -e "MAVEN_OPTS=$MAVEN_OPTS" \
+  -e "PROJECT_PATH=$PROJECT_PATH" \
   -w $TEST_HOME \
   -u "root" \
   kurento/dev-integration:jdk-8-node-0.12 \
-  /opt/adm-scripts/kurento_capability_test.sh kurento-integration-tests/kurento-test || status=$?
+  /opt/adm-scripts/kurento_capability_test.sh || status=$?
 
 exit $status
