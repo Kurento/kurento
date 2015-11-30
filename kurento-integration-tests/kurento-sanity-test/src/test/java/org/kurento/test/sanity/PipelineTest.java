@@ -19,7 +19,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.kurento.client.MediaPipeline;
 import org.kurento.commons.testing.SanityTests;
-import org.kurento.test.base.KurentoClientTest;
+import org.kurento.test.base.KurentoClientBrowserTest;
+import org.kurento.test.browser.WebPage;
 
 /**
  * Sanity test of a Media Pipeline creation and release.
@@ -28,7 +29,9 @@ import org.kurento.test.base.KurentoClientTest;
  * @since 4.2.5
  */
 @Category(SanityTests.class)
-public class PipelineTest extends KurentoClientTest {
+public class PipelineTest extends KurentoClientBrowserTest<WebPage> {
+
+	// TODO: this test should extend KurentoClientTest
 
 	@Test
 	public void basicPipelineTest() {
