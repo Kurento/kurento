@@ -64,7 +64,7 @@ import org.kurento.test.config.TestScenario;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public class PlayerWebRtcTest extends SimplePlayer {
+public class PlayerWebRtcTest extends FunctionalPlayerTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {

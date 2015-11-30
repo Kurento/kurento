@@ -60,7 +60,7 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class PlayerOnlyVideoTrackTest extends SimplePlayer {
+public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
