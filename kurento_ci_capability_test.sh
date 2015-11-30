@@ -73,7 +73,7 @@ docker run \
 
 # Create temporary folders
 TEST_WORKSPACE=$WORKSPACE/tmp
-[ -d $TEST_WORKSPACE] || mkdir -p $TEST_WORKSPACE
+[ -d $TEST_WORKSPACE ] || mkdir -p $TEST_WORKSPACE
 [ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
 
 # Craete Integration container
