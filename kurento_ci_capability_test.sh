@@ -73,7 +73,7 @@ docker run \
 
 # Create temporary folder for container
 TEST_WORKSPACE=$WORKSPACE/tmp
-mkdir $TEST_WORKSPACE
+[ -d $TEST_WORKSPACE] || mkdir $TEST_WORKSPACE
 
 # Craete Integration container
 TEST_HOME=/opt/kurento-java
