@@ -19,6 +19,8 @@ echo "##################### EXECUTE: kurento_merge_js_project ##################
 # BOWER_REPOSITORY url
 #   URL to bower repository
 
+PATH=$PATH:$(realpath $(dirname "$0"))
+
 # Verify mandatory parameters
 [ -z "$KURENTO_PROJECT" ] && exit 1
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1

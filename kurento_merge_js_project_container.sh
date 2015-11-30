@@ -43,5 +43,5 @@ docker run \
   -e "CERT=/opt/jenkins.crt" \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
-  kurento/dev-integration:jdk-8-node-0.12 \
-  /opt/adm-scripts/kurento_merge_js_project.sh
+    kurento/dev-integration:jdk-8-node-0.12 \
+      /opt/adm-scripts/kurento_merge_js_project.sh
