@@ -33,4 +33,10 @@ mavenOpts="$mavenOpts -U"
   (cd kurento-java &&  mvn --settings $MAVEN_SETTINGS clean install -Pdeploy -U -Dmaven.test.skip=true && cd ..)
 
 # Execute capability test
-mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS
+
+POM_FILE=$WORKSPACE/$PROJECT_PATH/pom.xml
+if [ -f $POM_FILE ]; then
+  mvn --settings $MAVEN_SETTINGS -pl $POM_FILE -am verify $mavenOpts $MAVEN_OPTS
+else
+  mvn --settings $MAVEN_SETTINGS verify $mavenOpts $MAVEN_OPTS
+fi
