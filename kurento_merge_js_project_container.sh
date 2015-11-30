@@ -33,6 +33,12 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 # Verify project structure
 [ -f package.json ] || exit 1
 
+cat >./.root-config <<EOL
+StrictHostKeyChecking no
+User jenkins
+IdentityFile /opt/id_rsa
+EOL
+
 CONTAINER_WORKSPACE=/opt/kurento
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
@@ -41,6 +47,7 @@ docker run \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
   -v $KEY:/opt/id_rsa \
   -v $CERT:/opt/jenkins.crt \
+  -v $PWD/.root-config:/root/.ssh/config \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "BASE_NAME=$BASE_NAME" \
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
