@@ -16,19 +16,22 @@ echo "##################### EXECUTE: kurento_maven_checkout ####################
 #     All valid references found will be cloned.
 #
 # GERRIT_PROJECT
-#     Project  where reference specified by GERRIT_NEWREV belongs to.
+#     Project  where reference specified by GERRIT_NEWREV belongs to
 #
 # GERRIT_USER
-#     Gerrit username required to clone projects
+#     Gerrit username required to clone projects. Default value is current
+#     user
 #
 # GERRIT_KEY
 #     Gerrit key used by authenticate with GERRIT server
 #
 # GERRIT_HOST
 #     IP address or DNS name of host where GERRIT_PROJECT is hosted
+#     Default value is code.kurento.org
 #
 # GERRIT_PORT
-#     TCP port where gerit server hosting GERRIT_PROJECT listens for requests
+#     TCP port where gerit server hosting GERRIT_PROJECT listens for requests.
+#     Default value is 12345
 #
 # KURENTO_PROJECTS
 #     A list of projects hosted in the same server as GERRIT_PROJECT that are
@@ -41,8 +44,8 @@ echo "##################### EXECUTE: kurento_maven_checkout ####################
 #     Maven settings
 #
 # Verify mandatory parameters
-[ -z "$GERRIT_HOST" ] && { echo "Mandatory parameter GERRIT_HOST: empty"; exit 1; }
-[ -z "$GERRIT_PORT" ] && { echo "Mandatory parameter GERRIT_PORT: empty"; exit 1; }
+[ -z "$GERRIT_HOST" ] && GERRIT_HOST=code.kurento.org
+[ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
 
 [ -z "$GERRIT_NEWREV" ] && GERRIT_NEWREV=master
 [ -z "$GERRIT_USER" ] && GERRIT_USER=$(whoami)
