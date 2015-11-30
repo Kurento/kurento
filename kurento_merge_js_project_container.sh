@@ -29,7 +29,7 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 CONTAINER_WORKSPACE=/opt/kurento
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
-  -- rm \
+  --rm \
   -v $KURENTO_SCRIPTS_HOME:/opt/adm-scripts \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
   -v $KEY:/opt/id_rsa \
@@ -43,5 +43,5 @@ docker run \
   -e "CERT=/opt/jenkins.crt" \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
-  dev-integration:jdk-8-node-0.12 \
+  kurento/dev-integration:jdk-8-node-0.12 \
   /opt/adm-scripts/kurento_merge_js_project.sh
