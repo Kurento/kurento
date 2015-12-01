@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-echo "##################### EXECUTE: mavenice-js-module #####################"
+echo "##################### EXECUTE: kurento_mavenice_js_project #####################"
 
 # PROJECT_NAME string
 #		Project name used in pom.xml
@@ -14,11 +14,13 @@ echo "##################### EXECUTE: mavenice-js-module #####################"
 
 # Get input parameters for backward compatibility
 [ -n "$1" ] && PROJECT_NAME=$1
-[ -n "$2" ] && MAVEN_SHELL_SCRIPT=$2 || MAVEN_SHELL_SCRIPT="cd \${basedir} ; npm -d install || exit 1 ; node_modules/.bin/grunt || exit 1 ; node_modules/.bin/grunt sync:bower || exit 1 ; mkdir -p src/main/resources/META-INF/resources/js/ || exit 1 ; cp dist/* src/main/resources/META-INF/resources/js/"
-[ -n "$3" ] && ASSEMBLY_FILE=$3 || ASSEMBLY_FILE="assembly.xml"
+[ -n "$2" ] && MAVEN_SHELL_SCRIPT=$2
+[ -n "$3" ] && ASSEMBLY_FILE=$3
 
 # Validate parameters
 [ -z "$PROJECT_NAME" ] && exit 1
+[ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="cd \${basedir} ; npm -d install || exit 1 ; node_modules/.bin/grunt || exit 1 ; node_modules/.bin/grunt sync:bower || exit 1 ; mkdir -p src/main/resources/META-INF/resources/js/ || exit 1 ; cp dist/* src/main/resources/META-INF/resources/js/"
+[ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
 [ -f package.json ] || exit 1
