@@ -955,7 +955,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
       G_CALLBACK (sendrecv_fakesink_hand_off), hod_video);
 
   g_object_set (G_OBJECT (audiotestsrc), "is-live", TRUE, NULL);
-  g_object_set (G_OBJECT (audiotestsrc), "is-live", TRUE, NULL);
+  g_object_set (G_OBJECT (videotestsrc), "is-live", TRUE, NULL);
 
   caps = gst_caps_new_simple ("audio/x-raw", "rate", G_TYPE_INT, 8000, NULL);
   g_object_set (capsfilter, "caps", caps, NULL);
