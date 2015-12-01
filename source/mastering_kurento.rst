@@ -50,6 +50,14 @@ Kurento Modules
 
    Kurento Modules <mastering/kurento_modules>
 
+WebRTC Statistics
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+   WebRTC Statistics <mastering/webrtc_statistics>
+
 Kurento Java Client JavaDoc
 ===========================
 
