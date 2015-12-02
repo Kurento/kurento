@@ -48,9 +48,6 @@ User jenkins
 IdentityFile $CONTAINER_KEY
 EOL
 
-chown root:root ./.root-config
-chmod 600 ./.root-config
-
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
   --rm \
@@ -75,6 +72,6 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \
-      /opt/adm-scripts/kurento_merge_js_project.sh || status=$?
+      /opt/adm-scripts/kurento_merge_js_project_entrypoint.sh || status=$?
 
 exit $status
