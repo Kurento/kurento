@@ -10,6 +10,12 @@ echo "##################### EXECUTE: kurento_ci_container_mvn ##################
 #    Mandatory
 #    A name to uniquely identify containers created within this job
 #
+# BOWER_RELEASE_URL
+#    Optional
+#    Kurento javascript modules are downloaded from this URL when provided
+#    instead of using bower.
+#    DEFAULT: none
+#
 # DOCKER_HUB_IMAGE
 #    Optional
 #    Docker image used for Selenium HUB containers.
@@ -140,6 +146,7 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.selenium.record=$RECORD_TEST"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 [ -n "$TEST_GROUP" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dgroups=$TEST_GROUP"
 [ -n "$TEST_NAME" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
+[ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dbower.release.url=$BOWER_RELEASE_URL"
 
 # Execute Presenter test
 docker run --rm \
