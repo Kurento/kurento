@@ -705,7 +705,7 @@ public class KmsService extends TestService {
 	}
 
 	public KurentoClient getKurentoClient() {
-		if (kurentoClient == null && isKmsStarted) {
+		if (kurentoClient == null) {
 			kurentoClient = createKurentoClient();
 		}
 		return kurentoClient;
