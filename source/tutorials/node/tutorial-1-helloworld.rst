@@ -102,14 +102,14 @@ media pipeline is illustrated in the following picture:
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
-At the server-side we use a Java EE application server consuming the
-**Kurento Java Client** API to control **Kurento Media Server** capabilities.
-All in all, the high level architecture of this demo is three-tier. To
-communicate these entities, two WebSockets are used. First, a WebSocket is
-created between client and application server to implement a custom signaling
-protocol. Second, another WebSocket is used to perform the communication
-between the Kurento Java Client and the Kurento Media Server. This
-communication takes place using the **Kurento Protocol**. For further
+At the server-side we use a Node.js application server consuming the
+**Kurento JavaScript Client** API to control **Kurento Media Server**
+capabilities. All in all, the high level architecture of this demo is
+three-tier. To communicate these entities, two WebSockets are used. First, a
+WebSocket is created between client and application server to implement a
+custom signaling protocol. Second, another WebSocket is used to perform the
+communication between the Kurento Java Client and the Kurento Media Server.
+This communication takes place using the **Kurento Protocol**. For further
 information on it, please see this
 :doc:`page <../../mastering/kurento_protocol>` of the documentation.
 
