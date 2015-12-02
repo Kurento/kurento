@@ -14,6 +14,7 @@
  */
 package org.kurento.test.services;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_LOGIN_PROP;
@@ -36,6 +37,8 @@ public class FakeKmsService extends KmsService {
 		this.kmsAutostartProp = FAKE_KMS_AUTOSTART_PROP;
 		this.kmsAutostartDefault = FAKE_KMS_AUTOSTART_DEFAULT;
 		this.kmsWsUriProp = FAKE_KMS_WS_URI_PROP;
+		
+		setWsUri(getProperty(kmsWsUriProp));
 	}
 
 }
