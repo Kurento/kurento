@@ -69,6 +69,7 @@ docker run \
   -e "BUILDS_HOST=$BUILDS_HOST" \
   -e "KEY=$CONTAINER_KEY" \
   -e "CERT=/opt/jenkins.crt" \
+  -e "SSH_CONFIG=$CONTAINER_SSH_CONFIG" \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \

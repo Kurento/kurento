@@ -12,8 +12,11 @@ fi
 
 if [ -f /root/.ssh/config ]; then
   echo "Set correct owner & permissions to /root/.ssh/config file"
-  chown root:root /root/.ssh/config
-  chown 600 /root/.ssh/config
+  chown root:root $SSH_CONFIG
+  chmod 600 $SSH_CONFIG
+  chown root:root $KEY
+  chmod 600 $KEY
+  ls -la /root
   ls -la /root/.ssh
   ls -la /opt
 fi
