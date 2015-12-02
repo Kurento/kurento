@@ -54,12 +54,15 @@ public class KurentoJsBowerTest extends KurentoJsBase {
 			bowerUtilsTag = "#" + bowerUtilsTag;
 		}
 
-		log.debug("Using bower to download kurento-client" + bowerClientTag
-				+ "\n" + Shell.runAndWait("sh", "-c",
-						"bower install kurento-client" + bowerClientTag));
+		log.debug(
+				"Using bower to download kurento-client" + bowerClientTag + "\n"
+						+ Shell.runAndWait("sh", "-c",
+								"bower install --allow-root kurento-client"
+										+ bowerClientTag));
 		log.debug("Using bower to download kurento-utils" + bowerUtilsTag + "\n"
 				+ Shell.runAndWait("sh", "-c",
-						"bower install kurento-utils" + bowerUtilsTag));
+						"bower install --allow-root kurento-utils"
+								+ bowerUtilsTag));
 
 		final String outputFolder = new ClassPathResource("static").getFile()
 				.getAbsolutePath() + File.separator;
