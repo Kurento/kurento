@@ -24,4 +24,5 @@ if [ -f /root/.ssh/config ]; then
   ls -la /opt
 fi
 
-exec "$BUILD_COMMAND"
+echo "Running command $BUILD_COMMAND"
+$BUILD_COMMAND
