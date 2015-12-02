@@ -138,9 +138,8 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.files=/opt/test-files/kurento"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.selenium.scope=docker"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.selenium.record=$RECORD_TEST"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dgroups=$TEST_GROUP"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
-
+[ -n "$TEST_GROUP" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dgroups=$TEST_GROUP"
+[ -n "$TEST_NAME" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
 
 # Execute Presenter test
 docker run --rm \
