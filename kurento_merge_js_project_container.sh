@@ -34,10 +34,12 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 [ -f package.json ] || exit 1
 
 # Parameters relative to container filesystem
+CONTAINER_WORKSPACE=/opt/kurento
 CONTAINER_KEY=/opt/id_rsa
 CONTAINER_CERT=/opt/jenkins.crt
 CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
+CONTAINER_GIT_CONFIG=/root/.gitconfig
 
 cat >./.root-config <<EOL
 StrictHostKeyChecking no
@@ -45,7 +47,9 @@ User jenkins
 IdentityFile $CONTAINER_KEY
 EOL
 
-CONTAINER_WORKSPACE=/opt/kurento
+chown root:root ./.root-config
+chmod 600 ./.root-config
+
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
   --rm \
@@ -55,6 +59,7 @@ docker run \
   -v $KEY:$CONTAINER_KEY \
   -v $CERT:$CONTAINER_CERT \
   -v $PWD/.root-config:/root/.ssh/config \
+  -v $GIT_CONFIG:$CONTAINER_GIT_CONFIG \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "BASE_NAME=$BASE_NAME" \
   -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
