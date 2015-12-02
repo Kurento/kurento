@@ -5,8 +5,11 @@ if [ -n "$1" ]
 then
   CREATE_TAG="$1"
 else
-  echo "Missing first parameter create tag (true/false)"
-  exit 1
+  if [ -z "$CREATE_TAG" ]
+  then
+    echo "Missing first parameter create tag (true/false)"
+    exit 1
+  fi
 fi
 
 PATH=$PATH:$(realpath $(dirname "$0"))
