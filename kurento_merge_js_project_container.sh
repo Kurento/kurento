@@ -33,28 +33,36 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 # Verify project structure
 [ -f package.json ] || exit 1
 
+# Parameters relative to container filesystem
+CONTAINER_KEY=/opt/id_rsa
+CONTAINER_CERT=/opt/jenkins.crt
+CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
+CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
+
 cat >./.root-config <<EOL
 StrictHostKeyChecking no
 User jenkins
-IdentityFile /opt/id_rsa
+IdentityFile $CONTAINER_KEY
 EOL
 
 CONTAINER_WORKSPACE=/opt/kurento
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
   --rm \
-  -v $KURENTO_SCRIPTS_HOME:/opt/adm-scripts \
+  -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
-  -v $KEY:/opt/id_rsa \
-  -v $CERT:/opt/jenkins.crt \
+  -v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS \
+  -v $KEY:$CONTAINER_KEY \
+  -v $CERT:$CONTAINER_CERT \
   -v $PWD/.root-config:/root/.ssh/config \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "BASE_NAME=$BASE_NAME" \
+  -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS"
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
   -e "MAVEN_KURENTO_SNAPSHOTS=$MAVEN_KURENTO_SNAPSHOTS" \
   -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
   -e "MAVEN_SONATYPE_NEXUS_STAGING=$MAVEN_SONATYPE_NEXUS_STAGING" \
-  -e "KEY=/opt/id_rsa" \
+  -e "KEY=$CONTAINER_KEY" \
   -e "CERT=/opt/jenkins.crt" \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
