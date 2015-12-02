@@ -31,7 +31,7 @@ COMMIT_LOG=$(git log -1 --oneline)
 COMMIT_ID=$(echo $COMMIT_LOG|cut -d' ' -f1)
 COMMIT_MSG=$(echo $COMMIT_LOG|cut -d' ' -f2-)
 MESSAGE="Generated code from $KURENTO_PROJECT:$COMMIT_ID"
-VERSION=$(xmlstarlet sel -N x=http://maven.apache.org/POM/4.0.0 -t -v "/x:project/x:version" pom.xml)
+VERSION=$(kurento_get_version.sh)
 
 # Checkout bower repo
 BOWER_DIR="bower_code"
