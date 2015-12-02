@@ -40,6 +40,7 @@ CONTAINER_CERT=/opt/jenkins.crt
 CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
+CONTAINER_SSH_CONFIG=/root/.ssh/config
 
 cat >./.root-config <<EOL
 StrictHostKeyChecking no
@@ -58,7 +59,7 @@ docker run \
   -v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS \
   -v $KEY:$CONTAINER_KEY \
   -v $CERT:$CONTAINER_CERT \
-  -v $PWD/.root-config:/root/.ssh/config \
+  -v $PWD/.root-config:$CONTAINER_SSH_CONFIG \
   -v $GIT_CONFIG:$CONTAINER_GIT_CONFIG \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "BASE_NAME=$BASE_NAME" \

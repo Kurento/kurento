@@ -30,6 +30,10 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 # Verify project structure
 [ -f package.json ] || exit 1
 
+# Activate ssh-agent and add private key
+eval `ssh-agent -s` > /dev/null
+ssh-add $KEY
+
 # Deploy to maven repository
 kurento_check_version.sh true
 kurento_mavenize_js_project.sh $KURENTO_PROJECT
