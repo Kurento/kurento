@@ -101,9 +101,8 @@ echo "##################### EXECUTE: kurento_ci_container_mvn ##################
 #
 # WORKSPACE path
 #    Mandatory
-#    Jenkins workspace path. This variable is expected to be exported by
-#    script caller.
-#    DEFAULT: .
+#    Jenkins workspace path.
+#    DEFAULT: none
 #
 
 # Set Default values

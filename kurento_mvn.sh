@@ -37,7 +37,7 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 [ -z "$WORKSPACE" ] && WORKSPACE="."
-[ -f $WORKSPACE/$PROJECT_MODULE/pom.xml ] && PARAM_PL="-pl $PROJECT_MODULE -am"
+[ -n "$PROJECT_MODULE" -a -f $WORKSPACE/$PROJECT_MODULE/pom.xml ] && PARAM_PL="-pl $PROJECT_MODULE -am"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
 mvn --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS
