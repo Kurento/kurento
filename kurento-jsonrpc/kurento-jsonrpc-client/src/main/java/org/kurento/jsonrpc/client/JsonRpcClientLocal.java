@@ -122,6 +122,9 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 							});
 
 							Response<R2> response2 = (Response<R2>) response[0];
+							
+							log.debug("<-- {}", response2);
+							
 							Object result = response2.getResult();
 
 							if ((result == null)
