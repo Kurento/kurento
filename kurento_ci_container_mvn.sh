@@ -12,8 +12,8 @@ echo "##################### EXECUTE: kurento_ci_container_mvn ##################
 #
 # BOWER_RELEASE_URL
 #    Optional
-#    Kurento javascript modules are downloaded from this URL when provided
-#    instead of using bower.
+#    Kurento javascript modules are downloaded from this URL when running
+#    JS sanity checks
 #    DEFAULT: none
 #
 # DOCKER_HUB_IMAGE

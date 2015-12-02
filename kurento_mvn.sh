@@ -12,8 +12,9 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 #   DEFAULT: verify
 #
 # MAVEN_SETTINGS path
-#    Mandatory
-#    Location of the settings.xml file used by maven
+#    Optional
+#    Location of the settings.xml file used by maven. Default one is used if
+#    not provided
 #
 # MAVEN_OPTIONS string
 #    Optional
@@ -34,14 +35,9 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 
 # Set default environment
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
+[ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 [ -z "$WORKSPACE" ] && WORKSPACE="."
+[ -f $WORKSPACE/$PROJECT_MODULE/pom.xml ] && PARAM_PL="-pl $PROJECT_MODULE -am"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
-# Execute capability test
-POM_FILE=$WORKSPACE/$PROJECT_MODULE/pom.xml
-if [ -n "$PROJECT_MODULE" -a -f $POM_FILE ]; then
-  # Install siblings dependencies first.
-  mvn --settings $MAVEN_SETTINGS -pl $PROJECT_MODULE -am clean $MAVEN_GOALS -U $MAVEN_OPTIONS
-else
-  mvn --settings $MAVEN_SETTINGS clean $MAVEN_GOALS -U $MAVEN_OPTIONS
-fi
+mvn --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS
