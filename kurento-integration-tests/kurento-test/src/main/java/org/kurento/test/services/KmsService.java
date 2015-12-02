@@ -157,6 +157,11 @@ public class KmsService extends TestService {
 	@Override
 	public void start() {
 		super.start();
+		
+		if(wsUri == null){
+			isKmsStarted = false;
+			return;
+		}
 
 		isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1") && !isKmsDocker;
@@ -705,7 +710,7 @@ public class KmsService extends TestService {
 	}
 
 	public KurentoClient getKurentoClient() {
-		if (kurentoClient == null) {
+		if (kurentoClient == null  && isKmsStarted) {
 			kurentoClient = createKurentoClient();
 		}
 		return kurentoClient;
