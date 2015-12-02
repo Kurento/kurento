@@ -1,5 +1,8 @@
 #!/bin/bash
 
+[[ -n "$1" ]] || { echo "No script to run specified. Need one to run after preparing the environment"; exit 1 }
+BUILD_COMMAND=$1
+
 PATH=$PATH:$(realpath $(dirname "$0"))
 
 echo "Preparing environment..."
@@ -21,4 +24,4 @@ if [ -f /root/.ssh/config ]; then
   ls -la /opt
 fi
 
-kurento_merge_js_project.sh
+exec $BUILD_COMMAND
