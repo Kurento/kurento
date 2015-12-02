@@ -92,7 +92,7 @@ for REF in $REFS; do
       git checkout FETCH_HEAD
       # Execute maven for maven projects
       if [ -f pom.xml ]; then
-        mvn $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
+        mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
       fi
     ) || exit 1
   fi
