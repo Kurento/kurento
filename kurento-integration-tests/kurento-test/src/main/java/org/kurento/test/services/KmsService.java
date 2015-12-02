@@ -795,7 +795,9 @@ public class KmsService extends TestService {
 	}
 
 	public void setWsUri(String wsUri) {
-		System.setProperty(KMS_WS_URI_PROP_EXPORT, wsUri);
+		if(wsUri != null){
+			System.setProperty(KMS_WS_URI_PROP_EXPORT, wsUri);
+		}
 		this.wsUri = wsUri;
 	}
 
