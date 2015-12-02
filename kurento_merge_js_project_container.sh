@@ -30,8 +30,7 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
 
-# Verify project structure
-[ -f package.json ] || exit 1
+[ -z "$BUILD_COMMAND" ] && BUILD_COMMAND="kurento_merge_js_project.sh"
 
 # Parameters relative to container filesystem
 CONTAINER_WORKSPACE=/opt/kurento
@@ -73,6 +72,6 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh kurento_merge_js_project.sh || status=$?
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || status=$?
 
 exit $status
