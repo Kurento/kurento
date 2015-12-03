@@ -1,18 +1,6 @@
 #!/bin/bash -x
-echo "##################### EXECUTE: kurento_merge_js_project_container #####################"
+echo "##################### EXECUTE: kurento_ci_container_job_setup #####################"
 
-# KURENTO_PROJECT string
-#   Optional
-#   Name of the project to be merged
-#
-# BASE_NAME
-#   Optional
-#   Name of the artifact.
-#   Default: PROJECT_NAME
-#
-# CREATE_TAG
-#   Flag to indicate if a tag is needed in case of a release version
-#
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
@@ -67,6 +55,10 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 
 [ -z "$BUILD_COMMAND" ] && BUILD_COMMAND="kurento_merge_js_project.sh"
 
+# Set default Parameters
+STATUS=0
+[ -z "$WORKSPACE" ] && WORKSPACE="."
+
 # Parameters relative to container filesystem
 CONTAINER_WORKSPACE=/opt/kurento
 CONTAINER_KEY=/opt/id_rsa
@@ -75,12 +67,15 @@ CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
 CONTAINER_SSH_CONFIG=/root/.ssh/config
+AGENT_SSH_CONFIG=$WORKSPACE/.root-config
 
-cat >./.root-config <<EOL
-StrictHostKeyChecking no
-User jenkins
-IdentityFile $CONTAINER_KEY
+if [ -n "$KEY" ]; then
+  cat >$AGENT_SSH_CONFIG <<-EOL
+    StrictHostKeyChecking no
+    User jenkins
+    IdentityFile $CONTAINER_KEY
 EOL
+fi
 
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
@@ -88,10 +83,10 @@ docker run \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
   -v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS \
-  -v $KEY:$CONTAINER_KEY \
+  $([ -n "$KEY" ] && echo "-v $KEY:$CONTAINER_KEY" )\
   -v $CERT:$CONTAINER_CERT \
-  -v $PWD/.root-config:$CONTAINER_SSH_CONFIG \
-  -v $GIT_CONFIG:$CONTAINER_GIT_CONFIG \
+  $([ -n "$KEY" ] && echo "-v $AGENT_SSH_CONFIG:$CONTAINER_SSH_CONFIG") \
+  $([ -n "$GIT_CONFIG" -a -f $GIT_CONFIG ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "BASE_NAME=$BASE_NAME" \
   -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
@@ -105,7 +100,7 @@ docker run \
   -e "FILES=$FILES" \
   -e "BUILDS_HOST=$BUILDS_HOST" \
   -e "KEY=$CONTAINER_KEY" \
-  -e "CERT=/opt/jenkins.crt" \
+  -e "CERT=$CONTAINER_CERT" \
   -e "SSH_CONFIG=$CONTAINER_SSH_CONFIG" \
   -e "CREATE_TAG=$CREATE_TAG" \
   -e "GERRIT_HOST=$GERRIT_HOST" \
