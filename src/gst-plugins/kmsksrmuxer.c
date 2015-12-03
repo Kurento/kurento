@@ -100,7 +100,8 @@ kms_ksr_muxer_add_src (KmsBaseMediaMuxer * obj, KmsMediaType type,
   }
 
   appsrc = gst_element_factory_make ("appsrc", NULL);
-  g_object_set (appsrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
+  g_object_set (appsrc, "block", TRUE, "format", 3 /* GST_FORMAT_TIME */ ,
+      NULL);
 
   gst_bin_add (GST_BIN (KMS_BASE_MEDIA_MUXER_GET_PIPELINE (self)), appsrc);
 
