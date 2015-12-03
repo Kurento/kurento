@@ -2,6 +2,7 @@
 echo "##################### EXECUTE: kurento_merge_js_project_container #####################"
 
 # KURENTO_PROJECT string
+#   Optional
 #   Name of the project to be merged
 #
 # BASE_NAME
@@ -9,8 +10,14 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 #   Name of the artifact.
 #   Default: PROJECT_NAME
 #
+# CREATE_TAG
+#   Flag to indicate if a tag is needed in case of a release version
+#
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
+#
+# MAVEN_SETTINGS
+#   Location of settings.xml maven configuration file
 #
 # MAVEN_KURENTO_SNAPSHOTS url
 #   URL of Kurento repository for maven snapshots
@@ -23,9 +30,37 @@ echo "##################### EXECUTE: kurento_merge_js_project_container ########
 #
 # BOWER_REPOSITORY url
 #   URL to bower repository
+#
+# FILES
+#   List of files to publish to $BUILDS_HOST
+#
+# BUILDS_HOST
+#   Server to publish artifacts specified in $FILES
+#
+# BUILD_COMMAND
+#   Command to run in the container after initialization
+#
+# CERT
+#   Jenkins certificate to upload artifacts to http services
+#
+# KEY
+#   Gerrit ssh key
+#
+# GERRIT_HOST
+#   Gerrit host
+#
+# GERRIT_PORT
+#   Gerrit port
+#
+# GERRIT_PROJECT
+#   Gerrit project
+#
+# GERRIT_NEWREV
+#   Gerrit revision
+
 
 # Verify mandatory parameters
-[ -z "$KURENTO_PROJECT" ] && exit 1
+[ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
 
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
@@ -65,11 +100,16 @@ docker run \
   -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
   -e "MAVEN_SONATYPE_NEXUS_STAGING=$MAVEN_SONATYPE_NEXUS_STAGING" \
   -e "BOWER_REPOSITORY=$BOWER_REPOSITORY" \
+  -e "FILES=$FILES" \
   -e "BUILDS_HOST=$BUILDS_HOST" \
   -e "KEY=$CONTAINER_KEY" \
   -e "CERT=/opt/jenkins.crt" \
   -e "SSH_CONFIG=$CONTAINER_SSH_CONFIG" \
   -e "CREATE_TAG=$CREATE_TAG" \
+  -e "GERRIT_HOST=$GERRIT_HOST" \
+  -e "GERRIT_PORT=$GERRIT_PORT" \
+  -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
+  -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \
