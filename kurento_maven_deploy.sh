@@ -45,13 +45,13 @@ echo "Deploying version $PROJECT_VERSION"
 
 if [[ ${PROJECT_VERSION} == *-SNAPSHOT ]] && [ -n "$SNAPSHOT_REPOSITORY" ]; then
 	echo "Deploying SNAPSHOT version"
-	mvn $PARAM_MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Pdefault $OPTS -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || exit 1
+	mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Pdefault $OPTS -DaltSnapshotDeploymentRepository=$SNAPSHOT_REPOSITORY || exit 1
 elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; then
 	OPTS="-Pdeploy -Pkurento-release -Pgpg-sign $OPTS"
 	if [[ $SIGN_ARTIFACTS == "true" ]]; then
 		echo "Deploying release version signing artifacts"
 		# Deploy signing artifacts
-		mvn $PARAM_MAVEN_SETTINGS clean package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
+		mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package javadoc:jar source:jar gpg:sign org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
 
 		#Verify signed files (if any)
 		SIGNED_FILES=$(find ./target -type f | egrep '\.asc$')
@@ -70,6 +70,6 @@ elif [[ ${PROJECT_VERSION} != *-SNAPSHOT ]] && [ -n "$RELEASE_REPOSITORY" ]; the
 	else
 		echo "Deploying release version without signing artifacts"
 		# Deploy without signing artifacts
-		mvn $PARAM_MAVEN_SETTINGS clean package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -U $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
+		mvn --batch-mode $PARAM_MAVEN_SETTINGS clean package javadoc:jar source:jar org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -U $OPTS -DaltReleaseDeploymentRepository=$RELEASE_REPOSITORY || exit 1
 	fi
 fi
