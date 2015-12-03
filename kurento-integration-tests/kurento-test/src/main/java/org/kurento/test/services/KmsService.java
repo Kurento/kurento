@@ -126,6 +126,7 @@ public class KmsService extends TestService {
 	protected String kmsAutostartProp;
 	protected String kmsAutostartDefault;
 	protected String kmsWsUriProp;
+	protected String kmsWsUriExportProp;
 	protected KurentoClient kurentoClient;
 
 	public KmsService(String wsUri) {
@@ -139,17 +140,20 @@ public class KmsService extends TestService {
 		this.kmsAutostartProp = KMS_AUTOSTART_PROP;
 		this.kmsAutostartDefault = KMS_AUTOSTART_DEFAULT;
 		this.kmsWsUriProp = KMS_WS_URI_PROP;
+		this.kmsWsUriExportProp = KMS_WS_URI_PROP_EXPORT;
 
 		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
 
 	public KmsService(String kmsLoginProp, String kmsPasswdProp,
-			String kmsPemProp, String kmsAutostartProp, String kmsWsUriProp) {
+			String kmsPemProp, String kmsAutostartProp, String kmsWsUriProp,
+			String kmsWsUriExportProp) {
 		this.kmsLoginProp = kmsLoginProp;
 		this.kmsPasswdProp = kmsPasswdProp;
 		this.kmsPemProp = kmsPemProp;
 		this.kmsAutostartProp = kmsAutostartProp;
 		this.kmsWsUriProp = kmsWsUriProp;
+		this.kmsWsUriExportProp = kmsWsUriExportProp;
 
 		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
@@ -710,7 +714,7 @@ public class KmsService extends TestService {
 	}
 
 	public KurentoClient getKurentoClient() {
-		if (kurentoClient == null) {
+		if (kurentoClient == null && wsUri != null) {
 			kurentoClient = createKurentoClient();
 		}
 		return kurentoClient;
@@ -801,7 +805,7 @@ public class KmsService extends TestService {
 
 	public void setWsUri(String wsUri) {
 		if (wsUri != null) {
-			System.setProperty(KMS_WS_URI_PROP_EXPORT, wsUri);
+			System.setProperty(kmsWsUriExportProp, wsUri);
 		}
 		this.wsUri = wsUri;
 	}

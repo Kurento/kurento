@@ -21,6 +21,7 @@ import static org.kurento.test.config.TestConfiguration.FAKE_KMS_LOGIN_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PASSWD_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PEM_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP_EXPORT;
 
 /**
  * Fake Kurento Media Server service.
@@ -37,7 +38,8 @@ public class FakeKmsService extends KmsService {
 		this.kmsAutostartProp = FAKE_KMS_AUTOSTART_PROP;
 		this.kmsAutostartDefault = FAKE_KMS_AUTOSTART_DEFAULT;
 		this.kmsWsUriProp = FAKE_KMS_WS_URI_PROP;
-		
+		this.kmsWsUriExportProp = FAKE_KMS_WS_URI_PROP_EXPORT;
+
 		setWsUri(getProperty(kmsWsUriProp));
 	}
 

@@ -175,6 +175,7 @@ public class TestConfiguration {
 
 	// Fake KMS
 	public static final String FAKE_KMS_WS_URI_PROP = "fake.kms.ws.uri";
+	public static final String FAKE_KMS_WS_URI_PROP_EXPORT = "fake.kms.url";
 	public static final String FAKE_KMS_LOGIN_PROP = "fake.kms.login";
 	public static final String FAKE_KMS_PASSWD_PROP = "fake.kms.passwd";
 	public static final String FAKE_KMS_PEM_PROP = "fake.kms.pem";
