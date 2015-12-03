@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "##################### EXECUTE: kurento_ci_clean_containers #####################"
 
 # This tool uses a set of variables expected to be exported by tester
 # WORKSPACE path

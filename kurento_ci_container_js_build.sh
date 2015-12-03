@@ -1,5 +1,7 @@
 #!/bin/bash -x
 #
+echo "##################### EXECUTE: kurento_build_js_project #####################"
+
 # Build JS artifacts and deploy to download service
 #
 # Following variables will be read from script

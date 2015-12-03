@@ -88,6 +88,12 @@ echo "##################### EXECUTE: kurento_ci_container_mvn ##################
 #    Activates session recording in case ffmpeg is available
 #    DEFAULT: false
 #
+# START_MONGO_CONTAINER [ true | false ]
+#    Optional
+#    Specifies if a MongoDB container must be started and linked to the
+#    maven container.
+#    DEFAULT false
+#
 # TEST_GROUP string
 #    Mandatory
 #    Identifies the test category to run
@@ -122,11 +128,17 @@ docker run \
     -w /opt/test-files \
      kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento
 
+# Verify if Mongo container must be started
+if [ "$START_MONGO_CONTAINER" == 'true' ]; then
+    MONGO_CONTAINER_ID=$(docker run -d \
+      --name $BUILD_TAG-MONGO \
+      mongo:2.6.11)
+fi
 # Create temporary folders
 [ -d $WORKSPACE/tmp ] || mkdir -p $WORKSPACE/tmp
 [ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
 
-# Craete Integration container
+# Set maven options
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.docker.image.forcepulling=false"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Djava.awt.headless=true"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.autostart=$KMS_AUTOSTART"
@@ -146,8 +158,9 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.
 [ -n "$TEST_GROUP" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dgroups=$TEST_GROUP"
 [ -n "$TEST_NAME" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
 [ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dbower.release.url=$BOWER_RELEASE_URL"
+[ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Drepository.mongodb.urlConn=mongodb://mongo"
 
-# Execute Presenter test
+# Execute maven container
 docker run --rm \
   --name $BUILD_TAG-INTEGRATION \
   -v /var/lib/jenkins/test-files:/opt/test-files \
@@ -161,9 +174,14 @@ docker run --rm \
   -e "MAVEN_OPTIONS=$MAVEN_OPTIONS" \
   -e "MAVEN_SETTINGS=/opt/kurento-settings.xml" \
   $([ -n "$PROJECT_MODULE" ] && echo "-e PROJECT_MODULE=$PROJECT_MODULE") \
+  $([ -n "$MONGO_CONTAINER_ID" ] && echo "--link $MONGO_CONTAINER_ID:mongo") \
   -w $TEST_HOME \
   -u "root" \
   kurento/dev-integration:jdk-8-node-0.12 \
   /opt/adm-scripts/kurento_mvn.sh || status=$?
+
+# Stop detached containers if started
+# MONGO
+[ -n "$MONGO_CONTAINER_ID" ] && docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
 
 exit $status
