@@ -112,6 +112,7 @@ echo "##################### EXECUTE: kurento_ci_container_mvn ##################
 #
 
 # Set Default values
+STATUS=0
 TEST_HOME=/opt/test-home
 [ -z "$KMS_AUTOSTART" ] && KMS_AUTOSTART="test"
 [ -z "$KMS_SCOPE" ] && KMS_SCOPE="docker"
@@ -178,10 +179,10 @@ docker run --rm \
   -w $TEST_HOME \
   -u "root" \
   kurento/dev-integration:jdk-8-node-0.12 \
-  /opt/adm-scripts/kurento_mvn.sh || status=$?
+  /opt/adm-scripts/kurento_mvn.sh || STATUS=$?
 
 # Stop detached containers if started
 # MONGO
 [ -n "$MONGO_CONTAINER_ID" ] && docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
 
-exit $status
+exit $STATUS
