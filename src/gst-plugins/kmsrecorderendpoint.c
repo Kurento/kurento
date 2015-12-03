@@ -163,7 +163,7 @@ send_eos (GstElement * appsrc)
 
   GST_DEBUG ("Send EOS to %s", GST_ELEMENT_NAME (appsrc));
 
-  g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
+  ret = gst_app_src_end_of_stream (GST_APP_SRC (appsrc));
   if (ret != GST_FLOW_OK) {
     /* something wrong */
     GST_ERROR ("Could not send EOS to appsrc  %s. Ret code %d",
