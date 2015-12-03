@@ -70,6 +70,8 @@
     "qunitjs": "1.18.0",
     "selenium-webdriver": "^2.46.1",
     "xml2js": "^0.4.9",
-    "wock": "^0.1.1"
+    "wock": "^0.1.1",
+    "dockerode":"2.2.6",
+    "minimist": "^1.1.1"
   }
 }
