@@ -139,8 +139,8 @@ public class KmsService extends TestService {
 		this.kmsAutostartProp = KMS_AUTOSTART_PROP;
 		this.kmsAutostartDefault = KMS_AUTOSTART_DEFAULT;
 		this.kmsWsUriProp = KMS_WS_URI_PROP;
-		
-		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));		
+
+		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
 
 	public KmsService(String kmsLoginProp, String kmsPasswdProp,
@@ -150,15 +150,15 @@ public class KmsService extends TestService {
 		this.kmsPemProp = kmsPemProp;
 		this.kmsAutostartProp = kmsAutostartProp;
 		this.kmsWsUriProp = kmsWsUriProp;
-		
+
 		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
 
 	@Override
 	public void start() {
 		super.start();
-		
-		if(wsUri == null){
+
+		if (wsUri == null) {
 			isKmsStarted = false;
 			return;
 		}
@@ -710,7 +710,7 @@ public class KmsService extends TestService {
 	}
 
 	public KurentoClient getKurentoClient() {
-		if (kurentoClient == null  && isKmsStarted) {
+		if (kurentoClient == null) {
 			kurentoClient = createKurentoClient();
 		}
 		return kurentoClient;
@@ -800,7 +800,7 @@ public class KmsService extends TestService {
 	}
 
 	public void setWsUri(String wsUri) {
-		if(wsUri != null){
+		if (wsUri != null) {
 			System.setProperty(KMS_WS_URI_PROP_EXPORT, wsUri);
 		}
 		this.wsUri = wsUri;
