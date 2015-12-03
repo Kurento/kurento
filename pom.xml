@@ -62,7 +62,6 @@
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>
 				<module>kurento-basicroom</module>
-				<module>kurento-qa-pom</module>
 			</modules>
 			<build>
 				<plugins>
@@ -93,7 +92,6 @@
 				<module>kurento-client</module>
 				<module>kurento-repository</module>
 				<module>kurento-integration-tests</module>
-				<module>kurento-qa-pom</module>
 			</modules>
 			<build>
 				<plugins>

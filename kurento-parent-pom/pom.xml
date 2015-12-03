@@ -6,7 +6,6 @@
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../kurento-qa-pom</relativePath>
 	</parent>
 
 	<artifactId>kurento-parent-pom</artifactId>
