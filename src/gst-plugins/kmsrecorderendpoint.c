@@ -118,6 +118,9 @@ struct _KmsRecorderEndpointPrivate
 
   gulong audio_probe;
   gulong video_probe;
+
+  gboolean stopping;
+  GSList *pending_pads;
 };
 
 typedef struct _DataEvtProbe
@@ -423,6 +426,8 @@ kms_recorder_endpoint_finalize (GObject * object)
       (GDestroyNotify) kms_stats_probe_destroy);
   g_hash_table_unref (self->priv->srcs);
 
+  g_slist_free_full (self->priv->pending_pads, g_free);
+
   GST_DEBUG_OBJECT (self, "finalized");
 
   G_OBJECT_CLASS (kms_recorder_endpoint_parent_class)->finalize (object);
@@ -466,13 +471,12 @@ static void
 kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
-  gboolean stopping;
 
   kms_recorder_endpoint_change_state (self);
 
   if (kms_base_media_muxer_get_state (self->priv->mux) >= GST_STATE_PAUSED) {
     kms_recorder_endpoint_send_eos_to_appsrcs (self);
-    stopping = TRUE;
+    self->priv->stopping = TRUE;
   }
 
   kms_recorder_endpoint_remove_pads (self);
@@ -488,7 +492,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   BASE_TIME_UNLOCK (self);
 
   if (kms_base_media_muxer_get_state (self->priv->mux) < GST_STATE_PAUSED &&
-      !stopping) {
+      !self->priv->stopping) {
     kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
     kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
   }
@@ -741,10 +745,18 @@ unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   id = gst_pad_get_name (pad);
 
+  if (self->priv->stopping) {
+    GST_DEBUG_OBJECT (self, "Stop operation is pending");
+    self->priv->pending_pads = g_slist_prepend (self->priv->pending_pads,
+        g_strdup (id));
+    goto end;
+  }
+
   if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
     g_hash_table_remove (self->priv->srcs, id);
   }
 
+end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
   g_free (id);
@@ -854,6 +866,14 @@ kms_recorder_endpoint_update_media_stats (KmsRecorderEndpoint * self)
 }
 
 static void
+kms_recorder_release_pending_pad (gchar * id, KmsRecorderEndpoint * self)
+{
+  if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
+    g_hash_table_remove (self->priv->srcs, id);
+  }
+}
+
+static void
 kms_recorder_endpoint_on_eos (KmsBaseMediaMuxer * obj, gpointer user_data)
 {
   KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (user_data);
@@ -865,6 +885,15 @@ kms_recorder_endpoint_on_eos (KmsBaseMediaMuxer * obj, gpointer user_data)
 
   kms_base_media_muxer_set_state (recorder->priv->mux, GST_STATE_NULL);
   kms_recorder_endpoint_state_changed (recorder, KMS_URI_ENDPOINT_STATE_STOP);
+
+  if (recorder->priv->stopping) {
+    GST_WARNING_OBJECT (recorder, "Releasing pending pads");
+    g_slist_foreach (recorder->priv->pending_pads,
+        (GFunc) kms_recorder_release_pending_pad, recorder);
+    g_slist_free_full (recorder->priv->pending_pads, g_free);
+    recorder->priv->pending_pads = NULL;
+    recorder->priv->stopping = FALSE;
+  }
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 }
