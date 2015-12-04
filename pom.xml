@@ -82,12 +82,6 @@
 		<profile>
 			<id>qa</id>
 			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>true</filtering>
-					</resource>
-				</resources>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -110,7 +104,7 @@
 								<id>validate</id>
 								<phase>validate</phase>
 								<configuration>
-									<configLocation>src/main/resources/kurento_checks.xml</configLocation>
+									<configLocation>https://raw.githubusercontent.com/Kurento/kurento-qa-pom/master/src/main/resources/kurento_checks.xml</configLocation>
 									<encoding>UTF-8</encoding>
 									<consoleOutput>true</consoleOutput>
 									<failsOnError>true</failsOnError>
