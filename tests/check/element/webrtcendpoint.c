@@ -1944,10 +1944,15 @@ on_ice_candidate_range (GstElement * self, gchar * sess_id,
 {
   guint port = kms_ice_candidate_get_port (candidate);
 
-  fail_if (port > data->max_port);
-  fail_if (port < data->min_port);
   GST_DEBUG ("Candidate: %s", kms_ice_candidate_get_candidate (candidate));
   GST_DEBUG ("Port: %u", kms_ice_candidate_get_port (candidate));
+
+  // Acording to https://tools.ietf.org/html/rfc6544#section-4.5
+  // port == 9 should be discarded
+  if (port != 9) {
+    fail_if (port > data->max_port);
+    fail_if (port < data->min_port);
+  }
 }
 
 GST_START_TEST (test_port_range)
