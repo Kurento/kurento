@@ -375,14 +375,25 @@ kms_recorder_endpoint_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
   if (self->priv->mux != NULL) {
     if (kms_base_media_muxer_get_state (self->priv->mux) != GST_STATE_NULL) {
       GST_ELEMENT_WARNING (self, RESOURCE, BUSY,
           ("Recorder may have buffers to save"),
           ("Disposing recorder when it isn't stopped."));
     }
+
     kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
+
+    if (self->priv->stopping) {
+      GST_WARNING_OBJECT (self, "Forcing pending stop operation to finish");
+      kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
+      self->priv->stopping = FALSE;
+    }
   }
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
   g_mutex_clear (&self->priv->base_time_lock);
 
