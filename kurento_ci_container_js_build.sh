@@ -1,6 +1,6 @@
 #!/bin/bash -x
 #
-echo "##################### EXECUTE: kurento_build_js_project #####################"
+echo "##################### EXECUTE: kurento_ci_container_js #####################"
 
 # Build JS artifacts and deploy to download service
 #

@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+echo "##################### EXECUTE: kurento_merge_java_project #####################"
+
 # MAVEN_KURENTO_SNAPSHOTS url
 #   URL of Kurento repository for maven snapshots
 #
