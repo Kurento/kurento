@@ -61,6 +61,8 @@ struct _KmsWebrtcSession
 
   guint16 min_port;
   guint16 max_port;
+
+  gboolean gather_started;
 };
 
 struct _KmsWebrtcSessionClass

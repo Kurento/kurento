@@ -222,9 +222,9 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
   SdpMediaConfig *mconf;
   gboolean ret;
 
-  if (local_sdp_ctx == NULL) {
+  if (local_sdp_ctx == NULL || !self->gather_started) {
     GST_INFO_OBJECT (self,
-        "Cannot add candidate until local SDP is generated.");
+        "Cannot add candidate until local SDP is generated and gathering candidates starts.");
     return TRUE;                /* We do not know if the candidate is valid until it is set */
   }
 
@@ -510,6 +510,12 @@ kms_webrtc_session_gather_candidates (KmsWebrtcSession * self)
       ret = FALSE;
     }
   }
+
+  if (ret) {
+    self->gather_started = TRUE;
+    kms_webrtc_session_add_stored_ice_candidates (self);
+  }
+
   KMS_SDP_SESSION_UNLOCK (self);
 
   return ret;
@@ -1032,6 +1038,7 @@ kms_webrtc_session_init (KmsWebrtcSession * self)
   self->stun_server_ip = DEFAULT_STUN_SERVER_IP;
   self->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->turn_url = DEFAULT_STUN_TURN_URL;
+  self->gather_started = FALSE;
 }
 
 static void
