@@ -4,47 +4,18 @@ echo "##################### EXECUTE: kurento_ci_container_job_setup ############
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
-# MAVEN_SETTINGS
-#   Location of settings.xml maven configuration file
-#
-# MAVEN_KURENTO_SNAPSHOTS url
-#   URL of Kurento repository for maven snapshots
-#
-# MAVEN_KURENTO_RELEASES url
-#   URL of Kurento repository for maven releases
-#
-# MAVEN_SONATYPE_NEXUS_STAGING url
-#   URL of Central staging repositories
-#
-# BOWER_REPOSITORY url
-#   URL to bower repository
-#
-# FILES
-#   List of files to publish to $BUILDS_HOST
-#
-# BUILDS_HOST
-#   Server to publish artifacts specified in $FILES
-#
 # BUILD_COMMAND
 #   Command to run in the container after initialization
 #
 # CERT
 #   Jenkins certificate to upload artifacts to http services
 #
+# GNUPK_KEY
+#   Private GNUPG key used to sign kurento artifacts
+#
 # KEY
 #   Gerrit ssh key
 #
-# GERRIT_HOST
-#   Gerrit host
-#
-# GERRIT_PORT
-#   Gerrit port
-#
-# GERRIT_PROJECT
-#   Gerrit project
-#
-# GERRIT_NEWREV
-#   Gerrit revision
 
 
 # Verify mandatory parameters
@@ -66,18 +37,7 @@ CONTAINER_CERT=/opt/jenkins.crt
 CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
-CONTAINER_SSH_CONFIG=/root/.ssh/config
-AGENT_SSH_CONFIG=$WORKSPACE/ssh-config
-
-if [ -n "$KEY" ]; then
-  # Move temporal file inside workspace to avoid permission problems
-  mv $KEY $WORKSPACE/id_rsa
-  cat >$AGENT_SSH_CONFIG <<-EOL
-    StrictHostKeyChecking no
-    User jenkins
-    IdentityFile $CONTAINER_KEY
-EOL
-fi
+CONTAINER_GNUPG_KEY=/opt/gnupg_key
 
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
@@ -85,10 +45,10 @@ docker run \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
   -v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS \
-  $([ -n "$KEY" ] && echo "-v $WORKSPACE/id_rsa:$CONTAINER_KEY" )\
-  -v $CERT:$CONTAINER_CERT \
-  $([ -n "$KEY" ] && echo "-v $AGENT_SSH_CONFIG:$CONTAINER_SSH_CONFIG") \
-  $([ -n "$GIT_CONFIG" -a -f $GIT_CONFIG ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
+  $([ -f "$CERT" ] && echo "-v $CERT:$CONTAINER_CERT") \
+  $([ -f "$KEY" ] && echo "-v $KEY:$CONTAINER_KEY" ) \
+  $([ -f "$GIT_CONFIG" ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
+  $([ -f "$GNUPG_KEY" ] && echo "-v $GNUPG_KEY:$CONTAINER_GNUPG_KEY") \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "BASE_NAME=$BASE_NAME" \
   -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
@@ -103,15 +63,14 @@ docker run \
   -e "BUILDS_HOST=$BUILDS_HOST" \
   -e "KEY=$CONTAINER_KEY" \
   -e "CERT=$CONTAINER_CERT" \
-  -e "SSH_CONFIG=$CONTAINER_SSH_CONFIG" \
+  -e "GNUPG_KEY=$CONTAINER_GNUPG_KEY" \
   -e "CREATE_TAG=$CREATE_TAG" \
   -e "GERRIT_HOST=$GERRIT_HOST" \
   -e "GERRIT_PORT=$GERRIT_PORT" \
+  -e "GERRIT_USER=$GERRIT_USER" \
   -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
   -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || status=$?
-
-exit $status
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND
