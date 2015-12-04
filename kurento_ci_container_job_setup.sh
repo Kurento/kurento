@@ -44,7 +44,7 @@ docker run \
   --rm \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
-  -v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS \
+  $([ -f "$MAVEN_SETTINGS" ] && echo "-v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS") \
   $([ -f "$CERT" ] && echo "-v $CERT:$CONTAINER_CERT") \
   $([ -f "$KEY" ] && echo "-v $KEY:$CONTAINER_KEY" ) \
   $([ -f "$GIT_CONFIG" ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
