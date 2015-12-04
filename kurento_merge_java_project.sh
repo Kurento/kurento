@@ -31,6 +31,5 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
   # Create version file
   echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > project.version
 
-  export FILES
-  kurento_http_publish.sh
+  [ -n "$FILES" ] && FILES=$FILES kurento_http_publish.sh
 fi

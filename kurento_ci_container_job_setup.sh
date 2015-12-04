@@ -67,7 +67,7 @@ CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
 CONTAINER_SSH_CONFIG=/root/.ssh/config
-AGENT_SSH_CONFIG=$WORKSPACE/.root-config
+AGENT_SSH_CONFIG=$WORKSPACE/ssh-config
 
 if [ -n "$KEY" ]; then
   cat >$AGENT_SSH_CONFIG <<-EOL
