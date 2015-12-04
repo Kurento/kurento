@@ -70,6 +70,8 @@ CONTAINER_SSH_CONFIG=/root/.ssh/config
 AGENT_SSH_CONFIG=$WORKSPACE/ssh-config
 
 if [ -n "$KEY" ]; then
+  # Move temporal file inside workspace to avoid permission problems
+  mv $KEY $WORKSPACE/id_rsa
   cat >$AGENT_SSH_CONFIG <<-EOL
     StrictHostKeyChecking no
     User jenkins
@@ -83,7 +85,7 @@ docker run \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE:$CONTAINER_WORKSPACE \
   -v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS \
-  $([ -n "$KEY" ] && echo "-v $KEY:$CONTAINER_KEY" )\
+  $([ -n "$KEY" ] && echo "-v $WORKSPACE/id_rsa:$CONTAINER_KEY" )\
   -v $CERT:$CONTAINER_CERT \
   $([ -n "$KEY" ] && echo "-v $AGENT_SSH_CONFIG:$CONTAINER_SSH_CONFIG") \
   $([ -n "$GIT_CONFIG" -a -f $GIT_CONFIG ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \

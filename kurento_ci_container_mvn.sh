@@ -106,7 +106,7 @@ echo "##################### EXECUTE: kurento_ci_container_mvn ##################
 #    DEFAULT: none
 #
 # WORKSPACE path
-#    Mandatory
+#    Optional
 #    Jenkins workspace path.
 #    DEFAULT: none
 #

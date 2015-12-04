@@ -7,12 +7,12 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 
 echo "Preparing environment..."
 
-if [ -n "$KEY" ]; then
-  echo "Add private key to ssh agent"
-  eval $(ssh-agent -s)
-  ssh-add $KEY
-  ls -la /opt
-fi
+#if [ -n "$KEY" ]; then
+#  echo "Add private key to ssh agent"
+#  eval $(ssh-agent -s)
+#  ssh-add $KEY
+#  ls -la /opt
+#fi
 
 if [ -f $SSH_CONFIG ]; then
   echo "Set correct owner & permissions to /root/.ssh/config file"
