@@ -19,8 +19,6 @@
 #define GST_CAT_DEFAULT kmsrtpconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
-#define MAX_RETRIES 10
-
 #define GST_DEFAULT_NAME "kmsrtpconnection"
 
 #define KMS_RTP_CONNECTION_GET_PRIVATE(obj) (   \
@@ -219,19 +217,13 @@ kms_rtp_connection_new (guint16 min_port, guint16 max_port)
   GObject *obj;
   KmsRtpConnection *conn;
   KmsRtpConnectionPrivate *priv;
-  gint retries = 0;
 
   obj = g_object_new (KMS_TYPE_RTP_CONNECTION, NULL);
   conn = KMS_RTP_CONNECTION (obj);
   priv = conn->priv;
 
-  while (!kms_rtp_connection_get_rtp_rtcp_sockets
-      (&priv->rtp_socket, &priv->rtcp_socket, min_port, max_port)
-      && retries++ < MAX_RETRIES) {
-    GST_WARNING_OBJECT (obj, "Getting ports failed, retring");
-  }
-
-  if (priv->rtp_socket == NULL) {
+  if (!kms_rtp_connection_get_rtp_rtcp_sockets
+      (&priv->rtp_socket, &priv->rtcp_socket, min_port, max_port)) {
     GST_ERROR_OBJECT (obj, "Cannot get ports");
     g_object_unref (obj);
     return NULL;

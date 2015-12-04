@@ -619,7 +619,7 @@ GST_START_TEST (test_port_range)
   guint i;
 
   min_port = 50000;
-  max_port = 50020;
+  max_port = 50007;
 
   audio_codecs_array = create_codecs_array (audio_codecs);
   video_codecs_array = create_codecs_array (video_codecs);
@@ -699,7 +699,7 @@ GST_START_TEST (test_not_enough_ports)
   guint port;
 
   min_port = 60000;
-  max_port = 60002;
+  max_port = 60001;
 
   audio_codecs_array = create_codecs_array (audio_codecs);
   video_codecs_array = create_codecs_array (video_codecs);

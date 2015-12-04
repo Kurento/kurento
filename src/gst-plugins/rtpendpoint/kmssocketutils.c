@@ -70,52 +70,99 @@ kms_socket_get_port (GSocket * socket)
   return port;
 }
 
+static inline guint16
+inc_port (guint16 current, guint16 min, guint16 max, guint16 start,
+    gboolean * max_reached, gboolean * all_checked)
+{
+  guint16 next = current + 1;
+
+  if (next > max) {
+    *max_reached = TRUE;
+    return min;
+  }
+
+  if (*max_reached && next >= start) {
+    *all_checked = TRUE;
+  }
+
+  return next;
+}
+
+static inline gboolean
+in_range (guint16 current, guint16 min, guint16 max)
+{
+  return current >= min && current <= max;
+}
+
 gboolean
 kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
     guint16 min_port, guint16 max_port)
 {
-  GSocket *s1, *s2;
   guint16 port1, port2;
+  guint16 start_port;
+  gboolean all_checked = FALSE, max_reached = FALSE;
 
   if (rtp == NULL || rtcp == NULL) {
     return FALSE;
   }
 
-  if (min_port != 0 && max_port != 0 && min_port != 1
-      && max_port != G_MAXUINT16) {
-    port1 = (guint16) g_random_int_range (min_port + 1, max_port);
+  /* Minimum port that a normal user can open */
+  if (min_port <= 1024) {
+    min_port = 1025;
+  }
+
+  if (max_port == 0) {
+    max_port = G_MAXUINT16;
+  }
+
+  if (min_port + 1 < max_port) {
+    start_port = (guint16) g_random_int_range (min_port + 1, max_port);
   } else {
-    port1 = 0;
+    start_port = min_port + 1;
   }
 
-  s1 = kms_socket_open (port1);
+  for (port1 = start_port; !all_checked;
+      port1 =
+      inc_port (port1, min_port, max_port, start_port, &max_reached,
+          &all_checked)) {
+    GSocket *s1, *s2;
 
-  if (s1 == NULL) {
-    return FALSE;
+    s1 = kms_socket_open (port1);
+
+    if (s1 == NULL) {
+      continue;
+    }
+
+    port1 = kms_socket_get_port (s1);
+
+    if (port1 & 0x01) {
+      port2 = port1 - 1;
+    } else {
+      port2 = port1 + 1;
+    }
+
+    if (!in_range (port2, min_port, max_port)) {
+      kms_socket_finalize (&s1);
+      continue;
+    }
+
+    s2 = kms_socket_open (port2);
+
+    if (s2 == NULL) {
+      kms_socket_finalize (&s1);
+      continue;
+    }
+
+    if (port1 < port2) {
+      *rtp = s1;
+      *rtcp = s2;
+    } else {
+      *rtp = s2;
+      *rtcp = s1;
+    }
+
+    return TRUE;
   }
 
-  port1 = kms_socket_get_port (s1);
-
-  if (port1 & 0x01) {
-    port2 = port1 - 1;
-  } else {
-    port2 = port1 + 1;
-  }
-
-  s2 = kms_socket_open (port2);
-
-  if (s2 == NULL) {
-    kms_socket_finalize (&s1);
-    return FALSE;
-  }
-
-  if (port1 < port2) {
-    *rtp = s1;
-    *rtcp = s2;
-  } else {
-    *rtp = s2;
-    *rtcp = s1;
-  }
-
-  return TRUE;
+  return FALSE;
 }
