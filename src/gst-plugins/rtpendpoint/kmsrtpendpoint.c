@@ -177,18 +177,6 @@ get_auth_cipher_from_crypto (SrtpCryptoSuite crypto, guint * auth,
   }
 }
 
-static void
-kms_rtp_endpoint_log_key (KmsRtpEndpoint * self, GValue * key,
-    const gchar * media, gboolean local)
-{
-  const GstStructure *str;
-
-  str = gst_value_get_structure (key);
-
-  GST_DEBUG_OBJECT (self, "Set %s %s key: %" GST_PTR_FORMAT,
-      (local) ? "local" : "remote", media, str);
-}
-
 static gboolean
 kms_rtp_endpoint_set_local_srtp_connection_key (KmsRtpEndpoint * self,
     const gchar * media, SdesKeys * sdes_keys)
@@ -218,8 +206,6 @@ kms_rtp_endpoint_set_local_srtp_connection_key (KmsRtpEndpoint * self,
   kms_srtp_connection_set_key (KMS_SRTP_CONNECTION (sdes_keys->conn),
       key, auth, cipher, TRUE);
   g_free (key);
-
-  kms_rtp_endpoint_log_key (self, &sdes_keys->local, media, TRUE);
 
   return TRUE;
 }
@@ -261,8 +247,6 @@ kms_rtp_endpoint_set_remote_srtp_connection_key (KmsRtpEndpoint * self,
 
   kms_srtp_connection_set_key (KMS_SRTP_CONNECTION (sdes_keys->conn), rem_key,
       auth, cipher, FALSE);
-
-  kms_rtp_endpoint_log_key (self, &sdes_keys->remote, media, FALSE);
 
   ret = TRUE;
 
