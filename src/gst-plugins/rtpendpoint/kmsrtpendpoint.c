@@ -16,6 +16,10 @@
 #  include <config.h>
 #endif
 
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/random.h>
+
 #include <string.h>
 #include <nice/interfaces.h>
 #include <gst/rtp/gstrtcpbuffer.h>
@@ -30,8 +34,10 @@
 #include <commons/kmsrefstruct.h>
 #include "kms-rtp-enumtypes.h"
 #include "kmsrtpsdescryptosuite.h"
+#include "kmsrandom.h"
 
 #define PLUGIN_NAME "rtpendpoint"
+#define MAX_RANDOM_TRIES 3
 
 GST_DEBUG_CATEGORY_STATIC (kms_rtp_endpoint_debug);
 #define GST_CAT_DEFAULT kms_rtp_endpoint_debug
@@ -292,25 +298,6 @@ kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
 
 /* Media handler management begin */
 
-static gchar *
-generate_random_key (guint size)
-{
-  guint8 *buff;
-  gchar *key;
-  guint i;
-
-  buff = g_malloc0 (size);
-
-  for (i = 0; i + 4 < size; i += 4) {
-    GST_WRITE_UINT32_BE (buff + i, g_random_int ());
-  }
-
-  key = g_base64_encode (buff, size);
-  g_free (buff);
-
-  return key;
-}
-
 static guint
 get_max_key_size (SrtpCryptoSuite crypto)
 {
@@ -349,6 +336,10 @@ kms_rtp_endpoint_create_new_key (KmsRtpEndpoint * self, guint tag, GValue * key)
 
     size = get_max_key_size ((SrtpCryptoSuite) self->priv->crypto);
     self->priv->master_key = generate_random_key (size);
+  }
+
+  if (self->priv->master_key == NULL) {
+    return FALSE;
   }
 
   return kms_sdp_sdes_ext_create_key_detailed (tag, self->priv->master_key,

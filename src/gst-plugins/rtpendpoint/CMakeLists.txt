@@ -8,6 +8,7 @@ set(KMS_RTPENDPOINT_SOURCES
   kmssrtpsession.c
   kmsrtpendpoint.c
   kmssocketutils.c
+  kmsrandom.c
 )
 
 set(KMS_RTPENDPOINT_HEADERS

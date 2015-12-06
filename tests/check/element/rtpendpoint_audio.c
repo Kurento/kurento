@@ -32,6 +32,9 @@
 #define KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80 3
 #define KMS_RTP_SDES_CRYPTO_SUITE_NONE 4
 
+#define SDES_30_BYTES_KEY "012345678901234567890123456789"
+#define SDES_46_BYTES_KEY "0123456789012345678901234567890123456789012345"
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -402,7 +405,7 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps expected_caps, gchar * codec, guint crypto)
+    GstStaticCaps expected_caps, gchar * codec, guint crypto, const gchar * key)
 {
   GArray *codecs_array;
   gchar *codecs[] = { codec, NULL };
@@ -430,6 +433,11 @@ test_audio_sendrecv (const gchar * audio_enc_name,
     /* Use random key */
     g_object_set (offerer, "crypto-suite", crypto, NULL);
     g_object_set (answerer, "crypto-suite", crypto, NULL);
+  }
+
+  if (key != NULL) {
+    g_object_set (offerer, "master-key", key, NULL);
+    g_object_set (answerer, "master-key", key, NULL);
   }
 
   gst_bus_add_signal_watch (bus);
@@ -548,15 +556,15 @@ GST_END_TEST
 GST_START_TEST (test_opus_sendrecv)
 {
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_NONE);
+      KMS_RTP_SDES_CRYPTO_SUITE_NONE, NULL);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_32);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_32, SDES_30_BYTES_KEY);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_80);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_80, SDES_30_BYTES_KEY);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_32);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_32, SDES_46_BYTES_KEY);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80, SDES_46_BYTES_KEY);
 }
 
 GST_END_TEST
