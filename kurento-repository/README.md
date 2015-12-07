@@ -15,8 +15,6 @@ This project is organized into several modules:
   * `kurento-repository-server`: Wrapper for the library, 
     offering a simpler Java API and a Http REST API. Contains a 
     [Spring Boot][SpringBoot] application, very easy to setup and run.
-  * `kurento-repository-doc`: Documentation in [Sphinx] of the repository
-    project.
 
 Instructions on running the server and the required dependencies are found 
 in its own [README][server-readme].
