@@ -53,7 +53,7 @@ public class One2ManyCallIT {
 	protected final static int TEST_TIMEOUT = 200; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 	protected final static String DEFAULT_NUM_VIEWERS = "3";
-	protected final static String APP_URL = "http://localhost:8080/";
+	protected final static String APP_URL = "https://localhost:8443/";
 
 	@BeforeClass
 	public static void setupClass() {
@@ -78,6 +78,7 @@ public class One2ManyCallIT {
 		// This flag makes using a synthetic video (green with spinner) in
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
+    options.addArguments("--ignore-certificate-errors");
 
 		return Browser.newWebDriver(options);
 	}

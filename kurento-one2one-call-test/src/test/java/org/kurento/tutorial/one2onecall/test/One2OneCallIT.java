@@ -51,7 +51,7 @@ public class One2OneCallIT {
 
 	protected final static int TEST_TIMEOUT = 120; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
-	protected final static String APP_URL = "http://localhost:8080/";
+	protected final static String APP_URL = "https://localhost:8443/";
 	protected final static String CALLER_NAME = "user1";
 	protected final static String CALLEE_NAME = "user2";
 
@@ -73,6 +73,7 @@ public class One2OneCallIT {
 		// This flag makes using a synthetic video (green with spinner) in
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
+    options.addArguments("--ignore-certificate-errors");
 
 		return Browser.newWebDriver(options);
 	}

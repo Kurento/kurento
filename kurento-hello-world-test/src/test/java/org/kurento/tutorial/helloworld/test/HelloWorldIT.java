@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.tutorial.helloworld.test;
 
 import org.junit.After;
@@ -35,7 +36,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Hello World integration test.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.0
  */
@@ -45,68 +46,70 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 @IntegrationTest
 public class HelloWorldIT {
 
-	protected WebDriver driver;
+  protected WebDriver driver;
 
-	protected final static int TEST_TIMEOUT = 100; // seconds
-	protected final static int PLAY_TIME = 5; // seconds
+  protected final static int TEST_TIMEOUT = 100; // seconds
+  protected final static int PLAY_TIME = 5; // seconds
 
-	@BeforeClass
-	public static void setupClass() {
-		ChromeDriverManager.getInstance().setup();
-	}
+  @BeforeClass
+  public static void setupClass() {
+    ChromeDriverManager.getInstance().setup();
+  }
 
-	@Before
-	public void setup() {
-		ChromeOptions options = new ChromeOptions();
-		// This flag avoids granting camera/microphone
-		options.addArguments("--use-fake-ui-for-media-stream");
-		// This flag makes using a synthetic video (green with spinner) in
-		// WebRTC instead of real media from camera/microphone
-		options.addArguments("--use-fake-device-for-media-stream");
+  @Before
+  public void setup() {
+    ChromeOptions options = new ChromeOptions();
+    // This flag avoids granting camera/microphone
+    options.addArguments("--use-fake-ui-for-media-stream");
+    // This flag makes using a synthetic video (green with spinner) in
+    // WebRTC instead of real media from camera/microphone
+    options.addArguments("--use-fake-device-for-media-stream");
+    options.addArguments("--ignore-certificate-errors");
 
-		driver = Browser.newWebDriver(options);
-	}
+    driver = Browser.newWebDriver(options);
+  }
 
-	@Test
-	public void testHelloWorld() throws InterruptedException {
-		// Open web application
-		driver.get("http://localhost:8080/");
+  @Test
+  public void testHelloWorld() throws InterruptedException {
+    // Open web application
+    driver.get("https://localhost:8443/");
 
-		// Start application
-		driver.findElement(By.id("start")).click();
+    // Start application
+    driver.findElement(By.id("start")).click();
 
-		// Assessment #1: Local video tag should play media
-		waitForStream("videoInput");
+    // Assessment #1: Local video tag should play media
+    waitForStream("videoInput");
 
-		// Assessment #2: Remote video tag should play media
-		waitForStream("videoOutput");
+    // Assessment #2: Remote video tag should play media
+    waitForStream("videoOutput");
 
-		// Guard time to see application in action
-		Thread.sleep(PLAY_TIME * 1000);
+    // Guard time to see application in action
+    Thread.sleep(PLAY_TIME * 1000);
 
-		// Stop application
-		driver.findElement(By.id("stop")).click();
-	}
+    // Stop application
+    driver.findElement(By.id("stop")).click();
+  }
 
-	private void waitForStream(String videoTagId) throws InterruptedException {
-		WebElement video = driver.findElement(By.id(videoTagId));
-		int i = 0;
-		for (; i < TEST_TIMEOUT; i++) {
-			if (video.getAttribute("src").startsWith("blob")) {
-				break;
-			} else {
-				Thread.sleep(1000);
-			}
-		}
-		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
-		}
-	}
+  private void waitForStream(String videoTagId) throws InterruptedException {
+    WebElement video = driver.findElement(By.id(videoTagId));
+    int i = 0;
+    for (; i < TEST_TIMEOUT; i++) {
+      if (video.getAttribute("src").startsWith("blob")) {
+        break;
+      } else {
+        Thread.sleep(1000);
+      }
+    }
+    if (i == TEST_TIMEOUT) {
+      Assert.fail(
+          "Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
+    }
+  }
 
-	@After
-	public void end() {
-		if (driver != null) {
-			driver.close();
-		}
-	}
+  @After
+  public void end() {
+    if (driver != null) {
+      driver.close();
+    }
+  }
 }

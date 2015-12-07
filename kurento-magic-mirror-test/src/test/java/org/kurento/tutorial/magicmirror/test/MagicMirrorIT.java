@@ -63,6 +63,7 @@ public class MagicMirrorIT {
 		// This flag makes using a synthetic video (green with spinner) in
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
+    options.addArguments("--ignore-certificate-errors");
 
 		driver = Browser.newWebDriver(options);
 	}
@@ -70,7 +71,7 @@ public class MagicMirrorIT {
 	@Test
 	public void testMagicMirror() throws InterruptedException {
 		// Open web application
-		driver.get("http://localhost:8080/");
+		driver.get("https://localhost:8443/");
 
 		// Start application
 		driver.findElement(By.id("start")).click();
