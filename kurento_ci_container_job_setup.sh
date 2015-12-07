@@ -70,6 +70,7 @@ CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
 CONTAINER_GNUPG_KEY=/opt/gnupg_key
+CONTAINER_TEST_FILES=/opt/test-files
 
 # Verify mandatory parameters
 [ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
@@ -88,6 +89,14 @@ CONTAINER_GNUPG_KEY=/opt/gnupg_key
 # Create temporary folders
 [ -d $WORKSPACE/tmp ] || mkdir -p $WORKSPACE/tmp
 [ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
+
+# Download or update test files
+docker run \
+  --rm \
+	--name $BUILD_TAG-TEST-FILES \
+    -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
+    -w $CONTAINER_TEST_FILES \
+     kurento/svn-client:1.0.0 svn checkout http://files.kurento.org/svn/kurento
 
 # Verify if Mongo container must be started
 if [ "$START_MONGO_CONTAINER" == 'true' ]; then
@@ -137,7 +146,7 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.scope=$KMS_SCOPE"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dproject.path=$TEST_HOME$([ -n "$MAVEN_MODULE" ] && echo "/$MAVEN_MODULE")"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.workspace=$TEST_HOME/tmp"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.workspace.host=$WORKSPACE/tmp"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.files=/opt/test-files/kurento"
+MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.files=$CONTAINER_TEST_FILES"
 [ -n "$DOCKER_HUB_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Ddocker.hub.image=$DOCKER_HUB_IMAGE"
 [ -n "$DOCKER_NODE_KMS_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.docker.image.name=$DOCKER_NODE_KMS_IMAGE"
 [ -n "$DOCKER_NODE_CHROME_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Ddocker.node.chrome.image=$DOCKER_NODE_CHROME_IMAGE"
@@ -156,6 +165,7 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.
 docker run \
   --name $BUILD_TAG-MERGE_PROJECT \
   --rm \
+  -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v $WORKSPACE$([ -n "$PROJECT_DIR" ] && echo "/$PROJECT_DIR"):$CONTAINER_WORKSPACE \
   $([ -f "$MAVEN_SETTINGS" ] && echo "-v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS") \
