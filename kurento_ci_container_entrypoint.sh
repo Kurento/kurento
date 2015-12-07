@@ -2,7 +2,7 @@
 echo "##################### EXECUTE: kurento_ci_container_entrypoint #####################"
 
 [ -n "$1" ] || { echo "No script to run specified. Need one to run after preparing the environment"; exit 1; }
-BUILD_COMMAND=$1
+BUILD_COMMAND=$@
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
@@ -32,5 +32,7 @@ cat >/root/.bowerrc << EOL
 }
 EOL
 
-echo "Running command $BUILD_COMMAND"
-$BUILD_COMMAND
+for CMD in $BUILD_COMMAND; do
+  echo "Running command: $CMD"
+  $CMD
+done

@@ -6,7 +6,7 @@ trap cleanup EXIT
 #   URL of Kurento code repository
 #
 # BUILD_COMMAND
-#   Command to run in the container after initialization
+#   List of commands to run in the container after initialization
 #
 # CHECKOUT
 #   Optional
