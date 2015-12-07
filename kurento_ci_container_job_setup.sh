@@ -1,5 +1,6 @@
 #!/bin/bash -x
 echo "##################### EXECUTE: kurento_ci_container_job_setup #####################"
+trap cleanup EXIT
 
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
@@ -43,6 +44,22 @@ echo "##################### EXECUTE: kurento_ci_container_job_setup ############
 #    DEFAULT false
 #
 
+cleanup () {
+  # Stop detached containers if started
+  # MONGO
+  [ -n "$MONGO_CONTAINER_ID" ] && \
+      mkdir -p $WORKSPACE/report-files && \
+      docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-mongodb.log && \
+      zip $WORKSPACE/report-files/external-mongodb.log.zip $WORKSPACE/report-files/external-mongodb.log && \
+      docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
+  # KMS
+  [ -n "$KMS_CONTAINER_ID" ] && \
+    mkdir -p $WORKSPACE/report-files && \
+    docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-kms.log && \
+    zip $WORKSPACE/report-files/external-kms.log.zip $WORKSPACE/report-files/external-kms.log && \
+    docker stop $KMS_CONTAINER_ID && docker rm -v $KMS_CONTAINER_ID
+}
+
 # Constants
 CONTAINER_WORKSPACE=/opt/kurento
 CONTAINER_GIT_KEY=/opt/git_id_rsa
@@ -75,7 +92,7 @@ CONTAINER_GNUPG_KEY=/opt/gnupg_key
 if [ "$START_MONGO_CONTAINER" == 'true' ]; then
     MONGO_CONTAINER_ID=$(docker run -d \
       --name $BUILD_TAG-MONGO \
-      mongo:2.6.11)
+      mongo:2.6.11) || exit
     # Guard time for mongo startup
     sleep 10
 fi
@@ -84,7 +101,7 @@ fi
 if [ "$START_KMS_CONTAINER" == 'true' ]; then
     KMS_CONTAINER_ID=$(docker run -d \
       --name $BUILD_TAG-MONGO \
-      kurento/kurento-media-server-dev:latest)
+      kurento/kurento-media-server-dev:latest) || exit
 fi
 
 # Checkout projects if requested
@@ -147,9 +164,20 @@ docker run \
   $([ -f "$GIT_KEY" ] && echo "-v $GIT_KEY:$CONTAINER_GIT_KEY" ) \
   $([ -f "$GIT_CONFIG" ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
   $([ -f "$GNUPG_KEY" ] && echo "-v $GNUPG_KEY:$CONTAINER_GNUPG_KEY") \
-  -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
+  -e "ASSEMBLY_FILE=$ASSEMBLY_FILE" \
   -e "BASE_NAME=$BASE_NAME" \
+  -e "CREATE_TAG=$CREATE_TAG" \
+  -e "FILES=$FILES" \
+  -e "GERRIT_HOST=$GERRIT_HOST" \
+  -e "GERRIT_PORT=$GERRIT_PORT" \
+  -e "GERRIT_USER=$GERRIT_USER" \
+  -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
+  -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
+  -e "GIT_KEY=$CONTAINER_GIT_KEY" \
+  -e "GNUPG_KEY=$CONTAINER_GNUPG_KEY" \
+  -e "HTTP_CERT=$CONTAINER_HTTP_CERT" \
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
+  -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "MAVEN_GOALS=$MAVEN_GOALS" \
   -e "MAVEN_KURENTO_SNAPSHOTS=$MAVEN_KURENTO_SNAPSHOTS" \
   -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
@@ -158,19 +186,9 @@ docker run \
   -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
   -e "MAVEN_SHELL_SCRIPT=$MAVEN_SHELL_SCRIPT" \
   -e "MAVEN_SONATYPE_NEXUS_STAGING=$MAVEN_SONATYPE_NEXUS_STAGING" \
-  -e "ASSEMBLY_FILE=$ASSEMBLY_FILE" \
   -e "BOWER_REPOSITORY=$BOWER_REPOSITORY" \
   -e "FILES=$FILES" \
   -e "BUILDS_HOST=$BUILDS_HOST" \
-  -e "GIT_KEY=$CONTAINER_GIT_KEY" \
-  -e "HTTP_CERT=$CONTAINER_HTTP_CERT" \
-  -e "GNUPG_KEY=$CONTAINER_GNUPG_KEY" \
-  -e "CREATE_TAG=$CREATE_TAG" \
-  -e "GERRIT_HOST=$GERRIT_HOST" \
-  -e "GERRIT_PORT=$GERRIT_PORT" \
-  -e "GERRIT_USER=$GERRIT_USER" \
-  -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
-  -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
   -e "WORKSPACE=$CONTAINER_WORKSPACE" \
   $([ -n "$MONGO_CONTAINER_ID" ] && echo "--link $MONGO_CONTAINER_ID:mongo") \
   $([ -n "$KMS_CONTAINER_ID" ] && echo "--link $KMS_CONTAINER_ID:kms") \
@@ -179,18 +197,4 @@ docker run \
     kurento/dev-integration:jdk-8-node-0.12 \
       /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || exit
 
-# Stop detached containers if started
-# MONGO
-[ -n "$MONGO_CONTAINER_ID" ] && \
-    mkdir -p $WORKSPACE/report-files && \
-    docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-mongodb.log && \
-    zip $WORKSPACE/report-files/external-mongodb.log.zip $WORKSPACE/report-files/external-mongodb.log && \
-    docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
-# KMS
-[ -n "$KMS_CONTAINER_ID" ] && \
-  mkdir -p $WORKSPACE/report-files && \
-  docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-kms.log && \
-  zip $WORKSPACE/report-files/external-kms.log.zip $WORKSPACE/report-files/external-kms.log && \
-  docker stop $KMS_CONTAINER_ID && docker rm -v $KMS_CONTAINER_ID
-
-exit $STATUS
+exit 0

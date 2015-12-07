@@ -51,4 +51,4 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 [ -n "$MAVEN_MODULE" -a -f $WORKSPACE/$MAVEN_MODULE/pom.xml ] && PARAM_PL="-pl $MAVEN_MODULE -am"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
-mvn --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS
+mvn --fail-at-end --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS
