@@ -7,10 +7,10 @@ echo "##################### EXECUTE: kurento_http_publish #####################"
 #   List of files to be uploaded. It consist of a of tuplas
 #   SRC_FILE:DST_FILE:UNCOMPRESS separated by white space.
 #
-# KEY path
+# HTTP_KEY path
 #   Path to key file used to authenticate
 #
-# CERT path
+# HTTP_CERT path
 #   Path to the certificate file if authentication is requried.
 #
 
@@ -44,8 +44,8 @@ export -f mkcol
 # Params management
 [ -z "$BUILDS_HOST" ] && BUILDS_HOST=builds.kurento.org
 [ -z "$FILES" ] && exit 1
-if [ -n "$KEY$CERT" ]; then
-  export CURL="curl --insecure --key $KEY --cert $CERT"
+if [ -n "$HTTP_KEY$HTTP_CERT" ]; then
+  export CURL="curl --insecure --key $HTTP_KEY --cert $HTTP_CERT"
 else
   CURL="curl"
 fi
