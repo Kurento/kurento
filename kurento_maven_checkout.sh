@@ -46,16 +46,8 @@ echo "##################### EXECUTE: kurento_maven_checkout ####################
 # Verify mandatory parameters
 [ -z "$GERRIT_HOST" ] && GERRIT_HOST=code.kurento.org
 [ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
-
 [ -z "$GERRIT_NEWREV" ] && GERRIT_NEWREV=master
 [ -z "$GERRIT_USER" ] && GERRIT_USER=$(whoami)
-if [ -f "$GERRIT_KEY" ]; then
-  eval `ssh-agent -s` > /dev/null
-  ssh-add $GERRIT_KEY
-  chmod 400 $GERRIT_KEY
-  mkdir -p ~/.ssh
-  echo "StrictHostKeyChecking no" >> ~/.ssh/config
-fi
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 
 GERRIT_URL=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT

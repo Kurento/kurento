@@ -7,14 +7,28 @@ echo "##################### EXECUTE: kurento_ci_container_job_setup ############
 # BUILD_COMMAND
 #   Command to run in the container after initialization
 #
-# CERT
-#   Jenkins certificate to upload artifacts to http services
+# CHECKOUT
+#   Optional
+#   Specify if this script must checkout projects before test running
+#   DEFAULT: false
 #
-# GNUPK_KEY
+# HTTP_CERT
+#   Certificate required to upload artifacts to http server
+#
+# GNUPG_KEY
 #   Private GNUPG key used to sign kurento artifacts
 #
-# KEY
-#   Gerrit ssh key
+# GIT_KEY
+#   SSH key required by git repository
+#
+# KURENTO_GIT_REPOSITORY_SERVER
+#    Mandatory
+#    GIT repository from where code is cloned
+#
+# PROJECT_DIR path
+#    Optional
+#    Directory within workspace where test code is located.
+#    DEFAULT: none
 #
 # START_MONGO_CONTAINER [ true | false ]
 #    Optional
@@ -31,8 +45,9 @@ echo "##################### EXECUTE: kurento_ci_container_job_setup ############
 
 # Constants
 CONTAINER_WORKSPACE=/opt/kurento
-CONTAINER_KEY=/opt/id_rsa
-CONTAINER_CERT=/opt/jenkins.crt
+CONTAINER_GIT_KEY=/opt/git_id_rsa
+CONTAINER_HTTP_CERT=/opt/http.crt
+CONTAINER_MAVEN_LOCAL_REPOSITORY=/root/.m2
 CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
@@ -42,11 +57,9 @@ CONTAINER_GNUPG_KEY=/opt/gnupg_key
 [ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
-
 [ -z "$BUILD_COMMAND" ] && BUILD_COMMAND="kurento_merge_js_project.sh"
 
 # Set default Parameters
-STATUS=0
 [ -z "$WORKSPACE" ] && WORKSPACE="."
 [ -z "$KMS_AUTOSTART" ] && KMS_AUTOSTART="test"
 [ -z "$KMS_SCOPE" ] && KMS_SCOPE="docker"
@@ -74,14 +87,36 @@ if [ "$START_KMS_CONTAINER" == 'true' ]; then
       kurento/kurento-media-server-dev:latest)
 fi
 
+# Checkout projects if requested
+[ -z "$GERRIT_HOST" ] && GERRIT_HOST=$KURENTO_GIT_REPOSITORY_SERVER
+[ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
+[ -z "$GERRIT_USER" ] && GERRIT_USER=$(whoami)
+if [ "$CHECKOUT" == 'true' ]; then
+  docker run --rm \
+    --name $BUILD_TAG-INTEGRATION \
+    -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
+    $([ -f "$MAVEN_SETTINGS" ] && echo "-v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS") \
+    -v $WORKSPACE:$CONTAINER_WORKSPACE \
+    $([ -f "$GIT_KEY" ] && echo "-v $GIT_KEY:$CONTAINER_GIT_KEY" ) \
+    -v $MAVEN_LOCAL_REPOSITORY:$CONTAINER_MAVEN_LOCAL_REPOSITORY \
+    -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
+    -e "GERRIT_HOST=$GERRIT_HOST" \
+    -e "GERRIT_PORT=$GERRIT_PORT" \
+    -e "GERRIT_USER=$GERRIT_USER" \
+    -e "GIT_KEY=$CONTAINER_GIT_KEY" \
+    -e "KURENTO_PROJECTS=$KURENTO_PROJECTS" \
+    -w $CONTAINER_WORKSPACE \
+    -u "root" \
+    kurento/dev-integration:jdk-8-node-0.12 \
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh kurento_maven_checkout.sh || exit
+fi
 
 # Set maven options
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.docker.image.forcepulling=false"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Djava.awt.headless=true"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.autostart=$KMS_AUTOSTART"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.scope=$KMS_SCOPE"
-[ -n "$KMS_WS_URI" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dkms.ws.uri=$KMS_WS_URI"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dproject.path=$TEST_HOME$([ -n "$PROJECT_MODULE" ] && echo "/$PROJECT_MODULE")"
+MAVEN_OPTIONS="$MAVEN_OPTIONS -Dproject.path=$TEST_HOME$([ -n "$MAVEN_MODULE" ] && echo "/$MAVEN_MODULE")"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.workspace=$TEST_HOME/tmp"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.workspace.host=$WORKSPACE/tmp"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.files=/opt/test-files/kurento"
@@ -96,6 +131,8 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.
 [ -n "$TEST_NAME" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
 [ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dbower.release.url=$BOWER_RELEASE_URL"
 [ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Drepository.mongodb.urlConn=mongodb://mongo"
+[ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dkms.ws.uri=ws://kms:8888/kurento"
+[ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dkms.ws.uri=$KMS_WS_URI"
 
 # Create main container
 docker run \
@@ -105,8 +142,9 @@ docker run \
   -v $WORKSPACE$([ -n "$PROJECT_DIR" ] && echo "/$PROJECT_DIR"):$CONTAINER_WORKSPACE \
   $([ -f "$MAVEN_SETTINGS" ] && echo "-v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS") \
   -v $WORKSPACE/tmp:$CONTAINER_WORKSPACE/tmp \
-  $([ -f "$CERT" ] && echo "-v $CERT:$CONTAINER_CERT") \
-  $([ -f "$KEY" ] && echo "-v $KEY:$CONTAINER_KEY" ) \
+  -v $MAVEN_LOCAL_REPOSITORY:$CONTAINER_MAVEN_LOCAL_REPOSITORY \
+  $([ -f "$HTTP_CERT" ] && echo "-v $HTTP_CERT:$CONTAINER_HTTP_CERT") \
+  $([ -f "$GIT_KEY" ] && echo "-v $GIT_KEY:$CONTAINER_GIT_KEY" ) \
   $([ -f "$GIT_CONFIG" ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
   $([ -f "$GNUPG_KEY" ] && echo "-v $GNUPG_KEY:$CONTAINER_GNUPG_KEY") \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
@@ -124,8 +162,8 @@ docker run \
   -e "BOWER_REPOSITORY=$BOWER_REPOSITORY" \
   -e "FILES=$FILES" \
   -e "BUILDS_HOST=$BUILDS_HOST" \
-  -e "KEY=$CONTAINER_KEY" \
-  -e "CERT=$CONTAINER_CERT" \
+  -e "GIT_KEY=$CONTAINER_GIT_KEY" \
+  -e "HTTP_CERT=$CONTAINER_HTTP_CERT" \
   -e "GNUPG_KEY=$CONTAINER_GNUPG_KEY" \
   -e "CREATE_TAG=$CREATE_TAG" \
   -e "GERRIT_HOST=$GERRIT_HOST" \
@@ -139,7 +177,7 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     kurento/dev-integration:jdk-8-node-0.12 \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || STATUS=$?
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || exit
 
 # Stop detached containers if started
 # MONGO

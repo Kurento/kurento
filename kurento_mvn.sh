@@ -21,9 +21,20 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 #    All settings defined in this varible will be added to mvn command line
 #    DEFAULT: none
 #
-# PROJECT_MODULE string
+# MAVEN_MODULE string
 #    Optional
 #    Identifies the module to execute within a reactor project.
+#    DEFAULT: none
+#
+# TEST_GROUP string
+#    Mandatory
+#    Identifies the test category to run
+#    DEFAULT: none
+#
+# TEST_NAME regexp
+#    Optional
+#    Identifies the tests within the category to run. Wildcards can be used.
+#    When no present, all tests within the category are run.
 #    DEFAULT: none
 #
 # WORKSPACE path
@@ -37,7 +48,7 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
 [ -z "$WORKSPACE" ] && WORKSPACE="."
-[ -n "$PROJECT_MODULE" -a -f $WORKSPACE/$PROJECT_MODULE/pom.xml ] && PARAM_PL="-pl $PROJECT_MODULE -am"
+[ -n "$MAVEN_MODULE" -a -f $WORKSPACE/$MAVEN_MODULE/pom.xml ] && PARAM_PL="-pl $MAVEN_MODULE -am"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
 mvn --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS

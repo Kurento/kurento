@@ -9,15 +9,15 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 echo "Preparing environment..."
 
 # Configure SSH keys
-if [ -f "$KEY" ]; then
+if [ -f "$GIT_KEY" ]; then
     mkdir -p /root/.ssh
-    cp $KEY /root/.ssh/gerrit_id_rsa
-    chmod 600 /root/.ssh/gerrit_id_rsa
-    export KEY=/root/.ssh/gerrit_id_rsa
+    cp $GIT_KEY /root/.ssh/git_id_rsa
+    chmod 600 /root/.ssh/git_id_rsa
+    export KEY=/root/.ssh/git_id_rsa
     cat >> /root/.ssh/config <<-EOF
       StrictHostKeyChecking no
       User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkins)
-      IdentityFile /root/.ssh/gerrit_id_rsa
+      IdentityFile /root/.ssh/git_id_rsa
 EOF
 fi
 
