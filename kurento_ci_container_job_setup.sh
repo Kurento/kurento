@@ -54,6 +54,27 @@ STATUS=0
 [ -z "$MAVEN_LOCAL_REPOSITORY" ] && MAVEN_LOCAL_REPOSITORY="$WORKSPACE/m2"
 [ -z "$RECORD_TEST" ] && RECORD_TEST="false"
 
+# Create temporary folders
+[ -d $WORKSPACE/tmp ] || mkdir -p $WORKSPACE/tmp
+[ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
+
+# Verify if Mongo container must be started
+if [ "$START_MONGO_CONTAINER" == 'true' ]; then
+    MONGO_CONTAINER_ID=$(docker run -d \
+      --name $BUILD_TAG-MONGO \
+      mongo:2.6.11)
+    # Guard time for mongo startup
+    sleep 10
+fi
+
+# Verify if Mongo container must be started
+if [ "$START_KMS_CONTAINER" == 'true' ]; then
+    KMS_CONTAINER_ID=$(docker run -d \
+      --name $BUILD_TAG-MONGO \
+      kurento/kurento-media-server-dev:latest)
+fi
+
+
 # Set maven options
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.docker.image.forcepulling=false"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -Djava.awt.headless=true"
@@ -75,24 +96,6 @@ MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.
 [ -n "$TEST_NAME" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
 [ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dbower.release.url=$BOWER_RELEASE_URL"
 [ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Drepository.mongodb.urlConn=mongodb://mongo"
-
-# Create temporary folders
-[ -d $WORKSPACE/tmp ] || mkdir -p $WORKSPACE/tmp
-[ -d $MAVEN_LOCAL_REPOSITORY ] || mkdir -p $MAVEN_LOCAL_REPOSITORY
-
-# Verify if Mongo container must be started
-if [ "$START_MONGO_CONTAINER" == 'true' ]; then
-    MONGO_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-MONGO \
-      mongo:2.6.11)
-fi
-
-# Verify if Mongo container must be started
-if [ "$START_KMS_CONTAINER" == 'true' ]; then
-    KMS_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-MONGO \
-      kurento/kurento-media-server-dev:latest)
-fi
 
 # Create main container
 docker run \
@@ -140,8 +143,16 @@ docker run \
 
 # Stop detached containers if started
 # MONGO
-[ -n "$MONGO_CONTAINER_ID" ] && docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
+[ -n "$MONGO_CONTAINER_ID" ] && \
+    mkdir -p $WORKSPACE/report-files && \
+    docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-mongodb.log && \
+    zip $WORKSPACE/report-files/external-mongodb.log.zip $WORKSPACE/report-files/external-mongodb.log && \
+    docker stop $MONGO_CONTAINER_ID && docker rm -v $MONGO_CONTAINER_ID
 # KMS
-[ -n "$KMS_CONTAINER_ID" ] && docker stop $KMS_CONTAINER_ID && docker rm -v $KMS_CONTAINER_ID
+[ -n "$KMS_CONTAINER_ID" ] && \
+  mkdir -p $WORKSPACE/report-files && \
+  docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-kms.log && \
+  zip $WORKSPACE/report-files/external-kms.log.zip $WORKSPACE/report-files/external-kms.log && \
+  docker stop $KMS_CONTAINER_ID && docker rm -v $KMS_CONTAINER_ID
 
 exit $STATUS
