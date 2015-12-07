@@ -64,7 +64,7 @@ public class HelloWorldIT {
     // This flag makes using a synthetic video (green with spinner) in
     // WebRTC instead of real media from camera/microphone
     options.addArguments("--use-fake-device-for-media-stream");
-    options.addArguments("--ignore-certificate-errors");
+    options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
 
     driver = Browser.newWebDriver(options);
   }
