@@ -121,51 +121,32 @@ if [ "$START_KMS_CONTAINER" == 'true' ]; then
 fi
 
 # Checkout projects if requested
-[ -z "$GERRIT_HOST" ] && GERRIT_HOST=$KURENTO_GIT_REPOSITORY_SERVER
+[ -z "$GERRIT_HOST" ] && GERRIT_HOST=${KURENTO_GIT_REPOSITORY_SERVER%:*}
 [ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
 [ -z "$GERRIT_USER" ] && GERRIT_USER=$(whoami)
-if [ "$CHECKOUT" == 'true' ]; then
-  docker run --rm \
-    --name $BUILD_TAG-INTEGRATION \
-    -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
-    $([ -f "$MAVEN_SETTINGS" ] && echo "-v $MAVEN_SETTINGS:$CONTAINER_MAVEN_SETTINGS") \
-    -v $WORKSPACE:$CONTAINER_WORKSPACE \
-    $([ -f "$GIT_KEY" ] && echo "-v $GIT_KEY:$CONTAINER_GIT_KEY" ) \
-    -v $MAVEN_LOCAL_REPOSITORY:$CONTAINER_MAVEN_LOCAL_REPOSITORY \
-    -e "MAVEN_SETTINGS=$CONTAINER_MAVEN_SETTINGS" \
-    -e "GERRIT_HOST=$GERRIT_HOST" \
-    -e "GERRIT_PORT=$GERRIT_PORT" \
-    -e "GERRIT_USER=$GERRIT_USER" \
-    -e "GIT_KEY=$CONTAINER_GIT_KEY" \
-    -e "KURENTO_PROJECTS=$KURENTO_PROJECTS" \
-    -w $CONTAINER_WORKSPACE \
-    -u "root" \
-    kurento/dev-integration:jdk-8-node-0.12 \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh kurento_maven_checkout.sh || exit
-fi
 
 # Set maven options
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.docker.image.forcepulling=false"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Djava.awt.headless=true"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.autostart=$KMS_AUTOSTART"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.scope=$KMS_SCOPE"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dproject.path=$CONTAINER_WORKSPACE$([ -n "$MAVEN_MODULE" ] && echo "/$MAVEN_MODULE")"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.workspace=$CONTAINER_WORKSPACE/tmp"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.workspace.host=$WORKSPACE/tmp"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.files=$CONTAINER_TEST_FILES"
-[ -n "$DOCKER_HUB_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Ddocker.hub.image=$DOCKER_HUB_IMAGE"
-[ -n "$DOCKER_NODE_KMS_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.kms.docker.image.name=$DOCKER_NODE_KMS_IMAGE"
-[ -n "$DOCKER_NODE_CHROME_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Ddocker.node.chrome.image=$DOCKER_NODE_CHROME_IMAGE"
-[ -n "$DOCKER_NODE_FIREFOX_IMAGE" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Ddocker.node.firefox.image=$DOCKER_NODE_FIREFOX_IMAGE"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.selenium.scope=docker"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest.selenium.record=$RECORD_TEST"
-MAVEN_OPTIONS="$MAVEN_OPTIONS -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
-[ -n "$TEST_GROUP" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dgroups=$TEST_GROUP"
-[ -n "$TEST_NAME" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dtest=$TEST_NAME"
-[ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dbower.release.url=$BOWER_RELEASE_URL"
-[ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Drepository.mongodb.urlConn=mongodb://mongo"
-[ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dkms.ws.uri=ws://kms:8888/kurento"
-[ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS="$MAVEN_OPTIONS -Dkms.ws.uri=$KMS_WS_URI"
+MAVEN_OPTIONS+=" -Dtest.kms.docker.image.forcepulling=false"
+MAVEN_OPTIONS+=" -Djava.awt.headless=true"
+MAVEN_OPTIONS+=" -Dtest.kms.autostart=$KMS_AUTOSTART"
+MAVEN_OPTIONS+=" -Dtest.kms.scope=$KMS_SCOPE"
+MAVEN_OPTIONS+=" -Dproject.path=$CONTAINER_WORKSPACE$([ -n "$MAVEN_MODULE" ] && echo "/$MAVEN_MODULE")"
+MAVEN_OPTIONS+=" -Dtest.workspace=$CONTAINER_WORKSPACE/tmp"
+MAVEN_OPTIONS+=" -Dtest.workspace.host=$WORKSPACE/tmp"
+MAVEN_OPTIONS+=" -Dtest.files=$CONTAINER_TEST_FILES"
+[ -n "$DOCKER_HUB_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.hub.image=$DOCKER_HUB_IMAGE"
+[ -n "$DOCKER_NODE_KMS_IMAGE" ] && MAVEN_OPTIONS+=" -Dtest.kms.docker.image.name=$DOCKER_NODE_KMS_IMAGE"
+[ -n "$DOCKER_NODE_CHROME_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.node.chrome.image=$DOCKER_NODE_CHROME_IMAGE"
+[ -n "$DOCKER_NODE_FIREFOX_IMAGE" ] && MAVEN_OPTIONS+=" -Ddocker.node.firefox.image=$DOCKER_NODE_FIREFOX_IMAGE"
+MAVEN_OPTIONS+=" -Dtest.selenium.scope=docker"
+MAVEN_OPTIONS+=" -Dtest.selenium.record=$RECORD_TEST"
+MAVEN_OPTIONS+=" -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
+[ -n "$TEST_GROUP" ] && MAVEN_OPTIONS+=" -Dgroups=$TEST_GROUP"
+[ -n "$TEST_NAME" ] && MAVEN_OPTIONS+=" -Dtest=$TEST_NAME"
+[ -n "$BOWER_RELEASE_URL" ] && MAVEN_OPTIONS+=" -Dbower.release.url=$BOWER_RELEASE_URL"
+[ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Drepository.mongodb.urlConn=mongodb://mongo"
+[ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=ws://kms:8888/kurento"
+[ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=$KMS_WS_URI"
 
 # Create main container
 docker run \
@@ -186,11 +167,12 @@ docker run \
   -e "BASE_NAME=$BASE_NAME" \
   -e "CREATE_TAG=$CREATE_TAG" \
   -e "FILES=$FILES" \
+  -e "GERRIT_CLONE_LIST=$GERRIT_CLONE_LIST" \
   -e "GERRIT_HOST=$GERRIT_HOST" \
-  -e "GERRIT_PORT=$GERRIT_PORT" \
-  -e "GERRIT_USER=$GERRIT_USER" \
-  -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
   -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
+  -e "GERRIT_PORT=$GERRIT_PORT" \
+  -e "GERRIT_PROJECT=$GERRIT_PROJECT" \
+  -e "GERRIT_USER=$GERRIT_USER" \
   -e "GIT_KEY=$CONTAINER_GIT_KEY" \
   -e "GNUPG_KEY=$CONTAINER_GNUPG_KEY" \
   -e "HTTP_CERT=$CONTAINER_HTTP_CERT" \

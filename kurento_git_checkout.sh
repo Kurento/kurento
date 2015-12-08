@@ -1,6 +1,6 @@
 #!/bin/bash -x
 #
-echo "##################### EXECUTE: kurento_maven_checkout #####################"
+echo "##################### EXECUTE: kurento_git_checkout #####################"
 
 # This tool is intended to checkout several maven projects, place them in
 # a given reference and install their artifacts in a maven repository
@@ -33,7 +33,7 @@ echo "##################### EXECUTE: kurento_maven_checkout ####################
 #     TCP port where gerit server hosting GERRIT_PROJECT listens for requests.
 #     Default value is 12345
 #
-# KURENTO_PROJECTS
+# GERRIT_CLONE_LIST
 #     A list of projects hosted in the same server as GERRIT_PROJECT that are
 #     inconditionally cloned. This parameter contains space separated key value
 #     pairs with format:
@@ -68,7 +68,7 @@ if [ -n "$GERRIT_PROJECT" ]; then
 fi
 
 # Add inconditional references
-REFS="$REFS $KURENTO_PROJECTS"
+REFS="$REFS $GERRIT_CLONE_LIST"
 
 # Look for dependency references
 for REF in $REFS; do
