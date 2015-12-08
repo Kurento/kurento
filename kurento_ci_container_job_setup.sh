@@ -2,6 +2,8 @@
 echo "##################### EXECUTE: kurento_ci_container_job_setup #####################"
 trap cleanup EXIT
 
+# Starts a docker container, prepares CI environment and executes procedure
+
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
