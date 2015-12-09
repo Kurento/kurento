@@ -1,11 +1,5 @@
 #!/bin/bash -x
 
-if [ $# -lt 2 ]
-then
-  echo "Usage: $0 <project_name> <branch>"
-  exit 1
-fi
-
 if [ "${KEY_ID}x" == "x" ]
 then
   echo "You should indentify an gnupg key in environment variable KEY_ID, use one from gpg -K"
@@ -15,6 +9,9 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 
 PROJECT_NAME=$1
 BRANCH=$2
+
+[ -z "$PROJECT_NAME" ] && PROJECT_NAME=$KURENTO_PROJECT
+[ -z "$BRANCH" ] && BRANCH=$GERRIT_REFNAME
 
 if [ ! -d $PROJECT_NAME ]
 then
