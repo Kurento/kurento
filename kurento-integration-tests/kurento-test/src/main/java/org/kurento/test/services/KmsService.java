@@ -111,13 +111,13 @@ import freemarker.template.Template;
  */
 public class KmsService extends TestService {
 
+	protected static String dockerContainerName = "kms";
 	protected SshConnection remoteKmsSshConnection;
 	protected Path workspace;
 	protected String wsUri;
 	protected boolean isKmsRemote;
 	protected boolean isKmsDocker;
 	protected boolean isKmsStarted;
-	protected String dockerContainerName = "kms";
 	protected String registrarUri;
 	protected String registrarLocalAddress = "127.0.0.1";
 	protected String kmsLoginProp;
@@ -820,6 +820,10 @@ public class KmsService extends TestService {
 
 	public boolean isKmsStarted() {
 		return isKmsStarted;
+	}
+
+	public static String getDockerContainerName() {
+		return dockerContainerName;
 	}
 
 }

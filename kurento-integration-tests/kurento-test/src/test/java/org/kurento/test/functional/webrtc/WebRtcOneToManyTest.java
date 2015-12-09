@@ -92,15 +92,16 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 
 	@Before
 	public void setupMonitor() {
-		// monitor = new SystemMonitorManager();
-		// monitor.start();
+		setDeleteLogsIfSuccess(false);
+		monitor = new SystemMonitorManager();
+		monitor.startMonitoring();
 	}
 
 	@After
-	public void teardownMonitor() {
-		// monitor.stop();
-		// monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
-		// monitor.destroy();
+	public void teardownMonitor() throws IOException {
+		monitor.stop();
+		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+		monitor.destroy();
 	}
 
 	@Test
@@ -121,9 +122,9 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
 				WebRtcMode.SEND_ONLY);
 
-		// monitor.addWebRtcClientAndActivateOutboundStats(
-		// getPresenter().getBrowser().getId(), masterWebRtcEP,
-		// getPresenter(), "webRtcPeer.peerConnection");
+		monitor.addWebRtcClientAndActivateOutboundStats(
+				getPresenter().getBrowser().getId(), masterWebRtcEP,
+				getPresenter(), "webRtcPeer.peerConnection");
 
 		// Viewers
 		ExecutorService exec = Executors.newFixedThreadPool(numViewers);

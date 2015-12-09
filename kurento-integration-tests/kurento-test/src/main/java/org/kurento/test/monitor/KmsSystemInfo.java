@@ -28,9 +28,7 @@ public class KmsSystemInfo implements Serializable {
 
 	private double cpuPercent;
 	private long mem;
-	private long swap;
 	private double memPercent;
-	private double swapPercent;
 	private NetInfo netInfo;
 	private int numThreadsKms;
 
@@ -58,28 +56,12 @@ public class KmsSystemInfo implements Serializable {
 		this.mem = mem;
 	}
 
-	public long getSwap() {
-		return swap;
-	}
-
-	public void setSwap(long swap) {
-		this.swap = swap;
-	}
-
 	public double getMemPercent() {
 		return memPercent;
 	}
 
 	public void setMemPercent(double memPercent) {
 		this.memPercent = memPercent;
-	}
-
-	public double getSwapPercent() {
-		return swapPercent;
-	}
-
-	public void setSwapPercent(double swapPercent) {
-		this.swapPercent = swapPercent;
 	}
 
 	public int getNumThreadsKms() {
@@ -92,9 +74,8 @@ public class KmsSystemInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		return "SystemInfo [cpuPercent=" + cpuPercent + ", mem=" + mem
-				+ ", swap=" + swap + ", memPercent=" + memPercent
-				+ ", swapPercent=" + swapPercent + ", netInfo=" + netInfo
+		return "KmsSystemInfo [cpuPercent=" + cpuPercent + ", mem=" + mem
+				+ ", memPercent=" + memPercent + ", netInfo=" + netInfo
 				+ ", numThreadsKms=" + numThreadsKms + "]";
 	}
 

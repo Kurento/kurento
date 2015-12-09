@@ -17,13 +17,15 @@ package org.kurento.test.monitor;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.DEFAULT_MONITOR_RATE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DEFAULT_MONITOR_RATE_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_LOGIN_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_PASSWD_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_PEM_PROP;
-import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_DEFAULT;
-import static org.kurento.test.monitor.KmsMonitor.MONITOR_PORT_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_SCOPE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_SCOPE_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
+import static org.kurento.test.monitor.KmsLocalMonitor.MONITOR_PORT_DEFAULT;
+import static org.kurento.test.monitor.KmsLocalMonitor.MONITOR_PORT_PROP;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -45,6 +47,7 @@ import org.kurento.commons.ClassPath;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.net.RemoteService;
 import org.kurento.test.browser.WebPage;
+import org.kurento.test.services.KmsService;
 import org.kurento.test.utils.SshConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,9 +90,9 @@ public class SystemMonitorManager {
 			remoteKms.createTmpFolder();
 			copyMonitorToRemoteKms();
 			startRemoteProcessMonitor();
-			monitor = new KmsMonitor();
+			monitor = new KmsLocalMonitor();
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new KurentoException(e);
 		}
 	}
 
@@ -97,11 +100,20 @@ public class SystemMonitorManager {
 
 		try {
 			String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
+			String kmsScope = getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT);
 
 			boolean isKmsRemote = !wsUri.contains("localhost")
 					&& !wsUri.contains("127.0.0.1");
+			boolean isKmsDocker = kmsScope.equalsIgnoreCase("docker");
 
-			if (isKmsRemote) {
+			if (isKmsDocker) {
+				// "Dockerized" KMS
+				String containerId = KmsService.getDockerContainerName();
+				log.debug("KMS container ID: {}", containerId);
+				monitor = new KmsDockerMonitor(containerId);
+
+			} else if (isKmsRemote) {
+				// Remote KMS
 
 				String kmsLogin = getProperty(KMS_LOGIN_PROP);
 				String kmsPasswd = getProperty(KMS_PASSWD_PROP);
@@ -110,11 +122,13 @@ public class SystemMonitorManager {
 				startRemoteMonitor(wsUri, kmsLogin, kmsPasswd, kmsPem);
 
 			} else {
-				monitor = new KmsMonitor();
+				// Local KMS
+
+				monitor = new KmsLocalMonitor();
 			}
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new KurentoException(e);
 		}
 	}
 
@@ -146,7 +160,8 @@ public class SystemMonitorManager {
 	private void copyMonitorToRemoteKms()
 			throws IOException, URISyntaxException {
 
-		copyClassesToRemote(new Class<?>[] { KmsMonitor.class, NetInfo.class,
+		copyClassesToRemote(new Class<?>[] { KmsMonitor.class,
+				KmsLocalMonitor.class, NetInfo.class,
 				NetInfo.NetInfoEntry.class, KmsSystemInfo.class });
 	}
 
@@ -174,16 +189,15 @@ public class SystemMonitorManager {
 
 	private void startRemoteProcessMonitor() throws IOException {
 
-		remoteKms.execCommand("sh", "-c",
-				"java -cp " + remoteKms.getTmpFolder() + " "
-						+ KmsMonitor.class.getName() + " " + monitorPort + " > "
-						+ remoteKms.getTmpFolder() + "/monitor.log 2>&1");
+		remoteKms.execCommand("sh", "-c", "java -cp " + remoteKms.getTmpFolder()
+				+ " " + KmsLocalMonitor.class.getName() + " " + monitorPort
+				+ " > " + remoteKms.getTmpFolder() + "/monitor.log 2>&1");
 
 		try {
 			RemoteService.waitForReady(remoteKms.getHost(), monitorPort, 60,
 					TimeUnit.SECONDS);
 		} catch (TimeoutException e) {
-			throw new RuntimeException(
+			throw new KurentoException(
 					"Monitor in remote KMS is not available");
 		}
 	}
@@ -279,7 +293,7 @@ public class SystemMonitorManager {
 			client.close();
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new KurentoException(e);
 		}
 
 		return returnedMessage;

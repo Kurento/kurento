@@ -17,15 +17,19 @@ package org.kurento.test.docker;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoTest;
@@ -39,6 +43,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
@@ -505,7 +510,7 @@ public class Docker implements Closeable {
 
 				// Check timeout
 				if (System.currentTimeMillis() > timeoutMs) {
-					throw new RuntimeException(
+					throw new KurentoException(
 							"Timeout of " + WAIT_CONTAINER_POLL_TIMEOUT
 									+ " seconds waiting for container "
 									+ containerName);
@@ -594,8 +599,8 @@ public class Docker implements Closeable {
 		LogContainerRetrieverCallback loggingCallback = new LogContainerRetrieverCallback(
 				file);
 
-		getClient().logContainerCmd(containerName).withStdErr().withStdOut()
-				.exec(loggingCallback);
+		getClient().logContainerCmd(containerName).withStdErr(true)
+				.withStdOut(true).exec(loggingCallback);
 
 		try {
 			loggingCallback.awaitCompletion();
@@ -635,9 +640,27 @@ public class Docker implements Closeable {
 			return getClient().statsCmd().withContainerId(containerId)
 					.exec(resultCallback).waitForObject();
 		} catch (InterruptedException e) {
-			throw new RuntimeException(
+			throw new KurentoException(
 					"Interrupted while waiting for statistics");
 		}
+	}
+
+	public String execCommand(String containerId, String... command) {
+		ExecCreateCmdResponse exec = client.execCreateCmd(containerId)
+				.withCmd(command).withTty(false).withAttachStdin(true)
+				.withAttachStdout(true).withAttachStderr(true).exec();
+		InputStream execInputStream = client.execStartCmd(exec.getId()).exec();
+
+		String output = null;
+		try {
+			output = IOUtils.toString(execInputStream,
+					Charset.defaultCharset());
+		} catch (IOException e) {
+			log.warn("Exception executing command {} on container {}",
+					Arrays.toString(command), containerId, e);
+		}
+
+		return output;
 	}
 
 }

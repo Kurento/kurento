@@ -81,7 +81,6 @@ public class MonitorSampleRegistrer {
 	private void printKmsProcessHeaders(PrintWriter pw) {
 		pw.print("time,clients_number,kms_threads_number");
 		pw.print(",cpu_percetage,mem_bytes,mem_percentage");
-		pw.print(",swap_bytes,swap_percentage");
 
 		if (showLantency) {
 			pw.print(",latency_ms_avg,latency_errors_number");
@@ -103,13 +102,10 @@ public class MonitorSampleRegistrer {
 		double cpu = systemInfo.getCpuPercent();
 		long mem = systemInfo.getMem();
 		double memPercent = systemInfo.getMemPercent();
-		long swap = systemInfo.getSwap();
-		double swapPercent = systemInfo.getSwapPercent();
 
-		pw.format(
-				Locale.ENGLISH, numClients + "," + numThreadsKms + ",%.2f,"
-						+ mem + ",%.2f," + swap + ",%.2f",
-				cpu, memPercent, swapPercent);
+		pw.format(Locale.ENGLISH,
+				numClients + "," + numThreadsKms + ",%.2f," + mem, cpu,
+				memPercent);
 
 		if (showLantency) {
 			pw.print("," + sample.getLatency() + ","
