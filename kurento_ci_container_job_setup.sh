@@ -4,6 +4,11 @@ trap cleanup EXIT
 
 # Starts a docker container, prepares CI environment and executes procedure
 
+# CONTAINER_IMAGE
+#   Optional
+#   Name of container image to use
+#   Default: kurento/dev-integration:jdk-8-node-0.12
+#
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
@@ -75,6 +80,7 @@ CONTAINER_GNUPG_KEY=/opt/gnupg_key
 CONTAINER_TEST_FILES=/opt/test-files
 
 # Verify mandatory parameters
+[ -z "$CONTAINER_IMAGE" ] && CONTAINER_IMAGE="kurento/dev-integration:jdk-8-node-0.12"
 [ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
@@ -195,7 +201,7 @@ docker run \
   $([ -n "$KMS_CONTAINER_ID" ] && echo "--link $KMS_CONTAINER_ID:kms") \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
-    kurento/dev-integration:jdk-8-node-0.12 \
+    $CONTAINER_IMAGE \
       /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || exit
 
 exit 0
