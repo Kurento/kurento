@@ -1,7 +1,16 @@
 #!/bin/bash -x
 
-[ -n $1 ] && FULL_RELEASE=$1 || FULL_RELEASE=0
-[ -n $2 ] && PUBLIC=$2 || PUBLIC=no
+if [ -z "$FULL_RELEASE" ];
+then
+  [ -n $1 ] && FULL_RELEASE=$1 || FULL_RELEASE=1
+fi
+
+if [ -z "$KURENTO_PUBLIC_PROJECT" ];
+then
+  [ -n $2 ] && PUBLIC=$2 || PUBLIC=no
+else
+  PUBLIC=$KURENTO_PUBLIC_PROJECT
+fi
 
 rm -rf build
 mkdir build && cd build && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE

@@ -9,6 +9,16 @@ trap cleanup EXIT
 #   Name of container image to use
 #   Default: kurento/dev-integration:jdk-8-node-0.12
 #
+# KURENTO_PROJECT
+#   Optional
+#   Kurento project to build
+#   Default: GERRIT_PROJECT
+#
+# KURENTO_PUBLIC_PROJECT
+#   Optional
+#   "Yes" if KURENTO_PROJECT is public, "no" otherwise
+#   Default: "no"
+#
 # KURENTO_GIT_REPOSITORY_SERVER string
 #   URL of Kurento code repository
 #
@@ -82,6 +92,7 @@ CONTAINER_TEST_FILES=/opt/test-files
 # Verify mandatory parameters
 [ -z "$CONTAINER_IMAGE" ] && CONTAINER_IMAGE="kurento/dev-integration:jdk-8-node-0.12"
 [ -z "$KURENTO_PROJECT" ] && KURENTO_PROJECT=$GERRIT_PROJECT
+[ -z "$KURENTO_PUBLIC_PROJECT" ] && KURENTO_PUBLIC_PROJECT="no"
 [ -z "$KURENTO_GIT_REPOSITORY_SERVER" ] && exit 1
 [ -z "$BASE_NAME" ] && BASE_NAME=$KURENTO_PROJECT
 [ -z "$BUILD_COMMAND" ] && BUILD_COMMAND="kurento_merge_js_project.sh"
@@ -185,6 +196,7 @@ docker run \
   -e "HTTP_KEY=$CONTAINER_HTTP_KEY" \
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
+  -e "KURENTO_PUBLIC_PROJECT=$KURENTO_PUBLIC_PROJECT" \
   -e "MAVEN_GOALS=$MAVEN_GOALS" \
   -e "MAVEN_KURENTO_SNAPSHOTS=$MAVEN_KURENTO_SNAPSHOTS" \
   -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
