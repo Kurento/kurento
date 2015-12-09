@@ -207,7 +207,7 @@ public class Docker implements Closeable {
 
 		if (!existsContainer(containerName)) {
 
-			pullImageIfNecessary(imageId);
+			pullImageIfNecessary(imageId, false);
 
 			log.debug("Creating container {}", containerName);
 
@@ -297,8 +297,8 @@ public class Docker implements Closeable {
 		}
 	}
 
-	public void pullImageIfNecessary(String imageId) {
-		if (!existsImage(imageId)) {
+	public void pullImageIfNecessary(String imageId, boolean force) {
+		if (force || !existsImage(imageId)) {
 			log.info(
 					"Pulling Docker image {} ... please be patient until the process finishes",
 					imageId);
@@ -411,7 +411,7 @@ public class Docker implements Closeable {
 		// Create node if not exist
 		if (!existsContainer(nodeName)) {
 
-			pullImageIfNecessary(imageId);
+			pullImageIfNecessary(imageId, true);
 
 			log.debug("Creating container {}", nodeName);
 

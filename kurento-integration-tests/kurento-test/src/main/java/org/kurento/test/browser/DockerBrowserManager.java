@@ -355,7 +355,7 @@ public class DockerBrowserManager {
 
 				String secretFile = createSecretFile();
 
-				docker.pullImageIfNecessary(vncrecordImageId);
+				docker.pullImageIfNecessary(vncrecordImageId, false);
 
 				String videoFile = Paths
 						.get(KurentoClientBrowserTest
