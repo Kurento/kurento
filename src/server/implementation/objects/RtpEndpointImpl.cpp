@@ -7,6 +7,7 @@
 #include <gst/gst.h>
 #include <CryptoSuite.hpp>
 #include <SDES.hpp>
+#include <SignalHandler.hpp>
 
 #define GST_CAT_DEFAULT kurento_rtp_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -63,6 +64,50 @@ RtpEndpointImpl::RtpEndpointImpl (const boost::property_tree::ptree &conf,
 
   g_object_set (element, "master-key", crypto->getKey().c_str(),
                 "crypto-suite", crypto->getCrypto()->getValue(), NULL);
+}
+
+RtpEndpointImpl::~RtpEndpointImpl()
+{
+  if (handlerOnKeySoftLimit > 0) {
+    unregister_signal_handler (element, handlerOnKeySoftLimit);
+  }
+}
+
+void
+RtpEndpointImpl::postConstructor ()
+{
+  BaseRtpEndpointImpl::postConstructor ();
+
+  handlerOnKeySoftLimit = register_signal_handler (G_OBJECT (element),
+                          "key-soft-limit",
+                          std::function <void (GstElement *, gchar *) >
+                          (std::bind (&RtpEndpointImpl::onKeySoftLimit, this,
+                                      std::placeholders::_2) ),
+                          std::dynamic_pointer_cast<RtpEndpointImpl>
+                          (shared_from_this() ) );
+}
+
+void
+RtpEndpointImpl::onKeySoftLimit (gchar *media)
+{
+  std::shared_ptr<MediaType> type;
+
+  if (g_strcmp0 (media, "audio") == 0) {
+    type = std::shared_ptr<MediaType> (new MediaType (MediaType::AUDIO) );
+  } else if (g_strcmp0 (media, "video") == 0) {
+    type = std::shared_ptr<MediaType> (new MediaType (MediaType::VIDEO) );
+  } else if (g_strcmp0 (media, "data") == 0) {
+    type = std::shared_ptr<MediaType> (new MediaType (MediaType::DATA) );
+  } else {
+    GST_ERROR ("Unsupported media %s", media);
+    return;
+  }
+
+  try {
+    OnKeySoftLimit event (shared_from_this(), OnKeySoftLimit::getName(), type);
+    signalOnKeySoftLimit (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
 }
 
 MediaObjectImpl *

@@ -21,7 +21,24 @@
               "defaultValue": {}
             }
           ]
+        },
+      "events": [
+        "OnKeySoftLimit"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "OnKeySoftLimit",
+      "doc": "Emitted when encryption is used and any stream reached the soft key usage limit and will expire soon.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "mediaType",
+          "doc": "The media stream",
+          "type": "MediaType"
         }
+      ]
     }
   ],
   "complexTypes": [

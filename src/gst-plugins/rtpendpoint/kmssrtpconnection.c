@@ -43,6 +43,16 @@ enum
   PROP_MAX_PORT
 };
 
+enum
+{
+  /* signals */
+  SIGNAL_KEY_SOFT_LIMIT,
+
+  LAST_SIGNAL
+};
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
+
 struct _KmsSrtpConnectionPrivate
 {
   GRecMutex mutex;
@@ -360,6 +370,18 @@ end:
   return caps;
 }
 
+static GstCaps *
+kms_srtp_connection_soft_key_limit_cb (GstElement * srtpdec, guint ssrc,
+    KmsSrtpConnection * conn)
+{
+  g_signal_emit (conn, obj_signals[SIGNAL_KEY_SOFT_LIMIT], 0);
+
+  /* FIXME: Key is about to expire, a new one should be provided */
+  /* when renegotiation is supported */
+
+  return NULL;
+}
+
 KmsSrtpConnection *
 kms_srtp_connection_new (guint16 min_port, guint16 max_port)
 {
@@ -387,6 +409,8 @@ kms_srtp_connection_new (guint16 min_port, guint16 max_port)
       G_CALLBACK (kms_srtp_connection_new_pad_cb), obj);
   g_signal_connect (priv->srtpdec, "request-key",
       G_CALLBACK (kms_srtp_connection_request_remote_key_cb), obj);
+  g_signal_connect (priv->srtpdec, "soft-limit",
+      G_CALLBACK (kms_srtp_connection_soft_key_limit_cb), obj);
 
   priv->rtp_udpsink = gst_element_factory_make ("udpsink", NULL);
   priv->rtp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
@@ -467,6 +491,13 @@ kms_srtp_connection_class_init (KmsSrtpConnectionClass * klass)
   g_object_class_override_property (gobject_class, PROP_IS_CLIENT, "is-client");
   g_object_class_override_property (gobject_class, PROP_MAX_PORT, "max-port");
   g_object_class_override_property (gobject_class, PROP_MIN_PORT, "min-port");
+
+  obj_signals[SIGNAL_KEY_SOFT_LIMIT] =
+      g_signal_new ("key-soft-limit",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsSrtpConnectionClass, key_soft_limit), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 void

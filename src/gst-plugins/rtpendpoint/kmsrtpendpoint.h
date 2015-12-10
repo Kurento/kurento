@@ -51,6 +51,9 @@ struct _KmsRtpEndpoint
 struct _KmsRtpEndpointClass
 {
   KmsBaseRtpEndpointClass parent_class;
+
+  /* signals */
+  void (*key_soft_limit) (KmsRtpEndpoint *obj, gchar *media);
 };
 
 GType kms_rtp_endpoint_get_type (void);

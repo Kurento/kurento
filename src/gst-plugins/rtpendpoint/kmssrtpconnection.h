@@ -46,6 +46,9 @@ struct _KmsSrtpConnection
 struct _KmsSrtpConnectionClass
 {
   KmsRtpBaseConnectionClass parent_class;
+
+  /* signals */
+  void (*key_soft_limit) (KmsSrtpConnection *conn);
 };
 
 GType kms_srtp_connection_get_type (void);

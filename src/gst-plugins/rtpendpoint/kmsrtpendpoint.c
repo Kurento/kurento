@@ -96,8 +96,13 @@ struct _KmsRtpEndpointPrivate
 /* Signals and args */
 enum
 {
+  /* signals */
+  SIGNAL_KEY_SOFT_LIMIT,
+
   LAST_SIGNAL
 };
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
 
 enum
 {
@@ -262,12 +267,33 @@ end:
   return ret;
 }
 
+static void
+conn_soft_limit_cb (KmsSrtpConnection * conn, gpointer user_data)
+{
+  SdesExtData *data = (SdesExtData *) user_data;
+  KmsRtpEndpoint *self = data->rtpep;
+
+  g_signal_emit (self, obj_signals[SIGNAL_KEY_SOFT_LIMIT], 0, data->media);
+}
+
 static KmsRtpBaseConnection *
 kms_rtp_endpoint_get_connection (KmsRtpEndpoint * self, KmsSdpSession * sess,
     SdpMediaConfig * mconf)
 {
   if (self->priv->use_sdes) {
-    return kms_srtp_session_get_connection (KMS_SRTP_SESSION (sess), mconf);
+    KmsRtpBaseConnection *conn;
+    GstSDPMedia *media;
+    SdesExtData *data;
+
+    conn = kms_srtp_session_get_connection (KMS_SRTP_SESSION (sess), mconf);
+
+    media = kms_sdp_media_config_get_sdp_media (mconf);
+    data = sdes_ext_data_new (self, gst_sdp_media_get_media (media));
+
+    g_signal_connect_data (conn, "key-soft-limit",
+        G_CALLBACK (conn_soft_limit_cb), data,
+        (GClosureNotify) kms_ref_struct_unref, 0);
+    return conn;
   } else {
     return kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
   }
@@ -983,6 +1009,13 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
           "Describes the encryption and authentication algorithms",
           KMS_TYPE_RTP_SDES_CRYPTO_SUITE, DEFAULT_CRYPTO_SUITE,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+
+  obj_signals[SIGNAL_KEY_SOFT_LIMIT] =
+      g_signal_new ("key-soft-limit",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsRtpEndpointClass, key_soft_limit), NULL, NULL,
+      g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING);
 
   g_type_class_add_private (klass, sizeof (KmsRtpEndpointPrivate));
 }
