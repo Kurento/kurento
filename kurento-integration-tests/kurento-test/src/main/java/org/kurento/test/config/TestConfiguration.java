@@ -30,13 +30,13 @@ public class TestConfiguration {
 	public static final String TEST_PORT_PROPERTY = "test.port";
 	public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
 	public static final String APP_HTTP_PORT_PROP = "server.port";
-	public static final int APP_HTTP_PORT_DEFAULT = 7779;
+  public static final int APP_HTTP_PORT_DEFAULT = 8443;
 
 	public static final String TEST_PATH_PROPERTY = "test.path";
 	public static final String TEST_PATH_DEFAULT = "/";
 
 	public static final String TEST_PROTOCOL_PROPERTY = "test.protocol";
-	public static final String TEST_PROTOCOL_DEFAULT = "http";
+  public static final String TEST_PROTOCOL_DEFAULT = "https";
 
 	public final static String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
 	public final static int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
