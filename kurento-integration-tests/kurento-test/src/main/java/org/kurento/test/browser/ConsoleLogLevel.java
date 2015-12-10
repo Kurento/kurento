@@ -21,10 +21,10 @@ package org.kurento.test.browser;
  * @since 5.0.4
  */
 public enum ConsoleLogLevel {
-  INFO, WARN, ERROR;
+	INFO, WARN, ERROR;
 
-  @Override
-  public String toString() {
-    return this.name().toLowerCase();
-  }
+	@Override
+	public String toString() {
+		return this.name().toLowerCase();
+	}
 }

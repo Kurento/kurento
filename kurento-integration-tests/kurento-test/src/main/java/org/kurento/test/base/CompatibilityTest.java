@@ -25,6 +25,7 @@ import org.kurento.test.browser.WebRtcTestPage;
  * @since 5.0.5
  */
 @Category(SystemCompatibilityTests.class)
-public class CompatibilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class CompatibilityTest
+		extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 }

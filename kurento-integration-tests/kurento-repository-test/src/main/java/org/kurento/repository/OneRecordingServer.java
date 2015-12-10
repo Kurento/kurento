@@ -24,155 +24,161 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 public class OneRecordingServer {
 
-  private static final Logger log = LoggerFactory.getLogger(OneRecordingServer.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(OneRecordingServer.class);
 
-  private ConfigurableApplicationContext context;
+	private ConfigurableApplicationContext context;
 
-  public void execute() throws Exception {
+	public void execute() throws Exception {
 
-    startServer();
+		startServer();
 
-    RepositoryItem repositoryItem = getRepository().createRepositoryItem();
-    Repository repo = getRepository();
-    if (repo instanceof MongoRepository) {
-      MongoRepository mrepo = (MongoRepository) repo;
-      mrepo.getGridFS().getDB().dropDatabase();
-    }
+		RepositoryItem repositoryItem = getRepository().createRepositoryItem();
+		Repository repo = getRepository();
+		if (repo instanceof MongoRepository) {
+			MongoRepository mrepo = (MongoRepository) repo;
+			mrepo.getGridFS().getDB().dropDatabase();
+		}
 
-    prepareToUploadVideo(repositoryItem);
-    prepareToDownloadVideo(repositoryItem);
+		prepareToUploadVideo(repositoryItem);
+		prepareToDownloadVideo(repositoryItem);
 
-    stopServer();
-  }
+		stopServer();
+	}
 
-  public synchronized void startServer() throws Exception {
-    if (context == null) {
-      context = KurentoRepositoryServerApp.start();
-    }
-  }
+	public synchronized void startServer() throws Exception {
+		if (context == null) {
+			context = KurentoRepositoryServerApp.start();
+		}
+	}
 
-  private synchronized void stopServer() {
+	private synchronized void stopServer() {
 
-    if (context != null) {
-      context.close();
-      context = null;
-    }
-  }
+		if (context != null) {
+			context.close();
+			context = null;
+		}
+	}
 
-  private void prepareToDownloadVideo(RepositoryItem repositoryItem) throws InterruptedException {
-    RepositoryHttpPlayer player = repositoryItem.createRepositoryHttpPlayer("video-download");
-    log.info("The video can be downloaded with GET from the URL: " + player.getURL());
+	private void prepareToDownloadVideo(RepositoryItem repositoryItem)
+			throws InterruptedException {
+		RepositoryHttpPlayer player = repositoryItem
+				.createRepositoryHttpPlayer("video-download");
+		log.info("The video can be downloaded with GET from the URL: "
+				+ player.getURL());
 
-    player.setAutoTerminationTimeout(30 * 60 * 1000);
-    log.info("The player will be auto-terminated 30 min after the last downloading of content (http GET)");
+		player.setAutoTerminationTimeout(30 * 60 * 1000);
+		log.info("The player will be auto-terminated 30 min after the last downloading of content (http GET)");
 
-    final CountDownLatch terminatedLatch = new CountDownLatch(1);
+		final CountDownLatch terminatedLatch = new CountDownLatch(1);
 
-    player.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
-      @Override
-      public void onEvent(HttpSessionStartedEvent event) {
-        log.info("Downloading started");
-      }
-    });
+		player.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
+			@Override
+			public void onEvent(HttpSessionStartedEvent event) {
+				log.info("Downloading started");
+			}
+		});
 
-    player
-        .addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
-          @Override
-          public void onEvent(HttpSessionTerminatedEvent event) {
-            log.info("Downloading terminated");
-            terminatedLatch.countDown();
-          }
-        });
+		player.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
+			@Override
+			public void onEvent(HttpSessionTerminatedEvent event) {
+				log.info("Downloading terminated");
+				terminatedLatch.countDown();
+			}
+		});
 
-    try {
-      terminatedLatch.await();
-    } catch (InterruptedException e) {
-    }
-  }
+		try {
+			terminatedLatch.await();
+		} catch (InterruptedException e) {
+		}
+	}
 
-  private void prepareToUploadVideo(RepositoryItem repositoryItem) throws InterruptedException {
+	private void prepareToUploadVideo(RepositoryItem repositoryItem)
+			throws InterruptedException {
 
-    RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder("video-upload");
+		RepositoryHttpRecorder recorder = repositoryItem
+				.createRepositoryHttpRecorder("video-upload");
 
-    log.info("The video must be uploaded with PUT or POST to the URL: " + recorder.getURL());
+		log.info("The video must be uploaded with PUT or POST to the URL: "
+				+ recorder.getURL());
 
-    readyToUploadWatch.countDown();
+		readyToUploadWatch.countDown();
 
-    recorder.setAutoTerminationTimeout(5 * 1000);
-    log.info("The recorder will be auto-terminated 5 seconds after the last uploading of content (http PUT or POST)");
+		recorder.setAutoTerminationTimeout(5 * 1000);
+		log.info("The recorder will be auto-terminated 5 seconds after the last uploading of content (http PUT or POST)");
 
-    final CountDownLatch terminatedLatch = new CountDownLatch(1);
+		final CountDownLatch terminatedLatch = new CountDownLatch(1);
 
-    recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
-      @Override
-      public void onEvent(HttpSessionStartedEvent event) {
-        log.info("Uploading started");
-      }
-    });
+		recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
+			@Override
+			public void onEvent(HttpSessionStartedEvent event) {
+				log.info("Uploading started");
+			}
+		});
 
-    recorder
-        .addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
-          @Override
-          public void onEvent(HttpSessionTerminatedEvent event) {
-            log.info("Uploading terminated");
-            terminatedLatch.countDown();
-          }
-        });
+		recorder.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
+			@Override
+			public void onEvent(HttpSessionTerminatedEvent event) {
+				log.info("Uploading terminated");
+				terminatedLatch.countDown();
+			}
+		});
 
-    terminatedLatch.await();
-  }
+		terminatedLatch.await();
+	}
 
-  protected Repository getRepository() {
-    return (Repository) context.getBean("repository");
-  }
+	protected Repository getRepository() {
+		return (Repository) context.getBean("repository");
+	}
 
-  // Convenience static methods and attributes
+	// Convenience static methods and attributes
 
-  private static CountDownLatch readyToUploadWatch = new CountDownLatch(1);
-  private static OneRecordingServer server;
-  private static Thread thread;
+	private static CountDownLatch readyToUploadWatch = new CountDownLatch(1);
+	private static OneRecordingServer server;
+	private static Thread thread;
 
-  public static void main(String[] args) throws Exception {
-    server = new OneRecordingServer();
-    server.execute();
-  }
+	public static void main(String[] args) throws Exception {
+		server = new OneRecordingServer();
+		server.execute();
+	}
 
-  public static String getPublicWebappURL() {
-    String web = server.context.getBean(RepositoryApiConfiguration.class).getWebappPublicURL();
-    // String web = "http://localhost:8080/";
+	public static String getPublicWebappURL() {
+		String web = server.context.getBean(RepositoryApiConfiguration.class)
+				.getWebappPublicURL();
+		// String web = "http://localhost:8080/";
 
-    log.info("web: " + web);
-    return web;
-  }
+		log.info("web: " + web);
+		return web;
+	}
 
-  public static void startServerAndWait() {
+	public static void startServerAndWait() {
 
-    thread = new Thread() {
-      @Override
-      public void run() {
-        try {
-          OneRecordingServer.main(null);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    };
+		thread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					OneRecordingServer.main(null);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
 
-    thread.start();
+		thread.start();
 
-    try {
-      readyToUploadWatch.await();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
+		try {
+			readyToUploadWatch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
-  public static void stop() {
-    thread.interrupt();
-    try {
-      thread.join();
-    } catch (InterruptedException e) {
-      thread.interrupt();
-    }
-  }
+	public static void stop() {
+		thread.interrupt();
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			thread.interrupt();
+		}
+	}
 }

@@ -55,43 +55,47 @@ import org.kurento.test.config.TestScenario;
 
 public class WebRtcFaceOverlayTest extends FunctionalTest {
 
-  private static final int DEFAULT_PLAYTIME = 10; // seconds
+	private static final int DEFAULT_PLAYTIME = 10; // seconds
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
 
-  @Test
-  public void testWebRtcFaceOverlay() throws InterruptedException {
-    int playTime =
-        Integer.parseInt(System.getProperty("test.webrtcfaceoverlay.playtime",
-            String.valueOf(DEFAULT_PLAYTIME)));
+	@Test
+	public void testWebRtcFaceOverlay() throws InterruptedException {
+		int playTime = Integer
+				.parseInt(System.getProperty("test.webrtcfaceoverlay.playtime",
+						String.valueOf(DEFAULT_PLAYTIME)));
 
-    // Media Pipeline
-    MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
-    FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(mp).build();
-    webRtcEndpoint.connect(faceOverlayFilter);
-    faceOverlayFilter.connect(webRtcEndpoint);
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+		FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(mp)
+				.build();
+		webRtcEndpoint.connect(faceOverlayFilter);
+		faceOverlayFilter.connect(webRtcEndpoint);
 
-    // Start WebRTC and wait for playing event
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
+		// Start WebRTC and wait for playing event
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.SEND_RCV);
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getPage().waitForEvent("playing"));
 
-    // Guard time to play the video
-    waitSeconds(playTime);
+		// Guard time to play the video
+		waitSeconds(playTime);
 
-    // Assertions
-    double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue("Error in play time (expected: " + playTime + " sec, real: " + currentTime
-        + " sec)", getPage().compare(playTime, currentTime));
-    Assert.assertTrue("The color of the video should be green",
-        getPage().similarColor(CHROME_VIDEOTEST_COLOR));
+		// Assertions
+		double currentTime = getPage().getCurrentTime();
+		Assert.assertTrue(
+				"Error in play time (expected: " + playTime + " sec, real: "
+						+ currentTime + " sec)",
+				getPage().compare(playTime, currentTime));
+		Assert.assertTrue("The color of the video should be green",
+				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 
-    // Release Media Pipeline
-    mp.release();
-  }
+		// Release Media Pipeline
+		mp.release();
+	}
 }

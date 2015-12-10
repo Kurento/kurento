@@ -16,35 +16,38 @@
 
 package org.kurento.jsonrpc.test.handler;
 
-import org.kurento.jsonrpc.DefaultJsonRpcHandler;
-import org.kurento.jsonrpc.Transaction;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.test.base.DemoBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonObject;
 
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
+import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.test.base.DemoBean;
+
 public class EchoJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
-  private static Logger log = LoggerFactory.getLogger(EchoJsonRpcHandler.class);
+	private static Logger log = LoggerFactory
+			.getLogger(EchoJsonRpcHandler.class);
 
-  @Autowired
-  DemoBean demoBean;
+	@Autowired
+	DemoBean demoBean;
 
-  @Override
-  public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
+	@Override
+	public void handleRequest(Transaction transaction,
+			Request<JsonObject> request) throws Exception {
 
-    if (demoBean == null) {
-      throw new RuntimeException("Not autowired dependencies");
-    }
-    log.info("Request id:" + request.getId());
-    log.info("Request method:" + request.getMethod());
-    log.info("Request params:" + request.getParams());
+		if (demoBean == null) {
+			throw new RuntimeException("Not autowired dependencies");
+		}
+		log.info("Request id:" + request.getId());
+		log.info("Request method:" + request.getMethod());
+		log.info("Request params:" + request.getParams());
 
-    transaction.sendResponse(request.getParams());
+		transaction.sendResponse(request.getParams());
 
-  }
+	}
 
 }

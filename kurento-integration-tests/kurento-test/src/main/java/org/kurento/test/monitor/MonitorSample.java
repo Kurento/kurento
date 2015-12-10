@@ -25,86 +25,86 @@ import java.util.Map;
  */
 public class MonitorSample {
 
-  // Number of clients
-  private int numClients = 0;
+	// Number of clients
+	private int numClients = 0;
 
-  // KMS information
-  private KmsSystemInfo kmsInfo;
+	// KMS information
+	private KmsSystemInfo kmsInfo;
 
-  // WebRtcStats
-  private Map<String, WebRtcStats> stats = new HashMap<>();
+	// WebRtcStats
+	private Map<String, WebRtcStats> stats = new HashMap<>();
 
-  // Latency
-  private double currentLatency = 0;
-  private int latencyHints = 0;
-  private int latencyErrors = 0;
-  private boolean showLantency = false;
+	// Latency
+	private double currentLatency = 0;
+	private int latencyHints = 0;
+	private int latencyErrors = 0;
+	private boolean showLantency = false;
 
-  public void addWebRtcStats(WebRtcStats webRtcStats) {
-    stats.put(webRtcStats.getId(), webRtcStats);
-  }
+	public void addWebRtcStats(WebRtcStats webRtcStats) {
+		stats.put(webRtcStats.getId(), webRtcStats);
+	}
 
-  public WebRtcStats getWebRtcStats(String id) {
-    return stats.get(id);
-  }
+	public WebRtcStats getWebRtcStats(String id) {
+		return stats.get(id);
+	}
 
-  public Map<String, WebRtcStats> getStats() {
-    return stats;
-  }
+	public Map<String, WebRtcStats> getStats() {
+		return stats;
+	}
 
-  public int getNumClients() {
-    return numClients;
-  }
+	public int getNumClients() {
+		return numClients;
+	}
 
-  public void setNumClients(int numClients) {
-    this.numClients = numClients;
-  }
+	public void setNumClients(int numClients) {
+		this.numClients = numClients;
+	}
 
-  public KmsSystemInfo getSystemInfo() {
-    return kmsInfo;
-  }
+	public KmsSystemInfo getSystemInfo() {
+		return kmsInfo;
+	}
 
-  public void setSystemInfo(KmsSystemInfo kmsInfo) {
-    this.kmsInfo = kmsInfo;
-  }
+	public void setSystemInfo(KmsSystemInfo kmsInfo) {
+		this.kmsInfo = kmsInfo;
+	}
 
-  public double getCurrentLatency() {
-    return currentLatency;
-  }
+	public double getCurrentLatency() {
+		return currentLatency;
+	}
 
-  public void setCurrentLatency(double currentLatency) {
-    this.currentLatency = currentLatency;
-  }
+	public void setCurrentLatency(double currentLatency) {
+		this.currentLatency = currentLatency;
+	}
 
-  public int getLatencyHints() {
-    return latencyHints;
-  }
+	public int getLatencyHints() {
+		return latencyHints;
+	}
 
-  public void setLatencyHints(int latencyHints) {
-    this.latencyHints = latencyHints;
-  }
+	public void setLatencyHints(int latencyHints) {
+		this.latencyHints = latencyHints;
+	}
 
-  public int getLatencyErrors() {
-    return latencyErrors;
-  }
+	public int getLatencyErrors() {
+		return latencyErrors;
+	}
 
-  public void setLatencyErrors(int latencyErrors) {
-    this.latencyErrors = latencyErrors;
-  }
+	public void setLatencyErrors(int latencyErrors) {
+		this.latencyErrors = latencyErrors;
+	}
 
-  public boolean isShowLantency() {
-    return showLantency;
-  }
+	public boolean isShowLantency() {
+		return showLantency;
+	}
 
-  public void setShowLantency(boolean showLantency) {
-    this.showLantency = showLantency;
-  }
+	public void setShowLantency(boolean showLantency) {
+		this.showLantency = showLantency;
+	}
 
-  public double getLatency() {
-    double latency = (latencyHints > 0) ? currentLatency / latencyHints : 0;
-    this.currentLatency = 0;
-    this.latencyHints = 0;
-    return latency;
-  }
+	public double getLatency() {
+		double latency = (latencyHints > 0) ? currentLatency / latencyHints : 0;
+		this.currentLatency = 0;
+		this.latencyHints = 0;
+		return latency;
+	}
 
 }

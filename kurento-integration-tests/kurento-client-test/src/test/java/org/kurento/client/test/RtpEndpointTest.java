@@ -46,11 +46,12 @@ import org.kurento.client.test.util.SdpBaseTest;
  */
 public class RtpEndpointTest extends SdpBaseTest<RtpEndpoint> {
 
-  @Before
-  public void setupMediaElements() {
-    sdp = new RtpEndpoint.Builder(pipeline).build();
-    sdp2 = new RtpEndpoint.Builder(pipeline).build();
+	@Before
+	public void setupMediaElements() {
+		sdp = new RtpEndpoint.Builder(pipeline).build();
+		sdp2 = new RtpEndpoint.Builder(pipeline).build();
 
-  }
+		 
+	}
 
 }

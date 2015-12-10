@@ -30,26 +30,26 @@ import org.kurento.test.services.Service;
  */
 public class KurentoClientTest extends KurentoTest {
 
-  public static @Service KmsService kms = new KmsService();
-  public static @Service KmsService fakeKms = new FakeKmsService();
+	public static @Service KmsService kms = new KmsService();
+	public static @Service KmsService fakeKms = new FakeKmsService();
 
-  protected KurentoClient kurentoClient;
-  protected KurentoClient fakeKurentoClient;
+	protected KurentoClient kurentoClient;
+	protected KurentoClient fakeKurentoClient;
 
-  @Before
-  public void setupKurentoClient() {
-    kurentoClient = kms.getKurentoClient();
-    fakeKurentoClient = fakeKms.getKurentoClient();
-  }
+	@Before
+	public void setupKurentoClient() {
+		kurentoClient = kms.getKurentoClient();
+		fakeKurentoClient = fakeKms.getKurentoClient();
+	}
 
-  @After
-  public void teardownKurentoClient() throws Exception {
-    if (kurentoClient != null) {
-      kurentoClient.destroy();
-    }
-    if (fakeKurentoClient != null) {
-      fakeKurentoClient.destroy();
-    }
-  }
+	@After
+	public void teardownKurentoClient() throws Exception {
+		if (kurentoClient != null) {
+			kurentoClient.destroy();
+		}
+		if (fakeKurentoClient != null) {
+			fakeKurentoClient.destroy();
+		}
+	}
 
 }

@@ -18,7 +18,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Custom annotation for finished test class (called when all tests have finished).
+ * Custom annotation for finished test class (called when all tests have
+ * finished).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1

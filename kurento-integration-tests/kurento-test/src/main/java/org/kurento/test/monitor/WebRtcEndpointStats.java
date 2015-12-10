@@ -13,60 +13,63 @@ import org.slf4j.LoggerFactory;
 
 public class WebRtcEndpointStats extends MonitorStats {
 
-  private static final Logger log = LoggerFactory.getLogger(WebRtcEndpointStats.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(WebRtcEndpointStats.class);
 
-  private Map<String, Stats> stats;
+	private Map<String, Stats> stats;
 
-  public WebRtcEndpointStats(Map<String, Stats> stats) {
-    this.stats = stats;
-  }
+	public WebRtcEndpointStats(Map<String, Stats> stats) {
+		this.stats = stats;
+	}
 
-  public Map<String, Stats> getStats() {
-    return stats;
-  }
+	public Map<String, Stats> getStats() {
+		return stats;
+	}
 
-  public List<String> calculateHeaders() {
+	public List<String> calculateHeaders() {
 
-    List<String> headers = new ArrayList<>();
+		List<String> headers = new ArrayList<>();
 
-    for (Entry<String, Stats> statEntry : stats.entrySet()) {
-      for (Method method : statEntry.getValue().getClass().getMethods()) {
-        if (isGetter(method)) {
-          headers.add(statEntry.getKey() + "_" + getGetterName(method));
-        }
-      }
-    }
+		for (Entry<String, Stats> statEntry : stats.entrySet()) {
+			for (Method method : statEntry.getValue().getClass().getMethods()) {
+				if (isGetter(method)) {
+					headers.add(
+							statEntry.getKey() + "_" + getGetterName(method));
+				}
+			}
+		}
 
-    return headers;
-  }
+		return headers;
+	}
 
-  public List<Object> calculateValues(List<String> headers) {
+	public List<Object> calculateValues(List<String> headers) {
 
-    Map<String, Object> rtcServerStatsValues = new HashMap<>();
+		Map<String, Object> rtcServerStatsValues = new HashMap<>();
 
-    for (Entry<String, Stats> statEntry : stats.entrySet()) {
-      for (Method method : statEntry.getValue().getClass().getMethods()) {
-        if (isGetter(method)) {
+		for (Entry<String, Stats> statEntry : stats.entrySet()) {
+			for (Method method : statEntry.getValue().getClass().getMethods()) {
+				if (isGetter(method)) {
 
-          Object value = null;
-          try {
-            value = method.invoke(statEntry.getValue());
-          } catch (Exception e) {
-            log.error("Exception invoking method", e);
-          }
+					Object value = null;
+					try {
+						value = method.invoke(statEntry.getValue());
+					} catch (Exception e) {
+						log.error("Exception invoking method", e);
+					}
 
-          String keyList = statEntry.getKey() + "_" + getGetterName(method);
+					String keyList = statEntry.getKey() + "_"
+							+ getGetterName(method);
 
-          rtcServerStatsValues.put(keyList, value);
-        }
-      }
-    }
+					rtcServerStatsValues.put(keyList, value);
+				}
+			}
+		}
 
-    List<Object> values = new ArrayList<>();
-    for (String header : headers) {
-      values.add(rtcServerStatsValues.get(header));
-    }
+		List<Object> values = new ArrayList<>();
+		for (String header : headers) {
+			values.add(rtcServerStatsValues.get(header));
+		}
 
-    return values;
-  }
+		return values;
+	}
 }

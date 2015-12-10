@@ -63,486 +63,534 @@ import com.google.gson.JsonObject;
 
 public class DockerBrowserManager {
 
-  public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
-  private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 20;
+	public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
+	private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 20;
+
+	private static final int HUB_CREATION_WAIT_POOL_TIME_MS = 1000;
+	private static final int HUB_CREATION_TIMEOUT_MS = 30000;
+
+	private static Logger log = LoggerFactory
+			.getLogger(DockerBrowserManager.class);
+
+	private class DockerBrowser {
+
+		private String id;
+		private String browserContainerName;
+		private String vncrecorderContainerName;
+		private String browserContainerIp;
+		private DesiredCapabilities capabilities;
+		private RemoteWebDriver driver;
 
-  private static final int HUB_CREATION_WAIT_POOL_TIME_MS = 1000;
-  private static final int HUB_CREATION_TIMEOUT_MS = 30000;
+		public DockerBrowser(String id, DesiredCapabilities capabilities) {
+			this.id = id;
+			this.capabilities = capabilities;
 
-  private static Logger log = LoggerFactory.getLogger(DockerBrowserManager.class);
+			calculateContainerNames();
 
-  private class DockerBrowser {
+			capabilities.setCapability("applicationName", browserContainerName);
+		}
 
-    private String id;
-    private String browserContainerName;
-    private String vncrecorderContainerName;
-    private String browserContainerIp;
-    private DesiredCapabilities capabilities;
-    private RemoteWebDriver driver;
+		private void calculateContainerNames() {
 
-    public DockerBrowser(String id, DesiredCapabilities capabilities) {
-      this.id = id;
-      this.capabilities = capabilities;
+			browserContainerName = id;
 
-      calculateContainerNames();
+			vncrecorderContainerName = browserContainerName + "-"
+					+ getProperty(DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY,
+							DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
 
-      capabilities.setCapability("applicationName", browserContainerName);
-    }
+			if (docker.isRunningInContainer()) {
 
-    private void calculateContainerNames() {
+				String containerName = docker.getContainerName();
 
-      browserContainerName = id;
+				browserContainerName = containerName + "-"
+						+ browserContainerName;
+				vncrecorderContainerName = containerName + "-"
+						+ vncrecorderContainerName;
+			}
+		}
 
-      vncrecorderContainerName =
-          browserContainerName
-              + "-"
-              + getProperty(DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY,
-                  DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
+		private void waitForNodeRegisteredInHub() {
 
-      if (docker.isRunningInContainer()) {
+			long timeoutMs = System.currentTimeMillis()
+					+ HUB_CREATION_TIMEOUT_MS;
+			while (true) {
 
-        String containerName = docker.getContainerName();
+				try {
 
-        browserContainerName = containerName + "-" + browserContainerName;
-        vncrecorderContainerName = containerName + "-" + vncrecorderContainerName;
-      }
-    }
+					JsonObject result = curl(
+							hubUrl + "/grid/api/proxy?id=http://"
+									+ browserContainerIp + ":5555");
 
-    private void waitForNodeRegisteredInHub() {
+					if (result.get("success").getAsBoolean()) {
+						log.info("Capabilities of container {}: {}",
+								browserContainerName, result.get("request")
+										.getAsJsonObject().get("capabilities"));
+						return;
+					} else {
+						log.debug(
+								"Node {} not registered in hub. Waiting {} ms...",
+								id, HUB_CREATION_WAIT_POOL_TIME_MS);
+					}
 
-      long timeoutMs = System.currentTimeMillis() + HUB_CREATION_TIMEOUT_MS;
-      while (true) {
+					waitPoolTime(timeoutMs, "node registration in hub");
 
-        try {
+				} catch (MalformedURLException e) {
+					throw new Error(e);
+				} catch (IOException e) {
+					log.debug("Hub is not ready. Waiting {} ms...",
+							HUB_CREATION_WAIT_POOL_TIME_MS);
+					waitPoolTime(timeoutMs, "hub service ready");
+				}
+			}
+		}
 
-          JsonObject result =
-              curl(hubUrl + "/grid/api/proxy?id=http://" + browserContainerIp + ":5555");
+		private void waitPoolTime(long timeoutMs, String message) {
+			if (System.currentTimeMillis() > timeoutMs) {
+				throw new RuntimeException(
+						"Timeout of " + HUB_CREATION_TIMEOUT_MS
+								+ " ms waiting for " + message);
+			}
+			try {
+				Thread.sleep(HUB_CREATION_WAIT_POOL_TIME_MS);
+			} catch (InterruptedException e1) {
+			}
+		}
 
-          if (result.get("success").getAsBoolean()) {
-            log.info("Capabilities of container {}: {}", browserContainerName, result
-                .get("request").getAsJsonObject().get("capabilities"));
-            return;
-          } else {
-            log.debug("Node {} not registered in hub. Waiting {} ms...", id,
-                HUB_CREATION_WAIT_POOL_TIME_MS);
-          }
+		private JsonObject curl(String urlString)
+				throws MalformedURLException, IOException {
+			URL url = new URL(urlString);
 
-          waitPoolTime(timeoutMs, "node registration in hub");
+			URLConnection connection = url.openConnection();
 
-        } catch (MalformedURLException e) {
-          throw new Error(e);
-        } catch (IOException e) {
-          log.debug("Hub is not ready. Waiting {} ms...", HUB_CREATION_WAIT_POOL_TIME_MS);
-          waitPoolTime(timeoutMs, "hub service ready");
-        }
-      }
-    }
+			Reader is = new BufferedReader(
+					new InputStreamReader(connection.getInputStream()));
 
-    private void waitPoolTime(long timeoutMs, String message) {
-      if (System.currentTimeMillis() > timeoutMs) {
-        throw new RuntimeException("Timeout of " + HUB_CREATION_TIMEOUT_MS + " ms waiting for "
-            + message);
-      }
-      try {
-        Thread.sleep(HUB_CREATION_WAIT_POOL_TIME_MS);
-      } catch (InterruptedException e1) {
-      }
-    }
+			JsonObject result = new GsonBuilder().create().fromJson(is,
+					JsonObject.class);
+			return result;
+		}
 
-    private JsonObject curl(String urlString) throws MalformedURLException, IOException {
-      URL url = new URL(urlString);
+		public void create() {
 
-      URLConnection connection = url.openConnection();
+			String nodeImageId = calculateBrowserImageName(capabilities);
 
-      Reader is = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			BrowserType type = BrowserType
+					.valueOf(capabilities.getBrowserName().toUpperCase());
 
-      JsonObject result = new GsonBuilder().create().fromJson(is, JsonObject.class);
-      return result;
-    }
+			int numRetries = 0;
 
-    public void create() {
+			do {
+				try {
 
-      String nodeImageId = calculateBrowserImageName(capabilities);
+					docker.startAndWaitNode(browserContainerName, type,
+							browserContainerName, nodeImageId, dockerHubIp);
 
-      BrowserType type = BrowserType.valueOf(capabilities.getBrowserName().toUpperCase());
+					browserContainerIp = docker
+							.inspectContainer(browserContainerName)
+							.getNetworkSettings().getIpAddress();
 
-      int numRetries = 0;
+					waitForNodeRegisteredInHub();
 
-      do {
-        try {
+					createAndWaitRemoteDriver(hubUrl + "/wd/hub", capabilities);
 
-          docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
-              dockerHubIp);
+				} catch (TimeoutException e) {
 
-          browserContainerIp =
-              docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
+					if (numRetries == REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES) {
+						throw new KurentoException("Timeout of "
+								+ (REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S
+										* REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES)
+								+ " seconds trying to create a RemoteWebDriver after"
+								+ REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES
+								+ "retries");
+					}
 
-          waitForNodeRegisteredInHub();
+					log.warn(
+							"Timeout of {} seconds creating RemoteWebDriver. Retrying {}...",
+							REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, numRetries);
 
-          createAndWaitRemoteDriver(hubUrl + "/wd/hub", capabilities);
+					docker.stopAndRemoveContainer(browserContainerName);
 
-        } catch (TimeoutException e) {
+					browserContainerName += "r";
 
-          if (numRetries == REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES) {
-            throw new KurentoException("Timeout of "
-                + (REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S * REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES)
-                + " seconds trying to create a RemoteWebDriver after"
-                + REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES + "retries");
-          }
+					capabilities.setCapability("applicationName",
+							browserContainerName);
 
-          log.warn("Timeout of {} seconds creating RemoteWebDriver. Retrying {}...",
-              REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, numRetries);
+					numRetries++;
+				}
 
-          docker.stopAndRemoveContainer(browserContainerName);
+			} while (driver == null);
 
-          browserContainerName += "r";
+			log.debug("RemoteWebDriver for browser {} created", id);
 
-          capabilities.setCapability("applicationName", browserContainerName);
+			if (record) {
+				createVncRecorderContainer();
+			}
+		}
 
-          numRetries++;
-        }
+		private void createAndWaitRemoteDriver(final String driverUrl,
+				final DesiredCapabilities capabilities)
+						throws TimeoutException {
 
-      } while (driver == null);
+			log.debug("Creating remote driver for browser {} in hub {}", id,
+					driverUrl);
 
-      log.debug("RemoteWebDriver for browser {} created", id);
+			int timeoutSeconds = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
+					SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
 
-      if (record) {
-        createVncRecorderContainer();
-      }
-    }
+			long timeoutMs = System.currentTimeMillis()
+					+ TimeUnit.SECONDS.toMillis(timeoutSeconds);
 
-    private void createAndWaitRemoteDriver(final String driverUrl,
-        final DesiredCapabilities capabilities) throws TimeoutException {
+			do {
 
-      log.debug("Creating remote driver for browser {} in hub {}", id, driverUrl);
+				Future<RemoteWebDriver> fDriver = null;
 
-      int timeoutSeconds =
-          getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+				try {
 
-      long timeoutMs = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeoutSeconds);
+					RemoteWebDriver rDriver;
 
-      do {
+					fDriver = exec.submit(new Callable<RemoteWebDriver>() {
+						@Override
+						public RemoteWebDriver call() throws Exception {
+							return new RemoteWebDriver(new URL(driverUrl),
+									capabilities);
+						}
+					});
 
-        Future<RemoteWebDriver> fDriver = null;
+					rDriver = fDriver.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S,
+							TimeUnit.SECONDS);
 
-        try {
+					SessionId sessionId = rDriver.getSessionId();
+					String nodeIp = obtainBrowserNodeIp(sessionId);
 
-          RemoteWebDriver rDriver;
+					if (!nodeIp.equals(browserContainerIp)) {
+						log.warn(
+								"Browser {} is not created in its container. Container IP: {} Browser IP:{}",
+								id, browserContainerIp, nodeIp);
+					}
 
-          fDriver = exec.submit(new Callable<RemoteWebDriver>() {
-            @Override
-            public RemoteWebDriver call() throws Exception {
-              return new RemoteWebDriver(new URL(driverUrl), capabilities);
-            }
-          });
+					log.debug(
+							"Created selenium session {} for browser {} in node {}",
+							sessionId, id, nodeIp);
 
-          rDriver = fDriver.get(REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S, TimeUnit.SECONDS);
+					driver = rDriver;
 
-          SessionId sessionId = rDriver.getSessionId();
-          String nodeIp = obtainBrowserNodeIp(sessionId);
+				} catch (TimeoutException e) {
 
-          if (!nodeIp.equals(browserContainerIp)) {
-            log.warn("Browser {} is not created in its container. Container IP: {} Browser IP:{}",
-                id, browserContainerIp, nodeIp);
-          }
+					fDriver.cancel(true);
+					throw e;
 
-          log.debug("Created selenium session {} for browser {} in node {}", sessionId, id, nodeIp);
+				} catch (InterruptedException e) {
 
-          driver = rDriver;
+					throw new RuntimeException(
+							"Interrupted exception waiting for RemoteWebDriver",
+							e);
 
-        } catch (TimeoutException e) {
+				} catch (ExecutionException e) {
 
-          fDriver.cancel(true);
-          throw e;
+					log.warn("Exception creating RemoveWebDriver", e);
 
-        } catch (InterruptedException e) {
+					// Check timeout
+					if (System.currentTimeMillis() > timeoutMs) {
+						throw new KurentoException(
+								"Timeout of " + timeoutMs
+										+ " millis waiting to create a RemoteWebDriver",
+								e.getCause());
+					}
 
-          throw new RuntimeException("Interrupted exception waiting for RemoteWebDriver", e);
+					log.debug(
+							"Exception creating RemoteWebDriver for browser \"{}\". Retrying...",
+							id, e.getCause());
 
-        } catch (ExecutionException e) {
+					// Poll time
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException t) {
+						Thread.currentThread().interrupt();
+						return;
+					}
 
-          log.warn("Exception creating RemoveWebDriver", e);
+				}
 
-          // Check timeout
-          if (System.currentTimeMillis() > timeoutMs) {
-            throw new KurentoException("Timeout of " + timeoutMs
-                + " millis waiting to create a RemoteWebDriver", e.getCause());
-          }
+			} while (driver == null);
+		}
 
-          log.debug("Exception creating RemoteWebDriver for browser \"{}\". Retrying...", id,
-              e.getCause());
+		private String obtainBrowserNodeIp(SessionId sessionId) {
 
-          // Poll time
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException t) {
-            Thread.currentThread().interrupt();
-            return;
-          }
+			try {
 
-        }
+				JsonObject result = curl(
+						hubUrl + "/grid/api/testsession?session=" + sessionId);
 
-      } while (driver == null);
-    }
+				String nodeIp = (String) result.get("proxyId").getAsString();
+				return nodeIp.substring(7, nodeIp.length()).split(":")[0];
 
-    private String obtainBrowserNodeIp(SessionId sessionId) {
+			} catch (IOException e) {
+				log.warn("Exception while trying to obtain node Ip. {}:{}",
+						e.getClass().getName(), e.getMessage());
+				return null;
+			}
 
-      try {
+		}
 
-        JsonObject result = curl(hubUrl + "/grid/api/testsession?session=" + sessionId);
+		private void createVncRecorderContainer() {
 
-        String nodeIp = (String) result.get("proxyId").getAsString();
-        return nodeIp.substring(7, nodeIp.length()).split(":")[0];
+			try {
 
-      } catch (IOException e) {
-        log.warn("Exception while trying to obtain node Ip. {}:{}", e.getClass().getName(),
-            e.getMessage());
-        return null;
-      }
+				try {
+					RemoteService.waitForReady(browserContainerIp, 5900, 10,
+							TimeUnit.SECONDS);
+				} catch (TimeoutException e) {
+					throw new RuntimeException(
+							"Timeout when connecting to browser VNC");
+				}
 
-    }
+				String vncrecordImageId = getProperty(
+						DOCKER_VNCRECORDER_IMAGE_PROPERTY,
+						DOCKER_VNCRECORDER_IMAGE_DEFAULT);
 
-    private void createVncRecorderContainer() {
+				if (docker.existsContainer(vncrecorderContainerName)) {
+					throw new KurentoException("Vncrecorder container '"
+							+ vncrecorderContainerName + "' already exists");
+				}
 
-      try {
+				String secretFile = createSecretFile();
 
-        try {
-          RemoteService.waitForReady(browserContainerIp, 5900, 10, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-          throw new RuntimeException("Timeout when connecting to browser VNC");
-        }
+				docker.pullImageIfNecessary(vncrecordImageId, false);
 
-        String vncrecordImageId =
-            getProperty(DOCKER_VNCRECORDER_IMAGE_PROPERTY, DOCKER_VNCRECORDER_IMAGE_DEFAULT);
+				String videoFile = Paths
+						.get(KurentoClientBrowserTest
+								.getDefaultOutputFile("-" + id + "-record.flv"))
+						.toAbsolutePath().toString();
 
-        if (docker.existsContainer(vncrecorderContainerName)) {
-          throw new KurentoException("Vncrecorder container '" + vncrecorderContainerName
-              + "' already exists");
-        }
+				log.debug(
+						"Creating container {} for recording video from browser {} in file {}",
+						vncrecorderContainerName, browserContainerName,
+						videoFile);
 
-        String secretFile = createSecretFile();
+				CreateContainerCmd createContainerCmd = docker.getClient()
+						.createContainerCmd(vncrecordImageId)
+						.withName(vncrecorderContainerName).withCmd("-o",
+								videoFile, "-P", secretFile, browserContainerIp,
+								"5900");
 
-        docker.pullImageIfNecessary(vncrecordImageId, false);
+				docker.mountDefaultFolders(createContainerCmd);
 
-        String videoFile =
-            Paths.get(KurentoClientBrowserTest.getDefaultOutputFile("-" + id + "-record.flv"))
-                .toAbsolutePath().toString();
+				createContainerCmd.exec();
 
-        log.debug("Creating container {} for recording video from browser {} in file {}",
-            vncrecorderContainerName, browserContainerName, videoFile);
+				docker.startContainer(vncrecorderContainerName);
 
-        CreateContainerCmd createContainerCmd =
-            docker.getClient().createContainerCmd(vncrecordImageId)
-                .withName(vncrecorderContainerName)
-                .withCmd("-o", videoFile, "-P", secretFile, browserContainerIp, "5900");
+				log.debug("Container {} started...", vncrecorderContainerName);
 
-        docker.mountDefaultFolders(createContainerCmd);
+			} catch (Exception e) {
+				log.warn("Exception creating vncRecorder container");
+			}
+		}
 
-        createContainerCmd.exec();
+		public RemoteWebDriver getRemoteWebDriver() {
+			return driver;
+		}
 
-        docker.startContainer(vncrecorderContainerName);
+		public void close() {
 
-        log.debug("Container {} started...", vncrecorderContainerName);
+			downloadLogsForContainer(browserContainerName, id);
 
-      } catch (Exception e) {
-        log.warn("Exception creating vncRecorder container");
-      }
-    }
+			downloadLogsForContainer(vncrecorderContainerName,
+					id + "-recorder");
 
-    public RemoteWebDriver getRemoteWebDriver() {
-      return driver;
-    }
+			docker.stopAndRemoveContainers(vncrecorderContainerName,
+					browserContainerName);
 
-    public void close() {
+		}
+	}
 
-      downloadLogsForContainer(browserContainerName, id);
+	private Docker docker = Docker.getSingleton();
 
-      downloadLogsForContainer(vncrecorderContainerName, id + "-recorder");
+	private AtomicInteger numBrowsers = new AtomicInteger();
+	private CountDownLatch hubStarted = new CountDownLatch(1);
+	private String dockerHubIp;
+	private String hubContainerName;
+	private String hubUrl;
+	private ExecutorService exec = Executors.newFixedThreadPool(10);
 
-      docker.stopAndRemoveContainers(vncrecorderContainerName, browserContainerName);
+	private ConcurrentMap<String, DockerBrowser> browsers = new ConcurrentHashMap<>();
 
-    }
-  }
+	private boolean record;
 
-  private Docker docker = Docker.getSingleton();
+	private Path downloadLogsPath;
 
-  private AtomicInteger numBrowsers = new AtomicInteger();
-  private CountDownLatch hubStarted = new CountDownLatch(1);
-  private String dockerHubIp;
-  private String hubContainerName;
-  private String hubUrl;
-  private ExecutorService exec = Executors.newFixedThreadPool(10);
+	public DockerBrowserManager() {
+		docker = Docker.getSingleton();
+		record = getProperty(SELENIUM_RECORD_PROPERTY, SELENIUM_RECORD_DEFAULT);
+		calculateHubContainerName();
+	}
 
-  private ConcurrentMap<String, DockerBrowser> browsers = new ConcurrentHashMap<>();
+	public void setDownloadLogsPath(Path path) {
+		this.downloadLogsPath = path;
+	}
 
-  private boolean record;
+	private void calculateHubContainerName() {
+		hubContainerName = getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY,
+				DOCKER_HUB_CONTAINER_NAME_DEFAULT);
 
-  private Path downloadLogsPath;
+		if (docker.isRunningInContainer()) {
 
-  public DockerBrowserManager() {
-    docker = Docker.getSingleton();
-    record = getProperty(SELENIUM_RECORD_PROPERTY, SELENIUM_RECORD_DEFAULT);
-    calculateHubContainerName();
-  }
+			String containerName = docker.getContainerName();
 
-  public void setDownloadLogsPath(Path path) {
-    this.downloadLogsPath = path;
-  }
+			hubContainerName = containerName + "-" + hubContainerName;
+		}
+	}
 
-  private void calculateHubContainerName() {
-    hubContainerName =
-        getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY, DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+	public RemoteWebDriver createDockerDriver(String id,
+			DesiredCapabilities capabilities) throws MalformedURLException {
 
-    if (docker.isRunningInContainer()) {
+		DockerBrowser browser = new DockerBrowser(id, capabilities);
 
-      String containerName = docker.getContainerName();
+		if (browsers.putIfAbsent(id, browser) != null) {
+			throw new KurentoException(
+					"Browser with id " + id + " already exists");
+		}
 
-      hubContainerName = containerName + "-" + hubContainerName;
-    }
-  }
+		boolean firstBrowser = numBrowsers.incrementAndGet() == 1;
 
-  public RemoteWebDriver createDockerDriver(String id, DesiredCapabilities capabilities)
-      throws MalformedURLException {
+		startHub(firstBrowser);
 
-    DockerBrowser browser = new DockerBrowser(id, capabilities);
+		browser.create();
 
-    if (browsers.putIfAbsent(id, browser) != null) {
-      throw new KurentoException("Browser with id " + id + " already exists");
-    }
+		return browser.getRemoteWebDriver();
+	}
 
-    boolean firstBrowser = numBrowsers.incrementAndGet() == 1;
+	public void closeDriver(String id) {
 
-    startHub(firstBrowser);
+		DockerBrowser browser = browsers.remove(id);
 
-    browser.create();
+		if (browser == null) {
+			log.warn("Browser " + id + " does not exists");
+			return;
+		}
 
-    return browser.getRemoteWebDriver();
-  }
+		browser.close();
 
-  public void closeDriver(String id) {
+		if (numBrowsers.decrementAndGet() == 0) {
+			closeHub();
+		}
+	}
 
-    DockerBrowser browser = browsers.remove(id);
+	private synchronized void closeHub() {
 
-    if (browser == null) {
-      log.warn("Browser " + id + " does not exists");
-      return;
-    }
+		if (hubContainerName == null) {
+			log.warn("Trying to close Hub, but it is not created");
+			return;
+		}
 
-    browser.close();
+		downloadLogsForContainer(hubContainerName, "hub");
+		docker.stopAndRemoveContainers(hubContainerName);
 
-    if (numBrowsers.decrementAndGet() == 0) {
-      closeHub();
-    }
-  }
+		dockerHubIp = null;
+		hubUrl = null;
+		hubStarted = new CountDownLatch(1);
+	}
 
-  private synchronized void closeHub() {
+	private void startHub(boolean firstBrowser) {
 
-    if (hubContainerName == null) {
-      log.warn("Trying to close Hub, but it is not created");
-      return;
-    }
+		if (firstBrowser) {
 
-    downloadLogsForContainer(hubContainerName, "hub");
-    docker.stopAndRemoveContainers(hubContainerName);
+			synchronized (this) {
 
-    dockerHubIp = null;
-    hubUrl = null;
-    hubStarted = new CountDownLatch(1);
-  }
+				log.debug("Creating hub...");
 
-  private void startHub(boolean firstBrowser) {
+				String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY,
+						DOCKER_HUB_IMAGE_DEFAULT);
 
-    if (firstBrowser) {
+				dockerHubIp = docker.startAndWaitHub(hubContainerName,
+						hubImageId);
 
-      synchronized (this) {
+				hubUrl = "http://" + dockerHubIp + ":4444";
 
-        log.debug("Creating hub...");
+				hubStarted.countDown();
+			}
 
-        String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY, DOCKER_HUB_IMAGE_DEFAULT);
+		} else {
 
-        dockerHubIp = docker.startAndWaitHub(hubContainerName, hubImageId);
+			if (hubStarted.getCount() != 0) {
 
-        hubUrl = "http://" + dockerHubIp + ":4444";
+				log.debug("Waiting for hub...");
 
-        hubStarted.countDown();
-      }
+				try {
+					hubStarted.await();
+				} catch (InterruptedException e) {
+					throw new RuntimeException(
+							"InterruptedException while waiting to hub creation");
+				}
+			}
+		}
+	}
 
-    } else {
+	private String createSecretFile() throws IOException {
+		Path secretFile = Paths.get(KurentoTest.getTestDir() + "vnc-passwd");
 
-      if (hubStarted.getCount() != 0) {
+		try (BufferedWriter bw = Files.newBufferedWriter(secretFile,
+				StandardCharsets.UTF_8)) {
+			bw.write("secret");
+		}
 
-        log.debug("Waiting for hub...");
+		return secretFile.toAbsolutePath().toString();
+	}
 
-        try {
-          hubStarted.await();
-        } catch (InterruptedException e) {
-          throw new RuntimeException("InterruptedException while waiting to hub creation");
-        }
-      }
-    }
-  }
+	private String calculateBrowserImageName(DesiredCapabilities capabilities) {
 
-  private String createSecretFile() throws IOException {
-    Path secretFile = Paths.get(KurentoTest.getTestDir() + "vnc-passwd");
+		String browserName = capabilities.getBrowserName();
 
-    try (BufferedWriter bw = Files.newBufferedWriter(secretFile, StandardCharsets.UTF_8)) {
-      bw.write("secret");
-    }
+		if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
 
-    return secretFile.toAbsolutePath().toString();
-  }
+			// Chrome
+			if (record) {
+				return getProperty(DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY,
+						DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT);
+			} else {
+				return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY,
+						DOCKER_NODE_CHROME_IMAGE_DEFAULT);
+			}
 
-  private String calculateBrowserImageName(DesiredCapabilities capabilities) {
+		} else if (browserName
+				.equals(DesiredCapabilities.firefox().getBrowserName())) {
 
-    String browserName = capabilities.getBrowserName();
+			// Firefox
+			if (record) {
+				return getProperty(DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY,
+						DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT);
+			} else {
+				return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY,
+						DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
+			}
 
-    if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
+		} else {
+			throw new RuntimeException("Browser " + browserName
+					+ " is not supported currently for Docker scope");
+		}
+	}
 
-      // Chrome
-      if (record) {
-        return getProperty(DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY,
-            DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT);
-      } else {
-        return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY, DOCKER_NODE_CHROME_IMAGE_DEFAULT);
-      }
+	private void downloadLogsForContainer(String container, String logName) {
 
-    } else if (browserName.equals(DesiredCapabilities.firefox().getBrowserName())) {
+		if (docker.existsContainer(container) && downloadLogsPath != null) {
 
-      // Firefox
-      if (record) {
-        return getProperty(DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY,
-            DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT);
-      } else {
-        return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY, DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
-      }
+			try {
 
-    } else {
-      throw new RuntimeException("Browser " + browserName
-          + " is not supported currently for Docker scope");
-    }
-  }
+				Path logFile = downloadLogsPath.resolve(logName + ".log");
 
-  private void downloadLogsForContainer(String container, String logName) {
+				if (Files.exists(logFile.getParent())) {
+					Files.createDirectories(logFile.getParent());
+				}
 
-    if (docker.existsContainer(container) && downloadLogsPath != null) {
+				log.debug("Downloading log for container {} in file {}",
+						container, logFile.toAbsolutePath());
 
-      try {
+				docker.downloadLog(container, logFile);
 
-        Path logFile = downloadLogsPath.resolve(logName + ".log");
-
-        if (Files.exists(logFile.getParent())) {
-          Files.createDirectories(logFile.getParent());
-        }
-
-        log.debug("Downloading log for container {} in file {}", container,
-            logFile.toAbsolutePath());
-
-        docker.downloadLog(container, logFile);
-
-      } catch (IOException e) {
-        log.warn("Exception writing logs for container {}", container, e);
-      }
-    }
-  }
+			} catch (IOException e) {
+				log.warn("Exception writing logs for container {}", container,
+						e);
+			}
+		}
+	}
 
 }

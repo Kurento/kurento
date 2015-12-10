@@ -22,68 +22,72 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.kurento.repository.HttpSessionErrorEvent;
 import org.kurento.repository.HttpSessionStartedEvent;
 import org.kurento.repository.RepositoryHttpEventListener;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.test.util.BaseRepositoryTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ErrorEventsTest extends BaseRepositoryTest {
 
-  private static final Logger log = LoggerFactory.getLogger(ErrorEventsTest.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(ErrorEventsTest.class);
 
-  @Test
-  public void testFileUploadAndDownload() throws Exception {
+	@Test
+	public void testFileUploadAndDownload() throws Exception {
 
-    RepositoryItem item = getRepository().createRepositoryItem();
+		RepositoryItem item = getRepository().createRepositoryItem();
 
-    final RepositoryHttpRecorder recorder = item.createRepositoryHttpRecorder();
+		final RepositoryHttpRecorder recorder = item
+				.createRepositoryHttpRecorder();
 
-    final CountDownLatch started = new CountDownLatch(1);
-    recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
-      @Override
-      public void onEvent(HttpSessionStartedEvent event) {
-        started.countDown();
-      }
-    });
+		final CountDownLatch started = new CountDownLatch(1);
+		recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
+			@Override
+			public void onEvent(HttpSessionStartedEvent event) {
+				started.countDown();
+			}
+		});
 
-    final CountDownLatch errorLatch = new CountDownLatch(1);
-    recorder.addSessionErrorListener(new RepositoryHttpEventListener<HttpSessionErrorEvent>() {
-      @Override
-      public void onEvent(HttpSessionErrorEvent event) {
-        log.info("Error event sent");
-        log.info("Exception:" + event.getCause());
-        errorLatch.countDown();
-      }
-    });
+		final CountDownLatch errorLatch = new CountDownLatch(1);
+		recorder.addSessionErrorListener(new RepositoryHttpEventListener<HttpSessionErrorEvent>() {
+			@Override
+			public void onEvent(HttpSessionErrorEvent event) {
+				log.info("Error event sent");
+				log.info("Exception:" + event.getCause());
+				errorLatch.countDown();
+			}
+		});
 
-    log.info("Start writing to URL " + recorder.getURL() + " the item with id '" + item.getId()
-        + "'");
+		log.info("Start writing to URL " + recorder.getURL()
+				+ " the item with id '" + item.getId() + "'");
 
-    new Thread() {
-      public void run() {
-        try {
-          uploadFileWithPOST(recorder.getURL(), new File("test-files/logo.png"));
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    }.start();
+		new Thread() {
+			public void run() {
+				try {
+					uploadFileWithPOST(recorder.getURL(), new File(
+							"test-files/logo.png"));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 
-    started.await();
+		started.await();
 
-    // Sleep to give time to open the outputStream to write the uploading
-    // file.
-    Thread.sleep(2000);
+		// Sleep to give time to open the outputStream to write the uploading
+		// file.
+		Thread.sleep(2000);
 
-    getRepository().remove(item);
+		getRepository().remove(item);
 
-    assertTrue("Error event was not fired in the next 5 seconds before deletion of the file",
-        errorLatch.await(5, TimeUnit.SECONDS));
+		assertTrue(
+				"Error event was not fired in the next 5 seconds before deletion of the file",
+				errorLatch.await(5, TimeUnit.SECONDS));
 
-  }
+	}
 
 }

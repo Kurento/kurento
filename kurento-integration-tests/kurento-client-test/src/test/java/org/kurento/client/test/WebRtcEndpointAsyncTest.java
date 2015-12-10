@@ -48,18 +48,22 @@ import org.kurento.client.test.util.SdpAsyncBaseTest;
  */
 public class WebRtcEndpointAsyncTest extends SdpAsyncBaseTest<WebRtcEndpoint> {
 
-  @Before
-  public void setupMediaElements() throws InterruptedException {
+	@Before
+	public void setupMediaElements() throws InterruptedException {
 
-    AsyncResultManager<WebRtcEndpoint> async = new AsyncResultManager<>("RtpEndpoint creation");
-    new WebRtcEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
-    sdp = async.waitForResult();
-    Assert.assertNotNull(sdp);
+		AsyncResultManager<WebRtcEndpoint> async = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		new WebRtcEndpoint.Builder(pipeline)
+				.buildAsync(async.getContinuation());
+		sdp = async.waitForResult();
+		Assert.assertNotNull(sdp);
 
-    AsyncResultManager<WebRtcEndpoint> async2 = new AsyncResultManager<>("RtpEndpoint creation");
-    new WebRtcEndpoint.Builder(pipeline).buildAsync(async2.getContinuation());
-    sdp2 = async2.waitForResult();
-    Assert.assertNotNull(sdp2);
-  }
+		AsyncResultManager<WebRtcEndpoint> async2 = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		new WebRtcEndpoint.Builder(pipeline).buildAsync(async2
+				.getContinuation());
+		sdp2 = async2.waitForResult();
+		Assert.assertNotNull(sdp2);
+	}
 
 }

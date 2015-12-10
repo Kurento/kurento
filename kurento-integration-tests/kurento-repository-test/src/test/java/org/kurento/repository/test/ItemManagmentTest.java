@@ -31,69 +31,73 @@ import org.kurento.repository.test.util.BaseRepositoryTest;
 
 public class ItemManagmentTest extends BaseRepositoryTest {
 
-  @Test(expected = DuplicateItemException.class)
-  public void duplicateTest() throws IOException {
+	@Test(expected = DuplicateItemException.class)
+	public void duplicateTest() throws IOException {
 
-    Repository repository = getRepository();
+		Repository repository = getRepository();
 
-    RepositoryItem item = repository.createRepositoryItem("file1");
-    item.createOutputStreamToWrite().close();
+		RepositoryItem item = repository.createRepositoryItem("file1");
+		item.createOutputStreamToWrite().close();
 
-    RepositoryItem item2 = repository.createRepositoryItem("file1");
-    item2.createOutputStreamToWrite().close();
+		RepositoryItem item2 = repository.createRepositoryItem("file1");
+		item2.createOutputStreamToWrite().close();
 
-  }
+	}
 
-  @Test
-  public void metadataTest() throws IOException {
+	@Test
+	public void metadataTest() throws IOException {
 
-    Repository repository = getRepository();
+		Repository repository = getRepository();
 
-    for (int i = 0; i < 10; i++) {
-      try {
-        RepositoryItem item = repository.findRepositoryItemById("File" + i + ".txt");
-        repository.remove(item);
-      } catch (NoSuchElementException e) {
-        // Do nothing if repository item doesn't exist
-      }
-    }
+		for (int i = 0; i < 10; i++) {
+			try {
+				RepositoryItem item = repository.findRepositoryItemById("File"
+						+ i + ".txt");
+				repository.remove(item);
+			} catch (NoSuchElementException e) {
+				// Do nothing if repository item doesn't exist
+			}
+		}
 
-    for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 
-      RepositoryItem item = repository.createRepositoryItem("File" + i + ".txt");
-      item.putMetadataEntry("numFile", Integer.toString(i));
-      item.putMetadataEntry("att", "value");
-      item.putMetadataEntry("regexAtt", "token" + Integer.toString(i));
-      OutputStream os = item.createOutputStreamToWrite();
-      os.write(0);
-      os.close();
+			RepositoryItem item = repository.createRepositoryItem("File" + i
+					+ ".txt");
+			item.putMetadataEntry("numFile", Integer.toString(i));
+			item.putMetadataEntry("att", "value");
+			item.putMetadataEntry("regexAtt", "token" + Integer.toString(i));
+			OutputStream os = item.createOutputStreamToWrite();
+			os.write(0);
+			os.close();
 
-    }
+		}
 
-    for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 
-      try {
-        RepositoryItem item = repository.findRepositoryItemById("File" + i + ".txt");
+			try {
+				RepositoryItem item = repository.findRepositoryItemById("File"
+						+ i + ".txt");
 
-        String numString = item.getMetadata().get("numFile");
-        assertEquals(numString, Integer.toString(i));
+				String numString = item.getMetadata().get("numFile");
+				assertEquals(numString, Integer.toString(i));
 
-        assertEquals(item.getMetadata().get("att"), "value");
+				assertEquals(item.getMetadata().get("att"), "value");
 
-      } catch (NoSuchElementException e) {
-        fail("Element 'File" + i + ".txt' doesn't exist");
-      }
+			} catch (NoSuchElementException e) {
+				fail("Element 'File" + i + ".txt' doesn't exist");
+			}
 
-    }
+		}
 
-    List<RepositoryItem> items = repository.findRepositoryItemsByAttValue("att", "value");
+		List<RepositoryItem> items = repository.findRepositoryItemsByAttValue(
+				"att", "value");
 
-    assertEquals("Found different items than expected", 10, items.size());
+		assertEquals("Found different items than expected", 10, items.size());
 
-    items = repository.findRepositoryItemsByAttRegex("regexAtt", "token.*");
+		items = repository.findRepositoryItemsByAttRegex("regexAtt", "token.*");
 
-    assertEquals("Found different items than expected", 10, items.size());
+		assertEquals("Found different items than expected", 10, items.size());
 
-  }
+	}
 
 }

@@ -27,31 +27,35 @@ import org.kurento.repository.test.util.TestUtils;
 
 public class RepositoryItemsTest extends BaseRepositoryTest {
 
-  @Test
-  public void testFileUpload() throws Exception {
-    uploadFile(new File("test-files/sample.txt"));
-  }
+	@Test
+	public void testFileUpload() throws Exception {
+		uploadFile(new File("test-files/sample.txt"));
+	}
 
-  @Test
-  public void testFileUploadWithPOSTAndDownload() throws Exception {
+	@Test
+	public void testFileUploadWithPOSTAndDownload() throws Exception {
 
-    RepositoryItem repositoryItem = getRepository().createRepositoryItem();
+		RepositoryItem repositoryItem = getRepository().createRepositoryItem();
 
-    String id = repositoryItem.getId();
+		String id = repositoryItem.getId();
 
-    File fileToUpload = new File("test-files/sample.txt");
-    RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder();
+		File fileToUpload = new File("test-files/sample.txt");
+		RepositoryHttpRecorder recorder = repositoryItem
+				.createRepositoryHttpRecorder();
 
-    uploadFileWithPOST(recorder.getURL(), fileToUpload);
+		uploadFileWithPOST(recorder.getURL(), fileToUpload);
 
-    recorder.stop();
+		recorder.stop();
 
-    RepositoryItem newRepositoryItem = getRepository().findRepositoryItemById(id);
+		RepositoryItem newRepositoryItem = getRepository()
+				.findRepositoryItemById(id);
 
-    File downloadedFile = new File("test-files/tmp/" + id);
-    downloadFromURL(newRepositoryItem.createRepositoryHttpPlayer().getURL(), downloadedFile);
+		File downloadedFile = new File("test-files/tmp/" + id);
+		downloadFromURL(
+				newRepositoryItem.createRepositoryHttpPlayer().getURL(),
+				downloadedFile);
 
-    assertTrue(TestUtils.equalFiles(fileToUpload, downloadedFile));
-  }
+		assertTrue(TestUtils.equalFiles(fileToUpload, downloadedFile));
+	}
 
 }

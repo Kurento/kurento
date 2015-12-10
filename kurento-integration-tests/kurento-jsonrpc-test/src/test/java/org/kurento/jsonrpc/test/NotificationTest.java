@@ -14,49 +14,51 @@ import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 
 public class NotificationTest extends JsonRpcConnectorBaseTest {
 
-  private static CountDownLatch serverRequestLatch;
+	private static CountDownLatch serverRequestLatch;
 
-  public static class Handler extends DefaultJsonRpcHandler<Integer> {
+	public static class Handler extends DefaultJsonRpcHandler<Integer> {
 
-    @Override
-    public void handleRequest(final Transaction transaction, Request<Integer> request)
-        throws Exception {
+		@Override
+		public void handleRequest(final Transaction transaction,
+				Request<Integer> request) throws Exception {
 
-      if (!transaction.isNotification()) {
-        throw new RuntimeException("Notification expected");
-      }
+			if (!transaction.isNotification()) {
+				throw new RuntimeException("Notification expected");
+			}
 
-      Thread.sleep(1000);
+			Thread.sleep(1000);
 
-      transaction.getSession().sendNotification("response", request.getParams());
-    }
-  }
+			transaction.getSession().sendNotification("response",
+					request.getParams());
+		}
+	}
 
-  @Test
-  public void test() throws IOException, InterruptedException {
+	@Test
+	public void test() throws IOException, InterruptedException {
 
-    serverRequestLatch = new CountDownLatch(3);
+		serverRequestLatch = new CountDownLatch(3);
 
-    JsonRpcClient client = createJsonRpcClient("/notification");
+		JsonRpcClient client = createJsonRpcClient("/notification");
 
-    client.setServerRequestHandler(new DefaultJsonRpcHandler<Integer>() {
+		client.setServerRequestHandler(new DefaultJsonRpcHandler<Integer>() {
 
-      @Override
-      public void handleRequest(Transaction transaction, Request<Integer> request) throws Exception {
+			@Override
+			public void handleRequest(Transaction transaction,
+					Request<Integer> request) throws Exception {
 
-        serverRequestLatch.countDown();
-      }
-    });
+				serverRequestLatch.countDown();
+			}
+		});
 
-    client.sendNotification("echo", 1);
-    client.sendNotification("echo", 2);
-    client.sendNotification("echo", 3);
+		client.sendNotification("echo", 1);
+		client.sendNotification("echo", 2);
+		client.sendNotification("echo", 3);
 
-    Assert.assertTrue("The server has not invoked requests",
-        serverRequestLatch.await(5000, TimeUnit.MILLISECONDS));
+		Assert.assertTrue("The server has not invoked requests",
+				serverRequestLatch.await(5000, TimeUnit.MILLISECONDS));
 
-    client.close();
+		client.close();
 
-  }
+	}
 
 }

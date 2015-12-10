@@ -32,8 +32,9 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV, MOV, MP4, MKV, AVI,
- * 3GP ... all with ONLY VIDEO) connected to a WebRtcEndpoint. <br>
+ * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV,
+ * MOV, MP4, MKV, AVI, 3GP ... all with ONLY VIDEO) connected to a
+ * WebRtcEndpoint. <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint -> WebRtcEndpoint <br>
@@ -43,7 +44,8 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects to a WebRtcEndpoint <br>
+ * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects
+ * to a WebRtcEndpoint <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -60,74 +62,74 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttp3gp() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, THIRDGP, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttp3gp() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, THIRDGP, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttpAvi() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, AVI, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpAvi() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, AVI, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttpMkv() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, MKV, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpMkv() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, MKV, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttpMov() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, MOV, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpMov() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, MOV, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttpMp4() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, MP4, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpMp4() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, MP4, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttpOgv() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, OGV, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpOgv() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, OGV, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyHttpWebm() throws Exception {
-    testPlayerWithSmallFileVideoOnly(HTTP, WEBM, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyHttpWebm() throws Exception {
+		testPlayerWithSmallFileVideoOnly(HTTP, WEBM, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyFile3gp() throws Exception {
-    testPlayerWithSmallFileVideoOnly(FILE, THIRDGP, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyFile3gp() throws Exception {
+		testPlayerWithSmallFileVideoOnly(FILE, THIRDGP, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyFileAvi() throws Exception {
-    testPlayerWithSmallFileVideoOnly(FILE, AVI, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileAvi() throws Exception {
+		testPlayerWithSmallFileVideoOnly(FILE, AVI, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyFileMkv() throws Exception {
-    testPlayerWithSmallFileVideoOnly(FILE, MKV, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileMkv() throws Exception {
+		testPlayerWithSmallFileVideoOnly(FILE, MKV, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyFileMov() throws Exception {
-    testPlayerWithSmallFileVideoOnly(FILE, MOV, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileMov() throws Exception {
+		testPlayerWithSmallFileVideoOnly(FILE, MOV, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyFileMp4() throws Exception {
-    testPlayerWithSmallFileVideoOnly(FILE, MP4, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileMp4() throws Exception {
+		testPlayerWithSmallFileVideoOnly(FILE, MP4, VIDEO_ONLY);
+	}
 
-  @Test
-  public void testPlayerWebRtcVideoOnlyFileOgv() throws Exception {
-    testPlayerWithSmallFileVideoOnly(FILE, OGV, VIDEO_ONLY);
-  }
+	@Test
+	public void testPlayerWebRtcVideoOnlyFileOgv() throws Exception {
+		testPlayerWithSmallFileVideoOnly(FILE, OGV, VIDEO_ONLY);
+	}
 
 }

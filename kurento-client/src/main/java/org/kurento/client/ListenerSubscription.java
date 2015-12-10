@@ -6,10 +6,12 @@
 package org.kurento.client;
 
 /**
- * Interface to be implemented by objects that represent the subscription to an event in Kurento.
- * Implementers of this interface may be used by the system to track listeners of events registered
- * by users. Subscribing to a certain {@link MediaEvent} raised by a {@link MediaObject} generates a
- * {@code ListenerSubscription}, that can be used by the client to unregister this listener.
+ * Interface to be implemented by objects that represent the subscription to an
+ * event in Kurento. Implementers of this interface may be used by the system to
+ * track listeners of events registered by users. Subscribing to a certain
+ * {@link MediaEvent} raised by a {@link MediaObject} generates a
+ * {@code ListenerSubscription}, that can be used by the client to unregister
+ * this listener.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -17,11 +19,11 @@ package org.kurento.client;
  */
 public interface ListenerSubscription {
 
-  /**
-   * Returns the registration id for this listener
-   * 
-   * @return The id
-   */
-  String getSubscriptionId();
+	/**
+	 * Returns the registration id for this listener
+	 * 
+	 * @return The id
+	 */
+	String getSubscriptionId();
 
 }

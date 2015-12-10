@@ -22,34 +22,34 @@ package org.kurento.test.monitor;
  */
 public abstract class KmsMonitor {
 
-  public KmsSystemInfo measureKms() {
-    KmsSystemInfo info = new KmsSystemInfo();
+	public KmsSystemInfo measureKms() {
+		KmsSystemInfo info = new KmsSystemInfo();
 
-    // Bandwidth (bytes tx and rx)
-    NetInfo newNetInfo = getNetInfo();
-    info.setNetInfo(newNetInfo);
+		// Bandwidth (bytes tx and rx)
+		NetInfo newNetInfo = getNetInfo();
+		info.setNetInfo(newNetInfo);
 
-    // CPU usage (%)
-    info.setCpuPercent(getCpuUsage());
+		// CPU usage (%)
+		info.setCpuPercent(getCpuUsage());
 
-    // Memory and swap usage (bytes)
-    double[] mem = getMem();
-    info.setMem((long) mem[0]);
-    info.setMemPercent(mem[1]);
+		// Memory and swap usage (bytes)
+		double[] mem = getMem();
+		info.setMem((long) mem[0]);
+		info.setMemPercent(mem[1]);
 
-    // Number of threads
-    info.setNumThreadsKms(getNumThreads());
+		// Number of threads
+		info.setNumThreadsKms(getNumThreads());
 
-    return info;
-  }
+		return info;
+	}
 
-  protected abstract NetInfo getNetInfo();
+	protected abstract NetInfo getNetInfo();
 
-  protected abstract double getCpuUsage();
+	protected abstract double getCpuUsage();
 
-  protected abstract double[] getMem();
+	protected abstract double[] getMem();
 
-  protected abstract int getNumThreads();
+	protected abstract int getNumThreads();
 
-  protected abstract int getKmsPid();
+	protected abstract int getKmsPid();
 }

@@ -44,11 +44,13 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) PlayerEndpoints streams media to FaceOverlay and then WebRtcEndpoint <br>
+ * 1. (KMS) PlayerEndpoints streams media to FaceOverlay and then WebRtcEndpoint
+ * <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
- * · Image should be overlayed on the media stream (proper color should be detected) <br>
+ * · Image should be overlayed on the media stream (proper color should be
+ * detected) <br>
  *
  * Secondary assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
@@ -60,60 +62,67 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerFaceOverlayTest extends FunctionalTest {
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
 
-  @Test
-  public void testPlayerFaceOverlay() throws Exception {
-    // Test data
-    final int playTimeSeconds = 30;
-    final String mediaUrl = "http://files.kurento.org/video/filter/fiwarecut.mp4";
-    final Color expectedColor = Color.RED;
-    final int xExpectedColor = 420;
-    final int yExpectedColor = 45;
-    final String imgOverlayUrl = "http://files.kurento.org/img/red-square.png";
-    final float offsetXPercent = -0.2F;
-    final float offsetYPercent = -1.2F;
-    final float widthPercent = 1.6F;
-    final float heightPercent = 1.6F;
+	@Test
+	public void testPlayerFaceOverlay() throws Exception {
+		// Test data
+		final int playTimeSeconds = 30;
+		final String mediaUrl = "http://files.kurento.org/video/filter/fiwarecut.mp4";
+		final Color expectedColor = Color.RED;
+		final int xExpectedColor = 420;
+		final int yExpectedColor = 45;
+		final String imgOverlayUrl = "http://files.kurento.org/img/red-square.png";
+		final float offsetXPercent = -0.2F;
+		final float offsetYPercent = -1.2F;
+		final float widthPercent = 1.6F;
+		final float heightPercent = 1.6F;
 
-    // Media Pipeline
-    MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-    FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
-    filter.setOverlayedImage(imgOverlayUrl, offsetXPercent, offsetYPercent, widthPercent,
-        heightPercent);
-    playerEP.connect(filter);
-    filter.connect(webRtcEP);
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl)
+				.build();
+		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
+		filter.setOverlayedImage(imgOverlayUrl, offsetXPercent, offsetYPercent,
+				widthPercent, heightPercent);
+		playerEP.connect(filter);
+		filter.connect(webRtcEP);
 
-    final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-      @Override
-      public void onEvent(EndOfStreamEvent event) {
-        eosLatch.countDown();
-      }
-    });
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
+			}
+		});
 
-    // Test execution
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-    playerEP.play();
+		// Test execution
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
+		playerEP.play();
 
-    // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
-    Assert.assertTrue("Color at coordinates " + xExpectedColor + "," + yExpectedColor + " must be "
-        + expectedColor, getPage().similarColorAt(expectedColor, xExpectedColor, yExpectedColor));
-    Assert.assertTrue("Not received EOS event in player",
-        eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
-    double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue("Error in play time (expected: " + playTimeSeconds + " sec, real: "
-        + currentTime + " sec)", getPage().compare(playTimeSeconds, currentTime));
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getPage().waitForEvent("playing"));
+		Assert.assertTrue(
+				"Color at coordinates " + xExpectedColor + "," + yExpectedColor
+						+ " must be " + expectedColor,
+				getPage().similarColorAt(expectedColor, xExpectedColor,
+						yExpectedColor));
+		Assert.assertTrue("Not received EOS event in player",
+				eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+		double currentTime = getPage().getCurrentTime();
+		Assert.assertTrue(
+				"Error in play time (expected: " + playTimeSeconds
+						+ " sec, real: " + currentTime + " sec)",
+				getPage().compare(playTimeSeconds, currentTime));
 
-    // Release Media Pipeline
-    mp.release();
-  }
+		// Release Media Pipeline
+		mp.release();
+	}
 }

@@ -62,198 +62,206 @@ import org.slf4j.LoggerFactory;
 @UseParametersRunnerFactory(KurentoBlockJUnit4ClassRunnerWithParametersFactory.class)
 public class KurentoTest {
 
-  @Rule
-  public Retry retry = new Retry(numRetries);
+	@Rule
+	public Retry retry = new Retry(numRetries);
 
-  @Rule
-  public KurentoTestWatcher watcher = new KurentoTestWatcher();
+	@Rule
+	public KurentoTestWatcher watcher = new KurentoTestWatcher();
 
-  @Parameter
-  public TestScenario testScenario;
+	@Parameter
+	public TestScenario testScenario;
 
-  @Parameters
-  public static Collection<Object[]> data() {
-    return TestScenario.empty();
-  }
+	@Parameters
+	public static Collection<Object[]> data() {
+		return TestScenario.empty();
+	}
 
-  protected static int numRetries = getProperty(TEST_NUMRETRIES_PROPERTY,
-      TEST_NUM_NUMRETRIES_DEFAULT);
-  protected static String testDir = getProperty(TEST_PROJECT_PATH_PROP, TEST_PROJECT_PATH_DEFAULT);
-  protected static boolean printLogs = getProperty(TEST_PRINT_LOG_PROP, TEST_PRINT_LOG_DEFAULT);
+	protected static int numRetries = getProperty(TEST_NUMRETRIES_PROPERTY,
+			TEST_NUM_NUMRETRIES_DEFAULT);
+	protected static String testDir = getProperty(TEST_PROJECT_PATH_PROP,
+			TEST_PROJECT_PATH_DEFAULT);
+	protected static boolean printLogs = getProperty(TEST_PRINT_LOG_PROP,
+			TEST_PRINT_LOG_DEFAULT);
 
-  public static Logger log = LoggerFactory.getLogger(KurentoTest.class);
+	public static Logger log = LoggerFactory.getLogger(KurentoTest.class);
 
-  protected static String testIdentifier;
-  protected static String testMethodName;
-  protected static String testClassName;
-  protected static List<File> logFiles;
-  protected static boolean deleteLogsIfSuccess;
+	protected static String testIdentifier;
+	protected static String testMethodName;
+	protected static String testClassName;
+	protected static List<File> logFiles;
+	protected static boolean deleteLogsIfSuccess;
 
-  public static final String SEPARATOR = "+" + StringUtils.repeat("-", 70);
+	public static final String SEPARATOR = "+" + StringUtils.repeat("-", 70);
 
-  static {
-    ConfigFileManager.loadConfigFile(TEST_CONFIG_JSON_DEFAULT);
-  }
+	static {
+		ConfigFileManager.loadConfigFile(TEST_CONFIG_JSON_DEFAULT);
+	}
 
-  public KurentoTest() {
-    testClassName = this.getClass().getName();
-    testIdentifier = this.getClass().getSimpleName() + " [" + new Date() + "]";
-    retry.useReport(testIdentifier);
-    deleteLogsIfSuccess = true;
-  }
+	public KurentoTest() {
+		testClassName = this.getClass().getName();
+		testIdentifier = this.getClass().getSimpleName() + " [" + new Date()
+				+ "]";
+		retry.useReport(testIdentifier);
+		deleteLogsIfSuccess = true;
+	}
 
-  @FailedTest
-  public static void printKmsLogs() {
-    if (printLogs) {
-      if (logFiles != null) {
-        for (File logFile : logFiles) {
-          if (logFile != null && logFile.exists()) {
-            System.err.println(SEPARATOR);
-            System.err.println("Log file: " + logFile.getAbsolutePath());
-            try {
-              for (String line : FileUtils.readLines(logFile)) {
-                System.err.println(line);
-              }
-            } catch (Throwable e) {
-              log.warn("Error reading log file {}: {} {}", logFile, e.getClass(), e.getMessage());
-            }
-            System.err.println(SEPARATOR);
-          }
-        }
-      }
-    }
-  }
+	@FailedTest
+	public static void printKmsLogs() {
+		if (printLogs) {
+			if (logFiles != null) {
+				for (File logFile : logFiles) {
+					if (logFile != null && logFile.exists()) {
+						System.err.println(SEPARATOR);
+						System.err.println(
+								"Log file: " + logFile.getAbsolutePath());
+						try {
+							for (String line : FileUtils.readLines(logFile)) {
+								System.err.println(line);
+							}
+						} catch (Throwable e) {
+							log.warn("Error reading log file {}: {} {}",
+									logFile, e.getClass(), e.getMessage());
+						}
+						System.err.println(SEPARATOR);
+					}
+				}
+			}
+		}
+	}
 
-  @FinishedTest
-  public static void deleteLogs() {
-    if (KurentoTestWatcher.isSuccees() && deleteLogsIfSuccess) {
-      File folder = KurentoTest.getDefaultOutputFolder();
-      final File[] files = folder.listFiles(new FilenameFilter() {
-        @Override
-        public boolean accept(final File dir, final String name) {
-          return name.contains(KurentoTest.getSimpleTestName());
-        }
-      });
+	@FinishedTest
+	public static void deleteLogs() {
+		if (KurentoTestWatcher.isSuccees() && deleteLogsIfSuccess) {
+			File folder = KurentoTest.getDefaultOutputFolder();
+			final File[] files = folder.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(final File dir, final String name) {
+					return name.contains(KurentoTest.getSimpleTestName());
+				}
+			});
 
-      if (files != null) {
-        for (final File file : files) {
-          try {
-            if (file.isDirectory()) {
-              FileUtils.deleteDirectory(file);
-            } else {
-              file.delete();
-            }
-            if (file.exists()) {
-              log.error("Can't remove {}", file.getAbsolutePath());
-            }
-          } catch (Throwable e) {
-            log.warn("Exception deleting file {}: {} {}", file, e.getClass(), e.getMessage());
-          }
-        }
-      }
-    }
-  }
+			if (files != null) {
+				for (final File file : files) {
+					try {
+						if (file.isDirectory()) {
+							FileUtils.deleteDirectory(file);
+						} else {
+							file.delete();
+						}
+						if (file.exists()) {
+							log.error("Can't remove {}",
+									file.getAbsolutePath());
+						}
+					} catch (Throwable e) {
+						log.warn("Exception deleting file {}: {} {}", file,
+								e.getClass(), e.getMessage());
+					}
+				}
+			}
+		}
+	}
 
-  // @Before
-  // public void setupKurentoTest() {
-  // logMessage("| TEST STARTING: " + getTestClassName() + "."
-  // + getTestMethodName());
-  // }
-  //
-  // @After
-  // public void teardownKurentoTest() {
-  // logMessage("| TEST FINISHED: " + getTestClassName() + "."
-  // + getTestMethodName());
-  // }
+	// @Before
+	// public void setupKurentoTest() {
+	// logMessage("| TEST STARTING: " + getTestClassName() + "."
+	// + getTestMethodName());
+	// }
+	//
+	// @After
+	// public void teardownKurentoTest() {
+	// logMessage("| TEST FINISHED: " + getTestClassName() + "."
+	// + getTestMethodName());
+	// }
 
-  public TestReport getTestReport() {
-    return retry.getTestReport();
-  }
+	public TestReport getTestReport() {
+		return retry.getTestReport();
+	}
 
-  public static File getDefaultOutputFolder() {
-    File testResultsFolder = new File(testDir + File.separator + testClassName);
+	public static File getDefaultOutputFolder() {
+		File testResultsFolder = new File(
+				testDir + File.separator + testClassName);
 
-    if (!testResultsFolder.exists()) {
-      testResultsFolder.mkdirs();
-    }
-    return testResultsFolder;
-  }
+		if (!testResultsFolder.exists()) {
+			testResultsFolder.mkdirs();
+		}
+		return testResultsFolder;
+	}
 
-  public static String getDefaultOutputFile(String suffix) {
-    return getDefaultOutputFolder().getAbsolutePath() + File.separator + getSimpleTestName()
-        + suffix;
-  }
+	public static String getDefaultOutputFile(String suffix) {
+		return getDefaultOutputFolder().getAbsolutePath() + File.separator
+				+ getSimpleTestName() + suffix;
+	}
 
-  public static String getSimpleTestName() {
-    String out = testMethodName;
-    if (testMethodName != null && out.indexOf(":") != -1) {
-      out = out.substring(0, out.indexOf(":")) + "]";
-    }
-    return out;
-  }
+	public static String getSimpleTestName() {
+		String out = testMethodName;
+		if (testMethodName != null && out.indexOf(":") != -1) {
+			out = out.substring(0, out.indexOf(":")) + "]";
+		}
+		return out;
+	}
 
-  public static String getTestMethodName() {
-    return testMethodName;
-  }
+	public static String getTestMethodName() {
+		return testMethodName;
+	}
 
-  public static void setTestMethodName(String testMethodName) {
-    KurentoTest.testMethodName = testMethodName;
-  }
+	public static void setTestMethodName(String testMethodName) {
+		KurentoTest.testMethodName = testMethodName;
+	}
 
-  public static String getTestClassName() {
-    return testClassName;
-  }
+	public static String getTestClassName() {
+		return testClassName;
+	}
 
-  public static void setTestClassName(String testClassName) {
-    KurentoTest.testClassName = testClassName;
-  }
+	public static void setTestClassName(String testClassName) {
+		KurentoTest.testClassName = testClassName;
+	}
 
-  public static String getTestDir() {
-    return testDir;
-  }
+	public static String getTestDir() {
+		return testDir;
+	}
 
-  public static void setTestDir(String testDir) {
-    KurentoTest.testDir = testDir;
-  }
+	public static void setTestDir(String testDir) {
+		KurentoTest.testDir = testDir;
+	}
 
-  public static String getTestIdentifier() {
-    return testIdentifier;
-  }
+	public static String getTestIdentifier() {
+		return testIdentifier;
+	}
 
-  public static void setTestIdentifier(String testIdentifier) {
-    KurentoTest.testIdentifier = testIdentifier;
-  }
+	public static void setTestIdentifier(String testIdentifier) {
+		KurentoTest.testIdentifier = testIdentifier;
+	}
 
-  public static boolean isDeleteLogsIfSuccess() {
-    return deleteLogsIfSuccess;
-  }
+	public static boolean isDeleteLogsIfSuccess() {
+		return deleteLogsIfSuccess;
+	}
 
-  public static void setDeleteLogsIfSuccess(boolean deleteLogsIfSuccess) {
-    KurentoTest.deleteLogsIfSuccess = deleteLogsIfSuccess;
-  }
+	public static void setDeleteLogsIfSuccess(boolean deleteLogsIfSuccess) {
+		KurentoTest.deleteLogsIfSuccess = deleteLogsIfSuccess;
+	}
 
-  public static void addLogFile(File logFile) {
-    log.info("Adding log file: {}", logFile);
-    if (logFiles == null) {
-      logFiles = new ArrayList<>();
-    }
-    logFiles.add(logFile);
-  }
+	public static void addLogFile(File logFile) {
+		log.info("Adding log file: {}", logFile);
+		if (logFiles == null) {
+			logFiles = new ArrayList<>();
+		}
+		logFiles.add(logFile);
+	}
 
-  public static List<File> getServerLogFiles() {
-    int countFiles = logFiles != null ? logFiles.size() : 0;
-    log.info("Logs files {}", countFiles);
-    return logFiles;
-  }
+	public static List<File> getServerLogFiles() {
+		int countFiles = logFiles != null ? logFiles.size() : 0;
+		log.info("Logs files {}", countFiles);
+		return logFiles;
+	}
 
-  public static String getTestFilesPath() {
-    return getProperty(TEST_FILES_PROP, TEST_FILES_DEFAULT);
-  }
+	public static String getTestFilesPath() {
+		return getProperty(TEST_FILES_PROP, TEST_FILES_DEFAULT);
+	}
 
-  public static void logMessage(String message) {
-    log.info(SEPARATOR);
-    log.info(message);
-    log.info(SEPARATOR);
-  }
+	public static void logMessage(String message) {
+		log.info(SEPARATOR);
+		log.info(message);
+		log.info(SEPARATOR);
+	}
 
 }

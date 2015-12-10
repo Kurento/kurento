@@ -23,8 +23,8 @@ package org.kurento.repository;
  */
 public class HttpSessionStartedEvent extends RepositoryHttpSessionEvent {
 
-  public HttpSessionStartedEvent(RepositoryHttpEndpoint source) {
-    super(source);
-  }
+	public HttpSessionStartedEvent(RepositoryHttpEndpoint source) {
+		super(source);
+	}
 
 }

@@ -22,11 +22,11 @@ package org.kurento.test.config;
  */
 public enum Protocol {
 
-  HTTP, HTTPS, FILE;
+	HTTP, HTTPS, FILE;
 
-  @Override
-  public String toString() {
-    return this.name().toLowerCase() + "://";
-  }
+	@Override
+	public String toString() {
+		return this.name().toLowerCase() + "://";
+	}
 
 }

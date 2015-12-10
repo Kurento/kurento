@@ -50,39 +50,45 @@ import org.kurento.client.test.util.SdpAsyncBaseTest;
  */
 public class RtpEndpointAsyncTest extends SdpAsyncBaseTest<RtpEndpoint> {
 
-  @Before
-  public void setupMediaElements() throws InterruptedException {
+	@Before
+	public void setupMediaElements() throws InterruptedException {
 
-    AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>("RtpEndpoint creation");
-    new RtpEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
-    sdp = async.waitForResult();
-    Assert.assertNotNull(sdp);
+		AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		new RtpEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
+		sdp = async.waitForResult();
+		Assert.assertNotNull(sdp);
 
-    AsyncResultManager<RtpEndpoint> async2 = new AsyncResultManager<>("RtpEndpoint creation");
-    new RtpEndpoint.Builder(pipeline).buildAsync(async2.getContinuation());
-    sdp2 = async2.waitForResult();
-    Assert.assertNotNull(sdp2);
-  }
+		AsyncResultManager<RtpEndpoint> async2 = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		new RtpEndpoint.Builder(pipeline).buildAsync(async2.getContinuation());
+		sdp2 = async2.waitForResult();
+		Assert.assertNotNull(sdp2);
+	}
 
-  @Test
-  public void testRtpEndpointSimulatingAndroidSdp() throws InterruptedException {
+	@Test
+	public void testRtpEndpointSimulatingAndroidSdp()
+			throws InterruptedException {
 
-    PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES).build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_BARCODES).build();
 
-    RtpEndpoint rtpEndpoint = new RtpEndpoint.Builder(pipeline).build();
+		RtpEndpoint rtpEndpoint = new RtpEndpoint.Builder(pipeline).build();
 
-    String requestSdp =
-        "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
-            + "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n" + "m=video 52126 RTP/AVP 96 97 98\r\n"
-            + "a=rtpmap:96 H264/90000\r\n" + "a=rtpmap:97 MP4V-ES/90000\r\n"
-            + "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n" + "b=AS:384\r\n";
+		String requestSdp = "v=0\r\n"
+				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
+				+ "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
+				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n" + "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
+				+ "b=AS:384\r\n";
 
-    rtpEndpoint.processOffer(requestSdp);
-    player.connect(rtpEndpoint, MediaType.VIDEO);
-    player.play();
+		rtpEndpoint.processOffer(requestSdp);
+		player.connect(rtpEndpoint, MediaType.VIDEO);
+		player.play();
 
-    // just a little bit of time before destroying
-    Thread.sleep(2000);
-  }
+		// just a little bit of time before destroying
+		Thread.sleep(2000);
+	}
 
 }

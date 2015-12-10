@@ -40,7 +40,8 @@ import org.kurento.test.config.VideoFormat;
 import org.kurento.test.functional.player.SimplePlayer;
 
 /**
- * Test of stability for a PlayerEndpoint (play many times different videos). <br>
+ * Test of stability for a PlayerEndpoint (play many times different videos).
+ * <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint -> WebRtcEndpoint <br>
@@ -50,10 +51,11 @@ import org.kurento.test.functional.player.SimplePlayer;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) PlayerEndpoint reads different media sources (HTTP/FILE) and different format (WEBM,
- * OGV, MOV, MP4, MKV, AVI, 3GP) and connects to a WebRtcEndpoint <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media. WebRtcPeer can be configured to receive both
- * video and audio, only video, or only audio <br>
+ * 1. (KMS) PlayerEndpoint reads different media sources (HTTP/FILE) and
+ * different format (WEBM, OGV, MOV, MP4, MKV, AVI, 3GP) and connects to a
+ * WebRtcEndpoint <br>
+ * 2. (Browser) WebRtcPeer in rcv-only receives media. WebRtcPeer can be
+ * configured to receive both video and audio, only video, or only audio <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
@@ -70,25 +72,27 @@ import org.kurento.test.functional.player.SimplePlayer;
 @Category(SystemStabilityTests.class)
 public class PlayerMultiplePlayTest extends SimplePlayer {
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
 
-  @Test
-  public void testPlayerMultiplePlay() throws Exception {
-    Protocol[] protocols = { HTTP, FILE };
-    VideoFormat[] videoFormats = { THIRDGP, AVI, MKV, MOV, MP4, OGV, WEBM };
-    WebRtcChannel[] webRtcChannels = { AUDIO_AND_VIDEO, AUDIO_ONLY, VIDEO_ONLY };
+	@Test
+	public void testPlayerMultiplePlay() throws Exception {
+		Protocol[] protocols = { HTTP, FILE };
+		VideoFormat[] videoFormats = { THIRDGP, AVI, MKV, MOV, MP4, OGV, WEBM };
+		WebRtcChannel[] webRtcChannels = { AUDIO_AND_VIDEO, AUDIO_ONLY,
+				VIDEO_ONLY };
 
-    for (Protocol protocol : protocols) {
-      for (VideoFormat videoFormat : videoFormats) {
-        for (WebRtcChannel webRtcChannel : webRtcChannels) {
-          testPlayerWithSmallFile(protocol, videoFormat, webRtcChannel);
-          getPage().reload();
-        }
-      }
-    }
-  }
+		for (Protocol protocol : protocols) {
+			for (VideoFormat videoFormat : videoFormats) {
+				for (WebRtcChannel webRtcChannel : webRtcChannels) {
+					testPlayerWithSmallFile(protocol, videoFormat,
+							webRtcChannel);
+					getPage().reload();
+				}
+			}
+		}
+	}
 
 }

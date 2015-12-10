@@ -39,91 +39,93 @@ import org.slf4j.LoggerFactory;
  */
 public class KurentoTestListener extends RunListener {
 
-  private Class<?> testClass;
-  private List<FrameworkField> serviceFields;
-  private static List<TestService> serviceRunners = new ArrayList<>();
+	private Class<?> testClass;
+	private List<FrameworkField> serviceFields;
+	private static List<TestService> serviceRunners = new ArrayList<>();
 
-  protected static Logger log = LoggerFactory.getLogger(KurentoTestListener.class);
+	protected static Logger log = LoggerFactory
+			.getLogger(KurentoTestListener.class);
 
-  public enum ServiceMethod {
-    START, STOP;
-  }
+	public enum ServiceMethod {
+		START, STOP;
+	}
 
-  public KurentoTestListener(List<FrameworkField> services) {
+	public KurentoTestListener(List<FrameworkField> services) {
 
-    this.serviceFields = services;
+		this.serviceFields = services;
 
-    for (FrameworkField service : serviceFields) {
-      TestService serviceRunner = null;
-      try {
-        serviceRunner = (TestService) service.getField().get(null);
-        if (!serviceRunners.contains(serviceRunner)) {
-          serviceRunners.add(serviceRunner);
-          if (serviceRunner.getScope() == TESTSUITE) {
-            serviceRunner.start();
-          }
-        }
+		for (FrameworkField service : serviceFields) {
+			TestService serviceRunner = null;
+			try {
+				serviceRunner = (TestService) service.getField().get(null);
+				if (!serviceRunners.contains(serviceRunner)) {
+					serviceRunners.add(serviceRunner);
+					if (serviceRunner.getScope() == TESTSUITE) {
+						serviceRunner.start();
+					}
+				}
 
-      } catch (Throwable e) {
-        log.warn("Exception instanting service in class {}", serviceRunner, e);
-      }
-    }
+			} catch (Throwable e) {
+				log.warn("Exception instanting service in class {}",
+						serviceRunner, e);
+			}
+		}
 
-  }
+	}
 
-  private void invokeServices(ServiceMethod method, TestServiceScope scope) {
-    for (TestService serviceRunner : serviceRunners) {
-      if (serviceRunner.getScope() == scope) {
-        if (method == ServiceMethod.START) {
-          serviceRunner.start();
-        } else if (method == ServiceMethod.STOP) {
-          serviceRunner.stop();
-        }
-      }
-    }
-  }
+	private void invokeServices(ServiceMethod method, TestServiceScope scope) {
+		for (TestService serviceRunner : serviceRunners) {
+			if (serviceRunner.getScope() == scope) {
+				if (method == ServiceMethod.START) {
+					serviceRunner.start();
+				} else if (method == ServiceMethod.STOP) {
+					serviceRunner.stop();
+				}
+			}
+		}
+	}
 
-  @Override
-  public void testRunStarted(Description description) {
-    testClass = description.getTestClass();
+	@Override
+	public void testRunStarted(Description description) {
+		testClass = description.getTestClass();
 
-    log.debug("Starting test class {}", testClass.getName());
-    invokeServices(ServiceMethod.START, TESTCLASS);
-  }
+		log.debug("Starting test class {}", testClass.getName());
+		invokeServices(ServiceMethod.START, TESTCLASS);
+	}
 
-  @Override
-  public void testRunFinished(Result result) {
-    log.debug("Finishing test class {}. Test(s) failed: {}", testClass.getName(),
-        result.getFailureCount());
+	@Override
+	public void testRunFinished(Result result) {
+		log.debug("Finishing test class {}. Test(s) failed: {}",
+				testClass.getName(), result.getFailureCount());
 
-    invokeServices(ServiceMethod.STOP, TESTCLASS);
-  }
+		invokeServices(ServiceMethod.STOP, TESTCLASS);
+	}
 
-  @Override
-  public void testStarted(Description description) {
-    String methodName = description.getMethodName();
-    KurentoTest.setTestMethodName(methodName);
-    log.debug("Starting test {}.{}", testClass.getName(), methodName);
+	@Override
+	public void testStarted(Description description) {
+		String methodName = description.getMethodName();
+		KurentoTest.setTestMethodName(methodName);
+		log.debug("Starting test {}.{}", testClass.getName(), methodName);
 
-    invokeServices(ServiceMethod.START, TEST);
+		invokeServices(ServiceMethod.START, TEST);
 
-    KurentoTest.logMessage("|       TEST STARTING: " + description.getClassName() + "."
-        + methodName);
-  }
+		KurentoTest.logMessage("|       TEST STARTING: "
+				+ description.getClassName() + "." + methodName);
+	}
 
-  @Override
-  public void testFinished(Description description) {
-    String methodName = description.getMethodName();
-    log.debug("Finishing test {}.{}", testClass.getName(), methodName);
+	@Override
+	public void testFinished(Description description) {
+		String methodName = description.getMethodName();
+		log.debug("Finishing test {}.{}", testClass.getName(), methodName);
 
-    invokeServices(ServiceMethod.STOP, TEST);
+		invokeServices(ServiceMethod.STOP, TEST);
 
-    KurentoTestWatcher.invokeMethodsAnnotatedWith(FinishedTest.class, description.getTestClass(),
-        null, description);
-  }
+		KurentoTestWatcher.invokeMethodsAnnotatedWith(FinishedTest.class,
+				description.getTestClass(), null, description);
+	}
 
-  public void testSuiteFinished() {
-    log.debug("Finishing test suite");
-    invokeServices(ServiceMethod.STOP, TESTSUITE);
-  }
+	public void testSuiteFinished() {
+		log.debug("Finishing test suite");
+		invokeServices(ServiceMethod.STOP, TESTSUITE);
+	}
 }

@@ -32,80 +32,83 @@ import org.slf4j.LoggerFactory;
 
 public class WebSocketClientToKmsConnectionTest extends KurentoClientTest {
 
-  private static Logger log = LoggerFactory.getLogger(WebSocketClientToKmsConnectionTest.class);
+	private static Logger log = LoggerFactory
+			.getLogger(WebSocketClientToKmsConnectionTest.class);
 
-  @WebSocket
-  public class WebSocketHandler {
+	@WebSocket
+	public class WebSocketHandler {
 
-    @OnWebSocketClose
-    public void onClose(int statusCode, String reason) {
-      log.debug("WebSocket OnClose");
-    }
+		@OnWebSocketClose
+		public void onClose(int statusCode, String reason) {
+			log.debug("WebSocket OnClose");
+		}
 
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
-      log.debug("WebSocket OnConnect");
-    }
+		@OnWebSocketConnect
+		public void onConnect(Session session) {
+			log.debug("WebSocket OnConnect");
+		}
 
-    @OnWebSocketMessage
-    public void onMessage(String msg) {
-      log.debug("WebSocket OnMessage: " + msg);
-    }
-  }
+		@OnWebSocketMessage
+		public void onMessage(String msg) {
+			log.debug("WebSocket OnMessage: " + msg);
+		}
+	}
 
-  @Test
-  public void reconnectTest() throws Exception {
+	@Test
+	public void reconnectTest() throws Exception {
 
-    for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 2; i++) {
 
-      String kmsUrl = kms.getWsUri();
+			String kmsUrl = kms.getWsUri();
 
-      log.info("Connecting to KMS in " + kmsUrl);
+			log.info("Connecting to KMS in " + kmsUrl);
 
-      WebSocketClient client = new WebSocketClient();
-      WebSocketHandler socket = new WebSocketHandler();
+			WebSocketClient client = new WebSocketClient();
+			WebSocketHandler socket = new WebSocketHandler();
 
-      client.start();
-      ClientUpgradeRequest request = new ClientUpgradeRequest();
-      Session wsSession = client.connect(socket, new URI(kmsUrl), request).get();
+			client.start();
+			ClientUpgradeRequest request = new ClientUpgradeRequest();
+			Session wsSession = client.connect(socket, new URI(kmsUrl), request)
+					.get();
 
-      wsSession.getRemote().sendString("xxxx");
+			wsSession.getRemote().sendString("xxxx");
 
-      kms.stopKms();
+			kms.stopKms();
 
-      Thread.sleep(3000);
+			Thread.sleep(3000);
 
-      kms.start();
+			kms.start();
 
-    }
-  }
+		}
+	}
 
-  @Test
-  public void errorSendingClosedKmsTest() throws Exception {
+	@Test
+	public void errorSendingClosedKmsTest() throws Exception {
 
-    String kmsUrl = kms.getWsUri();
+		String kmsUrl = kms.getWsUri();
 
-    log.info("Connecting to KMS in " + kmsUrl);
+		log.info("Connecting to KMS in " + kmsUrl);
 
-    WebSocketClient client = new WebSocketClient();
-    WebSocketHandler socket = new WebSocketHandler();
+		WebSocketClient client = new WebSocketClient();
+		WebSocketHandler socket = new WebSocketHandler();
 
-    client.start();
-    ClientUpgradeRequest request = new ClientUpgradeRequest();
-    Session wsSession = client.connect(socket, new URI(kmsUrl), request).get();
+		client.start();
+		ClientUpgradeRequest request = new ClientUpgradeRequest();
+		Session wsSession = client.connect(socket, new URI(kmsUrl), request)
+				.get();
 
-    wsSession.getRemote().sendString("xxxx");
+		wsSession.getRemote().sendString("xxxx");
 
-    kms.stopKms();
+		kms.stopKms();
 
-    Thread.sleep(3000);
+		Thread.sleep(3000);
 
-    try {
+		try {
 
-      wsSession.getRemote().sendString("xxxx");
-      fail("Trying to send to a closed WebSocket should raise an exception");
-    } catch (Exception e) {
+			wsSession.getRemote().sendString("xxxx");
+			fail("Trying to send to a closed WebSocket should raise an exception");
+		} catch (Exception e) {
 
-    }
-  }
+		}
+	}
 }

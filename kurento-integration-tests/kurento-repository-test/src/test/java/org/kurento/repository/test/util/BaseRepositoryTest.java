@@ -30,11 +30,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.RepositoryApiTests;
-import org.kurento.repository.KurentoRepositoryServerApp;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
+import org.kurento.repository.KurentoRepositoryServerApp;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,156 +51,172 @@ import org.springframework.web.client.RestTemplate;
 @Category(RepositoryApiTests.class)
 public class BaseRepositoryTest {
 
-  private static final Logger log = LoggerFactory.getLogger(BaseRepositoryTest.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(BaseRepositoryTest.class);
 
-  protected static ConfigurableApplicationContext repositoryServer;
+	protected static ConfigurableApplicationContext repositoryServer;
 
-  @BeforeClass
-  public static void start() throws Exception {
-    repositoryServer = KurentoRepositoryServerApp.start();
-  }
+	@BeforeClass
+	public static void start() throws Exception {
+		repositoryServer = KurentoRepositoryServerApp.start();
+	}
 
-  @AfterClass
-  public static void stop() {
+	@AfterClass
+	public static void stop() {
 
-    log.info("Stopping RepositoryServer...");
-    repositoryServer.close();
-    log.info("RepositoryServer stopped");
-  }
+		log.info("Stopping RepositoryServer...");
+		repositoryServer.close();
+		log.info("RepositoryServer stopped");
+	}
 
-  @Before
-  public void cleanTmp() {
-    File tmpFolder = new File("test-files/tmp");
+	@Before
+	public void cleanTmp() {
+		File tmpFolder = new File("test-files/tmp");
 
-    tmpFolder.delete();
-    tmpFolder.mkdirs();
+		tmpFolder.delete();
+		tmpFolder.mkdirs();
 
-    Repository repo = getRepository();
+		Repository repo = getRepository();
 
-    if (repo instanceof MongoRepository) {
-      MongoRepository mrepo = (MongoRepository) repo;
-      mrepo.getGridFS().getDB().dropDatabase();
-    }
-  }
+		if (repo instanceof MongoRepository) {
+			MongoRepository mrepo = (MongoRepository) repo;
+			mrepo.getGridFS().getDB().dropDatabase();
+		}
+	}
 
-  protected Repository getRepository() {
-    return (Repository) repositoryServer.getBean("repository");
-  }
+	protected Repository getRepository() {
+		return (Repository) repositoryServer.getBean("repository");
+	}
 
-  protected RestTemplate getRestTemplate() {
-    RestTemplate restTemplate = new RestTemplate();
-    restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-      @Override
-      public void handleError(ClientHttpResponse response) throws IOException {
-        log.error(response.getStatusText());
-      }
-    });
-    return restTemplate;
-  }
+	protected RestTemplate getRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+			@Override
+			public void handleError(ClientHttpResponse response)
+					throws IOException {
+				log.error(response.getStatusText());
+			}
+		});
+		return restTemplate;
+	}
 
-  protected void downloadFromURL(String urlToDownload, File downloadedFile) throws Exception {
+	protected void downloadFromURL(String urlToDownload, File downloadedFile)
+			throws Exception {
 
-    RestTemplate template = getRestTemplate();
-    ResponseEntity<byte[]> entity = template.getForEntity(urlToDownload, byte[].class);
+		RestTemplate template = getRestTemplate();
+		ResponseEntity<byte[]> entity = template.getForEntity(urlToDownload,
+				byte[].class);
 
-    assertEquals(HttpStatus.OK, entity.getStatusCode());
+		assertEquals(HttpStatus.OK, entity.getStatusCode());
 
-    FileOutputStream os = new FileOutputStream(downloadedFile);
-    os.write(entity.getBody());
-    os.close();
-  }
+		FileOutputStream os = new FileOutputStream(downloadedFile);
+		os.write(entity.getBody());
+		os.close();
+	}
 
-  protected File downloadFromRepoItemId(String id) throws Exception {
+	protected File downloadFromRepoItemId(String id) throws Exception {
 
-    RepositoryItem newRepositoryItem = getRepository().findRepositoryItemById(id);
+		RepositoryItem newRepositoryItem = getRepository()
+				.findRepositoryItemById(id);
 
-    RepositoryHttpPlayer player = newRepositoryItem.createRepositoryHttpPlayer();
+		RepositoryHttpPlayer player = newRepositoryItem
+				.createRepositoryHttpPlayer();
 
-    File downloadedFile = new File("test-files/tmp/" + id);
+		File downloadedFile = new File("test-files/tmp/" + id);
 
-    if (downloadedFile.exists()) {
-      boolean success = downloadedFile.delete();
-      if (!success) {
-        throw new RuntimeException("The existing file " + downloadedFile + " cannot be deleted");
-      }
-    }
+		if (downloadedFile.exists()) {
+			boolean success = downloadedFile.delete();
+			if (!success) {
+				throw new RuntimeException("The existing file " + downloadedFile
+						+ " cannot be deleted");
+			}
+		}
 
-    downloadFromURL(player.getURL(), downloadedFile);
+		downloadFromURL(player.getURL(), downloadedFile);
 
-    return downloadedFile;
-  }
+		return downloadedFile;
+	}
 
-  protected void uploadFileWithMultiparts(String uploadURL, File fileToUpload) {
+	protected void uploadFileWithMultiparts(String uploadURL,
+			File fileToUpload) {
 
-    RestTemplate template = getRestTemplate();
+		RestTemplate template = getRestTemplate();
 
-    MultiValueMap<String, Object> parts = new LinkedMultiValueMap<String, Object>();
-    parts.add("file", new FileSystemResource(fileToUpload));
+		MultiValueMap<String, Object> parts = new LinkedMultiValueMap<String, Object>();
+		parts.add("file", new FileSystemResource(fileToUpload));
 
-    ResponseEntity<String> entity = postWithRetries(uploadURL, template, parts);
+		ResponseEntity<String> entity = postWithRetries(uploadURL, template,
+				parts);
 
-    assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK, entity.getStatusCode());
-  }
+		assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK,
+				entity.getStatusCode());
+	}
 
-  protected void uploadFileWithPOST(String uploadURL, File fileToUpload)
-      throws FileNotFoundException, IOException {
+	protected void uploadFileWithPOST(String uploadURL, File fileToUpload)
+			throws FileNotFoundException, IOException {
 
-    RestTemplate client = getRestTemplate();
+		RestTemplate client = getRestTemplate();
 
-    ByteArrayOutputStream fileBytes = new ByteArrayOutputStream();
-    IOUtils.copy(new FileInputStream(fileToUpload), fileBytes);
+		ByteArrayOutputStream fileBytes = new ByteArrayOutputStream();
+		IOUtils.copy(new FileInputStream(fileToUpload), fileBytes);
 
-    ResponseEntity<String> entity = postWithRetries(uploadURL, client, fileBytes.toByteArray());
+		ResponseEntity<String> entity = postWithRetries(uploadURL, client,
+				fileBytes.toByteArray());
 
-    log.info("Upload response");
+		log.info("Upload response");
 
-    assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK, entity.getStatusCode());
-  }
+		assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK,
+				entity.getStatusCode());
+	}
 
-  protected String uploadFile(File fileToUpload) throws FileNotFoundException, IOException {
+	protected String uploadFile(File fileToUpload)
+			throws FileNotFoundException, IOException {
 
-    RepositoryItem repositoryItem = getRepository().createRepositoryItem();
-    return uploadFile(fileToUpload, repositoryItem);
-  }
+		RepositoryItem repositoryItem = getRepository().createRepositoryItem();
+		return uploadFile(fileToUpload, repositoryItem);
+	}
 
-  protected String uploadFile(File fileToUpload, RepositoryItem repositoryItem)
-      throws FileNotFoundException, IOException {
+	protected String uploadFile(File fileToUpload,
+			RepositoryItem repositoryItem)
+					throws FileNotFoundException, IOException {
 
-    String id = repositoryItem.getId();
+		String id = repositoryItem.getId();
 
-    RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder();
+		RepositoryHttpRecorder recorder = repositoryItem
+				.createRepositoryHttpRecorder();
 
-    uploadFileWithMultiparts(recorder.getURL(), fileToUpload);
+		uploadFileWithMultiparts(recorder.getURL(), fileToUpload);
 
-    recorder.stop();
+		recorder.stop();
 
-    return id;
-  }
+		return id;
+	}
 
-  private ResponseEntity<String> postWithRetries(String uploadURL, RestTemplate template,
-      Object request) {
+	private ResponseEntity<String> postWithRetries(String uploadURL,
+			RestTemplate template, Object request) {
 
-    ResponseEntity<String> entity = null;
+		ResponseEntity<String> entity = null;
 
-    int numRetries = 0;
-    while (true) {
-      try {
-        entity = template.postForEntity(uploadURL, request, String.class);
-        break;
-      } catch (Exception e) {
-        log.warn("Exception when uploading file with POST. Retring...");
-        log.warn("Exception message: " + e.getMessage());
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e1) {
-        }
-        numRetries++;
-        if (numRetries > 5) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-    return entity;
-  }
+		int numRetries = 0;
+		while (true) {
+			try {
+				entity = template.postForEntity(uploadURL, request,
+						String.class);
+				break;
+			} catch (Exception e) {
+				log.warn("Exception when uploading file with POST. Retring...");
+				log.warn("Exception message: " + e.getMessage());
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e1) {
+				}
+				numRetries++;
+				if (numRetries > 5) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		return entity;
+	}
 
 }

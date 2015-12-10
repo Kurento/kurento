@@ -16,70 +16,74 @@ import org.springframework.context.ConfigurableApplicationContext;
 @Category(JsonRpcConnectorTests.class)
 public class JsonRpcConnectorBaseTest {
 
-  protected static ConfigurableApplicationContext context;
+	protected static ConfigurableApplicationContext context;
 
-  @BeforeClass
-  public static void start() throws Exception {
+	@BeforeClass
+	public static void start() throws Exception {
 
-    System.setProperty("java.security.egd", "file:/dev/./urandom");
+		System.setProperty("java.security.egd", "file:/dev/./urandom");
 
-    Properties properties = new Properties();
-    properties.put("server.port", getPort());
+		Properties properties = new Properties();
+		properties.put("server.port", getPort());
 
-    SpringApplication application = new SpringApplication(BootTestApplication.class);
+		SpringApplication application = new SpringApplication(
+				BootTestApplication.class);
 
-    application.setDefaultProperties(properties);
+		application.setDefaultProperties(properties);
 
-    System.out.println("Properties: " + properties);
+		System.out.println("Properties: " + properties);
 
-    context = application.run();
+		context = application.run();
 
-  }
+	}
 
-  @AfterClass
-  public static void stop() {
+	@AfterClass
+	public static void stop() {
 
-    if (context != null) {
-      context.close();
-    }
-  }
+		if (context != null) {
+			context.close();
+		}
+	}
 
-  protected static String getPort() {
-    String port = System.getProperty("http.port");
-    if (port == null) {
-      port = "7788";
-    }
-    return port;
-  }
+	protected static String getPort() {
+		String port = System.getProperty("http.port");
+		if (port == null) {
+			port = "7788";
+		}
+		return port;
+	}
 
-  protected JsonRpcClient createJsonRpcClient(String servicePath) {
-    return createJsonRpcClient(servicePath, null);
-  }
+	protected JsonRpcClient createJsonRpcClient(String servicePath) {
+		return createJsonRpcClient(servicePath, null);
+	}
 
-  protected JsonRpcClient createJsonRpcClient(String servicePath,
-      JsonRpcWSConnectionListener listener) {
+	protected JsonRpcClient createJsonRpcClient(String servicePath,
+			JsonRpcWSConnectionListener listener) {
 
-    String clientType = System.getProperty("jsonrpcconnector-client-type");
+		String clientType = System.getProperty("jsonrpcconnector-client-type");
 
-    if (clientType == null) {
-      clientType = "ws";
-    }
+		if (clientType == null) {
+			clientType = "ws";
+		}
 
-    JsonRpcClient client;
-    if ("ws".equals(clientType)) {
-      client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + servicePath, listener);
-    } else if ("http".equals(clientType)) {
-      client = new JsonRpcClientHttp("http://localhost:" + getPort() + servicePath);
-    } else {
-      throw new RuntimeException("Unrecognized property value jsonrpcconnector-client-type="
-          + clientType);
-    }
+		JsonRpcClient client;
+		if ("ws".equals(clientType)) {
+			client = new JsonRpcClientWebSocket("ws://localhost:" + getPort()
+					+ servicePath, listener);
+		} else if ("http".equals(clientType)) {
+			client = new JsonRpcClientHttp("http://localhost:" + getPort()
+					+ servicePath);
+		} else {
+			throw new RuntimeException(
+					"Unrecognized property value jsonrpcconnector-client-type="
+							+ clientType);
+		}
 
-    return client;
-  }
+		return client;
+	}
 
-  public static void main(String[] args) throws Exception {
-    start();
-  }
+	public static void main(String[] args) throws Exception {
+		start();
+	}
 
 }

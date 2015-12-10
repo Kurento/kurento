@@ -18,26 +18,31 @@ import com.google.gson.JsonSyntaxException;
 
 public class ConfigFileTest {
 
-  @Test
-  public void testSimpleProperty() throws JsonSyntaxException, JsonIOException, IOException,
-      URISyntaxException {
+	@Test
+	public void testSimpleProperty() throws JsonSyntaxException,
+			JsonIOException, IOException, URISyntaxException {
 
-    Path configFilePath = ConfigFileFinder.searchConfigFileInDefaultPlaces("test.conf.json");
+		Path configFilePath = ConfigFileFinder
+				.searchConfigFileInDefaultPlaces("test.conf.json");
 
-    ConfigFilePropertyHolder.configurePropertiesFromConfigFile(configFilePath);
+		ConfigFilePropertyHolder
+				.configurePropertiesFromConfigFile(configFilePath);
 
-    assertThat(PropertiesManager.getProperty("prop1"), is("value1"));
-    assertThat(PropertiesManager.getProperty("prop2.prop1"), is("xxx"));
-    assertThat(PropertiesManager.getProperty("nonExistingProp3"), is(nullValue()));
-    assertThat(PropertiesManager.getProperty("nonExistingProp3.prop1"), is(nullValue()));
+		assertThat(PropertiesManager.getProperty("prop1"), is("value1"));
+		assertThat(PropertiesManager.getProperty("prop2.prop1"), is("xxx"));
+		assertThat(PropertiesManager.getProperty("nonExistingProp3"),
+				is(nullValue()));
+		assertThat(PropertiesManager.getProperty("nonExistingProp3.prop1"),
+				is(nullValue()));
 
-    System.setProperty("nonExistingProp4", "kkkk");
+		System.setProperty("nonExistingProp4", "kkkk");
 
-    assertThat(PropertiesManager.getProperty("nonExistingProp4"), is("kkkk"));
+		assertThat(PropertiesManager.getProperty("nonExistingProp4"),
+				is("kkkk"));
 
-    System.setProperty("prop1", "kkkk");
+		System.setProperty("prop1", "kkkk");
 
-    assertThat(PropertiesManager.getProperty("prop1"), is("kkkk"));
+		assertThat(PropertiesManager.getProperty("prop1"), is("kkkk"));
 
-  }
+	}
 }

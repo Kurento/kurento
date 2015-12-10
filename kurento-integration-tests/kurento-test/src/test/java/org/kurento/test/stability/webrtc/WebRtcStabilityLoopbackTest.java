@@ -50,7 +50,8 @@ import org.kurento.test.latency.VideoTagType;
  *
  * Main assertion(s): <br>
  * · Color change should be detected on local/remote video tag of browsers <br>
- * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected <br>
+ * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected
+ * <br>
  *
  * Secondary assertion(s): <br>
  * -- <br>
@@ -60,45 +61,50 @@ import org.kurento.test.latency.VideoTagType;
  */
 public class WebRtcStabilityLoopbackTest extends StabilityTest {
 
-  private static final int DEFAULT_PLAYTIME = 30; // minutes
+	private static final int DEFAULT_PLAYTIME = 30; // minutes
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    String videoPath = KurentoClientBrowserTest.getTestFilesPath() + "/video/15sec/rgbHD.y4m";
-    TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
-    return Arrays.asList(new Object[][] { { test } });
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
+				+ "/video/15sec/rgbHD.y4m";
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  @Test
-  public void testWebRtcStabilityLoopback() throws Exception {
-    final int playTime =
-        Integer.parseInt(System.getProperty("test.webrtcstability.playtime",
-            String.valueOf(DEFAULT_PLAYTIME)));
+	@Test
+	public void testWebRtcStabilityLoopback() throws Exception {
+		final int playTime = Integer
+				.parseInt(System.getProperty("test.webrtcstability.playtime",
+						String.valueOf(DEFAULT_PLAYTIME)));
 
-    // Media Pipeline
-    MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
-    webRtcEndpoint.connect(webRtcEndpoint);
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+		webRtcEndpoint.connect(webRtcEndpoint);
 
-    // Latency control
-    LatencyController cs = new LatencyController("WebRTC in loopback");
+		// Latency control
+		LatencyController cs = new LatencyController("WebRTC in loopback");
 
-    // WebRTC
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+		// WebRTC
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY,
+				WebRtcMode.SEND_RCV);
 
-    // Latency assessment
-    getPage().activateLatencyControl(VideoTagType.LOCAL.getId(), VideoTagType.REMOTE.getId());
-    cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getPage());
+		// Latency assessment
+		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(),
+				VideoTagType.REMOTE.getId());
+		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getPage());
 
-    // Release Media Pipeline
-    mp.release();
+		// Release Media Pipeline
+		mp.release();
 
-    // Draw latency results (PNG chart and CSV file)
-    cs.drawChart(getDefaultOutputFile(".png"), 500, 270);
-    cs.writeCsv(getDefaultOutputFile(".csv"));
-    cs.logLatencyErrorrs();
-  }
+		// Draw latency results (PNG chart and CSV file)
+		cs.drawChart(getDefaultOutputFile(".png"), 500, 270);
+		cs.writeCsv(getDefaultOutputFile(".csv"));
+		cs.logLatencyErrorrs();
+	}
 }

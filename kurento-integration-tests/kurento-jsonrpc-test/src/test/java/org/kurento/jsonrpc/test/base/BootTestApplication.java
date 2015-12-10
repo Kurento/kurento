@@ -30,66 +30,66 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
 @EnableAutoConfiguration
 public class BootTestApplication implements JsonRpcConfigurer {
 
-  @Override
-  public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
+	@Override
+	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
 
-    registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
+		registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
 
-    registry.addHandler(new PingPongTest.Handler(), "/pingpong");
+		registry.addHandler(new PingPongTest.Handler(), "/pingpong");
 
-    registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
+		registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
 
-    registry.addHandler(new BidirectionalMultiTest.Handler(), "/BidirectionalMultiTest");
+		registry.addHandler(new BidirectionalMultiTest.Handler(), "/BidirectionalMultiTest");
 
-    registry.addHandler(new ServerEventsTest.Handler(), "/serverevents");
+		registry.addHandler(new ServerEventsTest.Handler(), "/serverevents");
 
-    registry.addHandler(new AsyncServerTest.Handler(), "/async_handler");
+		registry.addHandler(new AsyncServerTest.Handler(), "/async_handler");
 
-    registry.addHandler(new ErrorServerTest.Handler(), "/error_handler");
+		registry.addHandler(new ErrorServerTest.Handler(), "/error_handler");
 
-    registry.addPerSessionHandler(MultipleSessionsTest.Handler.class, "/jsonrpc_multiple");
+		registry.addPerSessionHandler(MultipleSessionsTest.Handler.class, "/jsonrpc_multiple");
 
-    registry.addPerSessionHandler("multipleJsonRpcHandler", "/jsonrpc_multiple2");
+		registry.addPerSessionHandler("multipleJsonRpcHandler", "/jsonrpc_multiple2");
 
-    registry.addHandler(new NewSessionTest.Handler(), "/new_session_handler");
+		registry.addHandler(new NewSessionTest.Handler(), "/new_session_handler");
 
-    registry.addHandler(new CloseSessionTest.Handler(), "/close_session_handler");
+		registry.addHandler(new CloseSessionTest.Handler(), "/close_session_handler");
 
-    registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
+		registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
 
-    registry.addHandler(new ReconnectionServerTest.Handler(), "/reconnection2");
+		registry.addHandler(new ReconnectionServerTest.Handler(), "/reconnection2");
 
-    registry.addHandler(new ConnectionListenerTest.Handler(), "/connectionlistener");
+		registry.addHandler(new ConnectionListenerTest.Handler(), "/connectionlistener");
 
-    registry.addHandler(new LargePackageTest.Handler(), "/largepackage");
+		registry.addHandler(new LargePackageTest.Handler(), "/largepackage");
 
-    registry.addHandler(new NotificationTest.Handler(), "/notification");
+		registry.addHandler(new NotificationTest.Handler(), "/notification");
 
-  }
+	}
 
-  @Bean
-  @Scope("prototype")
-  public MultipleSessionsTest.Handler multipleJsonRpcHandler() {
-    return new MultipleSessionsTest.Handler();
-  }
+	@Bean
+	@Scope("prototype")
+	public MultipleSessionsTest.Handler multipleJsonRpcHandler() {
+		return new MultipleSessionsTest.Handler();
+	}
 
-  @Bean
-  public DemoBean demoBean() {
-    return new DemoBean();
-  }
+	@Bean
+	public DemoBean demoBean() {
+		return new DemoBean();
+	}
 
-  @Bean
-  public JsonRpcHandler<?> echoJsonRpcHandler() {
-    return new EchoJsonRpcHandler();
-  }
+	@Bean
+	public JsonRpcHandler<?> echoJsonRpcHandler() {
+		return new EchoJsonRpcHandler();
+	}
 
-  @Bean
-  public ServletServerContainerFactoryBean createWebSocketContainer() {
-    ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-    container.setMaxSessionIdleTimeout(10000);
-    container.setMaxTextMessageBufferSize(1000000);
-    container.setMaxBinaryMessageBufferSize(1000000);
-    return container;
-  }
+	@Bean
+	public ServletServerContainerFactoryBean createWebSocketContainer() {
+		ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+		container.setMaxSessionIdleTimeout(10000);
+		container.setMaxTextMessageBufferSize(1000000);
+		container.setMaxBinaryMessageBufferSize(1000000);
+		return container;
+	}
 
 }

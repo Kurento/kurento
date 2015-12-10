@@ -39,59 +39,67 @@ import org.slf4j.LoggerFactory;
  */
 public class Ffmpeg {
 
-  private static Logger log = LoggerFactory.getLogger(Ffmpeg.class);
+	private static Logger log = LoggerFactory.getLogger(Ffmpeg.class);
 
-  private static final String HTTP_TEST_FILES = "http://files.kurento.org";
-  private static final String PESQ_RESULTS = "pesq_results.txt";
-  private static final String RECORDED_WAV = KurentoTest.getDefaultOutputFile("recorded.wav");
+	private static final String HTTP_TEST_FILES = "http://files.kurento.org";
+	private static final String PESQ_RESULTS = "pesq_results.txt";
+	private static final String RECORDED_WAV = KurentoTest
+			.getDefaultOutputFile("recorded.wav");
 
-  public static void recordRemote(GridNode node, int seconds, int sampleRate,
-      AudioChannel audioChannel) {
-    node.getSshConnection().execCommand("ffmpeg", "-y", "-t", String.valueOf(seconds), "-f",
-        "alsa", "-i", "pulse", "-q:a", "0", "-ac", audioChannel.toString(), "-ar",
-        String.valueOf(sampleRate), RECORDED_WAV);
-  }
+	public static void recordRemote(GridNode node, int seconds, int sampleRate,
+			AudioChannel audioChannel) {
+		node.getSshConnection().execCommand("ffmpeg", "-y", "-t",
+				String.valueOf(seconds), "-f", "alsa", "-i", "pulse", "-q:a",
+				"0", "-ac", audioChannel.toString(), "-ar",
+				String.valueOf(sampleRate), RECORDED_WAV);
+	}
 
-  public static void record(int seconds, int sampleRate, AudioChannel audioChannel) {
-    Shell.run("sh", "-c", "ffmpeg -y -t " + seconds + " -f alsa -i pulse -q:a 0 -ac "
-        + audioChannel + " -ar " + sampleRate + " " + RECORDED_WAV);
-  }
+	public static void record(int seconds, int sampleRate,
+			AudioChannel audioChannel) {
+		Shell.run("sh", "-c",
+				"ffmpeg -y -t " + seconds + " -f alsa -i pulse -q:a 0 -ac "
+						+ audioChannel + " -ar " + sampleRate + " "
+						+ RECORDED_WAV);
+	}
 
-  public static float getRemotePesqMos(GridNode node, String audio, int sampleRate) {
-    node.getSshConnection().getFile(RECORDED_WAV, RECORDED_WAV);
-    return getPesqMos(audio, sampleRate);
-  }
+	public static float getRemotePesqMos(GridNode node, String audio,
+			int sampleRate) {
+		node.getSshConnection().getFile(RECORDED_WAV, RECORDED_WAV);
+		return getPesqMos(audio, sampleRate);
+	}
 
-  public static float getPesqMos(String audio, int sampleRate) {
-    float pesqmos = 0;
+	public static float getPesqMos(String audio, int sampleRate) {
+		float pesqmos = 0;
 
-    try {
-      String pesq = KurentoTest.getTestFilesPath() + "/bin/pesq/PESQ";
-      String origWav = "";
-      if (audio.startsWith(HTTP_TEST_FILES)) {
-        origWav = KurentoTest.getTestFilesPath() + audio.replace(HTTP_TEST_FILES, "");
-      } else {
-        // Download URL
-        origWav = KurentoTest.getDefaultOutputFile("downloaded.wav");
-        URL url = new URL(audio);
-        ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-        FileOutputStream fos = new FileOutputStream(origWav);
-        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        fos.close();
-      }
+		try {
+			String pesq = KurentoTest.getTestFilesPath() + "/bin/pesq/PESQ";
+			String origWav = "";
+			if (audio.startsWith(HTTP_TEST_FILES)) {
+				origWav = KurentoTest.getTestFilesPath()
+						+ audio.replace(HTTP_TEST_FILES, "");
+			} else {
+				// Download URL
+				origWav = KurentoTest.getDefaultOutputFile("downloaded.wav");
+				URL url = new URL(audio);
+				ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+				FileOutputStream fos = new FileOutputStream(origWav);
+				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+				fos.close();
+			}
 
-      Shell.runAndWait(pesq, "+" + sampleRate, origWav, RECORDED_WAV);
-      List<String> lines = FileUtils.readLines(new File(PESQ_RESULTS), "utf-8");
-      pesqmos = Float.parseFloat(lines.get(1).split("\t")[2].trim());
-      log.info("PESQMOS " + pesqmos);
+			Shell.runAndWait(pesq, "+" + sampleRate, origWav, RECORDED_WAV);
+			List<String> lines = FileUtils.readLines(new File(PESQ_RESULTS),
+					"utf-8");
+			pesqmos = Float.parseFloat(lines.get(1).split("\t")[2].trim());
+			log.info("PESQMOS " + pesqmos);
 
-      Shell.runAndWait("rm", PESQ_RESULTS);
+			Shell.runAndWait("rm", PESQ_RESULTS);
 
-    } catch (IOException e) {
-      log.error("Exception recording local audio", e);
-    }
+		} catch (IOException e) {
+			log.error("Exception recording local audio", e);
+		}
 
-    return pesqmos;
-  }
+		return pesqmos;
+	}
 
 }

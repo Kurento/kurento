@@ -25,38 +25,38 @@ import java.awt.Color;
  */
 public class ChangeColorEvent {
 
-  private VideoTag videoTag;
-  private long time;
-  private Color color;
+	private VideoTag videoTag;
+	private long time;
+	private Color color;
 
-  public ChangeColorEvent(VideoTag videoTag, long time, Color color) {
-    this.videoTag = videoTag;
-    this.time = time;
-    this.color = color;
-  }
+	public ChangeColorEvent(VideoTag videoTag, long time, Color color) {
+		this.videoTag = videoTag;
+		this.time = time;
+		this.color = color;
+	}
 
-  public VideoTag getVideoTag() {
-    return videoTag;
-  }
+	public VideoTag getVideoTag() {
+		return videoTag;
+	}
 
-  public long getTime() {
-    return time;
-  }
+	public long getTime() {
+		return time;
+	}
 
-  public void setVideoTag(VideoTag videoTag) {
-    this.videoTag = videoTag;
-  }
+	public void setVideoTag(VideoTag videoTag) {
+		this.videoTag = videoTag;
+	}
 
-  public void setTime(long time) {
-    this.time = time;
-  }
+	public void setTime(long time) {
+		this.time = time;
+	}
 
-  public Color getColor() {
-    return color;
-  }
+	public Color getColor() {
+		return color;
+	}
 
-  public void setColor(Color color) {
-    this.color = color;
-  }
+	public void setColor(Color color) {
+		this.color = color;
+	}
 
 }

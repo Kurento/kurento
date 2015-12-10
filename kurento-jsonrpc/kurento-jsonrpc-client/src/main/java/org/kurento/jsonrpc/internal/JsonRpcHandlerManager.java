@@ -35,169 +35,180 @@ import com.google.gson.JsonElement;
 
 public class JsonRpcHandlerManager {
 
-  private static final Logger log = LoggerFactory.getLogger(JsonRpcHandlerManager.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(JsonRpcHandlerManager.class);
 
-  private JsonRpcHandler<?> handler;
+	private JsonRpcHandler<?> handler;
 
-  public JsonRpcHandlerManager(JsonRpcHandler<?> handler) {
-    this.handler = handler;
-  }
+	public JsonRpcHandlerManager(JsonRpcHandler<?> handler) {
+		this.handler = handler;
+	}
 
-  public JsonRpcHandlerManager() {
-  }
+	public JsonRpcHandlerManager() {
+	}
 
-  /**
-   * Sets the handler. This method will also set the handlerClass, based on the {@link #getClass()}
-   * method from the handler passed as parameter
-   *
-   * @param handler
-   */
-  public void setJsonRpcHandler(JsonRpcHandler<?> handler) {
-    this.handler = handler;
-  }
+	/**
+	 * Sets the handler. This method will also set the handlerClass, based on
+	 * the {@link #getClass()} method from the handler passed as parameter
+	 *
+	 * @param handler
+	 */
+	public void setJsonRpcHandler(JsonRpcHandler<?> handler) {
+		this.handler = handler;
+	}
 
-  public void afterConnectionClosed(Session session, String reason) {
-    if (handler != null) {
-      try {
-        handler.afterConnectionClosed(session, reason);
-      } catch (Exception e) {
-        try {
-          handler.handleUncaughtException(session, e);
-        } catch (Exception e2) {
-          log.error("Exception while executing handleUncaughtException", e2);
-        }
-      }
-    }
-  }
+	public void afterConnectionClosed(Session session, String reason) {
+		if (handler != null) {
+			try {
+				handler.afterConnectionClosed(session, reason);
+			} catch (Exception e) {
+				try {
+					handler.handleUncaughtException(session, e);
+				} catch (Exception e2) {
+					log.error(
+							"Exception while executing handleUncaughtException",
+							e2);
+				}
+			}
+		}
+	}
 
-  public void afterConnectionEstablished(Session session) {
+	public void afterConnectionEstablished(Session session) {
 
-    try {
-      if (handler != null) {
-        handler.afterConnectionEstablished(session);
-      }
-    } catch (Exception e) {
-      try {
-        handler.handleUncaughtException(session, e);
-      } catch (Exception e2) {
-        log.error("Exception while executing handleUncaughtException", e2);
-      }
-    }
-  }
+		try {
+			if (handler != null) {
+				handler.afterConnectionEstablished(session);
+			}
+		} catch (Exception e) {
+			try {
+				handler.handleUncaughtException(session, e);
+			} catch (Exception e2) {
+				log.error("Exception while executing handleUncaughtException",
+						e2);
+			}
+		}
+	}
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public void handleRequest(Session session, Request<JsonElement> request, ResponseSender rs)
-      throws IOException {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void handleRequest(Session session, Request<JsonElement> request,
+			ResponseSender rs) throws IOException {
+		
+		try {
 
-    try {
+			if (handler == null) {
+				log.warn("JsonRpcClient has received a request from server but"
+						+ " there is no JsonRpcHandler configured to manage this"
+						+ " request");
+				return;
+			}
 
-      if (handler == null) {
-        log.warn("JsonRpcClient has received a request from server but"
-            + " there is no JsonRpcHandler configured to manage this" + " request");
-        return;
-      }
+			Class<?> paramsType = getParamsType(handler.getHandlerType());
+			Request<?> nonGenRequest;
+			try {
 
-      Class<?> paramsType = getParamsType(handler.getHandlerType());
-      Request<?> nonGenRequest;
-      try {
+				nonGenRequest = MessageUtils
+						.convertRequest(request, paramsType);
 
-        nonGenRequest = MessageUtils.convertRequest(request, paramsType);
+			} catch (ClassCastException e) {
 
-      } catch (ClassCastException e) {
+				String message = "The handler "
+						+ handler.getClass()
+						+ " is trying to process the request. But request params '"
+						+ request.getParams() + "' cannot be converted to "
+						+ paramsType.getCanonicalName()
+						+ ". The type to convert params is specified in the"
+						+ " handler as the supertype generic parameter";
 
-        String message =
-            "The handler " + handler.getClass()
-                + " is trying to process the request. But request params '" + request.getParams()
-                + "' cannot be converted to " + paramsType.getCanonicalName()
-                + ". The type to convert params is specified in the"
-                + " handler as the supertype generic parameter";
+				// TODO Maybe use the pattern handleUncaughtException
+				log.error(message, e);
 
-        // TODO Maybe use the pattern handleUncaughtException
-        log.error(message, e);
+				if (request.getId() != null) {
+					rs.sendResponse(new Response<>(null, new ResponseError(0,
+							message)));
+				}
+				return;
+			}
 
-        if (request.getId() != null) {
-          rs.sendResponse(new Response<>(null, new ResponseError(0, message)));
-        }
-        return;
-      }
+			JsonRpcHandler nonGenHandler = handler;
 
-      JsonRpcHandler nonGenHandler = handler;
+			TransactionImpl tx = new TransactionImpl(session, request, rs);
+			nonGenHandler.handleRequest(tx, nonGenRequest);
 
-      TransactionImpl tx = new TransactionImpl(session, request, rs);
-      nonGenHandler.handleRequest(tx, nonGenRequest);
+			if (!tx.isAsync() && request.getId() != null) {
 
-      if (!tx.isAsync() && request.getId() != null) {
+				boolean notResponded = tx.setRespondedIfNot();
 
-        boolean notResponded = tx.setRespondedIfNot();
+				if (notResponded) {
+					// Empty response
+					rs.sendResponse(new Response<>(request.getId(), ""));
+				}
+			}
 
-        if (notResponded) {
-          // Empty response
-          rs.sendResponse(new Response<>(request.getId(), ""));
-        }
-      }
+		} catch (Exception e) {
 
-    } catch (Exception e) {
+			// TODO Maybe use the pattern handleUncaughtException
+			log.error("Exception while processing request", e);
 
-      // TODO Maybe use the pattern handleUncaughtException
-      log.error("Exception while processing request", e);
+			ResponseError error = ResponseError.newFromException(e);
+			rs.sendResponse(new Response<>(request.getId(), error));
+		}
+	}
 
-      ResponseError error = ResponseError.newFromException(e);
-      rs.sendResponse(new Response<>(request.getId(), error));
-    }
-  }
+	// TODO Improve this way to obtain the generic parameters in class
+	// hierarchies
+	public static Class<?> getParamsType(Class<?> handlerClass) {
 
-  // TODO Improve this way to obtain the generic parameters in class
-  // hierarchies
-  public static Class<?> getParamsType(Class<?> handlerClass) {
+		Type[] genericInterfaces = handlerClass.getGenericInterfaces();
 
-    Type[] genericInterfaces = handlerClass.getGenericInterfaces();
+		for (Type type : genericInterfaces) {
 
-    for (Type type : genericInterfaces) {
+			if (type instanceof ParameterizedType) {
+				ParameterizedType parameterized = (ParameterizedType) type;
 
-      if (type instanceof ParameterizedType) {
-        ParameterizedType parameterized = (ParameterizedType) type;
+				if (parameterized.getRawType() == JsonRpcHandler.class) {
+					return (Class<?>) parameterized.getActualTypeArguments()[0];
+				}
+			}
+		}
 
-        if (parameterized.getRawType() == JsonRpcHandler.class) {
-          return (Class<?>) parameterized.getActualTypeArguments()[0];
-        }
-      }
-    }
+		Type genericSuperclass = handlerClass.getGenericSuperclass();
+		if (genericSuperclass != null) {
 
-    Type genericSuperclass = handlerClass.getGenericSuperclass();
-    if (genericSuperclass != null) {
+			if (genericSuperclass instanceof Class) {
+				return getParamsType((Class<?>) genericSuperclass);
+			}
 
-      if (genericSuperclass instanceof Class) {
-        return getParamsType((Class<?>) genericSuperclass);
-      }
+			ParameterizedType paramClass = (ParameterizedType) genericSuperclass;
 
-      ParameterizedType paramClass = (ParameterizedType) genericSuperclass;
+			if (paramClass.getRawType() == DefaultJsonRpcHandler.class) {
+				return (Class<?>) paramClass.getActualTypeArguments()[0];
+			}
 
-      if (paramClass.getRawType() == DefaultJsonRpcHandler.class) {
-        return (Class<?>) paramClass.getActualTypeArguments()[0];
-      }
+			return getParamsType((Class<?>) paramClass.getRawType());
 
-      return getParamsType((Class<?>) paramClass.getRawType());
+		}
 
-    }
+		throw new JsonRpcException(
+				"Unable to obtain the type paramter of JsonRpcHandler");
+	}
 
-    throw new JsonRpcException("Unable to obtain the type paramter of JsonRpcHandler");
-  }
-
-  public void handleTransportError(Session session, Throwable exception) {
-    if (handler != null) {
-      try {
-        handler.handleTransportError(session, exception);
-      } catch (Exception e) {
-        try {
-          handler.handleUncaughtException(session, e);
-        } catch (Exception e2) {
-          log.error("Exception while executing handleUncaughtException", e2);
-        }
-      }
-    }
-  }
-
-  public JsonRpcHandler<?> getHandler() {
-    return handler;
-  }
+	public void handleTransportError(Session session, Throwable exception) {
+		if (handler != null) {
+			try {
+				handler.handleTransportError(session, exception);
+			} catch (Exception e) {
+				try {
+					handler.handleUncaughtException(session, e);
+				} catch (Exception e2) {
+					log.error(
+							"Exception while executing handleUncaughtException",
+							e2);
+				}
+			}
+		}
+	}
+	
+	public JsonRpcHandler<?> getHandler() {
+		return handler;
+	}
 }

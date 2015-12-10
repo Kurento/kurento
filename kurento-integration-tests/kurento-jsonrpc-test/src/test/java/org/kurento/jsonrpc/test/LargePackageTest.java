@@ -11,41 +11,41 @@ import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 
 public class LargePackageTest extends JsonRpcConnectorBaseTest {
 
-  public static class Handler extends DefaultJsonRpcHandler<Integer> {
+	public static class Handler extends DefaultJsonRpcHandler<Integer> {
 
-    @Override
-    public void handleRequest(final Transaction transaction, Request<Integer> request)
-        throws Exception {
+		@Override
+		public void handleRequest(final Transaction transaction,
+				Request<Integer> request) throws Exception {
 
-      String largeString = newLargeString();
+			String largeString = newLargeString();
+			
+			System.out.println(largeString.getBytes().length);
+			
+			transaction.sendResponse(largeString);
+		}
 
-      System.out.println(largeString.getBytes().length);
+		private String newLargeString() {			
+			StringBuilder sb = new StringBuilder();			
+			for(int i=0; i<6600; i++){
+				sb.append("aaaaaaaaaa");
+			}			
+			return sb.toString();
+		}
+	}
 
-      transaction.sendResponse(largeString);
-    }
+	@Test
+	public void test() throws IOException, InterruptedException {
 
-    private String newLargeString() {
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < 6600; i++) {
-        sb.append("aaaaaaaaaa");
-      }
-      return sb.toString();
-    }
-  }
+		JsonRpcClient client = createJsonRpcClient("/largepackage");
 
-  @Test
-  public void test() throws IOException, InterruptedException {
+		String largePackage = client.sendRequest("echo", String.class);
+		
+		System.out.println(largePackage);
+		
+		Thread.sleep(2000);
+		
+		client.close();
 
-    JsonRpcClient client = createJsonRpcClient("/largepackage");
-
-    String largePackage = client.sendRequest("echo", String.class);
-
-    System.out.println(largePackage);
-
-    Thread.sleep(2000);
-
-    client.close();
-
-  }
+	}
 
 }

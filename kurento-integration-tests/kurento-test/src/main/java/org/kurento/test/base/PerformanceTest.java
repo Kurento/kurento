@@ -33,36 +33,36 @@ import org.kurento.test.monitor.SystemMonitorManager;
 @Category(SystemPerformanceTests.class)
 public class PerformanceTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-  protected SystemMonitorManager monitor;
+	protected SystemMonitorManager monitor;
 
-  protected String monitorResultPath;
+	protected String monitorResultPath;
 
-  public PerformanceTest() {
-    setDeleteLogsIfSuccess(false);
-  }
+	public PerformanceTest() {
+		setDeleteLogsIfSuccess(false);
+	}
 
-  @Before
-  public void setupMonitor() {
-    monitorResultPath = getDefaultOutputFile("-monitor.csv");
-    monitor = new SystemMonitorManager();
-    monitor.startMonitoring();
-  }
+	@Before
+	public void setupMonitor() {
+		monitorResultPath = getDefaultOutputFile("-monitor.csv");
+		monitor = new SystemMonitorManager();
+		monitor.startMonitoring();
+	}
 
-  @After
-  public void teardownMonitor() throws IOException {
-    if (monitor != null) {
-      monitor.stop();
-      monitor.writeResults(monitorResultPath);
-      monitor.destroy();
-    }
-  }
+	@After
+	public void teardownMonitor() throws IOException {
+		if (monitor != null) {
+			monitor.stop();
+			monitor.writeResults(monitorResultPath);
+			monitor.destroy();
+		}
+	}
 
-  public String getMonitorResultPath() {
-    return monitorResultPath;
-  }
+	public String getMonitorResultPath() {
+		return monitorResultPath;
+	}
 
-  public void setMonitorResultPath(String monitorResultPath) {
-    this.monitorResultPath = monitorResultPath;
-  }
+	public void setMonitorResultPath(String monitorResultPath) {
+		this.monitorResultPath = monitorResultPath;
+	}
 
 }

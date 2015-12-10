@@ -23,19 +23,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Internal utility for starting a Selenium Grid Hub (for manual testing/debug purposes).
+ * Internal utility for starting a Selenium Grid Hub (for manual testing/debug
+ * purposes).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 public class StartHub {
 
-  public Logger log = LoggerFactory.getLogger(StartHub.class);
+	public Logger log = LoggerFactory.getLogger(StartHub.class);
 
-  public static void main(String[] args) throws Exception {
-    int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY, SELENIUM_HUB_PORT_DEFAULT);
+	public static void main(String[] args) throws Exception {
+		int hubPort = getProperty(SELENIUM_HUB_PORT_PROPERTY, SELENIUM_HUB_PORT_DEFAULT);
 
-    GridHub seleniumGridHub = new GridHub(hubPort);
-    seleniumGridHub.start();
-  }
+		GridHub seleniumGridHub = new GridHub(hubPort);
+		seleniumGridHub.start();
+	}
 }

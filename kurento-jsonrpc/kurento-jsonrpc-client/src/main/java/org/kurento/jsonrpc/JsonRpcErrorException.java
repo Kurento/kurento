@@ -20,45 +20,47 @@ import com.google.gson.JsonElement;
 
 public class JsonRpcErrorException extends JsonRpcException {
 
-  private static final long serialVersionUID = 1584953670536766280L;
+	private static final long serialVersionUID = 1584953670536766280L;
 
-  private final ResponseError error;
+	private final ResponseError error;
 
-  public JsonRpcErrorException(int code, String message) {
-    this(new ResponseError(code, message));
-  }
+	public JsonRpcErrorException(int code, String message) {
+		this(new ResponseError(code, message));
+	}
 
-  public JsonRpcErrorException(int code, String message, JsonElement data) {
-    this(new ResponseError(code, message, data));
-  }
+	public JsonRpcErrorException(int code, String message, JsonElement data) {
+		this(new ResponseError(code, message, data));
+	}
+	
+	public JsonRpcErrorException(int code, String message, Exception e) {
+		this(ResponseError.newFromException(e));
+	}
 
-  public JsonRpcErrorException(int code, String message, Exception e) {
-    this(ResponseError.newFromException(e));
-  }
+	public JsonRpcErrorException(ResponseError error) {
+		super(createExceptionMessage(error));
+		this.error = error;
+	}
 
-  public JsonRpcErrorException(ResponseError error) {
-    super(createExceptionMessage(error));
-    this.error = error;
-  }
+	private static String createExceptionMessage(ResponseError error) {
+		return error.getMessage()
+				+ ((error.getData() != null) ? (". Data: " + error.getData())
+						: "");
+	}
 
-  private static String createExceptionMessage(ResponseError error) {
-    return error.getMessage() + ((error.getData() != null) ? (". Data: " + error.getData()) : "");
-  }
+	public ResponseError getError() {
+		return error;
+	}
 
-  public ResponseError getError() {
-    return error;
-  }
+	public String getData() {
+		return error.getData();
+	}
 
-  public String getData() {
-    return error.getData();
-  }
+	public int getCode() {
+		return error.getCode();
+	}
 
-  public int getCode() {
-    return error.getCode();
-  }
-
-  public String getServerMessage() {
-    return error.getMessage();
-  }
+	public String getServerMessage() {
+		return error.getMessage();
+	}
 
 }

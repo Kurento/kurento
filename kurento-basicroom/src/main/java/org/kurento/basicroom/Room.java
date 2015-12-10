@@ -41,190 +41,198 @@ import com.google.gson.JsonPrimitive;
  * @since 1.0.0
  */
 public class Room implements Closeable {
-  private final Logger log = LoggerFactory.getLogger(Room.class);
+	private final Logger log = LoggerFactory.getLogger(Room.class);
 
-  private final ConcurrentMap<String, RoomParticipant> participants = new ConcurrentHashMap<>();
-  private final String name;
+	private final ConcurrentMap<String, RoomParticipant> participants = new ConcurrentHashMap<>();
+	private final String name;
 
-  private MediaPipeline pipeline;
+	private MediaPipeline pipeline;
 
-  private KurentoClient kurento;
+	private KurentoClient kurento;
 
-  private volatile boolean closed = false;
+	private volatile boolean closed = false;
 
-  private ExecutorService executor = Executors.newFixedThreadPool(1);
+	private ExecutorService executor = Executors.newFixedThreadPool(1);
 
-  public Room(String roomName, KurentoClient kurento) {
-    this.name = roomName;
-    this.kurento = kurento;
-    log.info("ROOM {} has been created", roomName);
-  }
+	public Room(String roomName, KurentoClient kurento) {
+		this.name = roomName;
+		this.kurento = kurento;
+		log.info("ROOM {} has been created", roomName);
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public RoomParticipant join(String userName, WebSocketSession session) {
+	public RoomParticipant join(String userName, WebSocketSession session) {
 
-    checkClosed();
+		checkClosed();
 
-    if (pipeline == null) {
-      log.info("ROOM {}: Creating MediaPipeline", userName);
-      pipeline = kurento.createMediaPipeline();
-    }
+		if (pipeline == null) {
+			log.info("ROOM {}: Creating MediaPipeline", userName);
+			pipeline = kurento.createMediaPipeline();
+		}
 
-    log.info("ROOM {}: adding participant {}", userName, userName);
-    final RoomParticipant participant = new RoomParticipant(userName, this, session, this.pipeline);
+		log.info("ROOM {}: adding participant {}", userName, userName);
+		final RoomParticipant participant = new RoomParticipant(userName, this,
+				session, this.pipeline);
 
-    sendParticipantNames(participant);
+		sendParticipantNames(participant);
 
-    final JsonObject newParticipantMsg = new JsonObject();
-    newParticipantMsg.addProperty("id", "newParticipantArrived");
-    newParticipantMsg.addProperty("name", participant.getName());
+		final JsonObject newParticipantMsg = new JsonObject();
+		newParticipantMsg.addProperty("id", "newParticipantArrived");
+		newParticipantMsg.addProperty("name", participant.getName());
 
-    log.debug("ROOM {}: notifying other participants {} of new participant {}", name,
-        participants.values(), participant.getName());
+		log.debug(
+				"ROOM {}: notifying other participants {} of new participant {}",
+				name, participants.values(), participant.getName());
 
-    for (final RoomParticipant participant1 : participants.values()) {
-      participant1.sendMessage(newParticipantMsg);
-    }
+		for (final RoomParticipant participant1 : participants.values()) {
+			participant1.sendMessage(newParticipantMsg);
+		}
 
-    participants.put(participant.getName(), participant);
+		participants.put(participant.getName(), participant);
 
-    log.debug("ROOM {}: Notified other participants {} of new participant {}", name,
-        participants.values(), participant.getName());
+		log.debug(
+				"ROOM {}: Notified other participants {} of new participant {}",
+				name, participants.values(), participant.getName());
 
-    return participant;
-  }
+		return participant;
+	}
 
-  private void checkClosed() {
-    if (closed) {
-      throw new KurentoException("The room '" + name + "' is closed");
-    }
-  }
+	private void checkClosed() {
+		if (closed) {
+			throw new KurentoException("The room '" + name + "' is closed");
+		}
+	}
 
-  public void leave(RoomParticipant user) {
+	public void leave(RoomParticipant user) {
 
-    checkClosed();
+		checkClosed();
 
-    log.debug("PARTICIPANT {}: Leaving room {}", user.getName(), this.name);
-    this.removeParticipant(user.getName());
-    user.close();
-  }
+		log.debug("PARTICIPANT {}: Leaving room {}", user.getName(), this.name);
+		this.removeParticipant(user.getName());
+		user.close();
+	}
 
-  private void removeParticipant(String name) {
+	private void removeParticipant(String name) {
 
-    checkClosed();
+		checkClosed();
 
-    participants.remove(name);
+		participants.remove(name);
 
-    log.debug("ROOM {}: notifying all users that {} is leaving the room", this.name, name);
+		log.debug("ROOM {}: notifying all users that {} is leaving the room",
+				this.name, name);
 
-    final JsonObject participantLeftJson = new JsonObject();
-    participantLeftJson.addProperty("id", "participantLeft");
-    participantLeftJson.addProperty("name", name);
-    for (final RoomParticipant participant : participants.values()) {
-      participant.cancelSendingVideoTo(name);
-      participant.sendMessage(participantLeftJson);
-    }
-  }
+		final JsonObject participantLeftJson = new JsonObject();
+		participantLeftJson.addProperty("id", "participantLeft");
+		participantLeftJson.addProperty("name", name);
+		for (final RoomParticipant participant : participants.values()) {
+			participant.cancelSendingVideoTo(name);
+			participant.sendMessage(participantLeftJson);
+		}
+	}
 
-  public void sendParticipantNames(RoomParticipant user) {
+	public void sendParticipantNames(RoomParticipant user) {
 
-    checkClosed();
+		checkClosed();
 
-    log.debug("PARTICIPANT {}: sending a list of participants", user.getName());
+		log.debug("PARTICIPANT {}: sending a list of participants",
+				user.getName());
 
-    final JsonArray participantsArray = new JsonArray();
-    for (final RoomParticipant participant : this.getParticipants()) {
-      log.debug("PARTICIPANT {}: visiting participant", user.getName(), participant.getName());
-      if (!participant.equals(user)) {
-        final JsonElement participantName = new JsonPrimitive(participant.getName());
-        participantsArray.add(participantName);
-      }
-    }
+		final JsonArray participantsArray = new JsonArray();
+		for (final RoomParticipant participant : this.getParticipants()) {
+			log.debug("PARTICIPANT {}: visiting participant", user.getName(),
+					participant.getName());
+			if (!participant.equals(user)) {
+				final JsonElement participantName = new JsonPrimitive(
+						participant.getName());
+				participantsArray.add(participantName);
+			}
+		}
 
-    final JsonObject existingParticipantsMsg = new JsonObject();
-    existingParticipantsMsg.addProperty("id", "existingParticipants");
-    existingParticipantsMsg.add("data", participantsArray);
-    log.debug("PARTICIPANT {}: sending a list of {} participants", user.getName(),
-        participantsArray.size());
-    user.sendMessage(existingParticipantsMsg);
-  }
+		final JsonObject existingParticipantsMsg = new JsonObject();
+		existingParticipantsMsg.addProperty("id", "existingParticipants");
+		existingParticipantsMsg.add("data", participantsArray);
+		log.debug("PARTICIPANT {}: sending a list of {} participants",
+				user.getName(), participantsArray.size());
+		user.sendMessage(existingParticipantsMsg);
+	}
 
-  /**
-   * @return a collection with all the participants in the room
-   */
-  public Collection<RoomParticipant> getParticipants() {
+	/**
+	 * @return a collection with all the participants in the room
+	 */
+	public Collection<RoomParticipant> getParticipants() {
 
-    checkClosed();
+		checkClosed();
 
-    return participants.values();
-  }
+		return participants.values();
+	}
 
-  /**
-   * @param name
-   * @return the participant from this session
-   */
-  public RoomParticipant getParticipant(String name) {
+	/**
+	 * @param name
+	 * @return the participant from this session
+	 */
+	public RoomParticipant getParticipant(String name) {
 
-    checkClosed();
+		checkClosed();
 
-    return participants.get(name);
-  }
+		return participants.get(name);
+	}
 
-  @Override
-  public void close() {
+	@Override
+	public void close() {
 
-    if (!closed) {
+		if (!closed) {
 
-      executor.shutdown();
+			executor.shutdown();
 
-      for (final RoomParticipant user : participants.values()) {
-        user.close();
-      }
+			for (final RoomParticipant user : participants.values()) {
+				user.close();
+			}
 
-      participants.clear();
+			participants.clear();
 
-      if (pipeline != null) {
-        pipeline.release(new Continuation<Void>() {
+			if (pipeline != null) {
+				pipeline.release(new Continuation<Void>() {
 
-          @Override
-          public void onSuccess(Void result) throws Exception {
-            log.trace("ROOM {}: Released Pipeline", Room.this.name);
-          }
+					@Override
+					public void onSuccess(Void result) throws Exception {
+						log.trace("ROOM {}: Released Pipeline", Room.this.name);
+					}
 
-          @Override
-          public void onError(Throwable cause) throws Exception {
-            log.warn("PARTICIPANT " + Room.this.name + ": Could not release Pipeline", cause);
-          }
-        });
-      }
+					@Override
+					public void onError(Throwable cause) throws Exception {
+						log.warn("PARTICIPANT " + Room.this.name
+								+ ": Could not release Pipeline", cause);
+					}
+				});
+			}
 
-      log.debug("Room {} closed", this.name);
+			log.debug("Room {} closed", this.name);
 
-      this.closed = true;
-    } else {
-      log.warn("Closing a yet closed room {}", this.name);
-    }
-  }
+			this.closed = true;
+		} else {
+			log.warn("Closing a yet closed room {}", this.name);
+		}
+	}
 
-  public void execute(Runnable task) {
+	public void execute(Runnable task) {
 
-    checkClosed();
+		checkClosed();
 
-    if (!executor.isShutdown()) {
-      try {
-        executor.submit(task).get();
-      } catch (InterruptedException e) {
-        return;
-      } catch (ExecutionException e) {
-        log.warn("Exception while executing a task in room " + name, e);
-      }
-    }
-  }
+		if (!executor.isShutdown()) {
+			try {
+				executor.submit(task).get();
+			} catch (InterruptedException e) {
+				return;
+			} catch (ExecutionException e) {
+				log.warn("Exception while executing a task in room " + name, e);
+			}
+		}
+	}
 
-  public boolean isClosed() {
-    return closed;
-  }
+	public boolean isClosed() {
+		return closed;
+	}
 }

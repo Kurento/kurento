@@ -26,17 +26,19 @@ import com.google.gson.JsonObject;
 
 public class EchoJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
-  private static Logger log = LoggerFactory.getLogger(EchoJsonRpcHandler.class);
+	private static Logger log = LoggerFactory
+			.getLogger(EchoJsonRpcHandler.class);
 
-  @Override
-  public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
+	@Override
+	public void handleRequest(Transaction transaction,
+			Request<JsonObject> request) throws Exception {
+		
+		log.info("Request id:" + request.getId());
+		log.info("Request method:" + request.getMethod());
+		log.info("Request params:" + request.getParams());
 
-    log.info("Request id:" + request.getId());
-    log.info("Request method:" + request.getMethod());
-    log.info("Request params:" + request.getParams());
+		transaction.sendResponse(request.getParams());
 
-    transaction.sendResponse(request.getParams());
-
-  }
+	}
 
 }

@@ -18,7 +18,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Custom annotation for started test class (called before any tests have been run).
+ * Custom annotation for started test class (called before any tests have been
+ * run).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1

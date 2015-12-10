@@ -48,250 +48,277 @@ import com.google.gson.Gson;
  */
 public class TestScenario {
 
-  public final static String INSTANCES_SEPARATOR = "-";
+	public final static String INSTANCES_SEPARATOR = "-";
 
-  private Map<String, Browser> browserMap;
-  private List<URL> urlList;
+	private Map<String, Browser> browserMap;
+	private List<URL> urlList;
 
-  public TestScenario() {
-    browserMap = new TreeMap<>();
-    urlList = new ArrayList<>();
-  }
+	public TestScenario() {
+		browserMap = new TreeMap<>();
+		urlList = new ArrayList<>();
+	}
 
-  public void addBrowser(String id, Browser browser) {
-    if (browser.getNumInstances() > 0) {
-      for (int i = 0; i < browser.getNumInstances(); i++) {
-        if (browser.getBrowserPerInstance() > 1) {
-          for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
-            String browserId = id + i + INSTANCES_SEPARATOR + j;
-            addBrowserInstance(browserId, new Browser(browser.getBuilder()));
-          }
-        } else {
-          addBrowserInstance(id + i, new Browser(browser.getBuilder()));
-        }
-      }
-    } else {
-      addBrowserInstance(id, browser);
-    }
-  }
+	public void addBrowser(String id, Browser browser) {
+		if (browser.getNumInstances() > 0) {
+			for (int i = 0; i < browser.getNumInstances(); i++) {
+				if (browser.getBrowserPerInstance() > 1) {
+					for (int j = 0; j < browser.getBrowserPerInstance(); j++) {
+						String browserId = id + i + INSTANCES_SEPARATOR + j;
+						addBrowserInstance(browserId,
+								new Browser(browser.getBuilder()));
+					}
+				} else {
+					addBrowserInstance(id + i,
+							new Browser(browser.getBuilder()));
+				}
+			}
+		} else {
+			addBrowserInstance(id, browser);
+		}
+	}
 
-  private void addBrowserInstance(String id, Browser browser) {
-    assertKeyNotExist(id);
-    browser.setId(id);
-    browserMap.put(id, browser);
-  }
+	private void addBrowserInstance(String id, Browser browser) {
+		assertKeyNotExist(id);
+		browser.setId(id);
+		browserMap.put(id, browser);
+	}
 
-  private void assertKeyNotExist(String key) {
-    Assert.assertFalse("'" + key + "' key already registered in browser config map", browserMap
-        .keySet().contains(key));
-  }
+	private void assertKeyNotExist(String key) {
+		Assert.assertFalse(
+				"'" + key + "' key already registered in browser config map",
+				browserMap.keySet().contains(key));
+	}
 
-  public BrowserScope getScope(String key) {
-    return (browserMap.get(key)).getScope();
-  }
+	public BrowserScope getScope(String key) {
+		return (browserMap.get(key)).getScope();
+	}
 
-  public BrowserType getBrowserType(String key) {
-    return (browserMap.get(key)).getBrowserType();
-  }
+	public BrowserType getBrowserType(String key) {
+		return (browserMap.get(key)).getBrowserType();
+	}
 
-  public Platform getPlatform(String key) {
-    return (browserMap.get(key)).getPlatform();
-  }
+	public Platform getPlatform(String key) {
+		return (browserMap.get(key)).getPlatform();
+	}
 
-  public String getBrowserVersion(String key) {
-    return (browserMap.get(key)).getBrowserVersion();
-  }
+	public String getBrowserVersion(String key) {
+		return (browserMap.get(key)).getBrowserVersion();
+	}
 
-  @Override
-  public String toString() {
-    String out = "";
-    Map<String, Integer> browsers = new HashMap<>();
-    for (String key : browserMap.keySet()) {
-      String browser = getBrowserType(key).toString();
-      String version = getBrowserVersion(key);
-      Platform platform = getPlatform(key);
+	@Override
+	public String toString() {
+		String out = "";
+		Map<String, Integer> browsers = new HashMap<>();
+		for (String key : browserMap.keySet()) {
+			String browser = getBrowserType(key).toString();
+			String version = getBrowserVersion(key);
+			Platform platform = getPlatform(key);
 
-      if (version != null) {
-        browser += version;
-      }
-      if (platform != null) {
-        browser += platform;
-      }
-      if (browsers.containsKey(browser)) {
-        int newCount = browsers.get(browser) + 1;
-        browsers.put(browser, newCount);
-      } else {
-        browsers.put(browser, 1);
-      }
-    }
-    for (String browser : browsers.keySet()) {
-      int count = browsers.get(browser);
-      if (!out.isEmpty()) {
-        out += " ";
-      }
-      if (count > 1) {
-        out += count + "X";
-      }
-      out += browser;
-    }
-    return out;
-  }
+			if (version != null) {
+				browser += version;
+			}
+			if (platform != null) {
+				browser += platform;
+			}
+			if (browsers.containsKey(browser)) {
+				int newCount = browsers.get(browser) + 1;
+				browsers.put(browser, newCount);
+			} else {
+				browsers.put(browser, 1);
+			}
+		}
+		for (String browser : browsers.keySet()) {
+			int count = browsers.get(browser);
+			if (!out.isEmpty()) {
+				out += " ";
+			}
+			if (count > 1) {
+				out += count + "X";
+			}
+			out += browser;
+		}
+		return out;
+	}
 
-  public static Collection<Object[]> from(String defaultBrowserConfigFile) {
+	public static Collection<Object[]> from(String defaultBrowserConfigFile) {
 
-    try {
+		try {
 
-      // Load executions from config file or system properties
-      String executionsData =
-          getProperty(getProperty(TEST_CONFIG_EXECUTIONS_PROPERTY, TEST_CONFIG_EXECUTIONS_DEFAULT));
+			// Load executions from config file or system properties
+			String executionsData = getProperty(
+					getProperty(TEST_CONFIG_EXECUTIONS_PROPERTY,
+							TEST_CONFIG_EXECUTIONS_DEFAULT));
 
-      BrowserConfig browserConfig = null;
-      Gson gson = new Gson();
-      if (executionsData != null) {
-        browserConfig =
-            gson.fromJson("{\"executions\":" + executionsData + "}", BrowserConfig.class);
+			BrowserConfig browserConfig = null;
+			Gson gson = new Gson();
+			if (executionsData != null) {
+				browserConfig = gson.fromJson(
+						"{\"executions\":" + executionsData + "}",
+						BrowserConfig.class);
 
-      } else {
+			} else {
 
-        // If there is no browserConfig in config file, load default
-        // from defaultBrowserConfigFile
-        try (BufferedReader br =
-            Files.newBufferedReader(ClassPath.get("/" + defaultBrowserConfigFile),
-                StandardCharsets.UTF_8)) {
-          browserConfig = gson.fromJson(br, BrowserConfig.class);
-        }
-      }
+				// If there is no browserConfig in config file, load default
+				// from defaultBrowserConfigFile
+				try (BufferedReader br = Files.newBufferedReader(
+						ClassPath.get("/" + defaultBrowserConfigFile),
+						StandardCharsets.UTF_8)) {
+					browserConfig = gson.fromJson(br, BrowserConfig.class);
+				}
+			}
 
-      return browserConfig.getTestScenario();
+			return browserConfig.getTestScenario();
 
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-  public static Collection<Object[]> empty() {
-    TestScenario test = new TestScenario();
-    return Arrays.asList(new Object[][] { { test } });
-  }
+	public static Collection<Object[]> empty() {
+		TestScenario test = new TestScenario();
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  /*
-   * Local browsers
-   */
-  public static Collection<Object[]> localChromeAndFirefox() {
-    // Test #1 : Chrome in local
-    TestScenario test1 = new TestScenario();
-    test1.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
-    // Test #2 : Firefox in local
-    TestScenario test2 = new TestScenario();
-    test2.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
+	/*
+	 * Local browsers
+	 */
+	public static Collection<Object[]> localChromeAndFirefox() {
+		// Test #1 : Chrome in local
+		TestScenario test1 = new TestScenario();
+		test1.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		// Test #2 : Firefox in local
+		TestScenario test2 = new TestScenario();
+		test2.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
-    return Arrays.asList(new Object[][] { { test1 }, { test2 } });
-  }
+		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
+	}
 
-  public static Collection<Object[]> localChromePlusFirefox() {
-    // Test #1 : Firefox and Chrome in local
-    TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.BROWSER + 0, new Browser.Builder()
-        .webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-        .build());
-    test.addBrowser(BrowserConfig.BROWSER + 1, new Browser.Builder()
-        .webPageType(WebPageType.WEBRTC).browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL)
-        .build());
+	public static Collection<Object[]> localChromePlusFirefox() {
+		// Test #1 : Firefox and Chrome in local
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.BROWSER + 0,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.BROWSER + 1,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
-    return Arrays.asList(new Object[][] { { test } });
-  }
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  public static Collection<Object[]> localChromes(int size) {
-    // Test: Chrome(s) in local
-    TestScenario test = new TestScenario();
-    for (int i = 0; i < size; i++) {
-      test.addBrowser(BrowserConfig.BROWSER + i,
-          new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-              .scope(BrowserScope.LOCAL).build());
-    }
-    return Arrays.asList(new Object[][] { { test } });
-  }
+	public static Collection<Object[]> localChromes(int size) {
+		// Test: Chrome(s) in local
+		TestScenario test = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.CHROME)
+							.scope(BrowserScope.LOCAL).build());
+		}
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  public static Collection<Object[]> localChromesAndFirefoxs(int size) {
-    // Test #1 : Chrome's in local
-    TestScenario test1 = new TestScenario();
-    for (int i = 0; i < size; i++) {
-      test1.addBrowser(BrowserConfig.BROWSER + i,
-          new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-              .scope(BrowserScope.LOCAL).build());
-    }
-    // Test #2 : Firefox's in local
-    TestScenario test2 = new TestScenario();
-    for (int i = 0; i < size; i++) {
-      test2.addBrowser(BrowserConfig.BROWSER + i,
-          new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.FIREFOX)
-              .scope(BrowserScope.LOCAL).build());
-    }
+	public static Collection<Object[]> localChromesAndFirefoxs(int size) {
+		// Test #1 : Chrome's in local
+		TestScenario test1 = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test1.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.CHROME)
+							.scope(BrowserScope.LOCAL).build());
+		}
+		// Test #2 : Firefox's in local
+		TestScenario test2 = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test2.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.FIREFOX)
+							.scope(BrowserScope.LOCAL).build());
+		}
 
-    return Arrays.asList(new Object[][] { { test1 }, { test2 } });
-  }
+		return Arrays.asList(new Object[][] { { test1 }, { test2 } });
+	}
 
-  public static Collection<Object[]> localChrome() {
-    // Test: Chrome in local
-    TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+	public static Collection<Object[]> localChrome() {
+		// Test: Chrome in local
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
-    return Arrays.asList(new Object[][] { { test } });
-  }
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  public static Collection<Object[]> localFirefox() {
-    // Test: Firefox in local
-    TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
+	public static Collection<Object[]> localFirefox() {
+		// Test: Firefox in local
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.BROWSER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.FIREFOX)
+						.scope(BrowserScope.LOCAL).build());
 
-    return Arrays.asList(new Object[][] { { test } });
-  }
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  public static Collection<Object[]> localPresenterAndViewer() {
-    // Test: Chrome in local (presenter and viewer)
-    TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
-    test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+	public static Collection<Object[]> localPresenterAndViewer() {
+		// Test: Chrome in local (presenter and viewer)
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.PRESENTER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
+		test.addBrowser(BrowserConfig.VIEWER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).build());
 
-    return Arrays.asList(new Object[][] { { test } });
-  }
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  public static Collection<Object[]> localPresenterAndViewerRGB() {
-    // Test: Chrome in local (presenter and viewer)
-    String videoPath = KurentoClientBrowserTest.getTestFilesPath() + "/video/15sec/rgbHD.y4m";
-    TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
-    test.addBrowser(BrowserConfig.VIEWER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());
+	public static Collection<Object[]> localPresenterAndViewerRGB() {
+		// Test: Chrome in local (presenter and viewer)
+		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
+				+ "/video/15sec/rgbHD.y4m";
+		TestScenario test = new TestScenario();
+		test.addBrowser(BrowserConfig.PRESENTER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
+		test.addBrowser(BrowserConfig.VIEWER,
+				new Browser.Builder().webPageType(WebPageType.WEBRTC)
+						.browserType(BrowserType.CHROME)
+						.scope(BrowserScope.LOCAL).video(videoPath).build());
 
-    return Arrays.asList(new Object[][] { { test } });
-  }
+		return Arrays.asList(new Object[][] { { test } });
+	}
 
-  public Map<String, Browser> getBrowserMap() {
-    return browserMap;
-  }
+	public Map<String, Browser> getBrowserMap() {
+		return browserMap;
+	}
 
-  public Map<String, Browser> getBrowserMap(String... types) {
-    Map<String, Browser> out = new HashMap<String, Browser>();
-    for (String key : browserMap.keySet()) {
-      for (String type : types) {
-        if (key.startsWith(type)) {
-          out.put(key, browserMap.get(key));
-        }
-      }
-    }
-    return out;
-  }
+	public Map<String, Browser> getBrowserMap(String... types) {
+		Map<String, Browser> out = new HashMap<String, Browser>();
+		for (String key : browserMap.keySet()) {
+			for (String type : types) {
+				if (key.startsWith(type)) {
+					out.put(key, browserMap.get(key));
+				}
+			}
+		}
+		return out;
+	}
 
-  public List<URL> getUrlList() {
-    return urlList;
-  }
+	public List<URL> getUrlList() {
+		return urlList;
+	}
 
 }

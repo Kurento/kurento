@@ -37,32 +37,35 @@ import com.mongodb.util.JSON;
 
 public class FilenameAsIdTest extends BaseRepositoryTest {
 
-  private static final Logger log = LoggerFactory.getLogger(FilenameAsIdTest.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(FilenameAsIdTest.class);
 
-  @Test
-  public void test() throws IOException {
+	@Test
+	public void test() throws IOException {
 
-    Repository repository = getRepository();
+		Repository repository = getRepository();
 
-    if (repository instanceof MongoRepository) {
+		if (repository instanceof MongoRepository) {
 
-      MongoRepository mongoRepository = (MongoRepository) repository;
+			MongoRepository mongoRepository = (MongoRepository) repository;
 
-      GridFS gridFS = mongoRepository.getGridFS();
+			GridFS gridFS = mongoRepository.getGridFS();
 
-      GridFSInputFile file = gridFS.createFile(new File("test-files/sample.txt"));
+			GridFSInputFile file = gridFS.createFile(new File(
+					"test-files/sample.txt"));
 
-      file.setId("sample.txt");
+			file.setId("sample.txt");
 
-      file.save();
+			file.save();
 
-      List<GridFSDBFile> files = gridFS.find((DBObject) JSON.parse("{ _id : 'sample.txt' }"));
+			List<GridFSDBFile> files = gridFS.find((DBObject) JSON
+					.parse("{ _id : 'sample.txt' }"));
 
-      assertNotNull(files);
-      assertEquals(1, files.size());
-    } else
-      log.info("Repository is not MongoDB");
+			assertNotNull(files);
+			assertEquals(1, files.size());
+		} else
+			log.info("Repository is not MongoDB");
 
-  }
+	}
 
 }

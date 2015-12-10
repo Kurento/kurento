@@ -54,69 +54,72 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerSwitchTest extends FunctionalTest {
 
-  private static final int PLAYTIME = 30; // seconds
-  private static final int N_PLAYER = 5;
+	private static final int PLAYTIME = 30; // seconds
+	private static final int N_PLAYER = 5;
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
 
-  @Test
-  public void testPlayerSwitch() throws Exception {
-    // Media Pipeline
-    MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerRed =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/chrome.mp4").build();
-    PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/fiware.mkv").build();
-    PlayerEndpoint playerBlue =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/sintel.webm").build();
-    PlayerEndpoint playerBall =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/rabbit.mov").build();
-    PlayerEndpoint playerRtsp =
-        new PlayerEndpoint.Builder(mp, "rtsp://195.55.223.100/axis-media/media.amp").build();
-    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+	@Test
+	public void testPlayerSwitch() throws Exception {
+		// Media Pipeline
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/format/chrome.mp4").build();
+		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/format/fiware.mkv").build();
+		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/format/sintel.webm").build();
+		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
+				"http://files.kurento.org/video/format/rabbit.mov").build();
+		PlayerEndpoint playerRtsp = new PlayerEndpoint.Builder(mp,
+				"rtsp://195.55.223.100/axis-media/media.amp").build();
+		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
-    // Test execution
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+		// Test execution
+		getPage().subscribeEvents("playing");
+		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+				WebRtcMode.RCV_ONLY);
 
-    // red
-    playerRed.connect(webRtcEndpoint);
-    playerRed.play();
-    getPage().subscribeEvents("playing");
-    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+		// red
+		playerRed.connect(webRtcEndpoint);
+		playerRed.play();
+		getPage().subscribeEvents("playing");
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    // green
-    playerGreen.connect(webRtcEndpoint);
-    playerGreen.play();
-    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+		// green
+		playerGreen.connect(webRtcEndpoint);
+		playerGreen.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    // blue
-    playerBlue.connect(webRtcEndpoint);
-    playerBlue.play();
-    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+		// blue
+		playerBlue.connect(webRtcEndpoint);
+		playerBlue.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    // ball
-    playerBall.connect(webRtcEndpoint);
-    playerBall.play();
-    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+		// ball
+		playerBall.connect(webRtcEndpoint);
+		playerBall.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    // rtsp
-    playerRtsp.connect(webRtcEndpoint);
-    playerRtsp.play();
-    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
+		// rtsp
+		playerRtsp.connect(webRtcEndpoint);
+		playerRtsp.play();
+		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
-    double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime
-        + " sec)", getPage().compare(PLAYTIME, currentTime));
+		// Assertions
+		Assert.assertTrue("Not received media (timeout waiting playing event)",
+				getPage().waitForEvent("playing"));
+		double currentTime = getPage().getCurrentTime();
+		Assert.assertTrue(
+				"Error in play time (expected: " + PLAYTIME + " sec, real: "
+						+ currentTime + " sec)",
+				getPage().compare(PLAYTIME, currentTime));
 
-    // Release Media Pipeline
-    mp.release();
-  }
+		// Release Media Pipeline
+		mp.release();
+	}
 
 }

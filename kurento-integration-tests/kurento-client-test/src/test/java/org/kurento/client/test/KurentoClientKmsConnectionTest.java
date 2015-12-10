@@ -28,42 +28,45 @@ import org.slf4j.LoggerFactory;
 
 public class KurentoClientKmsConnectionTest extends KurentoClientTest {
 
-  private static Logger log = LoggerFactory.getLogger(KurentoClientKmsConnectionTest.class);
+	private static Logger log = LoggerFactory
+			.getLogger(KurentoClientKmsConnectionTest.class);
 
-  @Test
-  public void errorSendingClosedKmsTest() throws Exception {
+	@Test
+	public void errorSendingClosedKmsTest() throws Exception {
 
-    String kmsUrl = kms.getWsUri();
+		String kmsUrl = kms.getWsUri();
 
-    KurentoClient kurento = KurentoClient.create(kmsUrl, new KurentoConnectionListener() {
+		KurentoClient kurento = KurentoClient.create(kmsUrl,
+				new KurentoConnectionListener() {
 
-      @Override
-      public void reconnected(boolean sameServer) {
-      }
+					@Override
+					public void reconnected(boolean sameServer) {
+					}
 
-      @Override
-      public void disconnected() {
-        log.info("Disconnected");
-      }
+					@Override
+					public void disconnected() {
+						log.info("Disconnected");
+					}
 
-      @Override
-      public void connectionFailed() {
-      }
+					@Override
+					public void connectionFailed() {
+					}
 
-      @Override
-      public void connected() {
-      }
-    });
+					@Override
+					public void connected() {
+					}
+				});
 
-    kurento.createMediaPipeline();
+		kurento.createMediaPipeline();
 
-    kms.stopKms();
+		kms.stopKms();
 
-    try {
-      kurento.createMediaPipeline();
-      fail("KurentoException should be thrown");
-    } catch (KurentoException e) {
-      assertThat(e.getMessage(), containsString("Exception connecting to WebSocket"));
-    }
-  }
+		try {
+			kurento.createMediaPipeline();
+			fail("KurentoException should be thrown");
+		} catch (KurentoException e) {
+			assertThat(e.getMessage(),
+					containsString("Exception connecting to WebSocket"));
+		}
+	}
 }

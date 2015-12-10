@@ -27,8 +27,8 @@ import org.kurento.test.browser.WebRtcTestPage;
 @Category(SystemStabilityTests.class)
 public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-  public StabilityTest() {
-    setDeleteLogsIfSuccess(false);
-  }
+	public StabilityTest() {
+		setDeleteLogsIfSuccess(false);
+	}
 
 }

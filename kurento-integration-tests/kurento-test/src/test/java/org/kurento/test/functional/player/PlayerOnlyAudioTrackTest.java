@@ -23,8 +23,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a PlayerEndpoint with different types of media sources (MP3, WAV ... all with ONLY AUDIO)
- * connected to a WebRtcEndpoint. <br>
+ * Test of a PlayerEndpoint with different types of media sources (MP3, WAV ...
+ * all with ONLY AUDIO) connected to a WebRtcEndpoint. <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint -> WebRtcEndpoint <br>
@@ -34,7 +34,8 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects to a WebRtcEndpoint <br>
+ * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects
+ * to a WebRtcEndpoint <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -50,69 +51,82 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
 
-  @Parameters(name = "{index}: {0}")
-  public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
-  }
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return TestScenario.localChromeAndFirefox();
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackHttpMp3() throws Exception {
-    testPlayer("http://files.kurento.org/audio/10sec/birds.mp3", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackHttpMp3() throws Exception {
+		testPlayer("http://files.kurento.org/audio/10sec/birds.mp3", AUDIO_ONLY,
+				10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackHttpWav() throws Exception {
-    testPlayer("http://files.kurento.org/audio/10sec/counter.wav", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackHttpWav() throws Exception {
+		testPlayer("http://files.kurento.org/audio/10sec/counter.wav",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackHttpFlac() throws Exception {
-    testPlayer("http://files.kurento.org/audio/10sec/cinema.flac", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackHttpFlac() throws Exception {
+		testPlayer("http://files.kurento.org/audio/10sec/cinema.flac",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackHttpOgg() throws Exception {
-    testPlayer("http://files.kurento.org/audio/10sec/fiware.ogg", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackHttpOgg() throws Exception {
+		testPlayer("http://files.kurento.org/audio/10sec/fiware.ogg",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackHttpM4a() throws Exception {
-    testPlayer("http://files.kurento.org/audio/10sec/left-right.m4a", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackHttpM4a() throws Exception {
+		testPlayer("http://files.kurento.org/audio/10sec/left-right.m4a",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackHttpWma() throws Exception {
-    testPlayer("http://files.kurento.org/audio/10sec/meet.wma", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackHttpWma() throws Exception {
+		testPlayer("http://files.kurento.org/audio/10sec/meet.wma", AUDIO_ONLY,
+				10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackFileMp3() throws Exception {
-    testPlayer("file://" + getTestFilesPath() + "/audio/10sec/birds.mp3", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackFileMp3() throws Exception {
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/birds.mp3",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackFileWav() throws Exception {
-    testPlayer("file://" + getTestFilesPath() + "/audio/10sec/counter.wav", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackFileWav() throws Exception {
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/counter.wav",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackFileFlac() throws Exception {
-    testPlayer("file://" + getTestFilesPath() + "/audio/10sec/cinema.flac", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackFileFlac() throws Exception {
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/cinema.flac",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackFileOgg() throws Exception {
-    testPlayer("file://" + getTestFilesPath() + "/audio/10sec/fiware.ogg", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackFileOgg() throws Exception {
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/fiware.ogg",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackFileM4a() throws Exception {
-    testPlayer("file://" + getTestFilesPath() + "/audio/10sec/left-right.m4a", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackFileM4a() throws Exception {
+		testPlayer(
+				"file://" + getTestFilesPath() + "/audio/10sec/left-right.m4a",
+				AUDIO_ONLY, 10);
+	}
 
-  @Test
-  public void testPlayerOnlyAudioTrackFileWma() throws Exception {
-    testPlayer("file://" + getTestFilesPath() + "/audio/10sec/meet.wma", AUDIO_ONLY, 10);
-  }
+	@Test
+	public void testPlayerOnlyAudioTrackFileWma() throws Exception {
+		testPlayer("file://" + getTestFilesPath() + "/audio/10sec/meet.wma",
+				AUDIO_ONLY, 10);
+	}
 
 }

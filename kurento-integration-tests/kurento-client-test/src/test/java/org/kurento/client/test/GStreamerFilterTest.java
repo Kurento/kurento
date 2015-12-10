@@ -34,37 +34,40 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  */
 public class GStreamerFilterTest extends MediaPipelineBaseTest {
 
-  private GStreamerFilter filter;
-  private PlayerEndpoint player;
+	private GStreamerFilter filter;
+	private PlayerEndpoint player;
 
-  @Before
-  public void setupMediaElements() {
-    player = new PlayerEndpoint.Builder(pipeline, URL_SMALL).build();
-  }
+	@Before
+	public void setupMediaElements() {
+		player = new PlayerEndpoint.Builder(pipeline, URL_SMALL).build();
+	}
 
-  @After
-  public void teardownMediaElements() {
-    player.release();
-  }
+	@After
+	public void teardownMediaElements() {
+		player.release();
+	}
 
-  @Test
-  public void testInstantiation() throws InterruptedException {
+	@Test
+	public void testInstantiation() throws InterruptedException {
 
-    filter = new GStreamerFilter.Builder(pipeline, "videoflip method=horizontal-flip").build();
+		filter = new GStreamerFilter.Builder(pipeline,
+				"videoflip method=horizontal-flip").build();
 
-    Assert.assertNotNull(filter);
+		Assert.assertNotNull(filter);
 
-    player.connect(filter);
+		player.connect(filter);
 
-    AsyncEventManager<EndOfStreamEvent> async =
-        new AsyncEventManager<EndOfStreamEvent>("EndOfStream event");
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<EndOfStreamEvent>(
+				"EndOfStream event");
 
-    player.addEndOfStreamListener(async.getMediaEventListener());
+		 
 
-    player.play();
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
-    async.waitForResult();
+		player.play();
 
-    filter.release();
-  }
+		async.waitForResult();
+
+		filter.release();
+	}
 }

@@ -33,27 +33,27 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableAutoConfiguration
 public class KurentoRoomServerApp implements WebSocketConfigurer {
 
-  @Bean
-  public RoomManager roomManager() {
-    return new RoomManager();
-  }
+	@Bean
+	public RoomManager roomManager() {
+		return new RoomManager();
+	}
 
-  @Bean
-  public RoomHandler groupCallHandler() {
-    return new RoomHandler();
-  }
+	@Bean
+	public RoomHandler groupCallHandler() {
+		return new RoomHandler();
+	}
 
-  @Bean
-  public KurentoClient kurentoClient() {
-    return KurentoClient.create("ws://localhost:8888/kurento");
-  }
+	@Bean
+	public KurentoClient kurentoClient() {
+		return KurentoClient.create("ws://localhost:8888/kurento");
+	}
 
-  @Override
-  public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-    registry.addHandler(groupCallHandler(), "/room");
-  }
+	@Override
+	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+		registry.addHandler(groupCallHandler(), "/room");
+	}
 
-  public static void main(String[] args) throws Exception {
-    SpringApplication.run(KurentoRoomServerApp.class, args);
-  }
+	public static void main(String[] args) throws Exception {
+		SpringApplication.run(KurentoRoomServerApp.class, args);
+	}
 }

@@ -25,22 +25,24 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class TestService {
 
-  public static Logger log = LoggerFactory.getLogger(TestService.class);
+	public static Logger log = LoggerFactory.getLogger(TestService.class);
 
-  public enum TestServiceScope {
-    TEST, TESTCLASS, TESTSUITE, EXTERNAL;
-  }
+	public enum TestServiceScope {
+		TEST, TESTCLASS, TESTSUITE, EXTERNAL;
+	}
 
-  public TestServiceScope scope = TestServiceScope.TEST;
+	public TestServiceScope scope = TestServiceScope.TEST;
 
-  public abstract TestServiceScope getScope();
+	public abstract TestServiceScope getScope();
 
-  public void start() {
-    log.debug("[+] Starting {} (scope={})", this.getClass().getSimpleName(), getScope());
-  }
+	public void start() {
+		log.debug("[+] Starting {} (scope={})", this.getClass().getSimpleName(),
+				getScope());
+	}
 
-  public void stop() {
-    log.debug("[-] Stopping {} (scope={})", this.getClass().getSimpleName(), getScope());
-  }
+	public void stop() {
+		log.debug("[-] Stopping {} (scope={})", this.getClass().getSimpleName(),
+				getScope());
+	}
 
 }

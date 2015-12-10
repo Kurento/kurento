@@ -9,28 +9,29 @@ import java.util.concurrent.TimeoutException;
 
 public class RemoteService {
 
-  public static void waitForReady(String host, int port, int time, TimeUnit unit)
-      throws UnknownHostException, IOException, TimeoutException {
+	public static void waitForReady(String host, int port, int time,
+			TimeUnit unit)
+					throws UnknownHostException, IOException, TimeoutException {
 
-    long maxTime = System.currentTimeMillis() + unit.toMillis(time);
+		long maxTime = System.currentTimeMillis() + unit.toMillis(time);
 
-    while (true) {
-      try {
-        Socket client = new Socket(host, port);
-        client.close();
-        break;
-      } catch (ConnectException ce) {
+		while (true) {
+			try {
+				Socket client = new Socket(host, port);
+				client.close();
+				break;
+			} catch (ConnectException ce) {
 
-        if (System.currentTimeMillis() > maxTime) {
-          throw new TimeoutException();
-        }
+				if (System.currentTimeMillis() > maxTime) {
+					throw new TimeoutException();
+				}
 
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-      }
-    }
-  }
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+	}
 
 }
