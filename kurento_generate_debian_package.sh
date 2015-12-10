@@ -20,8 +20,8 @@ else
   echo "Project already cloned, using existing one"
   cd $PROJECT_NAME
   git remote update
-  git checkout $BRANCH
-  git pull origin $BRANCH
+  git checkout $BRANCH || exit 1
+  git pull origin $BRANCH || exit 1
 fi
 
 if [ ! -s debian/changelog ]
@@ -93,10 +93,10 @@ dpkg-buildpackage $build_args || exit 1
 
 for i in ../*${ver}_*.deb
 do
-  kurento_upload_package.sh $DIST-dev $i || echo "Failed to upload package $i"
+  kurento_upload_package.sh $DIST-dev $i || { echo "Failed to upload package $i"; exit 1; }
 
   if [ $rc = 0 ] || [ "${FORCE_RELEASE}" = "yes" ]
   then
-    kurento_upload_package.sh $DIST $i || echo "Failed to upload package $i"
+    kurento_upload_package.sh $DIST $i || { echo "Failed to upload package $i"; exit 1; }
   fi
 done

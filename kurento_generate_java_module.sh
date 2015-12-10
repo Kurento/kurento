@@ -13,7 +13,8 @@ else
 fi
 
 rm -rf build
-mkdir build && cd build && cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
+mkdir build && cd build
+cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || exit 1
 
 cd java || exit 1
 PATH=$PATH:$(realpath $(dirname "$0"))

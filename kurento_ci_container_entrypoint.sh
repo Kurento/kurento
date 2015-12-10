@@ -34,5 +34,5 @@ EOL
 
 for CMD in $BUILD_COMMAND; do
   echo "Running command: $CMD"
-  $CMD
+  $CMD || exit 1
 done

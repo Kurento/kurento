@@ -11,7 +11,7 @@ BRANCH=$2
 COMMIT_ID=`git rev-parse HEAD`
 mkdir -p build
 cd build
-cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE
+cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE -DDISABLE_LIBRARIES_GENERATION=TRUE || exit 1
 JS_PROJECT_NAME=`cat js_project_name`
 echo Project name $JS_PROJECT_NAME
 rm -rf js
@@ -21,7 +21,7 @@ git checkout -b ${BRANCH}
 git reset --hard origin/${BRANCH} || echo
 rm -rf *
 cd ..
-cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE
+cmake .. -DGENERATE_JS_CLIENT_PROJECT=TRUE || exit 1
 cd js
 for i in `find . | grep -v  "^./.git" | grep -v "^.$"`
 do
@@ -30,7 +30,7 @@ done
 if ! git diff-index --quiet HEAD
 then
   git commit -a -m "Generated code from ${PROJECT_NAME} $COMMIT_ID"
-  git push origin ${BRANCH}
+  git push origin ${BRANCH} || exit 1
 fi
 
 PROJECT_VERSION=`kurento_get_version.sh`
@@ -39,5 +39,5 @@ PROJECT_VERSION=`kurento_get_version.sh`
 if [[ ${PROJECT_VERSION} != *-dev ]]; then
   echo "Creating tag ${JS_PROJECT_NAME}-${PROJECT_VERSION}"
   git tag "${PROJECT_VERSION}"
-  git push --tags
+  git push --tags || exit 1
 fi
