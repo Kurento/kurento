@@ -4,7 +4,6 @@ import org.kurento.jsonrpc.Props;
 
 public interface RomEventHandler {
 
-	void processEvent(String objectRef, String subscription, String type,
-			Props data);
+  void processEvent(String objectRef, String subscription, String type, Props data);
 
 }

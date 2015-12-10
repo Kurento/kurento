@@ -41,13 +41,12 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a
- * WebRtcEndpoint, the PlayerEndpoint is stopped/released <br>
+ * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
+ * PlayerEndpoint is stopped/released <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
- * · EndOfStream event cannot be received since the stop is done before the end
- * of the video <br>
+ * · EndOfStream event cannot be received since the stop is done before the end of the video <br>
  *
  * Secondary assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
@@ -57,75 +56,70 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerEndTest extends FunctionalTest {
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChromeAndFirefox();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChromeAndFirefox();
+  }
 
-	private enum PlayerOperation {
-		STOP, RELEASE;
-	}
+  private enum PlayerOperation {
+    STOP, RELEASE;
+  }
 
-	@Test
-	public void testPlayerStop() throws Exception {
-		doTest(PlayerOperation.STOP);
-	}
+  @Test
+  public void testPlayerStop() throws Exception {
+    doTest(PlayerOperation.STOP);
+  }
 
-	@Test
-	public void testPlayerRelease() throws Exception {
-		doTest(PlayerOperation.RELEASE);
-	}
+  @Test
+  public void testPlayerRelease() throws Exception {
+    doTest(PlayerOperation.RELEASE);
+  }
 
-	public void doTest(PlayerOperation playerOperation) throws Exception {
-		// Test data
-		final String mediaUrl = "http://files.kurento.org/video/format/small.webm";
-		final int guardTimeSeconds = 10;
+  public void doTest(PlayerOperation playerOperation) throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/format/small.webm";
+    final int guardTimeSeconds = 10;
 
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl)
-				.build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-		playerEP.connect(webRtcEP);
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    playerEP.connect(webRtcEP);
 
-		// Subscription to EOS event
-		final boolean[] eos = new boolean[1];
-		eos[0] = false;
-		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				log.error("EOS event received: {} {}", event.getType(),
-						event.getTimestamp());
-				eos[0] = true;
-			}
-		});
+    // Subscription to EOS event
+    final boolean[] eos = new boolean[1];
+    eos[0] = false;
+    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        log.error("EOS event received: {} {}", event.getType(), event.getTimestamp());
+        eos[0] = true;
+      }
+    });
 
-		// WebRTC in receive-only mode
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
-		playerEP.play();
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
+    // WebRTC in receive-only mode
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    playerEP.play();
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage().waitForEvent("playing"));
 
-		// Stop/release stream and wait x seconds
-		switch (playerOperation) {
-		case STOP:
-			playerEP.stop();
-			break;
-		case RELEASE:
-			playerEP.release();
-			break;
-		}
-		Thread.sleep(TimeUnit.SECONDS.toMillis(guardTimeSeconds));
+    // Stop/release stream and wait x seconds
+    switch (playerOperation) {
+      case STOP:
+        playerEP.stop();
+        break;
+      case RELEASE:
+        playerEP.release();
+        break;
+    }
+    Thread.sleep(TimeUnit.SECONDS.toMillis(guardTimeSeconds));
 
-		// Verify that EOS event has not being received
-		Assert.assertFalse(
-				"EOS event has been received. "
-						+ "This should not be happenning because the stream has been stopped",
-				eos[0]);
+    // Verify that EOS event has not being received
+    Assert.assertFalse("EOS event has been received. "
+        + "This should not be happenning because the stream has been stopped", eos[0]);
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

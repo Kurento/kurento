@@ -38,119 +38,112 @@ import org.springframework.web.client.RestTemplate;
 
 public class RangeGetTest extends BaseRepositoryTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(RangeGetTest.class);
+  private static final Logger log = LoggerFactory.getLogger(RangeGetTest.class);
 
-	@Test
-	public void test() throws Exception {
+  @Test
+  public void test() throws Exception {
 
-		String id = "logo.png";
+    String id = "logo.png";
 
-		RepositoryItem item;
-		try {
-			item = getRepository().findRepositoryItemById(id);
-		} catch (NoSuchElementException e) {
-			item = getRepository().createRepositoryItem(id);
-			uploadFile(new File("test-files/" + id), item);
-		}
+    RepositoryItem item;
+    try {
+      item = getRepository().findRepositoryItemById(id);
+    } catch (NoSuchElementException e) {
+      item = getRepository().createRepositoryItem(id);
+      uploadFile(new File("test-files/" + id), item);
+    }
 
-		RepositoryHttpPlayer player = item.createRepositoryHttpPlayer();
+    RepositoryHttpPlayer player = item.createRepositoryHttpPlayer();
 
-		String url = player.getURL();
+    String url = player.getURL();
 
-		player.setAutoTerminationTimeout(10000);
+    player.setAutoTerminationTimeout(10000);
 
-		// Following sample
-		// http://stackoverflow.com/questions/8293687/sample-http-range-request-session
+    // Following sample
+    // http://stackoverflow.com/questions/8293687/sample-http-range-request-session
 
-		RestTemplate httpClient = getRestTemplate();
+    RestTemplate httpClient = getRestTemplate();
 
-		acceptRanges(url, httpClient);
-		log.info("Accept ranges test passed");
+    acceptRanges(url, httpClient);
+    log.info("Accept ranges test passed");
 
-		long fileLength = rangeFrom0(url, httpClient);
-		log.info("Range from 0 test passed");
+    long fileLength = rangeFrom0(url, httpClient);
+    log.info("Range from 0 test passed");
 
-		randomRange(url, httpClient, fileLength);
-		log.info("Random range test passed");
-	}
+    randomRange(url, httpClient, fileLength);
+    log.info("Random range test passed");
+  }
 
-	private void randomRange(String url, RestTemplate httpClient,
-			long fileLength) {
+  private void randomRange(String url, RestTemplate httpClient, long fileLength) {
 
-		HttpHeaders requestHeaders = new HttpHeaders();
+    HttpHeaders requestHeaders = new HttpHeaders();
 
-		long firstByte = fileLength - 3000;
-		long lastByte = fileLength - 1;
-		long numBytes = lastByte - firstByte + 1;
+    long firstByte = fileLength - 3000;
+    long lastByte = fileLength - 1;
+    long numBytes = lastByte - firstByte + 1;
 
-		requestHeaders.set("Range", "bytes=" + firstByte + "-" + lastByte);
+    requestHeaders.set("Range", "bytes=" + firstByte + "-" + lastByte);
 
-		MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
+    MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
 
-		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(
-				postParameters, requestHeaders);
+    HttpEntity<MultiValueMap<String, String>> requestEntity =
+        new HttpEntity<MultiValueMap<String, String>>(postParameters, requestHeaders);
 
-		ResponseEntity<byte[]> response = httpClient.exchange(url,
-				HttpMethod.GET, requestEntity, byte[].class);
+    ResponseEntity<byte[]> response =
+        httpClient.exchange(url, HttpMethod.GET, requestEntity, byte[].class);
 
-		log.info("Response: " + response);
+    log.info("Response: " + response);
 
-		assertEquals(
-				"The server doesn't respond with http status code 206 to a request with ranges",
-				response.getStatusCode(), HttpStatus.PARTIAL_CONTENT);
+    assertEquals("The server doesn't respond with http status code 206 to a request with ranges",
+        response.getStatusCode(), HttpStatus.PARTIAL_CONTENT);
 
-		long responseContentLength = Long
-				.parseLong(response.getHeaders().get("Content-Length").get(0));
-		assertEquals("The server doesn't send the requested bytes", numBytes,
-				responseContentLength);
+    long responseContentLength = Long.parseLong(response.getHeaders().get("Content-Length").get(0));
+    assertEquals("The server doesn't send the requested bytes", numBytes, responseContentLength);
 
-		assertEquals("The server doesn't send the requested bytes",
-				responseContentLength, response.getBody().length);
-	}
+    assertEquals("The server doesn't send the requested bytes", responseContentLength,
+        response.getBody().length);
+  }
 
-	private long rangeFrom0(String url, RestTemplate httpClient) {
+  private long rangeFrom0(String url, RestTemplate httpClient) {
 
-		// Range: bytes=0-
+    // Range: bytes=0-
 
-		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.set("Range", "bytes=0-");
+    HttpHeaders requestHeaders = new HttpHeaders();
+    requestHeaders.set("Range", "bytes=0-");
 
-		MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
+    MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
 
-		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(
-				postParameters, requestHeaders);
+    HttpEntity<MultiValueMap<String, String>> requestEntity =
+        new HttpEntity<MultiValueMap<String, String>>(postParameters, requestHeaders);
 
-		ResponseEntity<byte[]> response = httpClient.exchange(url,
-				HttpMethod.GET, requestEntity, byte[].class);
+    ResponseEntity<byte[]> response =
+        httpClient.exchange(url, HttpMethod.GET, requestEntity, byte[].class);
 
-		log.info("Response: " + response);
+    log.info("Response: " + response);
 
-		assertEquals(
-				"The server doesn't respond with http status code 206 to a request with ranges",
-				HttpStatus.PARTIAL_CONTENT, response.getStatusCode());
+    assertEquals("The server doesn't respond with http status code 206 to a request with ranges",
+        HttpStatus.PARTIAL_CONTENT, response.getStatusCode());
 
-		return Long
-				.parseLong(response.getHeaders().get("Content-Length").get(0));
-	}
+    return Long.parseLong(response.getHeaders().get("Content-Length").get(0));
+  }
 
-	private void acceptRanges(String url, RestTemplate httpClient) {
+  private void acceptRanges(String url, RestTemplate httpClient) {
 
-		HttpHeaders requestHeaders = new HttpHeaders();
+    HttpHeaders requestHeaders = new HttpHeaders();
 
-		MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
+    MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
 
-		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(
-				postParameters, requestHeaders);
+    HttpEntity<MultiValueMap<String, String>> requestEntity =
+        new HttpEntity<MultiValueMap<String, String>>(postParameters, requestHeaders);
 
-		ResponseEntity<byte[]> response = httpClient.exchange(url,
-				HttpMethod.GET, requestEntity, byte[].class);
+    ResponseEntity<byte[]> response =
+        httpClient.exchange(url, HttpMethod.GET, requestEntity, byte[].class);
 
-		log.info("Response: " + response);
+    log.info("Response: " + response);
 
-		assertTrue("The server doesn't accept ranges",
-				response.getHeaders().containsKey("Accept-ranges"));
-		assertTrue("The server doesn't accept ranges with bytes",
-				response.getHeaders().get("Accept-ranges").contains("bytes"));
-	}
+    assertTrue("The server doesn't accept ranges",
+        response.getHeaders().containsKey("Accept-ranges"));
+    assertTrue("The server doesn't accept ranges with bytes",
+        response.getHeaders().get("Accept-ranges").contains("bytes"));
+  }
 }

@@ -17,8 +17,8 @@ package org.kurento.repository;
 
 public interface RepositoryHttpEndpointFactory {
 
-	public RepositoryHttpPlayer createRepositoryHttpPlayer();
+  public RepositoryHttpPlayer createRepositoryHttpPlayer();
 
-	public RepositoryHttpRecorder createRepositoryHttpRecorder();
+  public RepositoryHttpRecorder createRepositoryHttpRecorder();
 
 }

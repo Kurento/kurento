@@ -16,22 +16,22 @@ package org.kurento.jsonrpc;
 
 public class PropImpl implements Prop {
 
-	private final String name;
-	private final Object value;
+  private final String name;
+  private final Object value;
 
-	public PropImpl(String name, Object value) {
-		this.name = name;
-		this.value = value;
-	}
+  public PropImpl(String name, Object value) {
+    this.name = name;
+    this.value = value;
+  }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+  @Override
+  public String getName() {
+    return name;
+  }
 
-	@Override
-	public Object getValue() {
-		return value;
-	}
+  @Override
+  public Object getValue() {
+    return value;
+  }
 
 }

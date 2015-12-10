@@ -27,8 +27,8 @@ import org.kurento.test.browser.WebRtcTestPage;
 @Category(SystemScalabilityTests.class)
 public class ScalabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	public ScalabilityTest() {
-		setDeleteLogsIfSuccess(false);
-	}
+  public ScalabilityTest() {
+    setDeleteLogsIfSuccess(false);
+  }
 
 }

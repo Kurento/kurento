@@ -33,195 +33,189 @@ import org.kurento.repository.internal.http.RepositoryHttpManager;
 
 public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
 
-	private final RepositoryHttpManager httpManager;
-	private final RepositoryItem repositoryItem;
+  private final RepositoryHttpManager httpManager;
+  private final RepositoryItem repositoryItem;
 
-	private final String sessionId;
-	private final String url;
+  private final String sessionId;
+  private final String url;
 
-	private OutputStream os;
+  private OutputStream os;
 
-	private final ListenerManager listeners = new ListenerManager();
+  private final ListenerManager listeners = new ListenerManager();
 
-	private long disconnectionTimeoutInMillis = 5000;
+  private long disconnectionTimeoutInMillis = 5000;
 
-	@SuppressWarnings("rawtypes")
-	private volatile ScheduledFuture lastStartedTimerFuture;
+  @SuppressWarnings("rawtypes")
+  private volatile ScheduledFuture lastStartedTimerFuture;
 
-	private boolean startedEventFired;
+  private boolean startedEventFired;
 
-	private long writtenBytes;
-	private boolean outputStreamClosed;
+  private long writtenBytes;
+  private boolean outputStreamClosed;
 
-	public RepositoryHttpEndpointImpl(RepositoryItem repositoryItem,
-			String sessionId, String url, RepositoryHttpManager httpManager) {
-		this.repositoryItem = repositoryItem;
-		this.sessionId = sessionId;
-		this.url = url;
-		this.httpManager = httpManager;
-	}
+  public RepositoryHttpEndpointImpl(RepositoryItem repositoryItem, String sessionId, String url,
+      RepositoryHttpManager httpManager) {
+    this.repositoryItem = repositoryItem;
+    this.sessionId = sessionId;
+    this.url = url;
+    this.httpManager = httpManager;
+  }
 
-	@Override
-	public String getURL() {
-		return url;
-	}
+  @Override
+  public String getURL() {
+    return url;
+  }
 
-	@Override
-	public String getDispatchURL() {
-		return httpManager.getDispatchURL(sessionId);
-	}
+  @Override
+  public String getDispatchURL() {
+    return httpManager.getDispatchURL(sessionId);
+  }
 
-	@Override
-	public void setAutoTerminationTimeout(long timeoutInMillis) {
-		this.disconnectionTimeoutInMillis = timeoutInMillis;
-	}
+  @Override
+  public void setAutoTerminationTimeout(long timeoutInMillis) {
+    this.disconnectionTimeoutInMillis = timeoutInMillis;
+  }
 
-	@Override
-	public long getAutoTerminationTimeout() {
-		return disconnectionTimeoutInMillis;
-	}
+  @Override
+  public long getAutoTerminationTimeout() {
+    return disconnectionTimeoutInMillis;
+  }
 
-	@Override
-	public void addSessionStartedListener(
-			RepositoryHttpEventListener<HttpSessionStartedEvent> listener) {
-		listeners.addStartedEventListener(listener);
-	}
+  @Override
+  public void addSessionStartedListener(
+      RepositoryHttpEventListener<HttpSessionStartedEvent> listener) {
+    listeners.addStartedEventListener(listener);
+  }
 
-	private void fireMediaSessionStartedEvent(HttpSessionStartedEvent event) {
-		listeners.fireEvent(event);
-	}
+  private void fireMediaSessionStartedEvent(HttpSessionStartedEvent event) {
+    listeners.fireEvent(event);
+  }
 
-	@Override
-	public void addSessionTerminatedListener(
-			RepositoryHttpEventListener<HttpSessionTerminatedEvent> listener) {
-		listeners.addTerminatedEventListener(listener);
-	}
+  @Override
+  public void addSessionTerminatedListener(
+      RepositoryHttpEventListener<HttpSessionTerminatedEvent> listener) {
+    listeners.addTerminatedEventListener(listener);
+  }
 
-	private void fireMediaSessionTerminatedEvent(
-			HttpSessionTerminatedEvent event) {
-		listeners.fireEvent(event);
-	}
+  private void fireMediaSessionTerminatedEvent(HttpSessionTerminatedEvent event) {
+    listeners.fireEvent(event);
+  }
 
-	@Override
-	public void addSessionErrorListener(
-			RepositoryHttpEventListener<HttpSessionErrorEvent> listener) {
-		listeners.addErrorEventListener(listener);
-	}
+  @Override
+  public void addSessionErrorListener(RepositoryHttpEventListener<HttpSessionErrorEvent> listener) {
+    listeners.addErrorEventListener(listener);
+  }
 
-	public synchronized void fireStartedEventIfFirstTime() {
-		if (!startedEventFired) {
-			fireMediaSessionStartedEvent(new HttpSessionStartedEvent(this));
-			startedEventFired = true;
-		}
-	}
+  public synchronized void fireStartedEventIfFirstTime() {
+    if (!startedEventFired) {
+      fireMediaSessionStartedEvent(new HttpSessionStartedEvent(this));
+      startedEventFired = true;
+    }
+  }
 
-	public void fireSessionTerminatedEvent() {
-		fireMediaSessionTerminatedEvent(new HttpSessionTerminatedEvent(this));
-	}
+  public void fireSessionTerminatedEvent() {
+    fireMediaSessionTerminatedEvent(new HttpSessionTerminatedEvent(this));
+  }
 
-	@Override
-	public RepositoryItem getRepositoryItem() {
-		return repositoryItem;
-	}
+  @Override
+  public RepositoryItem getRepositoryItem() {
+    return repositoryItem;
+  }
 
-	@Override
-	public InputStream createRepoItemInputStream() {
-		return repositoryItem.createInputStreamToRead();
-	}
+  @Override
+  public InputStream createRepoItemInputStream() {
+    return repositoryItem.createInputStreamToRead();
+  }
 
-	@Override
-	public OutputStream getRepoItemOutputStream() {
+  @Override
+  public OutputStream getRepoItemOutputStream() {
 
-		if (outputStreamClosed) {
-			throw new IllegalStateException("The outputStream is closed");
-		}
+    if (outputStreamClosed) {
+      throw new IllegalStateException("The outputStream is closed");
+    }
 
-		if (os == null) {
-			os = new ProxyOutputStream(
-					repositoryItem.createOutputStreamToWrite()) {
+    if (os == null) {
+      os = new ProxyOutputStream(repositoryItem.createOutputStreamToWrite()) {
 
-				@Override
-				protected void afterWrite(int n) throws IOException {
-					addWrittenBytes(n);
-				}
+        @Override
+        protected void afterWrite(int n) throws IOException {
+          addWrittenBytes(n);
+        }
 
-				@Override
-				public void close() throws IOException {
-					super.close();
-					outputStreamClosed = true;
-				}
-			};
-		}
-		return os;
-	}
+        @Override
+        public void close() throws IOException {
+          super.close();
+          outputStreamClosed = true;
+        }
+      };
+    }
+    return os;
+  }
 
-	private void addWrittenBytes(int numBytes) {
-		writtenBytes += numBytes;
-	}
+  private void addWrittenBytes(int numBytes) {
+    writtenBytes += numBytes;
+  }
 
-	public long getWrittenBytes() {
-		return writtenBytes;
-	}
+  public long getWrittenBytes() {
+    return writtenBytes;
+  }
 
-	// TODO Review for potentially race conditions if the timer is cancelled at
-	// the same time it is executing
-	public void stopInTimeout() {
+  // TODO Review for potentially race conditions if the timer is cancelled at
+  // the same time it is executing
+  public void stopInTimeout() {
 
-		lastStartedTimerFuture = httpManager.getScheduler().schedule(
-				new Runnable() {
-					@Override
-					public void run() {
-						stop();
-					}
-				},
-				new Date(System.currentTimeMillis()
-						+ disconnectionTimeoutInMillis));
-	}
+    lastStartedTimerFuture = httpManager.getScheduler().schedule(new Runnable() {
+      @Override
+      public void run() {
+        stop();
+      }
+    }, new Date(System.currentTimeMillis() + disconnectionTimeoutInMillis));
+  }
 
-	public void stopCurrentTimer() {
-		if (lastStartedTimerFuture != null) {
-			lastStartedTimerFuture.cancel(false);
-		}
-	}
+  public void stopCurrentTimer() {
+    if (lastStartedTimerFuture != null) {
+      lastStartedTimerFuture.cancel(false);
+    }
+  }
 
-	public String getSessionId() {
-		return sessionId;
-	}
+  public String getSessionId() {
+    return sessionId;
+  }
 
-	public void fireSessionErrorEvent(Exception e) {
-		listeners.fireEvent(new HttpSessionErrorEvent(this, e));
-	}
+  public void fireSessionErrorEvent(Exception e) {
+    listeners.fireEvent(new HttpSessionErrorEvent(this, e));
+  }
 
-	public void forceStopHttpManager(String message) {
-		stopTimerAndCloseOS();
-		listeners.fireEvent(new HttpSessionErrorEvent(this, message));
-	}
+  public void forceStopHttpManager(String message) {
+    stopTimerAndCloseOS();
+    listeners.fireEvent(new HttpSessionErrorEvent(this, message));
+  }
 
-	// TODO Review for potentially race conditions if the timer is cancelled at
-	// the same time it is executing
-	// TODO Investigate how to "lock" the item when is been served to a client.
-	// If we don't do, we can obtain a closed stream exception
-	@Override
-	public void stop() {
+  // TODO Review for potentially race conditions if the timer is cancelled at
+  // the same time it is executing
+  // TODO Investigate how to "lock" the item when is been served to a client.
+  // If we don't do, we can obtain a closed stream exception
+  @Override
+  public void stop() {
 
-		httpManager.disposeHttpRepoItemElem(sessionId);
-		stopTimerAndCloseOS();
-		fireSessionTerminatedEvent();
-	}
+    httpManager.disposeHttpRepoItemElem(sessionId);
+    stopTimerAndCloseOS();
+    fireSessionTerminatedEvent();
+  }
 
-	private void stopTimerAndCloseOS() {
-		if (lastStartedTimerFuture != null) {
-			lastStartedTimerFuture.cancel(false);
-			lastStartedTimerFuture = null;
-		}
+  private void stopTimerAndCloseOS() {
+    if (lastStartedTimerFuture != null) {
+      lastStartedTimerFuture.cancel(false);
+      lastStartedTimerFuture = null;
+    }
 
-		if (os != null) {
-			try {
-				os.close();
-			} catch (IOException e) {
-				throw new KurentoException(e);
-			}
-		}
-	}
+    if (os != null) {
+      try {
+        os.close();
+      } catch (IOException e) {
+        throw new KurentoException(e);
+      }
+    }
+  }
 
 }

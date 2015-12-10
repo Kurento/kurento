@@ -22,6 +22,6 @@ package org.kurento.test.browser;
  */
 public interface BrowserEventListener {
 
-	void onEvent(String event);
+  void onEvent(String event);
 
 }

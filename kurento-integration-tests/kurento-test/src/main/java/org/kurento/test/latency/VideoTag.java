@@ -22,55 +22,55 @@ package org.kurento.test.latency;
  */
 public class VideoTag {
 
-	private String color;
-	private String time;
-	private String name;
-	private VideoTagType videoTagType;
+  private String color;
+  private String time;
+  private String name;
+  private VideoTagType videoTagType;
 
-	public VideoTag(VideoTagType videoTagType, String mapKey) {
-		this.videoTagType = videoTagType;
-		this.color = "return kurentoTest.colorInfo['" + mapKey + "'].changeColor;";
-		this.time = "return kurentoTest.colorInfo['" + mapKey + "'].changeTime;";
-		this.name = mapKey;
-	}
+  public VideoTag(VideoTagType videoTagType, String mapKey) {
+    this.videoTagType = videoTagType;
+    this.color = "return kurentoTest.colorInfo['" + mapKey + "'].changeColor;";
+    this.time = "return kurentoTest.colorInfo['" + mapKey + "'].changeTime;";
+    this.name = mapKey;
+  }
 
-	public VideoTag(VideoTagType videoTagType) {
-		this.videoTagType = videoTagType;
-		this.color = videoTagType.getColor();
-		this.time = videoTagType.getTime();
-		this.name = videoTagType.getName();
-	}
+  public VideoTag(VideoTagType videoTagType) {
+    this.videoTagType = videoTagType;
+    this.color = videoTagType.getColor();
+    this.time = videoTagType.getTime();
+    this.name = videoTagType.getName();
+  }
 
-	public String getColor() {
-		return color;
-	}
+  public String getColor() {
+    return color;
+  }
 
-	public void setColor(String color) {
-		this.color = color;
-	}
+  public void setColor(String color) {
+    this.color = color;
+  }
 
-	public String getTime() {
-		return time;
-	}
+  public String getTime() {
+    return time;
+  }
 
-	public void setTime(String time) {
-		this.time = time;
-	}
+  public void setTime(String time) {
+    this.time = time;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public VideoTagType getVideoTagType() {
-		return videoTagType;
-	}
+  public VideoTagType getVideoTagType() {
+    return videoTagType;
+  }
 
-	public void setVideoTagType(VideoTagType videoTagType) {
-		this.videoTagType = videoTagType;
-	}
+  public void setVideoTagType(VideoTagType videoTagType) {
+    this.videoTagType = videoTagType;
+  }
 
 }

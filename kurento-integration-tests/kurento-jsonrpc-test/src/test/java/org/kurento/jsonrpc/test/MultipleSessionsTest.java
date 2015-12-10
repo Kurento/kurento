@@ -23,80 +23,79 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class MultipleSessionsTest extends JsonRpcConnectorBaseTest {
 
-	public static class Handler extends DefaultJsonRpcHandler<String> {
+  public static class Handler extends DefaultJsonRpcHandler<String> {
 
-		@Autowired
-		DemoBean demoBean;
+    @Autowired
+    DemoBean demoBean;
 
-		private int counter = 0;
+    private int counter = 0;
 
-		@Override
-		public void handleRequest(Transaction transaction,
-				Request<String> request) throws Exception {
+    @Override
+    public void handleRequest(Transaction transaction, Request<String> request) throws Exception {
 
-			if (demoBean == null) {
-				throw new RuntimeException("Not autowired dependencies");
-			}
+      if (demoBean == null) {
+        throw new RuntimeException("Not autowired dependencies");
+      }
 
-			transaction.sendResponse(counter);
-			counter++;
-		}
-	}
+      transaction.sendResponse(counter);
+      counter++;
+    }
+  }
 
-	@Ignore
-	@Test
-	public void test() throws InterruptedException {
+  @Ignore
+  @Test
+  public void test() throws InterruptedException {
 
-		ExecutorService executorService = Executors.newFixedThreadPool(5);
+    ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-		List<Callable<Void>> callables = new ArrayList<>();
-		for (int i = 0; i < 5; i++) {
-			callables.add(new Callable<Void>() {
-				@Override
-				public Void call() throws Exception {
-					counterSession();
-					return null;
-				}
-			});
-		}
+    List<Callable<Void>> callables = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      callables.add(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          counterSession();
+          return null;
+        }
+      });
+    }
 
-		List<Future<Void>> futures = executorService.invokeAll(callables);
-		executorService.shutdown();
-		executorService.awaitTermination(99999, TimeUnit.DAYS);
+    List<Future<Void>> futures = executorService.invokeAll(callables);
+    executorService.shutdown();
+    executorService.awaitTermination(99999, TimeUnit.DAYS);
 
-		for (Future<Void> future : futures) {
-			try {
-				future.get();
-			} catch (ExecutionException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
+    for (Future<Void> future : futures) {
+      try {
+        future.get();
+      } catch (ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
-	@Test
-	public void beanNameTest() throws IOException {
+  @Test
+  public void beanNameTest() throws IOException {
 
-		createJsonRpcClient("/jsonrpc_multiple2").sendRequest("count");
+    createJsonRpcClient("/jsonrpc_multiple2").sendRequest("count");
 
-	}
+  }
 
-	private void counterSession() {
+  private void counterSession() {
 
-		JsonRpcClient client = createJsonRpcClient("/jsonrpc_multiple");
+    JsonRpcClient client = createJsonRpcClient("/jsonrpc_multiple");
 
-		try {
+    try {
 
-			for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 5; i++) {
 
-				int counter = client.sendRequest("count", null, Integer.class);
-				Assert.assertEquals(i, counter);
-			}
+        int counter = client.sendRequest("count", null, Integer.class);
+        Assert.assertEquals(i, counter);
+      }
 
-			client.close();
+      client.close();
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }

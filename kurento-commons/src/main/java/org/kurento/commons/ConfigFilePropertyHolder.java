@@ -21,101 +21,94 @@ import com.google.gson.stream.JsonReader;
 
 public class ConfigFilePropertyHolder implements PropertyHolder {
 
-	private static Logger log = LoggerFactory
-			.getLogger(ConfigFilePropertyHolder.class);
+  private static Logger log = LoggerFactory.getLogger(ConfigFilePropertyHolder.class);
 
-	private static Path lastLoadedconfigFilePath;
+  private static Path lastLoadedconfigFilePath;
 
-	private static final Gson gson = new GsonBuilder().create();
+  private static final Gson gson = new GsonBuilder().create();
 
-	private JsonObject configFile;
+  private JsonObject configFile;
 
-	public static synchronized void configurePropertiesFromConfigFile(
-			Path configFilePath)
-					throws JsonSyntaxException, JsonIOException, IOException {
+  public static synchronized void configurePropertiesFromConfigFile(Path configFilePath)
+      throws JsonSyntaxException, JsonIOException, IOException {
 
-		if (lastLoadedconfigFilePath != null) {
-			if (lastLoadedconfigFilePath.equals(configFilePath)) {
-				log.info("Trying to load again config file {}. Ignoring it",
-						configFilePath.toAbsolutePath());
-			} else {
-				log.warn(
-						"Trying to load a second config file. The first was {} and the"
-								+ "current is {}. Ignoring it",
-						lastLoadedconfigFilePath, configFilePath);
-			}
+    if (lastLoadedconfigFilePath != null) {
+      if (lastLoadedconfigFilePath.equals(configFilePath)) {
+        log.info("Trying to load again config file {}. Ignoring it",
+            configFilePath.toAbsolutePath());
+      } else {
+        log.warn("Trying to load a second config file. The first was {} and the"
+            + "current is {}. Ignoring it", lastLoadedconfigFilePath, configFilePath);
+      }
 
-			return;
-		}
+      return;
+    }
 
-		lastLoadedconfigFilePath = configFilePath;
+    lastLoadedconfigFilePath = configFilePath;
 
-		Preconditions.checkNotNull(configFilePath,
-				"configFilePath paramter must be not null.");
+    Preconditions.checkNotNull(configFilePath, "configFilePath paramter must be not null.");
 
-		log.debug("Using configuration file in path '" + configFilePath + "' ("
-				+ configFilePath.getClass().getCanonicalName() + ")");
+    log.debug("Using configuration file in path '" + configFilePath + "' ("
+        + configFilePath.getClass().getCanonicalName() + ")");
 
-		JsonReader reader = new JsonReader(Files
-				.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
-		reader.setLenient(true);
+    JsonReader reader =
+        new JsonReader(Files.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
+    reader.setLenient(true);
 
-		JsonObject configFile = gson.fromJson(reader, JsonObject.class);
+    JsonObject configFile = gson.fromJson(reader, JsonObject.class);
 
-		traceConfigContent(configFile);
+    traceConfigContent(configFile);
 
-		PropertiesManager
-				.setPropertyHolder(new ConfigFilePropertyHolder(configFile));
-	}
+    PropertiesManager.setPropertyHolder(new ConfigFilePropertyHolder(configFile));
+  }
 
-	private static void traceConfigContent(JsonObject configFile) {
-		if (log.isDebugEnabled()) {
-			Gson gs = new GsonBuilder().setPrettyPrinting()
-					.disableHtmlEscaping().create();
-			String jsonContents = gs.toJson(configFile);
-			log.debug("Configuration content: " + jsonContents);
-		}
-	}
+  private static void traceConfigContent(JsonObject configFile) {
+    if (log.isDebugEnabled()) {
+      Gson gs = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+      String jsonContents = gs.toJson(configFile);
+      log.debug("Configuration content: " + jsonContents);
+    }
+  }
 
-	public ConfigFilePropertyHolder(JsonObject configFile) {
-		this.configFile = configFile;
-	}
+  public ConfigFilePropertyHolder(JsonObject configFile) {
+    this.configFile = configFile;
+  }
 
-	@Override
-	public String getProperty(String property) {
-		String systemProperty = System.getProperty(property);
+  @Override
+  public String getProperty(String property) {
+    String systemProperty = System.getProperty(property);
 
-		if (systemProperty != null) {
-			return systemProperty;
-		}
+    if (systemProperty != null) {
+      return systemProperty;
+    }
 
-		String[] tokens = property.split("\\.");
+    String[] tokens = property.split("\\.");
 
-		int lastTokenNumber = tokens.length - 1;
+    int lastTokenNumber = tokens.length - 1;
 
-		JsonObject currentObject = configFile;
+    JsonObject currentObject = configFile;
 
-		for (int i = 0; i < tokens.length; i++) {
-			JsonElement element = currentObject.get(tokens[i]);
-			if (element == null) {
-				return null;
-			}
+    for (int i = 0; i < tokens.length; i++) {
+      JsonElement element = currentObject.get(tokens[i]);
+      if (element == null) {
+        return null;
+      }
 
-			if (i == lastTokenNumber) {
-				if (element instanceof JsonPrimitive) {
-					return element.getAsString();
-				} else {
-					return element.toString();
-				}
-			}
+      if (i == lastTokenNumber) {
+        if (element instanceof JsonPrimitive) {
+          return element.getAsString();
+        } else {
+          return element.toString();
+        }
+      }
 
-			try {
-				currentObject = (JsonObject) element;
-			} catch (ClassCastException e) {
-				return null;
-			}
-		}
+      try {
+        currentObject = (JsonObject) element;
+      } catch (ClassCastException e) {
+        return null;
+      }
+    }
 
-		return null;
-	}
+    return null;
+  }
 }

@@ -16,48 +16,46 @@ import org.slf4j.LoggerFactory;
 
 public class ConnectionListener2Test extends JsonRpcConnectorBaseTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ConnectionListener2Test.class);
+  private static final Logger log = LoggerFactory.getLogger(ConnectionListener2Test.class);
 
-	@Test
-	public void serverDisconnectedTest() throws IOException,
-			InterruptedException {
+  @Test
+  public void serverDisconnectedTest() throws IOException, InterruptedException {
 
-		final CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
 
-		JsonRpcClient client = new JsonRpcClientWebSocket("ws://localhost:"
-				+ getPort() + "/connectionlistener",
-				new JsonRpcWSConnectionListener() {
+    JsonRpcClient client =
+        new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
+            new JsonRpcWSConnectionListener() {
 
-					@Override
-					public void disconnected() {
-						log.info("disconnected");
-						latch.countDown();
-					}
+              @Override
+              public void disconnected() {
+                log.info("disconnected");
+                latch.countDown();
+              }
 
-					@Override
-					public void connectionFailed() {
-					}
+              @Override
+              public void connectionFailed() {
+              }
 
-					@Override
-					public void connected() {
-					}
+              @Override
+              public void connected() {
+              }
 
-					@Override
-					public void reconnected(boolean sameServer) {
-						// TODO Auto-generated method stub
+              @Override
+              public void reconnected(boolean sameServer) {
+                // TODO Auto-generated method stub
 
-					}
-				});
+              }
+            });
 
-		client.sendRequest("sessiontest", String.class);
-		context.close();
+    client.sendRequest("sessiontest", String.class);
+    context.close();
 
-		if (!latch.await(20, TimeUnit.SECONDS)) {
-			fail("Event disconnected() not thrown in 20s");
-		}
+    if (!latch.await(20, TimeUnit.SECONDS)) {
+      fail("Event disconnected() not thrown in 20s");
+    }
 
-		client.close();
-	}
+    client.close();
+  }
 
 }

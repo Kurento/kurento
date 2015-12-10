@@ -37,33 +37,32 @@ import org.kurento.client.test.util.AsyncResultManager;
  */
 public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
-	private GStreamerFilter filter;
+  private GStreamerFilter filter;
 
-	private PlayerEndpoint player;
+  private PlayerEndpoint player;
 
-	@Before
-	public void setupMediaElements() {
-		player = new PlayerEndpoint.Builder(pipeline, URL_PLATES).build();
-	}
+  @Before
+  public void setupMediaElements() {
+    player = new PlayerEndpoint.Builder(pipeline, URL_PLATES).build();
+  }
 
-	@After
-	public void teardownMediaElements() {
-		player.release();
-	}
+  @After
+  public void teardownMediaElements() {
+    player.release();
+  }
 
-	@Test
-	public void testInstantiation() throws InterruptedException {
+  @Test
+  public void testInstantiation() throws InterruptedException {
 
-		AsyncResultManager<GStreamerFilter> async = new AsyncResultManager<GStreamerFilter>(
-				"GStreamerFilter creation");
+    AsyncResultManager<GStreamerFilter> async =
+        new AsyncResultManager<GStreamerFilter>("GStreamerFilter creation");
 
-		new GStreamerFilter.Builder(pipeline,
-				"videoflip method=horizontal-flip").buildAsync(async
-				.getContinuation());
+    new GStreamerFilter.Builder(pipeline, "videoflip method=horizontal-flip").buildAsync(async
+        .getContinuation());
 
-		filter = async.waitForResult();
+    filter = async.waitForResult();
 
-		releaseMediaObject(filter);
-	}
+    releaseMediaObject(filter);
+  }
 
 }

@@ -19,12 +19,12 @@ import org.kurento.repository.RepositoryHttpRecorder;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.internal.http.RepositoryHttpManager;
 
-public class RepositoryHttpRecorderImpl extends RepositoryHttpEndpointImpl
-		implements RepositoryHttpRecorder {
+public class RepositoryHttpRecorderImpl extends RepositoryHttpEndpointImpl implements
+    RepositoryHttpRecorder {
 
-	public RepositoryHttpRecorderImpl(RepositoryItem repositoryItem, String id,
-			String url, RepositoryHttpManager httpManager) {
-		super(repositoryItem, id, url, httpManager);
-	}
+  public RepositoryHttpRecorderImpl(RepositoryItem repositoryItem, String id, String url,
+      RepositoryHttpManager httpManager) {
+    super(repositoryItem, id, url, httpManager);
+  }
 
 }

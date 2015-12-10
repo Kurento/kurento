@@ -21,15 +21,15 @@ package org.kurento.test.config;
  * @since 4.2.11
  */
 public enum AudioChannel {
-	STEREO, MONO;
+  STEREO, MONO;
 
-	public String toString() {
-		switch (this) {
-		case MONO:
-			return "1";
-		case STEREO:
-		default:
-			return "2";
-		}
-	}
+  public String toString() {
+    switch (this) {
+      case MONO:
+        return "1";
+      case STEREO:
+      default:
+        return "2";
+    }
+  }
 }

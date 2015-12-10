@@ -65,73 +65,65 @@ import org.kurento.test.utils.Ffmpeg;
  */
 public class WebRtcQualityLoopbackTest extends QualityTest {
 
-	private static int PLAYTIME = 10; // seconds to play in WebRTC
-	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
-	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
+  private static int PLAYTIME = 10; // seconds to play in WebRTC
+  private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
+  private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		String videoPath = KurentoClientBrowserTest.getTestFilesPath()
-				+ "/video/10sec/red.y4m";
-		String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
-		TestScenario test = new TestScenario();
-		test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder()
-				.webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-				.scope(BrowserScope.LOCAL).video(videoPath)
-				.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE, AudioChannel.MONO)
-				.build());
-		return Arrays.asList(new Object[][] { { test } });
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    String videoPath = KurentoClientBrowserTest.getTestFilesPath() + "/video/10sec/red.y4m";
+    String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
+    TestScenario test = new TestScenario();
+    test.addBrowser(
+        BrowserConfig.BROWSER,
+        new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
+            .scope(BrowserScope.LOCAL).video(videoPath)
+            .audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE, AudioChannel.MONO).build());
+    return Arrays.asList(new Object[][] { { test } });
+  }
 
-	@Ignore
-	@Test
-	public void testWebRtcQualityLoopback() throws InterruptedException {
-		doTest(BrowserType.CHROME, getTestFilesPath() + "/video/10sec/red.y4m",
-				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
-				Color.RED);
-	}
+  @Ignore
+  @Test
+  public void testWebRtcQualityLoopback() throws InterruptedException {
+    doTest(BrowserType.CHROME, getTestFilesPath() + "/video/10sec/red.y4m",
+        "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav", Color.RED);
+  }
 
-	public void doTest(BrowserType browserType, String videoPath,
-			String audioUrl, Color color) throws InterruptedException {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
-		webRtcEndpoint.connect(webRtcEndpoint);
+  public void doTest(BrowserType browserType, String videoPath, String audioUrl, Color color)
+      throws InterruptedException {
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+    webRtcEndpoint.connect(webRtcEndpoint);
 
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.SEND_RCV);
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
-		// Wait until event playing in the remote stream
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
+    // Wait until event playing in the remote stream
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage().waitForEvent("playing"));
 
-		// Guard time to play the video
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+    // Guard time to play the video
+    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
-		// Assert play time
-		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue(
-				"Error in play time of player (expected: " + PLAYTIME
-						+ " sec, real: " + currentTime + " sec)",
-				getPage().compare(PLAYTIME, currentTime));
+    // Assert play time
+    double currentTime = getPage().getCurrentTime();
+    Assert.assertTrue("Error in play time of player (expected: " + PLAYTIME + " sec, real: "
+        + currentTime + " sec)", getPage().compare(PLAYTIME, currentTime));
 
-		// Assert color
-		if (color != null) {
-			Assert.assertTrue("The color of the video should be " + color,
-					getPage().similarColor(color));
-		}
+    // Assert color
+    if (color != null) {
+      Assert.assertTrue("The color of the video should be " + color, getPage().similarColor(color));
+    }
 
-		// Assert audio quality
-		if (audioUrl != null) {
-			float realPesqMos = Ffmpeg.getPesqMos(audioUrl, AUDIO_SAMPLE_RATE);
-			Assert.assertTrue(
-					"Bad perceived audio quality: PESQ MOS too low (expected="
-							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
-					realPesqMos >= MIN_PESQ_MOS);
-		}
+    // Assert audio quality
+    if (audioUrl != null) {
+      float realPesqMos = Ffmpeg.getPesqMos(audioUrl, AUDIO_SAMPLE_RATE);
+      Assert.assertTrue("Bad perceived audio quality: PESQ MOS too low (expected=" + MIN_PESQ_MOS
+          + ", real=" + realPesqMos + ")", realPesqMos >= MIN_PESQ_MOS);
+    }
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

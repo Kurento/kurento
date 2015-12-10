@@ -27,43 +27,43 @@ import org.slf4j.LoggerFactory;
  */
 public class GridHub {
 
-	public static Logger log = LoggerFactory.getLogger(GridHub.class);
+  public static Logger log = LoggerFactory.getLogger(GridHub.class);
 
-	private static final int DEFAULT_TIMEOUT = 60;
+  private static final int DEFAULT_TIMEOUT = 60;
 
-	private String bindIp = "0.0.0.0";
-	private int port;
-	private int timeout;
-	private Hub hub;
+  private String bindIp = "0.0.0.0";
+  private int port;
+  private int timeout;
+  private Hub hub;
 
-	public GridHub(int port) {
-		this.port = port;
-		this.timeout = DEFAULT_TIMEOUT; // Default timeout
-	}
+  public GridHub(int port) {
+    this.port = port;
+    this.timeout = DEFAULT_TIMEOUT; // Default timeout
+  }
 
-	public void start() throws Exception {
-		GridHubConfiguration config = new GridHubConfiguration();
-		config.setHost(bindIp);
-		config.setPort(this.port);
-		config.setTimeout(getTimeout());
+  public void start() throws Exception {
+    GridHubConfiguration config = new GridHubConfiguration();
+    config.setHost(bindIp);
+    config.setPort(this.port);
+    config.setTimeout(getTimeout());
 
-		hub = new Hub(config);
-		log.info("Starting hub on {}:{}", this.bindIp, this.port);
-		hub.start();
-	}
+    hub = new Hub(config);
+    log.info("Starting hub on {}:{}", this.bindIp, this.port);
+    hub.start();
+  }
 
-	public void stop() throws Exception {
-		if (hub != null) {
-			hub.stop();
-		}
-	}
+  public void stop() throws Exception {
+    if (hub != null) {
+      hub.stop();
+    }
+  }
 
-	public int getTimeout() {
-		return timeout;
-	}
+  public int getTimeout() {
+    return timeout;
+  }
 
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
+  public void setTimeout(int timeout) {
+    this.timeout = timeout;
+  }
 
 }

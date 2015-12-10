@@ -21,16 +21,15 @@ import org.kurento.jsonrpc.JsonRpcHandler;
  */
 public interface JsonRpcHandlerRegistration {
 
-	/**
-	 * Add more handlers that will share the same configuration
-	 * 
-	 * @param handler
-	 *            the handler to register
-	 * @param paths
-	 *            paths to register the handler in
-	 * @return the handler registration
-	 */
-	JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler,
-			String... paths);
+  /**
+   * Add more handlers that will share the same configuration
+   * 
+   * @param handler
+   *          the handler to register
+   * @param paths
+   *          paths to register the handler in
+   * @return the handler registration
+   */
+  JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler, String... paths);
 
 }

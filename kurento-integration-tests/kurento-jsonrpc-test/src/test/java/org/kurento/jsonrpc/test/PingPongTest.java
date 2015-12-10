@@ -15,85 +15,81 @@ import org.slf4j.LoggerFactory;
 
 public class PingPongTest extends JsonRpcConnectorBaseTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(PingPongTest.class);
+  private static final Logger log = LoggerFactory.getLogger(PingPongTest.class);
 
-	public static class Handler extends DefaultJsonRpcHandler<String> {
+  public static class Handler extends DefaultJsonRpcHandler<String> {
 
-		@Override
-		public void handleRequest(final Transaction transaction,
-				Request<String> request) throws Exception {
+    @Override
+    public void handleRequest(final Transaction transaction, Request<String> request)
+        throws Exception {
 
-			transaction.sendResponse("OK");
-		}
+      transaction.sendResponse("OK");
+    }
 
-		@Override
-		public boolean isPingWatchdog() {
-			return true;
-		}
-	}
+    @Override
+    public boolean isPingWatchdog() {
+      return true;
+    }
+  }
 
-	@Test
-	public void test() throws IOException, InterruptedException {
+  @Test
+  public void test() throws IOException, InterruptedException {
 
-		log.info("Client started");
+    log.info("Client started");
 
-		JsonRpcClient client = createJsonRpcClient("/pingpong",
-				new JsonRpcWSConnectionListener() {
+    JsonRpcClient client = createJsonRpcClient("/pingpong", new JsonRpcWSConnectionListener() {
 
-					@Override
-					public void connected() {
-						// TODO Auto-generated method stub
+      @Override
+      public void connected() {
+        // TODO Auto-generated method stub
 
-					}
+      }
 
-					@Override
-					public void connectionFailed() {
-						System.out
-								.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      @Override
+      public void connectionFailed() {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-					}
+      }
 
-					@Override
-					public void disconnected() {
-						System.out
-								.println("#######################################");
+      @Override
+      public void disconnected() {
+        System.out.println("#######################################");
 
-					}
+      }
 
-					@Override
-					public void reconnected(boolean sameServer) {
-						// TODO Auto-generated method stub
+      @Override
+      public void reconnected(boolean sameServer) {
+        // TODO Auto-generated method stub
 
-					}
-				});
+      }
+    });
 
-		client.setHeartbeatInterval(500);
-		client.enableHeartbeat();
+    client.setHeartbeatInterval(500);
+    client.enableHeartbeat();
 
-		String result = client.sendRequest("echo", "Params", String.class);
+    String result = client.sendRequest("echo", "Params", String.class);
 
-		log.info("Response:" + result);
+    log.info("Response:" + result);
 
-		Assert.assertEquals(result, "OK");
+    Assert.assertEquals(result, "OK");
 
-		Thread.sleep(20000);
+    Thread.sleep(20000);
 
-		log.info("----------------- Disabling heartbeat in client ----------------");
+    log.info("----------------- Disabling heartbeat in client ----------------");
 
-		client.disableHeartbeat();
+    client.disableHeartbeat();
 
-		// This should lead to reconnect clients
+    // This should lead to reconnect clients
 
-		Thread.sleep(30000);
+    Thread.sleep(30000);
 
-		log.info("----------------- Enabling heartbeat in client ----------------");
-		client.enableHeartbeat();
+    log.info("----------------- Enabling heartbeat in client ----------------");
+    client.enableHeartbeat();
 
-		Thread.sleep(30000);
+    Thread.sleep(30000);
 
-		log.info("Client finished");
+    log.info("Client finished");
 
-	}
+  }
 
 }

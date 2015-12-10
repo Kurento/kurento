@@ -14,10 +14,10 @@
  */
 package org.kurento.jsonrpc.message;
 
-import com.google.gson.annotations.SerializedName;
-
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
+
+import com.google.gson.annotations.SerializedName;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -26,36 +26,36 @@ import org.kurento.jsonrpc.internal.JsonRpcConstants;
  */
 public abstract class Message {
 
-	/**
-	 * JSON RPC version.
-	 */
-	@SerializedName("jsonrpc")
-	private final String jsonrpc = JsonRpcConstants.JSON_RPC_VERSION;
+  /**
+   * JSON RPC version.
+   */
+  @SerializedName("jsonrpc")
+  private final String jsonrpc = JsonRpcConstants.JSON_RPC_VERSION;
 
-	protected transient String sessionId;
+  protected transient String sessionId;
 
-	public Message() {
-	}
+  public Message() {
+  }
 
-	public Message(String sessionId) {
-		this.sessionId = sessionId;
-	}
+  public Message(String sessionId) {
+    this.sessionId = sessionId;
+  }
 
-	public String getVersion() {
-		return jsonrpc;
-	}
+  public String getVersion() {
+    return jsonrpc;
+  }
 
-	@Override
-	public String toString() {
-		return JsonUtils.toJsonMessage(this);
-	}
+  @Override
+  public String toString() {
+    return JsonUtils.toJsonMessage(this);
+  }
 
-	public String getSessionId() {
-		return sessionId;
-	}
+  public String getSessionId() {
+    return sessionId;
+  }
 
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
-	}
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
+  }
 
 }

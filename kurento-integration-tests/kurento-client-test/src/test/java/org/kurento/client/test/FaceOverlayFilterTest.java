@@ -32,46 +32,43 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  */
 public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 
-	private FaceOverlayFilter overlayFilter;
+  private FaceOverlayFilter overlayFilter;
 
-	@Before
-	public void setupMediaElements() {
+  @Before
+  public void setupMediaElements() {
 
-		overlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
-	}
+    overlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
+  }
 
-	@After
-	public void teardownMediaElements() {
+  @After
+  public void teardownMediaElements() {
 
-		overlayFilter.release();
-	}
+    overlayFilter.release();
+  }
 
-	/**
-	 * Test if a {@link FaceOverlayFilter} can be created in the KMS. The filter
-	 * is pipelined with a {@link PlayerEndpoint}, which feeds video to the
-	 * filter. This test depends on the correct behaviour of the player and its
-	 * events.
-	 *
-	 * @throws InterruptedException
-	 */
-	@Test
-	public void testFaceOverlayFilter() throws InterruptedException {
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				URL_POINTER_DETECTOR).build();
+  /**
+   * Test if a {@link FaceOverlayFilter} can be created in the KMS. The filter is pipelined with a
+   * {@link PlayerEndpoint}, which feeds video to the filter. This test depends on the correct
+   * behaviour of the player and its events.
+   *
+   * @throws InterruptedException
+   */
+  @Test
+  public void testFaceOverlayFilter() throws InterruptedException {
+    PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_POINTER_DETECTOR).build();
 
-		player.connect(overlayFilter);
+    player.connect(overlayFilter);
 
-		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
-				"EndOfStream event");
+    AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>("EndOfStream event");
 
-		player.addEndOfStreamListener(async.getMediaEventListener());
+    player.addEndOfStreamListener(async.getMediaEventListener());
 
-		player.play();
+    player.play();
 
-		async.waitForResult();
+    async.waitForResult();
 
-		player.stop();
-		player.release();
-	}
+    player.stop();
+    player.release();
+  }
 
 }

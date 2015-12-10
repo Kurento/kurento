@@ -60,308 +60,284 @@ import org.slf4j.LoggerFactory;
  */
 public class SystemMonitorManager {
 
-	public static Logger log = LoggerFactory
-			.getLogger(SystemMonitorManager.class);
-
-	public static final String OUTPUT_CSV = "/kms-monitor.csv";
-
-	private KmsMonitor monitor;
-	private SshConnection remoteKms;
-	private int monitorPort;
-	private long samplingTime = getProperty(DEFAULT_MONITOR_RATE_PROPERTY,
-			DEFAULT_MONITOR_RATE_DEFAULT);
-
-	private Thread thread;
-	private int numClients = 0;
-	private double currentLatency = 0;
-	private int latencyHints = 0;
-	private int latencyErrors = 0;
+  public static Logger log = LoggerFactory.getLogger(SystemMonitorManager.class);
 
-	private MonitorSampleRegistrer registrer = new MonitorSampleRegistrer();
+  public static final String OUTPUT_CSV = "/kms-monitor.csv";
 
-	private List<WebRtcClient> clients = new CopyOnWriteArrayList<>();
+  private KmsMonitor monitor;
+  private SshConnection remoteKms;
+  private int monitorPort;
+  private long samplingTime = getProperty(DEFAULT_MONITOR_RATE_PROPERTY,
+      DEFAULT_MONITOR_RATE_DEFAULT);
 
-	public SystemMonitorManager(String kmsHost, String kmsLogin,
-			String kmsPem) {
-		try {
-			monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
-			remoteKms = new SshConnection(kmsHost, kmsLogin, null, kmsPem);
-			remoteKms.start();
-			remoteKms.createTmpFolder();
-			copyMonitorToRemoteKms();
-			startRemoteProcessMonitor();
-			monitor = new KmsLocalMonitor();
-		} catch (Exception e) {
-			throw new KurentoException(e);
-		}
-	}
+  private Thread thread;
+  private int numClients = 0;
+  private double currentLatency = 0;
+  private int latencyHints = 0;
+  private int latencyErrors = 0;
 
-	public SystemMonitorManager() {
-
-		try {
-			String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
-			String kmsScope = getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT);
-
-			boolean isKmsRemote = !wsUri.contains("localhost")
-					&& !wsUri.contains("127.0.0.1");
-			boolean isKmsDocker = kmsScope.equalsIgnoreCase("docker");
-
-			if (isKmsDocker) {
-				// "Dockerized" KMS
-				String containerId = KmsService.getDockerContainerName();
-				log.debug("KMS container ID: {}", containerId);
-				monitor = new KmsDockerMonitor(containerId);
-
-			} else if (isKmsRemote) {
-				// Remote KMS
-
-				String kmsLogin = getProperty(KMS_LOGIN_PROP);
-				String kmsPasswd = getProperty(KMS_PASSWD_PROP);
-				String kmsPem = getProperty(KMS_PEM_PROP);
-
-				startRemoteMonitor(wsUri, kmsLogin, kmsPasswd, kmsPem);
-
-			} else {
-				// Local KMS
-
-				monitor = new KmsLocalMonitor();
-			}
-
-		} catch (Exception e) {
-			throw new KurentoException(e);
-		}
-	}
-
-	private void startRemoteMonitor(String wsUri, String kmsLogin,
-			String kmsPasswd, String kmsPem)
-					throws IOException, URISyntaxException {
-
-		monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
-
-		String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
-				wsUri.lastIndexOf(":"));
-
-		log.info("Monitoring remote KMS at {}", remoteKmsStr);
-
-		copyMonitor(kmsLogin, kmsPasswd, kmsPem, remoteKmsStr);
-
-		startRemoteProcessMonitor();
-	}
-
-	private void copyMonitor(String kmsLogin, String kmsPasswd, String kmsPem,
-			String remoteKmsStr) throws IOException, URISyntaxException {
-		remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd,
-				kmsPem);
-		remoteKms.start();
-		remoteKms.createTmpFolder();
-		copyMonitorToRemoteKms();
-	}
-
-	private void copyMonitorToRemoteKms()
-			throws IOException, URISyntaxException {
-
-		copyClassesToRemote(new Class<?>[] { KmsMonitor.class,
-				KmsLocalMonitor.class, NetInfo.class,
-				NetInfo.NetInfoEntry.class, KmsSystemInfo.class });
-	}
-
-	private void copyClassesToRemote(final Class<?>[] classesName)
-			throws IOException {
-		String targetFolder = remoteKms.getTmpFolder();
-
-		for (Class<?> className : classesName) {
-
-			String classFile = "/" + className.getName().replace(".", "/")
-					+ ".class";
-
-			Path sourceClass = ClassPath.get(classFile);
-
-			Path classFileInDisk = Files.createTempFile("", ".class");
-			Files.copy(sourceClass, classFileInDisk,
-					StandardCopyOption.REPLACE_EXISTING);
-			remoteKms.mkdirs(
-					Paths.get(targetFolder + classFile).getParent().toString());
-			remoteKms.scp(classFileInDisk.toString(), targetFolder + classFile);
-
-			Files.delete(classFileInDisk);
-		}
-	}
-
-	private void startRemoteProcessMonitor() throws IOException {
-
-		remoteKms.execCommand("sh", "-c", "java -cp " + remoteKms.getTmpFolder()
-				+ " " + KmsLocalMonitor.class.getName() + " " + monitorPort
-				+ " > " + remoteKms.getTmpFolder() + "/monitor.log 2>&1");
-
-		try {
-			RemoteService.waitForReady(remoteKms.getHost(), monitorPort, 60,
-					TimeUnit.SECONDS);
-		} catch (TimeoutException e) {
-			throw new KurentoException(
-					"Monitor in remote KMS is not available");
-		}
-	}
-
-	public void startMonitoring() {
-
-		final long startTime = new Date().getTime();
-		thread = new Thread() {
-			@Override
-			public void run() {
-				try {
-					while (true) {
-						registerSample(startTime);
-						Thread.sleep(samplingTime);
-					}
-				} catch (InterruptedException | KurentoException re) {
-					log.warn(
-							"Monitoring thread interrupted. Finishing execution");
-				} catch (Exception e) {
-					log.error("Exception in system monitor manager", e);
-				}
-			}
-		};
-		thread.setDaemon(true);
-		thread.start();
-	}
-
-	private void registerSample(final long start) {
-
-		MonitorSample sample = new MonitorSample();
-
-		// KMS info
-		KmsSystemInfo kmsInfo;
-		if (remoteKms != null) {
-			kmsInfo = (KmsSystemInfo) sendMessage("measureKms");
-		} else {
-			kmsInfo = (KmsSystemInfo) monitor.measureKms();
-		}
-		sample.setSystemInfo(kmsInfo);
-
-		// Latency
-		sample.setLatencyHints(latencyHints);
-		sample.setLatencyErrors(latencyErrors);
-		sample.setCurrentLatency(currentLatency);
-
-		// RTC stats
-		for (WebRtcClient client : clients) {
-			sample.addWebRtcStats(client.getWebRtcStats());
-		}
-
-		// Client number
-		sample.setNumClients(numClients);
-
-		// Save entry in map
-		long time = new Date().getTime() - start;
-		registrer.addSample(time, sample);
-	}
-
-	@SuppressWarnings("deprecation")
-	public void stop() {
-		thread.interrupt();
-		try {
-			thread.join(3000);
-			if (thread.isAlive()) {
-				log.warn(
-						"Monitoring thread not stopped 3s before interrupted. Force stop");
-				thread.stop();
-			}
-		} catch (InterruptedException e) {
-		}
-	}
-
-	public void writeResults(String csvFile) throws IOException {
-		registrer.writeResults(csvFile);
-	}
-
-	private Object sendMessage(String message) {
-		Object returnedMessage = null;
-		try {
-			log.debug("Sending message {} to {}", message, remoteKms.getHost());
-			Socket client = new Socket(remoteKms.getHost(), monitorPort);
-			PrintWriter output = new PrintWriter(client.getOutputStream(),
-					true);
-			ObjectInputStream input = new ObjectInputStream(
-					client.getInputStream());
-			output.println(message);
-
-			returnedMessage = input.readObject();
-			log.debug("Receive message {}", returnedMessage);
-
-			output.close();
-			input.close();
-			client.close();
-
-		} catch (Exception e) {
-			throw new KurentoException(e);
-		}
-
-		return returnedMessage;
-	}
-
-	public void destroy() {
-		if (remoteKms != null) {
-			sendMessage("destroy");
-			remoteKms.stop();
-		}
-	}
-
-	public void setSamplingTime(long samplingTime) {
-		this.samplingTime = samplingTime;
-	}
-
-	public long getSamplingTime() {
-		return samplingTime;
-	}
-
-	public synchronized void incrementNumClients() {
-		this.numClients++;
-	}
-
-	public synchronized void decrementNumClients() {
-		this.numClients--;
-	}
-
-	public synchronized void incrementLatencyErrors() {
-		this.latencyErrors++;
-	}
-
-	public synchronized void addCurrentLatency(double currentLatency) {
-		this.currentLatency += currentLatency;
-		this.latencyHints++;
-	}
-
-	public void addWebRtcClientAndActivateStats(String id,
-			WebRtcEndpoint webRtcEndpoint, WebPage page,
-			String peerConnectionId) {
-		addWebRtcClientAndActivateInboundStats(id, webRtcEndpoint, page,
-				peerConnectionId);
-		addWebRtcClientAndActivateOutboundStats(id, webRtcEndpoint, page,
-				peerConnectionId);
-	}
-
-	public void addWebRtcClientAndActivateOutboundStats(String id,
-			WebRtcEndpoint webRtcEndpoint, WebPage page,
-			String peerConnectionId) {
-
-		page.activatePeerConnectionOutboundStats(peerConnectionId);
-
-		addWebRtcClient(id, webRtcEndpoint, page);
-	}
-
-	public void addWebRtcClientAndActivateInboundStats(String id,
-			WebRtcEndpoint webRtcEndpoint, WebPage page,
-			String peerConnectionId) {
-
-		page.activatePeerConnectionInboundStats(peerConnectionId);
-
-		addWebRtcClient(id, webRtcEndpoint, page);
-	}
-
-	public void addWebRtcClient(String id, WebRtcEndpoint webRtcEndpoint,
-			WebPage page) {
-
-		this.clients.add(new WebRtcClient(id, webRtcEndpoint, page));
-	}
+  private MonitorSampleRegistrer registrer = new MonitorSampleRegistrer();
+
+  private List<WebRtcClient> clients = new CopyOnWriteArrayList<>();
+
+  public SystemMonitorManager(String kmsHost, String kmsLogin, String kmsPem) {
+    try {
+      monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
+      remoteKms = new SshConnection(kmsHost, kmsLogin, null, kmsPem);
+      remoteKms.start();
+      remoteKms.createTmpFolder();
+      copyMonitorToRemoteKms();
+      startRemoteProcessMonitor();
+      monitor = new KmsLocalMonitor();
+    } catch (Exception e) {
+      throw new KurentoException(e);
+    }
+  }
+
+  public SystemMonitorManager() {
+
+    try {
+      String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
+      String kmsScope = getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT);
+
+      boolean isKmsRemote = !wsUri.contains("localhost") && !wsUri.contains("127.0.0.1");
+      boolean isKmsDocker = kmsScope.equalsIgnoreCase("docker");
+
+      if (isKmsDocker) {
+        // "Dockerized" KMS
+        String containerId = KmsService.getDockerContainerName();
+        log.debug("KMS container ID: {}", containerId);
+        monitor = new KmsDockerMonitor(containerId);
+
+      } else if (isKmsRemote) {
+        // Remote KMS
+
+        String kmsLogin = getProperty(KMS_LOGIN_PROP);
+        String kmsPasswd = getProperty(KMS_PASSWD_PROP);
+        String kmsPem = getProperty(KMS_PEM_PROP);
+
+        startRemoteMonitor(wsUri, kmsLogin, kmsPasswd, kmsPem);
+
+      } else {
+        // Local KMS
+
+        monitor = new KmsLocalMonitor();
+      }
+
+    } catch (Exception e) {
+      throw new KurentoException(e);
+    }
+  }
+
+  private void startRemoteMonitor(String wsUri, String kmsLogin, String kmsPasswd, String kmsPem)
+      throws IOException, URISyntaxException {
+
+    monitorPort = getProperty(MONITOR_PORT_PROP, MONITOR_PORT_DEFAULT);
+
+    String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2, wsUri.lastIndexOf(":"));
+
+    log.info("Monitoring remote KMS at {}", remoteKmsStr);
+
+    copyMonitor(kmsLogin, kmsPasswd, kmsPem, remoteKmsStr);
+
+    startRemoteProcessMonitor();
+  }
+
+  private void copyMonitor(String kmsLogin, String kmsPasswd, String kmsPem, String remoteKmsStr)
+      throws IOException, URISyntaxException {
+    remoteKms = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd, kmsPem);
+    remoteKms.start();
+    remoteKms.createTmpFolder();
+    copyMonitorToRemoteKms();
+  }
+
+  private void copyMonitorToRemoteKms() throws IOException, URISyntaxException {
+
+    copyClassesToRemote(new Class<?>[] { KmsMonitor.class, KmsLocalMonitor.class, NetInfo.class,
+        NetInfo.NetInfoEntry.class, KmsSystemInfo.class });
+  }
+
+  private void copyClassesToRemote(final Class<?>[] classesName) throws IOException {
+    String targetFolder = remoteKms.getTmpFolder();
+
+    for (Class<?> className : classesName) {
+
+      String classFile = "/" + className.getName().replace(".", "/") + ".class";
+
+      Path sourceClass = ClassPath.get(classFile);
+
+      Path classFileInDisk = Files.createTempFile("", ".class");
+      Files.copy(sourceClass, classFileInDisk, StandardCopyOption.REPLACE_EXISTING);
+      remoteKms.mkdirs(Paths.get(targetFolder + classFile).getParent().toString());
+      remoteKms.scp(classFileInDisk.toString(), targetFolder + classFile);
+
+      Files.delete(classFileInDisk);
+    }
+  }
+
+  private void startRemoteProcessMonitor() throws IOException {
+
+    remoteKms.execCommand("sh", "-c", "java -cp " + remoteKms.getTmpFolder() + " "
+        + KmsLocalMonitor.class.getName() + " " + monitorPort + " > " + remoteKms.getTmpFolder()
+        + "/monitor.log 2>&1");
+
+    try {
+      RemoteService.waitForReady(remoteKms.getHost(), monitorPort, 60, TimeUnit.SECONDS);
+    } catch (TimeoutException e) {
+      throw new KurentoException("Monitor in remote KMS is not available");
+    }
+  }
+
+  public void startMonitoring() {
+
+    final long startTime = new Date().getTime();
+    thread = new Thread() {
+      @Override
+      public void run() {
+        try {
+          while (true) {
+            registerSample(startTime);
+            Thread.sleep(samplingTime);
+          }
+        } catch (InterruptedException | KurentoException re) {
+          log.warn("Monitoring thread interrupted. Finishing execution");
+        } catch (Exception e) {
+          log.error("Exception in system monitor manager", e);
+        }
+      }
+    };
+    thread.setDaemon(true);
+    thread.start();
+  }
+
+  private void registerSample(final long start) {
+
+    MonitorSample sample = new MonitorSample();
+
+    // KMS info
+    KmsSystemInfo kmsInfo;
+    if (remoteKms != null) {
+      kmsInfo = (KmsSystemInfo) sendMessage("measureKms");
+    } else {
+      kmsInfo = (KmsSystemInfo) monitor.measureKms();
+    }
+    sample.setSystemInfo(kmsInfo);
+
+    // Latency
+    sample.setLatencyHints(latencyHints);
+    sample.setLatencyErrors(latencyErrors);
+    sample.setCurrentLatency(currentLatency);
+
+    // RTC stats
+    for (WebRtcClient client : clients) {
+      sample.addWebRtcStats(client.getWebRtcStats());
+    }
+
+    // Client number
+    sample.setNumClients(numClients);
+
+    // Save entry in map
+    long time = new Date().getTime() - start;
+    registrer.addSample(time, sample);
+  }
+
+  @SuppressWarnings("deprecation")
+  public void stop() {
+    thread.interrupt();
+    try {
+      thread.join(3000);
+      if (thread.isAlive()) {
+        log.warn("Monitoring thread not stopped 3s before interrupted. Force stop");
+        thread.stop();
+      }
+    } catch (InterruptedException e) {
+    }
+  }
+
+  public void writeResults(String csvFile) throws IOException {
+    registrer.writeResults(csvFile);
+  }
+
+  private Object sendMessage(String message) {
+    Object returnedMessage = null;
+    try {
+      log.debug("Sending message {} to {}", message, remoteKms.getHost());
+      Socket client = new Socket(remoteKms.getHost(), monitorPort);
+      PrintWriter output = new PrintWriter(client.getOutputStream(), true);
+      ObjectInputStream input = new ObjectInputStream(client.getInputStream());
+      output.println(message);
+
+      returnedMessage = input.readObject();
+      log.debug("Receive message {}", returnedMessage);
+
+      output.close();
+      input.close();
+      client.close();
+
+    } catch (Exception e) {
+      throw new KurentoException(e);
+    }
+
+    return returnedMessage;
+  }
+
+  public void destroy() {
+    if (remoteKms != null) {
+      sendMessage("destroy");
+      remoteKms.stop();
+    }
+  }
+
+  public void setSamplingTime(long samplingTime) {
+    this.samplingTime = samplingTime;
+  }
+
+  public long getSamplingTime() {
+    return samplingTime;
+  }
+
+  public synchronized void incrementNumClients() {
+    this.numClients++;
+  }
+
+  public synchronized void decrementNumClients() {
+    this.numClients--;
+  }
+
+  public synchronized void incrementLatencyErrors() {
+    this.latencyErrors++;
+  }
+
+  public synchronized void addCurrentLatency(double currentLatency) {
+    this.currentLatency += currentLatency;
+    this.latencyHints++;
+  }
+
+  public void addWebRtcClientAndActivateStats(String id, WebRtcEndpoint webRtcEndpoint,
+      WebPage page, String peerConnectionId) {
+    addWebRtcClientAndActivateInboundStats(id, webRtcEndpoint, page, peerConnectionId);
+    addWebRtcClientAndActivateOutboundStats(id, webRtcEndpoint, page, peerConnectionId);
+  }
+
+  public void addWebRtcClientAndActivateOutboundStats(String id, WebRtcEndpoint webRtcEndpoint,
+      WebPage page, String peerConnectionId) {
+
+    page.activatePeerConnectionOutboundStats(peerConnectionId);
+
+    addWebRtcClient(id, webRtcEndpoint, page);
+  }
+
+  public void addWebRtcClientAndActivateInboundStats(String id, WebRtcEndpoint webRtcEndpoint,
+      WebPage page, String peerConnectionId) {
+
+    page.activatePeerConnectionInboundStats(peerConnectionId);
+
+    addWebRtcClient(id, webRtcEndpoint, page);
+  }
+
+  public void addWebRtcClient(String id, WebRtcEndpoint webRtcEndpoint, WebPage page) {
+
+    this.clients.add(new WebRtcClient(id, webRtcEndpoint, page));
+  }
 
 }

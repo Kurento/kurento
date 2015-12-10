@@ -13,52 +13,46 @@ import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 
 public class CloseSessionTest extends JsonRpcConnectorBaseTest {
 
-	public static class Handler extends DefaultJsonRpcHandler<String> {
+  public static class Handler extends DefaultJsonRpcHandler<String> {
 
-		int counter = 0;
+    int counter = 0;
 
-		@Override
-		public void handleRequest(final Transaction transaction,
-				Request<String> request) throws Exception {
+    @Override
+    public void handleRequest(final Transaction transaction, Request<String> request)
+        throws Exception {
 
-			Session session = transaction.getSession();
+      Session session = transaction.getSession();
 
-			if (session.isNew()) {
-				transaction.sendResponse("new");
-			} else {
-				transaction.sendResponse("old");
-			}
+      if (session.isNew()) {
+        transaction.sendResponse("new");
+      } else {
+        transaction.sendResponse("old");
+      }
 
-			if (counter == 2) {
-				session.close();
-			}
-			counter++;
-		}
-	}
+      if (counter == 2) {
+        session.close();
+      }
+      counter++;
+    }
+  }
 
-	@Test
-	public void test() throws IOException, InterruptedException {
+  @Test
+  public void test() throws IOException, InterruptedException {
 
-		JsonRpcClient client = createJsonRpcClient("/close_session_handler");
+    JsonRpcClient client = createJsonRpcClient("/close_session_handler");
 
-		Assert.assertEquals("new",
-				client.sendRequest("sessiontest", String.class));
-		Assert.assertEquals("old",
-				client.sendRequest("sessiontest", String.class));
-		Assert.assertEquals("old",
-				client.sendRequest("sessiontest", String.class));
+    Assert.assertEquals("new", client.sendRequest("sessiontest", String.class));
+    Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
+    Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
 
-		client = createJsonRpcClient("/close_session_handler");
+    client = createJsonRpcClient("/close_session_handler");
 
-		Assert.assertEquals("new",
-				client.sendRequest("sessiontest", String.class));
-		Assert.assertEquals("old",
-				client.sendRequest("sessiontest", String.class));
-		Assert.assertEquals("old",
-				client.sendRequest("sessiontest", String.class));
+    Assert.assertEquals("new", client.sendRequest("sessiontest", String.class));
+    Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
+    Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
 
-		client.close();
+    client.close();
 
-	}
+  }
 
 }

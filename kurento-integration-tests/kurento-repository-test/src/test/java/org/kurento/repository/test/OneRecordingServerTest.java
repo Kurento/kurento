@@ -42,106 +42,99 @@ import org.springframework.web.client.RestTemplate;
 @Category(RepositoryApiTests.class)
 public class OneRecordingServerTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(OneRecordingServerTest.class);
+  private static final Logger log = LoggerFactory.getLogger(OneRecordingServerTest.class);
 
-	@Before
-	public void setUp() {
-		OneRecordingServer.startServerAndWait();
-	}
+  @Before
+  public void setUp() {
+    OneRecordingServer.startServerAndWait();
+  }
 
-	@After
-	public void tearDown() {
-		OneRecordingServer.stop();
-	}
+  @After
+  public void tearDown() {
+    OneRecordingServer.stop();
+  }
 
-	@Test
-	public void test() throws Exception {
+  @Test
+  public void test() throws Exception {
 
-		String publicWebappURL = OneRecordingServer.getPublicWebappURL();
+    String publicWebappURL = OneRecordingServer.getPublicWebappURL();
 
-		log.info("Start uploading content");
+    log.info("Start uploading content");
 
-		File fileToUpload = new File("test-files/logo.png");
+    File fileToUpload = new File("test-files/logo.png");
 
-		uploadFileWithCURL(publicWebappURL + "repository_servlet/video-upload",
-				fileToUpload);
+    uploadFileWithCURL(publicWebappURL + "repository_servlet/video-upload", fileToUpload);
 
-		log.info("Waiting 10 seconds to auto-termination...");
-		Thread.sleep(10 * 1000);
+    log.info("Waiting 10 seconds to auto-termination...");
+    Thread.sleep(10 * 1000);
 
-		File downloadedFile = new File("test-files/sampleDownload.txt");
+    File downloadedFile = new File("test-files/sampleDownload.txt");
 
-		log.info("Start downloading file");
-		downloadFromURL(publicWebappURL + "repository_servlet/video-download",
-				downloadedFile);
+    log.info("Start downloading file");
+    downloadFromURL(publicWebappURL + "repository_servlet/video-download", downloadedFile);
 
-		boolean equalFiles = TestUtils.equalFiles(fileToUpload, downloadedFile);
+    boolean equalFiles = TestUtils.equalFiles(fileToUpload, downloadedFile);
 
-		if (equalFiles) {
-			log.info("The uploadad and downloaded files are equal");
-		} else {
-			log.info("The uploadad and downloaded files are different");
-		}
+    if (equalFiles) {
+      log.info("The uploadad and downloaded files are equal");
+    } else {
+      log.info("The uploadad and downloaded files are different");
+    }
 
-		assertTrue("The uploadad and downloaded files are different",
-				equalFiles);
-	}
+    assertTrue("The uploadad and downloaded files are different", equalFiles);
+  }
 
-	protected void downloadFromURL(String urlToDownload, File downloadedFile)
-			throws Exception {
+  protected void downloadFromURL(String urlToDownload, File downloadedFile) throws Exception {
 
-		if (!downloadedFile.exists()) {
-			downloadedFile.createNewFile();
-		}
+    if (!downloadedFile.exists()) {
+      downloadedFile.createNewFile();
+    }
 
-		log.info(urlToDownload);
+    log.info(urlToDownload);
 
-		RestTemplate client = new RestTemplate();
-		ResponseEntity<byte[]> response = client.getForEntity(urlToDownload,
-				byte[].class);
+    RestTemplate client = new RestTemplate();
+    ResponseEntity<byte[]> response = client.getForEntity(urlToDownload, byte[].class);
 
-		assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		FileOutputStream os = new FileOutputStream(downloadedFile);
-		os.write(response.getBody());
-		os.close();
-	}
+    FileOutputStream os = new FileOutputStream(downloadedFile);
+    os.write(response.getBody());
+    os.close();
+  }
 
-	protected void uploadFileWithCURL(String uploadURL, File fileToUpload)
-			throws FileNotFoundException, IOException {
+  protected void uploadFileWithCURL(String uploadURL, File fileToUpload)
+      throws FileNotFoundException, IOException {
 
-		log.info("Start uploading file with curl");
-		long startTime = System.currentTimeMillis();
+    log.info("Start uploading file with curl");
+    long startTime = System.currentTimeMillis();
 
-		ProcessBuilder builder = new ProcessBuilder("curl", "-i", "-F",
-				"filedata=@" + fileToUpload.getAbsolutePath(), uploadURL);
-		builder.redirectOutput();
-		Process process = builder.start();
-		try {
-			process.waitFor();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+    ProcessBuilder builder =
+        new ProcessBuilder("curl", "-i", "-F", "filedata=@" + fileToUpload.getAbsolutePath(),
+            uploadURL);
+    builder.redirectOutput();
+    Process process = builder.start();
+    try {
+      process.waitFor();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
-		long duration = System.currentTimeMillis() - startTime;
-		log.info("Finished uploading content in "
-				+ (((double) duration) / 1000) + " seconds.");
-	}
+    long duration = System.currentTimeMillis() - startTime;
+    log.info("Finished uploading content in " + (((double) duration) / 1000) + " seconds.");
+  }
 
-	protected void uploadFileWithPOST(String uploadURL, File fileToUpload)
-			throws FileNotFoundException, IOException {
+  protected void uploadFileWithPOST(String uploadURL, File fileToUpload)
+      throws FileNotFoundException, IOException {
 
-		RestTemplate template = new RestTemplate();
+    RestTemplate template = new RestTemplate();
 
-		ByteArrayOutputStream fileBytes = new ByteArrayOutputStream();
-		IOUtils.copy(new FileInputStream(fileToUpload), fileBytes);
+    ByteArrayOutputStream fileBytes = new ByteArrayOutputStream();
+    IOUtils.copy(new FileInputStream(fileToUpload), fileBytes);
 
-		ResponseEntity<String> entity = template.postForEntity(uploadURL,
-				fileBytes.toByteArray(), String.class);
+    ResponseEntity<String> entity =
+        template.postForEntity(uploadURL, fileBytes.toByteArray(), String.class);
 
-		assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK,
-				entity.getStatusCode());
+    assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK, entity.getStatusCode());
 
-	}
+  }
 }

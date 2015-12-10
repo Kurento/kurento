@@ -20,6 +20,6 @@ import org.kurento.repository.internal.http.RepositoryHttpManager;
 
 public interface RepositoryWithHttp extends Repository {
 
-	public RepositoryHttpManager getRepositoryHttpManager();
+  public RepositoryHttpManager getRepositoryHttpManager();
 
 }

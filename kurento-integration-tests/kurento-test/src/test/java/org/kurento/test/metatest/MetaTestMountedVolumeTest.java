@@ -35,42 +35,40 @@ import org.kurento.test.config.TestScenario;
  * @since 6.1.1
  */
 
-public class MetaTestMountedVolumeTest
-		extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class MetaTestMountedVolumeTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChrome();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChrome();
+  }
 
-	@Test
-	public void test() throws InterruptedException {
+  @Test
+  public void test() throws InterruptedException {
 
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-		String videoPath = "file://" + getTestFilesPath()
-				+ "/video/filter/barcodes.webm";
+    String videoPath = "file://" + getTestFilesPath() + "/video/filter/barcodes.webm";
 
-		PlayerEndpoint p = new PlayerEndpoint.Builder(mp, videoPath).build();
+    PlayerEndpoint p = new PlayerEndpoint.Builder(mp, videoPath).build();
 
-		final CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
 
-		p.addErrorListener(new EventListener<ErrorEvent>() {
-			@Override
-			public void onEvent(ErrorEvent event) {
-				log.warn("Error un player: " + event.getDescription());
-				latch.countDown();
-			}
-		});
+    p.addErrorListener(new EventListener<ErrorEvent>() {
+      @Override
+      public void onEvent(ErrorEvent event) {
+        log.warn("Error un player: " + event.getDescription());
+        latch.countDown();
+      }
+    });
 
-		p.play();
+    p.play();
 
-		if (latch.await(5, TimeUnit.SECONDS)) {
-			fail("Player error");
-		}
+    if (latch.await(5, TimeUnit.SECONDS)) {
+      fail("Player error");
+    }
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

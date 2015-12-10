@@ -17,67 +17,66 @@ package org.kurento.test.latency;
 import java.awt.Color;
 
 /**
- * Latency registry (for store and draw latency results compiled for
- * LatencyController).
+ * Latency registry (for store and draw latency results compiled for LatencyController).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 public class LatencyRegistry {
 
-	private Color color;
-	private long latency; // millisecons
-	private boolean latencyError;
-	private LatencyException latencyException;
+  private Color color;
+  private long latency; // millisecons
+  private boolean latencyError;
+  private LatencyException latencyException;
 
-	public LatencyRegistry() {
-		this(null, 0);
-	}
+  public LatencyRegistry() {
+    this(null, 0);
+  }
 
-	public LatencyRegistry(long latency) {
-		this(null, latency);
-	}
+  public LatencyRegistry(long latency) {
+    this(null, latency);
+  }
 
-	public LatencyRegistry(Color color, long latency) {
-		this.color = color;
-		this.latency = latency;
+  public LatencyRegistry(Color color, long latency) {
+    this.color = color;
+    this.latency = latency;
 
-		// By default, we suppose everything went fine
-		this.latencyError = false;
-		this.latencyException = null;
-	}
+    // By default, we suppose everything went fine
+    this.latencyError = false;
+    this.latencyException = null;
+  }
 
-	public Color getColor() {
-		return color;
-	}
+  public Color getColor() {
+    return color;
+  }
 
-	public void setColor(Color color) {
-		this.color = color;
-	}
+  public void setColor(Color color) {
+    this.color = color;
+  }
 
-	public long getLatency() {
-		return latency;
-	}
+  public long getLatency() {
+    return latency;
+  }
 
-	public void setLatency(long latency) {
-		this.latency = latency;
-	}
+  public void setLatency(long latency) {
+    this.latency = latency;
+  }
 
-	public boolean isLatencyError() {
-		return latencyError;
-	}
+  public boolean isLatencyError() {
+    return latencyError;
+  }
 
-	public void setLatencyError(boolean latencyError) {
-		this.latencyError = latencyError;
-	}
+  public void setLatencyError(boolean latencyError) {
+    this.latencyError = latencyError;
+  }
 
-	public LatencyException getLatencyException() {
-		return latencyException;
-	}
+  public LatencyException getLatencyException() {
+    return latencyException;
+  }
 
-	public void setLatencyException(LatencyException latencyException) {
-		this.latencyError = true;
-		this.latencyException = latencyException;
-	}
+  public void setLatencyException(LatencyException latencyException) {
+    this.latencyError = true;
+    this.latencyException = latencyException;
+  }
 
 }

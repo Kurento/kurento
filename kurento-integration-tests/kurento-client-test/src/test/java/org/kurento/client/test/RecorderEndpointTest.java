@@ -39,32 +39,32 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  */
 public class RecorderEndpointTest extends MediaPipelineBaseTest {
 
-	private RecorderEndpoint recorder;
+  private RecorderEndpoint recorder;
 
-	@Before
-	public void setupMediaElements() {
-		recorder = new RecorderEndpoint.Builder(pipeline, URL_SMALL).build();
+  @Before
+  public void setupMediaElements() {
+    recorder = new RecorderEndpoint.Builder(pipeline, URL_SMALL).build();
 
-	}
+  }
 
-	@After
-	public void teardownMediaElements() {
-		recorder.release();
-	}
+  @After
+  public void teardownMediaElements() {
+    recorder.release();
+  }
 
-	/**
-	 * start/pause/stop sequence test
-	 */
-	@Test
-	public void testRecorder() {
-		recorder.record();
-		recorder.pause();
-		recorder.stop();
-	}
+  /**
+   * start/pause/stop sequence test
+   */
+  @Test
+  public void testRecorder() {
+    recorder.record();
+    recorder.pause();
+    recorder.stop();
+  }
 
-	@Test
-	public void testCommandGetUri() {
-		Assert.assertEquals(URL_SMALL, recorder.getUri());
-	}
+  @Test
+  public void testCommandGetUri() {
+    Assert.assertEquals(URL_SMALL, recorder.getUri());
+  }
 
 }

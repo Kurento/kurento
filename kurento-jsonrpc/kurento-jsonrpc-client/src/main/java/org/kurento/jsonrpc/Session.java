@@ -21,16 +21,16 @@ import org.kurento.jsonrpc.internal.JsonRpcRequestSender;
 
 public interface Session extends JsonRpcRequestSender {
 
-	public String getSessionId();
+  public String getSessionId();
 
-	public Object getRegisterInfo();
+  public Object getRegisterInfo();
 
-	public boolean isNew();
+  public boolean isNew();
 
-	public void close() throws IOException;
+  public void close() throws IOException;
 
-	void setReconnectionTimeout(long millis);
+  void setReconnectionTimeout(long millis);
 
-	public Map<String, Object> getAttributes();
+  public Map<String, Object> getAttributes();
 
 }

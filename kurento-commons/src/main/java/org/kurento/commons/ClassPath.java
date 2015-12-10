@@ -12,42 +12,40 @@ import java.util.Collections;
 
 public class ClassPath {
 
-	public static Path get(String resource) throws IOException {
+  public static Path get(String resource) throws IOException {
 
-		URL url = ClassPath.class.getResource(resource);
+    URL url = ClassPath.class.getResource(resource);
 
-		if (url == null) {
-			return null;
-		}
+    if (url == null) {
+      return null;
+    }
 
-		URI uri;
-		try {
-			uri = url.toURI();
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(
-					"Exception converting classpath URL to URI", e);
-		}
+    URI uri;
+    try {
+      uri = url.toURI();
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("Exception converting classpath URL to URI", e);
+    }
 
-		String scheme = uri.getScheme();
-		if (scheme.equals("file")) {
-			return Paths.get(uri);
-		}
+    String scheme = uri.getScheme();
+    if (scheme.equals("file")) {
+      return Paths.get(uri);
+    }
 
-		String s = uri.toString();
-		int separator = s.indexOf("!/");
-		String entryName = s.substring(separator + 2);
-		URI fileURI = URI.create(s.substring(0, separator));
+    String s = uri.toString();
+    int separator = s.indexOf("!/");
+    String entryName = s.substring(separator + 2);
+    URI fileURI = URI.create(s.substring(0, separator));
 
-		FileSystem fs;
-		try {
+    FileSystem fs;
+    try {
 
-			fs = FileSystems.newFileSystem(fileURI,
-					Collections.<String, Object> emptyMap());
+      fs = FileSystems.newFileSystem(fileURI, Collections.<String, Object> emptyMap());
 
-		} catch (java.nio.file.FileSystemAlreadyExistsException e) {
-			fs = FileSystems.getFileSystem(fileURI);
-		}
-		return fs.getPath(entryName);
-	}
+    } catch (java.nio.file.FileSystemAlreadyExistsException e) {
+      fs = FileSystems.getFileSystem(fileURI);
+    }
+    return fs.getPath(entryName);
+  }
 
 }

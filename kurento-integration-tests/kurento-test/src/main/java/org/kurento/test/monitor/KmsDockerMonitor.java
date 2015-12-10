@@ -29,119 +29,111 @@ import com.github.dockerjava.api.model.Statistics;
  */
 public class KmsDockerMonitor extends KmsMonitor {
 
-	private int kmsPid;
+  private int kmsPid;
 
-	private Docker docker;
-	private String containerId;
+  private Docker docker;
+  private String containerId;
 
-	private long previousCPU = -1;
-	private long previousSystem = -1;
+  private long previousCPU = -1;
+  private long previousSystem = -1;
 
-	public KmsDockerMonitor(String containerId) {
-		this.containerId = containerId;
-		this.docker = Docker.getSingleton();
-		this.kmsPid = getKmsPid();
-	}
+  public KmsDockerMonitor(String containerId) {
+    this.containerId = containerId;
+    this.docker = Docker.getSingleton();
+    this.kmsPid = getKmsPid();
+  }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	protected NetInfo getNetInfo() {
-		NetInfo netInfo = new NetInfo();
-		Statistics stats = docker.getStatistics(containerId);
-		Map<String, Object> networksStats = stats.getNetworks();
+  @Override
+  @SuppressWarnings("unchecked")
+  protected NetInfo getNetInfo() {
+    NetInfo netInfo = new NetInfo();
+    Statistics stats = docker.getStatistics(containerId);
+    Map<String, Object> networksStats = stats.getNetworks();
 
-		for (String key : networksStats.keySet()) {
-			Map<String, Object> iface = (Map<String, Object>) networksStats
-					.get(key);
-			int rxBytes = (Integer) iface.get("rx_bytes");
-			int txBytes = (Integer) iface.get("tx_bytes");
+    for (String key : networksStats.keySet()) {
+      Map<String, Object> iface = (Map<String, Object>) networksStats.get(key);
+      int rxBytes = (Integer) iface.get("rx_bytes");
+      int txBytes = (Integer) iface.get("tx_bytes");
 
-			netInfo.putNetInfo(key, rxBytes, txBytes);
-		}
-		return netInfo;
-	}
+      netInfo.putNetInfo(key, rxBytes, txBytes);
+    }
+    return netInfo;
+  }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	protected double getCpuUsage() {
-		double cpuUsage = 0;
-		Statistics stats = docker.getStatistics(containerId);
-		Map<String, Object> cpuStats = stats.getCpuStats();
+  @Override
+  @SuppressWarnings("unchecked")
+  protected double getCpuUsage() {
+    double cpuUsage = 0;
+    Statistics stats = docker.getStatistics(containerId);
+    Map<String, Object> cpuStats = stats.getCpuStats();
 
-		if (cpuStats != null) {
-			Map<String, Object> cpuUsageMap = (Map<String, Object>) cpuStats
-					.get("cpu_usage");
-			long systemUsage = Long
-					.parseLong(cpuStats.get("system_cpu_usage").toString());
-			long totalUsage = Long
-					.parseLong(cpuUsageMap.get("total_usage").toString());
+    if (cpuStats != null) {
+      Map<String, Object> cpuUsageMap = (Map<String, Object>) cpuStats.get("cpu_usage");
+      long systemUsage = Long.parseLong(cpuStats.get("system_cpu_usage").toString());
+      long totalUsage = Long.parseLong(cpuUsageMap.get("total_usage").toString());
 
-			List<Object> perCpuUsage = (List<Object>) cpuUsageMap
-					.get("percpu_usage");
+      List<Object> perCpuUsage = (List<Object>) cpuUsageMap.get("percpu_usage");
 
-			if (previousCPU != -1 && previousSystem != -1) {
-				// Using same formula than
-				// https://github.com/docker/docker/blob/master/api/client/stats.go
+      if (previousCPU != -1 && previousSystem != -1) {
+        // Using same formula than
+        // https://github.com/docker/docker/blob/master/api/client/stats.go
 
-				float cpuDelta = totalUsage - previousCPU;
-				float systemDelta = systemUsage - previousSystem;
+        float cpuDelta = totalUsage - previousCPU;
+        float systemDelta = systemUsage - previousSystem;
 
-				if (cpuDelta > 0 && systemDelta > 0) {
-					cpuUsage = (cpuDelta / systemDelta) * perCpuUsage.size()
-							* 100;
-				}
-			}
+        if (cpuDelta > 0 && systemDelta > 0) {
+          cpuUsage = (cpuDelta / systemDelta) * perCpuUsage.size() * 100;
+        }
+      }
 
-			previousCPU = totalUsage;
-			previousSystem = systemUsage;
-		}
+      previousCPU = totalUsage;
+      previousSystem = systemUsage;
+    }
 
-		return cpuUsage;
-	}
+    return cpuUsage;
+  }
 
-	@Override
-	protected double[] getMem() {
-		double[] out = { 0, 0 };
+  @Override
+  protected double[] getMem() {
+    double[] out = { 0, 0 };
 
-		Statistics stats = docker.getStatistics(containerId);
-		Map<String, Object> memoryStats = stats.getMemoryStats();
-		int usage = (Integer) memoryStats.get("usage");
-		float limit = (Long) memoryStats.get("limit");
-		double memPercent = (usage / limit) * 100;
+    Statistics stats = docker.getStatistics(containerId);
+    Map<String, Object> memoryStats = stats.getMemoryStats();
+    int usage = (Integer) memoryStats.get("usage");
+    float limit = (Long) memoryStats.get("limit");
+    double memPercent = (usage / limit) * 100;
 
-		out[0] = usage;
-		out[1] = memPercent;
+    out[0] = usage;
+    out[1] = memPercent;
 
-		return out;
-	}
+    return out;
+  }
 
-	@Override
-	protected int getKmsPid() {
-		int kmdPid = -1;
-		String execOutput = docker.execCommand(containerId, "ps", "axf");
+  @Override
+  protected int getKmsPid() {
+    int kmdPid = -1;
+    String execOutput = docker.execCommand(containerId, "ps", "axf");
 
-		String[] lines = execOutput.split("\n");
-		for (String line : lines) {
-			if (line.contains("/usr/bin/kurento-media-server")) {
-				kmdPid = Integer.parseInt(
-						line.trim().substring(0, line.trim().indexOf(" ")));
-				break;
-			}
-		}
+    String[] lines = execOutput.split("\n");
+    for (String line : lines) {
+      if (line.contains("/usr/bin/kurento-media-server")) {
+        kmdPid = Integer.parseInt(line.trim().substring(0, line.trim().indexOf(" ")));
+        break;
+      }
+    }
 
-		return kmdPid;
-	}
+    return kmdPid;
+  }
 
-	@Override
-	protected int getNumThreads() {
-		int numThreads = -1;
-		String kmsStat = docker.execCommand(containerId, "cat",
-				"/proc/" + kmsPid + "/stat");
-		String[] kmsStats = kmsStat.split(" ");
-		if (kmsStats.length >= 20) {
-			numThreads = Integer.parseInt(kmsStats[19]);
-		}
-		return numThreads;
-	}
+  @Override
+  protected int getNumThreads() {
+    int numThreads = -1;
+    String kmsStat = docker.execCommand(containerId, "cat", "/proc/" + kmsPid + "/stat");
+    String[] kmsStats = kmsStat.split(" ");
+    if (kmsStats.length >= 20) {
+      numThreads = Integer.parseInt(kmsStats[19]);
+    }
+    return numThreads;
+  }
 
 }

@@ -22,6 +22,6 @@ package org.kurento.test.browser;
  */
 public interface SdpOfferProcessor {
 
-	public String processSdpOffer(String sdpOffer);
+  public String processSdpOffer(String sdpOffer);
 
 }

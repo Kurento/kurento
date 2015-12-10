@@ -32,8 +32,8 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Four synthetic videos are played by four PlayerEndpoint and mixed by a
- * Composite. The resulting video is played in an WebRtcEndpoint <br>
+ * Four synthetic videos are played by four PlayerEndpoint and mixed by a Composite. The resulting
+ * video is played in an WebRtcEndpoint <br>
  *
  * Media Pipeline(s): <br>
  * · 4xPlayerEndpoint -> Composite -> WebRtcEndpoint <br>
@@ -43,8 +43,7 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) Media server implements a grid with the media from 4 PlayerEndpoints
- * <br>
+ * 1. (KMS) Media server implements a grid with the media from 4 PlayerEndpoints <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -58,69 +57,68 @@ import org.kurento.test.config.TestScenario;
  */
 public class CompositePlayerTest extends FunctionalTest {
 
-	private static int PLAYTIME = 5; // seconds
+  private static int PLAYTIME = 5; // seconds
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChromeAndFirefox();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChromeAndFirefox();
+  }
 
-	@Test
-	public void testCompositePlayer() throws Exception {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
+  @Test
+  public void testCompositePlayer() throws Exception {
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/red.webm").build();
-		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/green.webm").build();
-		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/blue.webm").build();
-		PlayerEndpoint playerWhite = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/white.webm").build();
+    PlayerEndpoint playerRed =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/red.webm").build();
+    PlayerEndpoint playerGreen =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/green.webm").build();
+    PlayerEndpoint playerBlue =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/blue.webm").build();
+    PlayerEndpoint playerWhite =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/white.webm").build();
 
-		Composite composite = new Composite.Builder(mp).build();
-		HubPort hubPort1 = new HubPort.Builder(composite).build();
-		HubPort hubPort2 = new HubPort.Builder(composite).build();
-		HubPort hubPort3 = new HubPort.Builder(composite).build();
-		HubPort hubPort4 = new HubPort.Builder(composite).build();
-		HubPort hubPort5 = new HubPort.Builder(composite).build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    Composite composite = new Composite.Builder(mp).build();
+    HubPort hubPort1 = new HubPort.Builder(composite).build();
+    HubPort hubPort2 = new HubPort.Builder(composite).build();
+    HubPort hubPort3 = new HubPort.Builder(composite).build();
+    HubPort hubPort4 = new HubPort.Builder(composite).build();
+    HubPort hubPort5 = new HubPort.Builder(composite).build();
+    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
-		playerRed.connect(hubPort1);
-		playerGreen.connect(hubPort2);
-		playerBlue.connect(hubPort3);
-		playerWhite.connect(hubPort4);
+    playerRed.connect(hubPort1);
+    playerGreen.connect(hubPort2);
+    playerBlue.connect(hubPort3);
+    playerWhite.connect(hubPort4);
 
-		hubPort5.connect(webRtcEP);
+    hubPort5.connect(webRtcEP);
 
-		// Test execution
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
+    // Test execution
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
-		playerRed.play();
-		playerGreen.play();
-		playerBlue.play();
-		playerWhite.play();
+    playerRed.play();
+    playerGreen.play();
+    playerBlue.play();
+    playerWhite.play();
 
-		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
-		Assert.assertTrue("Upper left part of the video must be red",
-				getPage().similarColorAt(Color.RED, 0, 0));
-		Assert.assertTrue("Upper right part of the video must be green",
-				getPage().similarColorAt(Color.GREEN, 450, 0));
-		Assert.assertTrue("Lower left part of the video must be blue",
-				getPage().similarColorAt(Color.BLUE, 0, 450));
-		Assert.assertTrue("Lower right part of the video must be white",
-				getPage().similarColorAt(Color.WHITE, 450, 450));
+    // Assertions
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Upper left part of the video must be red",
+        getPage().similarColorAt(Color.RED, 0, 0));
+    Assert.assertTrue("Upper right part of the video must be green",
+        getPage().similarColorAt(Color.GREEN, 450, 0));
+    Assert.assertTrue("Lower left part of the video must be blue",
+        getPage().similarColorAt(Color.BLUE, 0, 450));
+    Assert.assertTrue("Lower right part of the video must be white",
+        getPage().similarColorAt(Color.WHITE, 450, 450));
 
-		// Guard time to see the composite result
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+    // Guard time to see the composite result
+    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 
 }

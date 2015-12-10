@@ -25,10 +25,9 @@ import retrofit.RestAdapter;
 import com.google.common.base.StandardSystemProperty;
 
 /**
- * Factory to create {@link RepositoryClient} that can be used to access
- * services offered by a repository server application. It requires the
- * repository's service URL for REST communications, which can be configured by
- * means of reading properties from well-known locations (see
+ * Factory to create {@link RepositoryClient} that can be used to access services offered by a
+ * repository server application. It requires the repository's service URL for REST communications,
+ * which can be configured by means of reading properties from well-known locations (see
  * {@link RepositoryUrlLoader}), or directly when instantiating the provider.
  * 
  * @author <a href="mailto:micael.gallego@gmail.com">Micael Gallego</a>
@@ -36,81 +35,78 @@ import com.google.common.base.StandardSystemProperty;
  */
 public class RepositoryClientProvider {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(RepositoryClientProvider.class);
+  private static final Logger log = LoggerFactory.getLogger(RepositoryClientProvider.class);
 
-	private static RepositoryUrlLoader repositoryUrlLoader;
+  private static RepositoryUrlLoader repositoryUrlLoader;
 
-	private RepositoryClient restService;
+  private RepositoryClient restService;
 
-	/**
-	 * Creates a provider for clients to a server instance. The repository URL
-	 * is searched for in properties from well-known locations.
-	 * 
-	 * @return a factory of {@link RepositoryClient}
-	 */
-	public static RepositoryClientProvider createProvider() {
-		return createProvider(getRepositoryUrl());
-	}
+  /**
+   * Creates a provider for clients to a server instance. The repository URL is searched for in
+   * properties from well-known locations.
+   * 
+   * @return a factory of {@link RepositoryClient}
+   */
+  public static RepositoryClientProvider createProvider() {
+    return createProvider(getRepositoryUrl());
+  }
 
-	/**
-	 * Creates a client to a server instance. The repository URL of the client
-	 * provider is searched for in properties from well-known locations.
-	 * 
-	 * @return a {@link RepositoryClient}
-	 */
-	public static RepositoryClient create() {
-		return create(getRepositoryUrl());
-	}
+  /**
+   * Creates a client to a server instance. The repository URL of the client provider is searched
+   * for in properties from well-known locations.
+   * 
+   * @return a {@link RepositoryClient}
+   */
+  public static RepositoryClient create() {
+    return create(getRepositoryUrl());
+  }
 
-	/**
-	 * Creates a provider for clients to a server instance.
-	 * 
-	 * @param repoRestUrl the repository server URL (where the server expects
-	 *        REST connections)
-	 * @return a factory of {@link RepositoryClient}
-	 */
-	public static RepositoryClientProvider createProvider(String repoRestUrl) {
-		RepositoryClientProvider provider = new RepositoryClientProvider();
-		RestAdapter restAdapter =
-				new RestAdapter.Builder().setEndpoint(repoRestUrl).build();
-		provider.restService = restAdapter.create(RepositoryClient.class);
-		log.info("Rest client service created for {}", repoRestUrl);
-		return provider;
-	}
+  /**
+   * Creates a provider for clients to a server instance.
+   * 
+   * @param repoRestUrl
+   *          the repository server URL (where the server expects REST connections)
+   * @return a factory of {@link RepositoryClient}
+   */
+  public static RepositoryClientProvider createProvider(String repoRestUrl) {
+    RepositoryClientProvider provider = new RepositoryClientProvider();
+    RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(repoRestUrl).build();
+    provider.restService = restAdapter.create(RepositoryClient.class);
+    log.info("Rest client service created for {}", repoRestUrl);
+    return provider;
+  }
 
-	/**
-	 * Creates a client to a server instance found on the provided URL.
-	 * 
-	 * @param repoRestUrl the repository server URL (where the server expects
-	 *        REST connections)
-	 * @return a {@link RepositoryClient}
-	 */
-	public static RepositoryClient create(String repoRestUrl) {
-		return createProvider(repoRestUrl).getRepositoryClient();
-	}
+  /**
+   * Creates a client to a server instance found on the provided URL.
+   * 
+   * @param repoRestUrl
+   *          the repository server URL (where the server expects REST connections)
+   * @return a {@link RepositoryClient}
+   */
+  public static RepositoryClient create(String repoRestUrl) {
+    return createProvider(repoRestUrl).getRepositoryClient();
+  }
 
-	private RepositoryClientProvider() {}
+  private RepositoryClientProvider() {
+  }
 
-	/**
-	 * @return a {@link RepositoryClient} to communicate with a repository
-	 *         server instance
-	 */
-	public RepositoryClient getRepositoryClient() {
-		return restService;
-	}
+  /**
+   * @return a {@link RepositoryClient} to communicate with a repository server instance
+   */
+  public RepositoryClient getRepositoryClient() {
+    return restService;
+  }
 
-	private synchronized static String getRepositoryUrl() {
+  private synchronized static String getRepositoryUrl() {
 
-		if (repositoryUrlLoader == null) {
+    if (repositoryUrlLoader == null) {
 
-			Path configFile =
-					Paths.get(StandardSystemProperty.USER_HOME.value(),
-							".kurento", "config.properties");
+      Path configFile =
+          Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento", "config.properties");
 
-			repositoryUrlLoader = new RepositoryUrlLoader(configFile);
-		}
+      repositoryUrlLoader = new RepositoryUrlLoader(configFile);
+    }
 
-		return repositoryUrlLoader.getRepositoryUrl();
-	}
+    return repositoryUrlLoader.getRepositoryUrl();
+  }
 }

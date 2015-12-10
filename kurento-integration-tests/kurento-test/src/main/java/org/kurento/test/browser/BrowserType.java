@@ -27,25 +27,25 @@ import org.openqa.selenium.safari.SafariDriver;
  * @since 4.2.3
  */
 public enum BrowserType {
-	CHROME, FIREFOX, IEXPLORER, SAFARI;
+  CHROME, FIREFOX, IEXPLORER, SAFARI;
 
-	public Class<? extends WebDriver> getDriverClass() {
-		switch (this) {
-		case IEXPLORER:
-			return InternetExplorerDriver.class;
-		case FIREFOX:
-			return FirefoxDriver.class;
-		case SAFARI:
-			return SafariDriver.class;
-		case CHROME:
-		default:
-			return ChromeDriver.class;
-		}
-	}
+  public Class<? extends WebDriver> getDriverClass() {
+    switch (this) {
+      case IEXPLORER:
+        return InternetExplorerDriver.class;
+      case FIREFOX:
+        return FirefoxDriver.class;
+      case SAFARI:
+        return SafariDriver.class;
+      case CHROME:
+      default:
+        return ChromeDriver.class;
+    }
+  }
 
-	@Override
-	public String toString() {
-		return super.toString().toLowerCase();
-	}
+  @Override
+  public String toString() {
+    return super.toString().toLowerCase();
+  }
 
 }

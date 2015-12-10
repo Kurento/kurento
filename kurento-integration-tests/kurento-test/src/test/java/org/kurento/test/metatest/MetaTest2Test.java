@@ -34,24 +34,24 @@ import org.openqa.selenium.WebElement;
 
 public class MetaTest2Test extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChrome();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChrome();
+  }
 
-	@Test
-	public void test() {
+  @Test
+  public void test() {
 
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-		// Check page loaded
-		WebElement element = getPage().getBrowser().getWebDriver()
-				.findElement(By.cssSelector("#testTitle"));
+    // Check page loaded
+    WebElement element =
+        getPage().getBrowser().getWebDriver().findElement(By.cssSelector("#testTitle"));
 
-		Assert.assertThat(element.getText(), IsEqual.equalTo("WebRTC test"));
+    Assert.assertThat(element.getText(), IsEqual.equalTo("WebRTC test"));
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

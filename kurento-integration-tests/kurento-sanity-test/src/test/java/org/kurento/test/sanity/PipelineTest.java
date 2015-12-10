@@ -31,13 +31,13 @@ import org.kurento.test.browser.WebPage;
 @Category(SanityTests.class)
 public class PipelineTest extends KurentoClientBrowserTest<WebPage> {
 
-	// TODO: this test should extend KurentoClientTest
+  // TODO: this test should extend KurentoClientTest
 
-	@Test
-	public void basicPipelineTest() {
-		MediaPipeline mediaPipeline = kurentoClient.createMediaPipeline();
-		Assert.assertNotNull("Error: MediaPipeline is null", mediaPipeline);
-		mediaPipeline.release();
-	}
+  @Test
+  public void basicPipelineTest() {
+    MediaPipeline mediaPipeline = kurentoClient.createMediaPipeline();
+    Assert.assertNotNull("Error: MediaPipeline is null", mediaPipeline);
+    mediaPipeline.release();
+  }
 
 }

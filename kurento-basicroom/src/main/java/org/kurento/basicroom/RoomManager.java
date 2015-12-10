@@ -32,55 +32,55 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RoomManager {
 
-	private final Logger log = LoggerFactory.getLogger(RoomManager.class);
+  private final Logger log = LoggerFactory.getLogger(RoomManager.class);
 
-	@Autowired
-	private KurentoClient kurento;
+  @Autowired
+  private KurentoClient kurento;
 
-	private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
 
-	@PreDestroy
-	public void close() {
-		for (Room room : rooms.values()) {
-			room.close();
-		}
-	}
+  @PreDestroy
+  public void close() {
+    for (Room room : rooms.values()) {
+      room.close();
+    }
+  }
 
-	/**
-	 * @param roomName
-	 *            the name of the room
-	 * @return the room if it was already created, or a new one if it is the
-	 *         first time this room is accessed
-	 */
-	public Room getRoom(String roomName) {
+  /**
+   * @param roomName
+   *          the name of the room
+   * @return the room if it was already created, or a new one if it is the first time this room is
+   *         accessed
+   */
+  public Room getRoom(String roomName) {
 
-		Room room = rooms.get(roomName);
+    Room room = rooms.get(roomName);
 
-		if (room == null) {
+    if (room == null) {
 
-			room = new Room(roomName, kurento);
-			Room oldRoom = rooms.putIfAbsent(roomName, room);
-			if (oldRoom != null) {
-				return oldRoom;
-			} else {
-				log.debug("Room {} not existent. Created new!", roomName);
-				return room;
-			}
-		} else {
-			return room;
-		}
-	}
+      room = new Room(roomName, kurento);
+      Room oldRoom = rooms.putIfAbsent(roomName, room);
+      if (oldRoom != null) {
+        return oldRoom;
+      } else {
+        log.debug("Room {} not existent. Created new!", roomName);
+        return room;
+      }
+    } else {
+      return room;
+    }
+  }
 
-	/**
-	 * Removes a room from the list of available rooms
-	 *
-	 * @param room
-	 * @throws IOException
-	 */
-	public void removeRoom(Room room) {
-		this.rooms.remove(room.getName());
-		room.close();
-		log.info("Room {} removed and closed", room.getName());
-	}
+  /**
+   * Removes a room from the list of available rooms
+   *
+   * @param room
+   * @throws IOException
+   */
+  public void removeRoom(Room room) {
+    this.rooms.remove(room.getName());
+    room.close();
+    log.info("Room {} removed and closed", room.getName());
+  }
 
 }

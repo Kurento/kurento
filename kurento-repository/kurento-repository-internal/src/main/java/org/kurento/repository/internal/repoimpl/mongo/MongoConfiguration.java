@@ -29,22 +29,21 @@ import com.mongodb.MongoClientURI;
 @Configuration
 public class MongoConfiguration extends AbstractMongoConfiguration {
 
-	@Autowired
-	RepositoryApiConfiguration config;
+  @Autowired
+  RepositoryApiConfiguration config;
 
-	@Override
-	public Mongo mongo() throws UnknownHostException {
-		return new MongoClient(new MongoClientURI(
-				config.getMongoURLConnection()));
-	}
+  @Override
+  public Mongo mongo() throws UnknownHostException {
+    return new MongoClient(new MongoClientURI(config.getMongoURLConnection()));
+  }
 
-	@Override
-	protected String getDatabaseName() {
-		return config.getMongoDatabaseName();
-	}
+  @Override
+  protected String getDatabaseName() {
+    return config.getMongoDatabaseName();
+  }
 
-	@Override
-	protected String getMappingBasePackage() {
-		return "org.kurento.repository.repoimpl.mongo.domain";
-	}
+  @Override
+  protected String getMappingBasePackage() {
+    return "org.kurento.repository.repoimpl.mongo.domain";
+  }
 }

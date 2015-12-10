@@ -26,18 +26,18 @@ import org.junit.Test;
  */
 public class KurentoJsReleaseTest extends KurentoJsBase {
 
-	public KurentoJsReleaseTest() {
+  public KurentoJsReleaseTest() {
 
-		kurentoUrl = getProperty("bower.release.url", DEFAULT_KURENTO_JS_URL);
-		log.debug("kurentoUrl = {}", kurentoUrl);
-		if (!kurentoUrl.endsWith("/")) {
-			kurentoUrl += "/";
-		}
-	}
+    kurentoUrl = getProperty("bower.release.url", DEFAULT_KURENTO_JS_URL);
+    log.debug("kurentoUrl = {}", kurentoUrl);
+    if (!kurentoUrl.endsWith("/")) {
+      kurentoUrl += "/";
+    }
+  }
 
-	@Test
-	public void kurentoJsReleaseTest() {
-		doTest();
-	}
+  @Test
+  public void kurentoJsReleaseTest() {
+    doTest();
+  }
 
 }

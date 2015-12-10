@@ -64,99 +64,90 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderPlayerOneToManyTest extends StabilityTest {
 
-	private static final int NUM_RECORDERS = 2;
-	private static final int PLAYTIME_MS = 10000; // ms
-	private static final int THRESHOLD_MS = 5000; // ms
-	private static int numViewers;
+  private static final int NUM_RECORDERS = 2;
+  private static final int PLAYTIME_MS = 10000; // ms
+  private static final int THRESHOLD_MS = 5000; // ms
+  private static int numViewers;
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		numViewers = getProperty(
-				"recorder.stability.player.one2many.numrecorders",
-				NUM_RECORDERS);
-		return TestScenario.empty();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    numViewers = getProperty("recorder.stability.player.one2many.numrecorders", NUM_RECORDERS);
+    return TestScenario.empty();
+  }
 
-	@Test
-	public void testRecorderPlayerOneToManyWebm() throws Exception {
-		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
-				EXTENSION_WEBM);
-	}
+  @Test
+  public void testRecorderPlayerOneToManyWebm() throws Exception {
+    doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+  }
 
-	@Test
-	public void testRecorderPlayerOneToManyMp4() throws Exception {
-		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
-				EXTENSION_MP4);
-	}
+  @Test
+  public void testRecorderPlayerOneToManyMp4() throws Exception {
+    doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+  }
 
-	public void doTest(final MediaProfileSpecType mediaProfileSpecType,
-			String expectedVideoCodec, String expectedAudioCodec,
-			final String extension) throws Exception {
+  public void doTest(final MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
+      String expectedAudioCodec, final String extension) throws Exception {
 
-		MediaPipeline mp = null;
+    MediaPipeline mp = null;
 
-		// Media Pipeline
-		mp = kurentoClient.createMediaPipeline();
-		final PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/60sec/ball.webm").build();
-		final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
-		final String recordingFile[] = new String[numViewers];
-		playerEP.play();
+    // Media Pipeline
+    mp = kurentoClient.createMediaPipeline();
+    final PlayerEndpoint playerEP =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/60sec/ball.webm").build();
+    final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
+    final String recordingFile[] = new String[numViewers];
+    playerEP.play();
 
-		ExecutorService executor = Executors.newFixedThreadPool(numViewers);
-		final CountDownLatch latch = new CountDownLatch(numViewers);
-		final MediaPipeline pipeline = mp;
-		for (int j = 0; j < numViewers; j++) {
-			final int i = j;
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						// N recorders
-						recordingFile[i] = getDefaultOutputFile(
-								"-recorder" + i + extension);
-						recorder[i] = new RecorderEndpoint.Builder(pipeline,
-								Protocol.FILE + recordingFile[i])
-										.withMediaProfile(mediaProfileSpecType)
-										.build();
-						playerEP.connect(recorder[i]);
+    ExecutorService executor = Executors.newFixedThreadPool(numViewers);
+    final CountDownLatch latch = new CountDownLatch(numViewers);
+    final MediaPipeline pipeline = mp;
+    for (int j = 0; j < numViewers; j++) {
+      final int i = j;
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            // N recorders
+            recordingFile[i] = getDefaultOutputFile("-recorder" + i + extension);
+            recorder[i] =
+                new RecorderEndpoint.Builder(pipeline, Protocol.FILE + recordingFile[i])
+                    .withMediaProfile(mediaProfileSpecType).build();
+            playerEP.connect(recorder[i]);
 
-						// Start record
-						recorder[i].record();
+            // Start record
+            recorder[i].record();
 
-						// Wait play time
-						Thread.sleep(PLAYTIME_MS);
+            // Wait play time
+            Thread.sleep(PLAYTIME_MS);
 
-						// Stop record
-						recorder[i].stop();
+            // Stop record
+            recorder[i].stop();
 
-						// Guard time to stop recording
-						Thread.sleep(4000);
+            // Guard time to stop recording
+            Thread.sleep(4000);
 
-					} catch (Throwable t) {
-						log.error("Exception in receiver " + i, t);
-					}
+          } catch (Throwable t) {
+            log.error("Exception in receiver " + i, t);
+          }
 
-					latch.countDown();
-				}
-			});
-		}
+          latch.countDown();
+        }
+      });
+    }
 
-		// Wait to finish all recordings
-		latch.await();
+    // Wait to finish all recordings
+    latch.await();
 
-		// Assessments
-		for (int j = 0; j < numViewers; j++) {
-			AssertMedia.assertCodecs(recordingFile[j], expectedVideoCodec,
-					expectedAudioCodec);
-			AssertMedia.assertDuration(recordingFile[j], PLAYTIME_MS,
-					THRESHOLD_MS);
-		}
+    // Assessments
+    for (int j = 0; j < numViewers; j++) {
+      AssertMedia.assertCodecs(recordingFile[j], expectedVideoCodec, expectedAudioCodec);
+      AssertMedia.assertDuration(recordingFile[j], PLAYTIME_MS, THRESHOLD_MS);
+    }
 
-		// Release Media Pipeline
-		if (mp != null) {
-			mp.release();
-		}
+    // Release Media Pipeline
+    if (mp != null) {
+      mp.release();
+    }
 
-	}
+  }
 }

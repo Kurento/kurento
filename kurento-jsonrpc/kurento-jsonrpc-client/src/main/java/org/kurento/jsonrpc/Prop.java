@@ -16,8 +16,8 @@ package org.kurento.jsonrpc;
 
 public interface Prop {
 
-	String getName();
+  String getName();
 
-	Object getValue();
+  Object getValue();
 
 }

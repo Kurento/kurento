@@ -56,8 +56,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  *
  * Test logic: <br>
  * 1. (Browser) WebRtcPeer in send-only sends media to KMS <br>
- * 2. (KMS) N WebRtcEndpoints receives media and it is recorded by N
- * RecorderEndpoints. <br>
+ * 2. (KMS) N WebRtcEndpoints receives media and it is recorded by N RecorderEndpoints. <br>
  *
  * Main assertion(s): <br>
  * · Recorded files are OK (seekable, length, content)
@@ -67,8 +66,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  * 
  * 
  * 
- * <strong>Description</strong>: Stability test for Recorder. WebRTC one to many
- * with recorders.<br>
+ * <strong>Description</strong>: Stability test for Recorder. WebRTC one to many with recorders.<br>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> N WebRtcEndpoint X RecorderEndpoint</li>
@@ -83,117 +81,104 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderWebRtcOneToManyTest extends StabilityTest {
 
-	private static final int NUM_VIEWERS = 3;
-	private static final int PLAYTIME_MS = 10000; // ms
-	private static final int THRESHOLD_MS = 8000; // ms
-	private static int numViewers;
+  private static final int NUM_VIEWERS = 3;
+  private static final int PLAYTIME_MS = 10000; // ms
+  private static final int THRESHOLD_MS = 8000; // ms
+  private static int numViewers;
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		numViewers = getProperty("recorder.stability.one2many.numviewers",
-				NUM_VIEWERS);
-		return TestScenario.localChromesAndFirefoxs(numViewers + 1);
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    numViewers = getProperty("recorder.stability.one2many.numviewers", NUM_VIEWERS);
+    return TestScenario.localChromesAndFirefoxs(numViewers + 1);
+  }
 
-	@Test
-	public void testRecorderWebRtcOneToManyWebm() throws Exception {
-		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
-				EXTENSION_WEBM);
-	}
+  @Test
+  public void testRecorderWebRtcOneToManyWebm() throws Exception {
+    doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+  }
 
-	@Test
-	public void testRecorderWebRtcOneToManyMp4() throws Exception {
-		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
-				EXTENSION_MP4);
-	}
+  @Test
+  public void testRecorderWebRtcOneToManyMp4() throws Exception {
+    doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+  }
 
-	public void doTest(final MediaProfileSpecType mediaProfileSpecType,
-			String expectedVideoCodec, String expectedAudioCodec,
-			final String extension) throws Exception {
+  public void doTest(final MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
+      String expectedAudioCodec, final String extension) throws Exception {
 
-		MediaPipeline mp = null;
+    MediaPipeline mp = null;
 
-		// Media Pipeline
-		mp = kurentoClient.createMediaPipeline();
-		final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp)
-				.build();
-		final WebRtcEndpoint[] webRtcReceiver = new WebRtcEndpoint[numViewers];
-		final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
-		final String recordingFile[] = new String[numViewers];
+    // Media Pipeline
+    mp = kurentoClient.createMediaPipeline();
+    final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp).build();
+    final WebRtcEndpoint[] webRtcReceiver = new WebRtcEndpoint[numViewers];
+    final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
+    final String recordingFile[] = new String[numViewers];
 
-		// WebRTC sender negotiation
-		getPage(0).subscribeLocalEvents("playing");
-		getPage(0).initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.SEND_ONLY);
-		Assert.assertTrue("Not received media in sender",
-				getPage(0).waitForEvent("playing"));
+    // WebRTC sender negotiation
+    getPage(0).subscribeLocalEvents("playing");
+    getPage(0).initWebRtc(webRtcSender, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    Assert.assertTrue("Not received media in sender", getPage(0).waitForEvent("playing"));
 
-		ExecutorService executor = Executors.newFixedThreadPool(numViewers);
-		final CountDownLatch latch = new CountDownLatch(numViewers);
-		final MediaPipeline pipeline = mp;
-		for (int j = 1; j <= numViewers; j++) {
-			final int i = j;
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					// N Receiver WebRTC and Recorder
-					webRtcReceiver[i - 1] = new WebRtcEndpoint.Builder(pipeline)
-							.build();
-					recordingFile[i - 1] = getDefaultOutputFile(
-							"-receiver" + i + extension);
-					recorder[i - 1] = new RecorderEndpoint.Builder(pipeline,
-							Protocol.FILE + recordingFile[i - 1])
-									.withMediaProfile(mediaProfileSpecType)
-									.build();
+    ExecutorService executor = Executors.newFixedThreadPool(numViewers);
+    final CountDownLatch latch = new CountDownLatch(numViewers);
+    final MediaPipeline pipeline = mp;
+    for (int j = 1; j <= numViewers; j++) {
+      final int i = j;
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          // N Receiver WebRTC and Recorder
+          webRtcReceiver[i - 1] = new WebRtcEndpoint.Builder(pipeline).build();
+          recordingFile[i - 1] = getDefaultOutputFile("-receiver" + i + extension);
+          recorder[i - 1] =
+              new RecorderEndpoint.Builder(pipeline, Protocol.FILE + recordingFile[i - 1])
+                  .withMediaProfile(mediaProfileSpecType).build();
 
-					webRtcSender.connect(webRtcReceiver[i - 1]);
-					webRtcSender.connect(recorder[i - 1]);
+          webRtcSender.connect(webRtcReceiver[i - 1]);
+          webRtcSender.connect(recorder[i - 1]);
 
-					try {
-						// WebRTC receiver negotiation
-						getPage(i).subscribeEvents("playing");
-						getPage(i).initWebRtc(webRtcReceiver[i - 1],
-								WebRtcChannel.AUDIO_AND_VIDEO,
-								WebRtcMode.RCV_ONLY);
-						Assert.assertTrue("Not received media in receiver " + i,
-								getPage(i).waitForEvent("playing"));
+          try {
+            // WebRTC receiver negotiation
+            getPage(i).subscribeEvents("playing");
+            getPage(i).initWebRtc(webRtcReceiver[i - 1], WebRtcChannel.AUDIO_AND_VIDEO,
+                WebRtcMode.RCV_ONLY);
+            Assert.assertTrue("Not received media in receiver " + i,
+                getPage(i).waitForEvent("playing"));
 
-						// Start record
-						recorder[i - 1].record();
+            // Start record
+            recorder[i - 1].record();
 
-						// Wait play time
-						Thread.sleep(PLAYTIME_MS);
+            // Wait play time
+            Thread.sleep(PLAYTIME_MS);
 
-						// Stop record
-						recorder[i - 1].stop();
+            // Stop record
+            recorder[i - 1].stop();
 
-						// Guard time to stop recording
-						Thread.sleep(4000);
+            // Guard time to stop recording
+            Thread.sleep(4000);
 
-					} catch (InterruptedException e) {
-						log.error("InterruptedException in receiver " + i, e);
-					}
+          } catch (InterruptedException e) {
+            log.error("InterruptedException in receiver " + i, e);
+          }
 
-					latch.countDown();
-				}
-			});
-		}
+          latch.countDown();
+        }
+      });
+    }
 
-		// Wait to finish all receivers
-		latch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
+    // Wait to finish all receivers
+    latch.await(getPage(0).getTimeout(), TimeUnit.SECONDS);
 
-		// Assessments
-		for (int j = 1; j <= numViewers; j++) {
-			AssertMedia.assertCodecs(recordingFile[j - 1], expectedVideoCodec,
-					expectedAudioCodec);
-			AssertMedia.assertDuration(recordingFile[j - 1], PLAYTIME_MS,
-					THRESHOLD_MS);
-		}
+    // Assessments
+    for (int j = 1; j <= numViewers; j++) {
+      AssertMedia.assertCodecs(recordingFile[j - 1], expectedVideoCodec, expectedAudioCodec);
+      AssertMedia.assertDuration(recordingFile[j - 1], PLAYTIME_MS, THRESHOLD_MS);
+    }
 
-		// Release Media Pipeline
-		if (mp != null) {
-			mp.release();
-		}
+    // Release Media Pipeline
+    if (mp != null) {
+      mp.release();
+    }
 
-	}
+  }
 }

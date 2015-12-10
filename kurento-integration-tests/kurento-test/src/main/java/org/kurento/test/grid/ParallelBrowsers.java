@@ -43,68 +43,62 @@ import org.slf4j.LoggerFactory;
  */
 public class ParallelBrowsers {
 
-	public static Logger log = LoggerFactory.getLogger(ParallelBrowsers.class);
+  public static Logger log = LoggerFactory.getLogger(ParallelBrowsers.class);
 
-	private static int clientRate = getProperty(CLIENT_RATE_PROPERTY,
-			CLIENT_RATE_DEFAULT);
+  private static int clientRate = getProperty(CLIENT_RATE_PROPERTY, CLIENT_RATE_DEFAULT);
 
-	private static int holdTime = getProperty(HOLD_TIME_PROPERTY,
-			HOLD_TIME_DEFAULT);
+  private static int holdTime = getProperty(HOLD_TIME_PROPERTY, HOLD_TIME_DEFAULT);
 
-	public static void ramp(final Map<String, Browser> browserClientMap,
-			final SystemMonitorManager monitor,
-			final BrowserRunner browserRunner) {
-		ExecutorService internalExec = Executors
-				.newFixedThreadPool(browserClientMap.size());
-		CompletionService<Void> exec = new ExecutorCompletionService<>(
-				internalExec);
+  public static void ramp(final Map<String, Browser> browserClientMap,
+      final SystemMonitorManager monitor, final BrowserRunner browserRunner) {
+    ExecutorService internalExec = Executors.newFixedThreadPool(browserClientMap.size());
+    CompletionService<Void> exec = new ExecutorCompletionService<>(internalExec);
 
-		int numBrowser = 0;
-		for (final String key : browserClientMap.keySet()) {
-			final int numBrowserFinal = numBrowser;
-			exec.submit(new Callable<Void>() {
-				public Void call() throws Exception {
-					try {
-						Thread.currentThread().setName(key);
-						Thread.sleep(clientRate * numBrowserFinal);
-						log.debug("*** Starting node {} ***", key);
-						if (monitor != null) {
-							monitor.incrementNumClients();
-						}
-						Browser browser = browserClientMap.get(key);
-						browserRunner.run(browser);
-					} finally {
-						if (monitor != null) {
-							monitor.decrementNumClients();
-						}
-						log.debug("--- Ending client {} ---", key);
-					}
-					return null;
-				}
-			});
-			numBrowser++;
-		}
+    int numBrowser = 0;
+    for (final String key : browserClientMap.keySet()) {
+      final int numBrowserFinal = numBrowser;
+      exec.submit(new Callable<Void>() {
+        public Void call() throws Exception {
+          try {
+            Thread.currentThread().setName(key);
+            Thread.sleep(clientRate * numBrowserFinal);
+            log.debug("*** Starting node {} ***", key);
+            if (monitor != null) {
+              monitor.incrementNumClients();
+            }
+            Browser browser = browserClientMap.get(key);
+            browserRunner.run(browser);
+          } finally {
+            if (monitor != null) {
+              monitor.decrementNumClients();
+            }
+            log.debug("--- Ending client {} ---", key);
+          }
+          return null;
+        }
+      });
+      numBrowser++;
+    }
 
-		for (final String key : browserClientMap.keySet()) {
-			Future<Void> taskFuture = null;
-			try {
-				taskFuture = exec.take();
-				taskFuture.get(browserClientMap.get(key).getTimeout(),
-						TimeUnit.SECONDS);
-			} catch (Throwable e) {
-				log.error("$$$ {} $$$", e.getCause().getMessage());
-				e.printStackTrace();
-				if (taskFuture != null) {
-					taskFuture.cancel(true);
-				}
-			} finally {
-				log.debug("+++ Ending browser #{} +++", key);
-			}
-		}
-	}
+    for (final String key : browserClientMap.keySet()) {
+      Future<Void> taskFuture = null;
+      try {
+        taskFuture = exec.take();
+        taskFuture.get(browserClientMap.get(key).getTimeout(), TimeUnit.SECONDS);
+      } catch (Throwable e) {
+        log.error("$$$ {} $$$", e.getCause().getMessage());
+        e.printStackTrace();
+        if (taskFuture != null) {
+          taskFuture.cancel(true);
+        }
+      } finally {
+        log.debug("+++ Ending browser #{} +++", key);
+      }
+    }
+  }
 
-	public static int getRampPlaytime(int numClients) {
-		return numClients * clientRate + holdTime;
-	}
+  public static int getRampPlaytime(int numClients) {
+    return numClients * clientRate + holdTime;
+  }
 
 }

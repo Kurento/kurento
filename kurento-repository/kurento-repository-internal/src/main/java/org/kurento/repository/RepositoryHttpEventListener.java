@@ -17,6 +17,6 @@ package org.kurento.repository;
 
 public interface RepositoryHttpEventListener<E extends RepositoryHttpSessionEvent> {
 
-	void onEvent(E event);
+  void onEvent(E event);
 
 }

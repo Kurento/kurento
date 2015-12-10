@@ -9,8 +9,7 @@ package org.kurento.client;
  * This interface is to be used in asynchronous calls to the media server.
  * 
  * @param <F>
- *            The data type of the callback´s response in case of successful
- *            outcome.
+ *          The data type of the callback´s response in case of successful outcome.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -18,20 +17,20 @@ package org.kurento.client;
  */
 public interface Continuation<F> {
 
-	/**
-	 * This method is called when the operation succeeds
-	 * 
-	 * @param result
-	 *            The result of the completed operation
-	 */
-	void onSuccess(F result) throws Exception;
+  /**
+   * This method is called when the operation succeeds
+   * 
+   * @param result
+   *          The result of the completed operation
+   */
+  void onSuccess(F result) throws Exception;
 
-	/**
-	 * This method gets called when the operation fails
-	 * 
-	 * @param cause
-	 *            The cause of the failure
-	 */
-	void onError(Throwable cause) throws Exception;
+  /**
+   * This method gets called when the operation fails
+   * 
+   * @param cause
+   *          The cause of the failure
+   */
+  void onError(Throwable cause) throws Exception;
 
 }

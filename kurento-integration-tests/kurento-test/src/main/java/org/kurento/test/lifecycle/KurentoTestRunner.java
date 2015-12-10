@@ -32,52 +32,50 @@ import org.kurento.test.services.Service;
  */
 public class KurentoTestRunner extends Parameterized {
 
-	private static boolean shutdownHook = false;
+  private static boolean shutdownHook = false;
 
-	public KurentoTestRunner(Class<?> clazz) throws Throwable {
-		super(clazz);
-	}
+  public KurentoTestRunner(Class<?> clazz) throws Throwable {
+    super(clazz);
+  }
 
-	private static KurentoTestListener listener;
+  private static KurentoTestListener listener;
 
-	@Override
-	public void run(RunNotifier notifier) {
+  @Override
+  public void run(RunNotifier notifier) {
 
-		if (listener != null) {
-			notifier.removeListener(listener);
-		}
+    if (listener != null) {
+      notifier.removeListener(listener);
+    }
 
-		List<FrameworkField> services = this.getTestClass()
-				.getAnnotatedFields(Service.class);
+    List<FrameworkField> services = this.getTestClass().getAnnotatedFields(Service.class);
 
-		ArrayList<FrameworkField> sortedServices = new ArrayList<>(services);
-		Collections.sort(sortedServices, new Comparator<FrameworkField>() {
-			@Override
-			public int compare(FrameworkField o1, FrameworkField o2) {
-				return Integer.compare(o1.getAnnotation(Service.class).value(),
-						o2.getAnnotation(Service.class).value());
-			}
-		});
+    ArrayList<FrameworkField> sortedServices = new ArrayList<>(services);
+    Collections.sort(sortedServices, new Comparator<FrameworkField>() {
+      @Override
+      public int compare(FrameworkField o1, FrameworkField o2) {
+        return Integer.compare(o1.getAnnotation(Service.class).value(),
+            o2.getAnnotation(Service.class).value());
+      }
+    });
 
-		listener = new KurentoTestListener(sortedServices);
-		notifier.addListener(listener);
-		listener.testRunStarted(getDescription());
+    listener = new KurentoTestListener(sortedServices);
+    notifier.addListener(listener);
+    listener.testRunStarted(getDescription());
 
-		if (!shutdownHook) {
-			shutdownHook = true;
-			Runtime.getRuntime()
-					.addShutdownHook(new Thread("app-shutdown-hook") {
-						@Override
-						public void run() {
-							listener.testSuiteFinished();
-						}
-					});
-		}
+    if (!shutdownHook) {
+      shutdownHook = true;
+      Runtime.getRuntime().addShutdownHook(new Thread("app-shutdown-hook") {
+        @Override
+        public void run() {
+          listener.testSuiteFinished();
+        }
+      });
+    }
 
-		// TODO Remove this if we change service management
-		notifier = new KurentoRunNotifier(notifier);
+    // TODO Remove this if we change service management
+    notifier = new KurentoRunNotifier(notifier);
 
-		super.run(notifier);
-	}
+    super.run(notifier);
+  }
 
 }

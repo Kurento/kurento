@@ -18,12 +18,12 @@ import org.kurento.jsonrpc.JsonRpcHandler;
 
 public interface JsonRpcConfigurer {
 
-	/**
-	 * Register {@link JsonRpcHandler}s.
-	 * 
-	 * @param registry
-	 *            a JSON RPC handler registry
-	 */
-	void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry);
+  /**
+   * Register {@link JsonRpcHandler}s.
+   * 
+   * @param registry
+   *          a JSON RPC handler registry
+   */
+  void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry);
 
 }

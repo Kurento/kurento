@@ -41,82 +41,76 @@ import org.kurento.test.utils.WebRtcConnector;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public class KurentoClientBrowserTest<W extends WebPage>
-		extends BrowserTest<W> {
+public class KurentoClientBrowserTest<W extends WebPage> extends BrowserTest<W> {
 
-	public static @Service WebServerService webServer = new WebServerService();
-	public static @Service KmsService kms = new KmsService();
-	public static @Service KmsService fakeKms = new FakeKmsService();
+  public static @Service WebServerService webServer = new WebServerService();
+  public static @Service KmsService kms = new KmsService();
+  public static @Service KmsService fakeKms = new FakeKmsService();
 
-	protected static KurentoClient kurentoClient;
-	protected static KurentoClient fakeKurentoClient;
+  protected static KurentoClient kurentoClient;
+  protected static KurentoClient fakeKurentoClient;
 
-	@Before
-	public void setupKurentoClient() {
-		kurentoClient = kms.getKurentoClient();
-		fakeKurentoClient = fakeKms.getKurentoClient();
-	}
+  @Before
+  public void setupKurentoClient() {
+    kurentoClient = kms.getKurentoClient();
+    fakeKurentoClient = fakeKms.getKurentoClient();
+  }
 
-	@After
-	public void teardownKurentoClient() throws Exception {
-		if (kurentoClient != null) {
-			kurentoClient.destroy();
-		}
-		if (fakeKurentoClient != null) {
-			fakeKurentoClient.destroy();
-		}
-	}
+  @After
+  public void teardownKurentoClient() throws Exception {
+    if (kurentoClient != null) {
+      kurentoClient.destroy();
+    }
+    if (fakeKurentoClient != null) {
+      fakeKurentoClient.destroy();
+    }
+  }
 
-	@FailedTest
-	public static void retrieveGstreamerDots() {
-		if (kurentoClient != null) {
-			try {
-				List<MediaPipeline> pipelines = kurentoClient.getServerManager()
-						.getPipelines();
-				log.debug(
-						"Retrieving GStreamerDots for all pipelines in KMS ({})",
-						pipelines.size());
+  @FailedTest
+  public static void retrieveGstreamerDots() {
+    if (kurentoClient != null) {
+      try {
+        List<MediaPipeline> pipelines = kurentoClient.getServerManager().getPipelines();
+        log.debug("Retrieving GStreamerDots for all pipelines in KMS ({})", pipelines.size());
 
-				for (MediaPipeline pipeline : pipelines) {
+        for (MediaPipeline pipeline : pipelines) {
 
-					String pipelineName = pipeline.getName();
-					log.debug("Saving GstreamerDot for pipeline {}",
-							pipelineName);
+          String pipelineName = pipeline.getName();
+          log.debug("Saving GstreamerDot for pipeline {}", pipelineName);
 
-					String gstreamerDotFile = KurentoClientBrowserTest
-							.getDefaultOutputFile("-" + pipelineName);
+          String gstreamerDotFile =
+              KurentoClientBrowserTest.getDefaultOutputFile("-" + pipelineName);
 
-					try {
-						FileUtils.writeStringToFile(new File(gstreamerDotFile),
-								pipeline.getGstreamerDot());
+          try {
+            FileUtils.writeStringToFile(new File(gstreamerDotFile), pipeline.getGstreamerDot());
 
-					} catch (IOException ioe) {
-						log.error("Exception writing GstreamerDot file", ioe);
-					}
-				}
-			} catch (WebSocketException e) {
-				log.warn(
-						"WebSocket exception while reading existing pipelines. Maybe KMS is closed: {}:{}",
-						e.getClass().getName(), e.getMessage());
-			}
-		}
-	}
+          } catch (IOException ioe) {
+            log.error("Exception writing GstreamerDot file", ioe);
+          }
+        }
+      } catch (WebSocketException e) {
+        log.warn(
+            "WebSocket exception while reading existing pipelines. Maybe KMS is closed: {}:{}", e
+                .getClass().getName(), e.getMessage());
+      }
+    }
+  }
 
-	protected String getDefaultFileForRecording() {
-		return getDefaultOutputFile(".webm");
-	}
+  protected String getDefaultFileForRecording() {
+    return getDefaultOutputFile(".webm");
+  }
 
-	public void addFakeClients(int numFakeClients, int bandwidht,
-			MediaPipeline mainPipeline, WebRtcEndpoint senderWebRtcEndpoint) {
-		fakeKms.addFakeClients(numFakeClients, bandwidht, mainPipeline,
-				senderWebRtcEndpoint, 0, null, null);
-	}
+  public void addFakeClients(int numFakeClients, int bandwidht, MediaPipeline mainPipeline,
+      WebRtcEndpoint senderWebRtcEndpoint) {
+    fakeKms.addFakeClients(numFakeClients, bandwidht, mainPipeline, senderWebRtcEndpoint, 0, null,
+        null);
+  }
 
-	public void addFakeClients(int numFakeClients, MediaPipeline mainPipeline,
-			WebRtcEndpoint senderWebRtcEndpoint, long timeBetweenClientMs,
-			SystemMonitorManager monitor, WebRtcConnector connector) {
-		fakeKms.addFakeClients(numFakeClients, -1, mainPipeline,
-				senderWebRtcEndpoint, timeBetweenClientMs, monitor, connector);
-	}
+  public void addFakeClients(int numFakeClients, MediaPipeline mainPipeline,
+      WebRtcEndpoint senderWebRtcEndpoint, long timeBetweenClientMs, SystemMonitorManager monitor,
+      WebRtcConnector connector) {
+    fakeKms.addFakeClients(numFakeClients, -1, mainPipeline, senderWebRtcEndpoint,
+        timeBetweenClientMs, monitor, connector);
+  }
 
 }

@@ -30,18 +30,18 @@ import org.kurento.test.grid.GridHandler;
  */
 public class GetNodeList {
 
-	public static void main(String[] args) throws IOException {
-		List<String> nodeList = new ArrayList<>();
+  public static void main(String[] args) throws IOException {
+    List<String> nodeList = new ArrayList<>();
 
-		for (String url : args) {
-			String contents = GridHandler.readContents(url);
-			Pattern p = Pattern.compile(GridHandler.IPS_REGEX);
-			Matcher m = p.matcher(contents);
-			while (m.find()) {
-				nodeList.add(m.group());
-			}
-		}
-		System.err.println(nodeList);
-	}
+    for (String url : args) {
+      String contents = GridHandler.readContents(url);
+      Pattern p = Pattern.compile(GridHandler.IPS_REGEX);
+      Matcher m = p.matcher(contents);
+      while (m.find()) {
+        nodeList.add(m.group());
+      }
+    }
+    System.err.println(nodeList);
+  }
 
 }

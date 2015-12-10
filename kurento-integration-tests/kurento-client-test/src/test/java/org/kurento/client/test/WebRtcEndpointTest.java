@@ -29,12 +29,11 @@ import org.kurento.client.test.util.SdpBaseTest;
  */
 public class WebRtcEndpointTest extends SdpBaseTest<WebRtcEndpoint> {
 
-	@Before
-	public void setupMediaElements() {
-		sdp = new WebRtcEndpoint.Builder(pipeline).build();
-		sdp2 = new WebRtcEndpoint.Builder(pipeline).build();
+  @Before
+  public void setupMediaElements() {
+    sdp = new WebRtcEndpoint.Builder(pipeline).build();
+    sdp2 = new WebRtcEndpoint.Builder(pipeline).build();
 
-		 
-	}
+  }
 
 }

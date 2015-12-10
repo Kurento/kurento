@@ -29,24 +29,24 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
 @SpringBootApplication
 public class TestServerApplication implements JsonRpcConfigurer {
 
-	@Override
-	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
-	}
-	
-	@Bean
-	public JsonRpcHandler<?> echoJsonRpcHandler() {
-		return new EchoJsonRpcHandler();
-	}
-	
-	@Bean
-	public ServletServerContainerFactoryBean createWebSocketContainer() {
-		ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-//		container.setMaxSessionIdleTimeout(10000);
-		return container;
-	}
+  @Override
+  public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
+    registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
+  }
 
-	public static void main(String[] args) throws Exception {
-		SpringApplication.run(TestServerApplication.class, args);
-	}
+  @Bean
+  public JsonRpcHandler<?> echoJsonRpcHandler() {
+    return new EchoJsonRpcHandler();
+  }
+
+  @Bean
+  public ServletServerContainerFactoryBean createWebSocketContainer() {
+    ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+    // container.setMaxSessionIdleTimeout(10000);
+    return container;
+  }
+
+  public static void main(String[] args) throws Exception {
+    SpringApplication.run(TestServerApplication.class, args);
+  }
 }

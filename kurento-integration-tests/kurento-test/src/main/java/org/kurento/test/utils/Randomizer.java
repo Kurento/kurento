@@ -24,9 +24,9 @@ import java.util.Random;
  */
 public class Randomizer {
 
-	public static int getInt(int lowerbound, int upperbound) {
-		Random rand = new Random(System.nanoTime());
-		return rand.nextInt(upperbound - lowerbound) + lowerbound;
-	}
+  public static int getInt(int lowerbound, int upperbound) {
+    Random rand = new Random(System.nanoTime());
+    return rand.nextInt(upperbound - lowerbound) + lowerbound;
+  }
 
 }

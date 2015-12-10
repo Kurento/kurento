@@ -19,12 +19,12 @@ import org.kurento.repository.RepositoryHttpPlayer;
 import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.internal.http.RepositoryHttpManager;
 
-public class RepositoryHttpPlayerImpl extends RepositoryHttpEndpointImpl
-		implements RepositoryHttpPlayer {
+public class RepositoryHttpPlayerImpl extends RepositoryHttpEndpointImpl implements
+    RepositoryHttpPlayer {
 
-	public RepositoryHttpPlayerImpl(RepositoryItem repositoryItem, String id,
-			String url, RepositoryHttpManager httpManager) {
-		super(repositoryItem, id, url, httpManager);
-	}
+  public RepositoryHttpPlayerImpl(RepositoryItem repositoryItem, String id, String url,
+      RepositoryHttpManager httpManager) {
+    super(repositoryItem, id, url, httpManager);
+  }
 
 }

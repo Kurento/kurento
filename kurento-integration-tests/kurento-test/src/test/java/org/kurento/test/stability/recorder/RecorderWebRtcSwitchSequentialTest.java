@@ -40,8 +40,7 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) with two
- * WebRTC's. <br>
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's. <br>
  *
  * Media Pipeline(s): <br>
  * · WebRtcEndpoint x 2 -> RecorderEndpoint <br>
@@ -51,8 +50,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  *
  * Test logic: <br>
  * 1. (Browser) 2 WebRtcPeer in send-only mode sends media to KMS <br>
- * 2. (KMS) 2 WebRtcEndpoints receive media and it is recorded by 1
- * RecorderEndpoint. <br>
+ * 2. (KMS) 2 WebRtcEndpoints receive media and it is recorded by 1 RecorderEndpoint. <br>
  *
  * Main assertion(s): <br>
  * · Recorded files are OK (seekable, length, content)
@@ -65,86 +63,78 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 
-	private static final int SWITCH_TIMES = 100;
-	private static final int SWITCH_RATE_MS = 500; // ms
-	private static final int THRESHOLD_MS = 5000; // ms
+  private static final int SWITCH_TIMES = 100;
+  private static final int SWITCH_RATE_MS = 500; // ms
+  private static final int THRESHOLD_MS = 5000; // ms
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChromePlusFirefox();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChromePlusFirefox();
+  }
 
-	@Test
-	public void testRecorderWebRtcSwitchSequentialWebm() throws Exception {
-		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
-				EXTENSION_WEBM);
-	}
+  @Test
+  public void testRecorderWebRtcSwitchSequentialWebm() throws Exception {
+    doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+  }
 
-	@Test
-	public void testRecorderWebRtcSwitchSequentialMp4() throws Exception {
-		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
-				EXTENSION_MP4);
-	}
+  @Test
+  public void testRecorderWebRtcSwitchSequentialMp4() throws Exception {
+    doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+  }
 
-	public void doTest(MediaProfileSpecType mediaProfileSpecType,
-			String expectedVideoCodec, String expectedAudioCodec,
-			String extension) throws Exception {
+  public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
+      String expectedAudioCodec, String extension) throws Exception {
 
-		MediaPipeline mp = null;
+    MediaPipeline mp = null;
 
-		// Media Pipeline
-		mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+    // Media Pipeline
+    mp = kurentoClient.createMediaPipeline();
+    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
 
-		String recordingFile = getDefaultOutputFile(extension);
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				Protocol.FILE + recordingFile)
-						.withMediaProfile(mediaProfileSpecType).build();
+    String recordingFile = getDefaultOutputFile(extension);
+    RecorderEndpoint recorderEP =
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + recordingFile).withMediaProfile(
+            mediaProfileSpecType).build();
 
-		// WebRTC negotiation
-		getPage(0).subscribeLocalEvents("playing");
-		getPage(0).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.SEND_ONLY);
-		getPage(1).subscribeLocalEvents("playing");
-		getPage(1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.SEND_ONLY);
+    // WebRTC negotiation
+    getPage(0).subscribeLocalEvents("playing");
+    getPage(0).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(1).subscribeLocalEvents("playing");
+    getPage(1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
-		// Start record
-		recorderEP.record();
+    // Start record
+    recorderEP.record();
 
-		// Switch webrtcs
-		for (int i = 0; i < SWITCH_TIMES; i++) {
-			if (i % 2 == 0) {
-				webRtcEP1.connect(recorderEP);
-			} else {
-				webRtcEP2.connect(recorderEP);
-			}
+    // Switch webrtcs
+    for (int i = 0; i < SWITCH_TIMES; i++) {
+      if (i % 2 == 0) {
+        webRtcEP1.connect(recorderEP);
+      } else {
+        webRtcEP2.connect(recorderEP);
+      }
 
-			Thread.sleep(SWITCH_RATE_MS);
-		}
+      Thread.sleep(SWITCH_RATE_MS);
+    }
 
-		// Stop record
-		recorderEP.stop();
+    // Stop record
+    recorderEP.stop();
 
-		// Guard time to stop recording
-		Thread.sleep(4000);
+    // Guard time to stop recording
+    Thread.sleep(4000);
 
-		// Assessment
-		Assert.assertTrue("Not received media in browser 1",
-				getPage(0).waitForEvent("playing"));
-		Assert.assertTrue("Not received media in browser 2",
-				getPage(1).waitForEvent("playing"));
+    // Assessment
+    Assert.assertTrue("Not received media in browser 1", getPage(0).waitForEvent("playing"));
+    Assert.assertTrue("Not received media in browser 2", getPage(1).waitForEvent("playing"));
 
-		long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
-		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
-				expectedAudioCodec);
-		AssertMedia.assertDuration(recordingFile, expectedTimeMs, THRESHOLD_MS);
+    long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
+    AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
+    AssertMedia.assertDuration(recordingFile, expectedTimeMs, THRESHOLD_MS);
 
-		// Release Media Pipeline
-		if (mp != null) {
-			mp.release();
-		}
+    // Release Media Pipeline
+    if (mp != null) {
+      mp.release();
+    }
 
-	}
+  }
 }

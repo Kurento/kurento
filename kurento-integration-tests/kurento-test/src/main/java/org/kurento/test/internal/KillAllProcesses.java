@@ -25,55 +25,55 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Internal utility for killing all the processes of a user in a remote node
- * (for manual testing/debug purposes).
+ * Internal utility for killing all the processes of a user in a remote node (for manual
+ * testing/debug purposes).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 public class KillAllProcesses {
 
-	public static Logger log = LoggerFactory.getLogger(KillAllProcesses.class);
+  public static Logger log = LoggerFactory.getLogger(KillAllProcesses.class);
 
-	public static void main(String[] args) throws InterruptedException {
-		List<String> nodeList = GridHandler.getInstance().getNodeList();
+  public static void main(String[] args) throws InterruptedException {
+    List<String> nodeList = GridHandler.getInstance().getNodeList();
 
-		int nodeListSize = nodeList.size();
-		log.debug("Node availables in the node list: {}", nodeListSize);
-		ExecutorService executor = Executors.newFixedThreadPool(nodeListSize);
-		final CountDownLatch latch = new CountDownLatch(nodeListSize);
+    int nodeListSize = nodeList.size();
+    log.debug("Node availables in the node list: {}", nodeListSize);
+    ExecutorService executor = Executors.newFixedThreadPool(nodeListSize);
+    final CountDownLatch latch = new CountDownLatch(nodeListSize);
 
-		for (final String node : nodeList) {
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					Thread.currentThread().setName(node);
+    for (final String node : nodeList) {
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          Thread.currentThread().setName(node);
 
-					if (SshConnection.ping(node)) {
-						SshConnection remoteHost = null;
-						try {
-							log.info("Openning connection to node {}", node);
-							remoteHost = new SshConnection(node);
-							remoteHost.start();
-							remoteHost.execCommand("kill", "-9", "-1");
-						} catch (Throwable e) {
-							e.printStackTrace();
-						} finally {
-							if (remoteHost != null) {
-								log.info("Closing connection to node {}", node);
-								remoteHost.stop();
-							}
-						}
-					} else {
-						log.error("Node down {}", node);
-					}
+          if (SshConnection.ping(node)) {
+            SshConnection remoteHost = null;
+            try {
+              log.info("Openning connection to node {}", node);
+              remoteHost = new SshConnection(node);
+              remoteHost.start();
+              remoteHost.execCommand("kill", "-9", "-1");
+            } catch (Throwable e) {
+              e.printStackTrace();
+            } finally {
+              if (remoteHost != null) {
+                log.info("Closing connection to node {}", node);
+                remoteHost.stop();
+              }
+            }
+          } else {
+            log.error("Node down {}", node);
+          }
 
-					latch.countDown();
-				}
-			});
-		}
+          latch.countDown();
+        }
+      });
+    }
 
-		latch.await();
-		executor.shutdown();
-	}
+    latch.await();
+    executor.shutdown();
+  }
 }

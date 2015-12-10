@@ -6,27 +6,27 @@ import java.util.Map;
 
 public class PeerConnectionStats extends MonitorStats {
 
-	private Map<String, Object> stats;
+  private Map<String, Object> stats;
 
-	public PeerConnectionStats(Map<String, Object> stats) {
-		this.stats = stats;
-	}
+  public PeerConnectionStats(Map<String, Object> stats) {
+    this.stats = stats;
+  }
 
-	public Map<String, Object> getStats() {
-		return stats;
-	}
+  public Map<String, Object> getStats() {
+    return stats;
+  }
 
-	public List<String> calculateHeaders() {
-		return new ArrayList<>(stats.keySet());
-	}
+  public List<String> calculateHeaders() {
+    return new ArrayList<>(stats.keySet());
+  }
 
-	public List<Object> calculateValues(List<String> headers) {
+  public List<Object> calculateValues(List<String> headers) {
 
-		List<Object> values = new ArrayList<>();
-		for (String header : headers) {
-			values.add(stats.get(header));
-		}
-		return values;
-	}
+    List<Object> values = new ArrayList<>();
+    for (String header : headers) {
+      values.add(stats.get(header));
+    }
+    return values;
+  }
 
 }

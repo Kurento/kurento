@@ -18,20 +18,18 @@ import org.kurento.jsonrpc.JsonRpcHandler;
 
 public interface JsonRpcHandlerRegistry {
 
-	/**
-	 * Configure a JsonRpcHandler at the specified URL paths.
-	 * 
-	 * @param jsonRpcHandler
-	 * @param paths
-	 * @return The handler registration object
-	 */
-	JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> jsonRpcHandler,
-			String... paths);
+  /**
+   * Configure a JsonRpcHandler at the specified URL paths.
+   * 
+   * @param jsonRpcHandler
+   * @param paths
+   * @return The handler registration object
+   */
+  JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> jsonRpcHandler, String... paths);
 
-	JsonRpcHandlerRegistration addPerSessionHandler(
-			Class<? extends JsonRpcHandler<?>> handlerClass, String... string);
+  JsonRpcHandlerRegistration addPerSessionHandler(Class<? extends JsonRpcHandler<?>> handlerClass,
+      String... string);
 
-	JsonRpcHandlerRegistration addPerSessionHandler(String beanName,
-			String... string);
+  JsonRpcHandlerRegistration addPerSessionHandler(String beanName, String... string);
 
 }

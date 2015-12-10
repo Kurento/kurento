@@ -28,36 +28,35 @@ import org.slf4j.LoggerFactory;
  */
 public class SdpUtils {
 
-	private static final String SDP_DELIMITER = "\r\n";
+  private static final String SDP_DELIMITER = "\r\n";
 
-	public static final Logger log = LoggerFactory.getLogger(SdpUtils.class);
+  public static final Logger log = LoggerFactory.getLogger(SdpUtils.class);
 
-	public static String mangleSdp(String sdpIn, String[] removeCodes) {
-		String sdpMangled1 = "";
-		List<String> indexList = new ArrayList<>();
-		for (String line : sdpIn.split(SDP_DELIMITER)) {
-			boolean codecFound = false;
-			for (String codec : removeCodes) {
-				codecFound |= line.contains(codec);
-			}
-			if (codecFound) {
-				String index = line.substring(line.indexOf(":") + 1,
-						line.indexOf(" ") + 1);
-				indexList.add(index);
-			} else {
-				sdpMangled1 += line + SDP_DELIMITER;
-			}
-		}
+  public static String mangleSdp(String sdpIn, String[] removeCodes) {
+    String sdpMangled1 = "";
+    List<String> indexList = new ArrayList<>();
+    for (String line : sdpIn.split(SDP_DELIMITER)) {
+      boolean codecFound = false;
+      for (String codec : removeCodes) {
+        codecFound |= line.contains(codec);
+      }
+      if (codecFound) {
+        String index = line.substring(line.indexOf(":") + 1, line.indexOf(" ") + 1);
+        indexList.add(index);
+      } else {
+        sdpMangled1 += line + SDP_DELIMITER;
+      }
+    }
 
-		String sdpMangled2 = "";
-		log.info("indexList " + indexList);
-		for (String line : sdpMangled1.split(SDP_DELIMITER)) {
-			for (String index : indexList) {
-				line = line.replaceAll(index, "");
-			}
-			sdpMangled2 += line + SDP_DELIMITER;
-		}
-		return sdpMangled2;
-	}
+    String sdpMangled2 = "";
+    log.info("indexList " + indexList);
+    for (String line : sdpMangled1.split(SDP_DELIMITER)) {
+      for (String index : indexList) {
+        line = line.replaceAll(index, "");
+      }
+      sdpMangled2 += line + SDP_DELIMITER;
+    }
+    return sdpMangled2;
+  }
 
 }

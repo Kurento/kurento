@@ -64,106 +64,95 @@ import org.kurento.test.latency.LatencyController;
  */
 public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
-	private static final String NUM_VIEWERS_PROPERTY = "perf.one2many.numviewers";
-	private static final int NUM_VIEWERS_DEFAULT = 1;
+  private static final String NUM_VIEWERS_PROPERTY = "perf.one2many.numviewers";
+  private static final int NUM_VIEWERS_DEFAULT = 1;
 
-	private static final String BROWSER_PER_VIEWER_PROPERTY = "perf.one2many.browserperviewer";
-	private static final int BROWSER_PER_VIEWER_DEFAULT = 2;
+  private static final String BROWSER_PER_VIEWER_PROPERTY = "perf.one2many.browserperviewer";
+  private static final int BROWSER_PER_VIEWER_DEFAULT = 2;
 
-	private static int numViewers;
-	private static int browserPerViewer;
+  private static int numViewers;
+  private static int browserPerViewer;
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		numViewers = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
-		browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY,
-				BROWSER_PER_VIEWER_DEFAULT);
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    numViewers = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
+    browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY, BROWSER_PER_VIEWER_DEFAULT);
 
-		TestScenario test = new TestScenario();
-		String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(BrowserConfig.PRESENTER,
-				new Browser.Builder().webPageType(WebPageType.WEBRTC)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).video(video).build());
+    TestScenario test = new TestScenario();
+    String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
+    test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
+        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(video).build());
 
-		test.addBrowser(BrowserConfig.VIEWER,
-				new Browser.Builder().webPageType(WebPageType.WEBRTC)
-						.numInstances(numViewers)
-						.browserPerInstance(browserPerViewer)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).build());
+    test.addBrowser(
+        BrowserConfig.VIEWER,
+        new Browser.Builder().webPageType(WebPageType.WEBRTC).numInstances(numViewers)
+            .browserPerInstance(browserPerViewer).browserType(BrowserType.CHROME)
+            .scope(BrowserScope.LOCAL).build());
 
-		// Uncomment this for remote scenario
-		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
-		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
-		// .video(video).build());
-		//
-		// ... or saucelabs, for example:
-		//
-		// test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
-		// .browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
-		// .platform(Platform.WIN8_1).browserVersion("39").build());
-		//
-		// test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
-		// .numInstances(numViewers).browserPerInstance(browserPerViewer)
-		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
-		// .build());
-		return Arrays.asList(new Object[][] { { test } });
-	}
+    // Uncomment this for remote scenario
+    // test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+    // .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+    // .video(video).build());
+    //
+    // ... or saucelabs, for example:
+    //
+    // test.addBrowser(TestConfig.PRESENTER, new BrowserClient.Builder()
+    // .browserType(BrowserType.CHROME).scope(BrowserScope.SAUCELABS)
+    // .platform(Platform.WIN8_1).browserVersion("39").build());
+    //
+    // test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+    // .numInstances(numViewers).browserPerInstance(browserPerViewer)
+    // .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+    // .build());
+    return Arrays.asList(new Object[][] { { test } });
+  }
 
-	@Test
-	public void testWebRtcPerformanceOneToMany() throws InterruptedException {
-		// Media Pipeline
-		final MediaPipeline mp = kurentoClient.createMediaPipeline();
-		final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp)
-				.build();
+  @Test
+  public void testWebRtcPerformanceOneToMany() throws InterruptedException {
+    // Media Pipeline
+    final MediaPipeline mp = kurentoClient.createMediaPipeline();
+    final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
-		// Master
-		getPresenter().subscribeLocalEvents("playing");
-		getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
+    // Master
+    getPresenter().subscribeLocalEvents("playing");
+    getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
 
-		Map<String, Browser> browsers = new TreeMap<>(
-				getTestScenario().getBrowserMap());
-		browsers.remove(BrowserConfig.PRESENTER);
-		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
+    Map<String, Browser> browsers = new TreeMap<>(getTestScenario().getBrowserMap());
+    browsers.remove(BrowserConfig.PRESENTER);
+    final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 
-		ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
-			public void run(Browser browser) throws Exception {
-				String name = browser.getId();
+    ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
+      public void run(Browser browser) throws Exception {
+        String name = browser.getId();
 
-				try {
-					// Viewer
-					WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(
-							mp).build();
-					masterWebRtcEP.connect(viewerWebRtcEP);
+        try {
+          // Viewer
+          WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(mp).build();
+          masterWebRtcEP.connect(viewerWebRtcEP);
 
-					// Latency control
-					LatencyController cs = new LatencyController(
-							"Latency control on " + name, monitor);
+          // Latency control
+          LatencyController cs = new LatencyController("Latency control on " + name, monitor);
 
-					// WebRTC
-					log.debug(">>> start {}", name);
-					getPage(name).subscribeEvents("playing");
-					getPage(name).initWebRtc(viewerWebRtcEP,
-							WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+          // WebRTC
+          log.debug(">>> start {}", name);
+          getPage(name).subscribeEvents("playing");
+          getPage(name).initWebRtc(viewerWebRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
-					// Latency assessment
-					cs.checkRemoteLatency(playTime, TimeUnit.MILLISECONDS,
-							getPresenter(), getPage(name));
+          // Latency assessment
+          cs.checkRemoteLatency(playTime, TimeUnit.MILLISECONDS, getPresenter(), getPage(name));
 
-				} catch (Throwable e) {
-					log.error("[[[ {} ]]]", e.getCause().getMessage());
-					throw e;
-				}
-			}
-		});
+        } catch (Throwable e) {
+          log.error("[[[ {} ]]]", e.getCause().getMessage());
+          throw e;
+        }
+      }
+    });
 
-		log.debug("<<< Releasing pipeline");
+    log.debug("<<< Releasing pipeline");
 
-		// Release Media Pipeline
-		if (mp != null) {
-			mp.release();
-		}
-	}
+    // Release Media Pipeline
+    if (mp != null) {
+      mp.release();
+    }
+  }
 }
