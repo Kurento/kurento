@@ -149,7 +149,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 							WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
 					// Latency assessment
-					cs.checkRemoteLatency(playTime, TimeUnit.MILLISECONDS,
+					cs.checkLatency(playTime, TimeUnit.MILLISECONDS,
 							getPresenter(), getPage(name));
 
 				} catch (Throwable e) {

@@ -123,9 +123,8 @@ public class LatencyController
 		}
 	}
 
-	public void checkLocalLatency(final long testTime,
-			final TimeUnit testTimeUnit, WebPage client)
-					throws InterruptedException, IOException {
+	public void checkLatency(final long testTime, final TimeUnit testTimeUnit,
+			WebPage client) throws InterruptedException, IOException {
 		long playTime = TimeUnit.MILLISECONDS.convert(testTime, testTimeUnit);
 		long endTimeMillis = System.currentTimeMillis() + playTime;
 		int consecutiveFailCounter = 0;
@@ -167,8 +166,9 @@ public class LatencyController
 
 				String parsedtime = new SimpleDateFormat("mm-ss.SSS")
 						.format(latencyTime);
-				client.takeScreeshot(KurentoClientBrowserTest.getDefaultOutputFile(
-						"-" + parsedtime + "-error-screenshot.png"));
+				client.takeScreeshot(
+						KurentoClientBrowserTest.getDefaultOutputFile(
+								"-" + parsedtime + "-error-screenshot.png"));
 
 				LatencyException latencyException = new LatencyException(
 						latency, TimeUnit.MILLISECONDS);
@@ -192,13 +192,13 @@ public class LatencyController
 		}
 	}
 
-	public void checkLocalLatencyInBackground(final long testTime,
+	public void checkLatencyInBackground(final long testTime,
 			final TimeUnit testTimeUnit, final WebPage client)
 					throws InterruptedException, IOException {
 		new Thread() {
 			public void run() {
 				try {
-					checkLocalLatency(testTime, testTimeUnit, client);
+					checkLatency(testTime, testTimeUnit, client);
 				} catch (InterruptedException e1) {
 					log.warn(
 							"checkLatencyInBackground InterruptedException: {}",
@@ -210,20 +210,28 @@ public class LatencyController
 		}.start();
 	}
 
-	public void checkRemoteLatencyInBackground(final long testTime,
+	public void checkLatencyInBackground(final long testTime,
 			final TimeUnit testTimeUnit, final WebPage localClient,
 			final WebPage remoteClient) {
 		new Thread() {
 			public void run() {
-				checkRemoteLatency(testTime, testTimeUnit, localClient,
+				checkLatency(testTime, testTimeUnit, localClient, remoteClient);
+			}
+		}.start();
+	}
+
+	public void checkLatencyInBackground(final WebPage localClient,
+			final WebPage remoteClient) {
+		new Thread() {
+			public void run() {
+				checkLatency(Long.MAX_VALUE, TimeUnit.SECONDS, localClient,
 						remoteClient);
 			}
 		}.start();
 	}
 
-	public void checkRemoteLatency(final long testTime,
-			final TimeUnit testTimeUnit, WebPage localClient,
-			WebPage remoteClient) {
+	public void checkLatency(final long testTime, final TimeUnit testTimeUnit,
+			WebPage localClient, WebPage remoteClient) {
 
 		addChangeColorEventListener(new VideoTag(VideoTagType.LOCAL),
 				localClient, getName() + " " + VideoTagType.LOCAL);
@@ -367,8 +375,8 @@ public class LatencyController
 		return distance <= MAX_DISTANCE;
 	}
 
-	public void addChangeColorEventListener(VideoTag type,
-			WebPage testClient, String name) {
+	public void addChangeColorEventListener(VideoTag type, WebPage testClient,
+			String name) {
 		final long timeoutSeconds = TimeUnit.SECONDS.convert(timeout,
 				timeoutTimeUnit);
 

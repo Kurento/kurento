@@ -152,7 +152,7 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 			executor.execute(new Runnable() {
 				@Override
 				public void run() {
-					csB2B[j].checkRemoteLatency(playTime, TimeUnit.SECONDS,
+					csB2B[j].checkLatency(playTime, TimeUnit.SECONDS,
 							getPage(), getPage(j));
 				}
 			});
@@ -161,7 +161,7 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 		// Latency assessment
 		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(),
 				VideoTagType.REMOTE.getId());
-		cs.checkLocalLatency(playTime, TimeUnit.SECONDS, getPage());
+		cs.checkLatency(playTime, TimeUnit.SECONDS, getPage());
 
 		// Release Media Pipeline
 		mp.release();

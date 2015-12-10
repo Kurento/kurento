@@ -86,7 +86,7 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 				WebRtcMode.RCV_ONLY);
 
 		// Latency assessment
-		cs.checkRemoteLatency(playTime, TimeUnit.MINUTES, getPresenter(),
+		cs.checkLatency(playTime, TimeUnit.MINUTES, getPresenter(),
 				getViewer());
 
 		// Release Media Pipeline

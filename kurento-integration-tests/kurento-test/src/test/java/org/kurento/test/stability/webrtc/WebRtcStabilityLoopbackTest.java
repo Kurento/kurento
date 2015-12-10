@@ -97,7 +97,7 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
 		// Latency assessment
 		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(),
 				VideoTagType.REMOTE.getId());
-		cs.checkLocalLatency(playTime, TimeUnit.MINUTES, getPage());
+		cs.checkLatency(playTime, TimeUnit.MINUTES, getPage());
 
 		// Release Media Pipeline
 		mp.release();

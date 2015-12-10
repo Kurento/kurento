@@ -364,4 +364,8 @@ public class SystemMonitorManager {
 		this.clients.add(new WebRtcClient(id, webRtcEndpoint, page));
 	}
 
+	public void setShowLantency(boolean showLantency) {
+		registrer.setShowLantency(showLantency);
+	}
+
 }

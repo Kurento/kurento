@@ -110,7 +110,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					log.debug("[{}.1] Latency control of browser1 to browser1",
 							i);
 
-					cs1.checkLocalLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS,
+					cs1.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS,
 							getPresenter());
 
 					log.debug("[{}.2] Latency control of browser2 to browser2",
@@ -118,7 +118,7 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					getViewer().activateLatencyControl(
 							VideoTagType.LOCAL.getId(),
 							VideoTagType.REMOTE.getId());
-					cs2.checkLocalLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS,
+					cs2.checkLatency(PLAYTIME_PER_SWITCH, TimeUnit.SECONDS,
 							getViewer());
 
 				} else {
@@ -129,12 +129,12 @@ public class WebRtcStabilitySwitchTest extends StabilityTest {
 					// Latency control (B2B)
 					log.debug("[{}.3] Latency control of browser1 to browser2",
 							i);
-					cs1.checkRemoteLatency(PLAYTIME_PER_SWITCH,
+					cs1.checkLatency(PLAYTIME_PER_SWITCH,
 							TimeUnit.SECONDS, getPresenter(), getViewer());
 
 					log.debug("[{}.4] Latency control of browser2 to browser1",
 							i);
-					cs2.checkRemoteLatency(PLAYTIME_PER_SWITCH,
+					cs2.checkLatency(PLAYTIME_PER_SWITCH,
 							TimeUnit.SECONDS, getViewer(), getPresenter());
 				}
 			}

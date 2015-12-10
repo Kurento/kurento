@@ -94,6 +94,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 	public void setupMonitor() {
 		setDeleteLogsIfSuccess(false);
 		monitor = new SystemMonitorManager();
+		monitor.setShowLantency(true);
 		monitor.startMonitoring();
 	}
 
@@ -156,7 +157,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 						}
 
 						// Latency assessment
-						cs[i].checkRemoteLatency(PLAYTIME, TimeUnit.SECONDS,
+						cs[i].checkLatency(PLAYTIME, TimeUnit.SECONDS,
 								getPresenter(), getViewer(i));
 						cs[i].drawChart(getDefaultOutputFile(
 								"-" + name + "-latency.png"), 500, 270);

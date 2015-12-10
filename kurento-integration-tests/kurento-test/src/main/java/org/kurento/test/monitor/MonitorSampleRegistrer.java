@@ -26,8 +26,9 @@ public class MonitorSampleRegistrer {
 	public void writeResults(String csvFile) throws IOException {
 
 		Path path = Paths.get(csvFile);
-		if (!Files.exists(path.getParent())) {
-			Files.createDirectories(path.getParent());
+		Path parent = path.getParent();
+		if (parent != null && !Files.exists(parent)) {
+			Files.createDirectories(parent);
 		}
 
 		try (PrintWriter pw = new PrintWriter(new FileWriter(csvFile))) {
@@ -83,7 +84,7 @@ public class MonitorSampleRegistrer {
 		pw.print(",cpu_percetage,mem_bytes,mem_percentage");
 
 		if (showLantency) {
-			pw.print(",latency_ms_avg,latency_errors_number");
+			pw.print(",latency_ms_avg");
 		}
 
 		MonitorSample firstSample = samples.entrySet().iterator().next()
@@ -104,12 +105,11 @@ public class MonitorSampleRegistrer {
 		double memPercent = systemInfo.getMemPercent();
 
 		pw.format(Locale.ENGLISH,
-				numClients + "," + numThreadsKms + ",%.2f," + mem, cpu,
-				memPercent);
+				numClients + "," + numThreadsKms + ",%.2f," + mem + ",%.2f",
+				cpu, memPercent);
 
 		if (showLantency) {
-			pw.print("," + sample.getLatency() + ","
-					+ sample.getLatencyErrors());
+			pw.format(",%.2f", sample.getLatency());
 		}
 
 		pw.print(systemInfo.getNetInfo().createEntries());
@@ -145,6 +145,10 @@ public class MonitorSampleRegistrer {
 		}
 
 		return headers;
+	}
+
+	public void setShowLantency(boolean showLantency) {
+		this.showLantency = showLantency;
 	}
 
 }

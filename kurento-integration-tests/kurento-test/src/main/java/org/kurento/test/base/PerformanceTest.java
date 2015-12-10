@@ -37,6 +37,8 @@ public class PerformanceTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	protected String monitorResultPath;
 
+	protected boolean showLatency = false;
+
 	public PerformanceTest() {
 		setDeleteLogsIfSuccess(false);
 	}
@@ -45,6 +47,7 @@ public class PerformanceTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 	public void setupMonitor() {
 		monitorResultPath = getDefaultOutputFile("-monitor.csv");
 		monitor = new SystemMonitorManager();
+		monitor.setShowLantency(showLatency);
 		monitor.startMonitoring();
 	}
 
@@ -63,6 +66,10 @@ public class PerformanceTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 	public void setMonitorResultPath(String monitorResultPath) {
 		this.monitorResultPath = monitorResultPath;
+	}
+
+	public void setShowLatency(boolean showLatency) {
+		this.showLatency = showLatency;
 	}
 
 }

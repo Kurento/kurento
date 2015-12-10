@@ -127,7 +127,7 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 		// Latency assessment
 		getPage().activateLatencyControl(VideoTagType.LOCAL.getId(),
 				VideoTagType.REMOTE.getId());
-		cs.checkLocalLatencyInBackground(playTime, TimeUnit.MINUTES, getPage());
+		cs.checkLatencyInBackground(playTime, TimeUnit.MINUTES, getPage());
 
 		// Connect-disconnect each second
 		for (int i = 0; i < DEFAULT_PLAYTIME * 60; i++) {
