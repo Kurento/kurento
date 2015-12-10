@@ -12,28 +12,26 @@ import org.kurento.modulecreator.Result;
 
 public class CodeGenerationTest {
 
-	static String[] TEMPLATES = { "cpp_cmake_dependencies", "cpp_find_cmake",
-			"cpp_interface", "cpp_interface_internal", "cpp_module",
-			"cpp_pkgconfig", "cpp_server", "cpp_server_opencv",
-			"cpp_server_internal", "doc", "maven", "npm" };
+  static String[] TEMPLATES = { "cpp_cmake_dependencies", "cpp_find_cmake", "cpp_interface",
+      "cpp_interface_internal", "cpp_module", "cpp_pkgconfig", "cpp_server", "cpp_server_opencv",
+      "cpp_server_internal", "doc", "maven", "npm" };
 
-	@Test
-	public void test() throws IOException, URISyntaxException {
+  @Test
+  public void test() throws IOException, URISyntaxException {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(
-				PathUtils.getPathInClasspath("/core.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/core.kmd.json"));
 
-		for (String template : TEMPLATES) {
-			System.out.println("Template:" + template);
-			modCreator.setInternalTemplates(template);
-			modCreator.setCodeGenDir(Paths.get("/tmp/test_java"));
-			Result r = modCreator.generateCode();
-			if (!r.isSuccess()) {
-				r.showErrorsInConsole();
-				throw new KurentoModuleCreatorException(r.toString());
-			}
-		}
-	}
+    for (String template : TEMPLATES) {
+      System.out.println("Template:" + template);
+      modCreator.setInternalTemplates(template);
+      modCreator.setCodeGenDir(Paths.get("/tmp/test_java"));
+      Result result = modCreator.generateCode();
+      if (!result.isSuccess()) {
+        result.showErrorsInConsole();
+        throw new KurentoModuleCreatorException(result.toString());
+      }
+    }
+  }
 }

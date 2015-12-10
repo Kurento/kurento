@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012-2014 Zafar Khaja <zafarkhaja@gmail.com>.
+ * Copyright 2012-2014 Zafar Khaja (zafarkhaja@gmail.com).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * */
+
 package com.github.zafarkhaja.semver.expr;
 
 import com.github.zafarkhaja.semver.ParseException;
@@ -28,34 +29,34 @@ import com.github.zafarkhaja.semver.ParseException;
 /**
  * Thrown during the lexical analysis when an illegal character is encountered.
  *
- * @author Zafar Khaja <zafarkhaja@gmail.com>
+ * @author Zafar Khaja (zafarkhaja@gmail.com)
  * @since 0.7.0
  */
 public class LexerException extends ParseException {
 
-	/**
-	 * The string being analyzed starting from an illegal character.
-	 */
-	private final String expr;
+  private static final long serialVersionUID = -8360147936057766701L;
+  /**
+   * The string being analyzed starting from an illegal character.
+   */
+  private final String expr;
 
-	/**
-	 * Constructs a {@code LexerException} instance with a string starting from
-	 * an illegal character.
-	 *
-	 * @param expr
-	 *            the string starting from an illegal character
-	 */
-	LexerException(String expr) {
-		this.expr = expr;
-	}
+  /**
+   * Constructs a {@code LexerException} instance with a string starting from an illegal character.
+   *
+   * @param expr
+   *          the string starting from an illegal character
+   */
+  LexerException(String expr) {
+    this.expr = expr;
+  }
 
-	/**
-	 * Returns the string representation of this exception.
-	 *
-	 * @return the string representation of this exception
-	 */
-	@Override
-	public String toString() {
-		return "Illegal character near '" + expr + "'";
-	}
+  /**
+   * Returns the string representation of this exception.
+   *
+   * @return the string representation of this exception
+   */
+  @Override
+  public String toString() {
+    return "Illegal character near '" + expr + "'";
+  }
 }

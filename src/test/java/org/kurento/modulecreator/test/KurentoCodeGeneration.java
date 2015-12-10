@@ -19,240 +19,223 @@ import com.google.gson.JsonIOException;
 
 public class KurentoCodeGeneration {
 
-	private static final String GLOBAL_FUSIONED_KMDS_PATH = "/tmp/kurento-module-creator/kmds";
-	private static final String KMS_PROJECTS_PATH = "/home/mica/Data/Kurento/git.kms";
+  private static final String GLOBAL_FUSIONED_KMDS_PATH = "/tmp/kurento-module-creator/kmds";
+  private static final String KMS_PROJECTS_PATH = "/home/mica/Data/Kurento/git.kms";
+
+  private static final Logger log = LoggerFactory.getLogger(KurentoCodeGeneration.class);
+
+  public static void main(String[] args) throws JsonIOException, IOException {
+
+    // updateGitProjects();
+
+    // generateJavaCode();
+
+    generateJavaScriptCode();
+
+  }
+
+  private static void generateJavaScriptCode() throws JsonIOException, IOException {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(KurentoCodeGeneration.class);
+    generateJavaScriptCodeFor("kms-core");
+    generateJavaScriptCodeFor("kms-elements");
+    generateJavaScriptCodeFor("kms-filters");
+    generateJavaScriptCodeFor("kms-platedetector");
+    generateJavaScriptCodeFor("kms-pointerdetector");
+    generateJavaScriptCodeFor("kms-crowddetector");
+    generateJavaScriptCodeFor("kms-chroma");
+    generateJavaScriptCodeFor("kms-example");
+  }
+
+  // private static void generateJavaCode() throws IOException {
+  // generateJavaCodeFor("kms-core");
+  // generateJavaCodeFor("kms-elements");
+  // generateJavaCodeFor("kms-filters");
+  //
+  // mvnInstall("/home/mica/Data/Kurento/git/kurento-module-creator");
+  // mvnInstall("/home/mica/Data/Kurento/git/kurento-maven-plugin");
+  //
+  // mvnInstall("/home/mica/Data/Kurento/git/kurento-java/kurento-client");
+  //
+  // generateJavaCodeFor("kms-platedetector");
+  // generateJavaCodeFor("kms-pointerdetector");
+  // generateJavaCodeFor("kms-crowddetector");
+  // generateJavaCodeFor("kms-chroma");
+  // generateJavaCodeFor("kms-example");
+  // }
 
-	public static void main(String[] args) throws JsonIOException, IOException {
+  // private static void updateGitProjects() throws IOException {
+  // updateGitProject("kms-core");
+  // updateGitProject("kms-elements");
+  // updateGitProject("kms-filters");
+  // updateGitProject("kms-platedetector");
+  // updateGitProject("kms-pointerdetector");
+  // updateGitProject("kms-crowddetector");
+  // updateGitProject("kms-chroma");
+  // updateGitProject("kms-example");
+  // }
 
-		// updateGitProjects();
+  // private static void updateGitProject(String project) throws IOException {
+  //
+  // execAndGetResult("git fetch origin", getProjectPath(project));
+  // execAndGetResult("git reset --hard origin/develop", getProjectPath(project));
+  //
+  // }
 
-		// generateJavaCode();
+  private static String getProjectPath(String project) {
+    return KMS_PROJECTS_PATH + "/" + project;
+  }
 
-		generateJavaScriptCode();
+  private static void generateJavaScriptCodeFor(String project) throws IOException {
+    log.info("----------------------------------------------------");
+    log.info("  Start Generating JavaScript code for " + project);
+    log.info("----------------------------------------------------");
 
-	}
+    generateNpmProject(project);
+  }
 
-	private static void generateJavaScriptCode()
-			throws JsonIOException, IOException {
+  private static void generateNpmProject(String project) throws IOException {
 
-		generateJavaScriptCodeFor("kms-core");
-		generateJavaScriptCodeFor("kms-elements");
-		generateJavaScriptCodeFor("kms-filters");
-		generateJavaScriptCodeFor("kms-platedetector");
-		generateJavaScriptCodeFor("kms-pointerdetector");
-		generateJavaScriptCodeFor("kms-crowddetector");
-		generateJavaScriptCodeFor("kms-chroma");
-		generateJavaScriptCodeFor("kms-example");
-	}
+    String npmProjectFolder = getProjectPath(project) + "/build/js";
 
-	private static void generateJavaCode() throws IOException {
-		generateJavaCodeFor("kms-core");
-		generateJavaCodeFor("kms-elements");
-		generateJavaCodeFor("kms-filters");
+    execAndGetResult("rm -R " + npmProjectFolder + "/package.json");
+    execAndGetResult("rm -R " + npmProjectFolder + "/src");
 
-		mvnInstall("/home/mica/Data/Kurento/git/kurento-module-creator");
-		mvnInstall("/home/mica/Data/Kurento/git/kurento-maven-plugin");
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		mvnInstall("/home/mica/Data/Kurento/git/kurento-java/kurento-client");
+    modCreator.setKmdFilesToGen(PathUtils.getPaths(
+        new String[] { getProjectPath(project) + "/src/server/interface" }, "*.kmd.json"));
 
-		generateJavaCodeFor("kms-platedetector");
-		generateJavaCodeFor("kms-pointerdetector");
-		generateJavaCodeFor("kms-crowddetector");
-		generateJavaCodeFor("kms-chroma");
-		generateJavaCodeFor("kms-example");
-	}
+    modCreator.setDependencyKmdFiles(
+        PathUtils.searchFiles(Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
 
-	private static void updateGitProjects() throws IOException {
-		updateGitProject("kms-core");
-		updateGitProject("kms-elements");
-		updateGitProject("kms-filters");
-		updateGitProject("kms-platedetector");
-		updateGitProject("kms-pointerdetector");
-		updateGitProject("kms-crowddetector");
-		updateGitProject("kms-chroma");
-		updateGitProject("kms-example");
-	}
+    modCreator.setInternalTemplates("npm");
+    modCreator.setCodeGenDir(Paths.get(npmProjectFolder));
+    modCreator.generateCode();
 
-	private static void updateGitProject(String project) throws IOException {
+    modCreator.setInternalTemplates("js");
+    modCreator.setCodeGenDir(Paths.get(npmProjectFolder + "/lib/"));
+    modCreator.generateCode();
 
-		execAndGetResult("git fetch origin", getProjectPath(project));
-		execAndGetResult("git reset --hard origin/develop",
-				getProjectPath(project));
+    // Copy fusioned kmd file to /lib/
+    Path fusionedKmdFile = Paths.get(npmProjectFolder + "/lib/");
+    modCreator.setOutputFile(fusionedKmdFile);
+    modCreator.generateCode();
 
-	}
+    // Copy fusioned kmd file to /tmp/kurento-module-creator/kmds
+    copyFusionedKmdToKmdsFolder(fusionedKmdFile);
+  }
 
-	private static String getProjectPath(String project) {
-		return KMS_PROJECTS_PATH + "/" + project;
-	}
+  private static void copyFusionedKmdToKmdsFolder(Path fusionedKmdFile) throws IOException {
 
-	private static void generateJavaScriptCodeFor(String project)
-			throws IOException {
-		log.info("----------------------------------------------------");
-		log.info("  Start Generating JavaScript code for " + project);
-		log.info("----------------------------------------------------");
+    Path kmdsPath = Paths.get(GLOBAL_FUSIONED_KMDS_PATH);
 
-		generateNpmProject(project);
-	}
+    if (!Files.exists(kmdsPath)) {
+      Files.createDirectories(kmdsPath);
+    }
 
-	private static void generateNpmProject(String project) throws IOException {
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(fusionedKmdFile)) {
 
-		String npmProjectFolder = getProjectPath(project) + "/build/js";
+      for (Path kmdFile : stream) {
 
-		execAndGetResult("rm -R " + npmProjectFolder + "/package.json");
-		execAndGetResult("rm -R " + npmProjectFolder + "/src");
+        Files.copy(kmdFile, kmdsPath.resolve(kmdFile.getFileName()),
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+            java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
+            java.nio.file.LinkOption.NOFOLLOW_LINKS);
+      }
+    }
+  }
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+  public static void generateJavaCodeFor(String project) throws JsonIOException, IOException {
 
-		modCreator.setKmdFilesToGen(PathUtils.getPaths(
-				new String[] {
-						getProjectPath(project) + "/src/server/interface" },
-				"*.kmd.json"));
+    log.info("----------------------------------------------------");
+    log.info("  Start Generating Java code for " + project);
+    log.info("----------------------------------------------------");
 
-		modCreator.setDependencyKmdFiles(PathUtils.searchFiles(
-				Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
+    generateMavenProject(project);
+    mvnInstallProject(project);
+  }
 
-		modCreator.setInternalTemplates("npm");
-		modCreator.setCodeGenDir(Paths.get(npmProjectFolder));
-		modCreator.generateCode();
+  private static void mvnInstallProject(String project) throws IOException {
+    mvnInstall(getProjectPath(project) + "/build/java");
+  }
 
-		modCreator.setInternalTemplates("js");
-		modCreator.setCodeGenDir(Paths.get(npmProjectFolder + "/lib/"));
-		modCreator.generateCode();
+  private static void mvnInstall(String path) throws IOException {
 
-		// Copy fusioned kmd file to /lib/
-		Path fusionedKmdFile = Paths.get(npmProjectFolder + "/lib/");
-		modCreator.setOutputFile(fusionedKmdFile);
-		modCreator.generateCode();
+    log.info("");
+    log.info("  MVN INSTALL " + path);
+    log.info("  ========================================================");
 
-		// Copy fusioned kmd file to /tmp/kurento-module-creator/kmds
-		copyFusionedKmdToKmdsFolder(fusionedKmdFile);
-	}
+    execAndGetResult("mvn install -DskipTests", path);
+  }
 
-	private static void copyFusionedKmdToKmdsFolder(Path fusionedKmdFile)
-			throws IOException {
+  private static void generateMavenProject(String project) throws IOException {
 
-		Path kmdsPath = Paths.get(GLOBAL_FUSIONED_KMDS_PATH);
+    String mavenProjectFolder = getProjectPath(project) + "/build/java";
 
-		if (!Files.exists(kmdsPath)) {
-			Files.createDirectories(kmdsPath);
-		}
+    execAndGetResult("rm -R " + mavenProjectFolder + "/pom.xml");
+    execAndGetResult("rm -R " + mavenProjectFolder + "/src");
 
-		try (DirectoryStream<Path> stream = Files
-				.newDirectoryStream(fusionedKmdFile)) {
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-			for (Path kmdFile : stream) {
+    modCreator.setKmdFilesToGen(PathUtils.getPaths(
+        new String[] { getProjectPath(project) + "/src/server/interface" }, "*.kmd.json"));
 
-				Files.copy(kmdFile, kmdsPath.resolve(kmdFile.getFileName()),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-						java.nio.file.StandardCopyOption.COPY_ATTRIBUTES,
-						java.nio.file.LinkOption.NOFOLLOW_LINKS);
-			}
-		}
-	}
+    modCreator.setDependencyKmdFiles(
+        PathUtils.searchFiles(Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
 
-	public static void generateJavaCodeFor(String project)
-			throws JsonIOException, IOException {
+    modCreator.setInternalTemplates("maven");
+    modCreator.setCodeGenDir(Paths.get(mavenProjectFolder));
+    modCreator.generateCode();
 
-		log.info("----------------------------------------------------");
-		log.info("  Start Generating Java code for " + project);
-		log.info("----------------------------------------------------");
+    if (modCreator.hasToGenerateCode()) {
 
-		generateMavenProject(project);
-		mvnInstallProject(project);
-	}
+      modCreator.setInternalTemplates("java");
+      modCreator.setCodeGenDir(Paths.get(mavenProjectFolder + "/src/main/java"));
+      modCreator.generateCode();
 
-	private static void mvnInstallProject(String project) throws IOException {
-		mvnInstall(getProjectPath(project) + "/build/java");
-	}
+    } else {
 
-	private static void mvnInstall(String path) throws IOException {
+      // Copy fusioned kmd file to /META-INF/kurento/
+      Path fusionedKmdFile = Paths
+          .get(mavenProjectFolder + "/src/main/resources/META-INF/kurento/");
+      modCreator.setOutputFile(fusionedKmdFile);
+      modCreator.generateCode();
 
-		log.info("");
-		log.info("  MVN INSTALL " + path);
-		log.info("  ========================================================");
+      copyFusionedKmdToKmdsFolder(fusionedKmdFile);
+    }
+  }
 
-		execAndGetResult("mvn install -DskipTests", path);
-	}
+  public static String execAndGetResult(final String command) throws IOException {
+    return execAndGetResult(command, null);
+  }
 
-	private static void generateMavenProject(String project)
-			throws IOException {
+  public static String execAndGetResult(final String command, String workDir) throws IOException {
 
-		String mavenProjectFolder = getProjectPath(project) + "/build/java";
+    log.debug("Running command on the shell: {} in {}", command, workDir);
 
-		execAndGetResult("rm -R " + mavenProjectFolder + "/pom.xml");
-		execAndGetResult("rm -R " + mavenProjectFolder + "/src");
+    Process process;
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    String[] execCommand = { "sh", "-c", command };
 
-		modCreator.setKmdFilesToGen(PathUtils.getPaths(
-				new String[] {
-						getProjectPath(project) + "/src/server/interface" },
-				"*.kmd.json"));
+    ProcessBuilder processBuilder = new ProcessBuilder(execCommand).redirectErrorStream(true);
 
-		modCreator.setDependencyKmdFiles(PathUtils.searchFiles(
-				Paths.get(GLOBAL_FUSIONED_KMDS_PATH), "*.kmd.json"));
+    if (workDir != null) {
+      processBuilder.directory(new File(workDir));
+    }
 
-		modCreator.setInternalTemplates("maven");
-		modCreator.setCodeGenDir(Paths.get(mavenProjectFolder));
-		modCreator.generateCode();
+    process = processBuilder.start();
 
-		if (modCreator.hasToGenerateCode()) {
+    String output = null;
+    try (Scanner scanner = new Scanner(process.getInputStream(), StandardCharsets.UTF_8.name())) {
+      try {
+        output = scanner.useDelimiter("\\A").next();
+      } catch (NoSuchElementException e) {
+        output = "";
+      }
+    }
 
-			modCreator.setInternalTemplates("java");
-			modCreator.setCodeGenDir(
-					Paths.get(mavenProjectFolder + "/src/main/java"));
-			modCreator.generateCode();
+    log.info(output);
 
-		} else {
-
-			// Copy fusioned kmd file to /META-INF/kurento/
-			Path fusionedKmdFile = Paths.get(mavenProjectFolder
-					+ "/src/main/resources/META-INF/kurento/");
-			modCreator.setOutputFile(fusionedKmdFile);
-			modCreator.generateCode();
-
-			copyFusionedKmdToKmdsFolder(fusionedKmdFile);
-		}
-	}
-
-	public static String execAndGetResult(final String command)
-			throws IOException {
-		return execAndGetResult(command, null);
-	}
-
-	public static String execAndGetResult(final String command, String workDir)
-			throws IOException {
-
-		log.debug("Running command on the shell: {} in {}", command, workDir);
-
-		Process p;
-
-		String[] execCommand = { "sh", "-c", command };
-
-		ProcessBuilder processBuilder = new ProcessBuilder(execCommand)
-				.redirectErrorStream(true);
-
-		if (workDir != null) {
-			processBuilder.directory(new File(workDir));
-		}
-
-		p = processBuilder.start();
-
-		String output = null;
-		try (Scanner scanner = new Scanner(p.getInputStream(),
-				StandardCharsets.UTF_8.name())) {
-			try {
-				output = scanner.useDelimiter("\\A").next();
-			} catch (NoSuchElementException e) {
-				output = "";
-			}
-		}
-
-		log.info(output);
-
-		return output;
-	}
+    return output;
+  }
 }

@@ -18,82 +18,74 @@ import org.kurento.modulecreator.definition.ModuleDefinition;
 
 public class ImportModulesWithRangesTest {
 
-	@Test
-	public void testSatisDep() throws IOException, URISyntaxException {
+  @Test
+  public void testSatisDep() throws IOException, URISyntaxException {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/versionranges/moduleC.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/versionranges/moduleC.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/versionranges/moduleB.kmd.json"));
+    modCreator
+        .addDependencyKmdFile(PathUtils.getPathInClasspath("/versionranges/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/versionranges/moduleA.kmd.json"));
+    modCreator
+        .addDependencyKmdFile(PathUtils.getPathInClasspath("/versionranges/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		modCreator.loadModulesFromKmdFiles();
+    modCreator.loadModulesFromKmdFiles();
 
-		ModuleManager moduleManager = modCreator.getModuleManager();
+    ModuleManager moduleManager = modCreator.getModuleManager();
 
-		ModuleDefinition moduleB = moduleManager.getModule("moduleB");
-		ModuleDefinition moduleC = moduleManager.getModule("moduleC");
+    ModuleDefinition moduleB = moduleManager.getModule("moduleB");
 
-		Import modAfromB = moduleB.getImports().get(0);
-		assertThat(modAfromB.getVersion(), is("~1.0"));
-		assertThat(modAfromB.getMavenVersion(), is("[1.0.0,2.0.0-SNAPSHOT)"));
-		assertThat(modAfromB.getNpmVersion(), is(">=1.0.0 <2.0.0"));
-		assertThat(modAfromB.getModule().getVersion(), is("1.5.0"));
+    Import modAfromB = moduleB.getImports().get(0);
+    assertThat(modAfromB.getVersion(), is("~1.0"));
+    assertThat(modAfromB.getMavenVersion(), is("[1.0.0,2.0.0-SNAPSHOT)"));
+    assertThat(modAfromB.getNpmVersion(), is(">=1.0.0 <2.0.0"));
+    assertThat(modAfromB.getModule().getVersion(), is("1.5.0"));
 
-		Import modAfromC = moduleC.getImports().get(0);
-		assertThat(modAfromC.getVersion(), is(">=1.0.0 & <2.0.0"));
-		assertThat(modAfromC.getMavenVersion(), is("[1.0.0,2.0.0-SNAPSHOT)"));
-		assertThat(modAfromC.getNpmVersion(), is(">=1.0.0 <2.0.0"));
-		assertThat(modAfromC.getModule().getVersion(), is("1.5.0"));
+    ModuleDefinition moduleC = moduleManager.getModule("moduleC");
+    Import modAfromC = moduleC.getImports().get(0);
+    assertThat(modAfromC.getVersion(), is(">=1.0.0 & <2.0.0"));
+    assertThat(modAfromC.getMavenVersion(), is("[1.0.0,2.0.0-SNAPSHOT)"));
+    assertThat(modAfromC.getNpmVersion(), is(">=1.0.0 <2.0.0"));
+    assertThat(modAfromC.getModule().getVersion(), is("1.5.0"));
 
-	}
+  }
 
-	@Test
-	public void testInsatisDep() throws IOException, URISyntaxException {
+  @Test
+  public void testInsatisDep() throws IOException, URISyntaxException {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/versionranges/moduleD.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/versionranges/moduleD.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/versionranges/moduleA.kmd.json"));
+    modCreator
+        .addDependencyKmdFile(PathUtils.getPathInClasspath("/versionranges/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		try {
+    try {
 
-			modCreator.loadModulesFromKmdFiles();
+      modCreator.loadModulesFromKmdFiles();
 
-		} catch (KurentoModuleCreatorException e) {
-			assertTrue(e.getMessage().contains("Import 'moduleA'")
-					&& e.getMessage().contains("not found in dependencies"));
-			return;
-		}
+    } catch (KurentoModuleCreatorException e) {
+      assertTrue(e.getMessage().contains("Import 'moduleA'")
+          && e.getMessage().contains("not found in dependencies"));
+      return;
+    }
 
-		fail("A KurentoModuleException should be thrown for insatisfied dependencies");
+    fail("A KurentoModuleException should be thrown for insatisfied dependencies");
 
-	}
+  }
 
 }

@@ -5,8 +5,8 @@ import java.util.List;
 
 public class ModelElement {
 
-	public List<ModelElement> getChildren() {
-		return Collections.emptyList();
-	}
+  public List<ModelElement> getChildren() {
+    return Collections.emptyList();
+  }
 
 }

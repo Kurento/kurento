@@ -30,183 +30,166 @@ import org.xml.sax.SAXException;
 
 public class CustomMavenPomTest {
 
-	@Test
-	public void xmlFusionerTest() throws Exception {
+  @Test
+  public void xmlFusionerTest() throws Exception {
 
-		Path fusionedXml = Files.createTempFile("pom", ".xml");
+    Path fusionedXml = Files.createTempFile("pom", ".xml");
 
-		String[] addTags = { "/dependencies", "/build/plugins" };
-		String[] replaceTags = { "/properties" };
+    String[] addTags = { "/dependencies", "/build/plugins" };
+    String[] replaceTags = { "/properties" };
 
-		XmlFusioner fusioner = new XmlFusioner(
-				PathUtils.getPathInClasspath("/custommaven/generated.xml"),
-				PathUtils.getPathInClasspath("/custommaven/customizer.xml"),
-				fusionedXml, addTags, replaceTags);
+    XmlFusioner fusioner = new XmlFusioner(
+        PathUtils.getPathInClasspath("/custommaven/generated.xml"),
+        PathUtils.getPathInClasspath("/custommaven/customizer.xml"), fusionedXml, addTags,
+        replaceTags);
 
-		fusioner.fusionXmls();
+    fusioner.fusionXmls();
 
-		printFile(fusionedXml);
+    printFile(fusionedXml);
 
-		Document doc = loadXmlFile(fusionedXml);
+    Document doc = loadXmlFile(fusionedXml);
 
-		// Add tags
-		assertTagValue(doc, "/project/newTag", "newValue");
-		assertTagValue(doc, "/project/url", "http://moduleUrl");
+    // Add tags
+    assertTagValue(doc, "/project/newTag", "newValue");
+    assertTagValue(doc, "/project/url", "http://moduleUrl");
 
-		// Replace tags
-		assertTagValue(doc, "/project/packaging", "war");
+    // Replace tags
+    assertTagValue(doc, "/project/packaging", "war");
 
-		// Add properties
-		assertTagValue(doc, "/project/properties/custom_prop", "custom_value");
-		assertTagValue(doc, "/project/properties/project.build.sourceEncoding",
-				"UTF-8");
+    // Add properties
+    assertTagValue(doc, "/project/properties/custom_prop", "custom_value");
+    assertTagValue(doc, "/project/properties/project.build.sourceEncoding", "UTF-8");
 
-		// Replace properties
-		assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
+    // Replace properties
+    assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
 
-		// Add dependencies
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"fake_dependency");
+    // Add dependencies
+    assertTagValue(doc, "/project/dependencies/dependency/groupId", "fake_dependency");
 
-		// Original dependencies
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"fake_plugin");
+    // Original dependencies
+    assertTagValue(doc, "/project/build/plugins/plugin/groupId", "fake_plugin");
 
-		// Add plugins
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"org.kurento.module");
+    // Add plugins
+    assertTagValue(doc, "/project/dependencies/dependency/groupId", "org.kurento.module");
 
-		// Original plugins
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"org.kurento");
+    // Original plugins
+    assertTagValue(doc, "/project/build/plugins/plugin/groupId", "org.kurento");
 
-		// Original tags
-		assertTagValue(doc, "/project/groupId", "org.kurento.module");
-		assertTagValue(doc, "/project/artifactId", "moduleA");
-		assertTagValue(doc, "/project/version", "1.0.0-SNAPSHOT");
-		assertTagValue(doc, "/project/name", "moduleA");
-	}
+    // Original tags
+    assertTagValue(doc, "/project/groupId", "org.kurento.module");
+    assertTagValue(doc, "/project/artifactId", "moduleA");
+    assertTagValue(doc, "/project/version", "1.0.0-SNAPSHOT");
+    assertTagValue(doc, "/project/name", "moduleA");
+  }
 
-	@Test
-	public void test() throws Exception {
+  @Test
+  public void test() throws Exception {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(
-				PathUtils.getPathInClasspath("/custommaven/moduleA.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/custommaven/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		modCreator.loadModulesFromKmdFiles();
+    modCreator.loadModulesFromKmdFiles();
 
-		Path codeGenDir = Files.createTempDirectory("maven");
+    Path codeGenDir = Files.createTempDirectory("maven");
 
-		modCreator.setCodeGenDir(codeGenDir);
-		modCreator.setGenerateMavenPom(true);
+    modCreator.setCodeGenDir(codeGenDir);
+    modCreator.setGenerateMavenPom(true);
 
-		Result result = modCreator.generateCode();
+    Result result = modCreator.generateCode();
 
-		assertThat("Compilation error: " + result.getErrors(),
-				result.isSuccess(), is(true));
+    assertThat("Compilation error: " + result.getErrors(), result.isSuccess(), is(true));
 
-		Path pomFile = codeGenDir.resolve("pom.xml");
+    Path pomFile = codeGenDir.resolve("pom.xml");
 
-		assertThat("The pom.xml should exist", Files.exists(pomFile), is(true));
+    assertThat("The pom.xml should exist", Files.exists(pomFile), is(true));
 
-		printFile(pomFile);
+    printFile(pomFile);
 
-		Document doc = loadXmlFile(pomFile);
+    Document doc = loadXmlFile(pomFile);
 
-		// Add tags
-		assertTagValue(doc, "/project/newTag", "newValue");
-		assertTagValue(doc, "/project/url", "http://moduleUrl");
+    // Add tags
+    assertTagValue(doc, "/project/newTag", "newValue");
+    assertTagValue(doc, "/project/url", "http://moduleUrl");
 
-		// Replace tags
-		assertTagValue(doc, "/project/packaging", "war");
+    // Replace tags
+    assertTagValue(doc, "/project/packaging", "war");
 
-		// Add properties
-		assertTagValue(doc, "/project/properties/custom_prop", "custom_value");
-		assertTagValue(doc, "/project/properties/project.build.sourceEncoding",
-				"UTF-8");
+    // Add properties
+    assertTagValue(doc, "/project/properties/custom_prop", "custom_value");
+    assertTagValue(doc, "/project/properties/project.build.sourceEncoding", "UTF-8");
 
-		// Replace properties
-		assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
+    // Replace properties
+    assertTagValue(doc, "/project/properties/maven.compiler.target", "1.8");
 
-		// Add dependencies
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"fake_dependency");
+    // Add dependencies
+    assertTagValue(doc, "/project/dependencies/dependency/groupId", "fake_dependency");
 
-		// Original dependencies
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"fake_plugin");
+    // Original dependencies
+    assertTagValue(doc, "/project/build/plugins/plugin/groupId", "fake_plugin");
 
-		// Add plugins
-		assertTagValue(doc, "/project/dependencies/dependency/groupId",
-				"org.kurento.module");
+    // Add plugins
+    assertTagValue(doc, "/project/dependencies/dependency/groupId", "org.kurento.module");
 
-		// Original plugins
-		assertTagValue(doc, "/project/build/plugins/plugin/groupId",
-				"org.kurento");
+    // Original plugins
+    assertTagValue(doc, "/project/build/plugins/plugin/groupId", "org.kurento");
 
-		// Original tags
-		assertTagValue(doc, "/project/groupId", "org.kurento.module");
-		assertTagValue(doc, "/project/artifactId", "moduleA");
-		assertTagValue(doc, "/project/version", "1.0.0-SNAPSHOT");
-		assertTagValue(doc, "/project/name", "moduleA");
-	}
+    // Original tags
+    assertTagValue(doc, "/project/groupId", "org.kurento.module");
+    assertTagValue(doc, "/project/artifactId", "moduleA");
+    assertTagValue(doc, "/project/version", "1.0.0-SNAPSHOT");
+    assertTagValue(doc, "/project/name", "moduleA");
+  }
 
-	private void assertTagValue(Document doc, String tagName, String tagValue)
-			throws XPathExpressionException {
+  private void assertTagValue(Document doc, String tagName, String tagValue)
+      throws XPathExpressionException {
 
-		NodeList list;
+    NodeList list;
 
-		if (tagName.startsWith("/")) {
+    if (tagName.startsWith("/")) {
 
-			XPathFactory xPathfactory = XPathFactory.newInstance();
-			XPath xpath = xPathfactory.newXPath();
-			XPathExpression expr = xpath.compile(tagName);
+      XPathFactory xpathFactory = XPathFactory.newInstance();
+      XPath xpath = xpathFactory.newXPath();
+      XPathExpression expr = xpath.compile(tagName);
 
-			list = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+      list = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
 
-		} else {
+    } else {
 
-			list = doc.getElementsByTagName(tagName);
+      list = doc.getElementsByTagName(tagName);
 
-			if (list.getLength() == 0) {
-				fail("Tag '" + tagName + "' not found in document");
-			}
-		}
+      if (list.getLength() == 0) {
+        fail("Tag '" + tagName + "' not found in document");
+      }
+    }
 
-		for (int i = 0; i < list.getLength(); i++) {
-			Node node = list.item(i);
-			if (node.getTextContent().equals(tagValue)) {
-				return;
-			}
-		}
+    for (int i = 0; i < list.getLength(); i++) {
+      Node node = list.item(i);
+      if (node.getTextContent().equals(tagValue)) {
+        return;
+      }
+    }
 
-		fail("There is no tag '" + tagName + "' with value '" + tagValue + "'");
+    fail("There is no tag '" + tagName + "' with value '" + tagValue + "'");
 
-	}
+  }
 
-	private Document loadXmlFile(Path pomFile)
-			throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory
-				.newInstance();
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(pomFile.toString());
-		return doc;
-	}
+  private Document loadXmlFile(Path pomFile)
+      throws ParserConfigurationException, SAXException, IOException {
+    DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+    Document doc = docBuilder.parse(pomFile.toString());
+    return doc;
+  }
 
-	private void printFile(Path pomFile) throws IOException {
-		System.out.println(new String(Files.readAllBytes(pomFile),
-				StandardCharsets.UTF_8));
-	}
+  private void printFile(Path pomFile) throws IOException {
+    System.out.println(new String(Files.readAllBytes(pomFile), StandardCharsets.UTF_8));
+  }
 
 }

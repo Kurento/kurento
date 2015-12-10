@@ -13,30 +13,28 @@ import freemarker.template.TemplateModelException;
 
 public class JsNamespace implements TemplateMethodModelEx {
 
-	@Override
-	public Object exec(@SuppressWarnings("rawtypes") List arguments)
-			throws TemplateModelException {
+  @Override
+  public Object exec(@SuppressWarnings("rawtypes") List arguments) throws TemplateModelException {
 
-		RemoteClass remoteClass = (RemoteClass) ((StringModel) arguments.get(0))
-				.getWrappedObject();
+    RemoteClass remoteClass = (RemoteClass) ((StringModel) arguments.get(0)).getWrappedObject();
 
-		Set<String> baseClassNames = new HashSet<String>();
-		baseClassNames.add("Filter");
-		baseClassNames.add("Endpoint");
-		baseClassNames.add("Hub");
+    Set<String> baseClassNames = new HashSet<String>();
+    baseClassNames.add("Filter");
+    baseClassNames.add("Endpoint");
+    baseClassNames.add("Hub");
 
-		TypeRef extendsRef = remoteClass.getExtends();
-		while (extendsRef != null) {
+    TypeRef extendsRef = remoteClass.getExtends();
+    while (extendsRef != null) {
 
-			RemoteClass parentRemoteClass = (RemoteClass) extendsRef.getType();
-			if (baseClassNames.contains(parentRemoteClass.getName())) {
-				return parentRemoteClass.getName();
-			}
+      RemoteClass parentRemoteClass = (RemoteClass) extendsRef.getType();
+      if (baseClassNames.contains(parentRemoteClass.getName())) {
+        return parentRemoteClass.getName();
+      }
 
-			extendsRef = parentRemoteClass.getExtends();
-		}
+      extendsRef = parentRemoteClass.getExtends();
+    }
 
-		return "None";
-	}
+    return "None";
+  }
 
 }

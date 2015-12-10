@@ -32,217 +32,202 @@ import com.google.gson.JsonPrimitive;
 
 public class CustomNpmPackTest {
 
-	@Test
-	public void jsonFusionerTest() throws Exception {
+  @Test
+  public void jsonFusionerTest() throws Exception {
 
-		Path fusionedJson = Files.createTempFile("package", ".json");
+    Path fusionedJson = Files.createTempFile("package", ".json");
 
-		String[] addTags = { "/keywords", "/dependencies",
-				"/peerDependencies" };
-		String[] replaceTags = { "/repository", "/bugs" };
+    String[] addTags = { "/keywords", "/dependencies", "/peerDependencies" };
+    String[] replaceTags = { "/repository", "/bugs" };
 
-		JsonFusioner fusioner = new JsonFusioner(
-				PathUtils.getPathInClasspath("/customnpm/generated.json"),
-				PathUtils.getPathInClasspath("/customnpm/customizer.json"),
-				fusionedJson, addTags, replaceTags);
+    JsonFusioner fusioner = new JsonFusioner(
+        PathUtils.getPathInClasspath("/customnpm/generated.json"),
+        PathUtils.getPathInClasspath("/customnpm/customizer.json"), fusionedJson, addTags,
+        replaceTags);
 
-		fusioner.fusionJsons();
+    fusioner.fusionJsons();
 
-		printFile(fusionedJson);
+    printFile(fusionedJson);
 
-		JsonObject doc = loadJsonFile(fusionedJson);
+    JsonObject doc = loadJsonFile(fusionedJson);
 
-		// Original properties
-		assertTagValue(doc, "/name", "npmName");
-		assertTagValue(doc, "/version", "1.0.0");
-		assertTagValue(doc, "/description", "xxxxxxx");
+    // Original properties
+    assertTagValue(doc, "/name", "npmName");
+    assertTagValue(doc, "/version", "1.0.0");
+    assertTagValue(doc, "/description", "xxxxxxx");
 
-		// Add properties
-		assertTagValue(doc, "/newProp", "newValue");
+    // Add properties
+    assertTagValue(doc, "/newProp", "newValue");
 
-		// Replace properties
-		assertTagValue(doc, "/homepage", "http://new.home.page");
+    // Replace properties
+    assertTagValue(doc, "/homepage", "http://new.home.page");
 
-		// Add dependencies
-		assertTagValue(doc, "/dependencies/custom", "2222");
+    // Add dependencies
+    assertTagValue(doc, "/dependencies/custom", "2222");
 
-		// Original dependencies
-		assertTagValue(doc, "/dependencies/inherits", "^2.0.1");
+    // Original dependencies
+    assertTagValue(doc, "/dependencies/inherits", "^2.0.1");
 
-		// Add dependencies
-		assertTagValue(doc, "/peerDependencies/customPeer", "1111");
+    // Add dependencies
+    assertTagValue(doc, "/peerDependencies/customPeer", "1111");
 
-		// Original dependencies
-		assertTagValue(doc, "/peerDependencies/kurento-client", "^5.0.0");
+    // Original dependencies
+    assertTagValue(doc, "/peerDependencies/kurento-client", "^5.0.0");
 
-		// Add keywords
-		assertTagValue(doc, "/keywords", "NewKeyword");
+    // Add keywords
+    assertTagValue(doc, "/keywords", "NewKeyword");
 
-		// Original keywords
-		assertTagValue(doc, "/keywords", "Kurento");
+    // Original keywords
+    assertTagValue(doc, "/keywords", "Kurento");
 
-	}
+  }
 
-	@Test
-	public void test() throws Exception {
+  @Test
+  public void test() throws Exception {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(
-				PathUtils.getPathInClasspath("/customnpm/moduleA.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/customnpm/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		modCreator.loadModulesFromKmdFiles();
+    modCreator.loadModulesFromKmdFiles();
 
-		Path codeGenDir = Files.createTempDirectory("npm");
+    Path codeGenDir = Files.createTempDirectory("npm");
 
-		modCreator.setCodeGenDir(codeGenDir);
-		modCreator.setGenerateNpmPackage(true);
+    modCreator.setCodeGenDir(codeGenDir);
+    modCreator.setGenerateNpmPackage(true);
 
-		Result result = modCreator.generateCode();
+    Result result = modCreator.generateCode();
 
-		assertThat("Compilation error: " + result.getErrors(),
-				result.isSuccess(), is(true));
+    assertThat("Compilation error: " + result.getErrors(), result.isSuccess(), is(true));
 
-		Path packageFile = codeGenDir.resolve("package.json");
+    Path packageFile = codeGenDir.resolve("package.json");
 
-		assertThat("The package.json should exist", Files.exists(packageFile),
-				is(true));
+    assertThat("The package.json should exist", Files.exists(packageFile), is(true));
 
-		printFile(packageFile);
+    printFile(packageFile);
 
-		JsonObject doc = loadJsonFile(packageFile);
+    JsonObject doc = loadJsonFile(packageFile);
 
-		// Original properties
-		assertTagValue(doc, "/name", "kurento-module-moduleA");
-		assertTagValue(doc, "/version", "1.0.0-dev");
-		assertTagValue(doc, "/description", "");
+    // Original properties
+    assertTagValue(doc, "/name", "kurento-module-moduleA");
+    assertTagValue(doc, "/version", "1.0.0-dev");
+    assertTagValue(doc, "/description", "");
 
-		// Add properties
-		assertTagValue(doc, "/newProp", "newValue");
+    // Add properties
+    assertTagValue(doc, "/newProp", "newValue");
 
-		// Replace properties
-		assertTagValue(doc, "/homepage", "http://new.home.page");
+    // Replace properties
+    assertTagValue(doc, "/homepage", "http://new.home.page");
 
-		// Add dependencies
-		assertTagValue(doc, "/dependencies/custom", "2222");
+    // Add dependencies
+    assertTagValue(doc, "/dependencies/custom", "2222");
 
-		// Original dependencies
-		assertTagValue(doc, "/dependencies/inherits", "^2.0.1");
+    // Original dependencies
+    assertTagValue(doc, "/dependencies/inherits", "^2.0.1");
 
-		// Add dependencies
-		assertTagValue(doc, "/peerDependencies/customPeer", "1111");
+    // Add dependencies
+    assertTagValue(doc, "/peerDependencies/customPeer", "1111");
 
-		// Add keywords
-		assertTagValue(doc, "/keywords", "NewKeyword");
+    // Add keywords
+    assertTagValue(doc, "/keywords", "NewKeyword");
 
-		// Original keywords
-		assertTagValue(doc, "/keywords", "Kurento");
-	}
+    // Original keywords
+    assertTagValue(doc, "/keywords", "Kurento");
+  }
 
-	private void findJsonElementsPath(JsonObject node, String[] propertyName,
-			List<JsonElement> list) {
+  private void findJsonElementsPath(JsonObject node, String[] propertyName,
+      List<JsonElement> list) {
 
-		for (Entry<String, JsonElement> entry : node.entrySet()) {
-			if (entry.getKey().equals(propertyName[0])) {
+    for (Entry<String, JsonElement> entry : node.entrySet()) {
+      if (entry.getKey().equals(propertyName[0])) {
 
-				if (propertyName.length == 1) {
-					list.add(entry.getValue());
-				} else {
-					JsonElement elem = entry.getValue();
-					if (elem instanceof JsonObject) {
-						findJsonElementsPath((JsonObject) elem,
-								Arrays.copyOfRange(propertyName, 1,
-										propertyName.length),
-								list);
-					}
-				}
-			}
-		}
-	}
+        if (propertyName.length == 1) {
+          list.add(entry.getValue());
+        } else {
+          JsonElement elem = entry.getValue();
+          if (elem instanceof JsonObject) {
+            findJsonElementsPath((JsonObject) elem,
+                Arrays.copyOfRange(propertyName, 1, propertyName.length), list);
+          }
+        }
+      }
+    }
+  }
 
-	private void findJsonElementsProp(JsonObject node, String propertyName,
-			List<JsonElement> list) {
+  private void findJsonElementsProp(JsonObject node, String propertyName, List<JsonElement> list) {
 
-		for (Entry<String, JsonElement> entry : node.entrySet()) {
-			if (entry.getKey().equals(propertyName)) {
-				list.add(entry.getValue());
-			} else {
-				JsonElement elem = entry.getValue();
-				if (elem instanceof JsonObject) {
-					findJsonElementsProp((JsonObject) elem, propertyName, list);
-				}
-			}
-		}
-	}
+    for (Entry<String, JsonElement> entry : node.entrySet()) {
+      if (entry.getKey().equals(propertyName)) {
+        list.add(entry.getValue());
+      } else {
+        JsonElement elem = entry.getValue();
+        if (elem instanceof JsonObject) {
+          findJsonElementsProp((JsonObject) elem, propertyName, list);
+        }
+      }
+    }
+  }
 
-	private void assertTagValue(JsonObject node, String propertyName,
-			String value) throws XPathExpressionException {
+  private void assertTagValue(JsonObject node, String propertyName, String value)
+      throws XPathExpressionException {
 
-		List<JsonElement> list = new ArrayList<>();
+    List<JsonElement> list = new ArrayList<>();
 
-		if (propertyName.startsWith("/")) {
-			findJsonElementsPath(node, propertyName.substring(1).split("/"),
-					list);
-		} else {
-			findJsonElementsProp(node, propertyName, list);
-		}
+    if (propertyName.startsWith("/")) {
+      findJsonElementsPath(node, propertyName.substring(1).split("/"), list);
+    } else {
+      findJsonElementsProp(node, propertyName, list);
+    }
 
-		if (list.isEmpty()) {
-			fail("Property '" + propertyName + "' no found in the document");
+    if (list.isEmpty()) {
+      fail("Property '" + propertyName + "' no found in the document");
 
-		} else {
+    } else {
 
-			for (JsonElement elem : list) {
+      for (JsonElement elem : list) {
 
-				if (elem instanceof JsonPrimitive) {
+        if (elem instanceof JsonPrimitive) {
 
-					if (value.equals(((JsonPrimitive) elem).getAsString())) {
-						return;
-					}
+          if (value.equals(((JsonPrimitive) elem).getAsString())) {
+            return;
+          }
 
-				} else if (elem instanceof JsonArray) {
+        } else if (elem instanceof JsonArray) {
 
-					JsonArray elemArray = (JsonArray) elem;
-					for (JsonElement arrayElem : elemArray) {
+          JsonArray elemArray = (JsonArray) elem;
+          for (JsonElement arrayElem : elemArray) {
 
-						if (arrayElem instanceof JsonPrimitive) {
+            if (arrayElem instanceof JsonPrimitive) {
 
-							if (value.equals(((JsonPrimitive) arrayElem)
-									.getAsString())) {
-								return;
-							}
-						}
-					}
-				}
-			}
+              if (value.equals(((JsonPrimitive) arrayElem).getAsString())) {
+                return;
+              }
+            }
+          }
+        }
+      }
 
-			fail("There is no tag '" + propertyName + "' with value '" + value
-					+ "'");
-		}
-	}
+      fail("There is no tag '" + propertyName + "' with value '" + value + "'");
+    }
+  }
 
-	private JsonObject loadJsonFile(Path jsonFile)
-			throws ParserConfigurationException, SAXException, IOException {
+  private JsonObject loadJsonFile(Path jsonFile)
+      throws ParserConfigurationException, SAXException, IOException {
 
-		Gson gson = new GsonBuilder().create();
+    Gson gson = new GsonBuilder().create();
 
-		return (JsonObject) gson.fromJson(
-				Files.newBufferedReader(jsonFile, StandardCharsets.UTF_8),
-				JsonElement.class);
-	}
+    return (JsonObject) gson.fromJson(Files.newBufferedReader(jsonFile, StandardCharsets.UTF_8),
+        JsonElement.class);
+  }
 
-	private void printFile(Path file) throws IOException {
-		System.out.println(
-				new String(Files.readAllBytes(file), StandardCharsets.UTF_8));
-	}
+  private void printFile(Path file) throws IOException {
+    System.out.println(new String(Files.readAllBytes(file), StandardCharsets.UTF_8));
+  }
 
 }

@@ -20,82 +20,78 @@ import org.kurento.modulecreator.definition.TypeRef;
 
 public class NamespacesTest {
 
-	@Test
-	public void test() throws IOException, URISyntaxException {
+  @Test
+  public void test() throws IOException, URISyntaxException {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(
-				PathUtils.getPathInClasspath("/namespaces/moduleC.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/namespaces/moduleC.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/namespaces/moduleB.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/namespaces/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/namespaces/moduleA.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/namespaces/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		modCreator.loadModulesFromKmdFiles();
+    modCreator.loadModulesFromKmdFiles();
 
-		ModuleManager moduleManager = modCreator.getModuleManager();
+    ModuleManager moduleManager = modCreator.getModuleManager();
 
-		ModuleDefinition moduleA = moduleManager.getModule("moduleA");
-		ModuleDefinition moduleB = moduleManager.getModule("moduleB");
-		ModuleDefinition moduleC = moduleManager.getModule("moduleC");
-		ModuleDefinition coreModule = moduleManager.getModule("core");
+    ModuleDefinition moduleA = moduleManager.getModule("moduleA");
+    assertThat(moduleA, is(notNullValue()));
 
-		assertThat(moduleA, is(notNullValue()));
-		assertThat(moduleB, is(notNullValue()));
-		assertThat(moduleC, is(notNullValue()));
-		assertThat(coreModule, is(notNullValue()));
+    ModuleDefinition moduleB = moduleManager.getModule("moduleB");
+    assertThat(moduleB, is(notNullValue()));
 
-		RemoteClass classA = moduleA.getRemoteClass("moduleA.ClassA");
-		assertThat(classA, is(notNullValue()));
+    ModuleDefinition moduleC = moduleManager.getModule("moduleC");
+    assertThat(moduleC, is(notNullValue()));
 
-		RemoteClass classB = moduleB.getRemoteClass("moduleB.ClassB");
-		assertThat(classB, is(notNullValue()));
+    ModuleDefinition coreModule = moduleManager.getModule("core");
+    assertThat(coreModule, is(notNullValue()));
 
-		RemoteClass classC = moduleC.getRemoteClass("moduleC.ClassC");
-		assertThat(classC, is(notNullValue()));
+    RemoteClass classA = moduleA.getRemoteClass("moduleA.ClassA");
+    assertThat(classA, is(notNullValue()));
 
-		RemoteClass coreClass = coreModule.getRemoteClass("CoreClass");
-		assertThat(coreClass, is(notNullValue()));
+    RemoteClass classB = moduleB.getRemoteClass("moduleB.ClassB");
+    assertThat(classB, is(notNullValue()));
 
-		List<Param> paramsB = classB.getMethods().get(0).getParams();
+    RemoteClass classC = moduleC.getRemoteClass("moduleC.ClassC");
+    assertThat(classC, is(notNullValue()));
 
-		TypeRef classAType = paramsB.get(0).getType();
-		assertThat(classAType.getName(), equalTo("ClassA"));
-		assertThat(classAType.getModuleName(), equalTo("moduleA"));
-		assertThat(classAType.getModule(), equalTo(moduleA));
+    RemoteClass coreClass = coreModule.getRemoteClass("CoreClass");
+    assertThat(coreClass, is(notNullValue()));
 
-		TypeRef coreClassType = paramsB.get(1).getType();
-		assertThat(coreClassType.getName(), equalTo("CoreClass"));
-		assertThat(coreClassType.getModule(), equalTo(coreModule));
+    List<Param> paramsB = classB.getMethods().get(0).getParams();
 
-		TypeRef classBType = paramsB.get(2).getType();
-		assertThat(classBType.getName(), equalTo("ClassB"));
-		assertThat(classBType.getModule(), equalTo(moduleB));
+    TypeRef classAType = paramsB.get(0).getType();
+    assertThat(classAType.getName(), equalTo("ClassA"));
+    assertThat(classAType.getModuleName(), equalTo("moduleA"));
+    assertThat(classAType.getModule(), equalTo(moduleA));
 
-		List<Param> paramsC = classC.getMethods().get(0).getParams();
+    TypeRef coreClassType = paramsB.get(1).getType();
+    assertThat(coreClassType.getName(), equalTo("CoreClass"));
+    assertThat(coreClassType.getModule(), equalTo(coreModule));
 
-		TypeRef classABModuleAType = paramsC.get(0).getType();
-		assertThat(classABModuleAType.getName(), equalTo("ClassAB"));
-		assertThat(classABModuleAType.getModuleName(), equalTo("moduleA"));
-		assertThat(classABModuleAType.getModule(), equalTo(moduleA));
+    TypeRef classBType = paramsB.get(2).getType();
+    assertThat(classBType.getName(), equalTo("ClassB"));
+    assertThat(classBType.getModule(), equalTo(moduleB));
 
-		TypeRef classABModuleBType = paramsC.get(1).getType();
-		assertThat(classABModuleBType.getName(), equalTo("ClassAB"));
-		assertThat(classABModuleBType.getModuleName(), equalTo("moduleB"));
-		assertThat(classABModuleBType.getModule(), equalTo(moduleB));
+    List<Param> paramsC = classC.getMethods().get(0).getParams();
 
-	}
+    TypeRef classAbModuleaType = paramsC.get(0).getType();
+    assertThat(classAbModuleaType.getName(), equalTo("ClassAB"));
+    assertThat(classAbModuleaType.getModuleName(), equalTo("moduleA"));
+    assertThat(classAbModuleaType.getModule(), equalTo(moduleA));
+
+    TypeRef classAbModulebType = paramsC.get(1).getType();
+    assertThat(classAbModulebType.getName(), equalTo("ClassAB"));
+    assertThat(classAbModulebType.getModuleName(), equalTo("moduleB"));
+    assertThat(classAbModulebType.getModule(), equalTo(moduleB));
+
+  }
 
 }

@@ -64,79 +64,75 @@ import java.nio.file.attribute.BasicFileAttributes;
 import freemarker.cache.TemplateLoader;
 
 /**
- * A {@link TemplateLoader} that uses Paths in a specified directory as the
- * source of templates.
+ * A {@link TemplateLoader} that uses Paths in a specified directory as the source of templates.
  */
 public class PathTemplateLoader implements TemplateLoader {
 
-	private static final boolean SEP_IS_SLASH = File.separatorChar == '/';
+  private static final boolean SEP_IS_SLASH = File.separatorChar == '/';
 
-	public final Path baseDir;
+  public final Path baseDir;
 
-	/**
-	 * Creates a new file template loader that will use the specified directory
-	 * as the base directory for loading templates.
-	 * 
-	 * @param baseDir
-	 *            the base directory for loading templates
-	 */
-	public PathTemplateLoader(final Path baseDir) throws IOException {
-		this.baseDir = baseDir;
-	}
+  /**
+   * Creates a new file template loader that will use the specified directory as the base directory
+   * for loading templates.
+   * 
+   * @param baseDir
+   *          the base directory for loading templates
+   */
+  public PathTemplateLoader(final Path baseDir) throws IOException {
+    this.baseDir = baseDir;
+  }
 
-	@Override
-	public Object findTemplateSource(final String name) throws IOException {
+  @Override
+  public Object findTemplateSource(final String name) throws IOException {
 
-		String processedName = SEP_IS_SLASH ? name
-				: name.replace('/', File.separatorChar);
-		Path source = baseDir.resolve(processedName);
+    String processedName = SEP_IS_SLASH ? name : name.replace('/', File.separatorChar);
+    Path source = baseDir.resolve(processedName);
 
-		if (!Files.exists(source) || Files.isDirectory(source)) {
-			return null;
-		}
+    if (!Files.exists(source) || Files.isDirectory(source)) {
+      return null;
+    }
 
-		return source;
-	}
+    return source;
+  }
 
-	@Override
-	public long getLastModified(final Object templateSource) {
+  @Override
+  public long getLastModified(final Object templateSource) {
 
-		Path templateAsPath = (Path) templateSource;
-		BasicFileAttributeView basicView = Files.getFileAttributeView(
-				templateAsPath, BasicFileAttributeView.class);
+    Path templateAsPath = (Path) templateSource;
+    BasicFileAttributeView basicView = Files.getFileAttributeView(templateAsPath,
+        BasicFileAttributeView.class);
 
-		// This attribute view is perhaps not available in this system
-		if (basicView != null) {
+    // This attribute view is perhaps not available in this system
+    if (basicView != null) {
 
-			BasicFileAttributes basic;
-			try {
-				basic = basicView.readAttributes();
-			} catch (IOException e) {
-				return -1;
-			}
+      BasicFileAttributes basic;
+      try {
+        basic = basicView.readAttributes();
+      } catch (IOException e) {
+        return -1;
+      }
 
-			return basic.lastModifiedTime().toMillis();
+      return basic.lastModifiedTime().toMillis();
 
-		} else {
-			return -1;
-		}
-	}
+    } else {
+      return -1;
+    }
+  }
 
-	@Override
-	public Reader getReader(final Object templateSource, final String encoding)
-			throws IOException {
+  @Override
+  public Reader getReader(final Object templateSource, final String encoding) throws IOException {
 
-		if (!(templateSource instanceof Path)) {
-			throw new IllegalArgumentException("templateSource is a: "
-					+ templateSource.getClass().getName());
-		}
+    if (!(templateSource instanceof Path)) {
+      throw new IllegalArgumentException(
+          "templateSource is a: " + templateSource.getClass().getName());
+    }
 
-		return Files.newBufferedReader((Path) templateSource,
-				Charset.forName(encoding));
-	}
+    return Files.newBufferedReader((Path) templateSource, Charset.forName(encoding));
+  }
 
-	@Override
-	public void closeTemplateSource(Object templateSource) {
-		// Do nothing.
-	}
+  @Override
+  public void closeTemplateSource(Object templateSource) {
+    // Do nothing.
+  }
 }

@@ -8,137 +8,133 @@ import com.google.gson.annotations.SerializedName;
 
 public class Method extends NamedElement {
 
-	private List<Param> params;
+  private List<Param> params;
 
-	@SerializedName("return")
-	private Return returnProp;
+  @SerializedName("return")
+  private Return returnProp;
 
-	public Method(String name, String doc, List<Param> params,
-			Return returnProp) {
-		super(name, doc);
-		this.setParams(params);
+  public Method(String name, String doc, List<Param> params, Return returnProp) {
+    super(name, doc);
+    this.setParams(params);
 
-		this.returnProp = returnProp;
-	}
+    this.returnProp = returnProp;
+  }
 
-	public List<Param> getParams() {
-		return params;
-	}
+  public List<Param> getParams() {
+    return params;
+  }
 
-	public Return getReturn() {
-		return returnProp;
-	}
+  public Return getReturn() {
+    return returnProp;
+  }
 
-	public void setParams(List<Param> params) {
-		this.params = params;
-	}
+  public void setParams(List<Param> params) {
+    this.params = params;
+  }
 
-	public void setReturnProp(Return returnProp) {
-		this.returnProp = returnProp;
-	}
+  public void setReturnProp(Return returnProp) {
+    this.returnProp = returnProp;
+  }
 
-	@Override
-	public String toString() {
-		return "Method [params=" + params + ", return=" + returnProp + ", doc="
-				+ getDoc() + ", name=" + getName() + "]";
-	}
+  @Override
+  public String toString() {
+    return "Method [params=" + params + ", return=" + returnProp + ", doc=" + getDoc() + ", name="
+        + getName() + "]";
+  }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((params == null) ? 0 : params.hashCode());
-		result = prime * result
-				+ ((returnProp == null) ? 0 : returnProp.hashCode());
-		return result;
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((params == null) ? 0 : params.hashCode());
+    result = prime * result + ((returnProp == null) ? 0 : returnProp.hashCode());
+    return result;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!super.equals(obj)) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		Method other = (Method) obj;
-		if (params == null) {
-			if (other.params != null) {
-				return false;
-			}
-		} else if (!params.equals(other.params)) {
-			return false;
-		}
-		if (returnProp == null) {
-			if (other.returnProp != null) {
-				return false;
-			}
-		} else if (!returnProp.equals(other.returnProp)) {
-			return false;
-		}
-		return true;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    Method other = (Method) obj;
+    if (params == null) {
+      if (other.params != null) {
+        return false;
+      }
+    } else if (!params.equals(other.params)) {
+      return false;
+    }
+    if (returnProp == null) {
+      if (other.returnProp != null) {
+        return false;
+      }
+    } else if (!returnProp.equals(other.returnProp)) {
+      return false;
+    }
+    return true;
+  }
 
-	@Override
-	public List<ModelElement> getChildren() {
-		List<ModelElement> children = new ArrayList<ModelElement>();
+  @Override
+  public List<ModelElement> getChildren() {
+    List<ModelElement> children = new ArrayList<ModelElement>();
 
-		if (params != null) {
-			children.addAll(params);
-		}
+    if (params != null) {
+      children.addAll(params);
+    }
 
-		if (returnProp != null) {
-			children.add(returnProp);
-		}
+    if (returnProp != null) {
+      children.add(returnProp);
+    }
 
-		return children;
-	}
+    return children;
+  }
 
-	public List<Method> expandIfOpsParams() {
+  public List<Method> expandIfOpsParams() {
 
-		boolean optParam = false;
-		for (Param param : this.params) {
-			if (param.isOptional()) {
-				optParam = true;
-				break;
-			}
-		}
+    boolean optParam = false;
+    for (Param param : this.params) {
+      if (param.isOptional()) {
+        optParam = true;
+        break;
+      }
+    }
 
-		if (optParam) {
+    if (optParam) {
 
-			List<Method> expandedMethods = new ArrayList<Method>();
-			for (Param param : this.params) {
-				if (param.isOptional()) {
+      List<Method> expandedMethods = new ArrayList<Method>();
+      for (Param param : this.params) {
+        if (param.isOptional()) {
 
-					List<Param> newParams = sublistUntilParam(params, param);
-					expandedMethods
-							.add(new Method(name, doc, newParams, returnProp));
-				}
-			}
+          List<Param> newParams = sublistUntilParam(params, param);
+          expandedMethods.add(new Method(name, doc, newParams, returnProp));
+        }
+      }
 
-			return expandedMethods;
+      return expandedMethods;
 
-		} else {
-			return Collections.emptyList();
-		}
-	}
+    } else {
+      return Collections.emptyList();
+    }
+  }
 
-	private List<Param> sublistUntilParam(List<Param> params,
-			Param centinelParam) {
+  private List<Param> sublistUntilParam(List<Param> params, Param centinelParam) {
 
-		List<Param> newParams = new ArrayList<Param>();
+    List<Param> newParams = new ArrayList<Param>();
 
-		for (Param param : params) {
-			if (param != centinelParam) {
-				newParams.add(param);
-			} else {
-				break;
-			}
-		}
-		return newParams;
-	}
+    for (Param param : params) {
+      if (param != centinelParam) {
+        newParams.add(param);
+      } else {
+        break;
+      }
+    }
+    return newParams;
+  }
 
 }

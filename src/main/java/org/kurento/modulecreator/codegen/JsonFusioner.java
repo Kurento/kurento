@@ -25,170 +25,156 @@ import com.google.gson.JsonSyntaxException;
 
 public class JsonFusioner {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(JsonFusioner.class);
+  private static final Logger log = LoggerFactory.getLogger(JsonFusioner.class);
 
-	private static final Gson gson = new GsonBuilder().setPrettyPrinting()
-			.disableHtmlEscaping().create();
+  private static final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping()
+      .create();
 
-	private final Path generatedJson;
-	private final Path customizerJson;
-	private final Path outputFile;
+  private final Path generatedJson;
+  private final Path customizerJson;
+  private final Path outputFile;
 
-	private final Set<String> addChildrenTags;
-	private final Set<String> replaceChildrenTags;
+  private final Set<String> addChildrenTags;
+  private final Set<String> replaceChildrenTags;
 
-	public JsonFusioner(Path generatedJson, Path customizerJson,
-			Path outputFile) {
-		this(generatedJson, customizerJson, outputFile, null, null);
-	}
+  public JsonFusioner(Path generatedJson, Path customizerJson, Path outputFile) {
+    this(generatedJson, customizerJson, outputFile, null, null);
+  }
 
-	public JsonFusioner(Path generatedJson, Path customizerJson,
-			Path outputFile, String[] addChildrenTags,
-			String[] replaceChildrenTags) {
-		super();
-		this.generatedJson = generatedJson;
-		this.customizerJson = customizerJson;
-		this.outputFile = outputFile;
-		this.addChildrenTags = new HashSet<String>(
-				Arrays.asList(addChildrenTags));
-		this.replaceChildrenTags = new HashSet<String>(
-				Arrays.asList(replaceChildrenTags));
-	}
+  public JsonFusioner(Path generatedJson, Path customizerJson, Path outputFile,
+      String[] addChildrenTags, String[] replaceChildrenTags) {
+    super();
+    this.generatedJson = generatedJson;
+    this.customizerJson = customizerJson;
+    this.outputFile = outputFile;
+    this.addChildrenTags = new HashSet<String>(Arrays.asList(addChildrenTags));
+    this.replaceChildrenTags = new HashSet<String>(Arrays.asList(replaceChildrenTags));
+  }
 
-	public void fusionJsons() throws IOException {
+  public void fusionJsons() throws IOException {
 
-		try {
-			JsonObject generatedJsonDoc = loadJson(generatedJson);
-			JsonObject customizedJsonDoc = loadJson(customizerJson);
+    try {
+      JsonObject generatedJsonDoc = loadJson(generatedJson);
+      JsonObject customizedJsonDoc = loadJson(customizerJson);
 
-			merge(generatedJsonDoc, customizedJsonDoc, new ArrayList<String>());
+      merge(generatedJsonDoc, customizedJsonDoc, new ArrayList<String>());
 
-			writeJson(generatedJsonDoc);
-		} catch (IOException e) {
-			log.warn("Error while merging '" + generatedJson + "' with '"
-					+ customizerJson + "': " + e.getMessage());
-		}
-	}
+      writeJson(generatedJsonDoc);
+    } catch (IOException e) {
+      log.warn("Error while merging '" + generatedJson + "' with '" + customizerJson + "': "
+          + e.getMessage());
+    }
+  }
 
-	private void merge(JsonObject genNode, JsonObject custNode,
-			List<String> genPath) {
+  private void merge(JsonObject genNode, JsonObject custNode, List<String> genPath) {
 
-		for (Entry<String, JsonElement> entry : custNode.entrySet()) {
+    for (Entry<String, JsonElement> entry : custNode.entrySet()) {
 
-			JsonElement custChildNode = entry.getValue();
+      JsonElement custChildNode = entry.getValue();
 
-			JsonElement genChildNode = genNode.get(entry.getKey());
+      JsonElement genChildNode = genNode.get(entry.getKey());
 
-			if (genChildNode != null) {
+      if (genChildNode != null) {
 
-				String nodePath = getPath(genPath, entry.getKey());
+        String nodePath = getPath(genPath, entry.getKey());
 
-				if (replaceChildrenTags.contains(nodePath)) {
+        if (replaceChildrenTags.contains(nodePath)) {
 
-					if (custChildNode instanceof JsonObject
-							&& genChildNode instanceof JsonObject) {
+          if (custChildNode instanceof JsonObject && genChildNode instanceof JsonObject) {
 
-						List<String> newPath = new ArrayList<String>(genPath);
-						newPath.add(entry.getKey());
+            List<String> newPath = new ArrayList<String>(genPath);
+            newPath.add(entry.getKey());
 
-						merge((JsonObject) genChildNode,
-								(JsonObject) custChildNode, newPath);
-					}
+            merge((JsonObject) genChildNode, (JsonObject) custChildNode, newPath);
+          }
 
-				} else if (addChildrenTags.contains(nodePath)) {
+        } else if (addChildrenTags.contains(nodePath)) {
 
-					addChildren(custChildNode, genChildNode);
+          addChildren(custChildNode, genChildNode);
 
-				} else if (includedInReplaceOrAdd(nodePath)) {
+        } else if (includedInReplaceOrAdd(nodePath)) {
 
-					if (custChildNode instanceof JsonObject
-							&& genChildNode instanceof JsonObject) {
+          if (custChildNode instanceof JsonObject && genChildNode instanceof JsonObject) {
 
-						List<String> newPath = new ArrayList<String>(genPath);
-						newPath.add(entry.getKey());
+            List<String> newPath = new ArrayList<String>(genPath);
+            newPath.add(entry.getKey());
 
-						merge((JsonObject) genChildNode,
-								(JsonObject) custChildNode, newPath);
-					}
+            merge((JsonObject) genChildNode, (JsonObject) custChildNode, newPath);
+          }
 
-				} else {
+        } else {
 
-					// Replace entire node
-					genNode.add(entry.getKey(), custChildNode);
-				}
+          // Replace entire node
+          genNode.add(entry.getKey(), custChildNode);
+        }
 
-			} else {
+      } else {
 
-				// Add new node
-				genNode.add(entry.getKey(), custChildNode);
-			}
-		}
-	}
+        // Add new node
+        genNode.add(entry.getKey(), custChildNode);
+      }
+    }
+  }
 
-	private void addChildren(JsonElement fromElement, JsonElement toElement) {
+  private void addChildren(JsonElement fromElement, JsonElement toElement) {
 
-		if (fromElement instanceof JsonObject
-				&& toElement instanceof JsonObject) {
+    if (fromElement instanceof JsonObject && toElement instanceof JsonObject) {
 
-			JsonObject fromObject = (JsonObject) fromElement;
-			JsonObject toObject = (JsonObject) toElement;
+      JsonObject fromObject = (JsonObject) fromElement;
+      JsonObject toObject = (JsonObject) toElement;
 
-			for (Entry<String, JsonElement> entry : fromObject.entrySet()) {
-				toObject.add(entry.getKey(), entry.getValue());
-			}
+      for (Entry<String, JsonElement> entry : fromObject.entrySet()) {
+        toObject.add(entry.getKey(), entry.getValue());
+      }
 
-		} else if (fromElement instanceof JsonArray
-				&& toElement instanceof JsonArray) {
+    } else if (fromElement instanceof JsonArray && toElement instanceof JsonArray) {
 
-			JsonArray fromArray = (JsonArray) fromElement;
-			JsonArray toArray = (JsonArray) toElement;
+      JsonArray fromArray = (JsonArray) fromElement;
+      JsonArray toArray = (JsonArray) toElement;
 
-			toArray.addAll(fromArray);
-		}
-	}
+      toArray.addAll(fromArray);
+    }
+  }
 
-	private boolean includedInReplaceOrAdd(String nodePath) {
+  private boolean includedInReplaceOrAdd(String nodePath) {
 
-		for (String path : replaceChildrenTags) {
-			if (path.startsWith(nodePath)) {
-				return true;
-			}
-		}
+    for (String path : replaceChildrenTags) {
+      if (path.startsWith(nodePath)) {
+        return true;
+      }
+    }
 
-		for (String path : addChildrenTags) {
-			if (path.startsWith(nodePath)) {
-				return true;
-			}
-		}
+    for (String path : addChildrenTags) {
+      if (path.startsWith(nodePath)) {
+        return true;
+      }
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	private String getPath(List<String> path, String propName) {
+  private String getPath(List<String> path, String propName) {
 
-		StringBuilder sb = new StringBuilder("/");
-		for (String prop : path) {
-			sb.append(prop).append("/");
-		}
-		sb.append(propName);
-		return sb.toString();
-	}
+    StringBuilder sb = new StringBuilder("/");
+    for (String prop : path) {
+      sb.append(prop).append("/");
+    }
+    sb.append(propName);
+    return sb.toString();
+  }
 
-	private JsonObject loadJson(Path jsonPath)
-			throws JsonSyntaxException, JsonIOException, IOException {
+  private JsonObject loadJson(Path jsonPath)
+      throws JsonSyntaxException, JsonIOException, IOException {
 
-		return (JsonObject) gson.fromJson(
-				Files.newBufferedReader(jsonPath, StandardCharsets.UTF_8),
-				JsonElement.class);
-	}
+    return (JsonObject) gson.fromJson(Files.newBufferedReader(jsonPath, StandardCharsets.UTF_8),
+        JsonElement.class);
+  }
 
-	private void writeJson(JsonObject doc) throws IOException {
+  private void writeJson(JsonObject doc) throws IOException {
 
-		String json = gson.toJson(doc);
-		try (Writer os = Files.newBufferedWriter(outputFile,
-				StandardCharsets.UTF_8)) {
-			os.write(json);
-		}
-	}
+    String json = gson.toJson(doc);
+    try (Writer os = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {
+      os.write(json);
+    }
+  }
 }

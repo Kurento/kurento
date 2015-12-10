@@ -2,18 +2,18 @@ package org.kurento.modulecreator.codegen;
 
 public class Error {
 
-	private String message;
+  private String message;
 
-	public Error(String message) {
-		this.message = message;
-	}
+  public Error(String message) {
+    this.message = message;
+  }
 
-	public String getMessage() {
-		return message;
-	}
+  public String getMessage() {
+    return message;
+  }
 
-	@Override
-	public String toString() {
-		return message;
-	}
+  @Override
+  public String toString() {
+    return message;
+  }
 }

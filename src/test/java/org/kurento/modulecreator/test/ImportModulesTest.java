@@ -14,47 +14,43 @@ import org.kurento.modulecreator.definition.ModuleDefinition;
 
 public class ImportModulesTest {
 
-	@Test
-	public void test() throws IOException, URISyntaxException {
+  @Test
+  public void test() throws IOException, URISyntaxException {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/importmodules/moduleC.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/importmodules/moduleC.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/importmodules/moduleB.kmd.json"));
+    modCreator
+        .addDependencyKmdFile(PathUtils.getPathInClasspath("/importmodules/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/importmodules/moduleA.kmd.json"));
+    modCreator
+        .addDependencyKmdFile(PathUtils.getPathInClasspath("/importmodules/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		modCreator.loadModulesFromKmdFiles();
+    modCreator.loadModulesFromKmdFiles();
 
-		ModuleManager moduleManager = modCreator.getModuleManager();
+    ModuleManager moduleManager = modCreator.getModuleManager();
 
-		ModuleDefinition moduleB = moduleManager.getModule("moduleB");
-		ModuleDefinition moduleC = moduleManager.getModule("moduleC");
+    ModuleDefinition moduleB = moduleManager.getModule("moduleB");
+    ModuleDefinition moduleC = moduleManager.getModule("moduleC");
 
-		String impModAFromModB = moduleB.getImports().get(0).getMavenVersion();
-		assertThat(impModAFromModB, is("0.0.1-SNAPSHOT"));
+    String impModAFromModB = moduleB.getImports().get(0).getMavenVersion();
+    assertThat(impModAFromModB, is("0.0.1-SNAPSHOT"));
 
-		String impModAFromModC = moduleC.getImports().get(0).getMavenVersion();
-		assertThat(impModAFromModC, is("1.0.0-SNAPSHOT"));
+    String impModAFromModC = moduleC.getImports().get(0).getMavenVersion();
+    assertThat(impModAFromModC, is("1.0.0-SNAPSHOT"));
 
-		String impCoreFromModB = moduleB.getImports().get(1).getMavenVersion();
-		assertThat(impCoreFromModB, is("1.0.0"));
+    String impCoreFromModB = moduleB.getImports().get(1).getMavenVersion();
+    assertThat(impCoreFromModB, is("1.0.0"));
 
-		String impCoreFromModC = moduleC.getImports().get(1).getMavenVersion();
-		assertThat(impCoreFromModC, is("[1.0,2.0)"));
-	}
+    String impCoreFromModC = moduleC.getImports().get(1).getMavenVersion();
+    assertThat(impCoreFromModC, is("[1.0,2.0)"));
+  }
 
 }

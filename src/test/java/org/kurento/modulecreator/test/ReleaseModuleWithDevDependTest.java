@@ -1,50 +1,46 @@
 package org.kurento.modulecreator.test;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 import org.kurento.modulecreator.KurentoModuleCreator;
 import org.kurento.modulecreator.KurentoModuleCreatorException;
 import org.kurento.modulecreator.PathUtils;
 
+import junit.framework.Assert;
+
 public class ReleaseModuleWithDevDependTest {
 
-	@Test
-	public void test() throws Exception {
+  @Test
+  public void test() throws Exception {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/releaseversion/moduleA.kmd.json"));
+    modCreator
+        .addDependencyKmdFile(PathUtils.getPathInClasspath("/releaseversion/moduleA.kmd.json"));
 
-		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/releaseversion/moduleB.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/releaseversion/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		try {
+    try {
 
-			modCreator.loadModulesFromKmdFiles();
+      modCreator.loadModulesFromKmdFiles();
 
-			Assert.fail(
-					"Exception KurentoModuleCreatorException for dev dependencies in release should be thrown");
+      Assert.fail("Exception KurentoModuleCreatorException for dev"
+          + " dependencies in release should be thrown");
 
-		} catch (KurentoModuleCreatorException e) {
+    } catch (KurentoModuleCreatorException e) {
 
-			Assert.assertTrue(
-					"Exception message should be: "
-							+ "\"All dependencies of a release version must be also release versions\""
-							+ " but it is: \"" + e.getMessage() + "\"",
-					e.getMessage().contains(
-							"All dependencies of a release version must be also release versions"));
+      Assert.assertTrue(
+          "Exception message should be: "
+              + "\"All dependencies of a release version must be also release versions\""
+              + " but it is: \"" + e.getMessage() + "\"",
+          e.getMessage()
+              .contains("All dependencies of a release version must be also release versions"));
 
-		}
-	}
+    }
+  }
 }

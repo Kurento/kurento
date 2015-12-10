@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012-2014 Zafar Khaja <zafarkhaja@gmail.com>.
+ * Copyright 2012-2014 Zafar Khaja (zafarkhaja@gmail.com).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * */
+
 package com.github.zafarkhaja.semver.expr;
 
 import com.github.zafarkhaja.semver.Version;
@@ -28,42 +29,40 @@ import com.github.zafarkhaja.semver.Version;
 /**
  * Expression for the comparison "greater than" operator.
  *
- * @author Zafar Khaja <zafarkhaja@gmail.com>
+ * @author Zafar Khaja (zafarkhaja@gmail.com)
  * @since 0.7.0
  */
 public class Greater implements Expression {
 
-	/**
-	 * The parsed version, the right-hand operand of the "greater than"
-	 * operator.
-	 */
-	private final Version parsedVersion;
+  /**
+   * The parsed version, the right-hand operand of the "greater than" operator.
+   */
+  private final Version parsedVersion;
 
-	/**
-	 * Constructs a {@code Greater} expression with the parsed version.
-	 *
-	 * @param parsedVersion
-	 *            the parsed version
-	 */
-	Greater(Version parsedVersion) {
-		this.parsedVersion = parsedVersion;
-	}
+  /**
+   * Constructs a {@code Greater} expression with the parsed version.
+   *
+   * @param parsedVersion
+   *          the parsed version
+   */
+  Greater(Version parsedVersion) {
+    this.parsedVersion = parsedVersion;
+  }
 
-	/**
-	 * Checks if the current version is greater than the parsed version.
-	 *
-	 * @param version
-	 *            the version to compare to, the left-hand operand of the
-	 *            "greater than" operator
-	 * @return {@code true} if the version is greater than the parsed version or
-	 *         {@code false} otherwise
-	 */
-	@Override
-	public boolean interpret(Version version) {
-		return version.greaterThan(parsedVersion);
-	}
+  /**
+   * Checks if the current version is greater than the parsed version.
+   *
+   * @param version
+   *          the version to compare to, the left-hand operand of the "greater than" operator
+   * @return {@code true} if the version is greater than the parsed version or {@code false}
+   *         otherwise
+   */
+  @Override
+  public boolean interpret(Version version) {
+    return version.greaterThan(parsedVersion);
+  }
 
-	public Version getParsedVersion() {
-		return parsedVersion;
-	}
+  public Version getParsedVersion() {
+    return parsedVersion;
+  }
 }

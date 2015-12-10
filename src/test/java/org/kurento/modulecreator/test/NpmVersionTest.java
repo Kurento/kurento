@@ -14,49 +14,40 @@ import org.kurento.modulecreator.definition.ModuleDefinition;
 
 public class NpmVersionTest {
 
-	@Test
-	public void test() throws IOException, URISyntaxException {
+  @Test
+  public void test() throws IOException, URISyntaxException {
 
-		KurentoModuleCreator modCreator = new KurentoModuleCreator();
+    KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
-		modCreator.addKmdFileToGen(
-				PathUtils.getPathInClasspath("/npmversion/moduleC.kmd.json"));
+    modCreator.addKmdFileToGen(PathUtils.getPathInClasspath("/npmversion/moduleC.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/npmversion/moduleB.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/npmversion/moduleB.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/npmversion/moduleA.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/npmversion/moduleA.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakecore.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakecore.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakeelements.kmd.json"));
 
-		modCreator.addDependencyKmdFile(
-				PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
+    modCreator.addDependencyKmdFile(PathUtils.getPathInClasspath("/fakefilters.kmd.json"));
 
-		modCreator.loadModulesFromKmdFiles();
+    modCreator.loadModulesFromKmdFiles();
 
-		ModuleManager moduleManager = modCreator.getModuleManager();
+    ModuleManager moduleManager = modCreator.getModuleManager();
 
-		ModuleDefinition moduleA = moduleManager.getModule("moduleA");
-		ModuleDefinition moduleB = moduleManager.getModule("moduleB");
-		ModuleDefinition moduleC = moduleManager.getModule("moduleC");
+    ModuleDefinition moduleA = moduleManager.getModule("moduleA");
+    ModuleDefinition moduleB = moduleManager.getModule("moduleB");
+    ModuleDefinition moduleC = moduleManager.getModule("moduleC");
 
-		String npmVersionA = moduleA.getCode().getApi().get("js")
-				.get("npmVersion");
-		assertThat(npmVersionA, is("git://host/path"));
+    String npmVersionA = moduleA.getCode().getApi().get("js").get("npmVersion");
+    assertThat(npmVersionA, is("git://host/path"));
 
-		String npmVersionB = moduleB.getCode().getApi().get("js")
-				.get("npmVersion");
-		assertThat(npmVersionB, is("1.0.0"));
+    String npmVersionB = moduleB.getCode().getApi().get("js").get("npmVersion");
+    assertThat(npmVersionB, is("1.0.0"));
 
-		String npmVersionC = moduleC.getCode().getApi().get("js")
-				.get("npmVersion");
-		assertThat(npmVersionC, is("1.0.0-d"));
+    String npmVersionC = moduleC.getCode().getApi().get("js").get("npmVersion");
+    assertThat(npmVersionC, is("1.0.0-d"));
 
-	}
+  }
 
 }

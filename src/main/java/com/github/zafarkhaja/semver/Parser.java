@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012-2014 Zafar Khaja <zafarkhaja@gmail.com>.
+ * Copyright 2012-2014 Zafar Khaja (zafarkhaja@gmail.com).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.zafarkhaja.semver;
 
 /**
  * A parser interface.
  *
  * @param <T>
- *            the type of parser's output
+ *          the type of parser's output
  *
- * @author Zafar Khaja <zafarkhaja@gmail.com>
+ * @author Zafar Khaja (zafarkhaja@gmail.com)
  * @since 0.7.0
  */
 public interface Parser<T> {
 
-	/**
-	 * Parses the input string.
-	 *
-	 * @param input
-	 *            the string to parse
-	 * @return the Abstract Syntax Tree
-	 */
-	T parse(String input);
+  /**
+   * Parses the input string.
+   *
+   * @param input
+   *          the string to parse
+   * @return the Abstract Syntax Tree
+   */
+  T parse(String input);
 }

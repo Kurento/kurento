@@ -26,189 +26,176 @@ import java.util.Objects;
 
 public class PathUtils {
 
-	public static class Finder extends SimpleFileVisitor<Path> {
+  public static class Finder extends SimpleFileVisitor<Path> {
 
-		private final PathMatcher matcher;
-		private List<Path> paths = new ArrayList<>();
+    private final PathMatcher matcher;
+    private final List<Path> paths = new ArrayList<>();
 
-		Finder(String pattern) {
-			matcher = FileSystems.getDefault()
-					.getPathMatcher("glob:" + pattern);
-		}
+    Finder(String pattern) {
+      matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+    }
 
-		// Compares the glob pattern against
-		// the file or directory name.
-		void find(Path file) {
-			Path name = file.getFileName();
-			if (name != null && matcher.matches(name)) {
-				paths.add(file);
-			}
-		}
+    // Compares the glob pattern against
+    // the file or directory name.
+    void find(Path file) {
+      Path name = file.getFileName();
+      if (name != null && matcher.matches(name)) {
+        paths.add(file);
+      }
+    }
 
-		// Invoke the pattern matching
-		// method on each file.
-		@Override
-		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-			find(file);
-			return CONTINUE;
-		}
+    // Invoke the pattern matching
+    // method on each file.
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+      find(file);
+      return CONTINUE;
+    }
 
-		// Invoke the pattern matching
-		// method on each directory.
-		@Override
-		public FileVisitResult preVisitDirectory(Path dir,
-				BasicFileAttributes attrs) {
-			find(dir);
-			return CONTINUE;
-		}
+    // Invoke the pattern matching
+    // method on each directory.
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+      find(dir);
+      return CONTINUE;
+    }
 
-		@Override
-		public FileVisitResult visitFileFailed(Path file, IOException exc) {
-			System.err.println(exc);
-			return CONTINUE;
-		}
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+      System.err.println(exc);
+      return CONTINUE;
+    }
 
-		public List<Path> getPaths() {
-			return paths;
-		}
-	}
+    public List<Path> getPaths() {
+      return paths;
+    }
+  }
 
-	public static Path getPathInClasspath(String resourceName)
-			throws IOException, URISyntaxException {
-		return getPathInClasspath(PathUtils.class.getResource(resourceName));
-	}
+  public static Path getPathInClasspath(String resourceName)
+      throws IOException, URISyntaxException {
+    return getPathInClasspath(PathUtils.class.getResource(resourceName));
+  }
 
-	public static Path getPathInClasspath(URL resource)
-			throws IOException, URISyntaxException {
+  public static Path getPathInClasspath(URL resource) throws IOException, URISyntaxException {
 
-		Objects.requireNonNull(resource, "Resource URL cannot be null");
-		URI uri = resource.toURI();
+    Objects.requireNonNull(resource, "Resource URL cannot be null");
+    URI uri = resource.toURI();
 
-		String scheme = uri.getScheme();
-		if (scheme.equals("file")) {
-			return Paths.get(uri);
-		}
+    String scheme = uri.getScheme();
+    if (scheme.equals("file")) {
+      return Paths.get(uri);
+    }
 
-		if (!scheme.equals("jar")) {
-			throw new IllegalArgumentException(
-					"Cannot convert to Path: " + uri);
-		}
+    if (!scheme.equals("jar")) {
+      throw new IllegalArgumentException("Cannot convert to Path: " + uri);
+    }
 
-		String s = uri.toString();
-		int separator = s.indexOf("!/");
-		String entryName = s.substring(separator + 2);
-		URI fileURI = URI.create(s.substring(0, separator));
+    String uriStr = uri.toString();
+    int separator = uriStr.indexOf("!/");
+    String entryName = uriStr.substring(separator + 2);
+    URI fileUri = URI.create(uriStr.substring(0, separator));
 
-		FileSystem fs = null;
+    FileSystem fs = null;
 
-		try {
+    try {
 
-			fs = FileSystems.newFileSystem(fileURI,
-					Collections.<String, Object> emptyMap());
+      fs = FileSystems.newFileSystem(fileUri, Collections.<String, Object>emptyMap());
 
-		} catch (FileSystemAlreadyExistsException e) {
-			fs = FileSystems.getFileSystem(fileURI);
-		}
+    } catch (FileSystemAlreadyExistsException e) {
+      fs = FileSystems.getFileSystem(fileUri);
+    }
 
-		return fs.getPath(entryName);
-	}
+    return fs.getPath(entryName);
+  }
 
-	public static void delete(Path folder, List<String> noDeleteFiles)
-			throws IOException {
-		delete(folder, folder, noDeleteFiles);
-	}
+  public static void delete(Path folder, List<String> noDeleteFiles) throws IOException {
+    delete(folder, folder, noDeleteFiles);
+  }
 
-	public static List<Path> getPaths(String[] pathNames, String globPattern)
-			throws IOException {
+  public static void delete(Path basePath, Path path, List<String> noDeleteFiles)
+      throws IOException {
 
-		List<Path> paths = new ArrayList<Path>();
-		for (String pathName : pathNames) {
-			Path path = Paths.get(pathName);
-			if (Files.exists(path)) {
-				paths.addAll(searchFiles(path, globPattern));
-			}
-		}
-		return paths;
-	}
+    Path relativePath = basePath.relativize(path);
 
-	public static List<Path> searchFiles(Path path, String globPattern)
-			throws IOException {
+    if (noDeleteFiles.contains(relativePath.toString())) {
+      return;
+    }
 
-		if (Files.isDirectory(path)) {
-			Finder finder = new Finder(globPattern);
-			Files.walkFileTree(path, finder);
-			return finder.getPaths();
-		} else {
-			PathMatcher matcher = FileSystems.getDefault()
-					.getPathMatcher("glob:" + globPattern);
+    if (Files.isDirectory(path)) {
 
-			if (matcher.matches(path.getFileName())) {
-				return Arrays.asList(path);
-			} else {
-				return Collections.emptyList();
-			}
-		}
-	}
+      try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(path)) {
+        for (Path c : directoryStream) {
+          delete(basePath, c, noDeleteFiles);
+        }
+      }
 
-	public static void deleteRecursive(Path path) throws IOException {
-		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file,
-					BasicFileAttributes attrs) throws IOException {
-				Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
+      if (isEmptyDir(path)) {
+        Files.delete(path);
+      }
+    } else {
+      Files.delete(path);
+    }
+  }
 
-			@Override
-			public FileVisitResult visitFileFailed(Path file, IOException exc)
-					throws IOException {
-				Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
+  public static List<Path> getPaths(String[] pathNames, String globPattern) throws IOException {
 
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-					throws IOException {
-				if (exc == null) {
-					Files.delete(dir);
-					return FileVisitResult.CONTINUE;
-				} else {
-					throw exc;
-				}
-			}
-		});
-	}
+    List<Path> paths = new ArrayList<Path>();
+    for (String pathName : pathNames) {
+      Path path = Paths.get(pathName);
+      if (Files.exists(path)) {
+        paths.addAll(searchFiles(path, globPattern));
+      }
+    }
+    return paths;
+  }
 
-	public static void delete(Path basePath, Path path,
-			List<String> noDeleteFiles) throws IOException {
+  public static List<Path> searchFiles(Path path, String globPattern) throws IOException {
 
-		Path relativePath = basePath.relativize(path);
+    if (Files.isDirectory(path)) {
+      Finder finder = new Finder(globPattern);
+      Files.walkFileTree(path, finder);
+      return finder.getPaths();
+    } else {
+      PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + globPattern);
 
-		if (noDeleteFiles.contains(relativePath.toString())) {
-			return;
-		}
+      if (matcher.matches(path.getFileName())) {
+        return Arrays.asList(path);
+      } else {
+        return Collections.emptyList();
+      }
+    }
+  }
 
-		if (Files.isDirectory(path)) {
+  public static void deleteRecursive(Path path) throws IOException {
+    Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
 
-			try (DirectoryStream<Path> directoryStream = Files
-					.newDirectoryStream(path)) {
-				for (Path c : directoryStream) {
-					delete(basePath, c, noDeleteFiles);
-				}
-			}
+      @Override
+      public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
 
-			if (isEmptyDir(path)) {
-				Files.delete(path);
-			}
-		} else {
-			Files.delete(path);
-		}
-	}
+      @Override
+      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        if (exc == null) {
+          Files.delete(dir);
+          return FileVisitResult.CONTINUE;
+        } else {
+          throw exc;
+        }
+      }
+    });
+  }
 
-	public static boolean isEmptyDir(Path path) throws IOException {
-		try (DirectoryStream<Path> ds = Files.newDirectoryStream(path)) {
-			Iterator<Path> files = ds.iterator();
-			return !files.hasNext();
-		}
-	}
+  public static boolean isEmptyDir(Path path) throws IOException {
+    try (DirectoryStream<Path> ds = Files.newDirectoryStream(path)) {
+      Iterator<Path> files = ds.iterator();
+      return !files.hasNext();
+    }
+  }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012-2014 Zafar Khaja <zafarkhaja@gmail.com>.
+ * Copyright 2012-2014 Zafar Khaja (zafarkhaja@gmail.com).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,27 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * */
+
 package com.github.zafarkhaja.semver.expr;
 
 import com.github.zafarkhaja.semver.Version;
 
 /**
- * The {@code Expression} interface is to be implemented by the nodes of the
- * Abstract Syntax Tree produced by the {@code ExpressionParser} class.
+ * The {@code Expression} interface is to be implemented by the nodes of the Abstract Syntax Tree
+ * produced by the {@code ExpressionParser} class.
  *
- * @author Zafar Khaja <zafarkhaja@gmail.com>
+ * @author Zafar Khaja (zafarkhaja@gmail.com)
  * @since 0.7.0
  */
 public interface Expression {
 
-	/**
-	 * Interprets the expression.
-	 *
-	 * @param version
-	 *            the version to interpret against
-	 * @return the result of the expression interpretation
-	 */
-	boolean interpret(Version version);
+  /**
+   * Interprets the expression.
+   *
+   * @param version
+   *          the version to interpret against
+   * @return the result of the expression interpretation
+   */
+  boolean interpret(Version version);
 }

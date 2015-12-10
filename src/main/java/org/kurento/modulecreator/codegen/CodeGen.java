@@ -45,259 +45,249 @@ import freemarker.template.TemplateExceptionHandler;
 
 public class CodeGen {
 
-	private Path templatesFolder;
-	private Configuration cfg;
+  private Path templatesFolder;
+  private Configuration cfg;
 
-	private final Path outputFolder;
+  private final Path outputFolder;
 
-	private final boolean listGeneratedFiles;
-	private final boolean verbose;
-	private final boolean overwrite;
-	private final JsonObject config;
+  private final boolean listGeneratedFiles;
+  private final boolean verbose;
+  private final boolean overwrite;
+  private final JsonObject config;
 
-	public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose,
-			boolean listGeneratedFiles, boolean overwrite, JsonObject config)
-					throws IOException {
+  public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose,
+      boolean listGeneratedFiles, boolean overwrite, JsonObject config) throws IOException {
 
-		this.verbose = verbose;
-		this.listGeneratedFiles = listGeneratedFiles;
-		this.overwrite = overwrite;
-		this.outputFolder = outputFolder;
-		this.config = config;
+    this.verbose = verbose;
+    this.listGeneratedFiles = listGeneratedFiles;
+    this.overwrite = overwrite;
+    this.outputFolder = outputFolder;
+    this.config = config;
 
-		if (templatesFolder != null) {
-			setTemplatesDir(templatesFolder);
-		}
-	}
+    if (templatesFolder != null) {
+      setTemplatesDir(templatesFolder);
+    }
+  }
 
-	public void setTemplatesDir(Path templatesFolder) throws IOException {
-		this.templatesFolder = templatesFolder;
+  public void setTemplatesDir(Path templatesFolder) throws IOException {
+    this.templatesFolder = templatesFolder;
 
-		cfg = new Configuration();
+    cfg = new Configuration();
 
-		// Specify the data source where the template files come from. Here I
-		// set a
-		// plain directory for it, but non-file-system are possible too:
-		cfg.setTemplateLoader(new PathTemplateLoader(templatesFolder));
+    // Specify the data source where the template files come from. Here I
+    // set a
+    // plain directory for it, but non-file-system are possible too:
+    cfg.setTemplateLoader(new PathTemplateLoader(templatesFolder));
 
-		// Specify how templates will see the data-model. This is an advanced
-		// topic...
-		// for now just use this:
-		cfg.setObjectWrapper(new DefaultObjectWrapper());
+    // Specify how templates will see the data-model. This is an advanced
+    // topic...
+    // for now just use this:
+    cfg.setObjectWrapper(new DefaultObjectWrapper());
 
-		// Set your preferred charset template files are stored in. UTF-8 is
-		// a good choice in most applications:
-		cfg.setDefaultEncoding("UTF-8");
+    // Set your preferred charset template files are stored in. UTF-8 is
+    // a good choice in most applications:
+    cfg.setDefaultEncoding("UTF-8");
 
-		// Sets how errors will appear. Here we assume we are developing HTML
-		// pages.
-		// For production systems TemplateExceptionHandler.RETHROW_HANDLER is
-		// better.
-		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER);
+    // Sets how errors will appear. Here we assume we are developing HTML
+    // pages.
+    // For production systems TemplateExceptionHandler.RETHROW_HANDLER is
+    // better.
+    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER);
 
-		// At least in new projects, specify that you want the fixes that aren't
-		// 100% backward compatible too (these are very low-risk changes as far
-		// as the
-		// 1st and 2nd version number remains):
-		// cfg.setIncompatibleImprovements(new Version(2, 3, 19)); // FreeMarker
-		// 2.3.19
-	}
+    // At least in new projects, specify that you want the fixes that aren't
+    // 100% backward compatible too (these are very low-risk changes as far
+    // as the
+    // 1st and 2nd version number remains):
+    // cfg.setIncompatibleImprovements(new Version(2, 3, 19)); // FreeMarker
+    // 2.3.19
+  }
 
-	public void generateCode(ModuleDefinition module)
-			throws IOException, TemplateException {
+  public void generateCode(ModuleDefinition module) throws IOException, TemplateException {
 
-		try (DirectoryStream<Path> directoryStream = Files
-				.newDirectoryStream(templatesFolder, "*.ftl")) {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(templatesFolder,
+        "*.ftl")) {
 
-			for (Path path : directoryStream) {
-				String name = path.getFileName().toString();
-				String templateType = name.split("_")[0];
+      for (Path path : directoryStream) {
+        String name = path.getFileName().toString();
+        String templateType = name.split("_")[0];
 
-				generateCode(name, module, templateType);
-			}
-		}
-	}
+        generateCode(name, module, templateType);
+      }
+    }
+  }
 
-	private void generateCode(String templateName, ModuleDefinition module,
-			String templateType) throws TemplateException, IOException {
+  private void generateCode(String templateName, ModuleDefinition module, String templateType)
+      throws TemplateException, IOException {
 
-		Template temp = cfg.getTemplate(templateName);
+    Template temp = cfg.getTemplate(templateName);
 
-		List<? extends Type> types;
-		if (templateType.equals("remoteClass")) {
-			types = module.getRemoteClasses();
-		} else if (templateType.equals("complexType")) {
-			types = module.getComplexTypes();
-		} else if (templateType.equals("event")) {
-			types = module.getEvents();
-		} else if (templateType.equals("model")) {
-			types = null;
-		} else {
-			throw new RuntimeException("Unknown template type: '" + templateType
-					+ "'. It should be 'model', 'remoteClass', 'complexType' or 'event'");
-		}
+    List<? extends Type> types;
+    if (templateType.equals("remoteClass")) {
+      types = module.getRemoteClasses();
+    } else if (templateType.equals("complexType")) {
+      types = module.getComplexTypes();
+    } else if (templateType.equals("event")) {
+      types = module.getEvents();
+    } else if (templateType.equals("model")) {
+      types = null;
+    } else {
+      throw new RuntimeException("Unknown template type: '" + templateType
+          + "'. It should be 'model', 'remoteClass', 'complexType' or 'event'");
+    }
 
-		Map<String, Object> root = new HashMap<String, Object>();
-		root.put("getJavaObjectType", new JavaObjectType());
-		root.put("getCppObjectType", new CppObjectType());
-		root.put("getJsonCppTypeData", new JsonCppTypeData());
-		root.put("escapeString", new EscapeString());
-		root.put("camelToUnderscore", new CamelToUnderscore());
-		root.put("typeDependencies", new TypeDependencies());
-		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
-		root.put("sphinxLinks", new SphinxLinks(module));
-		root.put("getJsNamespace", new JsNamespace());
-		root.put("packageToFolder", new PackageToFolder());
-		root.put("organizeDependencies", new OrganizeDependencies());
-		root.put("initializePropertiesValues",
-				new InitializePropertiesValues());
-		root.put("generateKurentoClientJsVersion",
-				new GenerateKurentoClientJsVersion());
+    Map<String, Object> root = new HashMap<String, Object>();
+    root.put("getJavaObjectType", new JavaObjectType());
+    root.put("getCppObjectType", new CppObjectType());
+    root.put("getJsonCppTypeData", new JsonCppTypeData());
+    root.put("escapeString", new EscapeString());
+    root.put("camelToUnderscore", new CamelToUnderscore());
+    root.put("typeDependencies", new TypeDependencies());
+    root.put("isFirstConstructorParam", new IsFirstConstructorParam());
+    root.put("sphinxLinks", new SphinxLinks(module));
+    root.put("getJsNamespace", new JsNamespace());
+    root.put("packageToFolder", new PackageToFolder());
+    root.put("organizeDependencies", new OrganizeDependencies());
+    root.put("initializePropertiesValues", new InitializePropertiesValues());
+    root.put("generateKurentoClientJsVersion", new GenerateKurentoClientJsVersion());
 
-		root.put("module", module);
-		if (this.config != null) {
-			JsonObjectAsMap mapper = new JsonObjectAsMap();
-			root.put("config", mapper.createMapFromJsonObject(config));
-		} else {
-			root.put("config", Collections.emptyMap());
-		}
+    root.put("module", module);
+    if (this.config != null) {
+      JsonObjectAsMap mapper = new JsonObjectAsMap();
+      root.put("config", mapper.createMapFromJsonObject(config));
+    } else {
+      root.put("config", Collections.emptyMap());
+    }
 
-		if (types == null) {
-			generateFile(temp, root);
-		} else {
+    if (types == null) {
+      generateFile(temp, root);
+    } else {
 
-			for (Type type : types) {
+      for (Type type : types) {
 
-				if (templateType.equals("remoteClass")) {
-					root.put("remoteClass", type);
-				} else if (templateType.equals("complexType")) {
-					root.put("complexType", type);
-				} else if (templateType.equals("event")) {
-					root.put("event", type);
-				}
+        if (templateType.equals("remoteClass")) {
+          root.put("remoteClass", type);
+        } else if (templateType.equals("complexType")) {
+          root.put("complexType", type);
+        } else if (templateType.equals("event")) {
+          root.put("event", type);
+        }
 
-				generateFile(temp, root);
-			}
-		}
-	}
+        generateFile(temp, root);
+      }
+    }
+  }
 
-	private void generateFile(Template temp, Map<String, Object> root)
-			throws TemplateException, IOException {
+  private void generateFile(Template temp, Map<String, Object> root)
+      throws TemplateException, IOException {
 
-		StringWriter out = new StringWriter();
-		temp.process(root, out);
-		String tempOutput = out.toString();
+    StringWriter out = new StringWriter();
+    temp.process(root, out);
+    String tempOutput = out.toString();
 
-		if (tempOutput.isEmpty()) {
-			System.out.println("No file generation because applying template '"
-					+ temp.getName() + "' is empty");
-			return;
-		}
+    if (tempOutput.isEmpty()) {
+      System.out.println(
+          "No file generation because applying template '" + temp.getName() + "' is empty");
+      return;
+    }
 
-		StringTokenizer st = new StringTokenizer(tempOutput);
+    StringTokenizer st = new StringTokenizer(tempOutput);
 
-		String fileName = st.nextToken();
+    String fileName = st.nextToken();
 
-		File outputFile = new File(outputFolder.toFile(), fileName);
+    File outputFile = new File(outputFolder.toFile(), fileName);
 
-		if (!outputFile.getParentFile().exists()) {
-			outputFile.getParentFile().mkdirs();
-		}
+    if (!outputFile.getParentFile().exists()) {
+      outputFile.getParentFile().mkdirs();
+    }
 
-		String sourceCode = tempOutput.substring(fileName.length() + 1,
-				tempOutput.length());
+    String sourceCode = tempOutput.substring(fileName.length() + 1, tempOutput.length());
 
-		boolean generateFile = !outputFile.exists();
-		if (outputFile.exists() && overwrite) {
-			generateFile = true;
-			String oldContent = readFile(outputFile);
+    boolean generateFile = !outputFile.exists();
+    if (outputFile.exists() && overwrite) {
+      generateFile = true;
+      String oldContent = readFile(outputFile);
 
-			if (oldContent.equals(sourceCode)) {
-				generateFile = false;
-			}
-		}
+      if (oldContent.equals(sourceCode)) {
+        generateFile = false;
+      }
+    }
 
-		if (generateFile) {
-			Writer writer = new FileWriter(outputFile);
-			writer.write(sourceCode);
-			writer.close();
-		}
+    if (generateFile) {
+      Writer writer = new FileWriter(outputFile);
+      writer.write(sourceCode);
+      writer.close();
+    }
 
-		if (verbose) {
-			System.out.println("File: " + fileName);
-			System.out.println();
-			System.out.println(sourceCode);
-			System.out.println("---------------------------------------");
-		}
+    if (verbose) {
+      System.out.println("File: " + fileName);
+      System.out.println();
+      System.out.println(sourceCode);
+      System.out.println("---------------------------------------");
+    }
 
-		if (listGeneratedFiles) {
-			System.out.print("Processed file:\t" + fileName);
-			if (!generateFile) {
-				System.out.println("\t(not generated)");
-			} else {
-				System.out.println();
-			}
-		}
-	}
+    if (listGeneratedFiles) {
+      System.out.print("Processed file:\t" + fileName);
+      if (!generateFile) {
+        System.out.println("\t(not generated)");
+      } else {
+        System.out.println();
+      }
+    }
+  }
 
-	public static String readFile(File file) throws IOException {
-		return new String(Files.readAllBytes(file.toPath()),
-				StandardCharsets.UTF_8.name());
-	}
+  public static String readFile(File file) throws IOException {
+    return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8.name());
+  }
 
-	public void generateMavenPom(ModuleDefinition module, Path templatePomXml)
-			throws IOException, TemplateException, ParserConfigurationException,
-			SAXException, TransformerException {
+  public void generateMavenPom(ModuleDefinition module, Path templatePomXml) throws IOException,
+      TemplateException, ParserConfigurationException, SAXException, TransformerException {
 
-		this.generateCode(module);
+    this.generateCode(module);
 
-		if (templatePomXml != null) {
+    if (templatePomXml != null) {
 
-			String[] addTags = { "/dependencies", "/build/plugins" };
-			String[] replaceTags = { "/properties" };
+      String[] addTags = { "/dependencies", "/build/plugins" };
+      String[] replaceTags = { "/properties" };
 
-			Path outputPomXml = outputFolder.resolve("pom.xml");
+      Path outputPomXml = outputFolder.resolve("pom.xml");
 
-			XmlFusioner fusioner = new XmlFusioner(outputPomXml, templatePomXml,
-					outputPomXml, addTags, replaceTags);
+      XmlFusioner fusioner = new XmlFusioner(outputPomXml, templatePomXml, outputPomXml, addTags,
+          replaceTags);
 
-			fusioner.fusionXmls();
-		}
-	}
+      fusioner.fusionXmls();
+    }
+  }
 
-	public void generateNpmPackage(ModuleDefinition module,
-			Path templatePackJson, Path templateBowerJson) throws IOException,
-					TemplateException, ParserConfigurationException,
-					SAXException, TransformerException {
+  public void generateNpmPackage(ModuleDefinition module, Path templatePackJson,
+      Path templateBowerJson) throws IOException, TemplateException, ParserConfigurationException,
+          SAXException, TransformerException {
 
-		this.generateCode(module);
+    this.generateCode(module);
 
-		if (templatePackJson != null) {
+    if (templatePackJson != null) {
 
-			String[] addTags = { "/keywords", "/dependencies",
-					"/devDependencies", "/peerDependencies" };
-			String[] replaceTags = { "/repository", "/bugs" };
+      String[] addTags = { "/keywords", "/dependencies", "/devDependencies", "/peerDependencies" };
+      String[] replaceTags = { "/repository", "/bugs" };
 
-			Path outputPackJson = outputFolder.resolve("package.json");
+      Path outputPackJson = outputFolder.resolve("package.json");
 
-			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
-					templatePackJson, outputPackJson, addTags, replaceTags);
+      JsonFusioner fusioner = new JsonFusioner(outputPackJson, templatePackJson, outputPackJson,
+          addTags, replaceTags);
 
-			fusioner.fusionJsons();
-		}
+      fusioner.fusionJsons();
+    }
 
-		if (templateBowerJson != null) {
+    if (templateBowerJson != null) {
 
-			String[] addTags = { "/keywords", "/dependencies",
-					"/peerDependencies" };
-			String[] replaceTags = { "/repository", "/bugs" };
+      String[] addTags = { "/keywords", "/dependencies", "/peerDependencies" };
+      String[] replaceTags = { "/repository", "/bugs" };
 
-			Path outputPackJson = outputFolder.resolve("bower.json");
+      Path outputPackJson = outputFolder.resolve("bower.json");
 
-			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
-					templateBowerJson, outputPackJson, addTags, replaceTags);
+      JsonFusioner fusioner = new JsonFusioner(outputPackJson, templateBowerJson, outputPackJson,
+          addTags, replaceTags);
 
-			fusioner.fusionJsons();
-		}
-	}
+      fusioner.fusionJsons();
+    }
+  }
 }

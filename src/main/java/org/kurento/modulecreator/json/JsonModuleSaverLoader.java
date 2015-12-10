@@ -22,68 +22,61 @@ import com.google.gson.GsonBuilder;
 
 public class JsonModuleSaverLoader {
 
-	private static JsonModuleSaverLoader INSTANCE = new JsonModuleSaverLoader();
+  private static JsonModuleSaverLoader INSTANCE = new JsonModuleSaverLoader();
 
-	public static JsonModuleSaverLoader getInstance() {
-		return INSTANCE;
-	}
+  public static JsonModuleSaverLoader getInstance() {
+    return INSTANCE;
+  }
 
-	private final Gson gson;
+  private final Gson gson;
 
-	private JsonModuleSaverLoader() {
-		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
-		gsonBuilder.registerTypeAdapter(TypeRef.class, new TypeRefAdapter());
-		gsonBuilder.registerTypeAdapter(Param.class, new DataItemAdapter());
-		gsonBuilder.registerTypeAdapter(Property.class, new DataItemAdapter());
-		gsonBuilder.registerTypeAdapter(RemoteClass.class,
-				new RemoteClassAdapter());
-		gsonBuilder.registerTypeAdapter(Method.class, new MethodAdapter());
-		gsonBuilder.disableHtmlEscaping();
-		gson = gsonBuilder.create();
-	}
+  private JsonModuleSaverLoader() {
+    GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
+    gsonBuilder.registerTypeAdapter(TypeRef.class, new TypeRefAdapter());
+    gsonBuilder.registerTypeAdapter(Param.class, new DataItemAdapter());
+    gsonBuilder.registerTypeAdapter(Property.class, new DataItemAdapter());
+    gsonBuilder.registerTypeAdapter(RemoteClass.class, new RemoteClassAdapter());
+    gsonBuilder.registerTypeAdapter(Method.class, new MethodAdapter());
+    gsonBuilder.disableHtmlEscaping();
+    gson = gsonBuilder.create();
+  }
 
-	public ModuleDefinition loadFromFile(Path file)
-			throws FileNotFoundException, IOException {
-		return loadFromInputStream(Files.newInputStream(file));
-	}
+  public ModuleDefinition loadFromFile(Path file) throws FileNotFoundException, IOException {
+    return loadFromInputStream(Files.newInputStream(file));
+  }
 
-	public ModuleDefinition loadFromClasspath(String resourceName)
-			throws IOException {
-		return loadFromInputStream(
-				this.getClass().getResourceAsStream(resourceName));
-	}
+  public ModuleDefinition loadFromClasspath(String resourceName) throws IOException {
+    return loadFromInputStream(this.getClass().getResourceAsStream(resourceName));
+  }
 
-	private ModuleDefinition loadFromInputStream(InputStream is)
-			throws IOException {
-		String moduleString = loadTextFromInputStream(is);
-		ModuleDefinition module = gson.fromJson(moduleString,
-				ModuleDefinition.class);
-		return module;
-	}
+  private ModuleDefinition loadFromInputStream(InputStream is) throws IOException {
+    String moduleString = loadTextFromInputStream(is);
+    ModuleDefinition module = gson.fromJson(moduleString, ModuleDefinition.class);
+    return module;
+  }
 
-	private String loadTextFromInputStream(InputStream is) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		while ((line = br.readLine()) != null) {
-			sb.append(line).append("\n");
-		}
+  private String loadTextFromInputStream(InputStream is) throws IOException {
+    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    StringBuilder sb = new StringBuilder();
+    String line = null;
+    while ((line = br.readLine()) != null) {
+      sb.append(line).append("\n");
+    }
 
-		return sb.toString();
-	}
+    return sb.toString();
+  }
 
-	public void writeToFile(ModuleDefinition module, File file)
-			throws FileNotFoundException {
+  public void writeToFile(ModuleDefinition module, File file) throws FileNotFoundException {
 
-		String jsonModuleString = gson.toJson(module);
+    String jsonModuleString = gson.toJson(module);
 
-		if (!file.getParentFile().exists()) {
-			file.getParentFile().mkdirs();
-		}
+    if (!file.getParentFile().exists()) {
+      file.getParentFile().mkdirs();
+    }
 
-		PrintWriter writer = new PrintWriter(file);
-		writer.println(jsonModuleString);
-		writer.close();
-	}
+    PrintWriter writer = new PrintWriter(file);
+    writer.println(jsonModuleString);
+    writer.close();
+  }
 
 }
