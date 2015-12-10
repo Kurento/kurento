@@ -14,6 +14,8 @@
  */
 package org.kurento.tutorial.pointerdetector.test;
 
+import io.github.bonigarcia.wdm.ChromeDriverManager;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,8 +33,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 /**
  * Hello World integration test.
  * 
@@ -46,69 +46,69 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 @IntegrationTest
 public class PointerDetectorIT {
 
-	protected WebDriver driver;
+  protected WebDriver driver;
 
-	protected final static int TEST_TIMEOUT = 60; // seconds
-	protected final static int PLAY_TIME = 5; // seconds
+  protected final static int TEST_TIMEOUT = 60; // seconds
+  protected final static int PLAY_TIME = 5; // seconds
 
-	@BeforeClass
-	public static void setupClass() {
-		ChromeDriverManager.getInstance().setup();
-	}
+  @BeforeClass
+  public static void setupClass() {
+    ChromeDriverManager.getInstance().setup();
+  }
 
-	@Before
-	public void setup() {
-		ChromeOptions options = new ChromeOptions();
-		// This flag avoids granting camera/microphone
-		options.addArguments("--use-fake-ui-for-media-stream");
-		// This flag makes using a synthetic video (green with spinner) in
-		// WebRTC instead of real media from camera/microphone
-		options.addArguments("--use-fake-device-for-media-stream");
+  @Before
+  public void setup() {
+    ChromeOptions options = new ChromeOptions();
+    // This flag avoids granting camera/microphone
+    options.addArguments("--use-fake-ui-for-media-stream");
+    // This flag makes using a synthetic video (green with spinner) in
+    // WebRTC instead of real media from camera/microphone
+    options.addArguments("--use-fake-device-for-media-stream");
     options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
 
-		driver = Browser.newWebDriver(options);
-	}
+    driver = Browser.newWebDriver(options);
+  }
 
-	@Test
-	public void testPointerDetector() throws InterruptedException {
-		// Open web application
-		driver.get("https://localhost:8443/");
+  @Test
+  public void testPointerDetector() throws InterruptedException {
+    // Open web application
+    driver.get("https://localhost:8443/");
 
-		// Start application
-		driver.findElement(By.id("start")).click();
+    // Start application
+    driver.findElement(By.id("start")).click();
 
-		// Assessment #1: Local video tag should play media
-		waitForStream("videoInput");
+    // Assessment #1: Local video tag should play media
+    waitForStream("videoInput");
 
-		// Assessment #2: Remote video tag should play media
-		waitForStream("videoOutput");
+    // Assessment #2: Remote video tag should play media
+    waitForStream("videoOutput");
 
-		// Guard time to see application in action
-		Thread.sleep(PLAY_TIME * 1000);
+    // Guard time to see application in action
+    Thread.sleep(PLAY_TIME * 1000);
 
-		// Stop application
-		driver.findElement(By.id("stop")).click();
-	}
+    // Stop application
+    driver.findElement(By.id("stop")).click();
+  }
 
-	private void waitForStream(String videoTagId) throws InterruptedException {
-		WebElement video = driver.findElement(By.id(videoTagId));
-		int i = 0;
-		for (; i < TEST_TIMEOUT; i++) {
-			if (video.getAttribute("src").startsWith("blob")) {
-				break;
-			} else {
-				Thread.sleep(1000);
-			}
-		}
-		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media");
-		}
-	}
+  private void waitForStream(String videoTagId) throws InterruptedException {
+    WebElement video = driver.findElement(By.id(videoTagId));
+    int i = 0;
+    for (; i < TEST_TIMEOUT; i++) {
+      if (video.getAttribute("src").startsWith("blob")) {
+        break;
+      } else {
+        Thread.sleep(1000);
+      }
+    }
+    if (i == TEST_TIMEOUT) {
+      Assert.fail("Video tag '" + videoTagId + "' is not playing media");
+    }
+  }
 
-	@After
-	public void end() {
-		if (driver != null) {
-			driver.close();
-		}
-	}
+  @After
+  public void end() {
+    if (driver != null) {
+      driver.close();
+    }
+  }
 }

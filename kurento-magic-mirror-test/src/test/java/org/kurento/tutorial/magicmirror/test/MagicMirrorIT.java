@@ -15,6 +15,8 @@
 
 package org.kurento.tutorial.magicmirror.test;
 
+import io.github.bonigarcia.wdm.ChromeDriverManager;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,8 +33,6 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-
-import io.github.bonigarcia.wdm.ChromeDriverManager;
 
 /**
  * Hello World integration test.
@@ -101,8 +101,8 @@ public class MagicMirrorIT {
       }
     }
     if (i == TEST_TIMEOUT) {
-      Assert.fail(
-          "Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
+      Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT
+          + " seconds");
     }
   }
 

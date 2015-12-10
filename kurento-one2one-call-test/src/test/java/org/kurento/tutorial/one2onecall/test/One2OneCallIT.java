@@ -14,6 +14,8 @@
  */
 package org.kurento.tutorial.one2onecall.test;
 
+import io.github.bonigarcia.wdm.ChromeDriverManager;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,8 +34,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 /**
  * One to one call integration test.
  * 
@@ -46,113 +46,114 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 @IntegrationTest
 public class One2OneCallIT {
 
-	protected WebDriver caller;
-	protected WebDriver callee;
+  protected WebDriver caller;
+  protected WebDriver callee;
 
-	protected final static int TEST_TIMEOUT = 120; // seconds
-	protected final static int PLAY_TIME = 5; // seconds
-	protected final static String APP_URL = "https://localhost:8443/";
-	protected final static String CALLER_NAME = "user1";
-	protected final static String CALLEE_NAME = "user2";
+  protected final static int TEST_TIMEOUT = 120; // seconds
+  protected final static int PLAY_TIME = 5; // seconds
+  protected final static String APP_URL = "https://localhost:8443/";
+  protected final static String CALLER_NAME = "user1";
+  protected final static String CALLEE_NAME = "user2";
 
-	@Before
-	public void setup() {
-		caller = newWebDriver();
-		callee = newWebDriver();
-	}
+  @Before
+  public void setup() {
+    caller = newWebDriver();
+    callee = newWebDriver();
+  }
 
-	@BeforeClass
-	public static void setupClass() {
-		ChromeDriverManager.getInstance().setup();
-	}
+  @BeforeClass
+  public static void setupClass() {
+    ChromeDriverManager.getInstance().setup();
+  }
 
-	private WebDriver newWebDriver() {
-		ChromeOptions options = new ChromeOptions();
-		// This flag avoids granting camera/microphone
-		options.addArguments("--use-fake-ui-for-media-stream");
-		// This flag makes using a synthetic video (green with spinner) in
-		// WebRTC instead of real media from camera/microphone
-		options.addArguments("--use-fake-device-for-media-stream");
+  private WebDriver newWebDriver() {
+    ChromeOptions options = new ChromeOptions();
+    // This flag avoids granting camera/microphone
+    options.addArguments("--use-fake-ui-for-media-stream");
+    // This flag makes using a synthetic video (green with spinner) in
+    // WebRTC instead of real media from camera/microphone
+    options.addArguments("--use-fake-device-for-media-stream");
     options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
 
-		return Browser.newWebDriver(options);
-	}
+    return Browser.newWebDriver(options);
+  }
 
-	@Test
-	public void testOne2One() throws InterruptedException {
-		// Open caller web application
-		caller.get(APP_URL);
+  @Test
+  public void testOne2One() throws InterruptedException {
+    // Open caller web application
+    caller.get(APP_URL);
 
-		// Register caller
-		caller.findElement(By.id("name")).sendKeys(CALLER_NAME);
-		caller.findElement(By.id("register")).click();
+    // Register caller
+    caller.findElement(By.id("name")).sendKeys(CALLER_NAME);
+    caller.findElement(By.id("register")).click();
 
-		// Open callee web application
-		callee.get(APP_URL);
+    // Open callee web application
+    callee.get(APP_URL);
 
-		// Register caller
-		callee.findElement(By.id("name")).sendKeys(CALLEE_NAME);
-		callee.findElement(By.id("register")).click();
+    // Register caller
+    callee.findElement(By.id("name")).sendKeys(CALLEE_NAME);
+    callee.findElement(By.id("register")).click();
 
-		// Caller calls callee
-		caller.findElement(By.id("peer")).sendKeys(CALLEE_NAME);
-		caller.findElement(By.id("call")).click();
+    // Caller calls callee
+    caller.findElement(By.id("peer")).sendKeys(CALLEE_NAME);
+    caller.findElement(By.id("call")).click();
 
-		// Callee accepts call
-		waitForIncomingCallDialog(callee);
-		callee.switchTo().alert().accept();
+    // Callee accepts call
+    waitForIncomingCallDialog(callee);
+    callee.switchTo().alert().accept();
 
-		// Assessments: local and remote video tags of caller and callee should
-		// play media
-		waitForStream(caller, "videoInput");
-		waitForStream(caller, "videoOutput");
-		waitForStream(callee, "videoInput");
-		waitForStream(callee, "videoOutput");
+    // Assessments: local and remote video tags of caller and callee should
+    // play media
+    waitForStream(caller, "videoInput");
+    waitForStream(caller, "videoOutput");
+    waitForStream(callee, "videoInput");
+    waitForStream(callee, "videoOutput");
 
-		// Guard time to see application in action
-		Thread.sleep(PLAY_TIME * 1000);
+    // Guard time to see application in action
+    Thread.sleep(PLAY_TIME * 1000);
 
-		// Stop application by caller
-		caller.findElement(By.id("terminate")).click();
-	}
+    // Stop application by caller
+    caller.findElement(By.id("terminate")).click();
+  }
 
-	private void waitForStream(WebDriver driver, String videoTagId) throws InterruptedException {
-		WebElement video = driver.findElement(By.id(videoTagId));
-		int i = 0;
-		for (; i < TEST_TIMEOUT; i++) {
-			if (video.getAttribute("src").startsWith("blob")) {
-				break;
-			} else {
-				Thread.sleep(1000);
-			}
-		}
-		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
-		}
-	}
+  private void waitForStream(WebDriver driver, String videoTagId) throws InterruptedException {
+    WebElement video = driver.findElement(By.id(videoTagId));
+    int i = 0;
+    for (; i < TEST_TIMEOUT; i++) {
+      if (video.getAttribute("src").startsWith("blob")) {
+        break;
+      } else {
+        Thread.sleep(1000);
+      }
+    }
+    if (i == TEST_TIMEOUT) {
+      Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT
+          + " seconds");
+    }
+  }
 
-	private void waitForIncomingCallDialog(WebDriver driver) throws InterruptedException {
-		int i = 0;
-		for (; i < TEST_TIMEOUT; i++) {
-			try {
-				driver.switchTo().alert();
-				break;
-			} catch (NoAlertPresentException e) {
-				Thread.sleep(1000);
-			}
-		}
-		if (i == TEST_TIMEOUT) {
-			throw new RuntimeException("Timeout (" + TEST_TIMEOUT + " seconds) waiting for incoming call");
-		}
-	}
+  private void waitForIncomingCallDialog(WebDriver driver) throws InterruptedException {
+    int i = 0;
+    for (; i < TEST_TIMEOUT; i++) {
+      try {
+        driver.switchTo().alert();
+        break;
+      } catch (NoAlertPresentException e) {
+        Thread.sleep(1000);
+      }
+    }
+    if (i == TEST_TIMEOUT) {
+      throw new RuntimeException("Timeout (" + TEST_TIMEOUT + " seconds) waiting for incoming call");
+    }
+  }
 
-	@After
-	public void end() {
-		if (caller != null) {
-			caller.close();
-		}
-		if (callee != null) {
-			callee.close();
-		}
-	}
+  @After
+  public void end() {
+    if (caller != null) {
+      caller.close();
+    }
+    if (callee != null) {
+      callee.close();
+    }
+  }
 }

@@ -13,6 +13,8 @@
  */
 package org.kurento.tutorial.one2manycall.test;
 
+import io.github.bonigarcia.wdm.ChromeDriverManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +35,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 /**
  * One to many call integration test.
  *
@@ -47,98 +47,101 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 @IntegrationTest
 public class One2ManyCallIT {
 
-	protected WebDriver master;
-	protected List<WebDriver> viewers;
+  protected WebDriver master;
+  protected List<WebDriver> viewers;
 
-	protected final static int TEST_TIMEOUT = 200; // seconds
-	protected final static int PLAY_TIME = 5; // seconds
-	protected final static String DEFAULT_NUM_VIEWERS = "3";
-	protected final static String APP_URL = "https://localhost:8443/";
+  protected final static int TEST_TIMEOUT = 200; // seconds
+  protected final static int PLAY_TIME = 5; // seconds
+  protected final static String DEFAULT_NUM_VIEWERS = "3";
+  protected final static String APP_URL = "https://localhost:8443/";
 
-	@BeforeClass
-	public static void setupClass() {
-		ChromeDriverManager.getInstance().setup();
-	}
+  @BeforeClass
+  public static void setupClass() {
+    ChromeDriverManager.getInstance().setup();
+  }
 
-	@Before
-	public void setup() {
-		master = newWebDriver();
+  @Before
+  public void setup() {
+    master = newWebDriver();
 
-		final int numViewers = Integer.parseInt(System.getProperty("test.num.viewers", DEFAULT_NUM_VIEWERS));
-		viewers = new ArrayList<>(numViewers);
-		for (int i = 0; i < numViewers; i++) {
-			viewers.add(newWebDriver());
-		}
-	}
+    final int numViewers =
+        Integer.parseInt(System.getProperty("test.num.viewers", DEFAULT_NUM_VIEWERS));
+    viewers = new ArrayList<>(numViewers);
+    for (int i = 0; i < numViewers; i++) {
+      viewers.add(newWebDriver());
+    }
+  }
 
-	private static WebDriver newWebDriver() {
-		ChromeOptions options = new ChromeOptions();
-		// This flag avoids granting camera/microphone
-		options.addArguments("--use-fake-ui-for-media-stream");
-		// This flag makes using a synthetic video (green with spinner) in
-		// WebRTC instead of real media from camera/microphone
-		options.addArguments("--use-fake-device-for-media-stream");
+  private static WebDriver newWebDriver() {
+    ChromeOptions options = new ChromeOptions();
+    // This flag avoids granting camera/microphone
+    options.addArguments("--use-fake-ui-for-media-stream");
+    // This flag makes using a synthetic video (green with spinner) in
+    // WebRTC instead of real media from camera/microphone
+    options.addArguments("--use-fake-device-for-media-stream");
     options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
 
-		return Browser.newWebDriver(options);
-	}
+    return Browser.newWebDriver(options);
+  }
 
-	@Test
-	public void testOne2Many() throws InterruptedException {
-		// MASTER
-		// Open web application
-		master.get(APP_URL);
+  @Test
+  public void testOne2Many() throws InterruptedException {
+    // MASTER
+    // Open web application
+    master.get(APP_URL);
 
-		// Start application as master
-		master.findElement(By.id("presenter")).click();
+    // Start application as master
+    master.findElement(By.id("presenter")).click();
 
-		// Assessment #1: Master video tag should play media
-		waitForStream(master, "video");
+    // Assessment #1: Master video tag should play media
+    waitForStream(master, "video");
 
-		// VIEWERS
-		for (WebDriver viewer : viewers) {
-			// Open web application
-			viewer.get(APP_URL);
+    // VIEWERS
+    for (WebDriver viewer : viewers) {
+      // Open web application
+      viewer.get(APP_URL);
 
-			// Start application as viewer
-			viewer.findElement(By.id("viewer")).click();
+      // Start application as viewer
+      viewer.findElement(By.id("viewer")).click();
 
-			// Assessment #2: Viewer video tag should play media
-			waitForStream(viewer, "video");
-		}
+      // Assessment #2: Viewer video tag should play media
+      waitForStream(viewer, "video");
+    }
 
-		// Guard time to see application in action
-		Thread.sleep(PLAY_TIME * 1000);
+    // Guard time to see application in action
+    Thread.sleep(PLAY_TIME * 1000);
 
-		// Stop application (master)
-		master.findElement(By.id("stop")).click();
-	}
+    // Stop application (master)
+    master.findElement(By.id("stop")).click();
+  }
 
-	private static void waitForStream(WebDriver driver, String videoTagId) throws InterruptedException {
-		WebElement video = driver.findElement(By.id(videoTagId));
-		int i = 0;
-		for (; i < TEST_TIMEOUT; i++) {
-			if (video.getAttribute("src").startsWith("blob")) {
-				break;
-			}
+  private static void waitForStream(WebDriver driver, String videoTagId)
+      throws InterruptedException {
+    WebElement video = driver.findElement(By.id(videoTagId));
+    int i = 0;
+    for (; i < TEST_TIMEOUT; i++) {
+      if (video.getAttribute("src").startsWith("blob")) {
+        break;
+      }
 
-			Thread.sleep(1000);
+      Thread.sleep(1000);
 
-		}
-		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
-		}
-	}
+    }
+    if (i == TEST_TIMEOUT) {
+      Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT
+          + " seconds");
+    }
+  }
 
-	@After
-	public void end() {
-		for (WebDriver viewer : viewers) {
-			if (viewer != null) {
-				viewer.close();
-			}
-		}
-		if (master != null) {
-			master.close();
-		}
-	}
+  @After
+  public void end() {
+    for (WebDriver viewer : viewers) {
+      if (viewer != null) {
+        viewer.close();
+      }
+    }
+    if (master != null) {
+      master.close();
+    }
+  }
 }
