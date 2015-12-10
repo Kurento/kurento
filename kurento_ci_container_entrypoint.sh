@@ -22,7 +22,11 @@ EOF
 fi
 
 # Configure Kurento gnupg
-[ -f "$GNUPG_KEY" ] && gpg --import $GNUPG_KEY
+if [ -f "$GNUPG_KEY" ]; then
+  gpg --import $GNUPG_KEY
+  # For compatibility with kurento_generate_debian_package:
+  export KEY_ID=$GNUPG_KEY
+fi
 
 # Configure private bower Repository
 cat >/root/.bowerrc << EOL
