@@ -29,7 +29,7 @@ if [ -f "$GNUPG_KEY" ]; then
 fi
 
 # For backwards compatibility with kurento_clone_repo
-export KURENTO_GIT_REPOSITORY=$KURENTO_GIT_REPOSITORY_SERVER
+export KURENTO_GIT_REPOSITORY=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT
 
 # Configure private bower Repository
 cat >/root/.bowerrc << EOL
