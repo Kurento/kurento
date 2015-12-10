@@ -28,6 +28,9 @@ if [ -f "$GNUPG_KEY" ]; then
   export KEY_ID=$GNUPG_KEY
 fi
 
+# For backwards compatibility with kurento_clone_repo
+export KURENTO_GIT_REPOSITORY=$KURENTO_GIT_REPOSITORY_SERVER
+
 # Configure private bower Repository
 cat >/root/.bowerrc << EOL
 {
