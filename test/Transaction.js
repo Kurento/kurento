@@ -58,6 +58,82 @@ if (!String.prototype.contains) {
 
 QUnit.module('Transaction', lifecycle);
 
+/**
+ * Transaction at KurentoClient
+ */
+QUnit.asyncTest('Auto-transactions', function (assert) {
+  var self = this;
+
+  assert.expect(1);
+
+  var player;
+  var recorder;
+
+  var pipeline = self.pipeline;
+
+  recorder = this.kurento.create('RecorderEndpoint', {
+    mediaPipeline: pipeline,
+    uri: URL_SMALL
+  });
+
+  this.kurento.transaction(function () {
+        player = pipeline.create('PlayerEndpoint', {
+          uri: URL_SMALL
+        });
+
+        return player.connect(recorder);
+      },
+      function (error) {
+        assert.equal(error, undefined, 'transaction');
+
+        if (error) return onerror(error);
+
+        QUnit.start();
+      })
+    .catch(onerror)
+});
+
+QUnit.asyncTest('transaction error', function (assert) {
+  assert.expect(8);
+
+  var tx = this.kurento.beginTransaction();
+
+  var pipeline = this.kurento.create(tx, 'MediaPipeline');
+  var player = pipeline.create(tx, 'PlayerEndpoint', {
+    uri: URL_SMALL
+  });
+  tx.commit(function (error) {
+      assert.equal(error, undefined);
+
+      return player.release(function (error) {
+        assert.equal(error, undefined);
+
+        return player.play(function (error) {
+          assert.notEqual(error, undefined);
+          assert.equal(error.code, 40101);
+          assert.ok(error.message.contains(" not found"));
+
+          tx = pipeline.beginTransaction();
+          var filter = pipeline.create(tx, 'ZBarFilter');
+          player.play(tx);
+
+          return tx.commit(function (error) {
+
+            return filter.connect(player, function (error) {
+              assert.notEqual(error, undefined);
+              assert.equal(error.code, 40101);
+              assert.ok(error.message.contains(
+                " not found"));
+
+              QUnit.start();
+            })
+          })
+        })
+      })
+    })
+    .catch(onerror)
+});
+
 QUnit.asyncTest('transaction', function (assert) {
   assert.expect(0);
 
@@ -275,47 +351,6 @@ QUnit.asyncTest('user rollback', function (assert) {
     .catch(onerror)
 });
 
-QUnit.asyncTest('transaction error', function (assert) {
-  assert.expect(8);
-
-  var tx = this.kurento.beginTransaction();
-
-  var pipeline = this.kurento.create(tx, 'MediaPipeline');
-  var player = pipeline.create(tx, 'PlayerEndpoint', {
-    uri: URL_SMALL
-  });
-  tx.commit(function (error) {
-      assert.equal(error, undefined);
-
-      return player.release(function (error) {
-        assert.equal(error, undefined);
-
-        return player.play(function (error) {
-          assert.notEqual(error, undefined);
-          assert.equal(error.code, 40101);
-          assert.ok(error.message.contains(" not found"));
-
-          tx = pipeline.beginTransaction();
-          var filter = pipeline.create(tx, 'ZBarFilter');
-          player.play(tx);
-
-          return tx.commit(function (error) {
-
-            return filter.connect(player, function (error) {
-              assert.notEqual(error, undefined);
-              assert.equal(error.code, 40101);
-              assert.ok(error.message.contains(
-                " not found"));
-
-              QUnit.start();
-            })
-          })
-        })
-      })
-    })
-    .catch(onerror)
-});
-
 QUnit.asyncTest('Transaction object on pseudo-sync API', function (assert) {
   var self = this;
 
@@ -389,7 +424,6 @@ QUnit.asyncTest('Transaction object on async API', function (assert) {
               assert.equal(error, undefined, 'release');
 
               if (error) return onerror(error);
-
               QUnit.start();
             })
           })
@@ -566,16 +600,14 @@ QUnit.asyncTest('Promise', function (assert) {
 /**
  * Transaction at KurentoClient
  */
-QUnit.asyncTest('Transactional API', function (assert) {
+/*QUnit.asyncTest('Transactional API', function (assert) {
   var self = this;
-
   assert.expect(1);
 
   var player;
 
   this.kurento.transaction(function () {
         var pipeline = self.pipeline;
-
         player = pipeline.create('PlayerEndpoint', {
           uri: URL_SMALL
         });
@@ -584,55 +616,15 @@ QUnit.asyncTest('Transactional API', function (assert) {
           mediaPipeline: pipeline,
           uri: URL_SMALL
         });
-
         return player.connect(recorder);
       },
       function (error) {
-        assert.equal(error, undefined, 'transaction');
-
-        if (error) return onerror(error);
-
-        player.release();
-
-        QUnit.start();
-      })
-    .catch(onerror)
-});
-
-/**
- * Transaction at KurentoClient
- */
-QUnit.asyncTest('Auto-transactions', function (assert) {
-  var self = this;
-
-  assert.expect(1);
-
-  var player;
-  var recorder;
-
-  var pipeline = self.pipeline;
-
-  recorder = this.kurento.create('RecorderEndpoint', {
-    mediaPipeline: pipeline,
-    uri: URL_SMALL
-  });
-
-  this.kurento.transaction(function () {
-        player = pipeline.create('PlayerEndpoint', {
-          uri: URL_SMALL
-        });
-
-        return player.connect(recorder);
-      },
-      function (error) {
-        assert.equal(error, undefined, 'transaction');
+        assert.equal(error, null, 'transaction');
 
         if (error) return onerror(error);
 
         QUnit.start();
       })
     .catch(onerror)
-
-  player.release()
-    .catch(onerror)
-});
+}
+);*/

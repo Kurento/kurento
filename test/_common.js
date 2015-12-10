@@ -13,6 +13,10 @@
  *
  */
 
+var Docker = require('dockerode');
+var minimist = require('minimist');
+var spawn = require('child_process').spawn;
+
 URL_VIDEO_FILES = "http://files.kurento.org/video/";
 URL_BARCODES = URL_VIDEO_FILES + "filter/barcodes.webm";
 URL_FIWARECUT = URL_VIDEO_FILES + "filter/fiwarecut.webm";
@@ -113,6 +117,59 @@ function fetchReport(type, report) {
   }
 }
 
+// Check if use docker or local
+
+function isDockerContainer(callback) {
+  var isDocker = false;
+  var cat = spawn('cat', ['/proc/1/cgroup'])
+    .on('error', onerror)
+
+  cat.stdout.on('data', function (data) {
+    var lines = data.toString('utf8').split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      if (lines[i].substr(lines[i].length - 1) != "") {
+        if (lines[i].substr(lines[i].length - 1) != "/") {
+          isDocker = true;
+          callback(isDocker);
+          return;
+        }
+      }
+    }
+    callback(isDocker);
+  });
+
+  cat.stderr.on('data', function (data) {
+    // The file is not exist
+    callback(isDocker);
+  });
+}
+
+function getIpDocker(callback) {
+  isDockerContainer(function (isDocker) {
+    var hostIp;
+    if (isDocker) {
+      var grep = spawn('grep', ['default']);
+      var ip = spawn('ip', ['route']);
+
+      ip.stdout.pipe(grep.stdin);
+      grep.stdout.on('data', function (data) {
+        callback(data.toString(
+          "utf8").split(" ")[2])
+      });
+    } else {
+      var grep = spawn('grep', ['docker']);
+      var ip = spawn('ip', ['route']);
+
+      ip.stdout.pipe(grep.stdin);
+      grep.stdout.on('data', function (data) {
+        var ips = data.toString(
+          "utf8").split(" ");
+        callback(ips[ips.length - 2])
+      });
+    }
+  })
+}
+
 QUnit.jUnitReport = fetchReport.bind(undefined, 'junit')
 QUnit.lcovReport = fetchReport.bind(undefined, 'lcov')
 
@@ -140,49 +197,140 @@ QUnit.config.urlConfig.push({
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
 
+var ws_uri = QUnit.config.ws_uri;
+var ws_port = QUnit.config.ws_port;
+var scope = QUnit.config.scope;
+var container;
+
 // Tests lifecycle
 
 lifecycle = {
   setup: function () {
     var self = this;
 
-    var ws_uri = QUnit.config.ws_uri;
     if (ws_uri == undefined) {
       //  var WebSocket = wock(proxy);
       //  ws_uri = new WebSocket();
       ws_uri = 'ws://127.0.0.1:8888/kurento';
     };
 
-    Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
+    if (ws_port == undefined) {
+      ws_port = "8888";
+    }
 
-    QUnit.config.testTimeout = 30000 * Timeout.factor;
+    if (scope == undefined) {
+      scope = "local";
+    }
 
-    var options = {
-      request_timeout: 5000 * Timeout.factor
-    };
+    if (scope == "local") {
+      Timeout.factor = parseFloat(QUnit.config.timeout_factor) || 1;
 
-    this.kurento = new kurentoClient(ws_uri, options);
+      QUnit.config.testTimeout = 30000 * Timeout.factor;
 
-    this.kurento.then(function () {
-        this.create('MediaPipeline', function (error, pipeline) {
-          if (error) return onerror(error);
+      var options = {
+        request_timeout: 5000 * Timeout.factor
+      };
 
-          self.pipeline = pipeline;
+      this.kurento = new kurentoClient(ws_uri, options);
 
-          QUnit.start();
+      this.kurento.then(function () {
+          this.create('MediaPipeline', function (error, pipeline) {
+            if (error) return onerror(error);
+
+            self.pipeline = pipeline;
+
+            QUnit.start();
+          });
+        },
+        onerror);
+    } else if (scope == "docker") {
+      getIpDocker(function (ip) {
+        var hostIp = ip;
+        console.log("Docker IP:", hostIp);
+        docker = new Docker({
+          host: hostIp,
+          port: 2375
         });
-      },
-      onerror);
+        docker.run('kurento/kurento-media-server-dev:latest', [], [
+          process.stdout,
+          process.stderr
+        ], {
+          Tty: false,
+          'PortBindings': {
+            "8888/tcp": [{
+              "HostIp": "",
+              "HostPort": ws_port.toString()
+            }]
+          }
+        }, function (err, data, container) {
+          if (err) console.error(err);
+        }).on('container', function (container_) {
+          container = container_;
+          container.inspect(function (err, data) {
+            container.inspect(function (err, data) {
+              container.inspect(function (err, data) {
+                var ipDocker = data.NetworkSettings
+                  .IPAddress;
+                ipDocker = hostIp;
+                ws_uri = 'ws://' +
+                  ipDocker +
+                  ":" + ws_port + "/kurento";
+                Timeout.factor = parseFloat(QUnit.config
+                  .timeout_factor) || 1;
+
+                QUnit.config.testTimeout = 30000 *
+                  Timeout.factor;
+
+                var options = {
+                  request_timeout: 5000 * Timeout.factor
+                };
+
+                self.kurento = new kurentoClient(ws_uri,
+                  options);
+                self.kurento.then(function () {
+                    this.create('MediaPipeline',
+                      function (error, pipeline) {
+                        if (error) return onerror(
+                          error);
+
+                        self.pipeline = pipeline;
+
+                        QUnit.start();
+                      });
+                  },
+                  onerror);
+
+              })
+            })
+          })
+        });
+      });
+    }
 
     QUnit.stop();
   },
 
   teardown: function () {
-    if (this.pipeline)
-      this.pipeline.release(function (error) {
-        if (error) console.error(error);
+    if (scope == "docker") {
+      if (this.pipeline)
+        this.pipeline.release(function (error) {
+          if (error) console.error(error);
+        });
+      this.kurento.close();
+      QUnit.stop();
+      container.stop(function (error, data) {
+        console.log("Container KMS stopped.")
+        container.remove(function (error, data) {
+          console.log("Container KMS removed.")
+          QUnit.start();
+        })
       });
-
-    this.kurento.close();
+    } else {
+      if (this.pipeline)
+        this.pipeline.release(function (error) {
+          if (error) console.error(error);
+        });
+      this.kurento.close();
+    }
   }
 };
