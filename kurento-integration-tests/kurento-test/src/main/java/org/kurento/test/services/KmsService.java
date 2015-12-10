@@ -176,10 +176,11 @@ public class KmsService extends TestService {
 		String kmsLogin = getProperty(kmsLoginProp);
 		String kmsPasswd = getProperty(kmsPasswdProp);
 		String kmsPem = getProperty(kmsPemProp);
+		String kmsAutoStart = getProperty(kmsAutostartProp,
+				kmsAutostartDefault);
+
 		if (isKmsRemote && kmsLogin == null
 				&& (kmsPem == null || kmsPasswd == null)) {
-			String kmsAutoStart = getProperty(kmsAutostartProp,
-					kmsAutostartDefault);
 			throw new KurentoException("Bad test parameters: "
 					+ kmsAutostartProp + "=" + kmsAutoStart + " and "
 					+ kmsWsUriProp + "=" + wsUri
@@ -212,21 +213,23 @@ public class KmsService extends TestService {
 			}
 			log.trace("Local folder to store temporal files: {}", workspace);
 
+			if (isKmsRemote) {
+				String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
+						wsUri.lastIndexOf(":"));
+				log.info("Using remote KMS at {}", remoteKmsStr);
+				remoteKmsSshConnection = new SshConnection(remoteKmsStr,
+						kmsLogin, kmsPasswd, kmsPem);
+				if (kmsPem != null) {
+					remoteKmsSshConnection.setPem(kmsPem);
+				}
+				remoteKmsSshConnection.start();
+				remoteKmsSshConnection.createTmpFolder();
+			}
+
 			createKurentoConf();
 		}
 
-		if (isKmsRemote) {
-			String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2,
-					wsUri.lastIndexOf(":"));
-			log.info("Using remote KMS at {}", remoteKmsStr);
-			remoteKmsSshConnection = new SshConnection(remoteKmsStr, kmsLogin,
-					kmsPasswd, kmsPem);
-			if (kmsPem != null) {
-				remoteKmsSshConnection.setPem(kmsPem);
-			}
-			remoteKmsSshConnection.start();
-			remoteKmsSshConnection.createTmpFolder();
-
+		if (isKmsRemote && !kmsAutoStart.equals(AUTOSTART_FALSE_VALUE)) {
 			String[] filesToBeCopied = { "kurento.conf.json", "kurento.sh" };
 			for (String s : filesToBeCopied) {
 				remoteKmsSshConnection.scp(workspace + File.separator + s,
@@ -267,8 +270,7 @@ public class KmsService extends TestService {
 			try {
 				deleteFolderAndContent(workspace);
 			} catch (IOException e) {
-				log.warn("Exception deleting temportal folder {}", workspace,
-						e);
+				log.warn("Exception deleting temporal folder {}", workspace, e);
 			}
 		}
 	}

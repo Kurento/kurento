@@ -16,22 +16,32 @@ package org.kurento.test.performance.kms;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.Filter;
 import org.kurento.client.FilterType;
 import org.kurento.client.GStreamerFilter;
+import org.kurento.client.ImageOverlayFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.ZBarFilter;
+import org.kurento.module.crowddetector.CrowdDetectorFilter;
+import org.kurento.module.crowddetector.RegionOfInterest;
+import org.kurento.module.crowddetector.RegionOfInterestConfig;
+import org.kurento.module.crowddetector.RelativePoint;
+import org.kurento.module.platedetector.PlateDetectorFilter;
 import org.kurento.test.base.PerformanceTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.latency.LatencyController;
 import org.kurento.test.utils.WebRtcConnector;
 
 /**
@@ -48,7 +58,7 @@ import org.kurento.test.utils.WebRtcConnector;
 public class KmsPerformanceTest extends PerformanceTest {
 
 	private enum MediaProcessingType {
-		NONE, ENCODER, FILTER
+		NONE, ENCODER, FILTER, FACEOVERLAY, IMAGEOVERLAY, ZBAR, PLATEDETECTOR, CROWDDETECTOR
 	}
 
 	private static final String MEDIA_PROCESSING_PROPERTY = "mediaProcessing";
@@ -59,18 +69,24 @@ public class KmsPerformanceTest extends PerformanceTest {
 	private static final int NUM_CLIENTS_DEFAULT = 2;
 
 	private static final String TIME_BEETWEEN_CLIENTS_PROPERTY = "timeBetweenClientCreation";
-	private static final int TIME_BEETWEEN_CLIENTS_DEFAULT = 0;
+	private static final int TIME_BEETWEEN_CLIENTS_DEFAULT = 0; // milliseconds
 
 	private static final String PERFORMANCE_TEST_TIME_PROPERTY = "performanceTestTime";
 	private static final int PERFORMANCE_TEST_TIME_DEFAULT = 10; // seconds
 
-	private static String MEDIA_PROCESSING = getProperty(
+	private static final String OUTPUT_FILE_PROPERTY = "outputFile";
+	private static final String OUTPUT_FILE_DEFAULT = "./kms-results.csv";
+
+	private static final String GET_KMS_LATENCY_PROPERTY = "getKmsLatency";
+	private static final boolean GET_KMS_LATENCY_DEFAULT = true;
+
+	private static String mediaProcessing = getProperty(
 			MEDIA_PROCESSING_PROPERTY, MEDIA_PROCESSING_DEFAULT);
-	private static int NUM_CLIENTS = getProperty(NUM_CLIENTS_PROPERTY,
+	private static int numClients = getProperty(NUM_CLIENTS_PROPERTY,
 			NUM_CLIENTS_DEFAULT);
-	private static int TIME_BETEEN_CLIENT_CREATION = getProperty(
+	private static int timeBetweenClients = getProperty(
 			TIME_BEETWEEN_CLIENTS_PROPERTY, TIME_BEETWEEN_CLIENTS_DEFAULT);
-	private static int TEST_TIME = getProperty(PERFORMANCE_TEST_TIME_PROPERTY,
+	private static int testTime = getProperty(PERFORMANCE_TEST_TIME_PROPERTY,
 			PERFORMANCE_TEST_TIME_DEFAULT);
 
 	private MediaPipeline mp;
@@ -78,12 +94,17 @@ public class KmsPerformanceTest extends PerformanceTest {
 	private MediaProcessingType mediaProcessingType;
 
 	public KmsPerformanceTest() {
+		setShowLatency(true);
+	}
 
-		setMonitorResultPath("./kms-results.csv");
+	@Before
+	public void setupKmsPerformanceTest() {
+		setMonitorResultPath(
+				getProperty(OUTPUT_FILE_PROPERTY, OUTPUT_FILE_DEFAULT));
 
 		try {
 			mediaProcessingType = MediaProcessingType
-					.valueOf(MEDIA_PROCESSING.toUpperCase());
+					.valueOf(mediaProcessing.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			mediaProcessingType = MediaProcessingType.NONE;
 		}
@@ -91,31 +112,41 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		int numBrowsers = NUM_CLIENTS < 2 ? 2 : 3;
-		return TestScenario.localChromes(numBrowsers);
+		int numBrowsers = numClients < 2 ? 2 : 3;
+		return TestScenario.localChromesWithRgbVideo(numBrowsers);
 	}
 
 	@Test
-	public void testKmsPerformance() throws Exception {
+	public void testKmsPerformance() throws InterruptedException {
 
 		mp = kurentoClient.createMediaPipeline();
+		mp.setLatencyStats(
+				getProperty(GET_KMS_LATENCY_PROPERTY, GET_KMS_LATENCY_DEFAULT));
+
+		// 2 latency controllers (1 per real viewer)
+		LatencyController[] cs = new LatencyController[2];
 
 		try {
-
 			WebRtcEndpoint inputEndpoint = createInputBrowserClient(getPage(0));
+			String firstClientName = "client1";
+			createOutputBrowserClient(firstClientName, getPage(1),
+					inputEndpoint);
 
-			createOutputBrowserClient("client1", getPage(1), inputEndpoint);
+			cs[0] = new LatencyController(firstClientName, monitor);
+			cs[0].checkLatencyInBackground(getPage(0), getPage(1));
 
-			if (NUM_CLIENTS > 1) {
-
+			if (numClients > 1) {
 				configureFakeClients(inputEndpoint);
+				String lastClientName = "clientN";
+				createOutputBrowserClient(lastClientName, getPage(2),
+						inputEndpoint);
 
-				createOutputBrowserClient("clientN", getPage(2), inputEndpoint);
-
+				cs[1] = new LatencyController(lastClientName, monitor);
+				cs[1].checkLatencyInBackground(getPage(0), getPage(2));
 			}
 
 			// Test time
-			Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_TIME));
+			waitSeconds(testTime);
 
 		} finally {
 			if (mp != null) {
@@ -139,11 +170,45 @@ public class KmsPerformanceTest extends PerformanceTest {
 			break;
 
 		case FILTER:
+		case FACEOVERLAY:
 			filter = new FaceOverlayFilter.Builder(mp).build();
 			inputEndpoint.connect(filter);
 			filter.connect(outputEndpoint);
 			log.debug(
 					"Pipeline: WebRtcEndpoint -> FaceOverlayFilter -> WebRtcEndpoint");
+			break;
+
+		case ZBAR:
+			filter = new ZBarFilter.Builder(mp).build();
+			inputEndpoint.connect(filter);
+			filter.connect(outputEndpoint);
+			log.debug(
+					"Pipeline: WebRtcEndpoint -> ZBarFilter -> WebRtcEndpoint");
+			break;
+
+		case IMAGEOVERLAY:
+			filter = new ImageOverlayFilter.Builder(mp).build();
+			inputEndpoint.connect(filter);
+			filter.connect(outputEndpoint);
+			log.debug(
+					"Pipeline: WebRtcEndpoint -> ImageOverlayFilter -> WebRtcEndpoint");
+			break;
+
+		case PLATEDETECTOR:
+			filter = new PlateDetectorFilter.Builder(mp).build();
+			inputEndpoint.connect(filter);
+			filter.connect(outputEndpoint);
+			log.debug(
+					"Pipeline: WebRtcEndpoint -> PlateDetectorFilter -> WebRtcEndpoint");
+			break;
+
+		case CROWDDETECTOR:
+			List<RegionOfInterest> rois = getDummyRois();
+			filter = new CrowdDetectorFilter.Builder(mp, rois).build();
+			inputEndpoint.connect(filter);
+			filter.connect(outputEndpoint);
+			log.debug(
+					"Pipeline: WebRtcEndpoint -> CrowdDetectorFilter -> WebRtcEndpoint");
 			break;
 
 		case NONE:
@@ -156,13 +221,12 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 	private void configureFakeClients(WebRtcEndpoint inputWebRtc) {
 
-		int numFakeClients = NUM_CLIENTS - 2;
+		int numFakeClients = numClients - 2;
 
 		if (numFakeClients > 0) {
 			log.debug("Adding {} fake clients", numFakeClients);
-			addFakeClients(numFakeClients, mp, inputWebRtc,
-					TIME_BETEEN_CLIENT_CREATION, monitor,
-					new WebRtcConnector() {
+			addFakeClients(numFakeClients, mp, inputWebRtc, timeBetweenClients,
+					monitor, new WebRtcConnector() {
 						public void connect(WebRtcEndpoint inputEndpoint,
 								WebRtcEndpoint outputEndpoint) {
 							connectWithMediaProcessing(inputEndpoint,
@@ -203,5 +267,48 @@ public class KmsPerformanceTest extends PerformanceTest {
 				"webRtcPeer.peerConnection");
 
 		return outputEndpoint;
+	}
+
+	private List<RegionOfInterest> getDummyRois() {
+
+		List<RelativePoint> points = new ArrayList<>();
+
+		float x = 0;
+		float y = 0;
+		points.add(new RelativePoint(x, y));
+
+		x = 1;
+		y = 0;
+		points.add(new RelativePoint(x, y));
+
+		x = 1;
+		y = 1;
+		points.add(new RelativePoint(x, y));
+
+		x = 0;
+		y = 1;
+		points.add(new RelativePoint(x, y));
+
+		RegionOfInterestConfig config = new RegionOfInterestConfig();
+
+		config.setFluidityLevelMin(10);
+		config.setFluidityLevelMed(35);
+		config.setFluidityLevelMax(65);
+		config.setFluidityNumFramesToEvent(5);
+		config.setOccupancyLevelMin(10);
+		config.setOccupancyLevelMed(35);
+		config.setOccupancyLevelMax(65);
+		config.setOccupancyNumFramesToEvent(5);
+
+		config.setSendOpticalFlowEvent(false);
+
+		config.setOpticalFlowNumFramesToEvent(3);
+		config.setOpticalFlowNumFramesToReset(3);
+		config.setOpticalFlowAngleOffset(0);
+
+		List<RegionOfInterest> rois = new ArrayList<>();
+		rois.add(new RegionOfInterest(points, config, "dummyRoy"));
+
+		return rois;
 	}
 }

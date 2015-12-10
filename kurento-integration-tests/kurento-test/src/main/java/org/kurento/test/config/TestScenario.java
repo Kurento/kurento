@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import org.junit.Assert;
 import org.kurento.commons.ClassPath;
 import org.kurento.test.base.KurentoClientBrowserTest;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.BrowserType;
 import org.kurento.test.browser.WebPageType;
@@ -222,6 +223,20 @@ public class TestScenario {
 					new Browser.Builder().webPageType(WebPageType.WEBRTC)
 							.browserType(BrowserType.CHROME)
 							.scope(BrowserScope.LOCAL).build());
+		}
+		return Arrays.asList(new Object[][] { { test } });
+	}
+
+	public static Collection<Object[]> localChromesWithRgbVideo(int size) {
+		// Test: Chrome(s) in local
+		TestScenario test = new TestScenario();
+		for (int i = 0; i < size; i++) {
+			test.addBrowser(BrowserConfig.BROWSER + i,
+					new Browser.Builder().webPageType(WebPageType.WEBRTC)
+							.browserType(BrowserType.CHROME)
+							.video(KurentoTest.getTestFilesPath()
+									+ "/video/15sec/rgbHD.y4m")
+					.scope(BrowserScope.LOCAL).build());
 		}
 		return Arrays.asList(new Object[][] { { test } });
 	}
