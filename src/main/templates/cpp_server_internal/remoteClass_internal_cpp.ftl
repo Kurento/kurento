@@ -80,7 +80,7 @@ ${remoteClass.name}Impl::invoke (std::shared_ptr<MediaObjectImpl> obj, const std
 <#if !property.final && !property.readOnly>
   if (methodName == "set${property.name?cap_first}") {
     kurento::JsonSerializer s (false);
-    ${getCppObjectType (property.type, false)} ${property.name} ${initializePropertiesValues (property.type)};
+    ${getCppObjectType (property.type, false)} ${property.name};
     s.JsonValue = params;
 
 <#assign jsonData = getJsonCppTypeData(property.type)>
@@ -89,8 +89,10 @@ ${remoteClass.name}Impl::invoke (std::shared_ptr<MediaObjectImpl> obj, const std
                               "'${property.name}' parameter should be a ${jsonData.getTypeDescription()}");
     }
 
-    s.SerializeNVP (${property.name});
-    std::dynamic_pointer_cast<${remoteClass.name}> (obj)->set${property.name?cap_first} (${property.name});
+    if (!s.IsWriter) {
+      s.SerializeNVP (${property.name});
+      std::dynamic_pointer_cast<${remoteClass.name}> (obj)->set${property.name?cap_first} (${property.name});
+    }
     return;
   }
 
