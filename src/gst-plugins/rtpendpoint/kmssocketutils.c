@@ -74,14 +74,14 @@ static inline guint16
 inc_port (guint16 current, guint16 min, guint16 max, guint16 start,
     gboolean * max_reached, gboolean * all_checked)
 {
-  guint16 next = current + 1;
+  guint16 next = current + 2;
 
   if (next > max) {
     *max_reached = TRUE;
-    return min;
+    next = min;
   }
 
-  if (*max_reached && next >= start) {
+  if (*max_reached && (next + 1 >= start)) {
     *all_checked = TRUE;
   }
 
@@ -115,11 +115,11 @@ kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
     max_port = G_MAXUINT16;
   }
 
-  if (min_port + 1 < max_port) {
-    start_port = (guint16) g_random_int_range (min_port + 1, max_port);
-  } else {
-    start_port = min_port + 1;
+  if (min_port + 1 > max_port) {
+    return FALSE;
   }
+
+  start_port = (guint16) g_random_int_range (min_port, max_port + 1);
 
   for (port1 = start_port; !all_checked;
       port1 =
