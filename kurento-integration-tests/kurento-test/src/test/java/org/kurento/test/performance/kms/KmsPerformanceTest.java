@@ -31,6 +31,8 @@ import org.kurento.client.ImageOverlayFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.client.ZBarFilter;
+import org.kurento.module.chroma.ChromaFilter;
+import org.kurento.module.chroma.WindowParam;
 import org.kurento.module.crowddetector.CrowdDetectorFilter;
 import org.kurento.module.crowddetector.RegionOfInterest;
 import org.kurento.module.crowddetector.RegionOfInterestConfig;
@@ -58,7 +60,7 @@ import org.kurento.test.utils.WebRtcConnector;
 public class KmsPerformanceTest extends PerformanceTest {
 
 	private enum MediaProcessingType {
-		NONE, ENCODER, FILTER, FACEOVERLAY, IMAGEOVERLAY, ZBAR, PLATEDETECTOR, CROWDDETECTOR
+		NONE, ENCODER, FILTER, FACEOVERLAY, IMAGEOVERLAY, ZBAR, PLATEDETECTOR, CHROMA, CROWDDETECTOR
 	}
 
 	private static final String MEDIA_PROCESSING_PROPERTY = "mediaProcessing";
@@ -135,6 +137,9 @@ public class KmsPerformanceTest extends PerformanceTest {
 			cs[0] = new LatencyController(firstClientName, monitor);
 			cs[0].checkLatencyInBackground(getPage(0), getPage(1));
 
+			// Guard time to receive positive values of latency by KMS
+      Thread.sleep(10000);
+
 			if (numClients > 1) {
 				configureFakeClients(inputEndpoint);
 				String lastClientName = "clientN";
@@ -210,6 +215,13 @@ public class KmsPerformanceTest extends PerformanceTest {
 			log.debug(
 					"Pipeline: WebRtcEndpoint -> CrowdDetectorFilter -> WebRtcEndpoint");
 			break;
+
+    case CHROMA:
+      filter = new ChromaFilter.Builder(mp, new WindowParam(0, 0, 640, 480)).build();
+      inputEndpoint.connect(filter);
+      filter.connect(outputEndpoint);
+      log.debug("Pipeline: WebRtcEndpoint -> ChromaFilter -> WebRtcEndpoint");
+      break;
 
 		case NONE:
 		default:

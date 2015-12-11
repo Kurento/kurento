@@ -81,7 +81,7 @@ public class MonitorSampleRegistrer {
 
 	private void printKmsProcessHeaders(PrintWriter pw) {
 		pw.print("time,clients_number,kms_threads_number");
-		pw.print(",cpu_percetage,mem_bytes,mem_percentage");
+		pw.print(",cpu_percentage,mem_bytes,mem_percentage");
 
 		if (showLantency) {
 			pw.print(",latency_ms_avg");
