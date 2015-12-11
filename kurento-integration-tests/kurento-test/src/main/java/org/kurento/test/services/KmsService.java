@@ -127,6 +127,8 @@ public class KmsService extends TestService {
 	protected String kmsAutostartDefault;
 	protected String kmsWsUriProp;
 	protected String kmsWsUriExportProp;
+	protected String kmsScopeProp;
+	protected String kmsScopeDefault;
 	protected KurentoClient kurentoClient;
 
 	public KmsService(String wsUri) {
@@ -141,19 +143,24 @@ public class KmsService extends TestService {
 		this.kmsAutostartDefault = KMS_AUTOSTART_DEFAULT;
 		this.kmsWsUriProp = KMS_WS_URI_PROP;
 		this.kmsWsUriExportProp = KMS_WS_URI_PROP_EXPORT;
+		this.kmsScopeProp = KMS_SCOPE_PROP;
+		this.kmsScopeDefault = KMS_SCOPE_DEFAULT;
 
 		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
 
 	public KmsService(String kmsLoginProp, String kmsPasswdProp,
 			String kmsPemProp, String kmsAutostartProp, String kmsWsUriProp,
-			String kmsWsUriExportProp) {
+			String kmsWsUriExportProp, String kmsScopeProp,
+			String kmsScopeDefault) {
 		this.kmsLoginProp = kmsLoginProp;
 		this.kmsPasswdProp = kmsPasswdProp;
 		this.kmsPemProp = kmsPemProp;
 		this.kmsAutostartProp = kmsAutostartProp;
 		this.kmsWsUriProp = kmsWsUriProp;
 		this.kmsWsUriExportProp = kmsWsUriExportProp;
+		this.kmsScopeProp = kmsScopeProp;
+		this.kmsScopeDefault = kmsScopeDefault;
 
 		setWsUri(getProperty(kmsWsUriProp, KMS_WS_URI_DEFAULT));
 	}
@@ -170,7 +177,7 @@ public class KmsService extends TestService {
 		isKmsRemote = !wsUri.contains("localhost")
 				&& !wsUri.contains("127.0.0.1") && !isKmsDocker;
 		isKmsDocker = KMS_SCOPE_DOCKER
-				.equals(getProperty(KMS_SCOPE_PROP, KMS_SCOPE_DEFAULT));
+				.equals(getProperty(kmsScopeProp, kmsScopeDefault));
 
 		// Assertion: if KMS remote, credentials should be available
 		String kmsLogin = getProperty(kmsLoginProp);
@@ -232,6 +239,7 @@ public class KmsService extends TestService {
 		if (isKmsRemote && !kmsAutoStart.equals(AUTOSTART_FALSE_VALUE)) {
 			String[] filesToBeCopied = { "kurento.conf.json", "kurento.sh" };
 			for (String s : filesToBeCopied) {
+				System.err.println(remoteKmsSshConnection);
 				remoteKmsSshConnection.scp(workspace + File.separator + s,
 						remoteKmsSshConnection.getTmpFolder() + File.separator
 								+ s);

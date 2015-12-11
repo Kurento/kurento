@@ -30,13 +30,13 @@ public class TestConfiguration {
 	public static final String TEST_PORT_PROPERTY = "test.port";
 	public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
 	public static final String APP_HTTP_PORT_PROP = "server.port";
-  public static final int APP_HTTP_PORT_DEFAULT = 8443;
+	public static final int APP_HTTP_PORT_DEFAULT = 8443;
 
 	public static final String TEST_PATH_PROPERTY = "test.path";
 	public static final String TEST_PATH_DEFAULT = "/";
 
 	public static final String TEST_PROTOCOL_PROPERTY = "test.protocol";
-  public static final String TEST_PROTOCOL_DEFAULT = "https";
+	public static final String TEST_PROTOCOL_DEFAULT = "https";
 
 	public final static String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
 	public final static int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
@@ -181,6 +181,8 @@ public class TestConfiguration {
 	public static final String FAKE_KMS_PEM_PROP = "fake.kms.pem";
 	public static final String FAKE_KMS_AUTOSTART_PROP = "fake.kms.autostart";
 	public static final String FAKE_KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
+	public static final String FAKE_KMS_SCOPE_PROP = "fake.kms.scope";
+	public static final String FAKE_KMS_SCOPE_DEFAULT = KMS_SCOPE_LOCAL;
 
 	// Bower
 	public static final String BOWER_KURENTO_CLIENT_TAG_PROP = "bower.kurentoclient.tag";
