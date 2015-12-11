@@ -58,7 +58,7 @@ if [ -n "$GERRIT_PROJECT" ]; then
   git clone $GERRIT_PROJECT_URL  $GERRIT_PROJECT || exit 1
   ( cd $GERRIT_PROJECT && git fetch $GERRIT_PROJECT_URL $GERRIT_NEWREV && git checkout FETCH_HEAD
     if [ -f pom.xml ]; then
-      mvn $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
+      mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
     fi
   ) || exit 1
 
