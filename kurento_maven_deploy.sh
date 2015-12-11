@@ -15,20 +15,12 @@ echo "##################### EXECUTE: kurento_maven_deploy.sh ###################
 # SIGN_ARTIFACTS true | false
 #   Wheter to sign artifacts before deployment. Default value is true
 #
-# KEY
-#   Private key to push artifacts to kurento maven repo
-#
-# CERT
-#   Public certificate to push artifacts to kurento maven repo
 
 # Get command line parameters for backward compatibility
 [ -n "$1" ] && MAVEN_SETTINGS=$1
 [ -n "$2" ] && SNAPSHOT_REPOSITORY=$2
 [ -n "$2" ] && RELEASE_REPOSITORY=$2
 [ -n "$3" ] && SIGN_ARTIFACTS=$3
-
-[ -z "$KEY" ] && echo "No key specified"
-[ -z "$CERT" ] && echo "No cert specified"
 
 # Validate parameters
 if [ -n "$MAVEN_SETTINGS" ];then

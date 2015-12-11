@@ -7,7 +7,7 @@ echo "##################### EXECUTE: kurento_git_checkout #####################"
 #
 # PARAMETERS
 #
-# GERRIT_NEWREV
+# GERRIT_NEWREV / GERRIT_REFSPEC
 #     Reference to the incoming commit to be verified. Commit message will be
 #     parsed for entries of the form:
 #
@@ -46,9 +46,13 @@ echo "##################### EXECUTE: kurento_git_checkout #####################"
 # Verify mandatory parameters
 [ -z "$GERRIT_HOST" ] && GERRIT_HOST=code.kurento.org
 [ -z "$GERRIT_PORT" ] && GERRIT_PORT=12345
-[ -z "$GERRIT_NEWREV" ] && GERRIT_NEWREV=master
 [ -z "$GERRIT_USER" ] && GERRIT_USER=$(whoami)
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
+
+# Define reference
+[ -n "$GERRIT_NEWREV" ] && GERRIT_REFERENCE=$GERRIT_NEWREV
+[ -n "$GERRIT_REFSPEC" ] && GERRIT_REFERENCE=$GERRIT_REFSPEC
+[ -z "$GERRIT_REFERENCE" ] && GERRIT_REFERENCE=master
 
 GERRIT_URL=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT
 
@@ -56,7 +60,7 @@ GERRIT_URL=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT
 if [ -n "$GERRIT_PROJECT" ]; then
   GERRIT_PROJECT_URL=$GERRIT_URL/$GERRIT_PROJECT
   git clone $GERRIT_PROJECT_URL  $GERRIT_PROJECT || exit 1
-  ( cd $GERRIT_PROJECT && git fetch $GERRIT_PROJECT_URL $GERRIT_NEWREV && git checkout FETCH_HEAD
+  ( cd $GERRIT_PROJECT && git fetch $GERRIT_PROJECT_URL $GERRIT_REFERENCE && git checkout FETCH_HEAD
     if [ -f pom.xml ]; then
       mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
     fi
