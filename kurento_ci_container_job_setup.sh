@@ -72,7 +72,7 @@ cleanup () {
   # KMS
   [ -n "$KMS_CONTAINER_ID" ] && \
     mkdir -p $WORKSPACE/report-files && \
-    docker logs $MONGO_CONTAINER_ID > $WORKSPACE/report-files/external-kms.log && \
+    docker logs $KMS_CONTAINER_ID > $WORKSPACE/report-files/external-kms.log && \
     zip $WORKSPACE/report-files/external-kms.log.zip $WORKSPACE/report-files/external-kms.log && \
     docker stop $KMS_CONTAINER_ID && docker rm -v $KMS_CONTAINER_ID
 }
