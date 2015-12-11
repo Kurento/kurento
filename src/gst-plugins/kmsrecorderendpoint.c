@@ -38,21 +38,12 @@
 #define PLUGIN_NAME "recorderendpoint"
 
 #define AUDIO_APPSINK "audio_appsink"
-#define AUDIO_APPSRC "audio_appsrc"
-#define VIDEO_APPSINK "video_appsink"
-#define VIDEO_APPSRC "video_appsrc"
 
-#define KEY_RECORDER_PAD_PROBE_ID "kms-recorder-pad-key-probe-id"
+#define VIDEO_APPSINK "video_appsink"
 
 #define BASE_TIME_DATA "base_time_data"
 
-#define HTTP_PROTO "http"
-#define HTTPS_PROTO "https"
-
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_NONE
-
-#define HTTP_TIMEOUT 10
-#define MEGA_BYTES(n) ((n) * 1000000)
 
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_endpoint_debug_category
