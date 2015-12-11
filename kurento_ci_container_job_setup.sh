@@ -168,7 +168,7 @@ MAVEN_OPTIONS+=" -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 
 # Create main container
 docker run \
-  --name $BUILD_TAG-MERGE_PROJECT \
+  --name $BUILD_TAG-JOB_SETUP \
   --rm \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \

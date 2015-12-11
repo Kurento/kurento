@@ -128,6 +128,18 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
 			  </plugin>
   		</plugins>
 	</build>
+	<profiles>
+		<!-- Kurento CI requires this profiles to exist -->
+		<profile>
+			<id>default</id>
+		</profile>
+		<profile>
+			<id>deploy</id>
+		</profile>
+		<profile>
+			<id>kurento-release</id>
+		</profile>
+	</profiles>
 </project>
 EOF
 
