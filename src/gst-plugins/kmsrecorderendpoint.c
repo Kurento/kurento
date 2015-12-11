@@ -18,7 +18,6 @@
 
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
-#include <libsoup/soup.h>
 
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
