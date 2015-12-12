@@ -19,7 +19,14 @@ echo "##################### EXECUTE: kurento_mavenice_js_project ###############
 
 # Validate parameters
 [ -z "$PROJECT_NAME" ] && exit 1
-[ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="cd \${basedir} ; npm -d install || exit 1 ; node_modules/.bin/grunt || exit 1 ; node_modules/.bin/grunt sync:bower || exit 1 ; mkdir -p src/main/resources/META-INF/resources/js/ || exit 1 ; cp dist/* src/main/resources/META-INF/resources/js/"
+[ -z "$MAVEN_SHELL_SCRIPT" ] && MAVEN_SHELL_SCRIPT="\
+	npm install npm -g || exit 1; \
+	cd \${basedir}; \
+	npm -d install || exit 1; \
+	node_modules/.bin/grunt || exit 1; \
+	node_modules/.bin/grunt sync:bower || exit 1; \
+	mkdir -p src/main/resources/META-INF/resources/js/ || exit 1; \
+	cp dist/* src/main/resources/META-INF/resources/js/"
 [ -z "$ASSEMBLY_FILE" ] && ASSEMBLY_FILE="assembly.xml"
 
 # Validate project structure
