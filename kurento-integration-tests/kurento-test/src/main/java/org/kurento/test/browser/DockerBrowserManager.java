@@ -137,7 +137,8 @@ public class DockerBrowserManager {
 				} catch (MalformedURLException e) {
 					throw new Error(e);
 				} catch (IOException e) {
-					log.debug("Hub is not ready. Waiting {} ms...",
+					log.debug("Hub is not ready ({} : {}). Waiting {} ms...",
+							e.getClass().getName(), e.getMessage(),
 							HUB_CREATION_WAIT_POOL_TIME_MS);
 					waitPoolTime(timeoutMs, "hub service ready");
 				}
