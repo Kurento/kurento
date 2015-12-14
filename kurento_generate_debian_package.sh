@@ -1,8 +1,8 @@
 #!/bin/bash -x
 
-if [ "${KEY_ID}x" == "x" ]
+if [ "${GNUPG_KEY_ID}x" == "x" ]
 then
-  echo "You should indentify an gnupg key in environment variable KEY_ID, use one from gpg -K"
+  echo "You should indentify an gnupg key in environment variable GNUPG_KEY_ID, use one from gpg -K"
 fi
 
 PATH=$PATH:$(realpath $(dirname "$0"))
@@ -79,17 +79,17 @@ export ver=$(head -1 debian/changelog | sed -e "s@.* (\(.*\)) .*@\1@")
 
 echo Version is: ${ver}
 
-if [ "${KEY_ID}x" == "x" ]
+if [ "${GNUPG_KEY_ID}x" == "x" ]
 then
  echo "Generating packages without signing them"
  build_args="-uc -us"
 else
- echo "Using key ${KEY_ID}"
- if [ ! -f ${KEY_ID} ]; then
+ echo "Using key ${GNUPG_KEY_ID}"
+ if [ ! -f ${GNUPG_KEY_ID} ]; then
    echo "Secret file does not exist"
    exit 1
  fi
- build_args="-k${KEY_ID}"
+ build_args="-k${GNUPG_KEY_ID}"
 fi
 
 #dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
