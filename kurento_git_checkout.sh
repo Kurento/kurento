@@ -82,14 +82,19 @@ for REF in $REFS; do
   [ -z "$DEPENDENCY_REFSPEC" ] && DEPENDENCY_REFSPEC=master
   # Clone and install artifacts only if not already cloned
   if [ ! -d "$DEPENDENCY_PROJECT" ]; then
-    git clone $DEPENDENCY_PROJECT_URL || exit 1
-    (cd $DEPENDENCY_PROJECT &&
-      git fetch $DEPENDENCY_PROJECT_URL $DEPENDENCY_REFSPEC &&
-      git checkout FETCH_HEAD
-      # Execute maven for maven projects
-      if [ -f pom.xml ]; then
-        mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
-      fi
-    ) || exit 1
+    if [ "$DEPENDENCY_REFSPEC" == 'ignore' ]; then
+      mkdir -p $DEPENDENCY_PROJECT
+      touch $DEPENDENCY_PROJECT/ignore
+    else
+      git clone $DEPENDENCY_PROJECT_URL || exit 1
+      (cd $DEPENDENCY_PROJECT &&
+        git fetch $DEPENDENCY_PROJECT_URL $DEPENDENCY_REFSPEC &&
+        git checkout FETCH_HEAD
+        # Execute maven for maven projects
+        if [ -f pom.xml ]; then
+          mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
+        fi
+      ) || exit 1
+    fi
   fi
 done

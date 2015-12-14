@@ -37,18 +37,16 @@ echo "##################### EXECUTE: kurento_mvn #####################"
 #    When no present, all tests within the category are run.
 #    DEFAULT: none
 #
-# WORKSPACE path
-#    Optional
-#    Jenkins workspace path. This variable is expected to be exported by
-#    script caller.
-#    DEFAULT: .
-#
 
 # Set default environment
 [ -z "$MAVEN_GOALS" ] && MAVEN_GOALS="verify"
 [ -n "$MAVEN_SETTINGS" ] && PARAM_MAVEN_SETTINGS="--settings $MAVEN_SETTINGS"
-[ -z "$WORKSPACE" ] && WORKSPACE="."
-[ -n "$MAVEN_MODULE" -a -f $WORKSPACE/$MAVEN_MODULE/pom.xml ] && PARAM_PL="-pl $MAVEN_MODULE -am"
+[ -n "$MAVEN_MODULE" -a -f $MAVEN_MODULE/pom.xml ] && PARAM_PL="-pl $MAVEN_MODULE -am"
 MAVEN_OPTIONS="$MAVEN_OPTIONS -DfailIfNoTests=false"
 
-mvn --fail-at-end --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS
+# Do not compile if file ignore has been added
+if [ ! -f ignore ]; then
+  mvn --fail-at-end --batch-mode $PARAM_MAVEN_SETTINGS $PARAM_PL clean $MAVEN_GOALS -U $MAVEN_OPTIONS
+else
+  exit 0
+fi

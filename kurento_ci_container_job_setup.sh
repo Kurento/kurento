@@ -133,7 +133,7 @@ fi
 # Verify if Mongo container must be started
 if [ "$START_KMS_CONTAINER" == 'true' ]; then
     KMS_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-MONGO \
+      --name $BUILD_TAG-KMS \
       kurento/kurento-media-server-dev:latest) || exit
     KMS_AUTOSTART=false
 fi
