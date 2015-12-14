@@ -3,20 +3,20 @@
 echo "##################### EXECUTE: kurento_merge_doc_project #####################"
 env
 
-sed -e "s@mvn@mvn --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc
-make -f Makefile.jenkins html epub latexpdf dist
+sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
+make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
+make -f Makefile.jenkins html epub latexpdf dist || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
 
 [ -z "$KURENTO_PROJECT" ] && (echo "KURENTO_PROJECT variable not defined"; exit 1;)
 [ -z "$BRANCH" ] && BRANCH=$GERRIT_NEWREV
-kurento_check_version.sh
+kurento_check_version.sh || exit 1
 
 export DOC_PROJECT=$KURENTO_PROJECT
 export BRANCH
-kurento_prepare_readthedocs.sh
+kurento_prepare_readthedocs.sh || exit 1
 
 pushd $KURENTO_PROJECT-readthedocs
-kurento_check_version.sh
+kurento_check_version.sh || exit 1
 
 # Extract version
 VERSION=$(kurento_get_version.sh)
@@ -34,9 +34,9 @@ if [[ $VERSION != *-dev ]]; then
   git ls-remote --tags ssh://jenkins@$KURENTO_GIT_REPOSITORY_SERVER/kurento-utils-js|grep -F -q "$KURENTO_UTILS_JS_RELEASE" || exit 1
 
   # Build release
-  sed -e "s@mvn@mvn --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-  make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc
-  make -f Makefile.jenkins html epub latexpdf dist
+  sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
+  make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
+  make -f Makefile.jenkins html epub latexpdf dist || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
 
   # Generate version file
   echo "VERSION_DATE=$VERSION - `date` - `date +%Y%m%d-%H%M%S`" > kurento-docs.version
@@ -58,6 +58,6 @@ if [[ $VERSION != *-dev ]]; then
   FILE="$FILE build/dist/kurento-docs-$VERSION.tgz:$S_DIR/docs/kurento-docs.tgz:1"
 
   export FILES=$FILE
-  kurento_http_publish.sh
+  kurento_http_publish.sh || { echo "Publishing $KURENTO_PROJECT failed"; exit 1; }
 
 fi
