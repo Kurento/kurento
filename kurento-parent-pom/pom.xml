@@ -100,7 +100,7 @@
 		<version.cors-filter>2.5</version.cors-filter>
 		<version.exec.maven.plugin>1.4.0</version.exec.maven.plugin>
 		<version.google.gson>2.5</version.google.gson>
-		<version.google.guava>19.0.20150826</version.google.guava>
+		<version.google.guava>19.0</version.google.guava>
 		<version.google.youtube>v3-rev153-1.21.0</version.google.youtube>
 		<version.google.http>1.21.0</version.google.http>
 		<version.google.oauth>1.21.0</version.google.oauth>
