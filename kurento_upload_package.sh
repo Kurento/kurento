@@ -30,6 +30,7 @@ then
     exit 1
   else
     CERT=${HTTP_CERT}
+  fi
 fi
 
 echo "Using http cert ${CERT}"
