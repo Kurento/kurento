@@ -7,9 +7,9 @@ echo "##################### EXECUTE: kurento_prepare_readthedocs ###############
 #    Mandatory
 #    Identifies the original documentation git repository
 #
-# BRANCH string
+# GERRIT_REFNAME string
 #    Mandatory
-#    Identifies the branch to be synchronized with readthedocs repository
+#    Identifies the GERRIT_REFNAME to be synchronized with readthedocs repository
 #
 # MAVEN_SETTINGS path
 #    Mandatory
@@ -18,10 +18,10 @@ echo "##################### EXECUTE: kurento_prepare_readthedocs ###############
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
-echo "Building $BRANCH of $DOC_PROJECT"
+echo "Building $GERRIT_REFNAME of $DOC_PROJECT"
 
 # Build
-kurento_clone_repo.sh $DOC_PROJECT $BRANCH || { echo "Couldn't clone $DOC_PROJECT repository"; exit 1; }
+kurento_clone_repo.sh $DOC_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $DOC_PROJECT repository"; exit 1; }
 pushd $DOC_PROJECT
 COMMIT_MSG=$(git log -1 --pretty=format:%s)
 sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
@@ -30,7 +30,7 @@ make -f Makefile.jenkins clean readthedocs || { echo "Building $DOC_PROJECT fail
 popd
 
 READTHEDOCS_PROJECT=$DOC_PROJECT-readthedocs
-kurento_clone_repo.sh $READTHEDOCS_PROJECT $BRANCH || { echo "Couldn't clone $READTHEDOCS_PROJECT repository"; exit 1; }
+kurento_clone_repo.sh $READTHEDOCS_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $READTHEDOCS_PROJECT repository"; exit 1; }
 
 rm -rf $READTHEDOCS_PROJECT/*
 cp -r $DOC_PROJECT/* $READTHEDOCS_PROJECT/
@@ -45,6 +45,6 @@ sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefi
 make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
 make -f Makefile.jenkins html epub latexpdf dist || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
 
-git push origin $BRANCH || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
+git push origin $GERRIT_REFNAME || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
 
 popd
