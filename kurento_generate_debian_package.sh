@@ -85,10 +85,6 @@ then
  build_args="-uc -us"
 else
  echo "Using key ${GNUPG_KEY_ID}"
- if [ ! -f ${GNUPG_KEY_ID} ]; then
-   echo "Secret file does not exist"
-   exit 1
- fi
  build_args="-k${GNUPG_KEY_ID}"
 fi
 
