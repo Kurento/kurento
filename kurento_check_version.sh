@@ -21,6 +21,7 @@ echo Create tag $CREATE_TAG
 PROJECT_VERSION=`kurento_get_version.sh`
 
 if [ "${PROJECT_VERSION}x" = "x" ]; then
+  echo "Could not find project version"
   exit 1
 fi
 
