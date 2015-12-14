@@ -37,20 +37,27 @@ echo "Using http cert ${CERT}"
 
 if [ "${REPREPRO_URL}x" == "x" ]
 then
-  if [ "${PACKAGE_REPOSITORY_HOST}x" == "x" ]
+  if [ "${DEBIAN_PACKAGE_REPOSITORY_HOST}x" == "x" ]
   then
     echo "You need to specify environment variable REPREPRO_URL with the address of your repository"
     exit 1
   else
-    REPREPRO_URL=${PACKAGE_REPOSITORY_HOST}
+    REPREPRO_URL=${DEBIAN_PACKAGE_REPOSITORY_HOST}
   fi
 fi
 
 if [ "${COMPONENT}x" == "x" ]
 then
-  echo "You did not specified a component, using main by default"
-  COMPONENT=main
+  if [ "${DEBIAN_PACKAGE_COMPONENT}" == "x" ]
+  then
+    echo "You did not specified a component, using main by default"
+    COMPONENT=main
+  else
+    COMPONENT=${DEBIAN_PACKAGE_COMPONENT}
+  fi
 fi
+
+echo "Using component ${COMPONENT}"
 
 KEY=$ID_RSA_FILE
 
