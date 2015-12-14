@@ -37,8 +37,13 @@ echo "Using http cert ${CERT}"
 
 if [ "${REPREPRO_URL}x" == "x" ]
 then
-  echo "You need to specify environment variable REPREPRO_URL with the address of your repository"
-  exit 1
+  if [ "${PACKAGE_REPOSITORY_HOST}x" == "x" ]
+  then
+    echo "You need to specify environment variable REPREPRO_URL with the address of your repository"
+    exit 1
+  else
+    REPREPRO_URL=${PACKAGE_REPOSITORY_HOST}
+  fi
 fi
 
 if [ "${COMPONENT}x" == "x" ]
