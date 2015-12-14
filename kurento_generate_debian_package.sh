@@ -85,6 +85,10 @@ then
  build_args="-uc -us"
 else
  echo "Using key ${KEY_ID}"
+ if [ ! -f ${KEY_ID} ]; then
+   echo "Secret file does not exist"
+   exit 1
+ fi
  build_args="-k${KEY_ID}"
 fi
 
