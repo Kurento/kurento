@@ -36,9 +36,12 @@ cd ${PROJECT_NAME} || exit 1
 
 git checkout ${BRANCH} || exit 1
 
-if [ "${GIT_SSH_KEY}x" == "x" ]
+if [ -f .gitmodules ]
 then
-  git submodule update --init --recursive || exit 1
-else
-  ssh-agent bash -c "ssh-add ${GIT_SSH_KEY}; git submodule update --init --recursive || exit 1" || exit 1
+  if [ "${GIT_SSH_KEY}x" == "x" ]
+    then
+    git submodule update --init --recursive || exit 1
+  else
+    ssh-agent bash -c "ssh-add ${GIT_SSH_KEY}; git submodule update --init --recursive || exit 1" || exit 1
+  fi
 fi
