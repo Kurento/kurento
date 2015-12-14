@@ -39,11 +39,11 @@ if [[ $VERSION != *-dev ]]; then
   make -f Makefile.jenkins html epub latexpdf dist || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
 
   # Generate version file
-  echo "VERSION_DATE=$VERSION - `date` - `date +%Y%m%d-%H%M%S`" > kurento-docs.version
+  echo "VERSION_DATE=$VERSION - `date` - `date +%Y%m%d-%H%M%S`" > $KURENTO_PROJECT.version
 
   # Extract contents
   mkdir build/dist/docs
-  tar -xvzf build/dist/kurento-docs-$VERSION.tgz -C ./build/dist/docs/
+  tar -xvzf build/dist/$KURENTO_PROJECT-$VERSION.tgz -C ./build/dist/docs/
 
   # Export files to upload
   DATE=$(date +"%Y%m%d")
@@ -51,11 +51,11 @@ if [[ $VERSION != *-dev ]]; then
   S_DIR=/release/stable
 
   FILE=""
-  FILE="$FILE build/dist/kurento-docs-$VERSION.tgz:$V_DIR/kurento-docs-$VERSION.tgz"
-  FILE="$FILE kurento-docs.version:$S_DIR/kurento-docs.version"
-  FILE="$FILE build/dist/kurento-docs-$VERSION.tgz:$S_DIR/kurento-docs.tgz"
-  FILE="$FILE build/dist/kurento-docs-$VERSION.tgz:$V_DIR/docs/kurento-docs.tgz:1"
-  FILE="$FILE build/dist/kurento-docs-$VERSION.tgz:$S_DIR/docs/kurento-docs.tgz:1"
+  FILE="$FILE build/dist/$KURENTO_PROJECT-$VERSION.tgz:$V_DIR/$KURENTO_PROJECT-$VERSION.tgz"
+  FILE="$FILE $KURENTO_PROJECT.version:$S_DIR/$KURENTO_PROJECT.version"
+  FILE="$FILE build/dist/$KURENTO_PROJECT-$VERSION.tgz:$S_DIR/$KURENTO_PROJECT.tgz"
+  FILE="$FILE build/dist/$KURENTO_PROJECT-$VERSION.tgz:$V_DIR/$KURENTO_PROJECT/$KURENTO_PROJECT.tgz:1"
+  FILE="$FILE build/dist/$KURENTO_PROJECT-$VERSION.tgz:$S_DIR/$KURENTO_PROJECT/$KURENTO_PROJECT.tgz:1"
 
   export FILES=$FILE
   kurento_http_publish.sh || { echo "Publishing $KURENTO_PROJECT failed"; exit 1; }
