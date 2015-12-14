@@ -8,7 +8,7 @@ make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc
 make -f Makefile.jenkins html epub latexpdf dist
 
 [ -z "$KURENTO_PROJECT" ] && (echo "KURENTO_PROJECT variable not defined"; exit 1;)
-[ -z "$BRANCH" ] && BRANCH=$GERRIT_REFNAME
+[ -z "$BRANCH" ] && BRANCH=$GERRIT_NEWREV
 kurento_check_version.sh
 
 export DOC_PROJECT=$KURENTO_PROJECT
