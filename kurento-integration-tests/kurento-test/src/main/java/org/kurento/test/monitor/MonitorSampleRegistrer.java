@@ -87,10 +87,12 @@ public class MonitorSampleRegistrer {
 			pw.print(",latency_ms_avg");
 		}
 
-		MonitorSample firstSample = samples.entrySet().iterator().next()
-				.getValue();
+		if (samples != null && !samples.entrySet().isEmpty()) {
+			MonitorSample firstSample = samples.entrySet().iterator().next()
+					.getValue();
 
-		pw.print(firstSample.getSystemInfo().getNetInfo().createHeader());
+			pw.print(firstSample.getSystemInfo().getNetInfo().createHeader());
+		}
 
 	}
 

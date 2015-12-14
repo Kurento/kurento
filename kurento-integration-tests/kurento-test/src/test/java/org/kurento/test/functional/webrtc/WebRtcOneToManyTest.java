@@ -100,9 +100,11 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 
 	@After
 	public void teardownMonitor() throws IOException {
-		monitor.stop();
-		monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
-		monitor.destroy();
+		if (monitor != null) {
+			monitor.stop();
+			monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+			monitor.destroy();
+		}
 	}
 
 	@Test
