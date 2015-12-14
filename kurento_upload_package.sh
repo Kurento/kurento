@@ -11,9 +11,16 @@ PACKAGE=$2
 
 if [ "${ID_RSA_FILE}x" == "x" ]
 then
-  echo "You need to specify environment variable ID_RSA_FILE with the public key to upload packages to the repository"
-  exit 1
+  if [ "${HTTP_KEY}x" == "x" ]
+  then
+    echo "You need to specify environment variable ID_RSA_FILE with the public key to upload packages to the repository"
+    exit 1
+  else
+    ID_RSA_FILE=${HTTP_KEY}
+  fi
 fi
+
+echo "Using http key ${ID_RSA_FILE}"
 
 if [ "${CERT}x" == "x" ]
 then
