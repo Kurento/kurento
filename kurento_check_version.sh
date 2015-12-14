@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "##################### EXECUTE: kurento_check_version #####################"
+
 # Create tag
 if [ -n "$1" ]
 then

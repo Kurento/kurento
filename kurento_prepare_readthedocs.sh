@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "##################### EXECUTE: kurento_prepare_readthedocs #####################"
+
 # This tool uses a set of variables expected to be exported by tester
 # DOC_PROJECT string
 #    Mandatory
