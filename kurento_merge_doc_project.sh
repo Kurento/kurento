@@ -12,6 +12,7 @@ make -f Makefile.jenkins html epub latexpdf dist
 kurento_check_version.sh
 
 export DOC_PROJECT=$KURENTO_PROJECT
+export BRANCH
 kurento_prepare_readthedocs.sh
 
 pushd $KURENTO_PROJECT-readthedocs

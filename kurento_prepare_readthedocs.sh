@@ -18,6 +18,8 @@ echo "##################### EXECUTE: kurento_prepare_readthedocs ###############
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
+echo "Building $BRANCH of $DOC_PROJECT"
+
 # Build
 kurento_clone_repo.sh $DOC_PROJECT $BRANCH
 pushd $DOC_PROJECT
