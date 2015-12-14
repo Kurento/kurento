@@ -41,7 +41,7 @@ sudo npm install -g http-server
 Then, in each demo folder execute this command:
 
 ```bash
-http-server -S -C keys/server.crt -K keys/server.key
+http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 ```
 
 Finally, open https://localhost:8080/ in your browser to access to the demo.
