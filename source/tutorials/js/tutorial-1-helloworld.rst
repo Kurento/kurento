@@ -42,7 +42,7 @@ start the HTTP server:
     cd kurento-tutorial-js/kurento-hello-world
     git checkout |TUTORIAL_JS_VERSION|
     bower install
-    http-server
+    http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
 Finally access the application connecting to the URL https://localhost:8443/
 through a WebRTC capable browser (Chrome, Firefox).
@@ -55,7 +55,7 @@ through a WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: none
 
-      https://localhost:8443/index.html?ws_uri=ws://kms_host:kms_port/kurento
+      https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
 
 Understanding this example
 ==========================

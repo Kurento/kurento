@@ -38,7 +38,7 @@ start the HTTP server:
     cd kurento-tutorial-js/kurento-magic-mirror
     git checkout |TUTORIAL_JS_VERSION|
     bower install
-    http-server
+    http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
 Finally access the application connecting to the URL https://localhost:8443/
 through a WebRTC capable browser (Chrome, Firefox).
@@ -46,12 +46,12 @@ through a WebRTC capable browser (Chrome, Firefox).
 .. note::
 
    These instructions work only if Kurento Media Server is up and running in the same machine
-   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
-   the parameter ``ws_uri`` to the URL, as follows:
+   than the tutorial. Kurento Media Server must have configurated Web Services Secure, check `here <../../faq.html?highlight=wss#configure-kurento-media-server-to-use-secure-websocket-wss>`_. 
+   However, it is possible to locate the KMS in other machine simple adding the parameter ``ws_uri`` to the URL, as follows:
 
    .. sourcecode:: none
 
-      https://localhost:8443/index.html?ws_uri=ws://kms_host:kms_port/kurento
+      https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
 
 
 Understanding this example

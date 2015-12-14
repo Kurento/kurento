@@ -52,8 +52,8 @@ through a WebRTC capable browser (Chrome, Firefox).
 .. note::
 
    These instructions work only if Kurento Media Server is up and running in the same machine
-   than the tutorial. However, it is possible to locate the KMS in other machine simple adding
-   the parameter ``ws_uri`` to the URL, as follows:
+   than the tutorial. Kurento Media Server must have configurated Web Services Secure, check `here <../../faq.html?highlight=wss#configure-kurento-media-server-to-use-secure-websocket-wss>`_. 
+   However, it is possible to locate the KMS in other machine simple adding the parameter ``ws_uri`` to the URL, as follows:
 
    .. sourcecode:: none
 
