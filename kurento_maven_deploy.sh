@@ -16,6 +16,8 @@ echo "##################### EXECUTE: kurento_maven_deploy.sh ###################
 #   Wheter to sign artifacts before deployment. Default value is true
 #
 
+PATH=$PATH:$(realpath $(dirname "$0"))
+
 # Get command line parameters for backward compatibility
 [ -n "$1" ] && MAVEN_SETTINGS=$1
 [ -n "$2" ] && SNAPSHOT_REPOSITORY=$2
