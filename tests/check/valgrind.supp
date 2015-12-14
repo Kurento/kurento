@@ -418,3 +418,10 @@
   fun:soup_session_add_feature_by_type
   ...
 }
+{
+  Quark init
+  Memcheck:Leak
+  ...
+  fun:g_quark_init
+  ...
+}

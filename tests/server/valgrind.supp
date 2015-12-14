@@ -363,3 +363,10 @@
   fun:nice_agent_send_messages_nonblocking_internal
   ...
 }
+{
+  Quark init
+  Memcheck:Leak
+  ...
+  fun:g_quark_init
+  ...
+}
