@@ -43,7 +43,7 @@ git ci -m "$COMMIT_MSG"
 # Build
 sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
 make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
-make -f Makefile.jenkins html epub latexpdf dist || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
+make -f Makefile.jenkins html || { echo "Building $READTHEDOCS_PROJECT failed"; exit 1; }
 
 git push origin $GERRIT_REFNAME || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
 
