@@ -3,10 +3,6 @@
 echo "##################### EXECUTE: kurento_merge_doc_project #####################"
 env
 
-sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-make -f Makefile.jenkins clean langdoc || make -f Makefile.jenkins javadoc || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
-make -f Makefile.jenkins html epub latexpdf dist || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
-
 [ -z "$KURENTO_PROJECT" ] && (echo "KURENTO_PROJECT variable not defined"; exit 1;)
 kurento_check_version.sh || exit 1
 
