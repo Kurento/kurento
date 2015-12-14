@@ -24,9 +24,15 @@ echo "Using http key ${ID_RSA_FILE}"
 
 if [ "${CERT}x" == "x" ]
 then
-  echo "You need to specify environment variable CERT with the certificate to upload packages to the repository via https"
-  exit 1
+  if [ "${HTTP_CERT}x" == "x" ]
+  then
+    echo "You need to specify environment variable CERT with the certificate to upload packages to the repository via https"
+    exit 1
+  else
+    CERT=${HTTP_CERT}
 fi
+
+echo "Using http cert ${CERT}"
 
 if [ "${REPREPRO_URL}x" == "x" ]
 then
