@@ -24,8 +24,6 @@ fi
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
   gpg --import $GNUPG_KEY
-  # For compatibility with kurento_generate_debian_package:
-  export KEY_ID=$GNUPG_KEY
 fi
 
 # For backwards compatibility with kurento_clone_repo
