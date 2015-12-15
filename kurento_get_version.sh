@@ -24,7 +24,7 @@ then
   then
     PROJECT_VERSION=`mvn --batch-mode help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v -i "Down"`
   else
-    PROJECT_VERSION=`mvn --batch-mode --settings $MAVEN_SETTINGS help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v "Down"`
+    PROJECT_VERSION=`mvn --batch-mode --settings $MAVEN_SETTINGS help:evaluate -Dexpression=project.version 2>/dev/null| grep -v "^\[" | grep -v -i "Down"`
   fi
 elif [ -f configure.ac ]
 then
