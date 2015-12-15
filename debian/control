@@ -35,6 +35,7 @@ Description: Kurento elements module
 Package: kms-elements-6.0-dev
 Architecture: any
 Depends: kms-elements-6.0 (= ${binary:Version}),
+  libnice-dev (>= 0.1.7),
   kms-core-6.0-dev
 Breaks:
   kms-elements-dev
