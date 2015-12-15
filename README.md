@@ -44,7 +44,7 @@ Then, in each demo folder execute this command:
 http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 ```
 
-Finally, open https://localhost:8080/ in your browser to access to the demo.
+Finally, open https://localhost:8443/ in your browser to access to the demo.
 
 Take into account that demos with Generators (kurento-faceoverlay-generator,
 kurento-recorder-filter-generator, and so on) require [co] (generator based
@@ -93,12 +93,12 @@ Kurento
 What is Kurento
 ---------------
 
-Kurento is an open source software project providing a platform suitable 
+Kurento is an open source software project providing a platform suitable
 for creating modular applications with advanced real-time communication
 capabilities. For knowing more about Kurento, please visit the Kurento
 project website: http://www.kurento.org.
 
-Kurento is part of [FIWARE]. For further information on the relationship of 
+Kurento is part of [FIWARE]. For further information on the relationship of
 FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]
 
 Kurento is part of the [NUBOMEDIA] research initiative.
@@ -185,6 +185,10 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [LGPL v2.1 License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [NUBOMEDIA]: http://www.nubomedia.eu
 [StackOverflow]: http://stackoverflow.com/search?q=kurento
+[Read-the-docs]: http://read-the-docs.readthedocs.org/
+[readthedocs.org]: http://kurento.readthedocs.org/
+[Open API specification]: http://kurento.github.io/doc-kurento/
+[apiary.io]: http://docs.streamoriented.apiary.io/
 [Bower]: http://bower.io
 [co]: https://github.com/visionmedia/co
 [GitHub repository]: https://github.com/Kurento/kurento-tutorial-js
@@ -193,7 +197,3 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [Node.js]: http://nodejs.org/
 [PeerConnection]: http://www.w3.org/TR/webrtc/#rtcpeerconnection-interface
 [RTCIceServer]: http://www.w3.org/TR/webrtc/#idl-def-RTCIceServer
-[Read-the-docs]: http://read-the-docs.readthedocs.org/
-[readthedocs.org]: http://kurento.readthedocs.org/
-[Open API specification]: http://kurento.github.io/doc-kurento/
-[apiary.io]: http://docs.streamoriented.apiary.io/
