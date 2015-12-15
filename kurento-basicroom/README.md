@@ -5,6 +5,8 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-basicroom
 =================
 
+Kurento Basic Room implements an application where several participants can 
+be together in the same session and talk and see between them.
 
 
 What is Kurento
