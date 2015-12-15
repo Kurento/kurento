@@ -41,12 +41,12 @@ Kurento
 What is Kurento
 ---------------
 
-Kurento is an open source software project providing a platform suitable 
+Kurento is an open source software project providing a platform suitable
 for creating modular applications with advanced real-time communication
 capabilities. For knowing more about Kurento, please visit the Kurento
 project website: http://www.kurento.org.
 
-Kurento is part of [FIWARE]. For further information on the relationship of 
+Kurento is part of [FIWARE]. For further information on the relationship of
 FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]
 
 Kurento is part of the [NUBOMEDIA] research initiative.
@@ -133,12 +133,12 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [LGPL v2.1 License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [NUBOMEDIA]: http://www.nubomedia.eu
 [StackOverflow]: http://stackoverflow.com/search?q=kurento
+[Read-the-docs]: http://read-the-docs.readthedocs.org/
+[readthedocs.org]: http://kurento.readthedocs.org/
+[Open API specification]: http://kurento.github.io/doc-kurento/
+[apiary.io]: http://docs.streamoriented.apiary.io/
 [GitHub repository]: https://github.com/kurento/kurento-jsonrpc-js
 [grunt]: http://gruntjs.com/
 [Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
 [NPM repository]: https://www.npmjs.org/package/kurento-jsonrpc
 [nodeunit]: https://github.com/caolan/nodeunit
-[Read-the-docs]: http://read-the-docs.readthedocs.org/
-[readthedocs.org]: http://kurento.readthedocs.org/
-[Open API specification]: http://kurento.github.io/doc-kurento/
-[apiary.io]: http://docs.streamoriented.apiary.io/
