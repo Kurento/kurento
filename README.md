@@ -75,11 +75,11 @@ npm start -- --ws_uri=ws://example.com:8888/kurento
 ```
 
 It also accept an optional parameter with the URI of the application server root
-that will serve the overlay image, being by default at https://localhost:8080/.
+that will serve the overlay image, being by default at https://localhost:8443/.
 You can define its value by using the ```as_uri``` flag:
 
 ```bash
-npm start -- --as_uri=https://example.org:8080/
+npm start -- --as_uri=https://example.org:8443/
 ```
 
 For example, if you would like to start the node server in the localhost using
@@ -99,12 +99,12 @@ Kurento
 What is Kurento
 ---------------
 
-Kurento is an open source software project providing a platform suitable 
+Kurento is an open source software project providing a platform suitable
 for creating modular applications with advanced real-time communication
 capabilities. For knowing more about Kurento, please visit the Kurento
 project website: http://www.kurento.org.
 
-Kurento is part of [FIWARE]. For further information on the relationship of 
+Kurento is part of [FIWARE]. For further information on the relationship of
 FIWARE and Kurento check the [Kurento FIWARE Catalog Entry]
 
 Kurento is part of the [NUBOMEDIA] research initiative.
@@ -191,11 +191,11 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [LGPL v2.1 License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [NUBOMEDIA]: http://www.nubomedia.eu
 [StackOverflow]: http://stackoverflow.com/search?q=kurento
-[GitHub repository]: https://github.com/Kurento/kurento-tutorial-node
-[kurento-client-js]: https://github.com/Kurento/kurento-client-js
-[kurento-utils-js]: https://github.com/Kurento/kurento-utils-js
-[Node.js]: http://nodejs.org/
 [Read-the-docs]: http://read-the-docs.readthedocs.org/
 [readthedocs.org]: http://kurento.readthedocs.org/
 [Open API specification]: http://kurento.github.io/doc-kurento/
 [apiary.io]: http://docs.streamoriented.apiary.io/
+[GitHub repository]: https://github.com/Kurento/kurento-tutorial-node
+[kurento-client-js]: https://github.com/Kurento/kurento-client-js
+[kurento-utils-js]: https://github.com/Kurento/kurento-utils-js
+[Node.js]: http://nodejs.org/
