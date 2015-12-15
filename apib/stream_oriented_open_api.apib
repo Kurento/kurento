@@ -1,12 +1,35 @@
 FORMAT: 1A
 HOST: http://kurento.lab.fiware.org:8888
+TITLE: Stream-oriented GE Open API
+DATE: 15 December 2015
+VERSION: v1.0
+APIARY_PROJECT: streamoriented
 
 # Stream-oriented GE Open API
 
-The Stream Oriented API is a resource-oriented API accessed via WebSockets that uses JSON-RPC V2.0 based representations for information exchange. An RPC call is represented by sending a Request message to a server. The Request message has the following members:
+The Stream Oriented Generic Enabler (GE) provides a framework devoted to simplify the development of complex interactive multimedia applications through a rich family of APIs and toolboxes. It provides a media server and a set of client APIs making simple the development of advanced video applications for WWW and smartphone platforms. The Stream Oriented GE features include group communications, transcoding, recording, mixing, broadcasting and routing of audiovisual flows. It also provides advanced media processing capabilities involving computer vision, video indexing, augmented reality and speech analysis.
+
+The Stream Oriented GE’s core element is a Media Server, responsible for media transmission, processing, loading and recording. This Media Server exposes a full fledged Open API to let application clients to process media in several ways. These clients require requires full-duplex communications between the server infrastructure. For this reason, the Stream Oriented GE Open API is resource-oriented and it is accessed via WebSockets that uses JSON-RPC V2.0 for information exchange. 
+
+## Editors
+
+  + Boni García, Universidad Rey Juan Carlos.
+
+## Copyright
+
+This specification is licensed under the
+[FIWARE Open Specification License (implicit patents license)](http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_Open_Specification_Legal_Notice_(implicit_patents_license)).
+
+## Status
+
+Final version aligned with FIWARE Release 4.
+
+## Group JSON-RPC Messages format
+
+An JSON-RPC call is represented by sending a request message to a server. The request messages has the following members:
 
 * `jsonrpc`: a string specifying the version of the JSON-RPC protocol. It must be exactly `2.0`.
-* `id`: an unique identifier established by the client that contains a string or number. The server must reply with the same value in the Response message. This member is used to correlate the context between both messages.
+* `id`: an unique identifier established by the client that contains a string or number. The server must reply with the same value in the response message. This member is used to correlate the context between both messages.
 * `method`: a string containing the name of the method to be invoked.
 * `params`: a structured value that holds the parameter values to be used during the invocation of the method.
 
@@ -20,7 +43,7 @@ In the case of an error, the response object contains the following members:
 
 * `jsonrpc`: it must be exactly `2.0`.
 * `id`: it must match the value of the id member in the request object.
-* `error`: object describing the error through the following members:.
+* `error`: object describing the error through the following members:
     * `code`: integer number that indicates the error type that occurred
     * `message`: string providing a short description of the error.
     * `data`: primitive or structured value that contains additional information about the error. It may be omitted. The value of this member is defined by the server.
