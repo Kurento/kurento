@@ -33,5 +33,5 @@ if [[ $VERSION != *-SNAPSHOT ]]; then
   # Create version file
   echo "$VERSION - $(date) - $(date +"%Y%m%d-%H%M%S")" > project.version
 
-  [ -n "$FILES" ] && FILES=$FILES kurento_http_publish.sh || exit 1
+  [ -n "$FILES" ] && FILES=$FILES kurento_http_publish.sh || echo "No files provided. Skipping."
 fi
