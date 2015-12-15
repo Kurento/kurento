@@ -42,9 +42,18 @@ public class JsonRpcErrorException extends JsonRpcException {
 	}
 
 	private static String createExceptionMessage(ResponseError error) {
-		return error.getMessage()
-				+ ((error.getData() != null) ? (". Data: " + error.getData())
-						: "");
+		
+		String message = error.getMessage();
+		
+		if(error.getCode() != 0){
+			message += ". Code: "+error.getCode();
+		}
+		
+		if(error.getData() != null){
+			message += ". Data: " + error.getData();
+		}
+		
+		return message;
 	}
 
 	public ResponseError getError() {
