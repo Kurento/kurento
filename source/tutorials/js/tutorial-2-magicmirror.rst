@@ -40,7 +40,7 @@ start the HTTP server:
     bower install
     http-server
 
-Finally access the application connecting to the URL http://localhost:8080/
+Finally access the application connecting to the URL https://localhost:8443/
 through a WebRTC capable browser (Chrome, Firefox).
 
 .. note::
@@ -51,7 +51,7 @@ through a WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: none
 
-      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
+      https://localhost:8443/index.html?ws_uri=ws://kms_host:kms_port/kurento
 
 
 Understanding this example
@@ -231,8 +231,8 @@ If everything works correctly, we have an instance of a media pipeline (variable
 
    .. sourcecode:: none
 
-      http://localhost:8080/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
-      http://localhost:8080/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
+      https://localhost:8443/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
+      https://localhost:8443/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
 
 Dependencies
 ============

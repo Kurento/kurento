@@ -44,7 +44,7 @@ clean the npm cache, and try to install them again:
     rm -r node_modules
     npm cache clean
 
-Finally access the application connecting to the URL http://localhost:8080/
+Finally access the application connecting to the URL https://localhost:8443/
 through a WebRTC capable browser (Chrome, Firefox).
 
 .. note::

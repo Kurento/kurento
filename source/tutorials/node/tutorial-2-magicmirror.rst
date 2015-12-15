@@ -40,7 +40,7 @@ clean the npm cache, and try to install them again:
     rm -r node_modules
     npm cache clean
 
-Access the application connecting to the URL http://localhost:8080/ through a
+Access the application connecting to the URL https://localhost:8443/ through a
 WebRTC capable browser (Chrome, Firefox).
 
 .. note::
@@ -231,7 +231,7 @@ at *localhost* listening in port 8888.
 
    var argv = minimist(process.argv.slice(2), {
        default: {
-           as_uri: 'http://localhost:8080/',
+           as_uri: 'https://localhost:8443/',
            ws_uri: 'ws://localhost:8888/kurento'
        }
    });

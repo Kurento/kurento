@@ -227,9 +227,9 @@ follows:
 	cd kurento-tutorial-java/kurento-magic-mirror
 	mvn compile exec:java
 
-These commands starts an HTTP server at the localhost in the port 8080.
+These commands starts an HTTP server at the localhost in the port 8443.
 Therefore, please open the web application connecting to the URL
-http://localhost:8080/ through a WebRTC capable browser (e.g. Chrome). Click on
+https://localhost:8443/ through a WebRTC capable browser (e.g. Chrome). Click on
 the `Start` button and grant the access to the camera and microphone. After the
 SDP negotiation an enhanced video mirror should start. Kurento Media Server is
 processing media in real time, detecting faces and overlying an image on the

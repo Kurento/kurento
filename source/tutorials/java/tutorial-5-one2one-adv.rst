@@ -23,8 +23,8 @@ is hosted and then run the main class, as follows:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-The web application starts on port 8080 in the localhost by default. Therefore,
-open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
+The web application starts on port 8443 in the localhost by default. Therefore,
+open the URL https://localhost:8443/ in a WebRTC compliant browser (Chrome,
 Firefox).
 
 .. note::
@@ -193,7 +193,7 @@ Bean.
    public class One2OneCallAdvApp implements WebSocketConfigurer {
 
       final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
-      final static String DEFAULT_APP_SERVER_URL = "http://localhost:8080";
+      final static String DEFAULT_APP_SERVER_URL = "https://localhost:8443";
 
       @Bean
       public CallHandler callHandler() {

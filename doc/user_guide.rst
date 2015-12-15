@@ -419,7 +419,7 @@ The pre-requisites to run this Node.js demo are `Git <http://git-scm.com/>`__,
 	sudo npm install -g bower
 
 Finally, open the demo (Java, JavaScript or Node.js) in the URL
-http://localhost:8080/ with a capable WebRTC browser, for example,
+https://localhost:8443/ with a capable WebRTC browser, for example,
 `Google Chrome <https://www.google.com/chrome/browser/>`__. To install it in
 Ubuntu (64 bits):
 

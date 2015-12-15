@@ -26,7 +26,7 @@ is hosted and then run the main class, as follows:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL http://localhost:8080/ through a
+Access the application connecting to the URL https://localhost:8443/ through a
 WebRTC capable browser (Chrome, Firefox).
 
 .. note::

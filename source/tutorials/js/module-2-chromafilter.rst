@@ -43,9 +43,9 @@ start the HTTP server:
     cd kurento-tutorial-js/kurento-chroma
     git checkout |TUTORIAL_JS_VERSION|
     bower install
-    http-server
+    http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 
-Finally access the application connecting to the URL http://localhost:8080/
+Finally access the application connecting to the URL https://localhost:8443/
 through a WebRTC capable browser (Chrome, Firefox).
 
 .. note::
@@ -56,7 +56,7 @@ through a WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: none
 
-      http://localhost:8080/index.html?ws_uri=ws://kms_host:kms_port/kurento
+      https://localhost:8443/index.html?ws_uri=wss://kms_host:kms_port/kurento
 
 Understanding this example
 ==========================
@@ -176,8 +176,8 @@ follows:
 
    .. sourcecode:: none
 
-      http://localhost:8080/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
-      http://localhost:8080/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
+      https://localhost:8443/index.html?ice_servers=[{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
+      https://localhost:8443/index.html?ice_servers=[{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
 
 Dependencies
 ============
