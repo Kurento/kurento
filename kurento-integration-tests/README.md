@@ -1,4 +1,4 @@
-[![][KurentoImage]][website]
+[![][KurentoImage]][Kurento]
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
