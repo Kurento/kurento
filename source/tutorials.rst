@@ -134,10 +134,36 @@ Player connected to a filter and a WebRTC to send data about qr codes through da
 Tutorial 10 - WebRTC in loopback with filter to show data received through data channel
 =======================================================================================
 
-This demo allows sending text from browser to the media server through data channels. That text will be shown in the loopback video.
+This demo allows sending text from browser to the media server through data channels. 
+That text will be shown in the loopback video.
 
 .. toctree::
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-10-show-datachannel>
+   Browser JavaScript </tutorials/js/tutorial-10-helloworld-datachannels>
+   
+Tutorial 11 - WebRTC in loopback with recorder
+==============================================
+
+This demo has two parts, in the first part implements a `WebRTC`:term: *loopback* and 
+records the media in the Kurento Media Server. And in the second part plays the media was recorded 
+in the Kurento Media Server.
+
+.. toctree::
+   :maxdepth: 1
+
+   Browser JavaScript </tutorials/js/tutorial-11-recorder>
+
+   
+Tutorial 12 - WebRTC in loopback with WebRTC statistics
+=======================================================
+
+This demo implements a `WebRTC`:term: *loopback* and shows in the browser several statistics about WebRTC.
+
+.. toctree::
+   :maxdepth: 1
+
+   Browser JavaScript </tutorials/js/tutorial-12-loopback-stats>
+   
 
