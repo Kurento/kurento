@@ -1,6 +1,6 @@
 [![][KurentoImage]][Kurento]
 
-Copyright © 2013 Kurento. Licensed under [LGPL License].
+Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 
 kurento-jsonrpc
 ==========
