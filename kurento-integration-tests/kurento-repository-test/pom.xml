@@ -62,6 +62,15 @@
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-repository-server</artifactId>
 		</dependency>
+		<!-- <dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+		</dependency> -->
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-commons</artifactId>
+		</dependency>
+		
 
 	</dependencies>
 	<profiles>

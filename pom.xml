@@ -54,7 +54,6 @@
 			</activation>
 			<modules>
 				<module>kurento-commons</module>
-				<module>kurento-commons-testing</module>
 				<module>kurento-parent-pom</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>
@@ -86,7 +85,6 @@
 			<id>deploy</id>
 			<modules>
 				<module>kurento-commons</module>
-				<module>kurento-commons-testing</module>
 				<module>kurento-parent-pom</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>

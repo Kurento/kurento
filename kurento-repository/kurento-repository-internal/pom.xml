@@ -79,11 +79,6 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-commons-testing</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 </project>

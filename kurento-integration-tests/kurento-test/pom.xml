@@ -29,11 +29,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-commons-testing</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
 			<artifactId>kurento-repository-internal</artifactId>
 		</dependency>
 		<dependency>

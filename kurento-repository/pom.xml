@@ -54,10 +54,7 @@
 		<profile>
 			<id>default</id>
 			<activation>
-				<property>
-					<name>default</name>
-					<value>true</value>
-				</property>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<modules>
 				<module>kurento-repository-internal</module>
@@ -76,11 +73,7 @@
 	</profiles>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-commons-testing</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 	</dependencies>
 
 </project>
