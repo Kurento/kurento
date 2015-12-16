@@ -238,14 +238,14 @@ public class Browser implements Closeable {
         try {
           url = new URI(protocol.toString() + webPageFile.getAbsolutePath());
         } catch (URISyntaxException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          throw new KurentoException("Exception generating URI from " + protocol + " and "
+              + webPageFile.getAbsolutePath());
         }
       } else {
 
         String hostName;
+        log.debug("BrowserScope is {}", scope);
         if (scope == BrowserScope.DOCKER) {
-
           if (docker.isRunningInContainer()) {
             hostName = docker.getContainerIpAddress();
           } else {
@@ -256,12 +256,15 @@ public class Browser implements Closeable {
           hostName = host != null ? host : node;
         }
 
+        log.debug("Protocol: {}, Hostname: {}, Port: {}, Web page type: {}", protocol, hostName,
+            serverPort, webPageType);
+
         try {
           url = new URI(protocol.toString(), null, hostName, serverPort, webPageType.toString(),
               null, null);
         } catch (URISyntaxException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          throw new KurentoException("Exception generating URI from " + protocol + ", " + hostName
+              + ", server port " + serverPort + " and webpage type " + webPageType);
         }
       }
     }

@@ -166,6 +166,8 @@ public class Docker implements Closeable {
       }
     }
 
+    log.debug("Host IP is {}", hostIp);
+
     return hostIp;
   }
 
@@ -548,7 +550,9 @@ public class Docker implements Closeable {
 
   public String getContainerIpAddress() {
     if (isRunningInContainer()) {
-      return inspectContainer(getContainerName()).getNetworkSettings().getIpAddress();
+      String ipAddr = inspectContainer(getContainerName()).getNetworkSettings().getIpAddress();
+      log.debug("Docker container IP address {}", ipAddr);
+      return ipAddr;
     } else {
       throw new DockerClientException(
           "Can't obtain container ip address if not running in container");
@@ -563,7 +567,9 @@ public class Docker implements Closeable {
         if (iface.getName().contains("docker")) {
           for (InterfaceAddress f : iface.getInterfaceAddresses()) {
             if (f.getAddress().isSiteLocalAddress()) {
-              return f.getAddress().toString();
+              String addr = f.getAddress().toString();
+              log.debug("Host IP for container is {}", addr);
+              return addr;
             }
           }
         }
