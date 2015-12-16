@@ -12,54 +12,58 @@ test handlers of JsonRpc messages.
 Installation details
 ---------------
 
-#### Execute KJRServer 6.0.x
+#### Execute KJRServer
 
 * Build
 ```sh
-cd kurento-jsonrpc-demo-server
+git clone git@github.com:Kurento/kurento-java.git
+cd kurento-java/kurento-jsonrpc/kurento-jsonrpc-demo-server
+git checkout $(git describe --abbrev=0 --tags)
 mvn clean install
 ```
 
 * Unzip distribution files
 ```sh
 cd target
-unzip kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT.zip
+unzip kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT.zip
 ```
 
 * Execute start script
 ```sh
-cd kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT
+cd kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT
 ./bin/start.sh
 ```
 
 * Configure logging
 ```sh
-vim kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT/config/kjrserver-log4j.properties
+vim kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT/config/kjrserver-log4j.properties
 ```
-> Log file by default will be located in kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT/logs/
+> Log file by default will be located in kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT/logs/
 
 * Configure server
 ```sh
-vim kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT/config/kjrserver.conf.json
+vim kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT/config/kjrserver.conf.json
 ```
 
-#### Start KJRServer 6.0.x as daemon (kjrserver) in Ubuntu or CentOS
+#### Start KJRServer as daemon (kjrserver) in Ubuntu or CentOS
 
 * Build
 ```sh
-cd kurento-jsonrpc-demo-server
+git clone git@github.com:Kurento/kurento-java.git
+cd kurento-java/kurento-jsonrpc/kurento-jsonrpc-demo-server
+git checkout $(git describe --abbrev=0 --tags)
 mvn clean install
 ```
 
 * Unzip distribution files
 ```sh
 cd target
-unzip kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT.zip
+unzip kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT.zip
 ```
 
 * Execute install script
 ```sh
-cd kurento-jsonrpc-demo-server-6.0.0-SNAPSHOT
+cd kurento-jsonrpc-demo-server-x.y.z-SNAPSHOT
 sudo ./bin/install.sh
 ```
 > The service (kjrserver) will be automatically started.
