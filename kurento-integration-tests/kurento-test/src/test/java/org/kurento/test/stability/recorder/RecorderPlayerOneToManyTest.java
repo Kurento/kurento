@@ -116,7 +116,7 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 						recordingFile[i] = getDefaultOutputFile(
 								"-recorder" + i + extension);
 						recorder[i] = new RecorderEndpoint.Builder(pipeline,
-								Protocol.FILE + recordingFile[i])
+								Protocol.FILE + "://" + recordingFile[i])
 										.withMediaProfile(mediaProfileSpecType)
 										.build();
 						playerEP.connect(recorder[i]);

@@ -97,7 +97,7 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
 		String recordingFile = getDefaultOutputFile(extension);
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				Protocol.FILE + recordingFile)
+				Protocol.FILE + "://" + recordingFile)
 						.withMediaProfile(mediaProfileSpecType).build();
 
 		// Start play and record

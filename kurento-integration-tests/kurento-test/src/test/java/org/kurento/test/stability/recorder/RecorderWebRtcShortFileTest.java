@@ -127,7 +127,7 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 						recordingFile[i] = getDefaultOutputFile(
 								"-receiver" + i + extension);
 						recorder[i] = new RecorderEndpoint.Builder(pipeline,
-								Protocol.FILE + recordingFile[i])
+								Protocol.FILE + "://" + recordingFile[i])
 										.withMediaProfile(mediaProfileSpecType)
 										.build();
 						webRtcSender.connect(recorder[i]);

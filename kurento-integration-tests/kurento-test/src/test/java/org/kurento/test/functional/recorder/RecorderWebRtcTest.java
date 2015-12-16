@@ -138,7 +138,7 @@ public class RecorderWebRtcTest extends BaseRecorder {
 
 		String recordingFile = getDefaultOutputFile(extension);
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				Protocol.FILE + recordingFile)
+				Protocol.FILE + "://" + recordingFile)
 						.withMediaProfile(mediaProfileSpecType).build();
 		webRtcEP.connect(webRtcEP);
 		webRtcEP.connect(recorderEP);
@@ -176,7 +176,7 @@ public class RecorderWebRtcTest extends BaseRecorder {
 		// Media Pipeline #2
 		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
-				Protocol.FILE + recordingFile).build();
+				Protocol.FILE + "://" + recordingFile).build();
 		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
 		playerEP2.connect(webRtcEP2);
 

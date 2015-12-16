@@ -142,7 +142,7 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 					recordingFile[i - 1] = getDefaultOutputFile(
 							"-receiver" + i + extension);
 					recorder[i - 1] = new RecorderEndpoint.Builder(pipeline,
-							Protocol.FILE + recordingFile[i - 1])
+							Protocol.FILE + "://" + recordingFile[i - 1])
 									.withMediaProfile(mediaProfileSpecType)
 									.build();
 

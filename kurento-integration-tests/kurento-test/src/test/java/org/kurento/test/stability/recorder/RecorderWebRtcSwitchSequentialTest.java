@@ -99,7 +99,7 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 
 		String recordingFile = getDefaultOutputFile(extension);
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				Protocol.FILE + recordingFile)
+				Protocol.FILE + "://" + recordingFile)
 						.withMediaProfile(mediaProfileSpecType).build();
 
 		// WebRTC negotiation

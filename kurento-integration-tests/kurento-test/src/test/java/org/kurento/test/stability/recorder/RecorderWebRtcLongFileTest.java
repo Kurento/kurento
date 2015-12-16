@@ -106,7 +106,7 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
 		// Recorder
 		String recordingFile = getDefaultOutputFile(extension);
 		RecorderEndpoint recorder = new RecorderEndpoint.Builder(mp,
-				Protocol.FILE + recordingFile)
+				Protocol.FILE + "://" + recordingFile)
 						.withMediaProfile(mediaProfileSpecType).build();
 		webRtcSender.connect(recorder);
 
