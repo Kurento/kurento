@@ -22,28 +22,28 @@ We classify Kurento modules into three groups, namely:
 
      .. sourcecode:: console
 
-        sudo apt-get install kms-pointerdetector
+        sudo apt-get install kms-pointerdetector-6.0
 
    * ``kms-chroma``: Filter that makes transparent a color range in the top
      layer, revealing another image behind.
 
      .. sourcecode:: console
 
-        sudo apt-get install kms-chroma
+        sudo apt-get install kms-chroma-6.0
 
    * ``kms-crowddetector``: Filter that detects people agglomeration in
      video streams.
 
      .. sourcecode:: console
 
-        sudo apt-get install kms-crowddetector
+        sudo apt-get install kms-crowddetector-6.0
 
    * ``kms-platedetector``: Filter that detects vehicle plates in video
      streams.
 
      .. sourcecode:: console
 
-        sudo apt-get install kms-platedetector
+        sudo apt-get install kms-platedetector-6.0
 
 
      .. warning::
