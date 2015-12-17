@@ -20,10 +20,21 @@ import static org.kurento.test.config.TestConfiguration.FAKE_KMS_AUTOSTART_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_LOGIN_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PASSWD_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PEM_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP_EXPORT;
-import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_PROP;
-import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_DEFAULT;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.kurento.client.EventListener;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.OnIceCandidateEvent;
+import org.kurento.client.WebRtcEndpoint;
+import org.kurento.commons.exception.KurentoException;
+import org.kurento.test.monitor.SystemMonitorManager;
+import org.kurento.test.utils.WebRtcConnector;
 
 /**
  * Fake Kurento Media Server service.
@@ -32,6 +43,8 @@ import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_DEFAULT;
  * @since 6.1.1
  */
 public class FakeKmsService extends KmsService {
+
+	protected List<WebRtcEndpoint> fakeWebRtcList = new ArrayList<>();
 
 	public FakeKmsService() {
 		this.kmsLoginProp = FAKE_KMS_LOGIN_PROP;
@@ -45,6 +58,105 @@ public class FakeKmsService extends KmsService {
 		this.kmsScopeProp = FAKE_KMS_SCOPE_DEFAULT;
 
 		setWsUri(getProperty(kmsWsUriProp));
+	}
+
+	public void addFakeClients(int numFakeClients, final int bandwidht,
+			final MediaPipeline mainPipeline, final WebRtcEndpoint inputWebRtc,
+			long timeBetweenClientMs, final SystemMonitorManager monitor,
+			final WebRtcConnector connector) {
+
+		if (kurentoClient == null) {
+			throw new KurentoException(
+					"Fake kurentoClient for is not defined.");
+
+		} else {
+			log.info("* * * Adding {} fake clients * * *", numFakeClients);
+			final MediaPipeline fakePipeline = kurentoClient
+					.createMediaPipeline();
+
+			for (int i = 0; i < numFakeClients; i++) {
+
+				log.info("* * * Adding fake client {} * * *", i);
+
+				new Thread() {
+					public void run() {
+
+						final WebRtcEndpoint fakeOutputWebRtc = new WebRtcEndpoint.Builder(
+								mainPipeline).build();
+						final WebRtcEndpoint fakeBrowser = new WebRtcEndpoint.Builder(
+								fakePipeline).build();
+
+						if (bandwidht != -1) {
+							fakeOutputWebRtc
+									.setMaxVideoSendBandwidth(bandwidht);
+							fakeOutputWebRtc
+									.setMinVideoSendBandwidth(bandwidht);
+							fakeBrowser.setMaxVideoRecvBandwidth(bandwidht);
+						}
+
+						fakeOutputWebRtc.addOnIceCandidateListener(
+								new EventListener<OnIceCandidateEvent>() {
+							@Override
+							public void onEvent(OnIceCandidateEvent event) {
+								fakeBrowser
+										.addIceCandidate(event.getCandidate());
+							}
+						});
+
+						fakeBrowser.addOnIceCandidateListener(
+								new EventListener<OnIceCandidateEvent>() {
+							@Override
+							public void onEvent(OnIceCandidateEvent event) {
+								fakeOutputWebRtc
+										.addIceCandidate(event.getCandidate());
+							}
+						});
+
+						String sdpOffer = fakeBrowser.generateOffer();
+						String sdpAnswer = fakeOutputWebRtc
+								.processOffer(sdpOffer);
+						fakeBrowser.processAnswer(sdpAnswer);
+
+						fakeOutputWebRtc.gatherCandidates();
+						fakeBrowser.gatherCandidates();
+
+						if (connector == null) {
+							inputWebRtc.connect(fakeOutputWebRtc);
+						} else {
+							connector.connect(inputWebRtc, fakeOutputWebRtc);
+						}
+
+						fakeWebRtcList.add(fakeOutputWebRtc);
+					}
+				}.start();
+
+				if (monitor != null) {
+					monitor.incrementNumClients();
+				}
+
+				waitMs(timeBetweenClientMs);
+			}
+		}
+	}
+
+	public void removeAllFakeClients(long timeBetweenClientMs,
+			WebRtcEndpoint inputWebRtc, SystemMonitorManager monitor) {
+		for (WebRtcEndpoint fakeWebRtc : fakeWebRtcList) {
+			inputWebRtc.disconnect(fakeWebRtc);
+			monitor.decrementNumClients();
+
+			waitMs(timeBetweenClientMs);
+		}
+	}
+
+	private void waitMs(long timeBetweenClientMs) {
+		if (timeBetweenClientMs > 0) {
+			try {
+				Thread.sleep(timeBetweenClientMs);
+			} catch (InterruptedException e) {
+				log.warn("Interrupted exception working with fake clients", e);
+			}
+		}
 	}
 
 }

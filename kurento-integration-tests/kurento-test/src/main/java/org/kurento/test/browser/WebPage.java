@@ -298,12 +298,13 @@ public class WebPage {
 	public PeerConnectionStats getRtcStats() {
 		Map<String, Object> out = new HashMap<>();
 		try {
-			out = (Map<String, Object>) browser
-					.executeScript("return kurentoTest.rtcStats;");
+			if (browser != null && browser.getWebDriver() != null) {
+				out = (Map<String, Object>) browser
+						.executeScript("return kurentoTest.rtcStats;");
 
-			log.debug(">>>>>>>>>> kurentoTest.rtcStats {} {}", browser.getId(),
-					out);
-
+				log.debug(">>>>>>>>>> kurentoTest.rtcStats {} {}",
+						browser.getId(), out);
+			}
 		} catch (WebDriverException we) {
 			// If client is not ready to gather rtc statistics, we just log it
 			// as warning (it is not an error itself)

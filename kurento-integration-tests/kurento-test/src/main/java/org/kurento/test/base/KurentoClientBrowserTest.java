@@ -46,7 +46,7 @@ public class KurentoClientBrowserTest<W extends WebPage>
 
 	public static @Service WebServerService webServer = new WebServerService();
 	public static @Service KmsService kms = new KmsService();
-	public static @Service KmsService fakeKms = new FakeKmsService();
+	public static @Service FakeKmsService fakeKms = new FakeKmsService();
 
 	protected static KurentoClient kurentoClient;
 	protected static KurentoClient fakeKurentoClient;

@@ -131,8 +131,8 @@ public class KmsPerformanceTest extends PerformanceTest {
 		try {
 			WebRtcEndpoint inputEndpoint = createInputBrowserClient(getPage(0));
 			String firstClientName = "client1";
-			createOutputBrowserClient(firstClientName, getPage(1),
-					inputEndpoint);
+			WebRtcEndpoint firstWebEndpoint = createOutputBrowserClient(
+					firstClientName, getPage(1), inputEndpoint);
 
 			cs[0] = new LatencyController(firstClientName, monitor);
 			cs[0].checkLatencyInBackground(getPage(0), getPage(1));
@@ -140,11 +140,12 @@ public class KmsPerformanceTest extends PerformanceTest {
 			// Guard time to receive positive values of latency by KMS
 			Thread.sleep(10000);
 
+			WebRtcEndpoint lastWebEndpoint = null;
 			if (numClients > 1) {
 				configureFakeClients(inputEndpoint);
 				String lastClientName = "clientN";
-				createOutputBrowserClient(lastClientName, getPage(2),
-						inputEndpoint);
+				lastWebEndpoint = createOutputBrowserClient(lastClientName,
+						getPage(2), inputEndpoint);
 
 				cs[1] = new LatencyController(lastClientName, monitor);
 				cs[1].checkLatencyInBackground(getPage(0), getPage(2));
@@ -152,6 +153,20 @@ public class KmsPerformanceTest extends PerformanceTest {
 
 			// Test time
 			waitSeconds(testTime);
+
+			// Remove clients (real and fake)
+			inputEndpoint.disconnect(lastWebEndpoint);
+			getPage(2).close();
+			monitor.decrementNumClients();
+			waitMilliSeconds(timeBetweenClients);
+
+			fakeKms.removeAllFakeClients(timeBetweenClients, inputEndpoint,
+					monitor);
+
+			inputEndpoint.disconnect(firstWebEndpoint);
+			getPage(1).close();
+			monitor.decrementNumClients();
+			waitMilliSeconds(timeBetweenClients);
 
 		} finally {
 			if (mp != null) {

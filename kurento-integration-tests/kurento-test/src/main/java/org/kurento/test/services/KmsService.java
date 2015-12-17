@@ -78,18 +78,12 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import org.apache.commons.io.FileUtils;
-import org.kurento.client.EventListener;
 import org.kurento.client.KurentoClient;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.OnIceCandidateEvent;
-import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
-import org.kurento.test.monitor.SystemMonitorManager;
 import org.kurento.test.utils.Shell;
 import org.kurento.test.utils.SshConnection;
-import org.kurento.test.utils.WebRtcConnector;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -734,81 +728,6 @@ public class KmsService extends TestService {
 		if (kurentoClient != null) {
 			kurentoClient.destroy();
 			kurentoClient = null;
-		}
-	}
-
-	public void addFakeClients(int numFakeClients, int bandwidht,
-			MediaPipeline mainPipeline, WebRtcEndpoint inputWebRtc,
-			long timeBetweenClientMs, SystemMonitorManager monitor,
-			WebRtcConnector connector) {
-
-		if (kurentoClient == null) {
-			throw new KurentoException(
-					"Fake kurentoClient for is not defined.");
-
-		} else {
-			log.info("* * * Adding {} fake clients * * *", numFakeClients);
-			MediaPipeline fakePipeline = kurentoClient.createMediaPipeline();
-
-			for (int i = 0; i < numFakeClients; i++) {
-
-				log.info("* * * Adding fake client {} * * *", i);
-
-				final WebRtcEndpoint fakeOutputWebRtc = new WebRtcEndpoint.Builder(
-						mainPipeline).build();
-				final WebRtcEndpoint fakeBrowser = new WebRtcEndpoint.Builder(
-						fakePipeline).build();
-
-				if (bandwidht != -1) {
-					fakeOutputWebRtc.setMaxVideoSendBandwidth(bandwidht);
-					fakeOutputWebRtc.setMinVideoSendBandwidth(bandwidht);
-					fakeBrowser.setMaxVideoRecvBandwidth(bandwidht);
-				}
-
-				fakeOutputWebRtc.addOnIceCandidateListener(
-						new EventListener<OnIceCandidateEvent>() {
-							@Override
-							public void onEvent(OnIceCandidateEvent event) {
-								fakeBrowser
-										.addIceCandidate(event.getCandidate());
-							}
-						});
-
-				fakeBrowser.addOnIceCandidateListener(
-						new EventListener<OnIceCandidateEvent>() {
-							@Override
-							public void onEvent(OnIceCandidateEvent event) {
-								fakeOutputWebRtc
-										.addIceCandidate(event.getCandidate());
-							}
-						});
-
-				String sdpOffer = fakeBrowser.generateOffer();
-				String sdpAnswer = fakeOutputWebRtc.processOffer(sdpOffer);
-				fakeBrowser.processAnswer(sdpAnswer);
-
-				fakeOutputWebRtc.gatherCandidates();
-				fakeBrowser.gatherCandidates();
-
-				if (connector == null) {
-					inputWebRtc.connect(fakeOutputWebRtc);
-				} else {
-					connector.connect(inputWebRtc, fakeOutputWebRtc);
-				}
-
-				if (monitor != null) {
-					monitor.incrementNumClients();
-				}
-
-				if (timeBetweenClientMs > 0) {
-					try {
-						Thread.sleep(timeBetweenClientMs);
-					} catch (InterruptedException e) {
-						log.warn("Interrupted exception adding fake clients",
-								e);
-					}
-				}
-			}
 		}
 	}
 

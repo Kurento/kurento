@@ -311,11 +311,16 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 		log.debug("URL {} already reachable", url);
 	}
 
-	public void waitSeconds(int waitTime) {
+	public void waitSeconds(long waitTime) {
+		waitMilliSeconds(TimeUnit.SECONDS.toMillis(waitTime));
+	}
+
+	public void waitMilliSeconds(long waitTime) {
 		try {
-			Thread.sleep(TimeUnit.SECONDS.toMillis(waitTime));
+			Thread.sleep(waitTime);
 		} catch (InterruptedException e) {
-			log.warn("InterruptedException waiting {} seconds", waitTime, e);
+			log.warn("InterruptedException waiting {} milliseconds", waitTime,
+					e);
 		}
 	}
 
