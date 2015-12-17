@@ -13,7 +13,7 @@
  *
  */
 
-package org.kurento.repository;
+package org.kurento.repository.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,11 +35,17 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.kurento.repository.KurentoRepositoryServerApp;
+import org.kurento.repository.Repository;
+import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
+import org.kurento.repository.RepositoryClient;
+import org.kurento.repository.RepositoryClientProvider;
 import org.kurento.repository.internal.RepositoryApplicationContextConfiguration;
 import org.kurento.repository.internal.repoimpl.mongo.MongoRepository;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
+import org.kurento.repository.test.util.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;

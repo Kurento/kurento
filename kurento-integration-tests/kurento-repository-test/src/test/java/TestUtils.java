@@ -13,7 +13,7 @@
  *
  */
 
-package org.kurento.repository;
+
 
 import java.io.File;
 import java.io.FileInputStream;
