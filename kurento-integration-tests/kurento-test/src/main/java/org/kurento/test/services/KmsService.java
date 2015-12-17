@@ -250,18 +250,18 @@ public class KmsService extends TestService {
 	public void stop() {
 		super.stop();
 
+		// Close Kurento client
+		closeKurentoClient();
+
+		// Stop KMS
+		stopKms();
+		
 		// Retrieve logs
 		try {
 			retrieveLogs();
 		} catch (IOException e) {
 			log.warn("Exception retrieving KMS logs", e);
 		}
-
-		// Close Kurento client
-		closeKurentoClient();
-
-		// Stop KMS
-		stopKms();
 
 		// Delete temporal folder and content
 		if (!isKmsDocker) {
