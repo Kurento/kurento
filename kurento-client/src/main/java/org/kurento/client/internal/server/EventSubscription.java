@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.server;
 
 import java.lang.annotation.Retention;
@@ -7,5 +8,5 @@ import org.kurento.client.Event;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EventSubscription {
-	Class<? extends Event> value();
+  Class<? extends Event> value();
 }

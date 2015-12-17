@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.test.model;
 
 import java.util.Arrays;
@@ -9,55 +10,55 @@ import org.kurento.client.internal.server.Param;
 @RemoteClass
 public class SampleRemoteClassImpl {
 
-	public void methodReturnVoid() {
-	}
+  public void methodReturnVoid() {
+  }
 
-	public String methodReturnsString() {
-		return "XXXX";
-	}
+  public String methodReturnsString() {
+    return "XXXX";
+  }
 
-	public boolean methodReturnsBoolean() {
-		return false;
-	}
+  public boolean methodReturnsBoolean() {
+    return false;
+  }
 
-	public float methodReturnsFloat() {
-		return 0.5f;
-	}
+  public float methodReturnsFloat() {
+    return 0.5f;
+  }
 
-	public int methodReturnsInt() {
-		return 0;
-	}
+  public int methodReturnsInt() {
+    return 0;
+  }
 
-	public List<String> methodReturnsStringList() {
-		return Arrays.asList("XXXX");
-	}
+  public List<String> methodReturnsStringList() {
+    return Arrays.asList("XXXX");
+  }
 
-	public List<Boolean> methodReturnsBooleanList() {
-		return Arrays.asList(false);
-	}
+  public List<Boolean> methodReturnsBooleanList() {
+    return Arrays.asList(false);
+  }
 
-	public List<Float> methodReturnsFloatList() {
-		return Arrays.asList(0.5f);
-	}
+  public List<Float> methodReturnsFloatList() {
+    return Arrays.asList(0.5f);
+  }
 
-	public List<Integer> methodReturnsIntList() {
-		return Arrays.asList(0);
-	}
+  public List<Integer> methodReturnsIntList() {
+    return Arrays.asList(0);
+  }
 
-	public String methodParamString(@Param("param") String param) {
-		return param;
-	}
+  public String methodParamString(@Param("param") String param) {
+    return param;
+  }
 
-	public boolean methodParamBoolean(@Param("param") boolean param) {
-		return param;
-	}
+  public boolean methodParamBoolean(@Param("param") boolean param) {
+    return param;
+  }
 
-	public float methodParamFloat(@Param("param") float param) {
-		return param;
-	}
+  public float methodParamFloat(@Param("param") float param) {
+    return param;
+  }
 
-	public int methodParamInt(@Param("param") int param) {
-		return param;
-	}
+  public int methodParamInt(@Param("param") int param) {
+    return param;
+  }
 
 }

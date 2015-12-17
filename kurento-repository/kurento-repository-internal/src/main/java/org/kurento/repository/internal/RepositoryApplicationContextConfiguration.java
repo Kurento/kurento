@@ -36,92 +36,84 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class RepositoryApplicationContextConfiguration {
 
-	public static final String KEY_CONFIG_FILENAME = "kurento-repo.conf.json";
+  public static final String KEY_CONFIG_FILENAME = "kurento-repo.conf.json";
 
-	public static final String KEY_REPO_HOST = "repository.hostname";
-	public static final String KEY_REPO_PORT = "repository.port";
-	public static final String KEY_REPO_TYPE = "repository.type";
+  public static final String KEY_REPO_HOST = "repository.hostname";
+  public static final String KEY_REPO_PORT = "repository.port";
+  public static final String KEY_REPO_TYPE = "repository.type";
 
-	public static final String KEY_FS_FOLDER = "repository.filesystem.folder";
+  public static final String KEY_FS_FOLDER = "repository.filesystem.folder";
 
-	public static final String KEY_MG_DB = "repository.mongodb.dbName";
-	public static final String KEY_MG_GRID = "repository.mongodb.gridName";
-	public static final String KEY_MG_URL = "repository.mongodb.urlConn";
+  public static final String KEY_MG_DB = "repository.mongodb.dbName";
+  public static final String KEY_MG_GRID = "repository.mongodb.gridName";
+  public static final String KEY_MG_URL = "repository.mongodb.urlConn";
 
-	static {
-		ConfigFileManager.loadConfigFile(KEY_CONFIG_FILENAME);
-	}
+  static {
+    ConfigFileManager.loadConfigFile(KEY_CONFIG_FILENAME);
+  }
 
-	public static int SERVER_PORT = getProperty(KEY_REPO_PORT, 7676);
-	public static String SERVER_HOSTNAME = getProperty(KEY_REPO_HOST,
-			"localhost");
-	public static String REPO_TYPE = getProperty(KEY_REPO_TYPE,
-			RepoType.MONGODB.getTypeValue());
+  public static int SERVER_PORT = getProperty(KEY_REPO_PORT, 7676);
+  public static String SERVER_HOSTNAME = getProperty(KEY_REPO_HOST, "localhost");
+  public static String REPO_TYPE = getProperty(KEY_REPO_TYPE, RepoType.MONGODB.getTypeValue());
 
-	private static final Logger log = LoggerFactory
-			.getLogger(RepositoryApplicationContextConfiguration.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(RepositoryApplicationContextConfiguration.class);
 
-	@Bean
-	public MultipartConfigElement multipartConfigElement() {
-		return new MultipartConfigElement("");
-	}
+  @Bean
+  public MultipartConfigElement multipartConfigElement() {
+    return new MultipartConfigElement("");
+  }
 
-	@Bean
-	public Repository repository() {
-		RepositoryApiConfiguration repositoryApiConfiguration = repositoryApiConfiguration();
-		RepoType rtype = repositoryApiConfiguration.getRepositoryType();
-		log.info("Repository type: {}", rtype);
-		if (rtype.isFilesystem()) {
-			return new FileSystemRepository();
-		} else if (rtype.isMongoDB()) {
-			return new MongoRepository();
-		} else {
-			throw new KurentoException(
-					"Unrecognized repository type. Must be filesystem or mongodb");
-		}
-	}
+  @Bean
+  public Repository repository() {
+    RepositoryApiConfiguration repositoryApiConfiguration = repositoryApiConfiguration();
+    RepoType rtype = repositoryApiConfiguration.getRepositoryType();
+    log.info("Repository type: {}", rtype);
+    if (rtype.isFilesystem()) {
+      return new FileSystemRepository();
+    } else if (rtype.isMongoDB()) {
+      return new MongoRepository();
+    } else {
+      throw new KurentoException("Unrecognized repository type. Must be filesystem or mongodb");
+    }
+  }
 
-	@Bean(destroyMethod = "shutdown")
-	public TaskScheduler repositoryTaskScheduler() {
-		return new ThreadPoolTaskScheduler();
-	}
+  @Bean(destroyMethod = "shutdown")
+  public TaskScheduler repositoryTaskScheduler() {
+    return new ThreadPoolTaskScheduler();
+  }
 
-	@Bean
-	public RepositoryApiConfiguration repositoryApiConfiguration() {
+  @Bean
+  public RepositoryApiConfiguration repositoryApiConfiguration() {
 
-		RepositoryApiConfiguration config = new RepositoryApiConfiguration();
+    RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 
-		config.setWebappPublicURL(
-				"http://" + SERVER_HOSTNAME + ":" + SERVER_PORT + "/");
+    config.setWebappPublicURL("http://" + SERVER_HOSTNAME + ":" + SERVER_PORT + "/");
 
-		RepoType type = RepoType.parseType(REPO_TYPE);
-		config.setRepositoryType(type);
-		StringBuilder sb = new StringBuilder(type.getTypeValue());
+    RepoType type = RepoType.parseType(REPO_TYPE);
+    config.setRepositoryType(type);
+    StringBuilder sb = new StringBuilder(type.getTypeValue());
 
-		if (type.isFilesystem()) {
+    if (type.isFilesystem()) {
 
-			String filesFolder = getProperty(KEY_FS_FOLDER,
-					config.getFileSystemFolder());
-			config.setFileSystemFolder(filesFolder);
-			sb.append("\n\t").append("folder : ").append(filesFolder);
+      String filesFolder = getProperty(KEY_FS_FOLDER, config.getFileSystemFolder());
+      config.setFileSystemFolder(filesFolder);
+      sb.append("\n\t").append("folder : ").append(filesFolder);
 
-		} else if (type.isMongoDB()) {
+    } else if (type.isMongoDB()) {
 
-			String dbName = getProperty(KEY_MG_DB,
-					config.getMongoDatabaseName());
-			config.setMongoDatabaseName(dbName);
-			sb.append("\n\t").append("dbName : ").append(dbName);
-			String grid = getProperty(KEY_MG_GRID,
-					config.getMongoGridFSCollectionName());
-			config.setMongoGridFSCollectionName(grid);
-			sb.append("\n\t").append("gridName : ").append(grid);
-			String url = getProperty(KEY_MG_URL,
-					config.getMongoURLConnection());
-			config.setMongoURLConnection(url);
-			sb.append("\n\t").append("urlConn : ").append(url);
-		}
+      String dbName = getProperty(KEY_MG_DB, config.getMongoDatabaseName());
+      config.setMongoDatabaseName(dbName);
+      sb.append("\n\t").append("dbName : ").append(dbName);
+      String grid = getProperty(KEY_MG_GRID, config.getMongoGridFSCollectionName());
+      config.setMongoGridFSCollectionName(grid);
+      sb.append("\n\t").append("gridName : ").append(grid);
+      String url = getProperty(KEY_MG_URL, config.getMongoURLConnection());
+      config.setMongoURLConnection(url);
+      sb.append("\n\t").append("urlConn : ").append(url);
+    }
 
-		log.info("Repository config: {}", sb.toString());
-		return config;
-	}
+    log.info("Repository config: {}", sb.toString());
+    return config;
+  }
 }

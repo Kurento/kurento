@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.internal.client;
 
 import java.io.IOException;
@@ -31,115 +32,109 @@ import com.google.gson.JsonObject;
 
 public class ClientSession extends AbstractSession {
 
-	private JsonRpcRequestSender requestSender;
-	private volatile ConcurrentMap<String, Object> attributes;
+  private JsonRpcRequestSender requestSender;
+  private volatile ConcurrentMap<String, Object> attributes;
 
-	public ClientSession(String sessionId, Object registerInfo,
-			JsonRpcRequestSender jsonRpcRequestSender) {
-		super(sessionId, registerInfo);
-		this.requestSender = jsonRpcRequestSender;
-	}
+  public ClientSession(String sessionId, Object registerInfo,
+      JsonRpcRequestSender jsonRpcRequestSender) {
+    super(sessionId, registerInfo);
+    this.requestSender = jsonRpcRequestSender;
+  }
 
-	public ClientSession(String sessionId, Object registerInfo) {
-		super(sessionId, registerInfo);
-	}
+  public ClientSession(String sessionId, Object registerInfo) {
+    super(sessionId, registerInfo);
+  }
 
-	public void setRequestSender(JsonRpcRequestSender requestSender) {
-		this.requestSender = requestSender;
-	}
+  public void setRequestSender(JsonRpcRequestSender requestSender) {
+    this.requestSender = requestSender;
+  }
 
-	@Override
-	public void close() throws IOException {
-		if (requestSender instanceof JsonRpcClient) {
-			((JsonRpcClient) requestSender).close();
-		}
-	}
+  @Override
+  public void close() throws IOException {
+    if (requestSender instanceof JsonRpcClient) {
+      ((JsonRpcClient) requestSender).close();
+    }
+  }
 
-	@Override
-	public <R> R sendRequest(String method, Class<R> resultClass)
-			throws IOException {
-		return requestSender.sendRequest(method, resultClass);
-	}
+  @Override
+  public <R> R sendRequest(String method, Class<R> resultClass) throws IOException {
+    return requestSender.sendRequest(method, resultClass);
+  }
 
-	@Override
-	public <R> R sendRequest(String method, Object params, Class<R> resultClass)
-			throws IOException {
-		return requestSender.sendRequest(method, params, resultClass);
-	}
+  @Override
+  public <R> R sendRequest(String method, Object params, Class<R> resultClass) throws IOException {
+    return requestSender.sendRequest(method, params, resultClass);
+  }
 
-	@Override
-	public JsonElement sendRequest(String method) throws IOException {
-		return requestSender.sendRequest(method);
-	}
+  @Override
+  public JsonElement sendRequest(String method) throws IOException {
+    return requestSender.sendRequest(method);
+  }
 
-	@Override
-	public JsonElement sendRequest(String method, Object params)
-			throws IOException {
-		return requestSender.sendRequest(method, params);
-	}
+  @Override
+  public JsonElement sendRequest(String method, Object params) throws IOException {
+    return requestSender.sendRequest(method, params);
+  }
 
-	@Override
-	public void sendNotification(String method, Object params)
-			throws IOException {
-		requestSender.sendNotification(method, params);
-	}
+  @Override
+  public void sendNotification(String method, Object params) throws IOException {
+    requestSender.sendNotification(method, params);
+  }
 
-	@Override
-	public void sendNotification(String method) throws IOException {
-		requestSender.sendNotification(method);
-	}
+  @Override
+  public void sendNotification(String method) throws IOException {
+    requestSender.sendNotification(method);
+  }
 
-	@Override
-	public void sendRequest(String method, JsonObject params,
-			Continuation<JsonElement> continuation) {
-		requestSender.sendRequest(method, params, continuation);
-	}
+  @Override
+  public void sendRequest(String method, JsonObject params,
+      Continuation<JsonElement> continuation) {
+    requestSender.sendRequest(method, params, continuation);
+  }
 
-	@Override
-	public void sendNotification(String method, Object params,
-			Continuation<JsonElement> continuation) throws IOException {
-		requestSender.sendNotification(method, params, continuation);
-	}
+  @Override
+  public void sendNotification(String method, Object params, Continuation<JsonElement> continuation)
+      throws IOException {
+    requestSender.sendNotification(method, params, continuation);
+  }
 
-	public Response<JsonElement> sendRequest(Request<JsonObject> request)
-			throws IOException {
-		return requestSender.sendRequest(request);
-	}
+  @Override
+  public Response<JsonElement> sendRequest(Request<JsonObject> request) throws IOException {
+    return requestSender.sendRequest(request);
+  }
 
-	public void sendRequest(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
-		requestSender.sendRequest(request, continuation);
-	}
+  @Override
+  public void sendRequest(Request<JsonObject> request,
+      Continuation<Response<JsonElement>> continuation) throws IOException {
+    requestSender.sendRequest(request, continuation);
+  }
 
-	public void sendRequestHonorId(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-					throws IOException {
-		requestSender.sendRequestHonorId(request, continuation);
-	}
+  @Override
+  public void sendRequestHonorId(Request<JsonObject> request,
+      Continuation<Response<JsonElement>> continuation) throws IOException {
+    requestSender.sendRequestHonorId(request, continuation);
+  }
 
-	@Override
-	public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
-			throws IOException {
-		return requestSender.sendRequestHonorId(request);
-	}
+  @Override
+  public Response<JsonElement> sendRequestHonorId(Request<JsonObject> request) throws IOException {
+    return requestSender.sendRequestHonorId(request);
+  }
 
-	@Override
-	public void setReconnectionTimeout(long millis) {
-		throw new JsonRpcException(
-				"Reconnection timeout can't be configured in the client");
-	}
+  @Override
+  public void setReconnectionTimeout(long millis) {
+    throw new JsonRpcException("Reconnection timeout can't be configured in the client");
+  }
 
-	@Override
-	public Map<String, Object> getAttributes() {
-		if (attributes == null) {
-			synchronized (this) {
-				if (attributes == null) {
-					attributes = new ConcurrentHashMap<>();
-				}
-			}
-		}
+  @Override
+  public Map<String, Object> getAttributes() {
+    if (attributes == null) {
+      synchronized (this) {
+        if (attributes == null) {
+          attributes = new ConcurrentHashMap<>();
+        }
+      }
+    }
 
-		return attributes;
-	}
+    return attributes;
+  }
 }

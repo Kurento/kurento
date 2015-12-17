@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.test.model.client;
 
 import java.util.List;
@@ -16,90 +17,83 @@ import org.kurento.client.internal.test.model.client.events.SampleEvent;
 @RemoteClass
 public interface SampleClass extends KurentoObject {
 
-	String getAtt1();
+  String getAtt1();
 
-	void getAtt1(Continuation<String> cont);
+  void getAtt1(Continuation<String> cont);
 
-	boolean getAtt2();
+  boolean getAtt2();
 
-	void getAtt2(Continuation<Boolean> cont);
+  void getAtt2(Continuation<Boolean> cont);
 
-	float getAtt3();
+  float getAtt3();
 
-	void getAtt3(Continuation<Float> cont);
+  void getAtt3(Continuation<Float> cont);
 
-	int getAtt4();
+  int getAtt4();
 
-	void getAtt4(Continuation<Integer> cont);
+  void getAtt4(Continuation<Integer> cont);
 
-	void startTestEvents(@Param("numEvents") int numEvents);
+  void startTestEvents(@Param("numEvents") int numEvents);
 
-	void startTestEvents(@Param("numEvents") int numEvents,
-			Continuation<Void> cont);
+  void startTestEvents(@Param("numEvents") int numEvents, Continuation<Void> cont);
 
-	SampleEnum echoEnum(@Param("param") SampleEnum param);
+  SampleEnum echoEnum(@Param("param") SampleEnum param);
 
-	void echoEnum(@Param("param") SampleEnum param,
-			Continuation<SampleEnum> cont);
+  void echoEnum(@Param("param") SampleEnum param, Continuation<SampleEnum> cont);
 
-	ComplexParam echoRegister(@Param("param") ComplexParam param);
+  ComplexParam echoRegister(@Param("param") ComplexParam param);
 
-	void echoRegister(@Param("param") ComplexParam param,
-			Continuation<ComplexParam> cont);
+  void echoRegister(@Param("param") ComplexParam param, Continuation<ComplexParam> cont);
 
-	List<SampleEnum> echoListEnum(@Param("param") List<SampleEnum> param);
+  List<SampleEnum> echoListEnum(@Param("param") List<SampleEnum> param);
 
-	void echoListEnum(@Param("param") List<SampleEnum> param,
-			Continuation<List<SampleEnum>> cont);
+  void echoListEnum(@Param("param") List<SampleEnum> param, Continuation<List<SampleEnum>> cont);
 
-	List<ComplexParam> echoListRegister(@Param("param") List<ComplexParam> param);
+  List<ComplexParam> echoListRegister(@Param("param") List<ComplexParam> param);
 
-	void echoListRegister(@Param("param") List<ComplexParam> param,
-			Continuation<List<ComplexParam>> cont);
+  void echoListRegister(@Param("param") List<ComplexParam> param,
+      Continuation<List<ComplexParam>> cont);
 
-	Map<String, SampleEnum> echoMapEnum(
-			@Param("param") Map<String, SampleEnum> param);
+  Map<String, SampleEnum> echoMapEnum(@Param("param") Map<String, SampleEnum> param);
 
-	void echoMapEnum(@Param("param") Map<String, SampleEnum> param,
-			Continuation<Map<String, SampleEnum>> cont);
+  void echoMapEnum(@Param("param") Map<String, SampleEnum> param,
+      Continuation<Map<String, SampleEnum>> cont);
 
-	Map<String, ComplexParam> echoMapRegister(
-			@Param("param") Map<String, ComplexParam> param);
+  Map<String, ComplexParam> echoMapRegister(@Param("param") Map<String, ComplexParam> param);
 
-	void echoMapRegister(@Param("param") Map<String, ComplexParam> param,
-			Continuation<Map<String, ComplexParam>> cont);
+  void echoMapRegister(@Param("param") Map<String, ComplexParam> param,
+      Continuation<Map<String, ComplexParam>> cont);
 
-	SampleClass echoObjectRef(@Param("param") SampleClass param);
+  SampleClass echoObjectRef(@Param("param") SampleClass param);
 
-	void echoObjectRef(@Param("param") SampleClass param,
-			Continuation<SampleClass> cont);
+  void echoObjectRef(@Param("param") SampleClass param, Continuation<SampleClass> cont);
 
-	List<SampleClass> echoObjectRefList(@Param("param") List<SampleClass> param);
+  List<SampleClass> echoObjectRefList(@Param("param") List<SampleClass> param);
 
-	void echoObjectRefList(@Param("param") List<SampleClass> param,
-			Continuation<List<SampleClass>> cont);
+  void echoObjectRefList(@Param("param") List<SampleClass> param,
+      Continuation<List<SampleClass>> cont);
 
-	ListenerSubscription addSampleListener(EventListener<SampleEvent> listener);
+  ListenerSubscription addSampleListener(EventListener<SampleEvent> listener);
 
-	void addSampleListener(EventListener<SampleEvent> listener,
-			Continuation<ListenerSubscription> cont);
+  void addSampleListener(EventListener<SampleEvent> listener,
+      Continuation<ListenerSubscription> cont);
 
-	public static class Builder extends AbstractBuilder<SampleClass> {
+  public static class Builder extends AbstractBuilder<SampleClass> {
 
-		public Builder(String att1, boolean att2, RomManager manager) {
-			super(SampleClass.class, manager);
-			props.add("att1", att1);
-			props.add("att2", att2);
-		}
+    public Builder(String att1, boolean att2, RomManager manager) {
+      super(SampleClass.class, manager);
+      props.add("att1", att1);
+      props.add("att2", att2);
+    }
 
-		public Builder withAtt3(float att3) {
-			props.add("att3", att3);
-			return this;
-		}
+    public Builder withAtt3(float att3) {
+      props.add("att3", att3);
+      return this;
+    }
 
-		public Builder withAtt4(int att4) {
-			props.add("att4", att4);
-			return this;
-		}
-	}
+    public Builder withAtt4(int att4) {
+      props.add("att4", att4);
+      return this;
+    }
+  }
 }

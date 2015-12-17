@@ -18,13 +18,13 @@ package org.kurento.repository;
 /**
  * This class represents an event fired when an client is connected to the
  * {@link RepositoryHttpEndpoint} identified as source.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  */
 public class HttpSessionStartedEvent extends RepositoryHttpSessionEvent {
 
-	public HttpSessionStartedEvent(RepositoryHttpEndpoint source) {
-		super(source);
-	}
+  public HttpSessionStartedEvent(RepositoryHttpEndpoint source) {
+    super(source);
+  }
 
 }

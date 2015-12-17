@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.client.operation;
 
 import org.kurento.client.TransactionExecutionException;
@@ -10,43 +11,43 @@ import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient.Requ
 
 public abstract class Operation {
 
-	protected RomManager manager;
-	protected TFutureImpl<Object> future;
+  protected RomManager manager;
+  protected TFutureImpl<Object> future;
 
-	public abstract RequestAndResponseType createRequest(
-			RomClientJsonRpcClient romClientJsonRpcClient);
+  public abstract RequestAndResponseType createRequest(
+      RomClientJsonRpcClient romClientJsonRpcClient);
 
-	public void setManager(RomManager manager) {
-		this.manager = manager;
-	}
+  public void setManager(RomManager manager) {
+    this.manager = manager;
+  }
 
-	public TFutureImpl<Object> getFuture() {
-		if (future == null) {
-			future = new TFutureImpl<>(this);
-		}
-		return future;
-	}
+  public TFutureImpl<Object> getFuture() {
+    if (future == null) {
+      future = new TFutureImpl<>(this);
+    }
+    return future;
+  }
 
-	protected String getObjectRef(Object object) {
-		return getRemoteObject(object).getObjectRef();
-	}
+  protected String getObjectRef(Object object) {
+    return getRemoteObject(object).getObjectRef();
+  }
 
-	protected RemoteObject getRemoteObject(Object object) {
-		return RemoteObjectInvocationHandler.getFor(object).getRemoteObject();
-	}
+  protected RemoteObject getRemoteObject(Object object) {
+    return RemoteObjectInvocationHandler.getFor(object).getRemoteObject();
+  }
 
-	public void rollback(TransactionExecutionException e) {
-		if (future != null) {
-			if (e != null) {
-				future.getFuture().setException(e);
-			} else {
-				future.getFuture().cancel(true);
-			}
-		}
-	}
+  public void rollback(TransactionExecutionException e) {
+    if (future != null) {
+      if (e != null) {
+        future.getFuture().setException(e);
+      } else {
+        future.getFuture().cancel(true);
+      }
+    }
+  }
 
-	public abstract String getDescription();
+  public abstract String getDescription();
 
-	public abstract void processResponse(Object response);
+  public abstract void processResponse(Object response);
 
 }

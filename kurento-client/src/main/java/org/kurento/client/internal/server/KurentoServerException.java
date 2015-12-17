@@ -12,14 +12,15 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.internal.server;
 
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.message.ResponseError;
 
 /**
- * This exception represents errors that take place in Kurento Server, while
- * operating with pipelines and media elements
+ * This exception represents errors that take place in Kurento Server, while operating with
+ * pipelines and media elements
  *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.1
@@ -27,37 +28,37 @@ import org.kurento.jsonrpc.message.ResponseError;
  */
 public class KurentoServerException extends KurentoException {
 
-	private static final long serialVersionUID = -4925041543188451274L;
+  private static final long serialVersionUID = -4925041543188451274L;
 
-	private ResponseError error;
+  private ResponseError error;
 
-	protected KurentoServerException(String message, ResponseError error) {
-		super(message);
-		this.error = error;
-	}
+  protected KurentoServerException(String message, ResponseError error) {
+    super(message);
+    this.error = error;
+  }
 
-	public KurentoServerException(ResponseError error) {
-		super(error.getCompleteMessage());
-		this.error = error;
-	}
+  public KurentoServerException(ResponseError error) {
+    super(error.getCompleteMessage());
+    this.error = error;
+  }
 
-	public String getServerMessage() {
-		return error.getMessage();
-	}
+  public String getServerMessage() {
+    return error.getMessage();
+  }
 
-	public String getData() {
-		return error.getData();
-	}
+  public String getData() {
+    return error.getData();
+  }
 
-	public String getErrorType() {
-		return error.getType();
-	}
+  public String getErrorType() {
+    return error.getType();
+  }
 
-	public int getCode() {
-		return error.getCode();
-	}
+  public int getCode() {
+    return error.getCode();
+  }
 
-	public ResponseError getError() {
-		return error;
-	}
+  public ResponseError getError() {
+    return error;
+  }
 }

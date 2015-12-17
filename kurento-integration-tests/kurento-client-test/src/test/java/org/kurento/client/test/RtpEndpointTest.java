@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import org.junit.Before;
@@ -35,8 +36,7 @@ import org.kurento.client.test.util.SdpBaseTest;
  * Events tested:
  * <ul>
  * <li>{@link RtpEndpoint#addMediaSessionStartedListener(EventListener)}
- * <li>
- * {@link RtpEndpoint#addMediaSessionTerminatedListener(EventListener)}
+ * <li>{@link RtpEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -46,12 +46,11 @@ import org.kurento.client.test.util.SdpBaseTest;
  */
 public class RtpEndpointTest extends SdpBaseTest<RtpEndpoint> {
 
-	@Before
-	public void setupMediaElements() {
-		sdp = new RtpEndpoint.Builder(pipeline).build();
-		sdp2 = new RtpEndpoint.Builder(pipeline).build();
+  @Before
+  public void setupMediaElements() {
+    sdp = new RtpEndpoint.Builder(pipeline).build();
+    sdp2 = new RtpEndpoint.Builder(pipeline).build();
 
-		 
-	}
+  }
 
 }

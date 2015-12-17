@@ -40,129 +40,123 @@ import com.mongodb.util.JSON;
 
 public class MongoRepository implements RepositoryWithHttp {
 
-	private final Logger log = LoggerFactory.getLogger(MongoRepository.class);
+  private final Logger log = LoggerFactory.getLogger(MongoRepository.class);
 
-	@Autowired
-	private MongoTemplate mongoTemplate;
+  @Autowired
+  private MongoTemplate mongoTemplate;
 
-	private GridFS gridFS;
+  private GridFS gridFS;
 
-	@Autowired
-	private RepositoryHttpManager httpManager;
+  @Autowired
+  private RepositoryHttpManager httpManager;
 
-	@PostConstruct
-	private void postConstruct() {
-		gridFS = new GridFS(mongoTemplate.getDb());
-	}
+  @PostConstruct
+  private void postConstruct() {
+    gridFS = new GridFS(mongoTemplate.getDb());
+  }
 
-	// TODO Define ways to let users access to low level mongo backend. I prefer
-	// using Spring with @Autowired, but can be useful to let users access
-	// mongo from repository.
-	public GridFS getGridFS() {
-		return gridFS;
-	}
+  // TODO Define ways to let users access to low level mongo backend. I prefer
+  // using Spring with @Autowired, but can be useful to let users access
+  // mongo from repository.
+  public GridFS getGridFS() {
+    return gridFS;
+  }
 
-	@Override
-	public RepositoryItem findRepositoryItemById(String id) {
+  @Override
+  public RepositoryItem findRepositoryItemById(String id) {
 
-		List<GridFSDBFile> dbFiles = gridFS.find(id);
+    List<GridFSDBFile> dbFiles = gridFS.find(id);
 
-		if (dbFiles.size() > 0) {
+    if (dbFiles.size() > 0) {
 
-			if (dbFiles.size() > 1) {
-				log.warn("There are several files with the same "
-						+ "filename and should be only one");
-			}
+      if (dbFiles.size() > 1) {
+        log.warn("There are several files with the same " + "filename and should be only one");
+      }
 
-			return createRepositoryItem(dbFiles.get(0));
-		}
+      return createRepositoryItem(dbFiles.get(0));
+    }
 
-		throw new NoSuchElementException(
-				"The repository item with id \"" + id + "\" does not exist");
-	}
-	//
-	// private DBObject idQuery(String id) {
-	// return new BasicDBObject("_id", id);
-	// }
+    throw new NoSuchElementException("The repository item with id \"" + id + "\" does not exist");
+  }
+  //
+  // private DBObject idQuery(String id) {
+  // return new BasicDBObject("_id", id);
+  // }
 
-	private RepositoryItem createRepositoryItem(GridFSInputFile dbFile) {
-		return new MongoRepositoryItem(this, dbFile);
-	}
+  private RepositoryItem createRepositoryItem(GridFSInputFile dbFile) {
+    return new MongoRepositoryItem(this, dbFile);
+  }
 
-	private MongoRepositoryItem createRepositoryItem(GridFSDBFile dbFile) {
+  private MongoRepositoryItem createRepositoryItem(GridFSDBFile dbFile) {
 
-		MongoRepositoryItem item = new MongoRepositoryItem(this, dbFile);
+    MongoRepositoryItem item = new MongoRepositoryItem(this, dbFile);
 
-		Map<String, String> metadata = new HashMap<>();
-		DBObject object = dbFile.getMetaData();
-		for (String key : object.keySet()) {
-			metadata.put(key, object.get(key).toString());
-		}
-		item.setMetadata(metadata);
-		return item;
-	}
+    Map<String, String> metadata = new HashMap<>();
+    DBObject object = dbFile.getMetaData();
+    for (String key : object.keySet()) {
+      metadata.put(key, object.get(key).toString());
+    }
+    item.setMetadata(metadata);
+    return item;
+  }
 
-	@Override
-	public RepositoryItem createRepositoryItem() {
-		GridFSInputFile dbFile = gridFS.createFile();
-		dbFile.setFilename(dbFile.getId().toString());
-		return createRepositoryItem(dbFile);
-	}
+  @Override
+  public RepositoryItem createRepositoryItem() {
+    GridFSInputFile dbFile = gridFS.createFile();
+    dbFile.setFilename(dbFile.getId().toString());
+    return createRepositoryItem(dbFile);
+  }
 
-	@Override
-	public RepositoryItem createRepositoryItem(String id) {
+  @Override
+  public RepositoryItem createRepositoryItem(String id) {
 
-		// TODO The file is not written until outputstream is closed. There is a
-		// potentially data race with this unique test
-		if (!gridFS.find(id).isEmpty()) {
-			throw new DuplicateItemException(id);
-		}
+    // TODO The file is not written until outputstream is closed. There is a
+    // potentially data race with this unique test
+    if (!gridFS.find(id).isEmpty()) {
+      throw new DuplicateItemException(id);
+    }
 
-		GridFSInputFile dbFile = gridFS.createFile(id);
-		dbFile.setId(id);
-		return createRepositoryItem(dbFile);
-	}
+    GridFSInputFile dbFile = gridFS.createFile(id);
+    dbFile.setId(id);
+    return createRepositoryItem(dbFile);
+  }
 
-	@Override
-	public RepositoryHttpManager getRepositoryHttpManager() {
-		return httpManager;
-	}
+  @Override
+  public RepositoryHttpManager getRepositoryHttpManager() {
+    return httpManager;
+  }
 
-	@Override
-	public void remove(RepositoryItem item) {
-		httpManager.disposeHttpRepoItemElemByItemId(item,
-				"Repository Item removed");
-		gridFS.remove(item.getId());
-	}
+  @Override
+  public void remove(RepositoryItem item) {
+    httpManager.disposeHttpRepoItemElemByItemId(item, "Repository Item removed");
+    gridFS.remove(item.getId());
+  }
 
-	@Override
-	public List<RepositoryItem> findRepositoryItemsByAttValue(
-			String attributeName, String value) {
+  @Override
+  public List<RepositoryItem> findRepositoryItemsByAttValue(String attributeName, String value) {
 
-		String query = "{'metadata." + attributeName + "':'" + value + "'}";
+    String query = "{'metadata." + attributeName + "':'" + value + "'}";
 
-		return findRepositoryItemsByQuery(query);
-	}
+    return findRepositoryItemsByQuery(query);
+  }
 
-	@Override
-	public List<RepositoryItem> findRepositoryItemsByAttRegex(
-			String attributeName, String regex) {
+  @Override
+  public List<RepositoryItem> findRepositoryItemsByAttRegex(String attributeName, String regex) {
 
-		String query = "{'metadata." + attributeName + "': { $regex : '" + regex
-				+ "'}}";
+    String query = "{'metadata." + attributeName + "': { $regex : '" + regex + "'}}";
 
-		return findRepositoryItemsByQuery(query);
-	}
+    return findRepositoryItemsByQuery(query);
+  }
 
-	private List<RepositoryItem> findRepositoryItemsByQuery(String query) {
-		List<GridFSDBFile> files = gridFS.find((DBObject) JSON.parse(query));
+  private List<RepositoryItem> findRepositoryItemsByQuery(String query) {
+    List<GridFSDBFile> files = gridFS.find((DBObject) JSON.parse(query));
 
-		List<RepositoryItem> repositoryItems = new ArrayList<>();
-		for (GridFSDBFile file : files) {
-			repositoryItems.add(createRepositoryItem(file));
-		}
+    List<RepositoryItem> repositoryItems = new ArrayList<>();
+    for (GridFSDBFile file : files) {
+      repositoryItems.add(createRepositoryItem(file));
+    }
 
-		return repositoryItems;
-	}
+    return repositoryItems;
+  }
 
 }

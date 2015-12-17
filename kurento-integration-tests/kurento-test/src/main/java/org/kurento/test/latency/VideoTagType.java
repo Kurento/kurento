@@ -12,85 +12,83 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.latency;
 
 /**
  * Video tag (local, remote).
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 public enum VideoTagType {
-	LOCAL, REMOTE;
+  LOCAL, REMOTE;
 
-	public static String localId;
-	public static String remoteId;
+  public static String localId;
+  public static String remoteId;
 
-	public String getColor() {
-		switch (this) {
-		case LOCAL:
-			return "return kurentoTest.colorInfo['" + localId
-					+ "'].changeColor;";
-		case REMOTE:
-		default:
-			return "return kurentoTest.colorInfo['" + remoteId
-					+ "'].changeColor;";
-		}
-	}
+  public String getColor() {
+    switch (this) {
+      case LOCAL:
+        return "return kurentoTest.colorInfo['" + localId + "'].changeColor;";
+      case REMOTE:
+      default:
+        return "return kurentoTest.colorInfo['" + remoteId + "'].changeColor;";
+    }
+  }
 
-	public String getTime() {
-		switch (this) {
-		case LOCAL:
-			return "return kurentoTest.colorInfo['" + localId
-					+ "'].changeTime;";
-		case REMOTE:
-		default:
-			return "return kurentoTest.colorInfo['" + remoteId
-					+ "'].changeTime;";
-		}
-	}
+  public String getTime() {
+    switch (this) {
+      case LOCAL:
+        return "return kurentoTest.colorInfo['" + localId + "'].changeTime;";
+      case REMOTE:
+      default:
+        return "return kurentoTest.colorInfo['" + remoteId + "'].changeTime;";
+    }
+  }
 
-	public String toString() {
-		switch (this) {
-		case LOCAL:
-			return "local stream";
-		case REMOTE:
-		default:
-			return "remote stream";
-		}
-	}
+  @Override
+  public String toString() {
+    switch (this) {
+      case LOCAL:
+        return "local stream";
+      case REMOTE:
+      default:
+        return "remote stream";
+    }
+  }
 
-	public String getName() {
-		switch (this) {
-		case LOCAL:
-			return "local";
-		case REMOTE:
-		default:
-			return "remote";
-		}
-	}
+  public String getName() {
+    switch (this) {
+      case LOCAL:
+        return "local";
+      case REMOTE:
+      default:
+        return "remote";
+    }
+  }
 
-	public String getId() {
-		if (localId == null || remoteId == null) {
-			throw new RuntimeException(
-					"You must specify local/remote video tag id in order to perform latency control");
-		}
+  public String getId() {
+    if (localId == null || remoteId == null) {
+      throw new RuntimeException(
+          "You must specify local/remote video tag id in order to perform latency control");
+    }
 
-		switch (this) {
-		case LOCAL:
-			return localId;
-		case REMOTE:
-		default:
-			return remoteId;
-		}
-	}
+    switch (this) {
+      case LOCAL:
+        return localId;
+      case REMOTE:
+      default:
+        return remoteId;
+    }
+  }
 
-	public static void setLocalId(String id) {
-		localId = id;
-	}
+  public static void setLocalId(String id) {
+    localId = id;
+  }
 
-	public static void setRemoteId(String id) {
-		remoteId = id;
-	}
+  public static void setRemoteId(String id) {
+    remoteId = id;
+  }
 
 }

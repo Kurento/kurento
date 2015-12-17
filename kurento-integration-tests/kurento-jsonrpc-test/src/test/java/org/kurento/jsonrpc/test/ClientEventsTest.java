@@ -1,3 +1,4 @@
+
 package org.kurento.jsonrpc.test;
 
 import java.io.IOException;
@@ -6,93 +7,84 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClientEventsTest extends JsonRpcConnectorBaseTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ClientEventsTest.class);
+  private static final Logger log = LoggerFactory.getLogger(ClientEventsTest.class);
 
-	private static final long TIMEOUT = 5000;
+  private static final long TIMEOUT = 5000;
 
-	@Test
-	public void test() throws IOException, InterruptedException {
+  @Test
+  public void test() throws IOException, InterruptedException {
 
-		log.info("Client started");
+    log.info("Client started");
 
-		JsonRpcClient client = createJsonRpcClient("/jsonrpcreverse");
+    JsonRpcClient client = createJsonRpcClient("/jsonrpcreverse");
 
-		final CountDownLatch afterConnectionEstablishedLatch = new CountDownLatch(
-				1);
-		final CountDownLatch afterConnectionClosedLatch = new CountDownLatch(1);
-		final CountDownLatch inverseRequestLatch = new CountDownLatch(2);
-		final String[] inverseRequestParams = new String[1];
+    final CountDownLatch afterConnectionEstablishedLatch = new CountDownLatch(1);
+    final CountDownLatch afterConnectionClosedLatch = new CountDownLatch(1);
+    final CountDownLatch inverseRequestLatch = new CountDownLatch(2);
+    final String[] inverseRequestParams = new String[1];
 
-		client.setServerRequestHandler(new DefaultJsonRpcHandler<String>() {
+    client.setServerRequestHandler(new DefaultJsonRpcHandler<String>() {
 
-			@Override
-			public void afterConnectionEstablished(Session session)
-					throws Exception {
+      @Override
+      public void afterConnectionEstablished(Session session) throws Exception {
 
-				log.info("Connection established with sessionId: "
-						+ session.getSessionId());
-				afterConnectionEstablishedLatch.countDown();
-			}
+        log.info("Connection established with sessionId: " + session.getSessionId());
+        afterConnectionEstablishedLatch.countDown();
+      }
 
-			@Override
-			public void handleRequest(Transaction transaction,
-					Request<String> request) throws Exception {
+      @Override
+      public void handleRequest(Transaction transaction, Request<String> request) throws Exception {
 
-				log.info("Reverse request: " + request);
+        log.info("Reverse request: " + request);
 
-				transaction.sendResponse(request.getParams());
-				inverseRequestParams[0] = request.getParams();
+        transaction.sendResponse(request.getParams());
+        inverseRequestParams[0] = request.getParams();
 
-				inverseRequestLatch.countDown();
-			}
+        inverseRequestLatch.countDown();
+      }
 
-			@Override
-			public void afterConnectionClosed(Session session, String status)
-					throws Exception {
+      @Override
+      public void afterConnectionClosed(Session session, String status) throws Exception {
 
-				log.info("Connection closed: " + status);
-				afterConnectionClosedLatch.countDown();
-			}
-		});
+        log.info("Connection closed: " + status);
+        afterConnectionClosedLatch.countDown();
+      }
+    });
 
-		String result = client.sendRequest("echo", "params", String.class);
+    String result = client.sendRequest("echo", "params", String.class);
 
-		Assert.assertTrue(
-				"The method 'afterConnectionEstablished' is not invoked",
-				afterConnectionEstablishedLatch.await(TIMEOUT,
-						TimeUnit.MILLISECONDS));
+    Assert.assertTrue("The method 'afterConnectionEstablished' is not invoked",
+        afterConnectionEstablishedLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-		log.info("Response:" + result);
+    log.info("Response:" + result);
 
-		Assert.assertEquals("params", result);
+    Assert.assertEquals("params", result);
 
-		Assert.assertTrue("The method 'handleRequest' is not invoked",
-				inverseRequestLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
+    Assert.assertTrue("The method 'handleRequest' is not invoked",
+        inverseRequestLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-		String newResult = inverseRequestParams[0];
+    String newResult = inverseRequestParams[0];
 
-		Assert.assertEquals("params", newResult);
+    Assert.assertEquals("params", newResult);
 
-		client.close();
+    client.close();
 
-		Assert.assertTrue("The method 'afterConnectionClosed' is not invoked",
-				afterConnectionClosedLatch
-						.await(TIMEOUT, TimeUnit.MILLISECONDS));
+    Assert.assertTrue("The method 'afterConnectionClosed' is not invoked",
+        afterConnectionClosedLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-		log.info("Client finished");
+    log.info("Client finished");
 
-	}
+  }
 
 }

@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.functional.player;
 
 import java.awt.Color;
@@ -40,8 +41,8 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a
- * WebRtcEndpoint, the PlayerEndpoint is paused and then resumed <br>
+ * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
+ * PlayerEndpoint is paused and then resumed <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -56,51 +57,45 @@ import org.kurento.test.config.TestScenario;
  */
 public class PlayerPauseTest extends FunctionalTest {
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChromeAndFirefox();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChromeAndFirefox();
+  }
 
-	@Test
-	public void testPlayerPause() throws Exception {
-		// Test data
-		final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.webm";
-		final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
-		final int pauseTimeSeconds = 10;
+  @Test
+  public void testPlayerPause() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.webm";
+    final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
+    final int pauseTimeSeconds = 10;
 
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl)
-				.build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-		playerEP.connect(webRtcEP);
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    playerEP.connect(webRtcEP);
 
-		// WebRTC in receive-only mode
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
-		playerEP.play();
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
+    // WebRTC in receive-only mode
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    playerEP.play();
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage().waitForEvent("playing"));
 
-		// Assert initial color, pause stream and wait x seconds
-		Assert.assertTrue(
-				"At the beginning, the color of the video should be "
-						+ expectedColors[0],
-				getPage().similarColor(expectedColors[0]));
-		playerEP.pause();
-		Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
+    // Assert initial color, pause stream and wait x seconds
+    Assert.assertTrue("At the beginning, the color of the video should be " + expectedColors[0],
+        getPage().similarColor(expectedColors[0]));
+    playerEP.pause();
+    Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
 
-		// Resume video after the pause, video color should be as expected
-		playerEP.play();
-		for (Color expectedColor : expectedColors) {
-			Assert.assertTrue(
-					"After the pause, the color of the video should be "
-							+ expectedColor,
-					getPage().similarColor(expectedColor));
-		}
+    // Resume video after the pause, video color should be as expected
+    playerEP.play();
+    for (Color expectedColor : expectedColors) {
+      Assert.assertTrue("After the pause, the color of the video should be " + expectedColor,
+          getPage().similarColor(expectedColor));
+    }
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

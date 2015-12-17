@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal;
 
 import java.lang.annotation.Annotation;
@@ -12,97 +13,92 @@ import org.kurento.jsonrpc.Props;
 
 public class ParamAnnotationUtils {
 
-	public static Props extractProps(List<String> paramNames, Object[] args) {
-		Props props = null;
+  public static Props extractProps(List<String> paramNames, Object[] args) {
+    Props props = null;
 
-		if (!paramNames.isEmpty()) {
-			props = new Props();
-			for (int i = 0; i < args.length; i++) {
-				props.add(paramNames.get(i), args[i]);
-			}
-		}
-		return props;
-	}
+    if (!paramNames.isEmpty()) {
+      props = new Props();
+      for (int i = 0; i < args.length; i++) {
+        props.add(paramNames.get(i), args[i]);
+      }
+    }
+    return props;
+  }
 
-	public static Props extractProps(Annotation[][] annotations, Object[] args,
-			int argsOffset) {
-		Props props = null;
+  public static Props extractProps(Annotation[][] annotations, Object[] args, int argsOffset) {
+    Props props = null;
 
-		if (args != null && args.length > 0) {
+    if (args != null && args.length > 0) {
 
-			props = new Props();
-			for (int i = 0; i < args.length; i++) {
+      props = new Props();
+      for (int i = 0; i < args.length; i++) {
 
-				Param param = getParamAnnotation(annotations[i + argsOffset]);
-				props.add(param.value(), args[i]);
-			}
-		}
+        Param param = getParamAnnotation(annotations[i + argsOffset]);
+        props.add(param.value(), args[i]);
+      }
+    }
 
-		return props;
-	}
+    return props;
+  }
 
-	public static Props extractProps(Annotation[][] annotations, Object[] args)
-			throws ProtocolException {
-		return extractProps(annotations, args, 0);
-	}
+  public static Props extractProps(Annotation[][] annotations, Object[] args)
+      throws ProtocolException {
+    return extractProps(annotations, args, 0);
+  }
 
-	public static List<String> getParamNames(Method method)
-			throws ProtocolException {
-		return getParamNames(method.getParameterAnnotations());
-	}
+  public static List<String> getParamNames(Method method) throws ProtocolException {
+    return getParamNames(method.getParameterAnnotations());
+  }
 
-	public static List<String> getParamNames(Constructor<?> constructor)
-			throws ProtocolException {
-		return getParamNames(constructor.getParameterAnnotations());
-	}
+  public static List<String> getParamNames(Constructor<?> constructor) throws ProtocolException {
+    return getParamNames(constructor.getParameterAnnotations());
+  }
 
-	public static List<String> getParamNames(Annotation[][] annotationsParams)
-			throws ProtocolException {
+  public static List<String> getParamNames(Annotation[][] annotationsParams)
+      throws ProtocolException {
 
-		List<String> paramNames = new ArrayList<>();
+    List<String> paramNames = new ArrayList<>();
 
-		for (int x = 0; x < annotationsParams.length; x++) {
-			Annotation[] annotationsParam = annotationsParams[x];
-			Param paramAnnotation = getParamAnnotation(annotationsParam);
-			if (paramAnnotation == null) {
-				paramNames.add(null);
-			} else {
-				paramNames.add(paramAnnotation.value());
-			}
-		}
+    for (int x = 0; x < annotationsParams.length; x++) {
+      Annotation[] annotationsParam = annotationsParams[x];
+      Param paramAnnotation = getParamAnnotation(annotationsParam);
+      if (paramAnnotation == null) {
+        paramNames.add(null);
+      } else {
+        paramNames.add(paramAnnotation.value());
+      }
+    }
 
-		return paramNames;
-	}
+    return paramNames;
+  }
 
-	public static Param getParamAnnotation(Annotation[] annotationsParam)
-			throws ProtocolException {
+  public static Param getParamAnnotation(Annotation[] annotationsParam) throws ProtocolException {
 
-		Param param = null;
+    Param param = null;
 
-		for (int j = 0; j < annotationsParam.length; j++) {
-			if (annotationsParam[j] instanceof Param) {
-				param = (Param) annotationsParam[j];
-				break;
-			}
-		}
+    for (int j = 0; j < annotationsParam.length; j++) {
+      if (annotationsParam[j] instanceof Param) {
+        param = (Param) annotationsParam[j];
+        break;
+      }
+    }
 
-		return param;
-	}
+    return param;
+  }
 
-	public static Object[] extractEventParams(
-			Annotation[][] parameterAnnotations, Props data)
-			throws ProtocolException {
+  public static Object[] extractEventParams(Annotation[][] parameterAnnotations, Props data)
+      throws ProtocolException {
 
-		List<String> names = getParamNames(parameterAnnotations);
+    List<String> names = getParamNames(parameterAnnotations);
 
-		Object[] params = new Object[names.size()];
+    Object[] params = new Object[names.size()];
 
-		for (int i = 0; i < names.size(); i++) {
-			String name = names.get(i);
-			params[i] = data.getProp(name);
-		}
+    for (int i = 0; i < names.size(); i++) {
+      String name = names.get(i);
+      params[i] = data.getProp(name);
+    }
 
-		return params;
-	}
+    return params;
+  }
 
 }

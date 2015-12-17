@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import org.junit.Assert;
@@ -23,34 +24,32 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
 
 public class BasicPipelineTest extends MediaPipelineBaseTest {
 
-	@Test
-	public void basicPipelineTest() {
+  @Test
+  public void basicPipelineTest() {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				"http://files.kurento.org/video/format/small.webm").build();
+    PlayerEndpoint player =
+        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
+            .build();
 
-		HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline)
-				.build();
+    HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build();
 
-		player.connect(httpEndpoint);
+    player.connect(httpEndpoint);
 
-		for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++) {
 
-			WebRtcEndpoint webRtc = new WebRtcEndpoint.Builder(pipeline)
-					.build();
+      WebRtcEndpoint webRtc = new WebRtcEndpoint.Builder(pipeline).build();
 
-			player.connect(webRtc);
+      player.connect(webRtc);
 
-		}
+    }
 
-		System.out.println(
-				"Dot length: " + pipeline.getGstreamerDot().getBytes().length);
+    System.out.println("Dot length: " + pipeline.getGstreamerDot().getBytes().length);
 
-		String url = httpEndpoint.getUrl();
+    String url = httpEndpoint.getUrl();
 
-		player.release();
+    player.release();
 
-		Assert.assertNotSame("The URL shouldn't be empty", "", url);
-	}
+    Assert.assertNotSame("The URL shouldn't be empty", "", url);
+  }
 
 }

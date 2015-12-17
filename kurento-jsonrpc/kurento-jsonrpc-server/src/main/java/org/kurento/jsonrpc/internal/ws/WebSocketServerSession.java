@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.internal.ws;
 
 import java.io.IOException;
@@ -44,145 +45,134 @@ import com.google.gson.JsonElement;
 
 public class WebSocketServerSession extends ServerSession {
 
-	private static final long TIMEOUT = PropertiesManager.getProperty(
-			"jsonRpcServerWebSocket.timeout", 10000);
+  private static final long TIMEOUT =
+      PropertiesManager.getProperty("jsonRpcServerWebSocket.timeout", 10000);
 
-	private static Logger log = LoggerFactory
-			.getLogger(WebSocketServerSession.class);
+  private static Logger log = LoggerFactory.getLogger(WebSocketServerSession.class);
 
-	private WebSocketSession wsSession;
+  private WebSocketSession wsSession;
 
-	private final PendingRequests pendingRequests = new PendingRequests();
+  private final PendingRequests pendingRequests = new PendingRequests();
 
-	private ExecutorService execService = Executors.newCachedThreadPool();
+  private ExecutorService execService = Executors.newCachedThreadPool();
 
-	public WebSocketServerSession(String sessionId, Object registerInfo,
-			SessionsManager sessionsManager, WebSocketSession wsSession) {
+  public WebSocketServerSession(String sessionId, Object registerInfo,
+      SessionsManager sessionsManager, WebSocketSession wsSession) {
 
-		super(sessionId, registerInfo, sessionsManager, wsSession.getId());
+    super(sessionId, registerInfo, sessionsManager, wsSession.getId());
 
-		this.wsSession = wsSession;
+    this.wsSession = wsSession;
 
-		this.setRsHelper(new JsonRpcRequestSenderHelper(sessionId) {
-			@Override
-			public <P, R> Response<R> internalSendRequest(Request<P> request,
-					Class<R> resultClass) throws IOException {
-				return sendRequestWebSocket(request, resultClass);
-			}
+    this.setRsHelper(new JsonRpcRequestSenderHelper(sessionId) {
+      @Override
+      public <P, R> Response<R> internalSendRequest(Request<P> request, Class<R> resultClass)
+          throws IOException {
+        return sendRequestWebSocket(request, resultClass);
+      }
 
-			@Override
-			protected void internalSendRequest(
-					Request<? extends Object> request,
-					Class<JsonElement> resultClass,
-					Continuation<Response<JsonElement>> continuation) {
-				sendRequestWebSocket(request, resultClass, continuation);
-			}
-		});
-	}
+      @Override
+      protected void internalSendRequest(Request<? extends Object> request,
+          Class<JsonElement> resultClass, Continuation<Response<JsonElement>> continuation) {
+        sendRequestWebSocket(request, resultClass, continuation);
+      }
+    });
+  }
 
-	protected void sendRequestWebSocket(
-			final Request<? extends Object> request,
-			final Class<JsonElement> resultClass,
-			final Continuation<Response<JsonElement>> continuation) {
+  protected void sendRequestWebSocket(final Request<? extends Object> request,
+      final Class<JsonElement> resultClass,
+      final Continuation<Response<JsonElement>> continuation) {
 
-		// FIXME: Poor man async implementation.
-		execService.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Response<JsonElement> result = sendRequestWebSocket(
-							request, resultClass);
-					try {
-						continuation.onSuccess(result);
-					} catch (Exception e) {
-						log.error("Exception while processing response", e);
-					}
-				} catch (Exception e) {
-					continuation.onError(e);
-				}
-			}
-		});
-	}
+    // FIXME: Poor man async implementation.
+    execService.submit(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Response<JsonElement> result = sendRequestWebSocket(request, resultClass);
+          try {
+            continuation.onSuccess(result);
+          } catch (Exception e) {
+            log.error("Exception while processing response", e);
+          }
+        } catch (Exception e) {
+          continuation.onError(e);
+        }
+      }
+    });
+  }
 
-	private <P, R> Response<R> sendRequestWebSocket(Request<P> request,
-			Class<R> resultClass) {
+  private <P, R> Response<R> sendRequestWebSocket(Request<P> request, Class<R> resultClass) {
 
-		log.info("Req-> {}", request.toString());
+    log.info("Req-> {}", request.toString());
 
-		Future<Response<JsonElement>> responseFuture = null;
+    Future<Response<JsonElement>> responseFuture = null;
 
-		if (request.getId() != null) {
-			responseFuture = pendingRequests.prepareResponse(request.getId());
-		}
+    if (request.getId() != null) {
+      responseFuture = pendingRequests.prepareResponse(request.getId());
+    }
 
-		try {
-			synchronized (wsSession) {
-				wsSession
-				.sendMessage(new TextMessage(JsonUtils.toJson(request)));
-			}
-		} catch (Exception e) {
-			throw new KurentoException("Exception while sending message '"
-					+ JsonUtils.toJson(request)
-					+ "' to websocket with native sessionId '"
-					+ wsSession.getId() + "'", e);
-		}
+    try {
+      synchronized (wsSession) {
+        wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));
+      }
+    } catch (Exception e) {
+      throw new KurentoException("Exception while sending message '" + JsonUtils.toJson(request)
+          + "' to websocket with native sessionId '" + wsSession.getId() + "'", e);
+    }
 
-		if (responseFuture == null) {
-			return null;
-		}
+    if (responseFuture == null) {
+      return null;
+    }
 
-		Response<JsonElement> responseJsonObject;
-		try {
-			responseJsonObject = responseFuture.get(TIMEOUT,
-					TimeUnit.MILLISECONDS);
+    Response<JsonElement> responseJsonObject;
+    try {
+      responseJsonObject = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
-			log.info("<-Res {}", responseJsonObject.toString());
+      log.info("<-Res {}", responseJsonObject.toString());
 
-		} catch (InterruptedException e) {
-			// TODO What to do in this case?
-			throw new JsonRpcException(
-					"Interrupted while waiting for a response", e);
-		} catch (ExecutionException e) {
-			// TODO Is there a better way to handle this?
-			throw new JsonRpcException("This exception shouldn't be thrown", e);
-		} catch (TimeoutException e) {
-			throw new TransportException("Timeout of " + TIMEOUT
-					+ " milliseconds waiting from response to request with id:"
-					+ request.getId()+". Request: "+request, e);
-		}
+    } catch (InterruptedException e) {
+      // TODO What to do in this case?
+      throw new JsonRpcException("Interrupted while waiting for a response", e);
+    } catch (ExecutionException e) {
+      // TODO Is there a better way to handle this?
+      throw new JsonRpcException("This exception shouldn't be thrown", e);
+    } catch (TimeoutException e) {
+      throw new TransportException(
+          "Timeout of " + TIMEOUT + " milliseconds waiting from response to request with id:"
+              + request.getId() + ". Request: " + request,
+          e);
+    }
 
-		return MessageUtils.convertResponse(responseJsonObject, resultClass);
-	}
+    return MessageUtils.convertResponse(responseJsonObject, resultClass);
+  }
 
-	@Override
-	public void handleResponse(Response<JsonElement> response) {
-		pendingRequests.handleResponse(response);
-	}
+  @Override
+  public void handleResponse(Response<JsonElement> response) {
+    pendingRequests.handleResponse(response);
+  }
 
-	@Override
-	public void close() throws IOException {
-		try {
-			execService.shutdown();
-			wsSession.close();
-		} finally {
-			super.close();
-		}
-	}
+  @Override
+  public void close() throws IOException {
+    try {
+      execService.shutdown();
+      wsSession.close();
+    } finally {
+      super.close();
+    }
+  }
 
-	public void updateWebSocketSession(WebSocketSession wsSession) {
-		synchronized (wsSession) {
-			this.wsSession = wsSession;
-		}
-	}
+  public void updateWebSocketSession(WebSocketSession wsSession) {
+    synchronized (wsSession) {
+      this.wsSession = wsSession;
+    }
+  }
 
-	@Override
-	public void closeNativeSession(String reason) {
-		try {
-			wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(),
-					reason));
-		} catch (IOException e) {
-			log.warn("Exception closing webSocket session", e);
-		}
-	}
+  @Override
+  public void closeNativeSession(String reason) {
+    try {
+      wsSession.close(new CloseStatus(CloseStatus.NORMAL.getCode(), reason));
+    } catch (IOException e) {
+      log.warn("Exception closing webSocket session", e);
+    }
+  }
 
 }

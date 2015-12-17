@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
@@ -20,15 +21,15 @@ import org.kurento.test.browser.WebRtcTestPage;
 
 /**
  * Stability tests.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 @Category(SystemStabilityTests.class)
 public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	public StabilityTest() {
-		setDeleteLogsIfSuccess(false);
-	}
+  public StabilityTest() {
+    setDeleteLogsIfSuccess(false);
+  }
 
 }

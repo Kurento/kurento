@@ -12,108 +12,109 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.message;
 
 /**
  *
- * Java representation for JSON RPC request. This class holds the information
- * needed to invoke a method on the server
+ * Java representation for JSON RPC request. This class holds the information needed to invoke a
+ * method on the server
  *
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  * @param
- * 			<P>
+ *          <P>
  */
 public class Request<P> extends Message {
 
-	public static final String METHOD_FIELD_NAME = "method";
+  public static final String METHOD_FIELD_NAME = "method";
 
-	public static final String POLL_METHOD_NAME = "poll";
+  public static final String POLL_METHOD_NAME = "poll";
 
-	/**
-	 * Request identifier.
-	 */
-	private Integer id;
+  /**
+   * Request identifier.
+   */
+  private Integer id;
 
-	/**
-	 * Method to be invoked on the server
-	 */
-	protected String method;
+  /**
+   * Method to be invoked on the server
+   */
+  protected String method;
 
-	/**
-	 * Method parameters
-	 */
-	protected P params;
+  /**
+   * Method parameters
+   */
+  protected P params;
 
-	/**
-	 * Default constructor.
-	 */
-	public Request() {
-	}
+  /**
+   * Default constructor.
+   */
+  public Request() {
+  }
 
-	/**
-	 * Parameterized constructor.
-	 *
-	 * @param method
-	 *            Thrift interface method
-	 * @param params
-	 *            Method parameters
-	 * @param id
-	 *            Request identifier
-	 * @param sessionId
-	 *            The session id associated to this request
-	 */
-	public Request(String sessionId, Integer id, String method, P params) {
-		this.sessionId = sessionId;
-		this.method = method;
-		this.params = params;
-		this.id = id;
-	}
+  /**
+   * Parameterized constructor.
+   *
+   * @param method
+   *          Thrift interface method
+   * @param params
+   *          Method parameters
+   * @param id
+   *          Request identifier
+   * @param sessionId
+   *          The session id associated to this request
+   */
+  public Request(String sessionId, Integer id, String method, P params) {
+    this.sessionId = sessionId;
+    this.method = method;
+    this.params = params;
+    this.id = id;
+  }
 
-	/**
-	 * Parameterized constructor.
-	 *
-	 * @param method
-	 *            Thrift interface method
-	 * @param params
-	 *            Method parameters
-	 * @param id
-	 *            Request identifier
-	 */
-	public Request(Integer id, String method, P params) {
-		this(null, id, method, params);
-	}
+  /**
+   * Parameterized constructor.
+   *
+   * @param method
+   *          Thrift interface method
+   * @param params
+   *          Method parameters
+   * @param id
+   *          Request identifier
+   */
+  public Request(Integer id, String method, P params) {
+    this(null, id, method, params);
+  }
 
-	public Request(String method, P params) {
-		this(null, null, method, params);
-	}
+  public Request(String method, P params) {
+    this(null, null, method, params);
+  }
 
-	public String getMethod() {
-		return method;
-	}
+  public String getMethod() {
+    return method;
+  }
 
-	public void setMethod(String method) {
-		this.method = method;
-	}
+  public void setMethod(String method) {
+    this.method = method;
+  }
 
-	public P getParams() {
-		return params;
-	}
+  public P getParams() {
+    return params;
+  }
 
-	public void setParams(P params) {
-		this.params = params;
-	}
+  public void setParams(P params) {
+    this.params = params;
+  }
 
-	public Integer getId() {
-		return id;
-	}
+  public Integer getId() {
+    return id;
+  }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-	public boolean isNotification() {
-		return id == null;
-	}
+  public boolean isNotification() {
+    return id == null;
+  }
 
 }

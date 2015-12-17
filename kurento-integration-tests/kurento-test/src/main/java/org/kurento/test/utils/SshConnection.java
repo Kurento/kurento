@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.utils;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
@@ -55,279 +56,257 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
  */
 public class SshConnection {
 
-	public static Logger log = LoggerFactory.getLogger(SshConnection.class);
-	public static final String DEFAULT_TMP_FOLDER = "/tmp";
+  public static Logger log = LoggerFactory.getLogger(SshConnection.class);
+  public static final String DEFAULT_TMP_FOLDER = "/tmp";
 
-	private static final int NODE_INITIAL_PORT = 5555;
-	private static final int PING_TIMEOUT = 2; // seconds
-	private static final int DEFAULT_CONNECTION_TIMEOUT = 30000; // ms
+  private static final int NODE_INITIAL_PORT = 5555;
+  private static final int PING_TIMEOUT = 2; // seconds
+  private static final int DEFAULT_CONNECTION_TIMEOUT = 30000; // ms
 
-	private String host;
-	private String login;
-	private String passwd;
-	private String pem;
-	private String tmpFolder;
-	private int connectionTimeout;
-	private OverthereConnection connection;
+  private String host;
+  private String login;
+  private String passwd;
+  private String pem;
+  private String tmpFolder;
+  private int connectionTimeout;
+  private OverthereConnection connection;
 
-	public SshConnection(String host) {
-		this.host = host;
-		this.login = getProperty(TEST_NODE_LOGIN_PROPERTY);
-		String pem = getProperty(TEST_NODE_PEM_PROPERTY);
-		if (pem != null) {
-			this.pem = pem;
-		} else {
-			this.passwd = getProperty(TEST_NODE_PASSWD_PROPERTY);
-		}
-		this.connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-	}
+  public SshConnection(String host) {
+    this.host = host;
+    this.login = getProperty(TEST_NODE_LOGIN_PROPERTY);
+    String pem = getProperty(TEST_NODE_PEM_PROPERTY);
+    if (pem != null) {
+      this.pem = pem;
+    } else {
+      this.passwd = getProperty(TEST_NODE_PASSWD_PROPERTY);
+    }
+    this.connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+  }
 
-	public SshConnection(String host, String login, String passwd, String pem) {
-		this.host = host;
-		this.login = login;
-		if (pem != null) {
-			this.pem = pem;
-		} else {
-			this.passwd = passwd;
-		}
-	}
+  public SshConnection(String host, String login, String passwd, String pem) {
+    this.host = host;
+    this.login = login;
+    if (pem != null) {
+      this.pem = pem;
+    } else {
+      this.passwd = passwd;
+    }
+  }
 
-	public List<String> listFiles(String folder, boolean recursive,
-			boolean includeFolders) {
+  public List<String> listFiles(String folder, boolean recursive, boolean includeFolders) {
 
-		String[] command = null;
-		if (recursive && includeFolders) {
-			command = new String[] { "find", folder };
-		} else if (recursive && !includeFolders) {
-			command = new String[] { "find", folder, "-type", "f" };
-		} else if (!recursive && includeFolders) {
-			command = new String[] { "find", folder, "-maxdepth", "1" };
-		} else if (!recursive && !includeFolders) {
-			command = new String[] { "find", folder, "-maxdepth", "1", "-type",
-					"f" };
-		}
-		return Arrays.asList(execAndWaitCommand(command).split("\r\n"));
-	}
+    String[] command = null;
+    if (recursive && includeFolders) {
+      command = new String[] { "find", folder };
+    } else if (recursive && !includeFolders) {
+      command = new String[] { "find", folder, "-type", "f" };
+    } else if (!recursive && includeFolders) {
+      command = new String[] { "find", folder, "-maxdepth", "1" };
+    } else if (!recursive && !includeFolders) {
+      command = new String[] { "find", folder, "-maxdepth", "1", "-type", "f" };
+    }
+    return Arrays.asList(execAndWaitCommand(command).split("\r\n"));
+  }
 
-	public void mkdirs(String dir) {
-		execAndWaitCommand("mkdir", "-p", dir);
-	}
+  public void mkdirs(String dir) {
+    execAndWaitCommand("mkdir", "-p", dir);
+  }
 
-	public String createTmpFolder() {
-		try {
-			do {
-				tmpFolder = DEFAULT_TMP_FOLDER + "/" + System.nanoTime();
-			} while (exists(tmpFolder));
-			execAndWaitCommand("mkdir", tmpFolder);
-		} catch (IOException e) {
-			tmpFolder = DEFAULT_TMP_FOLDER;
-		}
+  public String createTmpFolder() {
+    try {
+      do {
+        tmpFolder = DEFAULT_TMP_FOLDER + "/" + System.nanoTime();
+      } while (exists(tmpFolder));
+      execAndWaitCommand("mkdir", tmpFolder);
+    } catch (IOException e) {
+      tmpFolder = DEFAULT_TMP_FOLDER;
+    }
 
-		log.debug("Remote folder to store temporal files in node {}: {} ", host,
-				tmpFolder);
-		return tmpFolder;
-	}
+    log.debug("Remote folder to store temporal files in node {}: {} ", host, tmpFolder);
+    return tmpFolder;
+  }
 
-	public void getFile(String targetFile, String origFile) {
-		log.debug("Getting remote file: {} (in host {}) to local file: {}",
-				origFile, host, targetFile);
+  public void getFile(String targetFile, String origFile) {
+    log.debug("Getting remote file: {} (in host {}) to local file: {}", origFile, host, targetFile);
 
-		OverthereFile motd = connection.getFile(origFile);
-		if (!motd.isDirectory()) {
-			InputStream is = motd.getInputStream();
-			try {
-				Files.copy(is, Paths.get(targetFile),
-						StandardCopyOption.REPLACE_EXISTING);
-				is.close();
-			} catch (IOException e) {
-				log.error("Exception getting file: {} to {} ({})", origFile,
-						targetFile, e.getMessage());
-			}
-		}
-	}
+    OverthereFile motd = connection.getFile(origFile);
+    if (!motd.isDirectory()) {
+      InputStream is = motd.getInputStream();
+      try {
+        Files.copy(is, Paths.get(targetFile), StandardCopyOption.REPLACE_EXISTING);
+        is.close();
+      } catch (IOException e) {
+        log.error("Exception getting file: {} to {} ({})", origFile, targetFile, e.getMessage());
+      }
+    }
+  }
 
-	public void scp(String origFile, String targetFile) {
-		log.debug("Copying local file: {} to remote file: {} (in host {})",
-				origFile, targetFile, host);
+  public void scp(String origFile, String targetFile) {
+    log.debug("Copying local file: {} to remote file: {} (in host {})", origFile, targetFile, host);
 
-		OverthereFile motd = connection.getFile(targetFile);
-		OutputStream w = motd.getOutputStream();
+    OverthereFile motd = connection.getFile(targetFile);
+    OutputStream w = motd.getOutputStream();
 
-		try {
-			byte[] origBytes = Files.readAllBytes(Paths.get(origFile));
-			w.write(origBytes);
-			w.close();
-		} catch (IOException e) {
-			throw new KurentoException(
-					"Exception in SCP " + origFile + " " + targetFile, e);
-		}
+    try {
+      byte[] origBytes = Files.readAllBytes(Paths.get(origFile));
+      w.write(origBytes);
+      w.close();
+    } catch (IOException e) {
+      throw new KurentoException("Exception in SCP " + origFile + " " + targetFile, e);
+    }
 
-	}
+  }
 
-	public void start() {
-		ConnectionOptions options = new ConnectionOptions();
-		if (pem != null) {
-			options.set(SshConnectionBuilder.PRIVATE_KEY_FILE, pem);
-		} else {
-			options.set(ConnectionOptions.PASSWORD, passwd);
-		}
+  public void start() {
+    ConnectionOptions options = new ConnectionOptions();
+    if (pem != null) {
+      options.set(SshConnectionBuilder.PRIVATE_KEY_FILE, pem);
+    } else {
+      options.set(ConnectionOptions.PASSWORD, passwd);
+    }
 
-		options.set(ConnectionOptions.CONNECTION_TIMEOUT_MILLIS,
-				connectionTimeout);
-		options.set(ConnectionOptions.USERNAME, login);
-		options.set(ConnectionOptions.ADDRESS, host);
-		options.set(ConnectionOptions.OPERATING_SYSTEM,
-				OperatingSystemFamily.UNIX);
-		options.set(SshConnectionBuilder.CONNECTION_TYPE,
-				SshConnectionType.SCP);
+    options.set(ConnectionOptions.CONNECTION_TIMEOUT_MILLIS, connectionTimeout);
+    options.set(ConnectionOptions.USERNAME, login);
+    options.set(ConnectionOptions.ADDRESS, host);
+    options.set(ConnectionOptions.OPERATING_SYSTEM, OperatingSystemFamily.UNIX);
+    options.set(SshConnectionBuilder.CONNECTION_TYPE, SshConnectionType.SCP);
 
-		connection = Overthere.getConnection(SshConnectionBuilder.SSH_PROTOCOL,
-				options);
+    connection = Overthere.getConnection(SshConnectionBuilder.SSH_PROTOCOL, options);
 
-	}
+  }
 
-	public boolean isStarted() {
-		return connection != null;
-	}
+  public boolean isStarted() {
+    return connection != null;
+  }
 
-	public void stop() {
-		if (isStarted()) {
-			connection.close();
-			connection = null;
-		}
-	}
+  public void stop() {
+    if (isStarted()) {
+      connection.close();
+      connection = null;
+    }
+  }
 
-	public void execCommand(final String... command) {
-		if (connection.canStartProcess()) {
-			connection.startProcess(CmdLine.build(command));
-		}
-	}
+  public void execCommand(final String... command) {
+    if (connection.canStartProcess()) {
+      connection.startProcess(CmdLine.build(command));
+    }
+  }
 
-	public int runAndWaitCommand(String... command) {
-		return connection.execute(CmdLine.build(command));
-	}
+  public int runAndWaitCommand(String... command) {
+    return connection.execute(CmdLine.build(command));
+  }
 
-	public String execAndWaitCommand(String... command) {
-		log.info("execAndWaitCommand: {} ", Arrays.toString(command));
+  public String execAndWaitCommand(String... command) {
+    log.info("execAndWaitCommand: {} ", Arrays.toString(command));
 
-		CmdLine cmdLine = new CmdLine();
-		for (String c : command) {
-			cmdLine.addRaw(c);
-		}
-		OverthereProcess process = connection.startProcess(cmdLine);
+    CmdLine cmdLine = new CmdLine();
+    for (String c : command) {
+      cmdLine.addRaw(c);
+    }
+    OverthereProcess process = connection.startProcess(cmdLine);
 
-		StringBuilder sb = new StringBuilder();
-		try {
-			BufferedReader r = new BufferedReader(
-					new InputStreamReader(process.getStdout(), "UTF-8"));
-			String line = null;
-			while ((line = r.readLine()) != null) {
-				log.debug(line);
-				sb.append(line).append("\r\n");
-			}
-		} catch (Exception e) {
-			throw new KurentoException(
-					"Exception executing command " + Arrays.toString(command),
-					e);
-		}
+    StringBuilder sb = new StringBuilder();
+    try {
+      BufferedReader r = new BufferedReader(new InputStreamReader(process.getStdout(), "UTF-8"));
+      String line = null;
+      while ((line = r.readLine()) != null) {
+        log.debug(line);
+        sb.append(line).append("\r\n");
+      }
+    } catch (Exception e) {
+      throw new KurentoException("Exception executing command " + Arrays.toString(command), e);
+    }
 
-		return sb.toString();
-	}
+    return sb.toString();
+  }
 
-	public String execAndWaitCommandWithStderr(String... command)
-			throws IOException {
-		OverthereProcess process = connection
-				.startProcess(CmdLine.build(command));
-		String result = CharStreams
-				.toString(new InputStreamReader(process.getStdout(), "UTF-8"));
-		result += CharStreams
-				.toString(new InputStreamReader(process.getStderr(), "UTF-8"));
-		return result;
-	}
+  public String execAndWaitCommandWithStderr(String... command) throws IOException {
+    OverthereProcess process = connection.startProcess(CmdLine.build(command));
+    String result = CharStreams.toString(new InputStreamReader(process.getStdout(), "UTF-8"));
+    result += CharStreams.toString(new InputStreamReader(process.getStderr(), "UTF-8"));
+    return result;
+  }
 
-	public String execAndWaitCommandNoBr(String... command) {
-		return execAndWaitCommand(command).replace("\n", "").replace("\r", "");
-	}
+  public String execAndWaitCommandNoBr(String... command) {
+    return execAndWaitCommand(command).replace("\n", "").replace("\r", "");
+  }
 
-	public boolean exists(String fileOrFolder) throws IOException {
-		String output = execAndWaitCommand("file", fileOrFolder);
-		return !output.contains("ERROR");
-	}
+  public boolean exists(String fileOrFolder) throws IOException {
+    String output = execAndWaitCommand("file", fileOrFolder);
+    return !output.contains("ERROR");
+  }
 
-	public int getFreePort() throws IOException {
-		int port = NODE_INITIAL_PORT - 1;
-		String output;
-		do {
-			port++;
-			output = execAndWaitCommand("netstat", "-auxn");
-		} while (output.contains(":" + port));
-		return port;
-	}
+  public int getFreePort() throws IOException {
+    int port = NODE_INITIAL_PORT - 1;
+    String output;
+    do {
+      port++;
+      output = execAndWaitCommand("netstat", "-auxn");
+    } while (output.contains(":" + port));
+    return port;
+  }
 
-	public static boolean ping(String ipAddress) {
-		return ping(ipAddress, SshConnection.PING_TIMEOUT);
-	}
+  public static boolean ping(String ipAddress) {
+    return ping(ipAddress, SshConnection.PING_TIMEOUT);
+  }
 
-	public static boolean ping(final String ipAddress, int timeout) {
-		final CountDownLatch latch = new CountDownLatch(1);
+  public static boolean ping(final String ipAddress, int timeout) {
+    final CountDownLatch latch = new CountDownLatch(1);
 
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				try {
-					String[] command = { "ping", "-c", "1", ipAddress };
-					Process p = new ProcessBuilder(command)
-							.redirectErrorStream(true).start();
-					CharStreams.toString(
-							new InputStreamReader(p.getInputStream(), "UTF-8"));
-					latch.countDown();
-				} catch (Exception e) {
-				}
-			}
-		};
-		t.setDaemon(true);
-		t.start();
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        try {
+          String[] command = { "ping", "-c", "1", ipAddress };
+          Process p = new ProcessBuilder(command).redirectErrorStream(true).start();
+          CharStreams.toString(new InputStreamReader(p.getInputStream(), "UTF-8"));
+          latch.countDown();
+        } catch (Exception e) {
+        }
+      }
+    };
+    t.setDaemon(true);
+    t.start();
 
-		boolean ping = false;
-		try {
-			ping = latch.await(timeout, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			log.error("Exception making ping to {} : {}", ipAddress,
-					e.getClass());
-		}
-		if (!ping) {
-			t.interrupt();
-		}
+    boolean ping = false;
+    try {
+      ping = latch.await(timeout, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      log.error("Exception making ping to {} : {}", ipAddress, e.getClass());
+    }
+    if (!ping) {
+      t.interrupt();
+    }
 
-		return ping;
-	}
+    return ping;
+  }
 
-	public String getTmpFolder() {
-		return tmpFolder;
-	}
+  public String getTmpFolder() {
+    return tmpFolder;
+  }
 
-	public String getHost() {
-		return host;
-	}
+  public String getHost() {
+    return host;
+  }
 
-	public String getPem() {
-		return pem;
-	}
+  public String getPem() {
+    return pem;
+  }
 
-	public void setPem(String pem) {
-		this.pem = pem;
-	}
+  public void setPem(String pem) {
+    this.pem = pem;
+  }
 
-	public OverthereConnection getConnection() {
-		return connection;
-	}
+  public OverthereConnection getConnection() {
+    return connection;
+  }
 
-	public int getConnectionTimeout() {
-		return connectionTimeout;
-	}
+  public int getConnectionTimeout() {
+    return connectionTimeout;
+  }
 
-	public void setConnectionTimeout(int connectionTimeout) {
-		this.connectionTimeout = connectionTimeout;
-	}
+  public void setConnectionTimeout(int connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
+  }
 
 }

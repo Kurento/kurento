@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.internal.ws;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,49 +31,44 @@ import com.google.gson.JsonElement;
 
 public class PendingRequests {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(PendingRequests.class);
+  private static final Logger log = LoggerFactory.getLogger(PendingRequests.class);
 
-	private final ConcurrentMap<Integer, SettableFuture<Response<JsonElement>>> pendingRequests = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Integer, SettableFuture<Response<JsonElement>>> pendingRequests =
+      new ConcurrentHashMap<>();
 
-	public void handleResponse(Response<JsonElement> response) {
+  public void handleResponse(Response<JsonElement> response) {
 
-		SettableFuture<Response<JsonElement>> responseFuture = pendingRequests
-				.remove(response.getId());
+    SettableFuture<Response<JsonElement>> responseFuture = pendingRequests.remove(response.getId());
 
-		if (responseFuture == null) {
-			// TODO It is necessary to do something else? Who is watching this?
-			log.error(
-					"Received response with an id not registered as pending request");
-		} else {
-			responseFuture.set(response);
-		}
-	}
+    if (responseFuture == null) {
+      // TODO It is necessary to do something else? Who is watching this?
+      log.error("Received response with an id not registered as pending request");
+    } else {
+      responseFuture.set(response);
+    }
+  }
 
-	public ListenableFuture<Response<JsonElement>> prepareResponse(Integer id) {
+  public ListenableFuture<Response<JsonElement>> prepareResponse(Integer id) {
 
-		Preconditions.checkNotNull(id, "The request id cannot be null");
+    Preconditions.checkNotNull(id, "The request id cannot be null");
 
-		SettableFuture<Response<JsonElement>> responseFuture = SettableFuture
-				.create();
+    SettableFuture<Response<JsonElement>> responseFuture = SettableFuture.create();
 
-		if (pendingRequests.putIfAbsent(id, responseFuture) != null) {
-			throw new JsonRpcException("Can not send a request with the id '"
-					+ id
-					+ "'. There is already a pending request with this id");
-		}
+    if (pendingRequests.putIfAbsent(id, responseFuture) != null) {
+      throw new JsonRpcException("Can not send a request with the id '" + id
+          + "'. There is already a pending request with this id");
+    }
 
-		return responseFuture;
-	}
+    return responseFuture;
+  }
 
-	public void closeAllPendingRequests() {
-		log.info("Sending error to all pending requests");
-		for (SettableFuture<Response<JsonElement>> responseFuture : pendingRequests
-				.values()) {
-			responseFuture.set(new Response<JsonElement>(new ResponseError(0,
-					"Connection with server have been closed")));
-		}
-		pendingRequests.clear();
-	}
+  public void closeAllPendingRequests() {
+    log.info("Sending error to all pending requests");
+    for (SettableFuture<Response<JsonElement>> responseFuture : pendingRequests.values()) {
+      responseFuture.set(new Response<JsonElement>(
+          new ResponseError(0, "Connection with server have been closed")));
+    }
+    pendingRequests.clear();
+  }
 
 }

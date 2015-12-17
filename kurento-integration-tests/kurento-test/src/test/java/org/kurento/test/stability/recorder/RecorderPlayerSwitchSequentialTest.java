@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.stability.recorder;
 
 import static org.kurento.client.MediaProfileSpecType.MP4;
@@ -37,8 +38,7 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) between two
- * players. <br>
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players. <br>
  *
  * Media Pipeline(s): <br>
  * · PlayerEndpoint x 2 -> RecorderEndpoint <br>
@@ -55,85 +55,81 @@ import org.kurento.test.mediainfo.AssertMedia;
  *
  * Secondary assertion(s): <br>
  * -- <br>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
 public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
-	private static final int SWITCH_TIMES = 100;
-	private static final int SWITCH_RATE_MS = 500; // ms
-	private static final int THRESHOLD_MS = 5000; // ms
+  private static final int SWITCH_TIMES = 100;
+  private static final int SWITCH_RATE_MS = 500; // ms
+  private static final int THRESHOLD_MS = 5000; // ms
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.empty();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.empty();
+  }
 
-	@Test
-	public void testRecorderPlayerSwitchSequentialWebm() throws Exception {
-		doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
-				EXTENSION_WEBM);
-	}
+  @Test
+  public void testRecorderPlayerSwitchSequentialWebm() throws Exception {
+    doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+  }
 
-	@Test
-	public void testRecorderPlayerSwitchSequentialMp4() throws Exception {
-		doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
-				EXTENSION_MP4);
-	}
+  @Test
+  public void testRecorderPlayerSwitchSequentialMp4() throws Exception {
+    doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+  }
 
-	public void doTest(MediaProfileSpecType mediaProfileSpecType,
-			String expectedVideoCodec, String expectedAudioCodec,
-			String extension) throws Exception {
+  public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
+      String expectedAudioCodec, String extension) throws Exception {
 
-		MediaPipeline mp = null;
+    MediaPipeline mp = null;
 
-		// Media Pipeline
-		mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP1 = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/60sec/ball.webm").build();
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/60sec/smpte.webm").build();
+    // Media Pipeline
+    mp = kurentoClient.createMediaPipeline();
+    PlayerEndpoint playerEP1 =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/60sec/ball.webm").build();
+    PlayerEndpoint playerEP2 =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/60sec/smpte.webm").build();
 
-		String recordingFile = getDefaultOutputFile(extension);
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				Protocol.FILE + "://" + recordingFile)
-						.withMediaProfile(mediaProfileSpecType).build();
+    String recordingFile = getDefaultOutputFile(extension);
+    RecorderEndpoint recorderEP =
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
+            .withMediaProfile(mediaProfileSpecType).build();
 
-		// Start play and record
-		playerEP1.play();
-		playerEP2.play();
-		recorderEP.record();
+    // Start play and record
+    playerEP1.play();
+    playerEP2.play();
+    recorderEP.record();
 
-		// Switch players
-		for (int i = 0; i < SWITCH_TIMES; i++) {
-			if (i % 2 == 0) {
-				playerEP1.connect(recorderEP);
-			} else {
-				playerEP2.connect(recorderEP);
-			}
+    // Switch players
+    for (int i = 0; i < SWITCH_TIMES; i++) {
+      if (i % 2 == 0) {
+        playerEP1.connect(recorderEP);
+      } else {
+        playerEP2.connect(recorderEP);
+      }
 
-			Thread.sleep(SWITCH_RATE_MS);
-		}
+      Thread.sleep(SWITCH_RATE_MS);
+    }
 
-		// Stop play and record
-		playerEP1.stop();
-		playerEP2.stop();
-		recorderEP.stop();
+    // Stop play and record
+    playerEP1.stop();
+    playerEP2.stop();
+    recorderEP.stop();
 
-		// Guard time to stop recording
-		Thread.sleep(4000);
+    // Guard time to stop recording
+    Thread.sleep(4000);
 
-		// Assessments
-		long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
-		AssertMedia.assertCodecs(recordingFile, expectedVideoCodec,
-				expectedAudioCodec);
-		AssertMedia.assertDuration(recordingFile, expectedTimeMs, THRESHOLD_MS);
+    // Assessments
+    long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
+    AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
+    AssertMedia.assertDuration(recordingFile, expectedTimeMs, THRESHOLD_MS);
 
-		// Release Media Pipeline
-		if (mp != null) {
-			mp.release();
-		}
+    // Release Media Pipeline
+    if (mp != null) {
+      mp.release();
+    }
 
-	}
+  }
 }

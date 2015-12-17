@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.internal.client;
 
 import static org.kurento.jsonrpc.JsonUtils.INJECT_SESSION_ID;
@@ -29,107 +30,101 @@ import org.kurento.jsonrpc.message.ResponseError;
 
 public class TransactionImpl implements Transaction {
 
-	public interface ResponseSender {
-		void sendResponse(Message message) throws IOException;
+  public interface ResponseSender {
+    void sendResponse(Message message) throws IOException;
 
-		void sendPingResponse(Message message) throws IOException;
-	}
+    void sendPingResponse(Message message) throws IOException;
+  }
 
-	private final Session session;
-	private boolean async;
-	private final AtomicBoolean responded = new AtomicBoolean(false);
-	private final ResponseSender responseSender;
-	private final Request<?> request;
+  private final Session session;
+  private boolean async;
+  private final AtomicBoolean responded = new AtomicBoolean(false);
+  private final ResponseSender responseSender;
+  private final Request<?> request;
 
-	public TransactionImpl(Session session, Request<?> request,
-			ResponseSender responseSender) {
-		super();
-		this.session = session;
-		this.responseSender = responseSender;
-		this.request = request;
-	}
+  public TransactionImpl(Session session, Request<?> request, ResponseSender responseSender) {
+    super();
+    this.session = session;
+    this.responseSender = responseSender;
+    this.request = request;
+  }
 
-	@Override
-	public void sendResponse(Object result) throws IOException {
-		internalSendResponse(new Response<>(request.getId(), result));
-	}
+  @Override
+  public void sendResponse(Object result) throws IOException {
+    internalSendResponse(new Response<>(request.getId(), result));
+  }
 
-	@Override
-	public Session getSession() {
-		return session;
-	}
+  @Override
+  public Session getSession() {
+    return session;
+  }
 
-	@Override
-	public void startAsync() {
-		async = true;
-	}
+  @Override
+  public void startAsync() {
+    async = true;
+  }
 
-	public boolean isAsync() {
-		return async;
-	}
+  public boolean isAsync() {
+    return async;
+  }
 
-	public boolean setRespondedIfNot() {
-		return responded.compareAndSet(false, true);
-	}
+  public boolean setRespondedIfNot() {
+    return responded.compareAndSet(false, true);
+  }
 
-	@Override
-	public void sendError(int code, String message, String data)
-			throws IOException {
+  @Override
+  public void sendError(int code, String message, String data) throws IOException {
 
-		internalSendResponse(new Response<>(request.getId(), new ResponseError(
-				code, message, data)));
-	}
+    internalSendResponse(new Response<>(request.getId(), new ResponseError(code, message, data)));
+  }
 
-	@Override
-	public void sendError(Throwable e) throws IOException {
+  @Override
+  public void sendError(Throwable e) throws IOException {
 
-		ResponseError error = ResponseError.newFromException(e);
-		internalSendResponse(new Response<>(request.getId(), error));
+    ResponseError error = ResponseError.newFromException(e);
+    internalSendResponse(new Response<>(request.getId(), error));
 
-	}
+  }
 
-	@Override
-	public boolean isNotification() {
-		return request.getId() == null;
-	}
+  @Override
+  public boolean isNotification() {
+    return request.getId() == null;
+  }
 
-	@Override
-	public void sendResponseObject(Response<? extends Object> response)
-			throws IOException {
+  @Override
+  public void sendResponseObject(Response<? extends Object> response) throws IOException {
 
-		internalSendResponse(response);
-	}
+    internalSendResponse(response);
+  }
 
-	private void internalSendResponse(Response<? extends Object> response)
-			throws IOException {
+  private void internalSendResponse(Response<? extends Object> response) throws IOException {
 
-		boolean notResponded = setRespondedIfNot();
+    boolean notResponded = setRespondedIfNot();
 
-		if (notResponded) {
+    if (notResponded) {
 
-			if (response.getSessionId() == null && INJECT_SESSION_ID) {
-				response.setSessionId(session.getSessionId());
-			}
+      if (response.getSessionId() == null && INJECT_SESSION_ID) {
+        response.setSessionId(session.getSessionId());
+      }
 
-			if (response.getId() == null) {
-				response.setId(request.getId());
-			}
+      if (response.getId() == null) {
+        response.setId(request.getId());
+      }
 
-			responseSender.sendResponse(response);
+      responseSender.sendResponse(response);
 
-		} else {
-			throw new RequestAlreadyRespondedException(
-					"This request has already been responded");
-		}
-	}
+    } else {
+      throw new RequestAlreadyRespondedException("This request has already been responded");
+    }
+  }
 
-	@Override
-	public void sendVoidResponse() throws IOException {
-		sendResponse(null);
-	}
+  @Override
+  public void sendVoidResponse() throws IOException {
+    sendResponse(null);
+  }
 
-	@Override
-	public void sendError(ResponseError error) throws IOException {
-		internalSendResponse(new Response<>(request.getId(), error));
-	}
+  @Override
+  public void sendError(ResponseError error) throws IOException {
+    internalSendResponse(new Response<>(request.getId(), error));
+  }
 }

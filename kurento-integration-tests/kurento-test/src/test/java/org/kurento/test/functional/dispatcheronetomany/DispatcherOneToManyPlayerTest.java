@@ -1,3 +1,4 @@
+
 package org.kurento.test.functional.dispatcheronetomany;
 
 import java.awt.Color;
@@ -26,9 +27,9 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * 
- * <strong>Description</strong>: A PlayerEndpoint is connected to a
- * WebRtcEndpoint through a Dispatcher.<br/>
+ *
+ * <strong>Description</strong>: A PlayerEndpoint is connected to a WebRtcEndpoint through a
+ * Dispatcher.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>PlayerEndpoint -> Dispatcher -> WebRtcEndpoint</li>
@@ -40,138 +41,128 @@ import org.kurento.test.config.TestScenario;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 6.0.0
  */
 
 public class DispatcherOneToManyPlayerTest extends FunctionalTest {
-	private static final int TIMEOUT_EOS = 60; // seconds
-	private static final String BROWSER1 = "browser1";
-	private static final String BROWSER2 = "browser2";
-	private static final String BROWSER3 = "browser3";
+  private static final int TIMEOUT_EOS = 60; // seconds
+  private static final String BROWSER1 = "browser1";
+  private static final String BROWSER2 = "browser2";
+  private static final String BROWSER3 = "browser3";
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		TestScenario test = new TestScenario();
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    TestScenario test = new TestScenario();
 
-		test.addBrowser(BROWSER1,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC)
-						.scope(BrowserScope.LOCAL).build());
-		test.addBrowser(BROWSER2,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC)
-						.scope(BrowserScope.LOCAL).build());
-		test.addBrowser(BROWSER3,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC)
-						.scope(BrowserScope.LOCAL).build());
+    test.addBrowser(BROWSER1, new Browser.Builder().browserType(BrowserType.CHROME)
+        .webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL).build());
+    test.addBrowser(BROWSER2, new Browser.Builder().browserType(BrowserType.CHROME)
+        .webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL).build());
+    test.addBrowser(BROWSER3, new Browser.Builder().browserType(BrowserType.CHROME)
+        .webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL).build());
 
-		return Arrays.asList(new Object[][] { { test } });
-	}
+    return Arrays.asList(new Object[][] { { test } });
+  }
 
-	@Test
-	public void testDispatcherOneToManyPlayer() throws Exception {
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
+  @Test
+  public void testDispatcherOneToManyPlayer() throws Exception {
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/red.webm").build();
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/blue.webm").build();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
+    PlayerEndpoint playerEP =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/red.webm").build();
+    PlayerEndpoint playerEP2 =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/blue.webm").build();
+    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
 
-		DispatcherOneToMany dispatcherOneToMany = new DispatcherOneToMany.Builder(
-				mp).build();
-		HubPort hubPort1 = new HubPort.Builder(dispatcherOneToMany).build();
-		HubPort hubPort2 = new HubPort.Builder(dispatcherOneToMany).build();
-		HubPort hubPort3 = new HubPort.Builder(dispatcherOneToMany).build();
-		HubPort hubPort4 = new HubPort.Builder(dispatcherOneToMany).build();
-		HubPort hubPort5 = new HubPort.Builder(dispatcherOneToMany).build();
+    DispatcherOneToMany dispatcherOneToMany = new DispatcherOneToMany.Builder(mp).build();
+    HubPort hubPort1 = new HubPort.Builder(dispatcherOneToMany).build();
+    HubPort hubPort2 = new HubPort.Builder(dispatcherOneToMany).build();
+    HubPort hubPort3 = new HubPort.Builder(dispatcherOneToMany).build();
+    HubPort hubPort4 = new HubPort.Builder(dispatcherOneToMany).build();
+    HubPort hubPort5 = new HubPort.Builder(dispatcherOneToMany).build();
 
-		playerEP.connect(hubPort1);
-		playerEP2.connect(hubPort2);
-		hubPort3.connect(webRtcEP1);
-		hubPort4.connect(webRtcEP2);
-		hubPort5.connect(webRtcEP3);
-		dispatcherOneToMany.setSource(hubPort1);
+    playerEP.connect(hubPort1);
+    playerEP2.connect(hubPort2);
+    hubPort3.connect(webRtcEP1);
+    hubPort4.connect(webRtcEP2);
+    hubPort5.connect(webRtcEP3);
+    dispatcherOneToMany.setSource(hubPort1);
 
-		final CountDownLatch eosLatch = new CountDownLatch(1);
-		playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosLatch.countDown();
-			}
-		});
+    final CountDownLatch eosLatch = new CountDownLatch(1);
+    playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        eosLatch.countDown();
+      }
+    });
 
-		// Test execution
-		getPage(BROWSER1).subscribeEvents("playing");
-		getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
+    // Test execution
+    getPage(BROWSER1).subscribeEvents("playing");
+    getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
-		getPage(BROWSER2).subscribeEvents("playing");
-		getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
+    getPage(BROWSER2).subscribeEvents("playing");
+    getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
-		getPage(BROWSER3).subscribeEvents("playing");
-		getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.RCV_ONLY);
+    getPage(BROWSER3).subscribeEvents("playing");
+    getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
-		playerEP.play();
+    playerEP.play();
 
-		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage(BROWSER1).waitForEvent("playing"));
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage(BROWSER2).waitForEvent("playing"));
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage(BROWSER3).waitForEvent("playing"));
+    // Assertions
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER1).waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER2).waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER3).waitForEvent("playing"));
 
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER1).similarColor(Color.RED));
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER2).similarColor(Color.RED));
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER3).similarColor(Color.RED));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER1).similarColor(Color.RED));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER2).similarColor(Color.RED));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER3).similarColor(Color.RED));
 
-		Thread.sleep(3000);
-		playerEP2.play();
-		dispatcherOneToMany.setSource(hubPort2);
+    Thread.sleep(3000);
+    playerEP2.play();
+    dispatcherOneToMany.setSource(hubPort2);
 
-		Assert.assertTrue("The color of the video should be blue",
-				getPage(BROWSER1).similarColor(Color.BLUE));
-		Assert.assertTrue("The color of the video should be blue",
-				getPage(BROWSER2).similarColor(Color.BLUE));
-		Assert.assertTrue("The color of the video should be blue",
-				getPage(BROWSER3).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be blue",
+        getPage(BROWSER1).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be blue",
+        getPage(BROWSER2).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be blue",
+        getPage(BROWSER3).similarColor(Color.BLUE));
 
-		Thread.sleep(3000);
-		dispatcherOneToMany.setSource(hubPort1);
+    Thread.sleep(3000);
+    dispatcherOneToMany.setSource(hubPort1);
 
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER1).similarColor(Color.RED));
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER2).similarColor(Color.RED));
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER3).similarColor(Color.RED));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER1).similarColor(Color.RED));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER2).similarColor(Color.RED));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER3).similarColor(Color.RED));
 
-		Thread.sleep(3000);
+    Thread.sleep(3000);
 
-		dispatcherOneToMany.setSource(hubPort2);
+    dispatcherOneToMany.setSource(hubPort2);
 
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER1).similarColor(Color.BLUE));
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER2).similarColor(Color.BLUE));
-		Assert.assertTrue("The color of the video should be red",
-				getPage(BROWSER3).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER1).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER2).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be red",
+        getPage(BROWSER3).similarColor(Color.BLUE));
 
-		Thread.sleep(3000);
+    Thread.sleep(3000);
 
-		Assert.assertTrue("Not received EOS event in player",
-				eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
-	}
+    Assert.assertTrue("Not received EOS event in player",
+        eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
+  }
 }

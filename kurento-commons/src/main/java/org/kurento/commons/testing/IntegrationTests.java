@@ -12,11 +12,12 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.commons.testing;
 
 /**
  * Base category for integration tests
- * 
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.3.0
  *

@@ -12,16 +12,17 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.browser;
 
 /**
  * SDP offer processor.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
 public interface SdpOfferProcessor {
 
-	public String processSdpOffer(String sdpOffer);
+  public String processSdpOffer(String sdpOffer);
 
 }

@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.internal;
 
 import java.io.IOException;
@@ -21,25 +22,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Internal utility for killing all the processes of a user in a remote node
- * (for manual testing/debug purposes).
- * 
+ * Internal utility for killing all the processes of a user in a remote node (for manual
+ * testing/debug purposes).
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 public class KillProcesses {
 
-	public static Logger log = LoggerFactory.getLogger(KillProcesses.class);
+  public static Logger log = LoggerFactory.getLogger(KillProcesses.class);
 
-	public static void main(String[] args) throws IOException {
-		for (String node : args) {
-			if (SshConnection.ping(node)) {
-				SshConnection remoteHost = new SshConnection(node);
-				remoteHost.start();
-				remoteHost.execCommand("kill", "-9", "-1");
-			} else {
-				log.error("Node down {}", node);
-			}
-		}
-	}
+  public static void main(String[] args) throws IOException {
+    for (String node : args) {
+      if (SshConnection.ping(node)) {
+        SshConnection remoteHost = new SshConnection(node);
+        remoteHost.start();
+        remoteHost.execCommand("kill", "-9", "-1");
+      } else {
+        log.error("Node down {}", node);
+      }
+    }
+  }
 }

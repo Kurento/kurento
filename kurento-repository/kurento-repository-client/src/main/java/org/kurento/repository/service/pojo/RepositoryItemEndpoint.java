@@ -17,31 +17,31 @@ package org.kurento.repository.service.pojo;
 
 /**
  * Root class for the repository's REST <em>POJO</em>'s.
- * 
+ *
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
 abstract class RepositoryItemEndpoint {
-	private String id;
-	private String url;
+  private String id;
+  private String url;
 
-	public final String getId() {
-		return id;
-	}
+  public final String getId() {
+    return id;
+  }
 
-	public final void setId(String id) {
-		this.id = id;
-	}
+  public final void setId(String id) {
+    this.id = id;
+  }
 
-	public final String getUrl() {
-		return url;
-	}
+  public final String getUrl() {
+    return url;
+  }
 
-	public final void setUrl(String url) {
-		this.url = url;
-	}
+  public final void setUrl(String url) {
+    this.url = url;
+  }
 
-	@Override
-	public final String toString() {
-		return "[id=" + id + ", url=" + url + "]";
-	}
+  @Override
+  public final String toString() {
+    return "[id=" + id + ", url=" + url + "]";
+  }
 }

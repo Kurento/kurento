@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc;
 
 import java.util.List;
@@ -23,78 +24,78 @@ import com.google.common.collect.ImmutableList;
 
 public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 
-	private final Logger log = LoggerFactory.getLogger(DefaultJsonRpcHandler.class);
+  private final Logger log = LoggerFactory.getLogger(DefaultJsonRpcHandler.class);
 
-	private boolean useSockJs;
-	private String label;
-	private boolean pingWatchdog = false;
+  private boolean useSockJs;
+  private String label;
+  private boolean pingWatchdog = false;
 
-	private List<String> allowedOrigins = ImmutableList.of();
+  private List<String> allowedOrigins = ImmutableList.of();
 
-	@Override
-	public void afterConnectionEstablished(Session session) throws Exception {
-	}
+  @Override
+  public void afterConnectionEstablished(Session session) throws Exception {
+  }
 
-	@Override
-	public void afterConnectionClosed(Session session, String status) throws Exception {
-	}
+  @Override
+  public void afterConnectionClosed(Session session, String status) throws Exception {
+  }
 
-	@Override
-	public void handleTransportError(Session session, Throwable exception) throws Exception {
-		log.warn(
-				"Transport error. Exception " + exception.getClass().getName() + ":" + exception.getLocalizedMessage());
-	}
+  @Override
+  public void handleTransportError(Session session, Throwable exception) throws Exception {
+    log.warn("Transport error. Exception " + exception.getClass().getName() + ":"
+        + exception.getLocalizedMessage());
+  }
 
-	@Override
-	public void handleUncaughtException(Session session, Exception exception) {
-		log.warn("Uncaught exception in handler {}", this.getClass().getName(), exception);
-	}
+  @Override
+  public void handleUncaughtException(Session session, Exception exception) {
+    log.warn("Uncaught exception in handler {}", this.getClass().getName(), exception);
+  }
 
-	@Override
-	public Class<?> getHandlerType() {
-		return this.getClass();
-	}
+  @Override
+  public Class<?> getHandlerType() {
+    return this.getClass();
+  }
 
-	@Override
-	public DefaultJsonRpcHandler<P> withSockJS() {
-		this.useSockJs = true;
-		return this;
-	}
+  @Override
+  public DefaultJsonRpcHandler<P> withSockJS() {
+    this.useSockJs = true;
+    return this;
+  }
 
-	@Override
-	public boolean isSockJSEnabled() {
-		return this.useSockJs;
-	}
+  @Override
+  public boolean isSockJSEnabled() {
+    return this.useSockJs;
+  }
 
-	@Override
-	public final DefaultJsonRpcHandler<P> withAllowedOrigins(String... origins) {
-		this.allowedOrigins = ImmutableList.copyOf(origins);
-		return this;
-	}
+  @Override
+  public final DefaultJsonRpcHandler<P> withAllowedOrigins(String... origins) {
+    this.allowedOrigins = ImmutableList.copyOf(origins);
+    return this;
+  }
 
-	@Override
-	public List<String> allowedOrigins() {
-		return this.allowedOrigins;
-	}
+  @Override
+  public List<String> allowedOrigins() {
+    return this.allowedOrigins;
+  }
 
-	@Override
-	public DefaultJsonRpcHandler<P> withLabel(String label) {
-		this.label = label;
-		return this;
-	}
+  @Override
+  public DefaultJsonRpcHandler<P> withLabel(String label) {
+    this.label = label;
+    return this;
+  }
 
-	@Override
-	public String getLabel() {
-		return label;
-	}
+  @Override
+  public String getLabel() {
+    return label;
+  }
 
-	public DefaultJsonRpcHandler<P> withPingWatchdog(boolean pingAsWachdog) {
-		this.pingWatchdog = pingAsWachdog;
-		return this;
-	}
+  public DefaultJsonRpcHandler<P> withPingWatchdog(boolean pingAsWachdog) {
+    this.pingWatchdog = pingAsWachdog;
+    return this;
+  }
 
-	@Override
-	public boolean isPingWatchdog() {
-		return pingWatchdog;
-	}
+  @Override
+  public boolean isPingWatchdog() {
+    return pingWatchdog;
+  }
 }

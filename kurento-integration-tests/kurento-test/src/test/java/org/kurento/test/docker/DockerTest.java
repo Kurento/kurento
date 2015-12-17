@@ -1,3 +1,4 @@
+
 package org.kurento.test.docker;
 
 import static org.junit.Assert.assertEquals;
@@ -9,40 +10,38 @@ import org.kurento.test.base.KurentoTest;
 
 public class DockerTest extends KurentoTest {
 
-	@Test
-	public void executionContainerized() {
+  @Test
+  public void executionContainerized() {
 
-		boolean shouldBeInContainer = PropertiesManager
-				.getProperty("test.docker.shouldBeInContainer", false);
+    boolean shouldBeInContainer =
+        PropertiesManager.getProperty("test.docker.shouldBeInContainer", false);
 
-		Docker docker = Docker.getSingleton();
+    Docker docker = Docker.getSingleton();
 
-		boolean isRunningInContainer = docker.isRunningInContainer();
+    boolean isRunningInContainer = docker.isRunningInContainer();
 
-		assertEquals(
-				"shouldBeInContainer=" + shouldBeInContainer
-						+ " and isRunningInContainer=" + isRunningInContainer
-						+ " should be equals",
-				shouldBeInContainer, isRunningInContainer);
-	}
+    assertEquals(
+        "shouldBeInContainer=" + shouldBeInContainer + " and isRunningInContainer="
+            + isRunningInContainer + " should be equals",
+        shouldBeInContainer, isRunningInContainer);
+  }
 
-	@Test
-	public void dockerContainerName() {
+  @Test
+  public void dockerContainerName() {
 
-		String expectedContainerName = PropertiesManager
-				.getProperty("test.docker.expectedContainerName");
+    String expectedContainerName =
+        PropertiesManager.getProperty("test.docker.expectedContainerName");
 
-		if (expectedContainerName != null) {
+    if (expectedContainerName != null) {
 
-			Docker docker = Docker.getSingleton();
+      Docker docker = Docker.getSingleton();
 
-			assertTrue("Tests should be running in a docker container",
-					docker.isRunningInContainer());
+      assertTrue("Tests should be running in a docker container", docker.isRunningInContainer());
 
-			assertEquals("Container name is not retrieved correctly",
-					expectedContainerName, docker.getContainerName());
+      assertEquals("Container name is not retrieved correctly", expectedContainerName,
+          docker.getContainerName());
 
-		}
-	}
+    }
+  }
 
 }

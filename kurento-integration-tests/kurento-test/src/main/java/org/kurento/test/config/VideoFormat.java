@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.config;
 
 /**
@@ -22,11 +23,11 @@ package org.kurento.test.config;
  */
 public enum VideoFormat {
 
-	THIRDGP, AVI, MKV, MOV, MP4, OGV, WEBM;
+  THIRDGP, AVI, MKV, MOV, MP4, OGV, WEBM;
 
-	@Override
-	public String toString() {
-		return this == THIRDGP ? "3gp" : this.name().toLowerCase();
-	}
+  @Override
+  public String toString() {
+    return this == THIRDGP ? "3gp" : this.name().toLowerCase();
+  }
 
 }

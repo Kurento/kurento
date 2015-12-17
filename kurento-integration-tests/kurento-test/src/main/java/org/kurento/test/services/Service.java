@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.services;
 
 import java.lang.annotation.Retention;
@@ -19,13 +20,13 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Annotation to identify test service runners.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Service {
 
-	int value() default 1;
+  int value() default 1;
 
 }

@@ -1,3 +1,4 @@
+
 package org.kurento.jsonrpc.test;
 
 import java.io.IOException;
@@ -14,81 +15,80 @@ import org.slf4j.LoggerFactory;
 
 public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
 
-	public static class Handler extends DefaultJsonRpcHandler<Integer> {
+  public static class Handler extends DefaultJsonRpcHandler<Integer> {
 
-		private static Logger log = LoggerFactory.getLogger(Handler.class);
+    private static Logger log = LoggerFactory.getLogger(Handler.class);
 
-		@Override
-		public void handleRequest(Transaction transaction,
-				Request<Integer> request) throws Exception {
+    @Override
+    public void handleRequest(Transaction transaction, Request<Integer> request) throws Exception {
 
-			log.info("Request id:" + request.getId());
-			log.info("Request method:" + request.getMethod());
-			log.info("Request params:" + request.getParams());
+      log.info("Request id:" + request.getId());
+      log.info("Request method:" + request.getMethod());
+      log.info("Request params:" + request.getParams());
 
-			transaction.sendResponse(request.getParams());
+      transaction.sendResponse(request.getParams());
 
-			final Session session = transaction.getSession();
-			final Object params = request.getParams();
+      final Session session = transaction.getSession();
+      final Object params = request.getParams();
 
-			new Thread() {
-				public void run() {
-					asyncReverseSend(session, params);
-				}
-			}.start();
-		}
+      new Thread() {
+        @Override
+        public void run() {
+          asyncReverseSend(session, params);
+        }
+      }.start();
+    }
 
-		public void asyncReverseSend(Session session, Object params) {
+    public void asyncReverseSend(Session session, Object params) {
 
-			try {
+      try {
 
-				Thread.sleep(1000);
+        Thread.sleep(1000);
 
-				try {
+        try {
 
-					for (int i = 0; i < 5; i++) {
-						Object response = session.sendRequest("method", params);
-						session.sendRequest("method", response);
-					}
+          for (int i = 0; i < 5; i++) {
+            Object response = session.sendRequest("method", params);
+            session.sendRequest("method", response);
+          }
 
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
 
-			} catch (InterruptedException e) {
-			}
-		}
+      } catch (InterruptedException e) {
+      }
+    }
 
-	}
+  }
 
-	private static final Logger log = LoggerFactory
-			.getLogger(BidirectionalMultiTest.class);
+  private static final Logger log = LoggerFactory.getLogger(BidirectionalMultiTest.class);
 
-	@Test
-	public void test() throws IOException, InterruptedException {
+  @Test
+  public void test() throws IOException, InterruptedException {
 
-		log.info("Client started");
+    log.info("Client started");
 
-		JsonRpcClient client = createJsonRpcClient("/BidirectionalMultiTest");
+    JsonRpcClient client = createJsonRpcClient("/BidirectionalMultiTest");
 
-		client.setServerRequestHandler(new DefaultJsonRpcHandler<Integer>() {
+    client.setServerRequestHandler(new DefaultJsonRpcHandler<Integer>() {
 
-			@Override
-			public void handleRequest(Transaction transaction,
-					Request<Integer> request) throws Exception {
+      @Override
+      public void handleRequest(Transaction transaction, Request<Integer> request)
+          throws Exception {
 
-				log.info("Reverse request: " + request);
-				transaction.sendResponse(request.getParams() + 1);
-			}
-		});
+        log.info("Reverse request: " + request);
+        transaction.sendResponse(request.getParams() + 1);
+      }
+    });
 
-		for (int i = 0; i < 60; i++) {
-			client.sendRequest("echo", i, Integer.class);
-		}
+    for (int i = 0; i < 60; i++) {
+      client.sendRequest("echo", i, Integer.class);
+    }
 
-		client.close();
+    client.close();
 
-		log.info("Client finished");
-	}
+    log.info("Client finished");
+  }
 
 }

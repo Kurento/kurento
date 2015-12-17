@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.performance.webrtc;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
@@ -61,82 +62,77 @@ import org.kurento.test.grid.ParallelBrowsers;
  */
 public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
 
-	private static final String NUM_VIEWERS_PROPERTY = "perf.loopback.numviewers";
-	private static final int NUM_VIEWERS_DEFAULT = 1;
+  private static final String NUM_VIEWERS_PROPERTY = "perf.loopback.numviewers";
+  private static final int NUM_VIEWERS_DEFAULT = 1;
 
-	private static final String BROWSER_PER_VIEWER_PROPERTY = "perf.loopback.browserperviewer";
-	private static final int BROWSER_PER_VIEWER_DEFAULT = 2;
+  private static final String BROWSER_PER_VIEWER_PROPERTY = "perf.loopback.browserperviewer";
+  private static final int BROWSER_PER_VIEWER_DEFAULT = 2;
 
-	private static int numViewers;
-	private static int browserPerViewer;
+  private static int numViewers;
+  private static int browserPerViewer;
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		numViewers = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
-		browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY,
-				BROWSER_PER_VIEWER_DEFAULT);
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    numViewers = getProperty(NUM_VIEWERS_PROPERTY, NUM_VIEWERS_DEFAULT);
+    browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY, BROWSER_PER_VIEWER_DEFAULT);
 
-		TestScenario test = new TestScenario();
-		String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
-		test.addBrowser(BrowserConfig.VIEWER,
-				new Browser.Builder().webPageType(WebPageType.WEBRTC)
-						.numInstances(numViewers)
-						.browserPerInstance(browserPerViewer)
-						.browserType(BrowserType.CHROME)
-						.scope(BrowserScope.LOCAL).video(video).build());
+    TestScenario test = new TestScenario();
+    String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
+    test.addBrowser(BrowserConfig.VIEWER,
+        new Browser.Builder().webPageType(WebPageType.WEBRTC).numInstances(numViewers)
+            .browserPerInstance(browserPerViewer).browserType(BrowserType.CHROME)
+            .scope(BrowserScope.LOCAL).video(video).build());
 
-		// Uncomment this for remote scenario
-		// test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
-		// .numInstances(numViewers).browserPerInstance(browserPerViewer)
-		// .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
-		// .video(video).build());
-		return Arrays.asList(new Object[][] { { test } });
-	}
+    // Uncomment this for remote scenario
+    // test.addBrowser(TestConfig.VIEWER, new BrowserClient.Builder()
+    // .numInstances(numViewers).browserPerInstance(browserPerViewer)
+    // .browserType(BrowserType.CHROME).scope(BrowserScope.REMOTE)
+    // .video(video).build());
+    return Arrays.asList(new Object[][] { { test } });
+  }
 
-	@Test
-	public void testWebRtcPerformanceLoopback() throws Exception {
-		Map<String, Browser> browsers = getTestScenario().getBrowserMap();
+  @Test
+  public void testWebRtcPerformanceLoopback() throws Exception {
+    Map<String, Browser> browsers = getTestScenario().getBrowserMap();
 
-		final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
+    final int playTime = ParallelBrowsers.getRampPlaytime(browsers.size());
 
-		ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
-			public void run(Browser browser) throws Exception {
+    ParallelBrowsers.ramp(browsers, monitor, new BrowserRunner() {
+      @Override
+      public void run(Browser browser) throws Exception {
 
-				long endTimeMillis = System.currentTimeMillis() + playTime;
-				String name = browser.getId();
-				MediaPipeline mp = null;
+        long endTimeMillis = System.currentTimeMillis() + playTime;
+        String name = browser.getId();
+        MediaPipeline mp = null;
 
-				try {
-					// Media Pipeline
-					mp = kurentoClient.createMediaPipeline();
-					WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(
-							mp).build();
-					webRtcEndpoint.connect(webRtcEndpoint);
+        try {
+          // Media Pipeline
+          mp = kurentoClient.createMediaPipeline();
+          WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+          webRtcEndpoint.connect(webRtcEndpoint);
 
-					log.debug(">>> start {}", name);
-					getPage(name).subscribeEvents("playing");
-					getPage(name).initWebRtc(webRtcEndpoint,
-							WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
+          log.debug(">>> start {}", name);
+          getPage(name).subscribeEvents("playing");
+          getPage(name).initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
 
-					monitor.addWebRtcClientAndActivateStats(
-							getPage(name).getBrowser().getId(), webRtcEndpoint,
-							getPage(name), "webRtcPeer.peerConnection");
+          monitor.addWebRtcClientAndActivateStats(getPage(name).getBrowser().getId(),
+              webRtcEndpoint, getPage(name), "webRtcPeer.peerConnection");
 
-					getPage(name).checkLatencyUntil(monitor, endTimeMillis);
+          getPage(name).checkLatencyUntil(monitor, endTimeMillis);
 
-				} catch (Throwable e) {
-					log.error("[[[ {} ]]]", e.getCause().getMessage());
-					throw e;
-				} finally {
-					log.debug("<<< finally {}", name);
+        } catch (Throwable e) {
+          log.error("[[[ {} ]]]", e.getCause().getMessage());
+          throw e;
+        } finally {
+          log.debug("<<< finally {}", name);
 
-					// Release Media Pipeline
-					if (mp != null) {
-						mp.release();
-					}
-				}
-			}
-		});
-	}
+          // Release Media Pipeline
+          if (mp != null) {
+            mp.release();
+          }
+        }
+      }
+    });
+  }
 
 }

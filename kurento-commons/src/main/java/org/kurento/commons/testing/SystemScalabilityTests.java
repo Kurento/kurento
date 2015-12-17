@@ -12,11 +12,12 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.commons.testing;
 
 /**
  * Category for system tests that test scalability capabilities.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  *

@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import org.junit.After;
@@ -47,36 +48,34 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  */
 public class ZBarFilterTest extends MediaPipelineBaseTest {
 
-	private ZBarFilter zbar;
+  private ZBarFilter zbar;
 
-	@Before
-	public void setupMediaElements() {
-		zbar = new ZBarFilter.Builder(pipeline).build();
-	}
+  @Before
+  public void setupMediaElements() {
+    zbar = new ZBarFilter.Builder(pipeline).build();
+  }
 
-	@After
-	public void teardownMediaElements() {
-		zbar.release();
-	}
+  @After
+  public void teardownMediaElements() {
+    zbar.release();
+  }
 
-	@Test
-	public void testCodeFoundEvent() throws InterruptedException {
+  @Test
+  public void testCodeFoundEvent() throws InterruptedException {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				URL_BARCODES).build();
-		player.connect(zbar);
+    PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES).build();
+    player.connect(zbar);
 
-		AsyncEventManager<CodeFoundEvent> async = new AsyncEventManager<>(
-				"CodeFound event");
+    AsyncEventManager<CodeFoundEvent> async = new AsyncEventManager<>("CodeFound event");
 
-		zbar.addCodeFoundListener(async.getMediaEventListener());
+    zbar.addCodeFoundListener(async.getMediaEventListener());
 
-		player.play();
+    player.play();
 
-		async.waitForResult();
+    async.waitForResult();
 
-		player.stop();
-		player.release();
-	}
+    player.stop();
+    player.release();
+  }
 
 }

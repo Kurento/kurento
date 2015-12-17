@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.latency;
 
 /**
@@ -23,6 +24,6 @@ package org.kurento.test.latency;
  */
 public interface ChangeColorEventListener<E extends ChangeColorEvent> {
 
-	public void onEvent(E e);
+  public void onEvent(E e);
 
 }

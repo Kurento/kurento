@@ -32,37 +32,35 @@ import org.springframework.context.annotation.Import;
 @Import(RepositoryApplicationContextConfiguration.class)
 public class KurentoRepositoryServerApp {
 
-	@Bean
-	public RepositoryHttpServlet repositoryHttpServlet() {
-		return new RepositoryHttpServlet();
-	}
+  @Bean
+  public RepositoryHttpServlet repositoryHttpServlet() {
+    return new RepositoryHttpServlet();
+  }
 
-	@Bean
-	public ServletRegistrationBean repositoryServletRegistrationBean(
-			RepositoryHttpServlet repositoryHttpServlet) {
+  @Bean
+  public ServletRegistrationBean repositoryServletRegistrationBean(
+      RepositoryHttpServlet repositoryHttpServlet) {
 
-		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(
-				repositoryHttpServlet, "/repository_servlet/*");
-		servletRegistrationBean.setLoadOnStartup(1);
+    ServletRegistrationBean servletRegistrationBean =
+        new ServletRegistrationBean(repositoryHttpServlet, "/repository_servlet/*");
+    servletRegistrationBean.setLoadOnStartup(1);
 
-		return servletRegistrationBean;
-	}
+    return servletRegistrationBean;
+  }
 
-	public static ConfigurableApplicationContext start() {
+  public static ConfigurableApplicationContext start() {
 
-		Properties properties = new Properties();
-		properties.put("server.port",
-				RepositoryApplicationContextConfiguration.SERVER_PORT);
+    Properties properties = new Properties();
+    properties.put("server.port", RepositoryApplicationContextConfiguration.SERVER_PORT);
 
-		SpringApplication application = new SpringApplication(
-				KurentoRepositoryServerApp.class);
+    SpringApplication application = new SpringApplication(KurentoRepositoryServerApp.class);
 
-		application.setDefaultProperties(properties);
+    application.setDefaultProperties(properties);
 
-		return application.run();
-	}
+    return application.run();
+  }
 
-	public static void main(String[] args) {
-		start();
-	}
+  public static void main(String[] args) {
+    start();
+  }
 }

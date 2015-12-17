@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc;
 
 import java.io.IOException;
@@ -27,23 +28,22 @@ import org.kurento.jsonrpc.message.ResponseError;
  */
 public interface Transaction {
 
-	void sendResponseObject(Response<? extends Object> response)
-			throws IOException;
+  void sendResponseObject(Response<? extends Object> response) throws IOException;
 
-	void sendVoidResponse() throws IOException;
+  void sendVoidResponse() throws IOException;
 
-	void sendResponse(Object result) throws IOException;
+  void sendResponse(Object result) throws IOException;
 
-	void sendError(int code, String message, String data) throws IOException;
+  void sendError(int code, String message, String data) throws IOException;
 
-	void sendError(Throwable e) throws IOException;
+  void sendError(Throwable e) throws IOException;
 
-	Session getSession();
+  Session getSession();
 
-	void startAsync();
+  void startAsync();
 
-	boolean isNotification();
+  boolean isNotification();
 
-	void sendError(ResponseError error) throws IOException;
+  void sendError(ResponseError error) throws IOException;
 
 }

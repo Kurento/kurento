@@ -12,16 +12,17 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.browser;
 
 /**
  * Event listener to communicate client and server in tests.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
 public interface BrowserEventListener {
 
-	void onEvent(String event);
+  void onEvent(String event);
 
 }

@@ -16,9 +16,9 @@
 package org.kurento.repository.service.pojo;
 
 /**
- * <em>POJO</em> representing an Http endpoint of a RepositoryItem that
- * can be used for recording multimedia.
- * 
+ * <em>POJO</em> representing an Http endpoint of a RepositoryItem that can be used for recording
+ * multimedia.
+ *
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
 public class RepositoryItemRecorder extends RepositoryItemEndpoint {

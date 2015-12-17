@@ -12,11 +12,12 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.commons.testing;
 
 /**
  * Category for integration tests belonging to sanity-test.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  *

@@ -16,9 +16,9 @@
 package org.kurento.repository.service.pojo;
 
 /**
- * <em>POJO</em> representing an Http endpoint of a RepositoryItem that
- * can be used for playing (retrieving) multimedia.
- * 
+ * <em>POJO</em> representing an Http endpoint of a RepositoryItem that can be used for playing
+ * (retrieving) multimedia.
+ *
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>m
  */
 public class RepositoryItemPlayer extends RepositoryItemEndpoint {

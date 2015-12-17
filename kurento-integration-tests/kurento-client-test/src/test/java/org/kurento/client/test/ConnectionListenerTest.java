@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import static org.junit.Assert.fail;
@@ -32,86 +33,83 @@ import org.slf4j.LoggerFactory;
 
 public class ConnectionListenerTest extends KurentoClientTest {
 
-	private static Logger log = LoggerFactory
-			.getLogger(ConnectionListenerTest.class);
+  private static Logger log = LoggerFactory.getLogger(ConnectionListenerTest.class);
 
-	@Test
-	public void disconnectionEventTest()
-			throws InterruptedException, IOException {
+  @Test
+  public void disconnectionEventTest() throws InterruptedException, IOException {
 
-		final CountDownLatch disconnectedLatch = new CountDownLatch(1);
+    final CountDownLatch disconnectedLatch = new CountDownLatch(1);
 
-		String kmsUrl = kms.getWsUri();
+    String kmsUrl = kms.getWsUri();
 
-		log.info("Connecting to KMS in " + kmsUrl);
+    log.info("Connecting to KMS in " + kmsUrl);
 
-		KurentoClient kurentoClient = KurentoClient.create(kmsUrl,
-				new KurentoConnectionListener() {
+    KurentoClient kurentoClient = KurentoClient.create(kmsUrl, new KurentoConnectionListener() {
 
-					@Override
-					public void disconnected() {
-						log.info("disconnected from KMS");
-						disconnectedLatch.countDown();
-					}
+      @Override
+      public void disconnected() {
+        log.info("disconnected from KMS");
+        disconnectedLatch.countDown();
+      }
 
-					@Override
-					public void connectionFailed() {
+      @Override
+      public void connectionFailed() {
 
-					}
+      }
 
-					@Override
-					public void connected() {
+      @Override
+      public void connected() {
 
-					}
+      }
 
-					@Override
-					public void reconnected(boolean sameServer) {
+      @Override
+      public void reconnected(boolean sameServer) {
 
-					}
-				});
+      }
+    });
 
-		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
+    MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				"http://files.kurento.org/video/format/small.webm").build();
+    PlayerEndpoint player =
+        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
+            .build();
 
-		HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline)
-				.build();
+    HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build();
 
-		player.connect(httpEndpoint);
+    player.connect(httpEndpoint);
 
-		try {
-			kms.stopKms();
-		} catch (Exception e) {
-			fail("Exception thrown when destroying kms. " + e);
-		}
+    try {
+      kms.stopKms();
+    } catch (Exception e) {
+      fail("Exception thrown when destroying kms. " + e);
+    }
 
-		log.debug("Waiting for disconnection event");
-		if (!disconnectedLatch.await(60, TimeUnit.SECONDS)) {
-			fail("Event disconnected should be thrown when kcs is destroyed");
-		}
-		log.debug("Disconnection event received");
-	}
+    log.debug("Waiting for disconnection event");
+    if (!disconnectedLatch.await(60, TimeUnit.SECONDS)) {
+      fail("Event disconnected should be thrown when kcs is destroyed");
+    }
+    log.debug("Disconnection event received");
+  }
 
-	@Test
-	public void reconnectTest() throws InterruptedException, IOException {
+  @Test
+  public void reconnectTest() throws InterruptedException, IOException {
 
-		String kmsUrl = kms.getWsUri();
+    String kmsUrl = kms.getWsUri();
 
-		log.info("Connecting to KMS in " + kmsUrl);
+    log.info("Connecting to KMS in " + kmsUrl);
 
-		KurentoClient kurentoClient = KurentoClient.create(kmsUrl);
+    KurentoClient kurentoClient = KurentoClient.create(kmsUrl);
 
-		kurentoClient.createMediaPipeline();
+    kurentoClient.createMediaPipeline();
 
-		kms.stopKms();
+    kms.stopKms();
 
-		Thread.sleep(3000);
+    Thread.sleep(3000);
 
-		kms.start();
+    kms.start();
 
-		kurentoClient.createMediaPipeline();
+    kurentoClient.createMediaPipeline();
 
-		kms.stopKms();
-	}
+    kms.stopKms();
+  }
 }

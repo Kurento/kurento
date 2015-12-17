@@ -12,23 +12,23 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.config;
 
 /**
- * Scope for browser: i) local (installed on machine running the tests; ii)
- * remote (hosts acceded by Selenium Grid); iii) In Saucelabs (a private PAAS
- * for testing).
+ * Scope for browser: i) local (installed on machine running the tests; ii) remote (hosts acceded by
+ * Selenium Grid); iii) In Saucelabs (a private PAAS for testing).
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
  */
 public enum BrowserScope {
 
-	LOCAL, REMOTE, SAUCELABS, DOCKER;
+  LOCAL, REMOTE, SAUCELABS, DOCKER;
 
-	@Override
-	public String toString() {
-		return this.name().toLowerCase();
-	}
+  @Override
+  public String toString() {
+    return this.name().toLowerCase();
+  }
 
 }

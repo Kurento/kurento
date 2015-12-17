@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
@@ -20,12 +21,11 @@ import org.kurento.test.browser.WebRtcTestPage;
 
 /**
  * Compatibility tests.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 @Category(SystemCompatibilityTests.class)
-public class CompatibilityTest
-		extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class CompatibilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
 }

@@ -12,24 +12,26 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.config;
 
 /**
  * Kind of audio (stereo, mono).
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.11
  */
 public enum AudioChannel {
-	STEREO, MONO;
+  STEREO, MONO;
 
-	public String toString() {
-		switch (this) {
-		case MONO:
-			return "1";
-		case STEREO:
-		default:
-			return "2";
-		}
-	}
+  @Override
+  public String toString() {
+    switch (this) {
+      case MONO:
+        return "1";
+      case STEREO:
+      default:
+        return "2";
+    }
+  }
 }

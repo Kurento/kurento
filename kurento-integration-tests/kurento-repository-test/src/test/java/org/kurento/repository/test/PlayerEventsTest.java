@@ -36,93 +36,87 @@ import org.kurento.repository.test.util.TestUtils;
 
 public class PlayerEventsTest extends BaseRepositoryTest {
 
-	@Test
-	public void testFileUploadAndDownload() throws Exception {
+  @Test
+  public void testFileUploadAndDownload() throws Exception {
 
-		RepositoryItem repositoryItem = getRepository().createRepositoryItem();
+    RepositoryItem repositoryItem = getRepository().createRepositoryItem();
 
-		String id = repositoryItem.getId();
+    String id = repositoryItem.getId();
 
-		File fileToUpload = new File("test-files/sample.txt");
+    File fileToUpload = new File("test-files/sample.txt");
 
-		uploadWithEvents(repositoryItem, fileToUpload);
+    uploadWithEvents(repositoryItem, fileToUpload);
 
-		File downloadedFile = downloadWithEvents(id);
+    File downloadedFile = downloadWithEvents(id);
 
-		assertTrue(
-				"The uploaded file and the result of download it again are different",
-				TestUtils.equalFiles(fileToUpload, downloadedFile));
-	}
+    assertTrue("The uploaded file and the result of download it again are different",
+        TestUtils.equalFiles(fileToUpload, downloadedFile));
+  }
 
-	private void uploadWithEvents(RepositoryItem repositoryItem,
-			File fileToUpload) throws URISyntaxException,
-			FileNotFoundException, IOException, InterruptedException {
-		RepositoryHttpRecorder recorder = repositoryItem
-				.createRepositoryHttpRecorder();
+  private void uploadWithEvents(RepositoryItem repositoryItem, File fileToUpload)
+      throws URISyntaxException, FileNotFoundException, IOException, InterruptedException {
+    RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder();
 
-		final CountDownLatch started = new CountDownLatch(1);
-		recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
-			@Override
-			public void onEvent(HttpSessionStartedEvent event) {
-				started.countDown();
-			}
-		});
+    final CountDownLatch started = new CountDownLatch(1);
+    recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
+      @Override
+      public void onEvent(HttpSessionStartedEvent event) {
+        started.countDown();
+      }
+    });
 
-		final CountDownLatch terminated = new CountDownLatch(1);
-		recorder.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
-			@Override
-			public void onEvent(HttpSessionTerminatedEvent event) {
-				terminated.countDown();
-			}
-		});
+    final CountDownLatch terminated = new CountDownLatch(1);
+    recorder.addSessionTerminatedListener(
+        new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
+          @Override
+          public void onEvent(HttpSessionTerminatedEvent event) {
+            terminated.countDown();
+          }
+        });
 
-		uploadFileWithPOST(recorder.getURL(), fileToUpload);
+    uploadFileWithPOST(recorder.getURL(), fileToUpload);
 
-		// TODO We need to be sure that this events appear in the order
-		// specified. This test doesn't control this
+    // TODO We need to be sure that this events appear in the order
+    // specified. This test doesn't control this
 
-		assertTrue("Started event didn't sent in 10 seconds",
-				started.await(10, TimeUnit.SECONDS));
-		assertTrue("Terminated event didn't sent in 10 seconds",
-				terminated.await(10, TimeUnit.SECONDS));
-	}
+    assertTrue("Started event didn't sent in 10 seconds", started.await(10, TimeUnit.SECONDS));
+    assertTrue("Terminated event didn't sent in 10 seconds",
+        terminated.await(10, TimeUnit.SECONDS));
+  }
 
-	private File downloadWithEvents(String id) throws Exception,
-			InterruptedException {
+  private File downloadWithEvents(String id) throws Exception, InterruptedException {
 
-		RepositoryItem newRepositoryItem = getRepository()
-				.findRepositoryItemById(id);
+    RepositoryItem newRepositoryItem = getRepository().findRepositoryItemById(id);
 
-		RepositoryHttpPlayer player = newRepositoryItem
-				.createRepositoryHttpPlayer();
+    RepositoryHttpPlayer player = newRepositoryItem.createRepositoryHttpPlayer();
 
-		final CountDownLatch started = new CountDownLatch(1);
-		player.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
-			@Override
-			public void onEvent(HttpSessionStartedEvent event) {
-				started.countDown();
-			}
-		});
+    final CountDownLatch started = new CountDownLatch(1);
+    player.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
+      @Override
+      public void onEvent(HttpSessionStartedEvent event) {
+        started.countDown();
+      }
+    });
 
-		final CountDownLatch terminated = new CountDownLatch(1);
-		player.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
-			@Override
-			public void onEvent(HttpSessionTerminatedEvent event) {
-				terminated.countDown();
-			}
-		});
+    final CountDownLatch terminated = new CountDownLatch(1);
+    player.addSessionTerminatedListener(
+        new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
+          @Override
+          public void onEvent(HttpSessionTerminatedEvent event) {
+            terminated.countDown();
+          }
+        });
 
-		File downloadedFile = new File("test-files/tmp/" + id);
-		downloadFromURL(player.getURL(), downloadedFile);
+    File downloadedFile = new File("test-files/tmp/" + id);
+    downloadFromURL(player.getURL(), downloadedFile);
 
-		// TODO We need to be sure that this events appear in the order
-		// specified. This test doesn't control this
+    // TODO We need to be sure that this events appear in the order
+    // specified. This test doesn't control this
 
-		assertTrue("Started event didn't sent in 10 seconds",
-				started.await(10, TimeUnit.SECONDS));
-		assertTrue("Terminated event didn't sent in 10 seconds",
-				terminated.await(10, TimeUnit.SECONDS));
-		return downloadedFile;
-	}
+    assertTrue("Started event didn't sent in 10 seconds", started.await(10, TimeUnit.SECONDS));
+    assertTrue("Terminated event didn't sent in 10 seconds",
+        terminated.await(10, TimeUnit.SECONDS));
+    return downloadedFile;
+  }
 
 }

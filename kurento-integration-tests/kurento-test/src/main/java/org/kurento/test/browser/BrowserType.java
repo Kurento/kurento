@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.browser;
 
 import org.openqa.selenium.WebDriver;
@@ -22,30 +23,30 @@ import org.openqa.selenium.safari.SafariDriver;
 
 /**
  * Browser to perform automated web testing with Selenium WebDriver.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public enum BrowserType {
-	CHROME, FIREFOX, IEXPLORER, SAFARI;
+  CHROME, FIREFOX, IEXPLORER, SAFARI;
 
-	public Class<? extends WebDriver> getDriverClass() {
-		switch (this) {
-		case IEXPLORER:
-			return InternetExplorerDriver.class;
-		case FIREFOX:
-			return FirefoxDriver.class;
-		case SAFARI:
-			return SafariDriver.class;
-		case CHROME:
-		default:
-			return ChromeDriver.class;
-		}
-	}
+  public Class<? extends WebDriver> getDriverClass() {
+    switch (this) {
+      case IEXPLORER:
+        return InternetExplorerDriver.class;
+      case FIREFOX:
+        return FirefoxDriver.class;
+      case SAFARI:
+        return SafariDriver.class;
+      case CHROME:
+      default:
+        return ChromeDriver.class;
+    }
+  }
 
-	@Override
-	public String toString() {
-		return super.toString().toLowerCase();
-	}
+  @Override
+  public String toString() {
+    return super.toString().toLowerCase();
+  }
 
 }

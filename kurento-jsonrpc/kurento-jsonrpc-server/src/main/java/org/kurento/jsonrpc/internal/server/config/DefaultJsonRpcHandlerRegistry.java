@@ -19,57 +19,56 @@ package org.kurento.jsonrpc.internal.server.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistration;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 /**
- * A {@link WebSocketHandlerRegistry} that maps {@link WebSocketHandler}s to
- * URLs for use in a Servlet container.
- * 
+ * A {@link WebSocketHandlerRegistry} that maps {@link WebSocketHandler}s to URLs for use in a
+ * Servlet container.
+ *
  * @author Rossen Stoyanchev
  * @since 4.0
  */
 public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
 
-	private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
+  private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
 
-	@Override
-	public JsonRpcHandlerRegistration addHandler(
-			JsonRpcHandler<?> webSocketHandler, String... paths) {
+  @Override
+  public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> webSocketHandler,
+      String... paths) {
 
-		DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
-		registration.addHandler(webSocketHandler, paths);
-		this.registrations.add(registration);
-		return registration;
-	}
+    DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
+    registration.addHandler(webSocketHandler, paths);
+    this.registrations.add(registration);
+    return registration;
+  }
 
-	@Override
-	public JsonRpcHandlerRegistration addPerSessionHandler(
-			Class<? extends JsonRpcHandler<?>> handlerClass, String... paths) {
+  @Override
+  public JsonRpcHandlerRegistration addPerSessionHandler(
+      Class<? extends JsonRpcHandler<?>> handlerClass, String... paths) {
 
-		DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
-		registration.addPerSessionHandler(handlerClass, paths);
-		this.registrations.add(registration);
-		return registration;
+    DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
+    registration.addPerSessionHandler(handlerClass, paths);
+    this.registrations.add(registration);
+    return registration;
 
-	}
+  }
 
-	@Override
-	public JsonRpcHandlerRegistration addPerSessionHandler(String beanName,
-			String... paths) {
+  @Override
+  public JsonRpcHandlerRegistration addPerSessionHandler(String beanName, String... paths) {
 
-		DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
-		registration.addPerSessionHandler(beanName, paths);
-		this.registrations.add(registration);
-		return registration;
+    DefaultJsonRpcHandlerRegistration registration = new DefaultJsonRpcHandlerRegistration();
+    registration.addPerSessionHandler(beanName, paths);
+    this.registrations.add(registration);
+    return registration;
 
-	}
+  }
 
-	public List<DefaultJsonRpcHandlerRegistration> getRegistrations() {
-		return registrations;
-	}
+  public List<DefaultJsonRpcHandlerRegistration> getRegistrations() {
+    return registrations;
+  }
 
 }

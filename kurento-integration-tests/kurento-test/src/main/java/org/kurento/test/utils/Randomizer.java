@@ -12,21 +12,22 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.utils;
 
 import java.util.Random;
 
 /**
  * Random number generator.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
 public class Randomizer {
 
-	public static int getInt(int lowerbound, int upperbound) {
-		Random rand = new Random(System.nanoTime());
-		return rand.nextInt(upperbound - lowerbound) + lowerbound;
-	}
+  public static int getInt(int lowerbound, int upperbound) {
+    Random rand = new Random(System.nanoTime());
+    return rand.nextInt(upperbound - lowerbound) + lowerbound;
+  }
 
 }

@@ -16,22 +16,21 @@
 package org.kurento.repository;
 
 /**
- * This class represents an event fired when an client is "considered"
- * disconnected for the {@link RepositoryHttpEndpoint} identified as source.
- * 
- * The {@link RepositoryHttpEndpoint} is based on http protocol. As this
- * protocol is stateless, there is no concept of "connection". For this reason,
- * the way to consider that a client is disconnected is when a time is elapsed
- * without requests for the client. This concept is commonly used to manage http
- * sessions in web applications. The timeout can be configured in the endpoint
+ * This class represents an event fired when an client is "considered" disconnected for the
+ * {@link RepositoryHttpEndpoint} identified as source.
+ *
+ * The {@link RepositoryHttpEndpoint} is based on http protocol. As this protocol is stateless,
+ * there is no concept of "connection". For this reason, the way to consider that a client is
+ * disconnected is when a time is elapsed without requests for the client. This concept is commonly
+ * used to manage http sessions in web applications. The timeout can be configured in the endpoint
  * with {@link RepositoryHttpEndpoint#setAutoTerminationTimeout(long)}
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  */
 public class HttpSessionTerminatedEvent extends RepositoryHttpSessionEvent {
 
-	public HttpSessionTerminatedEvent(RepositoryHttpEndpoint source) {
-		super(source);
-	}
+  public HttpSessionTerminatedEvent(RepositoryHttpEndpoint source) {
+    super(source);
+  }
 
 }

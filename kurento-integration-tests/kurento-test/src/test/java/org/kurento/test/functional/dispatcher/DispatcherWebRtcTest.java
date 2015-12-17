@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.functional.dispatcher;
 
 import java.awt.Color;
@@ -36,8 +37,7 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * A WebRtcEndpoint is connected to another WebRtcEndpoint through a Dispatcher
- * <br>
+ * A WebRtcEndpoint is connected to another WebRtcEndpoint through a Dispatcher <br>
  *
  * Media Pipeline(s): <br>
  * · WebRtcEndpoint -> Dispatcher -> WebRtcEndpoint <br>
@@ -46,97 +46,90 @@ import org.kurento.test.config.TestScenario;
  * · 3 x Chrome <br>
  *
  * Test logic: <br>
- * 1. (KMS) Media server switchs the media from two WebRtcEndpoint using a
- * Dispatcher, streaming the result through antoher WebRtcEndpoint<br>
+ * 1. (KMS) Media server switchs the media from two WebRtcEndpoint using a Dispatcher, streaming the
+ * result through antoher WebRtcEndpoint<br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
- * · The color of the received video should be as expected (green and the blue)
- * <br>
+ * · The color of the received video should be as expected (green and the blue) <br>
  * · EOS event should arrive to player <br>
  * · Play time in remote video should be as expected <br>
  *
  * Secondary assertion(s): <br>
  * -- <br>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public class DispatcherWebRtcTest extends FunctionalTest {
 
-	private static final int PLAYTIME = 10; // seconds
-	private static final String BROWSER1 = "browser1";
-	private static final String BROWSER2 = "browser2";
-	private static final String BROWSER3 = "browser3";
+  private static final int PLAYTIME = 10; // seconds
+  private static final String BROWSER1 = "browser1";
+  private static final String BROWSER2 = "browser2";
+  private static final String BROWSER3 = "browser3";
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		TestScenario test = new TestScenario();
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    TestScenario test = new TestScenario();
 
-		test.addBrowser(BROWSER1,
-				new Browser.Builder().browserType(BrowserType.CHROME)
-						.webPageType(WebPageType.WEBRTC)
-						.scope(BrowserScope.LOCAL).build());
-		test.addBrowser(BROWSER2, new Browser.Builder()
-				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-				.scope(BrowserScope.LOCAL)
-				.video(getTestFilesPath() + "/video/10sec/green.y4m").build());
-		test.addBrowser(BROWSER3, new Browser.Builder()
-				.browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-				.scope(BrowserScope.LOCAL)
-				.video(getTestFilesPath() + "/video/10sec/blue.y4m").build());
+    test.addBrowser(BROWSER1, new Browser.Builder().browserType(BrowserType.CHROME)
+        .webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL).build());
+    test.addBrowser(BROWSER2,
+        new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+            .scope(BrowserScope.LOCAL).video(getTestFilesPath() + "/video/10sec/green.y4m")
+            .build());
+    test.addBrowser(BROWSER3,
+        new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
+            .scope(BrowserScope.LOCAL).video(getTestFilesPath() + "/video/10sec/blue.y4m").build());
 
-		return Arrays.asList(new Object[][] { { test } });
-	}
+    return Arrays.asList(new Object[][] { { test } });
+  }
 
-	@Test
-	public void testDispatcherWebRtc() throws Exception {
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-		WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
+  @Test
+  public void testDispatcherWebRtc() throws Exception {
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
 
-		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
-		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
-		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
-		HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
+    Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
+    HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
+    HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
+    HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
 
-		webRtcEP1.connect(hubPort1);
-		webRtcEP3.connect(hubPort3);
-		hubPort2.connect(webRtcEP2);
+    webRtcEP1.connect(hubPort1);
+    webRtcEP3.connect(hubPort3);
+    hubPort2.connect(webRtcEP2);
 
-		dispatcher.connect(hubPort1, hubPort2);
+    dispatcher.connect(hubPort1, hubPort2);
 
-		// Test execution
-		getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
-		getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.SEND_ONLY);
+    // Test execution
+    getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
 
-		getPage(BROWSER1).subscribeEvents("playing");
-		getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.VIDEO_ONLY,
-				WebRtcMode.RCV_ONLY);
+    getPage(BROWSER1).subscribeEvents("playing");
+    getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
-		Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
+    Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
-		// Assertions
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage(BROWSER1).waitForEvent("playing"));
+    // Assertions
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER1).waitForEvent("playing"));
 
-		Assert.assertTrue("The color of the video should be green",
-				getPage(BROWSER1).similarColor(Color.GREEN));
+    Assert.assertTrue("The color of the video should be green",
+        getPage(BROWSER1).similarColor(Color.GREEN));
 
-		Thread.sleep(5000);
-		dispatcher.connect(hubPort3, hubPort2);
+    Thread.sleep(5000);
+    dispatcher.connect(hubPort3, hubPort2);
 
-		Assert.assertTrue("The color of the video should be blue (BLUE)",
-				getPage(BROWSER1).similarColor(Color.BLUE));
+    Assert.assertTrue("The color of the video should be blue (BLUE)",
+        getPage(BROWSER1).similarColor(Color.BLUE));
 
-		Thread.sleep(2000);
+    Thread.sleep(2000);
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

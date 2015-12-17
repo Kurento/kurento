@@ -34,98 +34,92 @@ import org.slf4j.LoggerFactory;
 
 public class FileRepositoryItem extends AbstractRepositoryItem {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(FileRepositoryItem.class);
-	private final File file;
-	private OutputStream storingOutputStream;
+  private static final Logger log = LoggerFactory.getLogger(FileRepositoryItem.class);
+  private final File file;
+  private OutputStream storingOutputStream;
 
-	public FileRepositoryItem(FileSystemRepository repository, File file,
-			String id, Map<String, String> metadata) {
+  public FileRepositoryItem(FileSystemRepository repository, File file, String id,
+      Map<String, String> metadata) {
 
-		super(id, calculateState(file), loadAttributes(file), repository);
-		this.file = file;
-		setMetadata(metadata);
-	}
+    super(id, calculateState(file), loadAttributes(file), repository);
+    this.file = file;
+    setMetadata(metadata);
+  }
 
-	private static State calculateState(File file) {
-		return file.exists() && file.length() > 0 ? State.STORED : State.NEW;
-	}
+  private static State calculateState(File file) {
+    return file.exists() && file.length() > 0 ? State.STORED : State.NEW;
+  }
 
-	private static RepositoryItemAttributes loadAttributes(File file) {
+  private static RepositoryItemAttributes loadAttributes(File file) {
 
-		RepositoryItemAttributes attributes = new RepositoryItemAttributes();
+    RepositoryItemAttributes attributes = new RepositoryItemAttributes();
 
-		if (file.exists()) {
-			attributes.setContentLength(file.length());
-			attributes.setLastModified(file.lastModified());
+    if (file.exists()) {
+      attributes.setContentLength(file.length());
+      attributes.setLastModified(file.lastModified());
 
-			String mimeType = null;
-			try (InputStream is = new BufferedInputStream(new FileInputStream(
-					file))) {
-				mimeType = URLConnection.guessContentTypeFromStream(is);
-			} catch (Exception e) {
-				log.warn("Exception produced during load of attributes", e);
-			}
+      String mimeType = null;
+      try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+        mimeType = URLConnection.guessContentTypeFromStream(is);
+      } catch (Exception e) {
+        log.warn("Exception produced during load of attributes", e);
+      }
 
-			attributes.setMimeType(mimeType);
-		}
+      attributes.setMimeType(mimeType);
+    }
 
-		return attributes;
-	}
+    return attributes;
+  }
 
-	@Override
-	public InputStream createInputStreamToRead() {
+  @Override
+  public InputStream createInputStreamToRead() {
 
-		checkState(State.STORED);
+    checkState(State.STORED);
 
-		try {
-			return new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			throw new KurentoException(
-					"The file storing this repositoty item was deleted before creation",
-					e);
-		}
-	}
+    try {
+      return new FileInputStream(file);
+    } catch (FileNotFoundException e) {
+      throw new KurentoException(
+          "The file storing this repositoty item was deleted before creation", e);
+    }
+  }
 
-	@Override
-	public OutputStream createOutputStreamToWrite() {
+  @Override
+  public OutputStream createOutputStreamToWrite() {
 
-		checkState(State.NEW);
+    checkState(State.NEW);
 
-		try {
+    try {
 
-			this.state = State.STORING;
+      this.state = State.STORING;
 
-			storingOutputStream = new FilterOutputStream(new FileOutputStream(
-					file)) {
-				@Override
-				public void close() throws java.io.IOException {
-					refreshAttributesOnClose();
-				}
-			};
+      storingOutputStream = new FilterOutputStream(new FileOutputStream(file)) {
+        @Override
+        public void close() throws java.io.IOException {
+          refreshAttributesOnClose();
+        }
+      };
 
-			return storingOutputStream;
+      return storingOutputStream;
 
-		} catch (FileNotFoundException e) {
-			throw new KurentoException(
-					"There is a problem opening the output stream to the file "
-							+ "that will store the contents of the repositoty item",
-					e);
-		}
-	}
+    } catch (FileNotFoundException e) {
+      throw new KurentoException("There is a problem opening the output stream to the file "
+          + "that will store the contents of the repositoty item", e);
+    }
+  }
 
-	private void refreshAttributesOnClose() {
-		state = State.STORED;
-		attributes.setContentLength(file.length());
-	}
+  private void refreshAttributesOnClose() {
+    state = State.STORED;
+    attributes.setContentLength(file.length());
+  }
 
-	public File getFile() {
-		return file;
-	}
+  public File getFile() {
+    return file;
+  }
 
-	@Override
-	public void setMetadata(Map<String, String> metadata) {
-		super.setMetadata(metadata);
-		((FileSystemRepository) repository).setMetadataForItem(this, metadata);
-	}
+  @Override
+  public void setMetadata(Map<String, String> metadata) {
+    super.setMetadata(metadata);
+    ((FileSystemRepository) repository).setMetadataForItem(this, metadata);
+  }
 }

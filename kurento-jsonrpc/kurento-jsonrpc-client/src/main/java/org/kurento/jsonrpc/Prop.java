@@ -12,12 +12,13 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc;
 
 public interface Prop {
 
-	String getName();
+  String getName();
 
-	Object getValue();
+  Object getValue();
 
 }

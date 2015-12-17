@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal;
 
 import java.util.ArrayList;
@@ -10,34 +11,36 @@ import org.kurento.client.internal.client.operation.Operation;
 
 public class TransactionImpl implements Transaction {
 
-	private List<Operation> operations = new ArrayList<>();
-	private RomManager manager;
-	private int objectRef = 0;
+  private List<Operation> operations = new ArrayList<>();
+  private RomManager manager;
+  private int objectRef = 0;
 
-	public TransactionImpl(RomManager manager) {
-		this.manager = manager;
-	}
+  public TransactionImpl(RomManager manager) {
+    this.manager = manager;
+  }
 
-	public void addOperation(Operation op) {
-		this.operations.add(op);
-	}
+  public void addOperation(Operation op) {
+    this.operations.add(op);
+  }
 
-	public void commit() {
-		manager.transaction(operations);
-	}
+  @Override
+  public void commit() {
+    manager.transaction(operations);
+  }
 
-	public void commit(Continuation<Void> continuation) {
-		manager.transaction(operations, continuation);
-	}
+  @Override
+  public void commit(Continuation<Void> continuation) {
+    manager.transaction(operations, continuation);
+  }
 
-	public String nextObjectRef() {
-		return "newref:" + (objectRef++);
-	}
+  public String nextObjectRef() {
+    return "newref:" + objectRef++;
+  }
 
-	@Override
-	public void rollback() {
-		for (Operation op : operations) {
-			op.rollback(null);
-		}
-	}
+  @Override
+  public void rollback() {
+    for (Operation op : operations) {
+      op.rollback(null);
+    }
+  }
 }

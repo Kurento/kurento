@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import org.junit.After;
@@ -32,52 +33,48 @@ import org.kurento.client.test.util.AsyncResultManager;
  */
 public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
-	private PlayerEndpoint player;
+  private PlayerEndpoint player;
 
-	private FaceOverlayFilter overlayFilter;
+  private FaceOverlayFilter overlayFilter;
 
-	@Before
-	public void setupMediaElements() throws InterruptedException {
+  @Before
+  public void setupMediaElements() throws InterruptedException {
 
-		player = new PlayerEndpoint.Builder(pipeline, URL_POINTER_DETECTOR)
-				.build();
+    player = new PlayerEndpoint.Builder(pipeline, URL_POINTER_DETECTOR).build();
 
-		AsyncResultManager<FaceOverlayFilter> async = new AsyncResultManager<>(
-				"FaceOverlayFilter creation");
+    AsyncResultManager<FaceOverlayFilter> async =
+        new AsyncResultManager<>("FaceOverlayFilter creation");
 
-		new FaceOverlayFilter.Builder(pipeline)
-				.buildAsync(async.getContinuation());
+    new FaceOverlayFilter.Builder(pipeline).buildAsync(async.getContinuation());
 
-		overlayFilter = async.waitForResult();
-	}
+    overlayFilter = async.waitForResult();
+  }
 
-	@After
-	public void teardownMediaElements() throws InterruptedException {
-		player.release();
-		releaseMediaObject(overlayFilter);
-	}
+  @After
+  public void teardownMediaElements() throws InterruptedException {
+    player.release();
+    releaseMediaObject(overlayFilter);
+  }
 
-	/**
-	 * Test if a {@link FaceOverlayFilter} can be created in the KMS. The filter
-	 * is pipelined with a {@link PlayerEndpoint}, which feeds video to the
-	 * filter. This test depends on the correct behaviour of the player and its
-	 * events.
-	 *
-	 * @throws InterruptedException
-	 */
-	@Test
-	public void testFaceOverlayFilter() throws InterruptedException {
+  /**
+   * Test if a {@link FaceOverlayFilter} can be created in the KMS. The filter is pipelined with a
+   * {@link PlayerEndpoint}, which feeds video to the filter. This test depends on the correct
+   * behaviour of the player and its events.
+   *
+   * @throws InterruptedException
+   */
+  @Test
+  public void testFaceOverlayFilter() throws InterruptedException {
 
-		player.connect(overlayFilter);
+    player.connect(overlayFilter);
 
-		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
-				"EndOfStream event");
+    AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>("EndOfStream event");
 
-		player.addEndOfStreamListener(async.getMediaEventListener());
+    player.addEndOfStreamListener(async.getMediaEventListener());
 
-		player.play();
+    player.play();
 
-		async.waitForResult();
-	}
+    async.waitForResult();
+  }
 
 }

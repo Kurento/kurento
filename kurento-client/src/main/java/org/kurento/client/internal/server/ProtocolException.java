@@ -12,13 +12,13 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.internal.server;
 
 import org.kurento.commons.exception.KurentoException;
 
 /**
- * Exception that represents an error in the JSON RPC protocol (i.e. malformed
- * commands and so on)
+ * Exception that represents an error in the JSON RPC protocol (i.e. malformed commands and so on)
  *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.1
@@ -26,18 +26,18 @@ import org.kurento.commons.exception.KurentoException;
  */
 public class ProtocolException extends KurentoException {
 
-	private static final long serialVersionUID = -4925041543188451274L;
+  private static final long serialVersionUID = -4925041543188451274L;
 
-	public ProtocolException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public ProtocolException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-	public ProtocolException(String message) {
-		super(message);
-	}
+  public ProtocolException(String message) {
+    super(message);
+  }
 
-	public ProtocolException(Throwable cause) {
-		super(cause);
-	}
+  public ProtocolException(Throwable cause) {
+    super(cause);
+  }
 
 }

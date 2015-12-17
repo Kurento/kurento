@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.internal.server;
 
 import java.util.List;
@@ -34,166 +35,168 @@ import com.google.common.collect.ImmutableList;
 
 public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>, BeanFactoryAware {
 
-	private static final Log logger = LogFactory.getLog(PerConnectionWebSocketHandler.class);
+  private static final Log logger = LogFactory.getLog(PerConnectionWebSocketHandler.class);
 
-	private final BeanCreatingHelper<JsonRpcHandler<T>> provider;
+  private final BeanCreatingHelper<JsonRpcHandler<T>> provider;
 
-	private final Map<Session, JsonRpcHandler<T>> handlers = new ConcurrentHashMap<>();
+  private final Map<Session, JsonRpcHandler<T>> handlers = new ConcurrentHashMap<>();
 
-	private boolean useSockJS;
+  private boolean useSockJS;
 
-	private String label;
+  private String label;
 
-	private List<String> allowedOrigins = ImmutableList.of();
+  private List<String> allowedOrigins = ImmutableList.of();
 
-	private boolean pingWachdog;
+  private boolean pingWachdog;
 
-	public PerSessionJsonRpcHandler(String handlerName) {
-		this(handlerName, null);
-	}
+  public PerSessionJsonRpcHandler(String handlerName) {
+    this(handlerName, null);
+  }
 
-	public PerSessionJsonRpcHandler(Class<? extends JsonRpcHandler<T>> handlerType) {
-		this(null, handlerType);
-	}
+  public PerSessionJsonRpcHandler(Class<? extends JsonRpcHandler<T>> handlerType) {
+    this(null, handlerType);
+  }
 
-	public PerSessionJsonRpcHandler(String handlerName, Class<? extends JsonRpcHandler<T>> handlerType) {
-		this.provider = new BeanCreatingHelper<>(handlerType, handlerName);
-	}
+  public PerSessionJsonRpcHandler(String handlerName,
+      Class<? extends JsonRpcHandler<T>> handlerType) {
+    this.provider = new BeanCreatingHelper<>(handlerType, handlerName);
+  }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public Class<? extends JsonRpcHandler<T>> getHandlerType() {
-		Class<? extends JsonRpcHandler<T>> clazz = (Class<? extends JsonRpcHandler<T>>) provider.getCreatedBeanType();
+  @Override
+  @SuppressWarnings("unchecked")
+  public Class<? extends JsonRpcHandler<T>> getHandlerType() {
+    Class<? extends JsonRpcHandler<T>> clazz =
+        (Class<? extends JsonRpcHandler<T>>) provider.getCreatedBeanType();
 
-		// FIXME this has to be done in order to obtain the type of T when the
-		// bean is created from a name
-		if (clazz == null) {
-			this.provider.createBean();
-			clazz = (Class<? extends JsonRpcHandler<T>>) provider.getCreatedBeanType();
-		}
+    // FIXME this has to be done in order to obtain the type of T when the
+    // bean is created from a name
+    if (clazz == null) {
+      this.provider.createBean();
+      clazz = (Class<? extends JsonRpcHandler<T>>) provider.getCreatedBeanType();
+    }
 
-		return clazz;
-	}
+    return clazz;
+  }
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.provider.setBeanFactory(beanFactory);
-	}
+  @Override
+  public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    this.provider.setBeanFactory(beanFactory);
+  }
 
-	@Override
-	public void handleRequest(Transaction transaction, Request<T> request) throws Exception {
+  @Override
+  public void handleRequest(Transaction transaction, Request<T> request) throws Exception {
 
-		JsonRpcHandler<T> handler = getHandler(transaction.getSession());
+    JsonRpcHandler<T> handler = getHandler(transaction.getSession());
 
-		Assert.isTrue(handler != null, "Handler of class " + provider.getClass()
-				+ " can't be created. Be sure that there" + " is a bean registered of this type");
+    Assert.isTrue(handler != null, "Handler of class " + provider.getClass()
+        + " can't be created. Be sure that there" + " is a bean registered of this type");
 
-		try {
-			handler.handleRequest(transaction, request);
-		} catch (Exception e) {
-			handler.handleUncaughtException(transaction.getSession(), e);
-		}
-	}
+    try {
+      handler.handleRequest(transaction, request);
+    } catch (Exception e) {
+      handler.handleUncaughtException(transaction.getSession(), e);
+    }
+  }
 
-	private JsonRpcHandler<T> getHandler(Session session) {
-		JsonRpcHandler<T> handler = this.handlers.get(session);
-		Assert.isTrue(handler != null, "JsonRpcHandler not found for " + session);
-		return handler;
-	}
+  private JsonRpcHandler<T> getHandler(Session session) {
+    JsonRpcHandler<T> handler = this.handlers.get(session);
+    Assert.isTrue(handler != null, "JsonRpcHandler not found for " + session);
+    return handler;
+  }
 
-	@Override
-	public void afterConnectionEstablished(Session session) throws Exception {
-		JsonRpcHandler<T> handler = this.provider.createBean();
-		this.handlers.put(session, handler);
+  @Override
+  public void afterConnectionEstablished(Session session) throws Exception {
+    JsonRpcHandler<T> handler = this.provider.createBean();
+    this.handlers.put(session, handler);
 
-		try {
-			handler.afterConnectionEstablished(session);
-		} catch (Exception e) {
-			handler.handleUncaughtException(session, e);
-		}
-	}
+    try {
+      handler.afterConnectionEstablished(session);
+    } catch (Exception e) {
+      handler.handleUncaughtException(session, e);
+    }
+  }
 
-	@Override
-	public void afterConnectionClosed(Session session, String status) throws Exception {
-		try {
-			JsonRpcHandler<T> handler = getHandler(session);
-			try {
-				handler.afterConnectionClosed(session, status);
-			} catch (Exception e) {
-				handler.handleUncaughtException(session, e);
-			}
-		} finally {
-			destroy(session);
-		}
-	}
+  @Override
+  public void afterConnectionClosed(Session session, String status) throws Exception {
+    try {
+      JsonRpcHandler<T> handler = getHandler(session);
+      try {
+        handler.afterConnectionClosed(session, status);
+      } catch (Exception e) {
+        handler.handleUncaughtException(session, e);
+      }
+    } finally {
+      destroy(session);
+    }
+  }
 
-	private void destroy(Session session) {
-		JsonRpcHandler<T> handler = this.handlers.remove(session);
-		try {
-			if (handler != null) {
-				this.provider.destroy(handler);
-			}
-		} catch (Throwable t) {
-			logger.warn("Error while destroying handler", t);
-		}
-	}
+  private void destroy(Session session) {
+    JsonRpcHandler<T> handler = this.handlers.remove(session);
+    try {
+      if (handler != null) {
+        this.provider.destroy(handler);
+      }
+    } catch (Throwable t) {
+      logger.warn("Error while destroying handler", t);
+    }
+  }
 
-	@Override
-	public void handleTransportError(Session session, Throwable exception) throws Exception {
-		JsonRpcHandler<T> handler = getHandler(session);
-		try {
-			handler.handleTransportError(session, exception);
-		} catch (Exception e) {
-			handler.handleUncaughtException(session, e);
-		}
-	}
+  @Override
+  public void handleTransportError(Session session, Throwable exception) throws Exception {
+    JsonRpcHandler<T> handler = getHandler(session);
+    try {
+      handler.handleTransportError(session, exception);
+    } catch (Exception e) {
+      handler.handleUncaughtException(session, e);
+    }
+  }
 
-	@Override
-	public void handleUncaughtException(Session session, Exception exception) {
-		logger.error("Uncaught exception while execution PerSessionJsonRpcHandler", exception);
-	}
+  @Override
+  public void handleUncaughtException(Session session, Exception exception) {
+    logger.error("Uncaught exception while execution PerSessionJsonRpcHandler", exception);
+  }
 
-	@Override
-	public PerSessionJsonRpcHandler<T> withSockJS() {
-		this.useSockJS = true;
-		return this;
-	}
+  @Override
+  public PerSessionJsonRpcHandler<T> withSockJS() {
+    this.useSockJS = true;
+    return this;
+  }
 
-	@Override
-	public boolean isSockJSEnabled() {
-		return this.useSockJS;
-	}
+  @Override
+  public boolean isSockJSEnabled() {
+    return this.useSockJS;
+  }
 
-	@Override
-	public PerSessionJsonRpcHandler<T> withLabel(String label) {
-		this.label = label;
-		return this;
-	}
+  @Override
+  public PerSessionJsonRpcHandler<T> withLabel(String label) {
+    this.label = label;
+    return this;
+  }
 
-	@Override
-	public String getLabel() {
-		return label;
-	}
+  @Override
+  public String getLabel() {
+    return label;
+  }
 
-	public PerSessionJsonRpcHandler<T> withPingWachdog(boolean pingAsWachdog) {
-		this.pingWachdog = pingAsWachdog;
-		return this;
-	}
+  public PerSessionJsonRpcHandler<T> withPingWachdog(boolean pingAsWachdog) {
+    this.pingWachdog = pingAsWachdog;
+    return this;
+  }
 
-	@Override
-	public boolean isPingWatchdog() {
-		return pingWachdog;
-	}
+  @Override
+  public boolean isPingWatchdog() {
+    return pingWachdog;
+  }
 
-	@Override
-	public final PerSessionJsonRpcHandler<T> withAllowedOrigins(String... origins) {
-		this.allowedOrigins = ImmutableList.copyOf(origins);
-		return this;
-	}
+  @Override
+  public final PerSessionJsonRpcHandler<T> withAllowedOrigins(String... origins) {
+    this.allowedOrigins = ImmutableList.copyOf(origins);
+    return this;
+  }
 
-	@Override
-	public List<String> allowedOrigins() {
-		return this.allowedOrigins;
-	}
+  @Override
+  public List<String> allowedOrigins() {
+    return this.allowedOrigins;
+  }
 
 }

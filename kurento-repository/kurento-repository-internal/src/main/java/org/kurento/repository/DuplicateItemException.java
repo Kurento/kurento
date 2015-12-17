@@ -18,18 +18,18 @@ package org.kurento.repository;
 import org.kurento.commons.exception.KurentoException;
 
 /**
- * This exception is thrown when the user is trying to create a repository item
- * with the same id than existing repository item.
- * 
+ * This exception is thrown when the user is trying to create a repository item with the same id
+ * than existing repository item.
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
- * 
+ *
  */
 public class DuplicateItemException extends KurentoException {
 
-	private static final long serialVersionUID = 3515920000618086477L;
+  private static final long serialVersionUID = 3515920000618086477L;
 
-	public DuplicateItemException(String id) {
-		super("An item with id " + id + " already exists");
-	}
+  public DuplicateItemException(String id) {
+    super("An item with id " + id + " already exists");
+  }
 
 }

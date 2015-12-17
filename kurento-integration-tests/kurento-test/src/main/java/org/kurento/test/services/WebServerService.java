@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.services;
 
 import static org.kurento.test.config.TestConfiguration.APP_HTTP_PORT_DEFAULT;
@@ -25,75 +26,73 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Web server service.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
 public class WebServerService extends TestService {
 
-	@EnableAutoConfiguration
-	public static class WebServer {
-	}
+  @EnableAutoConfiguration
+  public static class WebServer {
+  }
 
-	private Class<?> webServerClass;
+  private Class<?> webServerClass;
 
-	protected ConfigurableApplicationContext context;
+  protected ConfigurableApplicationContext context;
 
-	public WebServerService() {
-		this.webServerClass = WebServer.class;
-	}
+  public WebServerService() {
+    this.webServerClass = WebServer.class;
+  }
 
-	public WebServerService(Class<?> webServerClass) {
-		this.webServerClass = webServerClass;
-	}
+  public WebServerService(Class<?> webServerClass) {
+    this.webServerClass = webServerClass;
+  }
 
-	@Override
-	public void start() {
-		super.start();
+  @Override
+  public void start() {
+    super.start();
 
-		System.setProperty("java.security.egd", "file:/dev/./urandom");
-		startContext();
-	}
+    System.setProperty("java.security.egd", "file:/dev/./urandom");
+    startContext();
+  }
 
-	private void startContext() {
-		context = new SpringApplication(webServerClass)
-				.run("--server.port=" + getAppHttpPort());
-		context.registerShutdownHook();
-	}
+  private void startContext() {
+    context = new SpringApplication(webServerClass).run("--server.port=" + getAppHttpPort());
+    context.registerShutdownHook();
+  }
 
-	@Override
-	public void stop() {
-		super.stop();
+  @Override
+  public void stop() {
+    super.stop();
 
-		stopContext();
-	}
+    stopContext();
+  }
 
-	private void stopContext() {
-		if (context != null && context.isRunning()) {
-			context.stop();
-			context.close();
-		}
-	}
+  private void stopContext() {
+    if (context != null && context.isRunning()) {
+      context.stop();
+      context.close();
+    }
+  }
 
-	@Override
-	public TestServiceScope getScope() {
-		return TEST;
-	}
+  @Override
+  public TestServiceScope getScope() {
+    return TEST;
+  }
 
-	public ConfigurableApplicationContext getContext() {
-		return context;
-	}
+  public ConfigurableApplicationContext getContext() {
+    return context;
+  }
 
-	public static int getAppHttpPort() {
-		return PropertiesManager.getProperty(APP_HTTP_PORT_PROP,
-				APP_HTTP_PORT_DEFAULT);
-	}
+  public static int getAppHttpPort() {
+    return PropertiesManager.getProperty(APP_HTTP_PORT_PROP, APP_HTTP_PORT_DEFAULT);
+  }
 
-	public void setWebServerClass(Class<?> webServerClass) {
-		this.webServerClass = webServerClass;
+  public void setWebServerClass(Class<?> webServerClass) {
+    this.webServerClass = webServerClass;
 
-		stopContext();
-		startContext();
-	}
+    stopContext();
+    startContext();
+  }
 
 }

@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import java.util.concurrent.CountDownLatch;
@@ -35,49 +36,46 @@ import org.kurento.commons.testing.KurentoClientTests;
 @Category(KurentoClientTests.class)
 public abstract class MediaPipelineAsyncBaseTest extends ApiBase {
 
-	protected MediaPipeline pipeline;
+  protected MediaPipeline pipeline;
 
-	@Before
-	public void setupPipeline() throws InterruptedException {
+  @Before
+  public void setupPipeline() throws InterruptedException {
 
-		AsyncResultManager<MediaPipeline> async = new AsyncResultManager<>(
-				"MediaPipeline creation");
+    AsyncResultManager<MediaPipeline> async = new AsyncResultManager<>("MediaPipeline creation");
 
-		kurentoClient.createMediaPipeline(async.getContinuation());
+    kurentoClient.createMediaPipeline(async.getContinuation());
 
-		pipeline = async.waitForResult();
+    pipeline = async.waitForResult();
 
-		if (pipeline == null) {
-			Assert.fail();
-		}
-	}
+    if (pipeline == null) {
+      Assert.fail();
+    }
+  }
 
-	@After
-	public void teardownPipeline() throws InterruptedException {
-		if (pipeline != null) {
-			releaseMediaObject(pipeline);
-		}
-	}
+  @After
+  public void teardownPipeline() throws InterruptedException {
+    if (pipeline != null) {
+      releaseMediaObject(pipeline);
+    }
+  }
 
-	protected static void releaseMediaObject(final MediaObject mo)
-			throws InterruptedException {
-		final CountDownLatch latch = new CountDownLatch(1);
+  protected static void releaseMediaObject(final MediaObject mo) throws InterruptedException {
+    final CountDownLatch latch = new CountDownLatch(1);
 
-		if (mo != null) {
-			mo.release(new Continuation<Void>() {
-				@Override
-				public void onSuccess(Void result) {
-					latch.countDown();
-				}
+    if (mo != null) {
+      mo.release(new Continuation<Void>() {
+        @Override
+        public void onSuccess(Void result) {
+          latch.countDown();
+        }
 
-				@Override
-				public void onError(Throwable cause) {
-					throw new KurentoException(cause);
-				}
-			});
-			Assert.assertTrue("Timeout of 25s releasing object",
-					latch.await(25, TimeUnit.SECONDS));
-		}
-	}
+        @Override
+        public void onError(Throwable cause) {
+          throw new KurentoException(cause);
+        }
+      });
+      Assert.assertTrue("Timeout of 25s releasing object", latch.await(25, TimeUnit.SECONDS));
+    }
+  }
 
 }

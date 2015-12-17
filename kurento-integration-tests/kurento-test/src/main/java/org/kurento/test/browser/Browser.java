@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.test.base.KurentoClientBrowserTest;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.config.AudioChannel;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.Protocol;
@@ -893,7 +893,7 @@ public class Browser implements Closeable {
     // Stop docker containers (if necessary)
     if (scope == BrowserScope.DOCKER) {
 
-      Path logFile = Paths.get(KurentoClientBrowserTest.getDefaultOutputFile(""));
+      Path logFile = Paths.get(KurentoTest.getDefaultOutputFile(""));
 
       try {
         if (!Files.exists(logFile)) {

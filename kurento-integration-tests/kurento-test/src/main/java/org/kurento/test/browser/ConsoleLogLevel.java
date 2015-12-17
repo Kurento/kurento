@@ -12,19 +12,20 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.browser;
 
 /**
  * JavaScript console log level.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
 public enum ConsoleLogLevel {
-	INFO, WARN, ERROR;
+  INFO, WARN, ERROR;
 
-	@Override
-	public String toString() {
-		return this.name().toLowerCase();
-	}
+  @Override
+  public String toString() {
+    return this.name().toLowerCase();
+  }
 }

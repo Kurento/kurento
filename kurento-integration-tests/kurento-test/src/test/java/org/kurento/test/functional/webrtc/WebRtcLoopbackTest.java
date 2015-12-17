@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.functional.webrtc;
 
 import java.util.Collection;
@@ -47,48 +48,46 @@ import org.kurento.test.config.TestScenario;
  *
  * Secondary assertion(s): <br>
  * -- <br>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 
 public class WebRtcLoopbackTest extends FunctionalTest {
 
-	private static final int PLAYTIME = 10; // seconds to play in WebRTC
+  private static final int PLAYTIME = 10; // seconds to play in WebRTC
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return TestScenario.localChromeAndFirefox();
-	}
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChromeAndFirefox();
+  }
 
-	@Test
-	public void testWebRtcLoopback() throws InterruptedException {
+  @Test
+  public void testWebRtcLoopback() throws InterruptedException {
 
-		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
-		webRtcEndpoint.connect(webRtcEndpoint);
+    // Media Pipeline
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+    webRtcEndpoint.connect(webRtcEndpoint);
 
-		// Start WebRTC and wait for playing event
-		getPage().subscribeEvents("playing");
-		getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
-				WebRtcMode.SEND_RCV);
-		Assert.assertTrue("Not received media (timeout waiting playing event)",
-				getPage().waitForEvent("playing"));
+    // Start WebRTC and wait for playing event
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage().waitForEvent("playing"));
 
-		// Guard time to play the video
-		waitSeconds(PLAYTIME);
+    // Guard time to play the video
+    waitSeconds(PLAYTIME);
 
-		// Assertions
-		double currentTime = getPage().getCurrentTime();
-		Assert.assertTrue(
-				"Error in play time (expected: " + PLAYTIME + " sec, real: "
-						+ currentTime + " sec)",
-				getPage().compare(PLAYTIME, currentTime));
-		Assert.assertTrue("The color of the video should be green",
-				getPage().similarColor(CHROME_VIDEOTEST_COLOR));
+    // Assertions
+    double currentTime = getPage().getCurrentTime();
+    Assert.assertTrue(
+        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
+        getPage().compare(PLAYTIME, currentTime));
+    Assert.assertTrue("The color of the video should be green",
+        getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 
-		// Release Media Pipeline
-		mp.release();
-	}
+    // Release Media Pipeline
+    mp.release();
+  }
 }

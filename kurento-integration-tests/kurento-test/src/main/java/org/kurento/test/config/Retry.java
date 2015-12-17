@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.config;
 
 import java.util.ArrayList;
@@ -32,108 +33,103 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("deprecation")
 public class Retry implements TestRule {
-	private static Logger log = LoggerFactory.getLogger(Retry.class);
-	private static final String SEPARATOR = "=======================================";
+  private static Logger log = LoggerFactory.getLogger(Retry.class);
+  private static final String SEPARATOR = "=======================================";
 
-	private int retryCount;
-	private int currentRetry = 1;
-	private List<Throwable> exceptions;
-	private TestReport testReport;
-	private TestScenario testScenario;
+  private int retryCount;
+  private int currentRetry = 1;
+  private List<Throwable> exceptions;
+  private TestReport testReport;
+  private TestScenario testScenario;
 
-	public Retry(int retryCount) {
-		this.retryCount = retryCount;
-		exceptions = new ArrayList<>(retryCount);
-	}
+  public Retry(int retryCount) {
+    this.retryCount = retryCount;
+    exceptions = new ArrayList<>(retryCount);
+  }
 
-	public void useReport(String testName) {
-		testReport = TestReport.getSingleton(testName, retryCount);
-	}
+  public void useReport(String testName) {
+    testReport = TestReport.getSingleton(testName, retryCount);
+  }
 
-	public void useReport(String testName, String htmlHeader) {
-		testReport = TestReport.getSingleton(testName, retryCount, htmlHeader);
-	}
+  public void useReport(String testName, String htmlHeader) {
+    testReport = TestReport.getSingleton(testName, retryCount, htmlHeader);
+  }
 
-	public Statement apply(Statement base, Description description) {
-		return statement(base, description);
-	}
+  @Override
+  public Statement apply(Statement base, Description description) {
+    return statement(base, description);
+  }
 
-	private Statement statement(final Statement base,
-			final Description description) {
-		return new Statement() {
+  private Statement statement(final Statement base, final Description description) {
+    return new Statement() {
 
-			@Override
-			public void evaluate() throws Throwable {
-				Throwable caughtThrowable = null;
-				for (; currentRetry <= retryCount; currentRetry++) {
-					try {
-						testReport.appendHeader(description.getMethodName()
-								+ " - Execution " + (exceptions.size() + 1)
-								+ "/" + getRetryCount());
-						base.evaluate();
-						testReport.flushExtraInfoHtml();
-						testReport.appendSuccess("Test ok");
-						testReport.flushExtraInfoHtml();
-						testReport.appendLine();
-						return;
-					} catch (Throwable t) {
+      @Override
+      public void evaluate() throws Throwable {
+        Throwable caughtThrowable = null;
+        for (; currentRetry <= retryCount; currentRetry++) {
+          try {
+            testReport.appendHeader(description.getMethodName() + " - Execution "
+                + (exceptions.size() + 1) + "/" + getRetryCount());
+            base.evaluate();
+            testReport.flushExtraInfoHtml();
+            testReport.appendSuccess("Test ok");
+            testReport.flushExtraInfoHtml();
+            testReport.appendLine();
+            return;
+          } catch (Throwable t) {
 
-						if (t instanceof MultipleFailureException) {
-							MultipleFailureException m = (MultipleFailureException) t;
-							for (Throwable throwable : m.getFailures()) {
-								log.warn("Multiple exception element",
-										throwable);
-							}
-						}
+            if (t instanceof MultipleFailureException) {
+              MultipleFailureException m = (MultipleFailureException) t;
+              for (Throwable throwable : m.getFailures()) {
+                log.warn("Multiple exception element", throwable);
+              }
+            }
 
-						exceptions.add(t);
-						if (testReport != null) {
-							testReport.appendWarning("Test failed in retry "
-									+ exceptions.size());
-							testReport.appendException(t, testScenario);
-							testReport.flushExtraInfoHtml();
-							testReport.flushExtraErrorHtml();
-						}
+            exceptions.add(t);
+            if (testReport != null) {
+              testReport.appendWarning("Test failed in retry " + exceptions.size());
+              testReport.appendException(t, testScenario);
+              testReport.flushExtraInfoHtml();
+              testReport.flushExtraErrorHtml();
+            }
 
-						caughtThrowable = t;
-						log.error(SEPARATOR);
-						log.error("{}: run {} failed",
-								description.getDisplayName(), currentRetry, t);
-						log.error(SEPARATOR);
-					}
-				}
+            caughtThrowable = t;
+            log.error(SEPARATOR);
+            log.error("{}: run {} failed", description.getDisplayName(), currentRetry, t);
+            log.error(SEPARATOR);
+          }
+        }
 
-				String errorMessage = "TEST ERROR: "
-						+ description.getMethodName() + " (giving up after "
-						+ retryCount + " retries)";
-				if (exceptions.size() > 0 && testReport != null) {
-					testReport.appendError(errorMessage);
-					testReport.appendLine();
-				}
+        String errorMessage = "TEST ERROR: " + description.getMethodName() + " (giving up after "
+            + retryCount + " retries)";
+        if (exceptions.size() > 0 && testReport != null) {
+          testReport.appendError(errorMessage);
+          testReport.appendLine();
+        }
 
-				throw caughtThrowable;
-			}
-		};
-	}
+        throw caughtThrowable;
+      }
+    };
+  }
 
-	public int getCurrentRetry() {
-		return currentRetry;
-	}
+  public int getCurrentRetry() {
+    return currentRetry;
+  }
 
-	public List<Throwable> getExceptions() {
-		return exceptions;
-	}
+  public List<Throwable> getExceptions() {
+    return exceptions;
+  }
 
-	public int getRetryCount() {
-		return retryCount;
-	}
+  public int getRetryCount() {
+    return retryCount;
+  }
 
-	public TestReport getTestReport() {
-		return testReport;
-	}
+  public TestReport getTestReport() {
+    return testReport;
+  }
 
-	public void setTestScenario(TestScenario testScenario) {
-		this.testScenario = testScenario;
-	}
+  public void setTestScenario(TestScenario testScenario) {
+    this.testScenario = testScenario;
+  }
 
 }

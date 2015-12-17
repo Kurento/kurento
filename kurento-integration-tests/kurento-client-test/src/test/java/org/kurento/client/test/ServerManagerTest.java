@@ -1,3 +1,4 @@
+
 package org.kurento.client.test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -24,86 +25,84 @@ import org.kurento.test.base.KurentoClientTest;
 
 public class ServerManagerTest extends KurentoClientTest {
 
-	@Test
-	public void testSameInstance() throws InterruptedException {
+  @Test
+  public void testSameInstance() throws InterruptedException {
 
-		ServerManager server = kurentoClient.getServerManager();
-		ServerManager server2 = kurentoClient.getServerManager();
+    ServerManager server = kurentoClient.getServerManager();
+    ServerManager server2 = kurentoClient.getServerManager();
 
-		assertThat(server, IsSame.sameInstance(server2));
-	}
+    assertThat(server, IsSame.sameInstance(server2));
+  }
 
-	@Test
-	public void testObjectCreationEvents() throws InterruptedException {
+  @Test
+  public void testObjectCreationEvents() throws InterruptedException {
 
-		ServerManager server = kurentoClient.getServerManager();
+    ServerManager server = kurentoClient.getServerManager();
 
-		final Exchanger<MediaObject> exchanger = new Exchanger<>();
+    final Exchanger<MediaObject> exchanger = new Exchanger<>();
 
-		server.addObjectCreatedListener(
-				new EventListener<ObjectCreatedEvent>() {
-					@Override
-					public void onEvent(ObjectCreatedEvent event) {
-						try {
-							exchanger.exchange(event.getObject());
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				});
+    server.addObjectCreatedListener(new EventListener<ObjectCreatedEvent>() {
+      @Override
+      public void onEvent(ObjectCreatedEvent event) {
+        try {
+          exchanger.exchange(event.getObject());
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    });
 
-		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
+    MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
-		try {
-			MediaObject eventObject = exchanger.exchange(null, 10,
-					TimeUnit.SECONDS);
+    try {
+      MediaObject eventObject = exchanger.exchange(null, 10, TimeUnit.SECONDS);
 
-			System.out.println("pipeline: " + pipeline);
-			System.out.println("eventObject: " + eventObject);
+      System.out.println("pipeline: " + pipeline);
+      System.out.println("eventObject: " + eventObject);
 
-			assertThat(pipeline, IsSame.sameInstance(eventObject));
+      assertThat(pipeline, IsSame.sameInstance(eventObject));
 
-		} catch (TimeoutException e) {
-			fail(ObjectCreatedEvent.class.getName() + " should be thrown");
-		}
-	}
+    } catch (TimeoutException e) {
+      fail(ObjectCreatedEvent.class.getName() + " should be thrown");
+    }
+  }
 
-	@Test
-	public void readPipelines() {
+  @Test
+  public void readPipelines() {
 
-		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
+    MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
-		ServerManager serverManager = kurentoClient.getServerManager();
-		List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
+    ServerManager serverManager = kurentoClient.getServerManager();
+    List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
 
-		for (MediaPipeline p : mediaPipelines) {
-			String gstreamerDot = p.getGstreamerDot();
-			System.out.println(p.getId() + ": " + gstreamerDot);
-		}
+    for (MediaPipeline p : mediaPipelines) {
+      String gstreamerDot = p.getGstreamerDot();
+      System.out.println(p.getId() + ": " + gstreamerDot);
+    }
 
-		assertTrue(mediaPipelines.contains(pipeline));
-	}
+    assertTrue(mediaPipelines.contains(pipeline));
+  }
 
-	@Test
-	public void readPipelineElements() throws IOException {
+  @Test
+  public void readPipelineElements() throws IOException {
 
-		MediaPipeline pipeline = kurentoClient.createMediaPipeline();
+    MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
-		new WebRtcEndpoint.Builder(pipeline).build();
+    new WebRtcEndpoint.Builder(pipeline).build();
 
-		KurentoClient otherKurentoClient = kms.createKurentoClient();
+    KurentoClient otherKurentoClient = kms.createKurentoClient();
 
-		ServerManager serverManager = otherKurentoClient.getServerManager();
+    ServerManager serverManager = otherKurentoClient.getServerManager();
 
-		List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
+    List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
 
-		for (MediaObject o : mediaPipelines.get(0).getChilds()) {
-			if (o.getId().indexOf("WebRtcEndpoint") >= 0) {
-				WebRtcEndpoint webRtc = (WebRtcEndpoint) o;
+    for (MediaObject o : mediaPipelines.get(0).getChilds()) {
+      if (o.getId().indexOf("WebRtcEndpoint") >= 0) {
+        WebRtcEndpoint webRtc = (WebRtcEndpoint) o;
 
-				assertThat(pipeline, is(webRtc.getParent()));
-			}
-		}
-	}
+        assertThat(pipeline, is(webRtc.getParent()));
+      }
+    }
+  }
 
 }

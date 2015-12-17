@@ -12,33 +12,33 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.client;
 
 import org.kurento.jsonrpc.JsonRpcException;
 
 /**
- * This exception occurs when there is a communication error. This could happen
- * either when trying to reach KMS, or when the server is trying to send a
- * response to the client.
- * 
+ * This exception occurs when there is a communication error. This could happen either when trying
+ * to reach KMS, or when the server is trying to send a response to the client.
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.1
- * 
+ *
  */
 public class RequestAlreadyRespondedException extends JsonRpcException {
 
-	private static final long serialVersionUID = -9166377169939591329L;
+  private static final long serialVersionUID = -9166377169939591329L;
 
-	public RequestAlreadyRespondedException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public RequestAlreadyRespondedException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-	public RequestAlreadyRespondedException(String message) {
-		super(message);
-	}
+  public RequestAlreadyRespondedException(String message) {
+    super(message);
+  }
 
-	public RequestAlreadyRespondedException(Throwable cause) {
-		super(cause);
-	}
+  public RequestAlreadyRespondedException(Throwable cause) {
+    super(cause);
+  }
 
 }

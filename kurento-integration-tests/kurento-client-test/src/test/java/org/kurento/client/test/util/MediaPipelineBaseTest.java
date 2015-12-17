@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test.util;
 
 import org.junit.After;
@@ -24,17 +25,17 @@ import org.kurento.commons.testing.KurentoClientTests;
 @Category(KurentoClientTests.class)
 public abstract class MediaPipelineBaseTest extends ApiBase {
 
-	protected MediaPipeline pipeline;
+  protected MediaPipeline pipeline;
 
-	@Before
-	public void setupPipeline() {
-		pipeline = kurentoClient.createMediaPipeline();
-	}
+  @Before
+  public void setupPipeline() {
+    pipeline = kurentoClient.createMediaPipeline();
+  }
 
-	@After
-	public void teardownPipeline() {
-		if (pipeline != null) {
-			pipeline.release();
-		}
-	}
+  @After
+  public void teardownPipeline() {
+    if (pipeline != null) {
+      pipeline.release();
+    }
+  }
 }

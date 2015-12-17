@@ -1,3 +1,4 @@
+
 package org.kurento.jsonrpc.test;
 
 import java.io.IOException;
@@ -12,40 +13,39 @@ import org.slf4j.LoggerFactory;
 
 public class ReconnectionIdleServerTest extends JsonRpcConnectorBaseTest {
 
-	private static final Logger log = LoggerFactory
-	        .getLogger(ReconnectionIdleServerTest.class);
+  private static final Logger log = LoggerFactory.getLogger(ReconnectionIdleServerTest.class);
 
-	@Test
-	public void test() throws IOException, InterruptedException {
+  @Test
+  public void test() throws IOException, InterruptedException {
 
-		log.info("Client started");
+    log.info("Client started");
 
-		JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-		        "ws://localhost:" + getPort() + "/jsonrpc");
+    JsonRpcClientWebSocket client =
+        new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/jsonrpc");
 
-		client.setIdleTimeout(5000);
-		client.enableHeartbeat(4000);
+    client.setIdleTimeout(5000);
+    client.enableHeartbeat(4000);
 
-		for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) {
 
-			Params params = new Params();
-			params.param1 = "Value1";
-			params.param2 = "Value2";
+      Params params = new Params();
+      params.param1 = "Value1";
+      params.param2 = "Value2";
 
-			Params result = client.sendRequest("echo", params, Params.class);
+      Params result = client.sendRequest("echo", params, Params.class);
 
-			log.info("Response:" + result);
+      log.info("Response:" + result);
 
-			Assert.assertEquals(params.param1, result.param1);
-			Assert.assertEquals(params.param2, result.param2);
+      Assert.assertEquals(params.param1, result.param1);
+      Assert.assertEquals(params.param2, result.param2);
 
-			Thread.sleep(5000);
+      Thread.sleep(5000);
 
-		}
+    }
 
-		client.close();
+    client.close();
 
-		log.info("Client finished");
+    log.info("Client finished");
 
-	}
+  }
 }

@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import org.junit.After;
@@ -39,57 +40,52 @@ import org.kurento.client.test.util.AsyncResultManager;
  */
 public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
-	private RecorderEndpoint recorder;
+  private RecorderEndpoint recorder;
 
-	@Before
-	public void setupMediaElements() throws InterruptedException {
+  @Before
+  public void setupMediaElements() throws InterruptedException {
 
-		AsyncResultManager<RecorderEndpoint> async = new AsyncResultManager<>(
-				"RecorderEndpoint creation");
+    AsyncResultManager<RecorderEndpoint> async =
+        new AsyncResultManager<>("RecorderEndpoint creation");
 
-		new RecorderEndpoint.Builder(pipeline, URL_SMALL)
-				.buildAsync(async.getContinuation());
+    new RecorderEndpoint.Builder(pipeline, URL_SMALL).buildAsync(async.getContinuation());
 
-		recorder = async.waitForResult();
+    recorder = async.waitForResult();
 
-		Assert.assertNotNull(recorder);
-	}
+    Assert.assertNotNull(recorder);
+  }
 
-	@After
-	public void teardownMediaElements() throws InterruptedException {
-		releaseMediaObject(recorder);
-	}
+  @After
+  public void teardownMediaElements() throws InterruptedException {
+    releaseMediaObject(recorder);
+  }
 
-	@Test
-	public void testGetUri() throws InterruptedException {
+  @Test
+  public void testGetUri() throws InterruptedException {
 
-		AsyncResultManager<String> async = new AsyncResultManager<>(
-				"recorder.getUri() invocation");
+    AsyncResultManager<String> async = new AsyncResultManager<>("recorder.getUri() invocation");
 
-		recorder.getUri(async.getContinuation());
+    recorder.getUri(async.getContinuation());
 
-		String uri = async.waitForResult();
+    String uri = async.waitForResult();
 
-		Assert.assertEquals(URL_SMALL, uri);
-	}
+    Assert.assertEquals(URL_SMALL, uri);
+  }
 
-	@Test
-	public void testRecorder() throws InterruptedException {
+  @Test
+  public void testRecorder() throws InterruptedException {
 
-		AsyncResultManager<Void> asyncRecord = new AsyncResultManager<>(
-				"recorder.record() invocation");
-		recorder.record(asyncRecord.getContinuation());
-		asyncRecord.waitForResult();
+    AsyncResultManager<Void> asyncRecord = new AsyncResultManager<>("recorder.record() invocation");
+    recorder.record(asyncRecord.getContinuation());
+    asyncRecord.waitForResult();
 
-		AsyncResultManager<Void> asyncPause = new AsyncResultManager<>(
-				"recorder.pause() invocation");
-		recorder.pause(asyncPause.getContinuation());
-		asyncPause.waitForResult();
+    AsyncResultManager<Void> asyncPause = new AsyncResultManager<>("recorder.pause() invocation");
+    recorder.pause(asyncPause.getContinuation());
+    asyncPause.waitForResult();
 
-		AsyncResultManager<Void> asyncStop = new AsyncResultManager<>(
-				"recorder.stop() invocation");
-		recorder.pause(asyncStop.getContinuation());
-		asyncStop.waitForResult();
+    AsyncResultManager<Void> asyncStop = new AsyncResultManager<>("recorder.stop() invocation");
+    recorder.pause(asyncStop.getContinuation());
+    asyncStop.waitForResult();
 
-	}
+  }
 }

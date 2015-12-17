@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.base;
 
 import org.junit.After;
@@ -23,33 +24,33 @@ import org.kurento.test.services.Service;
 
 /**
  * Base for tests using kurento-client.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 6.1.1
  */
 public class KurentoClientTest extends KurentoTest {
 
-	public static @Service KmsService kms = new KmsService();
-	public static @Service KmsService fakeKms = new FakeKmsService();
+  public static @Service KmsService kms = new KmsService();
+  public static @Service KmsService fakeKms = new FakeKmsService();
 
-	protected KurentoClient kurentoClient;
-	protected KurentoClient fakeKurentoClient;
+  protected KurentoClient kurentoClient;
+  protected KurentoClient fakeKurentoClient;
 
-	@Before
-	public void setupKurentoClient() {
-		kurentoClient = kms.getKurentoClient();
-		fakeKurentoClient = fakeKms.getKurentoClient();
-	}
+  @Before
+  public void setupKurentoClient() {
+    kurentoClient = kms.getKurentoClient();
+    fakeKurentoClient = fakeKms.getKurentoClient();
+  }
 
-	@After
-	public void teardownKurentoClient() throws Exception {
-		if (kurentoClient != null) {
-			kurentoClient.destroy();
-		}
-		if (fakeKurentoClient != null) {
-			fakeKurentoClient.destroy();
-		}
-	}
+  @After
+  public void teardownKurentoClient() throws Exception {
+    if (kurentoClient != null) {
+      kurentoClient.destroy();
+    }
+    if (fakeKurentoClient != null) {
+      fakeKurentoClient.destroy();
+    }
+  }
 
 }

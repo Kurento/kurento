@@ -12,16 +12,17 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.browser;
 
 /**
  * Interface used to execute parallel browsers.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 5.0.5
  */
 public interface BrowserRunner {
 
-	void run(Browser browser) throws Exception;
+  void run(Browser browser) throws Exception;
 
 }

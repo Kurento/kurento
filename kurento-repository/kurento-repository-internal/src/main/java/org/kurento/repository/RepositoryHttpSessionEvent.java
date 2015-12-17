@@ -17,13 +17,13 @@ package org.kurento.repository;
 
 public class RepositoryHttpSessionEvent {
 
-	private RepositoryHttpEndpoint source;
+  private RepositoryHttpEndpoint source;
 
-	public RepositoryHttpSessionEvent(RepositoryHttpEndpoint source) {
-		this.source = source;
-	}
+  public RepositoryHttpSessionEvent(RepositoryHttpEndpoint source) {
+    this.source = source;
+  }
 
-	public RepositoryHttpEndpoint getSource() {
-		return source;
-	}
+  public RepositoryHttpEndpoint getSource() {
+    return source;
+  }
 }

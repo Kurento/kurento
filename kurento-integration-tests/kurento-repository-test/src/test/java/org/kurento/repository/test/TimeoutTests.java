@@ -20,51 +20,47 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 
 import org.junit.Test;
+import org.kurento.repository.RepositoryHttpPlayer;
+import org.kurento.repository.test.util.BaseRepositoryTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
-import org.kurento.repository.RepositoryHttpPlayer;
-import org.kurento.repository.test.util.BaseRepositoryTest;
 
 public class TimeoutTests extends BaseRepositoryTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(TimeoutTests.class);
+  private static final Logger log = LoggerFactory.getLogger(TimeoutTests.class);
 
-	@Test
-	public void playerAutoTerminationTest() throws Exception {
+  @Test
+  public void playerAutoTerminationTest() throws Exception {
 
-		String id = uploadFile(new File("test-files/sample.txt"));
+    String id = uploadFile(new File("test-files/sample.txt"));
 
-		log.info("File uploaded");
+    log.info("File uploaded");
 
-		RepositoryHttpPlayer player = getRepository()
-				.findRepositoryItemById(id).createRepositoryHttpPlayer();
+    RepositoryHttpPlayer player =
+        getRepository().findRepositoryItemById(id).createRepositoryHttpPlayer();
 
-		player.setAutoTerminationTimeout(1000);
+    player.setAutoTerminationTimeout(1000);
 
-		RestTemplate template = getRestTemplate();
+    RestTemplate template = getRestTemplate();
 
-		assertEquals(HttpStatus.OK,
-				template.getForEntity(player.getURL(), byte[].class)
-						.getStatusCode());
-		log.info("Request 1 Passed");
+    assertEquals(HttpStatus.OK,
+        template.getForEntity(player.getURL(), byte[].class).getStatusCode());
+    log.info("Request 1 Passed");
 
-		Thread.sleep(300);
+    Thread.sleep(300);
 
-		assertEquals(HttpStatus.OK,
-				template.getForEntity(player.getURL(), byte[].class)
-						.getStatusCode());
-		log.info("Request 2 Passed");
+    assertEquals(HttpStatus.OK,
+        template.getForEntity(player.getURL(), byte[].class).getStatusCode());
+    log.info("Request 2 Passed");
 
-		Thread.sleep(1500);
+    Thread.sleep(1500);
 
-		assertEquals(HttpStatus.NOT_FOUND,
-				template.getForEntity(player.getURL(), byte[].class)
-						.getStatusCode());
-		log.info("Request 3 Passed");
+    assertEquals(HttpStatus.NOT_FOUND,
+        template.getForEntity(player.getURL(), byte[].class).getStatusCode());
+    log.info("Request 3 Passed");
 
-	}
+  }
 
 }

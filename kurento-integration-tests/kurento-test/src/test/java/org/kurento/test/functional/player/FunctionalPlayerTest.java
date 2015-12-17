@@ -1,3 +1,4 @@
+
 package org.kurento.test.functional.player;
 
 import org.junit.experimental.categories.Category;

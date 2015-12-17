@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.transport.jsonrpc;
 
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS;
@@ -27,103 +28,91 @@ import com.google.gson.JsonObject;
 
 public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
-	private static Logger LOG = LoggerFactory
-	        .getLogger(RomServerJsonRpcHandler.class);
+  private static Logger LOG = LoggerFactory.getLogger(RomServerJsonRpcHandler.class);
 
-	private final RomServer server;
+  private final RomServer server;
 
-	public RomServerJsonRpcHandler(String packageName, String classSuffix) {
-		server = new RomServer(packageName, classSuffix);
-	}
+  public RomServerJsonRpcHandler(String packageName, String classSuffix) {
+    server = new RomServer(packageName, classSuffix);
+  }
 
-	@Override
-	public void handleRequest(Transaction transaction,
-	        Request<JsonObject> request) throws Exception {
+  @Override
+  public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
 
-		try {
+    try {
 
-			JsonObject params = request.getParams();
-			String method = request.getMethod();
-			switch (method) {
-			case INVOKE_METHOD:
-				String objectRef = getAsString(params, INVOKE_OBJECT,
-				        "object reference");
+      JsonObject params = request.getParams();
+      String method = request.getMethod();
+      switch (method) {
+        case INVOKE_METHOD:
+          String objectRef = getAsString(params, INVOKE_OBJECT, "object reference");
 
-				String operationName = getAsString(params,
-				        INVOKE_OPERATION_NAME, "method to be invoked");
+          String operationName = getAsString(params, INVOKE_OPERATION_NAME, "method to be invoked");
 
-				JsonObject operationParams = params
-				        .getAsJsonObject(INVOKE_OPERATION_PARAMS);
+          JsonObject operationParams = params.getAsJsonObject(INVOKE_OPERATION_PARAMS);
 
-				handleInvokeCommand(transaction, objectRef, operationName,
-				        operationParams);
-				break;
-			case RELEASE_METHOD:
-				String objectReleaseRef = getAsString(params, RELEASE_OBJECT,
-				        "object reference to be released");
+          handleInvokeCommand(transaction, objectRef, operationName, operationParams);
+          break;
+        case RELEASE_METHOD:
+          String objectReleaseRef = getAsString(params, RELEASE_OBJECT,
+              "object reference to be released");
 
-				handleReleaseCommand(transaction, objectReleaseRef);
-				break;
-			case CREATE_METHOD:
-				String type = getAsString(params, CREATE_TYPE,
-				        "RemoteClass of the object to be created");
+          handleReleaseCommand(transaction, objectReleaseRef);
+          break;
+        case CREATE_METHOD:
+          String type = getAsString(params, CREATE_TYPE, "RemoteClass of the object to be created");
 
-				handleCreateCommand(transaction, type,
-				        params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
-				break;
-			default:
-				LOG.warn("Unknown request method '{}'", method);
+          handleCreateCommand(transaction, type, params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
+          break;
+        default:
+          LOG.warn("Unknown request method '{}'", method);
 
-			}
-		} catch (ProtocolException e) {
-			try {
-				transaction.sendError(e);
-			} catch (IOException ex) {
-				LOG.warn("Exception while sending a response", e);
-			}
-		} catch (IOException e) {
-			LOG.warn("Exception while sending a response", e);
-		}
-	}
+      }
+    } catch (ProtocolException e) {
+      try {
+        transaction.sendError(e);
+      } catch (IOException ex) {
+        LOG.warn("Exception while sending a response", e);
+      }
+    } catch (IOException e) {
+      LOG.warn("Exception while sending a response", e);
+    }
+  }
 
-	private String getAsString(JsonObject jsonObject, String propName,
-	        String propertyDescription) {
+  private String getAsString(JsonObject jsonObject, String propName, String propertyDescription) {
 
-		if (jsonObject == null) {
-			throw new ProtocolException("There are no params in the request");
-		}
+    if (jsonObject == null) {
+      throw new ProtocolException("There are no params in the request");
+    }
 
-		JsonElement element = jsonObject.get(propName);
-		if (element == null) {
-			throw new ProtocolException("It is necessary a property '"
-			        + propName + "' with " + propertyDescription);
-		} else {
-			return element.getAsString();
-		}
-	}
+    JsonElement element = jsonObject.get(propName);
+    if (element == null) {
+      throw new ProtocolException(
+          "It is necessary a property '" + propName + "' with " + propertyDescription);
+    } else {
+      return element.getAsString();
+    }
+  }
 
-	private void handleCreateCommand(Transaction transaction, String type,
-	        JsonObject constructorParams) throws IOException {
+  private void handleCreateCommand(Transaction transaction, String type,
+      JsonObject constructorParams) throws IOException {
 
-		Object result = server.create(type,
-		        JsonUtils.fromJson(constructorParams, Props.class));
+    Object result = server.create(type, JsonUtils.fromJson(constructorParams, Props.class));
 
-		transaction.sendResponse(result);
-	}
+    transaction.sendResponse(result);
+  }
 
-	private void handleReleaseCommand(Transaction transaction,
-	        String objectRef) {
-		server.release(objectRef);
-	}
+  private void handleReleaseCommand(Transaction transaction, String objectRef) {
+    server.release(objectRef);
+  }
 
-	private void handleInvokeCommand(Transaction transaction, String objectRef,
-	        String operationName, JsonObject operationParams)
-	                throws IOException {
+  private void handleInvokeCommand(Transaction transaction, String objectRef, String operationName,
+      JsonObject operationParams) throws IOException {
 
-		Object result = server.invoke(objectRef, operationName,
-		        JsonUtils.fromJson(operationParams, Props.class), Object.class);
+    Object result = server.invoke(objectRef, operationName,
+        JsonUtils.fromJson(operationParams, Props.class), Object.class);
 
-		transaction.sendResponse(result);
-	}
+    transaction.sendResponse(result);
+  }
 
 }

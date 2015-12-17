@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.client.test;
 
 import org.junit.After;
@@ -49,47 +50,46 @@ import org.kurento.commons.exception.KurentoException;
  */
 public class PlayerEndpointTest extends MediaPipelineBaseTest {
 
-	private PlayerEndpoint player;
+  private PlayerEndpoint player;
 
-	@Before
-	public void setupMediaElements() throws KurentoException {
-		player = new PlayerEndpoint.Builder(pipeline, URL_SMALL).build();
+  @Before
+  public void setupMediaElements() throws KurentoException {
+    player = new PlayerEndpoint.Builder(pipeline, URL_SMALL).build();
 
-	}
+  }
 
-	@After
-	public void teardownMediaElements() {
-		if (player != null) {
-			player.release();
-		}
-	}
+  @After
+  public void teardownMediaElements() {
+    if (player != null) {
+      player.release();
+    }
+  }
 
-	/**
-	 * start/pause/stop sequence test
-	 */
-	@Test
-	public void testPlayer() {
-		player.play();
-		player.pause();
-		player.stop();
-	}
+  /**
+   * start/pause/stop sequence test
+   */
+  @Test
+  public void testPlayer() {
+    player.play();
+    player.pause();
+    player.stop();
+  }
 
-	@Test
-	public void testEventEndOfStream() throws InterruptedException {
+  @Test
+  public void testEventEndOfStream() throws InterruptedException {
 
-		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
-				"EndOfStream event");
+    AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>("EndOfStream event");
 
-		player.addEndOfStreamListener(async.getMediaEventListener());
+    player.addEndOfStreamListener(async.getMediaEventListener());
 
-		player.play();
+    player.play();
 
-		async.waitForResult();
-	}
+    async.waitForResult();
+  }
 
-	@Test
-	public void testCommandGetUri() {
-		Assert.assertTrue(URL_SMALL.equals(player.getUri()));
-	}
+  @Test
+  public void testCommandGetUri() {
+    Assert.assertTrue(URL_SMALL.equals(player.getUri()));
+  }
 
 }

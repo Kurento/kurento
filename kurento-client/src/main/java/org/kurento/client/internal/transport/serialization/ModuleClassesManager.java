@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.transport.serialization;
 
 import java.lang.reflect.InvocationTargetException;
@@ -9,66 +10,64 @@ import org.kurento.client.internal.server.ProtocolException;
 
 public class ModuleClassesManager {
 
-	private final ConcurrentHashMap<String, String> packageNamesByModuleName = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<String, Class<?>> classesByClassName = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, String> packageNamesByModuleName = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Class<?>> classesByClassName = new ConcurrentHashMap<>();
 
-	public Class<?> getClassFor(String fullyTypeName) {
-		String[] parts = fullyTypeName.split("\\.");
-		return getClassFor(parts[0], parts[1]);
-	}
+  public Class<?> getClassFor(String fullyTypeName) {
+    String[] parts = fullyTypeName.split("\\.");
+    return getClassFor(parts[0], parts[1]);
+  }
 
-	public Class<?> getClassFor(String moduleName, String typeName) {
+  public Class<?> getClassFor(String moduleName, String typeName) {
 
-		Objects.requireNonNull(typeName, "typeName must not be null");
-		Objects.requireNonNull(moduleName, "moduleName must not be null");
+    Objects.requireNonNull(typeName, "typeName must not be null");
+    Objects.requireNonNull(moduleName, "moduleName must not be null");
 
-		try {
+    try {
 
-			String packageName = packageNamesByModuleName.get(moduleName);
+      String packageName = packageNamesByModuleName.get(moduleName);
 
-			if (packageName == null) {
+      if (packageName == null) {
 
-				packageName = getPackageNameWithModuleInfoClass(moduleName);
+        packageName = getPackageNameWithModuleInfoClass(moduleName);
 
-				packageNamesByModuleName.put(moduleName, packageName);
-			}
+        packageNamesByModuleName.put(moduleName, packageName);
+      }
 
-			String className = packageName + "." + typeName;
+      String className = packageName + "." + typeName;
 
-			Class<?> clazz = classesByClassName.get(className);
+      Class<?> clazz = classesByClassName.get(className);
 
-			if (clazz == null) {
-				clazz = Class.forName(className);
-				classesByClassName.put(className, clazz);
-			}
+      if (clazz == null) {
+        clazz = Class.forName(className);
+        classesByClassName.put(className, clazz);
+      }
 
-			return clazz;
+      return clazz;
 
-		} catch (Exception e) {
-			throw new ProtocolException("Exception creating Java Class for '"
-					+ moduleName + "." + typeName + "'", e);
-		}
-	}
+    } catch (Exception e) {
+      throw new ProtocolException(
+          "Exception creating Java Class for '" + moduleName + "." + typeName + "'", e);
+    }
+  }
 
-	private String getPackageNameWithModuleInfoClass(String moduleName)
-			throws ClassNotFoundException, NoSuchMethodException,
-			IllegalAccessException, InvocationTargetException {
+  private String getPackageNameWithModuleInfoClass(String moduleName) throws ClassNotFoundException,
+      NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
-		String moduleInfoClassName = getModuleInfoClassName(moduleName);
-		Class<?> clazzPackage = Class.forName(moduleInfoClassName);
-		Method method = clazzPackage.getMethod("getPackageName");
-		return (String) method.invoke(clazzPackage);
-	}
+    String moduleInfoClassName = getModuleInfoClassName(moduleName);
+    Class<?> clazzPackage = Class.forName(moduleInfoClassName);
+    Method method = clazzPackage.getMethod("getPackageName");
+    return (String) method.invoke(clazzPackage);
+  }
 
-	private String getModuleInfoClassName(String moduleName) {
+  private String getModuleInfoClassName(String moduleName) {
 
-		String moduleNameWithFirstUpper = moduleName.substring(0, 1)
-				.toUpperCase() + moduleName.substring(1, moduleName.length());
+    String moduleNameWithFirstUpper = moduleName.substring(0, 1).toUpperCase()
+        + moduleName.substring(1, moduleName.length());
 
-		String classPackageName = "org.kurento.module."
-				+ moduleNameWithFirstUpper + "ModuleInfo";
+    String classPackageName = "org.kurento.module." + moduleNameWithFirstUpper + "ModuleInfo";
 
-		return classPackageName;
-	}
+    return classPackageName;
+  }
 
 }

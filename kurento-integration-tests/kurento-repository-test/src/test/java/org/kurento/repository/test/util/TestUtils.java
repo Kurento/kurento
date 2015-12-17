@@ -23,30 +23,30 @@ import java.util.Arrays;
 
 public class TestUtils {
 
-	public static boolean equalFiles(File file1, File file2) {
-		try {
-			return Arrays.equals(createChecksum(file1), createChecksum(file2));
-		} catch (Exception e) {
-			throw new RuntimeException("Exception while creating MD5", e);
-		}
-	}
+  public static boolean equalFiles(File file1, File file2) {
+    try {
+      return Arrays.equals(createChecksum(file1), createChecksum(file2));
+    } catch (Exception e) {
+      throw new RuntimeException("Exception while creating MD5", e);
+    }
+  }
 
-	public static byte[] createChecksum(File file) throws Exception {
-		InputStream fis = new FileInputStream(file);
+  public static byte[] createChecksum(File file) throws Exception {
+    InputStream fis = new FileInputStream(file);
 
-		byte[] buffer = new byte[1024];
-		MessageDigest complete = MessageDigest.getInstance("MD5");
-		int numRead;
+    byte[] buffer = new byte[1024];
+    MessageDigest complete = MessageDigest.getInstance("MD5");
+    int numRead;
 
-		do {
-			numRead = fis.read(buffer);
-			if (numRead > 0) {
-				complete.update(buffer, 0, numRead);
-			}
-		} while (numRead != -1);
+    do {
+      numRead = fis.read(buffer);
+      if (numRead > 0) {
+        complete.update(buffer, 0, numRead);
+      }
+    } while (numRead != -1);
 
-		fis.close();
-		return complete.digest();
-	}
+    fis.close();
+    return complete.digest();
+  }
 
 }

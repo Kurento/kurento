@@ -37,157 +37,149 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class FileSystemRepository implements RepositoryWithHttp {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(FileSystemRepository.class);
+  private static final Logger log = LoggerFactory.getLogger(FileSystemRepository.class);
 
-	private static final String ITEMS_METADATA_FILE_PATH = "metadata/metadata.json";
+  private static final String ITEMS_METADATA_FILE_PATH = "metadata/metadata.json";
 
-	@Autowired
-	private RepositoryApiConfiguration config;
+  @Autowired
+  private RepositoryApiConfiguration config;
 
-	private File baseFolder;
+  private File baseFolder;
 
-	private int nextFreeFileNumber = 1;
-	private boolean firstIdRequest = true;
+  private int nextFreeFileNumber = 1;
+  private boolean firstIdRequest = true;
 
-	private ItemsMetadata metadata;
+  private ItemsMetadata metadata;
 
-	@Autowired
-	private RepositoryHttpManager httpManager;
+  @Autowired
+  private RepositoryHttpManager httpManager;
 
-	@PostConstruct
-	public void init() {
-		log.debug("Invoked post construct init method");
-		
-		baseFolder = new File(config.getFileSystemFolder());
-		checkFolder(baseFolder);
-		calculateNextId(true);
-		metadata = new ItemsMetadata(new File(baseFolder,
-				ITEMS_METADATA_FILE_PATH));
-	}
+  @PostConstruct
+  public void init() {
+    log.debug("Invoked post construct init method");
 
-	@PreDestroy
-	public void close() {
-		log.debug("Closing file system repository");
-		this.metadata.save();
-	}
+    baseFolder = new File(config.getFileSystemFolder());
+    checkFolder(baseFolder);
+    calculateNextId(true);
+    metadata = new ItemsMetadata(new File(baseFolder, ITEMS_METADATA_FILE_PATH));
+  }
 
-	private synchronized String calculateNextId(boolean init) {
-		// Very naive unique identifier system
-		if (firstIdRequest) {
-			firstIdRequest = false;
-			while (true) {
-				File file = getFileForId(Integer.toString(nextFreeFileNumber));
-				if (file.exists()) {
-					log.debug(
-							"File with id {} already exists, trying next value",
-							nextFreeFileNumber);
-					nextFreeFileNumber++;
-				} else {
-					if (init)
-						nextFreeFileNumber--;
-					break;
-				}
-			}
-		} else
-			nextFreeFileNumber++;
-		log.debug("Returning next free ID {}", nextFreeFileNumber);
-		return Integer.toString(nextFreeFileNumber);
-	}
+  @PreDestroy
+  public void close() {
+    log.debug("Closing file system repository");
+    this.metadata.save();
+  }
 
-	private void checkFolder(File folder) {
-		if (folder.exists() && !folder.isDirectory()) {
-			throw new IllegalArgumentException("The specified \""
-					+ folder.getAbsolutePath() + "\" is not a valid folder");
-		}
+  private synchronized String calculateNextId(boolean init) {
+    // Very naive unique identifier system
+    if (firstIdRequest) {
+      firstIdRequest = false;
+      while (true) {
+        File file = getFileForId(Integer.toString(nextFreeFileNumber));
+        if (file.exists()) {
+          log.debug("File with id {} already exists, trying next value", nextFreeFileNumber);
+          nextFreeFileNumber++;
+        } else {
+          if (init) {
+            nextFreeFileNumber--;
+          }
+          break;
+        }
+      }
+    } else {
+      nextFreeFileNumber++;
+    }
+    log.debug("Returning next free ID {}", nextFreeFileNumber);
+    return Integer.toString(nextFreeFileNumber);
+  }
 
-		if (!folder.exists()) {
-			boolean created = folder.mkdirs();
-			if (!created) {
-				throw new IllegalArgumentException("Error while creating \""
-						+ folder.getAbsolutePath() + "\" folder");
-			}
-		}
+  private void checkFolder(File folder) {
+    if (folder.exists() && !folder.isDirectory()) {
+      throw new IllegalArgumentException(
+          "The specified \"" + folder.getAbsolutePath() + "\" is not a valid folder");
+    }
 
-	}
+    if (!folder.exists()) {
+      boolean created = folder.mkdirs();
+      if (!created) {
+        throw new IllegalArgumentException(
+            "Error while creating \"" + folder.getAbsolutePath() + "\" folder");
+      }
+    }
 
-	@Override
-	public RepositoryItem findRepositoryItemById(String id) {
+  }
 
-		File file = getFileForId(id);
-		if (!file.exists()) {
-			throw new NoSuchElementException("The repository item with id \""
-					+ id + "\" does not exist");
-		}
+  @Override
+  public RepositoryItem findRepositoryItemById(String id) {
 
-		return new FileRepositoryItem(this, file, id, metadata.loadMetadata(id));
-	}
+    File file = getFileForId(id);
+    if (!file.exists()) {
+      throw new NoSuchElementException("The repository item with id \"" + id + "\" does not exist");
+    }
 
-	@Override
-	public RepositoryItem createRepositoryItem() {
-		String id = calculateNextId(false);
-		return new FileRepositoryItem(this, getFileForId(id), id,
-				metadata.loadMetadata(id));
-	}
+    return new FileRepositoryItem(this, file, id, metadata.loadMetadata(id));
+  }
 
-	@Override
-	public RepositoryItem createRepositoryItem(String id) {
+  @Override
+  public RepositoryItem createRepositoryItem() {
+    String id = calculateNextId(false);
+    return new FileRepositoryItem(this, getFileForId(id), id, metadata.loadMetadata(id));
+  }
 
-		File file = getFileForId(id);
+  @Override
+  public RepositoryItem createRepositoryItem(String id) {
 
-		if (file.exists()) {
-			throw new DuplicateItemException(id);
-		}
+    File file = getFileForId(id);
 
-		return new FileRepositoryItem(this, file, id, metadata.loadMetadata(id));
-	}
+    if (file.exists()) {
+      throw new DuplicateItemException(id);
+    }
 
-	@Override
-	public List<RepositoryItem> findRepositoryItemsByAttValue(
-			String attributeName, String value) {
-		return createItemsForIds(metadata.findByAttValue(attributeName, value));
-	}
+    return new FileRepositoryItem(this, file, id, metadata.loadMetadata(id));
+  }
 
-	@Override
-	public List<RepositoryItem> findRepositoryItemsByAttRegex(
-			String attributeName, String regex) {
-		return createItemsForIds(metadata.findByAttRegex(attributeName, regex));
-	}
+  @Override
+  public List<RepositoryItem> findRepositoryItemsByAttValue(String attributeName, String value) {
+    return createItemsForIds(metadata.findByAttValue(attributeName, value));
+  }
 
-	private List<RepositoryItem> createItemsForIds(
-			List<Entry<String, Map<String, String>>> itemsInfo) {
-		List<RepositoryItem> items = new ArrayList<>();
-		for (Entry<String, Map<String, String>> itemInfo : itemsInfo) {
-			String id = itemInfo.getKey();
-			items.add(new FileRepositoryItem(this, getFileForId(id), id,
-					itemInfo.getValue()));
-		}
-		return items;
-	}
+  @Override
+  public List<RepositoryItem> findRepositoryItemsByAttRegex(String attributeName, String regex) {
+    return createItemsForIds(metadata.findByAttRegex(attributeName, regex));
+  }
 
-	private File getFileForId(String id) {
-		return new File(baseFolder, id);
-	}
+  private List<RepositoryItem> createItemsForIds(
+      List<Entry<String, Map<String, String>>> itemsInfo) {
+    List<RepositoryItem> items = new ArrayList<>();
+    for (Entry<String, Map<String, String>> itemInfo : itemsInfo) {
+      String id = itemInfo.getKey();
+      items.add(new FileRepositoryItem(this, getFileForId(id), id, itemInfo.getValue()));
+    }
+    return items;
+  }
 
-	@Override
-	public RepositoryHttpManager getRepositoryHttpManager() {
-		return httpManager;
-	}
+  private File getFileForId(String id) {
+    return new File(baseFolder, id);
+  }
 
-	@Override
-	public void remove(RepositoryItem item) {
-		FileRepositoryItem fileItem = (FileRepositoryItem) item;
-		httpManager.disposeHttpRepoItemElemByItemId(item,
-				"Repository Item removed");
-		File file = fileItem.getFile();
-		boolean success = file.delete();
-		if (!success) {
-			throw new KurentoException("The file can't be deleted");
-		}
-	}
+  @Override
+  public RepositoryHttpManager getRepositoryHttpManager() {
+    return httpManager;
+  }
 
-	public void setMetadataForItem(FileRepositoryItem fileRepositoryItem,
-			Map<String, String> metadata) {
-		this.metadata.setMetadataForId(fileRepositoryItem.getId(), metadata);
-	}
+  @Override
+  public void remove(RepositoryItem item) {
+    FileRepositoryItem fileItem = (FileRepositoryItem) item;
+    httpManager.disposeHttpRepoItemElemByItemId(item, "Repository Item removed");
+    File file = fileItem.getFile();
+    boolean success = file.delete();
+    if (!success) {
+      throw new KurentoException("The file can't be deleted");
+    }
+  }
+
+  public void setMetadataForItem(FileRepositoryItem fileRepositoryItem,
+      Map<String, String> metadata) {
+    this.metadata.setMetadataForId(fileRepositoryItem.getId(), metadata);
+  }
 }

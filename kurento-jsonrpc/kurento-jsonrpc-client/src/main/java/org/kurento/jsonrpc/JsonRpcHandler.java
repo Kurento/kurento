@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc;
 
 import java.util.List;
@@ -20,46 +21,46 @@ import org.kurento.jsonrpc.message.Request;
 
 public interface JsonRpcHandler<P> {
 
-	/**
-	 * Invoked when a new JsonRpc request arrives.
-	 *
-	 * @param transaction
-	 *            the transaction to which the request belongs
-	 * @param request
-	 *            the request
-	 *
-	 * @throws TransportException
-	 *             when there is an error in the transport mechanism
-	 *
-	 * @throws Exception
-	 *             this method can handle or propagate exceptions.
-	 */
-	void handleRequest(Transaction transaction, Request<P> request) throws Exception;
+  /**
+   * Invoked when a new JsonRpc request arrives.
+   *
+   * @param transaction
+   *          the transaction to which the request belongs
+   * @param request
+   *          the request
+   *
+   * @throws TransportException
+   *           when there is an error in the transport mechanism
+   *
+   * @throws Exception
+   *           this method can handle or propagate exceptions.
+   */
+  void handleRequest(Transaction transaction, Request<P> request) throws Exception;
 
-	void afterConnectionEstablished(Session session) throws Exception;
+  void afterConnectionEstablished(Session session) throws Exception;
 
-	void afterConnectionClosed(Session session, String status) throws Exception;
+  void afterConnectionClosed(Session session, String status) throws Exception;
 
-	void handleTransportError(Session session, Throwable exception) throws Exception;
+  void handleTransportError(Session session, Throwable exception) throws Exception;
 
-	void handleUncaughtException(Session session, Exception exception);
+  void handleUncaughtException(Session session, Exception exception);
 
-	Class<?> getHandlerType();
+  Class<?> getHandlerType();
 
-	/**
-	 * This method configures the handler to use sockJS
-	 */
-	JsonRpcHandler<P> withSockJS();
+  /**
+   * This method configures the handler to use sockJS
+   */
+  JsonRpcHandler<P> withSockJS();
 
-	JsonRpcHandler<P> withAllowedOrigins(String... string);
+  JsonRpcHandler<P> withAllowedOrigins(String... string);
 
-	boolean isSockJSEnabled();
+  boolean isSockJSEnabled();
 
-	List<String> allowedOrigins();
+  List<String> allowedOrigins();
 
-	JsonRpcHandler<P> withLabel(String label);
+  JsonRpcHandler<P> withLabel(String label);
 
-	String getLabel();
+  String getLabel();
 
-	boolean isPingWatchdog();
+  boolean isPingWatchdog();
 }

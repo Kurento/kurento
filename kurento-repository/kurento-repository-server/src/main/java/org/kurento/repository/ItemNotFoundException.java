@@ -17,13 +17,13 @@ package org.kurento.repository;
 
 /**
  * Thrown when a repository item is not found using the provided id.
- * 
+ *
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
 public class ItemNotFoundException extends Exception {
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public ItemNotFoundException(String msg) {
-		super(msg);
-	}
+  public ItemNotFoundException(String msg) {
+    super(msg);
+  }
 }

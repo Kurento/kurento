@@ -1,3 +1,4 @@
+
 package org.kurento.test.metatest;
 
 import java.io.IOException;
@@ -26,163 +27,146 @@ import org.slf4j.LoggerFactory;
 @Category(SystemTests.class)
 public class BrowserCreationTest {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(BrowserCreationTest.class);
+  private static final Logger log = LoggerFactory.getLogger(BrowserCreationTest.class);
 
-	private static final int NUM_BROWSERS = PropertiesManager
-			.getProperty("test.BrowserCreationTest.numBrowsers", 5);
-	private static final int NUM_ITERATIONS = PropertiesManager
-			.getProperty("test.BrowserCreationTest.numIterations", 3);
+  private static final int NUM_BROWSERS =
+      PropertiesManager.getProperty("test.BrowserCreationTest.numBrowsers", 5);
+  private static final int NUM_ITERATIONS =
+      PropertiesManager.getProperty("test.BrowserCreationTest.numIterations", 3);
 
-	@Test
-	public void testParallelBrowser() throws InterruptedException, IOException {
+  @Test
+  public void testParallelBrowser() throws InterruptedException, IOException {
 
-		System.setProperty("test.selenium.record", "false");
+    System.setProperty("test.selenium.record", "false");
 
-		initTestFolder("testParallelBrowser");
+    initTestFolder("testParallelBrowser");
 
-		for (int i = 0; i < NUM_ITERATIONS; i++) {
-			createParallelBrowsers(NUM_BROWSERS);
-		}
-	}
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
+      createParallelBrowsers(NUM_BROWSERS);
+    }
+  }
 
-	@Test
-	public void testSerialBrowser() throws InterruptedException, IOException {
+  @Test
+  public void testSerialBrowser() throws InterruptedException, IOException {
 
-		System.setProperty("test.selenium.record", "false");
+    System.setProperty("test.selenium.record", "false");
 
-		initTestFolder("testSerialBrowser");
+    initTestFolder("testSerialBrowser");
 
-		for (int i = 0; i < NUM_ITERATIONS; i++) {
+    for (int i = 0; i < NUM_ITERATIONS; i++) {
 
-			for (int j = 0; j < NUM_BROWSERS; j++) {
+      for (int j = 0; j < NUM_BROWSERS; j++) {
 
-				log.info("Created browser {}-{}", i, j);
+        log.info("Created browser {}-{}", i, j);
 
-				Browser browser = new Browser.Builder()
-						.scope(BrowserScope.DOCKER).build();
+        Browser browser = new Browser.Builder().scope(BrowserScope.DOCKER).build();
 
-				browser.setId("browser_" + i + "_" + j);
+        browser.setId("browser_" + i + "_" + j);
 
-				browser.init();
+        browser.init();
 
-				browser.close();
-			}
-		}
-	}
+        browser.close();
+      }
+    }
+  }
 
-	private void createParallelBrowsers(int numBrowsers)
-			throws InterruptedException {
-		long startTime = System.currentTimeMillis();
+  private void createParallelBrowsers(int numBrowsers) throws InterruptedException {
+    long startTime = System.currentTimeMillis();
 
-		final List<Browser> browsers = Collections
-				.synchronizedList(new ArrayList<Browser>());
+    final List<Browser> browsers = Collections.synchronizedList(new ArrayList<Browser>());
 
-		ExecutorService executor = Executors.newFixedThreadPool(numBrowsers);
+    ExecutorService executor = Executors.newFixedThreadPool(numBrowsers);
 
-		try {
+    try {
 
-			final AbortableCountDownLatch latch = new AbortableCountDownLatch(
-					numBrowsers);
+      final AbortableCountDownLatch latch = new AbortableCountDownLatch(numBrowsers);
 
-			for (int i = 0; i < numBrowsers; i++) {
+      for (int i = 0; i < numBrowsers; i++) {
 
-				final int numBrowser = i;
+        final int numBrowser = i;
 
-				executor.execute(new Runnable() {
+        executor.execute(new Runnable() {
 
-					@Override
-					public void run() {
-						try {
+          @Override
+          public void run() {
+            try {
 
-							Browser browser = new Browser.Builder()
-									.scope(BrowserScope.DOCKER).build();
+              Browser browser = new Browser.Builder().scope(BrowserScope.DOCKER).build();
 
-							browsers.add(browser);
+              browsers.add(browser);
 
-							browser.setId("browser" + numBrowser);
+              browser.setId("browser" + numBrowser);
 
-							browser.init();
+              browser.init();
 
-							latch.countDown();
+              latch.countDown();
 
-						} catch (Throwable t) {
-							latch.abort(
-									"Exception setting up test. A browser could not be initialised",
-									t);
-						}
-					}
-				});
-			}
+            } catch (Throwable t) {
+              latch.abort("Exception setting up test. A browser could not be initialised", t);
+            }
+          }
+        });
+      }
 
-			latch.await();
+      latch.await();
 
-			long creationTime = System.currentTimeMillis() - startTime;
+      long creationTime = System.currentTimeMillis() - startTime;
 
-			log.info(
-					"----------------------------------------------------------------");
+      log.info("----------------------------------------------------------------");
 
-			log.info("All {} browsers started in {} millis", numBrowsers,
-					creationTime);
+      log.info("All {} browsers started in {} millis", numBrowsers, creationTime);
 
-			log.info(
-					"----------------------------------------------------------------");
+      log.info("----------------------------------------------------------------");
 
-		} finally {
+    } finally {
 
-			log.info(
-					"***************************************************************");
+      log.info("***************************************************************");
 
-			startTime = System.currentTimeMillis();
+      startTime = System.currentTimeMillis();
 
-			final AbortableCountDownLatch latch = new AbortableCountDownLatch(
-					numBrowsers);
+      final AbortableCountDownLatch latch = new AbortableCountDownLatch(numBrowsers);
 
-			for (final Browser browser : browsers) {
-				executor.execute(new Runnable() {
-					@Override
-					public void run() {
-						browser.close();
-						latch.countDown();
-					}
-				});
-			}
+      for (final Browser browser : browsers) {
+        executor.execute(new Runnable() {
+          @Override
+          public void run() {
+            browser.close();
+            latch.countDown();
+          }
+        });
+      }
 
-			executor.shutdown();
-			executor.awaitTermination(10, TimeUnit.HOURS);
+      executor.shutdown();
+      executor.awaitTermination(10, TimeUnit.HOURS);
 
-			latch.await();
+      latch.await();
 
-			long destructionTime = System.currentTimeMillis() - startTime;
+      long destructionTime = System.currentTimeMillis() - startTime;
 
-			log.info(
-					"----------------------------------------------------------------");
+      log.info("----------------------------------------------------------------");
 
-			log.info("All {} browsers stopped in {} millis", numBrowsers,
-					destructionTime);
+      log.info("All {} browsers stopped in {} millis", numBrowsers, destructionTime);
 
-			log.info(
-					"----------------------------------------------------------------");
-		}
-	}
+      log.info("----------------------------------------------------------------");
+    }
+  }
 
-	private void initTestFolder(String testName) throws IOException {
+  private void initTestFolder(String testName) throws IOException {
 
-		KurentoTest.setTestClassName(this.getClass().getSimpleName());
-		KurentoTest.setTestMethodName(testName);
+    KurentoTest.setTestClassName(this.getClass().getSimpleName());
+    KurentoTest.setTestMethodName(testName);
 
-		log.info("Tests dir {}", KurentoTest.getTestDir());
+    log.info("Tests dir {}", KurentoTest.getTestDir());
 
-		Path testFolder = Paths.get(KurentoTest.getTestDir(),
-				"BrowserCreationTest");
+    Path testFolder = Paths.get(KurentoTest.getTestDir(), "BrowserCreationTest");
 
-		if (Files.exists(testFolder)) {
-			log.debug("Deleting test folder {}", testFolder);
-			FileUtils.forceDelete(testFolder.toFile());
-		}
+    if (Files.exists(testFolder)) {
+      log.debug("Deleting test folder {}", testFolder);
+      FileUtils.forceDelete(testFolder.toFile());
+    }
 
-		log.debug("Creating test folder {}", testFolder);
-		Files.createDirectories(testFolder);
-	}
+    log.debug("Creating test folder {}", testFolder);
+    Files.createDirectories(testFolder);
+  }
 
 }

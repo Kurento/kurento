@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.lifecycle;
 
 import java.lang.annotation.Retention;
@@ -19,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Custom annotation for finished tests.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */

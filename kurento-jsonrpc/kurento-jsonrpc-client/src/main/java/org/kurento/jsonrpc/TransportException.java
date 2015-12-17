@@ -12,31 +12,31 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc;
 
 /**
- * This exception occurs when there is a communication error. This could happen
- * either when trying to reach KMS, or when the server is trying to send a
- * response to the client.
- * 
+ * This exception occurs when there is a communication error. This could happen either when trying
+ * to reach KMS, or when the server is trying to send a response to the client.
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.1
- * 
+ *
  */
 public class TransportException extends JsonRpcException {
 
-	private static final long serialVersionUID = -9166377169939591329L;
+  private static final long serialVersionUID = -9166377169939591329L;
 
-	public TransportException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public TransportException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-	public TransportException(String message) {
-		super(message);
-	}
+  public TransportException(String message) {
+    super(message);
+  }
 
-	public TransportException(Throwable cause) {
-		super(cause);
-	}
+  public TransportException(Throwable cause) {
+    super(cause);
+  }
 
 }

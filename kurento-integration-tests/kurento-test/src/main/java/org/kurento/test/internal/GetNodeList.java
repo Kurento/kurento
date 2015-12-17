@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.internal;
 
 import java.io.IOException;
@@ -24,24 +25,24 @@ import org.kurento.test.grid.GridHandler;
 
 /**
  * Internal utility for reading a node from a URL.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.0.1
  */
 public class GetNodeList {
 
-	public static void main(String[] args) throws IOException {
-		List<String> nodeList = new ArrayList<>();
+  public static void main(String[] args) throws IOException {
+    List<String> nodeList = new ArrayList<>();
 
-		for (String url : args) {
-			String contents = GridHandler.readContents(url);
-			Pattern p = Pattern.compile(GridHandler.IPS_REGEX);
-			Matcher m = p.matcher(contents);
-			while (m.find()) {
-				nodeList.add(m.group());
-			}
-		}
-		System.err.println(nodeList);
-	}
+    for (String url : args) {
+      String contents = GridHandler.readContents(url);
+      Pattern p = Pattern.compile(GridHandler.IPS_REGEX);
+      Matcher m = p.matcher(contents);
+      while (m.find()) {
+        nodeList.add(m.group());
+      }
+    }
+    System.err.println(nodeList);
+  }
 
 }

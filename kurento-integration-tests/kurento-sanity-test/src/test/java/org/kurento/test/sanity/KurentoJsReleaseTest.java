@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.sanity;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
@@ -20,24 +21,24 @@ import org.junit.Test;
 
 /**
  * Sanity test for kurento-js releases.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
 public class KurentoJsReleaseTest extends KurentoJsBase {
 
-	public KurentoJsReleaseTest() {
+  public KurentoJsReleaseTest() {
 
-		kurentoUrl = getProperty("bower.release.url", DEFAULT_KURENTO_JS_URL);
-		log.debug("kurentoUrl = {}", kurentoUrl);
-		if (!kurentoUrl.endsWith("/")) {
-			kurentoUrl += "/";
-		}
-	}
+    kurentoUrl = getProperty("bower.release.url", DEFAULT_KURENTO_JS_URL);
+    log.debug("kurentoUrl = {}", kurentoUrl);
+    if (!kurentoUrl.endsWith("/")) {
+      kurentoUrl += "/";
+    }
+  }
 
-	@Test
-	public void kurentoJsReleaseTest() {
-		doTest();
-	}
+  @Test
+  public void kurentoJsReleaseTest() {
+    doTest();
+  }
 
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.kurento.jsonrpc.internal.server;
 
 import org.slf4j.Logger;
@@ -24,79 +25,77 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
- * Instantiates a target handler through a Spring {@link BeanFactory} and also
- * provides an equivalent destroy method. Mainly for internal use to assist with
- * initializing and destroying handlers with per-connection lifecycle.
- * 
+ * Instantiates a target handler through a Spring {@link BeanFactory} and also provides an
+ * equivalent destroy method. Mainly for internal use to assist with initializing and destroying
+ * handlers with per-connection lifecycle.
+ *
  * @author Rossen Stoyanchev
  * @param <T>
  * @since 4.0
  */
 class BeanCreatingHelper<T> implements BeanFactoryAware {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(BeanCreatingHelper.class);
+  private static final Logger logger = LoggerFactory.getLogger(BeanCreatingHelper.class);
 
-	private AutowireCapableBeanFactory beanFactory;
+  private AutowireCapableBeanFactory beanFactory;
 
-	private final Class<? extends T> beanType;
-	private final String beanName;
-	private Class<?> createdBeanType;
+  private final Class<? extends T> beanType;
+  private final String beanName;
+  private Class<?> createdBeanType;
 
-	public BeanCreatingHelper(Class<? extends T> handlerType, String beanName) {
-		this.beanType = handlerType;
-		this.beanName = beanName;
+  public BeanCreatingHelper(Class<? extends T> handlerType, String beanName) {
+    this.beanType = handlerType;
+    this.beanName = beanName;
 
-		this.createdBeanType = beanType;
-	}
+    this.createdBeanType = beanType;
+  }
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		if (beanFactory instanceof AutowireCapableBeanFactory) {
-			this.beanFactory = (AutowireCapableBeanFactory) beanFactory;
-		}
-	}
+  @Override
+  public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    if (beanFactory instanceof AutowireCapableBeanFactory) {
+      this.beanFactory = (AutowireCapableBeanFactory) beanFactory;
+    }
+  }
 
-	public Class<?> getCreatedBeanType() {
-		return this.createdBeanType;
-	}
+  public Class<?> getCreatedBeanType() {
+    return this.createdBeanType;
+  }
 
-	public void setCreatedBeanType(Class<?> createdBeanType) {
-		this.createdBeanType = createdBeanType;
-	}
+  public void setCreatedBeanType(Class<?> createdBeanType) {
+    this.createdBeanType = createdBeanType;
+  }
 
-	@SuppressWarnings("unchecked")
-	public T createBean() {
-		if (logger.isTraceEnabled()) {
-			logger.trace("Creating instance for handler type {}", this.beanType);
-		}
-		if (this.beanFactory == null) {
-			logger.warn("No BeanFactory available, attempting to use default constructor");
-			return BeanUtils.instantiate(this.beanType);
-		} else {
+  @SuppressWarnings("unchecked")
+  public T createBean() {
+    if (logger.isTraceEnabled()) {
+      logger.trace("Creating instance for handler type {}", this.beanType);
+    }
+    if (this.beanFactory == null) {
+      logger.warn("No BeanFactory available, attempting to use default constructor");
+      return BeanUtils.instantiate(this.beanType);
+    } else {
 
-			if (beanType != null) {
-				return this.beanFactory.createBean(this.beanType);
-			} else {
-				T bean = (T) beanFactory.getBean(beanName);
-				createdBeanType = bean.getClass();
-				return bean;
-			}
-		}
-	}
+      if (beanType != null) {
+        return this.beanFactory.createBean(this.beanType);
+      } else {
+        T bean = (T) beanFactory.getBean(beanName);
+        createdBeanType = bean.getClass();
+        return bean;
+      }
+    }
+  }
 
-	public void destroy(T handler) {
-		if (this.beanFactory != null) {
-			if (logger.isTraceEnabled()) {
-				logger.trace("Destroying handler instance {}", handler);
-			}
-			this.beanFactory.destroyBean(handler);
-		}
-	}
+  public void destroy(T handler) {
+    if (this.beanFactory != null) {
+      if (logger.isTraceEnabled()) {
+        logger.trace("Destroying handler instance {}", handler);
+      }
+      this.beanFactory.destroyBean(handler);
+    }
+  }
 
-	@Override
-	public String toString() {
-		return "BeanCreatingHelper [beanType=" + beanType + ", beanName="
-				+ beanName + "]";
-	}
+  @Override
+  public String toString() {
+    return "BeanCreatingHelper [beanType=" + beanType + ", beanName=" + beanName + "]";
+  }
 }

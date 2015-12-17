@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
@@ -20,15 +21,15 @@ import org.kurento.test.browser.WebRtcTestPage;
 
 /**
  * Scalability tests.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
 @Category(SystemScalabilityTests.class)
 public class ScalabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	public ScalabilityTest() {
-		setDeleteLogsIfSuccess(false);
-	}
+  public ScalabilityTest() {
+    setDeleteLogsIfSuccess(false);
+  }
 
 }

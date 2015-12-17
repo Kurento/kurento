@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc;
 
 import org.kurento.commons.exception.KurentoException;
@@ -24,18 +25,18 @@ import org.kurento.commons.exception.KurentoException;
  */
 public class JsonRpcException extends KurentoException {
 
-	private static final long serialVersionUID = -9166377169939591329L;
+  private static final long serialVersionUID = -9166377169939591329L;
 
-	public JsonRpcException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public JsonRpcException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-	public JsonRpcException(String message) {
-		super(message);
-	}
+  public JsonRpcException(String message) {
+    super(message);
+  }
 
-	public JsonRpcException(Throwable cause) {
-		super(cause);
-	}
+  public JsonRpcException(Throwable cause) {
+    super(cause);
+  }
 
 }

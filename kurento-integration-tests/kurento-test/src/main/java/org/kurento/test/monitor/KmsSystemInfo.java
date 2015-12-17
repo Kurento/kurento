@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.monitor;
 
 import java.io.Serializable;
@@ -24,59 +25,58 @@ import java.io.Serializable;
  */
 public class KmsSystemInfo implements Serializable {
 
-	private static final long serialVersionUID = -8862615359741666215L;
+  private static final long serialVersionUID = -8862615359741666215L;
 
-	private double cpuPercent;
-	private long mem;
-	private double memPercent;
-	private NetInfo netInfo;
-	private int numThreadsKms;
+  private double cpuPercent;
+  private long mem;
+  private double memPercent;
+  private NetInfo netInfo;
+  private int numThreadsKms;
 
-	public double getCpuPercent() {
-		return cpuPercent;
-	}
+  public double getCpuPercent() {
+    return cpuPercent;
+  }
 
-	public void setCpuPercent(double cpuPercent) {
-		this.cpuPercent = cpuPercent;
-	}
+  public void setCpuPercent(double cpuPercent) {
+    this.cpuPercent = cpuPercent;
+  }
 
-	public NetInfo getNetInfo() {
-		return netInfo;
-	}
+  public NetInfo getNetInfo() {
+    return netInfo;
+  }
 
-	public void setNetInfo(NetInfo netInfo) {
-		this.netInfo = netInfo;
-	}
+  public void setNetInfo(NetInfo netInfo) {
+    this.netInfo = netInfo;
+  }
 
-	public long getMem() {
-		return mem;
-	}
+  public long getMem() {
+    return mem;
+  }
 
-	public void setMem(long mem) {
-		this.mem = mem;
-	}
+  public void setMem(long mem) {
+    this.mem = mem;
+  }
 
-	public double getMemPercent() {
-		return memPercent;
-	}
+  public double getMemPercent() {
+    return memPercent;
+  }
 
-	public void setMemPercent(double memPercent) {
-		this.memPercent = memPercent;
-	}
+  public void setMemPercent(double memPercent) {
+    this.memPercent = memPercent;
+  }
 
-	public int getNumThreadsKms() {
-		return numThreadsKms;
-	}
+  public int getNumThreadsKms() {
+    return numThreadsKms;
+  }
 
-	public void setNumThreadsKms(int numThreadsKms) {
-		this.numThreadsKms = numThreadsKms;
-	}
+  public void setNumThreadsKms(int numThreadsKms) {
+    this.numThreadsKms = numThreadsKms;
+  }
 
-	@Override
-	public String toString() {
-		return "KmsSystemInfo [cpuPercent=" + cpuPercent + ", mem=" + mem
-				+ ", memPercent=" + memPercent + ", netInfo=" + netInfo
-				+ ", numThreadsKms=" + numThreadsKms + "]";
-	}
+  @Override
+  public String toString() {
+    return "KmsSystemInfo [cpuPercent=" + cpuPercent + ", mem=" + mem + ", memPercent=" + memPercent
+        + ", netInfo=" + netInfo + ", numThreadsKms=" + numThreadsKms + "]";
+  }
 
 }

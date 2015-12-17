@@ -12,49 +12,44 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.internal;
 
 import java.io.IOException;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 public interface JsonRpcRequestSender {
 
-	<R> R sendRequest(String method, Class<R> resultClass) throws IOException;
+  <R> R sendRequest(String method, Class<R> resultClass) throws IOException;
 
-	<R> R sendRequest(String method, Object params, Class<R> resultClass)
-			throws IOException;
+  <R> R sendRequest(String method, Object params, Class<R> resultClass) throws IOException;
 
-	JsonElement sendRequest(String method) throws IOException;
+  JsonElement sendRequest(String method) throws IOException;
 
-	JsonElement sendRequest(String method, Object params) throws IOException;
+  JsonElement sendRequest(String method, Object params) throws IOException;
 
-	Response<JsonElement> sendRequest(Request<JsonObject> request)
-			throws IOException;
-	
-	Response<JsonElement> sendRequestHonorId(Request<JsonObject> request)
-			throws IOException;
+  Response<JsonElement> sendRequest(Request<JsonObject> request) throws IOException;
 
-	void sendNotification(String method, Object params) throws IOException;
+  Response<JsonElement> sendRequestHonorId(Request<JsonObject> request) throws IOException;
 
-	void sendNotification(String method) throws IOException;
+  void sendNotification(String method, Object params) throws IOException;
 
-	void sendRequest(String method, JsonObject params,
-			Continuation<JsonElement> continuation);
+  void sendNotification(String method) throws IOException;
 
-	void sendRequest(Request<JsonObject> request,
-			Continuation<Response<JsonElement>> continuation)
-			throws IOException;
-	
-	void sendRequestHonorId(Request<JsonObject> request, 
-			Continuation<Response<JsonElement>> continuation)
-			throws IOException;
+  void sendRequest(String method, JsonObject params, Continuation<JsonElement> continuation);
 
-	void sendNotification(String method, Object params,
-			Continuation<JsonElement> continuation) throws IOException;
+  void sendRequest(Request<JsonObject> request, Continuation<Response<JsonElement>> continuation)
+      throws IOException;
+
+  void sendRequestHonorId(Request<JsonObject> request,
+      Continuation<Response<JsonElement>> continuation) throws IOException;
+
+  void sendNotification(String method, Object params, Continuation<JsonElement> continuation)
+      throws IOException;
 }

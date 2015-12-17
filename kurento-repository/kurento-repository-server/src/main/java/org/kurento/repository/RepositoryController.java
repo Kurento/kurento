@@ -34,94 +34,93 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller for the REST API of Kurento Repository.
- * 
+ *
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
 @RestController
 @RequestMapping(value = "/repo/item", produces = "application/json")
 public class RepositoryController {
 
-	@Autowired
-	private RepositoryService repoService;
+  @Autowired
+  private RepositoryService repoService;
 
-	@RequestMapping(method = RequestMethod.POST)
-	public RepositoryItemRecorder createRepositoryItem(
-			@RequestBody(required = false) Map<String, String> metadata) {
-		return repoService.createRepositoryItem(metadata);
-	}
+  @RequestMapping(method = RequestMethod.POST)
+  public RepositoryItemRecorder createRepositoryItem(
+      @RequestBody(required = false) Map<String, String> metadata) {
+    return repoService.createRepositoryItem(metadata);
+  }
 
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{itemId}")
-	public void removeRepositoryItem(@PathVariable("itemId") String itemId,
-			HttpServletResponse response) {
-		try {
-			repoService.removeRepositoryItem(itemId);
-		} catch (ItemNotFoundException e) {
-			try {
-				response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				throw new KurentoException(ioe);
-			}
-		}
-	}
+  @RequestMapping(method = RequestMethod.DELETE, value = "/{itemId}")
+  public void removeRepositoryItem(@PathVariable("itemId") String itemId,
+      HttpServletResponse response) {
+    try {
+      repoService.removeRepositoryItem(itemId);
+    } catch (ItemNotFoundException e) {
+      try {
+        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        throw new KurentoException(ioe);
+      }
+    }
+  }
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{itemId}")
-	public RepositoryItemPlayer getReadEndpoint(
-			@PathVariable("itemId") String itemId, HttpServletResponse response) {
-		try {
-			return repoService.getReadEndpoint(itemId);
-		} catch (ItemNotFoundException e) {
-			try {
-				response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				throw new KurentoException(ioe);
-			}
-			return null;
-		}
-	}
+  @RequestMapping(method = RequestMethod.GET, value = "/{itemId}")
+  public RepositoryItemPlayer getReadEndpoint(@PathVariable("itemId") String itemId,
+      HttpServletResponse response) {
+    try {
+      return repoService.getReadEndpoint(itemId);
+    } catch (ItemNotFoundException e) {
+      try {
+        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        throw new KurentoException(ioe);
+      }
+      return null;
+    }
+  }
 
-	@RequestMapping(method = RequestMethod.POST, value = "/find")
-	public Set<String> simpleFindItems(
-			@RequestBody(required = true) Map<String, String> searchValues) {
-		return repoService.findItems(searchValues, false);
-	}
+  @RequestMapping(method = RequestMethod.POST, value = "/find")
+  public Set<String> simpleFindItems(
+      @RequestBody(required = true) Map<String, String> searchValues) {
+    return repoService.findItems(searchValues, false);
+  }
 
-	@RequestMapping(method = RequestMethod.POST, value = "/find/regex")
-	public Set<String> regexFindItems(
-			@RequestBody(required = true) Map<String, String> searchValues) {
-		return repoService.findItems(searchValues, true);
-	}
+  @RequestMapping(method = RequestMethod.POST, value = "/find/regex")
+  public Set<String> regexFindItems(
+      @RequestBody(required = true) Map<String, String> searchValues) {
+    return repoService.findItems(searchValues, true);
+  }
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{itemId}/metadata")
-	public Map<String, String> getRepositoryItemMetadata(
-			@PathVariable("itemId") String itemId, HttpServletResponse response) {
-		try {
-			return repoService.getRepositoryItemMetadata(itemId);
-		} catch (ItemNotFoundException e) {
-			try {
-				response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				throw new KurentoException(ioe);
-			}
-			return null;
-		}
-	}
+  @RequestMapping(method = RequestMethod.GET, value = "/{itemId}/metadata")
+  public Map<String, String> getRepositoryItemMetadata(@PathVariable("itemId") String itemId,
+      HttpServletResponse response) {
+    try {
+      return repoService.getRepositoryItemMetadata(itemId);
+    } catch (ItemNotFoundException e) {
+      try {
+        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        throw new KurentoException(ioe);
+      }
+      return null;
+    }
+  }
 
-	@RequestMapping(method = RequestMethod.PUT, value = "/{itemId}/metadata")
-	public void setRepositoryItemMetadata(
-			@RequestBody(required = true) Map<String, String> metadata,
-			@PathVariable("itemId") String itemId, HttpServletResponse response) {
-		try {
-			repoService.setRepositoryItemMetadata(itemId, metadata);
-		} catch (ItemNotFoundException e) {
-			try {
-				response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				throw new KurentoException(ioe);
-			}
-		}
-	}
+  @RequestMapping(method = RequestMethod.PUT, value = "/{itemId}/metadata")
+  public void setRepositoryItemMetadata(@RequestBody(required = true) Map<String, String> metadata,
+      @PathVariable("itemId") String itemId, HttpServletResponse response) {
+    try {
+      repoService.setRepositoryItemMetadata(itemId, metadata);
+    } catch (ItemNotFoundException e) {
+      try {
+        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        throw new KurentoException(ioe);
+      }
+    }
+  }
 }

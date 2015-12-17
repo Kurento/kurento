@@ -12,14 +12,14 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.latency;
 
 import java.util.Observable;
 import java.util.Observer;
 
 /**
- * Change color observable (notifies observers when a color change is detected
- * in the browser).
+ * Change color observable (notifies observers when a color change is detected in the browser).
  *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -27,21 +27,20 @@ import java.util.Observer;
  */
 public class ChangeColorObservable extends Observable {
 
-	@SuppressWarnings("unchecked")
-	public void addListener(
-			final ChangeColorEventListener<? extends ChangeColorEvent> listener) {
-		addObserver(new Observer() {
-			public void update(Observable obs, Object e) {
-				ChangeColorEvent changeColorEvent = (ChangeColorEvent) e;
-				((ChangeColorEventListener<ChangeColorEvent>) listener)
-						.onEvent(changeColorEvent);
-			}
-		});
-	}
+  @SuppressWarnings("unchecked")
+  public void addListener(final ChangeColorEventListener<? extends ChangeColorEvent> listener) {
+    addObserver(new Observer() {
+      @Override
+      public void update(Observable obs, Object e) {
+        ChangeColorEvent changeColorEvent = (ChangeColorEvent) e;
+        ((ChangeColorEventListener<ChangeColorEvent>) listener).onEvent(changeColorEvent);
+      }
+    });
+  }
 
-	public void detectedColorChange(ChangeColorEvent event) {
-		setChanged();
-		notifyObservers(event);
-	}
+  public void detectedColorChange(ChangeColorEvent event) {
+    setChanged();
+    notifyObservers(event);
+  }
 
 }

@@ -35,90 +35,87 @@ import com.mongodb.gridfs.GridFSInputFile;
 
 public class MongoRepositoryItem extends AbstractRepositoryItem {
 
-	private GridFSFile dbFile;
-	private OutputStream storingOutputStream;
+  private GridFSFile dbFile;
+  private OutputStream storingOutputStream;
 
-	private MongoRepositoryItem(MongoRepository repository, GridFSFile dbFile,
-			State state) {
+  private MongoRepositoryItem(MongoRepository repository, GridFSFile dbFile, State state) {
 
-		super(dbFile.getId().toString(), state, loadAttributes(dbFile),
-				repository);
+    super(dbFile.getId().toString(), state, loadAttributes(dbFile), repository);
 
-		this.dbFile = dbFile;
-		// don't call ours setMetadata(...)
-		super.setMetadata(new HashMap<String, String>());
-	}
+    this.dbFile = dbFile;
+    // don't call ours setMetadata(...)
+    super.setMetadata(new HashMap<String, String>());
+  }
 
-	private static RepositoryItemAttributes loadAttributes(GridFSFile file) {
+  private static RepositoryItemAttributes loadAttributes(GridFSFile file) {
 
-		RepositoryItemAttributes attributes = new RepositoryItemAttributes();
+    RepositoryItemAttributes attributes = new RepositoryItemAttributes();
 
-		attributes.setContentLength(file.getLength());
-		attributes.setLastModified(file.getUploadDate().getTime());
-		attributes.setMimeType(file.getContentType());
+    attributes.setContentLength(file.getLength());
+    attributes.setLastModified(file.getUploadDate().getTime());
+    attributes.setMimeType(file.getContentType());
 
-		return attributes;
-	}
+    return attributes;
+  }
 
-	public MongoRepositoryItem(MongoRepository repository,
-			GridFSDBFile dbFile) {
-		this(repository, dbFile, State.STORED);
-	}
+  public MongoRepositoryItem(MongoRepository repository, GridFSDBFile dbFile) {
+    this(repository, dbFile, State.STORED);
+  }
 
-	public MongoRepositoryItem(MongoRepository repository,
-			GridFSInputFile dbFile) {
-		this(repository, dbFile, State.NEW);
-	}
+  public MongoRepositoryItem(MongoRepository repository, GridFSInputFile dbFile) {
+    this(repository, dbFile, State.NEW);
+  }
 
-	@Override
-	public InputStream createInputStreamToRead() {
-		checkState(State.STORED);
-		return ((GridFSDBFile) dbFile).getInputStream();
-	}
+  @Override
+  public InputStream createInputStreamToRead() {
+    checkState(State.STORED);
+    return ((GridFSDBFile) dbFile).getInputStream();
+  }
 
-	@Override
-	public OutputStream createOutputStreamToWrite() {
-		checkState(State.NEW);
+  @Override
+  public OutputStream createOutputStreamToWrite() {
+    checkState(State.NEW);
 
-		storingOutputStream = new FilterOutputStream(
-				((GridFSInputFile) dbFile).getOutputStream()) {
+    storingOutputStream = new FilterOutputStream(((GridFSInputFile) dbFile).getOutputStream()) {
 
-			@Override
-			public void close() throws IOException {
-				putMetadataInGridFS(false);
-				super.close();
-				refreshAttributesOnClose();
-			}
-		};
+      @Override
+      public void close() throws IOException {
+        putMetadataInGridFS(false);
+        super.close();
+        refreshAttributesOnClose();
+      }
+    };
 
-		return storingOutputStream;
-	}
+    return storingOutputStream;
+  }
 
-	@Override
-	public void setMetadata(Map<String, String> metadata) {
-		super.setMetadata(metadata);
-		if (state.equals(State.STORED))
-			putMetadataInGridFS(true);
-	}
+  @Override
+  public void setMetadata(Map<String, String> metadata) {
+    super.setMetadata(metadata);
+    if (state.equals(State.STORED)) {
+      putMetadataInGridFS(true);
+    }
+  }
 
-	protected void refreshAttributesOnClose() {
-		dbFile = ((MongoRepository) repository).getGridFS().findOne(getId());
-		if (dbFile == null)
-			throw new KurentoException(
-					"Grid object not found for id " + getId());
-		state = State.STORED;
-		attributes.setContentLength(dbFile.getLength());
-	}
+  protected void refreshAttributesOnClose() {
+    dbFile = ((MongoRepository) repository).getGridFS().findOne(getId());
+    if (dbFile == null) {
+      throw new KurentoException("Grid object not found for id " + getId());
+    }
+    state = State.STORED;
+    attributes.setContentLength(dbFile.getLength());
+  }
 
-	// TODO Optimize this to use the GridFS metadata
-	private void putMetadataInGridFS(boolean save) {
-		DBObject metadataDBO = new BasicDBObject();
-		for (Entry<String, String> entry : metadata.entrySet()) {
-			metadataDBO.put(entry.getKey(), entry.getValue());
-		}
-		dbFile.setMetaData(metadataDBO);
-		if (save)
-			dbFile.save();
-	}
+  // TODO Optimize this to use the GridFS metadata
+  private void putMetadataInGridFS(boolean save) {
+    DBObject metadataDBO = new BasicDBObject();
+    for (Entry<String, String> entry : metadata.entrySet()) {
+      metadataDBO.put(entry.getKey(), entry.getValue());
+    }
+    dbFile.setMetaData(metadataDBO);
+    if (save) {
+      dbFile.save();
+    }
+  }
 
 }

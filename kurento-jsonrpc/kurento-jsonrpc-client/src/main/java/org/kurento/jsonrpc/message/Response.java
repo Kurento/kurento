@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.jsonrpc.message;
 
 /**
@@ -24,85 +25,85 @@ package org.kurento.jsonrpc.message;
  */
 public class Response<R> extends Message {
 
-	/**
-	 * Request identifier related to this response
-	 */
-	private Integer id;
+  /**
+   * Request identifier related to this response
+   */
+  private Integer id;
 
-	/**
-	 * Method result
-	 */
-	private R result;
+  /**
+   * Method result
+   */
+  private R result;
 
-	/**
-	 * Error produced executing method
-	 */
-	private ResponseError error;
+  /**
+   * Error produced executing method
+   */
+  private ResponseError error;
 
-	/**
-	 * Default constructor.
-	 */
-	public Response() {
-	}
+  /**
+   * Default constructor.
+   */
+  public Response() {
+  }
 
-	public Response(R result) {
-		this(null, null, result);
-	}
+  public Response(R result) {
+    this(null, null, result);
+  }
 
-	public Response(ResponseError error) {
-		this(null, null, error);
-	}
+  public Response(ResponseError error) {
+    this(null, null, error);
+  }
 
-	public Response(Integer id, R result) {
-		this(null, id, result);
-	}
+  public Response(Integer id, R result) {
+    this(null, id, result);
+  }
 
-	public Response(Integer id, ResponseError error) {
-		this(null, id, error);
-	}
+  public Response(Integer id, ResponseError error) {
+    this(null, id, error);
+  }
 
-	public Response(Integer id) {
-		super(null);
-		this.id = id;
-	}
+  public Response(Integer id) {
+    super(null);
+    this.id = id;
+  }
 
-	public Response(String sessionId, Integer id, R result) {
-		super(sessionId);
-		this.id = id;
-		this.result = result;
-	}
+  public Response(String sessionId, Integer id, R result) {
+    super(sessionId);
+    this.id = id;
+    this.result = result;
+  }
 
-	public Response(String sessionId, Integer id, ResponseError error) {
-		super(sessionId);
-		this.id = id;
-		this.error = error;
-	}
+  public Response(String sessionId, Integer id, ResponseError error) {
+    super(sessionId);
+    this.id = id;
+    this.error = error;
+  }
 
-	public R getResult() {
-		return result;
-	}
+  public R getResult() {
+    return result;
+  }
 
-	public void setResult(R result) {
-		this.result = result;
-	}
+  public void setResult(R result) {
+    this.result = result;
+  }
 
-	public Integer getId() {
-		return id;
-	}
+  public Integer getId() {
+    return id;
+  }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-	public ResponseError getError() {
-		return error;
-	}
+  public ResponseError getError() {
+    return error;
+  }
 
-	public void setError(ResponseError error) {
-		this.error = error;
-	}
+  public void setError(ResponseError error) {
+    this.error = error;
+  }
 
-	public boolean isError() {
-		return error != null;
-	}
+  public boolean isError() {
+    return error != null;
+  }
 }

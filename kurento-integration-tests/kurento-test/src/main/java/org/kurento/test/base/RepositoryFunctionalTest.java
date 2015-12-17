@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.base;
 
 import org.junit.Before;
@@ -32,50 +33,47 @@ import com.google.common.io.Files;
 
 /**
  * Base for repository tests.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
 @Category(SystemFunctionalTests.class)
-public class RepositoryFunctionalTest
-		extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class RepositoryFunctionalTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-	@ComponentScan(basePackageClasses = {
-			org.kurento.repository.RepositoryItem.class })
-	public static class RepositoryWebServer extends WebServer {
+  @ComponentScan(basePackageClasses = { org.kurento.repository.RepositoryItem.class })
+  public static class RepositoryWebServer extends WebServer {
 
-		@Bean
-		public RepositoryHttpServlet repositoryHttpServlet() {
-			return new RepositoryHttpServlet();
-		}
+    @Bean
+    public RepositoryHttpServlet repositoryHttpServlet() {
+      return new RepositoryHttpServlet();
+    }
 
-		@Bean
-		public ServletRegistrationBean repositoryServletRegistrationBean(
-				RepositoryHttpServlet repositoryHttpServlet) {
-			ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(
-					repositoryHttpServlet, "/repository_servlet/*");
-			servletRegistrationBean.setLoadOnStartup(1);
-			return servletRegistrationBean;
-		}
+    @Bean
+    public ServletRegistrationBean repositoryServletRegistrationBean(
+        RepositoryHttpServlet repositoryHttpServlet) {
+      ServletRegistrationBean servletRegistrationBean =
+          new ServletRegistrationBean(repositoryHttpServlet, "/repository_servlet/*");
+      servletRegistrationBean.setLoadOnStartup(1);
+      return servletRegistrationBean;
+    }
 
-		@Bean
-		public RepositoryApiConfiguration repositoryApiConfiguration() {
-			RepositoryApiConfiguration config = new RepositoryApiConfiguration();
-			config.setWebappPublicURL("http://localhost:"
-					+ WebServerService.getAppHttpPort() + "/");
-			config.setFileSystemFolder(Files.createTempDir().toString());
-			config.setRepositoryType(RepoType.FILESYSTEM);
-			return config;
-		}
-	}
+    @Bean
+    public RepositoryApiConfiguration repositoryApiConfiguration() {
+      RepositoryApiConfiguration config = new RepositoryApiConfiguration();
+      config.setWebappPublicURL("http://localhost:" + WebServerService.getAppHttpPort() + "/");
+      config.setFileSystemFolder(Files.createTempDir().toString());
+      config.setRepositoryType(RepoType.FILESYSTEM);
+      return config;
+    }
+  }
 
-	public Repository repository;
+  public Repository repository;
 
-	@Before
-	public void setupRepository() {
-		webServer.setWebServerClass(RepositoryWebServer.class);
-		repository = (Repository) webServer.getContext().getBean("repository");
-	}
+  @Before
+  public void setupRepository() {
+    webServer.setWebServerClass(RepositoryWebServer.class);
+    repository = (Repository) webServer.getContext().getBean("repository");
+  }
 
 }

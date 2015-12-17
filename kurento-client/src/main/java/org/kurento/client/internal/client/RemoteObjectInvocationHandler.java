@@ -1,3 +1,4 @@
+
 package org.kurento.client.internal.client;
 
 import java.lang.reflect.Constructor;
@@ -26,275 +27,252 @@ import com.google.common.collect.ImmutableSet;
 
 public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(RemoteObjectInvocationHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(RemoteObjectInvocationHandler.class);
 
-	private static final Set<String> REMOTE_OBJECT_METHODS = ImmutableSet.of(
-			"isCommited", "waitCommited", "whenCommited", "beginTransaction");
+  private static final Set<String> REMOTE_OBJECT_METHODS = ImmutableSet.of("isCommited",
+      "waitCommited", "whenCommited", "beginTransaction");
 
-	private RemoteObject remoteObject;
-	private final RomManager manager;
+  private RemoteObject remoteObject;
+  private final RomManager manager;
 
-	@SuppressWarnings("unchecked")
-	public static <E> E newProxy(RemoteObject remoteObject, RomManager manager,
-			Class<E> clazz) {
+  @SuppressWarnings("unchecked")
+  public static <E> E newProxy(RemoteObject remoteObject, RomManager manager, Class<E> clazz) {
 
-		RemoteObjectInvocationHandler handler = new RemoteObjectInvocationHandler(
-				remoteObject, manager);
+    RemoteObjectInvocationHandler handler = new RemoteObjectInvocationHandler(remoteObject,
+        manager);
 
-		KurentoObject kurentoObject = (KurentoObject) Proxy.newProxyInstance(
-				clazz.getClassLoader(), new Class[] { clazz }, handler);
+    KurentoObject kurentoObject = (KurentoObject) Proxy.newProxyInstance(clazz.getClassLoader(),
+        new Class[] { clazz }, handler);
 
-		remoteObject.setKurentoObject(kurentoObject);
+    remoteObject.setKurentoObject(kurentoObject);
 
-		return (E) kurentoObject;
-	}
+    return (E) kurentoObject;
+  }
 
-	public static RemoteObjectInvocationHandler getFor(Object object) {
-		return (RemoteObjectInvocationHandler) Proxy
-				.getInvocationHandler(object);
-	}
+  public static RemoteObjectInvocationHandler getFor(Object object) {
+    return (RemoteObjectInvocationHandler) Proxy.getInvocationHandler(object);
+  }
 
-	private RemoteObjectInvocationHandler(RemoteObject remoteObject,
-			RomManager manager) {
-		this.remoteObject = remoteObject;
-		this.manager = manager;
-	}
+  private RemoteObjectInvocationHandler(RemoteObject remoteObject, RomManager manager) {
+    this.remoteObject = remoteObject;
+    this.manager = manager;
+  }
 
-	@Override
-	public Object internalInvoke(final Object proxy, Method method,
-			Object[] args) throws Throwable {
+  @Override
+  public Object internalInvoke(final Object proxy, Method method, Object[] args) throws Throwable {
 
-		String methodName = method.getName();
-		if (REMOTE_OBJECT_METHODS.contains(methodName)) {
-			Method remoteObjectMethod = findMethod(remoteObject, methodName,
-					args);
-			return remoteObjectMethod.invoke(remoteObject, args);
-		}
+    String methodName = method.getName();
+    if (REMOTE_OBJECT_METHODS.contains(methodName)) {
+      Method remoteObjectMethod = findMethod(remoteObject, methodName, args);
+      return remoteObjectMethod.invoke(remoteObject, args);
+    }
 
-		log.trace("Invoking method {} on object {}", method, proxy);
+    log.trace("Invoking method {} on object {}", method, proxy);
 
-		Continuation<?> cont = null;
-		Transaction tx = null;
-		List<String> paramNames = Collections.emptyList();
+    Continuation<?> cont = null;
+    Transaction tx = null;
+    List<String> paramNames = Collections.emptyList();
 
-		if (args != null && args.length > 0) {
+    if (args != null && args.length > 0) {
 
-			paramNames = ParamAnnotationUtils.getParamNames(method);
+      paramNames = ParamAnnotationUtils.getParamNames(method);
 
-			if (args[args.length - 1] instanceof Continuation) {
+      if (args[args.length - 1] instanceof Continuation) {
 
-				cont = (Continuation<?>) args[args.length - 1];
-				args = Arrays.copyOf(args, args.length - 1);
-				paramNames = paramNames.subList(0, paramNames.size() - 1);
+        cont = (Continuation<?>) args[args.length - 1];
+        args = Arrays.copyOf(args, args.length - 1);
+        paramNames = paramNames.subList(0, paramNames.size() - 1);
 
-			} else if (args != null && args.length > 0
-					&& args[0] instanceof Transaction) {
+      } else if (args != null && args.length > 0 && args[0] instanceof Transaction) {
 
-				tx = (Transaction) args[0];
-				args = Arrays.copyOfRange(args, 1, args.length);
-				paramNames = paramNames.subList(1, paramNames.size());
-			}
-		}
+        tx = (Transaction) args[0];
+        args = Arrays.copyOfRange(args, 1, args.length);
+        paramNames = paramNames.subList(1, paramNames.size());
+      }
+    }
 
-		if (methodName.equals("release")) {
+    if (methodName.equals("release")) {
 
-			return release(cont, tx);
+      return release(cont, tx);
 
-		} else if (method.getAnnotation(EventSubscription.class) != null) {
+    } else if (method.getAnnotation(EventSubscription.class) != null) {
 
-			EventSubscription eventSubscription = method
-					.getAnnotation(EventSubscription.class);
+      EventSubscription eventSubscription = method.getAnnotation(EventSubscription.class);
 
-			if (methodName.startsWith("add")) {
-				return subscribeEventListener(proxy, args, methodName,
-						eventSubscription.value(), cont, tx);
-			} else if (methodName.startsWith("remove")) {
-				return unsubscribeEventListener(proxy, args, methodName,
-						eventSubscription.value(), cont, tx);
-			} else {
-				throw new IllegalStateException("Method " + methodName
-						+ " undefined for events");
-			}
+      if (methodName.startsWith("add")) {
+        return subscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont, tx);
+      } else if (methodName.startsWith("remove")) {
+        return unsubscribeEventListener(proxy, args, methodName, eventSubscription.value(), cont,
+            tx);
+      } else {
+        throw new IllegalStateException("Method " + methodName + " undefined for events");
+      }
 
-		} else {
+    } else {
 
-			return invoke(method, paramNames, args, cont, tx);
-		}
-	}
+      return invoke(method, paramNames, args, cont, tx);
+    }
+  }
 
-	private Object invoke(Method method, List<String> paramNames,
-			Object[] args, Continuation<?> cont, Transaction tx) {
+  private Object invoke(Method method, List<String> paramNames, Object[] args, Continuation<?> cont,
+      Transaction tx) {
 
-		Props props = ParamAnnotationUtils.extractProps(paramNames, args);
+    Props props = ParamAnnotationUtils.extractProps(paramNames, args);
 
-		if (cont != null) {
+    if (cont != null) {
 
-			Type[] paramTypes = method.getGenericParameterTypes();
-			ParameterizedType contType = (ParameterizedType) paramTypes[paramTypes.length - 1];
-			Type returnType = contType.getActualTypeArguments()[0];
-			remoteObject.invoke(method.getName(), props, returnType, cont);
-			return null;
+      Type[] paramTypes = method.getGenericParameterTypes();
+      ParameterizedType contType = (ParameterizedType) paramTypes[paramTypes.length - 1];
+      Type returnType = contType.getActualTypeArguments()[0];
+      remoteObject.invoke(method.getName(), props, returnType, cont);
+      return null;
 
-		} else if (tx != null) {
+    } else if (tx != null) {
 
-			Type returnType = method.getGenericReturnType();
+      Type returnType = method.getGenericReturnType();
 
-			if (returnType instanceof ParameterizedType) {
-				ParameterizedType futureType = (ParameterizedType) returnType;
-				Type methodReturnType = futureType.getActualTypeArguments()[0];
-				return remoteObject.invoke(method.getName(), props,
-						methodReturnType, tx);
-			} else {
-				return remoteObject.invoke(method.getName(), props, Void.class,
-						tx);
-			}
+      if (returnType instanceof ParameterizedType) {
+        ParameterizedType futureType = (ParameterizedType) returnType;
+        Type methodReturnType = futureType.getActualTypeArguments()[0];
+        return remoteObject.invoke(method.getName(), props, methodReturnType, tx);
+      } else {
+        return remoteObject.invoke(method.getName(), props, Void.class, tx);
+      }
 
-		} else {
+    } else {
 
-			return remoteObject.invoke(method.getName(), props,
-					method.getGenericReturnType());
-		}
-	}
+      return remoteObject.invoke(method.getName(), props, method.getGenericReturnType());
+    }
+  }
 
-	@SuppressWarnings("unchecked")
-	private Object release(Continuation<?> cont, Transaction tx) {
-		if (cont != null) {
-			remoteObject.release((Continuation<Void>) cont);
-		} else if (tx != null) {
-			remoteObject.release(tx);
-		} else {
-			remoteObject.release();
-		}
-		return null;
-	}
+  @SuppressWarnings("unchecked")
+  private Object release(Continuation<?> cont, Transaction tx) {
+    if (cont != null) {
+      remoteObject.release((Continuation<Void>) cont);
+    } else if (tx != null) {
+      remoteObject.release(tx);
+    } else {
+      remoteObject.release();
+    }
+    return null;
+  }
 
-	@SuppressWarnings("unchecked")
-	private Object subscribeEventListener(final Object proxy,
-			final Object[] args, String methodName,
-			final Class<? extends Event> eventClass, Continuation<?> cont,
-			Transaction tx) {
+  @SuppressWarnings("unchecked")
+  private Object subscribeEventListener(final Object proxy, final Object[] args, String methodName,
+      final Class<? extends Event> eventClass, Continuation<?> cont, Transaction tx) {
 
-		String eventName = eventClass.getSimpleName().substring(0,
-				eventClass.getSimpleName().length() - "Event".length());
+    String eventName = eventClass.getSimpleName().substring(0,
+        eventClass.getSimpleName().length() - "Event".length());
 
-		RemoteObjectEventListener listener = new RemoteObjectEventListener() {
-			@Override
-			public void onEvent(String eventType, Props data) {
-				propagateEventTo(proxy, eventClass, data,
-						(EventListener<?>) args[0]);
-			}
-		};
+    RemoteObjectEventListener listener = new RemoteObjectEventListener() {
+      @Override
+      public void onEvent(String eventType, Props data) {
+        propagateEventTo(proxy, eventClass, data, (EventListener<?>) args[0]);
+      }
+    };
 
-		if (cont != null) {
-			remoteObject.addEventListener(eventName, listener,
-					(Continuation<ListenerSubscriptionImpl>) cont);
-			return null;
-		} else if (tx != null) {
-			return remoteObject.addEventListener(eventName, listener, tx);
-		} else {
-			return remoteObject.addEventListener(eventName, listener);
-		}
-	}
+    if (cont != null) {
+      remoteObject.addEventListener(eventName, listener,
+          (Continuation<ListenerSubscriptionImpl>) cont);
+      return null;
+    } else if (tx != null) {
+      return remoteObject.addEventListener(eventName, listener, tx);
+    } else {
+      return remoteObject.addEventListener(eventName, listener);
+    }
+  }
 
-	@SuppressWarnings("unchecked")
-	private Object unsubscribeEventListener(final Object proxy,
-			final Object[] args, String methodName,
-			final Class<? extends Event> eventClass, Continuation<?> cont,
-			Transaction tx) {
+  @SuppressWarnings("unchecked")
+  private Object unsubscribeEventListener(final Object proxy, final Object[] args,
+      String methodName, final Class<? extends Event> eventClass, Continuation<?> cont,
+      Transaction tx) {
 
-		ListenerSubscriptionImpl listenerSubscription = (ListenerSubscriptionImpl) args[0];
-		if (cont != null) {
-			remoteObject.removeEventListener(listenerSubscription,
-					(Continuation<Void>) cont);
-		} else if (tx != null) {
-			remoteObject.removeEventListener(listenerSubscription, tx);
-		} else {
-			remoteObject.removeEventListener(listenerSubscription);
-		}
+    ListenerSubscriptionImpl listenerSubscription = (ListenerSubscriptionImpl) args[0];
+    if (cont != null) {
+      remoteObject.removeEventListener(listenerSubscription, (Continuation<Void>) cont);
+    } else if (tx != null) {
+      remoteObject.removeEventListener(listenerSubscription, tx);
+    } else {
+      remoteObject.removeEventListener(listenerSubscription);
+    }
 
-		return null;
-	}
+    return null;
+  }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void propagateEventTo(Object object,
-			Class<? extends Event> eventClass, Props data,
-			EventListener<?> listener) {
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  protected void propagateEventTo(Object object, Class<? extends Event> eventClass, Props data,
+      EventListener<?> listener) {
 
-		// TODO Optimize this to create only one event for all listeners
+    // TODO Optimize this to create only one event for all listeners
 
-		try {
+    try {
 
-			log.info("Event class '" + eventClass.getSimpleName() + " Data: "
-					+ data);
+      log.info("Event class '" + eventClass.getSimpleName() + " Data: " + data);
 
-			Constructor<?> constructor = eventClass.getConstructors()[0];
+      Constructor<?> constructor = eventClass.getConstructors()[0];
 
-			data.add("source", ((KurentoObject) object).getId());
+      data.add("source", ((KurentoObject) object).getId());
 
-			Object[] params = ParamsFlattener.getInstance().unflattenParams(
-					constructor.getParameterAnnotations(),
-					constructor.getGenericParameterTypes(), data, manager);
+      Object[] params = ParamsFlattener.getInstance().unflattenParams(
+          constructor.getParameterAnnotations(), constructor.getGenericParameterTypes(), data,
+          manager);
 
-			Event e = (Event) constructor.newInstance(params);
+      Event e = (Event) constructor.newInstance(params);
 
-			((EventListener) listener).onEvent(e);
+      ((EventListener) listener).onEvent(e);
 
-		} catch (Exception e) {
-			log.error(
-					"Exception while processing event '"
-							+ eventClass.getSimpleName() + "' with params '"
-							+ data + "'", e);
-		}
-	}
+    } catch (Exception e) {
+      log.error("Exception while processing event '" + eventClass.getSimpleName()
+          + "' with params '" + data + "'", e);
+    }
+  }
 
-	public RemoteObject getRemoteObject() {
-		return remoteObject;
-	}
+  public RemoteObject getRemoteObject() {
+    return remoteObject;
+  }
 
-	public void setRemoteObject(RemoteObject remoteObject) {
-		this.remoteObject = remoteObject;
-	}
+  public void setRemoteObject(RemoteObject remoteObject) {
+    this.remoteObject = remoteObject;
+  }
 
-	public RomManager getRomManager() {
-		return manager;
-	}
+  public RomManager getRomManager() {
+    return manager;
+  }
 
-	@Override
-	public String toString() {
-		return "[RemoteObject: type=" + this.remoteObject.getType()
-				+ " remoteRef=" + remoteObject.getObjectRef() + "";
-	}
+  @Override
+  public String toString() {
+    return "[RemoteObject: type=" + this.remoteObject.getType() + " remoteRef="
+        + remoteObject.getObjectRef() + "";
+  }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ (remoteObject == null ? 0 : remoteObject.hashCode());
-		return result;
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (remoteObject == null ? 0 : remoteObject.hashCode());
+    return result;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		RemoteObjectInvocationHandler other = getFor(obj);
-		if (other == null) {
-			return false;
-		}
-		if (remoteObject == null) {
-			if (other.remoteObject != null) {
-				return false;
-			}
-		} else if (!remoteObject.equals(other.remoteObject)) {
-			return false;
-		}
-		return true;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    RemoteObjectInvocationHandler other = getFor(obj);
+    if (other == null) {
+      return false;
+    }
+    if (remoteObject == null) {
+      if (other.remoteObject != null) {
+        return false;
+      }
+    } else if (!remoteObject.equals(other.remoteObject)) {
+      return false;
+    }
+    return true;
+  }
 
 }

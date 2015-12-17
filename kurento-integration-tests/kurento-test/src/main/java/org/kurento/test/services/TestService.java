@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.services;
 
 import org.slf4j.Logger;
@@ -19,30 +20,28 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract tect service.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
 public abstract class TestService {
 
-	public static Logger log = LoggerFactory.getLogger(TestService.class);
+  public static Logger log = LoggerFactory.getLogger(TestService.class);
 
-	public enum TestServiceScope {
-		TEST, TESTCLASS, TESTSUITE, EXTERNAL;
-	}
+  public enum TestServiceScope {
+    TEST, TESTCLASS, TESTSUITE, EXTERNAL;
+  }
 
-	public TestServiceScope scope = TestServiceScope.TEST;
+  public TestServiceScope scope = TestServiceScope.TEST;
 
-	public abstract TestServiceScope getScope();
+  public abstract TestServiceScope getScope();
 
-	public void start() {
-		log.debug("[+] Starting {} (scope={})", this.getClass().getSimpleName(),
-				getScope());
-	}
+  public void start() {
+    log.debug("[+] Starting {} (scope={})", this.getClass().getSimpleName(), getScope());
+  }
 
-	public void stop() {
-		log.debug("[-] Stopping {} (scope={})", this.getClass().getSimpleName(),
-				getScope());
-	}
+  public void stop() {
+    log.debug("[-] Stopping {} (scope={})", this.getClass().getSimpleName(), getScope());
+  }
 
 }

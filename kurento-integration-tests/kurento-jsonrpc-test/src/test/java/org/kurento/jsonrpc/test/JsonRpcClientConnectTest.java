@@ -1,3 +1,4 @@
+
 package org.kurento.jsonrpc.test;
 
 import static org.junit.Assert.fail;
@@ -10,36 +11,35 @@ import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 
 public class JsonRpcClientConnectTest extends JsonRpcConnectorBaseTest {
 
-	@Test
-	public void correctConnectTest() {
+  @Test
+  public void correctConnectTest() {
 
-		try {
+    try {
 
-			try (JsonRpcClientHttp client = new JsonRpcClientHttp(
-					"http://localhost:" + getPort() + "/jsonrpc")) {
-				client.connect();
-			}
+      try (JsonRpcClientHttp client =
+          new JsonRpcClientHttp("http://localhost:" + getPort() + "/jsonrpc")) {
+        client.connect();
+      }
 
-		} catch (IOException e) {
-			fail("IOException shouldn't be thrown");
-		}
-	}
+    } catch (IOException e) {
+      fail("IOException shouldn't be thrown");
+    }
+  }
 
-	@Test
-	public void incorrectConnectTest() {
+  @Test
+  public void incorrectConnectTest() {
 
-		try {
+    try {
 
-			try (JsonRpcClientHttp client = new JsonRpcClientHttp(
-					"http://localhost:9999/jsonrpc")) {
-				client.connect();
-			}
+      try (JsonRpcClientHttp client = new JsonRpcClientHttp("http://localhost:9999/jsonrpc")) {
+        client.connect();
+      }
 
-		} catch (IOException e) {
-			return;
-		}
+    } catch (IOException e) {
+      return;
+    }
 
-		fail("IOException should be thrown");
-	}
+    fail("IOException should be thrown");
+  }
 
 }
