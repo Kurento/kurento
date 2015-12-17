@@ -59,12 +59,8 @@ public class KurentoClientBrowserTest<W extends WebPage>
 
 	@After
 	public void teardownKurentoClient() throws Exception {
-		if (kurentoClient != null) {
-			kurentoClient.destroy();
-		}
-		if (fakeKurentoClient != null) {
-			fakeKurentoClient.destroy();
-		}
+		kms.closeKurentoClient();
+		fakeKms.closeKurentoClient();
 	}
 
 	@FailedTest

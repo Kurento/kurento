@@ -239,7 +239,6 @@ public class KmsService extends TestService {
 		if (isKmsRemote && !kmsAutoStart.equals(AUTOSTART_FALSE_VALUE)) {
 			String[] filesToBeCopied = { "kurento.conf.json", "kurento.sh" };
 			for (String s : filesToBeCopied) {
-				System.err.println(remoteKmsSshConnection);
 				remoteKmsSshConnection.scp(workspace + File.separator + s,
 						remoteKmsSshConnection.getTmpFolder() + File.separator
 								+ s);
@@ -265,10 +264,7 @@ public class KmsService extends TestService {
 		}
 
 		// Close Kurento client
-		if (kurentoClient != null) {
-			kurentoClient.destroy();
-			kurentoClient = null;
-		}
+		closeKurentoClient();
 
 		// Stop KMS
 		stopKms();
@@ -732,6 +728,13 @@ public class KmsService extends TestService {
 
 	public KurentoClient createKurentoClient() {
 		return KurentoClient.create(wsUri);
+	}
+
+	public void closeKurentoClient() {
+		if (kurentoClient != null) {
+			kurentoClient.destroy();
+			kurentoClient = null;
+		}
 	}
 
 	public void addFakeClients(int numFakeClients, int bandwidht,
