@@ -100,9 +100,8 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     playerEP.play();
 
     // Assertions
-    Assert.assertTrue(
-        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       Assert.assertTrue("The color of the video should be " + expectedColor + ": " + mediaUrl + " "
           + webRtcChannel, getPage().similarColorAt(expectedColor, x, y));
@@ -114,6 +113,57 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
       Assert.assertTrue("Error in play time (expected: " + playtime + " sec, real: " + currentTime
           + " sec): " + mediaUrl + " " + webRtcChannel, getPage().compare(playtime, currentTime));
     }
+
+    // Release Media Pipeline
+    mp.release();
+  }
+
+  public void testPlayerPause(String mediaUrl, WebRtcChannel webRtcChannel, int pauseTimeSeconds,
+      Color[] expectedColors) throws Exception {
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    playerEP.connect(webRtcEP);
+
+    final CountDownLatch eosLatch = new CountDownLatch(1);
+    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        eosLatch.countDown();
+      }
+    });
+
+    // Test execution
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEP, webRtcChannel, WebRtcMode.RCV_ONLY);
+    playerEP.play();
+
+    if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
+      // Assert initial color, pause stream and wait x seconds
+      Assert.assertTrue("At the beginning, the color of the video should be " + expectedColors[0],
+          getPage().similarColor(expectedColors[0]));
+    } else {
+      Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds / 2));
+    }
+
+    playerEP.pause();
+    Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
+
+    playerEP.play();
+
+    if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
+      for (Color expectedColor : expectedColors) {
+        Assert.assertTrue("After the pause, the color of the video should be " + expectedColor,
+            getPage().similarColor(expectedColor));
+      }
+    }
+
+    // Assertions
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
+
+    Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
+        eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
     mp.release();

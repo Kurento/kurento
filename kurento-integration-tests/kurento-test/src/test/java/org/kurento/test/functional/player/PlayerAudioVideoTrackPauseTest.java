@@ -12,22 +12,14 @@
  * Lesser General Public License for more details.
  *
  */
-
 package org.kurento.test.functional.player;
 
 import java.awt.Color;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
-import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -55,47 +47,65 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class PlayerPauseTest extends FunctionalTest {
+public class PlayerAudioVideoTrackPauseTest extends SimplePlayer {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
     return TestScenario.localChromeAndFirefox();
   }
 
+  private void initTest(String mediaUrl) throws Exception {
+    int pauseTimeSeconds = 10;
+    final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
+    testPlayerPause(mediaUrl, WebRtcChannel.AUDIO_AND_VIDEO, pauseTimeSeconds, expectedColors);
+  }
+
   @Test
-  public void testPlayerPause() throws Exception {
+  public void testPlayerPauseOgv() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.ogv";
+    initTest(mediaUrl);
+  }
+
+  @Test
+  public void testPlayerPauseMkv() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.mkv";
+    initTest(mediaUrl);
+  }
+
+  @Test
+  public void testPlayerPauseAvi() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.avi";
+    initTest(mediaUrl);
+  }
+
+  @Test
+  public void testPlayerPauseWebm() throws Exception {
     // Test data
     final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.webm";
-    final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
-    final int pauseTimeSeconds = 10;
+    initTest(mediaUrl);
+  }
 
-    // Media Pipeline
-    MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-    playerEP.connect(webRtcEP);
+  @Test
+  public void testPlayerPauseMov() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.mov";
+    initTest(mediaUrl);
+  }
 
-    // WebRTC in receive-only mode
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-    playerEP.play();
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
+  @Test
+  public void testPlayerPause3gp() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.3gp";
+    initTest(mediaUrl);
+  }
 
-    // Assert initial color, pause stream and wait x seconds
-    Assert.assertTrue("At the beginning, the color of the video should be " + expectedColors[0],
-        getPage().similarColor(expectedColors[0]));
-    playerEP.pause();
-    Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
-
-    // Resume video after the pause, video color should be as expected
-    playerEP.play();
-    for (Color expectedColor : expectedColors) {
-      Assert.assertTrue("After the pause, the color of the video should be " + expectedColor,
-          getPage().similarColor(expectedColor));
-    }
-
-    // Release Media Pipeline
-    mp.release();
+  @Test
+  public void testPlayerPauseMp4() throws Exception {
+    // Test data
+    final String mediaUrl = "http://files.kurento.org/video/15sec/rgb.mp4";
+    initTest(mediaUrl);
   }
 }
