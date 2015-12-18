@@ -67,7 +67,7 @@ executable on your command line:
 https://example.com/index.html?ws_uri=wss://example.org/kurento
 ```
 
-All the demos accept the parameters:
+All demos accept following parameters:
 
 * *ws_uri*: the WebSocket Kurento MediaServer endpoint. By default it connects
   to a Kurento MediaServer instance listening on the port 8433 on the same
