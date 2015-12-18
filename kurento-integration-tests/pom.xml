@@ -53,9 +53,6 @@
 	<profiles>
 		<profile>
 			<id>integration</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<modules>
 				<module>kurento-jsonrpc-test</module>
 				<module>kurento-client-test</module>

@@ -112,9 +112,6 @@
 		</profile>
 		<profile>
 			<id>integration</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<modules>
 				<module>kurento-integration-tests</module>
 			</modules>
