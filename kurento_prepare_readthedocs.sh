@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 echo "##################### EXECUTE: kurento_prepare_readthedocs #####################"
 
