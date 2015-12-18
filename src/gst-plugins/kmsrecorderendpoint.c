@@ -18,6 +18,7 @@
 
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
+#include <sys/stat.h>
 
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
@@ -469,6 +470,28 @@ kms_recorder_endpoint_remove_pads (KmsRecorderEndpoint * self)
 }
 
 static void
+kms_recorder_endpoint_create_parent_directories (KmsRecorderEndpoint * self)
+{
+  const gchar *uri = KMS_URI_ENDPOINT (self)->uri;
+  gchar *protocol = gst_uri_get_protocol (uri);
+
+  if (g_strcmp0 (protocol, "file") == 0) {
+    gchar *file = gst_uri_get_location (uri);
+    gchar *dir = g_path_get_dirname (file);
+
+    // Try to create directory
+    if (g_mkdir_with_parents (dir, ALLPERMS) != 0) {
+      GST_WARNING_OBJECT (self, "Directory %s could not be created", dir);
+    }
+
+    g_free (file);
+    g_free (dir);
+  }
+
+  g_free (protocol);
+}
+
+static void
 kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
@@ -503,6 +526,8 @@ static void
 kms_recorder_endpoint_started (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+
+  kms_recorder_endpoint_create_parent_directories (self);
 
   kms_recorder_endpoint_change_state (self);
 
