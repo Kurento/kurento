@@ -201,15 +201,19 @@ public class TestScenario {
     return Arrays.asList(new Object[][] { { test } });
   }
 
-  public static Collection<Object[]> localChromes(int size) {
+  public static Collection<Object[]> localChromes(int size, WebPageType webPageType) {
     // Test: Chrome(s) in local
     TestScenario test = new TestScenario();
     for (int i = 0; i < size; i++) {
-      test.addBrowser(BrowserConfig.BROWSER + i,
-          new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-              .scope(BrowserScope.LOCAL).build());
+      test.addBrowser(BrowserConfig.BROWSER + i, new Browser.Builder().webPageType(webPageType)
+          .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
     }
     return Arrays.asList(new Object[][] { { test } });
+  }
+
+  public static Collection<Object[]> localChromes(int size) {
+    // Test: Chrome(s) in local
+    return localChromes(size, WebPageType.WEBRTC);
   }
 
   public static Collection<Object[]> localChromesWithRgbVideo(int size) {
@@ -243,13 +247,18 @@ public class TestScenario {
     return Arrays.asList(new Object[][] { { test1 }, { test2 } });
   }
 
-  public static Collection<Object[]> localChrome() {
+  public static Collection<Object[]> localChrome(WebPageType webPageType) {
     // Test: Chrome in local
     TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
-        .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).build());
+    test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().browserType(BrowserType.CHROME)
+        .scope(BrowserScope.LOCAL).webPageType(webPageType).build());
 
     return Arrays.asList(new Object[][] { { test } });
+  }
+
+  public static Collection<Object[]> localChrome() {
+    // Test: Chrome in local
+    return localChrome(WebPageType.WEBRTC);
   }
 
   public static Collection<Object[]> localFirefox() {
