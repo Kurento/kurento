@@ -82,7 +82,7 @@ for REF in $REFS; do
   [ -z "$DEPENDENCY_REFSPEC" ] && DEPENDENCY_REFSPEC=master
   # Clone and install artifacts only if not already cloned
   if [ ! -d "$DEPENDENCY_PROJECT" ]; then
-    if [ "$DEPENDENCY_REFSPEC" == 'ignore' ]; then
+    if [ "$DEPENDENCY_REFSPEC" = 'ignore' ]; then
       mkdir -p $DEPENDENCY_PROJECT
       touch $DEPENDENCY_PROJECT/ignore
     else
