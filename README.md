@@ -47,7 +47,7 @@ http-server -p 8443 -S -C keys/server.crt -K keys/server.key
 Finally, open https://localhost:8443/ in your browser to access to the demo.
 
 Take into account that demos with Generators (kurento-faceoverlay-generator,
-kurento-recorder-filter-generator, and so on) require [co]i, a generator based
+kurento-recorder-filter-generator, and so on) require [co], a generator based
 flow-control for [Node.js] and browser. In these demos, the experimental
 JavaScript support must be enabled. In Chrome, this can done in the flags
 configuration page:
