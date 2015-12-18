@@ -50,6 +50,10 @@ struct _KmsPlayerEndpointClass
 {
   KmsUriEndpointClass parent_class;
 
+  /*Actions*/
+  gboolean (*set_position) (KmsPlayerEndpoint * self, gint64 position);
+
+  /* Signals*/
   void (*eos_signal) (KmsPlayerEndpoint * self);
   void (*invalid_uri_signal) (KmsPlayerEndpoint * self);
   void (*invalid_media_signal) (KmsPlayerEndpoint * self);

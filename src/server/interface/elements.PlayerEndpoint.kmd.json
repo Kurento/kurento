@@ -27,6 +27,19 @@
             }
           ]
         },
+      "properties": [
+        {
+          "name": "videoInfo",
+          "doc": "Returns info about the playing file",
+          "type": "VideoInfo",
+          "readOnly": true
+        },
+        {
+          "name": "position",
+          "doc": "Get or set the actual position of the video in ms. Only for seekable videos",
+          "type": "int64"
+        }
+      ],
       "methods": [
         {
           "name": "play",
@@ -36,6 +49,35 @@
       ],
       "events": [
         "EndOfStream"
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "name": "VideoInfo",
+      "typeFormat": "REGISTER",
+      "doc": "",
+      "properties": [
+        {
+          "name": "isSeekable",
+          "doc": "Seek is possible in video source",
+          "type": "boolean"
+        },
+        {
+          "name": "seekableInit",
+          "doc": "First video position to do seek in ms",
+          "type": "int64"
+        },
+        {
+          "name": "seekableEnd",
+          "doc": "Last video position to do seek in ms",
+          "type": "int64"
+        },
+        {
+          "name": "duration",
+          "doc": "Video duration in ms",
+          "type": "int64"
+        }
       ]
     }
   ]

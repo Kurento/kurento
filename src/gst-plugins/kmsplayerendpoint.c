@@ -22,6 +22,7 @@
 #include <commons/kmsagnosticcaps.h>
 #include "kmsplayerendpoint.h"
 #include <commons/kmsloop.h>
+#include <kms-elements-marshal.h>
 
 #define PLUGIN_NAME "playerendpoint"
 #define AUDIO_APPSRC "audio_appsrc"
@@ -66,6 +67,8 @@ enum
 {
   PROP_0,
   PROP_USE_ENCODED_MEDIA,
+  PROP_VIDEO_DATA,
+  PROP_POSITION,
   N_PROPERTIES
 };
 
@@ -74,6 +77,7 @@ enum
   SIGNAL_EOS,
   SIGNAL_INVALID_URI,
   SIGNAL_INVALID_MEDIA,
+  SIGNAL_SET_POSITION,
   LAST_SIGNAL
 };
 
@@ -128,6 +132,57 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
     case PROP_USE_ENCODED_MEDIA:
       g_value_set_boolean (value, playerendpoint->priv->use_encoded_media);
       break;
+    case PROP_VIDEO_DATA:{
+      gint64 segment_start = -1;
+      gint64 segment_end = -1;
+      gint64 duration = -1;
+      gboolean seekable = FALSE;
+      GstFormat format;
+      GstStructure *video_data = NULL;
+      GstQuery *query = gst_query_new_seeking (GST_FORMAT_TIME);
+
+      if (gst_element_query (playerendpoint->priv->pipeline, query)) {
+        gst_query_parse_seeking (query,
+            &format, &seekable, &segment_start, &segment_end);
+      } else {
+        GST_WARNING_OBJECT (playerendpoint,
+            "Impossible to get the file duration");
+      }
+
+      gst_query_unref (query);
+
+      if (!gst_element_query_duration (playerendpoint->priv->pipeline,
+              GST_FORMAT_TIME, &duration)) {
+        GST_WARNING_OBJECT (playerendpoint,
+            "Impossible to get the file duration");
+      }
+
+      video_data = gst_structure_new ("video_data",
+          "isSeekable", G_TYPE_BOOLEAN, seekable,
+          "seekableInit", G_TYPE_INT64, segment_start,
+          "seekableEnd", G_TYPE_INT64, segment_end,
+          "duration", G_TYPE_INT64, duration, NULL);
+
+      g_value_set_boxed (value, video_data);
+      break;
+    }
+    case PROP_POSITION:{
+      gint64 position = -1;
+      gboolean ret = FALSE;
+
+      if (playerendpoint->priv->pipeline != NULL) {
+        ret = gst_element_query_position (playerendpoint->priv->pipeline,
+            GST_FORMAT_TIME, &position);
+      }
+
+      if (!ret) {
+        GST_WARNING_OBJECT (playerendpoint,
+            "It is not possible retrieve information about position");
+      }
+
+      g_value_set_int64 (value, position);
+      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -568,6 +623,18 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
       KMS_URI_ENDPOINT_STATE_PAUSE);
 }
 
+static gboolean
+kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
+{
+  if (!gst_element_seek_simple (self->priv->pipeline,
+          GST_FORMAT_TIME, GST_SEEK_FLAG_ACCURATE, position)) {
+    GST_WARNING_OBJECT (self, "Seek failed");
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 static void
 kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
 {
@@ -586,11 +653,23 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
   urienpoint_class->started = kms_player_endpoint_started;
   urienpoint_class->paused = kms_player_endpoint_paused;
 
+  klass->set_position = kms_player_endpoint_set_position;
+
   g_object_class_install_property (gobject_class, PROP_USE_ENCODED_MEDIA,
       g_param_spec_boolean ("use-encoded-media", "use encoded media",
           "The element uses encoded media instead of raw media. This mode "
           "could have an unexpected behaviour if key frames are lost",
           FALSE, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
+
+  g_object_class_install_property (gobject_class, PROP_VIDEO_DATA,
+      g_param_spec_boxed ("video-data", "video data",
+          "Get video data from played data",
+          GST_TYPE_STRUCTURE, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_POSITION,
+      g_param_spec_int64 ("position", "position",
+          "Playing position in the file as miliseconds",
+          0, G_MAXINT64, 0, G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
 
   kms_player_endpoint_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
@@ -612,6 +691,13 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsPlayerEndpointClass, invalid_media_signal), NULL,
       NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  kms_player_endpoint_signals[SIGNAL_SET_POSITION] =
+      g_signal_new ("set-position",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsPlayerEndpointClass, set_position), NULL, NULL,
+      __kms_elements_marshal_BOOLEAN__INT64, G_TYPE_BOOLEAN, 1, G_TYPE_INT64);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsPlayerEndpointPrivate));

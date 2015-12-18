@@ -14,6 +14,7 @@ class PlayerEndpointImpl;
 
 void Serialize (std::shared_ptr<PlayerEndpointImpl> &object,
                 JsonSerializer &serializer);
+class VideoInfo;
 
 class PlayerEndpointImpl : public UriEndpointImpl, public virtual PlayerEndpoint
 {
@@ -27,6 +28,11 @@ public:
   virtual ~PlayerEndpointImpl ();
 
   void play ();
+
+  virtual std::shared_ptr<VideoInfo> getVideoInfo ();
+
+  virtual int64_t getPosition();
+  virtual void setPosition (int64_t position);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
