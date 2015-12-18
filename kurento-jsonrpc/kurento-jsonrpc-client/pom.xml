@@ -73,10 +73,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.woorea</groupId>
-			<artifactId>keystone-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-client</artifactId>
 		</dependency>
