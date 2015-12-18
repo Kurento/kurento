@@ -14,25 +14,25 @@
  */
 package org.kurento.tutorial.one2onecalladv.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
+import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.kurento.test.browser.Browser;
+import org.junit.runners.Parameterized.Parameters;
+import org.kurento.test.base.BrowserTest;
+import org.kurento.test.browser.WebPage;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.config.TestScenario;
+import org.kurento.test.services.KmsService;
+import org.kurento.test.services.Service;
+import org.kurento.test.services.WebServerService;
 import org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * Advanced one to one call integration test.
@@ -40,11 +40,11 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = One2OneCallAdvApp.class)
-@WebAppConfiguration
-@IntegrationTest
-public class One2OneCallAdvIT {
+public class One2OneCallAdvIT extends BrowserTest<WebPage> {
+
+  public static @Service(1) KmsService kms = new KmsService();
+  public static @Service(2) WebServerService webServer = new WebServerService(
+      One2OneCallAdvApp.class);
 
   protected WebDriver caller;
   protected WebDriver callee;
@@ -57,38 +57,20 @@ public class One2OneCallAdvIT {
 
   @Before
   public void setup() {
-    caller = newWebDriver();
-    callee = newWebDriver();
+    caller = this.getPage(0).getBrowser().getWebDriver();
+    callee = this.getPage(1).getBrowser().getWebDriver();
   }
 
-  @BeforeClass
-  public static void setupClass() {
-    ChromeDriverManager.getInstance().setup();
-  }
-
-  private WebDriver newWebDriver() {
-    ChromeOptions options = new ChromeOptions();
-    // This flag avoids granting camera/microphone
-    options.addArguments("--use-fake-ui-for-media-stream");
-    // This flag makes using a synthetic video (green with spinner) in
-    // WebRTC instead of real media from camera/microphone
-    options.addArguments("--use-fake-device-for-media-stream");
-    options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
-
-    return Browser.newWebDriver(options);
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChromes(2, WebPageType.ROOT);
   }
 
   @Test
   public void testAdvancedOne2One() throws InterruptedException {
-    // Open caller web application
-    caller.get(APP_URL);
-
     // Register caller
     caller.findElement(By.id("name")).sendKeys(CALLER_NAME);
     caller.findElement(By.id("register")).click();
-
-    // Open callee web application
-    callee.get(APP_URL);
 
     // Register caller
     callee.findElement(By.id("name")).sendKeys(CALLEE_NAME);

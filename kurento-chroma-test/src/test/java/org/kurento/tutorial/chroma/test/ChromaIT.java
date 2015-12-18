@@ -14,24 +14,24 @@
  */
 package org.kurento.tutorial.chroma.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
+import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.kurento.test.browser.Browser;
+import org.junit.runners.Parameterized.Parameters;
+import org.kurento.test.base.BrowserTest;
+import org.kurento.test.browser.WebPage;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.config.TestScenario;
+import org.kurento.test.services.KmsService;
+import org.kurento.test.services.Service;
+import org.kurento.test.services.WebServerService;
 import org.kurento.tutorial.chroma.ChromaApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * Hello World integration test.
@@ -40,40 +40,28 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 5.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ChromaApp.class)
-@WebAppConfiguration
-@IntegrationTest
-public class ChromaIT {
+public class ChromaIT extends BrowserTest<WebPage> {
 
   protected WebDriver driver;
 
   protected final static int TEST_TIMEOUT = 60; // seconds
   protected final static int PLAY_TIME = 5; // seconds
 
-  @BeforeClass
-  public static void setupClass() {
-    ChromeDriverManager.getInstance().setup();
+  public static @Service(1) KmsService kms = new KmsService();
+  public static @Service(2) WebServerService webServer = new WebServerService(ChromaApp.class);
+
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    return TestScenario.localChrome(WebPageType.ROOT);
   }
 
   @Before
   public void setup() {
-    ChromeOptions options = new ChromeOptions();
-    // This flag avoids granting camera/microphone
-    options.addArguments("--use-fake-ui-for-media-stream");
-    // This flag makes using a synthetic video (green with spinner) in
-    // WebRTC instead of real media from camera/microphone
-    options.addArguments("--use-fake-device-for-media-stream");
-    options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
-
-    driver = Browser.newWebDriver(options);
+    driver = this.getPage().getBrowser().getWebDriver();
   }
 
   @Test
   public void testChroma() throws InterruptedException {
-    // Open web application
-    driver.get("https://localhost:8443/");
-
     // Start application
     driver.findElement(By.id("start")).click();
 

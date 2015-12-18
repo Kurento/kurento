@@ -13,27 +13,26 @@
  */
 package org.kurento.tutorial.one2manycall.test;
 
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.kurento.test.browser.Browser;
+import org.junit.runners.Parameterized.Parameters;
+import org.kurento.test.base.BrowserTest;
+import org.kurento.test.browser.WebPage;
+import org.kurento.test.browser.WebPageType;
+import org.kurento.test.config.TestScenario;
+import org.kurento.test.services.KmsService;
+import org.kurento.test.services.Service;
+import org.kurento.test.services.WebServerService;
 import org.kurento.tutorial.one2manycall.One2ManyCallApp;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * One to many call integration test.
@@ -41,11 +40,11 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = One2ManyCallApp.class)
-@WebAppConfiguration
-@IntegrationTest
-public class One2ManyCallIT {
+public class One2ManyCallIT extends BrowserTest<WebPage> {
+
+  public static @Service(1) KmsService kms = new KmsService();
+  public static @Service(2) WebServerService webServer =
+      new WebServerService(One2ManyCallApp.class);
 
   protected WebDriver master;
   protected List<WebDriver> viewers;
@@ -54,42 +53,26 @@ public class One2ManyCallIT {
   protected final static int PLAY_TIME = 5; // seconds
   protected final static String DEFAULT_NUM_VIEWERS = "3";
   protected final static String APP_URL = "https://localhost:8443/";
-
-  @BeforeClass
-  public static void setupClass() {
-    ChromeDriverManager.getInstance().setup();
-  }
+  protected static int numViewers = 1;
 
   @Before
   public void setup() {
-    master = newWebDriver();
+    master = this.getPage(0).getBrowser().getWebDriver();
 
-    final int numViewers =
-        Integer.parseInt(System.getProperty("test.num.viewers", DEFAULT_NUM_VIEWERS));
     viewers = new ArrayList<>(numViewers);
     for (int i = 0; i < numViewers; i++) {
-      viewers.add(newWebDriver());
+      viewers.add(this.getPage(i + 1).getBrowser().getWebDriver());
     }
   }
 
-  private static WebDriver newWebDriver() {
-    ChromeOptions options = new ChromeOptions();
-    // This flag avoids granting camera/microphone
-    options.addArguments("--use-fake-ui-for-media-stream");
-    // This flag makes using a synthetic video (green with spinner) in
-    // WebRTC instead of real media from camera/microphone
-    options.addArguments("--use-fake-device-for-media-stream");
-    options.addArguments("ignore-certificate-errors", "allow-running-insecure-content");
-
-    return Browser.newWebDriver(options);
+  @Parameters(name = "{index}: {0}")
+  public static Collection<Object[]> data() {
+    numViewers = Integer.parseInt(System.getProperty("test.num.viewers", DEFAULT_NUM_VIEWERS));
+    return TestScenario.localChromes(numViewers + 1, WebPageType.ROOT);
   }
 
   @Test
   public void testOne2Many() throws InterruptedException {
-    // MASTER
-    // Open web application
-    master.get(APP_URL);
-
     // Start application as master
     master.findElement(By.id("presenter")).click();
 
@@ -98,8 +81,6 @@ public class One2ManyCallIT {
 
     // VIEWERS
     for (WebDriver viewer : viewers) {
-      // Open web application
-      viewer.get(APP_URL);
 
       // Start application as viewer
       viewer.findElement(By.id("viewer")).click();
