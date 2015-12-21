@@ -58,6 +58,14 @@ WebRTC Statistics
 
    WebRTC Statistics <mastering/webrtc_statistics>
 
+Kurento Utils JS
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   Kurento Utils JS <mastering/kurento_utils_js>
+
 Kurento Java Client JavaDoc
 ===========================
 
