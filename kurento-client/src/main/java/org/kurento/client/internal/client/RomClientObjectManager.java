@@ -12,7 +12,7 @@ import com.google.common.collect.MapMaker;
 
 public class RomClientObjectManager implements RomEventHandler, ObjectRefsManager {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RomClientObjectManager.class);
+  private static final Logger log = LoggerFactory.getLogger(RomClientObjectManager.class);
 
   private final ConcurrentMap<String, RemoteObject> objects = new MapMaker().weakValues().makeMap();
 
@@ -32,7 +32,7 @@ public class RomClientObjectManager implements RomEventHandler, ObjectRefsManage
     RemoteObject object = objects.get(objectRef);
 
     if (object == null) {
-      LOG.error("Trying to propagate an event to an object that doesn't exist in the client");
+      log.error("Trying to propagate an event to an object that doesn't exist in the client");
       return;
     }
 
