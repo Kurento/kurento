@@ -32,7 +32,10 @@ public class RomClientObjectManager implements RomEventHandler, ObjectRefsManage
     RemoteObject object = objects.get(objectRef);
 
     if (object == null) {
-      log.error("Trying to propagate an event to an object that doesn't exist in the client");
+      log.error(
+          "Trying to propagate a event with type={} and data={} to object {}, "
+              + "but that doesn't exist in the client. Objects are={}",
+          type, data, objectRef, objects);
       return;
     }
 
