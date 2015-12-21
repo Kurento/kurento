@@ -38,7 +38,7 @@ cp -r $DOC_PROJECT/* $READTHEDOCS_PROJECT/
 pushd $READTHEDOCS_PROJECT
 echo "Commiting changes to $READTHEDOCS_PROJECT repository"
 git add .
-git commit -m "$COMMIT_MSG"
+git commit -m "$COMMIT_MSG" || exit 1
 
 # Build
 sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins

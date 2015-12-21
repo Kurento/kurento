@@ -7,6 +7,7 @@ env
 kurento_check_version.sh || exit 1
 
 export DOC_PROJECT=$KURENTO_PROJECT
+export GIT_SSH_KEY=$GIT_KEY
 kurento_prepare_readthedocs.sh || exit 1
 
 pushd $KURENTO_PROJECT-readthedocs
