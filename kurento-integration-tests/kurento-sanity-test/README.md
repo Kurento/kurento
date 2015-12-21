@@ -5,8 +5,7 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-sanity-test
 ==========
 
-This project implements a simple evaluation of Kurento (KMS, KCS and Kurento
-Clients).
+This project implements a simple evaluation of Kurento components
 
 What is Kurento
 ---------------
