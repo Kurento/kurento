@@ -62,14 +62,14 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
     HubPort hubPort1 = new HubPort.Builder(alphaBlending).build();
     HubPort hubPort2 = new HubPort.Builder(alphaBlending).build();
     HubPort hubPort3 = new HubPort.Builder(alphaBlending).build();
-    HubPort hubPort4 = new HubPort.Builder(alphaBlending).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
     playerRed.connect(hubPort1);
     playerGreen.connect(hubPort2);
     playerBlue.connect(hubPort3);
 
-    hubPort4.connect(webRtcEP);
+    HubPort hubPort4 = new HubPort.Builder(alphaBlending).build();
+    WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
+    hubPort4.connect(webRtcEp);
 
     alphaBlending.setMaster(hubPort1, 1);
 
@@ -77,7 +77,7 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
     alphaBlending.setPortProperties(0.4F, 0.4F, 7, 0.2F, 0.2F, hubPort3);
 
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+    getPage().initWebRtc(webRtcEp, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
     playerRed.play();
     playerGreen.play();

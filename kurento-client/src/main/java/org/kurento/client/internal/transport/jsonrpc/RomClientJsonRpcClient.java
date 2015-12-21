@@ -75,41 +75,11 @@ public class RomClientJsonRpcClient implements RomClient {
     this.client = client;
   }
 
-  // Sync operations
+  // Operations
 
   @Override
   public Object invoke(String objectRef, String operationName, Props operationParams, Type type) {
     return invoke(objectRef, operationName, operationParams, type, null);
-  }
-
-  @Override
-  public String subscribe(String objectRef, String type) {
-    return subscribe(objectRef, type, null);
-  }
-
-  @Override
-  public void unsubscribe(String objectRef, String listenerSubscription) {
-    unsubscribe(objectRef, listenerSubscription, null);
-  }
-
-  @Override
-  public String create(String remoteClassName, Props constructorParams) {
-    return create(remoteClassName, constructorParams, null);
-  }
-
-  @Override
-  public void release(String objectRef) {
-    release(objectRef, null);
-  }
-
-  // Async operations
-
-  @Override
-  public String create(String remoteClassName, Props constructorParams, Continuation<String> cont) {
-
-    RequestAndResponseType reqres = createCreateRequest(remoteClassName, constructorParams, false);
-
-    return this.<String, String> sendRequest(reqres.request, reqres.responseType, null, cont);
   }
 
   @SuppressWarnings("unchecked")
@@ -131,10 +101,8 @@ public class RomClientJsonRpcClient implements RomClient {
   }
 
   @Override
-  public void release(String objectRef, Continuation<Void> cont) {
-
-    RequestAndResponseType reqres = createReleaseRequest(objectRef);
-    sendRequest(reqres.request, reqres.responseType, null, cont);
+  public String subscribe(String objectRef, String type) {
+    return subscribe(objectRef, type, null);
   }
 
   @Override
@@ -146,9 +114,39 @@ public class RomClientJsonRpcClient implements RomClient {
   }
 
   @Override
+  public void unsubscribe(String objectRef, String listenerSubscription) {
+    unsubscribe(objectRef, listenerSubscription, null);
+  }
+
+  @Override
   public void unsubscribe(String objectRef, String listenerSubscription, Continuation<Void> cont) {
 
     RequestAndResponseType reqres = createUnsubscribeRequest(objectRef, listenerSubscription);
+    sendRequest(reqres.request, reqres.responseType, null, cont);
+  }
+
+  @Override
+  public String create(String remoteClassName, Props constructorParams) {
+    return create(remoteClassName, constructorParams, null);
+  }
+
+  @Override
+  public String create(String remoteClassName, Props constructorParams, Continuation<String> cont) {
+
+    RequestAndResponseType reqres = createCreateRequest(remoteClassName, constructorParams, false);
+
+    return this.<String, String>sendRequest(reqres.request, reqres.responseType, null, cont);
+  }
+
+  @Override
+  public void release(String objectRef) {
+    release(objectRef, null);
+  }
+
+  @Override
+  public void release(String objectRef, Continuation<Void> cont) {
+
+    RequestAndResponseType reqres = createReleaseRequest(objectRef);
     sendRequest(reqres.request, reqres.responseType, null, cont);
   }
 
@@ -174,6 +172,7 @@ public class RomClientJsonRpcClient implements RomClient {
     try {
       params = (JsonObject) params.get("value");
     } catch (Exception e) {
+      log.trace("Exception processing event: getting value", e);
     }
 
     String objectRef = params.get(ONEVENT_OBJECT).getAsString();
@@ -366,25 +365,25 @@ public class RomClientJsonRpcClient implements RomClient {
   private void processTransactionResponse(List<Operation> operations,
       List<RequestAndResponseType> opReqres, List<Response<JsonElement>> responses) {
 
-    TransactionExecutionException e = null;
+    TransactionExecutionException ex = null;
 
     for (int i = 0; i < operations.size(); i++) {
       Operation op = operations.get(i);
       Response<JsonElement> response = responses.get(i);
       if (response.isError()) {
-        e = new TransactionExecutionException(op, response.getError());
+        ex = new TransactionExecutionException(op, response.getError());
         break;
       }
     }
 
-    if (e != null) {
+    if (ex != null) {
 
       for (int i = 0; i < operations.size(); i++) {
         Operation op = operations.get(i);
-        op.rollback(e);
+        op.rollback(ex);
       }
 
-      throw e;
+      throw ex;
 
     } else {
 

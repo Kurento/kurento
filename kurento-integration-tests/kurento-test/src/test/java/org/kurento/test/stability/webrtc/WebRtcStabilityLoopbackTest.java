@@ -37,24 +37,30 @@ import org.kurento.test.latency.LatencyController;
 import org.kurento.test.latency.VideoTagType;
 
 /**
- * Stability test for WebRTC in loopback during a long time (configurable). <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> WebRtcEndpoint (loopback) <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint in loopback. <br>
- * 2. (Browser) WebRtcPeer in send-receive mode sends and receives media <br>
- *
- * Main assertion(s): <br>
- * · Color change should be detected on local/remote video tag of browsers <br>
- * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for WebRTC in loopback during a long time (configurable).
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint (loopback)</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint in loopback.</li>
+ * <li>(Browser) WebRtcPeer in send-receive mode sends and receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color change should be detected on local/remote video tag of browsers</li>
+ * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
@@ -82,14 +88,12 @@ public class WebRtcStabilityLoopbackTest extends StabilityTest {
     WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
     webRtcEndpoint.connect(webRtcEndpoint);
 
-    // Latency control
-    LatencyController cs = new LatencyController("WebRTC in loopback");
-
     // WebRTC
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_RCV);
 
     // Latency assessment
+    LatencyController cs = new LatencyController("WebRTC in loopback");
     getPage().activateLatencyControl(VideoTagType.LOCAL.getId(), VideoTagType.REMOTE.getId());
     cs.checkLatency(playTime, TimeUnit.MINUTES, getPage());
 

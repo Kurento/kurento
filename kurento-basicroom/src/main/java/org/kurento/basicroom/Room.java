@@ -154,6 +154,8 @@ public class Room implements Closeable {
   }
 
   /**
+   * Gets all the participants present in a room.
+   * 
    * @return a collection with all the participants in the room
    */
   public Collection<RoomParticipant> getParticipants() {
@@ -163,10 +165,6 @@ public class Room implements Closeable {
     return participants.values();
   }
 
-  /**
-   * @param name
-   * @return the participant from this session
-   */
   public RoomParticipant getParticipant(String name) {
 
     checkClosed();

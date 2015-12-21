@@ -35,7 +35,7 @@ public class KmsDockerMonitor extends KmsMonitor {
   private Docker docker;
   private String containerId;
 
-  private long previousCPU = -1;
+  private long previousCpu = -1;
   private long previousSystem = -1;
 
   public KmsDockerMonitor(String containerId) {
@@ -75,11 +75,11 @@ public class KmsDockerMonitor extends KmsMonitor {
 
       List<Object> perCpuUsage = (List<Object>) cpuUsageMap.get("percpu_usage");
 
-      if (previousCPU != -1 && previousSystem != -1) {
+      if (previousCpu != -1 && previousSystem != -1) {
         // Using same formula than
         // https://github.com/docker/docker/blob/master/api/client/stats.go
 
-        float cpuDelta = totalUsage - previousCPU;
+        float cpuDelta = totalUsage - previousCpu;
         float systemDelta = systemUsage - previousSystem;
 
         if (cpuDelta > 0 && systemDelta > 0) {
@@ -87,7 +87,7 @@ public class KmsDockerMonitor extends KmsMonitor {
         }
       }
 
-      previousCPU = totalUsage;
+      previousCpu = totalUsage;
       previousSystem = systemUsage;
     }
 

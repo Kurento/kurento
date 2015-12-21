@@ -53,38 +53,38 @@ public class RepositoryApiConfiguration {
     }
   }
 
-  private String webappPublicURL = "";
+  private String webappPublicUrl = "";
   private RepoType repositoryType = RepoType.FILESYSTEM;
   private String fileSystemFolder = DEFAULT_FILESYSTEM_LOC;
   private String mongoDatabaseName = DEFAULT_MONGO_DBNAME;
   private String mongoGridFSCollectionName = DEFAULT_MONGO_GRIDFS;
-  private String mongoURLConnection = DEFAULT_MONGO_URL;
+  private String mongoUrlConnection = DEFAULT_MONGO_URL;
 
   /**
    * Returns the repository public URL. The default value is "" and can be changed using
-   * {@link RepositoryApiConfiguration#setWebappPublicURL(String)}.
-   * 
+   * {@link RepositoryApiConfiguration#setWebappPublicUrl(String)}.
+   *
    * @return the repository public URL.
    */
-  public String getWebappPublicURL() {
-    return webappPublicURL;
+  public String getWebappPublicUrl() {
+    return webappPublicUrl;
   }
 
   /**
    * Sets the public URL for the webapp of the repository.
-   * 
-   * @param webappPublicURL
+   *
+   * @param webappPublicUrl
    *          URL for the web application
    */
-  public void setWebappPublicURL(String webappPublicURL) {
-    this.webappPublicURL = webappPublicURL;
+  public void setWebappPublicUrl(String webappPublicUrl) {
+    this.webappPublicUrl = webappPublicUrl;
   }
 
   /**
    * Returns the repository type. The default value is {@link RepoType#FILESYSTEM} and can be
    * changed with a properties file or with the method
    * {@link RepositoryApiConfiguration#setRepositoryType(String)}.
-   * 
+   *
    * @return the repository type.
    */
   public RepoType getRepositoryType() {
@@ -94,7 +94,7 @@ public class RepositoryApiConfiguration {
   /**
    * Sets the type of the repository. The value can be {@link RepoType#FILESYSTEM} or
    * {@link RepoType#MONGODB}.
-   * 
+   *
    * @param repositoryType
    *          type of the repository
    */
@@ -107,7 +107,7 @@ public class RepositoryApiConfiguration {
    * with a properties file or with the method
    * {@link RepositoryApiConfiguration#setFileSystemFolder(String)}. This property is only used when
    * the repository type is "filesystem".
-   * 
+   *
    * @return the folder path of the repository.
    */
   public String getFileSystemFolder() {
@@ -117,7 +117,7 @@ public class RepositoryApiConfiguration {
   /**
    * Sets the folder path of the repository. This property is only used when the repository type is
    * "filesystem".
-   * 
+   *
    * @param fileSystemFolder
    *          folder, in the filesystem, that the repository will use to save the files
    */
@@ -130,7 +130,7 @@ public class RepositoryApiConfiguration {
    * and can be changed with a properties file or with the method
    * {@link RepositoryApiConfiguration#setMongoDatabaseName(String)}. This property is only used
    * when the repository type is "mongodb".
-   * 
+   *
    * @return the database name.
    */
   public String getMongoDatabaseName() {
@@ -140,7 +140,7 @@ public class RepositoryApiConfiguration {
   /**
    * Sets the database name used for the repository. This property is only used when the repository
    * type is "mongodb".
-   * 
+   *
    * @param mongoDatabaseName
    *          The database name
    */
@@ -153,7 +153,7 @@ public class RepositoryApiConfiguration {
    * and can be changed with a properties file or with the method
    * {@link RepositoryApiConfiguration#setMongoGridFSCollectionName(String)}. This property is only
    * used when the repository type is "mongodb".
-   * 
+   *
    * @return the name of the gridfs collection.
    */
   public String getMongoGridFSCollectionName() {
@@ -163,7 +163,7 @@ public class RepositoryApiConfiguration {
   /**
    * Sets the name of the gridfs collection used for the repository. This property is only used when
    * the repository type is "mongodb".
-   * 
+   *
    * @param mongoGridFSCollectionName
    *          the name of the gridfs collection
    */
@@ -174,24 +174,24 @@ public class RepositoryApiConfiguration {
   /**
    * Returns the connection to mongo database. The default value is "mongodb://localhost" and can be
    * changed with a properties file or with the method
-   * {@link RepositoryApiConfiguration#setMongoURLConnection(String)}. This property is only used
+   * {@link RepositoryApiConfiguration#setMongoUrlConnection(String)}. This property is only used
    * when the repository type is "mongodb".
-   * 
+   *
    * @return the connection to mongo database.
    */
-  public String getMongoURLConnection() {
-    return mongoURLConnection;
+  public String getMongoUrlConnection() {
+    return mongoUrlConnection;
   }
 
   /**
    * Sets the connection to mongo database in the format specified in
    * http://docs.mongodb.org/manual/reference/connection-string/. This property is only used when
    * the repository type is "mongodb".
-   * 
-   * @param mongoURLConnection
+   *
+   * @param mongoUrlConnection
    *          connection URL for the mong database
    */
-  public void setMongoURLConnection(String mongoURLConnection) {
-    this.mongoURLConnection = mongoURLConnection;
+  public void setMongoUrlConnection(String mongoUrlConnection) {
+    this.mongoUrlConnection = mongoUrlConnection;
   }
 }

@@ -109,18 +109,53 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
   }
 
   @Override
-  public synchronized void onEvent(ChangeColorEvent e) {
-    if (e.getVideoTag().getVideoTagType() == VideoTagType.LOCAL) {
+  public synchronized void onEvent(ChangeColorEvent event) {
+    if (event.getVideoTag().getVideoTagType() == VideoTagType.LOCAL) {
       lastLocalColorChangeTimeAbsolute = new Date().getTime();
-      lastLocalColorChangeTime = e.getTime();
-      lastLocalColor = e.getColor();
+      lastLocalColorChangeTime = event.getTime();
+      lastLocalColor = event.getColor();
       localEventLatch.release();
-    } else if (e.getVideoTag().getVideoTagType() == VideoTagType.REMOTE) {
+    } else if (event.getVideoTag().getVideoTagType() == VideoTagType.REMOTE) {
       lastRemoteColorChangeTimeAbsolute = new Date().getTime();
-      lastRemoteColorChangeTime = e.getTime();
-      lastRemoteColor = e.getColor();
+      lastRemoteColorChangeTime = event.getTime();
+      lastRemoteColor = event.getColor();
       remoteEventLatch.release();
     }
+  }
+
+  public void checkLatencyInBackground(final long testTime, final TimeUnit testTimeUnit,
+      final WebPage client) throws InterruptedException, IOException {
+    new Thread() {
+      @Override
+      public void run() {
+        try {
+          checkLatency(testTime, testTimeUnit, client);
+        } catch (InterruptedException e1) {
+          log.warn("checkLatencyInBackground InterruptedException: {}", e1.getMessage());
+        } catch (IOException e2) {
+          throw new RuntimeException(e2);
+        }
+      }
+    }.start();
+  }
+
+  public void checkLatencyInBackground(final long testTime, final TimeUnit testTimeUnit,
+      final WebPage localClient, final WebPage remoteClient) {
+    new Thread() {
+      @Override
+      public void run() {
+        checkLatency(testTime, testTimeUnit, localClient, remoteClient);
+      }
+    }.start();
+  }
+
+  public void checkLatencyInBackground(final WebPage localClient, final WebPage remoteClient) {
+    new Thread() {
+      @Override
+      public void run() {
+        checkLatency(Long.MAX_VALUE, TimeUnit.SECONDS, localClient, remoteClient);
+      }
+    }.start();
   }
 
   public void checkLatency(final long testTime, final TimeUnit testTimeUnit, WebPage client)
@@ -188,41 +223,6 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
     }
   }
 
-  public void checkLatencyInBackground(final long testTime, final TimeUnit testTimeUnit,
-      final WebPage client) throws InterruptedException, IOException {
-    new Thread() {
-      @Override
-      public void run() {
-        try {
-          checkLatency(testTime, testTimeUnit, client);
-        } catch (InterruptedException e1) {
-          log.warn("checkLatencyInBackground InterruptedException: {}", e1.getMessage());
-        } catch (IOException e2) {
-          throw new RuntimeException(e2);
-        }
-      }
-    }.start();
-  }
-
-  public void checkLatencyInBackground(final long testTime, final TimeUnit testTimeUnit,
-      final WebPage localClient, final WebPage remoteClient) {
-    new Thread() {
-      @Override
-      public void run() {
-        checkLatency(testTime, testTimeUnit, localClient, remoteClient);
-      }
-    }.start();
-  }
-
-  public void checkLatencyInBackground(final WebPage localClient, final WebPage remoteClient) {
-    new Thread() {
-      @Override
-      public void run() {
-        checkLatency(Long.MAX_VALUE, TimeUnit.SECONDS, localClient, remoteClient);
-      }
-    }.start();
-  }
-
   public void checkLatency(final long testTime, final TimeUnit testTimeUnit, WebPage localClient,
       WebPage remoteClient) {
 
@@ -241,36 +241,37 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
     try {
       final Thread waitingThread = Thread.currentThread();
 
-      Thread t;
+      Thread thread;
       if (testTimeUnit != null) {
-        t = new Thread() {
+        thread = new Thread() {
           @Override
           public void run() {
             try {
               testTimeUnit.sleep(testTime);
               waitingThread.interrupt();
             } catch (InterruptedException e) {
+              // Intentionally left blank
             }
           }
         };
-        t.setDaemon(true);
-        t.start();
+        thread.setDaemon(true);
+        thread.start();
       } else {
-        t = waitingThread;
+        thread = waitingThread;
       }
 
       // Synchronization with the green color
       do {
-        waitForLocalColor(msgName, t);
+        waitForLocalColor(msgName, thread);
       } while (!similarColor(lastLocalColor, Color.GREEN));
       do {
-        waitForRemoteColor(msgName, t);
+        waitForRemoteColor(msgName, thread);
       } while (!similarColor(lastRemoteColor, Color.GREEN));
 
       while (true) {
 
-        waitForLocalColor(msgName, t);
-        waitForRemoteColor(msgName, t);
+        waitForLocalColor(msgName, thread);
+        waitForRemoteColor(msgName, thread);
 
         long latencyMilis =
             Math.abs(lastRemoteColorChangeTimeAbsolute - lastLocalColorChangeTimeAbsolute);
@@ -301,7 +302,7 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
                 parsedLocaltime, parsedRemotetime, testTime, latencyMilis);
             LatencyRegistry.setLatencyException(latencyException);
             if (failIfLatencyProblem) {
-              t.interrupt();
+              thread.interrupt();
               throw latencyException;
             } else {
               log.warn(latencyException.getMessage());
@@ -323,17 +324,17 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
     remoteColorTrigger.interrupt();
   }
 
-  private void waitForRemoteColor(String msgName, Thread t) throws InterruptedException {
+  private void waitForRemoteColor(String msgName, Thread thread) throws InterruptedException {
     if (!remoteEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
-      t.interrupt();
+      thread.interrupt();
       throw new RuntimeException(msgName + "Change color not detected in REMOTE steam after "
           + timeout + " " + timeoutTimeUnit);
     }
   }
 
-  private void waitForLocalColor(String msgName, Thread t) throws InterruptedException {
+  private void waitForLocalColor(String msgName, Thread thread) throws InterruptedException {
     if (!localEventLatch.tryAcquire(timeout, timeoutTimeUnit)) {
-      t.interrupt();
+      thread.interrupt();
 
       throw new RuntimeException(msgName + "Change color not detected in LOCAL steam after "
           + timeout + " " + timeoutTimeUnit);
@@ -396,15 +397,15 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
     log.debug("---------------------------------------------");
     log.debug("LATENCY ERRORS " + getName());
     log.debug("---------------------------------------------");
-    int nErrors = 0;
+    int numErrors = 0;
     for (LatencyRegistry registry : latencyMap.values()) {
       if (registry.isLatencyError()) {
-        nErrors++;
+        numErrors++;
         log.debug(registry.getLatencyException().getMessage());
       }
     }
 
-    log.debug("{} errors of latency detected (threshold: {} {})", nErrors, latencyThreshold,
+    log.debug("{} errors of latency detected (threshold: {} {})", numErrors, latencyThreshold,
         latencyThresholdTimeUnit);
     log.debug("---------------------------------------------");
   }

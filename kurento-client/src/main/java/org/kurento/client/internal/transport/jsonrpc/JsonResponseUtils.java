@@ -109,9 +109,9 @@ public class JsonResponseUtils {
     }
 
     if (type instanceof ParameterizedType) {
-      ParameterizedType pType = (ParameterizedType) type;
-      if (pType.getRawType() instanceof Class) {
-        return ((Class<?>) pType.getRawType()).isAssignableFrom(List.class);
+      ParameterizedType paramType = (ParameterizedType) type;
+      if (paramType.getRawType() instanceof Class) {
+        return ((Class<?>) paramType.getRawType()).isAssignableFrom(List.class);
       }
     }
 
@@ -129,16 +129,16 @@ public class JsonResponseUtils {
 
       StringBuilder sb = new StringBuilder();
 
-      ParameterizedType pType = (ParameterizedType) type;
-      Class<?> rawClass = (Class<?>) pType.getRawType();
+      ParameterizedType paramType = (ParameterizedType) type;
+      Class<?> rawClass = (Class<?>) paramType.getRawType();
 
       sb.append(rawClass.getSimpleName());
 
-      Type[] arguments = pType.getActualTypeArguments();
+      Type[] arguments = paramType.getActualTypeArguments();
       if (arguments.length > 0) {
         sb.append('<');
-        for (Type aType : arguments) {
-          sb.append(getTypeName(aType));
+        for (Type argType : arguments) {
+          sb.append(getTypeName(argType));
           sb.append(',');
         }
         sb.deleteCharAt(sb.length() - 1);

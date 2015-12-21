@@ -73,21 +73,22 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
   public void testAlphaBlendingWebRtc() throws Exception {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEPRed = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPGreen = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPBlue = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPAlphabaBlending = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpRed = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpGreen = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpBlue = new WebRtcEndpoint.Builder(mp).build();
 
     AlphaBlending alphaBlending = new AlphaBlending.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(alphaBlending).build();
     HubPort hubPort2 = new HubPort.Builder(alphaBlending).build();
     HubPort hubPort3 = new HubPort.Builder(alphaBlending).build();
-    HubPort hubPort4 = new HubPort.Builder(alphaBlending).build();
 
-    webRtcEPRed.connect(hubPort1);
-    webRtcEPGreen.connect(hubPort2);
-    webRtcEPBlue.connect(hubPort3);
-    hubPort4.connect(webRtcEPAlphabaBlending);
+    webRtcEpRed.connect(hubPort1);
+    webRtcEpGreen.connect(hubPort2);
+    webRtcEpBlue.connect(hubPort3);
+
+    WebRtcEndpoint webRtcEpAlphabaBlending = new WebRtcEndpoint.Builder(mp).build();
+    HubPort hubPort4 = new HubPort.Builder(alphaBlending).build();
+    hubPort4.connect(webRtcEpAlphabaBlending);
 
     alphaBlending.setMaster(hubPort1, 1);
 
@@ -95,17 +96,17 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
     alphaBlending.setPortProperties(0.4F, 0.4F, 7, 0.2F, 0.2F, hubPort3);
 
     getPage(BROWSER1).subscribeLocalEvents("playing");
-    getPage(BROWSER1).initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER1).initWebRtc(webRtcEpRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER2).subscribeLocalEvents("playing");
-    getPage(BROWSER2).initWebRtc(webRtcEPGreen, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER2).initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER3).subscribeLocalEvents("playing");
-    getPage(BROWSER3).initWebRtc(webRtcEPBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER4).subscribeEvents("playing");
-    getPage(BROWSER4).initWebRtc(webRtcEPAlphabaBlending, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER4).initWebRtc(webRtcEpAlphabaBlending, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.RCV_ONLY);
 
     // Assertions

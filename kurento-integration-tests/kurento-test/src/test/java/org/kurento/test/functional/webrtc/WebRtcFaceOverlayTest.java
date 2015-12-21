@@ -29,26 +29,32 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * WebRTC in loopback with a FaceOverlayFilter. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> FaceOverlayFilter -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint in loopback with a FaceOverlayFilter <br>
- * 2. (Browser) WebRtcPeer in send-receive mode and receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · Play time in remote video should be as expected <br>
- * · The color of the received video should be as expected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * WebRTC in loopback with a FaceOverlayFilter.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> FaceOverlayFilter -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint in loopback with a FaceOverlayFilter</li>
+ * <li>(Browser) WebRtcPeer in send-receive mode and receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>Play time in remote video should be as expected</li>
+ * <li>The color of the received video should be as expected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
@@ -65,8 +71,6 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
 
   @Test
   public void testWebRtcFaceOverlay() throws InterruptedException {
-    int playTime = Integer.parseInt(
-        System.getProperty("test.webrtcfaceoverlay.playtime", String.valueOf(DEFAULT_PLAYTIME)));
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -82,6 +86,8 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
         getPage().waitForEvent("playing"));
 
     // Guard time to play the video
+    int playTime = Integer.parseInt(
+        System.getProperty("test.webrtcfaceoverlay.playtime", String.valueOf(DEFAULT_PLAYTIME)));
     waitSeconds(playTime);
 
     // Assertions

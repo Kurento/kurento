@@ -217,9 +217,9 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
           constructor.getParameterAnnotations(), constructor.getGenericParameterTypes(), data,
           manager);
 
-      Event e = (Event) constructor.newInstance(params);
+      Event event = (Event) constructor.newInstance(params);
 
-      ((EventListener) listener).onEvent(e);
+      ((EventListener) listener).onEvent(event);
 
     } catch (Exception e) {
       log.error("Exception while processing event '" + eventClass.getSimpleName()

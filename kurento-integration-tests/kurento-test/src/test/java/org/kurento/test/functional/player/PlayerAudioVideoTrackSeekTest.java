@@ -32,26 +32,32 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the seek feature for a PlayerEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
- * PlayerEndpoint is sought three times and then resumed <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color or the video should remain when a video is sought <br>
- * · After the seek, the color or the video should change <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
+ * Test of a the seek feature for a PlayerEndpoint.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
+ * PlayerEndpoint is sought three times and then resumed</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color or the video should remain when a video is sought</li>
+ * <li>After the seek, the color or the video should change</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * </ul>
  *
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.1.1
@@ -64,7 +70,6 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
   }
 
   private void initTest(Protocol protocol, String nameMedia) throws Exception {
-    int pauseTimeSeconds = 3;
     final Map<Integer, Color> expectedPositionAndColor = new LinkedHashMap<Integer, Color>();
     expectedPositionAndColor.put(2000, Color.RED);
     expectedPositionAndColor.put(10000, Color.BLUE);
@@ -73,7 +78,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     expectedPositionAndColor.put(10100, Color.BLUE);
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);
-
+    int pauseTimeSeconds = 3;
     testPlayerSeek(mediaUrl, WebRtcChannel.AUDIO_AND_VIDEO, pauseTimeSeconds,
         expectedPositionAndColor);
   }

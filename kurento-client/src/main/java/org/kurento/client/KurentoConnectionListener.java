@@ -4,7 +4,7 @@ package org.kurento.client;
 public interface KurentoConnectionListener {
 
   /**
-   * Method invoked when the Kurento client successfully connects to the server
+   * Method invoked when the Kurento client successfully connects to the server.
    */
   void connected();
 
@@ -15,12 +15,12 @@ public interface KurentoConnectionListener {
   void connectionFailed();
 
   /**
-   * Method invoked when the Kurento client connection with the server is interrupted
+   * Method invoked when the Kurento client connection with the server is interrupted.
    */
   void disconnected();
 
   /**
-   * Method invoked when the Kurento client is reconnected to a server
+   * Method invoked when the Kurento client is reconnected to a server.
    */
   void reconnected(boolean sameServer);
 

@@ -68,7 +68,7 @@ public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
 
   @Override
   public String getDispatchURL() {
-    return httpManager.getDispatchURL(sessionId);
+    return httpManager.getDispatchUrl(sessionId);
   }
 
   @Override
@@ -182,8 +182,8 @@ public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
     return sessionId;
   }
 
-  public void fireSessionErrorEvent(Exception e) {
-    listeners.fireEvent(new HttpSessionErrorEvent(this, e));
+  public void fireSessionErrorEvent(Exception ex) {
+    listeners.fireEvent(new HttpSessionErrorEvent(this, ex));
   }
 
   public void forceStopHttpManager(String message) {

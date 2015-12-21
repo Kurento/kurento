@@ -32,25 +32,31 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the seek feature for a PlayerEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
- * PlayerEndpoint is sought three times and then resumed <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · After the seek, the audio has continue <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
+ * Test of a the seek feature for a Player Endpoint
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
+ * PlayerEndpoint is sought three times and then resumed</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>After the seek, the audio has continue</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * </ul>
  *
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.1.1
@@ -63,7 +69,6 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
   }
 
   private void initTest(Protocol protocol, String nameMedia) throws Exception {
-    int pauseTimeSeconds = 3;
     final Map<Integer, Color> expectedPositionAndWithoutColor = new LinkedHashMap<Integer, Color>();
     expectedPositionAndWithoutColor.put(2000, null);
     expectedPositionAndWithoutColor.put(5000, null);
@@ -71,7 +76,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     expectedPositionAndWithoutColor.put(4000, null);
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);
-
+    int pauseTimeSeconds = 3;
     testPlayerSeek(mediaUrl, WebRtcChannel.AUDIO_ONLY, pauseTimeSeconds,
         expectedPositionAndWithoutColor);
   }

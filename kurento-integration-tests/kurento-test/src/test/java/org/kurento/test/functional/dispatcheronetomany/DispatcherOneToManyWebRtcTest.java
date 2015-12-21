@@ -68,32 +68,32 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
   public void testDispatcherOneToManyWebRtc() throws Exception {
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp3 = new WebRtcEndpoint.Builder(mp).build();
 
     DispatcherOneToMany dispatcherOneToMany = new DispatcherOneToMany.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(dispatcherOneToMany).build();
     HubPort hubPort2 = new HubPort.Builder(dispatcherOneToMany).build();
     HubPort hubPort3 = new HubPort.Builder(dispatcherOneToMany).build();
 
-    webRtcEP1.connect(hubPort1);
-    webRtcEP2.connect(hubPort2);
-    webRtcEP3.connect(hubPort3);
-    hubPort1.connect(webRtcEP1);
-    hubPort2.connect(webRtcEP2);
-    hubPort3.connect(webRtcEP3);
+    webRtcEp1.connect(hubPort1);
+    webRtcEp2.connect(hubPort2);
+    webRtcEp3.connect(hubPort3);
+    hubPort1.connect(webRtcEp1);
+    hubPort2.connect(webRtcEp2);
+    hubPort3.connect(webRtcEp3);
 
     dispatcherOneToMany.setSource(hubPort1);
 
     getPage(BROWSER1).subscribeEvents("playing");
-    getPage(BROWSER1).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+    getPage(BROWSER1).initWebRtc(webRtcEp1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
     getPage(BROWSER2).subscribeEvents("playing");
-    getPage(BROWSER2).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+    getPage(BROWSER2).initWebRtc(webRtcEp2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
     getPage(BROWSER3).subscribeEvents("playing");
-    getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+    getPage(BROWSER3).initWebRtc(webRtcEp3, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
     Thread.sleep(PLAYTIME * 1000);
 

@@ -42,23 +42,29 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Player one to many recorders. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> N RecorderEndpoint <br>
- *
- * Browser(s): <br>
- * -- <br>
- *
- * Test logic: <br>
- * 1. (KMS) N RecorderEndpoints recording media from 1 PlayerEndpoint. <br>
- * 2. (Browser) -- <br>
- *
- * Main assertion(s): <br>
- * · Recorded files are OK (seekable, length, content)
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for Recorder. Player one to many recorders.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> N RecorderEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) N RecorderEndpoints recording media from 1 PlayerEndpoint.</li>
+ * <li>(Browser) --</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Recorded files are OK (seekable, length, content)
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -93,12 +99,12 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
-    final PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/60sec/ball.webm").build();
+    final PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/60sec/ball.webm").build();
+
     final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
-    final String recordingFile[] = new String[numViewers];
-    playerEP.play();
+    final String[] recordingFile = new String[numViewers];
+    playerEp.play();
 
     ExecutorService executor = Executors.newFixedThreadPool(numViewers);
     final CountDownLatch latch = new CountDownLatch(numViewers);
@@ -114,7 +120,7 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
             recorder[i] =
                 new RecorderEndpoint.Builder(pipeline, Protocol.FILE + "://" + recordingFile[i])
                     .withMediaProfile(mediaProfileSpecType).build();
-            playerEP.connect(recorder[i]);
+            playerEp.connect(recorder[i]);
 
             // Start record
             recorder[i].record();

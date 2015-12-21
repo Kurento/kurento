@@ -1,3 +1,4 @@
+
 package org.kurento.commons;
 
 import java.io.IOException;
@@ -68,16 +69,18 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
     log.debug("Using configuration file in path '{}' ({})", configFilePath,
         configFilePath.getClass().getCanonicalName());
 
-    JsonReader reader = new JsonReader(
-        Files.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
+    JsonReader reader =
+        new JsonReader(Files.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
+
     reader.setLenient(true);
 
     JsonObject configFile = gson.fromJson(reader, JsonObject.class);
 
     traceConfigContent(configFile);
 
-    if (cfph == null)
+    if (cfph == null) {
       cfph = new ConfigFilePropertyHolder();
+    }
     cfph.loadedConfigFiles.add(new ConfigFileObject(configFilePath, configFile));
     cfph.loadedPaths.add(configFilePath);
 

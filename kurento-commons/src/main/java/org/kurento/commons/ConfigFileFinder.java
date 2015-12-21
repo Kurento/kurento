@@ -46,16 +46,19 @@ public class ConfigFileFinder {
    * <li>3. A classpath /config package</li>
    * <li>4. The classpath root</li>
    * </ul>
-   *
+   * </p>
    * The list is ordered by precedence (locations higher in the list override lower items).
-   *
+   * </p>
    * Remember that a property can be set using Java System properties (java -Dprop=value -jar
    * file.jar)
    *
    * @param fileName
-   * @return
+   *          The name of the file
+   * @return the path
    * @throws URISyntaxException
+   *           if the file name does not have the correct format
    * @throws IOException
+   *           if the file does not exist
    */
   private static Path getPathFromFile(String fileName) throws IOException {
 

@@ -41,24 +41,30 @@ import org.kurento.test.grid.ParallelBrowsers;
 import org.kurento.test.latency.LatencyController;
 
 /**
- * WebRTC (one to many) test with Selenium Grid. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> N x WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint one to many <br>
- * 2. (Browser) N WebRtcPeers in rcv-only receive media <br>
- *
- * Main assertion(s): <br>
- * · No assertion, just data gathering <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * WebRTC (one to many) test with Selenium Grid.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> N x WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint one to many</li>
+ * <li>(Browser) N WebRtcPeers in rcv-only receive media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>No assertion, just data gathering</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
@@ -111,11 +117,11 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
   public void testWebRtcPerformanceOneToMany() throws InterruptedException {
     // Media Pipeline
     final MediaPipeline mp = kurentoClient.createMediaPipeline();
-    final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    final WebRtcEndpoint masterWebRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
     // Master
     getPresenter().subscribeLocalEvents("playing");
-    getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+    getPresenter().initWebRtc(masterWebRtcEp, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
 
     Map<String, Browser> browsers = new TreeMap<>(getTestScenario().getBrowserMap());
     browsers.remove(BrowserConfig.PRESENTER);
@@ -128,8 +134,8 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
 
         try {
           // Viewer
-          WebRtcEndpoint viewerWebRtcEP = new WebRtcEndpoint.Builder(mp).build();
-          masterWebRtcEP.connect(viewerWebRtcEP);
+          WebRtcEndpoint viewerWebRtcEp = new WebRtcEndpoint.Builder(mp).build();
+          masterWebRtcEp.connect(viewerWebRtcEp);
 
           // Latency control
           LatencyController cs = new LatencyController("Latency control on " + name, monitor);
@@ -137,7 +143,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
           // WebRTC
           log.debug(">>> start {}", name);
           getPage(name).subscribeEvents("playing");
-          getPage(name).initWebRtc(viewerWebRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+          getPage(name).initWebRtc(viewerWebRtcEp, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
           // Latency assessment
           cs.checkLatency(playTime, TimeUnit.MILLISECONDS, getPresenter(), getPage(name));

@@ -34,7 +34,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 
   @Override
   public Mongo mongo() throws UnknownHostException {
-    return new MongoClient(new MongoClientURI(config.getMongoURLConnection()));
+    return new MongoClient(new MongoClientURI(config.getMongoUrlConnection()));
   }
 
   @Override

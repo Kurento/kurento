@@ -39,12 +39,12 @@ public class TestConfiguration {
   public static final String TEST_PROTOCOL_PROPERTY = "test.protocol";
   public static final String TEST_PROTOCOL_DEFAULT = "https";
 
-  public final static String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
-  public final static int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
+  public static final String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
+  public static final int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
 
-  public final static String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
-  public final static String TEST_CONFIG_EXECUTIONS_PROPERTY = "test.config.executions";
-  public final static String TEST_CONFIG_EXECUTIONS_DEFAULT = "executions";
+  public static final String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
+  public static final String TEST_CONFIG_EXECUTIONS_PROPERTY = "test.config.executions";
+  public static final String TEST_CONFIG_EXECUTIONS_DEFAULT = "executions";
 
   // Saucelabs
   public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
@@ -181,8 +181,8 @@ public class TestConfiguration {
   public static final String KMS_AUTOSTART_PROP = "test.kms.autostart";
   public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_TEST_VALUE;
 
-  public final static String TEST_APP_AUTOSTART_PROPERTY = "test.app.autostart";
-  public final static String TEST_APP_AUTOSTART_DEFAULT = AUTOSTART_TESTSUITE_VALUE;
+  public static final String TEST_APP_AUTOSTART_PROPERTY = "test.app.autostart";
+  public static final String TEST_APP_AUTOSTART_DEFAULT = AUTOSTART_TESTSUITE_VALUE;
 
   public static final String KMS_SCOPE_PROP = "test.kms.scope";
   public static final String KMS_SCOPE_LOCAL = "local";

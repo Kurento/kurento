@@ -45,24 +45,30 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Record 100 files (2 seconds) from the same WebRtcEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> N RecorderEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (Browser) WebRtcPeer in send-only sends media to KMS <br>
- * 2. (KMS) WebRtcEndpoint receives media and it is recorded by RecorderEndpoint. <br>
- *
- * Main assertion(s): <br>
- * · Recorded files are OK (seekable, length, content)
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for Recorder. Record 100 files (2 seconds) from the same WebRtcEndpoint
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> N RecorderEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(Browser) WebRtcPeer in send-only sends media to KMS</li>
+ * <li>(KMS) WebRtcEndpoint receives media and it is recorded by RecorderEndpoint.</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Recorded files are OK (seekable, length, content)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -99,7 +105,7 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
     mp = kurentoClient.createMediaPipeline();
     final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp).build();
     final RecorderEndpoint[] recorder = new RecorderEndpoint[numRecorders];
-    final String recordingFile[] = new String[numRecorders];
+    final String[] recordingFile = new String[numRecorders];
 
     // WebRTC sender negotiation
     getPage().subscribeLocalEvents("playing");

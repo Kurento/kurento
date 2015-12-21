@@ -35,7 +35,7 @@ public interface RepositoryItem {
 
   /**
    * Returns the state of the RepositoryItem.
-   * 
+   *
    * @return NEW when the item has been just created and has no binary content yet. CONTENT when the
    *         item has binary content and can be read.
    */
@@ -44,7 +44,7 @@ public interface RepositoryItem {
   /**
    * Creates an InputStream to read for the contents of the item. This operation is only valid when
    * the item is in {@link RepositoryItem.State#STORED STORED} state.
-   * 
+   *
    * @return An input stream to read item content
    */
   InputStream createInputStreamToRead();
@@ -55,7 +55,7 @@ public interface RepositoryItem {
    * {@link RepositoryItem.State#STORING}. When the {@link OutputStream#close()} method is invoked,
    * the item's state is changed to {@link RepositoryItem.State#STORED STORED}. This method can be
    * called only once because only one {@link OutputStream} can be created.
-   * 
+   *
    * @return An output stream to write item content
    */
   OutputStream createOutputStreamToWrite();
@@ -64,20 +64,10 @@ public interface RepositoryItem {
    * Returns the {@link RepositoryHttpPlayer} to download the contents of the item using http
    * protocol. This operation is only valid when the item is in {@link RepositoryItem.State#STORED
    * STORED} state.
-   * 
+   *
    * @return A player to download the item via HTTP
    */
   RepositoryHttpPlayer createRepositoryHttpPlayer();
-
-  /**
-   * Returns the {@link RepositoryHttpRecorder} to upload the contents of the item using http
-   * protocol. This operation is only valid when the item is in NEW state. When the element is used
-   * using the provided URL, the state of the item is changed to {@link RepositoryItem.State#STORING
-   * STORING}.
-   * 
-   * @return A recorder to upload to the item via HTTP
-   */
-  RepositoryHttpRecorder createRepositoryHttpRecorder();
 
   /**
    * Returns the {@link RepositoryHttpPlayer} to download the contents of the item using http
@@ -86,12 +76,22 @@ public interface RepositoryItem {
    * sessionIdInURL} allows to specify the sessionId of this player used to construct the URL. The
    * complete URL of the player can be obtained using the {@link RepositoryHttpPlayer#getURL()} in
    * the returned object.
-   * 
-   * @param sessionIdInURL
+   *
+   * @param sessionIdInUrl
    *          The sessionId of this player used to construct the URL.
    * @return A player to download the item via HTTP
    */
-  RepositoryHttpPlayer createRepositoryHttpPlayer(String sessionIdInURL);
+  RepositoryHttpPlayer createRepositoryHttpPlayer(String sessionIdInUrl);
+
+  /**
+   * Returns the {@link RepositoryHttpRecorder} to upload the contents of the item using http
+   * protocol. This operation is only valid when the item is in NEW state. When the element is used
+   * using the provided URL, the state of the item is changed to {@link RepositoryItem.State#STORING
+   * STORING}.
+   *
+   * @return A recorder to upload to the item via HTTP
+   */
+  RepositoryHttpRecorder createRepositoryHttpRecorder();
 
   /**
    * Returns the {@link RepositoryHttpRecorder} to upload the contents of the item using http
@@ -100,17 +100,17 @@ public interface RepositoryItem {
    * STORING}. The parameter {@code sessionIdInURL} allows to specify the sessionId of this recorder
    * used to construct the URL. The complete URL of the recorder can be obtained using the
    * {@link RepositoryHttpRecorder#getURL()} in the returned object.
-   * 
-   * @param sessionIdInURL
+   *
+   * @param sessionIdInUrl
    *          The sessionId of this player used to construct the URL.
    * @return A recorder to upload to the item via HTTP
    */
-  RepositoryHttpRecorder createRepositoryHttpRecorder(String sessionIdInURL);
+  RepositoryHttpRecorder createRepositoryHttpRecorder(String sessionIdInUrl);
 
   /**
    * Returns the attributes associated with this {@link RepositoryItem}. This attributes are used
    * mainly when serving this item by means of http endpoint.
-   * 
+   *
    * @return The metainformation attributes of the item
    */
   RepositoryItemAttributes getAttributes();

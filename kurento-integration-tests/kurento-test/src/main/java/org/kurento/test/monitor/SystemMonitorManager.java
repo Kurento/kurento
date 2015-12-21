@@ -251,7 +251,7 @@ public class SystemMonitorManager {
         log.warn("Monitoring thread not stopped 3s before interrupted. Force stop");
         thread.stop();
       }
-    } catch (InterruptedException e) {
+    } catch (InterruptedException e) { // Intentionally left blank
     }
   }
 

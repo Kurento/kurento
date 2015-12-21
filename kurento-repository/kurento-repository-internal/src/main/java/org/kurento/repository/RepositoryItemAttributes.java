@@ -35,7 +35,7 @@ public class RepositoryItemAttributes {
   /**
    * Date formats using for Date parsing.
    */
-  protected static final SimpleDateFormat formats[] =
+  protected static final SimpleDateFormat[] formats =
       { new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
           new SimpleDateFormat("EEEEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US),
           new SimpleDateFormat("EEE MMMM d HH:mm:ss yyyy", Locale.US) };
@@ -43,7 +43,7 @@ public class RepositoryItemAttributes {
   protected static final TimeZone gmtZone = TimeZone.getTimeZone("GMT");
 
   /**
-   * GMT timezone - all HTTP dates are on GMT
+   * GMT timezone - all HTTP dates are on GMT.
    */
   static {
 
@@ -102,7 +102,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Get content length.
-   * 
+   *
    * @return content length value
    */
   public long getContentLength() {
@@ -111,7 +111,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Set content length.
-   * 
+   *
    * @param contentLength
    *          New content length value
    */
@@ -121,7 +121,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Get creation time.
-   * 
+   *
    * @return creation time value
    */
   public long getCreation() {
@@ -130,7 +130,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Get creation date.
-   * 
+   *
    * @return Creation date value
    */
   public Date getCreationDate() {
@@ -139,7 +139,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Creation date mutator.
-   * 
+   *
    * @param creationDate
    *          New creation date
    */
@@ -150,7 +150,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Creation date mutator.
-   * 
+   *
    * @param creation
    *          New creation date as a long
    */
@@ -166,7 +166,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Get last modified time.
-   * 
+   *
    * @return lastModified time value
    */
   public long getLastModified() {
@@ -175,7 +175,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Set last modified.
-   * 
+   *
    * @param lastModified
    *          New last modified value
    */
@@ -186,7 +186,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Get lastModified date.
-   * 
+   *
    * @return LastModified date value
    */
   public Date getLastModifiedDate() {
@@ -195,7 +195,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Last modified date mutator.
-   * 
+   *
    * @param lastModifiedDate
    *          New last modified date
    */
@@ -253,6 +253,7 @@ public class RepositoryItemAttributes {
    * @param lastModifiedHttp
    *          The lastModifiedHttp to set.
    * @throws ParseException
+   *           in case the http date can't be parsed
    */
   public void setLastModifiedHttp(String lastModifiedHttp) throws ParseException {
     this.lastModifiedDate = parseHttpDate(lastModifiedHttp);
@@ -277,7 +278,7 @@ public class RepositoryItemAttributes {
 
   /**
    * Get ETag.
-   * 
+   *
    * @return strong ETag if available, else weak ETag.
    */
   public String getETag() {

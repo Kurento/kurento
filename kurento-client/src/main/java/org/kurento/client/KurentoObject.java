@@ -14,14 +14,12 @@ public interface KurentoObject {
   void whenCommited(Continuation<?> continuation, Executor executor);
 
   /**
-   *
    * Explicitly release a media object form memory. All of its children will also be released.
    *
    **/
   void release();
 
   /**
-   *
    * Explicitly release a media object form memory. All of its children will also be released.
    * Asynchronous call.
    *

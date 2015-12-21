@@ -40,26 +40,32 @@ import org.kurento.test.config.TestScenario;
 /**
  * Four synthetic videos are played by four WebRtcEndpoint and mixed by a Composite. The resulting
  * video is played in an WebRtcEndpoint. At the end, a B&N filter is connected in one of the
- * WebRTC's <br>
- *
- * Media Pipeline(s): <br>
- * · 4xWebRtcEndpoint -> Composite -> WebRtcEndpoint <br>
- * · 1xWebRtcEndpoint -> GStreamerFilter <br>
- *
- * Browser(s): <br>
- * · 5 x Chrome <br>
- *
- * Test logic: <br>
- * 1. (KMS) Media server implements a grid with the media from 4 WebRtcEndpoints and sends the
+ * WebRTC's
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>4xWebRtcEndpoint -> Composite -> WebRtcEndpoint</li>
+ * <li>1xWebRtcEndpoint -> GStreamerFilter</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>5 x Chrome</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) Media server implements a grid with the media from 4 WebRtcEndpoints and sends the
  * resulting media to another WebRtcEndpoint. Then the media of one the WebRtcEndpoint is filtered
- * with GStreamerFilter (B&N video) <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color of the video should be the expected in the right position (grid) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
+ * with GStreamerFilter (B&N video)</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color of the video should be the expected in the right position (grid)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -101,35 +107,37 @@ public class CompositeWebRtcTest extends FunctionalTest {
   public void testCompositeWebRtc() throws Exception {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEPRed = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPGreen = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPBlue = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPWhite = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPComposite = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpRed = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpGreen = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpBlue = new WebRtcEndpoint.Builder(mp).build();
 
     Composite composite = new Composite.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(composite).build();
     HubPort hubPort2 = new HubPort.Builder(composite).build();
     HubPort hubPort3 = new HubPort.Builder(composite).build();
-    HubPort hubPort4 = new HubPort.Builder(composite).build();
-    HubPort hubPort5 = new HubPort.Builder(composite).build();
 
-    webRtcEPRed.connect(hubPort1);
-    webRtcEPGreen.connect(hubPort2);
-    webRtcEPBlue.connect(hubPort3);
-    webRtcEPWhite.connect(hubPort4);
-    hubPort5.connect(webRtcEPComposite);
+    webRtcEpRed.connect(hubPort1);
+    webRtcEpGreen.connect(hubPort2);
+    webRtcEpBlue.connect(hubPort3);
+
+    WebRtcEndpoint webRtcEpWhite = new WebRtcEndpoint.Builder(mp).build();
+    HubPort hubPort4 = new HubPort.Builder(composite).build();
+    webRtcEpWhite.connect(hubPort4);
+
+    WebRtcEndpoint webRtcEpComposite = new WebRtcEndpoint.Builder(mp).build();
+    HubPort hubPort5 = new HubPort.Builder(composite).build();
+    hubPort5.connect(webRtcEpComposite);
 
     // WebRTC browsers
-    getPage(BROWSER2).initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER3).initWebRtc(webRtcEPGreen, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER2).initWebRtc(webRtcEpRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.SEND_ONLY);
-    getPage(BROWSER4).initWebRtc(webRtcEPBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER5).initWebRtc(webRtcEPWhite, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER4).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER5).initWebRtc(webRtcEpWhite, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER1).subscribeEvents("playing");
-    getPage(BROWSER1).initWebRtc(webRtcEPComposite, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER1).initWebRtc(webRtcEpComposite, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.RCV_ONLY);
 
     // Assertions
@@ -147,7 +155,7 @@ public class CompositeWebRtcTest extends FunctionalTest {
     // Finally, a black & white filter is connected to one WebRTC
     GStreamerFilter bwFilter =
         new GStreamerFilter.Builder(mp, "videobalance saturation=0.0").build();
-    webRtcEPRed.connect(bwFilter);
+    webRtcEpRed.connect(bwFilter);
     bwFilter.connect(hubPort1);
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
     Assert.assertTrue("When connecting the filter, the upper left part of the video must be gray",

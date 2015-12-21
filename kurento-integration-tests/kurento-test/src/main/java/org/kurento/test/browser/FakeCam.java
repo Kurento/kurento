@@ -29,7 +29,7 @@ public class FakeCam {
   private static FakeCam singleton = null;
 
   /**
-   * From 1 to NUM_FAKE_CAMS
+   * From 1 to NUM_FAKE_CAMS.
    */
   private static int NUM_FAKE_CAMS = 4;
 

@@ -71,15 +71,14 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
   public void testDispatcherOneToManyPlayer() throws Exception {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-    PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/red.webm").build();
-    PlayerEndpoint playerEP2 =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/blue.webm").build();
-    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
+    PlayerEndpoint playerEp =
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/30sec/red.webm")
+            .build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/30sec/blue.webm").build();
+    WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp3 = new WebRtcEndpoint.Builder(mp).build();
 
     DispatcherOneToMany dispatcherOneToMany = new DispatcherOneToMany.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(dispatcherOneToMany).build();
@@ -88,15 +87,15 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
     HubPort hubPort4 = new HubPort.Builder(dispatcherOneToMany).build();
     HubPort hubPort5 = new HubPort.Builder(dispatcherOneToMany).build();
 
-    playerEP.connect(hubPort1);
-    playerEP2.connect(hubPort2);
-    hubPort3.connect(webRtcEP1);
-    hubPort4.connect(webRtcEP2);
-    hubPort5.connect(webRtcEP3);
+    playerEp.connect(hubPort1);
+    playerEp2.connect(hubPort2);
+    hubPort3.connect(webRtcEp1);
+    hubPort4.connect(webRtcEp2);
+    hubPort5.connect(webRtcEp3);
     dispatcherOneToMany.setSource(hubPort1);
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEP2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+    playerEp2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
         eosLatch.countDown();
@@ -105,15 +104,15 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
 
     // Test execution
     getPage(BROWSER1).subscribeEvents("playing");
-    getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    getPage(BROWSER1).initWebRtc(webRtcEp2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
     getPage(BROWSER2).subscribeEvents("playing");
-    getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    getPage(BROWSER2).initWebRtc(webRtcEp1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
     getPage(BROWSER3).subscribeEvents("playing");
-    getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEp3, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
-    playerEP.play();
+    playerEp.play();
 
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event)",
@@ -131,7 +130,7 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
         getPage(BROWSER3).similarColor(Color.RED));
 
     Thread.sleep(3000);
-    playerEP2.play();
+    playerEp2.play();
     dispatcherOneToMany.setSource(hubPort2);
 
     Assert.assertTrue("The color of the video should be blue",

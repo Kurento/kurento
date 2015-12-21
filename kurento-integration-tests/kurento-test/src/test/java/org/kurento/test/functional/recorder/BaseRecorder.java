@@ -36,7 +36,6 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- *
  * Base for recorder tests.
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -63,28 +62,28 @@ public class BaseRecorder extends FunctionalTest {
     }
   }
 
-  protected void launchBrowser(MediaPipeline mp, WebRtcEndpoint webRtcEP, PlayerEndpoint playerEP,
-      RecorderEndpoint recorderEP, String expectedVideoCodec, String expectedAudioCodec,
+  protected void launchBrowser(MediaPipeline mp, WebRtcEndpoint webRtcEp, PlayerEndpoint playerEp,
+      RecorderEndpoint recorderEp, String expectedVideoCodec, String expectedAudioCodec,
       String recordingFile, Color expectedColor, int xColor, int yColor, int playTime)
           throws InterruptedException {
 
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-    playerEP.play();
+    getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    playerEp.play();
     final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+    playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
         eosLatch.countDown();
       }
     });
 
-    if (recorderEP != null) {
-      recorderEP.record();
+    if (recorderEp != null) {
+      recorderEp.record();
     }
 
     // Assertions
-    String inRecording = recorderEP == null ? " in the recording" : "";
+    String inRecording = recorderEp == null ? " in the recording" : "";
 
     Assert.assertTrue("Not received media (timeout waiting playing event)" + inRecording,
         getPage().waitForEvent("playing"));
@@ -93,11 +92,11 @@ public class BaseRecorder extends FunctionalTest {
         getPage().similarColorAt(expectedColor, xColor, yColor));
     Assert.assertTrue("Not received EOS event in player" + inRecording,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
-    if (recorderEP != null) {
+    if (recorderEp != null) {
 
       saveGstreamerDot(mp);
 
-      recorderEP.stop();
+      recorderEp.stop();
 
       // Guard time to stop the recording
       Thread.sleep(2000);

@@ -57,7 +57,7 @@ public class KurentoRunNotifier extends RunNotifier {
       }
     }
 
-    abstract protected void notifyListener(RunListener each) throws Exception;
+    protected abstract void notifyListener(RunListener each) throws Exception;
   }
 
   @Override

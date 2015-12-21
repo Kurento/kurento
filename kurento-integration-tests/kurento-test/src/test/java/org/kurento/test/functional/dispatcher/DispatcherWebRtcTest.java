@@ -37,27 +37,33 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * A WebRtcEndpoint is connected to another WebRtcEndpoint through a Dispatcher <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> Dispatcher -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · 3 x Chrome <br>
- *
- * Test logic: <br>
- * 1. (KMS) Media server switchs the media from two WebRtcEndpoint using a Dispatcher, streaming the
- * result through antoher WebRtcEndpoint<br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · The color of the received video should be as expected (green and the blue) <br>
- * · EOS event should arrive to player <br>
- * · Play time in remote video should be as expected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * A WebRtcEndpoint is connected to another WebRtcEndpoint through a Dispatcher
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> Dispatcher -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>3 x Chrome</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) Media server switchs the media from two WebRtcEndpoint using a Dispatcher, streaming
+ * the result through antoher WebRtcEndpoint</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>The color of the received video should be as expected (green and the blue)</li>
+ * <li>EOS event should arrive to player</li>
+ * <li>Play time in remote video should be as expected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -90,27 +96,27 @@ public class DispatcherWebRtcTest extends FunctionalTest {
   public void testDispatcherWebRtc() throws Exception {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp3 = new WebRtcEndpoint.Builder(mp).build();
 
     Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
     HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
     HubPort hubPort3 = new HubPort.Builder(dispatcher).build();
 
-    webRtcEP1.connect(hubPort1);
-    webRtcEP3.connect(hubPort3);
-    hubPort2.connect(webRtcEP2);
+    webRtcEp1.connect(hubPort1);
+    webRtcEp3.connect(hubPort3);
+    hubPort2.connect(webRtcEp2);
 
     dispatcher.connect(hubPort1, hubPort2);
 
     // Test execution
-    getPage(BROWSER2).initWebRtc(webRtcEP1, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER3).initWebRtc(webRtcEP3, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER2).initWebRtc(webRtcEp1, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEp3, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER1).subscribeEvents("playing");
-    getPage(BROWSER1).initWebRtc(webRtcEP2, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
+    getPage(BROWSER1).initWebRtc(webRtcEp2, WebRtcChannel.VIDEO_ONLY, WebRtcMode.RCV_ONLY);
 
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 

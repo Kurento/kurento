@@ -15,17 +15,17 @@ public class Properties {
           "Each key should have a value (pair number of parameters). Parameters are: " + params);
     }
 
-    Properties p = new Properties();
+    Properties props = new Properties();
 
     for (int i = 0; i < params.length; i += 2) {
       if (!(params[i] instanceof String)) {
         throw new IllegalArgumentException(
             "Property key should be an String value. Parameter " + i + " is " + params[i]);
       }
-      p.add((String) params[i], params[i + 1]);
+      props.add((String) params[i], params[i + 1]);
     }
 
-    return p;
+    return props;
   }
 
   public Properties add(String property, Object value) {

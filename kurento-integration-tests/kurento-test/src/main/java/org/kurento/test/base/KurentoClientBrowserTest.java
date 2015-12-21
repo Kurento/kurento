@@ -43,10 +43,12 @@ import org.kurento.test.utils.WebRtcConnector;
  * @since 4.2.3
  */
 public class KurentoClientBrowserTest<W extends WebPage> extends BrowserTest<W> {
-
-  public static @Service WebServerService webServer = new WebServerService();
-  public static @Service KmsService kms = new KmsService();
-  public static @Service FakeKmsService fakeKms = new FakeKmsService();
+  @Service
+  public static WebServerService webServer = new WebServerService();
+  @Service
+  public static KmsService kms = new KmsService();
+  @Service
+  public static FakeKmsService fakeKms = new FakeKmsService();
 
   protected static KurentoClient kurentoClient;
   protected static KurentoClient fakeKurentoClient;

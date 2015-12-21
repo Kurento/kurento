@@ -61,7 +61,7 @@ public class RepositoryFunctionalTest extends KurentoClientBrowserTest<WebRtcTes
     @Bean
     public RepositoryApiConfiguration repositoryApiConfiguration() {
       RepositoryApiConfiguration config = new RepositoryApiConfiguration();
-      config.setWebappPublicURL("http://localhost:" + WebServerService.getAppHttpPort() + "/");
+      config.setWebappPublicUrl("http://localhost:" + WebServerService.getAppHttpPort() + "/");
       config.setFileSystemFolder(Files.createTempDir().toString());
       config.setRepositoryType(RepoType.FILESYSTEM);
       return config;

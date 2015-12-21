@@ -22,7 +22,6 @@ import org.junit.Assert;
 import com.google.common.base.Strings;
 
 /**
- *
  * Utility class to assert the expected codecs in a media (video/audio) file.
  *
  * @author Boni Garcia (bgarcia@gsyc.es)

@@ -1,9 +1,6 @@
 
 package org.kurento.client;
 
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-
 public interface TFuture<V> {
 
   /**
@@ -26,9 +23,9 @@ public interface TFuture<V> {
    * Waits if necessary for the transaction to be committed, and then retrieves its result.
    *
    * @return the transaction result
-   * @throws CancellationException
+   * @throws java.util.concurrent.CancellationException
    *           if the transaction was cancelled with rollback
-   * @throws ExecutionException
+   * @throws java.util.concurrent.ExecutionException
    *           if the transaction threw an exception when committed
    * @throws InterruptedException
    *           if the current thread was interrupted while waiting

@@ -32,44 +32,48 @@ import org.kurento.test.latency.VideoTagType;
 
 /**
  * Stability test for switching 2 WebRTC (looback to back-2-back) a configurable number of times
- * (each switch holds 1 second). <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> WebRtcEndpoint (loopback) <br>
- * ... to: <br>
- * · WebRtcEndpoint -> WebRtcEndpoint (back to back) <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint in loopback to WebRtcEndpoint in B2B. <br>
- * 2. (Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color change should be detected on local/remote video tag of browsers <br>
- * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * (each switch holds 1 second).
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint (loopback)</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint (back to back)</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint in loopback to WebRtcEndpoint in B2B.</li>
+ * <li>(Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color change should be detected on local/remote video tag of browsers</li>
+ * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
 public class WebRtcStabilitySwitchTest extends StabilityTest {
 
-  /**
-   * test time = PLAYTIME_PER_SWITCH * 2 * DEFAULT_NUM_SWITCH
-   * 
-   * DEFAULT_NUM_SWITCH = 2 --> test time = 1 minute <br/>
-   * DEFAULT_NUM_SWITCH = 120 --> test time = 1 hour
-   */
+  // test time = PLAYTIME_PER_SWITCH * 2 * DEFAULT_NUM_SWITCH
+
+  // DEFAULT_NUM_SWITCH = 2 --> test time = 1 minute <br/>
+  // DEFAULT_NUM_SWITCH = 120 --> test time = 1 hour
+
   private static final int DEFAULT_NUM_SWITCH = 60;
   private static final int PLAYTIME_PER_SWITCH = 15; // seconds
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    return TestScenario.localPresenterAndViewerRGB();
+    return TestScenario.localPresenterAndViewerRgb();
   }
 
   @Test

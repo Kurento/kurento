@@ -309,9 +309,6 @@ public class GridHandler {
       String remoteFolder, String remoteChromeDriver, String classpath, BrowserType browser,
       int maxInstances) throws IOException {
 
-    // Create script for Node
-    Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-
     Map<String, Object> data = new HashMap<String, Object>();
     data.put("remotePort", String.valueOf(remotePort));
     data.put("maxInstances", String.valueOf(maxInstances));
@@ -323,6 +320,8 @@ public class GridHandler {
     data.put("pidFile", REMOTE_PID_FILE);
     data.put("browser", browser);
 
+    // Create script for Node
+    Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
     cfg.setClassForTemplateLoading(PerformanceTest.class, "/templates/");
 
     String tmpScript = node.getTmpFolder() + LAUNCH_SH;
@@ -371,6 +370,7 @@ public class GridHandler {
         try {
           Thread.sleep(100);
         } catch (InterruptedException ie) {
+          // Intentionally left blank
         }
         if (System.currentTimeMillis() > maxSystemTime) {
           log.error("Timeout ({} sec) waiting for node {}", TIMEOUT_NODE, node);

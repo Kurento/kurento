@@ -38,23 +38,29 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint x 2 -> RecorderEndpoint <br>
- *
- * Browser(s): <br>
- * -- <br>
- *
- * Test logic: <br>
- * 1. (KMS) 1 RecorderEndpoint recording media from 2 PlayerEndpoint. <br>
- * 2. (Browser) -- <br>
- *
- * Main assertion(s): <br>
- * · Recorded files are OK (seekable, length, content)
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint x 2 -> RecorderEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) 1 RecorderEndpoint recording media from 2 PlayerEndpoint.</li>
+ * <li>(Browser) --</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Recorded files are OK (seekable, length, content)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -87,38 +93,36 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP1 =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/60sec/ball.webm").build();
-    PlayerEndpoint playerEP2 =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/60sec/smpte.webm").build();
+    PlayerEndpoint playerEp1 = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/60sec/ball.webm").build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/60sec/smpte.webm").build();
 
     String recordingFile = getDefaultOutputFile(extension);
-    RecorderEndpoint recorderEP =
+    RecorderEndpoint recorderEp =
         new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
             .withMediaProfile(mediaProfileSpecType).build();
 
     // Start play and record
-    playerEP1.play();
-    playerEP2.play();
-    recorderEP.record();
+    playerEp1.play();
+    playerEp2.play();
+    recorderEp.record();
 
     // Switch players
     for (int i = 0; i < SWITCH_TIMES; i++) {
       if (i % 2 == 0) {
-        playerEP1.connect(recorderEP);
+        playerEp1.connect(recorderEp);
       } else {
-        playerEP2.connect(recorderEP);
+        playerEp2.connect(recorderEp);
       }
 
       Thread.sleep(SWITCH_RATE_MS);
     }
 
     // Stop play and record
-    playerEP1.stop();
-    playerEP2.stop();
-    recorderEP.stop();
+    playerEp1.stop();
+    playerEp2.stop();
+    recorderEp.stop();
 
     // Guard time to stop recording
     Thread.sleep(4000);

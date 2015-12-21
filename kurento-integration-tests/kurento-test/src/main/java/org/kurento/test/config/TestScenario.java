@@ -49,7 +49,7 @@ import com.google.gson.Gson;
  */
 public class TestScenario {
 
-  public final static String INSTANCES_SEPARATOR = "-";
+  public static final String INSTANCES_SEPARATOR = "-";
 
   private Map<String, Browser> browserMap;
   private List<URL> urlList;
@@ -281,7 +281,7 @@ public class TestScenario {
     return Arrays.asList(new Object[][] { { test } });
   }
 
-  public static Collection<Object[]> localPresenterAndViewerRGB() {
+  public static Collection<Object[]> localPresenterAndViewerRgb() {
     // Test: Chrome in local (presenter and viewer)
     String videoPath = KurentoTest.getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m";
     TestScenario test = new TestScenario();

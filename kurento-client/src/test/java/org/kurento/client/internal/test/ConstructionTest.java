@@ -27,13 +27,15 @@ public class ConstructionTest {
     Sample2 obj = new Sample2.Builder("XXX", 33, manager).withAtt3(0.5f).att4().build();
 
     String att1 = obj.getAtt1();
-    int att2 = obj.getAtt2();
-    float att3 = obj.getAtt3();
-    boolean att4 = obj.getAtt4();
-
     assertEquals(att1, "XXX");
+
+    int att2 = obj.getAtt2();
     assertEquals(att2, 33);
+
+    float att3 = obj.getAtt3();
     assertEquals(att3, 0.5f, 0.01);
+
+    boolean att4 = obj.getAtt4();
     assertEquals(att4, true);
 
   }

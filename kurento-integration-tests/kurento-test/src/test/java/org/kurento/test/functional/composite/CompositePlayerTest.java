@@ -34,24 +34,30 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Four synthetic videos are played by four PlayerEndpoint and mixed by a Composite. The resulting
- * video is played in an WebRtcEndpoint <br>
- *
- * Media Pipeline(s): <br>
- * · 4xPlayerEndpoint -> Composite -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) Media server implements a grid with the media from 4 PlayerEndpoints <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color of the video should be the expected in the right position (grid) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
+ * video is played in an WebRtcEndpoint
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>4xPlayerEndpoint -> Composite -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) Media server implements a grid with the media from 4 PlayerEndpoints</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color of the video should be the expected in the right position (grid)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -71,36 +77,34 @@ public class CompositePlayerTest extends FunctionalTest {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint playerRed =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/red.webm").build();
-    PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/green.webm").build();
-    PlayerEndpoint playerBlue =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/blue.webm").build();
-    PlayerEndpoint playerWhite =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/white.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/30sec/red.webm")
+            .build();
+    PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/30sec/green.webm").build();
+    PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/30sec/blue.webm").build();
 
     Composite composite = new Composite.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(composite).build();
     HubPort hubPort2 = new HubPort.Builder(composite).build();
     HubPort hubPort3 = new HubPort.Builder(composite).build();
-    HubPort hubPort4 = new HubPort.Builder(composite).build();
-    HubPort hubPort5 = new HubPort.Builder(composite).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
     playerRed.connect(hubPort1);
     playerGreen.connect(hubPort2);
     playerBlue.connect(hubPort3);
+
+    PlayerEndpoint playerWhite = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/30sec/white.webm").build();
+    HubPort hubPort4 = new HubPort.Builder(composite).build();
     playerWhite.connect(hubPort4);
 
-    hubPort5.connect(webRtcEP);
+    WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
+    HubPort hubPort5 = new HubPort.Builder(composite).build();
+    hubPort5.connect(webRtcEp);
 
     // Test execution
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
     playerRed.play();
     playerGreen.play();

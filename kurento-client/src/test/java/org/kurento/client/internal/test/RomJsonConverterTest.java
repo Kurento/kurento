@@ -198,14 +198,13 @@ public class RomJsonConverterTest {
   @Test
   public void objectListToJsonConversion() {
 
-    JsonArray array = new JsonArray();
-
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("prop1", "XXX");
     jsonObject.addProperty("prop2", 33);
     jsonObject.addProperty("prop3", "YYY");
     jsonObject.addProperty("prop4", 5.5f);
 
+    JsonArray array = new JsonArray();
     array.add(jsonObject);
 
     JsonObject jsonObject2 = new JsonObject();
@@ -233,8 +232,6 @@ public class RomJsonConverterTest {
   @Test
   public void jsonToObjectListConversion() {
 
-    List<ComplexParam> params = new ArrayList<ComplexParam>();
-
     ComplexParam param = new ComplexParam("XXX", 33);
     param.setProp3("YYY");
     param.setProp4(5.5f);
@@ -243,6 +240,7 @@ public class RomJsonConverterTest {
     param2.setProp3("YYY2");
     param2.setProp4(11.5f);
 
+    List<ComplexParam> params = new ArrayList<>();
     params.add(param);
     params.add(param2);
 

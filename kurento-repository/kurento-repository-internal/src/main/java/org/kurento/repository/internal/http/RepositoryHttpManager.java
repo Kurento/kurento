@@ -40,7 +40,7 @@ public class RepositoryHttpManager {
   @Autowired
   private RepositoryApiConfiguration config;
 
-  private String webappPublicURL;
+  private String webappPublicUrl;
 
   private String servletPath;
 
@@ -58,41 +58,41 @@ public class RepositoryHttpManager {
         RepositoryHttpPlayer.class, null);
   }
 
+  public RepositoryHttpPlayer createRepositoryHttpPlayer(RepositoryItem repositoryItem,
+      String sessionIdInUrl) {
+    return (RepositoryHttpPlayer) createRepositoryHttpElem(repositoryItem,
+        RepositoryHttpPlayer.class, sessionIdInUrl);
+  }
+
   public RepositoryHttpRecorder createRepositoryHttpRecorder(RepositoryItem repositoryItem) {
     return (RepositoryHttpRecorder) createRepositoryHttpElem(repositoryItem,
         RepositoryHttpRecorder.class, null);
   }
 
-  public RepositoryHttpPlayer createRepositoryHttpPlayer(RepositoryItem repositoryItem,
-      String sessionIdInURL) {
-    return (RepositoryHttpPlayer) createRepositoryHttpElem(repositoryItem,
-        RepositoryHttpPlayer.class, sessionIdInURL);
-  }
-
   public RepositoryHttpRecorder createRepositoryHttpRecorder(RepositoryItem repositoryItem,
-      String sessionIdInURL) {
+      String sessionIdInUrl) {
     return (RepositoryHttpRecorder) createRepositoryHttpElem(repositoryItem,
-        RepositoryHttpRecorder.class, sessionIdInURL);
+        RepositoryHttpRecorder.class, sessionIdInUrl);
   }
 
   private RepositoryHttpEndpointImpl createRepositoryHttpElem(RepositoryItem repositoryItem,
-      Class<? extends RepositoryHttpEndpoint> repoItemHttpElemClass, String sessionIdInURL) {
+      Class<? extends RepositoryHttpEndpoint> repoItemHttpElemClass, String sessionIdInUrl) {
 
-    if (sessionIdInURL == null) {
-      sessionIdInURL = createUniqueId();
+    if (sessionIdInUrl == null) {
+      sessionIdInUrl = createUniqueId();
     }
 
-    String url = createUlr(sessionIdInURL);
+    String url = createUrl(sessionIdInUrl);
 
     RepositoryHttpEndpointImpl elem = null;
 
     if (repoItemHttpElemClass == RepositoryHttpPlayer.class) {
-      elem = new RepositoryHttpPlayerImpl(repositoryItem, sessionIdInURL, url, this);
+      elem = new RepositoryHttpPlayerImpl(repositoryItem, sessionIdInUrl, url, this);
     } else {
-      elem = new RepositoryHttpRecorderImpl(repositoryItem, sessionIdInURL, url, this);
+      elem = new RepositoryHttpRecorderImpl(repositoryItem, sessionIdInUrl, url, this);
     }
 
-    sessions.put(sessionIdInURL, elem);
+    sessions.put(sessionIdInUrl, elem);
 
     return elem;
   }
@@ -101,11 +101,11 @@ public class RepositoryHttpManager {
     return generator.nextSecret();
   }
 
-  private String createUlr(String sessionId) {
-    return webappPublicURL + getDispatchURL(sessionId);
+  private String createUrl(String sessionId) {
+    return webappPublicUrl + getDispatchUrl(sessionId);
   }
 
-  public String getDispatchURL(String id) {
+  public String getDispatchUrl(String id) {
     return servletPath + id;
   }
 
@@ -142,8 +142,8 @@ public class RepositoryHttpManager {
     }
   }
 
-  public void setWebappPublicURL(String webappURL) {
-    this.webappPublicURL = webappURL;
+  public void setWebappPublicUrl(String webappUrl) {
+    this.webappPublicUrl = webappUrl;
   }
 
   public void setServletPath(String servletPath) {

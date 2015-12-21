@@ -7,8 +7,7 @@
 package org.kurento.client;
 
 /**
- *
- * Parent interface for Kurento events
+ * Parent interface for Kurento events.
  *
  **/
 public interface Event {

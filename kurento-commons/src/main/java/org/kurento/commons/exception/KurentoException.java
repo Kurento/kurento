@@ -25,10 +25,9 @@ package org.kurento.commons.exception;
  * <li>Any other unexpected error conditions.
  * </ul>
  * </p>
- *
  * The original exception cause must be provided within the exception if it is raised due to a
  * previous exception.
- *
+ * </p>
  * This kind of exceptions are not checked and with CMT provoke a roll back at the moment the are
  * thrown.
  *
@@ -49,7 +48,7 @@ public class KurentoException extends RuntimeException {
   /**
    * Constructs a new runtime exception with the specified detail message. The cause is not
    * initialized, and may subsequently be initialized by a call to initCause.
-   * 
+   *
    * @param msg
    *          the detail message. The detail message is saved for later retrieval by the
    *          {@link #getMessage()} method.
@@ -59,7 +58,7 @@ public class KurentoException extends RuntimeException {
   }
 
   /**
-   * 
+   *
    * @param msg
    *          the detail message. The detail message is saved for later retrieval by the
    *          {@link #getMessage()} method.
@@ -72,7 +71,7 @@ public class KurentoException extends RuntimeException {
   }
 
   /**
-   * 
+   *
    * @param throwable
    *          the cause (which is saved for later retrieval by the {@link #getCause()} method). (A
    *          null value is permitted, and indicates that the cause is nonexistent or unknown.)

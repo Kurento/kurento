@@ -49,8 +49,10 @@ public class RemoteObject {
   private Continuation<Object> whenContinuation;
   private Executor executor;
 
+  private final ArrayListMultimap<String, RemoteObjectEventListener> multi = ArrayListMultimap
+      .create();
   private final Multimap<String, RemoteObjectEventListener> listeners = Multimaps
-      .synchronizedMultimap(ArrayListMultimap.<String, RemoteObjectEventListener> create());
+      .synchronizedMultimap(multi);
 
   private TransactionExecutionException transactionException;
 

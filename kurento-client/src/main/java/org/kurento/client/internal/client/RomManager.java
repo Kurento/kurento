@@ -140,22 +140,14 @@ public class RomManager implements ObjectRefsManager {
     return client.invoke(objectRef, operationName, operationParams, type);
   }
 
-  public void release(String objectRef) {
-    client.release(objectRef);
-    manager.releaseObject(objectRef);
-  }
-
-  public String subscribe(String objectRef, String eventType) {
-    return client.subscribe(objectRef, eventType);
-  }
-
-  public void unsubscribe(String objectRef, String listenerSubscription) {
-    client.unsubscribe(objectRef, listenerSubscription);
-  }
-
   public Object invoke(String objectRef, String operationName, Props operationParams, Type type,
       Continuation<?> cont) {
     return client.invoke(objectRef, operationName, operationParams, type, cont);
+  }
+
+  public void release(String objectRef) {
+    client.release(objectRef);
+    manager.releaseObject(objectRef);
   }
 
   public void release(final String objectRef, final Continuation<Void> cont) {
@@ -172,8 +164,16 @@ public class RomManager implements ObjectRefsManager {
     });
   }
 
+  public String subscribe(String objectRef, String eventType) {
+    return client.subscribe(objectRef, eventType);
+  }
+
   public String subscribe(String objectRef, String type, Continuation<String> cont) {
     return client.subscribe(objectRef, type, cont);
+  }
+
+  public void unsubscribe(String objectRef, String listenerSubscription) {
+    client.unsubscribe(objectRef, listenerSubscription);
   }
 
   public void unsubscribe(String objectRef, String listenerRegistration, Continuation<Void> cont) {

@@ -29,6 +29,7 @@ public class RemoteService {
         try {
           Thread.sleep(100);
         } catch (InterruptedException e) {
+          // Intentionally left blank
         }
       }
     }

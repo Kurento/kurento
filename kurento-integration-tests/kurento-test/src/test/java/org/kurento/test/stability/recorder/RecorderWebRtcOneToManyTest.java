@@ -46,28 +46,32 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. WebRTC one to many with recorders. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> N x (WebRtcEndpoint -> RecorderEndpoint) <br>
- *
- * Browser(s): <br>
- * · N x Chrome <br>
- * · N x Firefox <br>
- *
- * Test logic: <br>
- * 1. (Browser) WebRtcPeer in send-only sends media to KMS <br>
- * 2. (KMS) N WebRtcEndpoints receives media and it is recorded by N RecorderEndpoints. <br>
- *
- * Main assertion(s): <br>
- * · Recorded files are OK (seekable, length, content)
- *
- * Secondary assertion(s): <br>
- * -- <br>
- *
- *
- *
- * <strong>Description</strong>: Stability test for Recorder. WebRTC one to many with recorders.<br>
+ * Stability test for Recorder. WebRTC one to many with recorders.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> N x (WebRtcEndpoint -> RecorderEndpoint)</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>N x Chrome</li>
+ * <li>N x Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(Browser) WebRtcPeer in send-only sends media to KMS</li>
+ * <li>(KMS) N WebRtcEndpoints receives media and it is recorded by N RecorderEndpoints.</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Recorded files are OK (seekable, length, content)
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
+ * <strong>Description</strong>: Stability test for Recorder. WebRTC one to many with recorders.
+ * </p>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> N WebRtcEndpoint X RecorderEndpoint</li>
@@ -113,7 +117,7 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
     final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(mp).build();
     final WebRtcEndpoint[] webRtcReceiver = new WebRtcEndpoint[numViewers];
     final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
-    final String recordingFile[] = new String[numViewers];
+    final String[] recordingFile = new String[numViewers];
 
     // WebRTC sender negotiation
     getPage(0).subscribeLocalEvents("playing");

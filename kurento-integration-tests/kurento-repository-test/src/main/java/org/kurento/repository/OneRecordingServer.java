@@ -64,8 +64,7 @@ public class OneRecordingServer {
     log.info("The video can be downloaded with GET from the URL: " + player.getURL());
 
     player.setAutoTerminationTimeout(30 * 60 * 1000);
-    log.info(
-        "The player will be auto-terminated 30 min after the last downloading of content (http GET)");
+    log.info("Player will be terminated 30 min after last download of content (http GET)");
 
     final CountDownLatch terminatedLatch = new CountDownLatch(1);
 
@@ -88,7 +87,9 @@ public class OneRecordingServer {
     try {
       terminatedLatch.await();
     } catch (InterruptedException e) {
+      // Intentionally left blank{
     }
+
   }
 
   private void prepareToUploadVideo(RepositoryItem repositoryItem) throws InterruptedException {
@@ -101,7 +102,7 @@ public class OneRecordingServer {
 
     recorder.setAutoTerminationTimeout(5 * 1000);
     log.info(
-        "The recorder will be auto-terminated 5 seconds after the last uploading of content (http PUT or POST)");
+        "Recorder will be terminated 5 seconds after last upload of content (http PUT or POST)");
 
     final CountDownLatch terminatedLatch = new CountDownLatch(1);
 
@@ -139,8 +140,8 @@ public class OneRecordingServer {
     server.execute();
   }
 
-  public static String getPublicWebappURL() {
-    String web = server.context.getBean(RepositoryApiConfiguration.class).getWebappPublicURL();
+  public static String getPublicWebappUrl() {
+    String web = server.context.getBean(RepositoryApiConfiguration.class).getWebappPublicUrl();
     // String web = "http://localhost:8080/";
 
     log.info("web: " + web);

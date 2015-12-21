@@ -40,28 +40,34 @@ import org.kurento.test.latency.VideoTagType;
 import org.kurento.test.sdp.SdpUtils;
 
 /**
- * Stability test for switching a WebRTC connected to RTP performing H264 transcoding. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> RtpEndpoint1 <br>
- * · RtpEndpoint1 -> RtpEndpoint2 (RTP session) <br>
- * · RtpEndpoint2 -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint to RtpEndpoint. RtpEndpoint to RtpEndpoint. RtpEndpoint to
- * WebRtcEndpoint. <br>
- * 2. (Browser) WebRtcPeer in send-receive mode sends and receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · Color change should be detected on local and remote video tags <br>
- * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for switching a WebRTC connected to RTP performing H264 transcoding.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> RtpEndpoint1</li>
+ * <li>RtpEndpoint1 -> RtpEndpoint2 (RTP session)</li>
+ * <li>RtpEndpoint2 -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint to RtpEndpoint. RtpEndpoint to RtpEndpoint. RtpEndpoint to
+ * WebRtcEndpoint.</li>
+ * <li>(Browser) WebRtcPeer in send-receive mode sends and receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>Color change should be detected on local and remote video tags</li>
+ * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0

@@ -38,29 +38,35 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV, MOV, MP4, MKV, AVI,
- * 3GP ... all with video and audio) connected to a WebRtcEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) PlayerEndpoint reads media source (from HTTP, FILE and S3) and connects to a
- * WebRtcEndpoint <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media. WebRtcPeer can be configured to receive both
- * video and audio, only video, or only audio <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · The color of the received video should be as expected <br>
- * · EOS event should arrive to player <br>
- * · Play time in remote video should be as expected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * 3GP ... all with video and audio) connected to a WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) PlayerEndpoint reads media source (from HTTP, FILE and S3) and connects to a
+ * WebRtcEndpoint</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media. WebRtcPeer can be configured to receive both
+ * video and audio, only video, or only audio</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>The color of the received video should be as expected</li>
+ * <li>EOS event should arrive to player</li>
+ * <li>Play time in remote video should be as expected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author Micael Gallego (micael.gallego@gmail.com)

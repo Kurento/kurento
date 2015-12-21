@@ -19,8 +19,8 @@ package org.kurento.client;
 public interface ListenerSubscription {
 
   /**
-   * Returns the registration id for this listener
-   * 
+   * Returns the registration id for this listener.
+   *
    * @return The id
    */
   String getSubscriptionId();

@@ -26,7 +26,7 @@ public class Assert {
 
   /**
    * Asserts that an object is not null; if it is null, a KurentoMediaFrameworkException is thrown.
-   * 
+   *
    * @param object
    *          Object to be checked whether or not is null
    * @param errorCode
@@ -39,7 +39,7 @@ public class Assert {
 
   /**
    * Asserts that an object is not null; if it is null, a KurentoMediaFrameworkException is thrown.
-   * 
+   *
    * @param object
    *          Object to be checked whether or not is null
    */
@@ -50,7 +50,7 @@ public class Assert {
   /**
    * Asserts that an object is not null; if it is null, a KurentoMediaFrameworkException is thrown.
    * In addition, a message passed as parameter is appended at the end of the error description.
-   * 
+   *
    * @param object
    *          Object to be checked whether or not is null
    * @param errorCode
@@ -68,7 +68,7 @@ public class Assert {
   /**
    * Asserts that an object is not null; if it is null, a KurentoMediaFrameworkException is thrown.
    * In addition, a message passed as parameter is appended at the end of the error description.
-   * 
+   *
    * @param object
    *          Object to be checked whether or not is null
    * @param message
@@ -83,7 +83,7 @@ public class Assert {
   /**
    * Asserts whether or not a condition is met; if not, a KurentoMediaFrameworkException is thrown.
    * In addition, a message passed as parameter is appended at the end of the error description.
-   * 
+   *
    * @param condition
    *          Boolean condition to be checked
    * @param errorCode
@@ -96,10 +96,11 @@ public class Assert {
 
   /**
    * Asserts whether or not a condition is met; if not, a KurentoMediaFrameworkException is thrown.
-   * 
+   *
    * @param condition
    *          Boolean condition to be checked
    * @param message
+   *          the message to show in case the assertion fails
    * @param errorCode
    *          Error code which determines the exception to be raise if the condition is not met
    */

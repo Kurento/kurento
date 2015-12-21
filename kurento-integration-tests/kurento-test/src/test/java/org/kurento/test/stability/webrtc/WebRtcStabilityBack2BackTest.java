@@ -29,24 +29,30 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.latency.LatencyController;
 
 /**
- * Stability test for switching a WebRTC in one to one communication. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> WebRtcEndpoint (back-to-back)(x2) <br>
- *
- * Browser(s): <br>
- * · 2 x Chrome (presenter and viewer) <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint presenter and viewer <br>
- * 2. (Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color change should be detected on local/remote video tag of browsers <br>
- * · Test fail when 3 consecutive latency errors (latency > 3sec) are detected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for switching a WebRTC in one to one communication.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint (back-to-back)(x2)</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>2 x Chrome (presenter and viewer)</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint presenter and viewer</li>
+ * <li>(Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color change should be detected on local/remote video tag of browsers</li>
+ * <li>Test fail when 3 consecutive latency errors (latency > 3sec) are detected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.1.0
@@ -57,7 +63,7 @@ public class WebRtcStabilityBack2BackTest extends StabilityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    return TestScenario.localPresenterAndViewerRGB();
+    return TestScenario.localPresenterAndViewerRgb();
   }
 
   @Test

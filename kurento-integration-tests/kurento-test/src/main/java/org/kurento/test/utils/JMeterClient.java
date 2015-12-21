@@ -54,10 +54,10 @@ import freemarker.template.TemplateException;
  */
 public class JMeterClient {
 
-  final static String ROOT = "src/test/resources/jmeter/";
-  final static String JMXFOLDER = "target/test-classes/";
-  final static String REPORTS = "target/jmeter-reports/";
-  final static String JMXFILE = "player.jmx";
+  static final String ROOT = "src/test/resources/jmeter/";
+  static final String JMXFOLDER = "target/test-classes/";
+  static final String REPORTS = "target/jmeter-reports/";
+  static final String JMXFILE = "player.jmx";
 
   private BrowserEventListener eventListener;
   private URL url;
@@ -78,8 +78,6 @@ public class JMeterClient {
 
   private void setup() throws TemplateException, IOException {
     Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-    // Load template from source folder
-    Template template = cfg.getTemplate(ROOT + JMXFILE + ".ftl");
 
     // Build the data-model
     Map<String, Object> data = new HashMap<String, Object>();
@@ -90,6 +88,8 @@ public class JMeterClient {
     data.put("numUsers", concurrentUsers);
 
     // File output
+    // Load template from source folder
+    Template template = cfg.getTemplate(ROOT + JMXFILE + ".ftl");
     Writer file = new FileWriter(new File(JMXFOLDER + JMXFILE));
     template.process(data, file);
     file.flush();
@@ -158,9 +158,9 @@ public class JMeterClient {
     DocumentBuilder builder = factory.newDocumentBuilder();
     Document document = builder.parse(datafile);
 
-    TransformerFactory tFactory = TransformerFactory.newInstance();
+    TransformerFactory transformerFactory = TransformerFactory.newInstance();
     StreamSource stylesource = new StreamSource(stylesheet);
-    Transformer transformer = tFactory.newTransformer(stylesource);
+    Transformer transformer = transformerFactory.newTransformer(stylesource);
 
     DOMSource source = new DOMSource(document);
     StreamResult result = new StreamResult(fileOutput);

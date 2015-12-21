@@ -42,24 +42,30 @@ import org.kurento.test.latency.LatencyController;
 import org.kurento.test.monitor.SystemMonitorManager;
 
 /**
- * WebRTC one to many test. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> N X WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint presenter connected to N viewers<br>
- * 2. (Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag of the viewers<br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * WebRTC one to many test.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> N X WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint presenter connected to N viewers</li>
+ * <li>(Browser) 1 WebRtcPeer in send-only sends media. N WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag of the viewers</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
@@ -109,7 +115,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
   public void testWebRtcOneToManyChrome() throws InterruptedException, IOException {
     // Media Pipeline
     final MediaPipeline mp = kurentoClient.createMediaPipeline();
-    final WebRtcEndpoint masterWebRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    final WebRtcEndpoint masterWebRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
     // Assets for viewers
     final LatencyController[] cs = new LatencyController[numViewers];
@@ -118,11 +124,11 @@ public class WebRtcOneToManyTest extends FunctionalTest {
 
     // Presenter
     getPresenter().subscribeLocalEvents("playing");
-    getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
+    getPresenter().initWebRtc(masterWebRtcEp, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
 
     if (monitor != null) {
       monitor.addWebRtcClientAndActivateOutboundStats(getPresenter().getBrowser().getId(),
-          masterWebRtcEP, getPresenter(), "webRtcPeer.peerConnection");
+          masterWebRtcEp, getPresenter(), "webRtcPeer.peerConnection");
     }
 
     // Viewers
@@ -134,7 +140,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
         public void run() {
           try {
             viewerWebRtcEPs[i] = new WebRtcEndpoint.Builder(mp).build();
-            masterWebRtcEP.connect(viewerWebRtcEPs[i]);
+            masterWebRtcEp.connect(viewerWebRtcEPs[i]);
             if (monitor != null) {
               monitor.incrementNumClients();
             }

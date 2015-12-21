@@ -84,6 +84,10 @@ public class KurentoClient {
     }
   }
 
+  private void setId(String id) {
+    this.id = id;
+  }
+
   public static KurentoClient create() {
     return create(new Properties());
   }
@@ -93,10 +97,6 @@ public class KurentoClient {
     KurentoClient client = create(getKmsUrl(id, properties), properties);
     client.setId(id);
     return client;
-  }
-
-  private void setId(String id) {
-    this.id = id;
   }
 
   public static KurentoClient create(String websocketUrl) {
@@ -145,7 +145,7 @@ public class KurentoClient {
   }
 
   /**
-   * Creates a new {@link MediaPipeline} in the media server
+   * Creates a new {@link MediaPipeline} in the media server.
    *
    * @return The media pipeline
    */
@@ -154,7 +154,7 @@ public class KurentoClient {
   }
 
   /**
-   * Creates a new {@link MediaPipeline} in the media server
+   * Creates a new {@link MediaPipeline} in the media server.
    *
    * @param cont
    *          An asynchronous callback handler. If the element was successfully created, the

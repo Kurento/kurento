@@ -38,11 +38,11 @@ import org.kurento.test.docker.Docker;
  */
 public class TestReport {
 
-  private static TestReport singleton = null;
+  private static TestReport singleton;
 
   protected String testReport = getProperty(TEST_REPORT_PROPERTY, TEST_REPORT_DEFAULT);
-  protected final static String RETURN = "\r\n";
-  protected final static int WIDTH_PERCENTAGE = 95;
+  protected static final String RETURN = "\r\n";
+  protected static final int WIDTH_PERCENTAGE = 95;
 
   protected PrintWriter writer;
   protected String extraInfoHtml;
@@ -109,17 +109,18 @@ public class TestReport {
     appendHtml("var executions = ok + retries;");
     appendHtml("var tests = ok + errors;");
     appendHtml("var retriesOk = retries - errors*" + numRetries + ";");
+    appendHtml("summary.innerHTML += \"<p style='color:black;font-weight:bold;'>"
+        + "Number of test(s): \" + tests + \"</p>\";");
+    appendHtml("if (tests != executions) summary.innerHTML += \"Number of test(s) executions:"
+        + " \" + executions + \"</p>\";");
+    appendHtml("if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>"
+        + "Number of test(s) ok: \" + ok + \"</p>\";");
     appendHtml(
-        "summary.innerHTML += \"<p style='color:black;font-weight:bold;'>Number of test(s): \" + tests + \"</p>\";");
-    appendHtml(
-        "if (tests != executions) summary.innerHTML += \"Number of test(s) executions: \" + executions + \"</p>\";");
-    appendHtml(
-        "if (ok > 0) summary.innerHTML += \"<p style='color:green;font-weight:bold;'>Number of test(s) ok: \" + ok + \"</p>\";");
-    appendHtml(
-        "if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>Number of test(s) retried and succeeded: \" + retriesOk + \"</p>\";");
-    appendHtml(
-        "if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>Number of test(s) with error (after "
-            + numRetries + " retries): \" + errors + \"</p>\";");
+        "if (retriesOk > 0) summary.innerHTML += \"<p style='color:orange;font-weight:bold;'>"
+            + "Number of test(s) retried and succeeded: \" + retriesOk + \"</p>\";");
+    appendHtml("if (errors > 0) summary.innerHTML += \"<p style='color:red;font-weight:bold;'>"
+        + "Number of test(s) with error (after " + numRetries
+        + " retries): \" + errors + \"</p>\";");
     appendHtml("}");
     appendHtml("</script>");
     appendHtml("<body>");

@@ -261,7 +261,7 @@ public class SshConnection {
           Process p = new ProcessBuilder(command).redirectErrorStream(true).start();
           CharStreams.toString(new InputStreamReader(p.getInputStream(), "UTF-8"));
           latch.countDown();
-        } catch (Exception e) {
+        } catch (Exception e) { // Intentionally left blank
         }
       }
     };

@@ -73,9 +73,10 @@ public class ParamsFlattener {
   }
 
   /**
-   * Flatten the parameter list to be sent to remote server using flattenParam method
+   * Flatten the parameter list to be sent to remote server using flattenParam method.
    *
    * @param params
+   *          parameters
    * @return Properties holding flattened params
    */
   public Props flattenParams(Props params) {
@@ -83,9 +84,10 @@ public class ParamsFlattener {
   }
 
   /**
-   * Flatten the parameter list to be sent to remote server using flattenParam method
+   * Flatten the parameter list to be sent to remote server using flattenParam method.
    *
    * @param params
+   *          parameters
    * @return Properties holding flattened params
    */
   public Props flattenParams(Props params, boolean inTx) {
@@ -102,10 +104,11 @@ public class ParamsFlattener {
   }
 
   /**
-   * Flatten the parameter list to be sent to remote server using flattenParam method
+   * Flatten the parameter list to be sent to remote server using flattenParam method.
    *
    * @param params
-   * @return
+   *          parameters
+   * @return List of flattened params
    */
   private List<?> flattenParamsList(List<? extends Object> params, boolean inTx) {
     List<Object> plainParams = new ArrayList<>(params.size());
@@ -134,11 +137,12 @@ public class ParamsFlattener {
    * <li>If param is an RemoteObject, is sent is reference String</li>
    * <li>If param is a complex object, a Props object is created for it. The Props object has an
    * entry for each property with its name and value. The value of the property is also flatten.
-   * </li>
+   Endpoint </li>
    * </ul>
    *
    * @param param
-   * @return
+   *          the param
+   * @return the flattened param
    */
   @SuppressWarnings("unchecked")
   private Object flattenParam(Object param, boolean inTx) {
@@ -270,8 +274,10 @@ public class ParamsFlattener {
    * Extract the bean properties of this param as Props object.
    *
    * @param param
+   *          the param
    * @param inTx
-   * @return
+   *          if it is inside a transaction
+   * @return The properties
    */
   private Object extractParamAsProps(Object param, boolean inTx) {
 
@@ -377,13 +383,14 @@ public class ParamsFlattener {
 
     } else if (type instanceof ParameterizedType) {
 
-      ParameterizedType pType = (ParameterizedType) type;
-      if (((Class<?>) pType.getRawType()).isAssignableFrom(List.class)) {
-        return unflattenList(paramName, (List<?>) value, pType.getActualTypeArguments()[0],
+      ParameterizedType paramType = (ParameterizedType) type;
+      if (((Class<?>) paramType.getRawType()).isAssignableFrom(List.class)) {
+        return unflattenList(paramName, (List<?>) value, paramType.getActualTypeArguments()[0],
             manager);
       }
-      if (((Class<?>) pType.getRawType()).isAssignableFrom(Map.class)) {
-        return unflattenMap(paramName, (Props) value, pType.getActualTypeArguments()[1], manager);
+      if (((Class<?>) paramType.getRawType()).isAssignableFrom(Map.class)) {
+        Type typeArgs = paramType.getActualTypeArguments()[1];
+        return unflattenMap(paramName, (Props) value, typeArgs, manager);
       }
     }
 

@@ -31,25 +31,31 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of multiple pauses in a PlayerEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
- * PlayerEndpoint is paused many times <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color or the video should remain when a video is paused <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
+ * Test of multiple pauses in a PlayerEndpoint.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) During the playback of a stream from a PlayerEndpoint to a WebRtcEndpoint, the
+ * PlayerEndpoint is paused many times</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color or the video should remain when a video is paused</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -72,14 +78,14 @@ public class PlayerMultiplePauseTest extends StabilityTest {
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-    playerEP.connect(webRtcEP);
+    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
+    playerEp.connect(webRtcEp);
 
     // WebRTC in receive-only mode
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-    playerEP.play();
+    getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    playerEp.play();
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
 
@@ -89,11 +95,11 @@ public class PlayerMultiplePauseTest extends StabilityTest {
           .similarColor(expectedColor));
 
       // Pause and wait
-      playerEP.pause();
+      playerEp.pause();
       Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
 
       // Resume video
-      playerEP.play();
+      playerEp.play();
       Thread.sleep(TimeUnit.SECONDS.toMillis(playTimeSeconds));
     }
 

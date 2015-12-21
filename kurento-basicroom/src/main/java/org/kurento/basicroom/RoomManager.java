@@ -15,7 +15,6 @@
 
 package org.kurento.basicroom;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -48,6 +47,8 @@ public class RoomManager {
   }
 
   /**
+   * Searches for a room by it's name.
+   *
    * @param roomName
    *          the name of the room
    * @return the room if it was already created, or a new one if it is the first time this room is
@@ -73,10 +74,12 @@ public class RoomManager {
   }
 
   /**
-   * Removes a room from the list of available rooms
+   * Removes a room from the list of available rooms.
    *
    * @param room
-   * @throws IOException
+   *          The room
+   * @throws java.io.IOException
+   *           If the room couldn't be closed
    */
   public void removeRoom(Room room) {
     this.rooms.remove(room.getName());

@@ -1,3 +1,4 @@
+
 package org.kurento.commons;
 
 import java.lang.reflect.Type;
@@ -31,10 +32,6 @@ public class PropertiesManager {
     return PropertiesManager.propertyHolder;
   }
 
-  public static String getProperty(String property) {
-    return propertyHolder.getProperty(property);
-  }
-
   public static String getPropertyOrException(String property, String exceptionMessage) {
 
     String value = getProperty(property);
@@ -44,6 +41,10 @@ public class PropertiesManager {
     }
 
     return value;
+  }
+
+  public static String getProperty(String property) {
+    return propertyHolder.getProperty(property);
   }
 
   public static Address getProperty(String property, Address defaultValue) {
@@ -105,6 +106,11 @@ public class PropertiesManager {
     }
   }
 
+  public static boolean getProperty(String property, boolean defaultValue) {
+    String systemValue = propertyHolder.getProperty(property);
+    return systemValue != null ? Boolean.parseBoolean(systemValue) : defaultValue;
+  }
+
   public static <T extends JsonElement> T getPropertyJson(String property, String defaultValue,
       Class<T> clazz) {
     String value = getProperty(property, defaultValue);
@@ -127,10 +133,4 @@ public class PropertiesManager {
       }
     }
   }
-
-  public static boolean getProperty(String property, boolean defaultValue) {
-    String systemValue = propertyHolder.getProperty(property);
-    return systemValue != null ? Boolean.parseBoolean(systemValue) : defaultValue;
-  }
-
 }

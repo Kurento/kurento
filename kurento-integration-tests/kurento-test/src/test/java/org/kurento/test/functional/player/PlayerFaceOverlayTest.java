@@ -35,26 +35,32 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a PlayerEndpoint with a FaceOverlay. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> FaceOverlay -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) PlayerEndpoints streams media to FaceOverlay and then WebRtcEndpoint <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Image should be overlayed on the media stream (proper color should be detected) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · EOS event should arrive to player <br>
- * · Play time in remote video should be as expected <br>
+ * Test of a PlayerEndpoint with a FaceOverlay.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> FaceOverlay -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) PlayerEndpoints streams media to FaceOverlay and then WebRtcEndpoint</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Image should be overlayed on the media stream (proper color should be detected)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>EOS event should arrive to player</li>
+ * <li>Play time in remote video should be as expected</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -82,16 +88,16 @@ public class PlayerFaceOverlayTest extends FunctionalTest {
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
     FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
     filter.setOverlayedImage(imgOverlayUrl, offsetXPercent, offsetYPercent, widthPercent,
         heightPercent);
-    playerEP.connect(filter);
-    filter.connect(webRtcEP);
+    playerEp.connect(filter);
+    filter.connect(webRtcEp);
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+    playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
         eosLatch.countDown();
@@ -100,8 +106,8 @@ public class PlayerFaceOverlayTest extends FunctionalTest {
 
     // Test execution
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-    playerEP.play();
+    getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    playerEp.play();
 
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event)",

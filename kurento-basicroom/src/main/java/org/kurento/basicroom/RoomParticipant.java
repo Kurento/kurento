@@ -16,7 +16,6 @@
 package org.kurento.basicroom;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,16 +77,10 @@ public class RoomParticipant implements Closeable {
     this.senderThread.start();
   }
 
-  /**
-   * @return the name
-   */
   public String getName() {
     return name;
   }
 
-  /**
-   * @return the session
-   */
   public WebSocketSession getSession() {
     return session;
   }
@@ -97,7 +90,7 @@ public class RoomParticipant implements Closeable {
   }
 
   /**
-   * The room to which the user is currently attending
+   * The room to which the user is currently attending.
    *
    * @return The room
    */
@@ -105,11 +98,6 @@ public class RoomParticipant implements Closeable {
     return this.room;
   }
 
-  /**
-   * @param sender
-   * @param sdpOffer
-   * @throws IOException
-   */
   public void receiveVideoFrom(RoomParticipant sender, String sdpOffer) {
 
     log.info("USER {}: Request to receive video from {} in room {}", this.name, sender.getName(),
@@ -134,9 +122,8 @@ public class RoomParticipant implements Closeable {
 
     WebRtcEndpoint receivingEndpoint = sender.getReceivingEndpoint();
     if (receivingEndpoint == null) {
-      log.warn(
-          "PARTICIPANT {}: Trying to connect to a user without receiving endpoint (it seems is not yet fully connected)",
-          this.name);
+      log.warn("PARTICIPANT {}: Trying to connect to a user without receiving endpoint "
+          + "(it seems is not yet fully connected)", this.name);
       return null;
     }
 
@@ -147,9 +134,8 @@ public class RoomParticipant implements Closeable {
     }
 
     if (sendingEndpoints.get(sender.getName()) != null) {
-      log.warn(
-          "PARTICIPANT {}: There is a sending endpoint to user {} when trying to create another one",
-          this.name, sender.getName());
+      log.warn("PARTICIPANT {}: There is a sending endpoint to user {} "
+          + "when trying to create another one", this.name, sender.getName());
       return null;
     }
 
@@ -162,7 +148,7 @@ public class RoomParticipant implements Closeable {
 
     if (oldSendingEndpoint != null) {
       log.warn(
-          "PARTICIPANT {}: Two threads have created at the same time a sending endpoint for user {}",
+          "PARTICIPANT {}: 2 threads have simultaneously created a sending endpoint for user {}",
           this.name, sender.getName());
       return null;
     }
@@ -205,18 +191,10 @@ public class RoomParticipant implements Closeable {
     return null;
   }
 
-  /**
-   * @param sender
-   *          the participant
-   */
   public void cancelSendingVideoTo(final RoomParticipant sender) {
     this.cancelSendingVideoTo(sender.getName());
   }
 
-  /**
-   * @param senderName
-   *          the participant
-   */
   public void cancelSendingVideoTo(final String senderName) {
 
     log.debug("PARTICIPANT {}: canceling video sending to {}", this.name, senderName);
@@ -224,9 +202,8 @@ public class RoomParticipant implements Closeable {
     final WebRtcEndpoint sendingEndpoint = sendingEndpoints.remove(senderName);
 
     if (sendingEndpoint == null) {
-      log.warn(
-          "PARTICIPANT {}: Trying to cancel sending video to user {}. But there is no such sending endpoint",
-          this.name, senderName);
+      log.warn("PARTICIPANT {}: Trying to cancel sending video to user {}."
+          + " But there is no such sending endpoint", this.name, senderName);
     } else {
 
       log.debug("PARTICIPANT {}: Cancelling sending endpoint to user {}", this.name, senderName);

@@ -21,7 +21,7 @@ import java.io.OutputStream;
 /**
  * An object implementing this interface represents an http endpoint to play (download) or record
  * (upload) the contents of a repository item.
- *
+ * </P>
  * This endpoints are created using the methods {@link RepositoryItem#createRepositoryHttpPlayer()}
  * or {@link RepositoryItem#createRepositoryHttpRecorder()} within the repository item that want to
  * be played or recorded.
@@ -34,7 +34,7 @@ public interface RepositoryHttpEndpoint {
    * Returns the URL to play (download) or record (upload) the content for the
    * {@link RepositoryItem}. When the first client connect to this URL, the
    * {@link HttpSessionStartedEvent} will be fired to registered listeners.
-   * 
+   *
    * @return the URL to play or record
    */
   String getURL();
@@ -46,7 +46,7 @@ public interface RepositoryHttpEndpoint {
    * {@link javax.servlet.ServletRequest#getRequestDispatcher(java.lang.String)
    * getRequestDispatcher}. When the first client connect to this URL, the
    * {@link HttpSessionStartedEvent} will be fired to registered listeners.
-   * 
+   *
    * @return the relative URL to play or record
    */
   String getDispatchURL();
@@ -57,8 +57,9 @@ public interface RepositoryHttpEndpoint {
    * will be fired to all registered listeners and the method
    * {@link RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent) onEvent} will be
    * invoked.
-   * 
+   *
    * @param listener
+   *          the listener
    */
   void addSessionStartedListener(
       final RepositoryHttpEventListener<HttpSessionStartedEvent> listener);
@@ -71,8 +72,9 @@ public interface RepositoryHttpEndpoint {
    * all registered listeners and the method
    * {@link RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent) onEvent} will be
    * invoked.
-   * 
+   *
    * @param listener
+   *          the listener
    */
   void addSessionTerminatedListener(
       final RepositoryHttpEventListener<HttpSessionTerminatedEvent> listener);
@@ -83,8 +85,9 @@ public interface RepositoryHttpEndpoint {
    * repository a {@link HttpSessionErrorEvent} will be fired to all registered listeners and the
    * method {@link RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent) onEvent} will be
    * invoked.
-   * 
+   *
    * @param listener
+   *          the listener
    */
   void addSessionErrorListener(RepositoryHttpEventListener<HttpSessionErrorEvent> listener);
 
@@ -95,8 +98,8 @@ public interface RepositoryHttpEndpoint {
   void stop();
 
   /**
-   * Returns the associated repository item of this {@link RepositoryHttpEndpoint}
-   * 
+   * Returns the associated repository item of this {@link RepositoryHttpEndpoint}.
+   *
    * @return The repository item associated to the endpoint
    */
   RepositoryItem getRepositoryItem();
@@ -105,7 +108,7 @@ public interface RepositoryHttpEndpoint {
    * Returns a new {@link InputStream} on each invocation. It is legal to read from multiple threads
    * to the same repositoryItem. The returned {@link InputStream} fully supports skip. The receiver
    * of the {@link InputStream} is responsible for closing it after its use.
-   * 
+   *
    * @return An input stream to read item content
    */
   InputStream createRepoItemInputStream();
@@ -117,7 +120,7 @@ public interface RepositoryHttpEndpoint {
    * several threads. The {@link OutputStream} is closed when the
    * {@link RepositoryHttpEndpoint#stop()} is invoked or the timeout
    * {@link RepositoryHttpEndpoint#getAutoTerminationTimeout()} is reached.
-   * 
+   *
    * @return An output stream to write item content
    */
   OutputStream getRepoItemOutputStream();
@@ -129,8 +132,8 @@ public interface RepositoryHttpEndpoint {
   void setAutoTerminationTimeout(long timeoutInMillis);
 
   /**
-   * Gets the current auto-termination timeout
-   * 
+   * Gets the current auto-termination timeout.
+   *
    * @see #setAutoTerminationTimeout(long)
    * @return the timeout in millis
    */

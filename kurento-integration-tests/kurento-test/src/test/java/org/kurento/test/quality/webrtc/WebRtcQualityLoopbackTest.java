@@ -40,26 +40,32 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.utils.Ffmpeg;
 
 /**
- * WebRTC in loopback using custom video and audio files.<br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint in loopback <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Perceived audio quality should be fair (PESQMOS) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · Play time in remote video should be as expected <br>
- * · The color of the received video should be as expected <br>
+ * WebRTC in loopback using custom video and audio files.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint in loopback <br>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Perceived audio quality should be fair (PESQMOS)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>Play time in remote video should be as expected</li>
+ * <li>The color of the received video should be as expected</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

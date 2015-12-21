@@ -36,10 +36,10 @@ public abstract class Operation {
     return RemoteObjectInvocationHandler.getFor(object).getRemoteObject();
   }
 
-  public void rollback(TransactionExecutionException e) {
+  public void rollback(TransactionExecutionException ex) {
     if (future != null) {
-      if (e != null) {
-        future.getFuture().setException(e);
+      if (ex != null) {
+        future.getFuture().setException(ex);
       } else {
         future.getFuture().cancel(true);
       }

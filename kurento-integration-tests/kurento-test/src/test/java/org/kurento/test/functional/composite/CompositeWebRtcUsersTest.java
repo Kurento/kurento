@@ -38,24 +38,30 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Four synthetic videos are played by four WebRtcEndpoint and mixed by a Composite. The resulting
- * video is played in an WebRtcEndpoint <br>
- *
- * Media Pipeline(s): <br>
- * · 4xWebRtcEndpoint -> Composite -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · 5 x Chrome <br>
- *
- * Test logic: <br>
- * 1. (KMS) Media server implements a grid with the media from 4 WebRtcEndpoints and sends the
- * resulting media to another WebRtcEndpoint <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Color of the video should be the expected in the right position (grid) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
+ * video is played in an WebRtcEndpoint
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>4xWebRtcEndpoint -> Composite -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>5 x Chrome</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) Media server implements a grid with the media from 4 WebRtcEndpoints and sends the</li>
+ * <li>resulting media to another WebRtcEndpoint (Browser) WebRtcPeer in rcv-only receives media
+ Endpoint </li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Color of the video should be the expected in the right position (grid)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ Endpoint </li>Playing event should be received in remote video tag</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
@@ -98,33 +104,33 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
   public void testCompositeWebRtcUsers() throws Exception {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEPRed = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPGreen = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPBlue = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPWhite = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEPComposite = new WebRtcEndpoint.Builder(mp).build();
-
     Composite composite = new Composite.Builder(mp).build();
+    WebRtcEndpoint webRtcEpRed = new WebRtcEndpoint.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(composite).build();
-    HubPort hubPort2 = new HubPort.Builder(composite).build();
-    HubPort hubPort3 = new HubPort.Builder(composite).build();
-    HubPort hubPort4 = new HubPort.Builder(composite).build();
-    HubPort hubPort5 = new HubPort.Builder(composite).build();
+    webRtcEpRed.connect(hubPort1);
 
-    webRtcEPRed.connect(hubPort1);
-    webRtcEPGreen.connect(hubPort2);
-    hubPort5.connect(webRtcEPComposite);
+    WebRtcEndpoint webRtcEpGreen = new WebRtcEndpoint.Builder(mp).build();
+    HubPort hubPort2 = new HubPort.Builder(composite).build();
+    webRtcEpGreen.connect(hubPort2);
+
+    WebRtcEndpoint webRtcEpComposite = new WebRtcEndpoint.Builder(mp).build();
+
+    HubPort hubPort5 = new HubPort.Builder(composite).build();
+    hubPort5.connect(webRtcEpComposite);
+
+    WebRtcEndpoint webRtcEpBlue = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEpWhite = new WebRtcEndpoint.Builder(mp).build();
 
     // Test execution
-    getPage(BROWSER2).initWebRtc(webRtcEPRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER3).initWebRtc(webRtcEPGreen, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER2).initWebRtc(webRtcEpRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.SEND_ONLY);
-    getPage(BROWSER4).initWebRtc(webRtcEPBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER5).initWebRtc(webRtcEPWhite, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER4).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER5).initWebRtc(webRtcEpWhite, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER1).subscribeEvents("playing");
-    getPage(BROWSER1).initWebRtc(webRtcEPComposite, WebRtcChannel.AUDIO_AND_VIDEO,
+    getPage(BROWSER1).initWebRtc(webRtcEpComposite, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.RCV_ONLY);
 
     // Assertions
@@ -141,7 +147,8 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
     Assert.assertTrue("All the video must be red",
         getPage(BROWSER1).similarColorAt(Color.RED, 300, 200));
 
-    webRtcEPWhite.connect(hubPort4);
+    HubPort hubPort4 = new HubPort.Builder(composite).build();
+    webRtcEpWhite.connect(hubPort4);
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
     Assert.assertTrue("Left part of the video must be red",
@@ -153,9 +160,11 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
     hubPort2 = new HubPort.Builder(composite).build();
     hubPort4 = new HubPort.Builder(composite).build();
 
-    webRtcEPGreen.connect(hubPort2);
-    webRtcEPBlue.connect(hubPort3);
-    webRtcEPWhite.connect(hubPort4);
+    webRtcEpGreen.connect(hubPort2);
+
+    HubPort hubPort3 = new HubPort.Builder(composite).build();
+    webRtcEpBlue.connect(hubPort3);
+    webRtcEpWhite.connect(hubPort4);
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
     Assert.assertTrue("Upper left part of the video must be red",

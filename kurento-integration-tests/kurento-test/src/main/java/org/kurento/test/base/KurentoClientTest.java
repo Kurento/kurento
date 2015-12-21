@@ -30,9 +30,10 @@ import org.kurento.test.services.Service;
  * @since 6.1.1
  */
 public class KurentoClientTest extends KurentoTest {
-
-  public static @Service KmsService kms = new KmsService();
-  public static @Service KmsService fakeKms = new FakeKmsService();
+  @Service
+  public static KmsService kms = new KmsService();
+  @Service
+  public static KmsService fakeKms = new FakeKmsService();
 
   protected KurentoClient kurentoClient;
   protected KurentoClient fakeKurentoClient;

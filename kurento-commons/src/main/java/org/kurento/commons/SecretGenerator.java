@@ -19,7 +19,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 /**
- *
  * Random word (integer) generator.
  *
  * @author Luis López (llopez@gsyc.es)
@@ -34,7 +33,7 @@ public class SecretGenerator {
 
   /**
    * Random word generator.
-   * 
+   *
    * @return Generated word
    */
   public String nextSecret() {

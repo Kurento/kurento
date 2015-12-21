@@ -44,7 +44,7 @@ public class RepositoryClientProvider {
   /**
    * Creates a provider for clients to a server instance. The repository URL is searched for in
    * properties from well-known locations.
-   * 
+   *
    * @return a factory of {@link RepositoryClient}
    */
   public static RepositoryClientProvider createProvider() {
@@ -52,18 +52,8 @@ public class RepositoryClientProvider {
   }
 
   /**
-   * Creates a client to a server instance. The repository URL of the client provider is searched
-   * for in properties from well-known locations.
-   * 
-   * @return a {@link RepositoryClient}
-   */
-  public static RepositoryClient create() {
-    return create(getRepositoryUrl());
-  }
-
-  /**
    * Creates a provider for clients to a server instance.
-   * 
+   *
    * @param repoRestUrl
    *          the repository server URL (where the server expects REST connections)
    * @return a factory of {@link RepositoryClient}
@@ -77,8 +67,18 @@ public class RepositoryClientProvider {
   }
 
   /**
+   * Creates a client to a server instance. The repository URL of the client provider is searched
+   * for in properties from well-known locations.
+   *
+   * @return a {@link RepositoryClient}
+   */
+  public static RepositoryClient create() {
+    return create(getRepositoryUrl());
+  }
+
+  /**
    * Creates a client to a server instance found on the provided URL.
-   * 
+   *
    * @param repoRestUrl
    *          the repository server URL (where the server expects REST connections)
    * @return a {@link RepositoryClient}
@@ -91,13 +91,15 @@ public class RepositoryClientProvider {
   }
 
   /**
+   * Gets the repository client.
+   *
    * @return a {@link RepositoryClient} to communicate with a repository server instance
    */
   public RepositoryClient getRepositoryClient() {
     return restService;
   }
 
-  private synchronized static String getRepositoryUrl() {
+  private static synchronized String getRepositoryUrl() {
 
     if (repositoryUrlLoader == null) {
 

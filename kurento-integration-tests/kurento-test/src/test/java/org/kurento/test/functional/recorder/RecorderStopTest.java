@@ -40,32 +40,38 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a Recorder, using the stream source from a PlayerEndpoint through an WebRtcEndpoint. The
- * video will be recorder for half the duration of the original video. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint (recording) and then
- * PlayerEndpoint -> WebRtcEndpoint (play of the recording). <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag (in the recording) <br>
- * · The color of the received video should be as expected (in the recording) <br>
- * · EOS event should arrive to player (in the recording) <br>
- * · Play time in remote video should be as expected (in the recording) <br>
- * · Codecs should be as expected (in the recording) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag (in the playing) <br>
- * · The color of the received video should be as expected (in the playing) <br>
- * · EOS event should arrive to player (in the playing) <br>
+ * video will be recorder for half the duration of the original video.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint (recording) and then
+ * PlayerEndpoint -> WebRtcEndpoint (play of the recording).</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag (in the recording)</li>
+ * <li>The color of the received video should be as expected (in the recording)</li>
+ * <li>EOS event should arrive to player (in the recording)</li>
+ * <li>Play time in remote video should be as expected (in the recording)</li>
+ * <li>Codecs should be as expected (in the recording)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag (in the playing)</li>
+ * <li>The color of the received video should be as expected (in the playing)</li>
+ * <li>EOS event should arrive to player (in the playing)</li>
+ * </ul>
  *
  * @author Ivan Gracia (igracia@kurento.org)
  * @since 6.1.1
@@ -95,22 +101,21 @@ public class RecorderStopTest extends BaseRecorder {
 
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/10sec/green.webm").build();
-    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/10sec/green.webm").build();
+    WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getDefaultOutputFile(extension);
 
-    final RecorderEndpoint recorderEP =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile).withMediaProfile(
-            mediaProfileSpecType).build();
-    playerEP.connect(webRtcEP1);
+    final RecorderEndpoint recorderEp =
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
+            .withMediaProfile(mediaProfileSpecType).build();
+    playerEp.connect(webRtcEp1);
 
-    playerEP.connect(recorderEP);
+    playerEp.connect(recorderEp);
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+    playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
         eosLatch.countDown();
@@ -118,7 +123,7 @@ public class RecorderStopTest extends BaseRecorder {
     });
 
     // Test execution #1. Play the video while it is recorded
-    launchBrowser(mp, webRtcEP1, playerEP, recorderEP, expectedVideoCodec, expectedAudioCodec,
+    launchBrowser(mp, webRtcEp1, playerEp, recorderEp, expectedVideoCodec, expectedAudioCodec,
         recordingFile, EXPECTED_COLOR, 0, 0, PLAYTIME);
 
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -126,7 +131,7 @@ public class RecorderStopTest extends BaseRecorder {
 
       @Override
       public void run() {
-        recorderEP.stop();
+        recorderEp.stop();
       }
     }, PLAYTIME / 2, TimeUnit.SECONDS);
 
@@ -141,13 +146,13 @@ public class RecorderStopTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP2 =
+    PlayerEndpoint playerEp2 =
         new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
-    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
-    playerEP2.connect(webRtcEP2);
+    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
+    playerEp2.connect(webRtcEp2);
 
     // Playing the recording
-    launchBrowser(null, webRtcEP2, playerEP2, null, expectedVideoCodec, expectedAudioCodec,
+    launchBrowser(null, webRtcEp2, playerEp2, null, expectedVideoCodec, expectedAudioCodec,
         recordingFile, EXPECTED_COLOR, 0, 0, PLAYTIME / 2);
 
     // Release Media Pipeline #2

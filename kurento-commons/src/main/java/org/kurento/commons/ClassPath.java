@@ -33,18 +33,18 @@ public class ClassPath {
       return Paths.get(uri);
     }
 
-    String s = uri.toString();
-    int separator = s.indexOf("!/");
-    String entryName = s.substring(separator + 2);
-    URI fileURI = URI.create(s.substring(0, separator));
+    String str = uri.toString();
+    int separator = str.indexOf("!/");
+    String entryName = str.substring(separator + 2);
+    URI fileUri = URI.create(str.substring(0, separator));
 
     FileSystem fs;
     try {
 
-      fs = FileSystems.newFileSystem(fileURI, Collections.<String, Object> emptyMap());
+      fs = FileSystems.newFileSystem(fileUri, Collections.<String, Object>emptyMap());
 
     } catch (java.nio.file.FileSystemAlreadyExistsException e) {
-      fs = FileSystems.getFileSystem(fileURI);
+      fs = FileSystems.getFileSystem(fileUri);
     }
     return fs.getPath(entryName);
   }

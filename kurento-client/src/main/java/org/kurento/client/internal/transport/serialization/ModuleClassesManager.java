@@ -10,7 +10,7 @@ import org.kurento.client.internal.server.ProtocolException;
 
 public class ModuleClassesManager {
 
-  private final ConcurrentHashMap<String, String> packageNamesByModuleName = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, String> pkgNamesByModuleName = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, Class<?>> classesByClassName = new ConcurrentHashMap<>();
 
   public Class<?> getClassFor(String fullyTypeName) {
@@ -25,13 +25,13 @@ public class ModuleClassesManager {
 
     try {
 
-      String packageName = packageNamesByModuleName.get(moduleName);
+      String packageName = pkgNamesByModuleName.get(moduleName);
 
       if (packageName == null) {
 
         packageName = getPackageNameWithModuleInfoClass(moduleName);
 
-        packageNamesByModuleName.put(moduleName, packageName);
+        pkgNamesByModuleName.put(moduleName, packageName);
       }
 
       String className = packageName + "." + typeName;

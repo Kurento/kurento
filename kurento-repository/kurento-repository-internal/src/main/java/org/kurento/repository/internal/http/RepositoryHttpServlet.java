@@ -94,7 +94,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
     /**
      * Validate range.
-     * 
+     *
      */
     public boolean validate() {
       if (length != -1 && end >= length) {
@@ -114,7 +114,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   protected static final List<Range> FULL = new ArrayList<>();
 
   /**
-   * MIME multipart separation string
+   * MIME multipart separation string.
    */
   protected static final String MIME_SEPARATION = "KURENTO_MIME_BOUNDARY";
 
@@ -139,7 +139,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   protected int debug;
 
   /**
-   * RepoItemHttpElems
+   * RepoItemHttpElems.
    */
   @Autowired
   protected transient RepositoryHttpManager repoHttpManager;
@@ -164,25 +164,25 @@ public class RepositoryHttpServlet extends HttpServlet {
     super.init(servletConfig);
 
     configureServletMapping(servletConfig);
-    configureWebappPublicURL(servletConfig);
+    configureWebappPublicUrl(servletConfig);
 
     if (servletConfig.getInitParameter("debug") != null) {
       debug = Integer.parseInt(getServletConfig().getInitParameter("debug"));
     }
   }
 
-  private String configureWebappPublicURL(ServletConfig servletConfig) {
-    String webappURL = config.getWebappPublicURL();
-    if (webappURL == null || webappURL.trim().isEmpty()) {
-      webappURL = servletConfig.getServletContext().getContextPath();
+  private String configureWebappPublicUrl(ServletConfig servletConfig) {
+    String webappUrl = config.getWebappPublicUrl();
+    if (webappUrl == null || webappUrl.trim().isEmpty()) {
+      webappUrl = servletConfig.getServletContext().getContextPath();
     } else {
-      if (webappURL.endsWith("/")) {
-        webappURL = webappURL.substring(0, webappURL.length() - 1);
+      if (webappUrl.endsWith("/")) {
+        webappUrl = webappUrl.substring(0, webappUrl.length() - 1);
       }
     }
 
-    repoHttpManager.setWebappPublicURL(webappURL);
-    return webappURL;
+    repoHttpManager.setWebappPublicUrl(webappUrl);
+    return webappUrl;
   }
 
   private String configureServletMapping(ServletConfig servletConfig) {
@@ -215,19 +215,19 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Override default implementation to ensure that TRACE is correctly handled.
-   * 
+   *
    * @param req
    *          the {@link HttpServletRequest} object that contains the request the client made of the
    *          servlet
-   * 
+   *
    * @param resp
    *          the {@link HttpServletResponse} object that contains the response the servlet returns
    *          to the client
-   * 
+   *
    * @exception IOException
    *              if an input or output error occurs while the servlet is handling the OPTIONS
    *              request
-   * 
+   *
    * @exception ServletException
    *              if the request for the OPTIONS cannot be handled
    */
@@ -240,12 +240,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Process a HEAD request for the specified resource.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
    *          The servlet response we are creating
-   * 
+   *
    * @exception IOException
    *              if an input/output error occurs
    * @exception ServletException
@@ -262,12 +262,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Process a POST request for the specified resource.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
    *          The servlet response we are creating
-   * 
+   *
    * @exception IOException
    *              if an input/output error occurs
    * @exception ServletException
@@ -281,12 +281,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Process a PUT request for the specified resource.
-   * 
+   *
    * @param req
    *          The servlet request we are processing
    * @param resp
    *          The servlet response we are creating
-   * 
+   *
    * @exception IOException
    *              if an input/output error occurs
    * @exception ServletException
@@ -300,12 +300,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Process a GET request for the specified resource.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
    *          The servlet response we are creating
-   * 
+   *
    * @exception IOException
    *              if an input/output error occurs
    * @exception ServletException
@@ -467,7 +467,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Return the sessionId from the request.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    */
@@ -553,7 +553,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Check if the conditions specified in the optional If headers are satisfied.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -577,14 +577,14 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Serve the specified resource, optionally including the data content.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
    *          The servlet response we are creating
    * @param content
    *          Should the content be included?
-   * 
+   *
    * @exception IOException
    *              if an input/output error occurs
    * @exception ServletException
@@ -756,7 +756,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Parse the content-range header.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -823,7 +823,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Parse the range header.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -955,7 +955,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Check if the if-match condition is satisfied.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -997,7 +997,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Check if the if-modified-since condition is satisfied.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -1036,7 +1036,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Check if the if-none-match condition is satisfied.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -1093,7 +1093,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
   /**
    * Check if the if-unmodified-since condition is satisfied.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -1127,12 +1127,12 @@ public class RepositoryHttpServlet extends HttpServlet {
   /**
    * Copy the contents of the specified input stream to the specified output stream, and ensure that
    * both streams are closed before returning (even in the face of an exception).
-   * 
+   *
    * @param repoItemHttpElem
    *          The cache entry for the source resource
    * @param response
    *          The HttpResponse where the resource will be copied
-   * 
+   *
    * @exception IOException
    *              if an input/output error occurs
    */
@@ -1144,7 +1144,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   /**
    * Copy the contents of the specified input stream to the specified output stream, and ensure that
    * both streams are closed before returning (even in the face of an exception).
-   * 
+   *
    * @param repoItemHttpElem
    *          The cache entry for the source resource
    * @param response
@@ -1187,7 +1187,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   /**
    * Copy the contents of the specified input stream to the specified output stream, and ensure that
    * both streams are closed before returning (even in the face of an exception).
-   * 
+   *
    * @param repoItemHttpElem
    *          The cache entry for the source resource
    * @param response
@@ -1249,7 +1249,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   /**
    * Copy the contents of the specified input stream to the specified output stream, and ensure that
    * both streams are closed before returning (even in the face of an exception).
-   * 
+   *
    * @param istream
    *          The input stream to read from
    * @param ostream
@@ -1261,7 +1261,7 @@ public class RepositoryHttpServlet extends HttpServlet {
     // Copy the input stream to the output stream
     IOException exception = null;
 
-    byte buffer[] = new byte[INPUT_BUFFER_SIZE];
+    byte[] buffer = new byte[INPUT_BUFFER_SIZE];
 
     int len = buffer.length;
     while (true) {
@@ -1287,7 +1287,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   /**
    * Copy the contents of the specified input stream to the specified output stream, and ensure that
    * both streams are closed before returning (even in the face of an exception).
-   * 
+   *
    * @param istream
    *          The input stream to read from
    * @param ostream
@@ -1319,7 +1319,7 @@ public class RepositoryHttpServlet extends HttpServlet {
     IOException exception = null;
     long remBytes = end - start + 1;
 
-    byte buffer[] = new byte[INPUT_BUFFER_SIZE];
+    byte[] buffer = new byte[INPUT_BUFFER_SIZE];
     int readBytes = buffer.length;
     while (remBytes > 0) {
       try {

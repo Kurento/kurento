@@ -38,7 +38,7 @@ public interface RepositoryClient {
 
   /**
    * Creates a new repository item with the provided metadata, ready for media recording.
-   * 
+   *
    * @param metadata
    *          a map of values. Can be empty but <strong>not null</strong>.
    * @return a {@link RepositoryItemRecorder} containing the item's id and an URL through which
@@ -49,7 +49,7 @@ public interface RepositoryClient {
 
   /**
    * Removes the repository item associated to the provided id.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @return a {@link Response} containing the response code from the server
@@ -59,7 +59,7 @@ public interface RepositoryClient {
 
   /**
    * Obtains a new endpoint for reading (playing multimedia) from the repository item.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @return a {@link RepositoryItemPlayer} containing the item's id and an URL from which Kurento
@@ -70,7 +70,7 @@ public interface RepositoryClient {
 
   /**
    * Searches for repository items by each pair of attributes and their expected values.
-   * 
+   *
    * @param searchValues
    *          pairs of attributes and their values
    * @return a {@link Set}&lt;{@link String}&gt; with identifiers of the repository items that were
@@ -81,7 +81,7 @@ public interface RepositoryClient {
 
   /**
    * Searches for repository items by each pair of attributes whose values can be regex Strings.
-   * 
+   *
    * @param searchValues
    *          pairs of attributes and their values
    * @return a {@link Set}&lt;{@link String}&gt; with identifiers of the repository items that were
@@ -92,7 +92,7 @@ public interface RepositoryClient {
 
   /**
    * Returns the metadata from a repository item.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @return the metadata map
@@ -102,7 +102,7 @@ public interface RepositoryClient {
 
   /**
    * Replaces the metadata of a repository item.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @param metadata

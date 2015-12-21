@@ -44,7 +44,8 @@ public class ConfigFileManager {
 
         if (!Files.exists(configFile)) {
           log.warn(
-              "Property '{}' points to an invalid location '{}'. Searching default config file '{}' in classpath and workdir",
+              "Property '{}' points to an invalid location '{}'. Searching default "
+                  + "config file '{}' in classpath and workdir",
               property, configFilePath, configFileName);
           configFile = ConfigFileFinder.searchConfigFileInDefaultPlaces(configFileName);
         } else {

@@ -57,7 +57,7 @@ public class OneRecordingServerTest {
   @Test
   public void test() throws Exception {
 
-    String publicWebappURL = OneRecordingServer.getPublicWebappURL();
+    String publicWebappURL = OneRecordingServer.getPublicWebappUrl();
 
     log.info("Start uploading content");
 

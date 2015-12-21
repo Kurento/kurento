@@ -13,10 +13,8 @@ import org.kurento.client.internal.client.RomManager;
 import org.kurento.jsonrpc.Props;
 
 /**
- * Kurento Media Builder base interface
- *
- * Builds a {@code <T>} object, either synchronously using {@link #build} or asynchronously using
- * {@link #buildAsync}
+ * Kurento Media Builder base interface. Builds a {@code <T>} object, either synchronously using
+ * {@link #build} or asynchronously using {@link #buildAsync}
  *
  * @param T
  *          the type of object to build
@@ -43,9 +41,9 @@ public class AbstractBuilder<T> {
   }
 
   /**
-   * Builds an object synchronously using the builder design pattern
+   * Builds an object synchronously using the builder design pattern.
    *
-   * @return <T> The type of object
+   * @return T The type of object
    *
    **/
   @SuppressWarnings("unchecked")
@@ -67,7 +65,7 @@ public class AbstractBuilder<T> {
 
   /**
    * Builds an object asynchronously using the builder design pattern.
-   *
+   * </p>
    * The continuation will have {@link Continuation#onSuccess} called when the object is ready, or
    * {@link Continuation#onError} if an error occurs
    *

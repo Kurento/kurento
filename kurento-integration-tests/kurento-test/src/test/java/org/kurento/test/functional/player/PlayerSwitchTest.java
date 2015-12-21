@@ -30,25 +30,31 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of N PlayerEndpoints connected to the same WebRtcEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) N PlayerEndpoints switch media to a WebRtcEndpoint<br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · Play time in remote video should be as expected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Test of N PlayerEndpoints connected to the same WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) N PlayerEndpoints switch media to a WebRtcEndpoint</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>Play time in remote video should be as expected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -67,20 +73,9 @@ public class PlayerSwitchTest extends FunctionalTest {
   public void testPlayerSwitch() throws Exception {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerRed =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/format/chrome.mp4").build();
-    PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/format/fiware.mkv").build();
-    PlayerEndpoint playerBlue =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/format/sintel.webm").build();
-    PlayerEndpoint playerBall =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/format/rabbit.mov").build();
-    PlayerEndpoint playerRtsp =
-        new PlayerEndpoint.Builder(mp, "rtsp://195.55.223.100/axis-media/media.amp").build();
+    PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/format/chrome.mp4").build();
+
     WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
     // Test execution
@@ -93,22 +88,30 @@ public class PlayerSwitchTest extends FunctionalTest {
     getPage().subscribeEvents("playing");
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
+    PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/format/fiware.mkv").build();
     // green
     playerGreen.connect(webRtcEndpoint);
     playerGreen.play();
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
     // blue
+    PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/format/sintel.webm").build();
     playerBlue.connect(webRtcEndpoint);
     playerBlue.play();
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
     // ball
+    PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/format/rabbit.mov").build();
     playerBall.connect(webRtcEndpoint);
     playerBall.play();
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
     // rtsp
+    PlayerEndpoint playerRtsp =
+        new PlayerEndpoint.Builder(mp, "rtsp://195.55.223.100/axis-media/media.amp").build();
     playerRtsp.connect(webRtcEndpoint);
     playerRtsp.play();
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
@@ -117,8 +120,9 @@ public class PlayerSwitchTest extends FunctionalTest {
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime
-        + " sec)", getPage().compare(PLAYTIME, currentTime));
+    Assert.assertTrue(
+        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
+        getPage().compare(PLAYTIME, currentTime));
 
     // Release Media Pipeline
     mp.release();

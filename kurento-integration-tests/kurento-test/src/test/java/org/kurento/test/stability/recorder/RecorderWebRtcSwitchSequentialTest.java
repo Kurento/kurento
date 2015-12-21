@@ -41,23 +41,29 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint x 2 -> RecorderEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome and Firefox <br>
- *
- * Test logic: <br>
- * 1. (Browser) 2 WebRtcPeer in send-only mode sends media to KMS <br>
- * 2. (KMS) 2 WebRtcEndpoints receive media and it is recorded by 1 RecorderEndpoint. <br>
- *
- * Main assertion(s): <br>
- * · Recorded files are OK (seekable, length, content)
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint x 2 -> RecorderEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome and Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(Browser) 2 WebRtcPeer in send-only mode sends media to KMS</li>
+ * <li>(KMS) 2 WebRtcEndpoints receive media and it is recorded by 1 RecorderEndpoint.</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Recorded files are OK (seekable, length, content)
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
@@ -90,36 +96,35 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
-    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
-
-    String recordingFile = getDefaultOutputFile(extension);
-    RecorderEndpoint recorderEP =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+    WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp).build();
 
     // WebRTC negotiation
     getPage(0).subscribeLocalEvents("playing");
-    getPage(0).initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(0).initWebRtc(webRtcEp1, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
     getPage(1).subscribeLocalEvents("playing");
-    getPage(1).initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(1).initWebRtc(webRtcEp2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     // Start record
-    recorderEP.record();
+    String recordingFile = getDefaultOutputFile(extension);
+    RecorderEndpoint recorderEp =
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
+            .withMediaProfile(mediaProfileSpecType).build();
+    recorderEp.record();
 
     // Switch webrtcs
     for (int i = 0; i < SWITCH_TIMES; i++) {
       if (i % 2 == 0) {
-        webRtcEP1.connect(recorderEP);
+        webRtcEp1.connect(recorderEp);
       } else {
-        webRtcEP2.connect(recorderEP);
+        webRtcEp2.connect(recorderEp);
       }
 
       Thread.sleep(SWITCH_RATE_MS);
     }
 
     // Stop record
-    recorderEP.stop();
+    recorderEp.stop();
 
     // Guard time to stop recording
     Thread.sleep(4000);

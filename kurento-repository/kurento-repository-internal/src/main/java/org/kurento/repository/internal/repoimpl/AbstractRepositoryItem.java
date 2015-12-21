@@ -61,18 +61,18 @@ public abstract class AbstractRepositoryItem implements RepositoryItem {
   }
 
   @Override
+  public RepositoryHttpPlayer createRepositoryHttpPlayer(String sessionIdInUrl) {
+    return repository.getRepositoryHttpManager().createRepositoryHttpPlayer(this, sessionIdInUrl);
+  }
+
+  @Override
   public RepositoryHttpRecorder createRepositoryHttpRecorder() {
     return repository.getRepositoryHttpManager().createRepositoryHttpRecorder(this);
   }
 
   @Override
-  public RepositoryHttpPlayer createRepositoryHttpPlayer(String sessionIdInURL) {
-    return repository.getRepositoryHttpManager().createRepositoryHttpPlayer(this, sessionIdInURL);
-  }
-
-  @Override
-  public RepositoryHttpRecorder createRepositoryHttpRecorder(String sessionIdInURL) {
-    return repository.getRepositoryHttpManager().createRepositoryHttpRecorder(this, sessionIdInURL);
+  public RepositoryHttpRecorder createRepositoryHttpRecorder(String sessionIdInUrl) {
+    return repository.getRepositoryHttpManager().createRepositoryHttpRecorder(this, sessionIdInUrl);
   }
 
   @Override

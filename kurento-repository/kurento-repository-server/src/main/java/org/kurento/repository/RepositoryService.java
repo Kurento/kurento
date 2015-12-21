@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.kurento.repository.RepositoryItem.State;
 import org.kurento.repository.service.pojo.RepositoryItemPlayer;
 import org.kurento.repository.service.pojo.RepositoryItemRecorder;
 import org.slf4j.Logger;
@@ -63,10 +62,11 @@ public class RepositoryService {
 
   /**
    * Removes the repository item associated to the provided id.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @throws ItemNotFoundException
+   *           if the object is not found
    */
   public void removeRepositoryItem(String itemId) throws ItemNotFoundException {
     repository.remove(findRepositoryItemById(itemId));
@@ -79,6 +79,7 @@ public class RepositoryService {
    *          the id of an existing repository item
    * @return the URL of the reading endpoint
    * @throws ItemNotFoundException
+   *           if the object is not found
    */
   public RepositoryItemPlayer getReadEndpoint(String itemId) throws ItemNotFoundException {
     RepositoryItemPlayer itemPlay = new RepositoryItemPlayer();
@@ -90,7 +91,7 @@ public class RepositoryService {
   /**
    * Searches for repository items by each pair of attributes and their values. The values can be
    * regular expressions (use the flag, Luke).
-   * 
+   *
    * @param metadata
    *          pairs of attributes and their values (can be regexes)
    * @param regex
@@ -118,11 +119,12 @@ public class RepositoryService {
 
   /**
    * Returns the metadata from a repository item.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @return the metadata map
    * @throws ItemNotFoundException
+   *           if the object is not found
    */
   public Map<String, String> getRepositoryItemMetadata(String itemId) throws ItemNotFoundException {
     return findRepositoryItemById(itemId).getMetadata();
@@ -130,12 +132,13 @@ public class RepositoryService {
 
   /**
    * Replaces the metadata of a repository item.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @param metadata
    *          the new metadata
    * @throws ItemNotFoundException
+   *           if the object is not found
    */
   public void setRepositoryItemMetadata(String itemId, Map<String, String> metadata)
       throws ItemNotFoundException {
@@ -148,7 +151,7 @@ public class RepositoryService {
   /**
    * Used to obtain the URL of a [play|rec] Http endpoint. Should be used only if the item'state is
    * {@link State#STORED}, otherwise the search for the item will fail.
-   * 
+   *
    * @param itemId
    *          the id of an existing repository item
    * @param toRead
@@ -158,6 +161,7 @@ public class RepositoryService {
    *          lifetime (should be "Upload"|"Download")
    * @return a public URL
    * @throws ItemNotFoundException
+   *           if the object is not found
    */
   private String getEndpointUrl(String itemId, boolean toRead, final String action)
       throws ItemNotFoundException {
@@ -166,7 +170,7 @@ public class RepositoryService {
 
   /**
    * Used to obtain the URL of a [play|rec] Http endpoint.
-   * 
+   *
    * @param item
    *          an existing repository item
    * @param toRead
@@ -221,7 +225,7 @@ public class RepositoryService {
   /**
    * Wrapper for {@link Repository#findRepositoryItemById(String)} that throws a checked exception
    * when the item is not found.
-   * 
+   *
    * @param itemId
    *          the id of a repository item
    * @return the found object

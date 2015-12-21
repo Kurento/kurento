@@ -30,28 +30,34 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Back-To-Back WebRTC switch. Three clients: A,B,C sets up WebRTC send-recv with audio/video.
- * Switch between following scenarios: A<->B, A<->C, B<->C. <br>
- *
- * Media Pipeline(s): <br>
- * · WebRtcEndpoint -> WebRtcEndpoint <br>
- * · WebRtcEndpoint -> WebRtcEndpoint <br>
- * · WebRtcEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) WebRtcEndpoint in loopback <br>
- * 2. (Browser) WebRtcPeer in send-receive mode and receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag <br>
- * · Play time in remote video should be as expected <br>
- * · The color of the received video should be as expected <br>
- *
- * Secondary assertion(s): <br>
- * -- <br>
+ * Switch between following scenarios: A<->B, A<->C, B<->C.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) WebRtcEndpoint in loopback</li>
+ * <li>(Browser) WebRtcPeer in send-receive mode and receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag</li>
+ * <li>Play time in remote video should be as expected</li>
+ * <li>The color of the received video should be as expected</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>--</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -70,7 +76,7 @@ public class WebRtcSwitchTest extends FunctionalTest {
   public void testWebRtcSwitch() throws InterruptedException {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    WebRtcEndpoint webRtcEndpoints[] = new WebRtcEndpoint[NUM_BROWSERS];
+    WebRtcEndpoint[] webRtcEndpoints = new WebRtcEndpoint[NUM_BROWSERS];
 
     for (int i = 0; i < NUM_BROWSERS; i++) {
       webRtcEndpoints[i] = new WebRtcEndpoint.Builder(mp).build();

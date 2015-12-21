@@ -36,8 +36,8 @@ public class MediaObjectCreationOperation extends Operation {
   }
 
   @Override
-  public void rollback(TransactionExecutionException e) {
-    super.rollback(e);
-    remoteObject.rollbackTransaction(e);
+  public void rollback(TransactionExecutionException ex) {
+    super.rollback(ex);
+    remoteObject.rollbackTransaction(ex);
   }
 }

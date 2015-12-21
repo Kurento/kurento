@@ -49,7 +49,7 @@
 
 	<properties>
 		<!-- Main class -->
-        <start-class>org.kurento.repository.KurentoRepositoryServerApp</start-class>
+		<start-class>org.kurento.repository.KurentoRepositoryServerApp</start-class>
 	</properties>
 
 	<dependencies>
@@ -148,8 +148,8 @@
 			</plugin>
 		</plugins>
 
-        <resources>
-            <resource>
+		<resources>
+			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>false</filtering>
 			</resource>

@@ -188,11 +188,11 @@ public class KmsService extends TestService {
     String kmsAutoStart = getProperty(kmsAutostartProp, kmsAutostartDefault);
 
     if (isKmsRemote && kmsLogin == null && (kmsPem == null || kmsPasswd == null)) {
-      throw new KurentoException("Bad test parameters: " + kmsAutostartProp + "=" + kmsAutoStart
-          + " and " + kmsWsUriProp + "=" + wsUri
-          + ". Remote KMS should be started but its credentials are not present: " + kmsLoginProp
-          + "=" + kmsLogin + ", " + kmsPasswdProp + "=" + kmsPasswd + ", " + kmsPemProp + "="
-          + kmsPem);
+      throw new KurentoException(
+          "Bad test parameters: " + kmsAutostartProp + "=" + kmsAutoStart + " and " + kmsWsUriProp
+              + "=" + wsUri + ". Remote KMS should be started but its credentials are not present: "
+              + kmsLoginProp + "=" + kmsLogin + ", " + kmsPasswdProp + "=" + kmsPasswd + ", "
+              + kmsPemProp + "=" + kmsPem);
     }
 
     // Assertion: if local or remote KMS, port should be available
@@ -236,8 +236,8 @@ public class KmsService extends TestService {
         remoteKmsSshConnection.scp(workspace + File.separator + s,
             remoteKmsSshConnection.getTmpFolder() + File.separator + s);
       }
-      remoteKmsSshConnection.runAndWaitCommand("chmod", "+x", remoteKmsSshConnection.getTmpFolder()
-          + File.separator + "kurento.sh");
+      remoteKmsSshConnection.runAndWaitCommand("chmod", "+x",
+          remoteKmsSshConnection.getTmpFolder() + File.separator + "kurento.sh");
     }
 
     startKms();
@@ -267,8 +267,7 @@ public class KmsService extends TestService {
         log.info("*** Only for debugging: Docker.getSingleton().removeContainer({})",
             dockerContainerName);
       } catch (Throwable name) {
-        log.error(
-            " +++ Only for debugging: Exception on Docker.getSingleton().removeContainer({})",
+        log.error(" +++ Only for debugging: Exception on Docker.getSingleton().removeContainer({})",
             dockerContainerName);
       }
     }
@@ -303,6 +302,8 @@ public class KmsService extends TestService {
       case AUTOSTART_TESTSUITE_VALUE:
         scope = TESTSUITE;
         break;
+      default:
+        throw new IllegalArgumentException("Unknown autostart value " + kmsAutostart);
     }
     return scope;
   }
@@ -318,9 +319,8 @@ public class KmsService extends TestService {
   private boolean isFreePort(String wsUri) {
     try {
       URI wsUrl = new URI(wsUri);
-      String result =
-          Shell.runAndWait("/bin/bash", "-c", "nc -z " + wsUrl.getHost() + " " + wsUrl.getPort()
-              + "; echo $?");
+      String result = Shell.runAndWait("/bin/bash", "-c",
+          "nc -z " + wsUrl.getHost() + " " + wsUrl.getPort() + "; echo $?");
       if (result.trim().equals("0")) {
         log.warn("Port " + wsUrl.getPort()
             + " is used. Maybe another KMS instance is running in this port");
@@ -333,7 +333,6 @@ public class KmsService extends TestService {
   }
 
   private void createKurentoConf() {
-    Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
     Map<String, Object> data = new HashMap<String, Object>();
     try {
       URI wsAsUri = new URI(wsUri);
@@ -352,6 +351,7 @@ public class KmsService extends TestService {
     data.put("serverCommand", getServerCommand());
     data.put("workspace", getKmsLogPath());
 
+    Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
     cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
 
     createFileFromTemplate(cfg, data, "kurento.conf.json");
@@ -397,14 +397,13 @@ public class KmsService extends TestService {
     if (wsUri != null) {
       WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 
-      int NUM_RETRIES = 300;
-      int WAIT_MILLIS = 100;
+      final int retries = 300;
+      final int waitTime = 100;
 
-      for (int i = 0; i < NUM_RETRIES; i++) {
+      for (int i = 0; i < retries; i++) {
         try {
-          Session wsSession =
-              container.connectToServer(new WebSocketClient(), ClientEndpointConfig.Builder
-                  .create().build(), new URI(wsUri));
+          Session wsSession = container.connectToServer(new WebSocketClient(),
+              ClientEndpointConfig.Builder.create().build(), new URI(wsUri));
           wsSession.close();
 
           double time = (System.nanoTime() - initTime) / (double) 1000000;
@@ -413,15 +412,15 @@ public class KmsService extends TestService {
           return;
         } catch (DeploymentException | IOException | URISyntaxException e) {
           try {
-            Thread.sleep(WAIT_MILLIS);
+            Thread.sleep(waitTime);
           } catch (InterruptedException e1) {
             e1.printStackTrace();
           }
         }
       }
 
-      throw new KurentoException("Timeout of " + NUM_RETRIES * WAIT_MILLIS
-          + " millis waiting for KMS " + wsUri);
+      throw new KurentoException(
+          "Timeout of " + retries * waitTime + " millis waiting for KMS " + wsUri);
 
     } else {
       try {
@@ -461,13 +460,11 @@ public class KmsService extends TestService {
     String s3Hostname = getProperty(TestConfiguration.KMS_DOCKET_S3_HOSTNAME);
 
     CreateContainerCmd createContainerCmd =
-        dockerClient
-            .getClient()
-            .createContainerCmd(kmsImageName)
-            .withName(dockerContainerName)
+        dockerClient.getClient().createContainerCmd(kmsImageName).withName(dockerContainerName)
             .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
                 "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
-                "S3_HOSTNAME=" + s3Hostname).withCmd("--gst-debug-no-color");
+                "S3_HOSTNAME=" + s3Hostname)
+            .withCmd("--gst-debug-no-color");
 
     if (dockerClient.isRunningInContainer()) {
       createContainerCmd.withVolumesFrom(new VolumesFrom(dockerClient.getContainerId()));
@@ -496,12 +493,14 @@ public class KmsService extends TestService {
   public String getKmsLogPath() {
     String kmsAutoStart = getProperty(kmsAutostartProp, kmsAutostartDefault);
 
-    return kmsAutoStart.equals(AUTOSTART_FALSE_VALUE) ? getProperty(KMS_LOG_PATH_PROP,
-        KMS_LOG_PATH_DEFAULT) : isKmsRemote ? remoteKmsSshConnection.getTmpFolder()
-        + File.separator : workspace + File.separator;
+    return kmsAutoStart.equals(AUTOSTART_FALSE_VALUE)
+        ? getProperty(KMS_LOG_PATH_PROP, KMS_LOG_PATH_DEFAULT)
+        : isKmsRemote ? remoteKmsSshConnection.getTmpFolder() + File.separator
+            : workspace + File.separator;
   }
 
-  private void createFileFromTemplate(Configuration cfg, Map<String, Object> data, String filename) {
+  private void createFileFromTemplate(Configuration cfg, Map<String, Object> data,
+      String filename) {
 
     try {
       Template template = cfg.getTemplate(filename + ".ftl");
@@ -534,11 +533,8 @@ public class KmsService extends TestService {
     String testMethodName = KurentoTest.getSimpleTestName();
 
     if (isKmsDocker) {
-      Docker.getSingleton()
-          .downloadLog(
-              dockerContainerName,
-              Paths.get(targetFolder.getAbsolutePath(), testMethodName + getDockerLogSuffix()
-                  + ".log"));
+      Docker.getSingleton().downloadLog(dockerContainerName, Paths
+          .get(targetFolder.getAbsolutePath(), testMethodName + getDockerLogSuffix() + ".log"));
     }
 
     else if (isKmsRemote) {
@@ -552,9 +548,8 @@ public class KmsService extends TestService {
 
       for (String remoteLogFile : remoteLogFiles) {
 
-        String localLogFile =
-            targetFolder + "/" + testMethodName + "-"
-                + remoteLogFile.substring(remoteLogFile.lastIndexOf("/") + 1);
+        String localLogFile = targetFolder + "/" + testMethodName + "-"
+            + remoteLogFile.substring(remoteLogFile.lastIndexOf("/") + 1);
 
         remoteKmsSshConnection.getFile(localLogFile, remoteLogFile);
 
@@ -635,9 +630,8 @@ public class KmsService extends TestService {
   private void kmsSigTerm() {
     log.trace("Sending SIGTERM to KMS process");
     if (isKmsRemote) {
-      String kmsPid =
-          remoteKmsSshConnection.execAndWaitCommandNoBr("cat",
-              remoteKmsSshConnection.getTmpFolder() + "/kms-pid");
+      String kmsPid = remoteKmsSshConnection.execAndWaitCommandNoBr("cat",
+          remoteKmsSshConnection.getTmpFolder() + "/kms-pid");
       remoteKmsSshConnection.runAndWaitCommand("kill", kmsPid);
     } else {
       Shell.runAndWait("sh", "-c", "kill `cat " + workspace + File.separator + "kms-pid`");
@@ -647,9 +641,8 @@ public class KmsService extends TestService {
   private void kmsSigKill() {
     log.trace("Sending SIGKILL to KMS process");
     if (isKmsRemote) {
-      String kmsPid =
-          remoteKmsSshConnection.execAndWaitCommandNoBr("cat",
-              remoteKmsSshConnection.getTmpFolder() + "/kms-pid");
+      String kmsPid = remoteKmsSshConnection.execAndWaitCommandNoBr("cat",
+          remoteKmsSshConnection.getTmpFolder() + "/kms-pid");
       remoteKmsSshConnection.runAndWaitCommand("sh", "-c", "kill -9 " + kmsPid);
     } else {
       Shell.runAndWait("sh", "-c", "kill -9 `cat " + workspace + File.separator + "kms-pid`");
@@ -663,16 +656,13 @@ public class KmsService extends TestService {
       // kms-pid file)
 
       if (isKmsRemote) {
-        String kmsPid =
-            remoteKmsSshConnection.execAndWaitCommandNoBr("cat",
-                remoteKmsSshConnection.getTmpFolder() + "/kms-pid");
-        result =
-            Integer.parseInt(remoteKmsSshConnection.execAndWaitCommandNoBr("ps --pid " + kmsPid
-                + " --no-headers | wc -l"));
+        String kmsPid = remoteKmsSshConnection.execAndWaitCommandNoBr("cat",
+            remoteKmsSshConnection.getTmpFolder() + "/kms-pid");
+        result = Integer.parseInt(remoteKmsSshConnection
+            .execAndWaitCommandNoBr("ps --pid " + kmsPid + " --no-headers | wc -l"));
       } else {
-        String[] command =
-            { "sh", "-c",
-                "ps --pid `cat " + workspace + File.separator + "kms-pid` --no-headers | wc -l" };
+        String[] command = { "sh", "-c",
+            "ps --pid `cat " + workspace + File.separator + "kms-pid` --no-headers | wc -l" };
         Process countKms = Runtime.getRuntime().exec(command);
         String stringFromStream =
             CharStreams.toString(new InputStreamReader(countKms.getInputStream(), "UTF-8"));
@@ -705,8 +695,9 @@ public class KmsService extends TestService {
 
   public synchronized void setDockerContainerName(String containerName) {
     dockerContainerName = containerName;
-    if (monitoredDockerContainerName == null)
+    if (monitoredDockerContainerName == null) {
       monitoredDockerContainerName = dockerContainerName;
+    }
   }
 
   private String getServerCommand() {
@@ -724,8 +715,8 @@ public class KmsService extends TestService {
   public KurentoClient getKurentoClient() {
     if (kurentoClient == null && wsUri != null) {
       kurentoClient = createKurentoClient();
-      kurentoClient.getServerManager().addObjectCreatedListener(
-          new EventListener<ObjectCreatedEvent>() {
+      kurentoClient.getServerManager()
+          .addObjectCreatedListener(new EventListener<ObjectCreatedEvent>() {
 
             @Override
             public void onEvent(ObjectCreatedEvent event) {
@@ -735,9 +726,8 @@ public class KmsService extends TestService {
 
                   @Override
                   public void onEvent(ErrorEvent event) {
-                    String msgException =
-                        "Error in KMS: " + event.getDescription() + "; Type: " + event.getType()
-                            + "; Error Code: " + event.getErrorCode();
+                    String msgException = "Error in KMS: " + event.getDescription() + "; Type: "
+                        + event.getType() + "; Error Code: " + event.getErrorCode();
                     log.error(msgException);
                     throw new KurentoException(msgException);
                   }

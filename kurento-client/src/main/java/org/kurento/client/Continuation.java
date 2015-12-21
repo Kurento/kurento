@@ -19,16 +19,16 @@ package org.kurento.client;
 public interface Continuation<F> {
 
   /**
-   * This method is called when the operation succeeds
-   * 
+   * This method is called when the operation succeeds.
+   *
    * @param result
    *          The result of the completed operation
    */
   void onSuccess(F result) throws Exception;
 
   /**
-   * This method gets called when the operation fails
-   * 
+   * This method gets called when the operation fails.
+   *
    * @param cause
    *          The cause of the failure
    */

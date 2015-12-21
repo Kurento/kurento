@@ -88,7 +88,7 @@ public class RepositoryApplicationContextConfiguration {
 
     RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 
-    config.setWebappPublicURL("http://" + SERVER_HOSTNAME + ":" + SERVER_PORT + "/");
+    config.setWebappPublicUrl("http://" + SERVER_HOSTNAME + ":" + SERVER_PORT + "/");
 
     RepoType type = RepoType.parseType(REPO_TYPE);
     config.setRepositoryType(type);
@@ -108,8 +108,8 @@ public class RepositoryApplicationContextConfiguration {
       String grid = getProperty(KEY_MG_GRID, config.getMongoGridFSCollectionName());
       config.setMongoGridFSCollectionName(grid);
       sb.append("\n\t").append("gridName : ").append(grid);
-      String url = getProperty(KEY_MG_URL, config.getMongoURLConnection());
-      config.setMongoURLConnection(url);
+      String url = getProperty(KEY_MG_URL, config.getMongoUrlConnection());
+      config.setMongoUrlConnection(url);
       sb.append("\n\t").append("urlConn : ").append(url);
     }
 

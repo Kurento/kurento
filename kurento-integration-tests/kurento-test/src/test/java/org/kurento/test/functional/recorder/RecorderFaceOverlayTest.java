@@ -35,32 +35,38 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a Recorder, using the stream source from a PlayerEndpoint with FaceOverlayFilter through
- * an WebRtcEndpoint. <br>
- *
- * Media Pipeline(s): <br>
- * · PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint <br>
- * · PlayerEndpoint -> WebRtcEndpoint <br>
- *
- * Browser(s): <br>
- * · Chrome <br>
- * · Firefox <br>
- *
- * Test logic: <br>
- * 1. (KMS) Two media pipelines. First PlayerEndpoint to RecorderEndpoint (recording) and then
- * PlayerEndpoint -> WebRtcEndpoint (play of the recording). <br>
- * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
- *
- * Main assertion(s): <br>
- * · Playing event should be received in remote video tag (in the recording) <br>
- * · The color of the received video should be as expected (in the recording) <br>
- * · EOS event should arrive to player (in the recording) <br>
- * · Play time in remote video should be as expected (in the recording) <br>
- * · Codecs should be as expected (in the recording) <br>
- *
- * Secondary assertion(s): <br>
- * · Playing event should be received in remote video tag (in the playing) <br>
- * · The color of the received video should be as expected (in the playing) <br>
- * · EOS event should arrive to player (in the playing) <br>
+ * an WebRtcEndpoint.
+ * </p>
+ * Media Pipeline(s):
+ * <ul>
+ * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * Browser(s):
+ * <ul>
+ * <li>Chrome</li>
+ * <li>Firefox</li>
+ * </ul>
+ * Test logic:
+ * <ol>
+ * <li>(KMS) Two media pipelines. First PlayerEndpoint to RecorderEndpoint (recording) and then
+ * PlayerEndpoint -> WebRtcEndpoint (play of the recording).</li>
+ * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * </ol>
+ * Main assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag (in the recording)</li>
+ * <li>The color of the received video should be as expected (in the recording)</li>
+ * <li>EOS event should arrive to player (in the recording)</li>
+ * <li>Play time in remote video should be as expected (in the recording)</li>
+ * <li>Codecs should be as expected (in the recording)</li>
+ * </ul>
+ * Secondary assertion(s):
+ * <ul>
+ * <li>Playing event should be received in remote video tag (in the playing)</li>
+ * <li>The color of the received video should be as expected (in the playing)</li>
+ * <li>EOS event should arrive to player (in the playing)</li>
+ * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -93,29 +99,27 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/filter/fiwarecut.mp4")
+    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/filter/fiwarecut.mp4")
+
             .build();
-    WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+    WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
+
+    FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
+    filter.setOverlayedImage("http://" + getTestFilesHttpPath() + "/img/red-square.png", -0.2F,
+        -1.2F, 1.6F, 1.6F);
 
     String recordingFile = getDefaultOutputFile(extension);
-
-    RecorderEndpoint recorderEP =
+    RecorderEndpoint recorderEp =
         new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
             .withMediaProfile(mediaProfileSpecType).build();
-    FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
-    filter.setOverlayedImage("http://" + getTestFilesHttpPath()
-            + "/img/red-square.png", -0.2F, -1.2F, 1.6F,
-        1.6F);
-
-    playerEP.connect(filter);
-    filter.connect(webRtcEP1);
-    filter.connect(recorderEP);
+    playerEp.connect(filter);
+    filter.connect(webRtcEp1);
+    filter.connect(recorderEp);
 
     // Test execution #1. Play and record
     getPage().setThresholdTime(THRESHOLD);
-    launchBrowser(mp, webRtcEP1, playerEP, recorderEP, expectedVideoCodec, expectedAudioCodec,
+    launchBrowser(mp, webRtcEp1, playerEp, recorderEp, expectedVideoCodec, expectedAudioCodec,
         recordingFile, EXPECTED_COLOR, EXPECTED_COLOR_X, EXPECTED_COLOR_Y, PLAYTIME);
 
     // Release Media Pipeline #1
@@ -126,13 +130,13 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP2 =
+    PlayerEndpoint playerEp2 =
         new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
-    WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
-    playerEP2.connect(webRtcEP2);
+    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
+    playerEp2.connect(webRtcEp2);
 
     // Playing the recording
-    launchBrowser(mp, webRtcEP2, playerEP2, null, expectedVideoCodec, expectedAudioCodec,
+    launchBrowser(mp, webRtcEp2, playerEp2, null, expectedVideoCodec, expectedAudioCodec,
         recordingFile, EXPECTED_COLOR, EXPECTED_COLOR_X, EXPECTED_COLOR_Y, PLAYTIME);
 
     // Release Media Pipeline #2

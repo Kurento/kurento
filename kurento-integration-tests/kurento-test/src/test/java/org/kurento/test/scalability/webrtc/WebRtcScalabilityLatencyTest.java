@@ -126,7 +126,7 @@ public class WebRtcScalabilityLatencyTest extends ScalabilityTest {
 
     // Real clients
     ExecutorService executor = Executors.newFixedThreadPool(realClients);
-    final LatencyController csB2B[] = new LatencyController[realClients];
+    final LatencyController[] csB2B = new LatencyController[realClients];
     for (int i = 0; i < realClients; i++) {
       csB2B[i] = new LatencyController("Latency in back2back " + i);
       WebRtcEndpoint extraWebRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();

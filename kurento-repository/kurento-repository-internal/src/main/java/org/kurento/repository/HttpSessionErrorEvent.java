@@ -38,8 +38,8 @@ public class HttpSessionErrorEvent extends RepositoryHttpSessionEvent {
 
   /**
    * Returns the exception that caused this error or null if the error is not produced by means of
-   * an exception
-   * 
+   * an exception.
+   *
    * @return the exception or null if the error is not produced by means of an exception
    */
   public Throwable getCause() {
@@ -48,7 +48,7 @@ public class HttpSessionErrorEvent extends RepositoryHttpSessionEvent {
 
   /**
    * Returns the description of the error. This description can be used to log the problem.
-   * 
+   *
    * @return the description of the error.
    */
   public String getDescription() {
