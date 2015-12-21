@@ -37,6 +37,21 @@ cat >/root/.bowerrc << EOL
 }
 EOL
 
+CODE_KURENTO_ORG=$(getent hosts code.kurento.org | awk '{ print $1 }')
+while [ -z $CODE_KURENTO_ORG ]
+do
+  CODE_KURENTO_ORG=$(getent hosts code.kurento.org | awk '{ print $1 }')
+done
+
+MAVEN_KURENTO_ORG=$(getent hosts maven.kurento.org | awk '{ print $1 }')
+while [ -z $MAVEN_KURENTO_ORG ]
+do
+  MAVEN_KURENTO_ORG=$(getent hosts maven.kurento.org | awk '{ print $1 }')
+done
+
+echo "$CODE_KURENTO_ORG code.kurento.org" >> /etc/hosts
+echo "$MAVEN_KURENTO_ORG maven.kurento.org" >> /etc/hosts
+
 for CMD in $BUILD_COMMAND; do
   echo "Running command: $CMD"
   $CMD || exit 1
