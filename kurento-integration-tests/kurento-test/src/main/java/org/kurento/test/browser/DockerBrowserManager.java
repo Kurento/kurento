@@ -202,7 +202,8 @@ public class DockerBrowserManager {
 
       } while (driver == null);
 
-      log.debug("RemoteWebDriver for browser {} created (Capabilities={})", id, capabilities);
+      log.debug("RemoteWebDriver for browser {} created (Version={}, Capabilities={})", id,
+          driver.getCapabilities().getVersion(), driver.getCapabilities());
 
       if (record) {
         createVncRecorderContainer();
