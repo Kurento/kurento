@@ -56,6 +56,8 @@ public class KurentoClient {
 
   private String id;
 
+  private ServerManager serverManager;
+
   private static KmsUrlLoader kmsUrlLoader;
 
   public static synchronized String getKmsUrl(String id, Properties properties) {
@@ -184,7 +186,10 @@ public class KurentoClient {
   }
 
   public ServerManager getServerManager() {
-    return getById("manager_ServerManager", ServerManager.class);
+    if(serverManager == null){ 
+      serverManager = getById("manager_ServerManager", ServerManager.class);
+    }
+    return serverManager;
   }
 
   public <T extends KurentoObject> T getById(String id, Class<T> clazz) {
