@@ -40,7 +40,21 @@ WebRTC capable browser (Chrome, Firefox).
 Understanding this example
 ==========================
 
-//TODO: Explain how the WebRtcEndpoints are created and connected
+Each client will send its own media, and in turn will receive the media from
+all the other participants. This means that there will be a total of n*n 
+webrtc endpoints in each room, where n is the number of clients.
+
+When a new client enters the room, a new webrtc will be created and negotiated
+receive the media on the server. On the other hand, all participant will be
+informed that a new user has connected. Then, all participants will request the 
+server to receive the new participant's media.
+
+The newcomer, in turn, gets a list of all connected participants, and requests
+the server to receive the media from all the present clients in the room.
+
+When a client leaves the room, all clients are informed by the server. Then,
+the client-side code requests the server to cancel all media elements related
+to the client that left.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
