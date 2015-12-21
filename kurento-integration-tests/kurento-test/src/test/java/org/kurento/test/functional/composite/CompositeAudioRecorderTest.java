@@ -1,3 +1,4 @@
+
 package org.kurento.test.functional.composite;
 
 import java.awt.Color;
@@ -60,14 +61,14 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
     // MediaPipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-    PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
-        "http://files.kurento.org/video/30sec/red.webm").build();
-    PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
-        "http://files.kurento.org/video/30sec/green.webm").build();
-    PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
-        "http://files.kurento.org/video/30sec/blue.webm").build();
-    PlayerEndpoint playerWhite = new PlayerEndpoint.Builder(mp,
-        "http://files.kurento.org/video/30sec/white.webm").build();
+    PlayerEndpoint playerRed =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/red.webm").build();
+    PlayerEndpoint playerGreen =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/green.webm").build();
+    PlayerEndpoint playerBlue =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/blue.webm").build();
+    PlayerEndpoint playerWhite =
+        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/white.webm").build();
 
     Composite composite = new Composite.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(composite).build();
@@ -76,8 +77,8 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
     HubPort hubPort4 = new HubPort.Builder(composite).build();
     HubPort hubPort5 = new HubPort.Builder(composite).build();
     String recordingFile = getDefaultOutputFile(EXTENSION_WEBM);
-    RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp, Protocol.FILE + recordingFile)
-        .build();
+    RecorderEndpoint recorderEP =
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + recordingFile).build();
 
     playerRed.connect(hubPort1);
     playerGreen.connect(hubPort2, MediaType.AUDIO);
@@ -104,8 +105,8 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2, Protocol.FILE + recordingFile)
-        .build();
+    PlayerEndpoint playerEP2 =
+        new PlayerEndpoint.Builder(mp2, Protocol.FILE + recordingFile).build();
     WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEP2.connect(webRtcEP2);
 

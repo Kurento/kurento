@@ -1,3 +1,4 @@
+
 package org.kurento.test.functional.composite;
 
 import java.awt.Color;
@@ -102,8 +103,8 @@ public class CompositeWebRtcRecorderTest extends BaseRecorder {
     HubPort hubPort4 = new HubPort.Builder(composite).build();
     HubPort hubPort5 = new HubPort.Builder(composite).build();
     String recordingFile = getDefaultOutputFile(EXTENSION_WEBM);
-    RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp, Protocol.FILE + recordingFile)
-        .build();
+    RecorderEndpoint recorderEP =
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + recordingFile).build();
 
     webRtcEPRed.connect(hubPort1);
     webRtcEPGreen.connect(hubPort2, MediaType.AUDIO);
@@ -129,8 +130,8 @@ public class CompositeWebRtcRecorderTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2, Protocol.FILE + recordingFile)
-        .build();
+    PlayerEndpoint playerEP2 =
+        new PlayerEndpoint.Builder(mp2, Protocol.FILE + recordingFile).build();
     WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEP2.connect(webRtcEP2);
 

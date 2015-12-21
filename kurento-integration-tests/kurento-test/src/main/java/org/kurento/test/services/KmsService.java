@@ -270,18 +270,18 @@ public class KmsService extends TestService {
     TestServiceScope scope = TESTSUITE;
     String kmsAutostart = getProperty(kmsAutostartProp, kmsAutostartDefault);
     switch (kmsAutostart) {
-    case AUTOSTART_FALSE_VALUE:
-      scope = EXTERNAL;
-      break;
-    case AUTOSTART_TEST_VALUE:
-      scope = TEST;
-      break;
-    case AUTOSTART_TESTCLASS_VALUE:
-      scope = TESTCLASS;
-      break;
-    case AUTOSTART_TESTSUITE_VALUE:
-      scope = TESTSUITE;
-      break;
+      case AUTOSTART_FALSE_VALUE:
+        scope = EXTERNAL;
+        break;
+      case AUTOSTART_TEST_VALUE:
+        scope = TEST;
+        break;
+      case AUTOSTART_TESTCLASS_VALUE:
+        scope = TESTCLASS;
+        break;
+      case AUTOSTART_TESTSUITE_VALUE:
+        scope = TESTSUITE;
+        break;
     }
     return scope;
   }
@@ -405,8 +405,8 @@ public class KmsService extends TestService {
     Docker dockerClient = Docker.getSingleton();
     String kmsImageName = getProperty(KMS_DOCKER_IMAGE_NAME_PROP, KMS_DOCKER_IMAGE_NAME_DEFAULT);
 
-    boolean forcePulling = getProperty(KMS_DOCKER_IMAGE_FORCE_PULLING_PROP,
-        KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT);
+    boolean forcePulling =
+        getProperty(KMS_DOCKER_IMAGE_FORCE_PULLING_PROP, KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT);
 
     if (!dockerClient.existsImage(kmsImageName) || forcePulling) {
       log.info("Pulling KMS image {} ... plase wait", kmsImageName);
@@ -423,17 +423,17 @@ public class KmsService extends TestService {
 
     log.debug("Starting KMS container...");
 
-    CreateContainerCmd createContainerCmd = dockerClient.getClient()
-        .createContainerCmd(kmsImageName).withName(dockerContainerName)
-        .withEnv("GST_DEBUG=" + getDebugOptions()).withCmd("--gst-debug-no-color");
+    CreateContainerCmd createContainerCmd =
+        dockerClient.getClient().createContainerCmd(kmsImageName).withName(dockerContainerName)
+            .withEnv("GST_DEBUG=" + getDebugOptions()).withCmd("--gst-debug-no-color");
 
     if (dockerClient.isRunningInContainer()) {
       createContainerCmd.withVolumesFrom(new VolumesFrom(dockerClient.getContainerId()));
     } else {
       String testFilesPath = KurentoTest.getTestFilesPath();
       Volume volume = new Volume(testFilesPath);
-      String targetPath = Paths.get(KurentoTest.getDefaultOutputFolder().toURI()).toAbsolutePath()
-          .toString();
+      String targetPath =
+          Paths.get(KurentoTest.getDefaultOutputFolder().toURI()).toAbsolutePath().toString();
       Volume volumeTest = new Volume(targetPath);
       createContainerCmd.withVolumes(volume, volumeTest).withBinds(
           new Bind(testFilesPath, volume, AccessMode.ro),
@@ -625,8 +625,8 @@ public class KmsService extends TestService {
         String[] command = { "sh", "-c",
             "ps --pid `cat " + workspace + File.separator + "kms-pid` --no-headers | wc -l" };
         Process countKms = Runtime.getRuntime().exec(command);
-        String stringFromStream = CharStreams
-            .toString(new InputStreamReader(countKms.getInputStream(), "UTF-8"));
+        String stringFromStream =
+            CharStreams.toString(new InputStreamReader(countKms.getInputStream(), "UTF-8"));
         result = Integer.parseInt(stringFromStream.trim());
       }
     } catch (IOException e) {
