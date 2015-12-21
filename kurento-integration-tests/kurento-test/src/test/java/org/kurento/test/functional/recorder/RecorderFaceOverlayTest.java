@@ -92,16 +92,14 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/filter/fiwarecut.mp4")
-            .build();
+    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
+        "http://files.kurento.org/video/filter/fiwarecut.mp4").build();
     WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getDefaultOutputFile(extension);
 
-    RecorderEndpoint recorderEP =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+    RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
+        Protocol.FILE + "://" + recordingFile).withMediaProfile(mediaProfileSpecType).build();
     FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
     filter.setOverlayedImage("http://files.kurento.org/img/red-square.png", -0.2F, -1.2F, 1.6F,
         1.6F);
@@ -123,8 +121,8 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP2 =
-        new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
+    PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
+        Protocol.FILE + "://" + recordingFile).build();
     WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEP2.connect(webRtcEP2);
 
