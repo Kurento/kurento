@@ -93,9 +93,8 @@ public class DockerBrowserManager {
 
       browserContainerName = id;
 
-      vncrecorderContainerName =
-          browserContainerName + "-" + getProperty(DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY,
-              DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
+      vncrecorderContainerName = browserContainerName + "-" + getProperty(
+          DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY, DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT);
 
       if (docker.isRunningInContainer()) {
 
@@ -113,8 +112,8 @@ public class DockerBrowserManager {
 
         try {
 
-          JsonObject result =
-              curl(hubUrl + "/grid/api/proxy?id=http://" + browserContainerIp + ":5555");
+          JsonObject result = curl(
+              hubUrl + "/grid/api/proxy?id=http://" + browserContainerIp + ":5555");
 
           if (result.get("success").getAsBoolean()) {
             log.info("Capabilities of container {}: {}", browserContainerName,
@@ -173,8 +172,8 @@ public class DockerBrowserManager {
           docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
               dockerHubIp);
 
-          browserContainerIp =
-              docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
+          browserContainerIp = docker.inspectContainer(browserContainerName).getNetworkSettings()
+              .getIpAddress();
 
           waitForNodeRegisteredInHub();
 
@@ -203,8 +202,7 @@ public class DockerBrowserManager {
 
       } while (driver == null);
 
-      log.debug("RemoteWebDriver for browser {} created (Version={}, Capabilities={})", id,
-          driver.getCapabilities().getVersion(), driver.getCapabilities());
+      log.debug("RemoteWebDriver for browser {} created (Capabilities={})", id, capabilities);
 
       if (record) {
         createVncRecorderContainer();
@@ -216,8 +214,8 @@ public class DockerBrowserManager {
 
       log.debug("Creating remote driver for browser {} in hub {}", id, driverUrl);
 
-      int timeoutSeconds =
-          getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+      int timeoutSeconds = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
+          SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
 
       long timeoutMs = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeoutSeconds);
 
@@ -313,8 +311,8 @@ public class DockerBrowserManager {
           throw new RuntimeException("Timeout when connecting to browser VNC");
         }
 
-        String vncrecordImageId =
-            getProperty(DOCKER_VNCRECORDER_IMAGE_PROPERTY, DOCKER_VNCRECORDER_IMAGE_DEFAULT);
+        String vncrecordImageId = getProperty(DOCKER_VNCRECORDER_IMAGE_PROPERTY,
+            DOCKER_VNCRECORDER_IMAGE_DEFAULT);
 
         if (docker.existsContainer(vncrecorderContainerName)) {
           throw new KurentoException(
@@ -389,8 +387,8 @@ public class DockerBrowserManager {
   }
 
   private void calculateHubContainerName() {
-    hubContainerName =
-        getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY, DOCKER_HUB_CONTAINER_NAME_DEFAULT);
+    hubContainerName = getProperty(DOCKER_HUB_CONTAINER_NAME_PROPERTY,
+        DOCKER_HUB_CONTAINER_NAME_DEFAULT);
 
     if (docker.isRunningInContainer()) {
 
