@@ -1423,8 +1423,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   g_free (answerer_sess_id);
 }
 
-#ifdef ENABLE_DEBUGGING_TESTS
-
 #define TEST_MESSAGE "Hello world!"
 
 static gboolean
@@ -1621,7 +1619,7 @@ test_data_channels (gboolean bundle)
 
   g_object_set (sender, "bundle", bundle, "num-audio-medias", 0,
       "num-video-medias", 0, NULL);
-  g_object_set (receiver, "num-audio-medias", "num-video-medias", 0, NULL);
+  g_object_set (receiver, "num-audio-medias", 0, "num-video-medias", 0, NULL);
 
   g_signal_connect (sender, "pad-added", G_CALLBACK (webrtc_sender_pad_added),
       pipeline);
@@ -1732,8 +1730,8 @@ GST_START_TEST (test_webrtc_data_channel)
   test_data_channels (FALSE);
 }
 
-GST_END_TEST
-#endif
+GST_END_TEST;
+
 /* Video tests */
 static GstStaticCaps vp8_expected_caps = GST_STATIC_CAPS ("video/x-vp8");
 
@@ -2098,9 +2096,7 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_port_range);
   tcase_add_test (tc_chain, test_not_enough_ports);
 
-#ifdef ENABLE_DEBUGGING_TESTS
   tcase_add_test (tc_chain, test_webrtc_data_channel);
-#endif
 
   return s;
 }

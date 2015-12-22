@@ -156,6 +156,7 @@ if (${ENABLE_DEBUGGING_TESTS})
   target_link_libraries(test_dtlssrtp ${gstreamer-1.5_LIBRARIES}
                                       ${gstreamer-check-1.5_LIBRARIES}
                                       ${gio-2.0_LIBRARIES})
+endif()
 
 add_test_program (test_webrtc_data_proto webrtc_data_proto.c)
 add_dependencies(test_webrtc_data_proto ${LIBRARY_NAME}plugins)
@@ -171,7 +172,6 @@ target_link_libraries(test_webrtc_data_proto
                       ${nice_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES}
                       webrtcdataproto)
-endif()
 
 add_test_program (test_srtp srtp.c)
 add_dependencies(test_srtp ${LIBRARY_NAME}plugins)
