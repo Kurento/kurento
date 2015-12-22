@@ -1704,7 +1704,7 @@ test_data_channels (gboolean bundle)
   g_main_loop_run (loop);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_sendonly_end");
+      GST_DEBUG_GRAPH_SHOW_ALL, "test_data_channels_end");
 
   GST_WARNING ("Finishing test");
 
