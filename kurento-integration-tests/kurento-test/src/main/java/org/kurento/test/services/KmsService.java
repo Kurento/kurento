@@ -79,7 +79,11 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import org.apache.commons.io.FileUtils;
+import org.kurento.client.ErrorEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.KurentoClient;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.ObjectCreatedEvent;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.docker.Docker;
@@ -673,6 +677,27 @@ public class KmsService extends TestService {
   public KurentoClient getKurentoClient() {
     if (kurentoClient == null && wsUri != null) {
       kurentoClient = createKurentoClient();
+      kurentoClient.getServerManager().addObjectCreatedListener(
+          new EventListener<ObjectCreatedEvent>() {
+
+            @Override
+            public void onEvent(ObjectCreatedEvent event) {
+              if (event instanceof MediaPipeline) {
+                MediaPipeline mp = (MediaPipeline) event;
+                mp.addErrorListener(new EventListener<ErrorEvent>() {
+
+                  @Override
+                  public void onEvent(ErrorEvent event) {
+                    String msgException =
+                        "Error in KMS: " + event.getDescription() + "; Type: " + event.getType()
+                            + "; Error Code: " + event.getErrorCode();
+                    log.error(msgException);
+                    throw new KurentoException(msgException);
+                  }
+                });
+              }
+            }
+          });
     }
     return kurentoClient;
   }
