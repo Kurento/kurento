@@ -1436,6 +1436,7 @@ feed_data_channel (GstElement * appsrc, guint unused_size, gpointer data)
   buff = gst_buffer_new_wrapped (msg, strlen (msg));
 
   g_signal_emit_by_name (appsrc, "push-buffer", buff, &ret);
+  gst_buffer_unref (buff);
 }
 
 static void
@@ -1459,6 +1460,7 @@ webrtc_sender_pad_added (GstElement * element, GstPad * new_pad,
 
   srcpad = gst_element_get_static_pad (appsrc, "src");
   fail_if (gst_pad_link (srcpad, new_pad) != GST_PAD_LINK_OK);
+  g_object_unref (srcpad);
 
   gst_element_sync_state_with_parent (appsrc);
 }
