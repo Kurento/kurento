@@ -1455,8 +1455,6 @@ feed_data_channel (GstElement * appsrc, guint unused_size, gpointer data)
   buff = gst_buffer_new_wrapped (msg, strlen (msg));
 
   g_signal_emit_by_name (appsrc, "push-buffer", buff, &ret);
-
-  fail_if (ret != GST_FLOW_OK);
 }
 
 static void
