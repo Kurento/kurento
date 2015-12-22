@@ -1,12 +1,23 @@
 #!/bin/bash
 
 # Internal (private) images
+
+# dev-integration images (for Java & JS)
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-7-node-0.12
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-0.12
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:1.0.0
+
+# kurento-media-server development version with core dump & public modules
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
+
+# svn-client to extract files from svn into a docker host
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
+
+# dev-documentation images (for documentation projects)
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0-jdk-8
+
+# dev-media-server images (for media server projects)
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-8
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-7
