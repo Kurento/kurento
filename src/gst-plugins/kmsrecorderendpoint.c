@@ -1179,9 +1179,17 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
     g_free (id);
 
     if (appsrc == NULL) {
+      GstCaps *aux;
+
       KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
       GST_ERROR_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
           pad);
+
+      /* Filter against profile */
+      GST_WARNING_OBJECT (appsrc, "Using generic profile's caps");
+      aux = gst_caps_intersect (caps, result);
+      gst_caps_unref (result);
+      result = aux;
       goto filter_caps;
     }
     srcpad = gst_element_get_static_pad (appsrc, "src");
