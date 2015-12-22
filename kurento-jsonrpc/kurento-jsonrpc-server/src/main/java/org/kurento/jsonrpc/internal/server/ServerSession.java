@@ -33,8 +33,9 @@ import com.google.gson.JsonObject;
 
 public abstract class ServerSession extends AbstractSession {
 
+  public static final String SESSION_RECONNECTION_TIME_PROP = "ws.sessionReconnectionTime";
   private static final int SESSION_RECONNECTION_TIME_DEFAULT = 10;
-  private static final String SESSION_RECONNECTION_TIME_PROP = "ws.sessionReconnectionTime";
+
   private final SessionsManager sessionsManager;
   private JsonRpcRequestSenderHelper rsHelper;
   private String transportId;
