@@ -457,11 +457,11 @@ kms_webrtc_endpoint_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
 
   gst_bin_add_many (GST_BIN (self), channel->appsrc, channel->appsink, NULL);
 
+  gst_element_sync_state_with_parent (channel->appsink);
+  gst_element_sync_state_with_parent (channel->appsrc);
+
   kms_webrtc_endpoint_add_src_data_pad (self, channel);
   kms_webrtc_endpoint_add_sink_data_pad (self, channel);
-
-  gst_element_sync_state_with_parent (channel->appsrc);
-  gst_element_sync_state_with_parent (channel->appsink);
 
   KMS_ELEMENT_UNLOCK (self);
 
