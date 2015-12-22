@@ -3,18 +3,17 @@ Kurento Tutorials
 %%%%%%%%%%%%%%%%%
 
 This section contains tutorials showing how to use Kurento framework to build
-different types of `WebRTC`:term: and multimedia applications. Turorials come
+different types of `WebRTC`:term: and multimedia applications. Tutorials come
 in three flavors:
 
-- **Java**: These show applications where clients interact with an application
-  server based on Java EE technology. The application server hold the logic
-  orchestrating the communication among the clients and controlling Kurento
-  Server capabilities for them.
+- **Java**: These show applications where clients interact with Spring-Boot based
+  application, that host the logic orchestrating the communication among 
+  clients and controlling Kurento Media Server capabilities.
 
 - **Browser JavaScript**: These show applications executing at the browser and
-  communicating directly with the Kurento Media Server. In these tutorial, all
-  the application logic is hold by the browser. Hence, no application server is
-  necessary. For these reasons, these applications need to be simple.
+  communicating directly with the Kurento Media Server. In these tutorial all
+  logic is directly hosted by browser. Hence, no application server is
+  necessary.
 
 - **Node.js**: These show applications where clients interact with an
   application server based on Node.js technology. The application server holds
@@ -23,147 +22,165 @@ in three flavors:
 
 .. note::
 
-   These tutorials have been created with learning objectives. They are not
+   The tutorials have been created with learning objectives. They are not
    intended to be used in production environments where different unmanaged error
-   conditions may emerge.
+   conditions may emerge. Use at your own risk!
+
+.. note::
+
+   These tutorials require https in order to use WebRTC. Following
+   `instructions <mastering/securing-kurento-applications.html>`_ will provided
+   further information about how to enable application security.
 
 
-Tutorial 1 - Hello world
-========================
+Hello world
+===========
 
-This is one of the simplest WebRTC application you can create with Kurento. It
+This is one of the simplest WebRTC applications you can create with Kurento. It
 implements a `WebRTC`:term: *loopback* (a WebRTC media stream going from client
 to Kurento and back to the client)
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-1-helloworld>
-   Browser JavaScript </tutorials/js/tutorial-1-helloworld>
-   Node.js </tutorials/node/tutorial-1-helloworld>
+   Java </tutorials/java/tutorial-helloworld>
+   Browser JavaScript </tutorials/js/tutorial-helloworld>
+   Node.js </tutorials/node/tutorial-helloworld>
 
-Tutorial 2 - WebRTC magic mirror
-================================
+WebRTC magic mirror
+===================
 
-This web application consists on a `WebRTC`:term: video communication in mirror
-adding a funny hat over your face. This is an example of computer vision and
-augmented reality using a filter.
+This web application consists on a `WebRTC`:term: video communication in loopback,
+adding a funny hat over detected faces. This is an example of a computer vision and
+augmented reality filter.
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-2-magicmirror>
-   Browser JavaScript </tutorials/js/tutorial-2-magicmirror>
-   Node.js </tutorials/node/tutorial-2-magicmirror>
+   Java </tutorials/java/tutorial-magicmirror>
+   Browser JavaScript </tutorials/js/tutorial-magicmirror>
+   Node.js </tutorials/node/tutorial-magicmirror>
 
-Tutorial 3 - WebRTC one-to-many broadcast
-=========================================
+WebRTC one-to-many broadcast
+============================
 
 Video broadcasting for `WebRTC`:term:. One peer transmits a video stream and N
-peers receives it.
+peers receive it.
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-3-one2many>
-   Node.js </tutorials/node/tutorial-3-one2many>
+   Java </tutorials/java/tutorial-one2many>
+   Node.js </tutorials/node/tutorial-one2many>
 
-Tutorial 4 - WebRTC one-to-one video call
-=========================================
+WebRTC one-to-one video call
+============================
 
 This web application is a videophone (call one to one) based on `WebRTC`:term:.
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-4-one2one>
-   Node.js </tutorials/node/tutorial-4-one2one>
+   Java </tutorials/java/tutorial-one2one>
+   Node.js </tutorials/node/tutorial-one2one>
 
-Tutorial 5 - WebRTC one-to-one video call with recording and filtering
-======================================================================
+WebRTC one-to-one video call with recording and filtering
+=========================================================
 
-This is an enhanced version of the previous application recording of the video
-communication, and also integration with an augmented reality filter.
-
-.. toctree::
-   :maxdepth: 1
-
-   Java </tutorials/java/tutorial-5-one2one-adv>
-   
-Tutorial 6 - WebRTC many to many video call (Group call)
-========================================================
-
-This tutorial allows connect several participants in the same session and see each of them.
+This is an enhanced version of the the one-to-one application with video recording
+and augmented reality.
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-6-groupcall>
+   Java </tutorials/java/tutorial-one2one-adv>
 
-Tutorial 7 - WebRTC in loopback with two filters which using metadata
-=====================================================================
-
-This tutorial detects and draws faces into the webcam video. The tutorial connects two filters, 
-the KmsDetectFaces and the KmsShowFaces.
-
-.. toctree::
-   :maxdepth: 1
-
-   Java </tutorials/java/tutorial-7-metadata>
-
-Tutorial 8 - Play of a video through WebRTC
+WebRTC many-to-many video call (Group call)
 ===========================================
 
-This tutorial plays of a video through WebRTC.
+This tutorial connects several participants to the same video conference. A group
+call will ocnsist, in the media server side, in N*N WebRTC endpoints, where N is the
+number of clients connected to that conference.
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-8-player>
+   Java </tutorials/java/tutorial-groupcall>
 
-Tutorial 9 - WebRTC to send data about qr codes through data channel
-====================================================================
+Media Elements metadata
+=======================
 
-Player connected to a filter and a WebRTC to send data about qr codes through data channel.
-
-.. toctree::
-   :maxdepth: 1
-
-   Java </tutorials/java/tutorial-9-send-datachannel>
-
-Tutorial 10 - WebRTC in loopback with filter to show data received through data channel
-=======================================================================================
-
-This demo allows sending text from browser to the media server through data channels. 
-That text will be shown in the loopback video.
+This tutorial detects and draws faces present in the webcam video. It connects filters:
+KmsDetectFaces and the KmsShowFaces.
 
 .. toctree::
    :maxdepth: 1
 
-   Java </tutorials/java/tutorial-10-show-datachannel>
-   Browser JavaScript </tutorials/js/tutorial-10-helloworld-datachannels>
-   
-Tutorial 11 - WebRTC in loopback with recorder
-==============================================
+   Java </tutorials/java/tutorial-metadata>
 
-This demo has two parts, in the first part implements a `WebRTC`:term: *loopback* and 
-records the media in the Kurento Media Server. And in the second part plays the media was recorded 
-in the Kurento Media Server.
+Play media to WebRTC
+====================
+
+This tutorial reads a file from disk and plays the video to WebRTC.
 
 .. toctree::
    :maxdepth: 1
 
-   Browser JavaScript </tutorials/js/tutorial-11-recorder>
+   Java </tutorials/java/tutorial-player>
 
-   
-Tutorial 12 - WebRTC in loopback with WebRTC statistics
-=======================================================
+WebRTC outgoing data channels
+=============================
 
-This demo implements a `WebRTC`:term: *loopback* and shows in the browser several statistics about WebRTC.
+This tutorial injects video to a QR filter and then sends the stream to WebRTC. QR detection
+events are delivered by means of WebRTC data channels, to be displayed in browser.
 
 .. toctree::
    :maxdepth: 1
 
-   Browser JavaScript </tutorials/js/tutorial-12-loopback-stats>
-   
+   Java </tutorials/java/tutorial-send-datachannel>
 
+WebRTC incoming data channel
+============================
+
+This tutorial shows how text messages sent from browser can be delivered by data channels,
+to be displayed together with loopback video.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/tutorial-show-datachannel>
+   Browser JavaScript </tutorials/js/tutorial-helloworld-datachannels>
+
+WebRTC recording
+================
+
+This tutorial has two parts. First, it implements a `WebRTC`:term: *loopback* and
+records the stream to disk. Second, it plays back the recorded stream. Users
+can choose which type of media to send and record: audio, video or both.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/tutorial-recorder>
+   Browser Javascript </tutorials/js/tutorial-recorder>
+
+WebRTC repository
+=================
+
+This is similar to the recording tutorial, but using the repository to store metadata.
+
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/tutorial-repository>
+
+
+WebRTC statistics
+=================
+
+This tutorial implements a `WebRTC`:term: *loopback* and shows how to collect WebRTC statistics.
+
+.. toctree::
+   :maxdepth: 1
+
+   Browser JavaScript </tutorials/js/tutorial-loopback-stats>

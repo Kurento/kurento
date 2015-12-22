@@ -89,7 +89,7 @@ modules (``kms-pointerdetector``, ``kms-chroma``, ``kms-crowddetector``,
 aimed to show how to use them.
 
 
-Module Tutorial 1 - Pointer Detector Filter
+Module Tutorial - Pointer Detector Filter
 ===========================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
@@ -97,12 +97,12 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 .. toctree:: :maxdepth: 1
 
-   Java </tutorials/java/module-1-pointerdetector>
-   Browser JavaScript </tutorials/js/module-1-pointerdetector>
-   Node.js </tutorials/node/module-1-pointerdetector>
+   Java </tutorials/java/module-pointerdetector>
+   Browser JavaScript </tutorials/js/module-pointerdetector>
+   Node.js </tutorials/node/module-pointerdetector>
 
 
-Module Tutorial 2 - Chroma Filter
+Module Tutorial - Chroma Filter
 =================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
@@ -111,12 +111,12 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 .. toctree:: :maxdepth: 1
 
-   Java </tutorials/java/module-2-chromafilter>
-   Browser JavaScript </tutorials/js/module-2-chromafilter>
-   Node.js </tutorials/node/module-2-chromafilter>
+   Java </tutorials/java/module-chromafilter>
+   Browser JavaScript </tutorials/js/module-chromafilter>
+   Node.js </tutorials/node/module-chromafilter>
 
 
-Module Tutorial 3 - Crowd Detector Filter
+Module Tutorial - Crowd Detector Filter
 =========================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
@@ -125,12 +125,12 @@ agglomeration in video streams.
 
 .. toctree:: :maxdepth: 1
 
-   Java </tutorials/java/module-3-crowddetector>
-   Browser JavaScript </tutorials/js/module-3-crowddetector>
-   Node.js </tutorials/node/module-3-crowddetector>
+   Java </tutorials/java/module-crowddetector>
+   Browser JavaScript </tutorials/js/module-crowddetector>
+   Node.js </tutorials/node/module-crowddetector>
 
 
-Module Tutorial 4 - Plate Detector Filter
+Module Tutorial - Plate Detector Filter
 =========================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
@@ -138,6 +138,6 @@ This web application consists on a `WebRTC`:term: video communication in mirror
 
 .. toctree:: :maxdepth: 1
 
-   Java </tutorials/java/module-4-platedetector>
-   Browser JavaScript </tutorials/js/module-4-platedetector>
-   Node.js </tutorials/node/module-4-platedetector>
+   Java </tutorials/java/module-platedetector>
+   Browser JavaScript </tutorials/js/module-platedetector>
+   Node.js </tutorials/node/module-platedetector>

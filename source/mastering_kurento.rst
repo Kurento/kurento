@@ -72,3 +72,12 @@ Kurento JavaScript Utils JsDoc
 ==============================
 
 * `kurento-utils-js <./langdoc/jsdoc/kurento-utils-js/index.html>`_
+
+
+Securing Kurento Applications
+=============================
+
+.. toctree::
+   :maxdepth: 1
+
+   Securing Kurento Applications <mastering/securing-kurento-applications>

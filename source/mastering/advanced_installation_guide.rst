@@ -75,13 +75,13 @@ Kurento Media Server Process
 
 To verify that KMS is up and running use the command:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
     ps -ef | grep kurento-media-server
 
 The output should include the ``kurento-media-server`` process:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
    nobody    1270     1  0 08:52 ?        00:01:00 /usr/bin/kurento-media-server
 
@@ -94,13 +94,13 @@ and send responses to/from by means of the
 :doc:`Kurento Protocol<kurento_protocol>`. To verify if this port is listening
 execute the following command:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
     sudo netstat -putan | grep kurento
 
 The output should be similar to the following:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
    tcp6    0    0 :::8888    :::*    LISTEN    1270/kurento-media-server
 
@@ -121,7 +121,7 @@ Kurento Media Server logs file are stored in the folder
 
 When KMS starts correctly, this trace is written in the log file:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
    [time] [0x10b2f880] [info]    KurentoMediaServer main.cpp:239 main() Mediaserver started
 

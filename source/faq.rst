@@ -13,7 +13,8 @@ How do I...
 ...install Kurento Media Server in an Amazon EC2 instance?
 ----------------------------------------------------------
 
-   You need to install a :term:`TURN` server, for example
+   Though for most situations it's enough to configure a STUN server in the KMS
+   configuration files, you might need to install a :term:`TURN` server, for example
    `coturn <https://code.google.com/p/coturn/>`__. Here are some instructions
    on how to install this TURN server for Kurento:
 
@@ -62,66 +63,6 @@ How do I...
    server::
 
       sudo service coturn start && sudo service kurento-media-server-6.0 restart
-
-...configure Kurento Media Server to use Secure WebSocket (WSS)?
-----------------------------------------------------------------
-
-   First, you need to change the configuration file of Kurento Media Server,
-   i.e. ``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
-
-      "secure": {
-        "port": 8433,
-        "certificate": "defaultCertificate.pem",
-        "password": ""
-      },
-
-   You will also need a PEM certificate that should be in the same path or
-   the configuration file or you may need to specify the full path on ``certificate``
-   field.
-
-   Second, you have to change the WebSocket URI in your application logic. For
-   instance, in the *hello-world* application within the tutorials, this would
-   be done as follows:
-
-   - Java: Changing this line in `HelloWorldApp.java <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_::
-
-      final static String DEFAULT_KMS_WS_URI = "wss://localhost:8433/kurento";
-
-   - Browser JavaScript: Changing this line in `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`_::
-
-       const ws_uri = 'wss://' + location.hostname + ':8433/kurento';
-
-   - Node.js: Changing this line in `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`_::
-
-      const ws_uri = "wss://localhost:8433/kurento";
-
-   If this PEM certificate is a signed certificate (by a Certificate Authority such
-   as Verisign), then you are done. If you are going to use a self-signed certificate
-   (suitable for development), then there is still more work to do.
-
-   You can generate a self signed certificate by doing this::
-
-      certtool --generate-privkey --outfile defaultCertificate.pem
-      echo 'organization = your organization name' > certtool.tmpl
-      certtool --generate-self-signed --load-privkey defaultCertificate.pem \
-         --template certtool.tmpl >> defaultCertificate.pem
-      sudo chown nobody defaultCertificate.pem
-
-   Due to the fact that the certificate is self-signed, applications will reject it
-   by default. For this reason, you have to trust it.
-
-   * Browser applications: it can be ignored by acessing, via HTTPS in your browser, to the WSS port (https://localhost:8433/ with the above configuration) and accepting the certificate permanently. 
-
-   * Java applications, follow the instructions of this `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_ (get ``InstallCert.java`` from `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`_). You'll need to instruct the ``KurentoClient`` needs to be configured to allow the use of certificates. For this purpose, we need to create our own ``JsonRpcClient``::
-      
-      SslContextFactory sec = new SslContextFactory(true);
-      sec.setValidateCerts(false); 
-      JsonRpcClientWebSocket rpcClient = new JsonRpcClientWebSocket(uri, sec); 
-      KurentoClient kuretoClient = KurentoClient.createFromJsonRpcClient(rpcClient);
-
-   * Node applications, please take a look to this
-     `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
-
 
 ...know how many Media Pipelines do I need for my Application?
 --------------------------------------------------------------

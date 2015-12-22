@@ -575,7 +575,7 @@ create custom clients in other languages.
 Kurento Module Creator can be installed in an Ubuntu machine using the following
 command:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
    sudo apt-get install kurento-module-creator
 
@@ -584,7 +584,7 @@ needed in the server-side. For code generation it uses
 `Freemarker <http://freemarker.org/>`_ as template engine. The typical way to
 use Kurento Module Creator is by running a command like this:
 
-.. sourcecode:: none
+.. sourcecode:: bash
 
     kurento-module-creator -c <CODEGEN_DIR> -r <ROM_FILE> -r <TEMPLATES_DIR>
 

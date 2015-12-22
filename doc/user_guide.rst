@@ -435,7 +435,7 @@ More Examples
 There are another sample applications that can be used to learn how to use the
 *Stream Oriented GE Kurento*, namely:
 
-* `Hello-world <http://www.kurento.org/docs/current/tutorials.html#tutorial-1-hello-world>`__
+* `Hello-world <http://www.kurento.org/docs/current/tutorials.html#tutorial--hello-world>`__
   application. This is one of the simplest WebRTC application you can create
   with Kurento. It implements a WebRTC loopback (a WebRTC media stream going
   from client to Kurento and back to the client). You can check out the source
@@ -445,7 +445,7 @@ There are another sample applications that can be used to learn how to use the
   and
   `Node.js <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-hello-world>`__.
 
-* `One to many video call <http://www.kurento.org/docs/current/tutorials.html#tutorial-3-webrtc-one-to-many-broadcast>`__
+* `One to many video call <http://www.kurento.org/docs/current/tutorials.html#tutorial-webrtc-one-to-many-broadcast>`__
   application. This web application consists video broadcasting with WebRTC.
   One peer transmits a video stream and N peers receives it. This web
   application is a videophone (call one to one) based on WebRTC. You can check
@@ -454,13 +454,13 @@ There are another sample applications that can be used to learn how to use the
   and
   `Node.js <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-one2many-call>`__.
 
-* `One to one video call <http://www.kurento.org/docs/current/tutorials.html#tutorial-4-webrtc-one-to-one-video-call>`__.
+* `One to one video call <http://www.kurento.org/docs/current/tutorials.html#tutorial-webrtc-one-to-one-video-call>`__.
   You can check out the source code on GitHub for
   `Java <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2one-call>`__
   and
   `Node.js <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-one2one-call>`__.
 
-* `Advanced one to one video call <http://www.kurento.org/docs/current/tutorials.html#tutorial-5-webrtc-one-to-one-video-call-with-recording-and-filtering>`__
+* `Advanced one to one video call <http://www.kurento.org/docs/current/tutorials.html#tutorial-webrtc-one-to-one-video-call-with-recording-and-filtering>`__
   application. This is an enhanced version of the previous application
   recording of the video communication, and also integration with an augmented
   reality filter. You can check out the source code on GitHub for
