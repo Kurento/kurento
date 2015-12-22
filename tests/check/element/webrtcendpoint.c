@@ -1425,25 +1425,6 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
 
 #define TEST_MESSAGE "Hello world!"
 
-static gboolean
-print_timedout_pipeline (gpointer data)
-{
-  GstElement *pipeline = data;
-  gchar *pipeline_name;
-  gchar *name;
-
-  pipeline_name = gst_element_get_name (pipeline);
-  name = g_strdup_printf ("%s_timedout", pipeline_name);
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, name);
-
-  g_free (name);
-  g_free (pipeline_name);
-
-  return FALSE;
-}
-
 static void
 feed_data_channel (GstElement * appsrc, guint unused_size, gpointer data)
 {
@@ -1700,7 +1681,6 @@ test_data_channels (gboolean bundle)
   g_signal_emit_by_name (receiver, "gather-candidates", receiver_sess_id, &ret);
   fail_unless (ret);
 
-  g_timeout_add_seconds (4, print_timedout_pipeline, pipeline);
   g_main_loop_run (loop);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
