@@ -1,6 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "6.2.1-dev",
+  "version": "6.2.1",
   "description": "Kurento Loopbak stats",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -24,7 +24,7 @@
     "bootstrap": "~3.3.0",
     "ekko-lightbox": "~3.2.3",
     "demo-console": "1.5.1",
-    "kurento-client": "master",
-    "kurento-utils": "master"
+    "kurento-client": "6.2.0",
+    "kurento-utils": "6.2.0"
   }
 }
