@@ -5,14 +5,14 @@
 # IMPORTANT: Notice that DOC_VERSION should be the same as variable "release" in conf.py,
 # so when this variable is updated, it should be also updated in conf.py
 
-DOC_VERSION = 6.2.1-dev
-KMS_VERSION = 6.2.1-dev
-CLIENT_JAVA_VERSION = 6.2.1-SNAPSHOT
-CLIENT_JS_VERSION = 6.2.1-dev
-UTILS_JS_VERSION = 6.2.1-dev
-TUTORIAL_JAVA_VERSION = 6.2.1-SNAPSHOT
-TUTORIAL_JS_VERSION = 6.2.1-dev
-TUTORIAL_NODE_VERSION = 6.2.1-dev
+DOC_VERSION = 6.2.1
+KMS_VERSION = 6.2.0
+CLIENT_JAVA_VERSION = 6.2.1
+CLIENT_JS_VERSION = 6.2.0
+UTILS_JS_VERSION = 6.2.0
+TUTORIAL_JAVA_VERSION = 6.2.1
+TUTORIAL_JS_VERSION = 6.2.1
+TUTORIAL_NODE_VERSION = 6.2.1
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
