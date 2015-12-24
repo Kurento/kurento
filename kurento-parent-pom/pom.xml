@@ -1,15 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-qa-pom</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>6.2.1-SNAPSHOT</version>
+	<version>6.2.1</version>
 	<packaging>pom</packaging>
 
 	<name>Kurento Parent POM</name>
@@ -68,22 +67,22 @@
 	<properties>
 
 		<!-- Kurento versions -->
-		<version.kurento-java>6.2.1-SNAPSHOT</version.kurento-java>
+		<version.kurento-java>6.2.1</version.kurento-java>
 
-		<version.kurento-chroma>6.2.1-SNAPSHOT</version.kurento-chroma>
-		<version.kurento-imageendpoint>6.2.1-SNAPSHOT</version.kurento-imageendpoint>
-		<version.kurento-platedetector>6.2.1-SNAPSHOT</version.kurento-platedetector>
-		<version.kurento-pointerdetector>6.2.1-SNAPSHOT</version.kurento-pointerdetector>
-		<version.kurento-markerdetector>6.2.1-SNAPSHOT</version.kurento-markerdetector>
-		<version.kurento-crowddetector>6.2.1-SNAPSHOT</version.kurento-crowddetector>
-		<version.kurento-facesegmentator>6.2.1-SNAPSHOT</version.kurento-facesegmentator>
-		<version.kurento-backgroundextractor>6.2.1-SNAPSHOT</version.kurento-backgroundextractor>
-		<version.kms-api-core>6.2.1-SNAPSHOT</version.kms-api-core>
-		<version.kms-api-elements>6.2.1-SNAPSHOT</version.kms-api-elements>
-		<version.kms-api-filters>6.2.1-SNAPSHOT</version.kms-api-filters>
-		<version.plumber-endpoint>6.2.1-SNAPSHOT</version.plumber-endpoint>
+		<version.kurento-chroma>6.2.0</version.kurento-chroma>
+		<version.kurento-imageendpoint>6.2.0</version.kurento-imageendpoint>
+		<version.kurento-platedetector>6.2.0</version.kurento-platedetector>
+		<version.kurento-pointerdetector>6.2.0</version.kurento-pointerdetector>
+		<version.kurento-markerdetector>6.2.0</version.kurento-markerdetector>
+		<version.kurento-crowddetector>6.2.0</version.kurento-crowddetector>
+		<version.kurento-facesegmentator>6.2.0</version.kurento-facesegmentator>
+		<version.kurento-backgroundextractor>6.2.0</version.kurento-backgroundextractor>
+		<version.kms-api-core>6.2.0</version.kms-api-core>
+		<version.kms-api-elements>6.2.0</version.kms-api-elements>
+		<version.kms-api-filters>6.2.0</version.kms-api-filters>
+		<version.plumber-endpoint>6.2.0</version.plumber-endpoint>
 		<version.kurento-maven-plugin>2.0.1</version.kurento-maven-plugin>
-		<version.kurento-utils-js>6.2.1-SNAPSHOT</version.kurento-utils-js>
+		<version.kurento-utils-js>6.2.0</version.kurento-utils-js>
 
 
 		<!-- External versions -->
@@ -189,8 +188,8 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 
-		<!-- Options to override the compiler arguments directly on the compiler 
-			arument line to separate between what the IDE understands as the source level 
+		<!-- Options to override the compiler arguments directly on the compiler
+			arument line to separate between what the IDE understands as the source level
 			and what the Maven compiler actually use. -->
 		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
 		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
@@ -1000,10 +999,10 @@
 					<version>${version.war.plugin}</version>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
-					<!--This plugin's configuration is used to store Eclipse m2e settings 
+					<!--This plugin's configuration is used to store Eclipse m2e settings
 						only. It has no influence on the Maven build itself. -->
 
 					<groupId>org.eclipse.m2e</groupId>
@@ -1012,7 +1011,7 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<!-- Configure m2e to execute the manifest goal of the bundle plugin, 
+								<!-- Configure m2e to execute the manifest goal of the bundle plugin,
 									if present. -->
 								<pluginExecution>
 									<pluginExecutionFilter>
@@ -1080,7 +1079,7 @@
 
 		<plugins>
 
-			<!-- Check for the minimum version of Java and Maven. Runs during the 
+			<!-- Check for the minimum version of Java and Maven. Runs during the
 				validate phase. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -1179,16 +1178,16 @@
 
 	<profiles>
 
-		<!-- The profile kurento-release must be active when a project is released. 
-			The configuration in this POM will automatically call this profile if using 
-			the maven-release-plugin. If the maven-release-plugin is not used during 
+		<!-- The profile kurento-release must be active when a project is released.
+			The configuration in this POM will automatically call this profile if using
+			the maven-release-plugin. If the maven-release-plugin is not used during
 			the release, this profile must be manually activated. -->
 		<profile>
 			<id>kurento-release</id>
 			<build>
 				<plugins>
-					<!-- Create a source-release artifact that contains the fully buildable 
-						project directory source structure. This should be released to the Maven 
+					<!-- Create a source-release artifact that contains the fully buildable
+						project directory source structure. This should be released to the Maven
 						repository for each JBoss project release. -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -1240,8 +1239,8 @@
 			</build>
 		</profile>
 
-		<!-- This profile can be activated to generate gpg signatures for all build 
-			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase" 
+		<!-- This profile can be activated to generate gpg signatures for all build
+			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase"
 			are available to the current build. -->
 		<profile>
 			<id>gpg-sign</id>
