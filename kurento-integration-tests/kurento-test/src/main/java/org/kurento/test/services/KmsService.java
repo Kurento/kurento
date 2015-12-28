@@ -527,7 +527,7 @@ public class KmsService extends TestService {
       if (directory.isDirectory()) {
         log.debug("Copying KMS logs from local path {} to {}", kmsLogsPath, targetFolder);
 
-        Collection<File> logFiles = FileUtils.listFiles(directory, null, false);
+        Collection<File> logFiles = FileUtils.listFiles(directory, null, true);
 
         for (File logFile : logFiles) {
           File destFile = new File(targetFolder, testMethodName + "-" + logFile.getName());
