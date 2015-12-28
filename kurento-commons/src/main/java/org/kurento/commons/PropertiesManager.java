@@ -1,4 +1,3 @@
-
 package org.kurento.commons;
 
 import java.lang.reflect.Type;
@@ -26,6 +25,10 @@ public class PropertiesManager {
 
   public static void setPropertyHolder(PropertyHolder propertyHolder) {
     PropertiesManager.propertyHolder = propertyHolder;
+  }
+
+  public static PropertyHolder getPropertyHolder() {
+    return PropertiesManager.propertyHolder;
   }
 
   public static String getProperty(String property) {

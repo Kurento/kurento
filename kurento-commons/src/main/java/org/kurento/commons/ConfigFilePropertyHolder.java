@@ -1,10 +1,13 @@
-
 package org.kurento.commons;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.kurento.commons.PropertiesManager.PropertyHolder;
 import org.slf4j.Logger;
@@ -24,43 +27,61 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 
   private static Logger log = LoggerFactory.getLogger(ConfigFilePropertyHolder.class);
 
-  private static Path lastLoadedconfigFilePath;
+  private static final String SINGLE_CONFIG_FILES_PROPERTY = "single.config.file";
+
+  private static Path lastLoadedConfigFilePath;
+
+  private List<ConfigFileObject> loadedConfigFiles;
+
+  private Set<Path> loadedPaths;
 
   private static final Gson gson = new GsonBuilder().create();
-
-  private JsonObject configFile;
 
   public static synchronized void configurePropertiesFromConfigFile(Path configFilePath)
       throws JsonSyntaxException, JsonIOException, IOException {
 
-    if (lastLoadedconfigFilePath != null) {
-      if (lastLoadedconfigFilePath.equals(configFilePath)) {
-        log.info("Trying to load again config file {}. Ignoring it",
-            configFilePath.toAbsolutePath());
-      } else {
-        log.warn("Trying to load a second config file. The first was {} and the"
-            + "current is {}. Ignoring it", lastLoadedconfigFilePath, configFilePath);
-      }
-
+    boolean singleConfigFile = Boolean.getBoolean(SINGLE_CONFIG_FILES_PROPERTY);
+    if (singleConfigFile && lastLoadedConfigFilePath != null) {
+      log.warn("Trying to load a second config file. The first was {} and the "
+          + "current is {}. Ignoring it.", lastLoadedConfigFilePath, configFilePath);
       return;
     }
 
-    lastLoadedconfigFilePath = configFilePath;
+    ConfigFilePropertyHolder cfph = null;
+    PropertyHolder ph = PropertiesManager.getPropertyHolder();
+    if (ph != null && ph instanceof ConfigFilePropertyHolder) {
+      cfph = (ConfigFilePropertyHolder) ph;
+      if (cfph.loadedPaths != null) {
+        if (cfph.loadedPaths.contains(configFilePath)) {
+          log.info("Trying to load again config file {}. Ignoring it.",
+              configFilePath.toAbsolutePath());
+          return;
+        }
+      }
+    }
 
+    lastLoadedConfigFilePath = configFilePath;
+
+    // FIXME shouldn't this be the first sentence in the method?
     Preconditions.checkNotNull(configFilePath, "configFilePath paramter must be not null.");
 
-    log.debug("Using configuration file in path '" + configFilePath + "' ("
-        + configFilePath.getClass().getCanonicalName() + ")");
+    log.debug("Using configuration file in path '{}' ({})", configFilePath, configFilePath
+        .getClass().getCanonicalName());
 
-    JsonReader reader =
-        new JsonReader(Files.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
+    JsonReader reader = new JsonReader(Files.newBufferedReader(configFilePath,
+        StandardCharsets.UTF_8));
     reader.setLenient(true);
 
     JsonObject configFile = gson.fromJson(reader, JsonObject.class);
 
     traceConfigContent(configFile);
 
-    PropertiesManager.setPropertyHolder(new ConfigFilePropertyHolder(configFile));
+    if (cfph == null)
+      cfph = new ConfigFilePropertyHolder();
+    cfph.loadedConfigFiles.add(new ConfigFileObject(configFilePath, configFile));
+    cfph.loadedPaths.add(configFilePath);
+
+    PropertiesManager.setPropertyHolder(cfph);
   }
 
   private static void traceConfigContent(JsonObject configFile) {
@@ -71,8 +92,9 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
     }
   }
 
-  public ConfigFilePropertyHolder(JsonObject configFile) {
-    this.configFile = configFile;
+  public ConfigFilePropertyHolder() {
+    this.loadedConfigFiles = new ArrayList<ConfigFileObject>();
+    this.loadedPaths = new HashSet<Path>();
   }
 
   @Override
@@ -87,27 +109,37 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 
     int lastTokenNumber = tokens.length - 1;
 
-    JsonObject currentObject = configFile;
+    // TODO customize search order (by default, it starts from the first loaded file)
+    // e.g. system property 'reverseSearch.multi.config.file': if true, start searching in reverse
+    if (loadedConfigFiles != null) {
 
-    for (int i = 0; i < tokens.length; i++) {
-      JsonElement element = currentObject.get(tokens[i]);
-      if (element == null) {
-        return null;
-      }
+      for (ConfigFileObject configFileObj : loadedConfigFiles) {
+        Path currentPath = configFileObj.getConfigFilePath();
+        JsonObject currentObject = configFileObj.getConfigFile();
 
-      if (i == lastTokenNumber) {
-        if (element instanceof JsonPrimitive) {
-          return element.getAsString();
-        } else {
-          return element.toString();
+        for (int i = 0; i < tokens.length; i++) {
+          JsonElement element = currentObject.get(tokens[i]);
+          if (element == null) {
+            break; // goto next cfg file
+          }
+
+          if (i == lastTokenNumber) {
+            log.debug("Found {} in config file {}", property, currentPath.toAbsolutePath());
+            if (element instanceof JsonPrimitive) {
+              return element.getAsString();
+            } else {
+              return element.toString();
+            }
+          }
+
+          try {
+            currentObject = (JsonObject) element;
+          } catch (ClassCastException e) {
+            break; // goto next cfg file
+          }
         }
       }
 
-      try {
-        currentObject = (JsonObject) element;
-      } catch (ClassCastException e) {
-        return null;
-      }
     }
 
     return null;
