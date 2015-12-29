@@ -131,6 +131,7 @@ public class KmsService extends TestService {
   protected KurentoClient kurentoClient;
 
   public KmsService(String wsUri) {
+    this();
     setWsUri(wsUri);
   }
 
