@@ -303,3 +303,7 @@ todo_include_todos = 'dev'
 
 # linkcheck, jboss forbids us
 linkcheck_ignore = [r'http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm']
+
+latex_elements = {
+    'preamble': "\\usepackage{enumitem}\n\\setlistdepth{99}",
+}
