@@ -86,7 +86,7 @@ in your `pom.xml`:
 	   <dependency>
 	      <groupId>org.kurento</groupId>
 	      <artifactId>kurento-client</artifactId>
-	      <version>6.1.0</version>
+	      <version>6.2.1</version>
 	   </dependency>
 	</dependencies>
 
@@ -168,7 +168,7 @@ in your `bower.json`:
 ::
 
 	"dependencies": {
-	   "kurento-client": "6.1.0",
+	   "kurento-client": "6.2.1",
 	}
 
 First, you need to create an instance of the `KurentoClient` class that will
@@ -357,7 +357,7 @@ in an Ubuntu machine, execute the following commands in the shell:
 
 	git clone https://github.com/Kurento/kurento-tutorial-java.git
 	cd kurento-tutorial-java/kurento-magic-mirror
-	git checkout 6.1.0
+	git checkout 6.2.1
 	mvn compile exec:java
 
 The pre-requisites to run this Java demo are `Git <http://git-scm.com/>`__,
@@ -379,7 +379,7 @@ in an Ubuntu machine, execute the following commands in the shell:
 
 	git clone https://github.com/Kurento/kurento-tutorial-js.git
 	cd kurento-tutorial-js/kurento-magic-mirror
-	git checkout 6.1.0
+	git checkout 6.2.1
 	bower install
 	http-server
 
@@ -404,7 +404,7 @@ in an Ubuntu machine, execute the following commands in the shell:
 
 	git clone https://github.com/Kurento/kurento-tutorial-node.git
 	cd kurento-tutorial-node/kurento-magic-mirror
-	git checkout 6.1.0
+	git checkout 6.2.1
 	npm install
 	npm start
 
