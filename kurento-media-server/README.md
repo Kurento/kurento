@@ -5,9 +5,9 @@ Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
 kurento-media-server
 ====================
 
-# Supported tags
+# Source
 
-* 6.1.1 ([kurento-media-server/Dockerfile](https://github.com/kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile))
+* [kurento-media-server/Dockerfile](https://github.com/kurento/kurento-docker/blob/master/kurento-media-server/Dockerfile)
 
 # How to use this image
 
@@ -19,7 +19,7 @@ instance to local port 8888, you can start kurento media server with:
 
 ```console
 $ docker run --name kms -p 8888:8888 -d
-kurento/kurento-media-server:6.1.0 ```
+kurento/kurento-media-server ```
 
 To check that kurento media server is ready and listening, issue the following
 command (you need to have curl installed on your system):
@@ -56,13 +56,13 @@ Kurento media server exposes an environment variable `GST_DEBUG` that can be
 used to set the debug level of kurento media server:
 
 ```console
-$ docker run -d --name kms -e GST_DEBUG=Kurento*:5 kurento/kurento-media-server:6.1.0
+$ docker run -d --name kms -e GST_DEBUG=Kurento*:5 kurento/kurento-media-server
 ```
 
 ## Get help about kurento media server
 
 ```console
-$ docker run --rm kurento/kurento-media-server:6.1.0 --help
+$ docker run --rm kurento/kurento-media-server --help
 ```
 
 Kurento
