@@ -3,7 +3,7 @@
 echo "##################### EXECUTE: kurento_prepare_readthedocs #####################"
 
 # This tool uses a set of variables expected to be exported by tester
-# DOC_PROJECT string
+# KURENTO_PROJECT string
 #    Mandatory
 #    Identifies the original documentation git repository
 #
@@ -18,22 +18,22 @@ echo "##################### EXECUTE: kurento_prepare_readthedocs ###############
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
-echo "Building $GERRIT_REFNAME of $DOC_PROJECT"
+echo "Building $GERRIT_REFNAME of $KURENTO_PROJECT"
 
 # Build
-kurento_clone_repo.sh $DOC_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $DOC_PROJECT repository"; exit 1; }
-pushd $DOC_PROJECT
+kurento_clone_repo.sh $KURENTO_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $KURENTO_PROJECT repository"; exit 1; }
+pushd $KURENTO_PROJECT
 COMMIT_MSG=$(git log -1 --pretty=format:%s)
 sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
-make -f Makefile.jenkins clean readthedocs || { echo "Building $DOC_PROJECT failed"; exit 1; }
+make -f Makefile.jenkins clean readthedocs || { echo "Building $KURENTO_PROJECT failed"; exit 1; }
 
 popd
 
-READTHEDOCS_PROJECT=$DOC_PROJECT-readthedocs
+READTHEDOCS_PROJECT=$KURENTO_PROJECT-readthedocs
 kurento_clone_repo.sh $READTHEDOCS_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $READTHEDOCS_PROJECT repository"; exit 1; }
 
 rm -rf $READTHEDOCS_PROJECT/*
-cp -r $DOC_PROJECT/* $READTHEDOCS_PROJECT/
+cp -r $KURENTO_PROJECT/* $READTHEDOCS_PROJECT/
 
 pushd $READTHEDOCS_PROJECT
 echo "Commiting changes to $READTHEDOCS_PROJECT repository"
