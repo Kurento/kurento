@@ -533,7 +533,7 @@ GST_START_TEST (process_bundle_offer)
   g_free (aux);
   aux = NULL;
 
-  /* No bundle group must apper in the response */
+  /* No bundle group must appear in the response */
   fail_if (gst_sdp_message_get_attribute_val (answer, "group") != NULL);
 
   len = gst_sdp_message_medias_len ((const GstSDPMessage *) answer);
