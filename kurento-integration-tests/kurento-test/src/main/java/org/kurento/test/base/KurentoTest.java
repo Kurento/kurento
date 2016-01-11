@@ -25,6 +25,8 @@ import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_S3_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_S3_PROP;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -77,8 +79,8 @@ public class KurentoTest {
     return TestScenario.empty();
   }
 
-  protected static int numRetries =
-      getProperty(TEST_NUMRETRIES_PROPERTY, TEST_NUM_NUMRETRIES_DEFAULT);
+  protected static int numRetries = getProperty(TEST_NUMRETRIES_PROPERTY,
+      TEST_NUM_NUMRETRIES_DEFAULT);
   protected static String testDir = getProperty(TEST_PROJECT_PATH_PROP, TEST_PROJECT_PATH_DEFAULT);
   protected static boolean printLogs = getProperty(TEST_PRINT_LOG_PROP, TEST_PRINT_LOG_DEFAULT);
 
@@ -249,6 +251,10 @@ public class KurentoTest {
 
   public static String getTestFilesPath() {
     return getProperty(TEST_FILES_PROP, TEST_FILES_DEFAULT);
+  }
+
+  public static String getTestS3Path() {
+    return getProperty(TEST_S3_PROP, TEST_S3_DEFAULT);
   }
 
   public static void logMessage(String message) {

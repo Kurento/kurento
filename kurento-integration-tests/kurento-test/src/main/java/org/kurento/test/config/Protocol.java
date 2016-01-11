@@ -23,7 +23,7 @@ package org.kurento.test.config;
  */
 public enum Protocol {
 
-  HTTP, HTTPS, FILE;
+  HTTP, HTTPS, FILE, S3;
 
   @Override
   public String toString() {

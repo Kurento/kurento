@@ -163,6 +163,12 @@ public class TestConfiguration {
       "test.kms.docker.image.forcepulling";
   public static final boolean KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT = true;
 
+  // S3 properties
+  public static final String KMS_DOCKER_S3_BUCKET_NAME = "s3.bucket.name";
+  public static final String KMS_DOCKER_S3_ACCESS_KEY_ID = "s3.access.key.id";
+  public static final String KMS_DOCKER_S3_SECRET_ACCESS_KEY = "s3.secret.access.key";
+  public static final String KMS_DOCKET_S3_HOSTNAME = "s3.hostname";
+
   public static final String KMS_HTTP_PORT_PROP = "kms.http.port";
   public static final int KMS_HTTP_PORT_DEFAULT = 9091;
 
@@ -212,6 +218,9 @@ public class TestConfiguration {
 
   public static final String TEST_FILES_PROP = "test.files";
   public static final String TEST_FILES_DEFAULT = "/var/lib/jenkins/test-files";
+
+  public static final String TEST_S3_PROP = "test.s3";
+  public static final String TEST_S3_DEFAULT = "kurento-s3-test";
 
   public static final String TEST_PROJECT_PATH_PROP = "test.project.path";
   public static final String TEST_PROJECT_PATH_DEFAULT = "target/surefire-reports/";
