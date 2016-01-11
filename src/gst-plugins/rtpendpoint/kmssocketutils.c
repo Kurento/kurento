@@ -64,7 +64,6 @@ kms_socket_get_port (GSocket * socket)
   }
 
   port = g_inet_socket_address_get_port (addr);
-  g_inet_socket_address_get_address (addr);
   g_object_unref (addr);
 
   return port;
