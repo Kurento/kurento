@@ -219,7 +219,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
   GRegex *regex;
   GMatchInfo *match_info;
   NiceCandidateType type;
-  gchar *foundation, *cid_str, *prio_str, *addr, *port_str, *type_str;
+  gchar *foundation, *cid_str, *prio_str, *addr, *port_str, *type_str, *ufrag;
   gboolean ret = TRUE;
 
   *cand = NULL;
@@ -227,7 +227,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
   regex = g_regex_new ("^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)"
       " (?<transport>(udp|UDP|tcp|TCP)) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
       " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
-      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?$",
+      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?( ufrag (?<ufrag>.+))?$",
       0, 0, NULL);
   g_regex_match (regex, str, 0, &match_info);
 
@@ -243,6 +243,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
   addr = g_match_info_fetch_named (match_info, "addr");
   port_str = g_match_info_fetch_named (match_info, "port");
   type_str = g_match_info_fetch_named (match_info, "type");
+  ufrag = g_match_info_fetch_named (match_info, "ufrag");
 
   if (foundation == NULL) {
     GST_WARNING ("Candidate: cannot get 'foundation'");
@@ -294,6 +295,7 @@ kms_ice_candidate_create_nice_from_str (const gchar * str,
   (*cand)->component_id = g_ascii_strtoll (cid_str, NULL, 10);
   (*cand)->priority = g_ascii_strtoll (prio_str, NULL, 10);
   g_strlcpy ((*cand)->foundation, foundation, NICE_CANDIDATE_MAX_FOUNDATION);
+  (*cand)->username = g_strdup (ufrag);
 
   if (!nice_address_set_from_string (&(*cand)->addr, addr)) {
     GST_WARNING ("Cannot set address '%s' to candidate", addr);
@@ -311,6 +313,7 @@ free:
   g_free (prio_str);
   g_free (port_str);
   g_free (type_str);
+  g_free (ufrag);
 
 end:
   g_match_info_free (match_info);
