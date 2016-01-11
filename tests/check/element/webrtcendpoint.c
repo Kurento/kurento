@@ -2050,6 +2050,101 @@ GST_START_TEST (test_not_enough_ports)
 }
 
 GST_END_TEST;
+
+static void
+on_ice_candidate_check_mid (GstElement * self, gchar * sess_id,
+    KmsIceCandidate * candidate, const gchar * expected_mid)
+{
+  const gchar *mid;
+
+  mid = kms_ice_candidate_get_sdp_mid (candidate);
+  fail_unless (g_strcmp0 (mid, expected_mid) == 0);
+}
+
+GST_START_TEST (process_mid_no_bundle_offer)
+{
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { "opus/48000/1", NULL };
+  gchar *video_codecs[] = { "VP8/90000", NULL };
+  GstElement *webrtcendpoint =
+      gst_element_factory_make ("webrtcendpoint", NULL);
+  gchar *sess_id;
+  GstSDPMessage *offer = NULL, *answer = NULL;
+  gchar *aux = NULL;
+  const GstSDPMedia *media;
+  const gchar *mid;
+  gboolean ret;
+
+  static const gchar *offer_str = "v=0\r\n"
+      "o=mozilla...THIS_IS_SDPARTA-43.0 4115481872190049086 0 IN IP4 0.0.0.0\r\n"
+      "s=-\r\n"
+      "t=0 0\r\n"
+      "a=fingerprint:sha-256 34:05:1B:DC:3E:50:C7:45:15:D4:B7:42:31:1C:D9:11:5B:4D:61:CF:DB:47:B7:EC:E0:76:8E:E7:3D:EB:72:92\r\n"
+      "a=ice-options:trickle\r\n"
+      "a=msid-semantic:WMS *\r\n"
+      "m=video 9 UDP/TLS/RTP/SAVPF 120\r\n"
+      "c=IN IP4 0.0.0.0\r\n"
+      "a=sendrecv\r\n"
+      "a=ice-pwd:ba52db4f140d7f0272f0b5329ef95aa2\r\n"
+      "a=ice-ufrag:66d7677a\r\n"
+      "a=mid:sdparta_0\r\n"
+      "a=msid:{4ab114f1-f994-456c-ba62-272b79006b5d} {a45061ff-7fb6-4208-930c-4c637b839815}\r\n"
+      "a=rtcp-fb:120 nack\r\n"
+      "a=rtcp-fb:120 nack pli\r\n"
+      "a=rtcp-fb:120 ccm fir\r\n"
+      "a=rtcp-mux\r\n"
+      "a=rtpmap:120 VP8/90000\r\n"
+      "a=setup:actpass\r\n"
+      "a=ssrc:1841010112 cname:{9e639331-ad7e-4a2e-9a26-9623e3e68ea2}\r\n";
+
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+
+  g_object_set (webrtcendpoint, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), NULL);
+
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
+
+  g_signal_connect (G_OBJECT (webrtcendpoint), "on-ice-candidate",
+      G_CALLBACK (on_ice_candidate_check_mid), "sdparta_0");
+
+  fail_unless (gst_sdp_message_new (&offer) == GST_SDP_OK);
+  fail_unless (gst_sdp_message_parse_buffer ((const guint8 *)
+          offer_str, -1, offer) == GST_SDP_OK);
+
+  GST_DEBUG ("Offer:\n%s", (aux = gst_sdp_message_as_text (offer)));
+  g_free (aux);
+  aux = NULL;
+
+  g_signal_emit_by_name (webrtcendpoint, "create-session", &sess_id);
+  GST_DEBUG_OBJECT (webrtcendpoint, "Created session with id '%s'", sess_id);
+  g_signal_emit_by_name (webrtcendpoint, "process-offer", sess_id, offer,
+      &answer);
+  fail_unless (answer != NULL);
+  GST_DEBUG ("Answer:\n%s", (aux = gst_sdp_message_as_text (answer)));
+  g_free (aux);
+  aux = NULL;
+
+  fail_if (gst_sdp_message_get_attribute_val (answer, "group") != NULL);
+
+  media = gst_sdp_message_get_media ((const GstSDPMessage *) answer, 0);
+  mid = gst_sdp_media_get_attribute_val (media, "mid");
+  fail_if (g_strcmp0 (mid, "sdparta_0") != 0);
+
+  gst_sdp_message_free (offer);
+  gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (webrtcendpoint, "gather-candidates", sess_id, &ret);
+  fail_unless (ret);
+
+  g_object_unref (webrtcendpoint);
+  g_free (sess_id);
+}
+
+GST_END_TEST;
+
 /*
  * End of test cases
  */
@@ -2077,6 +2172,8 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_not_enough_ports);
 
   tcase_add_test (tc_chain, test_webrtc_data_channel);
+
+  tcase_add_test (tc_chain, process_mid_no_bundle_offer);
 
   return s;
 }
