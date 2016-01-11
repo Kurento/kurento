@@ -5,13 +5,13 @@ Securing Kurento Applications
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or localhost).
-Check `release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`_
+Check their `release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`_
 for further information about this issue.
 
 .. note::
 
-      Note, if you use WebSockets to communicate the application server and browsers, then
-      you must use WebSockets Secure (WSS).
+      Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS)
+      if you are using websockets to control your application server.
 
 Securing client applications
 ============================
@@ -47,13 +47,18 @@ Configure Java applications to use HTTPS
             server.ssl.keyStoreType: JKS
             server.ssl.keyAlias: yourKeyAlias
 
-      * You can also specify the location of the file, when 
+      * You can also specify the location of the properties file. Just issue the flag `-Dspring.config.location=<path-to-properties>` when launching your Spring-Boot based app. 
 
 * Start application
 
 .. sourcecode:: bash
 
    mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
+
+.. note::
+
+      If you plan on using a webserver as proxy, like Nginx or Apache, you'll need to ``setAllowedOrigins`` when registering the handler. Please read the `official Spring documentation <http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html#websocket-server-allowed-origins>`_ entry for more info.
+
 
 
 Configure Node applications to use HTTPS
@@ -63,9 +68,9 @@ Configure Node applications to use HTTPS
 
    * Request a certificate from a local certification authority.
 
-   * Create your own self-signed certificate as explained `here <http://www.akadia.com/services/ssh_test_certificate.html>`_ how create *server.crt*, *server.key* and *server.csr*.
+   * Create your own self-signed certificate as explained `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This will show you how to create the required files: *server.crt*, *server.key* and *server.csr*.
 
-Add following changes to *server.js* in order to enable HTTPS:
+Add the following changes to *server.js* in order to enable HTTPS:
 
 .. sourcecode:: javascript
 
@@ -111,10 +116,10 @@ Configure Javascript applications to use HTTPS
 
    * Request a certificate from a local certification authority.
 
-   * Create your own self-signed certificate as explained `here <http://www.akadia.com/services/ssh_test_certificate.html>`_ how create *server.crt*, *server.key* and *server.csr*.
+   * Create your own self-signed certificate as explained `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This will show you how to create the required files: *server.crt*, *server.key* and *server.csr*.
 
 
-* Start application using the certificates:
+* Start the application using the certificates:
 
 .. sourcecode:: bash
 
@@ -136,12 +141,12 @@ i.e. ``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
      "password": ""
    },
 
-You will also need a PEM certificate that should be in the same path or
-the configuration file or you may need to specify the full path on ``certificate``
+You will also need a PEM certificate that should be in the same path of
+the configuration file, or you may need to specify the full path in the ``certificate``
 field. Take into account that this file must contain the entire trust chain. If you have
-several different files, you probably need to concatenate the content of those files
-in order to obtain a valid bundle. Assuming that the names correspond to each kind of
-certificate that you might have, the following commnad will create a valis SSL certificate
+several files, you probably need to concatenate the content of those files
+in order to obtain a valid certificate bundle. Assuming that the names correspond to each kind of
+certificate that you might have, the following commnad will create a valid SSL certificate
 chain bundle::
 
    $ cat signing-ca.crt subordinate-ca.crt server.crt > server.pem
