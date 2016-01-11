@@ -7,30 +7,7 @@ Kurento tutorial for Node.js
 Examples on usage of the Kurento Node.js Client.
 
 This project contains a set of simple applications built with JavaScript Kurento
-Client APIs ([kurento-client-js] and [kurento-utils-js]) for [Node.js]:
-
-  * kurento-chroma: WebRTC in loopback with a chroma filter.
-  * kurento-crowddetector: WebRTC in loopback with a crowd detector filter.
-
-  * kurento-hello-world: WebRTC loopback sending your webcam stream to a
-    Kurento Media Server and back.
-  
-  * kurento-magic-mirror: WebRTC loopback with a filter that detect faces
-    and put them an overlayed image of a hat.
-  
-  * kurento-one2many-call: This project makes possible one client to
-    upstream to the server a WebRTC stream so that it can be distributed to
-    other clients.
-  
-  * kurento-one2many-with-plumbers: Extension of kurento-one2many-call using
-    plumbers to connect different pipelines.
-  
-  * kurento-one2one-call: Bidirectional videophone.
-  
-  * kurento-platedetector: WebRTC in loopback with a plate detector filter.
-  
-  * kurento-pointerdetector: WebRTC in loopback with a pointer detector
-    filter.
+Client APIs ([kurento-client-js] and [kurento-utils-js]) for [Node.js].
 
 The source code of this project can be cloned from the [GitHub repository].
 
