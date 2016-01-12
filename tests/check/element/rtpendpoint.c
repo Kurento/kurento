@@ -405,23 +405,7 @@ GST_START_TEST (negotiation_offerer)
   g_free (answerer_sess_id);
 }
 
-GST_END_TEST static gboolean
-check_no_mid_attr (const GstSDPMedia * media)
-{
-  guint i, len;
-
-  len = gst_sdp_media_attributes_len (media);
-
-  for (i = 0; i < len; i++) {
-    const GstSDPAttribute *a;
-
-    a = gst_sdp_media_get_attribute (media, i);
-
-    fail_if (g_strcmp0 (a->key, "mid") == 0);
-  }
-
-  return TRUE;
-}
+GST_END_TEST;
 
 GST_START_TEST (process_bundle_offer)
 {
@@ -432,7 +416,6 @@ GST_START_TEST (process_bundle_offer)
   gchar *sess_id;
   GstSDPMessage *offer = NULL, *answer = NULL;
   gchar *aux = NULL;
-  guint i, len;
 
   static const gchar *offer_str = "v=0\r\n"
       "o=- 1783800438437245920 2 IN IP4 127.0.0.1\r\n"
@@ -535,13 +518,6 @@ GST_START_TEST (process_bundle_offer)
 
   /* No bundle group must appear in the response */
   fail_if (gst_sdp_message_get_attribute_val (answer, "group") != NULL);
-
-  len = gst_sdp_message_medias_len ((const GstSDPMessage *) answer);
-
-  for (i = 0; i < len; i++) {
-    check_no_mid_attr (gst_sdp_message_get_media ((const GstSDPMessage *)
-            answer, i));
-  }
 
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
