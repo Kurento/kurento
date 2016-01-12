@@ -449,20 +449,15 @@ kms_recorder_generate_pads (KmsRecorderEndpoint * self)
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_AUDIO)) {
-    KMS_ELEMENT_UNLOCK (self);
     kms_element_connect_sink_target_full (elem, self->priv->audio_target,
         KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, connect_pad_signals_cb, self);
-    KMS_ELEMENT_LOCK (self);
   }
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_VIDEO)) {
-    KMS_ELEMENT_UNLOCK (self);
     kms_element_connect_sink_target_full (elem, self->priv->video_target,
         KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, connect_pad_signals_cb, self);
-    KMS_ELEMENT_LOCK (self);
   }
-
 }
 
 static void
