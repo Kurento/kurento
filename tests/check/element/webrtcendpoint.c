@@ -1524,8 +1524,8 @@ webrtc_receiver_pad_added (GstElement * element, GstPad * new_pad,
 }
 
 static void
-data_session_established_cb (GstElement * self, gboolean connected,
-    gpointer data)
+data_session_established_cb (GstElement * self, const gchar * sess_id,
+    gboolean connected, gpointer data)
 {
   GST_DEBUG_OBJECT (self, "Data session %s",
       (connected) ? "established" : "finished");
@@ -1533,7 +1533,7 @@ data_session_established_cb (GstElement * self, gboolean connected,
   if (connected) {
     gint stream_id;
 
-    g_signal_emit_by_name (self, "create-data-channel", TRUE, -1, -1,
+    g_signal_emit_by_name (self, "create-data-channel", sess_id, TRUE, -1, -1,
         "TestChannel", "webrtc-datachannel", &stream_id);
 
     fail_if (stream_id < 0);

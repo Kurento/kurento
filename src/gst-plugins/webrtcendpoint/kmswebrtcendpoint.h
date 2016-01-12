@@ -52,16 +52,17 @@ struct _KmsWebrtcEndpointClass
   gboolean (*add_ice_candidate) (KmsWebrtcEndpoint * self, const gchar * sess_id,
       KmsIceCandidate * candidate);
 
-  gint (*create_data_channel) (KmsWebrtcEndpoint *self, gboolean ordered, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
-  void (*destroy_data_channel) (KmsWebrtcEndpoint *self, gint stream_id);
+  gint (*create_data_channel) (KmsWebrtcEndpoint *self, const gchar *sess_id, gboolean ordered, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
+  void (*destroy_data_channel) (KmsWebrtcEndpoint *self, const gchar *sess_id, gint stream_id);
+  gboolean (*get_data_channel_supported) (KmsWebrtcEndpoint * self, const gchar * sess_id);
 
   /* Signals */
   void (*on_ice_candidate) (KmsWebrtcEndpoint * self, const gchar *sess_id,
       KmsIceCandidate * candidate);
   void (*on_ice_gathering_done) (KmsWebrtcEndpoint * self, const gchar *sess_id);
-  void (*data_session_established) (KmsWebrtcEndpoint *self, gboolean connected);
-  void (*data_channel_opened) (KmsWebrtcEndpoint *self, guint stream_id);
-  void (*data_channel_closed) (KmsWebrtcEndpoint *self, guint stream_id);
+  void (*data_session_established) (KmsWebrtcEndpoint *self, const gchar *sess_id, gboolean connected);
+  void (*data_channel_opened) (KmsWebrtcEndpoint *self, const gchar *sess_id, guint stream_id);
+  void (*data_channel_closed) (KmsWebrtcEndpoint *self, const gchar *sess_id, guint stream_id);
 };
 
 GType kms_webrtc_endpoint_get_type (void);

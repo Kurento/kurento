@@ -84,8 +84,8 @@ private:
   void onIceGatheringDone (gchar *sessId);
   void onIceComponentStateChanged (gchar *sessId, const gchar *streamId,
                                    guint componentId, guint state);
-  void onDataChannelOpened (guint stream_id);
-  void onDataChannelClosed (guint stream_id);
+  void onDataChannelOpened (gchar *sessId, guint stream_id);
+  void onDataChannelClosed (gchar *sessId, guint stream_id);
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

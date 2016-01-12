@@ -21,9 +21,17 @@
 #include "kmswebrtcrtcpmuxconnection.h"
 #include "kmswebrtcbundleconnection.h"
 #include "kmswebrtcsctpconnection.h"
+#include "kmswebrtcdatasessionbin.h"
+#include <commons/constants.h>
+#include <commons/kmsutils.h>
 #include <commons/sdp_utils.h>
+#include <commons/kmsrefstruct.h>
 
 #include "kms-webrtc-marshal.h"
+#include "kms-webrtc-data-marshal.h"
+
+#include <gst/app/gstappsrc.h>
+#include <gst/app/gstappsink.h>
 
 #include <string.h>
 
@@ -43,8 +51,11 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 #define DEFAULT_STUN_SERVER_IP NULL
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
+#define DEFAULT_DATA_CHANNELS_SUPPORTED FALSE
 
 #define IP_VERSION_6 6
+
+#define MAX_DATA_CHANNELS 1
 
 enum
 {
@@ -54,6 +65,14 @@ enum
   SIGNAL_GATHER_CANDIDATES,
   SIGNAL_ADD_ICE_CANDIDATE,
   SIGNAL_INIT_ICE_AGENT,
+  SIGNAL_DATA_SESSION_ESTABLISHED,
+  SIGNAL_DATA_CHANNEL_OPENED,
+  SIGNAL_DATA_CHANNEL_CLOSED,
+  ACTION_CREATE_DATA_CHANNEL,
+  ACTION_DESTROY_DATA_CHANNEL,
+  SIGNAL_DATA_SINK_PAD_ADDED,
+  SIGNAL_DATA_SRC_PAD_ADDED,
+  SIGNAL_DATA_PADS_REMOVE,
   LAST_SIGNAL
 };
 
@@ -65,8 +84,92 @@ enum
   PROP_STUN_SERVER_IP,
   PROP_STUN_SERVER_PORT,
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
+  PROP_DATA_CHANNEL_SUPPORTED,
   N_PROPERTIES
 };
+
+/* ConnectSCTPData begin */
+
+typedef struct _ConnectSCTPData
+{
+  KmsRefStruct ref;
+  KmsWebrtcSession *self;
+  KmsIRtpConnection *conn;
+  GstSDPMedia *media;
+  gboolean connected;
+} ConnectSCTPData;
+
+typedef struct _DataChannel
+{
+  KmsRefStruct ref;
+  KmsWebRtcDataChannel *chann;
+  GstElement *appsink;
+  GstElement *appsrc;
+} DataChannel;
+
+static void
+data_channel_destroy (DataChannel * chann)
+{
+  g_slice_free (DataChannel, chann);
+}
+
+static DataChannel *
+data_channel_new (guint stream_id, KmsWebRtcDataChannel * channel)
+{
+  DataChannel *chann;
+  gchar *name;
+
+  chann = g_slice_new (DataChannel);
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (chann),
+      (GDestroyNotify) data_channel_destroy);
+
+  name = g_strdup_printf ("appsrc_stream_%u", stream_id);
+  chann->appsrc = gst_element_factory_make ("appsrc", name);
+  g_free (name);
+
+  name = g_strdup_printf ("appsink_stream_%u", stream_id);
+  chann->appsink = gst_element_factory_make ("appsink", name);
+  g_free (name);
+
+  g_object_set (chann->appsink, "async", FALSE, "sync", FALSE,
+      "emit-signals", FALSE, "drop", FALSE, "enable-last-sample", FALSE, NULL);
+
+  g_object_set (chann->appsrc, "is-live", TRUE, "min-latency",
+      G_GINT64_CONSTANT (0), "do-timestamp", TRUE, "max-bytes", 0,
+      "emit-signals", FALSE, NULL);
+
+  chann->chann = channel;
+
+  return chann;
+}
+
+static void
+connect_sctp_data_destroy (ConnectSCTPData * data, GClosure * closure)
+{
+  gst_sdp_media_free (data->media);
+
+  g_slice_free (ConnectSCTPData, data);
+}
+
+static ConnectSCTPData *
+connect_sctp_data_new (KmsWebrtcSession * self, GstSDPMedia * media,
+    KmsIRtpConnection * conn)
+{
+  ConnectSCTPData *data;
+
+  data = g_slice_new0 (ConnectSCTPData);
+
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (data),
+      (GDestroyNotify) connect_sctp_data_destroy);
+
+  data->self = self;
+  data->conn = conn;
+  data->media = media;
+
+  return data;
+}
+
+/* ConnectSCTPData end */
 
 KmsWebrtcSession *
 kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
@@ -716,11 +819,384 @@ kms_webrtc_session_remote_sdp_add_stored_ice_candidates (gpointer data,
 }
 
 static gboolean
+get_port_from_string (const gchar * str, gint * _ret)
+{
+  gchar *endptr;
+  gint64 val;
+
+  errno = 0;                    /* To distinguish success/failure after call */
+  val = g_ascii_strtoll (str, &endptr, 0);
+  if ((errno == ERANGE && (val == G_MAXINT64 || val == G_MININT64))
+      || (errno == EINVAL && val == 0)) {
+    return FALSE;
+  }
+
+  if (str == endptr) {
+    /* Nothing parsed from the string */
+    return FALSE;
+  }
+
+  if (val > G_MAXINT32 || val < G_MININT32) {
+    /* Value ut of int 32 range */
+    return FALSE;
+  }
+
+  if (_ret != NULL) {
+    *_ret = val;
+  }
+
+  return TRUE;
+}
+
+static void
+kms_webrtc_session_data_session_established_cb (KmsWebRtcDataSessionBin *
+    session, gboolean connected, KmsWebrtcSession * self)
+{
+  GST_DEBUG_OBJECT (self, "Data session %" GST_PTR_FORMAT " %s",
+      session, (connected) ? "established" : "finished");
+
+  g_signal_emit (self,
+      kms_webrtc_session_signals[SIGNAL_DATA_SESSION_ESTABLISHED], 0,
+      connected);
+}
+
+static GstFlowReturn
+new_sample_callback (GstAppSink * appsink, DataChannel * channel)
+{
+  GstFlowReturn ret;
+  GstSample *sample;
+  GstBuffer *buffer;
+
+  sample = gst_app_sink_pull_sample (GST_APP_SINK (appsink));
+  g_return_val_if_fail (sample, GST_FLOW_ERROR);
+
+  buffer = gst_sample_get_buffer (sample);
+  if (buffer == NULL) {
+    gst_sample_unref (sample);
+    GST_ERROR_OBJECT (appsink, "No buffer got from sample");
+
+    return GST_FLOW_ERROR;
+  }
+
+  /* By default all data received in a pipeline is binary unless they are */
+  /* sent by other data channel, in such cases, sctpencoders and decoders */
+  /* will set the appropriate ppid meta to the buffer */
+
+  ret = kms_webrtc_data_channel_push_buffer (channel->chann, buffer, FALSE);
+  gst_sample_unref (sample);
+
+  return ret;
+}
+
+static GstFlowReturn
+data_channel_buffer_received_cb (GObject * obj, GstBuffer * buffer,
+    DataChannel * channel)
+{
+  /* buffer is tranfser full */
+  return gst_app_src_push_buffer (GST_APP_SRC (channel->appsrc),
+      gst_buffer_ref (buffer));
+}
+
+static void
+kms_webrtc_session_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
+    guint stream_id, KmsWebrtcSession * self)
+{
+  GstAppSinkCallbacks callbacks;
+  KmsWebRtcDataChannel *chann;
+  DataChannel *channel;
+  GstPad *pad;
+
+  GST_DEBUG_OBJECT (self, "Data channel with stream_id %u opened", stream_id);
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  if (g_hash_table_size (self->data_channels) >= MAX_DATA_CHANNELS) {
+    GST_WARNING_OBJECT (self, "No more than %u data channel are allowed",
+        MAX_DATA_CHANNELS);
+    KMS_SDP_SESSION_UNLOCK (self);
+    g_signal_emit_by_name (session, "destroy-data-channel", stream_id, NULL);
+
+    return;
+  }
+
+  g_signal_emit_by_name (session, "get-data-channel", stream_id, &chann);
+
+  if (chann == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get data channel with id %u", stream_id);
+    KMS_SDP_SESSION_UNLOCK (self);
+
+    return;
+  }
+
+  channel = data_channel_new (stream_id, chann);
+
+  g_hash_table_insert (self->data_channels, GUINT_TO_POINTER (stream_id),
+      channel);
+
+  callbacks.eos = NULL;
+  callbacks.new_preroll = NULL;
+  callbacks.new_sample =
+      (GstFlowReturn (*)(GstAppSink *, gpointer)) new_sample_callback;
+
+  gst_app_sink_set_callbacks (GST_APP_SINK (channel->appsink), &callbacks,
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
+      (GDestroyNotify) kms_ref_struct_unref);
+
+  kms_webrtc_data_channel_set_new_buffer_callback (channel->chann,
+      (DataChannelNewBuffer) data_channel_buffer_received_cb,
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (channel)),
+      (GDestroyNotify) kms_ref_struct_unref);
+
+  gst_bin_add_many (GST_BIN (self), channel->appsrc, channel->appsink, NULL);
+
+  gst_element_sync_state_with_parent (channel->appsink);
+  gst_element_sync_state_with_parent (channel->appsrc);
+
+  pad = gst_element_get_static_pad (channel->appsrc, "src");
+  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_SRC_PAD_ADDED],
+      0, stream_id, pad);
+  g_object_unref (pad);
+
+  pad = gst_element_get_static_pad (channel->appsink, "sink");
+  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_SINK_PAD_ADDED],
+      0, stream_id, pad);
+  g_object_unref (pad);
+
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_CHANNEL_OPENED],
+      0, stream_id);
+}
+
+static void
+kms_webrtc_session_remove_data_channel (KmsWebrtcSession * self,
+    DataChannel * channel, guint stream_id)
+{
+  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_CHANNEL_OPENED],
+      0, stream_id);
+
+  g_object_ref (channel->appsrc);
+  g_object_ref (channel->appsink);
+
+  gst_element_set_state (channel->appsrc, GST_STATE_NULL);
+  gst_element_set_state (channel->appsink, GST_STATE_NULL);
+
+  gst_bin_remove_many (GST_BIN (self), channel->appsrc, channel->appsink, NULL);
+
+  g_object_unref (channel->appsrc);
+  g_object_unref (channel->appsink);
+}
+
+static void
+kms_webrtc_session_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
+    guint stream_id, KmsWebrtcSession * self)
+{
+  DataChannel *channel;
+
+  GST_DEBUG_OBJECT (self, "Data channel with stream_id %u closed", stream_id);
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  channel = (DataChannel *) g_hash_table_lookup (self->data_channels,
+      GUINT_TO_POINTER (stream_id));
+
+  if (channel == NULL) {
+    KMS_SDP_SESSION_UNLOCK (self);
+    return;
+  }
+
+  g_hash_table_steal (self->data_channels, GUINT_TO_POINTER (stream_id));
+
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  kms_webrtc_session_remove_data_channel (self, channel, stream_id);
+
+  kms_ref_struct_unref (KMS_REF_STRUCT_CAST (channel));
+
+  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_CHANNEL_CLOSED],
+      0, stream_id);
+}
+
+static gboolean
+configure_data_session (KmsWebrtcSession * self, GstSDPMedia * media)
+{
+  const gchar *sctpmap_attr = NULL;
+  gint port = -1;
+  guint i, len;
+
+  len = gst_sdp_media_formats_len (media);
+  if (len < 0) {
+    GST_WARNING_OBJECT (self, "No SCTP format");
+    return FALSE;
+  }
+
+  if (len > 1) {
+    GST_WARNING_OBJECT (self,
+        "Only one data session is supported over the same DTLS connection");
+  }
+
+  for (i = 0; i < len; i++) {
+    const gchar *port_str;
+    gchar **attrs;
+
+    port_str = gst_sdp_media_get_format (media, 0);
+    sctpmap_attr = sdp_utils_get_attr_map_value (media, "sctpmap", port_str);
+
+    attrs = g_strsplit (sctpmap_attr, " ", 0);
+    if (g_strcmp0 (attrs[1], "webrtc-datachannel") != 0) {
+      g_strfreev (attrs);
+      continue;
+    }
+
+    if (get_port_from_string (port_str, &port)) {
+      g_strfreev (attrs);
+      break;
+    }
+
+    g_strfreev (attrs);
+  }
+
+  if (port < 0) {
+    GST_ERROR_OBJECT (self, "Data session can not be configured");
+    return FALSE;
+  }
+
+  g_object_set (self->data_session, "sctp-local-port", port,
+      "sctp-remote-port", port, NULL);
+
+  return TRUE;
+}
+
+static void
+kms_webrtc_session_link_pads (GstPad * src, GstPad * sink)
+{
+  if (gst_pad_link_full (src, sink, GST_PAD_LINK_CHECK_CAPS) != GST_PAD_LINK_OK) {
+    GST_ERROR ("Error linking pads (src: %" GST_PTR_FORMAT ", sink: %"
+        GST_PTR_FORMAT ")", src, sink);
+  }
+}
+
+static void
+kms_webrtc_session_connect_data_session (KmsWebrtcSession * self,
+    GstSDPMedia * media, KmsIRtpConnection * conn)
+{
+  GstPad *srcpad = NULL, *sinkpad = NULL, *tmppad;
+
+  sinkpad = kms_i_rtp_connection_request_data_sink (conn);
+
+  if (sinkpad == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get data sink pad");
+    return;
+  }
+
+  srcpad = kms_i_rtp_connection_request_data_src (conn);
+  if (srcpad == NULL) {
+    GST_ERROR_OBJECT (self, "Can not get data src pad");
+    goto error;
+  }
+
+  if (!configure_data_session (self, media)) {
+    goto error;
+  }
+
+  tmppad = gst_element_get_static_pad (self->data_session, "sink");
+  kms_webrtc_session_link_pads (srcpad, tmppad);
+  g_object_unref (tmppad);
+
+  tmppad = gst_element_get_static_pad (self->data_session, "src");
+  kms_webrtc_session_link_pads (tmppad, sinkpad);
+  g_object_unref (tmppad);
+
+  gst_element_sync_state_with_parent_target_state (self->data_session);
+
+error:
+
+  g_clear_object (&sinkpad);
+  g_clear_object (&srcpad);
+}
+
+static void
+kms_webrtc_session_add_data_session (KmsWebrtcSession * self,
+    GstSDPMedia * media, KmsIRtpConnection * conn)
+{
+  KMS_SDP_SESSION_LOCK (self);
+
+  g_signal_connect (self->data_session, "data-session-established",
+      G_CALLBACK (kms_webrtc_session_data_session_established_cb), self);
+  g_signal_connect (self->data_session, "data-channel-opened",
+      G_CALLBACK (kms_webrtc_session_data_channel_opened_cb), self);
+  g_signal_connect (self->data_session, "data-channel-closed",
+      G_CALLBACK (kms_webrtc_session_data_channel_closed_cb), self);
+
+  g_object_ref (self->data_session);
+  gst_bin_add (GST_BIN (self), self->data_session);
+  kms_webrtc_session_connect_data_session (self, media, conn);
+
+  KMS_SDP_SESSION_UNLOCK (self);
+}
+
+static void
+kms_webrtc_session_add_data_session_cb (KmsIRtpConnection * conn,
+    ConnectSCTPData * data)
+{
+  if (g_atomic_int_compare_and_exchange (&data->connected, FALSE, TRUE)) {
+    kms_webrtc_session_add_data_session (data->self, data->media, data->conn);
+  } else {
+    GST_WARNING_OBJECT (data->self, "SCTP elements already configured");
+  }
+
+  /* DTLS is already connected, so we do not need to be attached to this */
+  /* signal any more. We can free the tmp data without waiting for the   */
+  /* object to be realeased. (Early release) */
+  g_signal_handlers_disconnect_by_data (data->conn, data);
+}
+
+static void
+kms_webrtc_session_support_sctp_stream (KmsWebrtcSession * self,
+    SdpMediaConfig * mconf, KmsIRtpConnection * conn)
+{
+  gboolean connected = FALSE;
+  ConnectSCTPData *data;
+  GstSDPMedia *media;
+  gulong handler_id = 0;
+
+  if (self->data_session == NULL) {
+    gboolean is_client;
+
+    g_object_get (conn, "is-client", &is_client, NULL);
+    self->data_session =
+        GST_ELEMENT (kms_webrtc_data_session_bin_new (is_client));
+  }
+
+  gst_sdp_media_copy (kms_sdp_media_config_get_sdp_media (mconf), &media);
+  data = connect_sctp_data_new (self, media, conn);
+
+  handler_id = g_signal_connect_data (conn, "connected",
+      G_CALLBACK (kms_webrtc_session_add_data_session_cb),
+      kms_ref_struct_ref (KMS_REF_STRUCT_CAST (data)),
+      (GClosureNotify) kms_ref_struct_unref, 0);
+
+  g_object_get (conn, "connected", &connected, NULL);
+  if (connected && g_atomic_int_compare_and_exchange (&data->connected, FALSE,
+          TRUE)) {
+    if (handler_id) {
+      g_signal_handler_disconnect (conn, handler_id);
+    }
+    kms_webrtc_session_add_data_session (self,
+        kms_sdp_media_config_get_sdp_media (mconf), conn);
+  } else {
+    GST_DEBUG_OBJECT (self, "SCTP: waiting for DTLS layer to be established");
+  }
+
+  kms_ref_struct_unref (KMS_REF_STRUCT_CAST (data));
+}
+
+static gboolean
 kms_webrtc_session_add_connection (KmsWebrtcSession * self,
     KmsSdpSession * sess, SdpMediaConfig * mconf, gboolean offerer)
 {
   KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
-  gboolean connected, active;
+  gboolean connected;
   KmsIRtpConnection *conn;
 
   conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
@@ -732,16 +1208,19 @@ kms_webrtc_session_add_connection (KmsWebrtcSession * self,
   g_object_get (conn, "added", &connected, NULL);
   if (connected) {
     GST_DEBUG_OBJECT (self, "Conn already added");
-    return TRUE;
+  } else {
+    gboolean active;
+
+    active =
+        sdp_utils_media_is_active (kms_sdp_media_config_get_sdp_media (mconf),
+        offerer);
+
+    kms_i_rtp_connection_add (conn, GST_BIN (self), active);
+    kms_i_rtp_connection_sink_sync_state_with_parent (conn);
+    kms_i_rtp_connection_src_sync_state_with_parent (conn);
   }
 
-  active =
-      sdp_utils_media_is_active (kms_sdp_media_config_get_sdp_media (mconf),
-      offerer);
-
-  kms_i_rtp_connection_add (conn, GST_BIN (self), active);
-  kms_i_rtp_connection_sink_sync_state_with_parent (conn);
-  kms_i_rtp_connection_src_sync_state_with_parent (conn);
+  kms_webrtc_session_support_sctp_stream (self, mconf, conn);
 
   return TRUE;
 }
@@ -865,6 +1344,32 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
 
 /* Start Transport end */
 
+void
+kms_webrtc_session_add_data_channels_stats (KmsWebrtcSession * self,
+    GstStructure * stats, const gchar * selector)
+{
+  GstStructure *data_stats;
+  const gchar *id;
+
+  if (self->data_session == NULL || (selector != NULL &&
+          g_strcmp0 (selector, DATA_STREAM_NAME) != 0)) {
+    return;
+  }
+
+  id = kms_utils_get_uuid (G_OBJECT (self->data_session));
+
+  if (id == NULL) {
+    kms_utils_set_uuid (G_OBJECT (self->data_session));
+    id = kms_utils_get_uuid (G_OBJECT (self->data_session));
+  }
+
+  g_signal_emit_by_name (self->data_session, "stats", &data_stats);
+  gst_structure_set (data_stats, "id", G_TYPE_STRING, id, NULL);
+  gst_structure_set (stats, KMS_DATA_SESSION_STATISTICS_FIELD,
+      GST_TYPE_STRUCTURE, data_stats, NULL);
+  gst_structure_free (data_stats);
+}
+
 static void
 kms_webrtc_session_parse_turn_url (KmsWebrtcSession * self)
 {
@@ -973,6 +1478,9 @@ kms_webrtc_session_get_property (GObject * object, guint prop_id,
     case PROP_TURN_URL:
       g_value_set_string (value, self->turn_url);
       break;
+    case PROP_DATA_CHANNEL_SUPPORTED:
+      g_value_set_boolean (value, self->data_session != NULL);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -997,6 +1505,9 @@ kms_webrtc_session_finalize (GObject * object)
   g_free (self->turn_user);
   g_free (self->turn_password);
   g_free (self->turn_address);
+
+  g_clear_object (&self->data_session);
+  g_hash_table_unref (self->data_channels);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_session_parent_class)->finalize (object);
@@ -1032,6 +1543,44 @@ kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
       G_CALLBACK (kms_webrtc_session_component_state_change), self);
 }
 
+static gint
+kms_webrtc_session_create_data_channel (KmsWebrtcSession * self,
+    gboolean ordered, gint max_packet_life_time, gint max_retransmits,
+    const gchar * label, const gchar * protocol)
+{
+  gint stream_id = -1;
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  if (self->data_session == NULL) {
+    GST_WARNING_OBJECT (self, "Data session is not yet established");
+  } else {
+    g_signal_emit_by_name (self->data_session, "create-data-channel",
+        ordered, max_packet_life_time, max_retransmits, label, protocol,
+        &stream_id);
+  }
+
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  return stream_id;
+}
+
+static void
+kms_webrtc_session_destroy_data_channel (KmsWebrtcSession * self,
+    gint stream_id)
+{
+  KMS_SDP_SESSION_LOCK (self);
+
+  if (self->data_session == NULL) {
+    GST_WARNING_OBJECT (self, "Data session is not yet established");
+  } else {
+    g_signal_emit_by_name (self->data_session, "destroy-data-channel",
+        stream_id);
+  }
+
+  KMS_SDP_SESSION_UNLOCK (self);
+}
+
 static void
 kms_webrtc_session_init (KmsWebrtcSession * self)
 {
@@ -1039,6 +1588,9 @@ kms_webrtc_session_init (KmsWebrtcSession * self)
   self->stun_server_port = DEFAULT_STUN_SERVER_PORT;
   self->turn_url = DEFAULT_STUN_TURN_URL;
   self->gather_started = FALSE;
+
+  self->data_channels = g_hash_table_new_full (g_direct_hash,
+      g_direct_equal, NULL, (GDestroyNotify) kms_ref_struct_unref);
 }
 
 static void
@@ -1059,6 +1611,8 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
   klass->gather_candidates = kms_webrtc_session_gather_candidates;
   klass->add_ice_candidate = kms_webrtc_session_add_ice_candidate;
   klass->init_ice_agent = kms_webrtc_session_init_ice_agent;
+  klass->create_data_channel = kms_webrtc_session_create_data_channel;
+  klass->destroy_data_channel = kms_webrtc_session_destroy_data_channel;
 
   base_rtp_session_class = KMS_BASE_RTP_SESSION_CLASS (klass);
   /* Connection management */
@@ -1095,6 +1649,13 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
           "'address' must be an IP (not a domain)."
           "'transport' is optional (UDP by default).",
           DEFAULT_STUN_TURN_URL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_DATA_CHANNEL_SUPPORTED,
+      g_param_spec_boolean ("data-channel-supported",
+          "Data channel supported",
+          "True if data channels are negotiated and supported",
+          DEFAULT_DATA_CHANNELS_SUPPORTED,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   /**
   * KmsWebrtcSession::on-ice-candidate:
@@ -1159,4 +1720,88 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, init_ice_agent), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  kms_webrtc_session_signals[SIGNAL_DATA_SESSION_ESTABLISHED] =
+      g_signal_new ("data-session-established",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_session_established),
+      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1,
+      G_TYPE_BOOLEAN);
+
+  kms_webrtc_session_signals[SIGNAL_DATA_CHANNEL_OPENED] =
+      g_signal_new ("data-channel-opened",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_opened),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+  kms_webrtc_session_signals[SIGNAL_DATA_CHANNEL_CLOSED] =
+      g_signal_new ("data-channel-closed",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+  kms_webrtc_session_signals[ACTION_CREATE_DATA_CHANNEL] =
+      g_signal_new ("create-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, create_data_channel),
+      NULL, NULL, __kms_webrtc_data_marshal_INT__BOOLEAN_INT_INT_STRING_STRING,
+      G_TYPE_INT, 5, G_TYPE_BOOLEAN, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING,
+      G_TYPE_STRING);
+
+  kms_webrtc_session_signals[ACTION_DESTROY_DATA_CHANNEL] =
+      g_signal_new ("destroy-data-channel",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, destroy_data_channel),
+      NULL, NULL, g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
+
+  /**
+   * KmsWebrtcSession::data-sink-pad-added:
+   * @webrtcsession: the object which received the signal
+   * @stream_id: the id of the DataChannel
+   * @pad: the new src pad
+   *
+   * Emited when a new data sink pad is added.
+   */
+  kms_webrtc_session_signals[SIGNAL_DATA_SINK_PAD_ADDED] =
+      g_signal_new ("data-sink-pad-added",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
+      NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 2, G_TYPE_UINT,
+      GST_TYPE_PAD);
+
+  /**
+   * KmsWebrtcSession::data-src-pad-added:
+   * @webrtcsession: the object which received the signal
+   * @stream_id: the id of the DataChannel
+   * @pad: the new sink pad
+   *
+   * Emited when a new data src pad is added.
+   */
+  kms_webrtc_session_signals[SIGNAL_DATA_SRC_PAD_ADDED] =
+      g_signal_new ("data-src-pad-added",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
+      NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 2, G_TYPE_UINT,
+      GST_TYPE_PAD);
+
+  /**
+   * KmsWebrtcSession::data-pads-remove:
+   * @webrtcsession: the object which received the signal
+   * @stream_id: the id of the DataChannel
+   *
+   * Emited before data pads are removed.
+   */
+  kms_webrtc_session_signals[SIGNAL_DATA_PADS_REMOVE] =
+      g_signal_new ("data-pads-remove",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
+      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 }

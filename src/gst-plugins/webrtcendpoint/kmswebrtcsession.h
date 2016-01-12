@@ -25,6 +25,7 @@
 G_BEGIN_DECLS
 
 typedef struct _KmsIRtpSessionManager KmsIRtpSessionManager;
+typedef struct _KmsIWebRtcDataChannelManager KmsIWebRtcDataChannelManager;
 
 /* #defines don't like whitespacey bits */
 #define KMS_TYPE_WEBRTC_SESSION \
@@ -63,6 +64,9 @@ struct _KmsWebrtcSession
   guint16 max_port;
 
   gboolean gather_started;
+
+  GstElement *data_session;
+  GHashTable *data_channels;
 };
 
 struct _KmsWebrtcSessionClass
@@ -73,20 +77,28 @@ struct _KmsWebrtcSessionClass
   gboolean (*add_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);
   void (*init_ice_agent) (KmsWebrtcSession * self);
 
+  gint (*create_data_channel) (KmsWebrtcSession * self, gboolean ordered, gint max_packet_life_time, gint max_retransmits, const gchar * label, const gchar * protocol);
+  void (*destroy_data_channel) (KmsWebrtcSession * self, gint stream_id);
+
   /* Signals */
   void (*on_ice_candidate) (KmsWebrtcSession * self, KmsIceCandidate * candidate);
   void (*on_ice_gathering_done) (KmsWebrtcSession * self);
+  void (*data_session_established) (KmsWebrtcSession * self, gboolean connected);
+  void (*data_channel_opened) (KmsWebrtcSession * self, guint stream_id);
+  void (*data_channel_closed) (KmsWebrtcSession * self, guint stream_id);
 
   /* private */
   /* virtual methods */
   void (*post_constructor) (KmsWebrtcSession * self, KmsBaseSdpEndpoint * ep,
-			    guint id, KmsIRtpSessionManager * manager, GMainContext * context);
+			    guint id, KmsIRtpSessionManager * manager,
+                            GMainContext * context);
 };
 
 GType kms_webrtc_session_get_type (void);
 
 KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
-					   KmsIRtpSessionManager * manager, GMainContext * context);
+					   KmsIRtpSessionManager * manager,
+                                           GMainContext * context);
 
 KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, SdpMediaConfig * mconf);
@@ -96,6 +108,8 @@ gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, K
 gchar * kms_webrtc_session_get_stream_id (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 
 void kms_webrtc_session_start_transport_send (KmsWebrtcSession * self, gboolean offerer);
+
+void kms_webrtc_session_add_data_channels_stats (KmsWebrtcSession * self, GstStructure * stats, const gchar * selector);
 
 G_END_DECLS
 #endif /* __KMS_WEBRTC_SESSION_H__ */
