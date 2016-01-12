@@ -86,16 +86,16 @@ check_connected ()
   if (connected == NUM_CONNEXIONS) {
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-    g_signal_emit_by_name (hubport3, "request-new-srcpad",
-        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname3);
+    g_signal_emit_by_name (hubport3, "request-new-pad",
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname3);
     fail_if (padname3 == NULL);
 
-    g_signal_emit_by_name (hubport4, "request-new-srcpad",
-        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname4);
+    g_signal_emit_by_name (hubport4, "request-new-pad",
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname4);
     fail_if (padname4 == NULL);
 
-    g_signal_emit_by_name (hubport5, "request-new-srcpad",
-        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname5);
+    g_signal_emit_by_name (hubport5, "request-new-pad",
+        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname5);
     fail_if (padname5 == NULL);
 
     g_signal_emit_by_name (mixer, "handle-port", hubport3, &handlerId3);

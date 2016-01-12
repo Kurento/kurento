@@ -117,8 +117,8 @@ GST_START_TEST (connection)
   signalId3 =
       g_signal_connect (hubport3, "pad-added", G_CALLBACK (srcpad_added), NULL);
 
-  g_signal_emit_by_name (hubport1, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname1);
+  g_signal_emit_by_name (hubport1, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname1);
   fail_if (padname1 == NULL);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);

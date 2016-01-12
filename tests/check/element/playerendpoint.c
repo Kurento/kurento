@@ -240,8 +240,8 @@ GST_START_TEST (check_states)
   gst_bin_add_many (GST_BIN (pipeline), player, fakesink, NULL);
 
   /* request src pad using action */
-  g_signal_emit_by_name (player, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname);
+  g_signal_emit_by_name (player, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
 
   GST_DEBUG ("Requested pad %s", padname);
@@ -380,16 +380,16 @@ GST_START_TEST (check_live_stream)
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   /* request audio src pad using action */
-  g_signal_emit_by_name (player, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname);
+  g_signal_emit_by_name (player, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
 
   GST_DEBUG ("Requested pad %s", padname);
   g_free (padname);
 
   /* request video src pad using action */
-  g_signal_emit_by_name (player, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname);
+  g_signal_emit_by_name (player, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
 
   GST_DEBUG ("Requested pad %s", padname);

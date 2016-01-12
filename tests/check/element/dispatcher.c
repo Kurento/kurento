@@ -116,16 +116,16 @@ GST_START_TEST (connection)
       g_signal_connect (hubport3, "pad-added", G_CALLBACK (srcpad_added),
       &padname3);
 
-  g_signal_emit_by_name (hubport1, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname1);
+  g_signal_emit_by_name (hubport1, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname1);
   fail_if (padname1 == NULL);
 
-  g_signal_emit_by_name (hubport2, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname2);
+  g_signal_emit_by_name (hubport2, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname2);
   fail_if (padname2 == NULL);
 
-  g_signal_emit_by_name (hubport3, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname3);
+  g_signal_emit_by_name (hubport3, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname3);
   fail_if (padname3 == NULL);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);

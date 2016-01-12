@@ -327,7 +327,8 @@ kms_element_request_srcpad (GstElement * src, KmsElementPadType pad_type)
 {
   gchar *padname;
 
-  g_signal_emit_by_name (src, "request-new-srcpad", pad_type, NULL, &padname);
+  g_signal_emit_by_name (src, "request-new-pad", pad_type, NULL, GST_PAD_SRC,
+      &padname);
   if (padname == NULL) {
     return FALSE;
   }
@@ -1611,8 +1612,8 @@ test_data_channels (gboolean bundle)
   g_signal_connect (receiver, "pad-added",
       G_CALLBACK (webrtc_receiver_pad_added), &tmp);
 
-  g_signal_emit_by_name (receiver, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_DATA, NULL, &padname);
+  g_signal_emit_by_name (receiver, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_DATA, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
 
   GST_DEBUG ("Requested pad name %s", padname);

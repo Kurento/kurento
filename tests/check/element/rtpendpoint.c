@@ -137,7 +137,8 @@ kms_element_request_srcpad (GstElement * src, KmsElementPadType pad_type)
 {
   gchar *padname;
 
-  g_signal_emit_by_name (src, "request-new-srcpad", pad_type, NULL, &padname);
+  g_signal_emit_by_name (src, "request-new-pad", pad_type, NULL, GST_PAD_SRC,
+      &padname);
   if (padname == NULL) {
     return FALSE;
   }
