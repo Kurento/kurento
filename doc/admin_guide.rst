@@ -87,8 +87,9 @@ following:
 	{
 	  "mediaServer" : {
 	    "resources": {
-	    //  //Resources usage limit for raising an exception when an object creation is attempted
-	    //  "exceptionLimit": "0.8",
+	    //  //Resources usage limit for raising an exception when an object creation is
+	    //   attempted
+       // "exceptionLimit": "0.8",
 	    //  // Resources usage limit for restarting the server when no objects are alive
 	    //  "killLimit": "0.7",
 	        // Garbage collector period in seconds
@@ -229,10 +230,10 @@ follows:
 
 These commands starts an HTTP server at the localhost in the port 8443.
 Therefore, please open the web application connecting to the URL
-https://localhost:8443/ through a WebRTC capable browser (e.g. Chrome). Click on
-the `Start` button and grant the access to the camera and microphone. After the
-SDP negotiation an enhanced video mirror should start. Kurento Media Server is
-processing media in real time, detecting faces and overlying an image on the
+https://localhost:8443/ through a WebRTC capable browser (e.g. Chrome). Click
+on the `Start` button and grant the access to the camera and microphone. After
+the SDP negotiation an enhanced video mirror should start. Kurento Media Server
+is processing media in real time, detecting faces and overlying an image on the
 top of them. This is a simple example of augmented reality in real time with
 Kurento.
 
@@ -339,5 +340,5 @@ When KMS starts correctly, this trace is written in the log file:
 
 ::
 
-	[time] [0x10b2f880] [info]    KurentoMediaServer main.cpp:239 main() Mediaserver started
+	[time] [0x10b2f880] [info]  KurentoMediaServer main.cpp:239 main() Mediaserver started
 
