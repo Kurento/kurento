@@ -15,11 +15,17 @@
 
 package org.kurento.test.functional.player;
 
+import static org.kurento.test.config.Protocol.FILE;
+import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.S3;
+
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -44,54 +50,126 @@ import org.kurento.test.config.TestScenario;
  * Secondary assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
  *
- * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.1.1
  */
-public class PlayerOnlyAudioTrackPauseTest extends SimplePlayer {
+public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
     return TestScenario.localChromeAndFirefox();
   }
 
-  private void initTest(String mediaUrl) throws Exception {
-    int pauseTimeSeconds = 10;
+  private void initTest(Protocol protocol, String nameMedia) throws Exception {
+    int pauseTimeSeconds = 3;
+
+    String mediaUrl = getMediaUrl(protocol, nameMedia);
+
     testPlayerPause(mediaUrl, WebRtcChannel.AUDIO_ONLY, pauseTimeSeconds, null);
   }
 
   @Test
-  public void testPlayerPauseMp3() throws Exception {
+  public void testPlayerOnlyAudioPauseHttpMp3() throws Exception {
     // Test data
-    String mediaUrl = "http://files.kurento.org/audio/10sec/cinema.mp3";
-    initTest(mediaUrl);
+    String mediaUrl = "/audio/10sec/cinema.mp3";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseM4a() throws Exception {
+  public void testPlayerOnlyAudioPauseHttpM4a() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/audio/10sec/cinema.m4a";
-    initTest(mediaUrl);
+    final String mediaUrl = "/audio/10sec/cinema.m4a";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseOgg() throws Exception {
+  public void testPlayerOnlyAudioPauseHttpOgg() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/audio/10sec/cinema.ogg";
-    initTest(mediaUrl);
+    final String mediaUrl = "/audio/10sec/cinema.ogg";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseWav() throws Exception {
+  public void testPlayerOnlyAudioPauseHttpWav() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/audio/10sec/cinema.wav";
-    initTest(mediaUrl);
+    final String mediaUrl = "/audio/10sec/cinema.wav";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseWma() throws Exception {
+  public void testPlayerOnlyAudioPauseHttpWma() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/audio/10sec/cinema.wma";
-    initTest(mediaUrl);
+    final String mediaUrl = "/audio/10sec/cinema.wma";
+    initTest(HTTP, mediaUrl);
   }
 
+  @Ignore
+  public void testPlayerOnlyAudioPauseFileMp3() throws Exception {
+    // Test data
+    String mediaUrl = "/audio/10sec/cinema.mp3";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Ignore
+  public void testPlayerOnlyAudioPauseFileM4a() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.m4a";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseFileOgg() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.ogg";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Ignore
+  public void testPlayerOnlyAudioPauseFileWav() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wav";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseFileWma() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wma";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Ignore
+  public void testPlayerOnlyAudioPauseS3Mp3() throws Exception {
+    // Test data
+    String mediaUrl = "/audio/10sec/cinema.mp3";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseS3M4a() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.m4a";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseS3Ogg() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.ogg";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseS3Wav() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wav";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseS3Wma() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wma";
+    initTest(S3, mediaUrl);
+  }
 }

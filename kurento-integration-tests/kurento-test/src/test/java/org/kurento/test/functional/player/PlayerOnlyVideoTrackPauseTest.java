@@ -15,12 +15,17 @@
 
 package org.kurento.test.functional.player;
 
+import static org.kurento.test.config.Protocol.FILE;
+import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.S3;
+
 import java.awt.Color;
 import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
@@ -45,68 +50,169 @@ import org.kurento.test.config.TestScenario;
  * Secondary assertion(s): <br>
  * · Playing event should be received in remote video tag <br>
  *
- * @author Boni Garcia (bgarcia@gsyc.es)
+ * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.1.1
  */
-public class PlayerOnlyVideoTrackPauseTest extends SimplePlayer {
+public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
     return TestScenario.localChromeAndFirefox();
   }
 
-  private void initTest(String mediaUrl) throws Exception {
-    int pauseTimeSeconds = 10;
+  private void initTest(Protocol protocol, String nameMedia) throws Exception {
+    int pauseTimeSeconds = 3;
     final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
+
+    String mediaUrl = getMediaUrl(protocol, nameMedia);
+
     testPlayerPause(mediaUrl, WebRtcChannel.VIDEO_ONLY, pauseTimeSeconds, expectedColors);
   }
 
   @Test
-  public void testPlayerPauseOgv() throws Exception {
+  public void testPlayerOnlyVideoPauseHttpOgv() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.ogv";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseMkv() throws Exception {
+  public void testPlayerOnlyVideoPauseHttpMkv() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.mkv";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseAvi() throws Exception {
+  public void testPlayerOnlyVideoPauseHttpAvi() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.avi";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseWebm() throws Exception {
+  public void testPlayerOnlyVideoPauseHttpWebm() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.webm";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseMov() throws Exception {
+  public void testPlayerOnlyVideoPauseHttpMov() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.mov";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPause3gp() throws Exception {
+  public void testPlayerOnlyVideoPauseHttp3gp() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.3gp";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    initTest(HTTP, mediaUrl);
   }
 
   @Test
-  public void testPlayerPauseMp4() throws Exception {
+  public void testPlayerOnlyVideoPauseHttpMp4() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/15sec/rgbOnlyVideo.mp4";
-    initTest(mediaUrl);
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    initTest(HTTP, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFileOgv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFileMkv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFileAvi() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFileWebm() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFileMov() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFile3gp() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    initTest(HTTP, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseFileMp4() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    initTest(FILE, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS3Ogv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS3Mkv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS3Avi() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS3Webm() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS3Mov() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS33gp() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseS3Mp4() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    initTest(S3, mediaUrl);
   }
 }
