@@ -70,7 +70,7 @@ import org.kurento.test.mediainfo.AssertMedia;
 public class RecorderWebRtcShortFileTest extends StabilityTest {
 
   private static final int NUM_RECORDERS = 50;
-  private static final int RECORD_MS = 2000; // ms
+  private static final int RECORD_MS = 4000; // ms
   private static final int THRESHOLD_MS = 8000; // ms
   private static int numRecorders;
 
