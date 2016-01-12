@@ -16,6 +16,9 @@
 package org.kurento.test.base;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.config.Protocol.FILE;
+import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.S3;
 import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_PROP;
@@ -43,6 +46,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.kurento.commons.ConfigFileManager;
+import org.kurento.test.config.Protocol;
 import org.kurento.test.config.Retry;
 import org.kurento.test.config.TestReport;
 import org.kurento.test.config.TestScenario;
@@ -261,6 +265,24 @@ public class KurentoTest {
     log.info(SEPARATOR);
     log.info(message);
     log.info(SEPARATOR);
+  }
+
+  public static String getMediaUrl(Protocol protocol, String nameMedia) {
+    String mediaUrl = "";
+    switch (protocol) {
+      case HTTP:
+        mediaUrl = HTTP + "://files.kurento.org";
+        break;
+      case FILE:
+        mediaUrl = FILE + "://" + getTestFilesPath();
+        break;
+      case S3:
+        mediaUrl = S3 + "://" + getTestS3Path();
+        break;
+      default:
+        throw new RuntimeException(protocol + "is not supported in this test.");
+    }
+    return mediaUrl + nameMedia;
   }
 
 }
