@@ -232,4 +232,8 @@ public class TestConfiguration {
   public static final String TEST_WORKSPACE_HOST_PROP = "test.workspace.host";
   public static final String TEST_WORKSPACE_HOST_DEFAULT = "/tmp";
 
+  // Other keys
+  public static final String TEST_SEEK_REPETITIONS = "test.seek.repetitions";
+  public static final int TEST_SEEK_REPETITIONS_DEFAULT = 100;
+
 }

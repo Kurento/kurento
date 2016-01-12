@@ -30,6 +30,8 @@ import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_DEFAUL
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_S3_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_S3_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS;
+import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS_DEFAULT;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -283,6 +285,10 @@ public class KurentoTest {
         throw new RuntimeException(protocol + "is not supported in this test.");
     }
     return mediaUrl + nameMedia;
+  }
+
+  public static int getTestSeekRepetitions() {
+    return getProperty(TEST_SEEK_REPETITIONS, TEST_SEEK_REPETITIONS_DEFAULT);
   }
 
 }

@@ -15,8 +15,21 @@
 
 package org.kurento.test.base;
 
+import java.awt.Color;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Assert;
 import org.junit.experimental.categories.Category;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.PlayerEndpoint;
+import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.testing.SystemStabilityTests;
+import org.kurento.test.browser.WebRtcChannel;
+import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.browser.WebRtcTestPage;
 
 /**
@@ -32,4 +45,53 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
     setDeleteLogsIfSuccess(false);
   }
 
+  public void testPlayerMultipleSeek(String mediaUrl, WebRtcChannel webRtcChannel, int pauseTimeSeconds,
+      int numSeeks, Map<Integer, Color> expectedPositionAndColor) throws Exception {
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+    playerEP.connect(webRtcEP);
+
+    final CountDownLatch eosLatch = new CountDownLatch(1);
+    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        eosLatch.countDown();
+      }
+    });
+
+    // Test execution
+    getPage().subscribeEvents("playing");
+    getPage().initWebRtc(webRtcEP, webRtcChannel, WebRtcMode.RCV_ONLY);
+    playerEP.play();
+
+    // TODO: Check with playerEP.getVideoInfo().getIsSeekable() if the video is seekable. If not,
+    // assert with exception from KMS
+
+    Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
+    for (int i = 0; i < numSeeks; i++) {
+      for (Integer position : expectedPositionAndColor.keySet()) {
+        playerEP.setPosition(position);
+        if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
+          Assert.assertTrue("After set position to " + position
+              + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
+              getPage().similarColor(expectedPositionAndColor.get(position)));
+        }
+        playerEP.setPosition(0);
+        // TODO: Add new method for checking that audio did pause properly when kurento-utils has
+        // the
+        // feature.
+      }
+    }
+
+    // Assertions
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
+
+    Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
+        eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
+    // Release Media Pipeline
+    mp.release();
+  }
 }
