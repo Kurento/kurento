@@ -855,6 +855,7 @@
 								<Build-Timestamp>${build.datetime}</Build-Timestamp>
 							</manifestEntries>
 						</archive>
+						<additionalparam>-Xdoclint:none</additionalparam>
 					</configuration>
 				</plugin>
 				<plugin>
