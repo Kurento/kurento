@@ -207,6 +207,68 @@ kms_player_endpoint_dispose (GObject * object)
 }
 
 static GstFlowReturn
+new_preroll_cb (GstElement * appsink, gpointer user_data)
+{
+  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstFlowReturn ret;
+  GstSample *sample;
+  GstBuffer *buffer;
+  GstPad *src, *sink;
+
+  g_signal_emit_by_name (appsink, "pull-preroll", &sample);
+
+  if (sample == NULL) {
+    GST_ERROR_OBJECT (appsink, "Cannot get sample");
+    return GST_FLOW_OK;
+  }
+
+  buffer = gst_sample_get_buffer (sample);
+
+  if (buffer == NULL) {
+    ret = GST_FLOW_OK;
+    goto end;
+  }
+
+  gst_buffer_ref (buffer);
+
+  buffer = gst_buffer_make_writable (buffer);
+
+  buffer->pts = GST_CLOCK_TIME_NONE;
+  buffer->dts = GST_CLOCK_TIME_NONE;
+  buffer->duration = GST_CLOCK_TIME_NONE;
+
+  src = gst_element_get_static_pad (appsrc, "src");
+  sink = gst_pad_get_peer (src);
+
+  if (sink != NULL) {
+    if (GST_OBJECT_FLAG_IS_SET (sink, GST_PAD_FLAG_EOS)) {
+      GST_INFO_OBJECT (sink, "Sending flush events");
+      gst_pad_send_event (sink, gst_event_new_flush_start ());
+      gst_pad_send_event (sink, gst_event_new_flush_stop (FALSE));
+    }
+    g_object_unref (sink);
+  }
+
+  g_object_unref (src);
+
+  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
+
+  gst_buffer_unref (buffer);
+
+  if (ret != GST_FLOW_OK) {
+    /* something wrong */
+    GST_ERROR ("Could not send buffer to appsrc %s. Cause: %s",
+        GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
+  }
+
+end:
+  if (sample != NULL)
+    gst_sample_unref (sample);
+
+  return ret;
+}
+
+static GstFlowReturn
 new_sample_cb (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
@@ -455,6 +517,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
     g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb),
         appsrc);
     g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
+    g_signal_connect (appsink, "new-preroll", G_CALLBACK (new_preroll_cb),
+        appsrc);
 
     g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
     g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
