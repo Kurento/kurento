@@ -64,11 +64,11 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     // Reduce threshold time per test
     getPage().setThresholdTime(5); // seconds
 
-    String mediaUrl = protocol.toString() + "://";
-    mediaUrl += protocol == HTTP ? "files.kurento.org" : getTestFilesPath();
-    mediaUrl += "/video/format/";
-    mediaUrl += videoOnly ? "small_video_only." : "small.";
-    mediaUrl += videoFormat.toString();
+    String nameMedia = "/video/format/";
+    nameMedia += videoOnly ? "small_video_only." : "small.";
+    nameMedia += videoFormat.toString();
+
+    String mediaUrl = getMediaUrl(protocol, nameMedia);
 
     log.debug(">>>> Playing small video ({}) on {}", webRtcChannel, mediaUrl);
     testPlayer(mediaUrl, webRtcChannel, 5, 50, 50, new Color(99, 65, 40));

@@ -18,6 +18,7 @@ package org.kurento.test.functional.player;
 import static org.kurento.test.browser.WebRtcChannel.VIDEO_ONLY;
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.S3;
 import static org.kurento.test.config.VideoFormat.AVI;
 import static org.kurento.test.config.VideoFormat.MKV;
 import static org.kurento.test.config.VideoFormat.MOV;
@@ -28,6 +29,7 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
@@ -44,8 +46,8 @@ import org.kurento.test.config.TestScenario;
  * · Firefox <br>
  *
  * Test logic: <br>
- * 1. (KMS) PlayerEndpoint reads media source (from HTTP and FILE) and connects to a WebRtcEndpoint
- * <br>
+ * 1. (KMS) PlayerEndpoint reads media source (from HTTP, FILE and S3) and connects to a
+ * WebRtcEndpoint <br>
  * 2. (Browser) WebRtcPeer in rcv-only receives media <br>
  *
  * Main assertion(s): <br>
@@ -130,6 +132,41 @@ public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
   @Test
   public void testPlayerWebRtcVideoOnlyFileOgv() throws Exception {
     testPlayerWithSmallFileVideoOnly(FILE, OGV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyS33gp() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, THIRDGP, VIDEO_ONLY);
+  }
+
+  @Ignore
+  public void testPlayerWebRtcVideoOnlyS3Avi() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, AVI, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyS3Mkv() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, MKV, VIDEO_ONLY);
+  }
+
+  @Ignore
+  public void testPlayerWebRtcVideoOnlyS3Mov() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, MOV, VIDEO_ONLY);
+  }
+
+  @Ignore
+  public void testPlayerWebRtcVideoOnlyS3Mp4() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, MP4, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyS3Ogv() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, OGV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyS3Webm() throws Exception {
+    testPlayerWithSmallFileVideoOnly(S3, WEBM, VIDEO_ONLY);
   }
 
 }
