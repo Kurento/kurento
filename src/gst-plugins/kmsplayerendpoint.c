@@ -626,8 +626,31 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
 static gboolean
 kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
 {
-  if (!gst_element_seek_simple (self->priv->pipeline,
-          GST_FORMAT_TIME, GST_SEEK_FLAG_ACCURATE, position)) {
+  GstQuery *query;
+  GstEvent *seek;
+  gboolean seekable = FALSE;
+
+  query = gst_query_new_seeking (GST_FORMAT_TIME);
+  if (!gst_element_query (self->priv->pipeline, query)) {
+    GST_WARNING_OBJECT (self, "File not seekable in format time");
+    gst_query_unref (query);
+    return FALSE;
+  }
+
+  gst_query_parse_seeking (query, NULL, &seekable, NULL, NULL);
+  gst_query_unref (query);
+
+  if (!seekable) {
+    GST_WARNING_OBJECT (self, "File not seekable");
+    return FALSE;
+  }
+
+  seek = gst_event_new_seek (1.0, GST_FORMAT_TIME,
+      GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_TRICKMODE | GST_SEEK_FLAG_ACCURATE,
+      /* start */ GST_SEEK_TYPE_SET, position,
+      /* stop */ GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE);
+
+  if (!gst_element_send_event (self->priv->pipeline, seek)) {
     GST_WARNING_OBJECT (self, "Seek failed");
     return FALSE;
   }
