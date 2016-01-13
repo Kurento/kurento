@@ -34,6 +34,7 @@ fi
 
 cd ${PROJECT_NAME} || exit 1
 
+git fetch ${KURENTO_GIT_REPOSITORY}/${PROJECT_NAME} refs/changes/*:refs/changes/*
 git checkout ${BRANCH} || exit 1
 
 if [ -f .gitmodules ]
