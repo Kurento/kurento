@@ -31,7 +31,6 @@
 
 #define APPSRC_DATA "appsrc_data"
 #define APPSINK_DATA "appsink_data"
-#define BASE_TIME_DATA "base_time_data"
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_player_endpoint_debug_category
@@ -42,14 +41,6 @@ GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
     KMS_TYPE_PLAYER_ENDPOINT,                   \
     KmsPlayerEndpointPrivate                    \
   )                                             \
-)
-
-#define BASE_TIME_LOCK(obj) (                                           \
-  g_mutex_lock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_lock)        \
-)
-
-#define BASE_TIME_UNLOCK(obj) (                                         \
-  g_mutex_unlock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_lock)      \
 )
 
 typedef void (*KmsActionFunc) (gpointer user_data);
@@ -215,21 +206,13 @@ kms_player_endpoint_dispose (GObject * object)
   G_OBJECT_CLASS (kms_player_endpoint_parent_class)->dispose (object);
 }
 
-static void
-release_gst_clock (gpointer data)
-{
-  g_slice_free (GstClockTime, data);
-}
-
 static GstFlowReturn
 new_sample_cb (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
   GstFlowReturn ret;
   GstSample *sample;
-  GstSegment *segment;
   GstBuffer *buffer;
-  GstClockTime *base_time;
   GstPad *src, *sink;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
@@ -240,7 +223,6 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   }
 
   buffer = gst_sample_get_buffer (sample);
-  segment = gst_sample_get_segment (sample);
 
   if (buffer == NULL) {
     ret = GST_FLOW_OK;
@@ -251,44 +233,9 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
 
   buffer = gst_buffer_make_writable (buffer);
 
-  if (GST_BUFFER_PTS_IS_VALID (buffer))
-    buffer->pts =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->pts);
-  if (GST_BUFFER_DTS_IS_VALID (buffer))
-    buffer->dts =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->dts);
-
-  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsrc));
-
-  base_time =
-      g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
-
-  if (base_time == NULL) {
-    GstClock *clock;
-
-    clock = gst_element_get_clock (appsrc);
-    base_time = g_slice_new0 (GstClockTime);
-
-    g_object_set_data_full (G_OBJECT (GST_OBJECT_PARENT (appsrc)),
-        BASE_TIME_DATA, base_time, release_gst_clock);
-    *base_time =
-        gst_clock_get_time (clock) - gst_element_get_base_time (appsrc);
-
-    g_object_unref (clock);
-    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
-  }
-
-  if (GST_BUFFER_DTS_IS_VALID (buffer)) {
-    buffer->dts += *base_time;
-  }
-
-  if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-    buffer->pts += *base_time;
-  } else {
-    buffer->pts = buffer->dts;
-  }
-
-  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsrc));
+  buffer->pts = GST_CLOCK_TIME_NONE;
+  buffer->dts = GST_CLOCK_TIME_NONE;
+  buffer->duration = GST_CLOCK_TIME_NONE;
 
   src = gst_element_get_static_pad (appsrc, "src");
   sink = gst_pad_get_peer (src);
@@ -583,9 +530,6 @@ kms_player_endpoint_stopped (KmsUriEndpoint * obj)
 
   /* Set internal pipeline to NULL */
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-  BASE_TIME_LOCK (self);
-  g_object_set_data (G_OBJECT (self), BASE_TIME_DATA, NULL);
-  BASE_TIME_UNLOCK (self);
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       KMS_URI_ENDPOINT_STATE_STOP);
