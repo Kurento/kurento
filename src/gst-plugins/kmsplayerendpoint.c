@@ -517,7 +517,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
     appsink = gst_element_factory_make ("fakesink", NULL);
   }
 
-  g_object_set (appsink, "sync", TRUE, "async", FALSE, NULL);
+  g_object_set (appsink, "sync", TRUE, "async", TRUE, NULL);
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
 
