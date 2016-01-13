@@ -21,7 +21,11 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 echo "Building $GERRIT_REFNAME of $KURENTO_PROJECT"
 
 # Build
-kurento_clone_repo.sh $KURENTO_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $KURENTO_PROJECT repository"; exit 1; }
+if [ -n $GERRIT_REFSPEC ] ; then
+  kurento_clone_repo.sh $KURENTO_PROJECT $GERRIT_REFSPEC || { echo "Couldn't clone $KURENTO_PROJECT repository"; exit 1; }
+else
+  kurento_clone_repo.sh $KURENTO_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $KURENTO_PROJECT repository"; exit 1; }
+fi
 pushd $KURENTO_PROJECT
 COMMIT_MSG=$(git log -1 --pretty=format:%s)
 sed -e "s@mvn@mvn --batch-mode --settings $MAVEN_SETTINGS@g" < Makefile > Makefile.jenkins
