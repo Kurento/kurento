@@ -407,6 +407,111 @@ GST_START_TEST (negotiation_offerer)
 
 GST_END_TEST;
 
+GST_START_TEST (negotiation_offerer_ipv6)
+{
+  GArray *audio_codecs_array, *video_codecs_array;
+  gchar *audio_codecs[] = { "OPUS/48000/1", "AMR/8000/1", NULL };
+  gchar *video_codecs[] = { "H263-1998/90000", "VP8/90000", NULL };
+  gchar *offerer_sess_id, *answerer_sess_id;
+  GstElement *offerer = gst_element_factory_make ("rtpendpoint", NULL);
+  GstElement *answerer = gst_element_factory_make ("rtpendpoint", NULL);
+  GstSDPMessage *offer = NULL, *answer = NULL;
+  GstSDPMessage *offerer_local_sdp = NULL, *offerer_remote_sdp = NULL;
+  gchar *offerer_local_sdp_str, *offerer_remote_sdp_str;
+  GstSDPMessage *answerer_local_sdp = NULL, *answerer_remote_sdp = NULL;
+  gchar *answerer_local_sdp_str, *answerer_remote_sdp_str;
+  gchar *sdp_str = NULL;
+  const GstSDPConnection *connection;
+  gboolean answer_ok;
+
+  audio_codecs_array = create_codecs_array (audio_codecs);
+  video_codecs_array = create_codecs_array (video_codecs);
+  g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), "use-ipv6", TRUE, NULL);
+  g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
+      g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
+      g_array_ref (video_codecs_array), "use-ipv6", TRUE, NULL);
+  g_array_unref (audio_codecs_array);
+  g_array_unref (video_codecs_array);
+
+  /* Session creation */
+  g_signal_emit_by_name (offerer, "create-session", &offerer_sess_id);
+  GST_DEBUG_OBJECT (offerer, "Created session with id '%s'", offerer_sess_id);
+  g_signal_emit_by_name (answerer, "create-session", &answerer_sess_id);
+  GST_DEBUG_OBJECT (answerer, "Created session with id '%s'", answerer_sess_id);
+
+  /* SDP negotiation */
+  g_signal_emit_by_name (offerer, "generate-offer", offerer_sess_id, &offer);
+  fail_unless (offer != NULL);
+  GST_DEBUG ("Offer:\n%s", (sdp_str = gst_sdp_message_as_text (offer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+  connection = gst_sdp_message_get_connection (offer);
+
+  fail_unless (g_strcmp0 (connection->address, "0.0.0.0"));
+  fail_unless (g_strcmp0 (connection->address, "::"));
+
+  g_signal_emit_by_name (answerer, "process-offer", answerer_sess_id, offer,
+      &answer);
+  fail_unless (answer != NULL);
+  GST_DEBUG ("Answer:\n%s", (sdp_str = gst_sdp_message_as_text (answer)));
+  g_free (sdp_str);
+  sdp_str = NULL;
+
+  g_signal_emit_by_name (offerer, "process-answer", offerer_sess_id, answer,
+      &answer_ok);
+  fail_unless (answer_ok);
+
+  gst_sdp_message_free (offer);
+  gst_sdp_message_free (answer);
+
+  g_signal_emit_by_name (offerer, "get-local-sdp", offerer_sess_id,
+      &offerer_local_sdp);
+  fail_unless (offerer_local_sdp != NULL);
+  g_signal_emit_by_name (offerer, "get-remote-sdp", offerer_sess_id,
+      &offerer_remote_sdp);
+  fail_unless (offerer_remote_sdp != NULL);
+
+  g_signal_emit_by_name (answerer, "get-local-sdp", answerer_sess_id,
+      &answerer_local_sdp);
+  fail_unless (answerer_local_sdp != NULL);
+  g_signal_emit_by_name (answerer, "get-remote-sdp", answerer_sess_id,
+      &answerer_remote_sdp);
+  fail_unless (answerer_remote_sdp != NULL);
+
+  offerer_local_sdp_str = gst_sdp_message_as_text (offerer_local_sdp);
+  offerer_remote_sdp_str = gst_sdp_message_as_text (offerer_remote_sdp);
+
+  answerer_local_sdp_str = gst_sdp_message_as_text (answerer_local_sdp);
+  answerer_remote_sdp_str = gst_sdp_message_as_text (answerer_remote_sdp);
+
+  GST_DEBUG ("Offerer local SDP\n%s", offerer_local_sdp_str);
+  GST_DEBUG ("Offerer remote SDPr\n%s", offerer_remote_sdp_str);
+  GST_DEBUG ("Answerer local SDP\n%s", answerer_local_sdp_str);
+  GST_DEBUG ("Answerer remote SDP\n%s", answerer_remote_sdp_str);
+
+  fail_unless (g_strcmp0 (offerer_local_sdp_str, answerer_remote_sdp_str) == 0);
+  fail_unless (g_strcmp0 (offerer_remote_sdp_str, answerer_local_sdp_str) == 0);
+
+  g_free (offerer_local_sdp_str);
+  g_free (offerer_remote_sdp_str);
+  g_free (answerer_local_sdp_str);
+  g_free (answerer_remote_sdp_str);
+
+  gst_sdp_message_free (offerer_local_sdp);
+  gst_sdp_message_free (offerer_remote_sdp);
+  gst_sdp_message_free (answerer_local_sdp);
+  gst_sdp_message_free (answerer_remote_sdp);
+
+  g_object_unref (offerer);
+  g_object_unref (answerer);
+  g_free (offerer_sess_id);
+  g_free (answerer_sess_id);
+}
+
+GST_END_TEST;
+
 GST_START_TEST (process_bundle_offer)
 {
   GArray *audio_codecs_array, *video_codecs_array;
@@ -734,6 +839,7 @@ sdp_suite (void)
   suite_add_tcase (s, tc_chain);
 
   tcase_add_test (tc_chain, negotiation_offerer);
+  tcase_add_test (tc_chain, negotiation_offerer_ipv6);
   tcase_add_test (tc_chain, loopback);
   tcase_add_test (tc_chain, process_bundle_offer);
   tcase_add_test (tc_chain, generate_offer_bw_limited);

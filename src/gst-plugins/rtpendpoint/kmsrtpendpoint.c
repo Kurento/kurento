@@ -302,11 +302,68 @@ kms_rtp_endpoint_get_connection (KmsRtpEndpoint * self, KmsSdpSession * sess,
 /* Internal session management begin */
 
 static void
+kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
+{
+  GList *ips, *l;
+  gboolean done = FALSE;
+
+  ips = nice_interfaces_get_local_ips (FALSE);
+  for (l = ips; l != NULL && !done; l = l->next) {
+    GInetAddress *addr;
+    gboolean is_ipv6 = FALSE;
+
+    addr = g_inet_address_new_from_string (l->data);
+    if (G_IS_INET_ADDRESS (addr)) {
+      switch (g_inet_address_get_family (addr)) {
+        case G_SOCKET_FAMILY_INVALID:
+        case G_SOCKET_FAMILY_UNIX:
+          /* Ignore this addresses */
+          break;
+        case G_SOCKET_FAMILY_IPV6:
+          is_ipv6 = TRUE;
+        case G_SOCKET_FAMILY_IPV4:
+        {
+          gchar *addr_str;
+          gboolean use_ipv6;
+
+          g_object_get (self, "use-ipv6", &use_ipv6, NULL);
+          if (is_ipv6 != use_ipv6) {
+            GST_DEBUG_OBJECT (self, "No valid address type: %d", is_ipv6);
+            break;
+          }
+
+          addr_str = g_inet_address_to_string (addr);
+          if (addr_str != NULL) {
+            g_object_set (self, "addr", addr_str, NULL);
+            g_free (addr_str);
+            done = TRUE;
+          }
+          break;
+        }
+      }
+    }
+
+    if (G_IS_OBJECT (addr)) {
+      g_object_unref (addr);
+    }
+  }
+
+  g_list_free_full (ips, g_free);
+
+  if (!done) {
+    GST_WARNING_OBJECT (self, "Addr not set");
+  }
+}
+
+static void
 kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
     gint id, KmsSdpSession ** sess)
 {
   KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (base_sdp);
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp);
+
+  /* Get ip address now that session is bein created */
+  kms_rtp_endpoint_set_addr (self);
 
   if (self->priv->use_sdes) {
     *sess = KMS_SDP_SESSION (kms_srtp_session_new (base_sdp, id, manager));
@@ -619,60 +676,6 @@ kms_rtp_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 }
 
 /* Media handler management end */
-
-static void
-kms_rtp_endpoint_set_addr (KmsRtpEndpoint * self)
-{
-  GList *ips, *l;
-  gboolean done = FALSE;
-
-  ips = nice_interfaces_get_local_ips (FALSE);
-  for (l = ips; l != NULL && !done; l = l->next) {
-    GInetAddress *addr;
-    gboolean is_ipv6 = FALSE;
-
-    addr = g_inet_address_new_from_string (l->data);
-    if (G_IS_INET_ADDRESS (addr)) {
-      switch (g_inet_address_get_family (addr)) {
-        case G_SOCKET_FAMILY_INVALID:
-        case G_SOCKET_FAMILY_UNIX:
-          /* Ignore this addresses */
-          break;
-        case G_SOCKET_FAMILY_IPV6:
-          is_ipv6 = TRUE;
-        case G_SOCKET_FAMILY_IPV4:
-        {
-          gchar *addr_str;
-          gboolean use_ipv6;
-
-          g_object_get (self, "use-ipv6", &use_ipv6, NULL);
-          if (is_ipv6 != use_ipv6) {
-            GST_DEBUG_OBJECT (self, "No valid address type: %d", is_ipv6);
-            break;
-          }
-
-          addr_str = g_inet_address_to_string (addr);
-          if (addr_str != NULL) {
-            g_object_set (self, "addr", addr_str, NULL);
-            g_free (addr_str);
-            done = TRUE;
-          }
-          break;
-        }
-      }
-    }
-
-    if (G_IS_OBJECT (addr)) {
-      g_object_unref (addr);
-    }
-  }
-
-  g_list_free_full (ips, g_free);
-
-  if (!done) {
-    GST_WARNING_OBJECT (self, "Addr not set");
-  }
-}
 
 static void
 kms_rtp_endpoint_configure_connection_keys (KmsRtpEndpoint * self,
@@ -1034,8 +1037,6 @@ kms_rtp_endpoint_init (KmsRtpEndpoint * self)
       FALSE, "rtcp-mux", FALSE, "rtcp-nack", TRUE, "rtcp-remb", FALSE,
       "max-video-recv-bandwidth", 0, NULL);
   /* FIXME: remove max-video-recv-bandwidth when it b=AS:X is in the SDP offer */
-
-  kms_rtp_endpoint_set_addr (self);
 }
 
 gboolean
