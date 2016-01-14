@@ -2,7 +2,7 @@
 Node.js - One to many video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on an one to one video call using `WebRTC`:term:
+This web application consists on one-to-many video call using `WebRTC`:term:
 technology. In other words, it is an implementation of a video broadcasting web
 application.
 
@@ -46,8 +46,8 @@ clean the npm cache, and try to install them again:
     rm -r node_modules
     npm cache clean
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 

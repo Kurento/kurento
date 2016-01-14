@@ -2,7 +2,7 @@
 Java - One to many video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on an one to one video call using `WebRTC`:term:
+This web application consists on a one-to-many video call using `WebRTC`:term:
 technology. In other words, it is an implementation of a video broadcasting web
 application.
 
@@ -74,12 +74,13 @@ implemented media pipeline is illustrated in the following picture:
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
 At the server-side, we use a Spring-Boot based server application consuming the
-**Kurento Java Client** API, to control **Kurento Media Server** capabilities. All in all, the high level architecture of this demo
-is three-tier. To communicate these entities two WebSockets are used. First, a
-WebSocket is created between client and server-side to implement a custom
-signaling protocol. Second, another WebSocket is used to perform the
-communication between the Kurento Java Client and the Kurento Media Server.
-This communication is implemented by the **Kurento Protocol**. For further
+**Kurento Java Client** API, to control **Kurento Media Server** capabilities.
+All in all, the high level architecture of this demo is three-tier. To
+communicate these entities two WebSockets are used. First, a WebSocket is
+created between client and server-side to implement a custom signaling
+protocol. Second, another WebSocket is used to perform the communication
+between the Kurento Java Client and the Kurento Media Server. This
+communication is implemented by the **Kurento Protocol**. For further
 information, please see this :doc:`page <../../mastering/kurento_protocol>`.
 
 Client and application server communicate using a signaling protocol based on
@@ -119,8 +120,8 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
@@ -194,8 +195,8 @@ the *localhost* and listening in the port 8888.
    }
 
 This web application follows a *Single Page Application* architecture
-(`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server by
-means of requests and responses. Specifically, the main app class implements
+(`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server
+by means of requests and responses. Specifically, the main app class implements
 the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
 process WebSocket requests in the path ``/call``.
 
