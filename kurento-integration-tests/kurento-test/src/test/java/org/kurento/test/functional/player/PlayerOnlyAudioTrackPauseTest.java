@@ -103,14 +103,14 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioPauseFileMp3() throws Exception {
     // Test data
     String mediaUrl = "/audio/10sec/cinema.mp3";
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioPauseFileM4a() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.m4a";
@@ -124,7 +124,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioPauseFileWav() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wav";
