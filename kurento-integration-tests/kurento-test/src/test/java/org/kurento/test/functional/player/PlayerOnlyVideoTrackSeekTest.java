@@ -90,7 +90,7 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttpAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
@@ -104,10 +104,9 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttpMov() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
     initTest(HTTP, mediaUrl);
   }
@@ -119,10 +118,9 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttpMp4() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
     initTest(HTTP, mediaUrl);
   }
@@ -141,14 +139,14 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekFileAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekFileWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -158,22 +156,20 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
   @Ignore
   public void testPlayerOnlyVideoSeekFileMov() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyVideoSeekFile3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekFileMp4() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
     initTest(FILE, mediaUrl);
   }
@@ -185,46 +181,44 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyVideoSeekS3Mkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Avi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Webm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Mov() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS33gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Mp4() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
     initTest(S3, mediaUrl);
   }

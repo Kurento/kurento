@@ -105,25 +105,23 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpMov() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgb.mov";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttp3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.3gp";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpMp4() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgb.mp4";
     initTest(HTTP, mediaUrl);
   }
@@ -156,10 +154,9 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekFileMov() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgb.mov";
     initTest(FILE, mediaUrl);
   }
@@ -171,10 +168,9 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekFileMp4() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgb.mp4";
     initTest(FILE, mediaUrl);
   }
@@ -207,10 +203,9 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekS3Mov() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgb.mov";
     initTest(S3, mediaUrl);
   }
@@ -222,10 +217,9 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekS3Mp4() throws Exception {
     // Test data
-    // TODO This test is ignore because KMS returns segmentation fault
     final String mediaUrl = "/video/15sec/rgb.mp4";
     initTest(S3, mediaUrl);
   }

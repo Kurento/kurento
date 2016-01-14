@@ -75,14 +75,14 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
         expectedPositionAndWithoutColor);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekHttpMp3() throws Exception {
     // Test data
     String mediaUrl = "/audio/10sec/cinema.mp3";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekHttpM4a() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.m4a";
@@ -96,14 +96,14 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekHttpWav() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wav";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekHttpWma() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wma";
