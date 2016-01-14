@@ -52,7 +52,7 @@ There are several tutorials that show kurento-utils used in complete webrtc appl
 
 
 In the following lines we will show how to use the library to create an ``RTCPeerConnection``, and how to negotiate the connection with 
-another peer. The library offers a ``ẀebRtcPeer`` object, which is a wrapper of the browser's RTCPeerConnection API. Peero connections can be of different types: unidirectional (send or receive only) or bidirectional (send and receive). The following code shows how to create the latter,
+another peer. The library offers a ``WebRtcPeer`` object, which is a wrapper of the browser's RTCPeerConnection API. Peero connections can be of different types: unidirectional (send or receive only) or bidirectional (send and receive). The following code shows how to create the latter,
 in order to be able to send and receive media (audio and video). The code assumes that there are two video tags in the page that loads the 
 script. These tags will be used to show the video as captured by your own client browser, and the media received from the other peer. The constructor receives a proerty bag that holds all the information needed for the configuration.
 
