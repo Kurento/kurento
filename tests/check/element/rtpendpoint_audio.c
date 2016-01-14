@@ -23,6 +23,8 @@
 #define KMS_VIDEO_PREFIX "video_src_"
 #define KMS_AUDIO_PREFIX "audio_src_"
 
+#define SINK_AUDIO_STREAM "sink_audio_default"
+
 #define AUDIO_SINK "audio-sink"
 #define VIDEO_SINK "video-sink"
 
@@ -283,7 +285,7 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), rtpendpointsender);
   connect_sink_async (rtpendpointsender, audiotestsrc, audio_enc,
-      NULL, pipeline, "sink_audio");
+      NULL, pipeline, SINK_AUDIO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), rtpendpointreceiver);
 
@@ -466,11 +468,11 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, audiotestsrc_offerer,
-      audio_enc_offerer, NULL, pipeline, "sink_audio");
+      audio_enc_offerer, NULL, pipeline, SINK_AUDIO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), answerer);
   connect_sink_async (answerer, audiotestsrc_answerer,
-      audio_enc_answerer, NULL, pipeline, "sink_audio");
+      audio_enc_answerer, NULL, pipeline, SINK_AUDIO_STREAM);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 

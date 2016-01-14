@@ -29,6 +29,9 @@
 #include "config.h"
 #endif
 
+#define SINK_VIDEO_STREAM "sink_video_default"
+#define SINK_AUDIO_STREAM "sink_audio_default"
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -429,7 +432,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   gst_bin_add (GST_BIN (pipeline), sender);
 
   connect_sink_async (sender, videotestsrc, video_enc, NULL, pipeline,
-      "sink_video");
+      SINK_VIDEO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), receiver);
 
@@ -595,11 +598,11 @@ test_video_sendrecv (const gchar * video_enc_name,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
-      pipeline, "sink_video");
+      pipeline, SINK_VIDEO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), answerer);
   connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
-      pipeline, "sink_video");
+      pipeline, SINK_VIDEO_STREAM);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -750,11 +753,11 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, audiotestsrc_offerer, audio_enc_offerer,
-      capsfilter_offerer, pipeline, "sink_audio");
+      capsfilter_offerer, pipeline, SINK_AUDIO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), answerer);
   connect_sink_async (answerer, audiotestsrc_answerer, audio_enc_answerer,
-      capsfilter_answerer, pipeline, "sink_audio");
+      capsfilter_answerer, pipeline, SINK_AUDIO_STREAM);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -965,9 +968,9 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), sender);
   connect_sink_async (sender, audiotestsrc, audio_enc, capsfilter, pipeline,
-      "sink_audio");
+      SINK_AUDIO_STREAM);
   connect_sink_async (sender, videotestsrc, video_enc, NULL, pipeline,
-      "sink_video");
+      SINK_VIDEO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), receiver);
 
@@ -1173,15 +1176,15 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, audiotestsrc_offerer, audio_enc_offerer,
-      capsfilter_offerer, pipeline, "sink_audio");
+      capsfilter_offerer, pipeline, SINK_AUDIO_STREAM);
   connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
-      pipeline, "sink_video");
+      pipeline, SINK_VIDEO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), answerer);
   connect_sink_async (answerer, audiotestsrc_answerer, audio_enc_answerer,
-      capsfilter_answerer, pipeline, "sink_audio");
+      capsfilter_answerer, pipeline, SINK_AUDIO_STREAM);
   connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
-      pipeline, "sink_video");
+      pipeline, SINK_VIDEO_STREAM);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -1348,11 +1351,11 @@ test_offerer_audio_video_answerer_video_sendrecv (const gchar * audio_enc_name,
   /* Add elements */
   gst_bin_add (GST_BIN (pipeline), offerer);
   connect_sink_async (offerer, videotestsrc_offerer, video_enc_offerer, NULL,
-      pipeline, "sink_video");
+      pipeline, SINK_VIDEO_STREAM);
 
   gst_bin_add (GST_BIN (pipeline), answerer);
   connect_sink_async (answerer, videotestsrc_answerer, video_enc_answerer, NULL,
-      pipeline, "sink_video");
+      pipeline, SINK_VIDEO_STREAM);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 

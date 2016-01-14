@@ -31,6 +31,8 @@
 #define AUDIO_BW 30
 #define VIDEO_BW 500
 
+#define SINK_VIDEO_STREAM "sink_video_default"
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -243,7 +245,8 @@ GST_START_TEST (loopback)
       rtpendpointsender, rtpendpointreceiver, outputfakesink, NULL);
 
   gst_element_link (videotestsrc, agnosticbin);
-  connect_sink_async (rtpendpointsender, agnosticbin, pipeline, "sink_video");
+  connect_sink_async (rtpendpointsender, agnosticbin, pipeline,
+      SINK_VIDEO_STREAM);
 
   g_object_set_data (G_OBJECT (rtpendpointreceiver), VIDEO_SINK,
       outputfakesink);

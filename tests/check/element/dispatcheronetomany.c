@@ -22,6 +22,8 @@
 #define KMS_ELEMENT_PAD_TYPE_VIDEO 2
 #define NUM_CONNEXIONS 2
 
+#define SINK_VIDEO_STREAM "sink_video_default"
+
 GstElement *pipeline;
 GMainLoop *loop;
 GstElement *hubport1, *hubport2, *hubport3, *hubport4, *hubport5, *mixer;
@@ -117,7 +119,7 @@ srcpad_added (GstElement * hubport, GstPad * new_pad, gpointer user_data)
   padname = gst_pad_get_name (new_pad);
   fail_if (padname == NULL);
 
-  if ((g_strcmp0 (padname, "sink_video") == 0) &&
+  if ((g_strcmp0 (padname, SINK_VIDEO_STREAM) == 0) &&
       ((hubport == hubport1) || (hubport == hubport2))) {
     //connect videosrc
     GST_INFO_OBJECT (hubport, "Pad added %" GST_PTR_FORMAT, new_pad);

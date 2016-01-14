@@ -19,6 +19,9 @@
 
 #include <commons/kmsuriendpointstate.h>
 
+#define SINK_VIDEO_STREAM "sink_video_default"
+#define SINK_AUDIO_STREAM "sink_audio_default"
+
 gboolean set_state_start (gpointer *);
 gboolean set_state_pause (gpointer *);
 gboolean set_state_stop (gpointer *);
@@ -313,8 +316,8 @@ GST_START_TEST (check_states_pipeline)
   gst_element_link (timeoverlay, vencoder);
   gst_element_link (audiotestsrc, aencoder);
 
-  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
-  link_to_recorder (recorder, aencoder, pipeline, "sink_audio");
+  link_to_recorder (recorder, vencoder, pipeline, SINK_VIDEO_STREAM);
+  link_to_recorder (recorder, aencoder, pipeline, SINK_AUDIO_STREAM);
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb),
       loop);
@@ -379,8 +382,8 @@ GST_START_TEST (warning_pipeline)
   gst_element_link (timeoverlay, vencoder);
   gst_element_link (audiotestsrc, aencoder);
 
-  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
-  link_to_recorder (recorder, aencoder, pipeline, "sink_audio");
+  link_to_recorder (recorder, vencoder, pipeline, SINK_VIDEO_STREAM);
+  link_to_recorder (recorder, aencoder, pipeline, SINK_AUDIO_STREAM);
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb),
       loop);
@@ -467,8 +470,8 @@ GST_START_TEST (finite_video_test)
   gst_element_link (timeoverlay, vencoder);
   gst_element_link (audiotestsrc, aencoder);
 
-  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
-  link_to_recorder (recorder, aencoder, pipeline, "sink_audio");
+  link_to_recorder (recorder, vencoder, pipeline, SINK_VIDEO_STREAM);
+  link_to_recorder (recorder, aencoder, pipeline, SINK_AUDIO_STREAM);
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb2),
       loop);
@@ -559,7 +562,7 @@ GST_START_TEST (check_video_only)
   gst_element_link (videotestsrc, timeoverlay);
   gst_element_link (timeoverlay, vencoder);
 
-  link_to_recorder (recorder, vencoder, pipeline, "sink_video");
+  link_to_recorder (recorder, vencoder, pipeline, SINK_VIDEO_STREAM);
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb3),
       loop);
@@ -621,7 +624,7 @@ GST_START_TEST (check_audio_only)
   gst_bin_add_many (GST_BIN (pipeline), audiotestsrc, encoder, recorder, NULL);
   gst_element_link (audiotestsrc, encoder);
 
-  link_to_recorder (recorder, encoder, pipeline, "sink_audio");
+  link_to_recorder (recorder, encoder, pipeline, SINK_AUDIO_STREAM);
 
   g_signal_connect (recorder, "state-changed", G_CALLBACK (state_changed_cb3),
       loop);
@@ -663,10 +666,13 @@ recorderendpoint_suite (void)
   suite_add_tcase (s, tc_chain);
 
 /* Enable test when recorder is able to emit dropable buffers for the muxer */
+
   tcase_add_test (tc_chain, check_video_only);
   tcase_add_test (tc_chain, check_audio_only);
   tcase_add_test (tc_chain, check_states_pipeline);
   tcase_add_test (tc_chain, warning_pipeline);
+  tcase_add_test (tc_chain, finite_video_test);
+
   tcase_add_test (tc_chain, finite_video_test);
 
   return s;
