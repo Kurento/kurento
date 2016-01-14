@@ -405,7 +405,8 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 static void
 test_audio_sendrecv (const gchar * audio_enc_name,
-    GstStaticCaps expected_caps, gchar * codec, guint crypto, const gchar * key)
+    GstStaticCaps expected_caps, gchar * codec, guint crypto, const gchar * key,
+    gboolean use_ipv6)
 {
   GArray *codecs_array;
   gchar *codecs[] = { codec, NULL };
@@ -445,9 +446,9 @@ test_audio_sendrecv (const gchar * audio_enc_name,
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (codecs_array), NULL);
+      g_array_ref (codecs_array), "use-ipv6", use_ipv6, NULL);
   g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (codecs_array), NULL);
+      g_array_ref (codecs_array), "use-ipv6", use_ipv6, NULL);
   g_array_unref (codecs_array);
 
   hod = g_slice_new (HandOffData);
@@ -552,22 +553,39 @@ GST_START_TEST (test_opus_sendonly_play_after_negotiation)
   test_opus_sendonly (TRUE);
 }
 
-GST_END_TEST
-GST_START_TEST (test_opus_sendrecv)
+GST_END_TEST;
+
+void
+do_opus_tests (gboolean use_ipv6)
 {
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_NONE, NULL);
+      KMS_RTP_SDES_CRYPTO_SUITE_NONE, NULL, use_ipv6);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_32, SDES_30_BYTES_KEY);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_32, SDES_30_BYTES_KEY,
+      use_ipv6);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_80, SDES_30_BYTES_KEY);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_128_CM_HMAC_SHA1_80, SDES_30_BYTES_KEY,
+      use_ipv6);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_32, SDES_46_BYTES_KEY);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_32, SDES_46_BYTES_KEY,
+      use_ipv6);
   test_audio_sendrecv ("opusenc", opus_expected_caps, "OPUS/48000/1",
-      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80, SDES_46_BYTES_KEY);
+      KMS_RTP_SDES_CRYPTO_SUITE_AES_256_CM_HMAC_SHA1_80, SDES_46_BYTES_KEY,
+      use_ipv6);
 }
 
-GST_END_TEST
+GST_START_TEST (test_opus_sendrecv)
+{
+  do_opus_tests (FALSE);
+}
+
+GST_END_TEST;
+GST_START_TEST (test_opus_sendrecv_ipv6)
+{
+  do_opus_tests (TRUE);
+}
+
+GST_END_TEST;
 /*
  * End of test cases
  */
@@ -582,6 +600,7 @@ rtpendpoint_audio_test_suite (void)
   tcase_add_test (tc_chain, test_opus_sendonly_play_before_negotiation);
   tcase_add_test (tc_chain, test_opus_sendonly_play_after_negotiation);
   tcase_add_test (tc_chain, test_opus_sendrecv);
+  tcase_add_test (tc_chain, test_opus_sendrecv_ipv6);
 
   return s;
 }

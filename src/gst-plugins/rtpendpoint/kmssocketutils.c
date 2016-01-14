@@ -27,19 +27,19 @@ kms_socket_finalize (GSocket ** socket)
 }
 
 static GSocket *
-kms_socket_open (guint16 port)
+kms_socket_open (guint16 port, GSocketFamily family)
 {
   GSocket *socket;
   GSocketAddress *bind_saddr;
   GInetAddress *addr;
 
-  socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM,
+  socket = g_socket_new (family, G_SOCKET_TYPE_DATAGRAM,
       G_SOCKET_PROTOCOL_UDP, NULL);
   if (socket == NULL) {
     return NULL;
   }
 
-  addr = g_inet_address_new_any (G_SOCKET_FAMILY_IPV4);
+  addr = g_inet_address_new_any (family);
   bind_saddr = g_inet_socket_address_new (addr, port);
   g_object_unref (addr);
   if (!g_socket_bind (socket, bind_saddr, FALSE, NULL)) {
@@ -95,7 +95,7 @@ in_range (guint16 current, guint16 min, guint16 max)
 
 gboolean
 kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
-    guint16 min_port, guint16 max_port)
+    guint16 min_port, guint16 max_port, GSocketFamily socket_family)
 {
   guint16 port1, port2;
   guint16 start_port;
@@ -126,7 +126,7 @@ kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
           &all_checked)) {
     GSocket *s1, *s2;
 
-    s1 = kms_socket_open (port1);
+    s1 = kms_socket_open (port1, socket_family);
 
     if (s1 == NULL) {
       continue;
@@ -145,7 +145,7 @@ kms_rtp_connection_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp,
       continue;
     }
 
-    s2 = kms_socket_open (port2);
+    s2 = kms_socket_open (port2, socket_family);
 
     if (s2 == NULL) {
       kms_socket_finalize (&s1);

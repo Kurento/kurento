@@ -19,7 +19,6 @@
 #include "kmsrtpbaseconnection.h"
 
 G_BEGIN_DECLS
-
 #define KMS_TYPE_RTP_CONNECTION \
   (kms_rtp_connection_get_type())
 #define KMS_RTP_CONNECTION(obj) \
@@ -31,7 +30,6 @@ G_BEGIN_DECLS
 #define KMS_IS_RTP_CONNECTION_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_RTP_CONNECTION))
 #define KMS_RTP_CONNECTION_CAST(obj) ((KmsRtpConnection*)(obj))
-
 typedef struct _KmsRtpConnectionPrivate KmsRtpConnectionPrivate;
 typedef struct _KmsRtpConnection KmsRtpConnection;
 typedef struct _KmsRtpConnectionClass KmsRtpConnectionClass;
@@ -50,7 +48,8 @@ struct _KmsRtpConnectionClass
 
 GType kms_rtp_connection_get_type (void);
 
-KmsRtpConnection * kms_rtp_connection_new (guint16 min_port, guint16 max_port);
+KmsRtpConnection *kms_rtp_connection_new (guint16 min_port, guint16 max_port,
+    gboolean use_ipv6);
 
 G_END_DECLS
 #endif /* __KMS_RTP_CONNECTION_H__ */

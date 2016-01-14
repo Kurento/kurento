@@ -383,18 +383,26 @@ kms_srtp_connection_soft_key_limit_cb (GstElement * srtpdec, guint ssrc,
 }
 
 KmsSrtpConnection *
-kms_srtp_connection_new (guint16 min_port, guint16 max_port)
+kms_srtp_connection_new (guint16 min_port, guint16 max_port, gboolean use_ipv6)
 {
   GObject *obj;
   KmsSrtpConnection *conn;
   KmsSrtpConnectionPrivate *priv;
+  GSocketFamily socket_family;
 
   obj = g_object_new (KMS_TYPE_SRTP_CONNECTION, NULL);
   conn = KMS_SRTP_CONNECTION (obj);
   priv = conn->priv;
 
+  if (use_ipv6) {
+    socket_family = G_SOCKET_FAMILY_IPV6;
+  } else {
+    socket_family = G_SOCKET_FAMILY_IPV4;
+  }
+
   if (!kms_rtp_connection_get_rtp_rtcp_sockets
-      (&priv->rtp_socket, &priv->rtcp_socket, min_port, max_port)) {
+      (&priv->rtp_socket, &priv->rtcp_socket, min_port, max_port,
+          socket_family)) {
     GST_ERROR_OBJECT (obj, "Cannot get ports");
     g_object_unref (obj);
     return NULL;

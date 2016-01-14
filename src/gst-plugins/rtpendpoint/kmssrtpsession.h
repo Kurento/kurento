@@ -43,6 +43,8 @@ typedef struct _KmsSrtpSessionClass KmsSrtpSessionClass;
 struct _KmsSrtpSession
 {
   KmsBaseRtpSession parent;
+
+  gboolean use_ipv6;
 };
 
 struct _KmsSrtpSessionClass
@@ -52,12 +54,13 @@ struct _KmsSrtpSessionClass
   /* private */
   /* virtual methods */
   void (*post_constructor) (KmsSrtpSession * self, KmsBaseSdpEndpoint * ep,
-                            guint id, KmsIRtpSessionManager * manager);
+                            guint id, KmsIRtpSessionManager * manager,
+                            gboolean use_ipv6);
 };
 
 GType kms_srtp_session_get_type (void);
 
-KmsSrtpSession * kms_srtp_session_new (KmsBaseSdpEndpoint * ep, guint id, KmsIRtpSessionManager * manager);
+KmsSrtpSession *kms_srtp_session_new (KmsBaseSdpEndpoint * ep, guint id, KmsIRtpSessionManager * manager, gboolean use_ipv6);
 
 KmsRtpBaseConnection * kms_srtp_session_get_connection (KmsSrtpSession * self, SdpMediaConfig * mconf);
 

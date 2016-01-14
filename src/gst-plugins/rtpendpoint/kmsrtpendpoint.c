@@ -361,14 +361,19 @@ kms_rtp_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
 {
   KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (base_sdp);
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp);
+  gboolean use_ipv6 = FALSE;
 
   /* Get ip address now that session is bein created */
   kms_rtp_endpoint_set_addr (self);
 
+  g_object_get (self, "use-ipv6", &use_ipv6, NULL);
   if (self->priv->use_sdes) {
-    *sess = KMS_SDP_SESSION (kms_srtp_session_new (base_sdp, id, manager));
+    *sess =
+        KMS_SDP_SESSION (kms_srtp_session_new (base_sdp, id, manager,
+            use_ipv6));
   } else {
-    *sess = KMS_SDP_SESSION (kms_rtp_session_new (base_sdp, id, manager));
+    *sess =
+        KMS_SDP_SESSION (kms_rtp_session_new (base_sdp, id, manager, use_ipv6));
   }
 
   /* Chain up */
