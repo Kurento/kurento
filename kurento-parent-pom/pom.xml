@@ -335,12 +335,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-commons-testing</artifactId>
-				<version>${version.kurento-java}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.kurento</groupId>
 				<artifactId>kms-api-core</artifactId>
 				<version>${version.kms-api-core}</version>
 			</dependency>
