@@ -233,13 +233,15 @@ kms_rtp_connection_new (guint16 min_port, guint16 max_port)
   priv->rtp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
   g_object_set (priv->rtp_udpsink, "socket", priv->rtp_socket,
       "sync", FALSE, "async", FALSE, NULL);
-  g_object_set (priv->rtp_udpsrc, "socket", priv->rtp_socket, NULL);
+  g_object_set (priv->rtp_udpsrc, "socket", priv->rtp_socket, "auto-multicast",
+      FALSE, NULL);
 
   priv->rtcp_udpsink = gst_element_factory_make ("multiudpsink", NULL);
   priv->rtcp_udpsrc = gst_element_factory_make ("udpsrc", NULL);
   g_object_set (priv->rtcp_udpsink, "socket", priv->rtcp_socket,
       "sync", FALSE, "async", FALSE, NULL);
-  g_object_set (priv->rtcp_udpsrc, "socket", priv->rtcp_socket, NULL);
+  g_object_set (priv->rtcp_udpsrc, "socket", priv->rtcp_socket,
+      "auto-multicast", FALSE, NULL);
 
   kms_i_rtp_connection_connected_signal (KMS_I_RTP_CONNECTION (conn));
 
