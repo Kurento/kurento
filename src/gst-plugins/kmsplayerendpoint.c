@@ -236,6 +236,12 @@ new_preroll_cb (GstElement * appsink, gpointer user_data)
   buffer->pts = GST_CLOCK_TIME_NONE;
   buffer->dts = GST_CLOCK_TIME_NONE;
 
+  // HACK: Change duration 1 to -1 to avoid segmentation fault
+  //problems in seeks with some formats
+  if (buffer->duration == 1) {
+    buffer->duration = GST_CLOCK_TIME_NONE;
+  }
+
   src = gst_element_get_static_pad (appsrc, "src");
   sink = gst_pad_get_peer (src);
 
@@ -296,6 +302,12 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
 
   buffer->pts = GST_CLOCK_TIME_NONE;
   buffer->dts = GST_CLOCK_TIME_NONE;
+
+  // HACK: Change duration 1 to -1 to avoid segmentation fault
+  //problems in seeks with some formats
+  if (buffer->duration == 1) {
+    buffer->duration = GST_CLOCK_TIME_NONE;
+  }
 
   src = gst_element_get_static_pad (appsrc, "src");
   sink = gst_pad_get_peer (src);
