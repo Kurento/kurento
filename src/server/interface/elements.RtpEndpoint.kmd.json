@@ -19,6 +19,13 @@
               "type": "SDES",
               "optional": true,
               "defaultValue": {}
+            },
+            {
+              "name": "useIpv6",
+              "doc": "Use IPv6 instead of IPv4",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
             }
           ]
         },

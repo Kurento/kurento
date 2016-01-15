@@ -22,10 +22,11 @@ namespace kurento
 {
 
 RtpEndpointImpl::RtpEndpointImpl (const boost::property_tree::ptree &conf,
-                                  std::shared_ptr<MediaPipeline> mediaPipeline, std::shared_ptr<SDES> crypto)
+                                  std::shared_ptr<MediaPipeline> mediaPipeline,
+                                  std::shared_ptr<SDES> crypto, bool useIpv6)
   : BaseRtpEndpointImpl (conf,
                          std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline),
-                         FACTORY_NAME)
+                         FACTORY_NAME, useIpv6)
 {
   if (!crypto->isSetCrypto() ) {
     return;
@@ -113,9 +114,9 @@ RtpEndpointImpl::onKeySoftLimit (gchar *media)
 MediaObjectImpl *
 RtpEndpointImplFactory::createObject (const boost::property_tree::ptree &conf,
                                       std::shared_ptr<MediaPipeline> mediaPipeline,
-                                      std::shared_ptr<SDES> crypto) const
+                                      std::shared_ptr<SDES> crypto, bool useIpv6) const
 {
-  return new RtpEndpointImpl (conf, mediaPipeline, crypto);
+  return new RtpEndpointImpl (conf, mediaPipeline, crypto, useIpv6);
 }
 
 RtpEndpointImpl::StaticConstructor RtpEndpointImpl::staticConstructor;

@@ -73,12 +73,13 @@ GF::~GF()
 }
 
 static std::shared_ptr <RtpEndpointImpl>
-createRtpEndpoint (void)
+createRtpEndpoint (bool useIpv6)
 {
   std::shared_ptr <kurento::MediaObjectImpl> rtpEndpoint;
   Json::Value constructorParams;
 
   constructorParams ["mediaPipeline"] = mediaPipelineId;
+  constructorParams ["useIpv6"] = useIpv6;
 
   rtpEndpoint = moduleManager.getFactory ("RtpEndpoint")->createObject (
                   config, "",
@@ -120,15 +121,15 @@ releaseTestSrc (std::shared_ptr<MediaElementImpl> &ep)
 }
 
 static void
-media_state_changes ()
+media_state_changes_impl (bool useIpv6)
 {
   std::atomic<bool> media_state_changed (false);
   std::condition_variable cv;
   std::mutex mtx;
   std::unique_lock<std::mutex> lck (mtx);
 
-  std::shared_ptr <RtpEndpointImpl> rtpEpOfferer = createRtpEndpoint();
-  std::shared_ptr <RtpEndpointImpl> rtpEpAnswerer = createRtpEndpoint();
+  std::shared_ptr <RtpEndpointImpl> rtpEpOfferer = createRtpEndpoint (useIpv6);
+  std::shared_ptr <RtpEndpointImpl> rtpEpAnswerer = createRtpEndpoint (useIpv6);
   std::shared_ptr <MediaElementImpl> src = createTestSrc();
 
   src->connect (rtpEpOfferer);
@@ -163,10 +164,22 @@ media_state_changes ()
 }
 
 static void
-connection_state_changes ()
+media_state_changes ()
 {
-  std::shared_ptr <RtpEndpointImpl> rtpEpOfferer = createRtpEndpoint();
-  std::shared_ptr <RtpEndpointImpl> rtpEpAnswerer = createRtpEndpoint();
+  media_state_changes_impl (false);
+}
+
+static void
+media_state_changes_ipv6 ()
+{
+  media_state_changes_impl (true);
+}
+
+static void
+connection_state_changes_impl (bool useIpv6)
+{
+  std::shared_ptr <RtpEndpointImpl> rtpEpOfferer = createRtpEndpoint (useIpv6);
+  std::shared_ptr <RtpEndpointImpl> rtpEpAnswerer = createRtpEndpoint (useIpv6);
   std::atomic<bool> conn_state_changed (false);
   std::condition_variable cv;
   std::mutex mtx;
@@ -218,6 +231,18 @@ connection_state_changes ()
   releaseRtpEndpoint (rtpEpAnswerer);
 }
 
+static void
+connection_state_changes ()
+{
+  connection_state_changes_impl (false);
+}
+
+static void
+connection_state_changes_ipv6 ()
+{
+  connection_state_changes_impl (true);
+}
+
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
@@ -225,6 +250,9 @@ init_unit_test_suite ( int , char *[] )
 
   test->add (BOOST_TEST_CASE ( &media_state_changes ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &connection_state_changes ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &media_state_changes_ipv6 ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &connection_state_changes_ipv6 ),
+             0, /* timeout */ 15);
 
   return test;
 }
