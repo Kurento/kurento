@@ -51,3 +51,23 @@ target_link_libraries(test_webrtc_endpoint
   ${KMSCORE_LIBRARIES}
   ${glibmm-2.4_LIBRARIES}
 )
+
+add_test_program (test_rtp_endpoint rtpEndpoint.cpp)
+add_dependencies(test_rtp_endpoint kmselementsplugins ${LIBRARY_NAME}impl)
+set_property (TARGET test_rtp_endpoint
+  PROPERTY INCLUDE_DIRECTORIES
+    ${KmsJsonRpc_INCLUDE_DIRS}
+    ${sigc++-2.0_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation/objects
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/implementation
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/server/interface
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
+    ${KMSCORE_INCLUDE_DIRS}
+    ${gstreamer-1.5_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_rtp_endpoint
+  ${LIBRARY_NAME}impl
+  ${KMSCORE_LIBRARIES}
+)
