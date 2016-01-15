@@ -18,7 +18,6 @@
 #include "kmshttpendpoint.h"
 #include "kmshttppostendpoint.h"
 #include "kmsplayerendpoint.h"
-#include "kmsrecorderendpoint.h"
 #include "kmsdispatcher.h"
 #include "kmsdispatcheronetomany.h"
 #include "kmsselectablemixer.h"
@@ -37,10 +36,6 @@ kurento_init (GstPlugin * kurento)
   }
 
   if (!kms_player_endpoint_plugin_init (kurento)) {
-    return FALSE;
-  }
-
-  if (!kms_recorder_endpoint_plugin_init (kurento)) {
     return FALSE;
   }
 
