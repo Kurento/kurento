@@ -4,7 +4,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-qa-pom</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kurento QA POM</name>
