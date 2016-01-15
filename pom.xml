@@ -109,6 +109,7 @@
 									<consoleOutput>true</consoleOutput>
 									<failsOnError>true</failsOnError>
 									<linkXRef>false</linkXRef>
+									<excludes>**/generated-sources/**/*</excludes>
 								</configuration>
 								<goals>
 									<goal>check</goal>
