@@ -1420,6 +1420,8 @@ kms_recorder_endpoint_request_new_sink_pad (KmsElement * obj,
     KmsElementPadType type, const gchar * description, const gchar * name)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  KmsUriEndpointState state;
+  KmsSinkPadData *data;
   gboolean ret = FALSE;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
@@ -1431,7 +1433,22 @@ kms_recorder_endpoint_request_new_sink_pad (KmsElement * obj,
     goto end;
   }
 
-  /* TODO: Create sinkpad */
+  kms_recorder_endpoint_add_appsink (self, type, description, name, TRUE);
+  g_object_get (self, "state", &state, NULL);
+
+  if (state != KMS_URI_ENDPOINT_STATE_START) {
+    goto end;
+  }
+
+  data = g_hash_table_lookup (self->priv->sink_pad_data, name);
+  if (data == NULL) {
+    GST_ERROR_OBJECT (self, "Can not create requested pad %s", name);
+    goto end;
+  }
+
+  kms_element_connect_sink_target_full (KMS_ELEMENT (self), data->sink_target,
+      data->type, data->description, connect_pad_signals_cb, self);
+
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
@@ -1443,6 +1460,8 @@ kms_recorder_endpoint_release_requested_sink_pad (KmsElement * obj,
     GstPad * pad)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  gchar *padname = NULL;
+  KmsSinkPadData *data;
   gboolean ret = FALSE;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
@@ -1453,9 +1472,28 @@ kms_recorder_endpoint_release_requested_sink_pad (KmsElement * obj,
     goto end;
   }
 
-  /* TODO: Release requested sinkpad */
+  padname = gst_pad_get_name (pad);
+  data = g_hash_table_lookup (self->priv->sink_pad_data, padname);
+
+  if (data == NULL) {
+    GST_ERROR_OBJECT (self, "Can not release requested pad %s", padname);
+    goto end;
+  }
+
+  if (!data->requested) {
+    GST_ERROR_OBJECT (self, "Can not release not requested pad %"
+        GST_PTR_FORMAT, pad);
+    goto end;
+  }
+
+  kms_element_remove_sink_by_type_full (KMS_ELEMENT (self), data->type,
+      data->description);
+  g_hash_table_remove (self->priv->sink_pad_data, padname);
+
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  g_free (padname);
 
   return ret;
 }
