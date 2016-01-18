@@ -170,6 +170,7 @@ public class KmsService extends TestService {
     super.start();
 
     if (wsUri == null) {
+      log.warn("WS URI is null, will not start");
       isKmsStarted = false;
       return;
     }

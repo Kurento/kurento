@@ -23,6 +23,7 @@ import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PASSWD_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_PEM_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_PROP;
+import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP_EXPORT;
 
@@ -56,9 +57,9 @@ public class FakeKmsService extends KmsService {
     this.kmsWsUriProp = FAKE_KMS_WS_URI_PROP;
     this.kmsWsUriExportProp = FAKE_KMS_WS_URI_PROP_EXPORT;
     this.kmsScopeProp = FAKE_KMS_SCOPE_PROP;
-    this.kmsScopeProp = FAKE_KMS_SCOPE_DEFAULT;
+    this.kmsScopeDefault = FAKE_KMS_SCOPE_DEFAULT;
 
-    setWsUri(getProperty(kmsWsUriProp));
+    setWsUri(getProperty(kmsWsUriProp, FAKE_KMS_WS_URI_DEFAULT));
   }
 
   public void addFakeClients(int numFakeClients, final int bandwidht,
