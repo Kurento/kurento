@@ -40,7 +40,7 @@ WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dkms.ws.uri=ws://kms_host:kms_port/kurento
+      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
       
 .. note::
 
@@ -144,7 +144,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
    
      @Bean
      public KurentoClient kurentoClient() {
-       return KurentoClient.create(System.getProperty("kms.ws.uri", DEFAULT_KMS_WS_URI));
+       return KurentoClient.create(System.getProperty("kms.url", DEFAULT_KMS_WS_URI));
      }
    
      @Override

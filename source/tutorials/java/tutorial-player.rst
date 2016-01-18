@@ -119,7 +119,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @SpringBootApplication
    public class PlayerApp implements WebSocketConfigurer {
    
-     private static final String KMS_WS_URI_PROP = "kms.ws.uri";
+     private static final String KMS_WS_URI_PROP = "kms.url";
      private static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
    
      @Bean

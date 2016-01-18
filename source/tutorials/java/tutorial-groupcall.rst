@@ -134,7 +134,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
    
      @Bean
      public KurentoClient kurentoClient() {
-       return KurentoClient.create(System.getProperty("kms.ws.uri", DEFAULT_KMS_WS_URI));
+       return KurentoClient.create(System.getProperty("kms.url", DEFAULT_KMS_WS_URI));
      }
    
      public static void main(String[] args) throws Exception {

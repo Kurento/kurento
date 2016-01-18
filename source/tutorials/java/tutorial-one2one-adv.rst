@@ -212,7 +212,7 @@ Bean.
 
       @Bean
       public KurentoClient kurentoClient() {
-         return KurentoClient.create(System.getProperty("kms.ws.uri",
+         return KurentoClient.create(System.getProperty("kms.url",
                DEFAULT_KMS_WS_URI));
       }
 
