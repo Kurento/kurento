@@ -106,7 +106,7 @@ public class SystemMonitorManager {
 
       if (isKmsDocker) {
         // "Dockerized" KMS
-        String containerId = KmsService.getDockerContainerName();
+        String containerId = KmsService.getMonitoredDockerContainerName();
         log.debug("KMS container ID: {}", containerId);
         monitor = new KmsDockerMonitor(containerId);
 

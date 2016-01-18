@@ -111,7 +111,10 @@ import freemarker.template.Template;
  */
 public class KmsService extends TestService {
 
-  protected static String dockerContainerName = "kms";
+  // FIXME replace with a registration mechanism
+  protected static String monitoredDockerContainerName;
+
+  protected String dockerContainerName = "kms";
   protected SshConnection remoteKmsSshConnection;
   protected Path workspace;
   protected String wsUri;
@@ -201,7 +204,8 @@ public class KmsService extends TestService {
       log.info("Starting KMS dockerized");
       Docker dockerClient = Docker.getSingleton();
       if (dockerClient.isRunningInContainer()) {
-        setDockerContainerName(dockerClient.getContainerName() + "_kms");
+        setDockerContainerName(dockerClient.getContainerName() + 
+            getDockerContainerNameSuffix());
       }
     } else {
       log.info("Starting KMS with URI: {}", wsUri);
@@ -291,6 +295,14 @@ public class KmsService extends TestService {
         break;
     }
     return scope;
+  }
+
+  protected String getDockerContainerNameSuffix() {
+    return "_kms";
+  }
+
+  protected String getDockerLogSuffix() {
+    return "-kms";
   }
 
   private boolean isFreePort(String wsUri) {
@@ -513,7 +525,8 @@ public class KmsService extends TestService {
 
     if (isKmsDocker) {
       Docker.getSingleton().downloadLog(dockerContainerName,
-          Paths.get(targetFolder.getAbsolutePath(), testMethodName + "-kms.log"));
+          Paths.get(targetFolder.getAbsolutePath(), testMethodName + 
+              getDockerLogSuffix() + ".log"));
     }
 
     else if (isKmsRemote) {
@@ -678,8 +691,10 @@ public class KmsService extends TestService {
     }
   }
 
-  public void setDockerContainerName(String containerName) {
+  public synchronized void setDockerContainerName(String containerName) {
     dockerContainerName = containerName;
+    if (monitoredDockerContainerName == null)
+      monitoredDockerContainerName = dockerContainerName;
   }
 
   private String getServerCommand() {
@@ -756,8 +771,9 @@ public class KmsService extends TestService {
     return isKmsStarted;
   }
 
-  public static String getDockerContainerName() {
-    return dockerContainerName;
+  // returns the name of the first container
+  public static String getMonitoredDockerContainerName() {
+    return monitoredDockerContainerName;
   }
 
 }

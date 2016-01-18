@@ -62,6 +62,16 @@ public class FakeKmsService extends KmsService {
     setWsUri(getProperty(kmsWsUriProp, FAKE_KMS_WS_URI_DEFAULT));
   }
 
+  @Override
+  protected String getDockerContainerNameSuffix() {
+    return "_fakekms";
+  }
+
+  @Override
+  protected String getDockerLogSuffix() {
+    return "-fakekms";
+  }
+
   public void addFakeClients(int numFakeClients, final int bandwidht,
       final MediaPipeline mainPipeline, final WebRtcEndpoint inputWebRtc, long timeBetweenClientMs,
       final SystemMonitorManager monitor, final WebRtcConnector connector) {
