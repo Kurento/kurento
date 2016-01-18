@@ -51,7 +51,7 @@
     "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#1.0.3",
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "^1.18.0",
-    "selenium-webdriver": "2.46.1",
+    "selenium-webdriver": "2.47.0",
     "xml2js": "^0.4.9"
   },
   "dependencies": {
