@@ -31,6 +31,7 @@
 #include <commons/kmsstats.h>
 #include <commons/kmsrecordingprofile.h>
 #include <commons/kms-core-enumtypes.h>
+#include <commons/constants.h>
 
 #include "kmsbasemediamuxer.h"
 #include "kmsavmuxer.h"
@@ -38,13 +39,12 @@
 
 #define PLUGIN_NAME "recorderendpoint"
 
-#define AUDIO_APPSINK "audio_appsink"
-
-#define VIDEO_APPSINK "video_appsink"
-
 #define BASE_TIME_DATA "base_time_data"
+#define RECORDER_DEFAULT_SUFFIX "_default"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_NONE
+
+#define KMS_PAD_IDENTIFIER_KEY "kms-pad-identifier-key"
 
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_endpoint_debug_category
@@ -86,6 +86,16 @@ struct state_controller
   gboolean changing;
 };
 
+typedef struct _KmsSinkPadData
+{
+  KmsElementPadType type;
+  gchar *description;
+  gchar *name;
+  GstPad *sink_target;
+  gulong sink_probe;
+  gboolean requested;
+} KmsSinkPadData;
+
 struct _KmsRecorderEndpointPrivate
 {
   KmsRecordingProfile profile;
@@ -97,9 +107,6 @@ struct _KmsRecorderEndpointPrivate
   KmsBaseMediaMuxer *mux;
   GMutex base_time_lock;
 
-  GstPad *audio_target;
-  GstPad *video_target;
-
   GSList *sink_probes;
   GHashTable *srcs;
 
@@ -107,11 +114,10 @@ struct _KmsRecorderEndpointPrivate
   gdouble vi;
   gdouble ai;
 
-  gulong audio_probe;
-  gulong video_probe;
-
   gboolean stopping;
   GSList *pending_pads;
+
+  GHashTable *sink_pad_data;    /* <name, KmsSinkPadData> */
 };
 
 typedef struct _DataEvtProbe
@@ -119,6 +125,30 @@ typedef struct _DataEvtProbe
   GstElement *appsrc;
   KmsRecordingProfile profile;
 } DataEvtProbe;
+
+static KmsSinkPadData *
+sink_pad_data_new (KmsElementPadType type, const gchar * description,
+    const gchar * name, gboolean requested)
+{
+  KmsSinkPadData *data;
+
+  data = g_slice_new0 (KmsSinkPadData);
+  data->type = type;
+  data->description = g_strdup (description);
+  data->name = g_strdup (name);
+  data->requested = requested;
+
+  return data;
+}
+
+static void
+sink_pad_data_destroy (KmsSinkPadData * data)
+{
+  g_free (data->name);
+  g_free (data->description);
+
+  g_slice_free (KmsSinkPadData, data);
+}
 
 static void
 data_evt_probe_destroy (DataEvtProbe * data)
@@ -428,6 +458,7 @@ kms_recorder_endpoint_finalize (GObject * object)
       (GDestroyNotify) kms_stats_probe_destroy);
   g_hash_table_unref (self->priv->srcs);
 
+  g_hash_table_unref (self->priv->sink_pad_data);
   g_slist_free_full (self->priv->pending_pads, g_free);
 
   GST_DEBUG_OBJECT (self, "finalized");
@@ -443,30 +474,33 @@ connect_pad_signals_cb (GstPad * pad, gpointer data)
 }
 
 static void
+connect_sink_func (const gchar * key, KmsSinkPadData * data,
+    KmsRecorderEndpoint * self)
+{
+  kms_element_connect_sink_target_full (KMS_ELEMENT (self), data->sink_target,
+      data->type, data->description, connect_pad_signals_cb, self);
+}
+
+static void
 kms_recorder_generate_pads (KmsRecorderEndpoint * self)
 {
-  KmsElement *elem = KMS_ELEMENT (self);
+  g_hash_table_foreach (self->priv->sink_pad_data, (GHFunc) connect_sink_func,
+      self);
+}
 
-  if (kms_recording_profile_supports_type (self->priv->profile,
-          KMS_ELEMENT_PAD_TYPE_AUDIO)) {
-    kms_element_connect_sink_target_full (elem, self->priv->audio_target,
-        KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, connect_pad_signals_cb, self);
-  }
-
-  if (kms_recording_profile_supports_type (self->priv->profile,
-          KMS_ELEMENT_PAD_TYPE_VIDEO)) {
-    kms_element_connect_sink_target_full (elem, self->priv->video_target,
-        KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, connect_pad_signals_cb, self);
-  }
+static void
+remove_sink_func (const gchar * key, KmsSinkPadData * data,
+    KmsRecorderEndpoint * self)
+{
+  kms_element_remove_sink_by_type_full (KMS_ELEMENT (self), data->type,
+      data->description);
 }
 
 static void
 kms_recorder_endpoint_remove_pads (KmsRecorderEndpoint * self)
 {
-  KmsElement *elem = KMS_ELEMENT (self);
-
-  kms_element_remove_sink_by_type (elem, KMS_ELEMENT_PAD_TYPE_AUDIO);
-  kms_element_remove_sink_by_type (elem, KMS_ELEMENT_PAD_TYPE_VIDEO);
+  g_hash_table_foreach (self->priv->sink_pad_data, (GHFunc) remove_sink_func,
+      self);
 }
 
 static void
@@ -693,32 +727,49 @@ static void
 link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  KmsSinkPadData *sinkdata;
   GstAppSinkCallbacks callbacks;
   GstElement *appsink, *appsrc;
   KmsRecordingProfile profile;
   DataEvtProbe *data;
   KmsMediaType type;
   GstPad *target;
-  gulong *probe;
-  gchar *id;
+  gchar *id, *key;
+
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+  if (target == NULL) {
+    GST_ERROR_OBJECT (pad, "No target pad set");
+    return;
+  }
+
+  key = g_object_get_data (G_OBJECT (target), KMS_PAD_IDENTIFIER_KEY);
+
+  if (key == NULL) {
+    GST_ERROR_OBJECT (pad, "No identifier assigned");
+    g_object_unref (&target);
+    return;
+  }
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
-  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
-
-  if (target == self->priv->audio_target) {
-    type = KMS_MEDIA_TYPE_AUDIO;
-    probe = &self->priv->audio_probe;
-  } else if (target == self->priv->video_target) {
-    type = KMS_MEDIA_TYPE_VIDEO;
-    probe = &self->priv->video_probe;
-  } else {
+  sinkdata = g_hash_table_lookup (self->priv->sink_pad_data, key);
+  if (sinkdata == NULL) {
     GST_ERROR_OBJECT (self, "Invalid pad %" GST_PTR_FORMAT " connected %"
         GST_PTR_FORMAT, pad, peer);
-    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-    g_clear_object (&target);
+    goto end;
+  }
 
-    return;
+  switch (sinkdata->type) {
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      type = KMS_MEDIA_TYPE_AUDIO;
+      break;
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      type = KMS_MEDIA_TYPE_VIDEO;
+      break;
+    default:
+      GST_ERROR_OBJECT (self, "Invalid pad %" GST_PTR_FORMAT " connected %"
+          GST_PTR_FORMAT, pad, peer);
+      goto end;
   }
 
   profile = self->priv->profile;
@@ -740,10 +791,8 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   g_hash_table_insert (self->priv->srcs, id, g_object_ref (appsrc));
 
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
-  if (*probe != 0UL) {
-    gst_pad_remove_probe (target, *probe);
+  if (sinkdata->sink_probe != 0UL) {
+    gst_pad_remove_probe (target, sinkdata->sink_probe);
   }
 
   callbacks.eos = recv_eos;
@@ -755,10 +804,15 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   g_object_unref (appsink);
 
   data = data_evt_probe_new (appsrc, profile);
-  *probe = gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+  sinkdata->sink_probe =
+      gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       configure_pipeline_capabilities, data,
       (GDestroyNotify) data_evt_probe_destroy);
-  g_object_unref (target);
+
+end:
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  g_clear_object (&target);
 }
 
 static void
@@ -790,27 +844,24 @@ end:
 
 static void
 kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
-    KmsElementPadType type)
+    KmsElementPadType type, const gchar * description, const gchar * name,
+    gboolean requested)
 {
+  KmsSinkPadData *data;
   GstElement *appsink;
   GstPad *sinkpad;
-  const gchar *appsink_name;
-  GstPad **target_pad;
 
-  switch (type) {
-    case KMS_ELEMENT_PAD_TYPE_AUDIO:
-      appsink_name = AUDIO_APPSINK;
-      target_pad = &self->priv->audio_target;
-      break;
-    case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      appsink_name = VIDEO_APPSINK;
-      target_pad = &self->priv->video_target;
-      break;
-    default:
-      return;
+  if (g_hash_table_contains (self->priv->sink_pad_data, name)) {
+    GST_WARNING_OBJECT (self, "Sink %s already added", name);
+    return;
   }
 
-  appsink = gst_element_factory_make ("appsink", appsink_name);
+  if (type != KMS_ELEMENT_PAD_TYPE_AUDIO && type != KMS_ELEMENT_PAD_TYPE_VIDEO) {
+    GST_WARNING_OBJECT (self, "Unsupported pad type %u", type);
+    return;
+  }
+
+  appsink = gst_element_factory_make ("appsink", NULL);
 
   g_object_set (appsink, "emit-signals", FALSE, "async", FALSE,
       "sync", FALSE, "qos", FALSE, NULL);
@@ -821,7 +872,11 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
 
   gst_element_sync_state_with_parent (appsink);
 
-  *target_pad = sinkpad;
+  data = sink_pad_data_new (type, description, name, requested);
+  data->sink_target = sinkpad;
+  g_hash_table_insert (self->priv->sink_pad_data, g_strdup (name), data);
+  g_object_set_data_full (G_OBJECT (sinkpad), KMS_PAD_IDENTIFIER_KEY,
+      g_strdup (name), g_free);
 
   g_object_unref (sinkpad);
 }
@@ -982,12 +1037,14 @@ kms_recorder_endpoint_new_media_muxer (KmsRecorderEndpoint * self)
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_AUDIO)) {
-    kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_AUDIO);
+    kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_AUDIO, NULL,
+        AUDIO_STREAM_NAME RECORDER_DEFAULT_SUFFIX, FALSE);
   }
 
   if (kms_recording_profile_supports_type (self->priv->profile,
           KMS_ELEMENT_PAD_TYPE_VIDEO)) {
-    kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_VIDEO);
+    kms_recorder_endpoint_add_appsink (self, KMS_ELEMENT_PAD_TYPE_VIDEO, NULL,
+        VIDEO_STREAM_NAME RECORDER_DEFAULT_SUFFIX, FALSE);
   }
 }
 
@@ -1085,34 +1142,6 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
   return caps;
 }
 
-static GstCaps *
-kms_recorder_endpoint_allowed_caps (KmsElement * kmselement,
-    KmsElementPadType type)
-{
-  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (kmselement);
-  GstPad *target_pad;
-  GstCaps *caps;
-
-  switch (type) {
-    case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      target_pad = self->priv->video_target;
-      break;
-    case KMS_ELEMENT_PAD_TYPE_AUDIO:
-      target_pad = self->priv->audio_target;
-      break;
-    default:
-      return NULL;
-  }
-
-  if (target_pad == NULL) {
-    return NULL;
-  }
-
-  caps = gst_pad_get_allowed_caps (target_pad);
-
-  return caps;
-}
-
 static gboolean
 kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
     GstQuery * query)
@@ -1120,23 +1149,24 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (element);
   GstCaps *allowed = NULL, *caps = NULL;
   GstCaps *filter, *result, *tcaps;
+  GstPad *target;
+
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+  if (target == NULL) {
+    GST_ERROR_OBJECT (pad, "No target pad set");
+    return FALSE;
+  }
 
   gst_query_parse_caps (query, &filter);
 
   switch (kms_element_get_pad_type (element, pad)) {
     case KMS_ELEMENT_PAD_TYPE_VIDEO:
-      allowed =
-          kms_recorder_endpoint_allowed_caps (element,
-          KMS_ELEMENT_PAD_TYPE_VIDEO);
       caps =
           kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_VIDEO);
       result = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
       break;
     case KMS_ELEMENT_PAD_TYPE_AUDIO:
-      allowed =
-          kms_recorder_endpoint_allowed_caps (element,
-          KMS_ELEMENT_PAD_TYPE_AUDIO);
       caps =
           kms_recorder_endpoint_get_caps_from_profile (self,
           KMS_ELEMENT_PAD_TYPE_AUDIO);
@@ -1144,8 +1174,11 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
       break;
     default:
       GST_ERROR_OBJECT (pad, "unknown pad");
+      g_object_unref (target);
       return FALSE;
   }
+
+  allowed = gst_pad_get_allowed_caps (target);
 
   /* make sure we only return results that intersect our padtemplate */
   tcaps = gst_pad_get_pad_template_caps (pad);
@@ -1238,6 +1271,8 @@ filter_caps:
 
   if (caps != NULL)
     gst_caps_unref (caps);
+
+  g_object_unref (target);
 
   return TRUE;
 }
@@ -1380,6 +1415,51 @@ kms_recorder_endpoint_stats (KmsElement * obj, gchar * selector)
   return stats;
 }
 
+static gboolean
+kms_recorder_endpoint_request_new_sink_pad (KmsElement * obj,
+    KmsElementPadType type, const gchar * description, const gchar * name)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  gboolean ret = FALSE;
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+  ret = self->priv->profile == KMS_RECORDING_PROFILE_KSR;
+
+  if (!ret) {
+    GST_WARNING_OBJECT (self, "KSR profile not configured");
+    goto end;
+  }
+
+  /* TODO: Create sinkpad */
+end:
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  return ret;
+}
+
+static gboolean
+kms_recorder_endpoint_release_requested_sink_pad (KmsElement * obj,
+    GstPad * pad)
+{
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  gboolean ret = FALSE;
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+
+  ret = self->priv->profile == KMS_RECORDING_PROFILE_KSR;
+
+  if (!ret) {
+    goto end;
+  }
+
+  /* TODO: Release requested sinkpad */
+end:
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  return ret;
+}
+
 static void
 kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
 {
@@ -1404,6 +1484,10 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
   kms_element_class->collect_media_stats =
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_collect_media_stats);
   kms_element_class->stats = GST_DEBUG_FUNCPTR (kms_recorder_endpoint_stats);
+  kms_element_class->request_new_sink_pad =
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_request_new_sink_pad);
+  kms_element_class->release_requested_sink_pad =
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_release_requested_sink_pad);
 
   gobject_class->set_property =
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_set_property);
@@ -1518,14 +1602,11 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
 
-  self->priv->video_target = NULL;
-  self->priv->audio_target = NULL;
-
   self->priv->ai = 0.0;
   self->priv->vi = 0.0;
 
-  self->priv->audio_probe = 0UL;
-  self->priv->video_probe = 0UL;
+  self->priv->sink_pad_data = g_hash_table_new_full (g_str_hash, g_str_equal,
+      g_free, (GDestroyNotify) sink_pad_data_destroy);
 
   g_cond_init (&self->priv->state_manager.cond);
 
