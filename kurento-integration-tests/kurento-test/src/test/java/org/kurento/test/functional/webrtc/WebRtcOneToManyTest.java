@@ -25,8 +25,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
@@ -89,22 +87,23 @@ public class WebRtcOneToManyTest extends FunctionalTest {
     return Arrays.asList(new Object[][] { { test } });
   }
 
-  @Before
-  public void setupMonitor() {
-    setDeleteLogsIfSuccess(false);
-    monitor = new SystemMonitorManager();
-    monitor.setShowLantency(true);
-    monitor.startMonitoring();
-  }
-
-  @After
-  public void teardownMonitor() throws IOException {
-    if (monitor != null) {
-      monitor.stop();
-      monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
-      monitor.destroy();
-    }
-  }
+  // TODO: Commented due to Hijack issue on Docker
+  // @Before
+  // public void setupMonitor() {
+  // setDeleteLogsIfSuccess(false);
+  // monitor = new SystemMonitorManager();
+  // monitor.setShowLantency(true);
+  // monitor.startMonitoring();
+  // }
+  //
+  // @After
+  // public void teardownMonitor() throws IOException {
+  // if (monitor != null) {
+  // monitor.stop();
+  // monitor.writeResults(getDefaultOutputFile("-monitor.csv"));
+  // monitor.destroy();
+  // }
+  // }
 
   @Test
   public void testWebRtcOneToManyChrome() throws InterruptedException, IOException {
@@ -121,8 +120,10 @@ public class WebRtcOneToManyTest extends FunctionalTest {
     getPresenter().subscribeLocalEvents("playing");
     getPresenter().initWebRtc(masterWebRtcEP, WebRtcChannel.VIDEO_ONLY, WebRtcMode.SEND_ONLY);
 
-    monitor.addWebRtcClientAndActivateOutboundStats(getPresenter().getBrowser().getId(),
-        masterWebRtcEP, getPresenter(), "webRtcPeer.peerConnection");
+    if (monitor != null) {
+      monitor.addWebRtcClientAndActivateOutboundStats(getPresenter().getBrowser().getId(),
+          masterWebRtcEP, getPresenter(), "webRtcPeer.peerConnection");
+    }
 
     // Viewers
     ExecutorService exec = Executors.newFixedThreadPool(numViewers);
