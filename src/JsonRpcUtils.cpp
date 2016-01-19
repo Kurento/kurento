@@ -63,6 +63,21 @@ getValue (const Json::Value &params, const std::string &name,
 
 void
 getValue (const Json::Value &params, const std::string &name,
+          bool &_return)
+{
+  checkParameter (params, name);
+
+  if (!params[name].isConvertibleTo (Json::booleanValue) ) {
+    JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
+                              "'" + name + "' parameter should be a boolean");
+    throw e;
+  }
+
+  _return = params[name].asBool ();
+}
+
+void
+getValue (const Json::Value &params, const std::string &name,
           Json::Value &_return)
 {
   checkParameter (params, name);

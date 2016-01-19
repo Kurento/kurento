@@ -30,6 +30,9 @@ void getValue (const Json::Value &params, const std::string &name,
                int &_return);
 
 void getValue (const Json::Value &params, const std::string &name,
+               bool &_return);
+
+void getValue (const Json::Value &params, const std::string &name,
                Json::Value &_return);
 
 void getArray (const Json::Value &params, const std::string &name,
