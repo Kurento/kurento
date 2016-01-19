@@ -1,3 +1,16 @@
+kms-jsonrpc-1.0 (1.1.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * JsonRpcUtils: Add method to get a boolean parameter
+  * Update version to 1.1 due to changes in API
+  * Add ChangeLog.md
+  * Prepare release 1.1.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 16:11:05 +0100
+
 kms-jsonrpc-1.0 (1.0.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
