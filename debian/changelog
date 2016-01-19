@@ -1,3 +1,13 @@
+kms-filters-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 17:09:08 +0100
+
 kms-filters-6.0 (6.2.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
