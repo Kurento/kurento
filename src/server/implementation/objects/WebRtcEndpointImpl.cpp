@@ -292,8 +292,9 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   try {
     turnURL = getConfigValue <std::string, WebRtcEndpoint> ("turnURL");
     GST_INFO ("turn info: %s\n", turnURL.c_str() );
-    g_object_set ( G_OBJECT (element), "turn-url", turnURL.c_str(),
-                   NULL);
+    GST_WARNING ("TURN is disabled until bug in libnice is solved");
+//     g_object_set ( G_OBJECT (element), "turn-url", turnURL.c_str(),
+//                    NULL);
   } catch (boost::property_tree::ptree_error &e) {
 
   }
