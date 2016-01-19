@@ -1,3 +1,15 @@
+kurento-module-creator-4.0 (4.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Format source
+  * cpp_templates: Do not initialize values that should be read from the JSON
+  * Prepare release 4.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 16:03:08 +0100
+
 kurento-module-creator-4.0 (4.0.3) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
