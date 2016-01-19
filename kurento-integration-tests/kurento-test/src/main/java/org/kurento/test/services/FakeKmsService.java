@@ -26,6 +26,7 @@ import static org.kurento.test.config.TestConfiguration.FAKE_KMS_SCOPE_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.FAKE_KMS_WS_URI_PROP_EXPORT;
+import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +59,19 @@ public class FakeKmsService extends KmsService {
     this.kmsWsUriExportProp = FAKE_KMS_WS_URI_PROP_EXPORT;
     this.kmsScopeProp = FAKE_KMS_SCOPE_PROP;
     this.kmsScopeDefault = FAKE_KMS_SCOPE_DEFAULT;
-
-    setWsUri(getProperty(kmsWsUriProp, FAKE_KMS_WS_URI_DEFAULT));
+    
+    //KMS_WS_URI_PROP has priority if there's no value for FAKE_KMS_WS_URI_PROP
+    String uri = getProperty(FAKE_KMS_WS_URI_PROP);
+    if (uri == null) {
+      if (getProperty(KMS_WS_URI_PROP) != null) {
+        this.kmsWsUriProp = KMS_WS_URI_PROP;
+        setWsUri(getProperty(KMS_WS_URI_PROP));
+      } else {
+        setWsUri(FAKE_KMS_WS_URI_DEFAULT);
+      }
+    } else {
+      setWsUri(uri);
+    }
   }
 
   @Override
