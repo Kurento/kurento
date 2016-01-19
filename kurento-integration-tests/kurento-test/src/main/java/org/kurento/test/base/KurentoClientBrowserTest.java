@@ -54,13 +54,11 @@ public class KurentoClientBrowserTest<W extends WebPage> extends BrowserTest<W> 
   @Before
   public void setupKurentoClient() {
     kurentoClient = kms.getKurentoClient();
-    fakeKurentoClient = fakeKms.getKurentoClient();
   }
 
   @After
   public void teardownKurentoClient() throws Exception {
     kms.closeKurentoClient();
-    fakeKms.closeKurentoClient();
   }
 
   @FailedTest
