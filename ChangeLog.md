@@ -1,3 +1,17 @@
+6.3.0
+=====
+
+  * RecorderEndpoint: Fix many problems that appeared with the las gstreamer update
+  * RtpEndpoint: Add event to notify when a srtp key is about to expire
+  * PlayerEndpoint: Add seek capability
+  * WebRtcEndpoint: Fix minor problems with datachannels
+  * WebRtcEndpoint: Fix problem with chrome 48 candidates
+  * RtpEndpoint: Add support for ipv6, by now only one protocol can be used
+  * WebRtcEndpoint: Add tests for ipv6 support
+  * WebRtcEndpoint: Do not use TURN configuration until bug in libnice is fixed
+    TURN in clients (browsers) can still be used, but kms will not generate
+    relay candidates.
+
 6.2.0
 =====
 

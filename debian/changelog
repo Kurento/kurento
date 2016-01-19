@@ -1,3 +1,104 @@
+kms-elements-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Miguel París Díaz ]
+  * webrtctransport: use SRTP_REPLAY_WINDOW_SIZE for srtp(enc|dec)
+  * webrtcendpoint: videotestsrc as live
+
+  [ Santiago Carot-Nemesio ]
+  * RecorderEndpointImpl: Allow to record in KSR format if it is supported
+  * kmsrecorderendpoint: integrate ksrmuxer
+  * kmsrecorderendpoint: Change management of EOS
+  * kmsrecorderendpoint: Get rid of kmsloop
+  * kmsavmuxer,kmsksrmuxer: Remove unused taskpool
+  * kmsbasemediamuxer: Remove sources when unlinked
+  * kmsrecorderendpoint: Use ghostpad to connect link and unlink signals
+
+  [ Jose Antonio Santos Cadenas ]
+  * basemediamuxer: Fix compilation warning returning proper value
+  * webrtcsession: Do not add candidates until gather candidates is called
+  * webrtcendpoint: Discard port == 9 during test
+  * socketutils: Improve the way sockets are get to check all the range
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrtpednpoint: Remove kms_rtp_endpoint_log_key
+  * kmsksrmuxer: Set appsrc block property
+  * kmsksrmuxer: Use defined types instead of magic numbers
+  * kmsrecorderendpoint: Use gstappsrc library instead of emitting actions/signals
+  * kmsrecorderendpoint: Send EOS before removing pads
+  * kmsrecorderendpoint: Do not release pad when a stop operation is pending
+  * kmsrecorderendpoint: Fix deadlock
+  * kmsrtpendpoint: Use new getrandom system call to get random values when possible.
+
+  [ Jose Antonio Santos Cadenas ]
+  * socketutils: Iterate over port range using increments of 2
+  * recorderendpoint: Remove uneeded include
+  * recorderendpoint: Remove uneeded macros
+  * valgrind.supp: Add g_quark_init to valgrind
+  * debian/control: Add libnice-dev as a dev dependency
+
+  [ Santiago Carot-Nemesio ]
+  * RtpEndpoint: Propagate onKeySoft limit when key is about to expire
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmsrecorderendpoint: Create parent directories if file protocol is used
+
+  [ David Fernandez ]
+  * kmsplayerendpoint: Add controls to seek video source
+
+  [ Jose Antonio Santos Cadenas ]
+  * recorderendpoint: Fix query caps function, using profile caps
+  * recorderendpoint: Unlock element before performing pad link
+
+  [ Miguel París Díaz ]
+  * webrtcendpoint: sync data channel appsink and appsrc before adding kmselement pads
+  * webrtcendpoint: enable DataChannel tests
+  * webrtcendpoint: remove uneeded check
+  * webrtcendpoint: fix data_channels graph name
+  * webrtcendpoint: do not show pipeline on timeout
+  * webrtcendpoint: fix memory leak in data_channel test
+  * icecandidate: support ufrag in ICE candidate
+  * socketutils: remove unnecessary line
+  * rtpendpoint: fix misprint in comment
+
+  [ José Antonio Santos Cadenas ]
+  * Revert "recorderendpoint: Unlock element before performing pad link"
+
+  [ Miguel París Díaz ]
+  * rtpendpoint: now, mid should appear in the answer
+  * webrtcendpoint: add test for checking mid without BUNDLE
+  * webrtc: move DataChannels management to KmsWebRtcSession
+
+  [ David Fernandez ]
+  * kmsplayerendpoint: Modify how to perform the seek
+  * kmsplayerendpoint: Fix problems in seek
+  * kmsplayerendpoint: Let appsrc set buffers timestamps
+  * kmsplayerendpoint: Add new-preroll callback for appsink
+  * kmsplayerendpoint: Not set duration to -1 to avoid composite problems
+
+  [ Jose Antonio Santos Cadenas ]
+  * rtpconnection: Fix problems while running tests in docker
+  * srtpconnection: Use multiudpsink just like in rtpconnection
+
+  [ David Fernandez ]
+  * kmsplayerendpoint: Set buffer with duration 1 to -1
+  * kmsplayerendpoint: Add property to uridecodebin
+
+  [ Jose Antonio Santos Cadenas ]
+  * rtpendpoint: Add entpoint checks
+  * rtpendpoint: Get address while session is created
+  * rtpendpoint: Enable use of ipv6 as an alternative to ipv4
+  * RtpEndpoint: Create useIpv6 constructor param
+  * webRtpEndpoint: Add test for ipv4 and ipv6
+  * WebRtcEndpoint: Disable turn until bug in libnice is solved
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 19 Jan 2016 17:06:43 +0100
+
 kms-elements-6.0 (6.2.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
