@@ -1,3 +1,13 @@
+kms-chroma-6.0 (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 07:51:26 +0100
+
 kms-chroma-6.0 (6.2.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
