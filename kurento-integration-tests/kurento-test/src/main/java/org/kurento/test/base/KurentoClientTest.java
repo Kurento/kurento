@@ -40,16 +40,12 @@ public class KurentoClientTest extends KurentoTest {
   @Before
   public void setupKurentoClient() {
     kurentoClient = kms.getKurentoClient();
-    fakeKurentoClient = fakeKms.getKurentoClient();
   }
 
   @After
   public void teardownKurentoClient() throws Exception {
     if (kurentoClient != null) {
       kurentoClient.destroy();
-    }
-    if (fakeKurentoClient != null) {
-      fakeKurentoClient.destroy();
     }
   }
 
