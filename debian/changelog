@@ -1,3 +1,18 @@
+kms-datachannelexample (6.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add README.md file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 08:39:11 +0100
+
 kms-datachannelexample (6.2.0) testing; urgency=medium
 
   [ David Fernandez ]
