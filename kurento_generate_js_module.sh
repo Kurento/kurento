@@ -18,6 +18,8 @@ rm -rf js
 git clone ssh://jenkins@code.kurento.org:12345/${JS_PROJECT_NAME}-js.git js || exit 1
 cd js || (echo "Cannot clone repository, may not be public" && exit 0)
 git checkout -b ${BRANCH}
+# Remove /refs/heads/ before appending
+BRANCH=$(echo $BRANCH | sed 's|/refs/heads/||g')
 git reset --hard origin/${BRANCH} || echo
 rm -rf *
 cd ..
