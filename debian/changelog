@@ -1,3 +1,25 @@
+kms-datachannelexample (6.3.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add README.md file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.0
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * Add pom.xml file to add mandatory data to generate pom
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 20 Jan 2016 20:10:47 +0100
+
 kms-datachannelexample (6.3.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
