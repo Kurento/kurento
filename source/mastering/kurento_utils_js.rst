@@ -360,8 +360,7 @@ Souce code
 
 The code is at `github <https://github.com/kurento/kurento-utils-js>`_. 
 
-Be sure to have `Node.js <http://nodejs.org/>`_ and [Bower] installed in your
-system:
+Be sure to have `Node.js`:term: and `Bower`:term: installed in your system:
 
 .. sourcecode:: bash
 
@@ -375,7 +374,7 @@ To install the library, it is recommended to do that from the
 .. sourcecode:: bash
 
    npm install kurento-utils
-   
+
 Alternatively, you can download the code using Git and install manually its
 dependencies:
 
