@@ -45,6 +45,7 @@ public abstract class ServerSession extends AbstractSession {
 
   private long reconnectionTimeoutInMillis = PropertiesManager
       .getProperty(SESSION_RECONNECTION_TIME_PROP, SESSION_RECONNECTION_TIME_DEFAULT) * 1000;
+  private boolean gracefullyClosed;
 
   public ServerSession(String sessionId, Object registerInfo, SessionsManager sessionsManager,
       String transportId) {
@@ -140,6 +141,14 @@ public abstract class ServerSession extends AbstractSession {
 
   public void setCloseTimerTask(ScheduledFuture<?> closeTimerTask) {
     this.closeTimerTask = closeTimerTask;
+  }
+
+  public void setGracefullyClosed() {
+    this.gracefullyClosed = true;
+  }
+
+  public boolean isGracefullyClosed() {
+    return gracefullyClosed;
   }
 
   public ScheduledFuture<?> getCloseTimerTask() {

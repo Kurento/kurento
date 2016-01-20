@@ -127,6 +127,8 @@ public class JsonRpcHandlerManager {
       nonGenHandler.handleRequest(tx, nonGenRequest);
 
       if (!tx.isAsync() && request.getId() != null) {
+        
+        log.debug("Request {} is processed asynchronously", request);
 
         boolean notResponded = tx.setRespondedIfNot();
 

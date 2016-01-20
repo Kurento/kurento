@@ -51,11 +51,11 @@ public class JsonRpcConstants {
 
   public static final String METHOD_EXECUTE = "execute";
 
-  public static final String METHOD_RECONNECT = "connect";
+  public static final String METHOD_CONNECT = "connect";
 
   public static final String METHOD_PING = "ping";
 
-  public static final String METHOD_CLOSE = "close_session";
+  public static final String METHOD_CLOSE = "closeSession";
 
   public static final String PONG_PAYLOAD = "value";
 

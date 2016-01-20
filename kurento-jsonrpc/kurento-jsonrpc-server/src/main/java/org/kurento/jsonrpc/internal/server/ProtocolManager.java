@@ -17,7 +17,7 @@ package org.kurento.jsonrpc.internal.server;
 
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_CLOSE;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
-import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_RECONNECT;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_CONNECT;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG_PAYLOAD;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_ERROR;
@@ -161,61 +161,60 @@ public class ProtocolManager {
     Request<JsonElement> request = JsonUtils.fromJsonRequest(requestJsonObject, JsonElement.class);
 
     switch (request.getMethod()) {
-      case METHOD_RECONNECT:
+    case METHOD_CONNECT:
 
-        log.debug("{} Req-> {}", label, request);
-        processReconnectMessage(factory, request, responseSender, transportId);
-        break;
-      case METHOD_PING:
-        log.trace("{} Req-> {}", label, request);
-        processPingMessage(factory, request, responseSender, transportId);
-        break;
+      log.debug("{} Req-> {}", label, request);
+      processReconnectMessage(factory, request, responseSender, transportId);
+      break;
+    case METHOD_PING:
+      log.trace("{} Req-> {}", label, request);
+      processPingMessage(factory, request, responseSender, transportId);
+      break;
 
-      case METHOD_CLOSE:
-        log.trace("{} Req-> {}", label, request);
-        processCloseMessage(factory, request, responseSender, transportId);
+    case METHOD_CLOSE:
+      log.trace("{} Req-> {}", label, request);
+      processCloseMessage(factory, request, responseSender, transportId);
 
-        break;
-      default:
+      break;
+    default:
 
-        ServerSession session = getSession(factory, transportId, request);
+      ServerSession session = getOrCreateSession(factory, transportId, request);
 
-        log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]", label, request,
-            session.getSessionId(), transportId);
+      log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]", label, request,
+          session.getSessionId(), transportId);
 
-        // TODO, Take out this an put in Http specific handler. The main
-        // reason is to wait for request before responding to the client.
-        // And for no contaminate the ProtocolManager.
-        if (request.getMethod().equals(Request.POLL_METHOD_NAME)) {
+      // TODO, Take out this an put in Http specific handler. The main
+      // reason is to wait for request before responding to the client.
+      // And for no contaminate the ProtocolManager.
+      if (request.getMethod().equals(Request.POLL_METHOD_NAME)) {
 
-          Type collectionType = new TypeToken<List<Response<JsonElement>>>() {
-          }.getType();
+        Type collectionType = new TypeToken<List<Response<JsonElement>>>() {
+        }.getType();
 
-          List<Response<JsonElement>> responseList =
-              JsonUtils.fromJson(request.getParams(), collectionType);
+        List<Response<JsonElement>> responseList = JsonUtils.fromJson(request.getParams(),
+            collectionType);
 
-          for (Response<JsonElement> response : responseList) {
-            session.handleResponse(response);
-          }
-
-          // Wait for some time if there is a request from server to
-          // client
-
-          // TODO Allow send empty responses. Now you have to send at
-          // least an
-          // empty string
-          responseSender
-              .sendResponse(new Response<Object>(request.getId(), Collections.emptyList()));
-
-        } else {
-          handlerManager.handleRequest(session, request, responseSender);
+        for (Response<JsonElement> response : responseList) {
+          session.handleResponse(response);
         }
-        break;
+
+        // Wait for some time if there is a request from server to
+        // client
+
+        // TODO Allow send empty responses. Now you have to send at
+        // least an
+        // empty string
+        responseSender.sendResponse(new Response<Object>(request.getId(), Collections.emptyList()));
+
+      } else {
+        handlerManager.handleRequest(session, request, responseSender);
+      }
+      break;
     }
 
   }
 
-  private ServerSession getSession(ServerSessionFactory factory, String transportId,
+  private ServerSession getOrCreateSession(ServerSessionFactory factory, String transportId,
       Request<JsonElement> request) {
 
     ServerSession session = null;
@@ -291,16 +290,20 @@ public class ProtocolManager {
 
   private void processCloseMessage(ServerSessionFactory factory, Request<JsonElement> request,
       ResponseSender responseSender, String transportId) {
+
+    ServerSession session = sessionsManager.getByTransportId(transportId);
+    if (session != null) {
+      session.setGracefullyClosed();
+      cancelCloseTimer(session);
+    }
+
     try {
       responseSender.sendResponse(new Response<>(request.getId(), "bye"));
     } catch (IOException e) {
       log.warn("Exception sending close message response to client", e);
     }
 
-    ServerSession session = sessionsManager.getByTransportId(transportId);
-
     if (session != null) {
-      cancelCloseTimer(session);
       this.closeSession(session, "Client sent close message");
     } else {
       log.warn(
@@ -317,7 +320,7 @@ public class ProtocolManager {
 
     if (sessionId == null) {
 
-      ServerSession session = getSession(factory, transportId, request);
+      ServerSession session = getOrCreateSession(factory, transportId, request);
 
       responseSender.sendResponse(new Response<>(session.getSessionId(), request.getId(), "OK"));
 
@@ -375,8 +378,8 @@ public class ProtocolManager {
 
   private void processResponseMessage(JsonObject messagetJsonObject, String internalSessionId) {
 
-    Response<JsonElement> response =
-        JsonUtils.fromJsonResponse(messagetJsonObject, JsonElement.class);
+    Response<JsonElement> response = JsonUtils.fromJsonResponse(messagetJsonObject,
+        JsonElement.class);
 
     ServerSession session = sessionsManager.getByTransportId(internalSessionId);
 
@@ -396,8 +399,8 @@ public class ProtocolManager {
 
       try {
 
-        Date closeTime =
-            new Date(System.currentTimeMillis() + session.getReconnectionTimeoutInMillis());
+        Date closeTime = new Date(
+            System.currentTimeMillis() + session.getReconnectionTimeoutInMillis());
 
         log.info(label + "Configuring close timeout for session: {} transportId: {} at {}",
             session.getSessionId(), transportId, format.format(closeTime));
