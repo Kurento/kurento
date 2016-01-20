@@ -87,6 +87,7 @@ CONTAINER_MAVEN_SETTINGS=/opt/kurento-settings.xml
 CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
 CONTAINER_GNUPG_KEY=/opt/gnupg_key
+CONTAINER_NPM_CONFIG=/root/.npmrc
 CONTAINER_TEST_FILES=/opt/test-files
 
 # Verify mandatory parameters
@@ -181,6 +182,7 @@ docker run \
   $([ -f "$GIT_KEY" ] && echo "-v $GIT_KEY:$CONTAINER_GIT_KEY" ) \
   $([ -f "$GIT_CONFIG" ] && echo "-v $GIT_CONFIG:$CONTAINER_GIT_CONFIG") \
   $([ -f "$GNUPG_KEY" ] && echo "-v $GNUPG_KEY:$CONTAINER_GNUPG_KEY") \
+  $([ -f "$NPM_CONFIG" ] && echo "-v $NPM_CONFIG:$CONTAINER_NPM_CONFIG") \
   -e "ASSEMBLY_FILE=$ASSEMBLY_FILE" \
   -e "BASE_NAME=$BASE_NAME" \
   -e "CREATE_TAG=$CREATE_TAG" \
