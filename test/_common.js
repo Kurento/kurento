@@ -170,6 +170,26 @@ function getIpDocker(callback) {
   })
 }
 
+function getopts(args, opts) {
+  var result = opts.default || {};
+  args.replace(
+    new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+    function ($0, $1, $2, $3) {
+      result[$1] = decodeURI($3);
+    });
+
+  return result;
+};
+
+// Only process arguments for browsers
+try {
+  var args = getopts(location.search, {
+    default: {
+
+    }
+  });
+} catch (e) {}
+
 QUnit.jUnitReport = fetchReport.bind(undefined, 'junit')
 QUnit.lcovReport = fetchReport.bind(undefined, 'lcov')
 
@@ -197,7 +217,13 @@ QUnit.config.urlConfig.push({
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
 
-var ws_uri = QUnit.config.ws_uri;
+var ws_uri;
+
+if (args != undefined && args.ws_uri != undefined) {
+  ws_uri = args.ws_uri;
+} else {
+  ws_uri = QUnit.config.ws_uri;
+}
 var ws_port = QUnit.config.ws_port;
 var scope = QUnit.config.scope;
 var container;
@@ -207,7 +233,6 @@ var container;
 lifecycle = {
   setup: function () {
     var self = this;
-
     if (ws_uri == undefined) {
       //  var WebSocket = wock(proxy);
       //  ws_uri = new WebSocket();

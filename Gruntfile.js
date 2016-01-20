@@ -15,6 +15,7 @@
 
 module.exports = function (grunt) {
   var DIST_DIR = 'dist';
+  var DIST_TEST_DIR = 'dist_test';
 
   var pkg = grunt.file.readJSON('package.json');
 
@@ -32,7 +33,7 @@ module.exports = function (grunt) {
 
     // Plugins configuration
     clean: {
-      generated_code: DIST_DIR,
+      generated_code: DIST_DIR + '*',
       coverage: 'lib-cov',
 
       generated_doc: '<%= jsdoc.all.dest %>'
@@ -65,6 +66,26 @@ module.exports = function (grunt) {
 
     // Generate browser versions and mapping debug file
     browserify: {
+      'test': {
+        options: {
+          alias: [
+            '<%= pkg.main %>:<%= pkg.name %>',
+            'async',
+            'es6-promise',
+            'inherits',
+            'kurento-client-core',
+            'kurento-client-elements',
+            'kurento-client-filters',
+            'promisecallback',
+            'dockerode',
+            'minimist',
+            'child_process'
+          ]
+        },
+        src: PKG_BROWSER,
+        dest: DIST_TEST_DIR + '/<%= pkg.name %>.test.js'
+      },
+
       options: {
         alias: [
           '<%= pkg.main %>:<%= pkg.name %>',
@@ -105,8 +126,8 @@ module.exports = function (grunt) {
           ]
         }
       }
-    },
 
+    },
     // Generate bower.json file from package.json data
     sync: {
       bower: {
@@ -227,6 +248,7 @@ module.exports = function (grunt) {
   grunt.registerTask('bower', ['sync:bower', 'shell:bower']);
   grunt.registerTask('coverage', [
     'jscoverage',
-    'shell:pre-coverage', 'browserify:coverage', 'shell:post-coverage'
+    'shell:pre-coverage', 'browserify:coverage', 'browserify:test',
+    'shell:post-coverage'
   ]);
 };

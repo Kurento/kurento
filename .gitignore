@@ -4,6 +4,7 @@
 *~
 node_modules/
 dist/
+dist_test/
 src/
 target/
 /bower.json

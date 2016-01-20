@@ -10,6 +10,8 @@ var tasks      = require('grunt').tasks
 
 var parseString = require('xml2js').parseString;
 
+var QUnit = require('qunit-cli');
+
 
 const package_name = require('../package.json').name
 
@@ -62,7 +64,12 @@ function runTest(browser)
 {
   var driver = new webdriver.Builder().forBrowser(browser).build()
 
-  driver.get('http://localhost:'+PORT+'/test/index.html')
+  var ws_uri = QUnit.config.ws_uri;
+  if (ws_uri == undefined) {
+    ws_uri = 'ws://127.0.0.1:8888/kurento';
+  };
+
+  driver.get('http://localhost:'+PORT+'/test/index.html?ws_uri=' + ws_uri)
 
   waitReport(driver, 'junit', function(error, data)
   {
