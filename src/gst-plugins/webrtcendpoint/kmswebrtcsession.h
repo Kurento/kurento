@@ -102,6 +102,7 @@ KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 
 KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, SdpMediaConfig * mconf);
+gboolean kms_webrtc_session_set_ice_candidates (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 gboolean kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self, SdpMediaConfig * mconf);
 void kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate *candidate, guint8 index);
 gboolean kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self, KmsIceCandidate * candidate);

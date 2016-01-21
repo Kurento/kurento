@@ -738,6 +738,39 @@ kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self,
   return TRUE;
 }
 
+gboolean
+kms_webrtc_session_set_ice_candidates (KmsWebrtcSession * self,
+    SdpMediaConfig * mconf)
+{
+  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  char *stream_id;
+  GSList *candidates;
+  GSList *walk;
+
+  stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+  if (stream_id == NULL) {
+    return FALSE;
+  }
+
+  candidates =
+      kms_ice_base_agent_get_local_candidates (self->agent, stream_id,
+      NICE_COMPONENT_TYPE_RTP);
+  for (walk = candidates; walk; walk = walk->next) {
+    sdp_media_add_ice_candidate (media, self->agent, walk->data);
+  }
+  g_slist_free_full (candidates, g_object_unref);
+
+  candidates =
+      kms_ice_base_agent_get_local_candidates (self->agent, stream_id,
+      NICE_COMPONENT_TYPE_RTCP);
+  for (walk = candidates; walk; walk = walk->next) {
+    sdp_media_add_ice_candidate (media, self->agent, walk->data);
+  }
+  g_slist_free_full (candidates, g_object_unref);
+
+  return TRUE;
+}
+
 static gchar *
 generate_fingerprint_from_pem (const gchar * pem)
 {
