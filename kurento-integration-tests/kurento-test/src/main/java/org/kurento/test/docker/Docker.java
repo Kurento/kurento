@@ -99,8 +99,8 @@ public class Docker implements Closeable {
 
   public static Docker getSingleton() {
 
-    return getSingleton(
-        PropertiesManager.getProperty(DOCKER_SERVER_URL_PROPERTY, getDefaultDockerServerUrl()));
+    return getSingleton(PropertiesManager.getProperty(DOCKER_SERVER_URL_PROPERTY,
+        getDefaultDockerServerUrl()));
   }
 
   private static String getDefaultDockerServerUrl() {
@@ -244,15 +244,17 @@ public class Docker implements Closeable {
 
       if (configFilePath != null) {
 
-        String workspace = PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_PROP,
-            TestConfiguration.TEST_WORKSPACE_DEFAULT);
+        String workspace =
+            PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_PROP,
+                TestConfiguration.TEST_WORKSPACE_DEFAULT);
 
         String workspaceHost =
             PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_HOST_PROP,
                 TestConfiguration.TEST_WORKSPACE_HOST_DEFAULT);
 
-        String hostConfigFilePath = Paths.get(workspaceHost)
-            .resolve(Paths.get(workspace).relativize(Paths.get(configFilePath))).toString();
+        String hostConfigFilePath =
+            Paths.get(workspaceHost)
+                .resolve(Paths.get(workspace).relativize(Paths.get(configFilePath))).toString();
 
         log.info("Config file volume {}", hostConfigFilePath);
 
@@ -362,8 +364,13 @@ public class Docker implements Closeable {
   public void removeContainer(String containerName) {
     if (existsContainer(containerName)) {
       log.debug("Removing container {}", containerName);
-
-      getClient().removeContainerCmd(containerName).withRemoveVolumes(true).exec();
+      try {
+        getClient().removeContainerCmd(containerName).withRemoveVolumes(true).exec();
+        log.info("*** Only for debuggin: After Docker.removeContainer({}).", containerName);
+      } catch (Throwable e) {
+        log.error("*** Only for debugging: Exception {} -> Docker.removeContainer({}).",
+            containerName, e.getMessage());
+      }
     }
   }
 
@@ -400,8 +407,9 @@ public class Docker implements Closeable {
 
       log.debug("Creating container {}", nodeName);
 
-      CreateContainerCmd createContainerCmd = getClient().createContainerCmd(imageId)
-          .withName(nodeName).withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp });
+      CreateContainerCmd createContainerCmd =
+          getClient().createContainerCmd(imageId).withName(nodeName)
+              .withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp });
 
       String configFile = generateConfigFile(id, browserType);
 
@@ -423,11 +431,13 @@ public class Docker implements Closeable {
 
     try {
 
-      String workspace = PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_PROP,
-          TestConfiguration.TEST_WORKSPACE_DEFAULT);
+      String workspace =
+          PropertiesManager.getProperty(TestConfiguration.TEST_WORKSPACE_PROP,
+              TestConfiguration.TEST_WORKSPACE_DEFAULT);
 
-      Path config = Files.createTempFile(Paths.get(workspace), "", "-config.json",
-          PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--")));
+      Path config =
+          Files.createTempFile(Paths.get(workspace), "", "-config.json",
+              PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--")));
 
       String browserName1;
       String browserName2;
@@ -446,10 +456,10 @@ public class Docker implements Closeable {
         w.write("{\n" + "  \"capabilities\": [\n" + "    {\n" + "      \"browserName\": \""
             + browserName1 + "\",\n" + "      \"maxInstances\": 1,\n"
             + "      \"seleniumProtocol\": \"Selenium\",\n" + "      \"applicationName\": \"" + id
-            + "\"\n" + "    },\n" + "    {\n" + "      \"browserName\": \"" + browserName2 + "\",\n"
-            + "      \"maxInstances\": 1,\n" + "      \"seleniumProtocol\": \"WebDriver\",\n"
-            + "      \"applicationName\": \"" + id + "\"\n" + "    }\n" + "  ],\n"
-            + "  \"configuration\": {\n"
+            + "\"\n" + "    },\n" + "    {\n" + "      \"browserName\": \"" + browserName2
+            + "\",\n" + "      \"maxInstances\": 1,\n"
+            + "      \"seleniumProtocol\": \"WebDriver\",\n" + "      \"applicationName\": \"" + id
+            + "\"\n" + "    }\n" + "  ],\n" + "  \"configuration\": {\n"
             + "    \"proxy\": \"org.openqa.grid.selenium.proxy.DefaultRemoteProxy\",\n"
             + "    \"maxSession\": 1,\n" + "    \"port\": 5555,\n" + "    \"register\": true,\n"
             + "    \"registerCycle\": 5000\n" + "  }\n" + "}");
@@ -521,8 +531,8 @@ public class Docker implements Closeable {
           + "The file /proc/self/cgroup doesn't contain a line with 'docker'");
 
     } catch (IOException e) {
-      throw new DockerClientException(
-          "Exception obtaining containerId. " + "Exception reading file /proc/self/cgroup", e);
+      throw new DockerClientException("Exception obtaining containerId. "
+          + "Exception reading file /proc/self/cgroup", e);
     }
   }
 
@@ -629,8 +639,9 @@ public class Docker implements Closeable {
   }
 
   public String execCommand(String containerId, String... command) {
-    ExecCreateCmdResponse exec = client.execCreateCmd(containerId).withCmd(command).withTty(false)
-        .withAttachStdin(true).withAttachStdout(true).withAttachStderr(true).exec();
+    ExecCreateCmdResponse exec =
+        client.execCreateCmd(containerId).withCmd(command).withTty(false).withAttachStdin(true)
+            .withAttachStdout(true).withAttachStderr(true).exec();
     InputStream execInputStream = client.execStartCmd(exec.getId()).exec();
 
     String output = null;

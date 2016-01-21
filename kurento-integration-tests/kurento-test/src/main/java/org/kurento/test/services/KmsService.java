@@ -204,8 +204,7 @@ public class KmsService extends TestService {
       log.info("Starting KMS dockerized");
       Docker dockerClient = Docker.getSingleton();
       if (dockerClient.isRunningInContainer()) {
-        setDockerContainerName(dockerClient.getContainerName() + 
-            getDockerContainerNameSuffix());
+        setDockerContainerName(dockerClient.getContainerName() + getDockerContainerNameSuffix());
       }
     } else {
       log.info("Starting KMS with URI: {}", wsUri);
@@ -263,8 +262,18 @@ public class KmsService extends TestService {
     }
 
     if (isKmsDocker) {
-      Docker.getSingleton().removeContainer(dockerContainerName);
+      try {
+        Docker.getSingleton().removeContainer(dockerContainerName);
+        log.info("*** Only for debugging: Docker.getSingleton().removeContainer({})",
+            dockerContainerName);
+      } catch (Throwable name) {
+        log.error(
+            " +++ Only for debugging: Exception on Docker.getSingleton().removeContainer({})",
+            dockerContainerName);
+      }
     }
+
+    log.info("+++ Only for debugging: After removeContainer {}", dockerContainerName);
 
     // Delete temporal folder and content
     if (!isKmsDocker) {
@@ -274,6 +283,7 @@ public class KmsService extends TestService {
         log.warn("Exception deleting temporal folder {}", workspace, e);
       }
     }
+    log.info("+++ Only for debugging: End of KmsService.stop() for: {}", dockerContainerName);
   }
 
   @Override
@@ -524,9 +534,11 @@ public class KmsService extends TestService {
     String testMethodName = KurentoTest.getSimpleTestName();
 
     if (isKmsDocker) {
-      Docker.getSingleton().downloadLog(dockerContainerName,
-          Paths.get(targetFolder.getAbsolutePath(), testMethodName + 
-              getDockerLogSuffix() + ".log"));
+      Docker.getSingleton()
+          .downloadLog(
+              dockerContainerName,
+              Paths.get(targetFolder.getAbsolutePath(), testMethodName + getDockerLogSuffix()
+                  + ".log"));
     }
 
     else if (isKmsRemote) {
