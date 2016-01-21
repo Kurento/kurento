@@ -58,7 +58,7 @@ public class KurentoClient {
 
   private ServerManager serverManager;
 
-  private String sessionId;
+  private JsonRpcClient client;
 
   private static KmsUrlLoader kmsUrlLoader;
 
@@ -131,6 +131,7 @@ public class KurentoClient {
   }
 
   KurentoClient(JsonRpcClient client) {
+    this.client = client;
     this.manager = new RomManager(new RomClientJsonRpcClient(client));
     client.setRequestTimeout(requesTimeout);
     if (client instanceof JsonRpcClientWebSocket) {
@@ -138,7 +139,6 @@ public class KurentoClient {
     }
     try {
       client.connect();
-      sessionId = client.getSession().getSessionId();
     } catch (IOException e) {
       throw new KurentoException("Exception connecting to KMS", e);
     }
@@ -204,6 +204,6 @@ public class KurentoClient {
   }
 
   public String getSessionId() {
-    return sessionId;
+    return client.getSession().getSessionId();
   }
 }
