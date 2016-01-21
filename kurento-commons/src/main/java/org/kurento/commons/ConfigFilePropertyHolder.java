@@ -65,11 +65,11 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
     // FIXME shouldn't this be the first sentence in the method?
     Preconditions.checkNotNull(configFilePath, "configFilePath paramter must be not null.");
 
-    log.debug("Using configuration file in path '{}' ({})", configFilePath, configFilePath
-        .getClass().getCanonicalName());
+    log.debug("Using configuration file in path '{}' ({})", configFilePath,
+        configFilePath.getClass().getCanonicalName());
 
-    JsonReader reader = new JsonReader(Files.newBufferedReader(configFilePath,
-        StandardCharsets.UTF_8));
+    JsonReader reader = new JsonReader(
+        Files.newBufferedReader(configFilePath, StandardCharsets.UTF_8));
     reader.setLenient(true);
 
     JsonObject configFile = gson.fromJson(reader, JsonObject.class);
@@ -143,5 +143,9 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
     }
 
     return null;
+  }
+
+  public List<ConfigFileObject> getLoadedConfigFiles() {
+    return loadedConfigFiles;
   }
 }
