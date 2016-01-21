@@ -1446,8 +1446,7 @@ kms_recorder_endpoint_request_new_sink_pad (KmsElement * obj,
     goto end;
   }
 
-  kms_element_connect_sink_target_full (KMS_ELEMENT (self), data->sink_target,
-      data->type, data->description, connect_pad_signals_cb, self);
+  connect_sink_func (name, data, self);
 
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
