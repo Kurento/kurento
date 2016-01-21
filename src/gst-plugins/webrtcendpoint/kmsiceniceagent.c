@@ -478,12 +478,11 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
       goto end;
     }
 
-    if (media_stream_id != stream_id) {
+    if (g_strcmp0 (media_stream_id, stream_id) != 0) {
       goto end;
     }
 
     mid = kms_sdp_media_config_get_mid (mconf);
-
     if (mid != NULL) {
       ret = kms_ice_candidate_new_from_nice (nice_agent->priv->agent, nice_cand,
           mid, idx);
