@@ -61,6 +61,7 @@ gchar * kms_ice_candidate_get_address (KmsIceCandidate * self);
 const guint kms_ice_candidate_get_port (KmsIceCandidate * self);
 int kms_ice_candidate_get_ip_version (KmsIceCandidate * self);
 guint8 kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self);
+const gchar * kms_ice_candidate_get_stream_id (KmsIceCandidate * self);
 gboolean kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand);
 
 /* Utils */

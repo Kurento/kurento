@@ -51,6 +51,8 @@ struct _KmsIceCandidatePrivate
   gchar *candidate;
   gchar *sdp_mid;
   guint8 sdp_m_line_index;
+
+  gchar *stream_id;
 };
 
 static void
@@ -108,6 +110,7 @@ kms_ice_candidate_finalize (GObject * gobject)
 
   g_free (self->priv->candidate);
   g_free (self->priv->sdp_mid);
+  g_free (self->priv->stream_id);
 
   G_OBJECT_CLASS (kms_ice_candidate_parent_class)->finalize (gobject);
 }
@@ -168,6 +171,8 @@ kms_ice_candidate_new_from_nice (NiceAgent * agent, NiceCandidate * candidate,
       "sdp-mid", sdp_mid, "sdp-m-line-index", sdp_m_line_index, NULL);
   g_free (cand);
 
+  obj->priv->stream_id = g_strdup_printf ("%d", candidate->stream_id);
+
   return obj;
 }
 
@@ -195,6 +200,12 @@ guint8
 kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self)
 {
   return self->priv->sdp_m_line_index;
+}
+
+const gchar *
+kms_ice_candidate_get_stream_id (KmsIceCandidate * self)
+{
+  return self->priv->stream_id;
 }
 
 gboolean

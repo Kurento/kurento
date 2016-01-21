@@ -381,12 +381,80 @@ kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self)
   }
 }
 
+static const gchar *
+kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
+    SdpMediaConfig * mconf, KmsIceCandidate * cand)
+{
+  char *media_stream_id;
+  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  const gchar *mid;
+
+  media_stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+  if (media_stream_id == NULL) {
+    return NULL;
+  }
+
+  if (g_strcmp0 (media_stream_id, kms_ice_candidate_get_stream_id (cand)) != 0) {
+    return NULL;
+  }
+
+  sdp_media_add_ice_candidate (media, self->agent, cand);
+
+  mid = kms_sdp_media_config_get_mid (mconf);
+  if (mid == NULL) {
+    return "";
+  }
+
+  return mid;
+}
+
+static void
+kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
+    KmsIceCandidate * cand)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
+  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
+  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
+  GList *list = NULL, *iterator = NULL;
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  for (; item != NULL; item = g_slist_next (item)) {
+    SdpMediaConfig *mconf = item->data;
+    gint idx = kms_sdp_media_config_get_id (mconf);
+    const gchar *mid;
+
+    if (kms_sdp_media_config_is_inactive (mconf)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
+      continue;
+    }
+
+    mid = kms_webrtc_session_sdp_media_add_ice_candidate (self, mconf, cand);
+    if (mid != NULL) {
+      KmsIceCandidate *candidate =
+          kms_ice_candidate_new (kms_ice_candidate_get_candidate (cand), mid,
+          idx);
+
+      list = g_list_append (list, candidate);
+    }
+  }
+
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  for (iterator = list; iterator; iterator = iterator->next) {
+    g_signal_emit (G_OBJECT (self),
+        kms_webrtc_session_signals[SIGNAL_ON_ICE_CANDIDATE], 0,
+        KMS_ICE_CANDIDATE (iterator->data));
+  }
+
+  g_list_free_full (list, g_object_unref);
+}
+
 static void
 kms_webrtc_session_new_candidate (KmsIceBaseAgent * agent,
     KmsIceCandidate * cand, KmsWebrtcSession * self)
 {
-  g_signal_emit (G_OBJECT (self),
-      kms_webrtc_session_signals[SIGNAL_ON_ICE_CANDIDATE], 0, cand);
+  kms_webrtc_session_sdp_msg_add_ice_candidate (self, cand);
 }
 
 static gboolean

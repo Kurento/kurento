@@ -42,86 +42,6 @@ struct _KmsIceNiceAgentPrivate
 };
 
 static void
-sdp_media_add_ice_candidate (GstSDPMedia * media, NiceAgent * agent,
-    NiceCandidate * cand)
-{
-  gchar *str;
-
-  str = nice_agent_generate_local_candidate_sdp (agent, cand);
-  gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
-      str + SDP_CANDIDATE_ATTR_LEN);
-  g_free (str);
-}
-
-static const gchar *
-kms_ice_nice_agent_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf, NiceAgent * agent, NiceCandidate * cand)
-{
-  char *media_stream_id;
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-  const gchar *mid;
-
-  media_stream_id = kms_webrtc_session_get_stream_id (self, mconf);
-  if (media_stream_id == NULL) {
-    return NULL;
-  }
-
-  if (atoi (media_stream_id) != cand->stream_id) {
-    return NULL;
-  }
-
-  sdp_media_add_ice_candidate (media, agent, cand);
-
-  mid = kms_sdp_media_config_get_mid (mconf);
-  if (mid == NULL) {
-    return "";
-  }
-
-  return mid;
-}
-
-static void
-kms_ice_nice_agent_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
-    NiceAgent * agent, NiceCandidate * nice_cand, KmsIceBaseAgent * parent)
-{
-  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
-  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
-  GList *list = NULL, *iterator = NULL;
-
-  KMS_SDP_SESSION_LOCK (self);
-
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
-    gint idx = kms_sdp_media_config_get_id (mconf);
-    const gchar *mid;
-
-    if (kms_sdp_media_config_is_inactive (mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
-      continue;
-    }
-
-    mid =
-        kms_ice_nice_agent_sdp_media_add_ice_candidate (self, mconf,
-        agent, nice_cand);
-    if (mid != NULL) {
-      KmsIceCandidate *candidate =
-          kms_ice_candidate_new_from_nice (agent, nice_cand, mid, idx);
-      list = g_list_append (list, candidate);
-    }
-  }
-
-  KMS_SDP_SESSION_UNLOCK (self);
-
-  for (iterator = list; iterator; iterator = iterator->next) {
-    g_signal_emit_by_name (parent, "on-ice-candidate",
-        KMS_ICE_CANDIDATE (iterator->data));
-  }
-
-  g_list_free_full (list, g_object_unref);
-}
-
-static void
 kms_ice_nice_agent_new_candidate (NiceAgent * agent,
     guint stream_id,
     guint component_id, gchar * foundation, KmsIceNiceAgent * self)
@@ -142,8 +62,10 @@ kms_ice_nice_agent_new_candidate (NiceAgent * agent,
     if (cand->stream_id == stream_id &&
         cand->component_id == component_id &&
         g_strcmp0 (foundation, cand->foundation) == 0) {
-      kms_ice_nice_agent_sdp_msg_add_ice_candidate (self->priv->session,
-          self->priv->agent, cand, parent);
+      KmsIceCandidate *candidate =
+          kms_ice_candidate_new_from_nice (agent, cand, "", 0);
+
+      g_signal_emit_by_name (parent, "on-ice-candidate", candidate);
     }
   }
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
