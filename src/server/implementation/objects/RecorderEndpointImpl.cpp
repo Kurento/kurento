@@ -147,9 +147,10 @@ collectEndpointStats (std::map <std::string, std::shared_ptr<Stats>>
   gst_structure_get (stats, "video-e2e-latency", G_TYPE_UINT64, &v_e2e,
                      "audio-e2e-latency", G_TYPE_UINT64, &a_e2e, NULL);
 
+  std::vector<std::shared_ptr<MediaLatencyStat>> inputStats;
   endpointStats = std::make_shared <EndpointStats> (id,
-                  std::make_shared <StatsType> (StatsType::endpoint), timestamp, 0.0, 0.0,
-                  a_e2e, v_e2e);
+                  std::make_shared <StatsType> (StatsType::endpoint), timestamp,
+                  inputStats, a_e2e, v_e2e);
 
   statsReport[id] = endpointStats;
 }
