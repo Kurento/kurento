@@ -372,20 +372,13 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
 }
 
 static KmsIceCandidate *
-kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
-    const char *stream_id, guint component_id)
+kms_ice_nice_agent_create_candidate_from_nice (KmsIceNiceAgent * nice_agent,
+    NiceCandidate * nice_cand, const char *stream_id)
 {
-  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
-  NiceCandidate *nice_cand;
-  KmsIceCandidate *ret = NULL;
-  guint id = atoi (stream_id);
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (nice_agent->priv->session);
   SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
   const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
-
-  nice_cand =
-      nice_agent_get_default_local_candidate (nice_agent->priv->agent, id,
-      component_id);
+  KmsIceCandidate *ret = NULL;
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;
@@ -394,7 +387,7 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
     gchar *media_stream_id;
 
     if (kms_sdp_media_config_is_inactive (mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
+      GST_DEBUG_OBJECT (nice_agent, "Media (id=%d) inactive", idx);
       continue;
     }
 
@@ -421,7 +414,55 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
   }
 
 end:
+  return ret;
+}
+
+static KmsIceCandidate *
+kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
+    const char *stream_id, guint component_id)
+{
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
+  NiceCandidate *nice_cand;
+  guint id = atoi (stream_id);
+  KmsIceCandidate *ret;
+
+  nice_cand =
+      nice_agent_get_default_local_candidate (nice_agent->priv->agent, id,
+      component_id);
+  ret =
+      kms_ice_nice_agent_create_candidate_from_nice (nice_agent, nice_cand,
+      stream_id);
   nice_candidate_free (nice_cand);
+
+  return ret;
+}
+
+static GSList *
+kms_ice_nice_agent_get_local_candidates (KmsIceBaseAgent * self,
+    const char *stream_id, guint component_id)
+{
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
+  GSList *ret = NULL;
+  guint id = atoi (stream_id);
+  GSList *candidates;
+  GSList *walk;
+
+  candidates =
+      nice_agent_get_local_candidates (nice_agent->priv->agent, id,
+      component_id);
+
+  for (walk = candidates; walk; walk = walk->next) {
+    NiceCandidate *nice_cand = walk->data;
+    KmsIceCandidate *candidate =
+        kms_ice_nice_agent_create_candidate_from_nice (nice_agent, nice_cand,
+        stream_id);
+
+    if (candidate != NULL) {
+      ret = g_slist_append (ret, candidate);
+    }
+  }
+
+  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
 
   return ret;
 }
@@ -463,6 +504,7 @@ kms_ice_nice_agent_class_init (KmsIceNiceAgentClass * klass)
   base_class->run_agent = kms_ice_nice_agent_run_agent;
   base_class->get_default_local_candidate =
       kms_ice_nice_agent_get_default_local_candidate;
+  base_class->get_local_candidates = kms_ice_nice_agent_get_local_candidates;
   base_class->remove_stream = kms_ice_nice_agent_remove_stream;
 
   g_type_class_add_private (klass, sizeof (KmsIceNiceAgentPrivate));
