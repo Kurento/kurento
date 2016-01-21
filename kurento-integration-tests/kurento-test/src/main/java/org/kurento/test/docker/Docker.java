@@ -264,7 +264,7 @@ public class Docker implements Closeable {
 
     } else {
 
-      String testFilesPath = KurentoTest.getTestFilesPath();
+      String testFilesPath = KurentoTest.getTestFilesDiskPath();
       Volume testFilesVolume = new Volume(testFilesPath);
 
       String workspacePath = Paths.get(KurentoTest.getTestDir()).toAbsolutePath().toString();

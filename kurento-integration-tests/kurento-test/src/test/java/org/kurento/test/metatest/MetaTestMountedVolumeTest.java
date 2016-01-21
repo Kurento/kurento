@@ -49,7 +49,7 @@ public class MetaTestMountedVolumeTest extends KurentoClientBrowserTest<WebRtcTe
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
-    String videoPath = "file://" + getTestFilesPath() + "/video/filter/barcodes.webm";
+    String videoPath = "file://" + getTestFilesDiskPath() + "/video/filter/barcodes.webm";
 
     PlayerEndpoint p = new PlayerEndpoint.Builder(mp, videoPath).build();
 

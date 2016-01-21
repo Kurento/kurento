@@ -68,13 +68,17 @@ public class PlayerSwitchTest extends FunctionalTest {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerRed =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/chrome.mp4").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/format/chrome.mp4").build();
     PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/fiware.mkv").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/format/fiware.mkv").build();
     PlayerEndpoint playerBlue =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/sintel.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/format/sintel.webm").build();
     PlayerEndpoint playerBall =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/format/rabbit.mov").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/format/rabbit.mov").build();
     PlayerEndpoint playerRtsp =
         new PlayerEndpoint.Builder(mp, "rtsp://195.55.223.100/axis-media/media.amp").build();
     WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -113,9 +117,8 @@ public class PlayerSwitchTest extends FunctionalTest {
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue(
-        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
-        getPage().compare(PLAYTIME, currentTime));
+    Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime
+        + " sec)", getPage().compare(PLAYTIME, currentTime));
 
     // Release Media Pipeline
     mp.release();

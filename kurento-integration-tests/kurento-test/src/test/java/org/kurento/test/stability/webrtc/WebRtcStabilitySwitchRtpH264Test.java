@@ -73,7 +73,7 @@ public class WebRtcStabilitySwitchRtpH264Test extends StabilityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    String videoPath = KurentoTest.getTestFilesPath() + "/video/15sec/rgbHD.y4m";
+    String videoPath = KurentoTest.getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m";
     TestScenario test = new TestScenario();
     test.addBrowser(BrowserConfig.BROWSER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
         .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());

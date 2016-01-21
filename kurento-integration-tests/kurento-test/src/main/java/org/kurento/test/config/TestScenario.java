@@ -222,7 +222,7 @@ public class TestScenario {
     for (int i = 0; i < size; i++) {
       test.addBrowser(BrowserConfig.BROWSER + i,
           new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-              .video(KurentoTest.getTestFilesPath() + "/video/15sec/rgbHD.y4m")
+              .video(KurentoTest.getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m")
               .scope(BrowserScope.LOCAL).build());
     }
     return Arrays.asList(new Object[][] { { test } });
@@ -283,7 +283,7 @@ public class TestScenario {
 
   public static Collection<Object[]> localPresenterAndViewerRGB() {
     // Test: Chrome in local (presenter and viewer)
-    String videoPath = KurentoTest.getTestFilesPath() + "/video/15sec/rgbHD.y4m";
+    String videoPath = KurentoTest.getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m";
     TestScenario test = new TestScenario();
     test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
         .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(videoPath).build());

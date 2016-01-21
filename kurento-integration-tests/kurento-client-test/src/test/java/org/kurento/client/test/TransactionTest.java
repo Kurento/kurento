@@ -49,8 +49,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .useEncodedMedia().build();
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").useEncodedMedia().build();
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build();
 
@@ -103,8 +103,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx1);
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .useEncodedMedia().build(tx1);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").useEncodedMedia().build(tx1);
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build(tx1);
 
@@ -125,14 +125,13 @@ public class TransactionTest extends KurentoClientTest {
   }
 
   @Test(expected = TransactionNotCommitedException.class)
-  public void usePlainMethodsInNewObjectsInsideTx()
-      throws InterruptedException, ExecutionException {
+  public void usePlainMethodsInNewObjectsInsideTx() throws InterruptedException, ExecutionException {
 
     // Pipeline creation (no transaction)
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build();
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build();
 
     // Creation in explicit transaction
     Transaction tx = pipeline.beginTransaction();
@@ -147,14 +146,14 @@ public class TransactionTest extends KurentoClientTest {
   // should be another error to control non-commited objects
   // @Ignore
   @Test(expected = TransactionNotCommitedException.class)
-  public void usePlainMethodsWithNewObjectsAsParamsInsideTx()
-      throws InterruptedException, ExecutionException {
+  public void usePlainMethodsWithNewObjectsAsParamsInsideTx() throws InterruptedException,
+      ExecutionException {
 
     // Pipeline creation (no transaction)
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build();
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build();
 
     // Creation in explicit transaction
     Transaction tx = pipeline.beginTransaction();
@@ -173,8 +172,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build(tx);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build(tx);
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build(tx);
 
@@ -195,8 +194,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build();
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build();
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build();
 
@@ -221,8 +220,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
 
     final PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build(tx);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build(tx);
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build(tx);
 
@@ -261,8 +260,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
 
     final PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build(tx);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build(tx);
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build(tx);
 
@@ -287,8 +286,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build();
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build();
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build();
 
@@ -329,8 +328,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build(tx);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build(tx);
 
     TFuture<String> uri = player.getUri(tx);
 
@@ -339,16 +338,16 @@ public class TransactionTest extends KurentoClientTest {
     try {
       player.release();
     } catch (TransactionRollbackException e) {
-      log.info(
-          "Captured exception of class " + e.getClass() + " with message '" + e.getMessage() + "'");
+      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+          + "'");
       assertThat(e.isUserRollback(), is(true));
     }
 
     try {
       uri.get();
     } catch (TransactionRollbackException e) {
-      log.info(
-          "Captured exception of class " + e.getClass() + " with message '" + e.getMessage() + "'");
+      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+          + "'");
       assertThat(e.isUserRollback(), is(true));
     }
   }
@@ -363,8 +362,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build(tx);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build(tx);
 
     tx.commit();
 
@@ -373,8 +372,8 @@ public class TransactionTest extends KurentoClientTest {
     try {
       player.play();
     } catch (KurentoServerException e) {
-      log.info(
-          "Captured exception of class " + e.getClass() + " with message '" + e.getMessage() + "'");
+      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+          + "'");
       assertThat(e.getCode(), is(40101));
       assertThat(e.getServerMessage(), containsString(" not found"));
     }
@@ -388,8 +387,8 @@ public class TransactionTest extends KurentoClientTest {
       tx.commit();
       fail("Exception 'TransactionExecutionException' should be thrown");
     } catch (TransactionExecutionException e) {
-      log.info(
-          "Captured exception of class " + e.getClass() + " with message '" + e.getMessage() + "'");
+      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+          + "'");
       assertThat(e.getCode(), is(40101));
       assertThat(e.getServerMessage(), containsString(" not found"));
     }
@@ -398,8 +397,8 @@ public class TransactionTest extends KurentoClientTest {
       filter.connect(player);
       fail("Exception 'TransactionExecutionException' should be thrown");
     } catch (TransactionRollbackException e) {
-      log.info(
-          "Captured exception of class " + e.getClass() + " with message '" + e.getMessage() + "'");
+      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+          + "'");
 
       KurentoServerException kse = e.getKurentoServerException();
       assertThat(kse, is(not(nullValue())));
@@ -418,8 +417,8 @@ public class TransactionTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline(tx);
 
     final PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build(tx);
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build(tx);
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build(tx);
 

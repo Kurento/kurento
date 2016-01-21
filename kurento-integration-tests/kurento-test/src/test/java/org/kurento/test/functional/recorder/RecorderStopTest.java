@@ -96,14 +96,15 @@ public class RecorderStopTest extends BaseRecorder {
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/green.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/10sec/green.webm").build();
     WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getDefaultOutputFile(extension);
 
     final RecorderEndpoint recorderEP =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile).withMediaProfile(
+            mediaProfileSpecType).build();
     playerEP.connect(webRtcEP1);
 
     playerEP.connect(recorderEP);

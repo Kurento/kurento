@@ -88,9 +88,11 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEP1 =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/60sec/ball.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/60sec/ball.webm").build();
     PlayerEndpoint playerEP2 =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/60sec/smpte.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/60sec/smpte.webm").build();
 
     String recordingFile = getDefaultOutputFile(extension);
     RecorderEndpoint recorderEP =

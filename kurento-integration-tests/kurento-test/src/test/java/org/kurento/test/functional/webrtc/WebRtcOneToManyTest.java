@@ -79,7 +79,7 @@ public class WebRtcOneToManyTest extends FunctionalTest {
     TestScenario test = new TestScenario();
     test.addBrowser(BrowserConfig.PRESENTER,
         new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
-            .scope(BrowserScope.LOCAL).video(getTestFilesPath() + "/video/15sec/rgbHD.y4m")
+            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m")
             .build());
     test.addBrowser(BrowserConfig.VIEWER,
         new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)

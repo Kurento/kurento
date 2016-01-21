@@ -102,9 +102,10 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestSameFormats(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls = { "http://files.kurento.org/video/10sec/red.webm",
-        "http://files.kurento.org/video/10sec/green.webm",
-        "http://files.kurento.org/video/10sec/blue.webm" };
+    String[] mediaUrls =
+        { "http://" + getTestFilesHttpPath() + "/video/10sec/red.webm",
+            "http://" + getTestFilesHttpPath() + "/video/10sec/green.webm",
+            "http://" + getTestFilesHttpPath() + "/video/10sec/blue.webm" };
     Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -113,9 +114,10 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestDifferentFormats(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls = { "http://files.kurento.org/video/10sec/ball.mkv",
-        "http://files.kurento.org/video/10sec/white.webm",
-        "http://files.kurento.org/video/10sec/blue.m4v" };
+    String[] mediaUrls =
+        { "http://" + getTestFilesHttpPath() + "/video/10sec/ball.mkv",
+            "http://" + getTestFilesHttpPath() + "/video/10sec/white.webm",
+            "http://" + getTestFilesHttpPath() + "/video/10sec/blue.m4v" };
     Color[] expectedColors = { Color.BLACK, Color.WHITE, Color.BLUE };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -124,7 +126,7 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension, String mediaUrls[], Color[] expectedColors)
-          throws Exception {
+      throws Exception {
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     int numPlayers = mediaUrls.length;
@@ -138,8 +140,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
     String recordingFile = getDefaultOutputFile(extension);
     RecorderEndpoint recorderEP =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile).withMediaProfile(
+            mediaProfileSpecType).build();
 
     // Test execution
     getPage().subscribeEvents("playing");
@@ -152,8 +154,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
       players[i].play();
 
       if (!startRecord) {
-        Assert.assertTrue("Not received media (timeout waiting playing event)",
-            getPage().waitForEvent("playing"));
+        Assert.assertTrue("Not received media (timeout waiting playing event)", getPage()
+            .waitForEvent("playing"));
         recorderEP.record();
         startRecord = true;
       }
@@ -192,8 +194,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
     Assert.assertTrue("Not received media in the recording (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
     for (Color color : expectedColors) {
-      Assert.assertTrue("The color of the recorded video should be " + color,
-          getPage().similarColor(color));
+      Assert.assertTrue("The color of the recorded video should be " + color, getPage()
+          .similarColor(color));
     }
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));

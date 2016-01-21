@@ -72,9 +72,11 @@ public class DispatcherOneToManyPlayerTest extends FunctionalTest {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/red.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/red.webm").build();
     PlayerEndpoint playerEP2 =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/blue.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/blue.webm").build();
     WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
     WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
     WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();

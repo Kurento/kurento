@@ -462,7 +462,7 @@ public class KmsService extends TestService {
     if (dockerClient.isRunningInContainer()) {
       createContainerCmd.withVolumesFrom(new VolumesFrom(dockerClient.getContainerId()));
     } else {
-      String testFilesPath = KurentoTest.getTestFilesPath();
+      String testFilesPath = KurentoTest.getTestFilesDiskPath();
       Volume volume = new Volume(testFilesPath);
       String targetPath =
           Paths.get(KurentoTest.getDefaultOutputFolder().toURI()).toAbsolutePath().toString();

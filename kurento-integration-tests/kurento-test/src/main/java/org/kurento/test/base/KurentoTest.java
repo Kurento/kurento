@@ -20,16 +20,22 @@ import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
 import static org.kurento.test.config.Protocol.S3;
 import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.TEST_FILES_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.TEST_FILES_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_PROP_OLD;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_HTTP_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_HTTP_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_MONGO_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_MONGO_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_PROP_OLD;
 import static org.kurento.test.config.TestConfiguration.TEST_NUMRETRIES_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_NUM_NUMRETRIES_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_PROP;
-import static org.kurento.test.config.TestConfiguration.TEST_S3_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.TEST_S3_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS;
 import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS_DEFAULT;
 
@@ -255,12 +261,28 @@ public class KurentoTest {
     return logFiles;
   }
 
-  public static String getTestFilesPath() {
-    return getProperty(TEST_FILES_PROP, TEST_FILES_DEFAULT);
+  public static String getTestFilesDiskPath() {
+    String testFilesDisk = getProperty(TEST_FILES_DISK_PROP);
+    if (testFilesDisk == null) {
+      testFilesDisk = getProperty(TEST_FILES_DISK_PROP_OLD, TEST_FILES_DISK_DEFAULT);
+    }
+    return testFilesDisk;
   }
 
-  public static String getTestS3Path() {
-    return getProperty(TEST_S3_PROP, TEST_S3_DEFAULT);
+  public static String getTestFilesS3Path() {
+    String testFilesS3 = getProperty(TEST_FILES_S3_PROP);
+    if (testFilesS3 == null) {
+      testFilesS3 = getProperty(TEST_FILES_S3_PROP_OLD, TEST_FILES_S3_DEFAULT);
+    }
+    return testFilesS3;
+  }
+
+  public static String getTestFilesHttpPath() {
+    return getProperty(TEST_FILES_HTTP_PROP, TEST_FILES_HTTP_DEFAULT);
+  }
+
+  public static String getTestFilesMongoPath() {
+    return getProperty(TEST_FILES_MONGO_PROP, TEST_FILES_MONGO_DEFAULT);
   }
 
   public static void logMessage(String message) {
@@ -273,14 +295,17 @@ public class KurentoTest {
     String mediaUrl = "";
     switch (protocol) {
       case HTTP:
-        mediaUrl = HTTP + "://files.kurento.org";
+        mediaUrl = HTTP + "://" + getTestFilesHttpPath();
         break;
       case FILE:
-        mediaUrl = FILE + "://" + getTestFilesPath();
+        mediaUrl = FILE + "://" + getTestFilesDiskPath();
         break;
       case S3:
-        mediaUrl = S3 + "://" + getTestS3Path();
+        mediaUrl = S3 + "://" + getTestFilesS3Path();
         break;
+      /*
+       * case MONGODB: mediaUrl = MONGODB + "://" + getTestFilesMongoPath(); break;
+       */
       default:
         throw new RuntimeException(protocol + "is not supported in this test.");
     }

@@ -25,11 +25,15 @@ import org.kurento.test.base.KurentoClientTest;
  */
 public class ApiBase extends KurentoClientTest {
 
-  public static final String URL_BARCODES = "http://files.kurento.org/video/filter/barcodes.webm";
-  public static final String URL_FIWARECUT = "http://files.kurento.org/video/filter/fiwarecut.webm";
-  public static final String URL_SMALL = "http://files.kurento.org/video/format/small.webm";
-  public static final String URL_PLATES = "http://files.kurento.org/video/filter/plates.webm";
-  public static final String URL_POINTER_DETECTOR =
-      "http://files.kurento.org/video/filter/pointerDetector.mp4";
+  public static final String URL_BARCODES = "http://" + getTestFilesHttpPath()
+      + "/video/filter/barcodes.webm";
+  public static final String URL_FIWARECUT = "http://" + getTestFilesHttpPath()
+      + "/video/filter/fiwarecut.webm";
+  public static final String URL_SMALL = "http://" + getTestFilesHttpPath()
+      + "/video/format/small.webm";
+  public static final String URL_PLATES = "http://" + getTestFilesHttpPath()
+      + "/video/filter/plates.webm";
+  public static final String URL_POINTER_DETECTOR = "http://" + getTestFilesHttpPath()
+      + "/video/filter/pointerDetector.mp4";
 
 }

@@ -76,7 +76,8 @@ public class PlayerZBarTest extends FunctionalTest {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/filter/barcodes.webm")
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/filter/barcodes.webm")
             .build();
     WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
     ZBarFilter zBarFilter = new ZBarFilter.Builder(mp).build();

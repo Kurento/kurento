@@ -72,10 +72,11 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    String videoPath = KurentoTest.getTestFilesPath() + "/video/10sec/red.y4m";
-    String audioUrl = "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav";
+    String videoPath = KurentoTest.getTestFilesDiskPath() + "/video/10sec/red.y4m";
+    String audioUrl = "http://" + getTestFilesHttpPath() + "/audio/10sec/fiware_mono_16khz.wav";
     TestScenario test = new TestScenario();
-    test.addBrowser(BrowserConfig.BROWSER,
+    test.addBrowser(
+        BrowserConfig.BROWSER,
         new Browser.Builder().webPageType(WebPageType.WEBRTC).browserType(BrowserType.CHROME)
             .scope(BrowserScope.LOCAL).video(videoPath)
             .audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE, AudioChannel.MONO).build());
@@ -85,8 +86,8 @@ public class WebRtcQualityLoopbackTest extends QualityTest {
   @Ignore
   @Test
   public void testWebRtcQualityLoopback() throws InterruptedException {
-    doTest(BrowserType.CHROME, getTestFilesPath() + "/video/10sec/red.y4m",
-        "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav", Color.RED);
+    doTest(BrowserType.CHROME, getTestFilesDiskPath() + "/video/10sec/red.y4m", "http://"
+        + getTestFilesHttpPath() + "/audio/10sec/fiware_mono_16khz.wav", Color.RED);
   }
 
   public void doTest(BrowserType browserType, String videoPath, String audioUrl, Color color)

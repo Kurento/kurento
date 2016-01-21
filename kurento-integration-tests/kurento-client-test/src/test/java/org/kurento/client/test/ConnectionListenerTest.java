@@ -71,8 +71,8 @@ public class ConnectionListenerTest extends KurentoClientTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/format/small.webm")
-            .build();
+        new PlayerEndpoint.Builder(pipeline, "http://" + getTestFilesHttpPath()
+            + "/video/format/small.webm").build();
 
     HttpPostEndpoint httpEndpoint = new HttpPostEndpoint.Builder(pipeline).build();
 

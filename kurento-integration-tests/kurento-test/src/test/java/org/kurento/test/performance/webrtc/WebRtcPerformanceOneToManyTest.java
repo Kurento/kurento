@@ -80,7 +80,7 @@ public class WebRtcPerformanceOneToManyTest extends PerformanceTest {
     browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY, BROWSER_PER_VIEWER_DEFAULT);
 
     TestScenario test = new TestScenario();
-    String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
+    String video = getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m";
     test.addBrowser(BrowserConfig.PRESENTER, new Browser.Builder().webPageType(WebPageType.WEBRTC)
         .browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL).video(video).build());
 

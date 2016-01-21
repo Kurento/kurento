@@ -217,11 +217,21 @@ public class TestConfiguration {
   public static final String TEST_PRINT_LOG_PROP = "test.print.log";
   public static final boolean TEST_PRINT_LOG_DEFAULT = true;
 
-  public static final String TEST_FILES_PROP = "test.files";
-  public static final String TEST_FILES_DEFAULT = "/var/lib/jenkins/test-files";
+  // FIXME: When CI can, remove TEST_FILES_DISK_PROP_OLD
+  public static final String TEST_FILES_DISK_PROP_OLD = "test.files";
+  public static final String TEST_FILES_DISK_PROP = "test.files.disk";
+  public static final String TEST_FILES_DISK_DEFAULT = "/var/lib/jenkins/test-files";
 
-  public static final String TEST_S3_PROP = "test.s3";
-  public static final String TEST_S3_DEFAULT = "kurento-s3-test";
+  // FIXME: When CI can, remove TEST_FILES_S3_PROP_OLD
+  public static final String TEST_FILES_S3_PROP_OLD = "test.s3";
+  public static final String TEST_FILES_S3_PROP = "test.files.s3";
+  public static final String TEST_FILES_S3_DEFAULT = "kurento-s3-test";
+
+  public static final String TEST_FILES_HTTP_PROP = "test.files.http";
+  public static final String TEST_FILES_HTTP_DEFAULT = "files.kurento.org";
+
+  public static final String TEST_FILES_MONGO_PROP = "test.files.mongo";
+  public static final String TEST_FILES_MONGO_DEFAULT = "files.kurento.org:27017";
 
   public static final String TEST_PROJECT_PATH_PROP = "test.project.path";
   public static final String TEST_PROJECT_PATH_DEFAULT = "target/surefire-reports/";

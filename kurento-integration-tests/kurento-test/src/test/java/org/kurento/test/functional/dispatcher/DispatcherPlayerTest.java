@@ -77,9 +77,11 @@ public class DispatcherPlayerTest extends FunctionalTest {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/red.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/10sec/red.webm")
+            .build();
     PlayerEndpoint playerEP2 =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/blue.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/10sec/blue.webm").build();
     WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
     Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
@@ -118,9 +120,8 @@ public class DispatcherPlayerTest extends FunctionalTest {
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue(
-        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
-        getPage().compare(PLAYTIME, currentTime));
+    Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime
+        + " sec)", getPage().compare(PLAYTIME, currentTime));
 
     // Release Media Pipeline
     mp.release();

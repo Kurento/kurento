@@ -67,10 +67,10 @@ public class Ffmpeg {
     float pesqmos = 0;
 
     try {
-      String pesq = KurentoTest.getTestFilesPath() + "/bin/pesq/PESQ";
+      String pesq = KurentoTest.getTestFilesDiskPath() + "/bin/pesq/PESQ";
       String origWav = "";
       if (audio.startsWith(HTTP_TEST_FILES)) {
-        origWav = KurentoTest.getTestFilesPath() + audio.replace(HTTP_TEST_FILES, "");
+        origWav = KurentoTest.getTestFilesDiskPath() + audio.replace(HTTP_TEST_FILES, "");
       } else {
         // Download URL
         origWav = KurentoTest.getDefaultOutputFile("downloaded.wav");

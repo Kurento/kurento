@@ -64,7 +64,7 @@ public class PlayerMultiplePauseTest extends StabilityTest {
   @Test
   public void testPlayerMultiplePause() throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/60sec/red.webm";
+    final String mediaUrl = "http://" + getTestFilesHttpPath() + "/video/60sec/red.webm";
     final Color expectedColor = Color.RED;
     final int playTimeSeconds = 2;
     final int pauseTimeSeconds = 2;
@@ -85,8 +85,8 @@ public class PlayerMultiplePauseTest extends StabilityTest {
 
     for (int i = 0; i < numPauses; i++) {
       // Assert color
-      Assert.assertTrue("The color of the video should be " + expectedColor,
-          getPage().similarColor(expectedColor));
+      Assert.assertTrue("The color of the video should be " + expectedColor, getPage()
+          .similarColor(expectedColor));
 
       // Pause and wait
       playerEP.pause();

@@ -70,11 +70,11 @@ public class PlayerFaceOverlayTest extends FunctionalTest {
   public void testPlayerFaceOverlay() throws Exception {
     // Test data
     final int playTimeSeconds = 30;
-    final String mediaUrl = "http://files.kurento.org/video/filter/fiwarecut.mp4";
+    final String mediaUrl = "http://" + getTestFilesHttpPath() + "/video/filter/fiwarecut.mp4";
     final Color expectedColor = Color.RED;
     final int xExpectedColor = 420;
     final int yExpectedColor = 45;
-    final String imgOverlayUrl = "http://files.kurento.org/img/red-square.png";
+    final String imgOverlayUrl = "http://" + getTestFilesHttpPath() + "/img/red-square.png";
     final float offsetXPercent = -0.2F;
     final float offsetYPercent = -1.2F;
     final float widthPercent = 1.6F;
@@ -106,16 +106,13 @@ public class PlayerFaceOverlayTest extends FunctionalTest {
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
-    Assert.assertTrue(
-        "Color at coordinates " + xExpectedColor + "," + yExpectedColor + " must be "
-            + expectedColor,
-        getPage().similarColorAt(expectedColor, xExpectedColor, yExpectedColor));
+    Assert.assertTrue("Color at coordinates " + xExpectedColor + "," + yExpectedColor + " must be "
+        + expectedColor, getPage().similarColorAt(expectedColor, xExpectedColor, yExpectedColor));
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue(
-        "Error in play time (expected: " + playTimeSeconds + " sec, real: " + currentTime + " sec)",
-        getPage().compare(playTimeSeconds, currentTime));
+    Assert.assertTrue("Error in play time (expected: " + playTimeSeconds + " sec, real: "
+        + currentTime + " sec)", getPage().compare(playTimeSeconds, currentTime));
 
     // Release Media Pipeline
     mp.release();

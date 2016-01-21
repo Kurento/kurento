@@ -78,7 +78,7 @@ public class PlayerEndTest extends FunctionalTest {
 
   public void doTest(PlayerOperation playerOperation) throws Exception {
     // Test data
-    final String mediaUrl = "http://files.kurento.org/video/format/small.webm";
+    final String mediaUrl = "http://" + getTestFilesHttpPath() + "/video/format/small.webm";
     final int guardTimeSeconds = 10;
 
     // Media Pipeline

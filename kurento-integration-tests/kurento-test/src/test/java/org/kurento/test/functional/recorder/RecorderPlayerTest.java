@@ -93,7 +93,8 @@ public class RecorderPlayerTest extends BaseRecorder {
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/green.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/10sec/green.webm").build();
     WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getDefaultOutputFile(extension);

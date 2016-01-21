@@ -94,7 +94,8 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
     final PlayerEndpoint playerEP =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/60sec/ball.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/60sec/ball.webm").build();
     final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
     final String recordingFile[] = new String[numViewers];
     playerEP.play();

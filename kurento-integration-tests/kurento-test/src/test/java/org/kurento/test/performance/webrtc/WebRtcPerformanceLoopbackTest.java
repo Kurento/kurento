@@ -77,7 +77,7 @@ public class WebRtcPerformanceLoopbackTest extends PerformanceTest {
     browserPerViewer = getProperty(BROWSER_PER_VIEWER_PROPERTY, BROWSER_PER_VIEWER_DEFAULT);
 
     TestScenario test = new TestScenario();
-    String video = getTestFilesPath() + "/video/15sec/rgbHD.y4m";
+    String video = getTestFilesDiskPath() + "/video/15sec/rgbHD.y4m";
     test.addBrowser(BrowserConfig.VIEWER,
         new Browser.Builder().webPageType(WebPageType.WEBRTC).numInstances(numViewers)
             .browserPerInstance(browserPerViewer).browserType(BrowserType.CHROME)

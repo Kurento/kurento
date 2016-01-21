@@ -71,13 +71,17 @@ public class CompositePlayerTest extends FunctionalTest {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
 
     PlayerEndpoint playerRed =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/red.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/red.webm").build();
     PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/green.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/green.webm").build();
     PlayerEndpoint playerBlue =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/blue.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/blue.webm").build();
     PlayerEndpoint playerWhite =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/30sec/white.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/white.webm").build();
 
     Composite composite = new Composite.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(composite).build();

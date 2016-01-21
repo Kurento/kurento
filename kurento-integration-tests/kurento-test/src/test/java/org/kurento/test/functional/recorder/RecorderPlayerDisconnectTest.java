@@ -100,7 +100,8 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://files.kurento.org/video/10sec/green.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/10sec/green.webm").build();
 
     String recordingFile = getDefaultOutputFile(extension);
     RecorderEndpoint recorderEP =
