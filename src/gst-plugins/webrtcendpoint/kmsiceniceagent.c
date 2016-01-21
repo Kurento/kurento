@@ -267,7 +267,6 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
   KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
   guint id =
       nice_agent_add_stream (nice_agent->priv->agent, KMS_NICE_N_COMPONENTS);
-  char buff[33];
   int i;
 
   if (min_port != 0 && max_port != 0 && min_port != 1
@@ -282,10 +281,8 @@ kms_ice_nice_agent_add_stream (KmsIceBaseAgent * self, const char *stream_id,
     GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.", stream_id);
     return NULL;
   }
-  //convert id to char*
-  g_snprintf (buff, 32, "%d", id);
 
-  return g_strdup (buff);
+  return g_strdup_printf ("%d", id);
 }
 
 static void
