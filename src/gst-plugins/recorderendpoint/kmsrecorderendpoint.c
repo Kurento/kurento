@@ -16,6 +16,7 @@
 #include "config.h"
 #endif
 
+#include <string.h>
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
 #include <sys/stat.h>
@@ -32,7 +33,7 @@
 #include <commons/kmsrecordingprofile.h>
 #include <commons/kms-core-enumtypes.h>
 #include <commons/constants.h>
-
+#include <commons/kmsrefstruct.h>
 #include "kmsbasemediamuxer.h"
 #include "kmsavmuxer.h"
 #include "kmsksrmuxer.h"
@@ -96,6 +97,21 @@ typedef struct _KmsSinkPadData
   gboolean requested;
 } KmsSinkPadData;
 
+typedef struct _StreamE2EAvgStat
+{
+  KmsRefStruct ref;
+  KmsMediaType type;
+  gdouble avg;
+} StreamE2EAvgStat;
+
+typedef struct _KmsRecorderStats
+{
+  gchar *id;
+  gboolean enabled;
+  /* End-to-end average stream stats */
+  GHashTable *avg_e2e;          /* <"pad_name", StreamE2EAvgStat> */
+} KmsRecorderStats;
+
 struct _KmsRecorderEndpointPrivate
 {
   KmsRecordingProfile profile;
@@ -110,7 +126,8 @@ struct _KmsRecorderEndpointPrivate
   GSList *sink_probes;
   GHashTable *srcs;
 
-  gboolean stats_enabled;
+  KmsRecorderStats stats;
+
   gdouble vi;
   gdouble ai;
 
@@ -119,6 +136,12 @@ struct _KmsRecorderEndpointPrivate
 
   GHashTable *sink_pad_data;    /* <name, KmsSinkPadData> */
 };
+
+typedef struct _MarkBufferProbeData
+{
+  gchar *id;
+  StreamE2EAvgStat *stat;
+} MarkBufferProbeData;
 
 typedef struct _DataEvtProbe
 {
@@ -170,6 +193,49 @@ data_evt_probe_new (GstElement * appsrc, KmsRecordingProfile profile)
   return data;
 }
 
+static void
+stream_e2e_avg_stat_destroy (StreamE2EAvgStat * stat)
+{
+  g_slice_free (StreamE2EAvgStat, stat);
+}
+
+static StreamE2EAvgStat *
+stream_e2e_avg_stat_new (KmsMediaType type)
+{
+  StreamE2EAvgStat *stat;
+
+  stat = g_slice_new0 (StreamE2EAvgStat);
+  kms_ref_struct_init (KMS_REF_STRUCT_CAST (stat),
+      (GDestroyNotify) stream_e2e_avg_stat_destroy);
+  stat->type = type;
+
+  return stat;
+}
+
+#define stream_e2e_avg_stat_ref(obj) \
+  (StreamE2EAvgStat *) kms_ref_struct_ref (KMS_REF_STRUCT_CAST (obj))
+#define stream_e2e_avg_stat_unref(obj) \
+  kms_ref_struct_unref (KMS_REF_STRUCT_CAST (obj))
+
+static MarkBufferProbeData *
+mark_buffer_probe_data_new ()
+{
+  MarkBufferProbeData *data;
+
+  data = g_slice_new0 (MarkBufferProbeData);
+
+  return data;
+}
+
+static void
+mark_buffer_probe_data_destroy (MarkBufferProbeData * data)
+{
+  g_free (data->id);
+  stream_e2e_avg_stat_unref (data->stat);
+
+  g_slice_free (MarkBufferProbeData, data);
+}
+
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndpoint, kms_recorder_endpoint,
@@ -179,6 +245,42 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndpoint, kms_recorder_endpoint,
 
 static GstBusSyncReply bus_sync_signal_handler (GstBus * bus, GstMessage * msg,
     gpointer data);
+
+static gchar *
+kms_recorder_create_id_from_pad (KmsRecorderEndpoint * self, GstPad * pad)
+{
+  gchar *key, *padname, *objname;
+
+  padname = gst_pad_get_name (pad);
+  objname = gst_element_get_name (self);
+
+  key = g_strdup_printf ("%s_%s", objname, padname);
+
+  g_free (padname);
+  g_free (objname);
+
+  return key;
+}
+
+static gchar *
+kms_element_get_padname_from_id (KmsRecorderEndpoint * self, const gchar * id)
+{
+  gchar *objname, *padname = NULL;
+
+  objname = gst_element_get_name (self);
+
+  if (!g_str_has_prefix (id, objname)) {
+    goto end;
+  }
+
+  padname =
+      g_strndup (id + strlen (objname) + 1, strlen (id) - strlen (objname) - 1);
+
+end:
+  g_free (objname);
+
+  return padname;
+}
 
 static void
 send_eos (GstElement * appsrc)
@@ -460,6 +562,8 @@ kms_recorder_endpoint_finalize (GObject * object)
 
   g_hash_table_unref (self->priv->sink_pad_data);
   g_slist_free_full (self->priv->pending_pads, g_free);
+  g_hash_table_unref (self->priv->stats.avg_e2e);
+  g_free (self->priv->stats.id);
 
   GST_DEBUG_OBJECT (self, "finalized");
 
@@ -474,11 +578,67 @@ connect_pad_signals_cb (GstPad * pad, gpointer data)
 }
 
 static void
+add_mark_data_cb (GstPad * pad, KmsMediaType type, GstClockTimeDiff t,
+    GHashTable * meta_data, gpointer user_data)
+{
+  MarkBufferProbeData *data = (MarkBufferProbeData *) user_data;
+  StreamE2EAvgStat *stat;
+
+  stat = g_hash_table_lookup (meta_data, data->id);
+
+  if (stat != NULL) {
+    GST_WARNING_OBJECT (pad, "Can not mark buffer for e2e latency. "
+        "Already used ID: %s", data->id);
+  } else {
+    /* add mark data to this meta */
+    g_hash_table_insert (meta_data, g_strdup (data->id),
+        stream_e2e_avg_stat_ref (data->stat));
+  }
+}
+
+static void
 connect_sink_func (const gchar * key, KmsSinkPadData * data,
     KmsRecorderEndpoint * self)
 {
-  kms_element_connect_sink_target_full (KMS_ELEMENT (self), data->sink_target,
-      data->type, data->description, connect_pad_signals_cb, self);
+  MarkBufferProbeData *markdata;
+  StreamE2EAvgStat *stat;
+  KmsMediaType type;
+  GstPad *sinkpad;
+  gchar *id;
+
+  sinkpad = kms_element_connect_sink_target_full (KMS_ELEMENT (self),
+      data->sink_target, data->type, data->description, connect_pad_signals_cb,
+      self);
+
+  switch (data->type) {
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      type = KMS_MEDIA_TYPE_AUDIO;
+      break;
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      type = KMS_MEDIA_TYPE_VIDEO;
+      break;
+    default:
+      GST_DEBUG_OBJECT (self, "No e2e stats will be collected for pad type %u",
+          data->type);
+      return;
+  }
+
+  id = kms_recorder_create_id_from_pad (self, sinkpad);
+
+  stat = g_hash_table_lookup (self->priv->stats.avg_e2e, id);
+
+  if (stat == NULL) {
+    stat = stream_e2e_avg_stat_new (type);
+    g_hash_table_insert (self->priv->stats.avg_e2e, g_strdup (id), stat);
+  }
+
+  markdata = mark_buffer_probe_data_new ();
+  markdata->id = id;
+  markdata->stat = stream_e2e_avg_stat_ref (stat);
+
+  kms_stats_add_buffer_latency_notification_probe (sinkpad, add_mark_data_cb,
+      TRUE /* lock the data */ , markdata,
+      (GDestroyNotify) mark_buffer_probe_data_destroy);
 }
 
 static void
@@ -898,9 +1058,12 @@ str_media_type (KmsMediaType type)
 
 static void
 kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
-    GstClockTimeDiff t, gpointer user_data)
+    GstClockTimeDiff t, GHashTable * mdata, gpointer user_data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  GHashTableIter iter;
+  gpointer key, value;
+  gchar *name;
   gdouble *prev;
 
   switch (type) {
@@ -916,6 +1079,22 @@ kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
       return;
   }
 
+  name = gst_element_get_name (self);
+
+  g_hash_table_iter_init (&iter, mdata);
+  while (g_hash_table_iter_next (&iter, &key, &value)) {
+    gchar *id = (gchar *) key;
+    StreamE2EAvgStat *stat;
+
+    if (!g_str_has_prefix (id, name)) {
+      /* This element did not add this mark to the metada */
+      continue;
+    }
+
+    stat = (StreamE2EAvgStat *) value;
+    stat->avg = KMS_STATS_CALCULATE_LATENCY_AVG (t, stat->avg);
+  }
+
   *prev = KMS_STATS_CALCULATE_LATENCY_AVG (t, *prev);
 }
 
@@ -923,8 +1102,8 @@ static void
 kms_recorder_endpoint_enable_media_stats (KmsStatsProbe * sprobe,
     KmsRecorderEndpoint * self)
 {
-  kms_stats_probe_add_latency (sprobe, kms_recorder_endpoint_latency_cb, self,
-      NULL);
+  kms_stats_probe_add_latency (sprobe, kms_recorder_endpoint_latency_cb,
+      TRUE /* Lock the data */ , self, NULL);
 }
 
 static void
@@ -940,7 +1119,7 @@ kms_recorder_endpoint_update_media_stats (KmsRecorderEndpoint * self)
   g_slist_foreach (self->priv->sink_probes,
       (GFunc) kms_recorder_endpoint_disable_media_stats, self);
 
-  if (self->priv->stats_enabled) {
+  if (self->priv->stats.enabled) {
     g_slist_foreach (self->priv->sink_probes,
         (GFunc) kms_recorder_endpoint_enable_media_stats, self);
   }
@@ -994,9 +1173,9 @@ kms_recorder_endpoint_on_sink_added (KmsBaseMediaMuxer * obj,
 
   self->priv->sink_probes = g_slist_append (self->priv->sink_probes, sprobe);
 
-  if (self->priv->stats_enabled) {
-    kms_stats_probe_add_latency (sprobe, kms_recorder_endpoint_latency_cb, self,
-        NULL);
+  if (self->priv->stats.enabled) {
+    kms_stats_probe_add_latency (sprobe, kms_recorder_endpoint_latency_cb,
+        TRUE /* Lock the data */ , self, NULL);
   }
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
@@ -1375,7 +1554,7 @@ kms_recorder_endpoint_collect_media_stats (KmsElement * obj, gboolean enable)
 
   KMS_ELEMENT_LOCK (self);
 
-  self->priv->stats_enabled = enable;
+  self->priv->stats.enabled = enable;
   kms_recorder_endpoint_update_media_stats (self);
 
   KMS_ELEMENT_UNLOCK (self);
@@ -1385,17 +1564,68 @@ kms_recorder_endpoint_collect_media_stats (KmsElement * obj, gboolean enable)
 }
 
 static GstStructure *
+kms_element_get_e2e_latency_stats (KmsRecorderEndpoint * self, gchar * selector)
+{
+  gpointer key, value;
+  GHashTableIter iter;
+  GstStructure *stats;
+
+  stats = gst_structure_new_empty ("e2e-latencies");
+
+  KMS_ELEMENT_LOCK (self);
+
+  g_hash_table_iter_init (&iter, self->priv->stats.avg_e2e);
+
+  while (g_hash_table_iter_next (&iter, &key, &value)) {
+    StreamE2EAvgStat *avg = value;
+    GstStructure *pad_latency;
+    gchar *padname, *id = key;
+
+    if (selector != NULL && ((g_strcmp0 (selector, AUDIO_STREAM_NAME) == 0 &&
+                avg->type != KMS_MEDIA_TYPE_AUDIO) ||
+            (g_strcmp0 (selector, VIDEO_STREAM_NAME) == 0 &&
+                avg->type != KMS_MEDIA_TYPE_VIDEO))) {
+      continue;
+    }
+
+    padname = kms_element_get_padname_from_id (self, id);
+
+    if (padname == NULL) {
+      GST_WARNING_OBJECT (self, "No pad identified by %s", id);
+      continue;
+    }
+
+    /* Video and audio latencies are measured in nano seconds. They */
+    /* are such an small values so there is no harm in casting them */
+    /* to uint64 even we might lose a bit of preccision.            */
+
+    pad_latency = gst_structure_new (padname, "type", G_TYPE_STRING,
+        (avg->type ==
+            KMS_MEDIA_TYPE_AUDIO) ? AUDIO_STREAM_NAME : VIDEO_STREAM_NAME,
+        "avg", G_TYPE_UINT64, (guint64) avg->avg, NULL);
+
+    gst_structure_set (stats, padname, GST_TYPE_STRUCTURE, pad_latency, NULL);
+    gst_structure_free (pad_latency);
+    g_free (padname);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  return stats;
+}
+
+static GstStructure *
 kms_recorder_endpoint_stats (KmsElement * obj, gchar * selector)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
-  GstStructure *stats, *e_stats;
+  GstStructure *stats, *e_stats, *l_stats;
 
   /* chain up */
   stats =
       KMS_ELEMENT_CLASS (kms_recorder_endpoint_parent_class)->stats (obj,
       selector);
 
-  if (!self->priv->stats_enabled) {
+  if (!self->priv->stats.enabled) {
     return stats;
   }
 
@@ -1405,10 +1635,14 @@ kms_recorder_endpoint_stats (KmsElement * obj, gchar * selector)
     return stats;
   }
 
+  l_stats = kms_element_get_e2e_latency_stats (self, selector);
+
   /* Add end to end latency */
   gst_structure_set (e_stats, "video-e2e-latency", G_TYPE_UINT64,
       (guint64) self->priv->vi, "audio-e2e-latency", G_TYPE_UINT64,
-      (guint64) self->priv->ai, NULL);
+      (guint64) self->priv->ai, "e2e-latencies", GST_TYPE_STRUCTURE, l_stats,
+      NULL);
+  gst_structure_free (l_stats);
 
   GST_DEBUG_OBJECT (self, "Stats: %" GST_PTR_FORMAT, stats);
 
@@ -1644,6 +1878,10 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->sink_pad_data = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) sink_pad_data_destroy);
+
+  self->priv->stats.avg_e2e = g_hash_table_new_full (g_str_hash, g_str_equal,
+      g_free, (GDestroyNotify) kms_ref_struct_unref);
+  self->priv->stats.id = g_strdup ("recorder-id");
 
   g_cond_init (&self->priv->state_manager.cond);
 

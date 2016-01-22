@@ -99,8 +99,11 @@ kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,
 
   element_remove_probe (tr->sink->sink, "sink", tr->sink_probe);
   pad = gst_element_get_static_pad (tr->sink->sink, "sink");
+
+  /* TODO: Allow to lock the data in callback when multi-stream */
+  /* end tpo end stats are supported in webrtc */
   tr->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad, cb,
-      user_data, destroy_data);
+      FALSE, user_data, destroy_data);
   g_object_unref (pad);
 }
 
