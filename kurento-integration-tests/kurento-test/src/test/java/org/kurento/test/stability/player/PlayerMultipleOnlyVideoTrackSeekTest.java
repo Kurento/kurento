@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.stability.player;
 
 import static org.kurento.test.config.Protocol.FILE;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -188,7 +190,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekS3Avi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
@@ -209,7 +211,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekS33gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";

@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.functional.player;
 
 import static org.kurento.test.config.Protocol.FILE;
@@ -188,7 +189,7 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyVideoSeekS3Avi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";

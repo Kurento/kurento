@@ -22,6 +22,7 @@ import static org.kurento.test.config.Protocol.S3;
 import java.awt.Color;
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -125,7 +126,7 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerAudioVideoPauseFileMkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mkv";

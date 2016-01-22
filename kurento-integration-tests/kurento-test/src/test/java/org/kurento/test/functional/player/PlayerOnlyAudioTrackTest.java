@@ -68,7 +68,7 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     testPlayer(mediaUrl, AUDIO_ONLY, 10);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyAudioTrackHttpMp3() throws Exception {
     initTest(HTTP, "/audio/10sec/birds.mp3");
   }
