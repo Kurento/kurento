@@ -828,8 +828,8 @@ kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self,
 /* Start Transport begin */
 
 static void
-gst_media_add_remote_candidates (SdpMediaConfig * mconf,
-    KmsWebRtcBaseConnection * conn,
+gst_media_add_remote_candidates (KmsWebrtcSession * self,
+    SdpMediaConfig * mconf, KmsWebRtcBaseConnection * conn,
     const gchar * msg_ufrag, const gchar * msg_pwd)
 {
   const GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
@@ -868,7 +868,7 @@ gst_media_add_remote_candidates (SdpMediaConfig * mconf,
     }
 
     candidate = kms_ice_candidate_new (attr->value, mid, idx);
-    kms_ice_base_agent_add_ice_candidate (agent, candidate, stream_id);
+    kms_webrtc_session_add_ice_candidate (self, candidate);
     g_object_unref (candidate);
   }
 }
@@ -1401,7 +1401,7 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
       GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
       continue;
     }
-    gst_media_add_remote_candidates (remote_mconf, conn, ufrag, pwd);
+    gst_media_add_remote_candidates (self, remote_mconf, conn, ufrag, pwd);
   }
 
   kms_webrtc_session_add_stored_ice_candidates (self);

@@ -465,6 +465,83 @@ check_webrtc_stats_ipv6 ()
   check_webrtc_stats (true);
 }
 
+static void
+check_exchange_candidates_on_sdp ()
+{
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc();
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc();
+  std::atomic<bool> conn_state_changed (false);
+  std::condition_variable cv;
+  std::atomic<bool> offer_gathered (false);
+  std::condition_variable cv_offer_gathered;
+  std::atomic<bool> answer_gathered (false);
+  std::condition_variable cv_answer_gathered;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+
+  webRtcEpOfferer->signalOnIceGatheringDone.connect ([&] (
+  OnIceGatheringDone event) {
+    BOOST_TEST_MESSAGE ("Offerer: Gathering done");
+    offer_gathered = true;
+    cv_offer_gathered.notify_one();
+  });
+
+  webRtcEpAnswerer->signalOnIceGatheringDone.connect ([&] (
+  OnIceGatheringDone event) {
+    BOOST_TEST_MESSAGE ("Answerer: Gathering done");
+    answer_gathered = true;
+    cv_answer_gathered.notify_one();
+  });
+
+  webRtcEpAnswerer->signalConnectionStateChanged.connect ([&] (
+  ConnectionStateChanged event) {
+    conn_state_changed = true;
+    cv.notify_one();
+  });
+
+  std::string offer = webRtcEpOfferer->generateOffer ();
+  BOOST_TEST_MESSAGE ("offer: " + offer);
+
+  webRtcEpOfferer->gatherCandidates ();
+
+  cv_offer_gathered.wait (lck, [&] () {
+    return offer_gathered.load();
+  });
+
+  offer = webRtcEpOfferer->getLocalSessionDescriptor();
+
+  std::string answer = webRtcEpAnswerer->processOffer (offer);
+  BOOST_TEST_MESSAGE ("answer: " + answer);
+
+  webRtcEpAnswerer->gatherCandidates ();
+
+  cv_answer_gathered.wait (lck, [&] () {
+    return answer_gathered.load();
+  });
+
+  answer = webRtcEpAnswerer->getLocalSessionDescriptor();
+
+  if (webRtcEpAnswerer->getConnectionState ()->getValue () !=
+      ConnectionState::DISCONNECTED) {
+    BOOST_ERROR ("Connection must be disconnected");
+  }
+
+  webRtcEpOfferer->processAnswer (answer);
+
+  cv.wait (lck, [&] () {
+    return conn_state_changed.load();
+  });
+
+  if (!conn_state_changed) {
+    BOOST_ERROR ("Not conn state chagned");
+  }
+
+  if (webRtcEpAnswerer->getConnectionState ()->getValue () !=
+      ConnectionState::CONNECTED) {
+    BOOST_ERROR ("Connection must be connected");
+  }
+}
+
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
@@ -482,6 +559,8 @@ init_unit_test_suite ( int , char *[] )
              0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &check_webrtc_stats_ipv4 ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &check_webrtc_stats_ipv6 ), 0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &check_exchange_candidates_on_sdp ),
+             0, /* timeout */ 15);
 
   return test;
 }
