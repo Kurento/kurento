@@ -11,6 +11,7 @@ kurento_prepare_readthedocs.sh || exit 1
 
 pushd $KURENTO_PROJECT-readthedocs
 echo "Push changes into $KURENTO_PROJECT-readthedocs"
+GERRIT_REFNAME=$(echo $GERRIT_REFNAME | sed 's|refs/heads||g')
 git push origin $GERRIT_REFNAME || { echo "Couldn't push changes to $READTHEDOCS_PROJECT repository"; exit 1; }
 kurento_check_version.sh || exit 1
 
