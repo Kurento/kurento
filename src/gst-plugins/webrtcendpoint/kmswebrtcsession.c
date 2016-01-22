@@ -433,7 +433,7 @@ kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
     if (mid != NULL) {
       KmsIceCandidate *candidate =
           kms_ice_candidate_new (kms_ice_candidate_get_candidate (cand), mid,
-          idx);
+          idx, NULL);
 
       list = g_list_append (list, candidate);
     }
@@ -867,7 +867,7 @@ gst_media_add_remote_candidates (KmsWebrtcSession * self,
       continue;
     }
 
-    candidate = kms_ice_candidate_new (attr->value, mid, idx);
+    candidate = kms_ice_candidate_new (attr->value, mid, idx, NULL);
     kms_webrtc_session_add_ice_candidate (self, candidate);
     g_object_unref (candidate);
   }

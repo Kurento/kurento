@@ -16,6 +16,7 @@
 #ifndef __KMS_ICE_NICE_AGENT_H__
 #define __KMS_ICE_NICE_AGENT_H__
 
+#include <nice/nice.h>
 #include "kmsicebaseagent.h"
 #include "kmswebrtcsession.h"
 
