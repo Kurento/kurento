@@ -99,7 +99,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekHttpWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -162,7 +162,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekFile3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
