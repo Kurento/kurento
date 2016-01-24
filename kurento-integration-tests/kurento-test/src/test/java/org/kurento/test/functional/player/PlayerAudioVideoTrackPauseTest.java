@@ -168,14 +168,14 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerAudioVideoPauseS3Ogv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.ogv";
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerAudioVideoPauseS3Mkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mkv";

@@ -113,7 +113,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekHttp3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
@@ -141,7 +141,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekFileAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";

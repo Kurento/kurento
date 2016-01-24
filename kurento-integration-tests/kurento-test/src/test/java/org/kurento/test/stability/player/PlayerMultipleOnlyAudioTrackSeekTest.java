@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.stability.player;
 
 import static org.kurento.test.config.Protocol.FILE;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -89,7 +91,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyAudioSeekHttpOgg() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.ogg";
