@@ -78,7 +78,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
         expectedPositionAndColor);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekHttpOgv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
@@ -127,7 +127,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekFileOgv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
@@ -148,7 +148,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekFileWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -176,7 +176,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekS3Ogv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
@@ -197,7 +197,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleOnlyVideoSeekS3Webm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";

@@ -210,14 +210,14 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyVideoSeekS33gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyVideoSeekS3Mp4() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";

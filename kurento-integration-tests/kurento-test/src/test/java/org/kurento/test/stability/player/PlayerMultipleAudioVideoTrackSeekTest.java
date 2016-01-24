@@ -92,7 +92,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleAudioVideoSeekHttpAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.avi";
@@ -204,7 +204,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerMultipleAudioVideoSeekS3Mov() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mov";

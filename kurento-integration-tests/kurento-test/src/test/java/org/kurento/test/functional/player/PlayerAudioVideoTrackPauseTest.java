@@ -112,7 +112,7 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerAudioVideoPauseHttpMp4() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mp4";
