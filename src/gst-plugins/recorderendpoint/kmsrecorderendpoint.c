@@ -579,19 +579,19 @@ connect_pad_signals_cb (GstPad * pad, gpointer data)
 
 static void
 add_mark_data_cb (GstPad * pad, KmsMediaType type, GstClockTimeDiff t,
-    GHashTable * meta_data, gpointer user_data)
+    KmsList * meta_data, gpointer user_data)
 {
   MarkBufferProbeData *data = (MarkBufferProbeData *) user_data;
   StreamE2EAvgStat *stat;
 
-  stat = g_hash_table_lookup (meta_data, data->id);
+  stat = kms_list_lookup (meta_data, data->id);
 
   if (stat != NULL) {
     GST_WARNING_OBJECT (pad, "Can not mark buffer for e2e latency. "
         "Already used ID: %s", data->id);
   } else {
     /* add mark data to this meta */
-    g_hash_table_insert (meta_data, g_strdup (data->id),
+    kms_list_prepend (meta_data, g_strdup (data->id),
         stream_e2e_avg_stat_ref (data->stat));
   }
 }
@@ -1058,10 +1058,10 @@ str_media_type (KmsMediaType type)
 
 static void
 kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
-    GstClockTimeDiff t, GHashTable * mdata, gpointer user_data)
+    GstClockTimeDiff t, KmsList * mdata, gpointer user_data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
-  GHashTableIter iter;
+  KmsListIter iter;
   gpointer key, value;
   gchar *name;
   gdouble *prev;
@@ -1081,8 +1081,8 @@ kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
 
   name = gst_element_get_name (self);
 
-  g_hash_table_iter_init (&iter, mdata);
-  while (g_hash_table_iter_next (&iter, &key, &value)) {
+  kms_list_iter_init (&iter, mdata);
+  while (kms_list_iter_next (&iter, &key, &value)) {
     gchar *id = (gchar *) key;
     StreamE2EAvgStat *stat;
 
