@@ -68,7 +68,7 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
   }
 
   private void initTest(Protocol protocol, String nameMedia) throws Exception {
-    int pauseTimeSeconds = 3;
+    int pauseTimeSeconds = 10;
     final Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);

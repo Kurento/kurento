@@ -149,13 +149,17 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
 
     playerEp.pause();
     Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
+    if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
+      Assert.assertTrue("After the pause, the color of the video should be " + expectedColors[0],
+          getPage().similarColor(expectedColors[0]));
+    }
 
     playerEp.play();
 
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       for (Color expectedColor : expectedColors) {
-        Assert.assertTrue("After the pause, the color of the video should be " + expectedColor,
-            getPage().similarColor(expectedColor));
+        Assert.assertTrue("After the pause and the play, the color of the video should be "
+            + expectedColor, getPage().similarColor(expectedColor));
       }
     }
     // TODO: Add new method for checking that audio did pause properly when kurento-utils has the

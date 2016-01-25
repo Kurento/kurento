@@ -67,7 +67,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
   }
 
   private void initTest(Protocol protocol, String nameMedia) throws Exception {
-    int pauseTimeSeconds = 3;
+    int pauseTimeSeconds = 10;
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);
 
