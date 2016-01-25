@@ -2,12 +2,12 @@
 Java - Player
 %%%%%%%%%%%%%
 
-This tutorial opens an URL and plays its content to WebRTC 
-where it is possible choose if plays video and audio, only video or only audio.
+This tutorial opens a URL and plays its content to WebRTC
+where it is possible to choose if it plays video and audio, only video or only audio.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -34,7 +34,7 @@ WebRTC capable browser (Chrome, Firefox).
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
+   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute
    the following command
 
    .. sourcecode:: bash
@@ -70,14 +70,14 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
 
    You can use whatever Java server side technology you prefer to build web
-   applications with Kurento. For example, a pure Java EE application, SIP 
+   applications with Kurento. For example, a pure Java EE application, SIP
    Servlets, Play, Vert.x, etc. Here we chose Spring Boot for convenience.
 
 ..
@@ -118,25 +118,25 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @EnableWebSocket
    @SpringBootApplication
    public class PlayerApp implements WebSocketConfigurer {
-   
+
      private static final String KMS_WS_URI_PROP = "kms.url";
      private static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
-   
+
      @Bean
      public PlayerHandler handler() {
        return new PlayerHandler();
      }
-   
+
      @Bean
      public KurentoClient kurentoClient() {
        return KurentoClient.create(System.getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT));
      }
-   
+
      @Override
      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
        registry.addHandler(handler(), "/player");
      }
-   
+
      public static void main(String[] args) throws Exception {
        new SpringApplication(PlayerApp.class).run(args);
      }
@@ -155,28 +155,29 @@ method implements the actions for requests, returning responses through the
 WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
-In the designed protocol there are three different kinds of incoming messages to
-the *Server* : ``start``, ``stop``, ``pause``, ``resume`` and ``onIceCandidates``. These messages are
+In the designed protocol, there are seven different kinds of incoming messages to
+the *Server* : ``start``, ``stop``, ``pause``, ``resume``, 
+``doSeek``, ``getPosition`` and ``onIceCandidates``. These messages are
 treated in the *switch* clause, taking the proper steps in each case.
 
 .. sourcecode:: java
 
    public class PlayerHandler extends TextWebSocketHandler {
-   
+
      @Autowired
      private KurentoClient kurento;
-   
+
      private final Logger log = LoggerFactory.getLogger(PlayerHandler.class);
      private final Gson gson = new GsonBuilder().create();
      private final ConcurrentHashMap<String, PlayerMediaPipeline> pipelines =
          new ConcurrentHashMap<>();
-   
+
      @Override
      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
        JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
        String sessionId = session.getId();
        log.debug("Incoming message {} from sessionId", jsonMessage, sessionId);
-   
+
        try {
          switch (jsonMessage.get("id").getAsString()) {
            case "start":
@@ -189,7 +190,13 @@ treated in the *switch* clause, taking the proper steps in each case.
              pause(sessionId);
              break;
            case "resume":
-             resume(sessionId);
+             resume(session);
+             break;
+           case "doSeek":
+             doSeek(session, jsonMessage);
+             break;
+           case "getPosition":
+             getPosition(session);
              break;
            case "onIceCandidate":
              onIceCandidate(sessionId, jsonMessage);
@@ -204,129 +211,231 @@ treated in the *switch* clause, taking the proper steps in each case.
        }
      }
 
-   
+
      private void start(final WebSocketSession session, JsonObject jsonMessage) {
        ...
      }
-     
+
      private void pause(String sessionId) {
       ...
      }
-   
-     private void resume(String sessionId) {
+
+     private void resume(final WebSocketSession session) {
      ...
      }
-   
+
+     private void doSeek(final WebSocketSession session, JsonObject jsonMessage) {
+     ...
+     }
+
+     private void getPosition(final WebSocketSession session) {
+     ...
+     }
+
      private void stop(String sessionId) {
      ...
      }
-   
+
      private void sendError(WebSocketSession session, String message) {
        ...
      }
    }
-   
+
 In the following snippet, we can see the ``start`` method. It handles the ICE
 candidates gathering, creates a Media Pipeline, creates the Media Elements
-(``WebRtcEndpoint`` and ``PlayerEndpoint``) and make the connections among
-them and play the video. A ``startResponse`` message is sent back to the client with the SDP
-answer.
+(``WebRtcEndpoint`` and ``PlayerEndpoint``) and makes the connections between
+them and plays the video. A ``startResponse`` message is sent back to the client with the SDP
+answer. When the ``MediaConnected`` event is received, info about the video is
+retrieved and sent back to the client in a ``videoInfo`` message.
 
 .. sourcecode:: java
 
-   private void start(final WebSocketSession session, JsonObject jsonMessage) {
-       // 1. Media pipeline
-       PlayerMediaPipeline playerMediaPipeline = new PlayerMediaPipeline();
-       String videourl = jsonMessage.get("videourl").getAsString();
-       playerMediaPipeline.initMediaPipeline(kurento, videourl);
-       pipelines.put(session.getId(), playerMediaPipeline);
-   
-       // 2. WebRtcEndpoint
-       String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-       String sdpAnswer = playerMediaPipeline.processOffer(sdpOffer);
-   
-       JsonObject response = new JsonObject();
-       response.addProperty("id", "startResponse");
-       response.addProperty("sdpAnswer", sdpAnswer);
-       sendMessage(session, response.toString());
-   
-       playerMediaPipeline.gatherCandidates(new EventListener<OnIceCandidateEvent>() {
-         @Override
-         public void onEvent(OnIceCandidateEvent event) {
-           JsonObject response = new JsonObject();
-           response.addProperty("id", "iceCandidate");
-           response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
-           sendMessage(session, response.toString());
-         }
-       });
-   
-       // 3. PlayEndpoint
-       playerMediaPipeline.play(new EventListener<ErrorEvent>() {
-         @Override
-         public void onEvent(ErrorEvent event) {
-           log.info("ErrorEvent: {}", event.getDescription());
-           sendPlayEnd(session);
-         }
-       }, new EventListener<EndOfStreamEvent>() {
-         @Override
-         public void onEvent(EndOfStreamEvent event) {
-           log.info("EndOfStreamEvent: {}", event.getTimestamp());
-           sendPlayEnd(session);
-         }
-       });
-   }
+  private void start(final WebSocketSession session, JsonObject jsonMessage) {
+    final UserSession user = new UserSession();
+    MediaPipeline pipeline = kurento.createMediaPipeline();
+    user.setMediaPipeline(pipeline);
+    WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
+    user.setWebRtcEndpoint(webRtcEndpoint);
+    String videourl = jsonMessage.get("videourl").getAsString();
+    final PlayerEndpoint playerEndpoint = new PlayerEndpoint.Builder(pipeline, videourl).build();
+    user.setPlayerEndpoint(playerEndpoint);
+    users.put(session.getId(), user);
 
+    playerEndpoint.connect(webRtcEndpoint);
 
-
-The ``pause`` method is quite simple: it searchs the *pipeline* by *sessionId* and 
-sets as pause the media element.
-
-.. sourcecode:: java
-
-   private void pause(String sessionId) {
-       if (pipelines.containsKey(sessionId)) {
-         pipelines.get(sessionId).pause();
-       }
-   }
-   
-The ``resume`` method is quite simple: it searchs the *pipeline* by *sessionId* and 
-starts the media element again.
-
-.. sourcecode:: java
-
-   private void resume(String sessionId) {
-       if (pipelines.containsKey(sessionId)) {
-         pipelines.get(sessionId).play();
-       }
-   }
-   
-The ``stop`` method is quite simple: it searchs the *pipeline* by *sessionId* and 
-stops the media element and remove from the list of pipelines.
-
-.. sourcecode:: java
-
-   private void stop(String sessionId) {
-      if (pipelines.containsKey(sessionId)) {
-        pipelines.get(sessionId).release();
-        pipelines.remove(sessionId);
+    // 2. WebRtcEndpoint
+    // ICE candidates
+    webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+      @Override
+      public void onEvent(OnIceCandidateEvent event) {
+        JsonObject response = new JsonObject();
+        response.addProperty("id", "iceCandidate");
+        response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+        try {
+          synchronized (session) {
+            session.sendMessage(new TextMessage(response.toString()));
+          }
+        } catch (IOException e) {
+          log.debug(e.getMessage());
+        }
       }
-   }
-   
+    });
+
+    String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
+    String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+
+    JsonObject response = new JsonObject();
+    response.addProperty("id", "startResponse");
+    response.addProperty("sdpAnswer", sdpAnswer);
+    sendMessage(session, response.toString());
+
+    webRtcEndpoint.addMediaStateChangedListener(new EventListener<MediaStateChangedEvent>() {
+      @Override
+      public void onEvent(MediaStateChangedEvent event) {
+
+        if (event.getNewState() == MediaState.CONNECTED) {
+          VideoInfo videoInfo = playerEndpoint.getVideoInfo();
+
+          JsonObject response = new JsonObject();
+          response.addProperty("id", "videoInfo");
+          response.addProperty("isSeekable", videoInfo.getIsSeekable());
+          response.addProperty("initSeekable", videoInfo.getSeekableInit());
+          response.addProperty("endSeekable", videoInfo.getSeekableEnd());
+          response.addProperty("videoDuration", videoInfo.getDuration());
+          sendMessage(session, response.toString());
+        }
+      }
+    });
+
+    webRtcEndpoint.gatherCandidates();
+
+    // 3. PlayEndpoint
+    playerEndpoint.addErrorListener(new EventListener<ErrorEvent>() {
+      @Override
+      public void onEvent(ErrorEvent event) {
+        log.info("ErrorEvent: {}", event.getDescription());
+        sendPlayEnd(session);
+      }
+    });
+
+    playerEndpoint.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        log.info("EndOfStreamEvent: {}", event.getTimestamp());
+        sendPlayEnd(session);
+      }
+    });
+
+    playerEndpoint.play();
+  }
+
+
+
+The ``pause`` method retrieves the *user* associated to the current session, and invokes 
+the *pause* method on the ``PlayerEndpoint``.
+
+.. sourcecode:: java
+
+  private void pause(String sessionId) {
+    UserSession user = users.get(sessionId);
+
+    if (user != null) {
+      user.getPlayerEndpoint().pause();
+    }
+  }
+
+The ``resume`` method starts the ``PlayerEndpoint`` of the current user, sending back the
+ information about the video, so the client side can refresh the stats.
+
+.. sourcecode:: java
+
+  private void resume(String sessionId) {
+    UserSession user = users.get(session.getId());
+
+    if (user != null) {
+      user.getPlayerEndpoint().play();
+      VideoInfo videoInfo = user.getPlayerEndpoint().getVideoInfo();
+
+      JsonObject response = new JsonObject();
+      response.addProperty("id", "videoInfo");
+      response.addProperty("isSeekable", videoInfo.getIsSeekable());
+      response.addProperty("initSeekable", videoInfo.getSeekableInit());
+      response.addProperty("endSeekable", videoInfo.getSeekableEnd());
+      response.addProperty("videoDuration", videoInfo.getDuration());
+      sendMessage(session, response.toString());
+    }
+  }
+
+The ``doSeek`` method gets the *user* by *sessionId*, and calls the method setPosition
+of the ``PlayerEndpoint`` with the new playing position. A ``seek`` message is sent
+back to the client if the seek fails.
+
+.. sourcecode:: java
+
+  private void doSeek(final WebSocketSession session, JsonObject jsonMessage) {
+    UserSession user = users.get(session.getId());
+
+    if (user != null) {
+      try {
+        user.getPlayerEndpoint().setPosition(jsonMessage.get("position").getAsLong());
+      } catch (KurentoException e) {
+        log.debug("The seek cannot be performed");
+        JsonObject response = new JsonObject();
+        response.addProperty("id", "seek");
+        response.addProperty("message", "Seek failed");
+        sendMessage(session, response.toString());
+      }
+    }
+  }
+
+The ``getPosition`` calls the method getPosition of the ``PlayerEndpoint`` 
+of the current *user*. A ``position`` message is sent
+back to the client with the actual position of the video.
+
+.. sourcecode:: java
+
+  private void getPosition(final WebSocketSession session) {
+    UserSession user = users.get(session.getId());
+
+    if (user != null) {
+      long position = user.getPlayerEndpoint().getPosition();
+
+      JsonObject response = new JsonObject();
+      response.addProperty("id", "position");
+      response.addProperty("position", position);
+      sendMessage(session, response.toString());
+    }
+  }
+
+The ``stop`` method is quite simple: it searches the *user* by *sessionId* and
+stops the ``PlayerEndpoint``. Finally, it releases the media elements and removes 
+the user from the list of active users.
+
+.. sourcecode:: java
+
+  private void stop(String sessionId) {
+    UserSession user = users.remove(sessionId);
+
+    if (user != null) {
+      user.release();
+    }
+  }
+
 The ``sendError`` method is quite simple: it sends an ``error`` message to the
 client when an exception is caught in the server-side.
 
 .. sourcecode:: java
 
-   private void sendError(WebSocketSession session, String message) {
-      try {
-         JsonObject response = new JsonObject();
-         response.addProperty("id", "error");
-         response.addProperty("message", message);
-         session.sendMessage(new TextMessage(response.toString()));
-      } catch (IOException e) {
-         log.error("Exception sending message", e);
-      }
-   }
+  private void sendError(WebSocketSession session, String message) {
+    try {
+      JsonObject response = new JsonObject();
+      response.addProperty("id", "error");
+      response.addProperty("message", message);
+      session.sendMessage(new TextMessage(response.toString()));
+    } catch (IOException e) {
+      log.error("Exception sending message", e);
+    }
+  }
 
 
 Client-Side Logic
@@ -347,8 +456,8 @@ web page, and are used in the
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/player``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are three incoming messages to client: ``startResponse``,
-``playEnd``, ``error``, and ``iceCandidate``. Convenient actions are taken to implement each
+Notice that there are seven incoming messages to client: ``startResponse``,
+``playEnd``, ``error``, ``videoInfo``, ``seek``, ``position`` and ``iceCandidate``. Convenient actions are taken to implement each
 step in the communication. For example, in functions ``start`` the function
 ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
 WebRTC communication.
@@ -357,11 +466,11 @@ WebRTC communication.
 
 
    var ws = new WebSocket('wss://' + location.host + '/player');
-   
+
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'startResponse':
          startResponse(parsedMessage);
@@ -375,11 +484,21 @@ WebRTC communication.
       case 'playEnd':
          playEnd();
          break;
+        break;
+      case 'videoInfo':
+         showVideoData(parsedMessage);
+         break;
       case 'iceCandidate':
          webRtcPeer.addIceCandidate(parsedMessage.candidate, function(error) {
             if (error)
                return console.error('Error adding candidate: ' + error);
          });
+         break;
+      case 'seek':
+         console.log (parsedMessage.message);
+         break;
+      case 'position':
+         document.getElementById("videoPosition").value = parsedMessage.position;
          break;
       default:
          if (state == I_AM_STARTING) {
@@ -388,36 +507,36 @@ WebRTC communication.
          onError('Unrecognized message', parsedMessage);
       }
    }
-   
+
    function start() {
       // Disable start button
       setState(I_AM_STARTING);
       showSpinner(video);
-   
+
       var mode = $('input[name="mode"]:checked').val();
       console
             .log('Creating WebRtcPeer in " + mode + " mode and generating local sdp offer ...');
-   
+
       // Video and audio by default
       var userMediaConstraints = {
          audio : true,
          video : true
       }
-   
+
       if (mode == 'video-only') {
          userMediaConstraints.audio = false;
       } else if (mode == 'audio-only') {
          userMediaConstraints.video = false;
       }
-   
+
       var options = {
          remoteVideo : video,
          mediaConstraints : userMediaConstraints,
          onicecandidate : onIceCandidate
       }
-   
+
       console.info('User media constraints' + userMediaConstraints);
-   
+
       webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
             function(error) {
                if (error)
@@ -425,12 +544,12 @@ WebRTC communication.
                webRtcPeer.generateOffer(onOffer);
             });
    }
-   
+
    function onOffer(error, offerSdp) {
       if (error)
          return console.error('Error generating the offer');
       console.info('Invoking SDP offer callback function ' + location.host);
-   
+
       var message = {
          id : 'start',
          sdpOffer : offerSdp,
@@ -438,31 +557,31 @@ WebRTC communication.
       }
       sendMessage(message);
    }
-   
+
    function onError(error) {
       console.error(error);
    }
-   
+
    function onIceCandidate(candidate) {
       console.log('Local candidate' + JSON.stringify(candidate));
-   
+
       var message = {
          id : 'onIceCandidate',
          candidate : candidate
       }
       sendMessage(message);
    }
-   
+
    function startResponse(message) {
       setState(I_CAN_STOP);
       console.log('SDP answer received from server. Processing ...');
-   
+
       webRtcPeer.processAnswer(message.sdpAnswer, function(error) {
          if (error)
             return console.error(error);
       });
    }
-   
+
    function pause() {
       togglePause()
       console.log('Pausing video ...');
@@ -471,7 +590,7 @@ WebRTC communication.
       }
       sendMessage(message);
    }
-   
+
    function resume() {
       togglePause()
       console.log('Resuming video ...');
@@ -480,14 +599,14 @@ WebRTC communication.
       }
       sendMessage(message);
    }
-   
+
    function stop() {
       console.log('Stopping video ...');
       setState(I_CAN_START);
       if (webRtcPeer) {
          webRtcPeer.dispose();
          webRtcPeer = null;
-   
+
          var message = {
             id : 'stop'
          }
@@ -495,12 +614,44 @@ WebRTC communication.
       }
       hideSpinner(video);
    }
-   
+
    function playEnd() {
       setState(I_CAN_START);
       hideSpinner(video);
    }
-     
+
+   function doSeek() {
+      var message = {
+        id : 'doSeek',
+        position: document.getElementById("seekPosition").value
+      }
+      sendMessage(message);
+    }
+
+    function getPosition() {
+      var message = {
+        id : 'getPosition'
+      }
+      sendMessage(message);
+    }
+
+    function showVideoData(parsedMessage) {
+      //Show video info
+      isSeekable = parsedMessage.isSeekable;
+      if (isSeekable) {
+          document.getElementById('isSeekable').value = "true";
+          enableButton('#doSeek', 'doSeek()');
+        } else {
+          document.getElementById('isSeekable').value = "false";
+        }
+
+        document.getElementById('initSeek').value = parsedMessage.initSeekable;
+        document.getElementById('endSeek').value = parsedMessage.endSeekable;
+        document.getElementById('duration').value = parsedMessage.videoDuration;
+
+        enableButton('#getPosition', 'getPosition()');
+    }
+
    function sendMessage(message) {
       var jsonMessage = JSON.stringify(message);
       console.log('Senging message: ' + jsonMessage);
@@ -519,19 +670,19 @@ need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
 client-side:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
-   <dependencies> 
+   <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
-      <dependency> 
+      </dependency>
+      <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
+      </dependency>
    </dependencies>
 
 .. note::
@@ -542,7 +693,7 @@ client-side:
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
