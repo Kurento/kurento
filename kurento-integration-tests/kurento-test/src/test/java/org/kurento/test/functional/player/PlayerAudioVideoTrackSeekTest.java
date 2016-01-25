@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.functional.player;
 
 import static org.kurento.test.config.Protocol.FILE;
@@ -119,7 +120,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerAudioVideoSeekHttpMp4() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mp4";

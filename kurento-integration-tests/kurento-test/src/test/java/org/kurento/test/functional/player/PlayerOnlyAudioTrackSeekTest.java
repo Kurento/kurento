@@ -12,6 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.test.functional.player;
 
 import static org.kurento.test.config.Protocol.FILE;
@@ -96,14 +97,14 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyAudioSeekHttpWav() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wav";
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerOnlyAudioSeekHttpWma() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wma";
