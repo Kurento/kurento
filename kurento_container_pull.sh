@@ -33,6 +33,10 @@ docker pull selenium/node-chrome-debug:$SELENIUM_VERSION
 docker pull selenium/node-firefox-debug:$SELENIUM_VERSION
 docker pull kurento/node-chrome-beta:$SELENIUM_VERSION
 docker pull kurento/node-chrome-beta-debug:$SELENIUM_VERSION
+docker pull kurento/node-chrome-dev:$SELENIUM_VERSION
+docker pull kurento/node-chrome-dev-debug:$SELENIUM_VERSION
+docker pull selenium/node-firefox-beta:$SELENIUM_VERSION
+docker pull selenium/node-firefox-beta-debug:$SELENIUM_VERSION
 
 # Image to record vnc sessions
 docker pull softsam/vncrecorder:latest
