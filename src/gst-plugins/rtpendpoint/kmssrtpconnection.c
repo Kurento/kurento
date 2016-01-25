@@ -15,12 +15,9 @@
 
 #include "kmssrtpconnection.h"
 #include "kmssocketutils.h"
-#include <string.h>
 
 #define GST_CAT_DEFAULT kmsrtpconnection
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
-
-#define MAX_RETRIES 4
 
 #define GST_DEFAULT_NAME "kmsrtpconnection"
 #define kms_srtp_connection_parent_class parent_class

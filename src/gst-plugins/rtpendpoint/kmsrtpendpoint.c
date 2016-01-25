@@ -16,13 +16,8 @@
 #  include <config.h>
 #endif
 
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <linux/random.h>
-
 #include <string.h>
 #include <nice/interfaces.h>
-#include <gst/rtp/gstrtcpbuffer.h>
 
 #include "kmsrtpendpoint.h"
 #include "kmsrtpsession.h"
@@ -37,7 +32,6 @@
 #include "kmsrandom.h"
 
 #define PLUGIN_NAME "rtpendpoint"
-#define MAX_RANDOM_TRIES 3
 
 GST_DEBUG_CATEGORY_STATIC (kms_rtp_endpoint_debug);
 #define GST_CAT_DEFAULT kms_rtp_endpoint_debug
@@ -49,8 +43,6 @@ G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 #define DEFAULT_MASTER_KEY NULL
 #define DEFAULT_CRYPTO_SUITE KMS_RTP_SDES_CRYPTO_SUITE_NONE
 #define DEFAULT_KEY_TAG 1
-
-#define MAX_RETRIES 4
 
 #define KMS_SRTP_CIPHER_AES_128_ICM 1
 #define KMS_SRTP_CIPHER_AES_256_ICM 2
