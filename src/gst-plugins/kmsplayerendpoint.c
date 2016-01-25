@@ -627,20 +627,6 @@ kms_player_endpoint_started (KmsUriEndpoint * obj)
       KMS_URI_ENDPOINT_STATE_START);
 }
 
-static void
-kms_player_endpoint_paused (KmsUriEndpoint * obj)
-{
-  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
-
-  GST_DEBUG_OBJECT (self, "Pipeline paused");
-
-  /* Set internal pipeline to paused */
-  gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
-
-  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
-      KMS_URI_ENDPOINT_STATE_PAUSE);
-}
-
 static gboolean
 kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
 {
@@ -674,6 +660,38 @@ kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
   }
 
   return TRUE;
+}
+
+static void
+kms_player_endpoint_paused (KmsUriEndpoint * obj)
+{
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
+  GstStateChangeReturn ret;
+
+  GST_DEBUG_OBJECT (self, "Pipeline paused");
+
+  /* Set internal pipeline to paused */
+  ret = gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+
+  // HACK: Get the return and perform a seek if the return is success
+  //in order to get async state changes. That hack only should be necessary
+  //the first time that paused is called.
+
+  if (ret == GST_STATE_CHANGE_SUCCESS) {
+    gint64 position = -1;
+
+    gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+
+    gst_element_query_position (self->priv->pipeline,
+        GST_FORMAT_TIME, &position);
+
+    kms_player_endpoint_set_position (self, position);
+
+    gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+  }
+
+  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
+      KMS_URI_ENDPOINT_STATE_PAUSE);
 }
 
 static void
