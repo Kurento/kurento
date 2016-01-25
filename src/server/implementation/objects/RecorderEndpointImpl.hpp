@@ -45,6 +45,10 @@ protected:
 private:
   static bool support_ksr;
 
+  void collectEndpointStats (std::map <std::string, std::shared_ptr<Stats>>
+                             &statsReport, std::string id, const GstStructure *stats,
+                             double timestamp);
+
   class StaticConstructor
   {
   public:

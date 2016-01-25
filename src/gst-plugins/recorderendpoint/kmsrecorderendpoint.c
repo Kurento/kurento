@@ -128,9 +128,6 @@ struct _KmsRecorderEndpointPrivate
 
   KmsRecorderStats stats;
 
-  gdouble vi;
-  gdouble ai;
-
   gboolean stopping;
   GSList *pending_pads;
 
@@ -1041,21 +1038,6 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   g_object_unref (sinkpad);
 }
 
-static gchar *
-str_media_type (KmsMediaType type)
-{
-  switch (type) {
-    case KMS_MEDIA_TYPE_VIDEO:
-      return "video";
-    case KMS_MEDIA_TYPE_AUDIO:
-      return "audio";
-    case KMS_MEDIA_TYPE_DATA:
-      return "data";
-    default:
-      return "<unsupported>";
-  }
-}
-
 static void
 kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
     GstClockTimeDiff t, KmsList * mdata, gpointer user_data)
@@ -1064,20 +1046,6 @@ kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
   KmsListIter iter;
   gpointer key, value;
   gchar *name;
-  gdouble *prev;
-
-  switch (type) {
-    case KMS_MEDIA_TYPE_AUDIO:
-      prev = &self->priv->ai;
-      break;
-    case KMS_MEDIA_TYPE_VIDEO:
-      prev = &self->priv->vi;
-      break;
-    default:
-      GST_DEBUG_OBJECT (pad, "No stast calculated for media (%s)",
-          str_media_type (type));
-      return;
-  }
 
   name = gst_element_get_name (self);
 
@@ -1094,8 +1062,6 @@ kms_recorder_endpoint_latency_cb (GstPad * pad, KmsMediaType type,
     stat = (StreamE2EAvgStat *) value;
     stat->avg = KMS_STATS_CALCULATE_LATENCY_AVG (t, stat->avg);
   }
-
-  *prev = KMS_STATS_CALCULATE_LATENCY_AVG (t, *prev);
 }
 
 static void
@@ -1638,9 +1604,7 @@ kms_recorder_endpoint_stats (KmsElement * obj, gchar * selector)
   l_stats = kms_element_get_e2e_latency_stats (self, selector);
 
   /* Add end to end latency */
-  gst_structure_set (e_stats, "video-e2e-latency", G_TYPE_UINT64,
-      (guint64) self->priv->vi, "audio-e2e-latency", G_TYPE_UINT64,
-      (guint64) self->priv->ai, "e2e-latencies", GST_TYPE_STRUCTURE, l_stats,
+  gst_structure_set (e_stats, "e2e-latencies", GST_TYPE_STRUCTURE, l_stats,
       NULL);
   gst_structure_free (l_stats);
 
@@ -1872,9 +1836,6 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
-
-  self->priv->ai = 0.0;
-  self->priv->vi = 0.0;
 
   self->priv->sink_pad_data = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) sink_pad_data_destroy);

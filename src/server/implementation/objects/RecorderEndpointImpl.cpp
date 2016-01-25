@@ -1,4 +1,5 @@
 #include <gst/gst.h>
+#include "MediaType.hpp"
 #include "MediaPipeline.hpp"
 #include "MediaProfileSpecType.hpp"
 #include <RecorderEndpointImplFactory.hpp>
@@ -137,20 +138,44 @@ void RecorderEndpointImpl::record ()
 }
 
 static void
-collectEndpointStats (std::map <std::string, std::shared_ptr<Stats>>
-                      &statsReport, std::string id, const GstStructure *stats,
-                      double timestamp)
+setDeprecatedProperties (std::shared_ptr<EndpointStats> eStats)
+{
+  std::vector<std::shared_ptr<MediaLatencyStat>> inStats =
+        eStats->getE2ELatency();
+
+  for (unsigned i = 0; i < inStats.size(); i++) {
+    if (inStats[i]->getName() == "sink_audio_default") {
+      eStats->setAudioE2ELatency (inStats[i]->getAvg() );
+    } else if (inStats[i]->getName() == "sink_video_default") {
+      eStats->setVideoE2ELatency (inStats[i]->getAvg() );
+    }
+  }
+}
+
+void
+RecorderEndpointImpl::collectEndpointStats (std::map
+    <std::string, std::shared_ptr<Stats>>
+    &statsReport, std::string id, const GstStructure *stats,
+    double timestamp)
 {
   std::shared_ptr<Stats> endpointStats;
-  guint64 v_e2e, a_e2e;
-
-  gst_structure_get (stats, "video-e2e-latency", G_TYPE_UINT64, &v_e2e,
-                     "audio-e2e-latency", G_TYPE_UINT64, &a_e2e, NULL);
+  GstStructure *e2e_stats;
 
   std::vector<std::shared_ptr<MediaLatencyStat>> inputStats;
+  std::vector<std::shared_ptr<MediaLatencyStat>> e2eStats;
+
+  if (gst_structure_get (stats, "e2e-latencies", GST_TYPE_STRUCTURE,
+                         &e2e_stats, NULL) ) {
+    collectLatencyStats (e2eStats, e2e_stats);
+    gst_structure_free (e2e_stats);
+  }
+
   endpointStats = std::make_shared <EndpointStats> (id,
                   std::make_shared <StatsType> (StatsType::endpoint), timestamp,
-                  inputStats, a_e2e, v_e2e);
+                  0.0, 0.0, inputStats, 0.0, 0.0, e2eStats);
+
+  setDeprecatedProperties (std::dynamic_pointer_cast <EndpointStats>
+                           (endpointStats) );
 
   statsReport[id] = endpointStats;
 }
