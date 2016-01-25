@@ -167,7 +167,7 @@ MAVEN_OPTIONS+=" -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 [ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Drepository.mongodb.urlConn=mongodb://mongo"
 [ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=ws://kms:8888/kurento"
 [ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=$KMS_WS_URI"
-[ -n "$SCENARIO_TEST_CONFIG_JSON" ] && MAVEN_OPTIONS+=" -Dtest.config.json=$CONTAINER_TEST_CONFIG_JSON"
+[ -n "$SCENARIO_TEST_CONFIG_JSON" ] && MAVEN_OPTIONS+=" -Dtest.config.json=$CONTAINER_TEST_CONFIG_JSON -Dtest.config.file=$CONTAINER_TEST_CONFIG_JSON"
 
 # Create main container
 docker run \
