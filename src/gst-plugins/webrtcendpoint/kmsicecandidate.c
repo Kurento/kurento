@@ -264,6 +264,14 @@ kms_ice_candidate_get_ip_version (KmsIceCandidate * self)
   }
 }
 
+gchar *
+kms_ice_candidate_get_sdp_line (KmsIceCandidate * self)
+{
+  const gchar *cand = kms_ice_candidate_get_candidate (self);
+
+  return g_strdup_printf ("a=%s", cand);
+}
+
 /* Utils end */
 
 static void init_debug (void) __attribute__ ((constructor));

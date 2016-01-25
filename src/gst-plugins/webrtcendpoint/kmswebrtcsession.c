@@ -280,7 +280,7 @@ sdp_media_add_ice_candidate (GstSDPMedia * media, KmsIceBaseAgent * agent,
 {
   gchar *str;
 
-  str = kms_ice_base_agent_generate_local_candidate_sdp (agent, cand);
+  str = kms_ice_candidate_get_sdp_line (cand);
   if (str != NULL) {
     gst_sdp_media_add_attribute (media, SDP_CANDIDATE_ATTR,
         str + SDP_CANDIDATE_ATTR_LEN);

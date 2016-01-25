@@ -206,23 +206,6 @@ kms_ice_base_agent_add_ice_candidate_default (KmsIceBaseAgent * self,
   return FALSE;
 }
 
-static gchar *
-kms_ice_base_agent_generate_local_candidate_sdp_default (KmsIceBaseAgent * self,
-    KmsIceCandidate * candidate)
-{
-  KmsIceBaseAgentClass *klass =
-      KMS_ICE_BASE_AGENT_CLASS (G_OBJECT_GET_CLASS (self));
-
-  if (klass->generate_local_candidate_sdp ==
-      kms_ice_base_agent_generate_local_candidate_sdp_default) {
-    GST_WARNING_OBJECT (self,
-        "%s does not reimplement 'generate_local_candidate_sdp'",
-        G_OBJECT_CLASS_NAME (klass));
-  }
-
-  return NULL;
-}
-
 static KmsIceCandidate *
 kms_ice_base_agent_get_default_local_candidate_default (KmsIceBaseAgent * self,
     const char *stream_id, guint component_id)
@@ -341,16 +324,6 @@ kms_ice_base_agent_add_ice_candidate (KmsIceBaseAgent * self,
   return klass->add_ice_candidate (self, candidate, stream_id);
 }
 
-gchar *
-kms_ice_base_agent_generate_local_candidate_sdp (KmsIceBaseAgent * self,
-    KmsIceCandidate * candidate)
-{
-  KmsIceBaseAgentClass *klass =
-      KMS_ICE_BASE_AGENT_CLASS (G_OBJECT_GET_CLASS (self));
-
-  return klass->generate_local_candidate_sdp (self, candidate);
-}
-
 KmsIceCandidate *
 kms_ice_base_agent_get_default_local_candidate (KmsIceBaseAgent * self,
     const char *stream_id, guint component_id)
@@ -392,8 +365,6 @@ kms_ice_base_agent_class_init (KmsIceBaseAgentClass * klass)
   klass->start_gathering_candidates =
       kms_ice_base_agent_start_gathering_candidates_default;
   klass->add_ice_candidate = kms_ice_base_agent_add_ice_candidate_default;
-  klass->generate_local_candidate_sdp =
-      kms_ice_base_agent_generate_local_candidate_sdp_default;
   klass->get_default_local_candidate =
       kms_ice_base_agent_get_default_local_candidate_default;
   klass->run_agent = kms_ice_base_agent_run_agent_default;

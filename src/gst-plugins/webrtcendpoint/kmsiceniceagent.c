@@ -370,17 +370,6 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   return ret;
 }
 
-static gchar *
-kms_ice_nice_agent_generate_local_candidate_sdp (KmsIceBaseAgent * self,
-    KmsIceCandidate * candidate)
-{
-  const gchar *cand = kms_ice_candidate_get_candidate (candidate);
-
-  GST_DEBUG_OBJECT (self, "Add ICE candidate '%s'", cand);
-
-  return g_strdup_printf ("a=%s", cand);
-}
-
 static KmsIceCandidate *
 kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
     const char *stream_id, guint component_id)
@@ -470,8 +459,6 @@ kms_ice_nice_agent_class_init (KmsIceNiceAgentClass * klass)
   base_class->start_gathering_candidates =
       kms_ice_nice_agent_start_gathering_candidates;
   base_class->add_ice_candidate = kms_ice_nice_agent_add_ice_candidate;
-  base_class->generate_local_candidate_sdp =
-      kms_ice_nice_agent_generate_local_candidate_sdp;
   base_class->run_agent = kms_ice_nice_agent_run_agent;
   base_class->get_default_local_candidate =
       kms_ice_nice_agent_get_default_local_candidate;

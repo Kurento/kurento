@@ -60,6 +60,7 @@ const guint kms_ice_candidate_get_port (KmsIceCandidate * self);
 int kms_ice_candidate_get_ip_version (KmsIceCandidate * self);
 guint8 kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self);
 const gchar * kms_ice_candidate_get_stream_id (KmsIceCandidate * self);
+gchar * kms_ice_candidate_get_sdp_line (KmsIceCandidate * self);
 
 G_END_DECLS
 #endif /* __KMS_ICE_ICE_CANDIDATE_H__ */
