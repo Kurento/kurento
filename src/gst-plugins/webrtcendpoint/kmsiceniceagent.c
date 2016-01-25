@@ -41,19 +41,6 @@ struct _KmsIceNiceAgentPrivate
   KmsWebrtcSession *session;
 };
 
-static char *
-kms_ice_nice_agent_get_candidate_sdp_string (NiceAgent * agent,
-    NiceCandidate * candidate)
-{
-  gchar *str = nice_agent_generate_local_candidate_sdp (agent, candidate);
-  gchar *cand = g_strconcat (SDP_CANDIDATE_ATTR, ":",
-      (str + SDP_CANDIDATE_ATTR_LEN), NULL);
-
-  g_free (str);
-
-  return cand;
-}
-
 static void
 kms_ice_nice_agent_new_candidate (NiceAgent * agent,
     guint stream_id,
@@ -75,14 +62,8 @@ kms_ice_nice_agent_new_candidate (NiceAgent * agent,
     if (cand->stream_id == stream_id &&
         cand->component_id == component_id &&
         g_strcmp0 (foundation, cand->foundation) == 0) {
-      gchar *cand_str =
-          kms_ice_nice_agent_get_candidate_sdp_string (agent, cand);
-      gchar *stream_id_str = g_strdup_printf ("%d", stream_id);
       KmsIceCandidate *candidate =
-          kms_ice_candidate_new (cand_str, "", 0, stream_id_str);
-
-      g_free (stream_id_str);
-      g_free (cand_str);
+          kms_ice_candidate_new_from_nice (agent, cand, "", 0);
 
       g_signal_emit_by_name (parent, "on-ice-candidate", candidate);
     }
@@ -332,21 +313,13 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
   gboolean ret;
   GSList *candidates;
   const gchar *cand_str;
-  gchar *candidate_str;
 
   GST_DEBUG_OBJECT (self, "Add ICE candidate '%s'",
       kms_ice_candidate_get_candidate (candidate));
 
-  candidate_str =
-      g_strdup_printf ("a=" SDP_CANDIDATE_ATTR ":%s",
-      kms_ice_candidate_get_candidate (candidate));
-  nice_cand =
-      nice_agent_parse_remote_candidate_sdp (nice_agent->priv->agent, id,
-      candidate_str);
-  g_free (candidate_str);
-
+  ret = kms_ice_candidate_create_nice (candidate, &nice_cand);
   if (nice_cand == NULL) {
-    return FALSE;
+    return ret;
   }
 
   nice_cand->stream_id = id;
@@ -374,11 +347,24 @@ static gchar *
 kms_ice_nice_agent_generate_local_candidate_sdp (KmsIceBaseAgent * self,
     KmsIceCandidate * candidate)
 {
-  const gchar *cand = kms_ice_candidate_get_candidate (candidate);
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
+  NiceCandidate *nice_cand;
+  gchar *ret;
 
-  GST_DEBUG_OBJECT (self, "Add ICE candidate '%s'", cand);
+  GST_DEBUG_OBJECT (self, "Add ICE candidate '%s'",
+      kms_ice_candidate_get_candidate (candidate));
 
-  return g_strdup_printf ("a=%s", cand);
+  kms_ice_candidate_create_nice (candidate, &nice_cand);
+  if (nice_cand == NULL) {
+    return NULL;
+  }
+
+  ret =
+      nice_agent_generate_local_candidate_sdp (nice_agent->priv->agent,
+      nice_cand);
+  nice_candidate_free (nice_cand);
+
+  return ret;
 }
 
 static KmsIceCandidate *
@@ -420,12 +406,8 @@ kms_ice_nice_agent_get_default_local_candidate (KmsIceBaseAgent * self,
 
     mid = kms_sdp_media_config_get_mid (mconf);
     if (mid != NULL) {
-      gchar *cand_str =
-          kms_ice_nice_agent_get_candidate_sdp_string (nice_agent->priv->agent,
-          nice_cand);
-
-      ret = kms_ice_candidate_new (cand_str, mid, idx, stream_id);
-      g_free (cand_str);
+      ret = kms_ice_candidate_new_from_nice (nice_agent->priv->agent, nice_cand,
+          mid, idx);
       goto end;
     }
   }

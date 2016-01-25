@@ -17,7 +17,7 @@
 #define __KMS_ICE_ICE_CANDIDATE_H__
 
 #include <glib.h>
-#include <glib-object.h>
+#include <nice/nice.h>
 
 #define SDP_ICE_UFRAG_ATTR "ice-ufrag"
 #define SDP_ICE_PWD_ATTR "ice-pwd"
@@ -50,8 +50,10 @@ struct _KmsIceCandidateClass
 
 GType kms_ice_candidate_get_type (void);
 
+KmsIceCandidate *kms_ice_candidate_new_from_nice (NiceAgent * agent,
+    NiceCandidate * candidate, const gchar * sdp_mid, guint8 sdp_m_line_index);
 KmsIceCandidate *kms_ice_candidate_new (const gchar * candidate,
-    const gchar * sdp_mid, guint8 sdp_m_line_index, const gchar *stream_id);
+    const gchar * sdp_mid, guint8 sdp_m_line_index);
 
 const gchar * kms_ice_candidate_get_candidate (KmsIceCandidate * self);
 const gchar * kms_ice_candidate_get_sdp_mid (KmsIceCandidate * self);
@@ -60,6 +62,11 @@ const guint kms_ice_candidate_get_port (KmsIceCandidate * self);
 int kms_ice_candidate_get_ip_version (KmsIceCandidate * self);
 guint8 kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self);
 const gchar * kms_ice_candidate_get_stream_id (KmsIceCandidate * self);
+gboolean kms_ice_candidate_create_nice (KmsIceCandidate * self, NiceCandidate ** cand);
+
+/* Utils */
+gboolean kms_ice_candidate_create_nice_from_str (const gchar * str,
+    NiceCandidate ** cand);
 
 G_END_DECLS
 #endif /* __KMS_ICE_ICE_CANDIDATE_H__ */
