@@ -17,6 +17,7 @@
 #endif
 
 #include <gst/gst.h>
+#include <commons/kmsstats.h>
 #include <commons/kmsutils.h>
 #include <commons/kmselement.h>
 #include <commons/kmsagnosticcaps.h>
@@ -45,6 +46,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
 
 typedef void (*KmsActionFunc) (gpointer user_data);
 
+typedef struct _KmsPlayerStats
+{
+  gboolean enabled;
+  GstElement *src;
+  gulong meta_id;
+  KmsList *probes;              /* <Gstpad, KmsStatsProbe> */
+} KmsPlayerStats;
+
 struct _KmsPlayerEndpointPrivate
 {
   GstElement *pipeline;
@@ -52,6 +61,8 @@ struct _KmsPlayerEndpointPrivate
   KmsLoop *loop;
   gboolean use_encoded_media;
   GMutex base_time_lock;
+
+  KmsPlayerStats stats;
 };
 
 enum
@@ -180,6 +191,57 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
   }
 }
 
+/* This function must be called holding the element mutex */
+static void
+kms_player_endpoint_disable_latency_probe (KmsPlayerEndpoint * self)
+{
+  GstPad *pad;
+
+  if (self->priv->stats.src == NULL || self->priv->stats.meta_id == 0UL) {
+    return;
+  }
+
+  pad = gst_element_get_static_pad (self->priv->stats.src, "src");
+
+  if (pad == NULL) {
+    GST_WARNING_OBJECT (self, "No source pad got from %" GST_PTR_FORMAT,
+        self->priv->stats.src);
+    return;
+  }
+
+  gst_pad_remove_probe (pad, self->priv->stats.meta_id);
+  self->priv->stats.meta_id = 0UL;
+
+  g_object_unref (pad);
+}
+
+/* This function must be called holding the element mutex */
+static void
+kms_player_endpoint_enable_latency_probe (KmsPlayerEndpoint * self)
+{
+  GstPad *pad;
+
+  if (self->priv->stats.src == NULL) {
+    GST_DEBUG_OBJECT (self, "No source element for stats is yet available");
+    return;
+  }
+
+  pad = gst_element_get_static_pad (self->priv->stats.src, "src");
+
+  if (pad == NULL) {
+    GST_WARNING_OBJECT (self, "No source pad got from %" GST_PTR_FORMAT,
+        self->priv->stats.src);
+    return;
+  }
+
+  if (self->priv->stats.enabled) {
+    self->priv->stats.meta_id = kms_stats_add_buffer_latency_meta_probe (pad,
+        FALSE, 0);
+  }
+
+  g_object_unref (pad);
+}
+
 static void
 kms_player_endpoint_dispose (GObject * object)
 {
@@ -199,11 +261,23 @@ kms_player_endpoint_dispose (GObject * object)
     self->priv->pipeline = NULL;
   }
 
-  g_mutex_clear (&self->priv->base_time_lock);
-
   /* clean up as possible. May be called multiple times */
 
   G_OBJECT_CLASS (kms_player_endpoint_parent_class)->dispose (object);
+}
+
+static void
+kms_player_endpoint_finalize (GObject * object)
+{
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
+
+  g_mutex_clear (&self->priv->base_time_lock);
+  g_clear_object (&self->priv->stats.src);
+  kms_list_unref (self->priv->stats.probes);
+
+  G_OBJECT_CLASS (kms_player_endpoint_parent_class)->finalize (object);
 }
 
 static GstFlowReturn
@@ -436,6 +510,35 @@ set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer element)
   return GST_PAD_PROBE_OK;
 }
 
+static void
+kms_player_end_point_add_stat_probe (KmsPlayerEndpoint * self, GstPad * pad,
+    KmsMediaType type)
+{
+  KmsStatsProbe *probe;
+
+  probe = kms_stats_probe_new (pad, type);
+
+  KMS_ELEMENT_LOCK (self);
+
+  kms_list_prepend (self->priv->stats.probes, g_object_ref (pad), probe);
+
+  if (self->priv->stats.enabled) {
+    kms_stats_probe_latency_meta_set_valid (probe, TRUE);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_player_end_point_remove_stat_probe (KmsPlayerEndpoint * self, GstPad * pad)
+{
+  KMS_ELEMENT_LOCK (self);
+
+  kms_list_remove (self->priv->stats.probes, pad);
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
 static GstElement *
 kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
     GstPad * pad)
@@ -452,10 +555,13 @@ kms_player_end_point_get_agnostic_for_pad (KmsPlayerEndpoint * self,
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
   video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
 
+  /* TODO: Update latency probe to set valid and media type */
   if (gst_caps_can_intersect (audio_caps, caps)) {
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+    kms_player_end_point_add_stat_probe (self, pad, KMS_MEDIA_TYPE_AUDIO);
   } else if (gst_caps_can_intersect (video_caps, caps)) {
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
+    kms_player_end_point_add_stat_probe (self, pad, KMS_MEDIA_TYPE_VIDEO);
   }
 
   gst_caps_unref (caps);
@@ -583,6 +689,8 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 
   GST_DEBUG ("pad %" GST_PTR_FORMAT " removed", pad);
 
+  kms_player_end_point_remove_stat_probe (self, pad);
+
   appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
   appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
 
@@ -695,9 +803,50 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
 }
 
 static void
+configure_latency_probes (GstPad * pad, KmsStatsProbe * probe,
+    gboolean * enabled)
+{
+  if (*enabled) {
+    kms_stats_probe_latency_meta_set_valid (probe, TRUE);
+  } else {
+    kms_stats_probe_remove (probe);
+  }
+}
+
+static void
+kms_player_endpoint_update_media_stats (KmsPlayerEndpoint * self)
+{
+  kms_list_foreach (self->priv->stats.probes, (GHFunc) configure_latency_probes,
+      &self->priv->stats.enabled);
+
+  if (self->priv->stats.enabled) {
+    kms_player_endpoint_enable_latency_probe (self);
+  } else {
+    kms_player_endpoint_disable_latency_probe (self);
+  }
+}
+
+static void
+kms_player_endpoint_collect_media_stats (KmsElement * obj, gboolean enable)
+{
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
+
+  KMS_ELEMENT_LOCK (self);
+
+  self->priv->stats.enabled = enable;
+  kms_player_endpoint_update_media_stats (self);
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  KMS_ELEMENT_CLASS
+      (kms_player_endpoint_parent_class)->collect_media_stats (obj, enable);
+}
+
+static void
 kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  KmsElementClass *kms_element_class = KMS_ELEMENT_CLASS (klass);
   KmsUriEndpointClass *urienpoint_class = KMS_URI_ENDPOINT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
@@ -705,12 +854,17 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
       "Joaquin Mengual García <kini.mengual@gmail.com>");
 
   gobject_class->dispose = kms_player_endpoint_dispose;
+  gobject_class->finalize = kms_player_endpoint_finalize;
+
   gobject_class->set_property = kms_player_endpoint_set_property;
   gobject_class->get_property = kms_player_endpoint_get_property;
 
   urienpoint_class->stopped = kms_player_endpoint_stopped;
   urienpoint_class->started = kms_player_endpoint_started;
   urienpoint_class->paused = kms_player_endpoint_paused;
+
+  kms_element_class->collect_media_stats =
+      GST_DEBUG_FUNCPTR (kms_player_endpoint_collect_media_stats);
 
   klass->set_position = kms_player_endpoint_set_position;
 
@@ -867,6 +1021,34 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 static void
+source_setup_cb (GstElement * uridecodebin, GstElement * source,
+    KmsPlayerEndpoint * self)
+{
+  GstPad *srcpad;
+
+  srcpad = gst_element_get_static_pad (source, "src");
+
+  if (srcpad == NULL) {
+    GST_WARNING_OBJECT (self, "Can not set latency probe to %" GST_PTR_FORMAT,
+        source);
+    return;
+  }
+
+  KMS_ELEMENT_LOCK (self);
+
+  kms_player_endpoint_disable_latency_probe (self);
+
+  g_clear_object (&self->priv->stats.src);
+  self->priv->stats.src = g_object_ref (source);
+
+  kms_player_endpoint_enable_latency_probe (self);
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  g_object_unref (srcpad);
+}
+
+static void
 kms_player_endpoint_init (KmsPlayerEndpoint * self)
 {
   GstBus *bus;
@@ -880,6 +1062,17 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
+  self->priv->stats.probes = kms_list_new_full (g_direct_equal, g_object_unref,
+      (GDestroyNotify) kms_stats_probe_destroy);
+
+  /* Connect to signals */
+  g_signal_connect (self->priv->uridecodebin, "pad-added",
+      G_CALLBACK (pad_added), self);
+  g_signal_connect (self->priv->uridecodebin, "pad-removed",
+      G_CALLBACK (pad_removed), self);
+  g_signal_connect (self->priv->uridecodebin, "source-setup",
+      G_CALLBACK (source_setup_cb), self);
+
   g_object_set (self->priv->uridecodebin, "download", TRUE, NULL);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
@@ -887,12 +1080,6 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
   gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
   g_object_unref (bus);
-
-  /* Connect to signals */
-  g_signal_connect (self->priv->uridecodebin, "pad-added",
-      G_CALLBACK (pad_added), self);
-  g_signal_connect (self->priv->uridecodebin, "pad-removed",
-      G_CALLBACK (pad_removed), self);
 }
 
 gboolean
