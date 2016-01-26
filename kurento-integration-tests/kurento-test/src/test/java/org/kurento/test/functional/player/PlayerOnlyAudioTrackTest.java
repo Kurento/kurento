@@ -30,9 +30,7 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (MP3, WAV ... all with ONLY AUDIO)
- * connected to a WebRtc Endpoint
- * </p>
- * Media Pipeline(s):
+ * connected to a WebRtc Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -74,7 +72,7 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     testPlayer(mediaUrl, AUDIO_ONLY, 10);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioTrackHttpMp3() throws Exception {
     initTest(HTTP, "/audio/10sec/birds.mp3");
   }
@@ -139,12 +137,12 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     initTest(S3, "/audio/10sec/birds.mp3");
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioTrackS3Wav() throws Exception {
     initTest(S3, "/audio/10sec/counter.wav");
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioTrackS3Flac() throws Exception {
     initTest(S3, "/audio/10sec/cinema.flac");
   }
@@ -154,7 +152,7 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     initTest(S3, "/audio/10sec/fiware.ogg");
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioTrackS3M4a() throws Exception {
     initTest(S3, "/audio/10sec/left-right.m4a");
   }

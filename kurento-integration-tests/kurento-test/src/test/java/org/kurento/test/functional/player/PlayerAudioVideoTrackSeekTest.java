@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -32,9 +31,7 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the seek feature for a PlayerEndpoint.
- * </p>
- * Media Pipeline(s):
+ * Test of a the seek feature for a PlayerEndpoint. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -83,28 +80,28 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
         expectedPositionAndColor);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpOgv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.ogv";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpMkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mkv";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.avi";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.webm";
@@ -125,7 +122,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpMp4() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mp4";

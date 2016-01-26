@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -32,9 +31,7 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the seek feature for a Player Endpoint
- * </p>
- * Media Pipeline(s):
+ * Test of a the seek feature for a Player Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -83,14 +80,14 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     testPlayerSeek(mediaUrl, WebRtcChannel.VIDEO_ONLY, pauseTimeSeconds, expectedPositionAndColor);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttpOgv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttpMkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
@@ -104,7 +101,7 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttpWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -118,7 +115,7 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekHttp3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
@@ -160,14 +157,14 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekFileMov() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekFile3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
@@ -188,14 +185,14 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Mkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Avi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
@@ -216,14 +213,14 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS33gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyVideoSeekS3Mp4() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";

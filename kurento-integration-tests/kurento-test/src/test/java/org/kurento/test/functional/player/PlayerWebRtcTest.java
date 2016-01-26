@@ -31,16 +31,13 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV, MOV, MP4, MKV, AVI,
- * 3GP ... all with video and audio) connected to a WebRtc Endpoint
- * </p>
- * Media Pipeline(s):
+ * 3GP ... all with video and audio) connected to a WebRtc Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -304,32 +301,32 @@ public class PlayerWebRtcTest extends FunctionalPlayerTest {
     testPlayerWithRtsp(AUDIO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioAndVideoS33gp() throws Exception {
     testPlayerWithSmallFile(S3, THIRDGP, AUDIO_AND_VIDEO);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS33gp() throws Exception {
     testPlayerWithSmallFile(S3, THIRDGP, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioOnlyS33gp() throws Exception {
     testPlayerWithSmallFile(S3, THIRDGP, AUDIO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioAndVideoS3Avi() throws Exception {
     testPlayerWithSmallFile(S3, AVI, AUDIO_AND_VIDEO);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS3Avi() throws Exception {
     testPlayerWithSmallFile(S3, AVI, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioOnlyS3Avi() throws Exception {
     testPlayerWithSmallFile(S3, AVI, AUDIO_ONLY);
   }
@@ -349,32 +346,32 @@ public class PlayerWebRtcTest extends FunctionalPlayerTest {
     testPlayerWithSmallFile(S3, MKV, AUDIO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioAndVideoS3Mov() throws Exception {
     testPlayerWithSmallFile(S3, MOV, AUDIO_AND_VIDEO);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS3Mov() throws Exception {
     testPlayerWithSmallFile(S3, MOV, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioOnlyS3Mov() throws Exception {
     testPlayerWithSmallFile(S3, MOV, AUDIO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioAndVideoS3Mp4() throws Exception {
     testPlayerWithSmallFile(S3, MP4, AUDIO_AND_VIDEO);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS3Mp4() throws Exception {
     testPlayerWithSmallFile(S3, MP4, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcAudioOnlyS3Mp4() throws Exception {
     testPlayerWithSmallFile(S3, MP4, AUDIO_ONLY);
   }

@@ -32,9 +32,7 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the seek feature for a Player Endpoint
- * </p>
- * Media Pipeline(s):
+ * Test of a the seek feature for a Player Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -102,14 +100,14 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekHttpWav() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wav";
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekHttpWma() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wma";
@@ -151,7 +149,7 @@ public class PlayerOnlyAudioTrackSeekTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioSeekS3Mp3() throws Exception {
     // Test data
     String mediaUrl = "/audio/10sec/cinema.mp3";

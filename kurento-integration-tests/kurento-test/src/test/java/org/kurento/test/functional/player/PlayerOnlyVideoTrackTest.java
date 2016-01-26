@@ -29,16 +29,13 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV, MOV, MP4, MKV, AVI,
- * 3GP ... all with ONLY VIDEO) connected to a WebRtc Endpoint
- * </p>
- * Media Pipeline(s):
+ * 3GP ... all with ONLY VIDEO) connected to a WebRtc Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -60,8 +57,7 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  * <li>EOS event should arrive to player</li>
  * <li>Play time in remote video should be as expected</li>
- * </ul>
- * Secondary assertion(s):
+ * </ul> Secondary assertion(s):
  * <ul>
  * <li>--</li>
  * </ul>
@@ -146,7 +142,7 @@ public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
     testPlayerWithSmallFileVideoOnly(S3, THIRDGP, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS3Avi() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, AVI, VIDEO_ONLY);
   }
@@ -156,12 +152,12 @@ public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
     testPlayerWithSmallFileVideoOnly(S3, MKV, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS3Mov() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, MOV, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerWebRtcVideoOnlyS3Mp4() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, MP4, VIDEO_ONLY);
   }

@@ -21,7 +21,6 @@ import static org.kurento.test.config.Protocol.S3;
 
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -29,9 +28,7 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the pause feature with only track audio for a PlayerEndpoint.
- * </p>
- * Media Pipeline(s):
+ * Test of a the pause feature with only track audio for a PlayerEndpoint. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -144,7 +141,7 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerOnlyAudioPauseS3Mp3() throws Exception {
     // Test data
     String mediaUrl = "/audio/10sec/cinema.mp3";

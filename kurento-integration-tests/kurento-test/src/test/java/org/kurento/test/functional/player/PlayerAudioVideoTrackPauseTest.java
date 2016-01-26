@@ -22,7 +22,6 @@ import static org.kurento.test.config.Protocol.S3;
 import java.awt.Color;
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -30,9 +29,7 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the pause feature for a PlayerEndpoint.
- * </p>
- * Media Pipeline(s):
+ * Test of a the pause feature for a PlayerEndpoint. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -56,7 +53,7 @@ import org.kurento.test.config.TestScenario;
  * <ul>
  * <li>Playing event should be received in remote video tag</li>
  * </ul>
- * 
+ *
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.1.1
  */
@@ -118,7 +115,7 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoPauseHttpMp4() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mp4";
@@ -132,7 +129,7 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoPauseFileMkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mkv";
@@ -174,14 +171,14 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoPauseS3Ogv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.ogv";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoPauseS3Mkv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mkv";
