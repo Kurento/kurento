@@ -62,6 +62,8 @@ public class KurentoClient {
 
   private static KmsUrlLoader kmsUrlLoader;
 
+  private String label;
+
   public static synchronized String getKmsUrl(String id, Properties properties) {
 
     if (kmsUrlLoader == null) {
@@ -110,9 +112,9 @@ public class KurentoClient {
     return new KurentoClient(client);
   }
 
-  private static void configureJsonRpcClient(JsonRpcClientWebSocket client) {
+  protected static void configureJsonRpcClient(JsonRpcClientWebSocket client) {
     client.enableHeartbeat(KEEPALIVE_TIME);
-    client.setLabel("KurentoClient");
+    updateLabel(client, null);
     client.setSendCloseMessage(true);
   }
 
@@ -205,5 +207,22 @@ public class KurentoClient {
 
   public String getSessionId() {
     return client.getSession().getSessionId();
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+    updateLabel(client, label);
+  }
+
+  public String getLabel() {
+    return label;
+  }
+
+  private static void updateLabel(JsonRpcClient client, String label) {
+    String clientLabel = "KurentoClient";
+    if (label != null) {
+      clientLabel += ":" + label;
+    }
+    client.setLabel(clientLabel);
   }
 }
