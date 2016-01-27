@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
+import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.slf4j.Logger;
@@ -38,13 +38,7 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 
     log.info("Client started");
 
-    JsonRpcClient client = createJsonRpcClient("/pingpong", new JsonRpcWSConnectionListener() {
-
-      @Override
-      public void connected() {
-        // TODO Auto-generated method stub
-
-      }
+    JsonRpcClient client = createJsonRpcClient("/pingpong", new JsonRpcWSConnectionAdapter() {
 
       @Override
       public void connectionFailed() {
@@ -55,12 +49,6 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
       @Override
       public void disconnected() {
         System.out.println("#######################################");
-
-      }
-
-      @Override
-      public void reconnected(boolean sameServer) {
-        // TODO Auto-generated method stub
 
       }
     });

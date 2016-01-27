@@ -408,6 +408,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
         @Override
         public void run() {
           try {
+
+            if (connectionListener != null) {
+              connectionListener.reconnecting();
+            }
+
             connectIfNecessary();
 
             reconnecting = false;

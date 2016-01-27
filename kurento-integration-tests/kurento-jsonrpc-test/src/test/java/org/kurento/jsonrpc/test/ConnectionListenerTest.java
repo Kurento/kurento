@@ -14,7 +14,7 @@ import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
-import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
+import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.slf4j.Logger;
@@ -42,26 +42,10 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     final CountDownLatch latch = new CountDownLatch(1);
 
     client = new JsonRpcClientWebSocket("ws://localhost:65000/connectionlistener",
-        new JsonRpcWSConnectionListener() {
-
-          @Override
-          public void disconnected() {
-          }
-
-          @Override
-          public void connected() {
-
-          }
-
+        new JsonRpcWSConnectionAdapter() {
           @Override
           public void connectionFailed() {
             latch.countDown();
-          }
-
-          @Override
-          public void reconnected(boolean sameServer) {
-            // TODO Auto-generated method stub
-
           }
         });
 
@@ -86,28 +70,11 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     final CountDownLatch latch = new CountDownLatch(1);
 
     client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionListener() {
-
-          @Override
-          public void disconnected() {
-          }
-
+        new JsonRpcWSConnectionAdapter() {
           @Override
           public void connected() {
             log.info("connected");
             latch.countDown();
-          }
-
-          @Override
-          public void connectionFailed() {
-            // TODO Auto-generated method stub
-
-          }
-
-          @Override
-          public void reconnected(boolean sameServer) {
-            // TODO Auto-generated method stub
-
           }
         });
 
@@ -126,28 +93,12 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     final CountDownLatch latch = new CountDownLatch(1);
 
     client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionListener() {
+        new JsonRpcWSConnectionAdapter() {
 
           @Override
           public void disconnected() {
             log.info("disconnected");
             latch.countDown();
-          }
-
-          @Override
-          public void connected() {
-          }
-
-          @Override
-          public void connectionFailed() {
-            // TODO Auto-generated method stub
-
-          }
-
-          @Override
-          public void reconnected(boolean sameServer) {
-            // TODO Auto-generated method stub
-
           }
         });
 
@@ -168,7 +119,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     final CountDownLatch isClosedLatch = new CountDownLatch(1);
 
     client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionListener() {
+        new JsonRpcWSConnectionAdapter() {
 
           @Override
           public void disconnected() {
@@ -177,22 +128,6 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
             if (client.isClosed()) {
               isClosedLatch.countDown();
             }
-          }
-
-          @Override
-          public void connected() {
-          }
-
-          @Override
-          public void connectionFailed() {
-            // TODO Auto-generated method stub
-
-          }
-
-          @Override
-          public void reconnected(boolean sameServer) {
-            // TODO Auto-generated method stub
-
           }
         });
 
@@ -217,28 +152,12 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     final CountDownLatch latch = new CountDownLatch(1);
 
     client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionListener() {
+        new JsonRpcWSConnectionAdapter() {
 
           @Override
           public void disconnected() {
             System.out.println("disconnected");
             latch.countDown();
-          }
-
-          @Override
-          public void connected() {
-          }
-
-          @Override
-          public void connectionFailed() {
-            // TODO Auto-generated method stub
-
-          }
-
-          @Override
-          public void reconnected(boolean sameServer) {
-            // TODO Auto-generated method stub
-
           }
         });
 

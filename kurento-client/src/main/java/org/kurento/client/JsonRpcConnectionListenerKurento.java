@@ -40,4 +40,9 @@ public class JsonRpcConnectionListenerKurento implements JsonRpcWSConnectionList
     return new JsonRpcConnectionListenerKurento(listener);
   }
 
+  @Override
+  public void reconnecting() {
+
+  }
+
 }
