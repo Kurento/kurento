@@ -89,6 +89,7 @@ CONTAINER_ADM_SCRIPTS=/opt/adm-scripts
 CONTAINER_GIT_CONFIG=/root/.gitconfig
 CONTAINER_GNUPG_KEY=/opt/gnupg_key
 CONTAINER_NPM_CONFIG=/root/.npmrc
+CONTAINER_KMS_KEY=/opt/kms_id_rsa
 CONTAINER_TEST_FILES=/opt/test-files
 
 # Verify mandatory parameters
@@ -167,6 +168,7 @@ MAVEN_OPTIONS+=" -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 [ -n "$MONGO_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Drepository.mongodb.urlConn=mongodb://mongo"
 [ -n "$KMS_CONTAINER_ID" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=ws://kms:8888/kurento"
 [ -z "$KMS_CONTAINER_ID" -a -n "$KMS_WS_URI" ] && MAVEN_OPTIONS+=" -Dkms.ws.uri=$KMS_WS_URI"
+[ -n "$KMS_KEY" ] && MAVEN_OPTIONS+=" -Dtest.kms.key=$CONTAINER_KMS_KEY"
 [ -n "$SCENARIO_TEST_CONFIG_JSON" ] && MAVEN_OPTIONS+=" -Dtest.config.json=$CONTAINER_TEST_CONFIG_JSON -Dtest.config.file=$CONTAINER_TEST_CONFIG_JSON"
 
 # Create main container
@@ -186,6 +188,7 @@ docker run \
   $([ -f "$GNUPG_KEY" ] && echo "-v $GNUPG_KEY:$CONTAINER_GNUPG_KEY") \
   $([ -f "$NPM_CONFIG" ] && echo "-v $NPM_CONFIG:$CONTAINER_NPM_CONFIG") \
   $([ -f "$SCENARIO_TEST_CONFIG_JSON" ] && echo "-v $SCENARIO_TEST_CONFIG_JSON:$CONTAINER_TEST_CONFIG_JSON") \
+  $([ -f "$KMS_KEY" ] && echo -v "$KMS_KEY:$CONTAINER_KMS_KEY") \
   -e "ASSEMBLY_FILE=$ASSEMBLY_FILE" \
   -e "BASE_NAME=$BASE_NAME" \
   -e "CREATE_TAG=$CREATE_TAG" \
@@ -206,6 +209,7 @@ docker run \
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "KURENTO_PUBLIC_PROJECT=$KURENTO_PUBLIC_PROJECT" \
+  -e "KMS_KEY=$CONTAINER_KMS_KEY" \
   -e "MAVEN_GOALS=$MAVEN_GOALS" \
   -e "MAVEN_KURENTO_SNAPSHOTS=$MAVEN_KURENTO_SNAPSHOTS" \
   -e "MAVEN_KURENTO_RELEASES=$MAVEN_KURENTO_RELEASES" \
