@@ -77,7 +77,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
     @OnWebSocketClose
     public void onClose(int statusCode, String closeReason) {
-      log.debug("Websocket disconnected by {} (status code {})", closeReason, statusCode);
+      log.debug("Websocket disconnected because '{}' (status code {})", closeReason, statusCode);
       handleReconnectDisconnection(statusCode, closeReason);
     }
 
@@ -408,6 +408,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
         @Override
         public void run() {
           try {
+
+            log.debug("{}JsonRpcWsClient reconnecting to {}", label, url);
 
             if (connectionListener != null) {
               connectionListener.reconnecting();
