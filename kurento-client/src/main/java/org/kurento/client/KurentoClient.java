@@ -130,7 +130,7 @@ public class KurentoClient {
 
   }
 
-  KurentoClient(JsonRpcClient client) {
+  protected KurentoClient(JsonRpcClient client) {
     this.client = client;
     this.manager = new RomManager(new RomClientJsonRpcClient(client));
     client.setRequestTimeout(requesTimeout);
