@@ -1288,7 +1288,7 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
 
     if (appsrc == NULL) {
       KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-      GST_ERROR_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
+      GST_DEBUG_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
           pad);
       goto end;
     }
