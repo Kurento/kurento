@@ -45,8 +45,9 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
     setDeleteLogsIfSuccess(false);
   }
 
-  public void testPlayerMultipleSeek(String mediaUrl, WebRtcChannel webRtcChannel, int pauseTimeSeconds,
-      int numSeeks, Map<Integer, Color> expectedPositionAndColor) throws Exception {
+  public void testPlayerMultipleSeek(String mediaUrl, WebRtcChannel webRtcChannel,
+      int pauseTimeSeconds, int numSeeks, Map<Integer, Color> expectedPositionAndColor)
+      throws Exception {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
     WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
@@ -56,6 +57,7 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
     playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
+        log.debug("Received EndOfStream Event");
         eosLatch.countDown();
       }
     });
@@ -70,14 +72,16 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
     Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
     for (int i = 0; i < numSeeks; i++) {
+      log.debug("Try to set position in 0");
+      playerEP.setPosition(0);
       for (Integer position : expectedPositionAndColor.keySet()) {
+        log.debug("Try to set position in {}", position);
         playerEP.setPosition(position);
         if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
           Assert.assertTrue("After set position to " + position
               + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
               getPage().similarColor(expectedPositionAndColor.get(position)));
         }
-        playerEP.setPosition(0);
         // TODO: Add new method for checking that audio did pause properly when kurento-utils has
         // the
         // feature.

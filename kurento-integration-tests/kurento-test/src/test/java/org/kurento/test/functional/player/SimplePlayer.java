@@ -42,10 +42,9 @@ import org.kurento.test.config.VideoFormat;
 public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
 
   public void testPlayerWithRtsp(WebRtcChannel webRtcChannel) throws Exception {
-    testPlayer(
-        "rtsp://r6---sn-cg07luez.c.youtube.com/"
-            + "CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp",
-        webRtcChannel, 0, 50, 50, Color.WHITE);
+    testPlayer("rtsp://r6---sn-cg07luez.c.youtube.com/"
+        + "CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp", webRtcChannel, 0, 50,
+        50, Color.WHITE);
   }
 
   public void testPlayerWithSmallFileVideoOnly(Protocol protocol, VideoFormat videoFormat,
@@ -100,9 +99,8 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     playerEp.play();
 
     // Assertions
-    Assert.assertTrue(
-        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       Assert.assertTrue("The color of the video should be " + expectedColor + ": " + mediaUrl + " "
           + webRtcChannel, getPage().similarColorAt(expectedColor, x, y));
@@ -166,9 +164,8 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     // feature.
 
     // Assertions
-    Assert.assertTrue(
-        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
 
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
@@ -188,6 +185,7 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
+        log.debug("Received EndOfStream Event");
         eosLatch.countDown();
       }
     });
@@ -202,11 +200,11 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
 
     Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
     for (Integer position : expectedPositionAndColor.keySet()) {
+      log.debug("Try to set position in {}", position);
       playerEp.setPosition(position);
       if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
-        Assert.assertTrue(
-            "After set position to " + position + "ms, the color of the video should be "
-                + expectedPositionAndColor.get(position),
+        Assert.assertTrue("After set position to " + position
+            + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
             getPage().similarColor(expectedPositionAndColor.get(position)));
       }
       // TODO: Add new method for checking that audio did pause properly when kurento-utils has the
@@ -214,9 +212,8 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     }
 
     // Assertions
-    Assert.assertTrue(
-        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
 
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
