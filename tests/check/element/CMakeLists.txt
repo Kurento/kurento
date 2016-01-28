@@ -114,15 +114,17 @@ target_link_libraries(test_dispatcheronetomany
                       ${gstreamer-check-1.5_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES})
 
-add_test_program (test_dispatcher dispatcher.c)
-target_include_directories(test_dispatcher PRIVATE
-                           ${KmsGstCommons_INCLUDE_DIRS}
-                           ${gstreamer-1.5_INCLUDE_DIRS}
-                           ${gstreamer-check-1.5_INCLUDE_DIRS})
-target_link_libraries(test_dispatcher
-                      ${gstreamer-1.5_LIBRARIES}
-                      ${gstreamer-check-1.5_LIBRARIES}
-                      ${KmsGstCommons_LIBRARIES})
+if (${ENABLE_DEBUGGING_TESTS})
+  add_test_program (test_dispatcher dispatcher.c)
+  target_include_directories(test_dispatcher PRIVATE
+                            ${KmsGstCommons_INCLUDE_DIRS}
+                            ${gstreamer-1.5_INCLUDE_DIRS}
+                            ${gstreamer-check-1.5_INCLUDE_DIRS})
+  target_link_libraries(test_dispatcher
+                        ${gstreamer-1.5_LIBRARIES}
+                        ${gstreamer-check-1.5_LIBRARIES}
+                        ${KmsGstCommons_LIBRARIES})
+endif()
 
 #add_test_program (test_alphablending alphablending.c)
 #add_dependencies(test_alphablending kmstestutils)
