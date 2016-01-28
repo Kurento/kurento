@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -78,7 +77,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
         expectedPositionAndColor);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekHttpOgv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
@@ -99,7 +98,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekHttpWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -113,7 +112,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekHttp3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
@@ -127,7 +126,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekFileOgv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
@@ -141,14 +140,14 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekFileAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekFileWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -162,7 +161,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekFile3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
@@ -176,7 +175,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(FILE, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekS3Ogv() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
@@ -190,14 +189,14 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekS3Avi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekS3Webm() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
@@ -211,7 +210,7 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyVideoSeekS33gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";

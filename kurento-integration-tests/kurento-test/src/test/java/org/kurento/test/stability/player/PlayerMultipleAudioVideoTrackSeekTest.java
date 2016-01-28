@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -92,7 +91,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleAudioVideoSeekHttpAvi() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.avi";
@@ -113,7 +112,7 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleAudioVideoSeekHttp3gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.3gp";
@@ -204,14 +203,14 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleAudioVideoSeekS3Mov() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mov";
     initTest(S3, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleAudioVideoSeekS33gp() throws Exception {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.3gp";

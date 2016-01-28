@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.base.StabilityTest;
@@ -91,7 +90,7 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultipleOnlyAudioSeekHttpOgg() throws Exception {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.ogg";
