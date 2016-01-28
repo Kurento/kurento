@@ -542,6 +542,80 @@ check_exchange_candidates_on_sdp ()
   }
 }
 
+static void
+check_codec_sdp ()
+{
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEp = createWebrtc();
+
+  std::string offer ("v=0\r\n"
+                     "o=- 5403198809162161286 2 IN IP4 127.0.0.1\r\n"
+                     "s=-\r\n"
+                     "t=0 0\r\n"
+                     "a=group:BUNDLE audio\r\n"
+                     "a=msid-semantic: WMS\r\n"
+                     "m=audio 9 UDP/TLS/RTP/SAVPF 111 103 104 9 0 8 106 105 13 126\r\n"
+                     "c=IN IP4 0.0.0.0\r\n"
+                     "a=rtcp:9 IN IP4 0.0.0.0\r\n"
+                     "a=ice-ufrag:z5Ynp3MoUpUWP2II\r\n"
+                     "a=ice-pwd:1dhv/Ia7Vk4yGt/sugyhSz7Q\r\n"
+                     "a=fingerprint:sha-256 AF:FE:D2:3C:01:AB:51:65:0D:95:4A:47:1B:CB:68:CE:6A:A8:11:CC:86:00:5F:1C:10:01:42:44:E2:FE:7B:21\r\n"
+                     "a=setup:actpass\r\n"
+                     "a=mid:audio\r\n"
+                     "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n"
+                     "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n"
+                     "a=recvonly\r\n"
+                     "a=rtcp-mux\r\n"
+                     "a=rtpmap:111 opus/48000/2\r\n"
+                     "a=fmtp:111 minptime=10; useinbandfec=1\r\n"
+                     "a=maxptime:60\r\n");
+
+  BOOST_TEST_MESSAGE ("offer: " + offer);
+
+  std::string answer = webRtcEp->processOffer (offer);
+  BOOST_TEST_MESSAGE ("answer: " + answer);
+
+
+  if (answer.find ("opus/48000/2") == std::string::npos) {
+    BOOST_ERROR ("Answer doesn't contain opus");
+  }
+
+  releaseWebRtc (webRtcEp);
+  webRtcEp = createWebrtc();
+
+  offer = ("v=0\r\n"
+           "o=- 5403198809162161286 2 IN IP4 127.0.0.1\r\n"
+           "s=-\r\n"
+           "t=0 0\r\n"
+           "a=group:BUNDLE audio\r\n"
+           "a=msid-semantic: WMS\r\n"
+           "m=audio 9 UDP/TLS/RTP/SAVPF 111 103 104 9 0 8 106 105 13 126\r\n"
+           "c=IN IP4 0.0.0.0\r\n"
+           "a=rtcp:9 IN IP4 0.0.0.0\r\n"
+           "a=ice-ufrag:z5Ynp3MoUpUWP2II\r\n"
+           "a=ice-pwd:1dhv/Ia7Vk4yGt/sugyhSz7Q\r\n"
+           "a=fingerprint:sha-256 AF:FE:D2:3C:01:AB:51:65:0D:95:4A:47:1B:CB:68:CE:6A:A8:11:CC:86:00:5F:1C:10:01:42:44:E2:FE:7B:21\r\n"
+           "a=setup:actpass\r\n"
+           "a=mid:audio\r\n"
+           "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n"
+           "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n"
+           "a=recvonly\r\n"
+           "a=rtcp-mux\r\n"
+           "a=rtpmap:111 OPUS/48000/2\r\n"
+           "a=fmtp:111 minptime=10; useinbandfec=1\r\n"
+           "a=maxptime:60\r\n");
+
+  BOOST_TEST_MESSAGE ("offer: " + offer);
+
+  answer = webRtcEp->processOffer (offer);
+  BOOST_TEST_MESSAGE ("answer: " + answer);
+
+  if (answer.find ("OPUS/48000/2") == std::string::npos) {
+    BOOST_ERROR ("Answer doesn't contain opus");
+  }
+
+  releaseWebRtc (webRtcEp);
+}
+
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
@@ -561,6 +635,7 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &check_webrtc_stats_ipv6 ), 0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &check_exchange_candidates_on_sdp ),
              0, /* timeout */ 15);
+  test->add (BOOST_TEST_CASE ( &check_codec_sdp ), 0, /* timeout */ 15);
 
   return test;
 }

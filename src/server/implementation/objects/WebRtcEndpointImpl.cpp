@@ -19,6 +19,7 @@
 #include <commons/kmsutils.h>
 
 #include "webrtcendpoint/kmswebrtcdatachannelstate.h"
+#include <boost/algorithm/string.hpp>
 
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -58,7 +59,8 @@ remove_not_supported_codecs_from_array (GstElement *element, GArray *codecs)
 
     for (std::vector<std::string>::iterator it = supported_codecs.begin();
          it != supported_codecs.end(); ++it) {
-      if (g_str_has_prefix (codec_name, (*it).c_str() ) ) {
+
+      if (boost::istarts_with (codec_name, (*it) ) ) {
         supported = TRUE;
         break;
       }
