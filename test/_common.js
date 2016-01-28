@@ -337,10 +337,6 @@ lifecycle = {
 
   teardown: function () {
     if (scope == "docker") {
-      if (this.pipeline)
-        this.pipeline.release(function (error) {
-          if (error) console.error(error);
-        });
       this.kurento.close();
       QUnit.stop();
       container.stop(function (error, data) {

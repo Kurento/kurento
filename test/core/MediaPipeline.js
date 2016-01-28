@@ -99,9 +99,13 @@ QUnit.asyncTest('Pseudo-syncronous API', function () {
 
   player.connect(recorder);
 
-  player.release();
+  player.release(function (error) {
+    if (error) return onerror(error);
 
-  QUnit.start();
+    QUnit.start();
+  });
+
+  
 });
 
 /**
@@ -129,9 +133,11 @@ QUnit.asyncTest('Transactional API', function () {
 
       if (error) return onerror(error);
 
-      player.release();
+      player.release(function (error) {
+        if (error) return onerror(error);
 
-      QUnit.start();
+        QUnit.start();
+      });
     })
     .catch(onerror)
 });
@@ -167,9 +173,11 @@ QUnit.asyncTest('Transactional plain API', function () {
 
       if (error) return onerror(error);
 
-      player.release();
+      player.release(function (error) {
+        if (error) return onerror(error);
 
-      QUnit.start();
+        QUnit.start();
+      });
     });
 });
 
