@@ -25,7 +25,7 @@
 
 #include "kmsrandom.h"
 
-#define RANDOM_NUMBER_SOURCE_DEVICE "/dev/random"
+#define RANDOM_NUMBER_SOURCE_DEVICE "/dev/urandom"
 
 #ifdef SYS_getrandom
 #define MAX_RANDOM_TRIES 3
@@ -41,7 +41,7 @@ sys_call_gen_random_key (guint size)
   tries = l = 0;
 
   while (tries < MAX_RANDOM_TRIES && l < size) {
-    ret = syscall (SYS_getrandom, buff + l, size - l, GRND_RANDOM);
+    ret = syscall (SYS_getrandom, buff + l, size - l, GRND_NONBLOCK);
 
     if (ret < 0) {
       goto error;
