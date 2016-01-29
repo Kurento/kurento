@@ -77,7 +77,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
     final Response<JsonObject>[] response = new Response[1];
 
-    ClientSession clientSession = new ClientSession("XXX", null, new JsonRpcRequestSenderHelper() {
+    ClientSession clientSession = new ClientSession(session.getSessionId(), null, new JsonRpcRequestSenderHelper() {
 
       @Override
       protected void internalSendRequest(Request<? extends Object> request,
