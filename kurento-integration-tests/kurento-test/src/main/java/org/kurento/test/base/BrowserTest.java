@@ -180,6 +180,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     W webPage;
     if (pages.containsKey(browserKey)) {
       webPage = pages.get(browserKey);
+      webPage.setBrowser(testScenario.getBrowserMap().get(browserKey));
     } else {
       webPage = createWebPage();
       webPage.setBrowser(testScenario.getBrowserMap().get(browserKey));
