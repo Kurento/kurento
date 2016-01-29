@@ -5,7 +5,7 @@ Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-6.0-dev (>= 6.3.0),
+ kms-core-6.0-dev (>= 6.3.1),
  libboost-filesystem-dev,
  libboost-test-dev,
  libsoup2.4-dev,
@@ -26,7 +26,7 @@ Depends:
   ${misc:Depends},
   gstreamer1.5-nice (>= 0.1.7),
   openwebrtc-gst-plugins,
-  kms-core-6.0 (>= 6.3.0)
+  kms-core-6.0 (>= 6.3.1)
 Breaks:
   kms-elements
 Description: Kurento elements module

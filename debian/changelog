@@ -1,3 +1,41 @@
+kms-elements-6.0 (6.3.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix version
+
+  [ Miguel París Díaz ]
+  * iceniceagent: improve int to char*
+  * iceniceagent: fix stream id comparation
+  * iceniceagent, webrtcsession: add ICE candidates to local SDP in the session class
+
+  [ Jose Antonio Santos Cadenas ]
+  * webrtcsession: Add candidates present is original offer correctly
+  * icecandidate: Remove references to nice library
+
+  [ David Fernandez ]
+  * kmsplayerendpoint: Perform a seek if pause state change return success
+
+  [ José Antonio Santos Cadenas ]
+  * Revert "icecandidate: Remove references to nice library"
+
+  [ Miguel París Díaz ]
+  * rtpendpoint: remove uneded includes and constants
+
+  [ Jose Antonio Santos Cadenas ]
+  * Test: Disable dispatcher tests that are failing randomly
+
+  [ David Fernandez ]
+  * kmsrecorderendpoint: Reduce log level
+  * WebRtcEndpointImpl: Check supported codecs in capital letters
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.3.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 29 Jan 2016 14:06:40 +0100
+
 kms-elements-6.0 (6.3.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

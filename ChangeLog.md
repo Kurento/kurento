@@ -1,3 +1,11 @@
+6.3.1
+=====
+
+  * PlayerEndpoint: Fix problem in pause introduced in previous release
+  * WebRtcEndpoint: Fix problems with upper/lower case codec names
+  * WebRtcEndpoint: Parse candidates present in original offer correctly
+  * RecorderEndpoint: Reduce log level for some messages that were not errors
+
 6.3.0
 =====
 
