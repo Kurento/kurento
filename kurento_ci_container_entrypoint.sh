@@ -66,6 +66,9 @@ echo "$MAVEN_KURENTO_ORG maven.kurento.org" >> /etc/hosts
 echo "$CHROMEDRIVER_KURENTO_ORG chromedriver.kurento.org" >> /etc/hosts
 echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 
+echo "Network configuration"
+ifconfig
+
 for CMD in $BUILD_COMMAND; do
   echo "Running command: $CMD"
   $CMD || exit 1
