@@ -73,7 +73,6 @@ typedef struct _SdesKeys
   GValue remote;
   KmsRtpBaseConnection *conn;
   KmsISdpMediaExtension *ext;
-  gboolean offerer;
 } SdesKeys;
 
 struct _KmsRtpEndpointPrivate
@@ -213,18 +212,19 @@ kms_rtp_endpoint_set_local_srtp_connection_key (KmsRtpEndpoint * self,
   return TRUE;
 }
 
-static gboolean
+static void
 kms_rtp_endpoint_set_remote_srtp_connection_key (KmsRtpEndpoint * self,
     const gchar * media, SdesKeys * sdes_keys)
 {
   SrtpCryptoSuite my_crypto, rem_crypto;
   guint my_tag, rem_tag;
   gchar *rem_key = NULL;
-  gboolean ret = FALSE;
+  gboolean done = FALSE;
   guint auth, cipher;
 
   if (!G_IS_VALUE (&sdes_keys->local) || !G_IS_VALUE (&sdes_keys->remote)) {
-    return FALSE;
+    GST_DEBUG_OBJECT (self, "Keys are not yet negotiated");
+    return;
   }
 
   if (!kms_sdp_sdes_ext_get_parameters_from_key (&sdes_keys->local,
@@ -251,12 +251,14 @@ kms_rtp_endpoint_set_remote_srtp_connection_key (KmsRtpEndpoint * self,
   kms_srtp_connection_set_key (KMS_SRTP_CONNECTION (sdes_keys->conn), rem_key,
       auth, cipher, FALSE);
 
-  ret = TRUE;
+  done = TRUE;
 
 end:
-  g_free (rem_key);
+  if (!done) {
+    GST_ERROR_OBJECT (self, "Can not configure remote connection key");
+  }
 
-  return ret;
+  g_free (rem_key);
 }
 
 static void
@@ -454,7 +456,6 @@ kms_rtp_endpoint_on_offer_keys_cb (KmsSdpSdesExt * ext, SdesExtData * edata)
   }
 
   enhanced_g_value_copy (&key, &sdes_keys->local);
-  sdes_keys->offerer = TRUE;
 
   KMS_ELEMENT_UNLOCK (self);
 
@@ -552,7 +553,6 @@ kms_rtp_endpoint_on_answer_keys_cb (KmsSdpSdesExt * ext, const GArray * keys,
 
   enhanced_g_value_copy (key, &sdes_keys->local);
   enhanced_g_value_copy (offer_key, &sdes_keys->remote);
-  sdes_keys->offerer = FALSE;
 
   ret = TRUE;
 
@@ -578,16 +578,10 @@ kms_rtp_endpoint_on_selected_key_cb (KmsSdpSdesExt * ext, const GValue * key,
     goto end;
   }
 
-  if (!sdes_keys->offerer) {
-    goto end;
-  }
-
   enhanced_g_value_copy (key, &sdes_keys->remote);
 
-  if (!kms_rtp_endpoint_set_remote_srtp_connection_key (self, edata->media,
-          sdes_keys)) {
-    GST_ERROR_OBJECT (self, "Can not set remote keys");
-  }
+  kms_rtp_endpoint_set_remote_srtp_connection_key (self, edata->media,
+      sdes_keys);
 
 end:
   KMS_ELEMENT_UNLOCK (self);
@@ -695,13 +689,7 @@ kms_rtp_endpoint_configure_connection_keys (KmsRtpEndpoint * self,
     goto end;
   }
 
-  if (sdes_keys->offerer) {
-    goto end;
-  }
-
-  if (!kms_rtp_endpoint_set_remote_srtp_connection_key (self, media, sdes_keys)) {
-    GST_ERROR_OBJECT (self, "Can not configure remote connection key");
-  }
+  kms_rtp_endpoint_set_remote_srtp_connection_key (self, media, sdes_keys);
 
 end:
   KMS_ELEMENT_UNLOCK (self);
@@ -890,29 +878,6 @@ kms_rtp_endpoint_get_property (GObject * object, guint prop_id,
 }
 
 static void
-kms_rtp_endpoint_configure_transport_key (KmsRtpEndpoint * self,
-    const GstSDPMedia * media)
-{
-  SdesKeys *sdes_keys;
-  GError *err = NULL;
-
-  sdes_keys = g_hash_table_lookup (self->priv->sdes_keys,
-      gst_sdp_media_get_media (media));
-
-  if (sdes_keys == NULL) {
-    GST_ERROR_OBJECT (self, "No keys configured for connection");
-
-    return;
-  }
-
-  if (!kms_i_sdp_media_extension_process_answer_attributes
-      (KMS_I_SDP_MEDIA_EXTENSION (sdes_keys->ext), media, &err)) {
-    GST_ERROR_OBJECT (self, "%s", err->message);
-    g_error_free (err);
-  }
-}
-
-static void
 kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
     base_sdp_endpoint, KmsSdpSession * sess)
 {
@@ -940,8 +905,6 @@ kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
           media_str);
       continue;
     }
-
-    kms_rtp_endpoint_configure_transport_key (self, media);
   }
 }
 
