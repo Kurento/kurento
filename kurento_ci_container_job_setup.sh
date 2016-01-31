@@ -30,6 +30,11 @@ trap cleanup EXIT
 #   Specify if this script must checkout projects before test running
 #   DEFAULT: false
 #
+# FORCE_RELEASE
+#   Optional
+#   On external modules is used to force a release
+#   DEFAULT: undefined
+#
 # HTTP_CERT
 #   Certificate required to upload artifacts to http server
 #
@@ -195,6 +200,7 @@ docker run \
   -e "CUSTOM_PRE_COMMAND=$CUSTOM_PRE_COMMAND" \
   -e "EXTRA_PACKAGES=$EXTRA_PACKAGES" \
   -e "FILES=$FILES" \
+  -e "FORCE_RELEASE=$FORCE_RELEASE" \
   -e "GERRIT_CLONE_LIST=$GERRIT_CLONE_LIST" \
   -e "GERRIT_HOST=$GERRIT_HOST" \
   -e "GERRIT_NEWREV=$GERRIT_NEWREV" \
