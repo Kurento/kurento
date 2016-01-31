@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # This scripts gets project version from CMakeList.txt, pom.xml or configure.ac
 

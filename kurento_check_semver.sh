@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # It checks if the version specified is a release version
 
