@@ -67,7 +67,7 @@ echo "$CHROMEDRIVER_KURENTO_ORG chromedriver.kurento.org" >> /etc/hosts
 echo "$BOWER_KURENTO_ORG bower.kurento.org" >> /etc/hosts
 
 echo "Network configuration"
-ifconfig
+ip addr list
 
 for CMD in $BUILD_COMMAND; do
   echo "Running command: $CMD"
