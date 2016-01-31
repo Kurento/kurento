@@ -175,7 +175,8 @@
 		<version.surefire.plugin>2.19</version.surefire.plugin>
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
 		<version.versions.plugin>2.2</version.versions.plugin>
-		<version.wagon.plugin>2.10</version.wagon.plugin>
+		<version.wagon.ssh.plugin>2.10</version.wagon.ssh.plugin>
+		<version.wagon.s3.plugin>1.2.1</version.wagon.s3.plugin>
 		<version.war.plugin>2.6</version.war.plugin>
 
 		<!-- ************** -->
@@ -1179,7 +1180,12 @@
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ssh</artifactId>
-				<version>${version.wagon.plugin}</version>
+				<version>${version.wagon.ssh.plugin}</version>
+			</extension>
+			<extension>
+				<groupId>org.kuali.maven.wagons</groupId>
+				<artifactId>maven-s3-wagon</artifactId>
+				<version>${version.wagon.s3.plugin}</version>
 			</extension>
 		</extensions>
 	</build>
