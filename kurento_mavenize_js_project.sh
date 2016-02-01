@@ -130,10 +130,15 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 	</outputDirectory>
 				 	<appendAssemblyId>false</appendAssemblyId>
 			     </configuration>
-
-
 			  </plugin>
   		</plugins>
+			<extensions>
+				<extension>
+					<groupId>org.kuali.maven.wagons</groupId>
+					<artifactId>maven-s3-wagon</artifactId>
+					<version>1.2.1</version>
+				</extension>
+			</extensions>
 	</build>
 	<profiles>
 		<!-- Kurento CI requires this profiles to exist -->
