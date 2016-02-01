@@ -24,14 +24,14 @@ OPTS="$OPTS org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Dmaven.test
 echo $OPTS
 
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
-  echo "Deploying release version to ${MAVEN_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
+  echo "Deploying release version to ${MAVEN_S3_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
   echo "Deploying with options $OPTS"
-  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_RELEASES} || exit 1
+  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_S3_KURENTO_RELEASES} || exit 1
   if [ "$PUBLIC" == "yes" ]
   then
     mvn --batch-mode --settings ${MAVEN_SETTINGS} deploy $OPTS -DaltDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1
   fi
 else
-  echo "Deploying snapshot version to ${MAVEN_KURENTO_SNAPSHOTS}"
-  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_KURENTO_SNAPSHOTS} -DaltSnapshotDeploymentRepository=${MAVEN_KURENTO_SNAPSHOTS} || exit 1
+  echo "Deploying snapshot version to ${MAVEN_S3_KURENTO_SNAPSHOTS}"
+  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} -DaltSnapshotDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} || exit 1
 fi
