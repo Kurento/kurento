@@ -71,10 +71,13 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
     // assert with exception from KMS
 
     Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
+    Integer executions = -1;
     for (int i = 0; i < numSeeks; i++) {
+      executions++;
       log.debug("Try to set position in 0");
       playerEP.setPosition(0);
       for (Integer position : expectedPositionAndColor.keySet()) {
+        executions++;
         log.debug("Try to set position in {}", position);
         playerEP.setPosition(position);
         if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
@@ -87,6 +90,12 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
         // feature.
       }
     }
+
+    Integer executionsExpected = (numSeeks * expectedPositionAndColor.size()) + numSeeks - 1;
+
+    log.info("The times executed. Expected  {}. Total {}.", executionsExpected, executions);
+    Assert.assertTrue("The times executed is wrong. Expected : " + executionsExpected + ". Total: "
+        + executions, (executionsExpected.equals(executions)));
 
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
