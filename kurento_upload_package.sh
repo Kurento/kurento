@@ -59,6 +59,10 @@ fi
 
 echo "Using component ${COMPONENT}"
 
+if [ -n "$DEBIAN_PACKAGE_REPOSITORY" ]; then
+  PARAM_REPO="repo=$DEBIAN_PACKAGE_REPOSITORY\&"
+fi
+
 KEY=$ID_RSA_FILE
 
-curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?dist=$DIST\&comp=$COMPONENT\&name=$(basename $PACKAGE) --data-binary @$PACKAGE || exit 1
+curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?${PARAM_REPO}dist=$DIST\&comp=$COMPONENT\&name=$(basename $PACKAGE) --data-binary @$PACKAGE || exit 1
