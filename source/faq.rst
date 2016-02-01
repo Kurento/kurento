@@ -49,6 +49,8 @@ How do I...
    installed. For this, modify the turnURL key in ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``::
 
       turnURL=kurento:kurento@<public-ip>:3478
+      stunServerAddress=<public-ip>
+      stunServerPort=3478
 
    The following ports should be open in the firewall:
 
