@@ -32,13 +32,13 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 kurento_check_version.sh true
 kurento_mavenize_js_project.sh $KURENTO_PROJECT
 # Deploy to snapshot or kurento release
-export SNAPSHOT_REPOSITORY=$MAVEN_KURENTO_SNAPSHOTS
-export RELEASE_REPOSITORY=$MAVEN_KURENTO_RELEASES
-kurento_maven_deploy.sh
+export SNAPSHOT_REPOSITORY=$MAVEN_S3_KURENTO_SNAPSHOTS
+export RELEASE_REPOSITORY=$MAVEN_S3_KURENTO_RELEASES
+kurento_maven_deploy.sh || exit 1
 # Deploy to Maven Central
 export SNAPSHOT_REPOSITORY=
 export RELEASE_REPOSITORY=$MAVEN_SONATYPE_NEXUS_STAGING
-kurento_maven_deploy.sh
+kurento_maven_deploy.sh || exit 1
 
 # Deploy to NPM
 kurento_npm_publish.sh
