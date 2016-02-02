@@ -1,5 +1,7 @@
 #!/bin/bash -x
 # PARAM API
+#  repo
+#       Name of the repo where package is uploaded
 #  dist
 #       Distribution where package is uploaded
 #  comp
@@ -9,11 +11,12 @@
 #      Name of file given to package
 #
 # Get dist param from query string
+REPO=$(echo $QUERY_STRING | grep 'repo=' | sed 's/QUERY_STRING=//g' | sed 's/^.*repo=\([^\&]*\).*$/\1/g')
 DIST=$(echo $QUERY_STRING | grep 'dist=' | sed 's/QUERY_STRING=//g' | sed 's/^.*dist=\([^\&]*\).*$/\1/g')
 COMP=$(echo $QUERY_STRING | grep 'comp=' | sed 's/QUERY_STRING=//g' | sed 's/^.*comp=\([^\&]*\).*$/\1/g')
 NAME=$(echo $QUERY_STRING | grep 'name=' | sed 's/QUERY_STRING=//g' | sed 's/^.*name=\([^\&]*\).*$/\1/g')
 
-
+[ -z "$REPO" ] && REPO=ubuntu-pub
 if [ -z "$DIST" -o -z "$COMP" ]; then
     STATUS="Status: 400 Bad Request"
     TITLE="400 Bad Request"
@@ -22,20 +25,29 @@ else
     mkdir -p /tmp/$DIST/$COMP
     UPLOAD_FILE=$([ -n "$NAME" ] && echo /tmp/$DIST/$COMP/$NAME || mktemp --suffix .deb)
     cat - > $UPLOAD_FILE
-    echo "Upload to reprepro" > $UPLOAD_FILE.reprepro.msg
-    reprepro -b .. --waitforlock 10 -C $COMP includedeb $DIST $UPLOAD_FILE >> $UPLOAD_FILE.reprepro.msg 2>&1
-    reprepro_res=$?
-    echo "Upload to aptly" > $UPLOAD_FILE.aptly.msg
-    # Requires package task-spooler
+    if echo $REPO | grep -qiv priv ; then
+      echo "Upload to reprepro" > $UPLOAD_FILE.reprepro.msg
+      reprepro -b .. --waitforlock 10 -C $COMP includedeb $DIST $UPLOAD_FILE >> $UPLOAD_FILE.reprepro.msg 2>&1
+      reprepro_res=$?
+      echo "" > $UPLOAD_FILE.aptly.msg
+      echo "Upload to aptly" >> $UPLOAD_FILE.aptly.msg
+    else
+      echo "DO NOT Upload to reprepro for private repo: $REPO" > $UPLOAD_FILE.reprepro.msg
+      reprepro_res=0
+    fi
     tsp -C
-    tsp aptly repo add $DIST $UPLOAD_FILE >> $UPLOAD_FILE.aptly.msg 2>&1
+    # Upload aptly tu ubuntu in background because pararllel uploads are not possible.
+    # Requires package task-spooler
+    tsp aptly repo add $REPO-$DIST-$COMP $UPLOAD_FILE >> $UPLOAD_FILE.aptly.msg 2>&1
+    aptly_res=$?
     tsp rm -f $UPLOAD_FILE >> $UPLOAD_FILE.aptly.msg 2>&1
+    tsp -C
     # Delete scheduled updates before inserting new one
-    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:ubuntu:" | awk '{print $1}'); do
+    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:$REPO:" | awk '{print $1}'); do
       tsp -r $task
     done
-    tsp aptly publish update $DIST s3:ubuntu: >> $UPLOAD_FILE.aptly.msg 2>&1
-    aptly_res=$?
+    tsp aptly publish update $DIST s3:$REPO: >> $UPLOAD_FILE.aptly.msg 2>&1
+
     if [ $reprepro_res -eq 0 -a $aptly_res -eq 0 ]; then
         STATUS="Status: 200 OK"
         TITLE="REQUEST ACCEPTED"
@@ -43,6 +55,8 @@ else
         STATUS="Status: 500 OK"
         TITLE="500 Internal Server ERROR"
     fi
+
+    # Build user response
     BODY=$(cat $UPLOAD_FILE.reprepro.msg)
     BODY=$BODY$(echo '')
     BODY=$BODY$(cat $UPLOAD_FILE.aptly.msg)
