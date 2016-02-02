@@ -5,7 +5,7 @@ then
   echo "You should indentify an gnupg key in environment variable GNUPG_KEY_ID, use one from gpg -K"
 fi
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
 
 PROJECT_NAME=$1
 BRANCH=$2
@@ -92,7 +92,7 @@ fi
 dpkg-buildpackage $build_args || exit 1
 
 #Check if repossitory is public or private
-PRIVATE=`kms/get_config_value.py --key private`
+PRIVATE=`get_config_value.py --key private`
 if [ "x$PRIVATE" == "xTrue" ]
 then
   export DEBIAN_PACKAGE_REPOSITORY=ubuntu-priv
