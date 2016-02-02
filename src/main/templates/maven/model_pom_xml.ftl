@@ -58,6 +58,13 @@ pom.xml
 				</executions>
 			</plugin>
 		</plugins>
+    <extensions>
+      <extension>
+        <groupId>org.kuali.maven.wagons</groupId>
+        <artifactId>maven-s3-wagon</artifactId>
+        <version>1.2.1</version>
+      </extension>
+    </extensions>
 	</build>
 
 </project>
