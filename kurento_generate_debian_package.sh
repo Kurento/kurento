@@ -91,6 +91,15 @@ fi
 #dpkg-buildpackage -S -sa $build_args || echo "Warning, source package not created"
 dpkg-buildpackage $build_args || exit 1
 
+#Check if repossitory is public or private
+PRIVATE=`kms/get_config_value.py --key private`
+if [ "x$PRIVATE" == "xTrue" ]
+then
+  export DEBIAN_PACKAGE_REPOSITORY=ubuntu-priv
+else
+  export DEBIAN_PACKAGE_REPOSITORY=ubuntu-pub
+fi
+
 for i in ../*${ver}_*.deb
 do
   kurento_upload_package.sh $DIST-dev $i || { echo "Failed to upload package $i"; exit 1; }
