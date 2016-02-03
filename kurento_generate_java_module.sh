@@ -19,19 +19,19 @@ OPTS="package"
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
   [ "$PUBLIC" == "yes" ] && OPTS="$OPTS javadoc:jar source:jar gpg:sign"
 fi
-OPTS="$OPTS org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -U"
+OPTS="$OPTS -Dmaven.test.skip=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -U"
 
 echo $OPTS
 
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
   echo "Deploying release version to ${MAVEN_S3_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
   echo "Deploying with options $OPTS"
-  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_S3_KURENTO_RELEASES} || exit 1
+  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=${MAVEN_S3_KURENTO_RELEASES} || exit 1
   if [ "$PUBLIC" == "yes" ]
   then
-    mvn --batch-mode --settings ${MAVEN_SETTINGS} deploy $OPTS -DaltDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1
+    mvn --batch-mode --settings ${MAVEN_SETTINGS} clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltReleaseDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1
   fi
 else
   echo "Deploying snapshot version to ${MAVEN_S3_KURENTO_SNAPSHOTS}"
-  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean deploy $OPTS -DaltDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} -DaltSnapshotDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} || exit 1
+  mvn --batch-mode --settings ${MAVEN_SETTINGS} clean package org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy $OPTS -DaltSnapshotDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} || exit 1
 fi
