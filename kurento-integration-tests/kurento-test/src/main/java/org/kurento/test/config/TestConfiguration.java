@@ -42,6 +42,8 @@ public class TestConfiguration {
   public static final String TEST_URL_TIMEOUT_PROPERTY = "test.url.timeout";
   public static final int TEST_URL_TIMEOUT_DEFAULT = 30; // seconds
 
+  public static final String TEST_DURATION_PROPERTY = "test.duration";
+
   public static final String TEST_CONFIG_FILE_DEFAULT = "test.config.file";
   public static final String TEST_CONFIG_JSON_DEFAULT = "test.conf.json";
   public static final String TEST_CONFIG_EXECUTIONS_PROPERTY = "test.config.executions";
