@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 8.0.0),
  libboost-filesystem-dev,
  libboost-test-dev,
  libsoup2.4-dev,
- libnice-dev (>= 0.1.7),
+ libnice-dev (>= 0.1.13),
  gstreamer1.5-nice,
  uuid-dev,
  valgrind,
@@ -24,7 +24,7 @@ Architecture: any
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
-  gstreamer1.5-nice (>= 0.1.7),
+  gstreamer1.5-nice (>= 0.1.13),
   openwebrtc-gst-plugins,
   kms-core-6.0 (>= 6.3.1)
 Breaks:
