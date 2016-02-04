@@ -12,6 +12,8 @@ SOURCE="Source: $1"
 ORIG_DIST=$2
 TARGET_DIST=$3
 
+PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
+
 if [ "${ID_RSA_FILE}x" == "x" ]
 then
   echo "You need to specify environment variable ID_RSA_FILE with the public key to upload packages to the repository"
@@ -36,43 +38,71 @@ then
   exit 1
 fi
 
-if [ "${COMPONENT}x" == "x" ]
+if [ "${ORIG_COMPONENT}x" == "x" ]
 then
-  echo "You need to specify environment variable COMPONENT with the component"
+  echo "You need to specify environment variable ORIG_COMPONENT with the origin component"
+  exit 1
+fi
+
+if [ "${DEST_COMPONENT}x" == "x" ]
+then
+  echo "You need to specify environment variable DEST_COMPONENT with the destination component"
+  exit 1
+fi
+
+if [ "x${ARCH}" != "xamd64" -a "x${ARCH}" != "xi386" ]
+then
+  echo "You need to specify environment variable ARCH with i386 or amd64"
   exit 1
 fi
 
 KEY=$ID_RSA_FILE
 
-mkdir tmp
-cd tmp
+TEMP_DIR=`mktemp -d`
 
-for file in $(curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${COMPONENT}/binary-amd64/Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
+cd $TEMP_DIR
+
+curl --fail -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${ORIG_COMPONENT}/binary-${ARCH}/Packages > Packages || curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${ORIG_COMPONENT}/binary-${ARCH}/Packages.gz | zcat > Packages
+
+export DIST=$TARGET_DIST
+export COMPONENT=$DEST_COMPONENT
+export REPREPRO_URL=$TARGET_REPREPRO_URL
+export DEBIAN_PACKAGE_REPOSITORY=ubuntu-pub
+
+if [ ! -e Packages ]
+then
+  echo "Cannot get packages index from ${ORIG_REPREPRO_URL}"
+  exit 1
+fi
+
+for file in $(cat Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
 do
   wget ${ORIG_REPREPRO_URL}/$file
 done
 
-for file in $(curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${COMPONENT}/binary-amd64/Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
+for file in $(cat Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
 do
   PACKAGE=$(basename $file)
-  echo "Uploading package $PACKAGE to ${TARGET_REPREPRO_URL}/dists/$DEST_DIST/$COMPONENT"
-  curl --insecure --key $KEY --cert $CERT -X POST ${TARGET_REPREPRO_URL}/upload?dist=$TARGET_DIST\&comp=$COMPONENT --data-binary @$PACKAGE || exit 1
+  echo "Uploading package $PACKAGE to ${TARGET_REPREPRO_URL}/dists/$DEST_DIST/$DEST_COMPONENT"
+  kurento_upload_package.sh $TARGET_DIST $PACKAGE
+  #curl --insecure --key $KEY --cert $CERT -X POST ${TARGET_REPREPRO_URL}/upload?dist=$TARGET_DIST\&comp=$DEST_COMPONENT --data-binary @$PACKAGE || exit 1
 done
 
 SOURCE="Package: $1"
-for file in $(curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${COMPONENT}/binary-amd64/Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
+for file in $(cat Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
 do
   wget ${ORIG_REPREPRO_URL}/$file
 done
 
-for file in $(curl -s ${ORIG_REPREPRO_URL}/dists/${ORIG_DIST}/${COMPONENT}/binary-amd64/Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
+for file in $(cat Packages | awk -v RS='' -v p="$SOURCE" '$0 ~ p'  | grep Filename | cut -d':' -f2)
 do
   PACKAGE=$(basename $file)
-  echo "Uploading package $PACKAGE to ${TARGET_REPREPRO_URL}/dists/$DEST_DIST/$COMPONENT"
-  curl --insecure --key $KEY --cert $CERT -X POST ${TARGET_REPREPRO_URL}/upload?dist=$TARGET_DIST\&comp=$COMPONENT --data-binary @$PACKAGE || exit 1
+  echo "Uploading package $PACKAGE to ${TARGET_REPREPRO_URL}/dists/$DEST_DIST/$DEST_COMPONENT"
+  kurento_upload_package.sh $TARGET_DIST $PACKAGE
+  #curl --insecure --key $KEY --cert $CERT -X POST ${TARGET_REPREPRO_URL}/upload?dist=$TARGET_DIST\&comp=$DEST_COMPONENT --data-binary @$PACKAGE || exit 1
 done
 
-cd ..
-rm -rf tmp
+cd -
+rm -rf $TEMP_DIR
 
 exec >&3-
