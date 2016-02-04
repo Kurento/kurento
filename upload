@@ -35,31 +35,44 @@ else
       echo "DO NOT Upload to reprepro for private repo: $REPO" > $UPLOAD_FILE.reprepro.msg
       reprepro_res=0
     fi
-    tsp -C
+    BODY=$(cat $UPLOAD_FILE.reprepro.msg)
+    #tsp -C
     # Upload aptly tu ubuntu in background because pararllel uploads are not possible.
     # Requires package task-spooler
-    tsp aptly repo add $REPO-$DIST-$COMP $UPLOAD_FILE >> $UPLOAD_FILE.aptly.msg 2>&1
-    aptly_res=$?
-    tsp rm -f $UPLOAD_FILE >> $UPLOAD_FILE.aptly.msg 2>&1
-    tsp -C
-    # Delete scheduled updates before inserting new one
-    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:$REPO:" | awk '{print $1}'); do
-      tsp -r $task
-    done
-    tsp aptly publish update $DIST s3:$REPO: >> $UPLOAD_FILE.aptly.msg 2>&1
+    add_id=$(tsp aptly repo add $REPO-$DIST-$COMP $UPLOAD_FILE)
+    tsp -w $add_id
+    BODY+=$(echo ' --- Aptly add package:')
+    BODY+=$(tsp -c $add_id)
+    add_res=$?
+    tsp -r $add_id
 
-    if [ $reprepro_res -eq 0 -a $aptly_res -eq 0 ]; then
+    BODY+=$(echo ' --- Aptly publish:')
+    if [ "$add_res" -eq 0 ]; then
+      # Delete scheduled updates before inserting new one
+      for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:$REPO:" | awk '{print $1}'); do
+        tsp -r $task
+      done
+      # This task can be removed any time by future uploads
+      publish_id=$(tsp aptly publish update $DIST s3:$REPO:)
+      #tsp -w $publish_id  # This command blocks if task is removed
+      until [ "$(tsp -s $publish_id)" = 'finished' -o $? -ne 0 ]; do
+        sleep 10
+      done
+      BODY+=$(tsp -c $publish_id)
+      publish_res=$?
+      [ $publish_res -eq 255 ] && publish_res=0 # task removed by other upload ==> success
+      tsp -r $publish_id
+    else
+      BODY+=$(echo "Publish skipped")
+      publish_res=0
+    fi
+    if [ "$reprepro_res" -eq 0 -a "$add_res" -eq 0 -a "$publish_res" -eq 0 ]; then
         STATUS="Status: 200 OK"
         TITLE="REQUEST ACCEPTED"
     else
         STATUS="Status: 500 OK"
         TITLE="500 Internal Server ERROR"
     fi
-
-    # Build user response
-    BODY=$(cat $UPLOAD_FILE.reprepro.msg)
-    BODY=$BODY$(echo '')
-    BODY=$BODY$(cat $UPLOAD_FILE.aptly.msg)
     rm -f $UPLOAD_FILE.*
 fi
 echo $STATUS
