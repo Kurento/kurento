@@ -38,12 +38,12 @@ echo "Preparing readthedocs project: $KURENTO_PROJECT-readthedocs"
 READTHEDOCS_PROJECT=$KURENTO_PROJECT-readthedocs
 kurento_clone_repo.sh $READTHEDOCS_PROJECT $GERRIT_REFNAME || { echo "Couldn't clone $READTHEDOCS_PROJECT repository"; exit 1; }
 
-rm -rf ./$READTHEDOCS_PROJECT/*
-cp -r ./$KURENTO_PROJECT/* ./$READTHEDOCS_PROJECT/
+rm -rf $READTHEDOCS_PROJECT/*
+cp -r $KURENTO_PROJECT/* $READTHEDOCS_PROJECT/
 
 pushd $READTHEDOCS_PROJECT
 echo "Commiting changes to $READTHEDOCS_PROJECT repository"
-git add .
+git add --all .
 git st
 git commit -m "$COMMIT_MSG" || exit 1
 
