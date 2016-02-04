@@ -68,8 +68,8 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
     int numSeeks = getTestSeekRepetitions();
     final Map<Integer, Color> expectedPositionAndColor = new LinkedHashMap<Integer, Color>();
     expectedPositionAndColor.put(2000, Color.RED);
-    expectedPositionAndColor.put(10000, Color.BLUE);
-    expectedPositionAndColor.put(6000, Color.GREEN);
+    expectedPositionAndColor.put(20000, Color.BLUE);
+    expectedPositionAndColor.put(10000, Color.GREEN);
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);
 
@@ -80,147 +80,147 @@ public class PlayerMultipleAudioVideoTrackSeekTest extends StabilityTest {
   @Test
   public void testPlayerMultipleAudioVideoSeekHttpOgv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.ogv";
+    final String mediaUrl = "/video/30sec/rgb.ogv";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekHttpMkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mkv";
+    final String mediaUrl = "/video/30sec/rgb.mkv";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekHttpAvi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.avi";
+    final String mediaUrl = "/video/30sec/rgb.avi";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekHttpWebm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.webm";
+    final String mediaUrl = "/video/30sec/rgb.webm";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekHttpMov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mov";
+    final String mediaUrl = "/video/30sec/rgb.mov";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekHttp3gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.3gp";
+    final String mediaUrl = "/video/30sec/rgb.3gp";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekHttpMp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mp4";
+    final String mediaUrl = "/video/30sec/rgb.mp4";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFileOgv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.ogv";
+    final String mediaUrl = "/video/30sec/rgb.ogv";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFileMkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mkv";
+    final String mediaUrl = "/video/30sec/rgb.mkv";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFileAvi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.avi";
+    final String mediaUrl = "/video/30sec/rgb.avi";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFileWebm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.webm";
+    final String mediaUrl = "/video/30sec/rgb.webm";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFileMov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mov";
+    final String mediaUrl = "/video/30sec/rgb.mov";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFile3gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.3gp";
+    final String mediaUrl = "/video/30sec/rgb.3gp";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekFileMp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mp4";
+    final String mediaUrl = "/video/30sec/rgb.mp4";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS3Ogv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.ogv";
+    final String mediaUrl = "/video/30sec/rgb.ogv";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS3Mkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mkv";
+    final String mediaUrl = "/video/30sec/rgb.mkv";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS3Avi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.avi";
+    final String mediaUrl = "/video/30sec/rgb.avi";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS3Webm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.webm";
+    final String mediaUrl = "/video/30sec/rgb.webm";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS3Mov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mov";
+    final String mediaUrl = "/video/30sec/rgb.mov";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS33gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.3gp";
+    final String mediaUrl = "/video/30sec/rgb.3gp";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleAudioVideoSeekS3Mp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgb.mp4";
+    final String mediaUrl = "/video/30sec/rgb.mp4";
     initTest(S3, mediaUrl);
   }
 }

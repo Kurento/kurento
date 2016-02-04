@@ -137,6 +137,9 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEp.play();
 
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
+
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       // Assert initial color, pause stream and wait x seconds
       Assert.assertTrue("At the beginning, the color of the video should be " + expectedColors[0],
@@ -164,9 +167,6 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     // feature.
 
     // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
-
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
@@ -195,6 +195,9 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEp.play();
 
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
+
     // TODO: Check with playerEp.getVideoInfo().getIsSeekable() if the video is seekable. If not,
     // assert with exception from KMS
 
@@ -212,8 +215,6 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     }
 
     // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
 
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));

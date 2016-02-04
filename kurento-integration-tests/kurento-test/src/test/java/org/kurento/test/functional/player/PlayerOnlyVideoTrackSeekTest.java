@@ -70,10 +70,10 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
 
     final Map<Integer, Color> expectedPositionAndColor = new LinkedHashMap<Integer, Color>();
     expectedPositionAndColor.put(2000, Color.RED);
-    expectedPositionAndColor.put(10000, Color.BLUE);
-    expectedPositionAndColor.put(6000, Color.GREEN);
+    expectedPositionAndColor.put(20000, Color.BLUE);
+    expectedPositionAndColor.put(10000, Color.GREEN);
     expectedPositionAndColor.put(2000, Color.RED);
-    expectedPositionAndColor.put(10100, Color.BLUE);
+    expectedPositionAndColor.put(20100, Color.BLUE);
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);
     int pauseTimeSeconds = 3;
@@ -83,147 +83,147 @@ public class PlayerOnlyVideoTrackSeekTest extends FunctionalPlayerTest {
   @Test
   public void testPlayerOnlyVideoSeekHttpOgv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekHttpMkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekHttpAvi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekHttpWebm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekHttpMov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekHttp3gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekHttpMp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFileOgv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFileMkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFileAvi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFileWebm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFileMov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFile3gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekFileMp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS3Ogv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS3Mkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS3Avi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS3Webm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS3Mov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS33gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerOnlyVideoSeekS3Mp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(S3, mediaUrl);
   }
 }

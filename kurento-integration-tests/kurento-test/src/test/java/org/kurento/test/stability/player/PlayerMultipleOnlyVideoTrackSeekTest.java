@@ -68,8 +68,8 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     int numSeeks = getTestSeekRepetitions();
     final Map<Integer, Color> expectedPositionAndColor = new LinkedHashMap<Integer, Color>();
     expectedPositionAndColor.put(2000, Color.RED);
-    expectedPositionAndColor.put(10000, Color.BLUE);
-    expectedPositionAndColor.put(6000, Color.GREEN);
+    expectedPositionAndColor.put(20000, Color.BLUE);
+    expectedPositionAndColor.put(10000, Color.GREEN);
 
     String mediaUrl = getMediaUrl(protocol, nameMedia);
 
@@ -80,147 +80,147 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttpOgv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttpMkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttpAvi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttpWebm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttpMov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttp3gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekHttpMp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(HTTP, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFileOgv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFileMkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFileAvi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFileWebm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFileMov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFile3gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekFileMp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(FILE, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Ogv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Mkv() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Avi() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Webm() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Mov() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS33gp() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
     initTest(S3, mediaUrl);
   }
 
   @Test
   public void testPlayerMultipleOnlyVideoSeekS3Mp4() throws Exception {
     // Test data
-    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(S3, mediaUrl);
   }
 }
