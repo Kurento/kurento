@@ -36,6 +36,8 @@ import org.kurento.jsonrpc.message.Message;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -465,6 +467,8 @@ public class JsonUtils {
 
 class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 
+  private static final Logger log = LoggerFactory.getLogger(JsonRpcResponseDeserializer.class);
+
   @Override
   public Response<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
       throws JsonParseException {
@@ -495,24 +499,28 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
       }
     }
 
-    if (jObject.has(RESULT_PROPERTY)) {
-
-      ParameterizedType parameterizedType = (ParameterizedType) typeOfT;
-
-      return new Response<>(id, context.deserialize(jObject.get(RESULT_PROPERTY),
-          parameterizedType.getActualTypeArguments()[0]));
-
-    } else if (jObject.has(ERROR_PROPERTY)) {
+    if (jObject.has(ERROR_PROPERTY)) {
 
       return new Response<>(id,
           (ResponseError) context.deserialize(jObject.get(ERROR_PROPERTY), ResponseError.class));
 
     } else {
 
-      throw new JsonParseException("Invalid JsonRpc response: " + json + " It lacks a valid '"
-          + RESULT_PROPERTY + "' or '" + ERROR_PROPERTY + "' field");
-    }
+      if (jObject.has(RESULT_PROPERTY)) {
 
+        ParameterizedType parameterizedType = (ParameterizedType) typeOfT;
+
+        return new Response<>(id, context.deserialize(jObject.get(RESULT_PROPERTY),
+            parameterizedType.getActualTypeArguments()[0]));
+
+      } else {
+
+        log.warn("Invalid JsonRpc response: " + json + " It lacks a valid '" + RESULT_PROPERTY
+            + "' or '" + ERROR_PROPERTY + "' field");
+
+        return new Response<>(id, null);
+      }
+    }
   }
 }
 
