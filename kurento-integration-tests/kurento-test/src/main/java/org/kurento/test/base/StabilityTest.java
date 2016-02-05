@@ -75,6 +75,9 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
     getPage().initWebRtc(webRtcEP, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEP.play();
 
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage().waitForEvent("playing"));
+
     // TODO: Check with playerEP.getVideoInfo().getIsSeekable() if the video is seekable. If not,
     // assert with exception from KMS
 
@@ -106,8 +109,6 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
         + executions, (executionsExpected.equals(executions)));
 
     // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
 
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
