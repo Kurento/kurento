@@ -918,6 +918,8 @@ kms_rtp_endpoint_finalize (GObject * object)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
 
+  GST_DEBUG_OBJECT (self, "finalize");
+
   g_free (self->priv->master_key);
   g_hash_table_unref (self->priv->sdes_keys);
 
