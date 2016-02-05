@@ -273,17 +273,36 @@ public class WebRtcTestPage extends WebPage {
   }
 
   /*
-   * initWebRtc
+   * initWebRtc with IPVMode
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
-      final WebRtcMode mode) throws InterruptedException {
+      final WebRtcMode mode, final IPVMode ipvMode) throws InterruptedException {
 
     webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
       @Override
       public void onEvent(OnIceCandidateEvent event) {
         JsonObject candidate = JsonUtils.toJsonObject(event.getCandidate());
         log.debug("OnIceCandidateEvent on {}: {}", webRtcEndpoint.getId(), candidate);
-        addIceCandidate(candidate);
+        Boolean hasCandidateIpv6 = false;
+        if (candidate.get("candidate").getAsString().split("candidate:")[1].contains(":")) {
+          hasCandidateIpv6 = true;
+        }
+        switch (ipvMode) {
+          case IPV4:
+            if (!hasCandidateIpv6) {
+              addIceCandidate(candidate);
+            }
+            break;
+          case IPV6:
+            if (hasCandidateIpv6) {
+              addIceCandidate(candidate);
+            }
+            break;
+          case BOTH:
+          default:
+            addIceCandidate(candidate);
+            break;
+        }
       }
     });
 
@@ -298,7 +317,26 @@ public class WebRtcTestPage extends WebPage {
     WebRtcConfigurer webRtcConfigurer = new WebRtcConfigurer() {
       @Override
       public void addIceCandidate(IceCandidate candidate) {
-        webRtcEndpoint.addIceCandidate(candidate);
+        Boolean hasCandidateIpv6 = false;
+        if (candidate.getCandidate().split("candidate:")[1].contains(":")) {
+          hasCandidateIpv6 = true;
+        }
+        switch (ipvMode) {
+          case IPV4:
+            if (!hasCandidateIpv6) {
+              webRtcEndpoint.addIceCandidate(candidate);
+            }
+            break;
+          case IPV6:
+            if (hasCandidateIpv6) {
+              webRtcEndpoint.addIceCandidate(candidate);
+            }
+            break;
+          case BOTH:
+          default:
+            webRtcEndpoint.addIceCandidate(candidate);
+            break;
+        }
       }
 
       @Override
@@ -310,6 +348,14 @@ public class WebRtcTestPage extends WebPage {
     };
 
     initWebRtc(webRtcConfigurer, channel, mode);
+  }
+
+  /*
+   * initWebRtc without IPVMode
+   */
+  public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
+      final WebRtcMode mode) throws InterruptedException {
+    initWebRtc(webRtcEndpoint, channel, mode, IPVMode.BOTH);
   }
 
   @SuppressWarnings({ "unchecked", "deprecation" })
