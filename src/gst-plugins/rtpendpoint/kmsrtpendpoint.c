@@ -129,8 +129,13 @@ sdes_ext_data_new (KmsRtpEndpoint * ep, const gchar * media)
 static void
 sdes_keys_destroy (SdesKeys * keys)
 {
-  g_value_unset (&keys->local);
-  g_value_unset (&keys->remote);
+  if (G_IS_VALUE (&keys->local)) {
+    g_value_unset (&keys->local);
+  }
+
+  if (G_IS_VALUE (&keys->remote)) {
+    g_value_unset (&keys->remote);
+  }
 
   g_clear_object (&keys->conn);
   g_clear_object (&keys->ext);
