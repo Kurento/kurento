@@ -247,6 +247,6 @@ public class TestConfiguration {
 
   // Other keys
   public static final String TEST_SEEK_REPETITIONS = "test.seek.repetitions";
-  public static final int TEST_SEEK_REPETITIONS_DEFAULT = 100;
+  public static final int TEST_SEEK_REPETITIONS_DEFAULT = 20;
 
 }
