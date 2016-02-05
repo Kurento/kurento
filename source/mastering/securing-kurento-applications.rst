@@ -4,8 +4,9 @@
 Securing Kurento Applications
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or localhost).
-Check their `release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`_
+Starting with Chrome 47, WebRTC is only allowed from SECURE ORIGINS (HTTPS or
+localhost). Check their
+`release notes <https://groups.google.com/forum/#!topic/discuss-webrtc/sq5CVmY69sc>`_
 for further information about this issue.
 
 .. note::
@@ -28,26 +29,26 @@ Configure Java applications to use HTTPS
 
       .. sourcecode:: bash
 
-         keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048
-
+         keytool -genkey -keyalg RSA -alias selfsigned -keystore \
+         keystore.jks -storepass password -validity 360 -keysize 2048
 
 * Use the certificate in your application:
 
      * Include a valid keystore in the *jar* file:
 
-        File *keystore.jks* must be in the project's root path, and a file 
-        named *application.properties* must exist in *src/main/resources/*, 
-        with the following content:
+        File *keystore.jks* must be in the project's root path, and a
+        file named *application.properties* must exist in
+        *src/main/resources/*, with the following content:
 
          .. sourcecode:: bash
 
-            server.port: 8443
-            server.ssl.key-store: keystore.jks
+            server.port: 8443 server.ssl.key-store: keystore.jks
             server.ssl.key-store-password: yourPassword
-            server.ssl.keyStoreType: JKS
-            server.ssl.keyAlias: yourKeyAlias
+            server.ssl.keyStoreType: JKS server.ssl.keyAlias: yourKeyAlias
 
-      * You can also specify the location of the properties file. Just issue the flag `-Dspring.config.location=<path-to-properties>` when launching your Spring-Boot based app. 
+      * You can also specify the location of the properties file. Just
+        issue the flag `-Dspring.config.location=<path-to-properties>` when
+        launching your Spring-Boot based app.
 
 * Start application
 
@@ -68,7 +69,10 @@ Configure Node applications to use HTTPS
 
    * Request a certificate from a local certification authority.
 
-   * Create your own self-signed certificate as explained `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This will show you how to create the required files: *server.crt*, *server.key* and *server.csr*.
+   * Create your own self-signed certificate as explained
+     `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This
+     will show you how to create the required files: *server.crt*, *server.key*
+     and *server.csr*.
 
 Add the following changes to *server.js* in order to enable HTTPS:
 
@@ -116,7 +120,10 @@ Configure Javascript applications to use HTTPS
 
    * Request a certificate from a local certification authority.
 
-   * Create your own self-signed certificate as explained `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This will show you how to create the required files: *server.crt*, *server.key* and *server.csr*.
+   * Create your own self-signed certificate as explained
+     `here <http://www.akadia.com/services/ssh_test_certificate.html>`_. This
+     will show you how to create the required files: *server.crt*, *server.key*
+     and *server.csr*.
 
 
 * Start the application using the certificates:
@@ -132,8 +139,8 @@ Securing server applications
 Configure Kurento Media Server to use Secure WebSocket (WSS)
 ------------------------------------------------------------
 
-First, you need to change the configuration file of Kurento Media Server,
-i.e. ``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
+First, you need to change the configuration file of Kurento Media Server, i.e.
+``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
 
    "secure": {
      "port": 8433,
@@ -141,38 +148,9 @@ i.e. ``/etc/kurento/kurento.conf.json``, uncommenting the following lines::
      "password": ""
    },
 
-You will also need a PEM certificate that should be in the same path of
-the configuration file, or you may need to specify the full path in the ``certificate``
-field. Take into account that this file must contain the entire trust chain. If you have
-several files, you probably need to concatenate the content of those files
-in order to obtain a valid certificate bundle. Assuming that the names correspond to each kind of
-certificate that you might have, the following commnad will create a valid SSL certificate
-chain bundle::
-
-   $ cat signing-ca.crt subordinate-ca.crt server.crt > server.pem
-
-The file ``server.pem`` is the file that you will need to point to in the configuration
-file.
-
-Second, you have to change the WebSocket URI in your application logic. For
-instance, in the *hello-world* application within the tutorials, this would
-be done as follows:
-
-- Java: Changing this line in `HelloWorldApp.java <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_::
-
-   final static String DEFAULT_KMS_WS_URI = "wss://localhost:8433/kurento";
-
-- Browser JavaScript: Changing this line in `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`_::
-
-    const ws_uri = 'wss://' + location.hostname + ':8433/kurento';
-
-- Node.js: Changing this line in `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`_::
-
-   const ws_uri = "wss://localhost:8433/kurento";
-
 If this PEM certificate is a signed certificate (by a Certificate Authority such
-as Verisign), then you are done. If you are going to use a self-signed certificate
-(suitable for development), then there is still more work to do.
+as Verisign), then you are done. If you are going to use a self-signed
+certificate (suitable for development), then there is still more work to do.
 
 You can generate a self signed certificate by doing this::
 
@@ -180,14 +158,25 @@ You can generate a self signed certificate by doing this::
    echo 'organization = your organization name' > certtool.tmpl
    certtool --generate-self-signed --load-privkey defaultCertificate.pem \
       --template certtool.tmpl >> defaultCertificate.pem
-   sudo chown nobody defaultCertificate.pem
+   sudo chown kurento defaultCertificate.pem
 
 Due to the fact that the certificate is self-signed, applications will reject it
 by default. For this reason, you'll need to force them to accept it.
 
-* Browser applications: You'll need to manually accept the certificate as trusted one before secure webscoket connections can be stablished.
+* Browser applications: You'll need to manually accept the certificate as
+  trusted one before secure WebSocket connections can be established. By
+  default, this can be done by connecting to connecting to
+  https://localhost:8433/kurento and accepting the certificate in the browser.
 
-* Java applications, follow the instructions of this `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_ (get ``InstallCert.java`` from `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`__). You'll need to instruct the ``KurentoClient`` needs to be configured to allow the use of certificates. For this purpose, we need to create our own ``JsonRpcClient``::
+* Java applications, follow the instructions of this
+  `link <http://www.mkyong.com/webservices/jax-ws/suncertpathbuilderexception-unable-to-find-valid-certification-path-to-requested-target/>`_
+  (get ``InstallCert.java`` from
+  `here <https://code.google.com/p/java-use-examples/source/browse/trunk/src/com/aw/ad/util/InstallCert.java>`__).
+  You'll need to instruct the ``KurentoClient`` needs to be configured to allow
+  the use of certificates. For this purpose, we need to create our own
+  ``JsonRpcClient``:
+
+.. sourcecode:: java
 
    SslContextFactory sec = new SslContextFactory(true);
    sec.setValidateCerts(false);
@@ -196,3 +185,22 @@ by default. For this reason, you'll need to force them to accept it.
 
 * Node applications, please take a look to this
   `page <https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js>`_.
+
+Second, you have to change the WebSocket URI in your application logic. For
+instance, in the *hello-world* application within the tutorials, this would be
+done as follows:
+
+* Java: Changing this line in
+  `HelloWorldApp.java <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_::
+
+   final static String DEFAULT_KMS_WS_URI = "wss://localhost:8433/kurento";
+
+* Browser JavaScript: Changing this line in
+  `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`_::
+
+   const ws_uri = 'wss://' + location.hostname + ':8433/kurento';
+
+* Node.js: Changing this line in
+  `server.js <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/server.js>`_::
+
+   const ws_uri = "wss://localhost:8433/kurento";
