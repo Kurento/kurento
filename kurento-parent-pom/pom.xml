@@ -78,8 +78,8 @@
 		<version.kurento-crowddetector>6.3.1-SNAPSHOT</version.kurento-crowddetector>
 		<version.kurento-facesegmentator>6.3.1-SNAPSHOT</version.kurento-facesegmentator>
 		<version.kurento-backgroundextractor>6.3.1-SNAPSHOT</version.kurento-backgroundextractor>
-		<version.kms-api-core>6.3.1-SNAPSHOT</version.kms-api-core>
-		<version.kms-api-elements>6.3.1-SNAPSHOT</version.kms-api-elements>
+		<version.kms-api-core>6.3.2-SNAPSHOT</version.kms-api-core>
+		<version.kms-api-elements>6.3.2-SNAPSHOT</version.kms-api-elements>
 		<version.kms-api-filters>6.3.1-SNAPSHOT</version.kms-api-filters>
 		<version.plumber-endpoint>6.3.1-SNAPSHOT</version.plumber-endpoint>
 		<version.kurento-maven-plugin>2.0.1</version.kurento-maven-plugin>
