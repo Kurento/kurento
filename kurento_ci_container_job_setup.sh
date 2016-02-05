@@ -247,8 +247,9 @@ docker run \
   -u "root" \
   -w "$CONTAINER_WORKSPACE" \
     $CONTAINER_IMAGE \
-      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND || exit
+      /opt/adm-scripts/kurento_ci_container_entrypoint.sh $BUILD_COMMAND
+status=$?
 
 # Change worspace ownership to avoid permission errors caused by docker usage of root
 [ -n "$WORKSPACE" ] && sudo chown -R $(whoami) $WORKSPACE
-exit 0
+exit $status
