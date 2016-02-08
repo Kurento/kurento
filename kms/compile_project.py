@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -t
 
 import yaml
 import argparse
@@ -8,12 +8,15 @@ import semver
 import git
 import os
 from debian.deb822 import Deb822, PkgRelation
+from debian.changelog import Changelog
 from apt.cache import Cache
 import apt_pkg
+from time import time, strftime
+from datetime import datetime
 
 from git import Repo
 
-#a = aptsources.sourceslist.SourcesList()
+import glob
 
 # sudo apt-get install python-semver python-git python-yaml python-git python-apt python-debian
 # python-simplejson
@@ -60,6 +63,40 @@ def install_dependency (cache, dep):
 
   return False
 
+def get_version ():
+  version = os.popen("kurento_get_version.sh").read()
+  return version
+
+def get_debian_version (args):
+  version = get_version ()
+
+  last_release = os.popen ("git describe --abbrev=0 --tags || git rev-list --max-parents=0 HEAD").read()
+  last_release = last_release[:last_release.rfind("\n"):]
+  current_commit = os.popen ("git rev-parse --short HEAD").read();
+  dist = "trusty"
+
+  rc= os.popen ("git log " + last_release + "..HEAD --oneline | wc -l").read()
+  rc = rc[:rc.rfind("\n"):]
+  current_commit = current_commit[:current_commit.rfind("\n"):]
+  version = version[:version.rfind("-"):]
+
+  now = datetime.fromtimestamp(time())
+
+  if int(rc) > 0:
+    if args.simplify_dev_version > 0:
+      version = version + "~0." + dist
+    else:
+      version = version + "~" + now.strftime("%Y%m%d%H%M%S") + "." + rc + "." + current_commit + "." + dist
+  else:
+    version = version + "." + dist
+
+  return version
+
+def upload_package (args, package, publish=False):
+  # TODO: Upload package to a repository
+  print ("TODO: Upload package: " + package + " publish " + str(publish))
+  pass
+
 def generate_debian_package(args):
   debfile = Deb822 (open("debian/control"), fields=["Build-Depends"])
   relations = PkgRelation.parse_relations (debfile.get("Build-Depends"))
@@ -75,13 +112,30 @@ def generate_debian_package(args):
         print ("Dependency cannot be installed: " + PkgRelation.str ([dep]))
         exit(1)
 
-  # TODO: Get package version and set is correctly to debian/changelog
+  changelog = Changelog (open("debian/changelog"))
+  old_changelog = Changelog (open("debian/changelog"))
+  new_version = get_debian_version (args)
 
-  #if os.system("dpkg-buildpackage -nc -uc -us") != 0:
-    #print ("Error while generating package, try cleaning")
-    #os.system ("dpkg-buildpackage -uc -us")
+  changelog.new_block(version=new_version, package=changelog.package, distributions="testing", changes=["\n  Generating new package version\n"], author=changelog.author, date=strftime("%a, %d %b %Y %H:%M:%S %z"), urgency=changelog.urgency)
 
-  # TODO: Install package
+  changelog.write_to_open_file (open("debian/changelog", 'w'))
+
+  if os.system("dpkg-buildpackage -nc -uc -us") != 0:
+    print ("Error while generating package, try cleaning")
+    os.system ("dpkg-buildpackage -uc -us")
+
+  files = glob.glob("../*" + new_version + "_*.deb")
+  for f in files:
+    os.system("sudo dpkg -i " + f)
+    if f is files[-1]:
+      is_last=True
+    else:
+      is_last=False
+    upload_package (args, f, publish=is_last)
+
+  # Write old changelog to let everything as it was
+  old_changelog.write_to_open_file (open("debian/changelog", 'w'))
+
 
 def compile_project (args):
   workdir = os.getcwd()
@@ -119,9 +173,10 @@ def compile_project (args):
   generate_debian_package(args)
 
 def main():
-  parser = argparse.ArgumentParser (description="Read configurations from build.yaml")
+  parser = argparse.ArgumentParser (description="Read configurations from .build.yaml")
   parser.add_argument ("--file", metavar="file", help="File to read config from", default=DEFAULT_CONFIG_FILE)
   parser.add_argument ("--base_url", metavar="base_url", help="Base repository url", required=True)
+  parser.add_argument ("--simplify_dev_version", action="count", help="Simplify dev version, usefull for debugging")
 
   args = parser.parse_args()
 
