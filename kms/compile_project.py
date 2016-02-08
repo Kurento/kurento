@@ -52,6 +52,14 @@ def check_dependency_installed (cache, dep):
   #If this code is reached, depdendency is not correctly installed in a valid version
   return False
 
+def install_dependency (cache, dep):
+  for dep_alternative in dep:
+    os.system ("sudo postpone -d -f apt-get install --force-yes -y -q " + dep_alternative["name"])
+    if check_dependency_installed (cache, dep):
+      return True
+
+  return False
+
 def generate_debian_package(args):
   debfile = Deb822 (open("debian/control"), fields=["Build-Depends"])
   relations = PkgRelation.parse_relations (debfile.get("Build-Depends"))
@@ -63,6 +71,11 @@ def generate_debian_package(args):
     if not check_dependency_installed (cache, dep):
       #Install not found dependencies
       print ("Dependency not matched: " + str(dep))
+      if not install_dependency (cache, dep):
+        print ("Dependency cannot be installed: " + PkgRelation.str ([dep]))
+        exit(1)
+
+  # TODO: Get package version and set is correctly to debian/changelog
 
   #if os.system("dpkg-buildpackage -nc -uc -us") != 0:
     #print ("Error while generating package, try cleaning")
