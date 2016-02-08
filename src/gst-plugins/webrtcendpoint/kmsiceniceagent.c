@@ -85,6 +85,7 @@ kms_ice_nice_agent_new_candidate (NiceAgent * agent,
       g_free (cand_str);
 
       g_signal_emit_by_name (parent, "on-ice-candidate", candidate);
+      g_object_unref (candidate);
     }
   }
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
