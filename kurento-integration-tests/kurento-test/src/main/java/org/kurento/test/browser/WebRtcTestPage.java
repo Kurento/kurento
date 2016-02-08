@@ -202,12 +202,12 @@ public class WebRtcTestPage extends WebPage {
         try {
           new WebDriverWait(browser.getWebDriver(), browser.getTimeout())
           .until(new ExpectedCondition<Boolean>() {
-                @Override
-                public Boolean apply(WebDriver d) {
-                  return d.findElement(By.id("status")).getAttribute("value")
-                      .equalsIgnoreCase(eventType);
-                }
-              });
+            @Override
+            public Boolean apply(WebDriver d) {
+              return d.findElement(By.id("status")).getAttribute("value")
+                  .equalsIgnoreCase(eventType);
+            }
+          });
           eventListener.onEvent(eventType);
         } catch (Throwable t) {
           log.error("~~~ Exception in addEventListener {}", t.getMessage());
@@ -275,35 +275,66 @@ public class WebRtcTestPage extends WebPage {
   }
 
   /*
+   * Decide if one candidate has to be added or not according with two parameters
+   */
+  protected Boolean filterCandidate(String candidate, WebRtcIpvMode webRtcIpvMode,
+      WebRtcCandidateType webRtcCandidateType) {
+
+    Boolean hasIpv = false;
+    Boolean hasCandidateIpv6 = false;
+    if (candidate.split("candidate:")[1].contains(":")) {
+      hasCandidateIpv6 = true;
+    }
+
+    switch (webRtcIpvMode) {
+      case IPV4:
+        if (!hasCandidateIpv6) {
+          hasIpv = true;
+        }
+        break;
+      case IPV6:
+        if (hasCandidateIpv6) {
+          hasIpv = true;
+        }
+        break;
+      case BOTH:
+      default:
+        hasIpv = true;
+        break;
+    }
+
+    String candidateType = candidate.split("typ")[1].split(" ")[1];
+    Boolean hasCandidate = false;
+
+    switch (webRtcCandidateType) {
+      case HOST:
+      case RELAY:
+      case SRFLX:
+        hasCandidate = webRtcCandidateType.toString().equals(candidateType);
+        break;
+      case ALL:
+      default:
+        hasCandidate = true;
+        break;
+    }
+    return hasIpv && hasCandidate;
+  }
+
+  /*
    * initWebRtc with IPVMode
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
-      final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode) throws InterruptedException {
+      final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode,
+      final WebRtcCandidateType webRtcCandidateType) throws InterruptedException {
 
     webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
       @Override
       public void onEvent(OnIceCandidateEvent event) {
         JsonObject candidate = JsonUtils.toJsonObject(event.getCandidate());
         log.debug("OnIceCandidateEvent on {}: {}", webRtcEndpoint.getId(), candidate);
-        Boolean hasCandidateIpv6 = false;
-        if (candidate.get("candidate").getAsString().split("candidate:")[1].contains(":")) {
-          hasCandidateIpv6 = true;
-        }
-        switch (webRtcIpvMode) {
-          case IPV4:
-            if (!hasCandidateIpv6) {
-              addIceCandidate(candidate);
-            }
-            break;
-          case IPV6:
-            if (hasCandidateIpv6) {
-              addIceCandidate(candidate);
-            }
-            break;
-          case BOTH:
-          default:
-            addIceCandidate(candidate);
-            break;
+        if (filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
+            webRtcCandidateType)) {
+          addIceCandidate(candidate);
         }
       }
     });
@@ -319,25 +350,8 @@ public class WebRtcTestPage extends WebPage {
     WebRtcConfigurer webRtcConfigurer = new WebRtcConfigurer() {
       @Override
       public void addIceCandidate(IceCandidate candidate) {
-        Boolean hasCandidateIpv6 = false;
-        if (candidate.getCandidate().split("candidate:")[1].contains(":")) {
-          hasCandidateIpv6 = true;
-        }
-        switch (webRtcIpvMode) {
-          case IPV4:
-            if (!hasCandidateIpv6) {
-              webRtcEndpoint.addIceCandidate(candidate);
-            }
-            break;
-          case IPV6:
-            if (hasCandidateIpv6) {
-              webRtcEndpoint.addIceCandidate(candidate);
-            }
-            break;
-          case BOTH:
-          default:
-            webRtcEndpoint.addIceCandidate(candidate);
-            break;
+        if (filterCandidate(candidate.getCandidate(), webRtcIpvMode, webRtcCandidateType)) {
+          webRtcEndpoint.addIceCandidate(candidate);
         }
       }
 
@@ -353,11 +367,19 @@ public class WebRtcTestPage extends WebPage {
   }
 
   /*
+   * initWebRtc with IPVMode
+   */
+  public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
+      final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode) throws InterruptedException {
+    initWebRtc(webRtcEndpoint, channel, mode, webRtcIpvMode, WebRtcCandidateType.ALL);
+  }
+
+  /*
    * initWebRtc without IPVMode
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
       final WebRtcMode mode) throws InterruptedException {
-    initWebRtc(webRtcEndpoint, channel, mode, WebRtcIpvMode.BOTH);
+    initWebRtc(webRtcEndpoint, channel, mode, WebRtcIpvMode.BOTH, WebRtcCandidateType.ALL);
   }
 
   @SuppressWarnings({ "unchecked", "deprecation" })
