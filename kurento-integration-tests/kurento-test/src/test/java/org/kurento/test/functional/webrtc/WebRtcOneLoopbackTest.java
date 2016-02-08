@@ -20,7 +20,6 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
@@ -29,11 +28,11 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * WebRTC in loopback with a FaceOverlayFilter.
+ * WebRTC in loopback.
  * </p>
  * Media Pipeline(s):
  * <ul>
- * <li>WebRtcEndpoint -> FaceOverlayFilter -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
  * </ul>
  * Browser(s):
  * <ul>
@@ -42,8 +41,8 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  * Test logic:
  * <ol>
- * <li>(KMS) WebRtcEndpoint in loopback with a FaceOverlayFilter</li>
- * <li>(Browser) WebRtcPeer in send-receive mode and receives media</li>
+ * <li>(KMS) WebRtcEndpoint in loopback <br>
+ * <li>(Browser) WebRtcPeer in send-receive mode sends and receives media</li>
  * </ol>
  * Main assertion(s):
  * <ul>
@@ -57,12 +56,12 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.5
+ * @since 4.2.3
  */
 
-public class WebRtcFaceOverlayTest extends FunctionalTest {
+public class WebRtcOneLoopbackTest extends FunctionalTest {
 
-  private static final int DEFAULT_PLAYTIME = 10; // seconds
+  private static final int PLAYTIME = 10; // seconds to play in WebRTC
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
@@ -70,14 +69,12 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
   }
 
   @Test
-  public void testWebRtcFaceOverlay() throws InterruptedException {
+  public void testWebRtcLoopback() throws InterruptedException {
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
-    FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(mp).build();
-    webRtcEndpoint.connect(faceOverlayFilter);
-    faceOverlayFilter.connect(webRtcEndpoint);
+    webRtcEndpoint.connect(webRtcEndpoint);
 
     // Start WebRTC and wait for playing event
     getPage().subscribeEvents("playing");
@@ -86,15 +83,13 @@ public class WebRtcFaceOverlayTest extends FunctionalTest {
         getPage().waitForEvent("playing"));
 
     // Guard time to play the video
-    int playTime = Integer.parseInt(
-        System.getProperty("test.webrtcfaceoverlay.playtime", String.valueOf(DEFAULT_PLAYTIME)));
-    waitSeconds(playTime);
+    waitSeconds(PLAYTIME);
 
     // Assertions
     double currentTime = getPage().getCurrentTime();
     Assert.assertTrue(
-        "Error in play time (expected: " + playTime + " sec, real: " + currentTime + " sec)",
-        getPage().compare(playTime, currentTime));
+        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
+        getPage().compare(PLAYTIME, currentTime));
     Assert.assertTrue("The color of the video should be green",
         getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 

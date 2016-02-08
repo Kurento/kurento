@@ -70,7 +70,7 @@ import org.kurento.test.monitor.SystemMonitorManager;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.5
  */
-public class WebRtcOneToManyTest extends FunctionalTest {
+public class WebRtcFourOneToManyTest extends FunctionalTest {
 
   private static final int PLAYTIME = 40; // seconds
   private static final int DEFAULT_NUM_VIEWERS = 3;

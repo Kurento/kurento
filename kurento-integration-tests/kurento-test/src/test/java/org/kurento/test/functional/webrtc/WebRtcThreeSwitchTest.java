@@ -62,7 +62,7 @@ import org.kurento.test.config.TestScenario;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class WebRtcSwitchTest extends FunctionalTest {
+public class WebRtcThreeSwitchTest extends FunctionalTest {
 
   private static final int PLAYTIME = 5; // seconds
   private static final int NUM_BROWSERS = 3;
