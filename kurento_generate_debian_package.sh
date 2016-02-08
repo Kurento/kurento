@@ -108,8 +108,10 @@ for i in ../*${ver}_*.deb
 do
   current=$((current + 1))
 
-  if [[ "$current" -eq "$length" ]]; then
+  if [[ "$current" -eq "$length" ]]
+  then
      export DO_SYNC=TRUE
+  fi
 
   sudo dpkg -i $i
   kurento_upload_package.sh $DIST-dev $i || { echo "Failed to upload package $i"; exit 1; }
