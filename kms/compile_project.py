@@ -133,6 +133,11 @@ def generate_debian_package(args):
       is_last=False
     upload_package (args, f, publish=is_last)
 
+  if args.clean > 0:
+    files = glob.glob("../*" + new_version + "*")
+    for f in files:
+      os.remove(f)
+
   # Write old changelog to let everything as it was
   old_changelog.write_to_open_file (open("debian/changelog", 'w'))
 
@@ -177,6 +182,7 @@ def main():
   parser.add_argument ("--file", metavar="file", help="File to read config from", default=DEFAULT_CONFIG_FILE)
   parser.add_argument ("--base_url", metavar="base_url", help="Base repository url", required=True)
   parser.add_argument ("--simplify_dev_version", action="count", help="Simplify dev version, usefull for debugging")
+  parser.add_argument ("--clean", action="count", help="Clean generated files when finished")
 
   args = parser.parse_args()
 
