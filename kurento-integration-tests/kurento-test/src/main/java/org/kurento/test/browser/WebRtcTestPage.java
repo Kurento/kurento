@@ -169,8 +169,9 @@ public class WebRtcTestPage extends WebPage {
       return false;
     }
 
-    boolean result = countDownLatchEvents.get(browserName + eventType).await(browser.getTimeout(),
-        TimeUnit.SECONDS);
+    boolean result =
+        countDownLatchEvents.get(browserName + eventType).await(browser.getTimeout(),
+            TimeUnit.SECONDS);
 
     // Record local audio when playing event reaches the browser
     if (eventType.equalsIgnoreCase("playing") && browser.getRecordAudio() > 0) {
@@ -196,17 +197,17 @@ public class WebRtcTestPage extends WebPage {
     Thread t = new Thread() {
       @Override
       public void run() {
-        browser
-            .executeScript(videoTag + ".addEventListener('" + eventType + "', videoEvent, false);");
+        browser.executeScript(videoTag + ".addEventListener('" + eventType
+            + "', videoEvent, false);");
         try {
           new WebDriverWait(browser.getWebDriver(), browser.getTimeout())
-              .until(new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(WebDriver d) {
-              return d.findElement(By.id("status")).getAttribute("value")
-                  .equalsIgnoreCase(eventType);
-            }
-          });
+          .until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver d) {
+                  return d.findElement(By.id("status")).getAttribute("value")
+                      .equalsIgnoreCase(eventType);
+                }
+              });
           eventListener.onEvent(eventType);
         } catch (Throwable t) {
           log.error("~~~ Exception in addEventListener {}", t.getMessage());
@@ -248,8 +249,9 @@ public class WebRtcTestPage extends WebPage {
    */
   public double getCurrentTime() {
     log.debug("getCurrentTime() called");
-    double currentTime = Double.parseDouble(
-        browser.getWebDriver().findElement(By.id("currentTime")).getAttribute("value"));
+    double currentTime =
+        Double.parseDouble(browser.getWebDriver().findElement(By.id("currentTime"))
+            .getAttribute("value"));
     log.debug("getCurrentTime() result: {}", currentTime);
     return currentTime;
   }
@@ -276,7 +278,7 @@ public class WebRtcTestPage extends WebPage {
    * initWebRtc with IPVMode
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
-      final WebRtcMode mode, final IPVMode ipvMode) throws InterruptedException {
+      final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode) throws InterruptedException {
 
     webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
       @Override
@@ -287,7 +289,7 @@ public class WebRtcTestPage extends WebPage {
         if (candidate.get("candidate").getAsString().split("candidate:")[1].contains(":")) {
           hasCandidateIpv6 = true;
         }
-        switch (ipvMode) {
+        switch (webRtcIpvMode) {
           case IPV4:
             if (!hasCandidateIpv6) {
               addIceCandidate(candidate);
@@ -321,7 +323,7 @@ public class WebRtcTestPage extends WebPage {
         if (candidate.getCandidate().split("candidate:")[1].contains(":")) {
           hasCandidateIpv6 = true;
         }
-        switch (ipvMode) {
+        switch (webRtcIpvMode) {
           case IPV4:
             if (!hasCandidateIpv6) {
               webRtcEndpoint.addIceCandidate(candidate);
@@ -355,7 +357,7 @@ public class WebRtcTestPage extends WebPage {
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
       final WebRtcMode mode) throws InterruptedException {
-    initWebRtc(webRtcEndpoint, channel, mode, IPVMode.BOTH);
+    initWebRtc(webRtcEndpoint, channel, mode, WebRtcIpvMode.BOTH);
   }
 
   @SuppressWarnings({ "unchecked", "deprecation" })
@@ -375,9 +377,8 @@ public class WebRtcTestPage extends WebPage {
             for (int i = numCandidate; i < iceCandidates.size(); i++) {
               JsonObject jsonCandidate = (JsonObject) parser.parse(iceCandidates.get(i).toString());
               IceCandidate candidate =
-                  new IceCandidate(jsonCandidate.get("candidate").getAsString(),
-                      jsonCandidate.get("sdpMid").getAsString(),
-                      jsonCandidate.get("sdpMLineIndex").getAsInt());
+                  new IceCandidate(jsonCandidate.get("candidate").getAsString(), jsonCandidate.get(
+                      "sdpMid").getAsString(), jsonCandidate.get("sdpMLineIndex").getAsInt());
               log.debug("Adding candidate {}: {}", i, jsonCandidate);
               webRtcConfigurer.addIceCandidate(candidate);
               numCandidate++;
@@ -443,8 +444,8 @@ public class WebRtcTestPage extends WebPage {
       t1.stop();
       t2.interrupt();
       t2.stop();
-      throw new KurentoException(
-          "ICE negotiation not finished in " + browser.getTimeout() + " seconds");
+      throw new KurentoException("ICE negotiation not finished in " + browser.getTimeout()
+          + " seconds");
     }
   }
 

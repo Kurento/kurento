@@ -31,7 +31,7 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
-import org.kurento.test.browser.IPVMode;
+import org.kurento.test.browser.WebRtcIpvMode;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
@@ -81,7 +81,7 @@ public class WebRtcIceTest extends FunctionalTest {
     return TestScenario.localChromeAndFirefox();
   }
 
-  private void initTestSendRecv(WebRtcChannel webRtcChannel, IPVMode ipvMode)
+  private void initTestSendRecv(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode)
       throws InterruptedException {
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -103,7 +103,7 @@ public class WebRtcIceTest extends FunctionalTest {
 
     // Test execution
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEndpoint, webRtcChannel, WebRtcMode.SEND_RCV, ipvMode);
+    getPage().initWebRtc(webRtcEndpoint, webRtcChannel, WebRtcMode.SEND_RCV, webRtcIpvMode);
 
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event)",
@@ -116,7 +116,7 @@ public class WebRtcIceTest extends FunctionalTest {
     mp.release();
   }
 
-  private void initTestRcvOnly(WebRtcChannel webRtcChannel, IPVMode ipvMode, String nameMedia)
+  private void initTestRcvOnly(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode, String nameMedia)
       throws InterruptedException {
 
     String mediaUrl = getMediaUrl(Protocol.HTTP, nameMedia);
@@ -139,7 +139,7 @@ public class WebRtcIceTest extends FunctionalTest {
 
     // Test execution
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY, ipvMode);
+    getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY, webRtcIpvMode);
     playerEp.play();
 
     // Assertions
@@ -153,7 +153,7 @@ public class WebRtcIceTest extends FunctionalTest {
     mp.release();
   }
 
-  private void initTestSendOnly(WebRtcChannel webRtcChannel, IPVMode ipvMode)
+  private void initTestSendOnly(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode)
       throws InterruptedException {
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -177,8 +177,8 @@ public class WebRtcIceTest extends FunctionalTest {
 
     // Test execution
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEpSendOnly, webRtcChannel, WebRtcMode.SEND_ONLY, ipvMode);
-    getPage().initWebRtc(webRtcEpRcvOnly, webRtcChannel, WebRtcMode.RCV_ONLY, ipvMode);
+    getPage().initWebRtc(webRtcEpSendOnly, webRtcChannel, WebRtcMode.SEND_ONLY, webRtcIpvMode);
+    getPage().initWebRtc(webRtcEpRcvOnly, webRtcChannel, WebRtcMode.RCV_ONLY, webRtcIpvMode);
 
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event)",
@@ -193,91 +193,91 @@ public class WebRtcIceTest extends FunctionalTest {
 
   @Test
   public void testWebRtcHostIpv4SendRcvAudioVideo() throws InterruptedException {
-    initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, IPVMode.IPV4);
+    initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4);
   }
 
   @Test
   public void testWebRtcHostIpv4SendRcvAudioOnly() throws InterruptedException {
-    initTestSendRecv(WebRtcChannel.AUDIO_ONLY, IPVMode.IPV4);
+    initTestSendRecv(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4);
   }
 
   @Test
   public void testWebRtcHostIpv4SendRcvVideoOnly() throws InterruptedException {
-    initTestSendRecv(WebRtcChannel.VIDEO_ONLY, IPVMode.IPV4);
+    initTestSendRecv(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4);
   }
 
   @Ignore
   public void testWebRtcHostIpv4SendOnlyAudioVideo() throws InterruptedException {
-    initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, IPVMode.IPV4);
+    initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4);
   }
 
   @Ignore
   public void testWebRtcHostIpv4SendOnlyAudioOnly() throws InterruptedException {
-    initTestSendOnly(WebRtcChannel.AUDIO_ONLY, IPVMode.IPV4);
+    initTestSendOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4);
   }
 
   @Ignore
   public void testWebRtcHostIpv4SendOnlyVideoOnly() throws InterruptedException {
-    initTestSendOnly(WebRtcChannel.VIDEO_ONLY, IPVMode.IPV4);
+    initTestSendOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4);
   }
 
   @Test
   public void testWebRtcHostIpv4RcvOnlyAudioVideo() throws InterruptedException {
-    initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, IPVMode.IPV4, "/video/15sec/rgb.webm");
+    initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, "/video/15sec/rgb.webm");
   }
 
   @Test
   public void testWebRtcHostIpv4RcvOnlyAudioOnly() throws InterruptedException {
-    initTestRcvOnly(WebRtcChannel.AUDIO_ONLY, IPVMode.IPV4, "/audio/10sec/cinema.ogg");
+    initTestRcvOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4, "/audio/10sec/cinema.ogg");
   }
 
   @Test
   public void testWebRtcHostIpv4RcvOnlyVideoOnly() throws InterruptedException {
-    initTestRcvOnly(WebRtcChannel.VIDEO_ONLY, IPVMode.IPV4, "/video/15sec/rgb.webm");
+    initTestRcvOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, "/video/15sec/rgb.webm");
   }
 
   @Test
   public void testWebRtcHostIpv6SendRcvAudioVideo() throws InterruptedException {
-    initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, IPVMode.IPV6);
+    initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV6);
   }
 
   @Test
   public void testWebRtcHostIpv6SendRcvAudioOnly() throws InterruptedException {
-    initTestSendRecv(WebRtcChannel.AUDIO_ONLY, IPVMode.IPV6);
+    initTestSendRecv(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV6);
   }
 
   @Test
   public void testWebRtcHostIpv6SendRcvVideoOnly() throws InterruptedException {
-    initTestSendRecv(WebRtcChannel.VIDEO_ONLY, IPVMode.IPV6);
+    initTestSendRecv(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV6);
   }
 
   @Ignore
   public void testWebRtcHostIpv6SendOnlyAudioVideo() throws InterruptedException {
-    initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, IPVMode.IPV6);
+    initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV6);
   }
 
   @Ignore
   public void testWebRtcHostIpv6SendOnlyAudioOnly() throws InterruptedException {
-    initTestSendOnly(WebRtcChannel.AUDIO_ONLY, IPVMode.IPV6);
+    initTestSendOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV6);
   }
 
   @Ignore
   public void testWebRtcHostIpv6SendOnlyVideoOnly() throws InterruptedException {
-    initTestSendOnly(WebRtcChannel.VIDEO_ONLY, IPVMode.IPV6);
+    initTestSendOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV6);
   }
 
   @Test
   public void testWebRtcHostIpv6RcvOnlyAudioVideo() throws InterruptedException {
-    initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, IPVMode.IPV6, "/video/15sec/rgb.webm");
+    initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV6, "/video/15sec/rgb.webm");
   }
 
   @Test
   public void testWebRtcHostIpv6RcvOnlyAudioOnly() throws InterruptedException {
-    initTestRcvOnly(WebRtcChannel.AUDIO_ONLY, IPVMode.IPV6, "/audio/10sec/cinema.ogg");
+    initTestRcvOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV6, "/audio/10sec/cinema.ogg");
   }
 
   @Test
   public void testWebRtcHostIpv6RcvOnlyVideoOnly() throws InterruptedException {
-    initTestRcvOnly(WebRtcChannel.VIDEO_ONLY, IPVMode.IPV6, "/video/15sec/rgb.webm");
+    initTestRcvOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV6, "/video/15sec/rgb.webm");
   }
 }

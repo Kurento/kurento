@@ -21,7 +21,7 @@ package org.kurento.test.browser;
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.3.1
  */
-public enum IPVMode {
+public enum WebRtcIpvMode {
   IPV4, IPV6, BOTH;
 
   @Override
