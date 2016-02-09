@@ -69,7 +69,7 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     String mediaUrl = getMediaUrl(protocol, nameMedia);
 
     log.debug(">>>> Playing small video ({}) on {}", webRtcChannel, mediaUrl);
-    testPlayer(mediaUrl, webRtcChannel, 5, 50, 50, new Color(99, 65, 40));
+    testPlayer(mediaUrl, webRtcChannel, 5, 100, 100, new Color(128, 85, 46));
   }
 
   public void testPlayer(String mediaUrl, WebRtcChannel webRtcChannel, int playtime)
