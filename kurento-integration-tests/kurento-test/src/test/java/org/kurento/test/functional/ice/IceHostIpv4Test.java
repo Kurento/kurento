@@ -17,7 +17,6 @@ package org.kurento.test.functional.ice;
 
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcCandidateType;
@@ -69,7 +68,7 @@ public class IceHostIpv4Test extends SimpleIceTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
+    return TestScenario.localChromesAndFirefoxs(2);
   }
 
   @Test
@@ -87,17 +86,17 @@ public class IceHostIpv4Test extends SimpleIceTest {
     initTestSendRecv(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }
 
-  @Ignore
+  @Test
   public void testIceHostIpv4SendOnlyAudioVideo() throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }
 
-  @Ignore
+  @Test
   public void testIceHostIpv4SendOnlyAudioOnly() throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }
 
-  @Ignore
+  @Test
   public void testIceHostIpv4SendOnlyVideoOnly() throws InterruptedException {
     initTestSendOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }

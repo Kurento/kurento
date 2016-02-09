@@ -37,27 +37,27 @@ public class SimpleIceTest extends FunctionalTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEndpoint
-    .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+        .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
 
-      @Override
-      public void onEvent(MediaFlowOutStateChangeEvent event) {
-        if (event.getState().equals(MediaFlowState.FLOWING)) {
-          eosLatch.countDown();
-        }
-      }
-    });
+          @Override
+          public void onEvent(MediaFlowOutStateChangeEvent event) {
+            if (event.getState().equals(MediaFlowState.FLOWING)) {
+              eosLatch.countDown();
+            }
+          }
+        });
 
     // Test execution
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEndpoint, webRtcChannel, WebRtcMode.SEND_RCV, webRtcIpvMode,
+    getPage(0).subscribeEvents("playing");
+    getPage(0).initWebRtc(webRtcEndpoint, webRtcChannel, WebRtcMode.SEND_RCV, webRtcIpvMode,
         webRtcCandidateType);
 
     // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(0)
+        .waitForEvent("playing"));
 
     Assert.assertTrue("Not received FLOWING OUT event in webRtcEp:" + webRtcChannel,
-        eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+        eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
     mp.release();
@@ -85,17 +85,17 @@ public class SimpleIceTest extends FunctionalTest {
     });
 
     // Test execution
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY, webRtcIpvMode,
+    getPage(0).subscribeEvents("playing");
+    getPage(0).initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY, webRtcIpvMode,
         webRtcCandidateType);
     playerEp.play();
 
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
+        + webRtcChannel, getPage(0).waitForEvent("playing"));
 
     Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
-        + webRtcChannel, eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+        + webRtcChannel, eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
     mp.release();
@@ -113,29 +113,29 @@ public class SimpleIceTest extends FunctionalTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEpRcvOnly
-    .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+        .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
 
-      @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
-        if (event.getState().equals(MediaFlowState.FLOWING)) {
-          eosLatch.countDown();
-        }
-      }
-    });
+          @Override
+          public void onEvent(MediaFlowInStateChangeEvent event) {
+            if (event.getState().equals(MediaFlowState.FLOWING)) {
+              eosLatch.countDown();
+            }
+          }
+        });
 
     // Test execution
-    getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEpSendOnly, webRtcChannel, WebRtcMode.SEND_ONLY, webRtcIpvMode,
+    getPage(1).subscribeEvents("playing");
+    getPage(0).initWebRtc(webRtcEpSendOnly, webRtcChannel, WebRtcMode.SEND_ONLY, webRtcIpvMode,
         webRtcCandidateType);
-    getPage().initWebRtc(webRtcEpRcvOnly, webRtcChannel, WebRtcMode.RCV_ONLY, webRtcIpvMode,
+    getPage(1).initWebRtc(webRtcEpRcvOnly, webRtcChannel, WebRtcMode.RCV_ONLY, webRtcIpvMode,
         webRtcCandidateType);
 
     // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(1)
+        .waitForEvent("playing"));
 
     Assert.assertTrue("Not received FLOWING IN event in webRtcEpRcvOnly: " + webRtcChannel,
-        eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+        eosLatch.await(getPage(1).getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
     mp.release();
