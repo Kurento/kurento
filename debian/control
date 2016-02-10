@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/Kurento/kms-cmake-utils.git
 
 Package: kms-cmake-utils
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, cmake, cmake-data
+Depends: ${misc:Depends}, cmake, cmake-data
 Description: Kurento cmake utils
  This package contains cmake utilities for building kurento projects
