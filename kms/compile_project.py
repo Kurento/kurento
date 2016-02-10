@@ -3,8 +3,6 @@
 import yaml
 import argparse
 import sys
-#import json
-import semver
 import git
 import os
 from debian.deb822 import Deb822, PkgRelation
@@ -19,8 +17,7 @@ from git import Repo
 import glob
 import re
 
-# sudo apt-get install python-semver python-git python-yaml python-git python-apt python-debian
-# python-simplejson
+# sudo apt-get install python-git python-yaml python-apt python-debian
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
 
@@ -44,7 +41,6 @@ def check_dep(cache, pkg_name, req_version, commit):
       #Check if version is valid
       if commit:
         return  pkg.installed.version.find (commit[:7]) >= 0
-        #return False
       elif req_version:
         comp = apt_pkg.version_compare (pkg.installed.version, req_version[1])
         if comp == 0 and req_version[0].find ("=") >= 0:
@@ -105,6 +101,7 @@ def install_dependency (cache, dep):
     #Install selected dependency version
     os.system ("sudo postpone -d -f apt-get install --force-yes -y -q " + pkg_name + version)
     cache = Cache();
+    gc.collect()
     if check_deb_dependency_installed (cache, dep):
       return True
 
@@ -132,7 +129,7 @@ def get_debian_version (args):
 
   if int(rc) > 0:
     if args.simplify_dev_version > 0:
-      version = version + "~0." + current_commit + "." + dist
+      version = version + "~" + rc + "." + current_commit + "." + dist
     else:
       version = version + "~" + now.strftime("%Y%m%d%H%M%S") + "." + rc + "." + current_commit + "." + dist
   else:
@@ -146,8 +143,13 @@ def upload_package (args, package, publish=False):
   pass
 
 def generate_debian_package(args, config):
-  debfile = Deb822 (open("debian/control"), fields=["Build-Depends"])
-  relations = PkgRelation.parse_relations (debfile.get("Build-Depends"))
+  debfile = Deb822 (open("debian/control"), fields=["Build-Depends", "Build-Depends-Indep"])
+
+  rel_str = debfile.get("Build-Depends")
+  if debfile.has_key ("Build-Depends-Indep"):
+    rel_str = rel_str + "," + debfile.get("Build-Depends-Indep")
+
+  relations = PkgRelation.parse_relations (rel_str)
 
   cache = Cache()
 
@@ -168,7 +170,7 @@ def generate_debian_package(args, config):
 
   changelog.write_to_open_file (open("debian/changelog", 'w'))
 
-  #Execute previous commands defined in config:
+  #Execute commands defined in config:
   if config.has_key ("prebuild-command"):
     print ("Executing prebuild-command: " + str(config["prebuild-command"]))
     os.system (config["prebuild-command"])
@@ -186,7 +188,7 @@ def generate_debian_package(args, config):
       is_last=False
     upload_package (args, f, publish=is_last)
   #In case packages were installed in a bad order and dependencies were not resolved
-  os.system ("sudo apt-get install -f")
+  os.system ("sudo apt-get install -f --force-yes -y -q")
 
   if args.clean > 0:
     files = glob.glob("../*" + new_version + "*")
@@ -260,8 +262,13 @@ def compile_project (args):
       repo = clone_repo (args, args.base_url, sub_project_name)
       os.chdir(sub_project_name)
 
+      if depenedency.has_key ("review"):
+        # TODO: Set commit according to review
+        pass
+
       if not check_dependency_installed (cache, dependency):
         print ("dependency not installed, compile it")
+        # TODO: Change to the correct commit or git review
         compile_project (args)
 
       os.chdir(workdir)
