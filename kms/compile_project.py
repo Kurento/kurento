@@ -16,6 +16,7 @@ from git import Repo
 
 import glob
 import re
+import gc
 
 # sudo apt-get install python-git python-yaml python-apt python-debian
 
@@ -26,6 +27,7 @@ def clone_repo(args, base_url, repo_name):
     repo = Repo (repo_name)
     print ("Updating repo: " + repo_name)
     if args.no_update_git == None:
+      #TODO: Decide if current current branch should be updated
       for remote in repo.remotes:
         remote.update()
   except:
@@ -34,23 +36,37 @@ def clone_repo(args, base_url, repo_name):
 
   return repo
 
+def get_version_to_install (pkg, req_version, commit):
+  valid_versions = []
+  for version in pkg.versions:
+    if commit:
+      if version.version.find (commit[:7]) >= 0:
+        valid_versions.append(version.version)
+    elif req_version:
+      comp = apt_pkg.version_compare (version.version, req_version[1])
+      if comp == 0 and req_version[0].find ("=") >= 0:
+        valid_versions.append(version.version)
+      if comp < 0 and req_version[0].find ("<") >= 0:
+        valid_versions.append(version.version)
+      if comp > 0 and req_version[0].find (">") >= 0:
+        valid_versions.append(version.version)
+    else:
+      valid_versions.append(version.version)
+
+  #As list of versions seems to be correctly sorted, get the first one
+  if len (valid_versions) > 0:
+    return valid_versions[0]
+  else:
+    return None
+
 def check_dep(cache, pkg_name, req_version, commit):
   if cache.has_key (pkg_name):
     pkg = cache[pkg_name]
+
     if pkg.is_installed:
       #Check if version is valid
-      if commit:
-        return  pkg.installed.version.find (commit[:7]) >= 0
-      elif req_version:
-        comp = apt_pkg.version_compare (pkg.installed.version, req_version[1])
-        if comp == 0 and req_version[0].find ("=") >= 0:
-          return True
-        if comp < 0 and req_version[0].find ("<") >= 0:
-          return True
-        if comp > 0 and req_version[0].find (">") >= 0:
-          return True
-      else:
-        return True
+      version = get_version_to_install (pkg, req_version, commit)
+      return version == pkg.installed.version
   return False
 
 def check_deb_dependency_installed (cache, dep):
@@ -64,24 +80,6 @@ def check_deb_dependency_installed (cache, dep):
   #If this code is reached, depdendency is not correctly installed in a valid version
   return False
 
-def get_version_to_install (pkg, req_version, commit):
-  for version in pkg.versions:
-    if commit:
-      if version.version.find (commit[:7]) >= 0:
-        return version.version
-    elif req_version:
-      comp = apt_pkg.version_compare (version.version, req_version[1])
-      if comp == 0 and req_version[0].find ("=") >= 0:
-        return version.version
-      if comp < 0 and req_version[0].find ("<") >= 0:
-        return version.version
-      if comp > 0 and req_version[0].find (">") >= 0:
-        return version.version
-    else:
-      return version.version
-
-  return None
-
 def install_dependency (cache, dep):
   for dep_alternative in dep:
     pkg_name = dep_alternative["name"]
@@ -93,12 +91,14 @@ def install_dependency (cache, dep):
     dep_alternative.setdefault ("commit")
     version = get_version_to_install (pkg, dep_alternative["version"], dep_alternative["commit"])
 
-    if version:
-      version = "=" + version
+    if version == None:
+      print ("Cannot find version of " + pkg_name + " that matches the requirements")
+      return False
     else:
-      version = ""
+      version = "=" + version
 
     #Install selected dependency version
+    print ("Installing " + pkg_name + version)
     os.system ("sudo postpone -d -f apt-get install --force-yes -y -q " + pkg_name + version)
     cache = Cache();
     gc.collect()
@@ -129,7 +129,7 @@ def get_debian_version (args):
 
   if int(rc) > 0:
     if args.simplify_dev_version > 0:
-      version = version + "~" + rc + "." + current_commit + "." + dist
+      version = version + "~0." + rc + "." + current_commit + "." + dist
     else:
       version = version + "~" + now.strftime("%Y%m%d%H%M%S") + "." + rc + "." + current_commit + "." + dist
   else:
@@ -232,7 +232,7 @@ def compile_project (args):
     config = yaml.load (f)
   except:
     print ("Config file not found")
-    return
+    exit (1)
 
   cache = Cache()
   # Parse dependencies and check if corrects versions are found
@@ -240,7 +240,7 @@ def compile_project (args):
     #Parse dependencies config
     for dependency in config["dependencies"]:
       if not dependency.has_key("name"):
-        print ("depenedency: >" + str(dependency) + "<\n needs a name")
+        print ("dependency: >" + str(dependency) + "<\n needs a name")
         exit (1)
       if dependency.has_key("version"):
         regex = re.compile (r'(?P<relop>[>=<]+)\s*'
@@ -262,13 +262,22 @@ def compile_project (args):
       repo = clone_repo (args, args.base_url, sub_project_name)
       os.chdir(sub_project_name)
 
-      if depenedency.has_key ("review"):
+      dependency.setdefault("commit")
+
+      if dependency.has_key ("review"):
         # TODO: Set commit according to review
         pass
 
+      if dependency["commit"] == None and args.use_master_branch != None:
+        dependency["commit"] = str(repo.commit())
+
       if not check_dependency_installed (cache, dependency):
         print ("dependency not installed, compile it")
-        # TODO: Change to the correct commit or git review
+        if dependency["commit"] != None:
+          if str(repo.commit()) != dependency["commit"]:
+            if os.system ("git checkout " + dependency["commit"]) != 0:
+              print ("Cannot checkout to the commit " + dependency["commit"] + " for dependency " + dependency["name"])
+              exit (1)
         compile_project (args)
 
       os.chdir(workdir)
@@ -281,6 +290,7 @@ def main():
   parser.add_argument ("--base_url", metavar="base_url", help="Base repository url", required=True)
   parser.add_argument ("--simplify_dev_version", action="count", help="Simplify dev version, usefull for debugging")
   parser.add_argument ("--clean", action="count", help="Clean generated files when finished")
+  parser.add_argument ("--use_master_branch", action="count", help="If no commit dependency is set uses master branch as dependency (forces compilation of last version)")
   parser.add_argument ("--no_update_git", action="count", help="Do not update git repositories of dependency projects")
 
   args = parser.parse_args()
