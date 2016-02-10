@@ -1,0 +1,3 @@
+dependencies:
+  - name: kms-cmake-utils
+  - name: jsoncpp
