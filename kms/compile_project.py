@@ -236,7 +236,7 @@ def generate_debian_package(args, config):
         exit(1)
 
     files = glob.glob("../*" + new_version + "_*.deb")
-    if args.upload_url != None:
+    if args.command == "upload":
         for f in files:
             if f is files[-1]:
                 is_last = True
@@ -377,7 +377,7 @@ def main():
         action="store_true",
         help="Do not update git repositories of dependency projects")
 
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest="command")
     comp = subparsers.add_parser('compile', help='Compile package')
     upload = subparsers.add_parser('upload', help='Upload package')
     upload.add_argument(
