@@ -52,8 +52,7 @@ struct _KmsIceNiceAgentClass
 
 GType kms_ice_nice_agent_get_type (void);
 
-KmsIceNiceAgent *kms_ice_nice_agent_new (GMainContext * context,
-                                         KmsWebrtcSession *session);
+KmsIceNiceAgent *kms_ice_nice_agent_new (GMainContext * context);
 NiceAgent* kms_ice_nice_agent_get_agent (KmsIceNiceAgent* agent);
 
 G_END_DECLS

@@ -1631,8 +1631,7 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
 static void
 kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
 {
-  self->agent =
-      KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context, self));
+  self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context));
 
   kms_ice_base_agent_run_agent (self->agent);
 
