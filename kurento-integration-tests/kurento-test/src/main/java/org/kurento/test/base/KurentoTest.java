@@ -30,12 +30,14 @@ import static org.kurento.test.config.TestConfiguration.TEST_FILES_MONGO_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_PROP_OLD;
+import static org.kurento.test.config.TestConfiguration.TEST_FILES_URL_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_NUMRETRIES_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_NUM_NUMRETRIES_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_RECORD_URL_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS;
 import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS_DEFAULT;
 
@@ -91,8 +93,8 @@ public class KurentoTest {
     return TestScenario.empty();
   }
 
-  protected static int numRetries =
-      getProperty(TEST_NUMRETRIES_PROPERTY, TEST_NUM_NUMRETRIES_DEFAULT);
+  protected static int numRetries = getProperty(TEST_NUMRETRIES_PROPERTY,
+      TEST_NUM_NUMRETRIES_DEFAULT);
   protected static String testDir = getProperty(TEST_PROJECT_PATH_PROP, TEST_PROJECT_PATH_DEFAULT);
   protected static boolean printLogs = getProperty(TEST_PRINT_LOG_PROP, TEST_PRINT_LOG_DEFAULT);
 
@@ -197,6 +199,22 @@ public class KurentoTest {
   public static String getDefaultOutputFile(String suffix) {
     return getDefaultOutputFolder().getAbsolutePath() + File.separator + getSimpleTestName()
         + suffix;
+  }
+
+  public static String getRecordUrl(String suffix) {
+    String recordUrl = getProperty(TEST_RECORD_URL_PROP);
+    if (recordUrl == null) {
+      return Protocol.FILE + "://" + getDefaultOutputFile(suffix);
+    }
+    return recordUrl + File.separator + getSimpleTestName() + suffix;
+  }
+
+  public static String getPlayerUrl(String mediaName) {
+    String playerUrl = getProperty(TEST_FILES_URL_PROP);
+    if (playerUrl == null) {
+      return getMediaUrl(Protocol.HTTP, mediaName);
+    }
+    return playerUrl + mediaName;
   }
 
   public static String getSimpleTestName() {

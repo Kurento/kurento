@@ -220,6 +220,9 @@ public class TestConfiguration {
   public static final String TEST_PRINT_LOG_PROP = "test.print.log";
   public static final boolean TEST_PRINT_LOG_DEFAULT = true;
 
+  public static final String TEST_FILES_URL_PROP = "test.files.url";
+  public static final String TEST_RECORD_URL_PROP = "test.record.url";
+
   // FIXME: When CI can, remove TEST_FILES_DISK_PROP_OLD
   public static final String TEST_FILES_DISK_PROP_OLD = "test.files";
   public static final String TEST_FILES_DISK_PROP = "test.files.disk";
