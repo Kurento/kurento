@@ -1,0 +1,2 @@
+*.sh /usr/bin
+kms/*.py /usr/bin
