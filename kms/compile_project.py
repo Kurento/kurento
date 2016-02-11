@@ -288,7 +288,7 @@ def compile_project(args):
 
         config = yaml.load(f)
     except:
-        print("Config file not found: " + sys.exc_info()[0])
+        print("Config file not found: " + str (sys.exc_info()[0]))
         exit(1)
 
     cache = Cache()
