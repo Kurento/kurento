@@ -55,7 +55,7 @@ def get_version_to_install(pkg, req_version, commit):
         else:
             valid_versions.append(version.version)
 
-    #As list of versions seems to be correctly sorted, get the first one
+    # As list of versions seems to be correctly sorted, get the first one
     if len(valid_versions) > 0:
         return valid_versions[0]
     else:
@@ -67,7 +67,7 @@ def check_dep(cache, pkg_name, req_version, commit):
         pkg = cache[pkg_name]
 
         if pkg.is_installed:
-            #Check if version is valid
+            # Check if version is valid
             version = get_version_to_install(pkg, req_version, commit)
             return version == pkg.installed.version
     return False
@@ -82,7 +82,7 @@ def check_deb_dependency_installed(cache, dep):
                      dep_alternative["commit"]):
             return True
 
-    #If this code is reached, depdendency is not correctly installed in a valid version
+    # If this code is reached, depdendency is not correctly installed in a valid version
     return False
 
 
@@ -92,7 +92,7 @@ def install_dependency(cache, dep):
         if not cache.has_key(pkg_name):
             continue
 
-        #Get package version to install that matches commit or version
+        # Get package version to install that matches commit or version
         pkg = cache[pkg_name]
         dep_alternative.setdefault("commit")
         version = get_version_to_install(pkg, dep_alternative["version"],
@@ -105,7 +105,7 @@ def install_dependency(cache, dep):
         else:
             version = "=" + version
 
-        #Install selected dependency version
+        # Install selected dependency version
         print("Installing " + pkg_name + version)
         os.system("sudo postpone -d -f apt-get install --force-yes -y -q " +
                   pkg_name + version)
@@ -173,10 +173,10 @@ def generate_debian_package(args, config):
 
     cache = Cache()
 
-    #Check if all required packages are installed
+    # Check if all required packages are installed
     for dep in relations:
         if not check_deb_dependency_installed(cache, dep):
-            #Install not found dependencies
+            # Install not found dependencies
             print("Dependency not matched: " + str(dep))
             if not install_dependency(cache, dep):
                 print("Dependency cannot be installed: " + PkgRelation.str([dep
@@ -197,18 +197,18 @@ def generate_debian_package(args, config):
 
     changelog.write_to_open_file(open("debian/changelog", 'w'))
 
-    #Execute commands defined in config:
+    # Execute commands defined in config:
     if config.has_key("prebuild-command"):
         print("Executing prebuild-command: " + str(config["prebuild-command"]))
         if os.system(config["prebuild-command"]) != 0:
-            print ("Failed to execute prebuild command")
-            exit (1)
+            print("Failed to execute prebuild command")
+            exit(1)
 
     if os.system("dpkg-buildpackage -nc -uc -us") != 0:
         print("Error while generating package, try cleaning")
         if os.system("dpkg-buildpackage -uc -us") != 0:
-            print ("Error generating package")
-            exit (1)
+            print("Error generating package")
+            exit(1)
 
     if os.system("sudo dpkg -i " + f) != 0:
         print("Packages are not installable")
@@ -270,7 +270,7 @@ def compile_project(args):
     cache = Cache()
     # Parse dependencies and check if corrects versions are found
     if config.has_key("dependencies"):
-        #Parse dependencies config
+        # Parse dependencies config
         for dependency in config["dependencies"]:
             if not dependency.has_key("name"):
                 print("dependency: >" + str(dependency) + "<\n needs a name")
@@ -302,7 +302,7 @@ def compile_project(args):
                 # TODO: Set commit according to review
                 pass
 
-            #TODO: Consolidate versions, check if commit is compatible with
+            # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
             if dependency["commit"] == None and args.use_master_branch:
                 dependency["commit"] = str(repo.commit())
