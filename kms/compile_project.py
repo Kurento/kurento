@@ -200,22 +200,27 @@ def generate_debian_package(args, config):
     #Execute commands defined in config:
     if config.has_key("prebuild-command"):
         print("Executing prebuild-command: " + str(config["prebuild-command"]))
-        os.system(config["prebuild-command"])
+        if os.system(config["prebuild-command"]) != 0:
+            print ("Failed to execute prebuild command")
+            exit (1)
 
     if os.system("dpkg-buildpackage -nc -uc -us") != 0:
         print("Error while generating package, try cleaning")
-        os.system("dpkg-buildpackage -uc -us")
+        if os.system("dpkg-buildpackage -uc -us") != 0:
+            print ("Error generating package")
+            exit (1)
+
+    if os.system("sudo dpkg -i " + f) != 0:
+        print("Packages are not installable")
+        exit(1)
 
     files = glob.glob("../*" + new_version + "_*.deb")
     for f in files:
-        os.system("sudo dpkg -i " + f)
         if f is files[-1]:
             is_last = True
         else:
             is_last = False
         upload_package(args, f, publish=is_last)
-    #In case packages were installed in a bad order and dependencies were not resolved
-    os.system("sudo apt-get install -f --force-yes -y -q")
 
     if args.clean > 0:
         files = glob.glob("../*" + new_version + "*")
@@ -259,7 +264,7 @@ def compile_project(args):
 
         config = yaml.load(f)
     except:
-        print("Config file not found")
+        print("Config file not found: " + sys.exc_info()[0])
         exit(1)
 
     cache = Cache()
@@ -297,11 +302,14 @@ def compile_project(args):
                 # TODO: Set commit according to review
                 pass
 
+            #TODO: Consolidate versions, check if commit is compatible with
+            # version requirement and also if there is a newer commit
             if dependency["commit"] == None and args.use_master_branch != None:
                 dependency["commit"] = str(repo.commit())
 
             if not check_dependency_installed(cache, dependency):
-                print("dependency not installed, compile it")
+                print("dependency " + dependency["name"] +
+                      " not installed, compile it")
                 if dependency["commit"] != None:
                     if str(repo.commit()) != dependency["commit"]:
                         if os.system("git checkout " + dependency[
@@ -337,8 +345,8 @@ def main():
     parser.add_argument(
         "--use_master_branch",
         action="count",
-        help=
-        "If no commit dependency is set uses master branch as dependency (forces compilation of last version)")
+        help="If no commit dependency is set uses master branch as "
+        "dependency (forces compilation of last version)")
     parser.add_argument(
         "--no_update_git",
         action="count",
