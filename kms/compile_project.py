@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 from time import strftime, time
 
+import requests
 import yaml
 from apt.cache import Cache
 from debian.changelog import Changelog
@@ -26,7 +27,7 @@ DEFAULT_CONFIG_FILE = '.build.yaml'
 def clone_repo(args, base_url, repo_name):
     try:
         repo = Repo(repo_name)
-        if args.no_update_git:
+        if not args.no_update_git:
             print("Updating repo: " + repo_name)
             # TODO: Decide if current current branch should be updated
             for remote in repo.remotes:
@@ -122,7 +123,7 @@ def get_version():
     return version
 
 
-def get_debian_version(args):
+def get_debian_version(args, dist):
     version = get_version()
 
     last_release = os.popen(
@@ -130,9 +131,6 @@ def get_debian_version(args):
         )
     last_release = last_release[:last_release.rfind("\n"):]
     current_commit = os.popen("git rev-parse --short HEAD").read()
-    dist = os.popen("lsb_release -c").read()
-    dist = dist[dist.rfind(":") + 1::].replace("\n", "").replace(
-        "\t", "").replace(" ", "")
 
     rc = os.popen("git log " + last_release + "..HEAD --oneline | wc -l").read(
     )
@@ -154,10 +152,30 @@ def get_debian_version(args):
     return version
 
 
-def upload_package(args, package, publish=False):
-    # TODO: Upload package to a repository
-    print("TODO: Upload package: " + package + " publish " + str(publish))
-    pass
+def upload_package(args, config, dist, package, publish=False):
+    if config.has_key("private") and config["private"] == True:
+        repo = "ubuntu-priv"
+    else:
+        repo = "ubuntu-pub"
+
+    base_url = args.upload_url + "/upload?repo=" + \
+        repo + "&dist=" + dist + "&comp=" + args.component
+    upload_url = base_url + "&name=" + os.path.basename(package) + "&cmd=add"
+    print("url: " + upload_url)
+
+    r = requests.post(upload_url,
+                      verify=False,
+                      cert=(args.cert.name, args.id_rsa.name),
+                      data=open(package))
+    print(r.text)
+
+    if publish:
+        publish_url = base_url + "&cmd=publish"
+        print("publish url: " + publish_url)
+        r = requests.post(publish_url,
+                          verify=False,
+                          cert=(args.cert.name, args.id_rsa.name))
+        print(r.text)
 
 
 def generate_debian_package(args, config):
@@ -185,7 +203,12 @@ def generate_debian_package(args, config):
 
     changelog = Changelog(open("debian/changelog"))
     old_changelog = Changelog(open("debian/changelog"))
-    new_version = get_debian_version(args)
+
+    dist = os.popen("lsb_release -c").read()
+    dist = dist[dist.rfind(":") + 1::].replace("\n", "").replace(
+        "\t", "").replace(" ", "")
+
+    new_version = get_debian_version(args, dist)
 
     changelog.new_block(version=new_version,
                         package=changelog.package,
@@ -204,23 +227,24 @@ def generate_debian_package(args, config):
             print("Failed to execute prebuild command")
             exit(1)
 
-    if os.system("dpkg-buildpackage -nc -uc -us") != 0:
-        print("Error while generating package, try cleaning")
-        if os.system("dpkg-buildpackage -uc -us") != 0:
-            print("Error generating package")
-            exit(1)
+    if os.system("dpkg-buildpackage -uc -us") != 0:
+        print("Error generating package")
+        exit(1)
 
-    if os.system("sudo dpkg -i " + f) != 0:
+    if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
         print("Packages are not installable")
         exit(1)
 
     files = glob.glob("../*" + new_version + "_*.deb")
-    for f in files:
-        if f is files[-1]:
-            is_last = True
-        else:
-            is_last = False
-        upload_package(args, f, publish=is_last)
+    if args.upload_url != None:
+        for f in files:
+            if f is files[-1]:
+                is_last = True
+            else:
+                is_last = False
+            if new_version.find("~") == -1:
+                upload_package(args, config, dist, f)
+            upload_package(args, config, dist + "-dev", f, publish=is_last)
 
     if args.clean:
         files = glob.glob("../*" + new_version + "*")
@@ -327,7 +351,8 @@ def compile_project(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Read configurations from .build.yaml")
+        description=
+        "Read configurations from .build.yaml and builds the project")
     parser.add_argument("--file",
                         metavar="file",
                         help="File to read config from",
@@ -351,6 +376,26 @@ def main():
         "--no_update_git",
         action="store_true",
         help="Do not update git repositories of dependency projects")
+
+    subparsers = parser.add_subparsers()
+    comp = subparsers.add_parser('compile', help='Compile package')
+    upload = subparsers.add_parser('upload', help='Upload package')
+    upload.add_argument(
+        "--upload_url",
+        help=
+        "Url to upload the package (by default /upload is added to the url)",
+        required=True)
+    upload.add_argument("--component",
+                        help="Component to upload the package",
+                        required=True)
+    upload.add_argument("--cert",
+                        help="Certificate required to upload packages",
+                        required=True,
+                        type=argparse.FileType('r'))
+    upload.add_argument("--id_rsa",
+                        help="Key required to upload packages",
+                        required=True,
+                        type=argparse.FileType('r'))
 
     args = parser.parse_args()
 
