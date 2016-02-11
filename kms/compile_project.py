@@ -26,9 +26,9 @@ DEFAULT_CONFIG_FILE = '.build.yaml'
 def clone_repo(args, base_url, repo_name):
     try:
         repo = Repo(repo_name)
-        print("Updating repo: " + repo_name)
-        if args.no_update_git == None:
-            #TODO: Decide if current current branch should be updated
+        if args.no_update_git:
+            print("Updating repo: " + repo_name)
+            # TODO: Decide if current current branch should be updated
             for remote in repo.remotes:
                 remote.update()
     except:
@@ -143,7 +143,7 @@ def get_debian_version(args):
     now = datetime.fromtimestamp(time())
 
     if int(rc) > 0:
-        if args.simplify_dev_version > 0:
+        if args.simplify_dev_version:
             version = version + "~0." + rc + "." + current_commit + "." + dist
         else:
             version = version + "~" + now.strftime(
@@ -222,7 +222,7 @@ def generate_debian_package(args, config):
             is_last = False
         upload_package(args, f, publish=is_last)
 
-    if args.clean > 0:
+    if args.clean:
         files = glob.glob("../*" + new_version + "*")
         for f in files:
             os.remove(f)
@@ -304,7 +304,7 @@ def compile_project(args):
 
             #TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
-            if dependency["commit"] == None and args.use_master_branch != None:
+            if dependency["commit"] == None and args.use_master_branch:
                 dependency["commit"] = str(repo.commit())
 
             if not check_dependency_installed(cache, dependency):
@@ -337,19 +337,19 @@ def main():
                         help="Base repository url",
                         required=True)
     parser.add_argument("--simplify_dev_version",
-                        action="count",
+                        action="store_true",
                         help="Simplify dev version, usefull for debugging")
     parser.add_argument("--clean",
-                        action="count",
+                        action="store_true",
                         help="Clean generated files when finished")
     parser.add_argument(
         "--use_master_branch",
-        action="count",
+        action="store_true",
         help="If no commit dependency is set uses master branch as "
         "dependency (forces compilation of last version)")
     parser.add_argument(
         "--no_update_git",
-        action="count",
+        action="store_true",
         help="Do not update git repositories of dependency projects")
 
     args = parser.parse_args()
