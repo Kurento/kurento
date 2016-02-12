@@ -39,6 +39,30 @@ var minimist = require('minimist');
 var spawn = require('child_process').spawn;
 
 var QUnit = require('qunit-cli');
+
+const REPORTS_DIR = 'reports'
+
+function writeReport(ext, data) {
+  var path = REPORTS_DIR + '/' + require('../package.json').name + '.' + ext
+
+  require('fs-extra').outputFile(path, data, function (error) {
+    if (error) return console.trace(error);
+
+    console.log(ext + ' report saved at ' + path);
+  });
+}
+
+function fetchReport(type, report) {
+  var ext = type
+  if (type == 'junit') ext = 'xml'
+
+  report = report[ext]
+
+  writeReport(ext, report)
+}
+
+QUnit.jUnitReport = fetchReport.bind(undefined, 'junit')
+
 QUnit.load();
 
 var kurentoClient = require('..');
@@ -110,7 +134,8 @@ function getIpDocker(callback) {
 
 }
 
-const ARGV = ['-f', './kurento.conf.json', '--gst-debug=Kurento*:5',
+const ARGV = ['-f', './test_reconnect/kurento.conf.json',
+  '--gst-debug=Kurento*:5',
   '--modules-config-path=/etc/kurento/modules', '2>&1'
 ];
 

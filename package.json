@@ -17,7 +17,8 @@
     "coveralls": "scripts/coveralls",
     "coverallsBrowser": "scripts/coveralls -- testBrowser",
     "test": "scripts/test",
-    "testBrowser": "scripts/testBrowser"
+    "testBrowser": "scripts/testBrowser",
+    "testReconnect":"scripts/testReconnect"
   },
   "repository": {
     "type": "git",
