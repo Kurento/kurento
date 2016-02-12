@@ -37,6 +37,26 @@
 #define SDES_30_BYTES_KEY "012345678901234567890123456789"
 #define SDES_46_BYTES_KEY "0123456789012345678901234567890123456789012345"
 
+static gboolean
+print_timedout_pipeline (gpointer data)
+{
+  GstElement *pipeline = GST_ELEMENT (data);
+  gchar *name;
+  gchar *pipeline_name;
+
+  GST_WARNING_OBJECT (pipeline, "Timed out test");
+  pipeline_name = gst_element_get_name (pipeline);
+  name = g_strdup_printf ("%s_timedout", pipeline_name);
+
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
+      GST_DEBUG_GRAPH_SHOW_ALL, name);
+
+  g_free (name);
+  g_free (pipeline_name);
+
+  return FALSE;
+}
+
 static GArray *
 create_codecs_array (gchar * codecs[])
 {
@@ -261,6 +281,7 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
       gst_element_factory_make ("rtpendpoint", NULL);
   GstElement *outputfakesink = gst_element_factory_make ("fakesink", NULL);
   gboolean answer_ok;
+  guint id;
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
@@ -278,7 +299,9 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   hod->expected_caps = expected_caps;
   hod->loop = loop;
 
-  g_object_set (G_OBJECT (outputfakesink), "signal-handoffs", TRUE, NULL);
+  g_object_set (G_OBJECT (audiotestsrc), "is-live", TRUE, NULL);
+  g_object_set (G_OBJECT (outputfakesink), "signal-handoffs", TRUE,
+      "sync", FALSE, "async", FALSE, NULL);
   g_signal_connect (G_OBJECT (outputfakesink), "handoff",
       G_CALLBACK (fakesink_hand_off), hod);
 
@@ -330,15 +353,13 @@ test_audio_sendonly (const gchar * audio_enc_name, GstStaticCaps expected_caps,
   if (play_after_negotiation)
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendonly_before_entering_loop");
+  id = g_timeout_add_seconds (3, print_timedout_pipeline, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendonly_end");
+  g_source_remove (id);
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
 
@@ -432,6 +453,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   GstElement *fakesink_offerer = gst_element_factory_make ("fakesink", NULL);
   GstElement *fakesink_answerer = gst_element_factory_make ("fakesink", NULL);
   gboolean answer_ok;
+  guint id;
 
   if (crypto != KMS_RTP_SDES_CRYPTO_SUITE_NONE) {
     /* Use random key */
@@ -458,21 +480,37 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   hod->expected_caps = expected_caps;
   hod->loop = loop;
 
-  g_object_set (G_OBJECT (fakesink_offerer), "signal-handoffs", TRUE, NULL);
+  g_object_set (G_OBJECT (audiotestsrc_offerer), "is-live", TRUE, NULL);
+  g_object_set (G_OBJECT (audiotestsrc_answerer), "is-live", TRUE, NULL);
+  g_object_set (G_OBJECT (fakesink_offerer), "signal-handoffs", TRUE,
+      "sync", FALSE, "async", FALSE, NULL);
   g_signal_connect (G_OBJECT (fakesink_offerer), "handoff",
       G_CALLBACK (sendrecv_offerer_fakesink_hand_off), hod);
-  g_object_set (G_OBJECT (fakesink_answerer), "signal-handoffs", TRUE, NULL);
+  g_object_set (G_OBJECT (fakesink_answerer), "signal-handoffs", TRUE,
+      "sync", FALSE, "async", FALSE, NULL);
   g_signal_connect (G_OBJECT (fakesink_answerer), "handoff",
       G_CALLBACK (sendrecv_answerer_fakesink_hand_off), hod);
 
-  /* Add elements */
-  gst_bin_add (GST_BIN (pipeline), offerer);
+  g_object_set_data (G_OBJECT (offerer), AUDIO_SINK, fakesink_offerer);
+  g_signal_connect (offerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (offerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
+
+  g_object_set_data (G_OBJECT (answerer), AUDIO_SINK, fakesink_answerer);
+  g_signal_connect (answerer, "pad-added",
+      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
+  fail_unless (kms_element_request_srcpad (answerer,
+          KMS_ELEMENT_PAD_TYPE_AUDIO));
+
   connect_sink_async (offerer, audiotestsrc_offerer,
       audio_enc_offerer, NULL, pipeline, SINK_AUDIO_STREAM);
 
-  gst_bin_add (GST_BIN (pipeline), answerer);
   connect_sink_async (answerer, audiotestsrc_answerer,
       audio_enc_answerer, NULL, pipeline, SINK_AUDIO_STREAM);
+
+  /* Add elements */
+  gst_bin_add_many (GST_BIN (pipeline), offerer, answerer, NULL);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
@@ -499,29 +537,16 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   gst_sdp_message_free (offer);
   gst_sdp_message_free (answer);
 
-  gst_bin_add (GST_BIN (pipeline), fakesink_offerer);
-  g_object_set_data (G_OBJECT (offerer), AUDIO_SINK, fakesink_offerer);
-  g_signal_connect (offerer, "pad-added",
-      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-  fail_unless (kms_element_request_srcpad (offerer,
-          KMS_ELEMENT_PAD_TYPE_AUDIO));
+  gst_bin_add_many (GST_BIN (pipeline), fakesink_offerer, fakesink_answerer,
+      NULL);
 
-  gst_bin_add (GST_BIN (pipeline), fakesink_answerer);
-  g_object_set_data (G_OBJECT (answerer), AUDIO_SINK, fakesink_answerer);
-  g_signal_connect (answerer, "pad-added",
-      G_CALLBACK (connect_sink_on_srcpad_added), NULL);
-  fail_unless (kms_element_request_srcpad (answerer,
-          KMS_ELEMENT_PAD_TYPE_AUDIO));
-
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_before_entering_loop");
+  id = g_timeout_add_seconds (3, print_timedout_pipeline, pipeline);
 
   mark_point ();
   g_main_loop_run (loop);
   mark_point ();
 
-  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
-      GST_DEBUG_GRAPH_SHOW_ALL, "test_audio_sendrecv_end");
+  g_source_remove (id);
 
   gst_element_set_state (pipeline, GST_STATE_NULL);
 

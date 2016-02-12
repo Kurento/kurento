@@ -241,10 +241,6 @@ GST_START_TEST (loopback)
   g_signal_connect (G_OBJECT (outputfakesink), "handoff",
       G_CALLBACK (fakesink_hand_off), loop);
 
-  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, agnosticbin,
-      rtpendpointsender, rtpendpointreceiver, outputfakesink, NULL);
-
-  gst_element_link (videotestsrc, agnosticbin);
   connect_sink_async (rtpendpointsender, agnosticbin, pipeline,
       SINK_VIDEO_STREAM);
 
@@ -254,6 +250,11 @@ GST_START_TEST (loopback)
       G_CALLBACK (connect_sink_on_srcpad_added), NULL);
   fail_unless (kms_element_request_srcpad (rtpendpointreceiver,
           KMS_ELEMENT_PAD_TYPE_VIDEO));
+
+  gst_bin_add_many (GST_BIN (pipeline), videotestsrc, agnosticbin,
+      rtpendpointsender, rtpendpointreceiver, outputfakesink, NULL);
+
+  gst_element_link (videotestsrc, agnosticbin);
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
