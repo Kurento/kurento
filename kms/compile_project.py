@@ -108,7 +108,7 @@ def install_dependency(cache, dep):
 
         # Install selected dependency version
         print("Installing " + pkg_name + version)
-        os.system("sudo postpone -d -f apt-get install --force-yes -y -q " +
+        os.system("sudo apt-get install --force-yes -y -q " +
                   pkg_name + version)
         cache = Cache()
         gc.collect()
