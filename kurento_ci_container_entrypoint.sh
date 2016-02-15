@@ -4,7 +4,7 @@ echo "##################### EXECUTE: kurento_ci_container_entrypoint ###########
 [ -n "$1" ] || { echo "No script to run specified. Need one to run after preparing the environment"; exit 1; }
 BUILD_COMMAND=$@
 
-PATH=$PATH:$(realpath $(dirname "$0"))
+PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
 
 echo "Preparing environment..."
 
