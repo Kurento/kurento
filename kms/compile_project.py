@@ -19,7 +19,7 @@ import apt_pkg
 import git
 from git import Repo
 
-# sudo apt-get install python-git python-yaml python-apt python-debian
+# sudo apt-get install python-git python-yaml python-apt python-debian python-requests
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
 
