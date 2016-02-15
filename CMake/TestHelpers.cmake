@@ -1,11 +1,16 @@
 find_program(VALGRIND valgrind)
 
 set (DISABLE_TESTS FALSE CACHE BOOL "Disable \"make check\" target")
+set (GENERATE_TESTS FALSE CACHE BOOL "Add \"make check\" to target ALL")
 
 function(create_check_target)
   if (NOT TARGET check_build)
     MESSAGE (STATUS "Enabling check_build target")
-    add_custom_target(check_build)
+    if (${GENERATE_TESTS})
+      add_custom_target(check_build ALL)
+    else ()
+      add_custom_target(check_build)
+    endif()
   endif()
   if (NOT TARGET check)
     MESSAGE (STATUS "Enabling check target")
