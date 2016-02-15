@@ -41,7 +41,6 @@ import org.kurento.commons.PropertiesManager;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
@@ -130,10 +129,10 @@ public class RecorderThreeWebRtcSimultaneous extends StabilityTest {
             // N viewer
             webRtcSender[i] = new WebRtcEndpoint.Builder(pipeline).build();
             // N recorders
-            recordingFile[i] = getDefaultOutputFile("-receiver" + i + extension);
+            recordingFile[i] = getRecordUrl("-receiver" + i + extension);
             recorder[i] =
-                new RecorderEndpoint.Builder(pipeline, Protocol.FILE + "://" + recordingFile[i])
-                    .withMediaProfile(mediaProfileSpecType).build();
+                new RecorderEndpoint.Builder(pipeline, recordingFile[i]).withMediaProfile(
+                    mediaProfileSpecType).build();
 
             // WebRTC receiver negotiation
             getPage(i).subscribeLocalEvents("playing");

@@ -38,14 +38,11 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Test of a Recorder switching sources from WebRtc Endpoint
- * </p>
- * Media Pipeline(s):
+ * Test of a Recorder switching sources from WebRtc Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> RecorderEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -106,13 +103,12 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/10sec/green.webm").build();
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/10sec/green.webm")).build();
 
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+        .build();
 
     playerGreen.play();
     recorderEp.record();
@@ -136,8 +132,7 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp2 =
-        new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp2, recordingFile).build();
     WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEp2.connect(webRtcEp2);
 
@@ -157,9 +152,8 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
     final String messageAppend = "[played file with media pipeline]";
     final int playtime = PLAYTIME;
 
-    Assert.assertTrue(
-        "Not received media in the recording (timeout waiting playing event) " + messageAppend,
-        getPage().waitForEvent("playing"));
+    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
+        + messageAppend, getPage().waitForEvent("playing"));
     for (Color color : EXPECTED_COLORS) {
       Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
           getPage().similarColor(color));

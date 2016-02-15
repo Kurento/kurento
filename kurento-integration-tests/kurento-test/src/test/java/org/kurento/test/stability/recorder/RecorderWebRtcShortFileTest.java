@@ -38,7 +38,6 @@ import org.kurento.commons.PropertiesManager;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
@@ -100,9 +99,9 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
 
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
     final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(pipeline).build();
-    final String recordingFile = getDefaultOutputFile(extension);
+    final String recordingFile = getRecordUrl(extension);
     final RecorderEndpoint recorder =
-        new RecorderEndpoint.Builder(pipeline, Protocol.FILE + "://" + recordingFile)
+        new RecorderEndpoint.Builder(pipeline, recordingFile)
     .withMediaProfile(mediaProfileSpecType).build();
 
     // WebRTC sender negotiation

@@ -32,14 +32,11 @@ import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a Recorder, using the stream source from a PlayerEndpoint through an WebRtcEndpoint. The
- * pipeline will be destroyed after half the duration of the original video.
- * </p>
- * Media Pipeline(s):
+ * pipeline will be destroyed after half the duration of the original video. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -98,15 +95,15 @@ public class RecorderPipelineDestroyTest extends BaseRecorder {
 
     // Media Pipeline #1
     final MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/10sec/green.webm").build();
+    PlayerEndpoint playerEp =
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/10sec/green.webm")).build();
     WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
 
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
 
     final RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+        .build();
     playerEp.connect(webRtcEp1);
 
     playerEp.connect(recorderEp);
@@ -134,8 +131,7 @@ public class RecorderPipelineDestroyTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp2 =
-        new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp2, recordingFile).build();
     WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEp2.connect(webRtcEp2);
 

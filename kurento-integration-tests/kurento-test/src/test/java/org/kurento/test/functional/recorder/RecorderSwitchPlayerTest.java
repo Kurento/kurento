@@ -35,14 +35,11 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Test of a Recorder switching sources from PlayerEndpoint.
- * </p>
- * Media Pipeline(s):
+ * Test of a Recorder switching sources from PlayerEndpoint. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -108,9 +105,9 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestSameFormats(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls = { "http://" + getTestFilesHttpPath() + "/video/10sec/red.webm",
-        "http://" + getTestFilesHttpPath() + "/video/10sec/green.webm",
-        "http://" + getTestFilesHttpPath() + "/video/10sec/blue.webm" };
+    String[] mediaUrls =
+      { getPlayerUrl("/video/10sec/red.webm"), getPlayerUrl("/video/10sec/green.webm"),
+        getPlayerUrl("/video/10sec/blue.webm") };
     Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -119,9 +116,9 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestDifferentFormats(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls = { "http://" + getTestFilesHttpPath() + "/video/10sec/ball.mkv",
-        "http://" + getTestFilesHttpPath() + "/video/10sec/white.webm",
-        "http://" + getTestFilesHttpPath() + "/video/10sec/blue.m4v" };
+    String[] mediaUrls =
+      { getPlayerUrl("/video/10sec/ball.mkv"), getPlayerUrl("/video/10sec/white.webm"),
+        getPlayerUrl("/video/10sec/blue.m4v") };
     Color[] expectedColors = { Color.BLACK, Color.WHITE, Color.BLUE };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -143,10 +140,10 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+        .build();
 
     // Test execution
     getPage().subscribeEvents("playing");
@@ -160,8 +157,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
       if (!startRecord) {
 
-        Assert.assertTrue("Not received media (timeout waiting playing event)",
-            getPage().waitForEvent("playing"));
+        Assert.assertTrue("Not received media (timeout waiting playing event)", getPage()
+            .waitForEvent("playing"));
         recorderEp.record();
         startRecord = true;
       }
@@ -179,8 +176,7 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp2 =
-        new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp2, recordingFile).build();
     WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEp2.connect(webRtcEp2);
 
@@ -200,8 +196,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
     Assert.assertTrue("Not received media in the recording (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
     for (Color color : expectedColors) {
-      Assert.assertTrue("The color of the recorded video should be " + color,
-          getPage().similarColor(color));
+      Assert.assertTrue("The color of the recorded video should be " + color, getPage()
+          .similarColor(color));
     }
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));

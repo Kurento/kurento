@@ -37,7 +37,6 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
@@ -102,8 +101,7 @@ public class RecorderSwitchPlayerWebRtcTest extends BaseRecorder {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
     PlayerEndpoint playerRed =
-        new PlayerEndpoint.Builder(mp, Protocol.HTTP + "://" + getTestFilesHttpPath()
-            + "/video/10sec/red.webm").build();
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/10sec/red.webm")).build();
     playerRed.connect(webRtcEp);
 
     // Test execution
@@ -116,13 +114,12 @@ public class RecorderSwitchPlayerWebRtcTest extends BaseRecorder {
         .waitForEvent("playing"));
 
     PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/10sec/green.webm").build();
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/10sec/green.webm")).build();
 
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile).withMediaProfile(
-            mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+        .build();
 
     playerGreen.play();
     recorderEp.record();
@@ -146,8 +143,7 @@ public class RecorderSwitchPlayerWebRtcTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp2 =
-        new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp2, recordingFile).build();
     WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEp2.connect(webRtcEp2);
 
@@ -190,5 +186,4 @@ public class RecorderSwitchPlayerWebRtcTest extends BaseRecorder {
 
     success = true;
   }
-
 }

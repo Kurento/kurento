@@ -36,14 +36,12 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's.
- * </p>
- * Media Pipeline(s):
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's. </p> Media
+ * Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint x 2 -> RecorderEndpoint</li>
  * </ul>
@@ -106,10 +104,10 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
     getPage(1).initWebRtc(webRtcEp2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     // Start record
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+            .build();
     recorderEp.record();
 
     // Switch webrtcs

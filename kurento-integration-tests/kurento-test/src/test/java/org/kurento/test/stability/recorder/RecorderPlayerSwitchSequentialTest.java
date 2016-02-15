@@ -33,14 +33,12 @@ import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.test.base.StabilityTest;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players.
- * </p>
- * Media Pipeline(s):
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players. </p> Media
+ * Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint x 2 -> RecorderEndpoint</li>
  * </ul>
@@ -93,15 +91,15 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp1 = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/60sec/ball.webm").build();
-    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/60sec/smpte.webm").build();
+    PlayerEndpoint playerEp1 =
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/60sec/ball.webm")).build();
+    PlayerEndpoint playerEp2 =
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/60sec/smpte.webm")).build();
 
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+            .build();
 
     // Start play and record
     playerEp1.play();

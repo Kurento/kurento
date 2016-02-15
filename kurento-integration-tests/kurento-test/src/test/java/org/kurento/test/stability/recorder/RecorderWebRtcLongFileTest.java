@@ -36,14 +36,11 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Record for 5 minutes.
- * </p>
- * Media Pipeline(s):
+ * Stability test for Recorder. Record for 5 minutes. </p> Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> RecorderEndpoint</li>
  * </ul>
@@ -104,10 +101,10 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
     Assert.assertTrue("Not received media in sender webrtc", getPage().waitForEvent("playing"));
 
     // Recorder
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorder =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+            .build();
     webRtcSender.connect(recorder);
 
     // Start recorder

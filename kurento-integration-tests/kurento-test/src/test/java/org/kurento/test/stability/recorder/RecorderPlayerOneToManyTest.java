@@ -37,14 +37,11 @@ import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.test.base.StabilityTest;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Player one to many recorders.
- * </p>
- * Media Pipeline(s):
+ * Stability test for Recorder. Player one to many recorders. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> N RecorderEndpoint</li>
  * </ul>
@@ -99,8 +96,8 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 
     // Media Pipeline
     mp = kurentoClient.createMediaPipeline();
-    final PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/60sec/ball.webm").build();
+    final PlayerEndpoint playerEp =
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/60sec/ball.webm")).build();
 
     final RecorderEndpoint[] recorder = new RecorderEndpoint[numViewers];
     final String[] recordingFile = new String[numViewers];
@@ -116,10 +113,10 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
         public void run() {
           try {
             // N recorders
-            recordingFile[i] = getDefaultOutputFile("-recorder" + i + extension);
+            recordingFile[i] = getRecordUrl("-recorder" + i + extension);
             recorder[i] =
-                new RecorderEndpoint.Builder(pipeline, Protocol.FILE + "://" + recordingFile[i])
-                    .withMediaProfile(mediaProfileSpecType).build();
+                new RecorderEndpoint.Builder(pipeline, recordingFile[i]).withMediaProfile(
+                    mediaProfileSpecType).build();
             playerEp.connect(recorder[i]);
 
             // Start record

@@ -30,14 +30,11 @@ import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a Recorder, using the stream source from a PlayerEndpoint with FaceOverlayFilter through
- * an WebRtcEndpoint.
- * </p>
- * Media Pipeline(s):
+ * an WebRtcEndpoint. </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -99,20 +96,18 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/filter/fiwarecut.mp4")
-
-            .build();
+    PlayerEndpoint playerEp =
+        new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/filter/fiwarecut.mp4")).build();
     WebRtcEndpoint webRtcEp1 = new WebRtcEndpoint.Builder(mp).build();
 
     FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
     filter.setOverlayedImage("http://" + getTestFilesHttpPath() + "/img/red-square.png", -0.2F,
         -1.2F, 1.6F, 1.6F);
 
-    String recordingFile = getDefaultOutputFile(extension);
+    String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, Protocol.FILE + "://" + recordingFile)
-            .withMediaProfile(mediaProfileSpecType).build();
+        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
+        .build();
     playerEp.connect(filter);
     filter.connect(webRtcEp1);
     filter.connect(recorderEp);
@@ -130,8 +125,7 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp2 =
-        new PlayerEndpoint.Builder(mp2, Protocol.FILE + "://" + recordingFile).build();
+    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp2, recordingFile).build();
     WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
     playerEp2.connect(webRtcEp2);
 
@@ -144,5 +138,4 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
 
     success = true;
   }
-
 }
