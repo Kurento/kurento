@@ -52,8 +52,7 @@
     "qunit-reporter-lcov": "^1.0.2",
     "qunitjs": "^1.18.0",
     "selenium-webdriver": "2.47.0",
-    "xml2js": "^0.4.9",
-    "sdp-translator": "^0.1.13"
+    "xml2js": "^0.4.9"
   },
   "dependencies": {
     "freeice": "^2.1.2",
