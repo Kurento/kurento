@@ -30,7 +30,6 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.testing.SystemStabilityTests;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.browser.WebRtcTestPage;
 
 /**
  * Stability tests.
@@ -39,7 +38,7 @@ import org.kurento.test.browser.WebRtcTestPage;
  * @since 5.0.5
  */
 @Category(SystemStabilityTests.class)
-public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class StabilityTest extends RepositoryMongoTest {
 
   public final long DEFAULT_TEST_DURATION = 300000; // ms
 
@@ -55,7 +54,7 @@ public class StabilityTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
   public void testPlayerMultipleSeek(String mediaUrl, WebRtcChannel webRtcChannel,
       int pauseTimeSeconds, int numSeeks, Map<Integer, Color> expectedPositionAndColor)
-          throws Exception {
+      throws Exception {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
     WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();

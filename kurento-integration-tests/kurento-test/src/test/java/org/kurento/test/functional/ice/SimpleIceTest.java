@@ -12,12 +12,12 @@ import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcCandidateType;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcIpvMode;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
+import org.kurento.test.functional.player.FunctionalPlayerTest;
 
 /**
  * Base for player tests.
@@ -25,7 +25,7 @@ import org.kurento.test.config.Protocol;
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.3.1
  */
-public class SimpleIceTest extends FunctionalTest {
+public class SimpleIceTest extends FunctionalPlayerTest {
 
   public void initTestSendRecv(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType) throws InterruptedException {

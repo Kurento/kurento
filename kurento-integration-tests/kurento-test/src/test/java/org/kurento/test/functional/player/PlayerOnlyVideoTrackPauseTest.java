@@ -17,6 +17,7 @@ package org.kurento.test.functional.player;
 
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 
 import java.awt.Color;
@@ -29,9 +30,7 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the pause feature with only track video for a Player Endpoint
- * </p>
- * Media Pipeline(s):
+ * Test of a the pause feature with only track video for a Player Endpoint </p> Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -55,7 +54,7 @@ import org.kurento.test.config.TestScenario;
  * <ul>
  * <li>Playing event should be received in remote video tag</li>
  * </ul>
- * 
+ *
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.1.1
  */
@@ -220,5 +219,54 @@ public class PlayerOnlyVideoTrackPauseTest extends FunctionalPlayerTest {
     // Test data
     final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
     initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepositoryOgv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.ogv";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepositoryMkv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mkv";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepositoryAvi() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.avi";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepositoryWebm() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.webm";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepositoryMov() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mov";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepository3gp() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.3gp";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyVideoPauseRepositoryMp4() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgbOnlyVideo.mp4";
+    initTest(MONGODB, mediaUrl);
   }
 }

@@ -30,8 +30,10 @@ public class TestConfiguration {
 
   public static final String TEST_PORT_PROPERTY = "test.port";
   public static final String TEST_PUBLIC_PORT_PROPERTY = "test.public.port";
-  public static final String APP_HTTP_PORT_PROP = "server.port";
-  public static final int APP_HTTP_PORT_DEFAULT = 8443;
+  public static final String APP_HTTPS_PORT_PROP = "server.port.https";
+  public static final int APP_HTTPS_PORT_DEFAULT = 8443;
+  public static final String APP_HTTP_PORT_PROP = "server.port.http";
+  public static final int APP_HTTP_PORT_DEFAULT = 8080;
 
   public static final String TEST_PATH_PROPERTY = "test.path";
   public static final String TEST_PATH_DEFAULT = "/";
@@ -236,7 +238,7 @@ public class TestConfiguration {
   public static final String TEST_FILES_HTTP_PROP = "test.files.http";
   public static final String TEST_FILES_HTTP_DEFAULT = "files.kurento.org";
 
-  public static final String TEST_FILES_MONGO_PROP = "test.files.mongo";
+  public static final String TEST_FILES_MONGO_PROP = "test.files.mongodb";
   public static final String TEST_FILES_MONGO_DEFAULT = "files.kurento.org:27017";
 
   public static final String TEST_PROJECT_PATH_PROP = "test.project.path";

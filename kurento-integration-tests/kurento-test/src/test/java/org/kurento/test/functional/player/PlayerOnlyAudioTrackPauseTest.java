@@ -17,6 +17,7 @@ package org.kurento.test.functional.player;
 
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 
 import java.util.Collection;
@@ -174,5 +175,40 @@ public class PlayerOnlyAudioTrackPauseTest extends FunctionalPlayerTest {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wma";
     initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseRepositoryMp3() throws Exception {
+    // Test data
+    String mediaUrl = "/audio/10sec/cinema.mp3";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseRepositoryM4a() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.m4a";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseRepositoryOgg() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.ogg";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseRepositoryWav() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wav";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerOnlyAudioPauseRepositoryWma() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wma";
+    initTest(MONGODB, mediaUrl);
   }
 }

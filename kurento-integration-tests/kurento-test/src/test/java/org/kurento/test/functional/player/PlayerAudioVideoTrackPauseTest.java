@@ -17,6 +17,7 @@ package org.kurento.test.functional.player;
 
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 
 import java.awt.Color;
@@ -218,5 +219,54 @@ public class PlayerAudioVideoTrackPauseTest extends FunctionalPlayerTest {
     // Test data
     final String mediaUrl = "/video/15sec/rgb.mp4";
     initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepositoryOgv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.ogv";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepositoryMkv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.mkv";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepositoryAvi() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.avi";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepositoryWebm() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.webm";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepositoryMov() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.mov";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepository3gp() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.3gp";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerAudioVideoPauseRepositoryMp4() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/15sec/rgb.mp4";
+    initTest(MONGODB, mediaUrl);
   }
 }

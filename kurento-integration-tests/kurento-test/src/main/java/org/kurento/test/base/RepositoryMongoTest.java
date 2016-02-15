@@ -15,32 +15,38 @@
 
 package org.kurento.test.base;
 
+import static org.kurento.test.config.Protocol.FILE;
+import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.S3;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.kurento.commons.testing.SystemFunctionalTests;
 import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.RepositoryApiConfiguration.RepoType;
+import org.kurento.repository.RepositoryHttpPlayer;
+import org.kurento.repository.RepositoryItem;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.kurento.test.browser.WebRtcTestPage;
+import org.kurento.test.config.Protocol;
 import org.kurento.test.services.WebServerService;
 import org.kurento.test.services.WebServerService.WebServer;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-import com.google.common.io.Files;
-
 /**
- * Base for repository tests.
+ * Base for repository tests using Mongo.
  *
- * @author Micael Gallego (micael.gallego@gmail.com)
- * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.4
+ * @author Raul Benitez (rbenitez@gsyc.es)
+ * @since 6.3.1
  */
-@Category(SystemFunctionalTests.class)
-public class RepositoryFunctionalTest extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class RepositoryMongoTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
+  // Repository
   @ComponentScan(basePackageClasses = { org.kurento.repository.RepositoryItem.class })
   public static class RepositoryWebServer extends WebServer {
 
@@ -59,11 +65,15 @@ public class RepositoryFunctionalTest extends KurentoClientBrowserTest<WebRtcTes
     }
 
     @Bean
-    public RepositoryApiConfiguration repositoryApiConfiguration() {
+    public RepositoryApiConfiguration repositoryApiConfiguration() throws UnknownHostException {
+      log.info("Repository for playing test");
       RepositoryApiConfiguration config = new RepositoryApiConfiguration();
-      config.setWebappPublicUrl("http://localhost:" + WebServerService.getAppHttpsPort() + "/");
-      config.setFileSystemFolder(Files.createTempDir().toString());
-      config.setRepositoryType(RepoType.FILESYSTEM);
+
+      config.setWebappPublicUrl("http://" + InetAddress.getLocalHost().getHostAddress() + ":"
+          + WebServerService.getAppHttpsPort() + "/");
+      config.setMongoDatabaseName("testfiles");
+      config.setMongoUrlConnection(Protocol.MONGODB + "://" + getTestFilesMongoPath());
+      config.setRepositoryType(RepoType.MONGODB);
       return config;
     }
   }
@@ -76,4 +86,27 @@ public class RepositoryFunctionalTest extends KurentoClientBrowserTest<WebRtcTes
     repository = (Repository) webServer.getContext().getBean("repository");
   }
 
+  public String getMediaUrl(Protocol protocol, String nameMedia) {
+    String mediaUrl = "";
+    switch (protocol) {
+      case HTTP:
+        mediaUrl = HTTP + "://" + getTestFilesHttpPath();
+        break;
+      case FILE:
+        mediaUrl = FILE + "://" + getTestFilesDiskPath();
+        break;
+      case S3:
+        mediaUrl = S3 + "://" + getTestFilesS3Path();
+        break;
+      case MONGODB:
+        List<RepositoryItem> repositoryItem =
+        repository.findRepositoryItemsByAttRegex("file", nameMedia);
+        RepositoryHttpPlayer repositoryPlayer = repositoryItem.get(0).createRepositoryHttpPlayer();
+        mediaUrl = repositoryPlayer.getURL();
+        return mediaUrl;
+      default:
+        throw new RuntimeException(protocol + "is not supported in this test.");
+    }
+    return mediaUrl + nameMedia;
+  }
 }

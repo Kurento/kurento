@@ -17,6 +17,7 @@ package org.kurento.test.stability.player;
 
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 
 import java.awt.Color;
@@ -222,5 +223,54 @@ public class PlayerMultipleOnlyVideoTrackSeekTest extends StabilityTest {
     // Test data
     final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
     initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepositoryOgv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.ogv";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepositoryMkv() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mkv";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepositoryAvi() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.avi";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepositoryWebm() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.webm";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepositoryMov() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mov";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepository3gp() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.3gp";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyVideoSeekRepositoryMp4() throws Exception {
+    // Test data
+    final String mediaUrl = "/video/30sec/rgbOnlyVideo.mp4";
+    initTest(MONGODB, mediaUrl);
   }
 }

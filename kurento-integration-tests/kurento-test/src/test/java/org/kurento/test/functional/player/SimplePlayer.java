@@ -26,10 +26,9 @@ import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.KurentoClientBrowserTest;
+import org.kurento.test.base.PlayerTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
-import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.VideoFormat;
 
@@ -39,7 +38,7 @@ import org.kurento.test.config.VideoFormat;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 6.1.1
  */
-public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class SimplePlayer extends PlayerTest {
 
   public void testPlayerWithRtsp(WebRtcChannel webRtcChannel) throws Exception {
     testPlayer("rtsp://r6---sn-cg07luez.c.youtube.com/"
@@ -222,4 +221,5 @@ public class SimplePlayer extends KurentoClientBrowserTest<WebRtcTestPage> {
     // Release Media Pipeline
     mp.release();
   }
+
 }

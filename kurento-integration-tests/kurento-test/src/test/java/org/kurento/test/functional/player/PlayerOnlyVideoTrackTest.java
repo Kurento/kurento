@@ -18,6 +18,7 @@ package org.kurento.test.functional.player;
 import static org.kurento.test.browser.WebRtcChannel.VIDEO_ONLY;
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 import static org.kurento.test.config.VideoFormat.AVI;
 import static org.kurento.test.config.VideoFormat.MKV;
@@ -170,6 +171,41 @@ public class PlayerOnlyVideoTrackTest extends FunctionalPlayerTest {
   @Test
   public void testPlayerWebRtcVideoOnlyS3Webm() throws Exception {
     testPlayerWithSmallFileVideoOnly(S3, WEBM, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepository3gp() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, THIRDGP, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepositoryAvi() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, AVI, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepositoryMkv() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, MKV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepositoryMov() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, MOV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepositoryMp4() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, MP4, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepositoryOgv() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, OGV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerWebRtcVideoOnlyRepositoryWebm() throws Exception {
+    testPlayerWithSmallFileVideoOnly(MONGODB, WEBM, VIDEO_ONLY);
   }
 
 }

@@ -17,6 +17,7 @@ package org.kurento.test.stability.player;
 
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 
 import java.awt.Color;
@@ -179,5 +180,40 @@ public class PlayerMultipleOnlyAudioTrackSeekTest extends StabilityTest {
     // Test data
     final String mediaUrl = "/audio/10sec/cinema.wma";
     initTest(S3, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyAudioSeekRepositoryMp3() throws Exception {
+    // Test data
+    String mediaUrl = "/audio/10sec/cinema.mp3";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyAudioSeekRepositoryM4a() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.m4a";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyAudioSeekRepositoryOgg() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.ogg";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyAudioSeekRepositoryWav() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wav";
+    initTest(MONGODB, mediaUrl);
+  }
+
+  @Test
+  public void testPlayerMultipleOnlyAudioSeekRepositoryWma() throws Exception {
+    // Test data
+    final String mediaUrl = "/audio/10sec/cinema.wma";
+    initTest(MONGODB, mediaUrl);
   }
 }

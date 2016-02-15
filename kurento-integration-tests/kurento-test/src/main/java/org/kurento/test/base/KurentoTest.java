@@ -18,7 +18,6 @@ package org.kurento.test.base;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
-import static org.kurento.test.config.Protocol.S3;
 import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_PROP;
@@ -56,7 +55,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.kurento.commons.ConfigFileManager;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.Retry;
 import org.kurento.test.config.TestReport;
 import org.kurento.test.config.TestScenario;
@@ -204,7 +202,7 @@ public class KurentoTest {
   public static String getRecordUrl(String suffix) {
     String recordUrl = getProperty(TEST_RECORD_URL_PROP);
     if (recordUrl == null) {
-      return Protocol.FILE + "://" + getDefaultOutputFile(suffix);
+      return FILE + "://" + getDefaultOutputFile(suffix);
     }
     return recordUrl + File.separator + getSimpleTestName() + suffix;
   }
@@ -212,7 +210,7 @@ public class KurentoTest {
   public static String getPlayerUrl(String mediaName) {
     String playerUrl = getProperty(TEST_FILES_URL_PROP);
     if (playerUrl == null) {
-      return getMediaUrl(Protocol.HTTP, mediaName);
+      return HTTP + "://" + getTestFilesHttpPath() + mediaName;
     }
     return playerUrl + mediaName;
   }
@@ -307,27 +305,6 @@ public class KurentoTest {
     log.info(SEPARATOR);
     log.info(message);
     log.info(SEPARATOR);
-  }
-
-  public static String getMediaUrl(Protocol protocol, String nameMedia) {
-    String mediaUrl = "";
-    switch (protocol) {
-      case HTTP:
-        mediaUrl = HTTP + "://" + getTestFilesHttpPath();
-        break;
-      case FILE:
-        mediaUrl = FILE + "://" + getTestFilesDiskPath();
-        break;
-      case S3:
-        mediaUrl = S3 + "://" + getTestFilesS3Path();
-        break;
-      /*
-       * case MONGODB: mediaUrl = MONGODB + "://" + getTestFilesMongoPath(); break;
-       */
-      default:
-        throw new RuntimeException(protocol + "is not supported in this test.");
-    }
-    return mediaUrl + nameMedia;
   }
 
   public static int getTestSeekRepetitions() {

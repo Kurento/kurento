@@ -922,7 +922,7 @@ public class Browser implements Closeable {
         getProperty(TEST_PUBLIC_IP_PROPERTY, TEST_PUBLIC_IP_DEFAULT));
     private String host = node;
     private int serverPort = getProperty(TEST_PORT_PROPERTY,
-        getProperty(TEST_PUBLIC_PORT_PROPERTY, WebServerService.getAppHttpPort()));
+        getProperty(TEST_PUBLIC_PORT_PROPERTY, WebServerService.getAppHttpsPort()));
     private BrowserScope scope = BrowserScope.LOCAL;
     private BrowserType browserType = BrowserType.CHROME;
     private Protocol protocol =

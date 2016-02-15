@@ -18,6 +18,7 @@ package org.kurento.test.functional.player;
 import static org.kurento.test.browser.WebRtcChannel.AUDIO_ONLY;
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.Protocol.MONGODB;
 import static org.kurento.test.config.Protocol.S3;
 
 import java.util.Collection;
@@ -162,4 +163,33 @@ public class PlayerOnlyAudioTrackTest extends FunctionalPlayerTest {
     initTest(S3, "/audio/10sec/meet.wma");
   }
 
+  @Test
+  public void testPlayerOnlyAudioTrackRepositoryMp3() throws Exception {
+    initTest(MONGODB, "/audio/10sec/birds.mp3");
+  }
+
+  @Test
+  public void testPlayerOnlyAudioTrackRepositoryWav() throws Exception {
+    initTest(MONGODB, "/audio/10sec/counter.wav");
+  }
+
+  @Test
+  public void testPlayerOnlyAudioTrackRepositoryFlac() throws Exception {
+    initTest(MONGODB, "/audio/10sec/cinema.flac");
+  }
+
+  @Test
+  public void testPlayerOnlyAudioTrackRepositoryOgg() throws Exception {
+    initTest(MONGODB, "/audio/10sec/fiware.ogg");
+  }
+
+  @Test
+  public void testPlayerOnlyAudioTrackRepositoryM4a() throws Exception {
+    initTest(MONGODB, "/audio/10sec/left-right.m4a");
+  }
+
+  @Test
+  public void testPlayerOnlyAudioTrackRepositoryWma() throws Exception {
+    initTest(MONGODB, "/audio/10sec/meet.wma");
+  }
 }

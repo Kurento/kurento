@@ -15,14 +15,20 @@
 
 package org.kurento.test.services;
 
+import static org.kurento.test.config.TestConfiguration.APP_HTTPS_PORT_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.APP_HTTPS_PORT_PROP;
 import static org.kurento.test.config.TestConfiguration.APP_HTTP_PORT_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.APP_HTTP_PORT_PROP;
 import static org.kurento.test.services.TestService.TestServiceScope.TEST;
 
+import org.apache.catalina.connector.Connector;
 import org.kurento.commons.PropertiesManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 
 /**
  * Web server service.
@@ -34,6 +40,17 @@ public class WebServerService extends TestService {
 
   @EnableAutoConfiguration
   public static class WebServer {
+
+    @Bean
+    public EmbeddedServletContainerFactory servletContainer() {
+      TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+      Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+      connector.setScheme("http");
+      connector.setPort(getAppHttpPort());
+
+      tomcat.addAdditionalTomcatConnectors(connector);
+      return tomcat;
+    }
   }
 
   private Class<?> webServerClass;
@@ -57,7 +74,7 @@ public class WebServerService extends TestService {
   }
 
   private void startContext() {
-    context = new SpringApplication(webServerClass).run("--server.port=" + getAppHttpPort());
+    context = new SpringApplication(webServerClass).run("--server.port=" + getAppHttpsPort());
     context.registerShutdownHook();
   }
 
@@ -82,6 +99,10 @@ public class WebServerService extends TestService {
 
   public ConfigurableApplicationContext getContext() {
     return context;
+  }
+
+  public static int getAppHttpsPort() {
+    return PropertiesManager.getProperty(APP_HTTPS_PORT_PROP, APP_HTTPS_PORT_DEFAULT);
   }
 
   public static int getAppHttpPort() {
