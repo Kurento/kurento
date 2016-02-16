@@ -234,16 +234,16 @@ GST_START_TEST (player_with_pointer)
       G_CALLBACK (connect_sink_on_srcpad_added), loop);
 
   /* request audio src pad using action */
-  g_signal_emit_by_name (player, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, &padname);
+  g_signal_emit_by_name (player, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_AUDIO, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
 
   GST_DEBUG ("Requested pad %s", padname);
   g_free (padname);
 
   /* request video src pad using action */
-  g_signal_emit_by_name (player, "request-new-srcpad",
-      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, &padname);
+  g_signal_emit_by_name (player, "request-new-pad",
+      KMS_ELEMENT_PAD_TYPE_VIDEO, NULL, GST_PAD_SRC, &padname);
   fail_if (padname == NULL);
 
   GST_DEBUG ("Requested pad %s", padname);
