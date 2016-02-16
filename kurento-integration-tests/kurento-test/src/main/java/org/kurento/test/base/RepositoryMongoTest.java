@@ -70,7 +70,7 @@ public class RepositoryMongoTest extends KurentoClientBrowserTest<WebRtcTestPage
       RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 
       config.setWebappPublicUrl("http://" + InetAddress.getLocalHost().getHostAddress() + ":"
-          + WebServerService.getAppHttpsPort() + "/");
+          + WebServerService.getAppHttpPort() + "/");
       config.setMongoDatabaseName("testfiles");
       config.setMongoUrlConnection(Protocol.MONGODB + "://" + getTestFilesMongoPath());
       config.setRepositoryType(RepoType.MONGODB);
@@ -100,7 +100,7 @@ public class RepositoryMongoTest extends KurentoClientBrowserTest<WebRtcTestPage
         break;
       case MONGODB:
         List<RepositoryItem> repositoryItem =
-        repository.findRepositoryItemsByAttRegex("file", nameMedia);
+            repository.findRepositoryItemsByAttRegex("file", nameMedia);
         RepositoryHttpPlayer repositoryPlayer = repositoryItem.get(0).createRepositoryHttpPlayer();
         mediaUrl = repositoryPlayer.getURL();
         return mediaUrl;
