@@ -108,8 +108,8 @@ def install_dependency(cache, dep):
 
         # Install selected dependency version
         print("Installing " + pkg_name + version)
-        os.system("sudo apt-get install --force-yes -y -q " +
-                  pkg_name + version)
+        os.system("sudo apt-get install --force-yes -y -q " + pkg_name +
+                  version)
         cache = Cache()
         gc.collect()
         if check_deb_dependency_installed(cache, dep):
@@ -376,6 +376,9 @@ def main():
         "--no_update_git",
         action="store_true",
         help="Do not update git repositories of dependency projects")
+    parser.add_argument("--no_apt_get_update",
+                        action="store_true",
+                        help="Do not perform an apt-get update on start")
 
     subparsers = parser.add_subparsers(dest="command")
     comp = subparsers.add_parser('compile', help='Compile package')
@@ -399,7 +402,8 @@ def main():
 
     args = parser.parse_args()
 
-    os.system ("sudo apt-get update")
+    if not args.no_apt_get_update:
+        os.system("sudo apt-get update")
     compile_project(args)
 
 
