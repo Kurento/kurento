@@ -33,6 +33,7 @@ import java.util.Collection;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.testing.SystemStabilityTests;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.config.Protocol;
@@ -41,9 +42,8 @@ import org.kurento.test.config.VideoFormat;
 import org.kurento.test.functional.player.SimplePlayer;
 
 /**
- * Test of stability for a PlayerEndpoint (play many times different videos).
- * </p>
- * Media Pipeline(s):
+ * Test of stability for a PlayerEndpoint (play many times different videos). </p> Media
+ * Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -83,16 +83,33 @@ public class PlayerMultiplePlayTest extends SimplePlayer {
   }
 
   @Test
-  public void testPlayerMultiplePlay() throws Exception {
+  public void testPlayerMultiplePlay() {
     Protocol[] protocols = { HTTP, FILE };
     VideoFormat[] videoFormats = { THIRDGP, AVI, MKV, MOV, MP4, OGV, WEBM };
     WebRtcChannel[] webRtcChannels = { AUDIO_AND_VIDEO, AUDIO_ONLY, VIDEO_ONLY };
+    int numError = 0;
+    Throwable t1 = null;
 
     for (Protocol protocol : protocols) {
       for (VideoFormat videoFormat : videoFormats) {
         for (WebRtcChannel webRtcChannel : webRtcChannels) {
-          testPlayerWithSmallFile(protocol, videoFormat, webRtcChannel);
-          getPage().reload();
+          do {
+            try {
+              testPlayerWithSmallFile(protocol, videoFormat, webRtcChannel);
+              getPage().reload();
+            } catch (Throwable t) {
+              getPage().reload();
+              numError++;
+              if (numError > 2) {
+                throw new KurentoException("2 Exceptions happens: " + t1.getClass().getName() + " "
+                    + t1.getMessage() + " and " + t.getClass().getName() + " " + t.getMessage());
+              } else {
+                t1 = t;
+              }
+              continue;
+            }
+            break;
+          } while (true);
         }
       }
     }
