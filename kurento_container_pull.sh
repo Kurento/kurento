@@ -23,6 +23,9 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:tru
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-8
 
+# dev-chef image
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
+
 # Selenium images
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.48.2"
 echo "Pulling images for selenium version $SELENIUM_VERSION"
