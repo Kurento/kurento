@@ -255,14 +255,14 @@ def generate_debian_package(args, config):
     old_changelog.write_to_open_file(open("debian/changelog", 'w'))
 
 
-def check_dependency_installed(cache, dependency):
+def check_dependency_installed(cache, dependency, debian_control_str):
     print("Check dependency installed: " + str(dependency))
 
     ret_val = True
 
-    f = open("debian/control")
+    #f = open("debian/control")
     while True:
-        debfile = Deb822(f)
+        debfile = Deb822(debian_control_str)
 
         if len(debfile) == 0:
             break
@@ -316,12 +316,9 @@ def compile_project(args):
         for dependency in config["dependencies"]:
             sub_project_name = dependency["name"]
 
-            os.chdir("..")
-            repo = clone_repo(args, args.base_url, sub_project_name)
-            os.chdir(sub_project_name)
-
             dependency.setdefault("commit")
 
+            git_url = args.base_url + "/" + sub_project_name
             if dependency.has_key("review"):
                 # TODO: Set commit according to review
                 pass
@@ -329,9 +326,21 @@ def compile_project(args):
             # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
             if dependency["commit"] == None and args.use_master_branch:
-                dependency["commit"] = str(repo.commit())
+                dependency["commit"] = str(os.popen("git ls-remote " + git_url
+                                                    + " HEAD").read(7))
+                default_commit = dependency["commit"]
+            else:
+                default_commit = "HEAD"
 
-            if not check_dependency_installed(cache, dependency):
+            debian_control_str = os.popen("git archive --remote=" + git_url +
+                                          " " + default_commit +
+                                          " debian/control")
+            if not check_dependency_installed(cache, dependency,
+                                              debian_control_str):
+                os.chdir("..")
+                repo = clone_repo(args, args.base_url, sub_project_name)
+                os.chdir(sub_project_name)
+
                 print("dependency " + dependency["name"] +
                       " not installed, compile it")
                 if dependency["commit"] != None:
@@ -343,8 +352,7 @@ def compile_project(args):
                                   dependency["name"])
                             exit(1)
                 compile_project(args)
-
-            os.chdir(workdir)
+                os.chdir(workdir)
 
     generate_debian_package(args, config)
 
