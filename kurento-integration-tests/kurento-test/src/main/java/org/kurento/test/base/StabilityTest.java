@@ -54,14 +54,14 @@ public class StabilityTest extends RepositoryMongoTest {
 
   public void testPlayerMultipleSeek(String mediaUrl, WebRtcChannel webRtcChannel,
       int pauseTimeSeconds, int numSeeks, Map<Integer, Color> expectedPositionAndColor)
-      throws Exception {
+          throws Exception {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, mediaUrl).build();
-    WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-    playerEP.connect(webRtcEP);
+    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+    WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
+    playerEp.connect(webRtcEp);
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+    playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
         log.debug("Received EndOfStream Event");
@@ -71,8 +71,8 @@ public class StabilityTest extends RepositoryMongoTest {
 
     // Test execution
     getPage().subscribeEvents("playing");
-    getPage().initWebRtc(webRtcEP, webRtcChannel, WebRtcMode.RCV_ONLY);
-    playerEP.play();
+    getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
+    playerEp.play();
 
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage().waitForEvent("playing"));
@@ -85,11 +85,11 @@ public class StabilityTest extends RepositoryMongoTest {
     for (int i = 0; i < numSeeks; i++) {
       executions++;
       log.debug("Try to set position in 0");
-      playerEP.setPosition(0);
+      playerEp.setPosition(0);
       for (Integer position : expectedPositionAndColor.keySet()) {
         executions++;
         log.debug("Try to set position in {}", position);
-        playerEP.setPosition(position);
+        playerEp.setPosition(position);
         if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
           Assert.assertTrue("After set position to " + position
               + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
@@ -113,6 +113,7 @@ public class StabilityTest extends RepositoryMongoTest {
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
+    playerEp.release();
     mp.release();
   }
 }

@@ -113,6 +113,7 @@ public class SimplePlayer extends PlayerTest {
     }
 
     // Release Media Pipeline
+    playerEp.release();
     mp.release();
   }
 
@@ -170,6 +171,7 @@ public class SimplePlayer extends PlayerTest {
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
+    playerEp.release();
     mp.release();
   }
 
@@ -219,6 +221,7 @@ public class SimplePlayer extends PlayerTest {
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline
+    playerEp.release();
     mp.release();
   }
 
