@@ -33,7 +33,7 @@ public class TestConfiguration {
   public static final String APP_HTTPS_PORT_PROP = "server.port.https";
   public static final int APP_HTTPS_PORT_DEFAULT = 8443;
   public static final String APP_HTTP_PORT_PROP = "server.port.http";
-  public static final int APP_HTTP_PORT_DEFAULT = 8080;
+  public static final int APP_HTTP_PORT_DEFAULT = 8090;
 
   public static final String TEST_PATH_PROPERTY = "test.path";
   public static final String TEST_PATH_DEFAULT = "/";

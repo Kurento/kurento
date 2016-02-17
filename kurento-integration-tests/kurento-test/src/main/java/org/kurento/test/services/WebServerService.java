@@ -25,6 +25,7 @@ import org.apache.catalina.connector.Connector;
 import org.kurento.commons.PropertiesManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -42,6 +43,7 @@ public class WebServerService extends TestService {
   public static class WebServer {
 
     @Bean
+    @ConditionalOnMissingBean
     public EmbeddedServletContainerFactory servletContainer() {
       TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
       Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
