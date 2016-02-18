@@ -15,7 +15,7 @@
 
 var chanId = 0;
 
-function getChannelName () {
+function getChannelName() {
   return "TestChannel" + chanId++;
 }
 
@@ -81,26 +81,20 @@ window.addEventListener('load', function()
   //TODO
   //This is ignoring ice servers. We should patch kurento-utils-js
   //for being able to do this correctly.
-  console.log("Creating external peerConnection");
+
   var servers = null;
   var configuration = null;
-  var peerConnection = new RTCPeerConnection(servers, configuration);
+  var peerConnection = null;
 
   console.log("Creating channel");
   var dataConstraints = null;
   var channel;
 
-  channel = peerConnection.createDataChannel(getChannelName (), dataConstraints);
-
-  channel.onopen = onSendChannelStateChange;
-  channel.onclose = onSendChannelStateChange;
-  channel.onmessage = onMessage;
-
-  function onSendChannelStateChange(){
-    if(!channel) return;
+  function onSendChannelStateChange() {
+    if (!channel) return;
     var readyState = channel.readyState;
     console.log("sencChannel state changed to " + readyState);
-    if(readyState == 'open'){
+    if (readyState == 'open') {
       dataChannelSend.disabled = false;
       dataChannelSend.focus();
       $('#send').attr('disabled', false);
@@ -121,34 +115,34 @@ window.addEventListener('load', function()
   var dataChannelSend = document.getElementById('dataChannelSend');
   var dataChannelReceive = document.getElementById('dataChannelReceive');
 
-  function onMessage (event) {
+  function onMessage(event) {
     console.log("Received data " + event["data"]);
     dataChannelReceive.value = event["data"];
   }
 
-  sendButton.addEventListener("click", function(){
+  sendButton.addEventListener("click", function() {
     var data = dataChannelSend.value;
     console.log("Send button pressed. Sending data " + data);
     channel.send(data);
     dataChannelSend.value = "";
   });
 
-  openButton.addEventListener("click", function(){
+  openButton.addEventListener("click", function() {
     if (channel) {
       console.error("No more than 1 channel supported");
       return;
     }
 
-    channel = peerConnection.createDataChannel(getChannelName (), dataConstraints);
+    channel = peerConnection.createDataChannel(getChannelName(), dataConstraints);
 
     channel.onopen = onSendChannelStateChange;
     channel.onclose = onSendChannelStateChange;
     channel.onmessage = onMessage;
   });
 
-  function closeChannels(){
+  function closeChannels() {
 
-    if(channel){
+    if (channel) {
       channel.close();
       dataChannelSend.disabled = true;
       $('#send').attr('disabled', true);
@@ -158,15 +152,24 @@ window.addEventListener('load', function()
     }
   }
 
-  closeButton.addEventListener("click", function(){
+  closeButton.addEventListener("click", function() {
     console.log("Close data channel");
-    closeChannels ();
+    closeChannels();
   });
 
   //DataChannel stuff above this line
 
   startButton.addEventListener("click", function()
   {
+    console.log("Creating external peerConnection");
+    peerConnection = new RTCPeerConnection(servers, configuration);
+
+    channel = peerConnection.createDataChannel(getChannelName(), dataConstraints);
+
+    channel.onopen = onSendChannelStateChange;
+    channel.onclose = onSendChannelStateChange;
+    channel.onmessage = onMessage;
+
     showSpinner(videoInput, videoOutput);
 
     var options = {
@@ -186,40 +189,44 @@ window.addEventListener('load', function()
 
     webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error)
     {
-      if(error) return onError(error)
+      if (error) return onError(error)
 
       this.generateOffer(onOffer)
     });
 
     function onOffer(error, sdpOffer)
     {
-      if(error) return onError(error)
+      if (error) return onError(error)
 
       kurentoClient(args.ws_uri, function(error, kurentoClient)
       {
-        if(error) return onError(error);
+        if (error) return onError(error);
 
         kurentoClient.create("MediaPipeline", function(error, _pipeline)
         {
-          if(error) return onError(error);
+          if (error) return onError(error);
 
           pipeline = _pipeline;
 
-          pipeline.create("WebRtcEndpoint", {useDataChannels: true}, function(error, webRtc){
-            if(error) return onError(error);
+          pipeline.create("WebRtcEndpoint", {useDataChannels: true}, function(error, webRtc) {
+            if (error) return onError(error);
 
             setIceCandidateCallbacks(webRtcPeer, webRtc, onError)
 
-            webRtc.processOffer(sdpOffer, function(error, sdpAnswer){
-              if(error) return onError(error);
+            console.log("Offer: " + sdpOffer);
+
+            webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+              if (error) return onError(error);
+
+              console.log("Answer: " + sdpAnswer);
 
               webRtc.gatherCandidates(onError);
 
               webRtcPeer.processAnswer(sdpAnswer, onError);
             });
 
-            webRtc.connect(webRtc, function(error){
-              if(error) return onError(error);
+            webRtc.connect(webRtc, function(error) {
+              if (error) return onError(error);
 
               console.log("Loopback established");
             });
@@ -234,12 +241,17 @@ window.addEventListener('load', function()
 
     closeChannels();
 
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+
     if (webRtcPeer) {
       webRtcPeer.dispose();
       webRtcPeer = null;
     }
 
-    if(pipeline){
+    if (pipeline) {
       pipeline.release();
       pipeline = null;
     }
@@ -248,7 +260,7 @@ window.addEventListener('load', function()
   }
 
   function onError(error) {
-    if(error)
+    if (error)
     {
       console.error(error);
       stop();
@@ -258,14 +270,14 @@ window.addEventListener('load', function()
 
 
 function showSpinner() {
-  for (var i = 0; i < arguments.length; i++) {
+  for(var i = 0; i < arguments.length; i++) {
     arguments[i].poster = 'img/transparent-1px.png';
     arguments[i].style.background = "center transparent url('img/spinner.gif') no-repeat";
   }
 }
 
 function hideSpinner() {
-  for (var i = 0; i < arguments.length; i++) {
+  for(var i = 0; i < arguments.length; i++) {
     arguments[i].src = '';
     arguments[i].poster = 'img/webrtc.png';
     arguments[i].style.background = '';
