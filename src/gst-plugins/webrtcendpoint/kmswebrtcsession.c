@@ -1096,6 +1096,7 @@ kms_webrtc_session_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
     guint stream_id, KmsWebrtcSession * self)
 {
   DataChannel *channel;
+  GstPad *pad;
 
   GST_DEBUG_OBJECT (self, "Data channel with stream_id %u closed", stream_id);
 
@@ -1110,6 +1111,15 @@ kms_webrtc_session_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
   }
 
   g_hash_table_steal (self->data_channels, GUINT_TO_POINTER (stream_id));
+
+  pad = gst_element_get_static_pad (channel->appsink, "sink");
+
+  if (self->remove_pad_cb != NULL) {
+    self->remove_pad_cb (self, pad, KMS_ELEMENT_PAD_TYPE_DATA, NULL,
+        self->cb_data);
+  }
+
+  g_object_unref (pad);
 
   KMS_SDP_SESSION_UNLOCK (self);
 

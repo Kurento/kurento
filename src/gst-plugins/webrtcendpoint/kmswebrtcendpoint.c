@@ -243,7 +243,23 @@ static gboolean
 kms_webrtc_endpoint_remove_pad (KmsWebrtcSession * session, GstPad * pad,
     KmsElementPadType type, const gchar * description, gpointer user_data)
 {
-  /* TODO: Remove pad */
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (user_data);
+
+  if (type != KMS_ELEMENT_PAD_TYPE_DATA) {
+    GST_ERROR_OBJECT (self, "Unsupported pad type %u", type);
+    return FALSE;
+  }
+
+  if (gst_pad_get_direction (pad) != GST_PAD_SINK) {
+    GST_ERROR_OBJECT (self, "Failed to remove pad %" GST_PTR_FORMAT
+        "Only sink pads can be removed", pad);
+    return FALSE;
+  }
+
+  GST_DEBUG_OBJECT (self, "Remove sink pad %" GST_PTR_FORMAT, pad);
+
+  kms_element_remove_sink_by_type_full (KMS_ELEMENT (self), type, description);
+
   return TRUE;
 }
 
