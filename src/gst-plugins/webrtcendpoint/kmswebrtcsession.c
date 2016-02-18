@@ -1079,9 +1079,6 @@ static void
 kms_webrtc_session_remove_data_channel (KmsWebrtcSession * self,
     DataChannel * channel, guint stream_id)
 {
-  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_CHANNEL_OPENED],
-      0, stream_id);
-
   g_object_ref (channel->appsrc);
   g_object_ref (channel->appsink);
 
