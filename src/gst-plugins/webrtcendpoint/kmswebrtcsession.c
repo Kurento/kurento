@@ -70,8 +70,6 @@ enum
   SIGNAL_DATA_CHANNEL_CLOSED,
   ACTION_CREATE_DATA_CHANNEL,
   ACTION_DESTROY_DATA_CHANNEL,
-  SIGNAL_DATA_SINK_PAD_ADDED,
-  SIGNAL_DATA_SRC_PAD_ADDED,
   SIGNAL_DATA_PADS_REMOVE,
   LAST_SIGNAL
 };
@@ -1054,13 +1052,21 @@ kms_webrtc_session_data_channel_opened_cb (KmsWebRtcDataSessionBin * session,
   gst_element_sync_state_with_parent (channel->appsrc);
 
   pad = gst_element_get_static_pad (channel->appsrc, "src");
-  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_SRC_PAD_ADDED],
-      0, stream_id, pad);
+
+  if (self->add_pad_cb != NULL) {
+    self->add_pad_cb (self, pad, KMS_ELEMENT_PAD_TYPE_DATA, NULL,
+        self->cb_data);
+  }
+
   g_object_unref (pad);
 
   pad = gst_element_get_static_pad (channel->appsink, "sink");
-  g_signal_emit (self, kms_webrtc_session_signals[SIGNAL_DATA_SINK_PAD_ADDED],
-      0, stream_id, pad);
+
+  if (self->add_pad_cb != NULL) {
+    self->add_pad_cb (self, pad, KMS_ELEMENT_PAD_TYPE_DATA, NULL,
+        self->cb_data);
+  }
+
   g_object_unref (pad);
 
   KMS_SDP_SESSION_UNLOCK (self);
@@ -1607,6 +1613,10 @@ kms_webrtc_session_finalize (GObject * object)
   g_free (self->turn_password);
   g_free (self->turn_address);
 
+  if (self->destroy_data != NULL && self->cb_data != NULL) {
+    self->destroy_data (self->cb_data);
+  }
+
   g_clear_object (&self->data_session);
   g_hash_table_unref (self->data_channels);
 
@@ -1691,6 +1701,30 @@ kms_webrtc_session_init (KmsWebrtcSession * self)
 
   self->data_channels = g_hash_table_new_full (g_direct_hash,
       g_direct_equal, NULL, (GDestroyNotify) kms_ref_struct_unref);
+}
+
+void
+kms_webrtc_session_set_callbacks (KmsWebrtcSession * self,
+    KmsWebrtcSessionCallbacks * cb, gpointer user_data, GDestroyNotify notify)
+{
+  GDestroyNotify destroy;
+  gpointer data;
+
+  KMS_SDP_SESSION_LOCK (self);
+
+  destroy = self->destroy_data;
+  data = self->cb_data;
+
+  self->cb_data = user_data;
+  self->destroy_data = notify;
+  self->add_pad_cb = cb->add_pad_cb;
+  self->remove_pad_cb = cb->remove_pad_cb;
+
+  KMS_SDP_SESSION_UNLOCK (self);
+
+  if (destroy != NULL && data != NULL) {
+    destroy (data);
+  }
 }
 
 static void
@@ -1858,38 +1892,6 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, destroy_data_channel),
       NULL, NULL, g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
-
-  /**
-   * KmsWebrtcSession::data-sink-pad-added:
-   * @webrtcsession: the object which received the signal
-   * @stream_id: the id of the DataChannel
-   * @pad: the new src pad
-   *
-   * Emited when a new data sink pad is added.
-   */
-  kms_webrtc_session_signals[SIGNAL_DATA_SINK_PAD_ADDED] =
-      g_signal_new ("data-sink-pad-added",
-      G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
-      NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 2, G_TYPE_UINT,
-      GST_TYPE_PAD);
-
-  /**
-   * KmsWebrtcSession::data-src-pad-added:
-   * @webrtcsession: the object which received the signal
-   * @stream_id: the id of the DataChannel
-   * @pad: the new sink pad
-   *
-   * Emited when a new data src pad is added.
-   */
-  kms_webrtc_session_signals[SIGNAL_DATA_SRC_PAD_ADDED] =
-      g_signal_new ("data-src-pad-added",
-      G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
-      NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 2, G_TYPE_UINT,
-      GST_TYPE_PAD);
 
   /**
    * KmsWebrtcSession::data-pads-remove:

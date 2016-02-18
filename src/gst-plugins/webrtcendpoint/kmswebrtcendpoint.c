@@ -164,32 +164,87 @@ kms_webrtc_endpoint_link_pads (GstPad * src, GstPad * sink)
 }
 
 static void
-on_data_sink_pad_added (KmsWebrtcSession * sess, guint stream_id,
-    GstPad * sink, KmsWebrtcEndpoint * self)
-{
-  kms_element_connect_sink_target (KMS_ELEMENT (self), sink,
-      KMS_ELEMENT_PAD_TYPE_DATA);
-}
-
-static void
-on_data_src_pad_added (KmsWebrtcSession * sess, guint stream_id,
-    GstPad * src, KmsWebrtcEndpoint * self)
-{
-  GstElement *data_tee;
-  GstPad *sink;
-
-  data_tee = kms_element_get_data_tee (KMS_ELEMENT (self));
-  sink = gst_element_get_static_pad (data_tee, "sink");
-  kms_webrtc_endpoint_link_pads (src, sink);
-  g_object_unref (sink);
-}
-
-static void
 on_data_pads_removed (KmsWebrtcSession * sess, guint stream_id,
     KmsWebrtcEndpoint * self)
 {
   kms_element_remove_sink_by_type (KMS_ELEMENT (self),
       KMS_ELEMENT_PAD_TYPE_DATA);
+}
+
+static gboolean
+kms_webrtc_endpoint_add_data_sink_pad (KmsWebrtcEndpoint * self,
+    GstPad * target, const gchar * description)
+{
+  GstPad *pad;
+
+  pad = kms_element_connect_sink_target_full (KMS_ELEMENT (self), target,
+      KMS_ELEMENT_PAD_TYPE_DATA, description, NULL, NULL);
+
+  if (pad == NULL) {
+    GST_ERROR_OBJECT (self, "Can not add pad %" GST_PTR_FORMAT, target);
+    return FALSE;
+  }
+
+  GST_DEBUG_OBJECT (self, "Added pad %" GST_PTR_FORMAT, pad);
+
+  return TRUE;
+}
+
+static gboolean
+kms_webrtc_endpoint_add_data_src_pad (KmsWebrtcEndpoint * self, GstPad * pad,
+    const gchar * description)
+{
+  GstElement *data_tee;
+  GstPad *sink;
+
+  data_tee = kms_element_get_data_output_element (KMS_ELEMENT (self),
+      description);
+
+  if (data_tee == NULL) {
+    GST_ERROR_OBJECT (self, "Can not add pad %" GST_PTR_FORMAT, pad);
+    return FALSE;
+  }
+
+  sink = gst_element_get_static_pad (data_tee, "sink");
+  kms_webrtc_endpoint_link_pads (pad, sink);
+  g_object_unref (sink);
+
+  return TRUE;
+}
+
+static gboolean
+kms_webrtc_endpoint_add_pad (KmsWebrtcSession * session, GstPad * pad,
+    KmsElementPadType type, const gchar * description, gpointer user_data)
+{
+  KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (user_data);
+  gboolean ret = FALSE;
+
+  if (type != KMS_ELEMENT_PAD_TYPE_DATA) {
+    GST_WARNING_OBJECT (self, "Unsupported pad type %u", type);
+    return FALSE;
+  }
+
+  switch (gst_pad_get_direction (pad)) {
+    case GST_PAD_SINK:
+      ret = kms_webrtc_endpoint_add_data_sink_pad (self, pad, description);
+      break;
+    case GST_PAD_SRC:
+      ret = kms_webrtc_endpoint_add_data_src_pad (self, pad, description);
+      break;
+    default:
+      GST_ERROR_OBJECT (self, "Invalid direction of pad %" GST_PTR_FORMAT, pad);
+      return FALSE;
+  }
+
+  return ret;
+}
+
+static gboolean
+kms_webrtc_endpoint_remove_pad (KmsWebrtcSession * session, GstPad * pad,
+    KmsElementPadType type, const gchar * description, gpointer user_data)
+{
+  /* TODO: Remove pad */
+  return TRUE;
 }
 
 static void
@@ -198,11 +253,17 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (base_sdp);
   KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (self);
+  KmsWebrtcSessionCallbacks callbacks;
   KmsWebrtcSession *webrtc_sess;
   guint min_port, max_port;
 
   webrtc_sess =
       kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
+
+  callbacks.add_pad_cb = kms_webrtc_endpoint_add_pad;
+  callbacks.remove_pad_cb = kms_webrtc_endpoint_remove_pad;
+
+  kms_webrtc_session_set_callbacks (webrtc_sess, &callbacks, self, NULL);
 
   g_object_bind_property (self, "stun-server",
       webrtc_sess, "stun-server", G_BINDING_DEFAULT);
@@ -229,10 +290,6 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   g_signal_connect (webrtc_sess, "data-channel-closed",
       G_CALLBACK (on_data_channel_closed), self);
 
-  g_signal_connect (webrtc_sess, "data-sink-pad-added",
-      G_CALLBACK (on_data_sink_pad_added), self);
-  g_signal_connect (webrtc_sess, "data-src-pad-added",
-      G_CALLBACK (on_data_src_pad_added), self);
   g_signal_connect (webrtc_sess, "data-pads-remove",
       G_CALLBACK (on_data_pads_removed), self);
 
