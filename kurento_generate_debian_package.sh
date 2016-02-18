@@ -104,6 +104,8 @@ list=(../*${ver}_*.deb)
 length=${#list[@]}
 current=0
 
+sudo dpkg -i ../*${ver}_*.deb || { echo "Packages cannot be installed"; exit 1 }
+
 for i in ../*${ver}_*.deb
 do
   current=$((current + 1))
@@ -113,7 +115,6 @@ do
      export DO_SYNC=TRUE
   fi
 
-  sudo dpkg -i $i
   kurento_upload_package.sh $DIST-dev $i || { echo "Failed to upload package $i"; exit 1; }
 
   if [ $rc = 0 ] || [ "${FORCE_RELEASE}" = "yes" ]
