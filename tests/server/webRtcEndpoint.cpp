@@ -28,6 +28,8 @@
 #include <MediaElementImpl.hpp>
 #include <ConnectionState.hpp>
 
+#define NUMBER_OF_RECONNECTIONS 5
+
 using namespace kurento;
 using namespace boost::unit_test;
 
@@ -92,12 +94,13 @@ exchange_candidate (OnIceCandidate event,
 }
 
 static std::shared_ptr <WebRtcEndpointImpl>
-createWebrtc (void)
+createWebrtc (bool use_data_channels = false)
 {
   std::shared_ptr <kurento::MediaObjectImpl> webrtcEndpoint;
   Json::Value constructorParams;
 
   constructorParams ["mediaPipeline"] = mediaPipelineId;
+  constructorParams ["useDataChannels"] = use_data_channels;
 
   webrtcEndpoint = moduleManager.getFactory ("WebRtcEndpoint")->createObject (
                      config, "",
@@ -631,6 +634,73 @@ check_codec_sdp ()
   releaseWebRtc (webRtcEp);
 }
 
+static void
+check_data_channel ()
+{
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpOfferer = createWebrtc (true);
+  std::shared_ptr <WebRtcEndpointImpl> webRtcEpAnswerer = createWebrtc (true);
+  std::atomic<bool> pass_cond (false);
+  std::condition_variable cv;
+  std::mutex mtx;
+  std::unique_lock<std::mutex> lck (mtx);
+  int chanId = -1;
+
+  connectWebrtcEndpoints (webRtcEpOfferer, webRtcEpAnswerer, false);
+
+  webRtcEpAnswerer->signalOnDataChannelOpened.connect ([&] (
+  OnDataChannelOpened event) {
+    BOOST_TEST_MESSAGE ("Data channel " << event.getChannelId() << " opened");
+
+    if (chanId < 0) {
+      chanId = event.getChannelId();
+    }
+
+    pass_cond = true;
+    cv.notify_one();
+  });
+
+  webRtcEpOfferer->signalOnDataChannelClosed.connect ([&] (
+  OnDataChannelClosed event) {
+    BOOST_TEST_MESSAGE ("Data channel " << event.getChannelId() << " closed");
+
+    if (chanId != event.getChannelId() ) {
+      BOOST_ERROR ("Unexpected data channel closed");
+    }
+
+    pass_cond = true;
+    cv.notify_one();
+  });
+
+  for (int i = 0; i < NUMBER_OF_RECONNECTIONS; i++) {
+    pass_cond = false;
+    chanId = -1;
+
+    webRtcEpOfferer->createDataChannel ("TestDataChannel");
+
+    cv.wait (lck, [&] () {
+      return pass_cond.load();
+    });
+
+    if (!pass_cond) {
+      BOOST_ERROR ("No data channel opened");
+    }
+
+    pass_cond = false;
+    webRtcEpAnswerer->closeDataChannel (chanId);
+
+    cv.wait (lck, [&] () {
+      return pass_cond.load();
+    });
+
+    if (!pass_cond) {
+      BOOST_ERROR ("No data channel closed");
+    }
+  }
+
+  releaseWebRtc (webRtcEpOfferer);
+  releaseWebRtc (webRtcEpAnswerer);
+}
+
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
@@ -651,6 +721,8 @@ init_unit_test_suite ( int , char *[] )
   test->add (BOOST_TEST_CASE ( &check_exchange_candidates_on_sdp ),
              0, /* timeout */ 15);
   test->add (BOOST_TEST_CASE ( &check_codec_sdp ), 0, /* timeout */ 15);
+
+  test->add (BOOST_TEST_CASE ( &check_data_channel ), 0, /* timeout */ 15);
 
   return test;
 }

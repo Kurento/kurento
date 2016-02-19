@@ -788,7 +788,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
       G_STRUCT_OFFSET (KmsWebrtcEndpointClass, get_data_channel_supported),
-      NULL, NULL, __kms_webrtc_marshal_BOOLEAN__STRING, G_TYPE_BOOLEAN, 2,
+      NULL, NULL, __kms_webrtc_marshal_BOOLEAN__STRING, G_TYPE_BOOLEAN, 1,
       G_TYPE_STRING);
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
