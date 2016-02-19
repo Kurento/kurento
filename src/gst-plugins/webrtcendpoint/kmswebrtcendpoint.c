@@ -271,7 +271,6 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
   KmsIRtpSessionManager *manager = KMS_I_RTP_SESSION_MANAGER (self);
   KmsWebrtcSessionCallbacks callbacks;
   KmsWebrtcSession *webrtc_sess;
-  guint min_port, max_port;
 
   webrtc_sess =
       kms_webrtc_session_new (base_sdp, id, manager, self->priv->context);
@@ -316,8 +315,7 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       (kms_webrtc_endpoint_parent_class)->create_session_internal (base_sdp, id,
       sess);
 
-  g_object_get (self, "min-port", &min_port, "max-port", &max_port, NULL);
-  g_signal_emit_by_name (webrtc_sess, "init-ice-agent", min_port, max_port);
+  g_signal_emit_by_name (webrtc_sess, "init-ice-agent");
 }
 
 /* Internal session management end */
