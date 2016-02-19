@@ -104,7 +104,7 @@ list=(../*${ver}_*.deb)
 length=${#list[@]}
 current=0
 
-sudo dpkg -i ../*${ver}_*.deb || { echo "Packages cannot be installed"; exit 1 }
+#sudo dpkg -i ../*${ver}_*.deb || { echo "Packages cannot be installed"; exit 1 }
 
 for i in ../*${ver}_*.deb
 do
