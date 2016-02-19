@@ -19,7 +19,7 @@ import apt_pkg
 import git
 from git import Repo
 
-# sudo apt-get install python-git python-yaml python-apt python-debian python-requests
+# sudo apt-get install curl python-git python-yaml python-apt python-debian python-requests
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
 
@@ -152,6 +152,17 @@ def get_debian_version(args, dist):
     return version
 
 
+def request_http(url, cert, id_rsa, data=None):
+    if data == None:
+        r = requests.post(url, verify=False, cert=(cert, id_rsa))
+        print(r.text)
+    else:
+        result = os.popen("curl --insecure --key " + id_rsa + "  --cert " +
+                          cert + " -X POST \"" + url + "\" --data-binary @" +
+                          data)
+        print (result.read())
+
+
 def upload_package(args, config, dist, package, publish=False):
     if config.has_key("private") and config["private"] == True:
         repo = "ubuntu-priv"
@@ -163,19 +174,12 @@ def upload_package(args, config, dist, package, publish=False):
     upload_url = base_url + "&name=" + os.path.basename(package) + "&cmd=add"
     print("url: " + upload_url)
 
-    r = requests.post(upload_url,
-                      verify=False,
-                      cert=(args.cert.name, args.id_rsa.name),
-                      data=open(package))
-    print(r.text)
+    request_http(upload_url, args.cert.name, args.id_rsa.name, package)
 
     if publish:
         publish_url = base_url + "&cmd=publish"
         print("publish url: " + publish_url)
-        r = requests.post(publish_url,
-                          verify=False,
-                          cert=(args.cert.name, args.id_rsa.name))
-        print(r.text)
+        request_http(publish_url, args.cert.name, args.id_rsa.name)
 
 
 def generate_debian_package(args, config):
