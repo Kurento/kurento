@@ -329,6 +329,31 @@ public class TestScenario {
     }
   }
 
+  public static Collection<Object[]> localFirefoxs(int size, WebPageType webPageType) {
+    String configFile = getConfigFile();
+    if (configFile != null) {
+      return from(configFile);
+    } else {
+      // Test : Firefox's in local
+      TestScenario test = new TestScenario();
+      for (int i = 0; i < size; i++) {
+        test.addBrowser(BrowserConfig.BROWSER + i, new Browser.Builder().webPageType(webPageType)
+            .browserType(BrowserType.FIREFOX).scope(BrowserScope.LOCAL).build());
+      }
+      return Arrays.asList(new Object[][] { { test } });
+    }
+  }
+
+  public static Collection<Object[]> localFirefoxs(int size) {
+    String configFile = getConfigFile();
+    if (configFile != null) {
+      return from(configFile);
+    } else {
+      // Test: Chrome(s) in local
+      return localFirefoxs(size, WebPageType.WEBRTC);
+    }
+  }
+
   public static Collection<Object[]> localPresenterAndViewer() {
     String configFile = getConfigFile();
     if (configFile != null) {
