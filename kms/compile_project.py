@@ -18,8 +18,9 @@ from debian.deb822 import Deb822, PkgRelation
 import apt_pkg
 import git
 from git import Repo
+from git_review.cmd import query_reviews
 
-# sudo apt-get install curl python-git python-yaml python-apt python-debian python-requests
+# sudo apt-get install curl python-git python-yaml python-apt python-debian python-requests git-review
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
 
@@ -160,7 +161,7 @@ def request_http(url, cert, id_rsa, data=None):
         result = os.popen("curl --insecure --key " + id_rsa + "  --cert " +
                           cert + " -X POST \"" + url + "\" --data-binary @" +
                           data)
-        print (result.read())
+        print(result.read())
 
 
 def upload_package(args, config, dist, package, publish=False):
@@ -320,18 +321,24 @@ def compile_project(args):
         for dependency in config["dependencies"]:
             sub_project_name = dependency["name"]
 
-            dependency.setdefault("commit")
+            #Only revisions are allowed
+            dependency["commit"] = None
 
             git_url = args.base_url + "/" + sub_project_name
             if dependency.has_key("review"):
-                # TODO: Set commit according to review
-                pass
+                reviews = query_reviews(git_url, change=dependency["review"])
+                if len(reviews) > 0 and reviews[0]["status"] == "MERGED":
+                    dependency["commit"] = reviews[0]["currentPatchSet"][
+                        "revision"]
+                    print("Revision " + dependency["commit"])
 
             # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
             if dependency["commit"] == None and args.use_master_branch:
                 dependency["commit"] = str(os.popen("git ls-remote " + git_url
                                                     + " HEAD").read(7))
+
+            if dependency["commit"]:
                 default_commit = dependency["commit"]
             else:
                 default_commit = "HEAD"
