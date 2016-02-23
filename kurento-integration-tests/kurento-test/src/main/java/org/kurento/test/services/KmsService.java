@@ -26,6 +26,10 @@ import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_P
 import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_FORCE_PULLING_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_NAME_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_IMAGE_NAME_PROP;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_ACCESS_KEY_ID;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_BUCKET_NAME;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_HOSTNAME;
+import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_SECRET_ACCESS_KEY;
 import static org.kurento.test.config.TestConfiguration.KMS_GST_PLUGINS_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_LOGIN_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_LOG_PATH_DEFAULT;
@@ -457,10 +461,10 @@ public class KmsService extends TestService {
     log.debug("Starting KMS container...");
 
     // Check S3 properties
-    String s3BucketName = getProperty(TestConfiguration.KMS_DOCKER_S3_BUCKET_NAME);
-    String s3AccessKeyId = getProperty(TestConfiguration.KMS_DOCKER_S3_ACCESS_KEY_ID);
-    String s3SecretAccessKey = getProperty(TestConfiguration.KMS_DOCKER_S3_SECRET_ACCESS_KEY);
-    String s3Hostname = getProperty(TestConfiguration.KMS_DOCKET_S3_HOSTNAME);
+    String s3BucketName = getProperty(KMS_DOCKER_S3_BUCKET_NAME);
+    String s3AccessKeyId = getProperty(KMS_DOCKER_S3_ACCESS_KEY_ID);
+    String s3SecretAccessKey = getProperty(KMS_DOCKER_S3_SECRET_ACCESS_KEY);
+    String s3Hostname = getProperty(KMS_DOCKER_S3_HOSTNAME);
 
     // Check Stun properties
     String kmsStunIp = getProperty(TestConfiguration.KMS_STUN_IP_PROPERTY);
