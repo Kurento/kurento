@@ -15,10 +15,11 @@ if [ $action = 'start' ]; then
 echo "Starting..." && exit 0
 
 ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
-while [ ping $ip ]; do
+while [ ping -c 1 $ip ]; do
   ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
 done
 
+echo "Selected ip: $ip"
 
 docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
 # Add Net namespaces
