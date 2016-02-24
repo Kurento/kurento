@@ -9,7 +9,9 @@ transport=$3
 
 echo "Performing $action on container ID $container with transport $transport"
 
-if [ $action = 'create' ]; then
+if [ $action = 'start' ]; then
+
+echo "Starting..." && exit 0
 
 docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
 # Add Net namespaces
@@ -76,9 +78,11 @@ fi
 
 fi
 
-if [ $action = 'delete' ]; then
+if [ $action = 'destroy' ]; then
 ######################################################
 # Delete container
+echo "Destroying..." && exit 0-9a
+
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
 ip netns del $docker_pid
