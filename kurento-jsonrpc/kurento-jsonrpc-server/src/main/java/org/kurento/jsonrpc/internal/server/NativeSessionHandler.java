@@ -14,6 +14,6 @@ public interface NativeSessionHandler {
 
   public boolean isSessionKnown(String sessionId);
 
-  public void processNewCreatedSession(Session session);
+  public void processNewCreatedKnownSession(Session session);
 
 }

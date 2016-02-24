@@ -16,8 +16,8 @@
 package org.kurento.jsonrpc.internal.server;
 
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_CLOSE;
-import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_CONNECT;
+import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.PONG_PAYLOAD;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.RECONNECTION_ERROR;
@@ -258,9 +258,12 @@ public class ProtocolManager {
     if (handler instanceof NativeSessionHandler) {
       NativeSessionHandler nativeHandler = (NativeSessionHandler) handler;
       if (nativeHandler.isSessionKnown(reqSessionId)) {
+
+        log.debug("Session {} is already known by NativeSessionHandler", reqSessionId);
+
         session = createSession(factory, null, reqSessionId);
         session.setNew(false);
-        nativeHandler.processNewCreatedSession(session);
+        nativeHandler.processNewCreatedKnownSession(session);
       }
     }
     return session;
