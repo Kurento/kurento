@@ -1,8 +1,5 @@
 #!/bin/bash -x
 
-exec >> dnat.log
-exec 2>&1
-
 echo "##################### EXECUTE: kurento_ci_container_dnat #####################"
 
 ############################################

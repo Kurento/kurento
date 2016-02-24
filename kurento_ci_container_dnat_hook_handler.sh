@@ -3,9 +3,6 @@ echo "##################### EXECUTE: kurento_ci_container_dnat_hook_handler ####
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
-exec >> hook.log
-exec 2>&1
-
 echo "Arguments: $*"
 
 event=$1
@@ -26,7 +23,8 @@ if [ $event = 'start' ]; then
       transport="udp"
     fi
     touch $container.id
-    kurento_ci_container_dnat.sh $container $event $transport
+    echo "Calling dnat script"
+    kurento_ci_container_dnat.sh $container $event $transport >> dnat2.log
   fi
 fi
 
@@ -35,7 +33,8 @@ if [ $event = 'destroy' ]; then
   if [ -f $container.id ]; then
     echo "Container with dnat found. Deleting dnat rules."
     rm $container.id
-    kurento_ci_container_dnat.sh $container $event $transport
+    echo "Calling dnat script"
+    kurento_ci_container_dnat.sh $container $event $transport >> dnat2destroy.log
   else
     echo "Container not found. Ignoring."
   fi
