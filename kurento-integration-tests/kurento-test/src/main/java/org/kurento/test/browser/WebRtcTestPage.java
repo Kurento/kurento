@@ -60,6 +60,9 @@ public class WebRtcTestPage extends WebPage {
     public String processOffer(String sdpOffer);
   }
 
+  protected final String FAKE_IPV4 = "10.2.3.4";
+  protected final String FAKE_IPV6 = "2000:2001:2002:2003:2004:2005:2006";
+
   protected static final String LOCAL_VIDEO = "local";
   protected static final String REMOTE_VIDEO = "video";
 
@@ -280,7 +283,7 @@ public class WebRtcTestPage extends WebPage {
   protected Boolean filterCandidate(String candidate, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType) {
 
-    Boolean hasIpv = false;
+    Boolean filtered = true;
     Boolean hasCandidateIpv6 = false;
     if (candidate.split("candidate:")[1].contains(":")) {
       hasCandidateIpv6 = true;
@@ -289,35 +292,111 @@ public class WebRtcTestPage extends WebPage {
     switch (webRtcIpvMode) {
       case IPV4:
         if (!hasCandidateIpv6) {
-          hasIpv = true;
+          filtered = false;
         }
         break;
       case IPV6:
         if (hasCandidateIpv6) {
-          hasIpv = true;
+          filtered = false;
         }
         break;
       case BOTH:
       default:
-        hasIpv = true;
+        filtered = false;
         break;
     }
+    return filtered;
+  }
+
+  protected String manglingCandidate(String candidate, WebRtcIpvMode webRtcIpvMode,
+      WebRtcCandidateType webRtcCandidateType) {
+
+    String internalAddress;
+    String publicAddress;
+    String internalAddresses[];
+    String publicAddresses[];
+    String newInternalAddress = "";
+    String newPublicAddress = "";
 
     String candidateType = candidate.split("typ")[1].split(" ")[1];
-    Boolean hasCandidate = false;
 
-    switch (webRtcCandidateType) {
-      case HOST:
-      case RELAY:
-      case SRFLX:
-        hasCandidate = webRtcCandidateType.toString().equals(candidateType);
-        break;
-      case ALL:
-      default:
-        hasCandidate = true;
-        break;
+    if (WebRtcCandidateType.HOST.toString().equals(candidateType)) {
+      internalAddress = candidate.split(" ")[4];
+      switch (webRtcIpvMode) {
+        case IPV4:
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            internalAddresses = internalAddress.split("\\.");
+            for (int i = 0; i < internalAddresses.length - 1; i++) {
+              newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
+            }
+            newInternalAddress = newInternalAddress.concat("254");
+          } else {
+            newInternalAddress = internalAddress;
+          }
+          return candidate.replace(internalAddress, newInternalAddress);
+        case IPV6:
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            internalAddresses = internalAddress.split(":");
+            for (int i = 0; i < internalAddresses.length - 1; i++) {
+              newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
+            }
+            newInternalAddress = newInternalAddress.concat("2000");
+          } else {
+            newInternalAddress = internalAddress;
+          }
+          return candidate.replace(internalAddress, newInternalAddress);
+        default:
+          break;
+      }
+
+    } else if (WebRtcCandidateType.SRFLX.toString().equals(candidateType)
+        || WebRtcCandidateType.RELAY.toString().equals(candidateType)) {
+      publicAddress = candidate.split(" ")[4];
+      internalAddress = candidate.split(" ")[9];
+      switch (webRtcIpvMode) {
+        case IPV4:
+          internalAddresses = internalAddress.split("\\.");
+
+          for (int i = 0; i < internalAddresses.length - 1; i++) {
+            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
+          }
+          newInternalAddress = newInternalAddress.concat("254");
+
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            publicAddresses = publicAddress.split("\\.");
+            for (int i = 0; i < publicAddresses.length - 1; i++) {
+              newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ".");
+            }
+            newPublicAddress = newPublicAddress.concat("254");
+          } else {
+            newPublicAddress = publicAddress;
+          }
+          return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
+              newPublicAddress);
+        case IPV6:
+          internalAddresses = internalAddress.split(":");
+          for (int i = 0; i < internalAddresses.length - 1; i++) {
+            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
+          }
+          newInternalAddress = newInternalAddress.concat("2000");
+
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            publicAddresses = publicAddress.split(":");
+            for (int i = 0; i < publicAddresses.length - 1; i++) {
+              newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ":");
+            }
+            newPublicAddress = newPublicAddress.concat("2000");
+          } else {
+            newPublicAddress = publicAddress;
+          }
+          return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
+              newPublicAddress);
+        default:
+          break;
+      }
     }
-    return hasIpv && hasCandidate;
+
+    return candidate;
   }
 
   /*
@@ -331,19 +410,12 @@ public class WebRtcTestPage extends WebPage {
       @Override
       public void onEvent(OnIceCandidateEvent event) {
         JsonObject candidate = JsonUtils.toJsonObject(event.getCandidate());
-        log.debug("OnIceCandidateEvent on {}: {}", webRtcEndpoint.getId(), candidate);
-        // In this case, KMS hasn't relay candidates
-        if (WebRtcCandidateType.RELAY.equals(webRtcCandidateType)) {
-          log.debug("Adding candidate: {} IpvMode: {} CandidateType: {}", candidate
-              .get("candidate").getAsString(), webRtcIpvMode, webRtcCandidateType);
+
+        if (!filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
+            webRtcCandidateType)) {
+          log.debug("OnIceCandadite -> Adding candidate: {} IpvMode: {} CandidateType: {}",
+              candidate.get("candidate").getAsString(), webRtcIpvMode, webRtcCandidateType);
           addIceCandidate(candidate);
-        } else {
-          if (filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
-              webRtcCandidateType)) {
-            log.debug("Adding candidate: {} IpvMode: {} CandidateType: {}",
-                candidate.get("candidate").getAsString(), webRtcIpvMode, webRtcCandidateType);
-            addIceCandidate(candidate);
-          }
         }
       }
     });
@@ -359,7 +431,10 @@ public class WebRtcTestPage extends WebPage {
     WebRtcConfigurer webRtcConfigurer = new WebRtcConfigurer() {
       @Override
       public void addIceCandidate(IceCandidate candidate) {
-        if (filterCandidate(candidate.getCandidate(), webRtcIpvMode, webRtcCandidateType)) {
+
+        if (!filterCandidate(candidate.getCandidate(), webRtcIpvMode, webRtcCandidateType)) {
+          log.debug("webRtcConfigurer -> Adding candidate: {} IpvMode: {} CandidateType: {}",
+              candidate.getCandidate(), webRtcIpvMode, webRtcCandidateType);
           webRtcEndpoint.addIceCandidate(candidate);
         }
       }
@@ -410,7 +485,7 @@ public class WebRtcTestPage extends WebPage {
               IceCandidate candidate =
                   new IceCandidate(jsonCandidate.get("candidate").getAsString(), jsonCandidate.get(
                       "sdpMid").getAsString(), jsonCandidate.get("sdpMLineIndex").getAsInt());
-              log.debug("Adding candidate {}: {}", i, jsonCandidate);
+              // log.debug("Adding candidate {}: {}", i, jsonCandidate);
               webRtcConfigurer.addIceCandidate(candidate);
               numCandidate++;
             }
