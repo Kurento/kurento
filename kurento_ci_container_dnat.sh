@@ -14,9 +14,9 @@ if [ $action = 'start' ]; then
 
 echo "Starting..."
 
-ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
+ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
 while [ ping -c 1 $ip ]; do
-  ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
+  ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
 done
 
 echo "Selected ip: $ip"
