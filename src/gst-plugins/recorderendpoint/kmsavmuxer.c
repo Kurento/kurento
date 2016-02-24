@@ -263,20 +263,15 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
       GstElement *mux = gst_element_factory_make ("qtmux", NULL);
       GstElementFactory *file_sink_factory =
           gst_element_factory_find ("filesink");
-      GstElementFactory *curl_sink_factory =
-          gst_element_factory_find ("curlhttpsink");
       GstElementFactory *sink_factory =
           gst_element_get_factory (self->priv->sink);
 
       if ((gst_element_factory_get_element_type (sink_factory) !=
-              gst_element_factory_get_element_type (file_sink_factory))
-          && (gst_element_factory_get_element_type (sink_factory) !=
-              gst_element_factory_get_element_type (curl_sink_factory))) {
+              gst_element_factory_get_element_type (file_sink_factory))) {
         g_object_set (mux, "faststart", TRUE, NULL);
       }
 
       g_object_unref (file_sink_factory);
-      g_object_unref (curl_sink_factory);
       return mux;
     }
     default:
