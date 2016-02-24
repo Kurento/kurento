@@ -12,7 +12,7 @@ echo "Performing $action on container ID $container with transport $transport"
 
 if [ $action = 'start' ]; then
 
-echo "Starting..." && exit 0
+echo "Starting..."
 
 ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
 while [ ping -c 1 $ip ]; do
@@ -89,7 +89,7 @@ fi
 if [ $action = 'destroy' ]; then
 ######################################################
 # Delete container
-echo "Destroying..." && exit 0
+echo "Destroying..."
 
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
