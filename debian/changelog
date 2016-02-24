@@ -1,3 +1,89 @@
+kms-elements-6.0 (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Santiago Carot-Nemesio ]
+  * tests: Do not use deprecated signal
+  * tests: Use default stream for audio and video
+  * recorderendpoint: Organize source code
+
+  [ Jose Antonio Santos Cadenas ]
+  * CMakeLists.txt: Fix order of include directories
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrecorderendpoint: Add multi-sink pad support
+  * kmsrecorderendpoint: Support requested pads
+  * recorderendpoint: Test multiple sink pads
+  * RecorderEndpointImpl: Fix compilation issue with multistream stats
+  * kmsrecorderendpoint: Create sink pad in just one place in the code
+  * kmsrecorderendpoint: Calculate E2E statistics for each stream
+  * kmsrecorderendpoint: Use kmslist for stats
+  * RecorderEndpointImpl: Notify end to end latencies
+  * kmsplayerendpoint: Set latency meta to buffers
+
+  [ Jose Antonio Santos Cadenas ]
+  * Require libnice 0.1.13
+  * icecandidate: Remove references to nice library
+  * icebaseagent: Remove generic method to get local_candidate_sdp
+
+  [ Miguel París Díaz ]
+  * kmsiceniceagent: fix candidate memory leak
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add build configuration
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrandom: Use non blocking sources to generate random numbers
+  * rtpendpoint: Fix race condition in tests
+  * kmsrtpendpoint: Fix issue with renegotiation
+  * kmsrtpendpoint: Fix crytical warning releasing keys when they are not set
+  * kmsrtpendpoint: Add debug message when releaing resources
+
+  [ David Fernandez ]
+  * kmsavmuxer: Activate faststart for MP4 if sink is not file or http
+
+  [ Miguel París Díaz ]
+  * icebaseagent: add get_local_candidates method
+  * iceniceagent: implement get_local_candidates
+  * webrtcsession: add set_ice_candidates
+  * iceniceagent: do not depend on WebRtcSession
+
+  [ David Fernandez ]
+  * debian/rules: Execute test in debian package generation
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcendpoint: Remove unneded signals to notify creation of data pads
+  * kmswebrtcsession: Fix bad signal emission
+  * kmswebrtcendpoint: Remove sink pad when data channel is closed
+
+  [ José Antonio Santos Cadenas ]
+  * Revert "debian/rules: Execute test in debian package generation"
+
+  [ Jose Antonio Santos Cadenas ]
+  * WebRtcEndpointTests: Wait for events only for 5 seconds
+
+  [ David Fernandez ]
+  * debian/rules: Execute test in debian package generation
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/rules: Increase number of compilation threads
+  * kmswebrtcendpoint: Remove unexistent parameter from signal
+  * WebRtcEndpointImpl: Reenable turn
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcendpoint: Fix creation of data channels
+
+  [ David Fernandez ]
+  * kmsavmuxer.c: Activate fast-start for http MP4
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 24 Feb 2016 17:13:30 +0100
+
 kms-elements-6.0 (6.3.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

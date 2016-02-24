@@ -1,3 +1,15 @@
+6.4.0
+=====
+
+  * WebRtcEndpoint: Update libnice library to 0.1.13.1
+  * WebRtcEndpoint: Turn is working again now that libnice is updated
+  * RecorderEndpoint: Calculate end to end latency stats
+  * PlayerEndpoint: Calculate end to end latency
+  * WebRtcEndpoint: minor issues fixing
+  * RecorderEndpoint: Fix problem when recording to http, now mp4 is buffered
+    using and fast start and webm is recorder as live (no seekable without
+    post-processing)
+
 6.3.1
 =====
 
