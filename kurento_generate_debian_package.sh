@@ -11,7 +11,15 @@ PROJECT_NAME=$1
 BRANCH=$2
 
 [ -z "$PROJECT_NAME" ] && PROJECT_NAME=$KURENTO_PROJECT
-[ -z "$BRANCH" ] && BRANCH=$GERRIT_REFNAME
+if [ -z "$BRANCH" ]
+then
+  if [ -z "$GERRIT_NEWREV" ]
+  then
+    BRANCH=$GERRIT_REFNAME
+  else
+    BRANCH=$GERRIT_NEWREV
+  fi
+fi
 
 if [ ! -d $PROJECT_NAME ]
 then
