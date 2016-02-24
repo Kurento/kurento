@@ -97,6 +97,10 @@ public class TestConfiguration {
   public static final String SELENIUM_RECORD_PROPERTY = "test.selenium.record";
   public static final boolean SELENIUM_RECORD_DEFAULT = true;
 
+  public static final String TEST_SELENIUM_DNAT = "test.selenium.dnat";
+  public static final boolean TEST_SELENIUM_DNAT_DEFAULT = false;
+  public static final String TEST_SELENIUM_TRANSPORT = "test.selenium.transport";
+
   // Docker
   public static final String DOCKER_HUB_IMAGE_PROPERTY = "docker.hub.image";
   public static final String DOCKER_HUB_IMAGE_DEFAULT = "selenium/hub:2.48.2";
@@ -126,6 +130,8 @@ public class TestConfiguration {
   public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_PROPERTY =
       "docker.vncrecorder.container.name";
   public static final String DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT = "vncrecorder";
+
+  public static final String TEST_POST_CONTAINER_RUN_URL = "test.post.container.run.url";
 
   // Parallel browsers
   public static final String CLIENT_RATE_PROPERTY = "parallel.browsers.rate";
@@ -167,6 +173,10 @@ public class TestConfiguration {
   public static final String KMS_DOCKER_IMAGE_FORCE_PULLING_PROP =
       "test.kms.docker.image.forcepulling";
   public static final boolean KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT = true;
+
+  public static final String TEST_KMS_DNAT = "test.kms.dnat";
+  public static final boolean TEST_KMS_DNAT_DEFAULT = false;
+  public static final String TEST_KMS_TRANSPORT = "test.kms.transport";
 
   // S3 properties
   public static final String KMS_DOCKER_S3_BUCKET_NAME = "s3.bucket.name";
