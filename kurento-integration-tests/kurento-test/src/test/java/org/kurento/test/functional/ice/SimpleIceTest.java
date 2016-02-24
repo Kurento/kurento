@@ -10,6 +10,7 @@ import org.kurento.client.MediaFlowInStateChangeEvent;
 import org.kurento.client.MediaFlowOutStateChangeEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.OnIceComponentStateChangedEvent;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.browser.WebRtcCandidateType;
@@ -37,15 +38,25 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEndpoint
-        .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
 
-          @Override
-          public void onEvent(MediaFlowOutStateChangeEvent event) {
-            if (event.getState().equals(MediaFlowState.FLOWING)) {
-              eosLatch.countDown();
-            }
-          }
-        });
+      @Override
+      public void onEvent(OnIceComponentStateChangedEvent event) {
+        log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+            event.getState(), event.getSource(), event.getType(), event.getStreamId());
+      }
+    });
+
+    webRtcEndpoint
+    .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowOutStateChangeEvent event) {
+        if (event.getState().equals(MediaFlowState.FLOWING)) {
+          eosLatch.countDown();
+        }
+      }
+    });
 
     // Test execution
     getPage(0).subscribeEvents("playing");
@@ -73,6 +84,16 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     playerEp.connect(webRtcEp);
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
+
+    webRtcEp
+    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+
+      @Override
+      public void onEvent(OnIceComponentStateChangedEvent event) {
+        log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+            event.getState(), event.getSource(), event.getType(), event.getStreamId());
+      }
+    });
 
     webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
 
@@ -112,16 +133,38 @@ public class SimpleIceTest extends FunctionalPlayerTest {
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
-    webRtcEpRcvOnly
-        .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+    webRtcEpSendOnly
+    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
 
-          @Override
-          public void onEvent(MediaFlowInStateChangeEvent event) {
-            if (event.getState().equals(MediaFlowState.FLOWING)) {
-              eosLatch.countDown();
-            }
-          }
-        });
+      @Override
+      public void onEvent(OnIceComponentStateChangedEvent event) {
+        log.info(
+            "webRtcEpSendOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+            event.getState(), event.getSource(), event.getType(), event.getStreamId());
+      }
+    });
+
+    webRtcEpRcvOnly
+    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+
+      @Override
+      public void onEvent(OnIceComponentStateChangedEvent event) {
+        log.info(
+            "webRtcEpRcvOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+            event.getState(), event.getSource(), event.getType(), event.getStreamId());
+      }
+    });
+
+    webRtcEpRcvOnly
+    .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowInStateChangeEvent event) {
+        if (event.getState().equals(MediaFlowState.FLOWING)) {
+          eosLatch.countDown();
+        }
+      }
+    });
 
     // Test execution
     getPage(1).subscribeEvents("playing");

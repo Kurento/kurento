@@ -24,6 +24,19 @@ package org.kurento.test.browser;
 public enum WebRtcCandidateType {
   HOST, RELAY, SRFLX, ALL;
 
+  public String getJsFunction(String url, String username, String password) {
+    switch (this) {
+      case RELAY:
+        return "setIceServers('" + url + "', '" + username + "', '" + password + "');";
+      case HOST:
+      case SRFLX:
+      case ALL:
+        return null;
+      default:
+        throw new IllegalArgumentException();
+    }
+  }
+
   @Override
   public String toString() {
     switch (this) {

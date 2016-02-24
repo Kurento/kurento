@@ -30,6 +30,9 @@ import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_S3_PROP_OLD;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_URL_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_SERVER_CREDENTIAL_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_SERVER_URL_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_SERVER_USERNAME_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_NUMRETRIES_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_NUM_NUMRETRIES_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_DEFAULT;
@@ -314,6 +317,18 @@ public class KurentoTest {
 
   public static int getTestSeekRepetitions() {
     return getProperty(TEST_SEEK_REPETITIONS, TEST_SEEK_REPETITIONS_DEFAULT);
+  }
+
+  public static String getTestIceServerUrl() {
+    return getProperty(TEST_ICE_SERVER_URL_PROPERTY);
+  }
+
+  public static String getTestIceServerUsername() {
+    return getProperty(TEST_ICE_SERVER_USERNAME_PROPERTY);
+  }
+
+  public static String getTestIceServerCredential() {
+    return getProperty(TEST_ICE_SERVER_CREDENTIAL_PROPERTY);
   }
 
 }

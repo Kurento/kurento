@@ -332,9 +332,18 @@ public class WebRtcTestPage extends WebPage {
       public void onEvent(OnIceCandidateEvent event) {
         JsonObject candidate = JsonUtils.toJsonObject(event.getCandidate());
         log.debug("OnIceCandidateEvent on {}: {}", webRtcEndpoint.getId(), candidate);
-        if (filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
-            webRtcCandidateType)) {
+        // In this case, KMS hasn't relay candidates
+        if (WebRtcCandidateType.RELAY.equals(webRtcCandidateType)) {
+          log.debug("Adding candidate: {} IpvMode: {} CandidateType: {}", candidate
+              .get("candidate").getAsString(), webRtcIpvMode, webRtcCandidateType);
           addIceCandidate(candidate);
+        } else {
+          if (filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
+              webRtcCandidateType)) {
+            log.debug("Adding candidate: {} IpvMode: {} CandidateType: {}",
+                candidate.get("candidate").getAsString(), webRtcIpvMode, webRtcCandidateType);
+            addIceCandidate(candidate);
+          }
         }
       }
     });
@@ -363,7 +372,7 @@ public class WebRtcTestPage extends WebPage {
       }
     };
 
-    initWebRtc(webRtcConfigurer, channel, mode);
+    initWebRtc(webRtcConfigurer, channel, mode, webRtcCandidateType);
   }
 
   /*
@@ -384,7 +393,7 @@ public class WebRtcTestPage extends WebPage {
 
   @SuppressWarnings({ "unchecked", "deprecation" })
   protected void initWebRtc(final WebRtcConfigurer webRtcConfigurer, final WebRtcChannel channel,
-      final WebRtcMode mode) throws InterruptedException {
+      final WebRtcMode mode, final WebRtcCandidateType candidateType) throws InterruptedException {
     // ICE candidates
     Thread t1 = new Thread() {
       @Override
@@ -429,6 +438,14 @@ public class WebRtcTestPage extends WebPage {
       browser.executeScript("setCustomAudio('" + audio + "');");
     }
 
+    // Setting IceServer (if necessary)
+    String iceServerJsFunction =
+        candidateType.getJsFunction(KurentoTest.getTestIceServerUrl(),
+            KurentoTest.getTestIceServerUsername(), KurentoTest.getTestIceServerCredential());
+    if (iceServerJsFunction != null) {
+      browser.executeScript(iceServerJsFunction);
+    }
+
     // Setting MediaConstraints (if necessary)
     String channelJsFunction = channel.getJsFunction();
     if (channelJsFunction != null) {
@@ -469,6 +486,11 @@ public class WebRtcTestPage extends WebPage {
       throw new KurentoException("ICE negotiation not finished in " + browser.getTimeout()
           + " seconds");
     }
+  }
+
+  protected void initWebRtc(final WebRtcConfigurer webRtcConfigurer, final WebRtcChannel channel,
+      final WebRtcMode mode) throws InterruptedException {
+    initWebRtc(webRtcConfigurer, channel, mode, WebRtcCandidateType.ALL);
   }
 
   /*

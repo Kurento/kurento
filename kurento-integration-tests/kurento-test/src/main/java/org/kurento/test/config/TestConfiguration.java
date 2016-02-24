@@ -51,6 +51,10 @@ public class TestConfiguration {
   public static final String TEST_CONFIG_EXECUTIONS_PROPERTY = "test.config.executions";
   public static final String TEST_CONFIG_EXECUTIONS_DEFAULT = "executions";
 
+  public static final String TEST_ICE_SERVER_URL_PROPERTY = "test.ice.server.url";
+  public static final String TEST_ICE_SERVER_USERNAME_PROPERTY = "test.ice.server.username";
+  public static final String TEST_ICE_SERVER_CREDENTIAL_PROPERTY = "test.ice.server.credential";
+
   // Saucelabs
   public static final String SAUCELAB_USER_PROPERTY = "saucelab.user";
   public static final String SAUCELAB_KEY_PROPERTY = "saucelab.key";
