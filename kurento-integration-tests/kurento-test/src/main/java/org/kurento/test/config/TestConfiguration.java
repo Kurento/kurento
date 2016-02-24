@@ -178,6 +178,9 @@ public class TestConfiguration {
       "test.kms.docker.image.forcepulling";
   public static final boolean KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT = true;
 
+  public static final String KMS_STUN_IP_PROPERTY = "kms.stun.ip";
+  public static final String KMS_STUN_PORT_PROPERTY = "kms.stun.port";
+
   public static final String TEST_KMS_DNAT = "test.kms.dnat";
   public static final boolean TEST_KMS_DNAT_DEFAULT = false;
   public static final String TEST_KMS_TRANSPORT = "test.kms.transport";
