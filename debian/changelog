@@ -1,3 +1,20 @@
+kms-cmake-utils (1.3.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * debian/control: Remove unused variable
+  * Add build configuration
+
+  [ David Fernandez ]
+  * TestHelpers: Add test to target all if GENERATE_TESTS is true
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare release 1.3.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 24 Feb 2016 16:34:56 +0100
+
 kms-cmake-utils (1.2.2) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
