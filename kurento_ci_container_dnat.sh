@@ -1,4 +1,8 @@
 #!/bin/bash -x
+
+exec >> dnat.log
+exec 2>&1
+
 echo "##################### EXECUTE: kurento_ci_container_dnat #####################"
 
 ############################################
@@ -12,6 +16,12 @@ echo "Performing $action on container ID $container with transport $transport"
 if [ $action = 'start' ]; then
 
 echo "Starting..." && exit 0
+
+ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
+while [ ping $ip ]; do
+  ip=172.17.100.$(( ( RANDOM % 100 )  + 1 ))
+done
+
 
 docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
 # Add Net namespaces
@@ -69,7 +79,7 @@ ip netns exec $docker_pid-route ip route add default via 172.17.0.1
 ip link set vethrae$docker_pid up
 
 # Add SNAT
-ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to 172.17.100.100
+ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to $ip
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'tcp' ]; then
   # Comment out following line to force RLFX TCP
@@ -81,7 +91,7 @@ fi
 if [ $action = 'destroy' ]; then
 ######################################################
 # Delete container
-echo "Destroying..." && exit 0-9a
+echo "Destroying..." && exit 0
 
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
