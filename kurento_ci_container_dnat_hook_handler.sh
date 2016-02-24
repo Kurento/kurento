@@ -28,7 +28,7 @@ if [ $event = 'start' ]; then
     fi
     touch $container.id
     echo "Calling dnat script"
-    sudo kurento_ci_container_dnat.sh $container $event $transport >> dnat2.log
+    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $transport >> dnat2.log
   fi
 fi
 
@@ -38,7 +38,7 @@ if [ $event = 'destroy' ]; then
     echo "Container with dnat found. Deleting dnat rules."
     rm $container.id
     echo "Calling dnat script"
-    sudo kurento_ci_container_dnat.sh $container $event $transport >> dnat2destroy.log
+    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $transport >> dnat2destroy.log
   else
     echo "Container not found. Ignoring."
   fi
