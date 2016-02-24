@@ -3,6 +3,9 @@ echo "##################### EXECUTE: kurento_ci_container_dnat_hook_handler ####
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
+exec >> hook.log
+exec 2>&1
+
 echo "Arguments: $*"
 
 event=$1
@@ -12,6 +15,7 @@ echo "Event:|$event| Container:|$container|"
 
 if [ $event = 'start' ]; then
   echo "start event"
+  docker inspect $container
   inspect=$(docker inspect $container|grep "\"KurentoDnat\": \"true\"")
   if [ $? = 0 ]; then
     echo "Starting container $container with dnat label. Preparing dnat."
