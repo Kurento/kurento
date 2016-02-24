@@ -1,12 +1,25 @@
 var METHOD = 'test';
 
 
+
+
 function noop(error, result){};
 
 
 function load()
 {
   var packer = RpcBuilder.packers.JsonRPC;
+  var JsonRpcClient = RpcBuilder.clients.JsonRpcClient;
+
+  var ws_uri = "ws://localhost:8888/kurento";
+
+  function connectCallback(){
+   connected = true;
+  }
+
+  function disconnectCallback(){
+    connected = false;
+  }
 
   nodeunit.run({
     'encode JsonRPC 2.0':
@@ -439,6 +452,38 @@ function load()
         };
         transport.dispatchEvent(event);
       }
+      ,
+
+  'create JsonRpcClientWs with WS': function(test)
+  {
+    test.expect(1);
+
+    var configuration = {
+      sendCloseMessage : false,
+      ws : {
+        uri : ws_uri,
+        useSockJS: false,
+        onconnected : connectCallback,
+        ondisconnect : disconnectCallback,
+        onreconnecting : disconnectCallback,
+        onreconnected : connectCallback
+      },
+      rpc : {
+        requestTimeout : 15000
+      }
+    };
+
+    var jsonRpcClientWs = new JsonRpcClient(configuration);
+
+    test.ok(jsonRpcClientWs instanceof JsonRpcClient);
+
+    setTimeout(function()
+    {
+      jsonRpcClientWs.close();
+      test.done();
+    }, 4*1000)
+
+  }
     }
   });
 }
