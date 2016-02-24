@@ -1,3 +1,8 @@
+6.4.0
+=====
+
+  * Update kurento dependencies to 6.4.0
+
 6.3.0
 =====
 
