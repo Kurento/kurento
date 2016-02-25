@@ -331,10 +331,12 @@ def compile_project(args):
                     dependency["commit"] = reviews[0]["currentPatchSet"][
                         "revision"]
                     print("Revision " + dependency["commit"])
+            else:
+                dependency["review"] = None
 
             # TODO: Consolidate versions, check if commit is compatible with
             # version requirement and also if there is a newer commit
-            if dependency["commit"] == None and args.use_master_branch:
+            if dependency["commit"] == None and dependency["version"] == None:
                 dependency["commit"] = str(os.popen("git ls-remote " + git_url
                                                     + " HEAD").read(7))
 
@@ -356,12 +358,20 @@ def compile_project(args):
                       " not installed, compile it")
                 if dependency["commit"] != None:
                     if str(repo.commit()) != dependency["commit"]:
-                        if os.system("git checkout " + dependency[
-                                "commit"]) != 0:
-                            print("Cannot checkout to the commit " +
-                                  dependency["commit"] + " for dependency " +
-                                  dependency["name"])
-                            exit(1)
+                        if dependency["review"]:
+                            if os.system("git review -d " + dependency[
+                                    "review"]) != 0:
+                                print("Cannot checkout to the commit " +
+                                      dependency["commit"] + " for dependency "
+                                      + dependency["name"])
+                                exit(1)
+                        else:
+                            if os.system("git checkout " + dependency[
+                                    "commit"]) != 0:
+                                print("Cannot checkout to the commit " +
+                                      dependency["commit"] + " for dependency "
+                                      + dependency["name"])
+                                exit(1)
                 compile_project(args)
                 os.chdir(workdir)
 
@@ -386,11 +396,6 @@ def main():
     parser.add_argument("--clean",
                         action="store_true",
                         help="Clean generated files when finished")
-    parser.add_argument(
-        "--use_master_branch",
-        action="store_true",
-        help="If no commit dependency is set uses master branch as "
-        "dependency (forces compilation of last version)")
     parser.add_argument(
         "--no_update_git",
         action="store_true",
