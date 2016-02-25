@@ -14,7 +14,7 @@ echo "Sort: ${short}"
 
 echo "Performing $action on container ID $container with transport $transport"
 
-if [ $action = 'start' ]; then
+if [ $action = 'create' ]; then
 
 echo "Starting..."
 
