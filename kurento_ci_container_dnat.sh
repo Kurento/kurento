@@ -7,6 +7,7 @@ echo "##################### EXECUTE: kurento_ci_container_dnat #################
 container=$1
 action=$2
 transport=$3
+ip=$4
 
 echo "Performing $action on container ID $container with transport $transport"
 
@@ -14,10 +15,10 @@ if [ $action = 'start' ]; then
 
 echo "Starting..."
 
-ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
-while [ ping -c 1 $ip ]; do
-  ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
-done
+#ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
+#while [ ping -c 1 $ip ]; do
+#  ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
+#done
 
 echo "Selected ip: $ip"
 
@@ -83,6 +84,29 @@ if [ $transport = 'tcp' ]; then
   # Comment out following line to force RLFX TCP
   ip netns exec $docker_pid-route iptables iptables -A INPUT -p udp -s 172.16.0.0/16 -j DROP
 fi
+
+# Set IP for container
+pid=$(docker inspect -f '{{.State.Pid}}' $container)
+[ ! -d /var/run/netns ] && mkdir -p /var/run/netns
+ln -s /proc/$pid/net /var/run/netns/$pid
+
+# Check the bridge's IP address and netmask
+
+# Create a pair of "peer" interfaces A and B,
+# bind the A end to the bridge, and bring it up
+
+ip link add A_${container} type veth peer name B_${container}
+brctl addif docker0 A_${container}
+ip link set A_${container} up
+
+# Place B inside the container's network namespace,
+# rename to eth0, and activate it with a free IP
+
+ip link set B_${container} netns $pid
+ip netns exec $pid ip link set dev B_${container} name eth0
+ip netns exec $pid ip link set eth0 up
+ip netns exec $pid ip addr add ${ip}/16 dev eth0
+ip netns exec $pid ip route add default via 172.17.0.1
 
 fi
 

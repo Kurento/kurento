@@ -17,6 +17,7 @@ if [ $event = 'start' ]; then
   echo "start event"
   docker inspect $container
   inspect=$(docker inspect $container|grep "\"KurentoDnat\": \"true\"")
+  ip=$(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed -i 's/"//g'|cut -f1 -d",")
   if [ $? = 0 ]; then
     echo "Starting container $container with dnat label. Preparing dnat."
     # Check transport
@@ -28,7 +29,7 @@ if [ $event = 'start' ]; then
     fi
     touch $container.id
     echo "Calling dnat script"
-    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $transport >> dnat2.log
+    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $transport $ip >> dnat2.log
   fi
 fi
 
