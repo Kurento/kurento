@@ -9,6 +9,9 @@ action=$2
 transport=$3
 ip=$4
 
+short=${container:0:7}
+echo "Sort: ${short}"
+
 echo "Performing $action on container ID $container with transport $transport"
 
 if [ $action = 'start' ]; then
@@ -95,15 +98,15 @@ ln -s /proc/$pid/net /var/run/netns/$pid
 # Create a pair of "peer" interfaces A and B,
 # bind the A end to the bridge, and bring it up
 
-ip link add A_${container} type veth peer name B_${container}
-brctl addif docker0 A_${container}
-ip link set A_${container} up
+ip link add A_${short} type veth peer name B_${short}
+brctl addif docker0 A_${short}
+ip link set A_${short} up
 
 # Place B inside the container's network namespace,
 # rename to eth0, and activate it with a free IP
 
-ip link set B_${container} netns $pid
-ip netns exec $pid ip link set dev B_${container} name eth0
+ip link set B_${short} netns $pid
+ip netns exec $pid ip link set dev B_${short} name eth0
 ip netns exec $pid ip link set eth0 up
 ip netns exec $pid ip addr add ${ip}/16 dev eth0
 ip netns exec $pid ip route add default via 172.17.0.1
