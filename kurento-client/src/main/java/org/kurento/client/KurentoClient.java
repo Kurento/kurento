@@ -52,8 +52,8 @@ public class KurentoClient {
 
   protected RomManager manager;
 
-  private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
-      10000);
+  private long requesTimeout = PropertiesManager
+      .getProperty("kurento.client.requestTimeout", 10000);
 
   private String id;
 
@@ -122,6 +122,13 @@ public class KurentoClient {
 
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener) {
     return create(websocketUrl, listener, new Properties());
+  }
+
+  public static KurentoClient create(Properties properties, KurentoConnectionListener listener) {
+    String id = UUID.randomUUID().toString();
+    KurentoClient client = create(getKmsUrl(id, properties), listener, properties);
+    client.setId(id);
+    return client;
   }
 
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener,
