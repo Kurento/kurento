@@ -28,11 +28,10 @@ DEFAULT_CONFIG_FILE = '.build.yaml'
 def clone_repo(args, base_url, repo_name):
     try:
         repo = Repo(repo_name)
-        if not args.no_update_git:
-            print("Updating repo: " + repo_name)
-            # TODO: Decide if current current branch should be updated
-            for remote in repo.remotes:
-                remote.update()
+        print("Updating repo: " + repo_name)
+        # TODO: Decide if current current branch should be updated
+        for remote in repo.remotes:
+            remote.update()
     except:
         print("Cloning repo: " + repo_name)
         repo = Repo.clone_from(base_url + "/" + repo_name, repo_name)
@@ -396,10 +395,6 @@ def main():
     parser.add_argument("--clean",
                         action="store_true",
                         help="Clean generated files when finished")
-    parser.add_argument(
-        "--no_update_git",
-        action="store_true",
-        help="Do not update git repositories of dependency projects")
     parser.add_argument("--no_apt_get_update",
                         action="store_true",
                         help="Do not perform an apt-get update on start")
