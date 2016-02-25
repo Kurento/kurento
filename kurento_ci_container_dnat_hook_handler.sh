@@ -13,7 +13,7 @@ container=$2
 
 echo "Event:|$event| Container:|$container|"
 
-if [ $event = 'create' ]; then
+if [ $event = 'start' ]; then
   echo "start event"
   docker inspect $container
   inspect=$(docker inspect $container|grep "\"KurentoDnat\": \"true\"")
