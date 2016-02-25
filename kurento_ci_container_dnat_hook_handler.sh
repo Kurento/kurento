@@ -17,12 +17,14 @@ if [ $event = 'start' ]; then
   echo "start event"
   docker inspect $container
   inspect=$(docker inspect $container|grep "\"KurentoDnat\": \"true\"")
-  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'})
-  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g')
-  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g'|cut -f1 -d",")
-  ip=$(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g'|cut -f1 -d",")
   if [ $? = 0 ]; then
     echo "Starting container $container with dnat label. Preparing dnat."
+    #Check ip
+    echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'})
+    echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g')
+    echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g'|cut -f1 -d",")
+    ip=$(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g'|cut -f1 -d",")
+
     # Check transport
     result=$(docker inspect $container|grep "\"Transport\": \"TCP\"")
     if [ $? = 0 ]; then
