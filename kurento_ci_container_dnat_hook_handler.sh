@@ -18,9 +18,9 @@ if [ $event = 'start' ]; then
   docker inspect $container
   inspect=$(docker inspect $container|grep "\"KurentoDnat\": \"true\"")
   echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'})
-  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed -i 's/"//g')
-  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed -i 's/"//g'|cut -f1 -d",")
-  ip=$(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed -i 's/"//g'|cut -f1 -d",")
+  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g')
+  echo $(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g'|cut -f1 -d",")
+  ip=$(docker inspect $container|grep "IpAddress"|awk {'print $2'}|sed 's/"//g'|cut -f1 -d",")
   if [ $? = 0 ]; then
     echo "Starting container $container with dnat label. Preparing dnat."
     # Check transport
