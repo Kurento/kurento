@@ -90,8 +90,9 @@ fi
 
 # Set IP for container
 pid=$(docker inspect -f '{{.State.Pid}}' $container)
+destpid=a${pid}
 [ ! -d /var/run/netns ] && mkdir -p /var/run/netns
-ln -s /proc/$pid/net /var/run/netns/$pid
+ln -s /proc/$pid/net /var/run/netns/$destpid
 
 # Check the bridge's IP address and netmask
 
@@ -105,11 +106,11 @@ ip link set A_${short} up
 # Place B inside the container's network namespace,
 # rename to eth0, and activate it with a free IP
 
-ip link set B_${short} netns $pid
-ip netns exec $pid ip link set dev B_${short} name eth0
-ip netns exec $pid ip link set eth0 up
-ip netns exec $pid ip addr add ${ip}/16 dev eth0
-ip netns exec $pid ip route add default via 172.17.0.1
+ip link set B_${short} netns $destpid
+ip netns exec $destpid ip link set dev B_${short} name eth0
+ip netns exec $destpid ip link set eth0 up
+ip netns exec $destpid ip addr add ${ip}/16 dev eth0
+ip netns exec $destpid ip route add default via 172.17.0.1
 
 fi
 
