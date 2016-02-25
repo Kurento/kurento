@@ -113,6 +113,7 @@ ip netns exec $pid ip link set eth1${pid} up
 ip netns exec $pid ip addr add ${ip}/16 dev eth1${pid}
 #ip netns exec $pid ip route add default via 172.17.0.1
 
+docker start $container
 fi
 
 if [ $action = 'destroy' ]; then
