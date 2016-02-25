@@ -1,3 +1,14 @@
+kms-markerdetector-6.0 (6.4.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Set repository as private
+  * Prepare release 6.4.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Feb 2016 12:58:04 +0100
+
 kms-markerdetector-6.0 (6.3.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
