@@ -165,6 +165,9 @@ public class RecorderWebRtcTest extends BaseRecorder {
     recorderEp.stop();
     mp.release();
 
+    // Wait until file exists
+    waitForFileExists(recordingFile);
+
     // Reloading browser
     getPage().reload();
 

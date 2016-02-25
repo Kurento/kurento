@@ -184,6 +184,9 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     recorderEp.stop();
     mp.release();
 
+    // Wait until file exists
+    waitForFileExists(recordingFile);
+
     // Reloading browser
     getPage(BROWSER3).close();
 

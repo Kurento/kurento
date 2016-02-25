@@ -138,6 +138,9 @@ public class RecorderStopTest extends BaseRecorder {
     // Release Media Pipeline #1
     mp.release();
 
+    // Wait until file exists
+    waitForFileExists(recordingFile);
+
     // Reloading browser
     getPage().reload();
 

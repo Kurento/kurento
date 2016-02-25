@@ -146,6 +146,9 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
     recorderEp.stop();
     mp.release();
 
+    // Wait until file exists
+    waitForFileExists(recordingFile);
+
     // Reloading browser
     getPage(BROWSER1).close();
 
