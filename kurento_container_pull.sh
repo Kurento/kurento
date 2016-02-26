@@ -26,6 +26,10 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:tru
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-8
 
+# Selenium images
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:1.0.0
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-debug:1.0.0
+
 # dev-chef image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 
