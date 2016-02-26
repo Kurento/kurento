@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 PATH=$PATH:$(realpath $(dirname "$0"))
 
