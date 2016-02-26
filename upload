@@ -11,24 +11,27 @@
 #      Name of file given to package
 #
 # Get dist param from query string
+CMD=$(echo $QUERY_STRING | grep 'cmd=' | sed 's/QUERY_STRING=//g' | sed 's/^.*cmd=\([^\&]*\).*$/\1/g')
 REPO=$(echo $QUERY_STRING | grep 'repo=' | sed 's/QUERY_STRING=//g' | sed 's/^.*repo=\([^\&]*\).*$/\1/g')
 DIST=$(echo $QUERY_STRING | grep 'dist=' | sed 's/QUERY_STRING=//g' | sed 's/^.*dist=\([^\&]*\).*$/\1/g')
 COMP=$(echo $QUERY_STRING | grep 'comp=' | sed 's/QUERY_STRING=//g' | sed 's/^.*comp=\([^\&]*\).*$/\1/g')
 NAME=$(echo $QUERY_STRING | grep 'name=' | sed 's/QUERY_STRING=//g' | sed 's/^.*name=\([^\&]*\).*$/\1/g')
 
+[ -z "$CMD" ] && CMD=add
 [ -z "$REPO" ] && REPO=ubuntu-pub
 if [ -z "$DIST" -o -z "$COMP" ]; then
     STATUS="Status: 400 Bad Request"
     TITLE="400 Bad Request"
     BODY="<h1>MISSING PARAMETERS</h1><p>Parameters dist & comp must be provided for package upload"
 else
+  if [ "$CMD" = 'add' ]; then
     mkdir -p /tmp/$DIST/$COMP
     UPLOAD_FILE=$([ -n "$NAME" ] && echo /tmp/$DIST/$COMP/$NAME || mktemp --suffix .deb)
     cat - > $UPLOAD_FILE
     if echo $REPO | grep -qiv priv ; then
       echo "Upload to reprepro" > $UPLOAD_FILE.reprepro.msg
       reprepro -b .. --waitforlock 10 -C $COMP includedeb $DIST $UPLOAD_FILE >> $UPLOAD_FILE.reprepro.msg 2>&1
-      reprepro_res=$?
+      result=$?
       echo "" > $UPLOAD_FILE.aptly.msg
       echo "Upload to aptly" >> $UPLOAD_FILE.aptly.msg
     else
@@ -45,35 +48,32 @@ else
     BODY+=$(tsp -c $add_id)
     add_res=$?
     tsp -r $add_id
-
-    BODY+=$(echo ' --- Aptly publish:')
-    if [ "$add_res" -eq 0 ]; then
-      # Delete scheduled updates before inserting new one
-      for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:$REPO:" | awk '{print $1}'); do
-        tsp -r $task
-      done
-      # This task can be removed any time by future uploads
-      publish_id=$(tsp aptly publish update $DIST s3:$REPO:)
-      #tsp -w $publish_id  # This command blocks if task is removed
-      until [ "$(tsp -s $publish_id)" = 'finished' -o $? -ne 0 ]; do
-        sleep 10
-      done
-      BODY+=$(tsp -c $publish_id)
-      publish_res=$?
-      [ $publish_res -eq 255 ] && publish_res=0 # task removed by other upload ==> success
-      tsp -r $publish_id
-    else
-      BODY+=$(echo "Publish skipped")
-      publish_res=0
-    fi
-    if [ "$reprepro_res" -eq 0 -a "$add_res" -eq 0 -a "$publish_res" -eq 0 ]; then
-        STATUS="Status: 200 OK"
-        TITLE="REQUEST ACCEPTED"
-    else
-        STATUS="Status: 500 OK"
-        TITLE="500 Internal Server ERROR"
-    fi
+    [ "$result" -eq 0 ] && result=$add_res
     rm -f $UPLOAD_FILE.*
+  else
+    BODY+=$(echo ' --- Aptly publish:')
+    # Delete scheduled updates before inserting new one
+    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:$REPO:" | awk '{print $1}'); do
+      tsp -r $task
+    done
+    # This task can be removed any time by future uploads
+    publish_id=$(tsp aptly publish update $DIST s3:$REPO:)
+    #tsp -w $publish_id  # This command blocks if task is removed
+    until [ "$(tsp -s $publish_id)" = 'finished' -o $? -ne 0 ]; do
+      sleep 10
+    done
+    BODY+=$(tsp -c $publish_id)
+    result=$?
+    [ $result -eq 255 ] && result=0 # task removed by other upload ==> success
+    tsp -r $publish_id
+  fi
+  if [ "$result" -eq 0 ]; then
+      STATUS="Status: 200 OK"
+      TITLE="REQUEST ACCEPTED"
+  else
+      STATUS="Status: 500 OK"
+      TITLE="500 Internal Server ERROR"
+  fi
 fi
 echo $STATUS
 echo "Content-type: text/html"
