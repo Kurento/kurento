@@ -17,10 +17,10 @@ public class RepositoryUrlLoader extends UrlServiceLoader<RepositoryUrlProvider>
   }
 
   public String getRepositoryUrl() {
-    if (getUrl() == null) {
+    if (getStaticUrl() == null) {
       return getServiceProvider().getRepositoryUrl();
     } else {
-      return getUrl();
+      return getStaticUrl();
     }
   }
 

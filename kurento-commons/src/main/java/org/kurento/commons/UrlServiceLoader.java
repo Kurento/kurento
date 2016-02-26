@@ -19,7 +19,7 @@ public abstract class UrlServiceLoader<P> {
   private String defaultUrl;
 
   private String serviceProviderClassName;
-  private String url;
+  private String staticUrl;
 
   private P serviceProvider;
 
@@ -30,14 +30,14 @@ public abstract class UrlServiceLoader<P> {
     this.urlProviderProperty = urlProviderProperty;
     this.defaultUrl = defaultUrl;
 
-    url = load(configFile);
+    staticUrl = load(configFile);
   }
 
   private String load(Path configFile) {
 
-    String kmsUrl = System.getProperty(urlProperty);
-    if (kmsUrl != null && !kmsUrl.equals("")) {
-      return kmsUrl;
+    String kmsUrlInProperty = System.getProperty(urlProperty);
+    if (kmsUrlInProperty != null && !kmsUrlInProperty.equals("")) {
+      return kmsUrlInProperty;
     }
 
     try {
@@ -49,20 +49,31 @@ public abstract class UrlServiceLoader<P> {
           properties.load(reader);
         }
 
-        serviceProviderClassName = properties.getProperty(urlProviderProperty);
+        String kmsUrl = properties.getProperty(urlProperty);
 
-        kmsUrl = properties.getProperty(urlProperty);
-
-        if (kmsUrl == null && serviceProviderClassName == null) {
-          log.warn("The file {} lacks property '{}' or '{}'. The default kms uri '{}' will be used",
-              configFile.toAbsolutePath().toString(), urlProviderProperty, urlProperty, defaultUrl);
-
-          return defaultUrl;
-        } else {
+        if (kmsUrl != null) {
+          log.info("Using static url from property {}={} configured in config file {}", urlProperty,
+              kmsUrl, configFile.toAbsolutePath());
           return kmsUrl;
         }
 
+        serviceProviderClassName = properties.getProperty(urlProviderProperty);
+
+        if (serviceProviderClassName == null) {
+          log.warn("The file {} lacks property '{}' or '{}'. The default url '{}' will be used",
+              configFile.toAbsolutePath(), urlProviderProperty, urlProperty, defaultUrl);
+
+          return defaultUrl;
+        } else {
+          log.info("Using UrlServiceProvider={} configured in config file {}",
+              serviceProviderClassName, configFile.toAbsolutePath());
+          return null;
+        }
+
       } else {
+        log.info(
+            "Config file is null (usually this means that config file doesn't exist). Using default url {}",
+            defaultUrl);
         return defaultUrl;
       }
 
@@ -74,8 +85,8 @@ public abstract class UrlServiceLoader<P> {
     }
   }
 
-  protected String getUrl() {
-    return url;
+  protected String getStaticUrl() {
+    return staticUrl;
   }
 
   @SuppressWarnings("unchecked")

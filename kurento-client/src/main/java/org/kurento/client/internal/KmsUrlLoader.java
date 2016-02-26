@@ -4,8 +4,12 @@ package org.kurento.client.internal;
 import java.nio.file.Path;
 
 import org.kurento.commons.UrlServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KmsUrlLoader extends UrlServiceLoader<KmsProvider> {
+
+  private static final Logger log = LoggerFactory.getLogger(KmsUrlLoader.class);
 
   public static final String KMS_URL_PROPERTY = "kms.url";
   public static final String KMS_URL_PROVIDER_PROPERTY = "kms.url.provider";
@@ -16,34 +20,47 @@ public class KmsUrlLoader extends UrlServiceLoader<KmsProvider> {
   }
 
   public String getKmsUrl(String id) {
-    if (getUrl() == null) {
+    log.debug("Executing getKmsUrlLoad({}) in KmsUrlLoader", id);
+    if (getStaticUrl() == null) {
+      log.debug("Obtaining kmsUrl from provider");
       return loadKmsUrlFromProvider(id, -1);
     } else {
-      return getUrl();
+      log.debug("Obtaining kmsUrl={} from config file or system property", getStaticUrl());
+      return getStaticUrl();
     }
   }
 
   public String getKmsUrlLoad(String id, int loadPoints) {
-    if (getUrl() == null) {
+    log.debug("Executing getKmsUrlLoad({},{}) in KmsUrlLoader", id, loadPoints);
+    if (getStaticUrl() == null) {
+      log.debug("Obtaining kmsUrl from provider");
       return loadKmsUrlFromProvider(id, loadPoints);
     } else {
-      return getUrl();
+      log.debug("Obtaining kmsUrl={} from config file or system property", getStaticUrl());
+      return getStaticUrl();
     }
   }
 
   private synchronized String loadKmsUrlFromProvider(String id, int loadPoints) {
-
+    log.debug("Executing loadKmsUrlFromProvider({},{}) in KmsUrlLoader", id, loadPoints);
     KmsProvider kmsProvider = getServiceProvider();
     if (loadPoints == -1) {
-      return kmsProvider.reserveKms(id);
+      String kmsUrl = kmsProvider.reserveKms(id);
+      log.debug("Executed reserveKms({}) in serviceProvider with result={}", id, kmsUrl);
+      return kmsUrl;
     } else {
-      return kmsProvider.reserveKms(id, loadPoints);
+      String kmsUrl = kmsProvider.reserveKms(id, loadPoints);
+      log.debug("Executed reserveKms({},{}) in serviceProvider with result={}", id, loadPoints,
+          kmsUrl);
+      return kmsUrl;
     }
   }
 
   public void clientDestroyed(String id) {
-    if (getUrl() == null) {
+    log.debug("Executing clientDestroyed in KmsUrlLoader");
+    if (getStaticUrl() == null) {
       getServiceProvider().releaseKms(id);
+      log.debug("Executed releaseKms({}) in serviceProvider", id);
     }
   }
 

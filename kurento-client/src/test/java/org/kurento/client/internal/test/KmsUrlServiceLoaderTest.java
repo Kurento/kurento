@@ -46,6 +46,20 @@ public class KmsUrlServiceLoaderTest {
   }
 
   @Test
+  public void testKurentoClient() throws IOException {
+
+    String expectedKmsUri = "ws://test.url";
+
+    System.setProperty(KmsUrlLoader.KMS_URL_PROPERTY, expectedKmsUri);
+
+    String kmsUri = new KmsUrlLoader(null).getKmsUrl("id");
+
+    assertEquals("Invalid kmsUri read from file", expectedKmsUri, kmsUri);
+
+    System.setProperty(KmsUrlLoader.KMS_URL_PROPERTY, "");
+  }
+
+  @Test
   public void testKmsUri() throws IOException {
 
     String expectedKmsUri = "ws://test.url";
