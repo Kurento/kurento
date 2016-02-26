@@ -71,6 +71,7 @@ enum
   ACTION_CREATE_DATA_CHANNEL,
   ACTION_DESTROY_DATA_CHANNEL,
   SIGNAL_DATA_PADS_REMOVE,
+  SIGNAL_NEW_SELECTED_PAIR_FULL,
   LAST_SIGNAL
 };
 
@@ -1646,6 +1647,24 @@ kms_webrtc_session_post_constructor (KmsWebrtcSession * self,
 }
 
 static void
+kms_webrtc_session_new_selected_pair_full (KmsIceBaseAgent * agent,
+    gchar * stream_id,
+    guint component_id,
+    KmsIceCandidate * lcandidate,
+    KmsIceCandidate * rcandidate, KmsWebrtcSession * self)
+{
+  GST_DEBUG_OBJECT (self,
+      "New pair selected stream_id: %s, component_id: %d, local candidate: %s,"
+      " remote candidate: %s", stream_id, component_id,
+      kms_ice_candidate_get_candidate (lcandidate),
+      kms_ice_candidate_get_candidate (rcandidate));
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_session_signals[SIGNAL_NEW_SELECTED_PAIR_FULL], 0, stream_id,
+      component_id, lcandidate, rcandidate);
+}
+
+static void
 kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
 {
   self->agent = KMS_ICE_BASE_AGENT (kms_ice_nice_agent_new (self->context));
@@ -1658,6 +1677,8 @@ kms_webrtc_session_init_ice_agent (KmsWebrtcSession * self)
       G_CALLBACK (kms_webrtc_session_gathering_done), self);
   g_signal_connect (self->agent, "on-ice-component-state-changed",
       G_CALLBACK (kms_webrtc_session_component_state_change), self);
+  g_signal_connect (self->agent, "new-selected-pair-full",
+      G_CALLBACK (kms_webrtc_session_new_selected_pair_full), self);
 }
 
 static gint
@@ -1845,6 +1866,12 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, gather_candidates), NULL, NULL,
       __kms_webrtc_marshal_BOOLEAN__VOID, G_TYPE_BOOLEAN, 0);
+
+  kms_webrtc_session_signals[SIGNAL_NEW_SELECTED_PAIR_FULL] =
+      g_signal_new ("new-selected-pair-full",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, KMS_TYPE_ICE_CANDIDATE,
+      KMS_TYPE_ICE_CANDIDATE);
 
   kms_webrtc_session_signals[SIGNAL_ADD_ICE_CANDIDATE] =
       g_signal_new ("add-ice-candidate",

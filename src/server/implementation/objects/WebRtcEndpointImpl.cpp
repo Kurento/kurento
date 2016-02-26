@@ -177,6 +177,18 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
   }
 }
 
+void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
+    const gchar *streamId,
+    guint componentId, KmsIceCandidate *localCandidate,
+    KmsIceCandidate *remoteCandidate)
+{
+  GST_DEBUG_OBJECT (element,
+                    "New pair selected stream_id: %s, component_id: %d, local candidate: %s,"
+                    " remote candidate: %s", streamId, componentId,
+                    kms_ice_candidate_get_candidate (localCandidate),
+                    kms_ice_candidate_get_candidate (remoteCandidate) );
+}
+
 void
 WebRtcEndpointImpl::onDataChannelOpened (gchar *sessId, guint stream_id)
 {
@@ -227,6 +239,16 @@ void WebRtcEndpointImpl::postConstructor ()
                                           std::placeholders::_5) ),
                                       std::dynamic_pointer_cast<WebRtcEndpointImpl>
                                       (shared_from_this() ) );
+
+  handlerNewSelectedPairFull = register_signal_handler (G_OBJECT (element),
+                               "new-selected-pair-full",
+                               std::function
+                               <void (GstElement *, gchar *, gchar *, guint, KmsIceCandidate *, KmsIceCandidate *) >
+                               (std::bind (&WebRtcEndpointImpl::newSelectedPairFull, this,
+                                   std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
+                                   std::placeholders::_5, std::placeholders::_6) ),
+                               std::dynamic_pointer_cast<WebRtcEndpointImpl>
+                               (shared_from_this() ) );
 
   handlerOnDataChannelOpened = register_signal_handler (G_OBJECT (element),
                                "data-channel-opened",
@@ -321,6 +343,10 @@ WebRtcEndpointImpl::~WebRtcEndpointImpl()
 
   if (handlerOnDataChannelClosed > 0) {
     unregister_signal_handler (element, handlerOnDataChannelClosed);
+  }
+
+  if (handlerNewSelectedPairFull > 0) {
+    unregister_signal_handler (element, handlerNewSelectedPairFull);
   }
 }
 

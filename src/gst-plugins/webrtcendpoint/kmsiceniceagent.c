@@ -166,6 +166,35 @@ kms_ice_nice_agent_component_state_change (NiceAgent * agent, guint stream_id,
   g_free (ret);
 }
 
+void
+kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
+    guint stream_id,
+    guint component_id,
+    NiceCandidate * lcandidate,
+    NiceCandidate * rcandidate, KmsIceNiceAgent * self)
+{
+  KmsIceBaseAgent *parent = KMS_ICE_BASE_AGENT (self);
+  gchar *stream_id_str;
+  KmsIceCandidate *local_candidate, *remote_candidate;
+
+  stream_id_str = g_strdup_printf ("%d", stream_id);
+
+  local_candidate = kms_ice_nice_agent_create_candidate_from_nice (agent,
+      lcandidate, stream_id_str);
+  remote_candidate = kms_ice_nice_agent_create_candidate_from_nice (agent,
+      rcandidate, stream_id_str);
+
+  GST_DEBUG_OBJECT (self,
+      "New pair selected stream_id: %d, component_id: %d, local candidate: %s,"
+      " remote candidate: %s", stream_id, component_id,
+      kms_ice_candidate_get_candidate (local_candidate),
+      kms_ice_candidate_get_candidate (remote_candidate));
+
+  g_signal_emit_by_name (parent, "new-selected-pair-full", stream_id_str,
+      component_id, local_candidate, remote_candidate);
+  g_free (stream_id_str);
+}
+
 KmsIceNiceAgent *
 kms_ice_nice_agent_new (GMainContext * context)
 {
@@ -187,6 +216,8 @@ kms_ice_nice_agent_new (GMainContext * context)
       G_CALLBACK (kms_ice_nice_agent_gathering_done), agent_object);
   g_signal_connect (agent_object->priv->agent, "component-state-changed",
       G_CALLBACK (kms_ice_nice_agent_component_state_change), agent_object);
+  g_signal_connect (agent_object->priv->agent, "new-selected-pair-full",
+      G_CALLBACK (kms_ice_nice_agent_new_selected_pair_full), agent_object);
 
   return agent_object;
 }

@@ -79,11 +79,15 @@ private:
   gulong handlerOnIceComponentStateChanged = 0;
   gulong handlerOnDataChannelOpened = 0;
   gulong handlerOnDataChannelClosed = 0;
+  gulong handlerNewSelectedPairFull = 0;
 
   void onIceCandidate (gchar *sessId, KmsIceCandidate *candidate);
   void onIceGatheringDone (gchar *sessId);
   void onIceComponentStateChanged (gchar *sessId, const gchar *streamId,
                                    guint componentId, guint state);
+  void newSelectedPairFull (gchar *sessId, const gchar *streamId,
+                            guint componentId, KmsIceCandidate *localCandidate,
+                            KmsIceCandidate *remoteCandidate);
   void onDataChannelOpened (gchar *sessId, guint stream_id);
   void onDataChannelClosed (gchar *sessId, guint stream_id);
 

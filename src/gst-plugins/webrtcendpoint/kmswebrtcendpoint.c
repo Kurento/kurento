@@ -71,6 +71,7 @@ enum
   SIGNAL_DATA_SESSION_ESTABLISHED,
   SIGNAL_DATA_CHANNEL_OPENED,
   SIGNAL_DATA_CHANNEL_CLOSED,
+  SIGNAL_NEW_SELECTED_PAIR_FULL,
   ACTION_CREATE_DATA_CHANNEL,
   ACTION_DESTROY_DATA_CHANNEL,
   ACTION_GET_DATA_CHANNEL_SUPPORTED,
@@ -264,6 +265,26 @@ kms_webrtc_endpoint_remove_pad (KmsWebrtcSession * session, GstPad * pad,
 }
 
 static void
+new_selected_pair_full (KmsWebrtcSession * sess,
+    gchar * stream_id,
+    guint component_id,
+    KmsIceCandidate * lcandidate,
+    KmsIceCandidate * rcandidate, KmsWebrtcEndpoint * self)
+{
+  KmsSdpSession *sdp_sess = KMS_SDP_SESSION (sess);
+
+  GST_DEBUG_OBJECT (self,
+      "New pair selected stream_id: %s, component_id: %d, local candidate: %s,"
+      " remote candidate: %s", stream_id, component_id,
+      kms_ice_candidate_get_candidate (lcandidate),
+      kms_ice_candidate_get_candidate (rcandidate));
+
+  g_signal_emit (G_OBJECT (self),
+      kms_webrtc_endpoint_signals[SIGNAL_NEW_SELECTED_PAIR_FULL], 0,
+      sdp_sess->id_str, stream_id, component_id, lcandidate, rcandidate);
+}
+
+static void
 kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
     gint id, KmsSdpSession ** sess)
 {
@@ -297,6 +318,8 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       G_CALLBACK (on_ice_gathering_done), self);
   g_signal_connect (webrtc_sess, "on-ice-component-state-changed",
       G_CALLBACK (on_ice_component_state_change), self);
+  g_signal_connect (webrtc_sess, "new-selected-pair-full",
+      G_CALLBACK (new_selected_pair_full), self);
 
   g_signal_connect (webrtc_sess, "data-session-established",
       G_CALLBACK (on_data_session_established), self);
@@ -725,6 +748,12 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
       G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT,
       G_TYPE_INVALID);
+
+  kms_webrtc_endpoint_signals[SIGNAL_NEW_SELECTED_PAIR_FULL] =
+      g_signal_new ("new-selected-pair-full",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+      KMS_TYPE_ICE_CANDIDATE, KMS_TYPE_ICE_CANDIDATE);
 
   kms_webrtc_endpoint_signals[SIGNAL_ADD_ICE_CANDIDATE] =
       g_signal_new ("add-ice-candidate",

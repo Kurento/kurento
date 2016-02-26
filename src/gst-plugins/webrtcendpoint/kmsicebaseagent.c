@@ -27,6 +27,7 @@ enum
   SIGNAL_ON_ICE_CANDIDATE_,
   SIGNAL_ON_ICE_GATHERING_DONE_,
   SIGNAL_ON_ICE_COMPONENT_STATE_CHANGED_,
+  SIGNAL_NEW_SELECTED_PAIR_FULL_,
   LAST_SIGNAL_
 };
 
@@ -437,6 +438,12 @@ kms_ice_base_agent_class_init (KmsIceBaseAgentClass * klass)
       g_signal_new ("on-ice-component-state-changed",
       G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
       G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+
+  kms_ice_base_agent_signals[SIGNAL_NEW_SELECTED_PAIR_FULL_] =
+      g_signal_new ("new-selected-pair-full",
+      G_OBJECT_CLASS_TYPE (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, KMS_TYPE_ICE_CANDIDATE,
+      KMS_TYPE_ICE_CANDIDATE);
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
