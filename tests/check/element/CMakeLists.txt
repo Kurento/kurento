@@ -23,3 +23,15 @@ set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
                        ${gstreamer-1.5_LIBRARIES}
                        ${gstreamer-check-1.5_LIBRARIES}
                        kmstestutils)
+
+add_test_program (test_logooverlay logooverlay.c)
+add_dependencies(test_logooverlay logooverlay)
+target_include_directories(test_logooverlay PRIVATE
+                          ${KMSCORE_INCLUDE_DIRS}
+                          ${gstreamer-1.5_INCLUDE_DIRS}
+                          ${gstreamer-check-1.5_INCLUDE_DIRS}
+                          "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
+target_link_libraries(test_logooverlay
+                     ${gstreamer-1.5_LIBRARIES}
+                     ${gstreamer-check-1.5_LIBRARIES}
+                     kmstestutils)
