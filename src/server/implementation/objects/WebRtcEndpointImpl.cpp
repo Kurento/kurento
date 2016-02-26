@@ -6,6 +6,7 @@
 #include <KurentoException.hpp>
 #include <boost/filesystem.hpp>
 #include <IceCandidate.hpp>
+#include "IceCandidatePair.hpp"
 #include <webrtcendpoint/kmsicecandidate.h>
 #include <IceComponentState.hpp>
 #include <SignalHandler.hpp>
@@ -182,11 +183,38 @@ void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
     guint componentId, KmsIceCandidate *localCandidate,
     KmsIceCandidate *remoteCandidate)
 {
+  std::shared_ptr<IceCandidatePair > candidatePair;
+  std::string key;
+  std::map<std::string, std::shared_ptr <IceCandidatePair>>::iterator it;
+
   GST_DEBUG_OBJECT (element,
                     "New pair selected stream_id: %s, component_id: %d, local candidate: %s,"
                     " remote candidate: %s", streamId, componentId,
                     kms_ice_candidate_get_candidate (localCandidate),
                     kms_ice_candidate_get_candidate (remoteCandidate) );
+
+  candidatePair = std::make_shared< IceCandidatePair > (streamId,
+                  componentId,
+                  kms_ice_candidate_get_candidate (localCandidate),
+                  kms_ice_candidate_get_candidate (remoteCandidate) );
+  key = streamId + '_' + componentId;
+
+  it = candidatePairs.find (key);
+
+  if (it != candidatePairs.end() ) {
+    candidatePairs.erase (it);
+  }
+
+  candidatePairs.insert (std::pair
+                         <std::string, std::shared_ptr <IceCandidatePair>> (key, candidatePair) );
+
+  try {
+    NewCandidatePairSelected event (shared_from_this(),
+                                    NewCandidatePairSelected::getName(), candidatePair);
+
+    signalNewCandidatePairSelected (event);
+  } catch (std::bad_weak_ptr &e) {
+  }
 }
 
 void
@@ -413,6 +441,19 @@ WebRtcEndpointImpl::setTurnUrl (const std::string &turnUrl)
   g_object_set ( G_OBJECT (element), "turn-url",
                  turnUrl.c_str(),
                  NULL);
+}
+
+std::vector<std::shared_ptr<IceCandidatePair>>
+    WebRtcEndpointImpl::getICECandidatePairs ()
+{
+  std::vector<std::shared_ptr<IceCandidatePair>> candidates;
+  std::map<std::string, std::shared_ptr <IceCandidatePair>>::iterator it;
+
+  for (it = candidatePairs.begin(); it != candidatePairs.end(); it++) {
+    candidates.push_back ( (*it).second);
+  }
+
+  return candidates;
 }
 
 void

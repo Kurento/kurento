@@ -36,6 +36,8 @@ public:
   std::string getTurnUrl ();
   void setTurnUrl (const std::string &turnUrl);
 
+  std::vector<std::shared_ptr<IceCandidatePair>> getICECandidatePairs ();
+
   void gatherCandidates ();
   void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
 
@@ -57,6 +59,7 @@ public:
   sigc::signal<void, OnIceCandidate> signalOnIceCandidate;
   sigc::signal<void, OnIceGatheringDone> signalOnIceGatheringDone;
   sigc::signal<void, OnIceComponentStateChanged> signalOnIceComponentStateChanged;
+  sigc::signal<void, NewCandidatePairSelected> signalNewCandidatePairSelected;
 
   sigc::signal<void, OnDataChannelOpened> signalOnDataChannelOpened;
   sigc::signal<void, OnDataChannelClosed> signalOnDataChannelClosed;
@@ -93,6 +96,8 @@ private:
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;
+
+  std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
 
   class StaticConstructor
   {

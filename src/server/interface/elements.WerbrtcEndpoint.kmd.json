@@ -19,6 +19,12 @@
           "name": "turnUrl",
           "doc": "TURN server URL with this format: 'user:password@address:port(?transport=[udp|tcp|tls])'.\n'address' must be an IP (not a domain).\n'transport' is optional (UDP by default).",
           "type": "String"
+        },
+        {
+          "name": "ICECandidatePairs",
+          "doc": "The ICE candidate pair used by the ice library for each stream.",
+          "type": "IceCandidatePair[]",
+          "readOnly": true
         }
       ],
       "constructor":
@@ -114,7 +120,8 @@
         "OnIceGatheringDone",
         "OnIceComponentStateChanged",
         "OnDataChannelOpened",
-        "OnDataChannelClosed"
+        "OnDataChannelClosed",
+        "NewCandidatePairSelected"
       ]
     }
   ],
@@ -182,6 +189,18 @@
           "type": "int"
         }
       ]
+    },
+    {
+      "name": "NewCandidatePairSelected",
+      "doc": "Notify of the new pair of ICE candidates used by the ice library.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "candidatePair",
+          "doc": "The new pair of candidates",
+          "type": "IceCandidatePair"
+        }
+      ]
     }
   ],
   "complexTypes": [
@@ -218,6 +237,33 @@
         "CONNECTED",
         "READY",
         "FAILED"
+      ]
+    },
+    {
+      "typeFormat": "REGISTER",
+      "name": "IceCandidatePair",
+      "doc": "The ICE candidate pair used by the ice library.",
+      "properties": [
+        {
+          "name": "streamID",
+          "doc": "Stream ID of the ice connection",
+          "type": "String"
+        },
+        {
+          "name": "componentID",
+          "doc": "Component ID of the ice connection",
+          "type": "int"
+        },
+        {
+          "name": "localCandidate",
+          "doc": "The local candidate used by the ice library.",
+          "type": "String"
+        },
+        {
+          "name": "remoteCandidate",
+          "doc": "The remote candidate used by the ice library.",
+          "type": "String"
+        }
       ]
     }
   ]
