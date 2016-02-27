@@ -43,7 +43,7 @@ cd $BOWER_DIR || exit 1
 # Fail if a tag for that version already exists
 if [ ${CREATE_TAG} = true ] && [[ $VERSION != *-SNAPSHOT ]]; then
   # If tag already exists terminate silently
-  git ls-remote --tags|grep -q "$VERSION" && exit 0
+  git ls-remote --tags|grep -q "refs/tags/$VERSION" && exit 0
 fi
 
 git checkout $REFSPEC || git checkout -b $REFSPEC || exit 1
