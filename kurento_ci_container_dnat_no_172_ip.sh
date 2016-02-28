@@ -74,14 +74,14 @@ ip netns exec $docker_pid-bridge ip link set vethrbe$docker_pid up
 
 # Agent internal
 ip netns exec $docker_pid-route ip link set vethrai$docker_pid up
-ip netns exec $docker_pid-route ip addr add 172.17.100.100/16 dev vethrai$docker_pid
+ip netns exec $docker_pid-route ip addr add 172.17.0.100/16 dev vethrai$docker_pid
 ip netns exec $docker_pid-route ip route add default via 172.17.0.1
 
 # Agent external
 ip link set vethrae$docker_pid up
 
 # Add SNAT
-ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j MASQUERADE --to 172.17.100.100
+ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to 172.17.0.100
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 # Comment out following line to force RLFX TCP
 #ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 172.16.0.0/16 -j DROP
