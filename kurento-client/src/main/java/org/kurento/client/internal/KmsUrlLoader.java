@@ -57,7 +57,7 @@ public class KmsUrlLoader extends UrlServiceLoader<KmsProvider> {
   }
 
   public void clientDestroyed(String id) {
-    log.debug("Executing clientDestroyed in KmsUrlLoader");
+    log.debug("Executing clientDestroyed({}) in KmsUrlLoader", id);
     if (getStaticUrl() == null) {
       getServiceProvider().releaseKms(id);
       log.debug("Executed releaseKms({}) in serviceProvider", id);
