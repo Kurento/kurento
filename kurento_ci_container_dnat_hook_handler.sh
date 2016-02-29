@@ -45,7 +45,7 @@ if [ $event = 'destroy' ]; then
     docker_pid=$(cat $container.id)
     rm $container.id
     echo "Calling dnat script"
-    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $transport $docker_pid >> dnat2destroy.log
+    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event no-transport $docker_pid >> dnat2destroy.log
   else
     echo "Container not found. Ignoring."
   fi
