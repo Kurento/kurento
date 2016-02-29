@@ -96,5 +96,6 @@ echo "Destroying..."
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
 ip netns del $docker_pid
+ip link del vethrae$docker_pid
 
 fi
