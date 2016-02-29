@@ -94,7 +94,7 @@ fi
 if [ $action = 'destroy' ]; then
 ######################################################
 # Delete container
-echo "Destroying..."
+echo "Destroying netns & interfaces related to $docker_pid..."
 
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
