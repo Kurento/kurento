@@ -8,6 +8,7 @@ container=$1
 action=$2
 transport=$3
 ip=$4
+[ -n $5 ] && docker_pid=$5
 
 short=${container:0:7}
 echo "Sort: ${short}"
@@ -74,7 +75,7 @@ ip netns exec $docker_pid-bridge ip link set vethrbe$docker_pid up
 
 # Agent internal
 ip netns exec $docker_pid-route ip link set vethrai$docker_pid up
-ip netns exec $docker_pid-route ip addr add $ip/16 dev vethrai$docker_pid
+ip netns exec $docker_pid-route ip addr add ${ip}/16 dev vethrai$docker_pid
 ip netns exec $docker_pid-route ip route add default via 172.17.0.1
 
 # Agent external
@@ -98,5 +99,6 @@ echo "Destroying..."
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
 ip netns del $docker_pid
+ip link del vethrae$docker_pid
 
 fi
