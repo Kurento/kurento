@@ -418,9 +418,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
             connectIfNecessary();
 
             reconnecting = false;
-          } catch (KurentoException e) {
 
-            log.debug("{} WebSocket closed due to: {}", label, closeReason);
+          } catch (Exception e) {
+
+            // TODO Implement retries here
+
+            log.warn(
+                "{} Exception trying to reconnect to server {}. The websocket was closed due to {}",
+                label, url, closeReason, e);
 
             pendingRequests.closeAllPendingRequests();
 
@@ -431,9 +436,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
             if (connectionListener != null) {
               connectionListener.disconnected();
             }
-
-          } catch (IOException e) {
-            log.warn("{} Exception trying to reconnect to server {}", label, url, e);
           }
         }
       });
