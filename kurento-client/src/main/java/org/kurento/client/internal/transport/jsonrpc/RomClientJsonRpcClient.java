@@ -3,6 +3,7 @@ package org.kurento.client.internal.transport.jsonrpc;
 
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.CREATE_METHOD;
+import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.CREATE_PROPERTIES;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.CREATE_TYPE;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.INVOKE_METHOD;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.INVOKE_OBJECT;
@@ -126,16 +127,18 @@ public class RomClientJsonRpcClient implements RomClient {
   }
 
   @Override
-  public String create(String remoteClassName, Props constructorParams) {
-    return create(remoteClassName, constructorParams, null);
+  public String create(String remoteClassName, Props constructorParams, Props genericProperties) {
+    return create(remoteClassName, constructorParams, genericProperties, null);
   }
 
   @Override
-  public String create(String remoteClassName, Props constructorParams, Continuation<String> cont) {
+  public String create(String remoteClassName, Props constructorParams, Props genericProperties,
+      Continuation<String> cont) {
 
-    RequestAndResponseType reqres = createCreateRequest(remoteClassName, constructorParams, false);
+    RequestAndResponseType reqres = createCreateRequest(remoteClassName, constructorParams,
+        genericProperties, false);
 
-    return this.<String, String>sendRequest(reqres.request, reqres.responseType, null, cont);
+    return this.<String, String> sendRequest(reqres.request, reqres.responseType, null, cont);
   }
 
   @Override
@@ -286,7 +289,7 @@ public class RomClientJsonRpcClient implements RomClient {
   }
 
   public RequestAndResponseType createCreateRequest(String remoteClassName, Props constructorParams,
-      boolean inTx) {
+      Props genericProps, boolean inTx) {
 
     JsonObject params = new JsonObject();
     params.addProperty(CREATE_TYPE, remoteClassName);
@@ -295,6 +298,13 @@ public class RomClientJsonRpcClient implements RomClient {
       Props flatParams = ParamsFlattener.getInstance().flattenParams(constructorParams, inTx);
 
       params.add(CREATE_CONSTRUCTOR_PARAMS, JsonUtils.toJsonObject(flatParams));
+    }
+
+    if (genericProps != null) {
+
+      Props flatProperties = ParamsFlattener.getInstance().flattenParams(genericProps, inTx);
+
+      params.add(CREATE_PROPERTIES, JsonUtils.toJsonObject(flatProperties));
     }
 
     return new RequestAndResponseType(new Request<>(CREATE_METHOD, params), String.class);

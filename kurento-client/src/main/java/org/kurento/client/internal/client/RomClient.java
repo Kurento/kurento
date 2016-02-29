@@ -10,9 +10,10 @@ import org.kurento.jsonrpc.Props;
 
 public interface RomClient {
 
-  public abstract String create(String remoteClassName, Props constructorParams);
-
   public abstract String create(String remoteClassName, Props constructorParams,
+      Props genericProps);
+
+  public abstract String create(String remoteClassName, Props constructorParams, Props genericProps,
       Continuation<String> cont);
 
   public abstract <E> E invoke(String objectRef, String methodName, Props params, Class<E> clazz);

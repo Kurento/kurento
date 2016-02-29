@@ -49,6 +49,10 @@ public class Props implements Iterable<Prop> {
     return this;
   }
 
+  public Map<String, Object> getMap() {
+    return props;
+  }
+
   @Override
   public Iterator<Prop> iterator() {
 

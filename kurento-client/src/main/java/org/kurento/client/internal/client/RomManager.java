@@ -33,14 +33,15 @@ public class RomManager implements ObjectRefsManager {
   }
 
   // FIXME: Improve concurrency
-  public synchronized RemoteObject create(String remoteClassName, Props constructorParams) {
-    String objectRef = client.create(remoteClassName, constructorParams);
+  public synchronized RemoteObject create(String remoteClassName, Props constructorParams,
+      Props genericProps) {
+    String objectRef = client.create(remoteClassName, constructorParams, genericProps);
 
     return new RemoteObject(objectRef, remoteClassName, this);
   }
 
   public synchronized RemoteObject create(String remoteClassName, Props constructorParams,
-      Transaction tx) {
+      Props genericProps, Transaction tx) {
 
     TransactionImpl txImpl = (TransactionImpl) tx;
 
@@ -48,7 +49,7 @@ public class RomManager implements ObjectRefsManager {
         this);
 
     MediaObjectCreationOperation op = new MediaObjectCreationOperation(remoteClassName,
-        constructorParams, remoteObject);
+        constructorParams, genericProps, remoteObject);
 
     txImpl.addOperation(op);
 
@@ -57,13 +58,13 @@ public class RomManager implements ObjectRefsManager {
   }
 
   public synchronized RemoteObject create(String remoteClassName) {
-    return create(remoteClassName, (Props) null);
+    return create(remoteClassName, (Props) null, null);
   }
 
   public synchronized void create(final String remoteClassName, final Props constructorParams,
-      final Continuation<RemoteObject> cont) {
+      Props genericProps, final Continuation<RemoteObject> cont) {
 
-    client.create(remoteClassName, constructorParams, new Continuation<String>() {
+    client.create(remoteClassName, constructorParams, genericProps, new Continuation<String>() {
       @Override
       public void onSuccess(String objectRef) {
         try {
@@ -85,7 +86,7 @@ public class RomManager implements ObjectRefsManager {
   }
 
   public synchronized void create(String remoteClassName, Continuation<RemoteObject> cont) {
-    create(remoteClassName, null, cont);
+    create(remoteClassName, null, null, cont);
   }
 
   @Override
@@ -219,22 +220,25 @@ public class RomManager implements ObjectRefsManager {
   }
 
   public synchronized RemoteObject createWithKurentoObject(Class<?> clazz, Props props,
-      Transaction transaction) {
+      Props genericProps, Transaction transaction) {
 
-    RemoteObject remoteObject = this.create(clazz.getSimpleName(), props, transaction);
+    RemoteObject remoteObject = this.create(clazz.getSimpleName(), props, genericProps,
+        transaction);
 
     RemoteObjectInvocationHandler.newProxy(remoteObject, this, clazz);
 
     return remoteObject;
   }
 
-  public synchronized RemoteObject createWithKurentoObject(Class<?> clazz, Props props) {
+  public synchronized RemoteObject createWithKurentoObject(Class<?> clazz, Props props,
+      Props genericProps) {
 
-    RemoteObject remoteObject = this.create(clazz.getSimpleName(), props);
+    RemoteObject remoteObject = this.create(clazz.getSimpleName(), props, genericProps);
 
     RemoteObjectInvocationHandler.newProxy(remoteObject, this, clazz);
 
     return remoteObject;
 
   }
+
 }

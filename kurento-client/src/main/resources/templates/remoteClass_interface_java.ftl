@@ -124,6 +124,14 @@ done. If an error occurs, {@link Continuation#onError} is called.
           </#list>
     }
 
+	public Builder withProperties(Properties properties) {
+    	return (Builder)super.withProperties(properties);
+  	}
+
+	public Builder with(String name, Object value) {
+		return (Builder)super.with(name, value);
+	}
+	
         <#list remoteClass.constructor.params as param>
         <#if param.optional>
         <#if param.type.name != "boolean" >

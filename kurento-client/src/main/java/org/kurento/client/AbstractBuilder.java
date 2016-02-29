@@ -23,6 +23,7 @@ import org.kurento.jsonrpc.Props;
 public class AbstractBuilder<T> {
 
   protected final Props props;
+  protected final Props genericProperties = new Props();
   private final RomManager manager;
   private final Class<?> clazz;
 
@@ -49,7 +50,7 @@ public class AbstractBuilder<T> {
   @SuppressWarnings("unchecked")
   public T build() {
 
-    RemoteObject remoteObject = manager.createWithKurentoObject(clazz, props);
+    RemoteObject remoteObject = manager.createWithKurentoObject(clazz, props, genericProperties);
 
     return (T) remoteObject.getKurentoObject();
 
@@ -58,7 +59,8 @@ public class AbstractBuilder<T> {
   @SuppressWarnings("unchecked")
   public T build(Transaction transaction) {
 
-    RemoteObject remoteObject = manager.createWithKurentoObject(clazz, props, transaction);
+    RemoteObject remoteObject = manager.createWithKurentoObject(clazz, props, genericProperties,
+        transaction);
 
     return (T) remoteObject.getKurentoObject();
   }
@@ -76,7 +78,7 @@ public class AbstractBuilder<T> {
    **/
   public void buildAsync(final Continuation<T> continuation) {
 
-    manager.create(clazz.getSimpleName(), props,
+    manager.create(clazz.getSimpleName(), props, genericProperties,
         new DefaultContinuation<RemoteObject>(continuation) {
           @SuppressWarnings("unchecked")
           @Override
@@ -90,6 +92,16 @@ public class AbstractBuilder<T> {
           }
         });
 
+  }
+
+  public AbstractBuilder<T> withProperties(Properties properties) {
+    genericProperties.getMap().putAll(properties.getMap());
+    return this;
+  }
+
+  public AbstractBuilder<T> with(String name, Object value) {
+    genericProperties.add(name, value);
+    return this;
   }
 
 }

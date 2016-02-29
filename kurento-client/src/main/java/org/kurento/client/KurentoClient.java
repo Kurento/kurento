@@ -52,8 +52,8 @@ public class KurentoClient {
 
   protected RomManager manager;
 
-  private long requesTimeout = PropertiesManager
-      .getProperty("kurento.client.requestTimeout", 10000);
+  private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
+      10000);
 
   private String id;
 
@@ -180,6 +180,37 @@ public class KurentoClient {
 
   public MediaPipeline createMediaPipeline(Transaction tx) {
     return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).build(tx);
+  }
+
+  /**
+   * Creates a new {@link MediaPipeline} in the media server.
+   *
+   * @return The media pipeline
+   */
+  public MediaPipeline createMediaPipeline(Properties properties) {
+    return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+        .withProperties(properties).build();
+  }
+
+  /**
+   * Creates a new {@link MediaPipeline} in the media server.
+   *
+   * @param cont
+   *          An asynchronous callback handler. If the element was successfully created, the
+   *          {@code onSuccess} method from the handler will receive a {@link MediaPipeline} stub
+   *          from the media server.
+   * @throws KurentoException
+   *
+   */
+  public void createMediaPipeline(Properties properties, final Continuation<MediaPipeline> cont)
+      throws KurentoException {
+    new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).withProperties(properties)
+        .buildAsync(cont);
+  }
+
+  public MediaPipeline createMediaPipeline(Transaction tx, Properties properties) {
+    return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager)
+        .withProperties(properties).build(tx);
   }
 
   @PreDestroy

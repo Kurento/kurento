@@ -5,6 +5,7 @@ public class RomJsonRpcConstants {
 
   public static final String CREATE_METHOD = "create";
   public static final String CREATE_CONSTRUCTOR_PARAMS = "constructorParams";
+  public static final String CREATE_PROPERTIES = "properties";
   public static final String CREATE_TYPE = "type";
 
   public static final String INVOKE_METHOD = "invoke";

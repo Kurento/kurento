@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Properties {
 
-  private Map<String, Object> values = new HashMap<>();
+  private Map<String, Object> values;
 
   public static Properties of(Object... params) {
 
@@ -28,6 +28,14 @@ public class Properties {
     return props;
   }
 
+  public Properties(Map<String, Object> values) {
+    this.values = values;
+  }
+
+  public Properties() {
+    this(new HashMap<String, Object>());
+  }
+
   public Properties add(String property, Object value) {
     values.put(property, value);
     return this;
@@ -37,4 +45,7 @@ public class Properties {
     return values.get(property);
   }
 
+  public Map<String, Object> getMap() {
+    return values;
+  }
 }

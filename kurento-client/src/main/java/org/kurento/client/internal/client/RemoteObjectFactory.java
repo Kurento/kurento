@@ -18,21 +18,21 @@ public class RemoteObjectFactory {
     this.manager = new RomManager(client);
   }
 
-  public RemoteObject create(String remoteClassName, Props constructorParams) {
+  public RemoteObject create(String remoteClassName, Props constructorParams, Props genericProps) {
 
-    String objectRef = client.create(remoteClassName, constructorParams);
+    String objectRef = client.create(remoteClassName, constructorParams, genericProps);
 
     return new RemoteObject(objectRef, remoteClassName, manager);
   }
 
   public RemoteObject create(String remoteClassName) {
-    return create(remoteClassName, (Props) null);
+    return create(remoteClassName, (Props) null, (Props) null);
   }
 
   public void create(final String remoteClassName, final Props constructorParams,
-      final Continuation<RemoteObject> cont) {
+      Props genericProps, final Continuation<RemoteObject> cont) {
 
-    client.create(remoteClassName, constructorParams, new Continuation<String>() {
+    client.create(remoteClassName, constructorParams, genericProps, new Continuation<String>() {
       @Override
       public void onSuccess(String objectRef) {
         try {
@@ -54,7 +54,7 @@ public class RemoteObjectFactory {
   }
 
   public void create(String remoteClassName, Continuation<RemoteObject> cont) {
-    create(remoteClassName, null, cont);
+    create(remoteClassName, null, null, cont);
   }
 
   public void destroy() {
