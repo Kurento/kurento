@@ -6,12 +6,9 @@ echo "##################### EXECUTE: kurento_ci_container_dnat #################
 # Craete container
 container=$1
 action=$2
-transport=$3
-ip=$4
-[ -n $5 ] && docker_pid=$5
-
-short=${container:0:7}
-echo "Sort: ${short}"
+docker_pid=$3
+[ -n $4 ] && transport=$4
+[ -n $5 ] && ip=$5
 
 echo "Performing $action on container ID $container with transport $transport"
 
@@ -19,14 +16,8 @@ if [ $action = 'start' ]; then
 
 echo "Starting..."
 
-#ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
-#while [ ping -c 1 $ip ]; do
-#  ip=172.17.0.$(( ( RANDOM % 100 )  + 101 ))
-#done
-
 echo "Selected ip: $ip"
 
-docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
 # Add Net namespaces
 ln -s /proc/$docker_pid/ns/net /var/run/netns/$docker_pid
 ip netns add $docker_pid-bridge
@@ -85,7 +76,9 @@ ip link set vethrae$docker_pid up
 ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to $ip
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'tcp' ]; then
-  # Comment out following line to force RLFX TCP
+  # This is used to force RLFX TCP
+  ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 172.17.0.0/16 -j DROP
+  # This is used to force RELAY
   ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 172.16.0.0/16 -j DROP
 fi
 

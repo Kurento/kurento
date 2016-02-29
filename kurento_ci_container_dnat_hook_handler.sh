@@ -32,9 +32,10 @@ if [ $event = 'start' ]; then
     else
       transport="udp"
     fi
-    echo $(docker inspect -f '{{.State.Pid}}' $container) > $container.id
+    docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
+    echo $docker_pid > $container.id
     echo "Calling dnat script"
-    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $transport $ip >> dnat2.log
+    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $docker_pid $transport $ip >> dnat2.log
   fi
 fi
 
@@ -45,7 +46,7 @@ if [ $event = 'destroy' ]; then
     docker_pid=$(cat $container.id)
     rm $container.id
     echo "Calling dnat script"
-    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event no-transport $docker_pid >> dnat2destroy.log
+    sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $docker_pid >> dnat2destroy.log
   else
     echo "Container not found. Ignoring."
   fi
