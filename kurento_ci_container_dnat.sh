@@ -74,7 +74,7 @@ ip netns exec $docker_pid-bridge ip link set vethrbe$docker_pid up
 
 # Agent internal
 ip netns exec $docker_pid-route ip link set vethrai$docker_pid up
-ip netns exec $docker_pid-route ip addr add 172.17.100.100/16 dev vethrai$docker_pid
+ip netns exec $docker_pid-route ip addr add $ip/16 dev vethrai$docker_pid
 ip netns exec $docker_pid-route ip route add default via 172.17.0.1
 
 # Agent external
@@ -85,33 +85,8 @@ ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'tcp' ]; then
   # Comment out following line to force RLFX TCP
-  ip netns exec $docker_pid-route iptables iptables -A INPUT -p udp -s 172.16.0.0/16 -j DROP
+  ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 172.16.0.0/16 -j DROP
 fi
-
-# Set IP for container
-pid=$(docker inspect -f '{{.State.Pid}}' $container)
-#destpid=a${pid}
-#[ ! -d /var/run/netns ] && mkdir -p /var/run/netns
-#ln -s /proc/$pid/net /var/run/netns/$destpid
-
-# Check the bridge's IP address and netmask
-
-# Create a pair of "peer" interfaces A and B,
-# bind the A end to the bridge, and bring it up
-
-ip link add A_${short} type veth peer name B_${short}
-brctl addif docker0 A_${short}
-ip link set A_${short} up
-
-# Place B inside the container's network namespace,
-# rename to eth0, and activate it with a free IP
-# We rename it to eth1 because there is already an eth0 with a 192.168 ip
-
-ip link set B_${short} netns $pid
-ip netns exec $pid ip link set dev B_${short} name eth1${pid}
-ip netns exec $pid ip link set eth1${pid} up
-ip netns exec $pid ip addr add ${ip}/16 dev eth1${pid}
-#ip netns exec $pid ip route add default via 172.17.0.1
 
 fi
 
