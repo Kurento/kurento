@@ -64,7 +64,7 @@ import org.kurento.test.config.TestScenario;
  * @since 6.3.1
  */
 
-public class IceHostIpv6Test extends SimpleIceTest {
+public class IceIpv6HostKmsBridgeSeleniumBridgeTest extends SimpleIceTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
@@ -72,49 +72,50 @@ public class IceHostIpv6Test extends SimpleIceTest {
   }
 
   @Test
-  public void testIceHostIpv6SendRcvAudioVideo() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeSendRcvAudioVideo() throws InterruptedException {
     initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceHostIpv6SendRcvAudioOnly() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeSendRcvAudioOnly() throws InterruptedException {
     initTestSendRecv(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceHostIpv6SendRcvVideoOnly() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeSendRcvVideoOnly() throws InterruptedException {
     initTestSendRecv(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceHostIpv6SendOnlyAudioVideo() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeSendOnlyAudioVideo()
+      throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceHostIpv6SendOnlyAudioOnly() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeSendOnlyAudioOnly() throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceHostIpv6SendOnlyVideoOnly() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeSendOnlyVideoOnly() throws InterruptedException {
     initTestSendOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceHostIpv6RcvOnlyAudioVideo() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeRcvOnlyAudioVideo() throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST,
         "/video/15sec/rgb.webm");
   }
 
   @Test
-  public void testIceHostIpv6RcvOnlyAudioOnly() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeRcvOnlyAudioOnly() throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST,
         "/audio/10sec/cinema.ogg");
   }
 
   @Test
-  public void testIceHostIpv6RcvOnlyVideoOnly() throws InterruptedException {
+  public void testIceIpv6HostKmsBridgeSeleniumBridgeRcvOnlyVideoOnly() throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV6, WebRtcCandidateType.HOST,
         "/video/15sec/rgb.webm");
   }
