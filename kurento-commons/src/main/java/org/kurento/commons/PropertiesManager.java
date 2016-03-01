@@ -2,12 +2,15 @@
 package org.kurento.commons;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.kurento.commons.exception.KurentoException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class PropertiesManager {
 
@@ -132,5 +135,17 @@ public class PropertiesManager {
         }
       }
     }
+  }
+
+  public static Map<String, Object> getProperty(String property, Map<String, Object> defaultMap) {
+
+    Map<String, Object> result = new HashMap<>(defaultMap);
+
+    Map<String, Object> propertiesMap = BasicJsonUtils
+        .toPropertiesMap(getPropertyJson(property, "{}", JsonObject.class));
+
+    result.putAll(propertiesMap);
+
+    return result;
   }
 }

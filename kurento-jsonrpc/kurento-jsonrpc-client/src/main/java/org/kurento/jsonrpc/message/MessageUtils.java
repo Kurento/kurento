@@ -15,9 +15,10 @@
 
 package org.kurento.jsonrpc.message;
 
+import java.util.Map.Entry;
+
 import static org.kurento.jsonrpc.JsonUtils.getGson;
 
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
