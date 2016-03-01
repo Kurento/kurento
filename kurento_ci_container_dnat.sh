@@ -19,7 +19,7 @@ echo "Starting..."
 echo "Selected ip: $ip"
 
 # Add Net namespaces
-ln -s /proc/$docker_pid/ns/net /var/run/netns/$docker_pid
+ln -s /proc/$docker_pid/ns/net /var/run/netns/$docker_pid-cont
 ip netns add $docker_pid-bridge
 ip netns add $docker_pid-route
 
@@ -30,7 +30,7 @@ ip link add vethrbi$docker_pid type veth peer name vethrbe$docker_pid
 ip link add vethrai$docker_pid type veth peer name vethrae$docker_pid
 
 # Assign interfaces to Net namespaces
-ip link set vethci$docker_pid netns $docker_pid
+ip link set vethci$docker_pid netns $docker_pid-cont
 ip link set vethce$docker_pid netns $docker_pid-bridge
 ip link set vethrbi$docker_pid netns $docker_pid-route
 ip link set vethrbe$docker_pid netns $docker_pid-bridge
@@ -45,10 +45,10 @@ ip netns exec $docker_pid-bridge brctl addif br0 vethrbe$docker_pid
 # Configure IP addresses
 
 # Container Internal
-ip netns exec $docker_pid ip link set dev vethci$docker_pid name eth0
-ip netns exec $docker_pid ip link set eth0 up
-ip netns exec $docker_pid ip addr add 192.168.0.100/24 dev eth0
-ip netns exec $docker_pid ip route add default via 192.168.0.1
+ip netns exec $docker_pid-cont ip link set dev vethci$docker_pid name eth0
+ip netns exec $docker_pid-cont ip link set eth0 up
+ip netns exec $docker_pid-cont ip addr add 192.168.0.100/24 dev eth0
+ip netns exec $docker_pid-cont ip route add default via 192.168.0.1
 
 # Container external (peer)
 ip netns exec $docker_pid-bridge ip link set vethce$docker_pid up
@@ -91,7 +91,7 @@ echo "Destroying netns & interfaces related to $docker_pid..."
 
 ip netns del $docker_pid-route
 ip netns del $docker_pid-bridge
-ip netns del $docker_pid
+ip netns del $docker_pid-cont
 ip link del vethrae$docker_pid
 
 fi
