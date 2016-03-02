@@ -47,6 +47,9 @@ import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP_EXPORT;
 import static org.kurento.test.config.TestConfiguration.KSM_GST_PLUGINS_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_KMS_DNAT;
+import static org.kurento.test.config.TestConfiguration.TEST_KMS_DNAT_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_KMS_TRANSPORT;
 import static org.kurento.test.services.TestService.TestServiceScope.EXTERNAL;
 import static org.kurento.test.services.TestService.TestServiceScope.TEST;
 import static org.kurento.test.services.TestService.TestServiceScope.TESTCLASS;
@@ -491,6 +494,16 @@ public class KmsService extends TestService {
       createContainerCmd.withVolumes(volume, volumeTest).withBinds(
           new Bind(testFilesPath, volume, AccessMode.ro),
           new Bind(targetPath, volumeTest, AccessMode.rw));
+    }
+
+    if (getProperty(TEST_KMS_DNAT) != null && getProperty(TEST_KMS_DNAT, TEST_KMS_DNAT_DEFAULT)) {
+      log.debug("Set network, for kms, as none");
+      createContainerCmd.withNetworkMode("none");
+
+      Map<String, String> labels = new HashMap<String, String>();
+      labels.put("KurentoDnat", "true");
+      labels.put("Transport", getProperty(TEST_KMS_TRANSPORT));
+      createContainerCmd.withLabels(labels);
     }
 
     CreateContainerResponse kmsContainer = createContainerCmd.exec();

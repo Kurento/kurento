@@ -15,6 +15,11 @@
 
 package org.kurento.test.docker;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -32,6 +37,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
@@ -414,6 +421,17 @@ public class Docker implements Closeable {
       String configFile = generateConfigFile(id, browserType);
 
       mountDefaultFolders(createContainerCmd, configFile);
+
+      if (getProperty(TEST_SELENIUM_DNAT) != null
+          && getProperty(TEST_SELENIUM_DNAT, TEST_SELENIUM_DNAT_DEFAULT)) {
+        log.debug("Set network, for Selenium, as none");
+        createContainerCmd.withNetworkMode("none");
+
+        Map<String, String> labels = new HashMap<String, String>();
+        labels.put("KurentoDnat", "true");
+        labels.put("Transport", getProperty(TEST_SELENIUM_TRANSPORT));
+        createContainerCmd.withLabels(labels);
+      }
 
       createContainerCmd.exec();
 
