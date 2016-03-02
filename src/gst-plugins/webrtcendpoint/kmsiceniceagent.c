@@ -193,6 +193,8 @@ kms_ice_nice_agent_new_selected_pair_full (NiceAgent * agent,
   g_signal_emit_by_name (parent, "new-selected-pair-full", stream_id_str,
       component_id, local_candidate, remote_candidate);
   g_free (stream_id_str);
+  g_object_unref (local_candidate);
+  g_object_unref (remote_candidate);
 }
 
 KmsIceNiceAgent *
