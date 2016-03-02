@@ -55,8 +55,14 @@ public abstract class AbstractTransaction implements Transaction {
   }
 
   @Override
-  public void sendError(int code, String message, String data) throws IOException {
-    internalSendResponse(new Response<>(request.getId(), new ResponseError(code, message, data)));
+  public void sendError(int code, String type, String data) throws IOException {
+    internalSendResponse(new Response<>(request.getId(), new ResponseError(code, type, data)));
+  }
+
+  @Override
+  public void sendError(int code, String type, String message, String data) throws IOException {
+    internalSendResponse(
+        new Response<>(request.getId(), new ResponseError(code, type, message, data)));
   }
 
   @Override

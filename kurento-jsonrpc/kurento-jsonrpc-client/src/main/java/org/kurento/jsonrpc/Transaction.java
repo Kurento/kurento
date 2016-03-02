@@ -34,7 +34,9 @@ public interface Transaction {
 
   void sendResponse(Object result) throws IOException;
 
-  void sendError(int code, String message, String data) throws IOException;
+  void sendError(int code, String type, String data) throws IOException;
+
+  void sendError(int code, String type, String message, String data) throws IOException;
 
   void sendError(Throwable e) throws IOException;
 

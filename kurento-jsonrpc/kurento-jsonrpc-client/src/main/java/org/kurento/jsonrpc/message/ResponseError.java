@@ -117,6 +117,15 @@ public class ResponseError {
     this.type = getErrorType(data);
   }
 
+  public ResponseError(int code, String type, String message, String data) {
+    this.code = Integer.valueOf(code);
+    this.message = message;
+    if (data != null) {
+      this.data = new JsonPrimitive(data);
+    }
+    this.type = type;
+  }
+
   public ResponseError(int code, String message) {
     this.code = Integer.valueOf(code);
     this.message = message;

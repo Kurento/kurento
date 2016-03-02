@@ -30,8 +30,7 @@ public abstract class TypeDefaultJsonRpcHandler extends DefaultJsonRpcHandler<Js
   private final Logger log = LoggerFactory.getLogger(TypeDefaultJsonRpcHandler.class);
   private final Map<String, Method> methods = new ConcurrentHashMap<>();
 
-  private static final JsonRpcAndJavaMethodManager methodManager =
-      new JsonRpcAndJavaMethodManager();
+  private static final JsonRpcAndJavaMethodManager methodManager = new JsonRpcAndJavaMethodManager();
 
   public TypeDefaultJsonRpcHandler() {
     Method[] methodsArray = this.getClass().getMethods();
@@ -49,7 +48,8 @@ public abstract class TypeDefaultJsonRpcHandler extends DefaultJsonRpcHandler<Js
       Method method = methods.get(request.getMethod());
       if (method == null) {
         log.error("Requesting unrecognized method '{}'", request.getMethod());
-        transaction.sendError(1, "Unrecognized method '" + request.getMethod() + "'", null);
+        transaction.sendError(1, "UNRECOGNIZED_METHOD",
+            "Unrecognized method '" + request.getMethod() + "'", null);
       } else {
         methodManager.executeMethod(method, this, transaction, request);
       }

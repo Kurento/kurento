@@ -25,7 +25,7 @@ public class ErrorServerTest extends JsonRpcConnectorBaseTest {
 
       if (method.equals("explicitError")) {
 
-        transaction.sendError(-1, "Exception message", "Data");
+        transaction.sendError(-1, "EXCEPTION", "Exception message", "Data");
 
       } else if (method.equals("asyncError")) {
 
@@ -37,7 +37,7 @@ public class ErrorServerTest extends JsonRpcConnectorBaseTest {
           public void run() {
             try {
               Thread.sleep(1000);
-              transaction.sendError(-1, "Exception message", "Data");
+              transaction.sendError(-1, "GENERIC_EXCEPTION", "Exception message", "Data");
             } catch (Exception e) {
             }
           }
