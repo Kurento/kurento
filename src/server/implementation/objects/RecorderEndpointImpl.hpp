@@ -34,6 +34,10 @@ public:
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);
 
+  sigc::signal<void, Recording> signalRecording;
+  sigc::signal<void, Paused> signalPaused;
+  sigc::signal<void, Stopped> signalStopped;
+
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
                        Json::Value &response);

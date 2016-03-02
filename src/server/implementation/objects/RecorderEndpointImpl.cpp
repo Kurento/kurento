@@ -124,6 +124,26 @@ void RecorderEndpointImpl::postConstructor()
 void
 RecorderEndpointImpl::onStateChanged (gint newState)
 {
+  switch (newState) {
+  case KMS_URI_END_POINT_STATE_STOP: {
+    Stopped event (shared_from_this(), Stopped::getName() );
+    signalStopped (event);
+    break;
+  }
+
+  case KMS_URI_END_POINT_STATE_START: {
+    Recording event (shared_from_this(), Recording::getName() );
+    signalRecording (event);
+    break;
+  }
+
+  case KMS_URI_END_POINT_STATE_PAUSE: {
+    Paused event (shared_from_this(), Paused::getName() );
+    signalPaused (event);
+    break;
+  }
+  }
+
   std::unique_lock<std::mutex> lck (mtx);
 
   GST_TRACE_OBJECT (element, "State changed to %d", newState);

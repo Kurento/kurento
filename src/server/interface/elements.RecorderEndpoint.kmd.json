@@ -40,7 +40,32 @@
           "doc": "Starts storing media received through the :rom:cls:`MediaSink` pad",
           "params": []
         }
+      ],
+      "events": [
+        "Recording",
+        "Paused",
+        "Stopped"
       ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Recording",
+      "extends": "Media",
+      "doc": "Raised when the recoding effectively starts. ie: Media is received by the recorder once record method has been called.",
+      "properties": []
+    },
+    {
+      "name": "Paused",
+      "extends": "Media",
+      "doc": "Raised when the recorder goes to pause state",
+      "properties": []
+    },
+    {
+      "name": "Stopped",
+      "extends": "Media",
+      "doc": "Raised when the recorder has been stopped and all the media has been written to storage.",
+      "properties": []
     }
   ]
 }
