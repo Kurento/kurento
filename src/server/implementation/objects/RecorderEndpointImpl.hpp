@@ -4,6 +4,7 @@
 #include "UriEndpointImpl.hpp"
 #include "RecorderEndpoint.hpp"
 #include <EventHandler.hpp>
+#include <condition_variable>
 
 namespace kurento
 {
@@ -42,8 +43,19 @@ public:
 protected:
   virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
                                 &report, const GstStructure *stats, double timestamp);
+
+  virtual void postConstructor ();
+
+  virtual void release ();
 private:
   static bool support_ksr;
+  gulong handlerOnStateChanged = 0;
+  std::mutex mtx;
+  std::condition_variable cv;
+  gint state;
+
+  void onStateChanged (gint state);
+  void waitForStateChange (gint state);
 
   void collectEndpointStats (std::map <std::string, std::shared_ptr<Stats>>
                              &statsReport, std::string id, const GstStructure *stats,
