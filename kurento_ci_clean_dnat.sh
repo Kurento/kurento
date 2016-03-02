@@ -48,7 +48,7 @@ if [ -n $1 -a $1 = 'all' ]; then
   done
 
 else
-  for cidfile in $(find . -name *.id); do
+  for cidfile in $(ls *.id); do
 
     cid=$(cat $cidfile)
 
