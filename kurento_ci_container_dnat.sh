@@ -85,13 +85,19 @@ fi
 fi
 
 if [ $action = 'destroy' ]; then
-######################################################
-# Delete container
-echo "Destroying netns & interfaces related to $docker_pid..."
 
-ip netns del $docker_pid-route
-ip netns del $docker_pid-bridge
-ip netns del $docker_pid-cont
-ip link del vethrae$docker_pid
+  ######################################################
+  # Delete container
+  echo "Destroying netns & interfaces related to $docker_pid..."
+
+  ip netns exec $docker_pid-cont ip link del vethci$docker_pid
+  ip netns exec $docker_pid-bridge ip link del vethce$docker_pid
+  ip netns exec $docker_pid-bridge ip link del vethrbe$docker_pid
+  ip netns exec $docker_pid-route ip link del vethrbi$docker_pid
+  ip netns exec $docker_pid-route ip link del vethrai$docker_pid
+  ip link del vethrae$docker_pid
+  ip netns del $docker_pid-cont
+  ip netns del $docker_pid-route
+  ip netns del $docker_pid-bridge
 
 fi

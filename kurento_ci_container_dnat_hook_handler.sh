@@ -44,7 +44,6 @@ if [ $event = 'destroy' ]; then
   if [ -f $container.id ]; then
     echo "Container with dnat found. Deleting dnat rules."
     docker_pid=$(cat $container.id)
-    rm $container.id
     echo "Calling dnat script"
     sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $docker_pid >> dnat2destroy.log
   else
