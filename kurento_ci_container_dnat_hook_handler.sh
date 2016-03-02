@@ -13,6 +13,13 @@ container=$2
 
 echo "Event:|$event| Container:|$container|"
 
+# Check if this container has been started by our job
+name=$(docker inspect -f '{{.Name}}' $container)
+if [[ ! $name == ${BUILD_TAG}* ]]; then
+  echo "It's not my container"
+  exit 0
+fi
+
 if [ $event = 'start' ]; then
   echo "start event"
   docker inspect $container
