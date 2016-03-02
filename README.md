@@ -1,6 +1,6 @@
 [![][KurentoImage]][Kurento]
 
-Copyright © 2013-2016 [Kurento]. Licensed under [LGPL v2.1 License].
+Copyright © 2013-2016 [Kurento]. Licensed under [MIT License].
 
 kms-sample-plugin
 =================
@@ -108,3 +108,4 @@ Before asking for support, please read first the [Kurento Netiquette Guidelines]
 [readthedocs.org]: http://kurento.readthedocs.org/
 [Open API specification]: http://kurento.github.io/doc-kurento/
 [apiary.io]: http://docs.streamoriented.apiary.io/
+[MIT License]: http://opensource.org/licenses/MIT
