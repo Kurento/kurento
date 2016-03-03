@@ -10,7 +10,7 @@ docker_pid=$3
 [ -n $4 ] && transport=$4
 [ -n $5 ] && ip=$5
 
-echo "Performing $action on container ID $container with transport $transport"
+echo "Performing $action on container ID $container (pid=$docker_pid) with transport $transport"
 
 if [ $action = 'start' ]; then
 
