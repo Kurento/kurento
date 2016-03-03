@@ -26,7 +26,7 @@ public class KurentoClientKmsProviderTest extends KurentoClientTest {
 
   private static final Logger log = LoggerFactory.getLogger(KurentoClientKmsProviderTest.class);
 
-  public static BlockingQueue<String> queue = new ArrayBlockingQueue<>(10);
+  public static BlockingQueue<String> queue = new ArrayBlockingQueue<>(100);
 
   public static class TestKmsUrlProvider implements KmsProvider {
 

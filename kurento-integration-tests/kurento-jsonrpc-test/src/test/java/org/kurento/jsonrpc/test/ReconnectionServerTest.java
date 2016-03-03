@@ -77,8 +77,8 @@ public class ReconnectionServerTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    JsonRpcClient client =
-        new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/reconnection2");
+    JsonRpcClient client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection2");
     client.setServerRequestHandler(new DefaultJsonRpcHandler<JsonElement>() {
 
       @Override
@@ -102,7 +102,8 @@ public class ReconnectionServerTest extends JsonRpcConnectorBaseTest {
     log.info("SessionId: " + client.getSession().getSessionId());
 
     JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-    webSocketClient.closeNativeSession();
+
+    webSocketClient.closeNativeClient();
 
     Thread.sleep(100);
 

@@ -164,7 +164,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     client.sendRequest("sessiontest", String.class);
 
     JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-    webSocketClient.closeNativeSession();
+    webSocketClient.closeNativeClient();
 
     if (latch.await(20, TimeUnit.SECONDS)) {
       fail("Event disconnected() not should be thrown "

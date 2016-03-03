@@ -55,7 +55,7 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
       log.info("SessionId: " + client.getSession().getSessionId());
 
       JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-      webSocketClient.closeNativeSession();
+      webSocketClient.closeNativeClient();
 
       Thread.sleep(100);
 
@@ -90,7 +90,7 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
       Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
 
       JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-      webSocketClient.closeNativeSession();
+      webSocketClient.closeNativeClient();
 
       Thread.sleep(1000);
 
