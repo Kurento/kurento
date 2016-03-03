@@ -97,13 +97,6 @@ typedef struct _KmsSinkPadData
   gboolean requested;
 } KmsSinkPadData;
 
-typedef struct _StreamE2EAvgStat
-{
-  KmsRefStruct ref;
-  KmsMediaType type;
-  gdouble avg;
-} StreamE2EAvgStat;
-
 typedef struct _KmsRecorderStats
 {
   gchar *id;
@@ -191,30 +184,6 @@ data_evt_probe_new (GstElement * appsrc, KmsRecordingProfile profile)
   return data;
 }
 
-static void
-stream_e2e_avg_stat_destroy (StreamE2EAvgStat * stat)
-{
-  g_slice_free (StreamE2EAvgStat, stat);
-}
-
-static StreamE2EAvgStat *
-stream_e2e_avg_stat_new (KmsMediaType type)
-{
-  StreamE2EAvgStat *stat;
-
-  stat = g_slice_new0 (StreamE2EAvgStat);
-  kms_ref_struct_init (KMS_REF_STRUCT_CAST (stat),
-      (GDestroyNotify) stream_e2e_avg_stat_destroy);
-  stat->type = type;
-
-  return stat;
-}
-
-#define stream_e2e_avg_stat_ref(obj) \
-  (StreamE2EAvgStat *) kms_ref_struct_ref (KMS_REF_STRUCT_CAST (obj))
-#define stream_e2e_avg_stat_unref(obj) \
-  kms_ref_struct_unref (KMS_REF_STRUCT_CAST (obj))
-
 static MarkBufferProbeData *
 mark_buffer_probe_data_new ()
 {
@@ -229,7 +198,7 @@ static void
 mark_buffer_probe_data_destroy (MarkBufferProbeData * data)
 {
   g_free (data->id);
-  stream_e2e_avg_stat_unref (data->stat);
+  kms_stats_stream_e2e_avg_stat_unref (data->stat);
 
   g_slice_free (MarkBufferProbeData, data);
 }
@@ -243,22 +212,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndpoint, kms_recorder_endpoint,
 
 static GstBusSyncReply bus_sync_signal_handler (GstBus * bus, GstMessage * msg,
     gpointer data);
-
-static gchar *
-kms_recorder_create_id_from_pad (KmsRecorderEndpoint * self, GstPad * pad)
-{
-  gchar *key, *padname, *objname;
-
-  padname = gst_pad_get_name (pad);
-  objname = gst_element_get_name (self);
-
-  key = g_strdup_printf ("%s_%s", objname, padname);
-
-  g_free (padname);
-  g_free (objname);
-
-  return key;
-}
 
 static gchar *
 kms_element_get_padname_from_id (KmsRecorderEndpoint * self, const gchar * id)
@@ -589,7 +542,7 @@ add_mark_data_cb (GstPad * pad, KmsMediaType type, GstClockTimeDiff t,
   } else {
     /* add mark data to this meta */
     kms_list_prepend (meta_data, g_strdup (data->id),
-        stream_e2e_avg_stat_ref (data->stat));
+        kms_stats_stream_e2e_avg_stat_ref (data->stat));
   }
 }
 
@@ -620,18 +573,18 @@ connect_sink_func (const gchar * key, KmsSinkPadData * data,
       return;
   }
 
-  id = kms_recorder_create_id_from_pad (self, sinkpad);
+  id = kms_stats_create_id_for_pad (GST_ELEMENT (self), sinkpad);
 
   stat = g_hash_table_lookup (self->priv->stats.avg_e2e, id);
 
   if (stat == NULL) {
-    stat = stream_e2e_avg_stat_new (type);
+    stat = kms_stats_stream_e2e_avg_stat_new (type);
     g_hash_table_insert (self->priv->stats.avg_e2e, g_strdup (id), stat);
   }
 
   markdata = mark_buffer_probe_data_new ();
   markdata->id = id;
-  markdata->stat = stream_e2e_avg_stat_ref (stat);
+  markdata->stat = kms_stats_stream_e2e_avg_stat_ref (stat);
 
   kms_stats_add_buffer_latency_notification_probe (sinkpad, add_mark_data_cb,
       TRUE /* lock the data */ , markdata,
