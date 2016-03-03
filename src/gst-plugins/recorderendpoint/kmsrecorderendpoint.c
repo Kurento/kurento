@@ -513,7 +513,6 @@ kms_recorder_endpoint_finalize (GObject * object)
   g_hash_table_unref (self->priv->sink_pad_data);
   g_slist_free_full (self->priv->pending_pads, g_free);
   g_hash_table_unref (self->priv->stats.avg_e2e);
-  g_free (self->priv->stats.id);
 
   GST_DEBUG_OBJECT (self, "finalized");
 
@@ -1816,7 +1815,6 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->stats.avg_e2e = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) kms_ref_struct_unref);
-  self->priv->stats.id = g_strdup ("recorder-id");
 
   g_cond_init (&self->priv->state_manager.cond);
 
