@@ -56,6 +56,42 @@ function getOnError(done) {
 }
 
 /**
+ * Waiting 10 minutes and ask again for an object
+ */
+QUnit.test('Waiting 10 minutes and ask again for an object', function (assert) {
+  var self = this;
+
+  QUnit.config.testTimeout = 660000;
+  QUnit.expect(2);
+
+  var done = assert.async()
+  var onerror = getOnError(done)
+
+  var client = this.kurento
+  var pipeline = this.pipeline
+  var sessionId = client.sessionId;
+
+  setTimeout(function () {
+    client.getMediaobjectById(pipeline.id, function (error, pipeline_) {
+
+      QUnit.equal(error, null)
+
+      if (error) return onerror(error);
+
+      QUnit.equal(pipeline.id, pipeline_.id);
+
+      console.log("Pipeline:", pipeline.id, " pipeline_:",
+        pipeline_.id)
+
+      QUnit.config.testTimeout = 30000 * Timeout.factor;
+
+      done();
+    })
+  }, 600000);
+
+});
+
+/**
  * Close the connection and keep working
  */
 QUnit.test('Continue after network error', function (assert) {
