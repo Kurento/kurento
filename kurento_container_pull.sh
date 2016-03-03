@@ -30,6 +30,11 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wil
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-debug:1.0.0
 
+# DNAT images
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta-debug:1.0.0-dnat
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-dev-debug:1.0.0-dnat
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-beta-debug:1.0.0-dnat
+
 # dev-chef image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 
