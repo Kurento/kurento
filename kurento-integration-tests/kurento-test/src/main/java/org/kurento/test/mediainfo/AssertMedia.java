@@ -97,32 +97,44 @@ public class AssertMedia {
     MediaInfo info = new MediaInfo();
     String pathToMedia_[] = pathToMedia.split("://");
 
-    if (pathToMedia_.length > 1) {
-      String protocol = pathToMedia_[0];
-      String path = pathToMedia_[1];
+    String protocol = "";
+    String path = "";
 
-      if (Protocol.FILE.toString().equals(protocol)) {
-        info.open(new File(path));
-        return info;
-      } else if (Protocol.HTTP.toString().equals(protocol)
-          || Protocol.HTTPS.toString().equals(protocol)) {
-        // TODO Get uri from client repository and use wget
-      } else if (Protocol.S3.toString().equals(protocol)) {
-        String pathDownload =
-            KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator + path;
-        String pathOut =
-            KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator
-                + path.replace("/test", "/ffmpeg");
-        // Download file from S3
-        Shell.runAndWaitString("aws s3 cp " + pathToMedia + " " + pathDownload);
-        // Use ffmpeg for adding duration
-        Shell.runAndWaitString("ffmpeg -y -i " + pathDownload + " -c:a copy -c:v copy -map 0 "
-            + pathOut);
-        info.open(new File(pathOut));
-        return info;
-      } else if (Protocol.MONGODB.toString().equals(protocol)) {
-        // TODO
+    if (pathToMedia_.length > 1) {
+      protocol = pathToMedia_[0];
+      path = pathToMedia_[1];
+    } else {
+      String recordDefaultPath = KurentoTest.getRecordDefaultPath();
+      if (recordDefaultPath != null) {
+        String defaultPathToMedia_[] = recordDefaultPath.split("://");
+        protocol = defaultPathToMedia_[0];
+        String pathStart = defaultPathToMedia_[1];
+
+        path = pathStart + pathToMedia_[0];
       }
+    }
+
+    if (Protocol.FILE.toString().equals(protocol)) {
+      info.open(new File(path));
+      return info;
+    } else if (Protocol.HTTP.toString().equals(protocol)
+        || Protocol.HTTPS.toString().equals(protocol)) {
+      // TODO Get uri from client repository and use wget
+    } else if (Protocol.S3.toString().equals(protocol)) {
+      String pathDownload =
+          KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator + path;
+      String pathOut =
+          KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator
+          + path.replace("/test", "/ffmpeg");
+      // Download file from S3
+      Shell.runAndWaitString("aws s3 cp " + pathToMedia + " " + pathDownload);
+      // Use ffmpeg for adding duration
+      Shell.runAndWaitString("ffmpeg -y -i " + pathDownload + " -c:a copy -c:v copy -map 0 "
+          + pathOut);
+      info.open(new File(pathOut));
+      return info;
+    } else if (Protocol.MONGODB.toString().equals(protocol)) {
+      // TODO
     }
 
     return info;

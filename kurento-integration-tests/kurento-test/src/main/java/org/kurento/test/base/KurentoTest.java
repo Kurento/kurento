@@ -36,6 +36,7 @@ import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PRINT_LOG_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_PROJECT_PATH_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_RECORD_DEFAULTPATH_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_RECORD_URL_PROP;
 import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS;
 import static org.kurento.test.config.TestConfiguration.TEST_SEEK_REPETITIONS_DEFAULT;
@@ -197,6 +198,10 @@ public class KurentoTest {
   public static String getDefaultOutputFile(String suffix) {
     return getDefaultOutputFolder().getAbsolutePath() + File.separator + getSimpleTestName()
         + suffix;
+  }
+
+  public static String getRecordDefaultPath() {
+    return getProperty(TEST_RECORD_DEFAULTPATH_PROP);
   }
 
   public static String getRecordUrl(String suffix) {

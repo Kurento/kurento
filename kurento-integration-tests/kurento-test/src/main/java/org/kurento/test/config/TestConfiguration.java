@@ -224,6 +224,7 @@ public class TestConfiguration {
 
   public static final String TEST_FILES_URL_PROP = "test.files.url";
   public static final String TEST_RECORD_URL_PROP = "test.record.url";
+  public static final String TEST_RECORD_DEFAULTPATH_PROP = "test.record.defaultpath";
 
   // FIXME: When CI can, remove TEST_FILES_DISK_PROP_OLD
   public static final String TEST_FILES_DISK_PROP_OLD = "test.files";
