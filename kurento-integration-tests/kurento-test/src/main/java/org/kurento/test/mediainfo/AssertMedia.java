@@ -96,30 +96,33 @@ public class AssertMedia {
   private static MediaInfo getInfoByPath(String pathToMedia) {
     MediaInfo info = new MediaInfo();
     String pathToMedia_[] = pathToMedia.split("://");
-    String protocol = pathToMedia_[0];
-    String path = pathToMedia_[1];
 
-    if (Protocol.FILE.toString().equals(protocol)) {
-      info.open(new File(path));
-      return info;
-    } else if (Protocol.HTTP.toString().equals(protocol)
-        || Protocol.HTTPS.toString().equals(protocol)) {
-      // TODO Get uri from client repository and use wget
-    } else if (Protocol.S3.toString().equals(protocol)) {
-      String pathDownload =
-          KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator + path;
-      String pathOut =
-          KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator
-              + path.replace("/", "/ffmpeg");
-      // Download file from S3
-      Shell.runAndWaitString("aws s3 cp " + pathToMedia + " " + pathDownload);
-      // Use ffmpeg for adding duration
-      Shell.runAndWaitString("ffmpeg -y -i " + pathDownload + " -c:a copy -c:v copy -map 0 "
-          + pathOut);
-      info.open(new File(pathOut));
-      return info;
-    } else if (Protocol.MONGODB.toString().equals(protocol)) {
-      // TODO
+    if (pathToMedia_.length > 1) {
+      String protocol = pathToMedia_[0];
+      String path = pathToMedia_[1];
+
+      if (Protocol.FILE.toString().equals(protocol)) {
+        info.open(new File(path));
+        return info;
+      } else if (Protocol.HTTP.toString().equals(protocol)
+          || Protocol.HTTPS.toString().equals(protocol)) {
+        // TODO Get uri from client repository and use wget
+      } else if (Protocol.S3.toString().equals(protocol)) {
+        String pathDownload =
+            KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator + path;
+        String pathOut =
+            KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator
+                + path.replace("/test", "/ffmpeg");
+        // Download file from S3
+        Shell.runAndWaitString("aws s3 cp " + pathToMedia + " " + pathDownload);
+        // Use ffmpeg for adding duration
+        Shell.runAndWaitString("ffmpeg -y -i " + pathDownload + " -c:a copy -c:v copy -map 0 "
+            + pathOut);
+        info.open(new File(pathOut));
+        return info;
+      } else if (Protocol.MONGODB.toString().equals(protocol)) {
+        // TODO
+      }
     }
 
     return info;
