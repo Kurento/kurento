@@ -51,6 +51,7 @@ G_DEFINE_TYPE (KmsWebrtcEndpoint, kms_webrtc_endpoint,
 #define DEFAULT_STUN_SERVER_IP NULL
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
+#define DEFAULT_PEM_CERTIFICATE NULL
 
 enum
 {
@@ -58,6 +59,7 @@ enum
   PROP_STUN_SERVER_IP,
   PROP_STUN_SERVER_PORT,
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
+  PROP_PEM_CERTIFICATE,
   N_PROPERTIES
 };
 
@@ -88,6 +90,7 @@ struct _KmsWebrtcEndpointPrivate
   gchar *stun_server_ip;
   guint stun_server_port;
   gchar *turn_url;
+  gchar *pem_certificate;
 };
 
 /* Internal session management begin */
@@ -307,10 +310,13 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       webrtc_sess, "stun-server-port", G_BINDING_DEFAULT);
   g_object_bind_property (self, "turn-url",
       webrtc_sess, "turn-url", G_BINDING_DEFAULT);
+  g_object_bind_property (self, "pem_certificate",
+      webrtc_sess, "pem-certificate", G_BINDING_DEFAULT);
 
   g_object_set (webrtc_sess, "stun-server", self->priv->stun_server_ip,
       "stun-server-port", self->priv->stun_server_port,
-      "turn-url", self->priv->turn_url, NULL);
+      "turn-url", self->priv->turn_url,
+      "pem-certificate", self->priv->pem_certificate, NULL);
 
   g_signal_connect (webrtc_sess, "on-ice-candidate",
       G_CALLBACK (on_ice_candidate), self);
@@ -473,6 +479,10 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       g_free (self->priv->turn_url);
       self->priv->turn_url = g_value_dup_string (value);
       break;
+    case PROP_PEM_CERTIFICATE:
+      g_free (self->priv->pem_certificate);
+      self->priv->pem_certificate = g_value_dup_string (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -498,6 +508,9 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
       break;
     case PROP_TURN_URL:
       g_value_set_string (value, self->priv->turn_url);
+      break;
+    case PROP_PEM_CERTIFICATE:
+      g_value_set_string (value, self->priv->pem_certificate);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -533,6 +546,7 @@ kms_webrtc_endpoint_finalize (GObject * object)
 
   g_free (self->priv->stun_server_ip);
   g_free (self->priv->turn_url);
+  g_free (self->priv->pem_certificate);
 
   g_main_context_unref (self->priv->context);
 
@@ -702,6 +716,12 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "'address' must be an IP (not a domain)."
           "'transport' is optional (UDP by default).",
           DEFAULT_STUN_TURN_URL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_PEM_CERTIFICATE,
+      g_param_spec_string ("pem-certificate",
+          "PemCertificate",
+          "Pem certificate to be used in dtls",
+          DEFAULT_PEM_CERTIFICATE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   /**
   * KmsWebrtcEndpoint::on-ice-candidate:

@@ -93,6 +93,7 @@ private:
                             KmsIceCandidate *remoteCandidate);
   void onDataChannelOpened (gchar *sessId, guint stream_id);
   void onDataChannelClosed (gchar *sessId, guint stream_id);
+  void checkUri (std::string &uri);
 
   std::shared_ptr<std::string> getPemCertificate ();
   static std::mutex certificateMutex;

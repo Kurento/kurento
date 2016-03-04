@@ -263,7 +263,7 @@ connected_cb (GstElement * dtlssrtpenc, gpointer self)
 KmsWebRtcBundleConnection *
 kms_webrtc_bundle_connection_new (KmsIceBaseAgent * agent,
     GMainContext * context, const gchar * name, guint16 min_port,
-    guint16 max_port)
+    guint16 max_port, gchar * pem_cerficate)
 {
   GObject *obj;
   KmsWebRtcBaseConnection *base_conn;
@@ -284,7 +284,7 @@ kms_webrtc_bundle_connection_new (KmsIceBaseAgent * agent,
 
   priv->tr =
       kms_webrtc_transport_create (agent, base_conn->stream_id,
-      NICE_COMPONENT_TYPE_RTP);
+      NICE_COMPONENT_TYPE_RTP, pem_cerficate);
 
   if (priv->tr == NULL) {
     GST_ERROR_OBJECT (conn, "Cannot create connection");

@@ -52,6 +52,7 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 #define DEFAULT_STUN_SERVER_PORT 3478
 #define DEFAULT_STUN_TURN_URL NULL
 #define DEFAULT_DATA_CHANNELS_SUPPORTED FALSE
+#define DEFAULT_PEM_CERTIFICATE NULL
 
 #define IP_VERSION_6 6
 
@@ -87,6 +88,7 @@ enum
   PROP_STUN_SERVER_PORT,
   PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
   PROP_DATA_CHANNEL_SUPPORTED,
+  PROP_PEM_CERTIFICATE,
   N_PROPERTIES
 };
 
@@ -221,12 +223,14 @@ kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
     GST_DEBUG_OBJECT (self, "Create SCTP connection");
     conn =
         KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_sctp_connection_new
-        (self->agent, self->context, name, min_port, max_port));
+        (self->agent, self->context, name, min_port, max_port,
+            self->pem_certificate));
   } else {
     GST_DEBUG_OBJECT (self, "Create RTP connection");
     conn =
         KMS_WEBRTC_BASE_CONNECTION (kms_webrtc_connection_new
-        (self->agent, self->context, name, min_port, max_port));
+        (self->agent, self->context, name, min_port, max_port,
+            self->pem_certificate));
   }
 
   return KMS_I_RTP_CONNECTION (conn);
@@ -241,7 +245,7 @@ kms_webrtc_session_create_rtcp_mux_connection (KmsBaseRtpSession *
 
   conn =
       kms_webrtc_rtcp_mux_connection_new (self->agent, self->context, name,
-      min_port, max_port);
+      min_port, max_port, self->pem_certificate);
 
   return KMS_I_RTCP_MUX_CONNECTION (conn);
 }
@@ -255,7 +259,7 @@ kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
 
   conn =
       kms_webrtc_bundle_connection_new (self->agent, self->context, name,
-      min_port, max_port);
+      min_port, max_port, self->pem_certificate);
 
   return KMS_I_BUNDLE_CONNECTION (conn);
 }
@@ -1580,6 +1584,10 @@ kms_webrtc_session_set_property (GObject * object, guint prop_id,
       self->turn_url = g_value_dup_string (value);
       kms_webrtc_session_parse_turn_url (self);
       break;
+    case PROP_PEM_CERTIFICATE:
+      g_free (self->pem_certificate);
+      self->pem_certificate = g_value_dup_string (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1609,6 +1617,9 @@ kms_webrtc_session_get_property (GObject * object, guint prop_id,
     case PROP_DATA_CHANNEL_SUPPORTED:
       g_value_set_boolean (value, self->data_session != NULL);
       break;
+    case PROP_PEM_CERTIFICATE:
+      g_value_set_string (value, self->pem_certificate);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1633,6 +1644,7 @@ kms_webrtc_session_finalize (GObject * object)
   g_free (self->turn_user);
   g_free (self->turn_password);
   g_free (self->turn_address);
+  g_free (self->pem_certificate);
 
   if (self->destroy_data != NULL && self->cb_data != NULL) {
     self->destroy_data (self->cb_data);
@@ -1824,6 +1836,12 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
           "'address' must be an IP (not a domain)."
           "'transport' is optional (UDP by default).",
           DEFAULT_STUN_TURN_URL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_PEM_CERTIFICATE,
+      g_param_spec_string ("pem-certificate",
+          "PemCertificate",
+          "Pem certificate to be used in dtls",
+          DEFAULT_PEM_CERTIFICATE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_DATA_CHANNEL_SUPPORTED,
       g_param_spec_boolean ("data-channel-supported",

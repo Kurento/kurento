@@ -21,12 +21,16 @@
 
 #include "webrtcendpoint/kmswebrtcdatachannelstate.h"
 #include <boost/algorithm/string.hpp>
+#include <fstream>
 
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoWebRtcEndpointImpl"
 
 #define FACTORY_NAME "webrtcendpoint"
+
+#define CONFIG_PATH "configPath"
+#define DEFAULT_PATH "/etc/kurento"
 
 namespace kurento
 {
@@ -102,6 +106,23 @@ check_support_for_h264 ()
 
   supported_codecs.push_back ("H264");
   gst_object_unref (plugin);
+}
+
+void WebRtcEndpointImpl::checkUri (std::string &uri)
+{
+  //Check if uri is an absolute or relative path.
+  if (! boost::starts_with (uri, "/") ) {
+    std::string path;
+
+    try {
+      path = getConfigValue <std::string, WebRtcEndpoint> (CONFIG_PATH);
+    } catch (boost::property_tree::ptree_error &e) {
+      GST_DEBUG ("WebRtcEndpoint config file doesn't contain a defaul path");
+      path = getConfigValue <std::string> (CONFIG_PATH, DEFAULT_PATH);
+    }
+
+    uri = path + "/" + uri;
+  }
 }
 
 void WebRtcEndpointImpl::onIceCandidate (gchar *sessId,
@@ -305,6 +326,8 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   uint stunPort;
   std::string stunAddress;
   std::string turnURL;
+  std::string pemUri;
+  std::string pemCertificate;
 
   if (useDataChannels) {
     g_object_set (element, "use-data-channels", TRUE, NULL);
@@ -346,6 +369,28 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
     GST_INFO ("turn info: %s\n", turnURL.c_str() );
     g_object_set ( G_OBJECT (element), "turn-url", turnURL.c_str(),
                    NULL);
+  } catch (boost::property_tree::ptree_error &e) {
+
+  }
+
+  try {
+    std::ifstream inFile;
+    std::stringstream strStream;
+
+    pemUri = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificate");
+
+    //check if the uri is absolute or relative
+    checkUri (pemUri);
+    GST_INFO ("pemCertificate in: %s\n", pemUri.c_str() );
+
+    inFile.open (pemUri);
+    strStream << inFile.rdbuf();
+    pemCertificate = strStream.str();
+    GST_INFO ("pemCertificate content: %s\n", pemCertificate.c_str() );
+
+    g_object_set ( G_OBJECT (element), "pem-certificate", pemCertificate.c_str(),
+                   NULL);
+
   } catch (boost::property_tree::ptree_error &e) {
 
   }

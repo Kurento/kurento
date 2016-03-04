@@ -54,7 +54,7 @@ kms_webrtc_transport_destroy (KmsWebRtcTransport * tr)
 
 KmsWebRtcTransport *
 kms_webrtc_transport_create (KmsIceBaseAgent * agent, char *stream_id,
-    guint component_id)
+    guint component_id, gchar * pem_certificate)
 {
   KmsWebRtcTransport *tr;
   gchar *str;
@@ -77,6 +77,11 @@ kms_webrtc_transport_create (KmsIceBaseAgent * agent, char *stream_id,
   g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "connection-id", str, NULL);
   g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "connection-id", str, NULL);
   g_free (str);
+
+  if (pem_certificate != NULL) {
+    g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "pem", pem_certificate,
+        NULL);
+  }
 
   kms_webrtc_transport_src_configure (tr->src, agent, stream_id, component_id);
   kms_webrtc_transport_sink_configure (tr->sink, agent, stream_id,

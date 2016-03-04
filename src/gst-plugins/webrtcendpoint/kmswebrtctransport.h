@@ -36,7 +36,7 @@ typedef struct _KmsWebRtcTransport
 } KmsWebRtcTransport;
 
 KmsWebRtcTransport *kms_webrtc_transport_create (KmsIceBaseAgent * agent,
-    char* stream_id, guint component_id);
+    char* stream_id, guint component_id, gchar *pem_certificate);
 void kms_webrtc_transport_destroy (KmsWebRtcTransport * tr);
 
 void kms_webrtc_transport_enable_latency_notification (KmsWebRtcTransport * tr,

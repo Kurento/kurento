@@ -259,7 +259,8 @@ rtcp_connected_cb (GstElement * dtlssrtpenc, gpointer data)
 
 KmsWebRtcConnection *
 kms_webrtc_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
-    const gchar * name, guint16 min_port, guint16 max_port)
+    const gchar * name, guint16 min_port, guint16 max_port,
+    gchar * pem_certificate)
 {
   GObject *obj;
   KmsWebRtcBaseConnection *base_conn;
@@ -279,10 +280,10 @@ kms_webrtc_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
 
   priv->rtp_tr =
       kms_webrtc_transport_create (agent, base_conn->stream_id,
-      NICE_COMPONENT_TYPE_RTP);
+      NICE_COMPONENT_TYPE_RTP, pem_certificate);
   priv->rtcp_tr =
       kms_webrtc_transport_create (agent, base_conn->stream_id,
-      NICE_COMPONENT_TYPE_RTCP);
+      NICE_COMPONENT_TYPE_RTCP, pem_certificate);
 
   if (priv->rtp_tr == NULL || priv->rtcp_tr == NULL) {
     GST_ERROR_OBJECT (obj, "Cannot create KmsWebRTCConnection.");
