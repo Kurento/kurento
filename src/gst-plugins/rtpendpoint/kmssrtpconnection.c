@@ -52,8 +52,6 @@ static guint obj_signals[LAST_SIGNAL] = { 0 };
 
 struct _KmsSrtpConnectionPrivate
 {
-  GRecMutex mutex;
-
   GSocket *rtp_socket;
   GstElement *rtp_udpsink;
   GstElement *rtp_udpsrc;
@@ -75,11 +73,6 @@ struct _KmsSrtpConnectionPrivate
   gboolean r_updated;
   gboolean r_key_set;
 };
-
-#define KMS_SRTP_CONNECTION_LOCK(conn) \
-  (g_rec_mutex_lock (&KMS_SRTP_CONNECTION ((conn))->priv->mutex))
-#define KMS_SRTP_CONNECTION_UNLOCK(conn) \
-  (g_rec_mutex_unlock (&KMS_SRTP_CONNECTION ((conn))->priv->mutex))
 
 static void
 kms_srtp_connection_interface_init (KmsIRtpConnectionInterface * iface);
@@ -342,7 +335,7 @@ kms_srtp_connection_request_remote_key_cb (GstElement * srtpdec, guint ssrc,
 {
   GstCaps *caps = NULL;
 
-  KMS_SRTP_CONNECTION_LOCK (conn);
+  KMS_RTP_BASE_CONNECTION_LOCK (conn);
 
   if (!conn->priv->r_key_set) {
     GST_DEBUG_OBJECT (conn, "key is not yet set");
@@ -362,7 +355,7 @@ kms_srtp_connection_request_remote_key_cb (GstElement * srtpdec, guint ssrc,
   GST_DEBUG_OBJECT (srtpdec, "Key Caps: %" GST_PTR_FORMAT, caps);
 
 end:
-  KMS_SRTP_CONNECTION_UNLOCK (conn);
+  KMS_RTP_BASE_CONNECTION_UNLOCK (conn);
 
   return caps;
 }
@@ -437,12 +430,69 @@ kms_srtp_connection_new (guint16 min_port, guint16 max_port, gboolean use_ipv6)
 }
 
 static void
+kms_srtp_connection_enable_latency_stats (KmsRtpBaseConnection * base)
+{
+  KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base);
+  GstPad *pad;
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsrc, "src",
+      base->src_probe);
+  pad = gst_element_get_static_pad (self->priv->rtp_udpsrc, "src");
+  base->src_probe = kms_stats_add_buffer_latency_meta_probe (pad, FALSE,
+      0 /* No matter type at this point */ );
+  g_object_unref (pad);
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsink, "sink",
+      base->sink_probe);
+  pad = gst_element_get_static_pad (self->priv->rtp_udpsink, "sink");
+  base->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad,
+      base->cb, TRUE /* Lock the data */ , base->user_data, NULL);
+  g_object_unref (pad);
+}
+
+void
+kms_srtp_transport_disable_latency_notification (KmsRtpBaseConnection * base)
+{
+  KmsSrtpConnection *self = KMS_SRTP_CONNECTION (base);
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsrc, "src",
+      base->src_probe);
+  base->src_probe = 0UL;
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsink, "sink",
+      base->sink_probe);
+  base->sink_probe = 0UL;
+}
+
+static void
+kms_srtp_connection_collect_latency_stats (KmsIRtpConnection * obj,
+    gboolean enable)
+{
+  KmsRtpBaseConnection *base = KMS_RTP_BASE_CONNECTION (obj);
+
+  KMS_RTP_BASE_CONNECTION_LOCK (base);
+
+  if (enable) {
+    kms_srtp_connection_enable_latency_stats (base);
+  } else {
+    kms_srtp_transport_disable_latency_notification (base);
+  }
+
+  kms_rtp_base_connection_collect_latency_stats (obj, enable);
+
+  KMS_RTP_BASE_CONNECTION_UNLOCK (base);
+}
+
+static void
 kms_srtp_connection_finalize (GObject * object)
 {
   KmsSrtpConnection *self = KMS_SRTP_CONNECTION (object);
   KmsSrtpConnectionPrivate *priv = self->priv;
 
   GST_DEBUG_OBJECT (self, "finalize");
+
+  kms_srtp_transport_disable_latency_notification (KMS_RTP_BASE_CONNECTION
+      (self));
 
   g_clear_object (&priv->rtp_udpsink);
   g_clear_object (&priv->rtp_udpsrc);
@@ -458,8 +508,6 @@ kms_srtp_connection_finalize (GObject * object)
 
   g_free (priv->r_key);
 
-  g_rec_mutex_clear (&priv->mutex);
-
   /* chain up */
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
@@ -469,7 +517,6 @@ kms_srtp_connection_init (KmsSrtpConnection * self)
 {
   self->priv = KMS_SRTP_CONNECTION_GET_PRIVATE (self);
   self->priv->connected = FALSE;
-  g_rec_mutex_init (&self->priv->mutex);
 }
 
 static void
@@ -527,7 +574,7 @@ kms_srtp_connection_set_key (KmsSrtpConnection * conn, const gchar * key,
   } else {
     gboolean changed;
 
-    KMS_SRTP_CONNECTION_LOCK (conn);
+    KMS_RTP_BASE_CONNECTION_LOCK (conn);
 
     changed = !conn->priv->r_key_set || g_strcmp0 (key, conn->priv->r_key) != 0
         || conn->priv->r_auth != auth || conn->priv->r_cipher != cipher;
@@ -541,7 +588,7 @@ kms_srtp_connection_set_key (KmsSrtpConnection * conn, const gchar * key,
       conn->priv->r_key_set = TRUE;
     }
 
-    KMS_SRTP_CONNECTION_UNLOCK (conn);
+    KMS_RTP_BASE_CONNECTION_UNLOCK (conn);
   }
 }
 
@@ -557,8 +604,6 @@ kms_srtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
   iface->request_rtp_src = kms_srtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_srtp_connection_request_rtcp_sink;
   iface->request_rtcp_src = kms_srtp_connection_request_rtcp_src;
-
-  /* This endpoint does not support latency statistics yet */
-  iface->set_latency_callback = NULL;
-  iface->collect_latency_stats = NULL;
+  iface->set_latency_callback = kms_rtp_base_connection_set_latency_callback;
+  iface->collect_latency_stats = kms_srtp_connection_collect_latency_stats;
 }

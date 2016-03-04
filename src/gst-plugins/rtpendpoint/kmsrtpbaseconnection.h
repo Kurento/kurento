@@ -34,12 +34,27 @@ G_BEGIN_DECLS
 typedef struct _KmsRtpBaseConnection KmsRtpBaseConnection;
 typedef struct _KmsRtpBaseConnectionClass KmsRtpBaseConnectionClass;
 
+#define KMS_RTP_BASE_CONNECTION_LOCK(conn) \
+  (g_rec_mutex_lock (&KMS_RTP_BASE_CONNECTION_CAST ((conn))->mutex))
+#define KMS_RTP_BASE_CONNECTION_UNLOCK(conn) \
+  (g_rec_mutex_unlock (&KMS_RTP_BASE_CONNECTION_CAST ((conn))->mutex))
+
 struct _KmsRtpBaseConnection
 {
   GObject parent;
 
+  GRecMutex mutex;
+
   guint min_port;
   guint max_port;
+
+  BufferLatencyCallback cb;
+  gpointer user_data;
+
+  gboolean stats_enabled;
+
+  gulong src_probe;
+  gulong sink_probe;
 };
 
 struct _KmsRtpBaseConnectionClass
@@ -50,6 +65,8 @@ struct _KmsRtpBaseConnectionClass
     guint (*get_rtcp_port) (KmsRtpBaseConnection * self);
   void (*set_remote_info) (KmsRtpBaseConnection * self,
       const gchar * host, gint rtp_port, gint rtcp_port);
+  void (*set_latency_callback) (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
+  void (*collect_latency_stats) (KmsIRtpConnection *self, gboolean enable);
 };
 
 GType kms_rtp_base_connection_get_type (void);
@@ -59,5 +76,8 @@ guint kms_rtp_base_connection_get_rtcp_port (KmsRtpBaseConnection * self);
 void kms_rtp_base_connection_set_remote_info (KmsRtpBaseConnection * self,
     const gchar * host, gint rtp_port, gint rtcp_port);
 
+void kms_rtp_base_connection_set_latency_callback (KmsIRtpConnection *self, BufferLatencyCallback cb, gpointer user_data);
+void kms_rtp_base_connection_collect_latency_stats (KmsIRtpConnection *self, gboolean enable);
+void kms_rtp_base_connection_remove_probe (KmsRtpBaseConnection * self, GstElement * e, const gchar * pad_name, gulong id);
 G_END_DECLS
 #endif /* __KMS_RTP_BASE_CONNECTION_H__ */

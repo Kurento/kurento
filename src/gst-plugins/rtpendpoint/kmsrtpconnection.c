@@ -257,12 +257,69 @@ kms_rtp_connection_new (guint16 min_port, guint16 max_port, gboolean use_ipv6)
 }
 
 static void
+kms_rtp_connection_enable_latency_stats (KmsRtpBaseConnection * base)
+{
+  KmsRtpConnection *self = KMS_RTP_CONNECTION (base);
+  GstPad *pad;
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsrc, "src",
+      base->src_probe);
+  pad = gst_element_get_static_pad (self->priv->rtp_udpsrc, "src");
+  base->src_probe = kms_stats_add_buffer_latency_meta_probe (pad, FALSE,
+      0 /* No matter type at this point */ );
+  g_object_unref (pad);
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsink, "sink",
+      base->sink_probe);
+  pad = gst_element_get_static_pad (self->priv->rtp_udpsink, "sink");
+  base->sink_probe = kms_stats_add_buffer_latency_notification_probe (pad,
+      base->cb, TRUE /* Lock the data */ , base->user_data, NULL);
+  g_object_unref (pad);
+}
+
+void
+kms_rtp_transport_disable_latency_notification (KmsRtpBaseConnection * base)
+{
+  KmsRtpConnection *self = KMS_RTP_CONNECTION (base);
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsrc, "src",
+      base->src_probe);
+  base->src_probe = 0UL;
+
+  kms_rtp_base_connection_remove_probe (base, self->priv->rtp_udpsink, "sink",
+      base->sink_probe);
+  base->sink_probe = 0UL;
+}
+
+static void
+kms_rtp_connection_collect_latency_stats (KmsIRtpConnection * obj,
+    gboolean enable)
+{
+  KmsRtpBaseConnection *base = KMS_RTP_BASE_CONNECTION (obj);
+
+  KMS_RTP_BASE_CONNECTION_LOCK (base);
+
+  if (enable) {
+    kms_rtp_connection_enable_latency_stats (base);
+  } else {
+    kms_rtp_transport_disable_latency_notification (base);
+  }
+
+  kms_rtp_base_connection_collect_latency_stats (obj, enable);
+
+  KMS_RTP_BASE_CONNECTION_UNLOCK (base);
+}
+
+static void
 kms_rtp_connection_finalize (GObject * object)
 {
   KmsRtpConnection *self = KMS_RTP_CONNECTION (object);
   KmsRtpConnectionPrivate *priv = self->priv;
 
   GST_DEBUG_OBJECT (self, "finalize");
+
+  kms_rtp_transport_disable_latency_notification (KMS_RTP_BASE_CONNECTION
+      (self));
 
   g_clear_object (&priv->rtp_udpsink);
   g_clear_object (&priv->rtp_udpsrc);
@@ -323,8 +380,6 @@ kms_rtp_connection_interface_init (KmsIRtpConnectionInterface * iface)
   iface->request_rtp_src = kms_rtp_connection_request_rtp_src;
   iface->request_rtcp_sink = kms_rtp_connection_request_rtcp_sink;
   iface->request_rtcp_src = kms_rtp_connection_request_rtcp_src;
-
-  /* This endpoint does not support latency statistics yet */
-  iface->set_latency_callback = NULL;
-  iface->collect_latency_stats = NULL;
+  iface->set_latency_callback = kms_rtp_base_connection_set_latency_callback;
+  iface->collect_latency_stats = kms_rtp_connection_collect_latency_stats;
 }
