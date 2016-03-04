@@ -55,7 +55,6 @@ function getOnError(done) {
   };
 }
 
-
 /**
  * Close the connection and keep working
  */
