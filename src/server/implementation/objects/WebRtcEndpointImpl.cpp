@@ -315,9 +315,9 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   //set properties
   try {
     stunPort = getConfigValue <uint, WebRtcEndpoint> ("stunServerPort");
-  } catch (boost::property_tree::ptree_error &e) {
-    GST_INFO ("Setting default port %d to stun server",
-              DEFAULT_STUN_PORT);
+  } catch (std::exception &e) {
+    GST_INFO ("Setting default port %d to stun server. Reason: %s",
+              DEFAULT_STUN_PORT, e.what() );
     stunPort = DEFAULT_STUN_PORT;
   }
 
