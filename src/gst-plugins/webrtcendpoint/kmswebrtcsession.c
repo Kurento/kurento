@@ -57,6 +57,9 @@ G_DEFINE_TYPE (KmsWebrtcSession, kms_webrtc_session, KMS_TYPE_BASE_RTP_SESSION);
 
 #define MAX_DATA_CHANNELS 1
 
+#define BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
+#define END_CERTIFICATE "-----END CERTIFICATE-----"
+
 enum
 {
   SIGNAL_ON_ICE_CANDIDATE,
@@ -788,9 +791,19 @@ generate_fingerprint_from_pem (const gchar * pem)
 
   der = tmp = g_new0 (guchar, (strlen (pem) / 4) * 3 + 3);
   lines = g_strsplit (pem, "\n", 0);
+
   for (i = 0, line = lines[i]; line; line = lines[++i]) {
-    if (line[0] && !g_str_has_prefix (line, "-----"))
-      tmp += g_base64_decode_step (line, strlen (line), tmp, &state, &save);
+    if (line[0] && g_str_has_prefix (line, BEGIN_CERTIFICATE)) {
+      i++;
+      break;
+    }
+  }
+
+  for (line = lines[i]; line; line = lines[++i]) {
+    if (line[0] && g_str_has_prefix (line, END_CERTIFICATE)) {
+      break;
+    }
+    tmp += g_base64_decode_step (line, strlen (line), tmp, &state, &save);
   }
   der_length = tmp - der;
   checksum = g_checksum_new (G_CHECKSUM_SHA256);
