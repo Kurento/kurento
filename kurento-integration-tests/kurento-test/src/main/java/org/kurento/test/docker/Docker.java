@@ -16,8 +16,6 @@
 package org.kurento.test.docker;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
-import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
-import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
 
 import java.io.BufferedReader;
@@ -39,6 +37,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
@@ -415,23 +414,52 @@ public class Docker implements Closeable {
       log.debug("Creating container {}", nodeName);
 
       CreateContainerCmd createContainerCmd =
-          getClient().createContainerCmd(imageId).withName(nodeName)
-              .withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp });
+          getClient().createContainerCmd(imageId).withName(nodeName);
 
       String configFile = generateConfigFile(id, browserType);
 
       mountDefaultFolders(createContainerCmd, configFile);
 
-      if (getProperty(TEST_SELENIUM_DNAT) != null
-          && getProperty(TEST_SELENIUM_DNAT, TEST_SELENIUM_DNAT_DEFAULT)) {
-        log.debug("Set network, for Selenium, as none");
-        createContainerCmd.withNetworkMode("none");
+      createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp });
 
-        Map<String, String> labels = new HashMap<String, String>();
-        labels.put("KurentoDnat", "true");
-        labels.put("Transport", getProperty(TEST_SELENIUM_TRANSPORT));
-        createContainerCmd.withLabels(labels);
-      }
+      createContainerCmd.exec();
+
+      log.debug("Container {} started...", nodeName);
+
+    } else {
+      log.debug("Container {} already exists", nodeName);
+    }
+
+    // Start node if stopped
+    startContainer(nodeName);
+  }
+
+  public void startNode(String id, BrowserType browserType, String nodeName, String imageId,
+      String hubIp, String containerIp) {
+    // Create node if not exist
+    if (!existsContainer(nodeName)) {
+
+      pullImageIfNecessary(imageId, false);
+
+      log.debug("Creating container {}", nodeName);
+
+      CreateContainerCmd createContainerCmd =
+          getClient().createContainerCmd(imageId).withName(nodeName);
+
+      String configFile = generateConfigFile(id, browserType);
+
+      mountDefaultFolders(createContainerCmd, configFile);
+
+      createContainerCmd.withNetworkMode("none");
+
+      Map<String, String> labels = new HashMap<String, String>();
+      labels.put("KurentoDnat", "true");
+      labels.put("Transport", getProperty(TEST_SELENIUM_TRANSPORT));
+      labels.put("IpAddress", containerIp);
+
+      createContainerCmd.withLabels(labels);
+      createContainerCmd.withEnv(new String[] { "HUB_PORT_4444_TCP_ADDR=" + hubIp,
+          "REMOTE_HOST=http://" + containerIp + ":5555" });
 
       createContainerCmd.exec();
 
@@ -493,6 +521,12 @@ public class Docker implements Closeable {
   public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
       String hubIp) {
     startNode(id, browserType, nodeName, imageId, hubIp);
+    waitForContainer(nodeName);
+  }
+
+  public void startAndWaitNode(String id, BrowserType browserType, String nodeName, String imageId,
+      String hubIp, String containerIp) {
+    startNode(id, browserType, nodeName, imageId, hubIp, containerIp);
     waitForContainer(nodeName);
   }
 
@@ -608,6 +642,36 @@ public class Docker implements Closeable {
     }
 
     return null;
+  }
+
+  /**
+   * Return an ip address according with some parameters for testing Ice
+   *
+   * @param container
+   * @param webRtcCandidate
+   * @param isKmsDnat
+   * @param isSeleniumDnat
+   * @param isUpdTransport
+   * @return
+   */
+  public String generateIpAddressForContainer() {
+
+    String baseIpAddress = "172.17";
+    String ipAddress = "";
+    Random random = new Random();
+    Integer x;
+    Integer y;
+    String output = "";
+
+    do {
+      x = random.nextInt((240 - 1) + 1) + 1;
+      y = random.nextInt((240 - 1) + 1) + 1;
+      ipAddress = baseIpAddress + "." + x + "." + y;
+      output = Shell.runAndWaitString("ping -c 1 " + ipAddress);
+    } while (!output.contains("Destination Host Unreachable"));
+
+    log.info("Ip address generated: {}", ipAddress);
+    return ipAddress;
   }
 
   public void downloadLog(String containerName, Path file) throws IOException {

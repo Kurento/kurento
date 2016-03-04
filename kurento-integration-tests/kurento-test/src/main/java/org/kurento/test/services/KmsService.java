@@ -16,6 +16,8 @@
 package org.kurento.test.services;
 
 import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.browser.WebRtcCandidateType.RELAY;
+import static org.kurento.test.browser.WebRtcCandidateType.SRFLX;
 import static org.kurento.test.config.TestConfiguration.AUTOSTART_FALSE_VALUE;
 import static org.kurento.test.config.TestConfiguration.AUTOSTART_TESTCLASS_VALUE;
 import static org.kurento.test.config.TestConfiguration.AUTOSTART_TESTSUITE_VALUE;
@@ -47,9 +49,14 @@ import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_WS_URI_PROP_EXPORT;
 import static org.kurento.test.config.TestConfiguration.KSM_GST_PLUGINS_PROP;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_CANDIDATE_KMS_TYPE;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_CANDIDATE_SELENIUM_TYPE;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_SERVER_URL_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_KMS_DNAT;
 import static org.kurento.test.config.TestConfiguration.TEST_KMS_DNAT_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_KMS_TRANSPORT;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
 import static org.kurento.test.services.TestService.TestServiceScope.EXTERNAL;
 import static org.kurento.test.services.TestService.TestServiceScope.TEST;
 import static org.kurento.test.services.TestService.TestServiceScope.TESTCLASS;
@@ -469,19 +476,48 @@ public class KmsService extends TestService {
     String s3SecretAccessKey = getProperty(KMS_DOCKER_S3_SECRET_ACCESS_KEY);
     String s3Hostname = getProperty(KMS_DOCKER_S3_HOSTNAME);
 
+
+    Boolean kmsDnat = false;
+    if (getProperty(TEST_KMS_DNAT) != null && getProperty(TEST_KMS_DNAT, TEST_KMS_DNAT_DEFAULT)) {
+      kmsDnat = true;
+    }
+
+    Boolean seleniumDnat = false;
+    if (getProperty(TEST_SELENIUM_DNAT) != null
+        && getProperty(TEST_SELENIUM_DNAT, TEST_SELENIUM_DNAT_DEFAULT)) {
+      seleniumDnat = true;
+    }
+
+    String kmsCandidateType = getProperty(TEST_ICE_CANDIDATE_KMS_TYPE);
+    String seleniumCandidateType = getProperty(TEST_ICE_CANDIDATE_SELENIUM_TYPE);
+
     // Check Stun properties
     String kmsStunIp = getProperty(TestConfiguration.KMS_STUN_IP_PROPERTY);
     String kmsStunPort = getProperty(TestConfiguration.KMS_STUN_PORT_PROPERTY);
 
+    if (kmsDnat && seleniumDnat && RELAY.toString().toUpperCase().equals(seleniumCandidateType)
+        && SRFLX.toString().toUpperCase().equals(kmsCandidateType)) {
+      // Change kmsStunIp by turn values
+      kmsStunIp = getProperty(TEST_ICE_SERVER_URL_PROPERTY).split(":")[1];
+    }
+
+    if (kmsStunIp == null) {
+      kmsStunIp = "";
+    }
+
+    if (kmsStunPort == null) {
+      kmsStunPort = "";
+    }
+
     CreateContainerCmd createContainerCmd =
         dockerClient
-            .getClient()
-            .createContainerCmd(kmsImageName)
-            .withName(dockerContainerName)
-            .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
-                "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
-                "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
-                "KMS_STUN_PORT=" + kmsStunPort).withCmd("--gst-debug-no-color");
+        .getClient()
+        .createContainerCmd(kmsImageName)
+        .withName(dockerContainerName)
+        .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
+            "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
+            "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
+            "KMS_STUN_PORT=" + kmsStunPort).withCmd("--gst-debug-no-color");
 
     if (dockerClient.isRunningInContainer()) {
       createContainerCmd.withVolumesFrom(new VolumesFrom(dockerClient.getContainerId()));
@@ -496,23 +532,30 @@ public class KmsService extends TestService {
           new Bind(targetPath, volumeTest, AccessMode.rw));
     }
 
-    if (getProperty(TEST_KMS_DNAT) != null && getProperty(TEST_KMS_DNAT, TEST_KMS_DNAT_DEFAULT)) {
+    String kmsAddress = "";
+    if (kmsDnat) {
       log.debug("Set network, for kms, as none");
       createContainerCmd.withNetworkMode("none");
 
       Map<String, String> labels = new HashMap<String, String>();
       labels.put("KurentoDnat", "true");
       labels.put("Transport", getProperty(TEST_KMS_TRANSPORT));
+
+      kmsAddress = dockerClient.generateIpAddressForContainer();
+
+      labels.put("IpAddress", kmsAddress);
       createContainerCmd.withLabels(labels);
+
+      CreateContainerResponse kmsContainer = createContainerCmd.exec();
+      dockerClient.getClient().startContainerCmd(kmsContainer.getId()).exec();
+    } else {
+      CreateContainerResponse kmsContainer = createContainerCmd.exec();
+      dockerClient.getClient().startContainerCmd(kmsContainer.getId()).exec();
+      kmsAddress =
+          dockerClient.inspectContainer(dockerContainerName).getNetworkSettings().getIpAddress();
     }
 
-    CreateContainerResponse kmsContainer = createContainerCmd.exec();
-
-    dockerClient.getClient().startContainerCmd(kmsContainer.getId()).exec();
-
-    setWsUri("ws://"
-        + dockerClient.inspectContainer(dockerContainerName).getNetworkSettings().getIpAddress()
-        + ":8888/kurento");
+    setWsUri("ws://" + kmsAddress + ":8888/kurento");
 
     log.info("Dockerized KMS started in URI {}", wsUri);
   }

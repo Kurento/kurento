@@ -22,6 +22,8 @@ import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERRO
 import static org.kurento.test.config.TestConfiguration.SELENIUM_MAX_DRIVER_ERROR_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.SELENIUM_RECORD_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT;
+import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_DNAT_DEFAULT;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -64,10 +66,10 @@ import com.google.gson.JsonObject;
 public class DockerBrowserManager {
 
   public static final int REMOTE_WEB_DRIVER_CREATION_MAX_RETRIES = 3;
-  private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 20;
+  private static final int REMOTE_WEB_DRIVER_CREATION_TIMEOUT_S = 300;
 
   private static final int HUB_CREATION_WAIT_POOL_TIME_MS = 1000;
-  private static final int HUB_CREATION_TIMEOUT_MS = 30000;
+  private static final int HUB_CREATION_TIMEOUT_MS = 120000;
 
   private static Logger log = LoggerFactory.getLogger(DockerBrowserManager.class);
 
@@ -170,12 +172,22 @@ public class DockerBrowserManager {
 
       do {
         try {
+          Boolean kmsSelenium = false;
+          if (getProperty(TEST_SELENIUM_DNAT) != null
+              && getProperty(TEST_SELENIUM_DNAT, TEST_SELENIUM_DNAT_DEFAULT)) {
+            kmsSelenium = true;
+          }
 
-          docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
-              dockerHubIp);
-
-          browserContainerIp =
-              docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
+          if (kmsSelenium) {
+            browserContainerIp = docker.generateIpAddressForContainer();
+            docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
+                dockerHubIp, browserContainerIp);
+          } else {
+            docker.startAndWaitNode(browserContainerName, type, browserContainerName, nodeImageId,
+                dockerHubIp);
+            browserContainerIp =
+                docker.inspectContainer(browserContainerName).getNetworkSettings().getIpAddress();
+          }
 
           waitForNodeRegisteredInHub();
 

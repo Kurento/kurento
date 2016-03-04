@@ -101,6 +101,7 @@ public class TestConfiguration {
   public static final String SELENIUM_RECORD_PROPERTY = "test.selenium.record";
   public static final boolean SELENIUM_RECORD_DEFAULT = true;
 
+  public static final String TEST_ICE_CANDIDATE_SELENIUM_TYPE = "test.ice.candidate.selenium.type";
   public static final String TEST_SELENIUM_DNAT = "test.selenium.dnat";
   public static final boolean TEST_SELENIUM_DNAT_DEFAULT = false;
   public static final String TEST_SELENIUM_TRANSPORT = "test.selenium.transport";
@@ -181,6 +182,7 @@ public class TestConfiguration {
   public static final String KMS_STUN_IP_PROPERTY = "kms.stun.ip";
   public static final String KMS_STUN_PORT_PROPERTY = "kms.stun.port";
 
+  public static final String TEST_ICE_CANDIDATE_KMS_TYPE = "test.ice.candidate.kms.type";
   public static final String TEST_KMS_DNAT = "test.kms.dnat";
   public static final boolean TEST_KMS_DNAT_DEFAULT = false;
   public static final String TEST_KMS_TRANSPORT = "test.kms.transport";

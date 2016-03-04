@@ -121,6 +121,7 @@ function startSendRecv() {
 			iceServers : iceServers
 		};
 	}
+	console.log("Options:" + JSON.stringify(options));
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
 			function(error) {
@@ -146,6 +147,7 @@ function startSendOnly() {
 			iceServers : iceServers
 		};
 	}
+	console.log("Options:" + JSON.stringify(options));
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
 			function(error) {
@@ -165,12 +167,14 @@ function startRecvOnly() {
 		mediaConstraints : userMediaConstraints,
 		onicecandidate : onIceCandidate
 	}
+	
 
 	if (iceServers) {
 		options.configuration = {
 			iceServers : iceServers
 		};
 	}
+	console.log("Options:" + JSON.stringify(options));
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
 			function(error) {

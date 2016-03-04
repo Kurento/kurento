@@ -18,6 +18,8 @@ package org.kurento.test.base;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.Protocol.FILE;
 import static org.kurento.test.config.Protocol.HTTP;
+import static org.kurento.test.config.TestConfiguration.KMS_STUN_IP_PROPERTY;
+import static org.kurento.test.config.TestConfiguration.KMS_STUN_PORT_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.TEST_CONFIG_JSON_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_FILES_DISK_PROP;
@@ -317,6 +319,10 @@ public class KurentoTest {
 
   public static int getTestSeekRepetitions() {
     return getProperty(TEST_SEEK_REPETITIONS, TEST_SEEK_REPETITIONS_DEFAULT);
+  }
+
+  public static String getTestStunServerUrl() {
+    return "stun:" + getProperty(KMS_STUN_IP_PROPERTY) + ":" + getProperty(KMS_STUN_PORT_PROPERTY);
   }
 
   public static String getTestIceServerUrl() {

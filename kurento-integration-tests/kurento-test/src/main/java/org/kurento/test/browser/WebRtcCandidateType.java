@@ -15,6 +15,8 @@
 
 package org.kurento.test.browser;
 
+import org.kurento.test.base.KurentoTest;
+
 /**
  * Type of candidate
  *
@@ -24,12 +26,20 @@ package org.kurento.test.browser;
 public enum WebRtcCandidateType {
   HOST, RELAY, SRFLX, ALL;
 
-  public String getJsFunction(String url, String username, String password) {
+  public String getJsFunction() {
+    String url;
+    String username;
+    String password;
     switch (this) {
       case RELAY:
+        url = KurentoTest.getTestIceServerUrl();
+        username = KurentoTest.getTestIceServerUsername();
+        password = KurentoTest.getTestIceServerCredential();
         return "setIceServers('" + url + "', '" + username + "', '" + password + "');";
-      case HOST:
       case SRFLX:
+        url = KurentoTest.getTestStunServerUrl();
+        return "setIceServers('" + url + "', '', '');";
+      case HOST:
       case ALL:
         return null;
       default:

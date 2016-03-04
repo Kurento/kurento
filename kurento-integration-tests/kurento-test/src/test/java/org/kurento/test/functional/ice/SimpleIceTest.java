@@ -10,6 +10,7 @@ import org.kurento.client.MediaFlowInStateChangeEvent;
 import org.kurento.client.MediaFlowOutStateChangeEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.NewCandidatePairSelectedEvent;
 import org.kurento.client.OnIceComponentStateChangedEvent;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
@@ -38,25 +39,37 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEndpoint
-    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
 
-      @Override
-      public void onEvent(OnIceComponentStateChangedEvent event) {
-        log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
-            event.getState(), event.getSource(), event.getType(), event.getStreamId());
-      }
-    });
+          @Override
+          public void onEvent(OnIceComponentStateChangedEvent event) {
+            log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+                event.getState(), event.getSource(), event.getType(), event.getStreamId());
+          }
+        });
 
     webRtcEndpoint
-    .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+        .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
 
-      @Override
-      public void onEvent(MediaFlowOutStateChangeEvent event) {
-        if (event.getState().equals(MediaFlowState.FLOWING)) {
-          eosLatch.countDown();
-        }
-      }
-    });
+          @Override
+          public void onEvent(MediaFlowOutStateChangeEvent event) {
+            if (event.getState().equals(MediaFlowState.FLOWING)) {
+              eosLatch.countDown();
+            }
+          }
+        });
+
+    webRtcEndpoint
+        .addNewCandidatePairSelectedListener(new EventListener<NewCandidatePairSelectedEvent>() {
+
+          @Override
+          public void onEvent(NewCandidatePairSelectedEvent event) {
+            log.info(
+                "SendRecv -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
+                event.getCandidatePair().getStreamID(), event.getCandidatePair()
+                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+          }
+        });
 
     // Test execution
     getPage(0).subscribeEvents("playing");
@@ -77,7 +90,7 @@ public class SimpleIceTest extends FunctionalPlayerTest {
   public void initTestRcvOnly(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType, String nameMedia) throws InterruptedException {
 
-    String mediaUrl = getMediaUrl(Protocol.HTTP, nameMedia);
+    String mediaUrl = getMediaUrl(Protocol.FILE, nameMedia);
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
@@ -86,14 +99,14 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEp
-    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
 
-      @Override
-      public void onEvent(OnIceComponentStateChangedEvent event) {
-        log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
-            event.getState(), event.getSource(), event.getType(), event.getStreamId());
-      }
-    });
+          @Override
+          public void onEvent(OnIceComponentStateChangedEvent event) {
+            log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+                event.getState(), event.getSource(), event.getType(), event.getStreamId());
+          }
+        });
 
     webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
 
@@ -104,6 +117,19 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         }
       }
     });
+
+    webRtcEp
+        .addNewCandidatePairSelectedListener(new EventListener<NewCandidatePairSelectedEvent>() {
+
+          @Override
+          public void onEvent(NewCandidatePairSelectedEvent event) {
+            log.info(
+                "RecvOnly -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
+                event.getCandidatePair().getStreamID(), event.getCandidatePair()
+                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+
+          }
+        });
 
     // Test execution
     getPage(0).subscribeEvents("playing");
@@ -134,37 +160,61 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEpSendOnly
-    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
 
-      @Override
-      public void onEvent(OnIceComponentStateChangedEvent event) {
-        log.info(
-            "webRtcEpSendOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
-            event.getState(), event.getSource(), event.getType(), event.getStreamId());
-      }
-    });
+          @Override
+          public void onEvent(OnIceComponentStateChangedEvent event) {
+            log.info(
+                "webRtcEpSendOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+                event.getState(), event.getSource(), event.getType(), event.getStreamId());
+          }
+        });
+
+    webRtcEpSendOnly
+        .addNewCandidatePairSelectedListener(new EventListener<NewCandidatePairSelectedEvent>() {
+
+          @Override
+          public void onEvent(NewCandidatePairSelectedEvent event) {
+            log.info(
+                "SendOnly (webRtcEpSendOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
+                event.getCandidatePair().getStreamID(), event.getCandidatePair()
+                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+          }
+        });
 
     webRtcEpRcvOnly
-    .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
 
-      @Override
-      public void onEvent(OnIceComponentStateChangedEvent event) {
-        log.info(
-            "webRtcEpRcvOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
-            event.getState(), event.getSource(), event.getType(), event.getStreamId());
-      }
-    });
+          @Override
+          public void onEvent(OnIceComponentStateChangedEvent event) {
+            log.info(
+                "webRtcEpRcvOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+                event.getState(), event.getSource(), event.getType(), event.getStreamId());
+          }
+        });
 
     webRtcEpRcvOnly
-    .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+        .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
 
-      @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
-        if (event.getState().equals(MediaFlowState.FLOWING)) {
-          eosLatch.countDown();
-        }
-      }
-    });
+          @Override
+          public void onEvent(MediaFlowInStateChangeEvent event) {
+            if (event.getState().equals(MediaFlowState.FLOWING)) {
+              eosLatch.countDown();
+            }
+          }
+        });
+
+    webRtcEpRcvOnly
+        .addNewCandidatePairSelectedListener(new EventListener<NewCandidatePairSelectedEvent>() {
+
+          @Override
+          public void onEvent(NewCandidatePairSelectedEvent event) {
+            log.info(
+                "SendOnly (webRtcEpRcvOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
+                event.getCandidatePair().getStreamID(), event.getCandidatePair()
+                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+          }
+        });
 
     // Test execution
     getPage(1).subscribeEvents("playing");
