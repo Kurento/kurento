@@ -121,6 +121,7 @@ public class AssertMedia {
         || Protocol.HTTPS.toString().equals(protocol)) {
       // TODO Get uri from client repository and use wget
     } else if (Protocol.S3.toString().equals(protocol)) {
+      pathToMedia = protocol + "://" + path;
       String pathDownload =
           KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator + path;
       String pathOut =

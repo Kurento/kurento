@@ -32,6 +32,7 @@ import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.base.FunctionalTest;
+import org.kurento.test.base.KurentoTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
@@ -128,8 +129,24 @@ public class BaseRecorder extends FunctionalTest {
   protected void waitForFileExists(String recordingFile) {
     boolean exists = false;
     String pathToMedia_[] = recordingFile.split("://");
-    String protocol = pathToMedia_[0];
-    String path = pathToMedia_[1];
+
+    String protocol = "";
+    String path = "";
+
+    if (pathToMedia_.length > 1) {
+      protocol = pathToMedia_[0];
+      path = pathToMedia_[1];
+    } else {
+      String recordDefaultPath = KurentoTest.getRecordDefaultPath();
+
+      if (recordDefaultPath != null) {
+        String defaultPathToMedia_[] = recordDefaultPath.split("://");
+        protocol = defaultPathToMedia_[0];
+        String pathStart = defaultPathToMedia_[1];
+
+        path = pathStart + pathToMedia_[0];
+      }
+    }
 
     log.debug("Waiting for the file to be saved: {}", recordingFile);
 
@@ -145,6 +162,7 @@ public class BaseRecorder extends FunctionalTest {
           || Protocol.HTTPS.toString().equals(protocol)) {
         exists = true;
       } else if (Protocol.S3.toString().equals(protocol)) {
+        recordingFile = protocol + "://" + path;
         String output = Shell.runAndWaitString("aws s3 ls " + recordingFile);
         if (!output.equals("")) {
           exists = true;
