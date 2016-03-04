@@ -24,7 +24,16 @@ import org.kurento.test.base.KurentoTest;
  * @since 6.3.1
  */
 public enum WebRtcCandidateType {
-  HOST, RELAY, SRFLX, ALL;
+  HOST, RELAY, SRFLX, ALL, PRFLX;
+
+  public static WebRtcCandidateType find(String candidateType) {
+    for (WebRtcCandidateType v : values()) {
+      if (v.toString().equals(candidateType)) {
+        return v;
+      }
+    }
+    return null;
+  }
 
   public String getJsFunction() {
     String url;
@@ -56,6 +65,8 @@ public enum WebRtcCandidateType {
         return "relay";
       case SRFLX:
         return "srflx";
+      case PRFLX:
+        return "prflx";
       case ALL:
         return "all";
       default:

@@ -1,6 +1,12 @@
 
 package org.kurento.test.functional.ice;
 
+import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_CANDIDATE_KMS_TYPE;
+import static org.kurento.test.config.TestConfiguration.TEST_ICE_CANDIDATE_SELENIUM_TYPE;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -29,8 +35,25 @@ import org.kurento.test.functional.player.FunctionalPlayerTest;
  */
 public class SimpleIceTest extends FunctionalPlayerTest {
 
+  private List<WebRtcCandidateType> localCandidate;
+  private List<WebRtcCandidateType> remoteCandidate;
+
+  private List<WebRtcCandidateType> kmsCandidateType;
+  private List<WebRtcCandidateType> seleniumCandidateType;
+
+  protected WebRtcCandidateType getCandidateType(String candidate) {
+    String candidateType = candidate.split("typ")[1].split(" ")[1];
+    return WebRtcCandidateType.find(candidateType);
+  }
+
   public void initTestSendRecv(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType) throws InterruptedException {
+
+    localCandidate = new ArrayList<WebRtcCandidateType>();
+    remoteCandidate = new ArrayList<WebRtcCandidateType>();
+    kmsCandidateType = new ArrayList<WebRtcCandidateType>();
+    seleniumCandidateType = new ArrayList<WebRtcCandidateType>();
+
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -68,6 +91,32 @@ public class SimpleIceTest extends FunctionalPlayerTest {
                 "SendRecv -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
                 event.getCandidatePair().getStreamID(), event.getCandidatePair()
                     .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+
+            WebRtcCandidateType lCandidate =
+                getCandidateType(event.getCandidatePair().getLocalCandidate());
+            WebRtcCandidateType rCandidate =
+                getCandidateType(event.getCandidatePair().getRemoteCandidate());
+
+            if (WebRtcCandidateType.PRFLX.equals(lCandidate)) {
+              lCandidate = WebRtcCandidateType.SRFLX;
+            }
+
+            if (WebRtcCandidateType.PRFLX.equals(rCandidate)) {
+              rCandidate = WebRtcCandidateType.SRFLX;
+            }
+
+            localCandidate.add(lCandidate);
+            remoteCandidate.add(rCandidate);
+
+            if (getProperty(TEST_ICE_CANDIDATE_KMS_TYPE) != null) {
+              kmsCandidateType.add(WebRtcCandidateType
+                  .find(getProperty(TEST_ICE_CANDIDATE_KMS_TYPE).toLowerCase()));
+            }
+
+            if (getProperty(TEST_ICE_CANDIDATE_SELENIUM_TYPE) != null) {
+              seleniumCandidateType.add(WebRtcCandidateType.find(getProperty(
+                  TEST_ICE_CANDIDATE_SELENIUM_TYPE).toLowerCase()));
+            }
           }
         });
 
@@ -83,12 +132,25 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     Assert.assertTrue("Not received FLOWING OUT event in webRtcEp:" + webRtcChannel,
         eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
+    log.info("Assert: {} {} {} {}", localCandidate.get(0), kmsCandidateType.get(0),
+        remoteCandidate.get(0), seleniumCandidateType.get(0));
+    Assert.assertEquals("Local candidate (KMS) is wrong. It waits " + kmsCandidateType.get(0)
+        + " and finds " + localCandidate.get(0), kmsCandidateType.get(0), localCandidate.get(0));
+    Assert.assertEquals(
+        "Remote candidate (SELENIUM) is wrong. It waits " + seleniumCandidateType.get(0) + "",
+        seleniumCandidateType.get(0), remoteCandidate.get(0));
+
     // Release Media Pipeline
     mp.release();
   }
 
   public void initTestRcvOnly(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType, String nameMedia) throws InterruptedException {
+
+    localCandidate = new ArrayList<WebRtcCandidateType>();
+    remoteCandidate = new ArrayList<WebRtcCandidateType>();
+    kmsCandidateType = new ArrayList<WebRtcCandidateType>();
+    seleniumCandidateType = new ArrayList<WebRtcCandidateType>();
 
     String mediaUrl = getMediaUrl(Protocol.FILE, nameMedia);
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -128,6 +190,31 @@ public class SimpleIceTest extends FunctionalPlayerTest {
                 event.getCandidatePair().getStreamID(), event.getCandidatePair()
                     .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
 
+            WebRtcCandidateType lCandidate =
+                getCandidateType(event.getCandidatePair().getLocalCandidate());
+            WebRtcCandidateType rCandidate =
+                getCandidateType(event.getCandidatePair().getRemoteCandidate());
+
+            if (WebRtcCandidateType.PRFLX.equals(lCandidate)) {
+              lCandidate = WebRtcCandidateType.SRFLX;
+            }
+
+            if (WebRtcCandidateType.PRFLX.equals(rCandidate)) {
+              rCandidate = WebRtcCandidateType.SRFLX;
+            }
+
+            localCandidate.add(lCandidate);
+            remoteCandidate.add(rCandidate);
+
+            if (getProperty(TEST_ICE_CANDIDATE_KMS_TYPE) != null) {
+              kmsCandidateType.add(WebRtcCandidateType
+                  .find(getProperty(TEST_ICE_CANDIDATE_KMS_TYPE).toLowerCase()));
+            }
+
+            if (getProperty(TEST_ICE_CANDIDATE_SELENIUM_TYPE) != null) {
+              seleniumCandidateType.add(WebRtcCandidateType.find(getProperty(
+                  TEST_ICE_CANDIDATE_SELENIUM_TYPE).toLowerCase()));
+            }
           }
         });
 
@@ -144,12 +231,25 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
         + webRtcChannel, eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
+    log.info("Assert: {} {} {} {}", localCandidate.get(0), kmsCandidateType.get(0),
+        remoteCandidate.get(0), seleniumCandidateType.get(0));
+    Assert.assertEquals("Local candidate (KMS) is wrong. It waits " + kmsCandidateType.get(0)
+        + " and finds " + localCandidate.get(0), kmsCandidateType.get(0), localCandidate.get(0));
+    Assert.assertEquals(
+        "Remote candidate (SELENIUM) is wrong. It waits " + seleniumCandidateType.get(0) + "",
+        seleniumCandidateType.get(0), remoteCandidate.get(0));
+
     // Release Media Pipeline
     mp.release();
   }
 
   public void initTestSendOnly(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType) throws InterruptedException {
+
+    localCandidate = new ArrayList<WebRtcCandidateType>();
+    remoteCandidate = new ArrayList<WebRtcCandidateType>();
+    kmsCandidateType = new ArrayList<WebRtcCandidateType>();
+    seleniumCandidateType = new ArrayList<WebRtcCandidateType>();
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     WebRtcEndpoint webRtcEpSendOnly = new WebRtcEndpoint.Builder(mp).build();
@@ -213,6 +313,32 @@ public class SimpleIceTest extends FunctionalPlayerTest {
                 "SendOnly (webRtcEpRcvOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
                 event.getCandidatePair().getStreamID(), event.getCandidatePair()
                     .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+
+            WebRtcCandidateType lCandidate =
+                getCandidateType(event.getCandidatePair().getLocalCandidate());
+            WebRtcCandidateType rCandidate =
+                getCandidateType(event.getCandidatePair().getRemoteCandidate());
+
+            if (WebRtcCandidateType.PRFLX.equals(lCandidate)) {
+              lCandidate = WebRtcCandidateType.SRFLX;
+            }
+
+            if (WebRtcCandidateType.PRFLX.equals(rCandidate)) {
+              rCandidate = WebRtcCandidateType.SRFLX;
+            }
+
+            localCandidate.add(lCandidate);
+            remoteCandidate.add(rCandidate);
+
+            if (getProperty(TEST_ICE_CANDIDATE_KMS_TYPE) != null) {
+              kmsCandidateType.add(WebRtcCandidateType
+                  .find(getProperty(TEST_ICE_CANDIDATE_KMS_TYPE).toLowerCase()));
+            }
+
+            if (getProperty(TEST_ICE_CANDIDATE_SELENIUM_TYPE) != null) {
+              seleniumCandidateType.add(WebRtcCandidateType.find(getProperty(
+                  TEST_ICE_CANDIDATE_SELENIUM_TYPE).toLowerCase()));
+            }
           }
         });
 
@@ -229,6 +355,14 @@ public class SimpleIceTest extends FunctionalPlayerTest {
 
     Assert.assertTrue("Not received FLOWING IN event in webRtcEpRcvOnly: " + webRtcChannel,
         eosLatch.await(getPage(1).getTimeout(), TimeUnit.SECONDS));
+
+    log.info("Assert: {} {} {} {}", localCandidate.get(0), kmsCandidateType.get(0),
+        remoteCandidate.get(0), seleniumCandidateType.get(0));
+    Assert.assertEquals("Local candidate (KMS) is wrong. It waits " + kmsCandidateType.get(0)
+        + " and finds " + localCandidate.get(0), kmsCandidateType.get(0), localCandidate.get(0));
+    Assert.assertEquals(
+        "Remote candidate (SELENIUM) is wrong. It waits " + seleniumCandidateType.get(0) + "",
+        seleniumCandidateType.get(0), remoteCandidate.get(0));
 
     // Release Media Pipeline
     mp.release();
