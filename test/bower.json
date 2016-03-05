@@ -17,6 +17,6 @@
     "tests"
   ],
   "dependencies": {
-    "adapter.js": "*"
+    "adapter.js": "v0.2.9"
   }
 }
