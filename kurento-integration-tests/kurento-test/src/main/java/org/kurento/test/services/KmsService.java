@@ -499,6 +499,7 @@ public class KmsService extends TestService {
         && SRFLX.toString().toUpperCase().equals(kmsCandidateType)) {
       // Change kmsStunIp by turn values
       kmsStunIp = getProperty(TEST_ICE_SERVER_URL_PROPERTY).split(":")[1];
+      kmsStunPort = "3478";
     }
 
     if (kmsStunIp == null) {
@@ -508,6 +509,8 @@ public class KmsService extends TestService {
     if (kmsStunPort == null) {
       kmsStunPort = "";
     }
+
+    log.info("Stun Server {}:{}", kmsStunIp, kmsStunPort);
 
     CreateContainerCmd createContainerCmd =
         dockerClient
