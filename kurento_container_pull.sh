@@ -30,11 +30,6 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wil
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:1.0.0
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-debug:1.0.0
 
-# DNAT images
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta-debug:1.0.0-dnat
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-dev-debug:1.0.0-dnat
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-beta-debug:1.0.0-dnat
-
 # dev-chef image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 
@@ -52,6 +47,11 @@ docker pull kurento/node-chrome-dev:$SELENIUM_VERSION
 docker pull kurento/node-chrome-dev-debug:$SELENIUM_VERSION
 docker pull selenium/node-firefox-beta:$SELENIUM_VERSION
 docker pull selenium/node-firefox-beta-debug:$SELENIUM_VERSION
+
+# Selenium DNAT images
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta-debug:$SELENIUM_VERSION-dnat
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-dev-debug:$SELENIUM_VERSION-dnat
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-beta-debug:$SELENIUM_VERSION-dnat
 
 # Image to record vnc sessions
 docker pull softsam/vncrecorder:latest
