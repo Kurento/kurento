@@ -20,7 +20,7 @@
             },
             {
               "name": "mediaProfile",
-              "doc": "Choose either a :rom:attr:`MediaProfileSpecType.WEBM` or a :rom:attr:`MediaProfileSpecType.MP4` profile for recording",
+              "doc": "Choose either one of the values defined in :rom:attr:`MediaProfileSpecType` as profile for recording",
               "type": "MediaProfileSpecType",
               "optional": true,
               "defaultValue": "WEBM"
