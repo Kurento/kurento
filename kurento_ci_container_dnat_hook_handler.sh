@@ -21,7 +21,7 @@ if [[ ! ${name:1} == ${BUILD_TAG}* ]]; then
 fi
 
 if [ $event = 'start' ]; then
-  echo "start event"
+  echo "**** Starting container $name"
   docker inspect $container
   inspect=$(docker inspect $container|grep "\"KurentoDnat\": \"true\"")
   if [ $? = 0 ]; then
@@ -46,8 +46,12 @@ if [ $event = 'start' ]; then
   fi
 fi
 
+if [ $event = 'stop' ]; then
+  echo "++++ Stopping container $name"
+fi
+
 if [ $event = 'destroy' ]; then
-  echo "Destroying container $container."
+  echo "---- Destroying container $name."
   if [ -f $container.id ]; then
     echo "Container with dnat found. Deleting dnat rules."
     docker_pid=$(cat $container.id)
@@ -56,4 +60,8 @@ if [ $event = 'destroy' ]; then
   else
     echo "Container not found. Ignoring."
   fi
+fi
+
+if [ $event == 'die' ]; then
+  echo "???? Dying container $name"
 fi
