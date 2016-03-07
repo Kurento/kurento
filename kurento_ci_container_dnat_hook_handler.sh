@@ -22,7 +22,7 @@ fi
 
 docker inspect $container
 inspect=$(docker inspect -f '{{.Config.Labels.KurentoDnat}}' $container)
-if [ $inspect != 'true' ]; then
+if [[ ! $inspect == 'true' ]]; then
   echo "It's not a dnat container. Skip."
   exit 0
 fi
@@ -37,16 +37,16 @@ if [ $event = 'start' ]; then
 
   docker_pid=$(docker inspect -f '{{.State.Pid}}' $container)
   echo $docker_pid > $container.id
-  echo "Calling dnat script"
+  echo "[$container] >>>> Calling dnat script"
   sudo $(realpath $(dirname "$0"))/kurento_ci_container_dnat.sh $container $event $docker_pid $transport $ip >> dnat2.log
 fi
 
 if [ $event = 'stop' ]; then
-  echo "++++ Stopping container $name with id $container"
+  echo "[$container] ++++ Stopping container $name with id $container"
 fi
 
 if [ $event = 'destroy' ]; then
-  echo "---- Destroying container $name with id $container"
+  echo "[$container] ---- Destroying container $name with id $container"
   if [ -f $container.id ]; then
     echo "Container with dnat found. Deleting dnat rules."
     docker_pid=$(cat $container.id)
@@ -58,5 +58,5 @@ if [ $event = 'destroy' ]; then
 fi
 
 if [ $event == 'die' ]; then
-  echo "???? Dying container $name with id $container"
+  echo "[$container] ???? Dying container $name with id $container"
 fi
