@@ -1272,11 +1272,10 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
       GstCaps *aux;
 
       KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-      GST_ERROR_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
-          pad);
+      GST_INFO_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT, pad);
 
       /* Filter against profile */
-      GST_WARNING_OBJECT (appsrc, "Using generic profile's caps");
+      GST_INFO_OBJECT (appsrc, "Using generic profile's caps");
       aux = gst_caps_intersect (caps, result);
       gst_caps_unref (result);
       result = aux;
