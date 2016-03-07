@@ -80,7 +80,7 @@ if [ $transport = 'TCP' ]; then
   ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 172.17.0.0/16 -j DROP
   # This is used to force RELAY
   ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 172.16.0.0/16 -j DROP
-  ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 193.147.51.8/32 -j DROP
+  ip netns exec $docker_pid-route iptables -A INPUT -p udp -s 193.147.0.0/16 -j DROP
 fi
 
 fi
