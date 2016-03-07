@@ -77,10 +77,11 @@ ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'TCP' ]; then
   # This is used to force RLFX TCP
-  ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 172.17.0.0/16 -j DROP
+  ip netns exec $docker_pid-route iptables -I INPUT -p udp -j DROP
+  #ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 172.17.0.0/16 -j DROP
   # This is used to force RELAY
-  ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 172.16.0.0/16 -j DROP
-  ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 193.147.0.0/16 -j DROP
+  #ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 172.16.0.0/16 -j DROP
+  #ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 193.147.0.0/16 -j DROP
 fi
 
 fi
