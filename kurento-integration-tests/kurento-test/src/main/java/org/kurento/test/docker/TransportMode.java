@@ -15,6 +15,7 @@
 
 package org.kurento.test.docker;
 
+
 /**
  * Type of transport protocol
  *
@@ -23,6 +24,15 @@ package org.kurento.test.docker;
  */
 public enum TransportMode {
   UDP, TCP, BOTH;
+
+  public static TransportMode find(String transportMode) {
+    for (TransportMode v : values()) {
+      if (v.toString().equals(transportMode)) {
+        return v;
+      }
+    }
+    return null;
+  }
 
   @Override
   public String toString() {
