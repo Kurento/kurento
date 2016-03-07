@@ -95,9 +95,6 @@ private:
   void onDataChannelClosed (gchar *sessId, guint stream_id);
   void checkUri (std::string &uri);
 
-  std::shared_ptr<std::string> getPemCertificate ();
-  static std::mutex certificateMutex;
-
   std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
 
   class StaticConstructor
