@@ -13,22 +13,23 @@ container=$2
 
 echo "Event:|$event| Container:|$container|"
 
-# Check if this container has been started by our job
-name=$(docker inspect -f '{{.Name}}' $container)
-if [[ ! ${name:1} == ${BUILD_TAG}* ]]; then
-  echo "It's not my container"
-  exit 0
-fi
-
-docker inspect $container
-inspect=$(docker inspect -f '{{.Config.Labels.KurentoDnat}}' $container)
-if [[ ! $inspect == 'true' ]]; then
-  echo "It's not a dnat container. Skip."
-  exit 0
-fi
-
 if [ $event = 'start' ]; then
-  echo "[$container] **** Starting container $container with dnat label. Preparing dnat."
+
+  # Check if this container has been started by our job
+  name=$(docker inspect -f '{{.Name}}' $container)
+  if [[ ! ${name:1} == ${BUILD_TAG}* ]]; then
+    echo "It's not my container"
+    exit 0
+  fi
+
+  docker inspect $container
+  inspect=$(docker inspect -f '{{.Config.Labels.KurentoDnat}}' $container)
+  if [[ ! $inspect == 'true' ]]; then
+    echo "It's not a dnat container. Skip."
+    exit 0
+  fi
+
+  echo "[$container] **** Starting container $name with dnat label. Preparing dnat."
   #Check ip
   ip=$(docker inspect -f '{{.Config.Labels.IpAddress}}' $container)
 
