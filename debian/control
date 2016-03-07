@@ -13,7 +13,8 @@ Build-Depends: debhelper (>= 8.0.0),
  gstreamer1.5-nice,
  uuid-dev,
  valgrind,
- openwebrtc-gst-plugins-dev
+ openwebrtc-gst-plugins-dev,
+ ffmpeg
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-elements.git

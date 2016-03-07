@@ -79,14 +79,6 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-struct state_controller
-{
-  GCond cond;
-  GMutex mutex;
-  guint locked;
-  gboolean changing;
-};
-
 typedef struct _KmsSinkPadData
 {
   KmsElementPadType type;
@@ -111,7 +103,6 @@ struct _KmsRecorderEndpointPrivate
   GstClockTime paused_time;
   GstClockTime paused_start;
   gboolean use_dvr;
-  struct state_controller state_manager;
   GstTaskPool *pool;
   KmsBaseMediaMuxer *mux;
   GMutex base_time_lock;
@@ -382,23 +373,7 @@ static void
 kms_recorder_endpoint_change_state (KmsRecorderEndpoint * self,
     KmsUriEndpointState new_state)
 {
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
   self->priv->moving_to_state = new_state;
-
-  g_mutex_lock (&self->priv->state_manager.mutex);
-  while (self->priv->state_manager.changing) {
-    GST_WARNING ("Change of state is taking place");
-    self->priv->state_manager.locked++;
-    g_cond_wait (&self->priv->state_manager.cond,
-        &self->priv->state_manager.mutex);
-    self->priv->state_manager.locked--;
-  }
-
-  self->priv->state_manager.changing = TRUE;
-  g_mutex_unlock (&self->priv->state_manager.mutex);
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 }
 
 static void
@@ -409,12 +384,6 @@ kms_recorder_endpoint_state_changed (KmsRecorderEndpoint * self,
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       state);
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
-  g_mutex_lock (&self->priv->state_manager.mutex);
-  self->priv->state_manager.changing = FALSE;
-  if (self->priv->state_manager.locked > 0)
-    g_cond_broadcast (&self->priv->state_manager.cond);
-  g_mutex_unlock (&self->priv->state_manager.mutex);
 }
 
 static void
@@ -478,24 +447,10 @@ kms_recorder_endpoint_dispose (GObject * object)
 static void
 kms_recorder_endpoint_release_pending_requests (KmsRecorderEndpoint * self)
 {
-  g_mutex_lock (&self->priv->state_manager.mutex);
-  while (self->priv->state_manager.changing ||
-      self->priv->state_manager.locked > 0) {
-    GST_WARNING ("Waiting to all process blocked");
-    self->priv->state_manager.locked++;
-    g_cond_wait (&self->priv->state_manager.cond,
-        &self->priv->state_manager.mutex);
-    self->priv->state_manager.locked--;
-  }
-  g_mutex_unlock (&self->priv->state_manager.mutex);
-
   gst_task_pool_cleanup (self->priv->pool);
 
   g_clear_object (&self->priv->mux);
   gst_object_unref (self->priv->pool);
-
-  g_cond_clear (&self->priv->state_manager.cond);
-  g_mutex_clear (&self->priv->state_manager.mutex);
 }
 
 static void
@@ -554,6 +509,11 @@ connect_sink_func (const gchar * key, KmsSinkPadData * data,
   KmsMediaType type;
   GstPad *sinkpad;
   gchar *id;
+
+  if (gst_pad_is_linked (data->sink_target)) {
+    /* Pad was not previously removed */
+    return;
+  }
 
   sinkpad = kms_element_connect_sink_target_full (KMS_ELEMENT (self),
       data->sink_target, data->type, data->description, connect_pad_signals_cb,
@@ -694,6 +654,7 @@ static void
 kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  GstClock *clk;
 
   kms_recorder_endpoint_change_state (self, KMS_URI_ENDPOINT_STATE_PAUSE);
 
@@ -704,8 +665,11 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 
   KMS_ELEMENT_LOCK (self);
 
-  self->priv->paused_start =
-      gst_clock_get_time (kms_base_media_muxer_get_clock (self->priv->mux));
+  clk = kms_base_media_muxer_get_clock (self->priv->mux);
+
+  if (clk) {
+    self->priv->paused_start = gst_clock_get_time (clk);
+  }
 
   KMS_ELEMENT_UNLOCK (self);
 
@@ -1815,8 +1779,6 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 
   self->priv->stats.avg_e2e = g_hash_table_new_full (g_str_hash, g_str_equal,
       g_free, (GDestroyNotify) kms_ref_struct_unref);
-
-  g_cond_init (&self->priv->state_manager.cond);
 
   self->priv->pool = gst_task_pool_new ();
   gst_task_pool_prepare (self->priv->pool, &err);
