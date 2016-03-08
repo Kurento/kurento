@@ -173,7 +173,7 @@
 		<version.shade.plugin>2.4.2</version.shade.plugin>
 		<version.sonar.plugin>2.7.1</version.sonar.plugin>
 		<version.source.plugin>2.3</version.source.plugin>
-		<version.surefire.plugin>2.19</version.surefire.plugin>
+		<version.surefire.plugin>2.19.1</version.surefire.plugin>
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
 		<version.versions.plugin>2.2</version.versions.plugin>
 		<version.wagon.ssh.plugin>2.10</version.wagon.ssh.plugin>
