@@ -55,7 +55,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
   protected final SslContextFactory sslContextFactory;
 
   protected volatile Session jettyWsSession;
-  protected WebSocketClient jettyClient;
+  protected volatile WebSocketClient jettyClient;
 
   public JsonRpcClientWebSocket(String url) {
     this(url, null, new SslContextFactory());
@@ -94,7 +94,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
   protected void connectNativeClient() throws TimeoutException, Exception {
 
-    if (jettyClient == null) {
+    if (jettyClient == null || jettyClient.isStopped() || jettyClient.isStopping()) {
 
       jettyClient = new WebSocketClient(sslContextFactory);
       jettyClient.setConnectTimeout(this.connectionTimeout);
@@ -106,8 +106,6 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
       jettyClient.start();
 
-    } else {
-      log.warn("{} Using existing websocket client when session is either null or closed.", label);
     }
 
     WebSocketClientSocket socket = new WebSocketClientSocket();

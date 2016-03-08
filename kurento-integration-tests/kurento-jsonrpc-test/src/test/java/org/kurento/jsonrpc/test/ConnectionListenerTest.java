@@ -1,22 +1,17 @@
 
 package org.kurento.jsonrpc.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.jsonrpc.DefaultJsonRpcHandler;
-import org.kurento.jsonrpc.Transaction;
-import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
-import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
+import org.kurento.jsonrpc.test.util.EventWaiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,153 +19,111 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectionListenerTest.class);
 
-  private JsonRpcClient client;
-
-  public static class Handler extends DefaultJsonRpcHandler<String> {
-
-    @Override
-    public void handleRequest(final Transaction transaction, Request<String> request)
-        throws Exception {
-
-      transaction.sendResponse("Hello");
-    }
-  }
-
   @Test
-  public void connectionTimeoutTest() throws IOException, InterruptedException {
+  public void givenPortWithoutServer_whenClientTryToConnect_thenAnExceptionIsThrownAndConnectionFailedEventIsFired()
+      throws IOException, InterruptedException {
 
-    final CountDownLatch latch = new CountDownLatch(1);
+    final EventWaiter connectionFailed = new EventWaiter("connectionFailed");
 
-    client = new JsonRpcClientWebSocket("ws://localhost:65000/connectionlistener",
-        new JsonRpcWSConnectionAdapter() {
-          @Override
-          public void connectionFailed() {
-            latch.countDown();
-          }
-        });
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void connectionFailed() {
+        connectionFailed.eventReceived();
+      }
+    };
 
-    try {
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:65000/reconnection", listener)) {
+
       client.sendRequest("sessiontest", String.class);
 
-      if (!latch.await(20, TimeUnit.SECONDS)) {
-        fail(
-            "Any of KurentoException should be thrown or connectionTimeout() event method should be called");
-      }
+      fail("KurentoException informing connection exception should be thrown");
 
     } catch (KurentoException e) {
-      assertTrue(e.getMessage().contains("Exception connecting to"));
+      assertThat(e.getMessage()).contains("Exception connecting to");
     }
 
-    client.close();
+    connectionFailed.waitFor(20000);
   }
 
   @Test
-  public void connectedTest() throws IOException, InterruptedException {
+  public void givenServer_whenClientIsConnected_thenConnectedEventIsFired()
+      throws IOException, InterruptedException {
 
-    final CountDownLatch latch = new CountDownLatch(1);
+    final EventWaiter connected = new EventWaiter("connected");
 
-    client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionAdapter() {
-          @Override
-          public void connected() {
-            log.info("connected");
-            latch.countDown();
-          }
-        });
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void connected() {
+        connected.eventReceived();
+      }
+    };
 
-    client.sendRequest("sessiontest", String.class);
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
-    if (!latch.await(20, TimeUnit.SECONDS)) {
-      fail("Event connected() not thrown in 20s");
+      client.sendRequest("sessiontest", String.class);
+
+      connected.waitFor(20000);
     }
-
-    client.close();
   }
 
   @Test
-  public void clientDisconnectedTest() throws IOException, InterruptedException {
+  public void givenConnectedClient_whenClientIsClosedByUser_thenDisconnectedEventIsFired()
+      throws IOException, InterruptedException {
 
-    final CountDownLatch latch = new CountDownLatch(1);
+    final EventWaiter disconnected = new EventWaiter("disconnected");
 
-    client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionAdapter() {
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void disconnected() {
+        disconnected.eventReceived();
+      }
+    };
 
-          @Override
-          public void disconnected() {
-            log.info("disconnected");
-            latch.countDown();
-          }
-        });
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
-    client.sendRequest("sessiontest", String.class);
-    client.close();
+      client.sendRequest("sessiontest", String.class);
+      client.close();
 
-    if (!latch.await(20, TimeUnit.SECONDS)) {
-      fail("Event disconnected() not thrown in 20s");
+      disconnected.waitFor(20000);
+
     }
-
-    client.close();
   }
 
   @Test
-  public void clientDisconnectedIsClosedTest() throws IOException, InterruptedException {
+  public void givenConnectedClient_whenClientIsClosedByUser_thenIsClosedByUserMethodIsTrueWhenDisconnectedEventIsReceived()
+      throws IOException, InterruptedException {
 
-    final CountDownLatch disconnectedLatch = new CountDownLatch(1);
-    final CountDownLatch isClosedLatch = new CountDownLatch(1);
+    final EventWaiter disconnected = new EventWaiter("disconnected");
+    final EventWaiter closedByClientWhenDisconnected = new EventWaiter(
+        "closedByClientWhenDisconnected");
 
-    client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionAdapter() {
+    final JsonRpcClientWebSocket[] clientForListener = new JsonRpcClientWebSocket[1];
 
-          @Override
-          public void disconnected() {
-            log.info("disconnected");
-            disconnectedLatch.countDown();
-            if (client.isClosed()) {
-              isClosedLatch.countDown();
-            }
-          }
-        });
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
 
-    client.sendRequest("sessiontest", String.class);
-    client.close();
+      @Override
+      public void disconnected() {
+        disconnected.eventReceived();
+        if (clientForListener[0].isClosedByUser()) {
+          closedByClientWhenDisconnected.eventReceived();
+        }
+      }
+    };
 
-    if (!disconnectedLatch.await(20, TimeUnit.SECONDS)) {
-      fail("Event disconnected() not thrown in 20s");
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      clientForListener[0] = client;
+
+      client.sendRequest("sessiontest", String.class);
+      client.close();
+
+      disconnected.waitFor(20000);
+      closedByClientWhenDisconnected.waitFor(20000);
     }
-
-    if (!isClosedLatch.await(20, TimeUnit.SECONDS)) {
-      fail(
-          "JsonRpcClient.isClosed() was false when disconnected after forcefully closing client (hint: should be true)");
-    }
-
-    client.close();
   }
 
-  @Test
-  public void communicationFailureDisconnectionTest() throws IOException, InterruptedException {
-
-    final CountDownLatch latch = new CountDownLatch(1);
-
-    client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + "/connectionlistener",
-        new JsonRpcWSConnectionAdapter() {
-
-          @Override
-          public void disconnected() {
-            System.out.println("disconnected");
-            latch.countDown();
-          }
-        });
-
-    client.sendRequest("sessiontest", String.class);
-
-    JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-    webSocketClient.closeNativeClient();
-
-    if (latch.await(20, TimeUnit.SECONDS)) {
-      fail("Event disconnected() not should be thrown "
-          + "because reconnection should be succesful");
-    }
-
-    client.close();
-  }
 }

@@ -82,7 +82,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
   protected int heartbeatInterval = 0;
   private static final int DEFAULT_HEARTBEAT_INTERVAL = 5000;
   protected boolean heartbeating;
-  protected boolean closed;
+  protected boolean closedByClient;
   private volatile PingParams pingParams;
 
   private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -331,8 +331,8 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
    */
   @Override
   public void close() throws IOException {
-    log.debug("Closing JsonRpcClient");
-    this.closed = true;
+    log.debug("Closing JsonRpcClient by client");
+    this.closedByClient = true;
     this.disableHeartbeat(true);
   }
 
@@ -348,7 +348,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
    * @return true if the socket has been closed by the client
    * @see #close
    */
-  public boolean isClosed() {
-    return this.closed;
+  public boolean isClosedByUser() {
+    return this.closedByClient;
   }
 }

@@ -17,10 +17,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 @Category(JsonRpcConnectorTests.class)
 public class JsonRpcConnectorBaseTest {
 
-  protected static ConfigurableApplicationContext context;
+  protected static ConfigurableApplicationContext server;
 
   @BeforeClass
-  public static void start() throws Exception {
+  public static void startServer() throws Exception {
 
     System.setProperty("java.security.egd", "file:/dev/./urandom");
 
@@ -33,15 +33,15 @@ public class JsonRpcConnectorBaseTest {
 
     System.out.println("Properties: " + properties);
 
-    context = application.run();
+    server = application.run();
 
   }
 
   @AfterClass
-  public static void stop() {
+  public static void stopServer() {
 
-    if (context != null) {
-      context.close();
+    if (server != null) {
+      server.close();
     }
   }
 
@@ -80,7 +80,7 @@ public class JsonRpcConnectorBaseTest {
   }
 
   public static void main(String[] args) throws Exception {
-    start();
+    startServer();
   }
 
 }

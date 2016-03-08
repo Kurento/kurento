@@ -408,7 +408,7 @@ public class RomClientJsonRpcClient implements RomClient {
 
   @Override
   public boolean isClosed() {
-    return this.client.isClosed();
+    return this.client.isClosedByUser();
   }
 
 }

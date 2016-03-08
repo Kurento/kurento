@@ -129,6 +129,12 @@
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

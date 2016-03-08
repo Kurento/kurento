@@ -136,6 +136,7 @@
 		<webdrivermanager.version>1.3.1</webdrivermanager.version>
 		<docker-java.version>2.1.3</docker-java.version>
 		<jackson.version>2.6.3</jackson.version>
+		<assertj.version>3.3.0</assertj.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -586,6 +587,11 @@
 				<artifactId>mockito-all</artifactId>
 				<version>${version.mockito}</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>${assertj.version}</version>			
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>

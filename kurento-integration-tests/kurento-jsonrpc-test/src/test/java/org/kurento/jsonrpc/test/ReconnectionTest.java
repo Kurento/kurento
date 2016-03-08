@@ -1,18 +1,19 @@
 
 package org.kurento.jsonrpc.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
-import org.kurento.jsonrpc.JsonRpcErrorException;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
-import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
+import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
+import org.kurento.jsonrpc.test.util.EventWaiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,67 +43,243 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
   }
 
   @Test
-  public void test() throws IOException, InterruptedException {
+  public void givenReconnectedSession_whenSessionIdIsRemovedFromClient_thenServerUsesWebSocketAsSessionIdSource()
+      throws IOException, InterruptedException {
 
-    JsonRpcClient client = createJsonRpcClient("/reconnection");
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection")) {
 
-    if (client instanceof JsonRpcClientWebSocket) {
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("new");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
 
-      Assert.assertEquals("new", client.sendRequest("sessiontest", String.class));
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
+      String sessionId = client.getSession().getSessionId();
 
-      log.info("SessionId: " + client.getSession().getSessionId());
+      client.closeNativeClient();
 
-      JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-      webSocketClient.closeNativeClient();
-
+      // Wait for reconnection
       Thread.sleep(100);
 
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
 
       client.setSessionId(null);
 
-      // With this we test if the transportId is used to recognize the
-      // session
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
 
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
-
-      log.info("SessionId: " + client.getSession().getSessionId());
+      assertThat(client.getSession().getSessionId()).isEqualTo(sessionId);
 
     }
-
-    client.close();
-
   }
 
   @Test
-  public void timeoutReconnectionTest() throws IOException, InterruptedException {
+  public void givenClient_whenNativeSocketIsClosed_thenSessionIsAutomaticallyReconnected()
+      throws IOException, InterruptedException {
 
-    JsonRpcClient client = createJsonRpcClient("/reconnection");
+    final EventWaiter reconnecting = new EventWaiter("reconnecting");
+    final EventWaiter reconnected = new EventWaiter("reconnected");
 
-    if (client instanceof JsonRpcClientWebSocket) {
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void reconnecting() {
+        reconnecting.eventReceived();
+      }
 
-      Assert.assertEquals("new", client.sendRequest("sessiontest", String.class));
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
-      Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
+      @Override
+      public void reconnected(boolean sameServer) {
+        reconnected.eventReceived();
+      }
+    };
 
-      JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-      webSocketClient.closeNativeClient();
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("new");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+
+      client.closeNativeClient();
+
+      // Wait for reconnection
+      Thread.sleep(100);
+
+      reconnecting.waitFor(3000);
+      reconnected.waitFor(3000);
+
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+      assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
+
+    }
+  }
+
+  @Test
+  public void givenJsonRpcClientAndServer_whenServerIsDown_thenClientKeepsReconnectingUntilServerIsUpAgain()
+      throws Exception {
+
+    final EventWaiter reconnecting = new EventWaiter("reconnecting");
+    final EventWaiter reconnected = new EventWaiter("reconnected");
+
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void reconnecting() {
+        reconnecting.eventReceived();
+      }
+
+      @Override
+      public void reconnected(boolean sameServer) {
+        reconnected.eventReceived();
+      }
+    };
+
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      client.setTryReconnectingForever(true);
+      client.enableHeartbeat(2000);
 
       Thread.sleep(1000);
 
-      try {
-        Assert.assertEquals("old", client.sendRequest("sessiontest", String.class));
-      } catch (JsonRpcErrorException e) {
-        Assert.fail("Reconnection should be happend behind the covers");
+      client.connect();
+
+      log.info("--------> Client connected to server");
+
+      server.close();
+
+      log.info("--------> Server closed");
+
+      reconnecting.waitFor(3000);
+
+      log.info("--------> Event reconnecting received in client");
+
+      assertThat(reconnected.isEventRecived()).isFalse();
+
+      // Wait some time to verify client is reconnecting
+      Thread.sleep(20000);
+
+      assertThat(reconnected.isEventRecived()).isFalse();
+
+      log.info("--------> Starting new server after 20s");
+
+      startServer();
+
+      log.info("--------> New server started");
+
+      log.info("--------> Waiting 10s to client reconnection");
+
+      reconnected.waitFor(10000);
+
+      log.info("--------> Client reconnected event received");
+
+    }
+  }
+
+  @Test
+  public void givenClientWithHeartbeat_whenWaitMoreThanIdleTimeout_thenClientIsNotDisconnected()
+      throws IOException, InterruptedException {
+
+    final EventWaiter reconnecting = new EventWaiter("reconnecting");
+    final EventWaiter reconnected = new EventWaiter("reconnected");
+
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void reconnecting() {
+        reconnecting.eventReceived();
+      }
+
+      @Override
+      public void reconnected(boolean sameServer) {
+        reconnected.eventReceived();
+      }
+    };
+
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      client.setIdleTimeout(5000);
+      client.enableHeartbeat(4000);
+
+      for (int i = 0; i < 5; i++) {
+        client.sendRequest("sessiontest", String.class);
+        Thread.sleep(10000);
       }
     }
 
-    client.close();
+    assertThat(reconnecting.isEventRecived()).as("Event reconnecting received").isEqualTo(false);
+    assertThat(reconnecting.isEventRecived()).as("Event reconnected received").isEqualTo(false);
+  }
 
+  @Test
+  public void givenReconnectingClient_whenClientIsClosed_thenClientIsNotReconnectedWhenServerIsUpAgain()
+      throws Exception {
+
+    final EventWaiter reconnecting = new EventWaiter("reconnecting");
+    final EventWaiter reconnected = new EventWaiter("reconnected");
+    final EventWaiter disconnected = new EventWaiter("disconnected");
+
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void reconnecting() {
+        reconnecting.eventReceived();
+      }
+
+      @Override
+      public void reconnected(boolean sameServer) {
+        reconnected.eventReceived();
+      }
+
+      @Override
+      public void disconnected() {
+        disconnected.eventReceived();
+      }
+    };
+
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      client.setTryReconnectingForever(true);
+      client.enableHeartbeat(2000);
+
+      Thread.sleep(1000);
+
+      client.connect();
+
+      log.info("--------> Client connected to server");
+
+      server.close();
+
+      log.info("--------> Server closed");
+
+      reconnecting.waitFor(3000);
+
+      log.info("--------> Event reconnecting received in client");
+
+      assertThat(reconnected.isEventRecived()).isFalse();
+
+      // Wait some time to verify client is reconnecting
+      Thread.sleep(20000);
+
+      assertThat(reconnected.isEventRecived()).isFalse();
+
+      log.info("--------> Starting new server after 20s");
+
+      client.close();
+
+      disconnected.waitFor(20000);
+
+      log.info("--------> Client is disconnected");
+
+      startServer();
+
+      log.info("--------> New server started");
+
+      Thread.sleep(10000);
+
+      assertThat(reconnected.isEventRecived()).isFalse();
+
+      log.info("--------> Client is not reconnected after 10s after closing it");
+
+    }
   }
 
 }
