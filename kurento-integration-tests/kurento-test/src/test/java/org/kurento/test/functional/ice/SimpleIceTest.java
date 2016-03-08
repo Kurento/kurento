@@ -67,11 +67,11 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         new Candidate(getCandidateType(event.getCandidatePair().getRemoteCandidate()),
             getTransportMode(event.getCandidatePair().getRemoteCandidate()));
 
-    if (WebRtcCandidateType.PRFLX.equals(lCandidate)) {
+    if (WebRtcCandidateType.PRFLX.equals(lCandidate.getWebRtcCandidateType())) {
       lCandidate.setWebRtcCandidateType(WebRtcCandidateType.SRFLX);
     }
 
-    if (WebRtcCandidateType.PRFLX.equals(rCandidate)) {
+    if (WebRtcCandidateType.PRFLX.equals(rCandidate.getWebRtcCandidateType())) {
       rCandidate.setWebRtcCandidateType(WebRtcCandidateType.SRFLX);
     }
 
