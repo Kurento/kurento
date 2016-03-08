@@ -114,6 +114,7 @@ public class KurentoClient {
 
   protected static void configureJsonRpcClient(JsonRpcClientWebSocket client) {
     client.enableHeartbeat(KEEPALIVE_TIME);
+    client.setTryReconnectingForever(true);
     updateLabel(client, null);
     client.setSendCloseMessage(true);
   }
