@@ -12,3 +12,6 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # otherwise, readthedocs.org uses their theme by default, so no need to specify it
 
 project = 'FIWARE-Stream-Oriented-GE'
+html_theme_options = {
+  'cssfiles': ['https://fiware.org/style/fiware_readthedocs.css']
+}
