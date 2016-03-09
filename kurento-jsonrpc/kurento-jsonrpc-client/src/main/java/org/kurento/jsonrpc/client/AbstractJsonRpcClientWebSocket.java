@@ -567,12 +567,12 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   protected void internalConnectIfNecessary() throws IOException {
 
-    if (isClosedByUser()) {
-      throw new KurentoException("Trying to send a message in a client closed explicitly. "
-          + "When a client is closed, it can't be reused. It is necessary to create another one");
-    }
-
     if (!isNativeClientConnected()) {
+
+      if (isClosedByUser()) {
+        throw new KurentoException("Trying to send a message in a client closed explicitly. "
+            + "When a client is closed, it can't be reused. It is necessary to create another one");
+      }
 
       log.debug("{} Connecting webSocket client to server {}", label, url);
 
