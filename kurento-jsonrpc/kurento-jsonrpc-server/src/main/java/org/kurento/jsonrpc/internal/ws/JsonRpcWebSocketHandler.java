@@ -163,8 +163,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
       }, wsSession.getId());
 
     } catch (Throwable t) {
-      log.error("{} Exception processing request {}. Reason: {} Cause: {} Stacktrace: {}", label,
-          message.toString(), t.getMessage(), t.getCause(), t.getStackTrace());
+      log.error("{} Exception processing request {}.", label, message.getPayload(), t);
     }
 
   }
