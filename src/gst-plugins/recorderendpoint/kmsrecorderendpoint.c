@@ -872,6 +872,8 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
     return;
   }
 
+  gst_pad_set_element_private (pad, g_object_ref (appsrc));
+
   g_hash_table_insert (self->priv->srcs, id, g_object_ref (appsrc));
 
   if (sinkdata->sink_probe != 0UL) {
@@ -903,10 +905,20 @@ unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
   gchar *id = NULL;
+  GstElement *appsrc;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
   id = gst_pad_get_name (pad);
+
+  GST_OBJECT_LOCK (pad);
+  appsrc = gst_pad_get_element_private (pad);
+  gst_pad_set_element_private (pad, NULL);
+
+  if (appsrc) {
+    g_object_unref (appsrc);
+  }
+  GST_OBJECT_UNLOCK (pad);
 
   if (self->priv->stopping) {
     GST_DEBUG_OBJECT (self, "Stop operation is pending");
@@ -1272,19 +1284,14 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
   } else {
     GstElement *appsrc;
     GstPad *srcpad;
-    gchar *id;
 
-    id = gst_pad_get_name (pad);
-
-    KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
-
-    appsrc = g_hash_table_lookup (self->priv->srcs, id);
-    g_free (id);
+    GST_OBJECT_LOCK (pad);
+    appsrc = gst_pad_get_element_private (pad);
 
     if (appsrc == NULL) {
       GstCaps *aux;
 
-      KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+      GST_OBJECT_UNLOCK (pad);
       GST_INFO_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT, pad);
 
       /* Filter against profile */
@@ -1296,7 +1303,7 @@ kms_recorder_endpoint_query_caps (KmsElement * element, GstPad * pad,
     }
     srcpad = gst_element_get_static_pad (appsrc, "src");
 
-    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+    GST_OBJECT_UNLOCK (pad);
 
     /* Get encodebin's caps filtering by profile */
     tcaps = gst_pad_peer_query_caps (srcpad, caps);
