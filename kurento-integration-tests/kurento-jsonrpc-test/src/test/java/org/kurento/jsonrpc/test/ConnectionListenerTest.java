@@ -93,6 +93,33 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
   }
 
   @Test
+  public void givenConnectedClient_whenServerIsClosed_thenDisconnectedEventIsFired()
+      throws Exception {
+
+    final EventWaiter disconnected = new EventWaiter("disconnected");
+
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void disconnected() {
+        disconnected.eventReceived();
+      }
+    };
+
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      client.sendRequest("sessiontest", String.class);
+
+      stopServer();
+
+      disconnected.waitFor(20000);
+
+    } finally {
+      startServer();
+    }
+  }
+
+  @Test
   public void givenConnectedClient_whenClientIsClosedByUser_thenIsClosedByUserMethodIsTrueWhenDisconnectedEventIsReceived()
       throws IOException, InterruptedException {
 

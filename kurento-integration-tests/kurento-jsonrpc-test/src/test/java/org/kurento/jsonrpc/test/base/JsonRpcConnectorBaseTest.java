@@ -22,19 +22,22 @@ public class JsonRpcConnectorBaseTest {
   @BeforeClass
   public static void startServer() throws Exception {
 
-    System.setProperty("java.security.egd", "file:/dev/./urandom");
+    if (server == null || !server.isActive()) {
 
-    Properties properties = new Properties();
-    properties.put("server.port", getPort());
+      System.setProperty("java.security.egd", "file:/dev/./urandom");
 
-    SpringApplication application = new SpringApplication(BootTestApplication.class);
+      Properties properties = new Properties();
+      properties.put("server.port", getPort());
 
-    application.setDefaultProperties(properties);
+      SpringApplication application = new SpringApplication(BootTestApplication.class);
 
-    System.out.println("Properties: " + properties);
+      application.setDefaultProperties(properties);
 
-    server = application.run();
+      System.out.println("Properties: " + properties);
 
+      server = application.run();
+
+    }
   }
 
   @AfterClass
@@ -42,6 +45,7 @@ public class JsonRpcConnectorBaseTest {
 
     if (server != null) {
       server.close();
+      server = null;
     }
   }
 

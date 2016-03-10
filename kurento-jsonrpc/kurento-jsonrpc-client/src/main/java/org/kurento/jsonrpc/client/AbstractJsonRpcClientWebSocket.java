@@ -19,9 +19,9 @@ import java.util.concurrent.TimeoutException;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.TimeoutReentrantLock;
 import org.kurento.commons.TimeoutRuntimeException;
-import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.JsonRpcClientClosedException;
 import org.kurento.jsonrpc.JsonRpcErrorException;
-import org.kurento.jsonrpc.TransportException;
+import org.kurento.jsonrpc.JsonRpcException;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.ClientSession;
@@ -289,11 +289,11 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       return response;
 
     } catch (InterruptedException e) {
-      throw new KurentoException(label + " Interrupted while waiting for a response", e);
+      throw new JsonRpcException(label + " Interrupted while waiting for a response", e);
     } catch (ExecutionException e) {
-      throw new KurentoException(label + " This exception shouldn't be thrown", e);
+      throw new JsonRpcException(label + " This exception shouldn't be thrown", e);
     } catch (TimeoutException e) {
-      throw new TransportException(label + " Timeout of " + requestTimeout
+      throw new JsonRpcException(label + " Timeout of " + requestTimeout
           + " milliseconds waiting from response to request " + jsonMessage.trim(), e);
     }
   }
@@ -393,7 +393,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   protected synchronized void closeClient(String reason) {
 
     if (!reconnecting) {
-      notifyUserClientClosed(reason);
+      notifyUserClientClosed(reason, false);
     }
 
     closeNativeClient();
@@ -423,8 +423,8 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     }
   }
 
-  private void notifyUserClientClosed(String reason) {
-    if (isClosedByUser()) {
+  private void notifyUserClientClosed(String reason, boolean connectedBefore) {
+    if (isClosedByUser() || connectedBefore) {
       fireDisconnected();
     } else {
       fireConnectionFailed();
@@ -541,7 +541,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
                 "{} Exception trying to reconnect to server {}. The websocket was closed due to {}",
                 label, url, closeReason, e);
 
-            notifyUserClientClosed(closeReason);
+            notifyUserClientClosed(closeReason, true);
 
           } else {
             reconnect(closeReason, RECONNECT_DELAY_TIME_MILLIS);
@@ -570,8 +570,9 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     if (!isNativeClientConnected()) {
 
       if (isClosedByUser()) {
-        throw new KurentoException("Trying to send a message in a client closed explicitly. "
-            + "When a client is closed, it can't be reused. It is necessary to create another one");
+        throw new JsonRpcClientClosedException(
+            "Trying to send a message in a client closed explicitly. "
+                + "When a client is closed, it can't be reused. It is necessary to create another one");
       }
 
       log.debug("{} Connecting webSocket client to server {}", label, url);
@@ -593,7 +594,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
         this.closeClient("Closed by exception: " + exceptionMessage);
 
-        throw new KurentoException(exceptionMessage, e);
+        throw new JsonRpcException(exceptionMessage, e);
 
       }
 
@@ -655,12 +656,12 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
         } catch (Exception e2) {
           closeClient("Closed by exception: " + e.getMessage());
-          throw new KurentoException(label + " Exception executing reconnect protocol", e2);
+          throw new JsonRpcException(label + " Exception executing reconnect protocol", e2);
         }
 
       } else {
         closeClient("Closed by exception: " + e.getMessage());
-        throw new KurentoException(label + " Exception executing reconnect protocol", e);
+        throw new JsonRpcException(label + " Exception executing reconnect protocol", e);
       }
     }
   }

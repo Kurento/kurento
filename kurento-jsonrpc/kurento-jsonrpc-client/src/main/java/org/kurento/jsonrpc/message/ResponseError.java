@@ -199,7 +199,7 @@ public class ResponseError {
   }
 
   public String getCompleteMessage() {
-    return message + " (Code:" + code + ", Type:" + type + ")";
+    return message + " (Code:" + code + ", Type:" + type + ", Data: " + data + ")";
   }
 
   private static String getErrorType(JsonElement data) {
