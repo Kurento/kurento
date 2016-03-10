@@ -376,6 +376,11 @@ static void
 kms_recorder_endpoint_change_state (KmsRecorderEndpoint * self,
     KmsUriEndpointState new_state)
 {
+  // TODO: check stopping and wait until stopping is set to false
+  if (self->priv->stopping) {
+    GST_WARNING_OBJECT (self, "Stopping is in progress, waif for it to finish");
+  }
+
   self->priv->moving_to_state = new_state;
 }
 
@@ -384,8 +389,10 @@ kms_recorder_endpoint_state_changed (KmsRecorderEndpoint * self,
     KmsUriEndpointState state)
 {
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
-  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
-      state);
+  if (!self->priv->stopping || state == KMS_URI_ENDPOINT_STATE_STOP) {
+    KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
+        state);
+  }
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
@@ -604,8 +611,8 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   kms_recorder_endpoint_change_state (self, KMS_URI_ENDPOINT_STATE_STOP);
 
   if (kms_base_media_muxer_get_state (self->priv->mux) >= GST_STATE_PAUSED) {
-    kms_recorder_endpoint_send_eos_to_appsrcs (self);
     self->priv->stopping = TRUE;
+    kms_recorder_endpoint_send_eos_to_appsrcs (self);
   }
 
   kms_recorder_endpoint_remove_pads (self);
