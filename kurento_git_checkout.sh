@@ -60,19 +60,15 @@ GERRIT_URL=ssh://$GERRIT_USER@$GERRIT_HOST:$GERRIT_PORT
 if [ -n "$GERRIT_PROJECT" ]; then
   GERRIT_PROJECT_URL=$GERRIT_URL/$GERRIT_PROJECT
   git clone $GERRIT_PROJECT_URL  $GERRIT_PROJECT || exit 1
-  ( cd $GERRIT_PROJECT && git fetch $GERRIT_PROJECT_URL $GERRIT_REFERENCE && git checkout FETCH_HEAD
-    if [ -f pom.xml ]; then
-      mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
-    fi
-  ) || exit 1
-
+  pushd $GERRIT_PROJECT && git fetch $GERRIT_PROJECT_URL $GERRIT_REFERENCE && git checkout FETCH_HEAD || exit 1
+  popd
   # Collect GERRIT references
   REFS=$(cd $GERRIT_PROJECT &&
     git log -n1 | egrep "^\s*dependency\s*:\s*(\w\S*)\s*=\s*(\S+)\s*$" | awk -F ':' '{print $2}' )
 fi
 
 # Add inconditional references
-REFS="$REFS $GERRIT_CLONE_LIST"
+REFS="$REFS $([-n "$GERRIT_PROJECT" ] && echo "$GERRIT_PROJECT=$GERRIT_REFERENCE") $GERRIT_CLONE_LIST"
 
 # Look for dependency references
 for REF in $REFS; do
