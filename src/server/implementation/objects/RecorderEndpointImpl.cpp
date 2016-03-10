@@ -176,8 +176,7 @@ RecorderEndpointImpl::release ()
     return;
   }
 
-  stop();
-  waitForStateChange (KMS_URI_END_POINT_STATE_STOP);
+  stopAndWait();
 
   UriEndpointImpl::release();
 }
@@ -200,6 +199,12 @@ RecorderEndpointImpl::~RecorderEndpointImpl()
 void RecorderEndpointImpl::record ()
 {
   start();
+}
+
+void RecorderEndpointImpl::stopAndWait ()
+{
+  stop();
+  waitForStateChange (KMS_URI_END_POINT_STATE_STOP);
 }
 
 static void

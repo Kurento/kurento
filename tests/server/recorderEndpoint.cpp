@@ -34,7 +34,7 @@ boost::property_tree::ptree config;
 std::string mediaPipelineId;
 ModuleManager moduleManager;
 
-#define EXPECTED_LEN 1.0
+#define EXPECTED_LEN 0.2
 
 struct GF {
   GF();
@@ -153,6 +153,9 @@ recorder_state_changes ()
 
   src->connect (recorder);
   recorder->pause();
+  recorder->stop();
+  recorder->stop();
+  recorder->pause();
   recorder->record();
   recorder->pause();
   recorder->record();
@@ -160,19 +163,23 @@ recorder_state_changes ()
   recorder->pause();
   recorder->record();
   recorder->pause();
-  recorder->stop();
+  recorder->stopAndWait();
+
   recorder->record();
   recorder->pause();
   recorder->record();
-
-  g_usleep (500000);
+  recorder->record();
+  // Wait for record event
+  g_usleep (100000);
 
   recorder->pause();
-  g_usleep (500000);
+  g_usleep (100000);
+  recorder->record();
   recorder->record();
 
-  g_usleep (500000);
-  recorder->stop();
+  // Wait for record event
+  g_usleep (100000);
+  recorder->stopAndWait();
 
   releaseTestSrc (src);
 
@@ -187,15 +194,15 @@ recorder_state_changes ()
   std::cout << duration << std::endl;
 
   float dur = atof (duration.c_str() );
-  BOOST_CHECK_GE (dur, EXPECTED_LEN * 0.9);
-  BOOST_CHECK (dur <= EXPECTED_LEN * 1.1);
+  BOOST_WARN_GE (dur, EXPECTED_LEN * 0.8);
+  BOOST_WARN_LE (dur, EXPECTED_LEN * 1.2);
 
   command = "ffprobe -i " + uri +
             " -show_streams -v quiet | sed -n 's/codec_name=//p'";
   std::string codecs = exec (command.c_str() );
 
-  BOOST_CHECK (codecs.find ("vp8") != std::string::npos);
-  BOOST_CHECK (codecs.find ("opus") != std::string::npos);
+  BOOST_REQUIRE (codecs.find ("vp8") != std::string::npos);
+  BOOST_REQUIRE (codecs.find ("opus") != std::string::npos);
 
   std::cout << "recording_changes: " << recording_changes << std::endl;
   std::cout << "stop_changes: " << stop_changes << std::endl;
@@ -206,8 +213,14 @@ recorder_state_changes ()
   BOOST_CHECK_GE (pause_changes, 2);
 
   BOOST_CHECK_LE (recording_changes, 6);
-  BOOST_CHECK_LE (stop_changes, 3);
-  BOOST_CHECK_LE (pause_changes, 6);
+  BOOST_CHECK_LE (stop_changes, 5);
+  BOOST_CHECK_LE (pause_changes, 7);
+
+  uri = uri.substr (sizeof ("file://") - 1);
+
+  if (remove (uri.c_str() ) != 0) {
+    BOOST_ERROR ("Error deleting tmp file");
+  }
 }
 
 test_suite *

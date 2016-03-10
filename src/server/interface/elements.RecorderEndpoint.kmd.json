@@ -39,6 +39,11 @@
           "name": "record",
           "doc": "Starts storing media received through the :rom:cls:`MediaSink` pad",
           "params": []
+        },
+        {
+          "name": "stopAndWait",
+          "doc": "Stops recording and do not returns until all the content has bee written to the selected uri. This can cause timeouts on some clients if there is too much content to write and/or the transport is slow",
+          "params": []
         }
       ],
       "events": [

@@ -29,6 +29,7 @@ public:
   virtual ~RecorderEndpointImpl ();
 
   void record ();
+  virtual void stopAndWait ();
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
