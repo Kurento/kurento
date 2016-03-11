@@ -76,6 +76,8 @@ ip link set vethrae$docker_pid up
 ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to $ip
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'TCP' ]; then
+  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 192.168.0.0/24 -j DROP
+
   # This is used to force RLFX TCP
   ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.17.0.0/16 -j DROP
   ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.17.0.0/16 -j DROP
