@@ -65,9 +65,9 @@ fi
 
 KEY=$ID_RSA_FILE
 
-curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?${PARAM_REPO}dist=$DIST\&comp=$COMPONENT\&name=$(basename $PACKAGE)\&cmd=add --data-binary @$PACKAGE || exit 1
+curl -s -o /dev/stderr -w %{http_code} --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?${PARAM_REPO}dist=$DIST\&comp=$COMPONENT\&name=$(basename $PACKAGE)\&cmd=add --data-binary @$PACKAGE | grep 200 || exit 1
 
 if [ "${DO_SYNC}x" == "TRUEx" ]
 then
-curl --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?${PARAM_REPO}dist=$DIST\&comp=$COMPONENT\&cmd=publish || exit 1
+curl -s -o /dev/stderr -w %{http_code} --insecure --key $KEY --cert $CERT -X POST ${REPREPRO_URL}/upload?${PARAM_REPO}dist=$DIST\&comp=$COMPONENT\&cmd=publish | grep 200  || exit 1
 fi
