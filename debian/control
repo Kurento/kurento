@@ -5,9 +5,9 @@ Maintainer: Maintainer Name
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev,
+ kms-core-6.0-dev (>= 6.0.0),
+ kms-elements-6.0-dev (>= 6.0.0),
+ kms-filters-6.0-dev (>= 6.0.0),
  libopencv-dev
 Standards-Version: 3.9.4
 
@@ -19,8 +19,8 @@ Description: package description
 Package: opencv-plugin-sample-dev
 Architecture: any
 Depends: opencv-plugin-sample (= ${binary:Version}),
-  kms-core-dev,
-  kms-elements-dev,
-  kms-filters-dev,
-  libopencv-dev
+ kms-core-6.0-dev (>= 6.0.0),
+ kms-elements-6.0-dev (>= 6.0.0),
+ kms-filters-6.0-dev (>= 6.0.0),
+ libopencv-dev
 Description: dev package description

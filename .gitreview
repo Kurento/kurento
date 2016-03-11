@@ -2,4 +2,4 @@
 host=code.kurento.org
 port=12345
 project=kms-opencv-plugin-sample.git
-defaultbranch=develop
+defaultbranch=master
