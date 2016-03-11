@@ -47,19 +47,19 @@ ip netns exec $docker_pid-bridge brctl addif br0 vethrbe$docker_pid
 # Container Internal
 ip netns exec $docker_pid-cont ip link set dev vethci$docker_pid name eth0
 ip netns exec $docker_pid-cont ip link set eth0 up
-ip netns exec $docker_pid-cont ip addr add 192.168.10.100/24 dev eth0
-ip netns exec $docker_pid-cont ip route add default via 192.168.10.1
+ip netns exec $docker_pid-cont ip addr add 192.168.0.100/24 dev eth0
+ip netns exec $docker_pid-cont ip route add default via 192.168.0.1
 
 # Container external (peer)
 ip netns exec $docker_pid-bridge ip link set vethce$docker_pid up
 
 # Bridge
 ip netns exec $docker_pid-bridge ip link set br0 up
-ip netns exec $docker_pid-bridge ip addr add 192.168.10.254/24 dev br0
+ip netns exec $docker_pid-bridge ip addr add 192.168.0.254/24 dev br0
 
 # Router bridge internal
 ip netns exec $docker_pid-route ip link set vethrbi$docker_pid up
-ip netns exec $docker_pid-route ip addr add 192.168.10.1/24 dev vethrbi$docker_pid
+ip netns exec $docker_pid-route ip addr add 192.168.0.1/24 dev vethrbi$docker_pid
 
 # Router bridge external (peer)
 ip netns exec $docker_pid-bridge ip link set vethrbe$docker_pid up
@@ -74,12 +74,12 @@ ip link set vethrae$docker_pid up
 
 # Add SNAT
 ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to $ip
-ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.10.100
+ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'TCP' ]; then
   # This is used to force RLFX TCP
-  ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 172.17.0.0/16 -j DROP
+  ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.17.0.0/16 -j DROP
   # This is used to force RELAY
-  ip netns exec $docker_pid-route iptables -I INPUT -p udp -s 172.16.0.0/16 -j DROP
+  ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.16.0.0/16 -j DROP
 fi
 
 fi
