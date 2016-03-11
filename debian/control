@@ -5,9 +5,9 @@ Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
- kms-core-dev,
- kms-elements-dev,
- kms-filters-dev,
+ kms-core-6.0-dev (>= 6.0.0),
+ kms-elements-6.0-dev (>= 6.0.0),
+ kms-filters-6.0-dev (>= 6.0.0),
  libopencv-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
@@ -22,9 +22,9 @@ Description: Kurento Plugin Sample
 Package: kms-plugin-sample-dev
 Architecture: any
 Depends: kms-plugin-sample (= ${binary:Version}),
-  kms-core-dev,
-  kms-elements-dev,
-  kms-filters-dev
+ kms-core-6.0-dev (>= 6.0.0),
+ kms-elements-6.0-dev (>= 6.0.0),
+ kms-filters-6.0-dev (>= 6.0.0),
 Description: Kurento Plugin Sample development files
 
 Package: kms-plugin-sample-dbg
