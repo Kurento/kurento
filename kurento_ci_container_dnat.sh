@@ -81,7 +81,8 @@ if [ $transport = 'TCP' ]; then
 
   # This is used to force RLFX TCP
   ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.17.0.0/16 -j DROP
-  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.17.0.0/16 -j DROP
+  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.17.0.0/16 --sport 3478 -j ACCEPT
+  ip netns exec $docker_pid-route iptables -A FORWARD -p udp -s 172.17.0.0/16 -j DROP
   # This is used to force RELAY
   ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.16.0.0/16 -j DROP
   ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.16.0.0/16 -j DROP
