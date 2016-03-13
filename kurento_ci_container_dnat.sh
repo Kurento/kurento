@@ -76,16 +76,25 @@ ip link set vethrae$docker_pid up
 ip netns exec $docker_pid-route iptables -t nat -A POSTROUTING -o vethrai$docker_pid -j SNAT --to $ip
 ip netns exec $docker_pid-route iptables -t nat -A PREROUTING -i vethrai$docker_pid -j DNAT --to 192.168.0.100
 if [ $transport = 'TCP' ]; then
+  # Allow UDP on port 3478 (for TURN)
   ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp --dport 3478 -s 192.168.0.0/24 -j ACCEPT
-  ip netns exec $docker_pid-route iptables -A FORWARD -p udp --match multiport --dports 1024:65535 -s 192.168.0.0/24 -j DROP
+  ip netns exec $docker_pid-route iptables -A FORWARD -p udp --sport 3478 -j ACCEPT
+
+  # Allow DNS
+  ip netns exec $docker_pid-route iptables -A FORWARD -p udp --dport 53 -j ACCEPT
+  ip netns exec $docker_pid-route iptables -A FORWARD -p udp --sport 53 -j ACCEPT
+
+  ip netns exec $docker_pid-route iptables -A FORWARD -p udp -s 192.168.0.0/24 -j DROP
 
   # This is used to force RLFX TCP
-  ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.17.0.0/16 -j DROP
-  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.17.0.0/16 --sport 3478 -j ACCEPT
+#  ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.17.0.0/16 -j DROP
+#  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 193.147.0.0/16 --sport 3478 -j ACCEPT
   ip netns exec $docker_pid-route iptables -A FORWARD -p udp -s 172.17.0.0/16 -j DROP
+
   # This is used to force RELAY
-  ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.16.0.0/16 -j DROP
-  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.16.0.0/16 -j DROP
+#  ip netns exec $docker_pid-route iptables -I INPUT 1 -p udp -s 172.16.0.0/16 -j DROP
+#  ip netns exec $docker_pid-route iptables -I FORWARD 1 -p udp -s 172.16.0.0/16 -j DROP
+  ip netns exec $docker_pid-route iptables -A FORWARD -p udp -s 193.147.0.0/16 -j DROP
 fi
 
 fi
