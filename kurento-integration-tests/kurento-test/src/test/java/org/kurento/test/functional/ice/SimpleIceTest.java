@@ -162,20 +162,24 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         + localCandidate.get(0).getWebRtcCandidateType(), kmsCandidateType.get(0)
         .getWebRtcCandidateType(), localCandidate.get(0).getWebRtcCandidateType());
 
-    Assert.assertEquals("Local candidate transport (KMS) is wrong. It waits "
-        + kmsCandidateType.get(0).getTransportMode() + " and finds "
-        + localCandidate.get(0).getTransportMode(), kmsCandidateType.get(0).getTransportMode(),
-        localCandidate.get(0).getTransportMode());
+    if (WebRtcCandidateType.RELAY.toString().equals(webRtcCandidateType)) {
+      Assert.assertEquals("Local candidate transport (KMS) is wrong. It waits "
+          + kmsCandidateType.get(0).getTransportMode() + " and finds "
+          + localCandidate.get(0).getTransportMode(), kmsCandidateType.get(0).getTransportMode(),
+          localCandidate.get(0).getTransportMode());
+    }
 
     Assert.assertEquals("Remote candidate type (SELENIUM) is wrong. It waits "
         + seleniumCandidateType.get(0).getWebRtcCandidateType() + " and finds "
         + remoteCandidate.get(0).getWebRtcCandidateType(), seleniumCandidateType.get(0)
         .getWebRtcCandidateType(), remoteCandidate.get(0).getWebRtcCandidateType());
 
-    Assert.assertEquals("Remote candidate transport (SELENIUM) is wrong. It waits "
-        + seleniumCandidateType.get(0).getTransportMode() + " and finds "
-        + remoteCandidate.get(0).getTransportMode(), seleniumCandidateType.get(0)
-        .getTransportMode(), remoteCandidate.get(0).getTransportMode());
+    if (WebRtcCandidateType.RELAY.toString().equals(webRtcCandidateType)) {
+      Assert.assertEquals("Remote candidate transport (SELENIUM) is wrong. It waits "
+          + seleniumCandidateType.get(0).getTransportMode() + " and finds "
+          + remoteCandidate.get(0).getTransportMode(), seleniumCandidateType.get(0)
+          .getTransportMode(), remoteCandidate.get(0).getTransportMode());
+    }
 
     // Release Media Pipeline
     mp.release();
@@ -246,20 +250,24 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         + localCandidate.get(0).getWebRtcCandidateType(), kmsCandidateType.get(0)
         .getWebRtcCandidateType(), localCandidate.get(0).getWebRtcCandidateType());
 
-    Assert.assertEquals("Local candidate transport (KMS) is wrong. It waits "
-        + kmsCandidateType.get(0).getTransportMode() + " and finds "
-        + localCandidate.get(0).getTransportMode(), kmsCandidateType.get(0).getTransportMode(),
-        localCandidate.get(0).getTransportMode());
+    if (WebRtcCandidateType.RELAY.toString().equals(webRtcCandidateType)) {
+      Assert.assertEquals("Local candidate transport (KMS) is wrong. It waits "
+          + kmsCandidateType.get(0).getTransportMode() + " and finds "
+          + localCandidate.get(0).getTransportMode(), kmsCandidateType.get(0).getTransportMode(),
+          localCandidate.get(0).getTransportMode());
+    }
 
     Assert.assertEquals("Remote candidate type (SELENIUM) is wrong. It waits "
         + seleniumCandidateType.get(0).getWebRtcCandidateType() + " and finds "
         + remoteCandidate.get(0).getWebRtcCandidateType(), seleniumCandidateType.get(0)
         .getWebRtcCandidateType(), remoteCandidate.get(0).getWebRtcCandidateType());
 
-    Assert.assertEquals("Remote candidate transport (SELENIUM) is wrong. It waits "
-        + seleniumCandidateType.get(0).getTransportMode() + " and finds "
-        + remoteCandidate.get(0).getTransportMode(), seleniumCandidateType.get(0)
-        .getTransportMode(), remoteCandidate.get(0).getTransportMode());
+    if (WebRtcCandidateType.RELAY.toString().equals(webRtcCandidateType)) {
+      Assert.assertEquals("Remote candidate transport (SELENIUM) is wrong. It waits "
+          + seleniumCandidateType.get(0).getTransportMode() + " and finds "
+          + remoteCandidate.get(0).getTransportMode(), seleniumCandidateType.get(0)
+          .getTransportMode(), remoteCandidate.get(0).getTransportMode());
+    }
 
     // Release Media Pipeline
     mp.release();
@@ -356,20 +364,24 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         + localCandidate.get(0).getWebRtcCandidateType(), kmsCandidateType.get(0)
         .getWebRtcCandidateType(), localCandidate.get(0).getWebRtcCandidateType());
 
-    Assert.assertEquals("Local candidate transport (KMS) is wrong. It waits "
-        + kmsCandidateType.get(0).getTransportMode() + " and finds "
-        + localCandidate.get(0).getTransportMode(), kmsCandidateType.get(0).getTransportMode(),
-        localCandidate.get(0).getTransportMode());
+    if (WebRtcCandidateType.RELAY.toString().equals(webRtcCandidateType)) {
+      Assert.assertEquals("Local candidate transport (KMS) is wrong. It waits "
+          + kmsCandidateType.get(0).getTransportMode() + " and finds "
+          + localCandidate.get(0).getTransportMode(), kmsCandidateType.get(0).getTransportMode(),
+          localCandidate.get(0).getTransportMode());
+    }
 
     Assert.assertEquals("Remote candidate type (SELENIUM) is wrong. It waits "
         + seleniumCandidateType.get(0).getWebRtcCandidateType() + " and finds "
         + remoteCandidate.get(0).getWebRtcCandidateType(), seleniumCandidateType.get(0)
         .getWebRtcCandidateType(), remoteCandidate.get(0).getWebRtcCandidateType());
 
-    Assert.assertEquals("Remote candidate transport (SELENIUM) is wrong. It waits "
-        + seleniumCandidateType.get(0).getTransportMode() + " and finds "
-        + remoteCandidate.get(0).getTransportMode(), seleniumCandidateType.get(0)
-        .getTransportMode(), remoteCandidate.get(0).getTransportMode());
+    if (WebRtcCandidateType.RELAY.toString().equals(webRtcCandidateType)) {
+      Assert.assertEquals("Remote candidate transport (SELENIUM) is wrong. It waits "
+          + seleniumCandidateType.get(0).getTransportMode() + " and finds "
+          + remoteCandidate.get(0).getTransportMode(), seleniumCandidateType.get(0)
+          .getTransportMode(), remoteCandidate.get(0).getTransportMode());
+    }
 
     // Release Media Pipeline
     mp.release();
