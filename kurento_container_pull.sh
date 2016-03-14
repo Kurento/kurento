@@ -11,7 +11,7 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-brow
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
 
 # coturn image
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/coturn:1.0.0
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/coturn:1.1.0
 
 # svn-client to extract files from svn into a docker host
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
