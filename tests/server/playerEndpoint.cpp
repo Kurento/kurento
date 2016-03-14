@@ -155,12 +155,61 @@ eos_received ()
   g_cond_clear (&cond);
 }
 
+static void
+eos_received_with_no_accept_eos_sink ()
+{
+  std::shared_ptr <PlayerEndpointImpl> player = createPlayerEndpoint ();
+  std::shared_ptr <MediaElementImpl> sink = createTestSink();
+  GCond cond;
+  GMutex mutex;
+  bool eos = false;
+  gint64 end_time;
+
+  g_mutex_init (&mutex);
+  g_cond_init (&cond);
+
+  g_object_set (sink->getGstreamerElement(), "accept-eos", FALSE, NULL);
+
+  player->signalEndOfStream.connect ([&] (EndOfStream event) {
+    std::cout << "EOS received" << std::endl;
+    g_mutex_lock (&mutex);
+    eos = true;
+    g_cond_signal (&cond);
+    g_mutex_unlock (&mutex);
+  });
+
+  std::dynamic_pointer_cast <MediaElementImpl> (player)->connect (sink);
+
+  player->play ();
+  end_time = g_get_monotonic_time () + TIME;
+
+  g_mutex_lock (&mutex);
+
+  while (!eos) {
+    if (!g_cond_wait_until (&cond, &mutex, end_time) ) {
+      g_mutex_unlock (&mutex);
+      std::cout << "EOS NOT received" << std::endl;
+      BOOST_CHECK (false);
+      return;
+    }
+  }
+
+  g_mutex_unlock (&mutex);
+
+  releaseTestSink (sink);
+  releasePlayerEndpoint (player);
+  g_mutex_clear (&mutex);
+  g_cond_clear (&cond);
+}
+
 test_suite *
 init_unit_test_suite ( int , char *[] )
 {
   test_suite *test = BOOST_TEST_SUITE ( "PlayerEndpoint" );
 
   test->add (BOOST_TEST_CASE ( &eos_received ), 0, /* timeout */ 20);
+  test->add (BOOST_TEST_CASE ( &eos_received_with_no_accept_eos_sink), 0,
+             /* timeout */ 20);
 
   return test;
 }
