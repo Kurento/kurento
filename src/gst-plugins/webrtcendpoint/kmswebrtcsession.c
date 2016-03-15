@@ -793,6 +793,10 @@ generate_fingerprint_from_pem (const gchar * pem)
   GString *fingerprint;
   gchar *ret;
 
+  if (pem == NULL) {
+    GST_ERROR ("Pem certificate is null");
+    return NULL;
+  }
   der = tmp = g_new0 (guchar, (strlen (pem) / 4) * 3 + 3);
   lines = g_strsplit (pem, "\n", 0);
 
@@ -845,6 +849,8 @@ kms_webrtc_session_generate_fingerprint_sdp_attr (KmsWebrtcSession * self,
   g_free (pem);
 
   if (fp == NULL) {
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
+        (("Fingerprint not generated.")), (NULL));
     return NULL;
   }
 
