@@ -15,17 +15,23 @@ import org.kurento.client.*;
 public interface ${remoteClass.name} extends <#if remoteClass.extends??>${remoteClass.extends.name}<#else>KurentoObject</#if> {
 
    <#list remoteClass.properties as property>
+     <@comment_set_get property.doc "Get"/>
      ${getJavaObjectType(property.type,false)} get${property.name?cap_first}();
 
+     <@comment_set_get property.doc "Get"/>
      void get${property.name?cap_first}(Continuation<${getJavaObjectType(property.type,true)}> cont);
 
+     <@comment_set_get property.doc "Get"/>
      TFuture<${getJavaObjectType(property.type,true)}> get${property.name?cap_first}(Transaction tx);
 
      <#if !property.readOnly && !property.final>
+     <@comment_set_get property.doc "Set"/>
      void set${property.name?cap_first}(@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name});
 
+     <@comment_set_get property.doc "Set"/>
      void set${property.name?cap_first}(@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}, Continuation<Void> cont);
 
+     <@comment_set_get property.doc "Set"/>
      void set${property.name?cap_first}(@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}, Transaction tx);
      </#if>
    </#list>

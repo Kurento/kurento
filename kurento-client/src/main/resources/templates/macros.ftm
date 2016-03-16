@@ -20,3 +20,25 @@
  **/
 </#macro>
 
+<#macro comment_set_get doc type>
+/**
+ *
+    <#lt><#assign first = true><#rt>
+    <#t><#if doc??>
+        <#t><#list doc?split("\n") as x><#assign line = sphinxLinks(x) ><#rt>
+			<#lt><#if (line != "") >
+				<#lt><#if (first) >
+					<#lt><#if (line != "@deprecated") >
+						<#lt> * ${type} ${line}
+						<#lt><#assign first = false><#rt>
+					<#else>
+						<#lt> * ${line}
+					<#lt></#if><#rt>
+				<#lt><#else> * ${line}
+				<#lt></#if><#rt>
+			<#lt></#if><#rt>
+        <#lt></#list><#rt>
+    <#t></#if><#rt>
+ *
+ **/
+</#macro>
