@@ -22,13 +22,15 @@ package org.kurento.test.browser;
  * @since 4.2.3
  */
 public enum WebPageType {
-  PLAYER, WEBRTC, ROOM, SCREEN, ROOT;
+  PLAYER, WEBRTC, ROOM, SCREEN, ROOT, MULTIBROWSER, MULTISESSION;
 
   private static final String ROOT_VALUE = "/";
   private static final String PLAYER_VALUE = "/player.html";
   private static final String ROOM_VALUE = "/room.html";
   private static final String SCREEN_VALUE = "/index.html";
   private static final String WEBRTC_VALUE = "/webrtc.html";
+  private static final String MULTIBROWSER_VALUE = "/multibrowser.html";
+  private static final String MULTISESSION_VALUE = "/multisession.html";
 
   @Override
   public String toString() {
@@ -41,6 +43,10 @@ public enum WebPageType {
         return ROOM_VALUE;
       case SCREEN:
         return SCREEN_VALUE;
+      case MULTIBROWSER:
+        return MULTIBROWSER_VALUE;
+      case MULTISESSION:
+        return MULTISESSION_VALUE;
       case WEBRTC:
       default:
         return WEBRTC_VALUE;
@@ -57,6 +63,10 @@ public enum WebPageType {
         return ROOM;
       case SCREEN_VALUE:
         return SCREEN;
+      case MULTIBROWSER_VALUE:
+        return MULTIBROWSER;
+      case MULTISESSION_VALUE:
+        return MULTISESSION;
       case WEBRTC_VALUE:
       default:
         return WEBRTC;
