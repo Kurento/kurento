@@ -476,7 +476,6 @@ public class KmsService extends TestService {
     String s3SecretAccessKey = getProperty(KMS_DOCKER_S3_SECRET_ACCESS_KEY);
     String s3Hostname = getProperty(KMS_DOCKER_S3_HOSTNAME);
 
-
     Boolean kmsDnat = false;
     if (getProperty(TEST_KMS_DNAT) != null && getProperty(TEST_KMS_DNAT, TEST_KMS_DNAT_DEFAULT)) {
       kmsDnat = true;
@@ -495,32 +494,50 @@ public class KmsService extends TestService {
     String kmsStunIp = getProperty(TestConfiguration.KMS_STUN_IP_PROPERTY);
     String kmsStunPort = getProperty(TestConfiguration.KMS_STUN_PORT_PROPERTY);
 
-    if (kmsDnat && seleniumDnat && RELAY.toString().toUpperCase().equals(seleniumCandidateType)
-        && SRFLX.toString().toUpperCase().equals(kmsCandidateType)) {
-      // Change kmsStunIp by turn values
-      kmsStunIp = getProperty(TEST_ICE_SERVER_URL_PROPERTY).split(":")[1];
-      kmsStunPort = "3478";
+    CreateContainerCmd createContainerCmd;
+
+    if (kmsDnat && seleniumDnat && RELAY.toString().toUpperCase().equals(kmsCandidateType)
+        && SRFLX.toString().toUpperCase().equals(seleniumCandidateType)) {
+      // Use Turn for KMS
+      String kmsTurnIp = getProperty(TEST_ICE_SERVER_URL_PROPERTY);
+      log.info("Turn Server {}", kmsTurnIp);
+      createContainerCmd =
+          dockerClient
+              .getClient()
+              .createContainerCmd(kmsImageName)
+              .withName(dockerContainerName)
+              .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
+                  "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
+                  "S3_HOSTNAME=" + s3Hostname, "KMS_TURN_URL=" + kmsTurnIp)
+              .withCmd("--gst-debug-no-color");
+    } else {
+      if (kmsDnat && seleniumDnat && RELAY.toString().toUpperCase().equals(seleniumCandidateType)
+          && SRFLX.toString().toUpperCase().equals(kmsCandidateType)) {
+        // Change kmsStunIp by turn values
+        kmsStunIp = getProperty(TEST_ICE_SERVER_URL_PROPERTY).split(":")[1];
+        kmsStunPort = "3478";
+      }
+
+      if (kmsStunIp == null) {
+        kmsStunIp = "";
+      }
+
+      if (kmsStunPort == null) {
+        kmsStunPort = "";
+      }
+
+      log.info("Stun Server {}:{}", kmsStunIp, kmsStunPort);
+
+      createContainerCmd =
+          dockerClient
+              .getClient()
+              .createContainerCmd(kmsImageName)
+              .withName(dockerContainerName)
+              .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
+                  "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
+                  "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
+                  "KMS_STUN_PORT=" + kmsStunPort).withCmd("--gst-debug-no-color");
     }
-
-    if (kmsStunIp == null) {
-      kmsStunIp = "";
-    }
-
-    if (kmsStunPort == null) {
-      kmsStunPort = "";
-    }
-
-    log.info("Stun Server {}:{}", kmsStunIp, kmsStunPort);
-
-    CreateContainerCmd createContainerCmd =
-        dockerClient
-        .getClient()
-        .createContainerCmd(kmsImageName)
-        .withName(dockerContainerName)
-        .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
-            "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
-            "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
-            "KMS_STUN_PORT=" + kmsStunPort).withCmd("--gst-debug-no-color");
 
     if (dockerClient.isRunningInContainer()) {
       createContainerCmd.withVolumesFrom(new VolumesFrom(dockerClient.getContainerId()));
