@@ -71,7 +71,7 @@ import org.kurento.test.config.TestScenario;
  * @since 6.3.1
  */
 
-public class IceIpv4RelayKmsDnatSeleniumDnatTest extends SimpleIceTest {
+public class IceIpv4BrowserRelayKmsDnatSeleniumDnatTest extends SimpleIceTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
@@ -79,49 +79,58 @@ public class IceIpv4RelayKmsDnatSeleniumDnatTest extends SimpleIceTest {
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatSendRcvAudioVideo() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatSendRcvAudioVideo()
+      throws InterruptedException {
     initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY);
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatSendRcvAudioOnly() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatSendRcvAudioOnly()
+      throws InterruptedException {
     initTestSendRecv(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY);
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatSendRcvVideoOnly() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatSendRcvVideoOnly()
+      throws InterruptedException {
     initTestSendRecv(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY);
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatSendOnlyAudioVideo() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatSendOnlyAudioVideo()
+      throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY);
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatSendOnlyAudioOnly() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatSendOnlyAudioOnly()
+      throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY);
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatSendOnlyVideoOnly() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatSendOnlyVideoOnly()
+      throws InterruptedException {
     initTestSendOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY);
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatRcvOnlyAudioVideo() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatRcvOnlyAudioVideo()
+      throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY,
         "/video/15sec/rgb.webm");
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatRcvOnlyAudioOnly() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatRcvOnlyAudioOnly()
+      throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY,
         "/audio/10sec/cinema.ogg");
   }
 
   @Test
-  public void testIceIpv4RelayKmsDnatSeleniumDnatRcvOnlyVideoOnly() throws InterruptedException {
+  public void testIceIpv4BrowserRelayKmsDnatSeleniumDnatRcvOnlyVideoOnly()
+      throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.RELAY,
         "/video/15sec/rgb.webm");
   }
