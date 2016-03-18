@@ -68,7 +68,7 @@ if [ -n "$GERRIT_PROJECT" ]; then
 fi
 
 # Add inconditional references
-REFS="$REFS $([-n "$GERRIT_PROJECT" ] && echo "$GERRIT_PROJECT=$GERRIT_REFERENCE") $GERRIT_CLONE_LIST"
+REFS="$REFS $([ -n "$GERRIT_PROJECT" ] && echo "$GERRIT_PROJECT=$GERRIT_REFERENCE") $GERRIT_CLONE_LIST"
 
 # Look for dependency references
 for REF in $REFS; do
