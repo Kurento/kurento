@@ -26,10 +26,6 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:tru
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-8
 
-# Selenium images
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:1.0.0
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-debug:1.0.0
-
 # dev-chef image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 
@@ -49,6 +45,8 @@ docker pull selenium/node-firefox-beta:$SELENIUM_VERSION
 docker pull selenium/node-firefox-beta-debug:$SELENIUM_VERSION
 
 # Selenium DNAT images
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:$SELENIUM_VERSION-dnat
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-debug:$SELENIUM_VERSION-dnat
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta-debug:$SELENIUM_VERSION-dnat
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-dev-debug:$SELENIUM_VERSION-dnat
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-beta-debug:$SELENIUM_VERSION-dnat
