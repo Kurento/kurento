@@ -36,12 +36,15 @@ else
       echo "Upload to aptly" >> $UPLOAD_FILE.aptly.msg
     else
       echo "DO NOT Upload to reprepro for private repo: $REPO" > $UPLOAD_FILE.reprepro.msg
-      reprepro_res=0
+      result=0
     fi
     BODY=$(cat $UPLOAD_FILE.reprepro.msg)
     #tsp -C
     # Upload aptly tu ubuntu in background because pararllel uploads are not possible.
     # Requires package task-spooler
+    pkg_name=$(dpkg --info $UPLOAD_FILE | grep "Package:" |awk '{print $2}')
+    purge_id=$(tsp aptly repo remove $repo $REPO-$DIST-$COMP $pkg_name)
+    tsp -w $purge_id
     add_id=$(tsp aptly repo add $REPO-$DIST-$COMP $UPLOAD_FILE)
     tsp -w $add_id
     BODY+=$(echo ' --- Aptly add package:')
