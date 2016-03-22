@@ -29,5 +29,5 @@ init (GstPlugin * plugin)
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     kmscrowddetector,
-    "Kurento plate detector",
+    "Kurento crowd detector",
     init, VERSION, GST_LICENSE_UNKNOWN, "Kurento", "http://kurento.com/")
