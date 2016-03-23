@@ -1788,7 +1788,7 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
   self->priv->srcs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
       g_object_unref);
 
-  self->priv->profile = KMS_RECORDING_PROFILE_NONE;
+  self->priv->profile = DEFAULT_RECORDING_PROFILE;
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
