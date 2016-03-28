@@ -310,7 +310,7 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       webrtc_sess, "stun-server-port", G_BINDING_DEFAULT);
   g_object_bind_property (self, "turn-url",
       webrtc_sess, "turn-url", G_BINDING_DEFAULT);
-  g_object_bind_property (self, "pem_certificate",
+  g_object_bind_property (self, "pem-certificate",
       webrtc_sess, "pem-certificate", G_BINDING_DEFAULT);
 
   g_object_set (webrtc_sess, "stun-server", self->priv->stun_server_ip,
