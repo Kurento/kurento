@@ -177,7 +177,6 @@ public class WebPage {
   private void activatePeerConnectionStats(String jsFunction, String peerConnectionId) {
 
     try {
-
       browser.executeScript("kurentoTest." + jsFunction + "('" + peerConnectionId + "');");
 
     } catch (WebDriverException we) {
@@ -186,7 +185,38 @@ public class WebPage {
       // If client is not ready to gather rtc statistics, we just log it
       // as warning (it is not an error itself)
       log.warn("Client does not support RTC statistics (function kurentoTest.{}() not defined)",
-          "activateLocalRtcStats");
+          jsFunction);
+    }
+  }
+
+  /**
+   *
+   * @param peerConnectionId
+   */
+  public void stopPeerConnectionInboundStats(String peerConnectionId) {
+    stopPeerConnectionStats("stopInboundRtcStats", peerConnectionId);
+  }
+
+  /**
+   *
+   * @param peerConnectionId
+   */
+  public void stopPeerConnectionOutboundStats(String peerConnectionId) {
+    stopPeerConnectionStats("stopOutboundRtcStats", peerConnectionId);
+  }
+
+  private void stopPeerConnectionStats(String jsFunction, String peerConnectionId) {
+
+    try {
+      log.info("kurentoTest." + jsFunction + "('" + peerConnectionId + "');");
+      browser.executeScript("kurentoTest." + jsFunction + "('" + peerConnectionId + "');");
+
+    } catch (WebDriverException we) {
+      we.printStackTrace();
+
+      // If client is not ready to gather rtc statistics, we just log it
+      // as warning (it is not an error itself)
+      log.warn("Client does not support RTC statistics (function kurentoTest.{}() not defined)");
     }
   }
 

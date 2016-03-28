@@ -36,6 +36,7 @@ function KurentoTest() {
 	// RTC statistics parameters
 	this.rtcStats = {};
 	this.rtcStatsRate = 100; // milliseconds
+	this.rtcStatsIntervalId = {};
 
 	// Initial time
 	this.initTime = new Date();
@@ -162,7 +163,7 @@ KurentoTest.prototype.activateRtcStats = function(peerConnection, streamFunction
 	if (arguments.length) {
 		rate = arguments[0];
 	}
-	setInterval(this.updateRtcStats, rate, eval(peerConnection), streamFunction, suffix);
+	kurentoTest.rtcStatsIntervalId[peerConnection + streamFunction + suffix] = setInterval(this.updateRtcStats, rate, eval(peerConnection), streamFunction, suffix);
 }
 
 KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction, suffix) {
@@ -183,6 +184,20 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction, 
 
 	updateStats(peerConnection, videoTrack, "video_peerconnection" + suffix);
 	updateStats(peerConnection, audioTrack, "audio_peerconnection"  + suffix);
+}
+
+KurentoTest.prototype.stopOutboundRtcStats = function(peerConnection) {
+	this.clearRtcStatsInterval(peerConnection, "getLocalStreams", "_outbound_");
+}
+
+
+KurentoTest.prototype.stopInboundRtcStats = function(peerConnection) {
+	this.clearRtcStatsInterval(peerConnection, "getRemoteStreams", "_inbound_");
+}
+
+KurentoTest.prototype.clearRtcStatsInterval = function(peerConnection, streamFunction, suffix) {
+	clearInterval(kurentoTest.rtcStatsIntervalId[peerConnection + streamFunction + suffix]);
+	this.rtcStats = {};
 }
 
 /*
