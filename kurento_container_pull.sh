@@ -30,19 +30,19 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wil
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 
 # Selenium images
-[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.48.2"
+[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.47.1"
 echo "Pulling images for selenium version $SELENIUM_VERSION"
 docker pull selenium/hub:$SELENIUM_VERSION
-docker pull selenium/node-chrome:$SELENIUM_VERSION
-docker pull selenium/node-firefox:$SELENIUM_VERSION
-docker pull selenium/node-chrome-debug:$SELENIUM_VERSION
-docker pull selenium/node-firefox-debug:$SELENIUM_VERSION
+docker pull kurento/node-chrome:$SELENIUM_VERSION
+docker pull kurento/node-firefox:$SELENIUM_VERSION
+docker pull kurento/node-chrome-debug:$SELENIUM_VERSION
+docker pull kurento/node-firefox-debug:$SELENIUM_VERSION
 docker pull kurento/node-chrome-beta:$SELENIUM_VERSION
 docker pull kurento/node-chrome-beta-debug:$SELENIUM_VERSION
 docker pull kurento/node-chrome-dev:$SELENIUM_VERSION
 docker pull kurento/node-chrome-dev-debug:$SELENIUM_VERSION
-docker pull selenium/node-firefox-beta:$SELENIUM_VERSION
-docker pull selenium/node-firefox-beta-debug:$SELENIUM_VERSION
+docker pull kurento/node-firefox-beta:$SELENIUM_VERSION
+docker pull kurento/node-firefox-beta-debug:$SELENIUM_VERSION
 
 # Selenium DNAT images
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:$SELENIUM_VERSION-dnat
