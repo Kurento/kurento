@@ -45,7 +45,6 @@
     "kurento-jsonrpc": "Kurento/kurento-jsonrpc-js#master",
     "promisecallback": "0.0.4",
     "reconnect-ws": "KurentoForks/reconnect-ws#0.0.1",
-    "dockerode":"2.2.6",
     "minimist": "^1.1.1"
   },
   "devDependencies": {
@@ -73,6 +72,7 @@
     "qunitjs": "1.18.0",
     "selenium-webdriver": "2.47.0",
     "xml2js": "^0.4.9",
-    "wock": "^0.1.1"
+    "wock": "^0.1.1",
+    "dockerode":"2.2.6"
   }
 }
