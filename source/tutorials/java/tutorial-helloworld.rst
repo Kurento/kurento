@@ -31,8 +31,8 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
@@ -68,13 +68,13 @@ video tags: one showing the local stream (as captured by the device webcam) and
 the other showing the remote stream sent by the media server back to the client.
 
 The logic of the application is quite simple: the local stream is sent to the
-Kurento Media Server, which sends it back to the client without
-modifications. To implement this behavior, we need to create a
-`Media Pipeline`:term: composed by a single `Media Element`:term:, i.e. a
-**WebRtcEndpoint**, which holds the capability of exchanging full-duplex
-(bidirectional) WebRTC media flows. This media element is connected to itself
-so that the media it receives (from browser) is sent back (to browser). This
-media pipeline is illustrated in the following picture:
+Kurento Media Server, which sends it back to the client without modifications.
+To implement this behavior, we need to create a `Media Pipeline`:term: composed
+by a single `Media Element`:term:, i.e. a **WebRtcEndpoint**, which holds the
+capability of exchanging full-duplex (bidirectional) WebRTC media flows. This
+media element is connected to itself so that the media it receives (from
+browser) is sent back (to browser). This media pipeline is illustrated in the
+following picture:
 
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
@@ -115,8 +115,8 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
@@ -323,8 +323,8 @@ The ``start`` method performs the following actions:
    *WebRtcEndpoint* for receiving the WebRTC stream and sending it back to the
    client.
 
-#. **Store user session**: In order to release the resources in the
-   Kurento Media Server, we store the user session (i.e. *Media Pipeline* and
+#. **Store user session**: In order to release the resources in the Kurento
+   Media Server, we store the user session (i.e. *Media Pipeline* and
    *WebRtcEndpoint*) to be able to perform a release process when the stop
    method is called.
 

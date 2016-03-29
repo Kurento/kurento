@@ -2,8 +2,9 @@
 Java - WebRTC magic mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application extends the :doc:`Hello World Tutorial<./tutorial-helloworld>`,
-adding media processing to the basic `WebRTC`:term: loopback.
+This web application extends the
+:doc:`Hello World Tutorial<./tutorial-helloworld>`, adding media processing to
+the basic `WebRTC`:term: loopback.
 
 .. note::
 
@@ -79,8 +80,8 @@ composed by the following `Media Element`:term: s:
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
-At the client-side, the logic is implemented in **JavaScript**.
-At the server-side, we use a Spring-Boot based server application consuming the
+At the client-side, the logic is implemented in **JavaScript**. At the
+server-side, we use a Spring-Boot based server application consuming the
 **Kurento Java Client** API, to control **Kurento Media Server** capabilities.
 All in all, the high level architecture of this demo is three-tier. To
 communicate these entities, two WebSockets are used. First, a WebSocket is
@@ -117,8 +118,8 @@ Application Server Side
 =======================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
@@ -194,6 +195,7 @@ location of your Kurento Media Server instance there.
          new SpringApplication(MagicMirrorApp.class).run(args);
       }
    }
+
 
 This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
@@ -330,6 +332,17 @@ answer.
          sendError(session, t.getMessage());
       }
    }
+
+.. note::
+
+   Notice the hat URL is provided by the application server and consumed by the KMS. This logic is assuming
+   that the application server is hosted in local (*localhost*), and by the default the hat URL is
+   https://localhost:8443/img/mario-wings.png. If your application server is hosted in a different host, it
+   can be easily changed by means of the configuration parameter ``app.server.url``, for example:
+
+   .. sourcecode:: bash
+
+      mvn compile exec:java -Dapp.server.url=https://app_server_host:app_server_port
 
 The ``sendError`` method is quite simple: it sends an ``error`` message to the
 client when an exception is caught in the server-side.

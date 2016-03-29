@@ -63,10 +63,10 @@ The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the local video camera stream (the caller stream, the
 smaller video in the picture) and other for the remote peer in the call (the
 callee stream, the bigger video in the picture). If two users, A and B, are
-using the application, the media flow goes this way: The video camera
-stream of user A is sent to the Kurento Media Server and sent again to the user
-B. On the other hand, user B sends its video camera stream to Kurento and then
-it is sent to user A.
+using the application, the media flow goes this way: The video camera stream of
+user A is sent to the Kurento Media Server and sent again to the user B. On the
+other hand, user B sends its video camera stream to Kurento and then it is sent
+to user A.
 
 This application is implemented by means of two `Media Pipeline`:term: 's.
 First, the rich real-time WebRTC communication is performed two
@@ -148,8 +148,8 @@ how to run the demo. The complete source code of this demo can be found in
 Application Server Logic
 ========================
 
-As in the :doc:`Magic Mirror tutorial</tutorials/java/tutorial-magicmirror>`, this demo
-has been developed using **Java** and `Spring Boot`:term:.
+As in the :doc:`Magic Mirror tutorial</tutorials/java/tutorial-magicmirror>`,
+this demo has been developed using **Java** and `Spring Boot`:term:.
 
 .. note::
 
@@ -227,8 +227,8 @@ Bean.
    }
 
 This web application follows a *Single Page Application* architecture
-(`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server by
-means of requests and responses. Specifically, the main app class implements
+(`SPA`:term:), and uses a `WebSocket`:term: to communicate client with server
+by means of requests and responses. Specifically, the main app class implements
 the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
 process WebSocket requests in the path ``/call``.
 
@@ -413,7 +413,8 @@ the callee. Basically, the server creates a ``CallMediaPipeline`` object, to
 encapsulate the media pipeline creation and management. Then, this object is
 used to negotiate media interchange with user's browsers.
 
-As explained in the :doc:`Magic Mirror tutorial</tutorials/java/tutorial-magicmirror>`, the
+As explained in the
+:doc:`Magic Mirror tutorial</tutorials/java/tutorial-magicmirror>`, the
 negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento
 Server is made by means of `SDP`:term: generation at the client (offer) and SDP
 generation at the server (answer). The SDP answers are generated with the
@@ -695,6 +696,18 @@ methods delegate to WebRtc endpoints to create the appropriate answer.
          return webRtcCallee;
       }
    }
+
+.. note::
+
+   Notice the hat URLs are provided by the application server and consumed by the KMS. This logic is assuming
+   that the application server is hosted in local (*localhost*), and by the default the hat URLs are
+   https://localhost:8443/img/mario-wings.png and https://localhost:8443/img/Hat.png. If your application server
+   is hosted in a different host, it can be easily changed by means of the configuration parameter ``app.server.url``,
+   for example:
+
+   .. sourcecode:: bash
+
+      mvn compile exec:java -Dapp.server.url=https://app_server_host:app_server_port
 
 The second media pipeline consists on a ``PlayerEndpoint`` connected to a
 ``WebRtcEndpoint``. The ``PlayerEndpoint`` reads the previously recorded media
@@ -984,8 +997,8 @@ include the following properties in your pom:
    <maven.compiler.source>1.7</maven.compiler.source>
 
 Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, *adapter.js*, and
-*draggabilly*) are handled with :term:`Bower`. These dependencies are defined in
-the file
+*draggabilly*) are handled with :term:`Bower`. These dependencies are defined
+in the file
 `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/bower.json>`_.
 The command ``bower install`` is automatically called from Maven. Thus, Bower
 should be present in your system. It can be installed in an Ubuntu machine as
