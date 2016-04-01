@@ -27,8 +27,8 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
@@ -45,13 +45,15 @@ WebRTC capable browser (Chrome, Firefox).
 Understanding this example
 ==========================
 
-In the first part of this tutorial, the local stream is sent to the media server,
-which in turn sends it back to the client, while recording it at the same time. 
-In order to implement this behavior, we need to create a `Media Pipeline`:term: consisting on a **WebRtcEndpoint** and a **RecorderEnpoint**.
+In the first part of this tutorial, the local stream is sent to the media
+server, which in turn sends it back to the client, while recording it at the
+same time. In order to implement this behavior, we need to create a
+`Media Pipeline`:term: consisting on a **WebRtcEndpoint** and a
+**RecorderEnpoint**.
 
 The second part of this demo shows how to play recorded media. To achieve this,
 we need to create a `Media Pipeline`:term: composed by a **WebRtcEndpoint** and
-a **PlayerEndpoint**. The *uri* property of the player is the uri of the 
+a **PlayerEndpoint**. The *uri* property of the player is the uri of the
 recorded file.
 
 This is a web application, and therefore it follows a client-server
@@ -75,8 +77,8 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
@@ -116,7 +118,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
    
      @Override
      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-       registry.addHandler(handler(), "/helloworld");
+       registry.addHandler(handler(), "/recording");
      }
    
      @Bean
@@ -134,7 +136,7 @@ This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
 application server by means of requests and responses. Specifically, the main
 app class implements the interface ``WebSocketConfigurer`` to register a
-``WebSocketHanlder`` to process WebSocket requests in the path ``/helloworld``.
+``WebSocketHanlder`` to process WebSocket requests in the path ``/recording``.
 
 `HelloWorldRecHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world-recording/src/main/java/org/kurento/tutorial/helloworld/HelloWorldRecHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
@@ -144,8 +146,9 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kinds of incoming messages to
-the *Server* : ``start``, ``stop`` , ``play`` and ``onIceCandidates``. These messages are
-treated in the *switch* clause, taking the proper steps in each case.
+the *Server* : ``start``, ``stop`` , ``play`` and ``onIceCandidates``. These
+messages are treated in the *switch* clause, taking the proper steps in each
+case.
 
 .. sourcecode:: java
 
@@ -287,8 +290,8 @@ answer.
      }
 
 The ``play`` method, creates a Media Pipeline with the Media Elements
-(``WebRtcEndpoint`` and ``PlayerEndpoint``) and make the connections among them.
-It will then send the recorded media to the client.
+(``WebRtcEndpoint`` and ``PlayerEndpoint``) and make the connections among
+them. It will then send the recorded media to the client.
 
 .. sourcecode:: java
 
@@ -393,17 +396,17 @@ These libraries are linked in the
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world-recording/src/main/resources/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
-``ws``) in the path ``/helloworld``. Then, the ``onmessage`` listener of the
+``ws``) in the path ``/recording``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are three incoming messages to client: ``startResponse``, ``playResponse``,
-``playEnd``,``error``, and ``iceCandidate``. Convenient actions are taken to implement each
-step in the communication. For example, in functions ``start`` the function
-``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
-WebRTC communication.
+Notice that there are three incoming messages to client: ``startResponse``,
+``playResponse``, ``playEnd``,``error``, and ``iceCandidate``. Convenient
+actions are taken to implement each step in the communication. For example, in
+functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
+*kurento-utils.js* is used to start a WebRTC communication.
 
 .. sourcecode:: javascript
 
-   var ws = new WebSocket('wss://' + location.host + '/helloworld');
+   var ws = new WebSocket('wss://' + location.host + '/recording');
    
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
