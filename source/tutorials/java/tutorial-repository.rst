@@ -3,8 +3,8 @@ Java - Repository
 %%%%%%%%%%%%%%%%%
 
 This web application extends :doc:`Hello World <./tutorial-helloworld>` adding
-recording capabilities, including storing metadata that will be stored along
-with the media recorded.
+recording capabilities by means of the
+`Kurento Repository <http://doc-kurento-repository.readthedocs.org/>`_.
 
 .. note::
 
@@ -18,6 +18,15 @@ You need to have installed the Kurento Media Server before running this example.
 Read the :doc:`installation guide <../../installation_guide>` for further
 information.
 
+..
+   TODO: As soon as doc-kurento-repository is released, the following URL should be
+   changed to the stable version (not /en/latest)
+
+In addition, you also need the **kurento-repository-server**. This component is
+in charge of the storage and retrieval of the media. Please visit the
+`Kurento Repository Server installation guide <http://doc-kurento-repository.readthedocs.org/en/latest/repository_server.html>`_
+for further details.
+
 To launch the application, you need to clone the GitHub project where this demo
 is hosted, and then run the main class:
 
@@ -28,26 +37,30 @@ is hosted, and then run the main class:
     git checkout |TUTORIAL_JAVA_VERSION|
     mvn compile exec:java
 
-Access the application connecting to the URL https://localhost:8443/ in a
-WebRTC capable browser (Chrome, Firefox).
+Access the application connecting to the URL https://localhost:8443/ in a WebRTC
+capable browser (Chrome, Firefox).
 
 .. note::
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
-   the following command
+   the flag ``kms.url`` to the JVM executing the demo. In addition, by default this demo is also
+   suppossing that the Kurento Repository is up and running in the localhost. It can be changed by
+   means of the property ``repository.uri``. All in all, and due to the fact that we can use Maven
+   to run the tutorial, you should execute the following command:
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
+      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento \
+          -Drepository.uri=http://repository_host:repository_url
 
 
 Understanding this example
 ==========================
 
 On top of the recording capabilities from the base tutorial, this application
-will create a repository element to store metadata about the recorded file.
+creates a repository element to store media in that repository. Additionally,
+metadata about the recorded file can be also stored in the repository.
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
@@ -70,8 +83,8 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
@@ -99,10 +112,10 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @EnableWebSocket
    public class HelloWorldRecApp implements WebSocketConfigurer {
    
-     static final String DEFAULT_REPOSITORY_SERVER_URI = "http://localhost:7676";
+     protected static final String DEFAULT_REPOSITORY_SERVER_URI = "http://localhost:7676";
    
-     static final String REPOSITORY_SERVER_URI =
-         System.getProperty("repository.uri", DEFAULT_REPOSITORY_SERVER_URI);
+     protected static final String REPOSITORY_SERVER_URI =
+       System.getProperty("repository.uri", DEFAULT_REPOSITORY_SERVER_URI);
    
      @Bean
      public HelloWorldRecHandler handler() {
@@ -116,15 +129,13 @@ with Kurento Media Server and controlling its multimedia capabilities.
    
      @Override
      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-       registry.addHandler(handler(), "/helloworld");
+       registry.addHandler(handler(), "/repository");
      }
    
      @Bean
      public RepositoryClient repositoryServiceProvider() {
-       if (REPOSITORY_SERVER_URI.startsWith("file://")) {
-         return null;
-       }
-       return RepositoryClientProvider.create(REPOSITORY_SERVER_URI);
+       return REPOSITORY_SERVER_URI.startsWith("file://") ? null
+         : RepositoryClientProvider.create(REPOSITORY_SERVER_URI);
      }
    
      @Bean
@@ -141,7 +152,7 @@ This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
 application server by means of requests and responses. Specifically, the main
 app class implements the interface ``WebSocketConfigurer`` to register a
-``WebSocketHanlder`` to process WebSocket requests in the path ``/helloworld``.
+``WebSocketHanlder`` to process WebSocket requests in the path ``/repository``.
 
 `HelloWorldRecHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world-repository/src/main/java/org/kurento/tutorial/helloworld/HelloWorldRecHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
@@ -151,8 +162,9 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kinds of incoming messages to
-the *Server* : ``start``, ``stop`` , ``play`` and ``onIceCandidates``. These messages are
-treated in the *switch* clause, taking the proper steps in each case.
+the *Server* : ``start``, ``stop``, ``stopPlay``, ``play`` and
+``onIceCandidates``. These messages are treated in the *switch* clause, taking
+the proper steps in each case.
 
 .. sourcecode:: java
 
@@ -232,16 +244,16 @@ treated in the *switch* clause, taking the proper steps in each case.
      }
    }
 
-In the following snippet, we can see the ``start`` method. If a repository REST 
-client or interface has been created, it will obtain a RepositoryItem from the 
-remote service. This item contains an ID and a recording URI that will be used 
+In the following snippet, we can see the ``start`` method. If a repository REST
+client or interface has been created, it will obtain a RepositoryItem from the
+remote service. This item contains an ID and a recording URI that will be used
 by the Kurento Media Server. The ID will be used after the recording ends in
 order to manage the stored media. If the client doesn't exist, the recording
 will be performed to a local URI, on the same machine as the KMS. This method
-also deals with the ICE candidates gathering, creates a Media Pipeline,
-creates the Media Elements (``WebRtcEndpoint`` and ``RecorderEndpoint``) 
-and makes the connections between them. A ``startResponse`` message is sent
-back to the client with the SDP answer.
+also deals with the ICE candidates gathering, creates a Media Pipeline, creates
+the Media Elements (``WebRtcEndpoint`` and ``RecorderEndpoint``) and makes the
+connections between them. A ``startResponse`` message is sent back to the
+client with the SDP answer.
 
 .. sourcecode:: java
 
@@ -303,14 +315,15 @@ back to the client with the SDP answer.
      }
 
 The ``play`` method, creates a Media Pipeline with the Media Elements
-(``WebRtcEndpoint`` and ``PlayerEndpoint``) and make the connections between them.
-It will then send the recorded media to the client. The media can be served from 
-the repository or directly from the disk. If the repository interface exists, it 
-will try to connect to the remote service in order to obtain an URI from which
-the KMS will read the media streams. The inner workings of the repository restrict
-reading an item before it has been closed (after the upload finished). This will 
-happen only when a certain number of seconds elapse after the last byte of media 
-is uploaded by the KMS (safe-guard for gaps in the network communications).
+(``WebRtcEndpoint`` and ``PlayerEndpoint``) and make the connections between
+them. It will then send the recorded media to the client. The media can be
+served from the repository or directly from the disk. If the repository
+interface exists, it will try to connect to the remote service in order to
+obtain an URI from which the KMS will read the media streams. The inner
+workings of the repository restrict reading an item before it has been closed
+(after the upload finished). This will happen only when a certain number of
+seconds elapse after the last byte of media is uploaded by the KMS (safe-guard
+for gaps in the network communications).
 
 .. sourcecode:: java
 
@@ -433,17 +446,17 @@ These libraries are linked in the
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world-repository/src/main/resources/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
-``ws``) in the path ``/helloworld``. Then, the ``onmessage`` listener of the
+``ws``) in the path ``/repository``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are three incoming messages to client: ``startResponse``,
-``playResponse``, ``playEnd``,``error``, and ``iceCandidate``. Convenient actions 
-are taken to implement each step in the communication. For example, in functions 
-``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js*
-is used to start a WebRTC communication.
+``playResponse``, ``playEnd``,``error``, and ``iceCandidate``. Convenient
+actions are taken to implement each step in the communication. For example, in
+functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
+*kurento-utils.js* is used to start a WebRTC communication.
 
 .. sourcecode:: javascript
 
-   var ws = new WebSocket('wss://' + location.host + '/helloworld');
+   var ws = new WebSocket('wss://' + location.host + '/repository');
    
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
