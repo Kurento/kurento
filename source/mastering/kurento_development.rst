@@ -54,6 +54,7 @@ To install packages from unstable repository you need to execute::
     wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
     sudo apt-get update
     sudo apt-get install kurento-media-server-6.0
+    sudo apt-get dist-upgrade
 
 As you can imagine, it is not possible to have installed at the same time latest
 stable version and latest development version of Kurento Media Server.
