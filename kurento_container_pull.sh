@@ -3,8 +3,12 @@
 # Internal (private) images
 
 # dev-integration images (for Java & JS)
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-7-node-0.12
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-0.12
+NODE_VERSIONS="0.12 4.x 5.x"
+for NODE_VERSION in $NODE_VERSIONS
+do
+	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-7-node-$NODE_VERSION
+	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-$NODE_VERSION
+done
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:1.0.0
 
 # kurento-media-server development version with core dump & public modules
