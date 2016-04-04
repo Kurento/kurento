@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Internal (private) images
+[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.47.1"
 
 # dev-integration images (for Java & JS)
 NODE_VERSIONS="0.12 4.x 5.x"
@@ -8,8 +9,8 @@ for NODE_VERSION in $NODE_VERSIONS
 do
 	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-7-node-$NODE_VERSION
 	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-$NODE_VERSION
+	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-$NODE_VERSION
 done
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:1.0.0
 
 # kurento-media-server development version with core dump & public modules
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
@@ -34,7 +35,6 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wil
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 
 # Selenium images
-[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.47.1"
 echo "Pulling images for selenium version $SELENIUM_VERSION"
 docker pull selenium/hub:$SELENIUM_VERSION
 docker pull kurento/node-chrome:$SELENIUM_VERSION
