@@ -205,6 +205,11 @@ public class KurentoTest {
         + suffix;
   }
 
+  public static String getDefaultOutputTestPath() {
+    return getDefaultOutputFolder().getAbsolutePath() + File.separator + getSimpleTestName()
+        + File.separator;
+  }
+
   public static String getRecordDefaultPath() {
     return getProperty(TEST_RECORD_DEFAULTPATH_PROP);
   }

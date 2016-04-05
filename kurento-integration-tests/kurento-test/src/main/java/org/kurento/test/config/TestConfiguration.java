@@ -187,6 +187,8 @@ public class TestConfiguration {
   public static final boolean TEST_KMS_DNAT_DEFAULT = false;
   public static final String TEST_KMS_TRANSPORT = "test.kms.transport";
 
+  public static final String KMS_GENERATE_RTP_PTS_STATS_PROPERTY = "kms.generate.rtp.pts.stats";
+
   // S3 properties
   public static final String KMS_DOCKER_S3_BUCKET_NAME = "s3.bucket.name";
   public static final String KMS_DOCKER_S3_ACCESS_KEY_ID = "s3.access.key.id";

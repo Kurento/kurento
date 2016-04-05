@@ -32,6 +32,7 @@ import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_ACCESS_KEY
 import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_BUCKET_NAME;
 import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_HOSTNAME;
 import static org.kurento.test.config.TestConfiguration.KMS_DOCKER_S3_SECRET_ACCESS_KEY;
+import static org.kurento.test.config.TestConfiguration.KMS_GENERATE_RTP_PTS_STATS_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.KMS_GST_PLUGINS_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.KMS_LOGIN_PROP;
 import static org.kurento.test.config.TestConfiguration.KMS_LOG_PATH_DEFAULT;
@@ -508,7 +509,8 @@ public class KmsService extends TestService {
               .withName(dockerContainerName)
               .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
                   "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
-                  "S3_HOSTNAME=" + s3Hostname, "KMS_TURN_URL=" + kmsTurnIp)
+                  "S3_HOSTNAME=" + s3Hostname, "KMS_TURN_URL=" + kmsTurnIp,
+                  "KURENTO_GENERATE_RTP_PTS_STATS=" + getKurentoGenerateRtpPtsStats())
               .withCmd("--gst-debug-no-color");
     } else {
       if (kmsDnat && seleniumDnat && RELAY.toString().toUpperCase().equals(seleniumCandidateType)
@@ -536,7 +538,9 @@ public class KmsService extends TestService {
               .withEnv("GST_DEBUG=" + getDebugOptions(), "S3_ACCESS_BUCKET_NAME=" + s3BucketName,
                   "S3_ACCESS_KEY_ID=" + s3AccessKeyId, "S3_SECRET_ACCESS_KEY=" + s3SecretAccessKey,
                   "S3_HOSTNAME=" + s3Hostname, "KMS_STUN_IP=" + kmsStunIp,
-                  "KMS_STUN_PORT=" + kmsStunPort).withCmd("--gst-debug-no-color");
+                  "KMS_STUN_PORT=" + kmsStunPort,
+                  "KURENTO_GENERATE_RTP_PTS_STATS=" + getKurentoGenerateRtpPtsStats())
+              .withCmd("--gst-debug-no-color");
     }
 
     if (dockerClient.isRunningInContainer()) {
@@ -807,6 +811,13 @@ public class KmsService extends TestService {
 
   private String getDebugOptions() {
     return getProperty(KMS_SERVER_DEBUG_PROP, KMS_SERVER_DEBUG_DEFAULT);
+  }
+
+  private String getKurentoGenerateRtpPtsStats() {
+    String path =
+        getProperty(KMS_GENERATE_RTP_PTS_STATS_PROPERTY, KurentoTest.getDefaultOutputTestPath());
+    log.info("{} = {}", KMS_GENERATE_RTP_PTS_STATS_PROPERTY, path);
+    return path;
   }
 
   public KurentoClient getKurentoClient() {
