@@ -70,6 +70,11 @@ kms_webrtc_transport_create (KmsIceBaseAgent * agent, char *stream_id,
     return NULL;
   }
 
+  if (pem_certificate != NULL) {
+    g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "pem", pem_certificate,
+        NULL);
+  }
+
   str =
       g_strdup_printf ("%s-%s-%s-%" G_GUINT32_FORMAT,
       GST_OBJECT_NAME (tr->sink->dtlssrtpenc),
@@ -77,11 +82,6 @@ kms_webrtc_transport_create (KmsIceBaseAgent * agent, char *stream_id,
   g_object_set (G_OBJECT (tr->sink->dtlssrtpenc), "connection-id", str, NULL);
   g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "connection-id", str, NULL);
   g_free (str);
-
-  if (pem_certificate != NULL) {
-    g_object_set (G_OBJECT (tr->src->dtlssrtpdec), "pem", pem_certificate,
-        NULL);
-  }
 
   kms_webrtc_transport_src_configure (tr->src, agent, stream_id, component_id);
   kms_webrtc_transport_sink_configure (tr->sink, agent, stream_id,
