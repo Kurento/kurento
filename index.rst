@@ -1,1 +1,0 @@
-.. include:: doc/README.rst
