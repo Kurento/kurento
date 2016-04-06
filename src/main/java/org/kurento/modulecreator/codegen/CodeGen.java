@@ -29,8 +29,9 @@ import org.kurento.modulecreator.codegen.function.JsNamespace;
 import org.kurento.modulecreator.codegen.function.JsonCppTypeData;
 import org.kurento.modulecreator.codegen.function.OrganizeDependencies;
 import org.kurento.modulecreator.codegen.function.PackageToFolder;
-import org.kurento.modulecreator.codegen.function.TypeDependencies;
 import org.kurento.modulecreator.codegen.function.SphinxLinks;
+import org.kurento.modulecreator.codegen.function.TypeDependencies;
+import org.kurento.modulecreator.codegen.function.TypeHierarchy;
 import org.kurento.modulecreator.definition.ModuleDefinition;
 import org.kurento.modulecreator.definition.Type;
 import org.xml.sax.SAXException;
@@ -149,6 +150,7 @@ public class CodeGen {
     root.put("organizeDependencies", new OrganizeDependencies());
     root.put("initializePropertiesValues", new InitializePropertiesValues());
     root.put("generateKurentoClientJsVersion", new GenerateKurentoClientJsVersion());
+    root.put("typeHierarchy", new TypeHierarchy());
 
     root.put("module", module);
     if (this.config != null) {

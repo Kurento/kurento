@@ -73,6 +73,8 @@ public:
 </#if>
   }
 
+  virtual const std::vector<std::string>& getHierarchy () const;
+
   virtual void Serialize (JsonSerializer &serializer) = 0;
 <#list remoteClass.properties as property>
 
