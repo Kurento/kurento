@@ -61,18 +61,8 @@ public:
     <#lt><@methodHeader method />
   </#list>
 
-  virtual std::string getType () const {
-    return "${remoteClass.name}";
-  }
-
-  virtual std::string getModule () const {
-<#if module.name == "core" || module.name == "elements" || module.name == "filters">
-    return "kurento";
-<#else>
-    return "${module.name}";
-</#if>
-  }
-
+  virtual const std::string& getType () const;
+  virtual const std::string& getModule () const;
   virtual const std::vector<std::string>& getHierarchy () const;
 
   virtual void Serialize (JsonSerializer &serializer) = 0;

@@ -27,6 +27,20 @@ ${remoteClass.name}::getHierarchy () const
   return hierarchy${remoteClass.name};
 }
 
+const std::string&
+${remoteClass.name}::getType () const {
+  static std::string typeName = "${remoteClass.name}";
+
+  return typeName;
+}
+
+const std::string&
+${remoteClass.name}::getModule () const {
+  static std::string moduleName =  <#if module.name == "core" || module.name == "elements" || module.name == "filters">"kurento"<#else>"${module.name}"</#if>;
+
+  return moduleName;
+}
+
 <#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
 } /* ${namespace} */
 </#list>
