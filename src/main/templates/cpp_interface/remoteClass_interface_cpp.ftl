@@ -35,6 +35,13 @@ ${remoteClass.name}::getType () const {
 }
 
 const std::string&
+${remoteClass.name}::getQualifiedType () const {
+  static std::string qualifiedTypeName = getModule() + "." + getType();
+
+  return qualifiedTypeName;
+}
+
+const std::string&
 ${remoteClass.name}::getModule () const {
   static std::string moduleName =  <#if module.name == "core" || module.name == "elements" || module.name == "filters">"kurento"<#else>"${module.name}"</#if>;
 

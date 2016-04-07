@@ -62,6 +62,7 @@ public:
   </#list>
 
   virtual const std::string& getType () const;
+  virtual const std::string& getQualifiedType () const;
   virtual const std::string& getModule () const;
   virtual const std::vector<std::string>& getHierarchy () const;
 
