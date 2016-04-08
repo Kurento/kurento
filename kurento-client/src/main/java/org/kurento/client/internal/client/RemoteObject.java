@@ -34,7 +34,7 @@ public class RemoteObject {
     NOT_COMMITED, ROLLBACK, CREATED
   }
 
-  private static Logger LOG = LoggerFactory.getLogger(RemoteObject.class);
+  private static Logger log = LoggerFactory.getLogger(RemoteObject.class);
 
   private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
@@ -312,13 +312,24 @@ public class RemoteObject {
     Collection<RemoteObjectEventListener> typeListeners;
     synchronized (this.listeners) {
       typeListeners = new ArrayList<>(this.listeners.get(type));
+      log.info("Listeners found in object {}:{} for event {}: {}", super.hashCode(),
+          this.getObjectRef(), type, typeListeners);
     }
 
-    for (RemoteObjectEventListener eventListener : typeListeners) {
-      try {
-        eventListener.onEvent(type, data);
-      } catch (Exception e) {
-        LOG.error("Exception executing event listener", e);
+    if (typeListeners.isEmpty()) {
+
+      log.warn(
+          "Received event with data {} in object {} but there is no listener registered for it",
+          data, this.getObjectRef());
+
+    } else {
+
+      for (RemoteObjectEventListener eventListener : typeListeners) {
+        try {
+          eventListener.onEvent(type, data);
+        } catch (Exception e) {
+          log.error("Exception executing event listener", e);
+        }
       }
     }
   }
