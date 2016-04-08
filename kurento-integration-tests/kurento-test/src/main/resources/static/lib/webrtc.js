@@ -21,6 +21,8 @@ var videoStream = null;
 var audioStream = null;
 var iceCandidates = [];
 var iceServers;
+var peerConnection;
+var channel;
 var defaultVideoConstraints = {
 	width : {
 		max : 640
@@ -100,6 +102,32 @@ function setCustomAudio(audioUrl) {
 	audioStream = mixedOutput.stream;
 }
 
+function useDataChannels() {
+	var servers = null;
+	var configuration = null;
+	var dataConstraints = null;
+	peerConnection = new RTCPeerConnection(servers, configuration);
+	channel = peerConnection.createDataChannel("dataChannel", dataConstraints);
+
+    channel.onopen = onSendChannelStateChange;
+    channel.onclose = onSendChannelStateChange;
+    channel.onmessage = onMessage;
+}
+
+function onSendChannelStateChange() {
+	document.getElementById("datachannel-state").value = channel.readyState;
+}
+
+function onMessage(event) {
+	document.getElementById("datachannel-received").value = event["data"];
+}
+
+function sendDataByChannel(message){
+	if (channel) {
+		channel.send(message);
+	}
+}
+
 function onIceCandidate(candidate) {
 	console.log('Local candidate' + JSON.stringify(candidate));
 	iceCandidates.push(JSON.stringify(candidate));
@@ -120,6 +148,10 @@ function startSendRecv() {
 		options.configuration = {
 			iceServers : iceServers
 		};
+	}
+
+	if (peerConnection) {
+		options.peerConnection = peerConnection;
 	}
 	console.log("Options:" + JSON.stringify(options));
 
@@ -147,6 +179,10 @@ function startSendOnly() {
 			iceServers : iceServers
 		};
 	}
+
+	if (peerConnection) {
+		options.peerConnection = peerConnection;
+	}
 	console.log("Options:" + JSON.stringify(options));
 
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
@@ -173,6 +209,10 @@ function startRecvOnly() {
 		options.configuration = {
 			iceServers : iceServers
 		};
+	}
+
+	if (peerConnection) {
+		options.peerConnection = peerConnection;
 	}
 	console.log("Options:" + JSON.stringify(options));
 

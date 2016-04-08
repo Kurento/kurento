@@ -128,6 +128,14 @@ KurentoTest.prototype.getLatency = function() {
 	return out;
 }
 
+KurentoTest.prototype.getDataChannelState = function() {
+	return document.getElementById("datachannel-state").value;
+}
+
+KurentoTest.prototype.getDataChannelMessage = function() {
+	return document.getElementById("datachannel-received").value;
+}
+
 KurentoTest.prototype.colorChanged = function(expectedColor, realColor) {
 	if (expectedColor && realColor) {
 		var realRed = realColor[0];

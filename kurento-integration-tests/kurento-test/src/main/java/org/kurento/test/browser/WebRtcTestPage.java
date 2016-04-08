@@ -266,6 +266,10 @@ public class WebRtcTestPage extends WebPage {
     return browser.getWebDriver().findElement(By.id("console")).getText();
   }
 
+  public void sendDataByDataChannel(String message) {
+    browser.executeScript("sendDataByChannel('" + message + "')");
+  }
+
   /*
    * compare
    */
@@ -404,7 +408,8 @@ public class WebRtcTestPage extends WebPage {
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
       final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode,
-      final WebRtcCandidateType webRtcCandidateType) throws InterruptedException {
+      final WebRtcCandidateType webRtcCandidateType, boolean useDataChannels)
+          throws InterruptedException {
 
     webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
       @Override
@@ -447,7 +452,17 @@ public class WebRtcTestPage extends WebPage {
       }
     };
 
-    initWebRtc(webRtcConfigurer, channel, mode, webRtcCandidateType);
+    initWebRtc(webRtcConfigurer, channel, mode, webRtcCandidateType, useDataChannels);
+  }
+
+  /**
+   *
+   * initWebRtc with IPVMode and without useDataChannels
+   */
+  public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
+      final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode,
+      final WebRtcCandidateType webRtcCandidateType) throws InterruptedException {
+    initWebRtc(webRtcEndpoint, channel, mode, webRtcIpvMode, webRtcCandidateType, false);
   }
 
   /*
@@ -455,7 +470,16 @@ public class WebRtcTestPage extends WebPage {
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
       final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode) throws InterruptedException {
-    initWebRtc(webRtcEndpoint, channel, mode, webRtcIpvMode, WebRtcCandidateType.ALL);
+    initWebRtc(webRtcEndpoint, channel, mode, webRtcIpvMode, WebRtcCandidateType.ALL, false);
+  }
+
+  /*
+   * initWebRtc with useDataChannels
+   */
+  public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
+      final WebRtcMode mode, final Boolean useDataChannels) throws InterruptedException {
+    initWebRtc(webRtcEndpoint, channel, mode, WebRtcIpvMode.BOTH, WebRtcCandidateType.ALL,
+        useDataChannels);
   }
 
   /*
@@ -463,12 +487,13 @@ public class WebRtcTestPage extends WebPage {
    */
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
       final WebRtcMode mode) throws InterruptedException {
-    initWebRtc(webRtcEndpoint, channel, mode, WebRtcIpvMode.BOTH, WebRtcCandidateType.ALL);
+    initWebRtc(webRtcEndpoint, channel, mode, WebRtcIpvMode.BOTH, WebRtcCandidateType.ALL, false);
   }
 
   @SuppressWarnings({ "unchecked", "deprecation" })
   protected void initWebRtc(final WebRtcConfigurer webRtcConfigurer, final WebRtcChannel channel,
-      final WebRtcMode mode, final WebRtcCandidateType candidateType) throws InterruptedException {
+      final WebRtcMode mode, final WebRtcCandidateType candidateType, boolean useDataChannels)
+          throws InterruptedException {
     // ICE candidates
     Thread t1 = new Thread() {
       @Override
@@ -511,6 +536,11 @@ public class WebRtcTestPage extends WebPage {
     String audio = browser.getAudio();
     if (audio != null) {
       browser.executeScript("setCustomAudio('" + audio + "');");
+    }
+
+    // Create peerConnection for using dataChannels (if necessary)
+    if (useDataChannels) {
+      browser.executeScript("useDataChannels()");
     }
 
     // Setting IceServer (if necessary)
@@ -564,7 +594,7 @@ public class WebRtcTestPage extends WebPage {
 
   protected void initWebRtc(final WebRtcConfigurer webRtcConfigurer, final WebRtcChannel channel,
       final WebRtcMode mode) throws InterruptedException {
-    initWebRtc(webRtcConfigurer, channel, mode, WebRtcCandidateType.ALL);
+    initWebRtc(webRtcConfigurer, channel, mode, WebRtcCandidateType.ALL, false);
   }
 
   /*

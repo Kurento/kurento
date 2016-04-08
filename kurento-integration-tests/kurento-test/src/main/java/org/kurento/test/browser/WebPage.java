@@ -350,4 +350,31 @@ public class WebPage {
 
   }
 
+  /*
+   * equalDataChannelMessage
+   */
+  public boolean compareDataChannelMessage(String message) {
+    boolean out;
+    final long endTimeMillis = System.currentTimeMillis() + browser.getTimeout() * 1000;
+    boolean logWarn = true;
+    while (true) {
+      String messageReceived =
+          (String) browser.executeScript("return kurentoTest.getDataChannelMessage()");
+      out = (message.equals(messageReceived));
+      if (out || System.currentTimeMillis() > endTimeMillis) {
+        break;
+      } else {
+        // Polling: wait 200 ms and check again the color
+        // Max wait = timeout variable
+        try {
+          Thread.sleep(200);
+        } catch (InterruptedException e) {
+          log.trace("InterruptedException in guard condition ({})", e.getMessage());
+        }
+      }
+      logWarn = false;
+    }
+    return out;
+  }
+
 }
