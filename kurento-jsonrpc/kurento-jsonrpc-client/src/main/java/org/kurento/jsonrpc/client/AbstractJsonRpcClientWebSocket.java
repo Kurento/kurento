@@ -75,6 +75,8 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   private boolean tryReconnectingForever = false;
 
+  private boolean retryingIfTimeoutToConnect = false;
+
   public AbstractJsonRpcClientWebSocket(String url,
       JsonRpcWSConnectionListener connectionListener) {
 
@@ -586,8 +588,17 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
         String exceptionMessage;
 
         if (e instanceof TimeoutException) {
+
           exceptionMessage = label + " Timeout of " + this.connectionTimeout
               + "ms when waiting to connect to Websocket server " + url;
+
+          if (retryingIfTimeoutToConnect) {
+
+            log.debug(exceptionMessage + ". Retrying...");
+
+            internalConnectIfNecessary();
+          }
+
         } else {
           exceptionMessage = label + " Exception connecting to WebSocket server " + url;
         }
