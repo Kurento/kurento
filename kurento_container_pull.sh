@@ -11,6 +11,7 @@ do
 	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-$NODE_VERSION
 done
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-0.12
+dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 
 # kurento-media-server development version with core dump & public modules
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
