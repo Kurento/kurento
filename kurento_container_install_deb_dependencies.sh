@@ -5,10 +5,14 @@ if [ ! -s debian/control ] ; then
   exit 1
 fi
 
-echo "deb http://ubuntuci.kurento.org trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento.list
-if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
-  echo "deb s3://ubuntu-priv.kurento.org.s3.amazonaws.com trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento-priv.list
+if [ ! -f /etc/apt/sources.list.d/kurento.list ]; then
+  echo "deb http://ubuntuci.kurento.org trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento.list
+  if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
+    echo "deb s3://ubuntu-priv.kurento.org.s3.amazonaws.com trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento-priv.list
+  fi
+fi
 
+if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
   cat >/etc/apt/s3auth.conf  <<-EOF
   AccessKeyId = $UBUNTU_PRIV_S3_ACCESS_KEY_ID
   SecretAccessKey = $UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
