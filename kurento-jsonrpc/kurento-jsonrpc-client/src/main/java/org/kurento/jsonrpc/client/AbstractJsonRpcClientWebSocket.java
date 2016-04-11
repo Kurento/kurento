@@ -12,11 +12,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.ThreadFactoryCreator;
 import org.kurento.commons.TimeoutReentrantLock;
 import org.kurento.commons.TimeoutRuntimeException;
 import org.kurento.jsonrpc.JsonRpcClientClosedException;
@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -46,9 +45,6 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private static final int CONNECTION_LOCK_TIMEOUT = 25000;
 
   public static Logger log = LoggerFactory.getLogger(AbstractJsonRpcClientWebSocket.class);
-
-  private static final ThreadFactory threadFactory = new ThreadFactoryBuilder()
-      .setNameFormat("JsonRpcClientWebsocket-%d").build();
 
   protected static final long RECONNECT_DELAY_TIME_MILLIS = 5000;
 
@@ -233,12 +229,14 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       try {
 
         if (execService == null || execService.isShutdown() || execService.isTerminated()) {
-          execService = Executors.newCachedThreadPool(threadFactory);
+          execService = Executors.newCachedThreadPool(
+              ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-execService"));
         }
 
         if (disconnectExecService == null || disconnectExecService.isShutdown()
             || disconnectExecService.isTerminated()) {
-          disconnectExecService = Executors.newScheduledThreadPool(1, threadFactory);
+          disconnectExecService = Executors.newScheduledThreadPool(1,
+              ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-disconnectExecService"));
         }
       } finally {
         lock.unlock();

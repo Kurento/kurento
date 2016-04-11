@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.kurento.commons.ThreadFactoryCreator;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -38,6 +39,7 @@ import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -85,7 +87,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
   protected boolean closedByClient;
   private volatile PingParams pingParams;
 
-  private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+  private ScheduledExecutorService scheduler = createScheduler();
 
   private Future<?> heartbeat;
 
@@ -250,7 +252,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
       this.heartbeatInterval = interval;
 
       if (scheduler.isShutdown()) {
-        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler = createScheduler();
       }
 
       heartbeat = scheduler.scheduleAtFixedRate(new Runnable() {
@@ -271,6 +273,11 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
         }
       }, 0, heartbeatInterval, MILLISECONDS);
     }
+  }
+
+  private ScheduledExecutorService createScheduler() {
+    return Executors.newSingleThreadScheduledExecutor(
+        ThreadFactoryCreator.create("JsonRpcClient-scheduler"));
   }
 
   /**
