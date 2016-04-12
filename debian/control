@@ -10,6 +10,5 @@ Standards-Version: 3.9.4
 Package: kurento-adm-scripts
 Architecture: any
 Depends:
- ${shlibs:Depends},
- ${misc:Depends}
+ ${shlibs:Depends}, ${misc:Depends}, sudo, python-yaml, curl, python-git, python-apt, python-debian, python-requests, git-review
 Description: Kurento Administration Scripts
