@@ -200,7 +200,7 @@ kms_image_overlay_metadata_transform_frame_ip (GstVideoFilter * filter,
   KmsImageOverlayMetadata *imageoverlay = KMS_IMAGE_OVERLAY_METADATA (filter);
   GstMapInfo info;
   GSList *faces_list;
-  KmsSerializableMeta *metadata;
+  GstStructure *metadata;
 
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
 
@@ -209,13 +209,13 @@ kms_image_overlay_metadata_transform_frame_ip (GstVideoFilter * filter,
 
   GST_OBJECT_LOCK (imageoverlay);
   /* check if the buffer has metadata */
-  metadata = kms_buffer_get_serializable_meta (frame->buffer);
+  metadata = kms_serializable_meta_get_metadata (frame->buffer);
 
   if (metadata == NULL) {
     goto end;
   }
 
-  faces_list = get_faces (metadata->data);
+  faces_list = get_faces (metadata);
 
   if (faces_list != NULL) {
     kms_image_overlay_metadata_display_detections_overlay_img (imageoverlay,
