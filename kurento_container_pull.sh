@@ -29,8 +29,8 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.
 # dev-media-server images (for media server projects)
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-8
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-7
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:wily-jdk-8
+docker pull dockerhub.kurento.org:5000/kurento/dev-media-server:wily-jdk-7
+docker pull dockerhub.kurento.org:5000/kurento/dev-media-server:wily-jdk-8
 
 # dev-chef image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
