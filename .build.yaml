@@ -1,4 +1,4 @@
 dependencies:
   - name: kms-core
   - name: libnice
-
+  - name: openwebrtc-gst-plugins
