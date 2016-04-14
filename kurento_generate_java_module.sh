@@ -27,12 +27,13 @@ echo $OPTS
 if [[ ${PROJECT_VERSION} != *-SNAPSHOT ]]; then
   echo "Deploying release version to ${MAVEN_S3_KURENTO_RELEASES} and ${MAVEN_SONATYPE_NEXUS_STAGING}"
   echo "Deploying with options $OPTS"
-  mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltReleaseDeploymentRepository=${MAVEN_S3_KURENTO_RELEASES} || exit 1
+  # We need to clear AWS* env variables, because that would take precedence over S3 credentials in MAVEN_SETTINGS file
+  AWS_ACCESS_KEY_ID= AWS_SECRET_KEY= mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltReleaseDeploymentRepository=${MAVEN_S3_KURENTO_RELEASES} || exit 1
   if [ "$PUBLIC" == "yes" ]
   then
-    mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltReleaseDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1
+  AWS_ACCESS_KEY_ID= AWS_SECRET_KEY= mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltReleaseDeploymentRepository=${MAVEN_SONATYPE_NEXUS_STAGING} || exit 1
   fi
 else
   echo "Deploying snapshot version to ${MAVEN_S3_KURENTO_SNAPSHOTS}"
-  mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltSnapshotDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} || exit 1
+  AWS_ACCESS_KEY_ID= AWS_SECRET_KEY= mvn --batch-mode --settings ${MAVEN_SETTINGS} $GOALS $OPTS -DaltSnapshotDeploymentRepository=${MAVEN_S3_KURENTO_SNAPSHOTS} || exit 1
 fi
