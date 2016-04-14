@@ -16,6 +16,7 @@
 package org.kurento.jsonrpc.client;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.JsonUtils;
@@ -106,11 +107,15 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
         final Object[] response = new Object[1];
         try {
+
+          final CountDownLatch responseLatch = new CountDownLatch(1);
+
           handlerManager.handleRequest(session, (Request<JsonElement>) request,
               new ResponseSender() {
             @Override
             public void sendResponse(Message message) throws IOException {
               response[0] = message;
+              responseLatch.countDown();
             }
 
             @Override
@@ -120,6 +125,12 @@ public class JsonRpcClientLocal extends JsonRpcClient {
           });
 
           Response<R2> response2 = (Response<R2>) response[0];
+
+          try {
+            responseLatch.await();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
 
           log.debug("<-- {}", response2);
 
