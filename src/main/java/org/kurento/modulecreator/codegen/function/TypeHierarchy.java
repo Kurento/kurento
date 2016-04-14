@@ -37,13 +37,16 @@ public class TypeHierarchy implements TemplateMethodModelEx {
       while (parent != null) {
         String moduleName = parent.getModule().getName();
 
-        if (moduleName == "core" || moduleName == "elements" || moduleName == "filters") {
+        if (moduleName == null) {
+          moduleName = "";
+        }
+
+        if (moduleName.equals("core") || moduleName.equals("elements")
+            || moduleName.equals("filters")) {
           moduleName = "kurento";
         }
 
-        if (moduleName == null) {
-          moduleName = "";
-        } else if (!moduleName.isEmpty()) {
+        if (!moduleName.isEmpty()) {
           moduleName += ".";
         }
 
