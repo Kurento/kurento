@@ -1,7 +1,7 @@
 set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
 
  add_test_program (test_pointerdetector pointerdetector.c)
- add_dependencies(test_pointerdetector pointerdetector kmsplugin)
+ add_dependencies(test_pointerdetector pointerdetector)
  target_include_directories(test_pointerdetector PRIVATE
          ${KMSCORE_INCLUDE_DIRS}
                             ${GSTREAMER_INCLUDE_DIRS}
