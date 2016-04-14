@@ -39,7 +39,6 @@ import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -87,7 +86,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
   protected boolean closedByClient;
   private volatile PingParams pingParams;
 
-  private ScheduledExecutorService scheduler = createScheduler();
+  private ScheduledExecutorService hearbeatExec = createScheduler();
 
   private Future<?> heartbeat;
 
@@ -251,11 +250,11 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
       this.heartbeating = true;
       this.heartbeatInterval = interval;
 
-      if (scheduler.isShutdown()) {
-        scheduler = createScheduler();
+      if (hearbeatExec.isShutdown()) {
+        hearbeatExec = createScheduler();
       }
 
-      heartbeat = scheduler.scheduleAtFixedRate(new Runnable() {
+      heartbeat = hearbeatExec.scheduleAtFixedRate(new Runnable() {
         @Override
         public void run() {
           try {
@@ -277,7 +276,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
   private ScheduledExecutorService createScheduler() {
     return Executors.newSingleThreadScheduledExecutor(
-        ThreadFactoryCreator.create("JsonRpcClient-scheduler"));
+        ThreadFactoryCreator.create("JsonRpcClient-hearbeatExec"));
   }
 
   /**
@@ -288,7 +287,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 
     heartbeat.cancel(false);
     heartbeat = null;
-    scheduler.shutdownNow();
+    hearbeatExec.shutdownNow();
 
     try {
       closeWithReconnection();
@@ -320,7 +319,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
         heartbeat.cancel(mayInterruptIfRunning);
         heartbeat = null;
       }
-      scheduler.shutdownNow();
+      hearbeatExec.shutdownNow();
     }
   }
 

@@ -51,8 +51,8 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private long requestTimeout = PropertiesManager.getProperty("jsonRpcClientWebSocket.timeout",
       60000);
 
-  private volatile ExecutorService execService;
-  private volatile ScheduledExecutorService disconnectExecService;
+  private volatile ExecutorService reqResEventExec;
+  private volatile ScheduledExecutorService disconnectExec;
 
   protected String url;
 
@@ -158,7 +158,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private void fireEvent(Runnable r) {
     if (connectionListener != null) {
       createExecServiceIfNecessary();
-      execService.submit(r);
+      reqResEventExec.submit(r);
     }
   }
 
@@ -220,23 +220,24 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   protected void createExecServiceIfNecessary() {
 
-    if (execService == null || disconnectExecService == null || execService.isShutdown()
-        || execService.isTerminated() || disconnectExecService.isShutdown()
-        || disconnectExecService.isTerminated()) {
+    if (reqResEventExec == null || disconnectExec == null || reqResEventExec.isShutdown()
+        || reqResEventExec.isTerminated() || disconnectExec.isShutdown()
+        || disconnectExec.isTerminated()) {
 
       lock.tryLockTimeout("createExecServiceIfNecessary");
 
       try {
 
-        if (execService == null || execService.isShutdown() || execService.isTerminated()) {
-          execService = Executors.newCachedThreadPool(
-              ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-execService"));
+        if (reqResEventExec == null || reqResEventExec.isShutdown()
+            || reqResEventExec.isTerminated()) {
+          reqResEventExec = Executors.newCachedThreadPool(
+              ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-reqResEventExec"));
         }
 
-        if (disconnectExecService == null || disconnectExecService.isShutdown()
-            || disconnectExecService.isTerminated()) {
-          disconnectExecService = Executors.newScheduledThreadPool(1,
-              ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-disconnectExecService"));
+        if (disconnectExec == null || disconnectExec.isShutdown()
+            || disconnectExec.isTerminated()) {
+          disconnectExec = Executors.newScheduledThreadPool(1,
+              ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-disconnectExec"));
         }
       } finally {
         lock.unlock();
@@ -358,7 +359,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
           public void onFailure(Throwable thrown) {
             continuation.onError(thrown);
           }
-        }, execService);
+        }, reqResEventExec);
 
       }
 
@@ -398,24 +399,24 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
     closeNativeClient();
 
-    if (execService != null) {
+    if (reqResEventExec != null) {
       try {
-        execService.shutdown();
+        reqResEventExec.shutdown();
       } catch (Exception e) {
         log.debug("{} Could not properly shut down executor service. Reason: {}", label,
             e.getMessage());
       }
-      execService = null;
+      reqResEventExec = null;
     }
 
-    if (disconnectExecService != null) {
+    if (disconnectExec != null) {
       try {
-        disconnectExecService.shutdown();
+        disconnectExec.shutdown();
       } catch (Exception e) {
         log.debug("{} Could not properly shut down disconnect executor service. Reason: {}", label,
             e.getMessage());
       }
-      disconnectExecService = null;
+      disconnectExec = null;
     }
 
     if (heartbeating) {
@@ -469,7 +470,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
       createExecServiceIfNecessary();
 
-      execService.submit(new Runnable() {
+      reqResEventExec.submit(new Runnable() {
         @Override
         public void run() {
           try {
@@ -522,7 +523,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
     createExecServiceIfNecessary();
 
-    disconnectExecService.schedule(new Runnable() {
+    disconnectExec.schedule(new Runnable() {
       @Override
       public void run() {
         try {
