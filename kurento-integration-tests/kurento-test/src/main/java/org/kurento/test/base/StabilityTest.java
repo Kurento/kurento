@@ -91,9 +91,15 @@ public class StabilityTest extends RepositoryMongoTest {
         log.debug("Try to set position in {}", position);
         playerEp.setPosition(position);
         if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
+          boolean isSimilarColor = getPage().similarColor(expectedPositionAndColor.get(position));
+          log.debug("Is the color of the video: {} ? {} ", expectedPositionAndColor.get(position),
+              isSimilarColor);
+          if (eosLatch.getCount() == 0) {
+            break;
+          }
           Assert.assertTrue("After set position to " + position
               + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
-              getPage().similarColor(expectedPositionAndColor.get(position)));
+              isSimilarColor);
         }
         // TODO: Add new method for checking that audio did pause properly when kurento-utils has
         // the
