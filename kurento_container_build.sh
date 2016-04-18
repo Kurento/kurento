@@ -7,7 +7,7 @@
 # PUSH_IMAGES
 #     Optional
 #
-#     True if images should be pushed to registry
+#     yes if images should be pushed to registry
 #     Either absent or any other value is considered false
 #
 # BUILD_ARGS
@@ -72,11 +72,16 @@ df -h
 # Push
 if [ "$PUSH_IMAGES" = "yes" ]; then
   docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
+  docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
+  docker tag -f $IMAGE_NAME:${TAG}-${commit} $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
+
+  docker tag -f $IMAGE_NAME:${TAG} $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
   docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
   dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:$TAG
 
   for $EXTRA_TAG in $EXTRA_TAGS
   do
+    docker tag -f $IMAGE_NAME:$EXTRA_TAG $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
     docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
     dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:$EXTRA_TAG
   done
