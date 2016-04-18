@@ -76,7 +76,7 @@ for REF in $REFS; do
   DEPENDENCY_PROJECT_URL=$GERRIT_URL/$DEPENDENCY_PROJECT
   DEPENDENCY_REFSPEC=$(echo $REF | awk -F '=' '{print $2}' | tr -d '[[:space:]]')
   [ -z "$DEPENDENCY_REFSPEC" ] && DEPENDENCY_REFSPEC=master
-  # Clone and install artifacts only if not already cloned
+  # Clone and install artifacts
   if [ ! -d "$DEPENDENCY_PROJECT" ]; then
     if [ "$DEPENDENCY_REFSPEC" = 'ignore' ]; then
       mkdir -p $DEPENDENCY_PROJECT
@@ -85,12 +85,13 @@ for REF in $REFS; do
       git clone $DEPENDENCY_PROJECT_URL || exit 1
       (cd $DEPENDENCY_PROJECT &&
         git fetch $DEPENDENCY_PROJECT_URL $DEPENDENCY_REFSPEC &&
-        git checkout FETCH_HEAD
-        # Execute maven for maven projects
-        if [ -f pom.xml ]; then
-          mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
-        fi
-      ) || exit 1
+        git checkout FETCH_HEAD) || exit 1
     fi
   fi
+  # Execute maven for maven projects
+  (cd $DEPENDENCY_PROJECT
+  if [ -f pom.xml ]; then
+     mvn --batch-mode $PARAM_MAVEN_SETTINGS clean install -Dmaven.test.skip=true
+  fi
+  )
 done
