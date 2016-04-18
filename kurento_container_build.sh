@@ -10,9 +10,23 @@
 #     True if images should be pushed to registry
 #     Either absent or any other value is considered false
 #
+# BUILD_ARGS
+#     Optional
+#     Build arguments to pass to docker build.
+#     Format: NODE_VERSION=4.x JDK=jdk-8
+#
 # DOCKERFILE
 #     Optional
 #     Location of Dockerfile to build
+#
+# IMAGE_NAME
+#     Optional
+#     Name of image to build
+#
+# EXTRA_TAGS
+#     Optional
+#     Extra tags to apply to image
+
 
 [ -n $PUSH_IMAGES ] || PUSH_IMAGES='no'
 
@@ -33,7 +47,11 @@ echo "Extra tags: ${image_extra_tags[@]}"
 [ -n "$EXTRA_TAGS" ] || EXTRA_TAGS="${image_extra_tags[@]}"
 
 # Build using a tag composed of the original tag and the short commit id
-docker build --no-cache --rm=true -t $IMAGE_NAME:${TAG}-${commit} -f $DOCKERFILE
+for BUILD_ARG in $BUILD_ARGS
+do
+  build_args+=("--build-arg $BUILD_ARG")
+done
+docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE_NAME:${TAG}-${commit} -f $DOCKERFILE $FOLDER
 
 # Tag the resulting image using the original tag
 docker tag -f $IMAGE_NAME:$TAG $IMAGE_NAME:$TAG
@@ -64,4 +82,7 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
   done
 
   docker logout
+else
+  # Remove image and its tags
+  docker rmi $IMAGE_NAME:${TAG}-${commit}
 fi
