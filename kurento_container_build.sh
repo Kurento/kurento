@@ -80,7 +80,7 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
   docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
   dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:$TAG
 
-  for $EXTRA_TAG in $EXTRA_TAGS
+  for EXTRA_TAG in $EXTRA_TAGS
   do
     docker tag -f $IMAGE_NAME:$EXTRA_TAG $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
     docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
