@@ -54,7 +54,7 @@ done
 docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE_NAME:${TAG}-${commit} -f $DOCKERFILE $FOLDER
 
 # Tag the resulting image using the original tag
-docker tag -f $IMAGE_NAME:$TAG $IMAGE_NAME:$TAG
+docker tag -f $IMAGE_NAME:${TAG}-${commit} $IMAGE_NAME:$TAG
 
 # Apply any additional tags required
 echo "Extra tags: $EXTRA_TAGS"
@@ -72,8 +72,9 @@ df -h
 # Push
 if [ "$PUSH_IMAGES" = "yes" ]; then
   docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
-  docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
   docker tag -f $IMAGE_NAME:${TAG}-${commit} $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
+  docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
+  dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:${TAG}-${commit}
 
   docker tag -f $IMAGE_NAME:${TAG} $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
   docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
