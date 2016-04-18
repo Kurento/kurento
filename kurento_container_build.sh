@@ -60,7 +60,7 @@ docker tag -f $IMAGE_NAME:$TAG $IMAGE_NAME:$TAG
 echo "Extra tags: $EXTRA_TAGS"
 for EXTRA_TAG in $EXTRA_TAGS
 do
-  docker tag -f $IMAGE_NAME:$TAG $IMAGE_NAME:$EXTRA_TAG
+  docker tag -f $IMAGE_NAME:$TAG-${commit} $IMAGE_NAME:$EXTRA_TAG
 done
 
 echo "### DOCKER IMAGES"
