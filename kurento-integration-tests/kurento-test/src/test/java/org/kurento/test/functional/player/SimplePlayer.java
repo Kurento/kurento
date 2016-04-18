@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
+import org.kurento.client.MediaFlowInStateChangeEvent;
+import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
@@ -183,11 +185,23 @@ public class SimplePlayer extends PlayerTest {
     playerEp.connect(webRtcEp);
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
+    final CountDownLatch flowingLatch = new CountDownLatch(1);
+
     playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
       public void onEvent(EndOfStreamEvent event) {
         log.debug("Received EndOfStream Event");
         eosLatch.countDown();
+      }
+    });
+
+    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowInStateChangeEvent event) {
+        if (event.getState().equals(MediaFlowState.FLOWING)) {
+          flowingLatch.countDown();
+        }
       }
     });
 
@@ -198,6 +212,9 @@ public class SimplePlayer extends PlayerTest {
 
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage().waitForEvent("playing"));
+
+    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
+        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // TODO: Check with playerEp.getVideoInfo().getIsSeekable() if the video is seekable. If not,
     // assert with exception from KMS
