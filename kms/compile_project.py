@@ -236,10 +236,10 @@ def generate_debian_package(args, config):
         exit(1)
 
     if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
-        os.system ("sudo apt-get install -f")
+        os.system("sudo apt-get install -f")
         if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
-          print("Packages are not installable")
-          exit(1)
+            print("Packages are not installable")
+            exit(1)
 
     files = glob.glob("../*" + new_version + "_*.deb")
     if args.command == "upload":
