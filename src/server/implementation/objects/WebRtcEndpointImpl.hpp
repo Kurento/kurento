@@ -38,6 +38,8 @@ public:
 
   std::vector<std::shared_ptr<IceCandidatePair>> getICECandidatePairs ();
 
+  std::vector<std::shared_ptr<IceConnection>> getIceConnectionState ();
+
   void gatherCandidates ();
   void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
 
@@ -96,6 +98,9 @@ private:
   void checkUri (std::string &uri);
 
   std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
+  std::map < std::string, std::shared_ptr<IceConnection>> iceConnectionState;
+
+  std::mutex mut;
 
   class StaticConstructor
   {

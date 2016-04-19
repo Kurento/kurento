@@ -7,6 +7,7 @@
 #include <boost/filesystem.hpp>
 #include <IceCandidate.hpp>
 #include "IceCandidatePair.hpp"
+#include "IceConnection.hpp"
 #include <webrtcendpoint/kmsicecandidate.h>
 #include <IceComponentState.hpp>
 #include <SignalHandler.hpp>
@@ -156,6 +157,9 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
 {
   try {
     IceComponentState::type type;
+    std::shared_ptr<IceConnection> connectionState;
+    std::map < std::string, std::shared_ptr<IceConnection>>::iterator it;
+    std::string key;
 
     switch (state) {
     case ICE_STATE_DISCONNECTED:
@@ -187,11 +191,22 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
       break;
     }
 
-    IceComponentState *componentState = new IceComponentState (type);
+    IceComponentState *componentState_event = new IceComponentState (type);
+    IceComponentState *componentState_property = new IceComponentState (type);
     OnIceComponentStateChanged event (shared_from_this(),
                                       OnIceComponentStateChanged::getName(),
                                       atoi (streamId), componentId,
-                                      std::shared_ptr<IceComponentState> (componentState) );
+                                      std::shared_ptr<IceComponentState> (componentState_event) );
+
+    connectionState = std::make_shared< IceConnection> (streamId, componentId,
+                      std::shared_ptr<IceComponentState> (componentState_property) );
+    key = std::string (streamId) + '_' + std::to_string (componentId);
+
+    std::unique_lock<std::mutex> mutex (mut);
+    it = iceConnectionState.find (key);
+    iceConnectionState[key] = connectionState;
+    iceConnectionState.insert (std::pair
+                               <std::string, std::shared_ptr <IceConnection>> (key, connectionState) );
 
     signalOnIceComponentStateChanged (event);
   } catch (std::bad_weak_ptr &e) {
@@ -498,6 +513,20 @@ std::vector<std::shared_ptr<IceCandidatePair>>
   }
 
   return candidates;
+}
+
+std::vector<std::shared_ptr<IceConnection>>
+    WebRtcEndpointImpl::getIceConnectionState ()
+{
+  std::vector<std::shared_ptr<IceConnection>> connections;
+  std::map<std::string, std::shared_ptr <IceConnection>>::iterator it;
+  std::unique_lock<std::mutex> mutex (mut);
+
+  for (it = iceConnectionState.begin(); it != iceConnectionState.end(); it++) {
+    connections.push_back ( (*it).second);
+  }
+
+  return connections;
 }
 
 void
