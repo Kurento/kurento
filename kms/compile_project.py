@@ -1,11 +1,13 @@
-#!/usr/bin/python -t
+#!/usr/bin/python2.7
 
 import argparse
 import gc
 import glob
 import os
 import re
+import subprocess
 import sys
+import urlparse
 from datetime import datetime
 from time import strftime, time
 
@@ -18,11 +20,242 @@ from debian.deb822 import Deb822, PkgRelation
 import apt_pkg
 import git
 from git import Repo
-from git_review.cmd import query_reviews
 
 # sudo apt-get install curl python-git python-yaml python-apt python-debian python-requests git-review
 
 DEFAULT_CONFIG_FILE = '.build.yaml'
+
+#Next source is imported from git review
+
+#Copyright (C) 2011-2012 OpenStack LLC.
+#
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#implied.
+#
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
+urljoin = urlparse.urljoin
+urlparse = urlparse.urlparse
+do_input = raw_input
+
+VERBOSE = False
+
+
+class GitReviewException(Exception):
+    pass
+
+
+class CommandFailed(GitReviewException):
+    def __init__(self, *args):
+        Exception.__init__(self, *args)
+        (self.rc, self.output, self.argv, self.envp) = args
+        self.quickmsg = dict([
+            ("argv", " ".join(self.argv)), ("rc", self.rc), ("output",
+                                                             self.output)
+        ])
+
+    def __str__(self):
+        return self.__doc__ + """
+The following command failed with exit code %(rc)d
+    "%(argv)s"
+-----------------------
+%(output)s
+-----------------------""" % self.quickmsg
+
+
+def run_command_status(*argv, **kwargs):
+    if VERBOSE:
+        print(datetime.datetime.now(), "Running:", " ".join(argv))
+    if len(argv) == 1:
+        # for python2 compatibility with shlex
+        if sys.version_info < (3, ) and isinstance(argv[0], unicode):
+            argv = shlex.split(argv[0].encode('utf-8'))
+        else:
+            argv = shlex.split(str(argv[0]))
+    stdin = kwargs.pop('stdin', None)
+    newenv = os.environ.copy()
+    newenv['LANG'] = 'C'
+    newenv['LANGUAGE'] = 'C'
+    newenv.update(kwargs)
+    p = subprocess.Popen(argv,
+                         stdin=subprocess.PIPE if stdin else None,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         env=newenv)
+    (out, nothing) = p.communicate(stdin)
+    out = out.decode('utf-8', 'replace')
+    return (p.returncode, out.strip())
+
+
+def run_command_exc(klazz, *argv, **env):
+    """Run command *argv, on failure raise klazz
+
+    klazz should be derived from CommandFailed
+    """
+    (rc, output) = run_command_status(*argv, **env)
+    if rc != 0:
+        raise klazz(rc, output, argv, env)
+    return output
+
+
+def parse_gerrit_ssh_params_from_git_url(git_url):
+    """Parse a given Git "URL" into Gerrit parameters. Git "URLs" are either
+    real URLs or SCP-style addresses.
+    """
+
+    # The exact code for this in Git itself is a bit obtuse, so just do
+    # something sensible and pythonic here instead of copying the exact
+    # minutiae from Git.
+
+    # Handle real(ish) URLs
+    if "://" in git_url:
+        parsed_url = urlparse(git_url)
+        path = parsed_url.path
+
+        hostname = parsed_url.netloc
+        username = None
+        port = parsed_url.port
+
+        # Workaround bug in urlparse on OSX
+        if parsed_url.scheme == "ssh" and parsed_url.path[:2] == "//":
+            hostname = parsed_url.path[2:].split("/")[0]
+
+        if "@" in hostname:
+            (username, hostname) = hostname.split("@")
+        if ":" in hostname:
+            (hostname, port) = hostname.split(":")
+
+        if port is not None:
+            port = str(port)
+
+    # Handle SCP-style addresses
+    else:
+        username = None
+        port = None
+        (hostname, path) = git_url.split(":", 1)
+        if "@" in hostname:
+            (username, hostname) = hostname.split("@", 1)
+
+    # Strip leading slash and trailing .git from the path to form the project
+    # name.
+    project_name = re.sub(r"^/|(\.git$)", "", path)
+
+    return (hostname, username, port, project_name)
+
+
+def query_reviews(remote_url,
+                  change=None,
+                  current_patch_set=True,
+                  exception=CommandFailed,
+                  parse_exc=Exception):
+    if remote_url.startswith('http://') or remote_url.startswith('https://'):
+        query = query_reviews_over_http
+    else:
+        query = query_reviews_over_ssh
+    return query(remote_url,
+                 change=change,
+                 current_patch_set=current_patch_set,
+                 exception=exception,
+                 parse_exc=parse_exc)
+
+
+def query_reviews_over_http(remote_url,
+                            change=None,
+                            current_patch_set=True,
+                            exception=CommandFailed,
+                            parse_exc=Exception):
+    url = urljoin(remote_url, '/changes/')
+    if change:
+        if current_patch_set:
+            url += '?q=%s&o=CURRENT_REVISION' % change
+        else:
+            url += '?q=%s&o=ALL_REVISIONS' % change
+    else:
+        project_name = re.sub(r"^/|(\.git$)", "", urlparse(remote_url).path)
+        params = urlencode({'q': 'project:%s status:open' % project_name})
+        url += '?' + params
+
+    if VERBOSE:
+        print("Query gerrit %s" % url)
+    request = run_http_exc(exception, url)
+    if VERBOSE:
+        print(request.text)
+    reviews = json.loads(request.text[4:])
+
+    # Reformat output to match ssh output
+    try:
+        for review in reviews:
+            review["number"] = str(review.pop("_number"))
+            if "revisions" not in review:
+                continue
+            patchsets = {}
+            for key, revision in review["revisions"].items():
+                fetch_value = list(revision["fetch"].values())[0]
+                patchset = {"number": str(revision["_number"]),
+                            "ref": fetch_value["ref"]}
+                patchsets[key] = patchset
+            review["patchSets"] = patchsets.values()
+            review["currentPatchSet"] = patchsets[review["current_revision"]]
+    except Exception as err:
+        raise parse_exc(err)
+
+    return reviews
+
+
+def query_reviews_over_ssh(remote_url,
+                           change=None,
+                           current_patch_set=True,
+                           exception=CommandFailed,
+                           parse_exc=Exception):
+    (hostname, username, port, project_name) = \
+        parse_gerrit_ssh_params_from_git_url(remote_url)
+
+    if change:
+        if current_patch_set:
+            query = "--current-patch-set change:%s" % change
+        else:
+            query = "--patch-sets change:%s" % change
+    else:
+        query = "project:%s status:open" % project_name
+
+    port_data = "p%s" % port if port is not None else ""
+    if username is None:
+        userhost = hostname
+    else:
+        userhost = "%s@%s" % (username, hostname)
+
+    if VERBOSE:
+        print("Query gerrit %s %s" % (remote_url, query))
+    output = run_command_exc(exception, "ssh", "-x" + port_data, userhost,
+                             "gerrit", "query", "--format=JSON %s" % query)
+    if VERBOSE:
+        print(output)
+
+    changes = []
+    try:
+        for line in output.split("\n"):
+            if line[0] == "{":
+                try:
+                    data = json.loads(line)
+                    if "type" not in data:
+                        changes.append(data)
+                except Exception:
+                    if VERBOSE:
+                        print(output)
+    except Exception as err:
+        raise parse_exc(err)
+    return changes
+
+# End of imported code from git review
 
 
 def clone_repo(args, base_url, repo_name):
