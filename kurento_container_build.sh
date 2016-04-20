@@ -74,21 +74,23 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
   docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
   docker tag -f $IMAGE_NAME:${TAG}-${commit} $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
   docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:${TAG}-${commit}
-  dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:${TAG}-${commit}
 
   docker tag -f $IMAGE_NAME:${TAG} $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
   docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$TAG
-  dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:$TAG
 
   for EXTRA_TAG in $EXTRA_TAGS
   do
     docker tag -f $IMAGE_NAME:$EXTRA_TAG $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
     docker push $KURENTO_REGISTRY_URI/$IMAGE_NAME:$EXTRA_TAG
-    dogestry push s3://kurento-docker/?region=eu-west-1 $IMAGE_NAME:$EXTRA_TAG
   done
 
   docker logout
 else
   # Remove image and its tags
   docker rmi $IMAGE_NAME:${TAG}-${commit}
+  docker rmi $IMAGE_NAME:${TAG}
+  for EXTRA_TAG in $EXTRA_TAGS
+  do
+    docker rmi $IMAGE_NAME:$EXTRA_TAG
+  done
 fi
