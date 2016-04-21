@@ -167,14 +167,6 @@ kms_webrtc_endpoint_link_pads (GstPad * src, GstPad * sink)
   }
 }
 
-static void
-on_data_pads_removed (KmsWebrtcSession * sess, guint stream_id,
-    KmsWebrtcEndpoint * self)
-{
-  kms_element_remove_sink_by_type (KMS_ELEMENT (self),
-      KMS_ELEMENT_PAD_TYPE_DATA);
-}
-
 static gboolean
 kms_webrtc_endpoint_add_data_sink_pad (KmsWebrtcEndpoint * self,
     GstPad * target, const gchar * description)
@@ -333,9 +325,6 @@ kms_webrtc_endpoint_create_session_internal (KmsBaseSdpEndpoint * base_sdp,
       G_CALLBACK (on_data_channel_opened), self);
   g_signal_connect (webrtc_sess, "data-channel-closed",
       G_CALLBACK (on_data_channel_closed), self);
-
-  g_signal_connect (webrtc_sess, "data-pads-remove",
-      G_CALLBACK (on_data_pads_removed), self);
 
   *sess = KMS_SDP_SESSION (webrtc_sess);
 

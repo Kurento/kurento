@@ -71,7 +71,6 @@ enum
   SIGNAL_DATA_CHANNEL_CLOSED,
   ACTION_CREATE_DATA_CHANNEL,
   ACTION_DESTROY_DATA_CHANNEL,
-  SIGNAL_DATA_PADS_REMOVE,
   SIGNAL_NEW_SELECTED_PAIR_FULL,
   LAST_SIGNAL
 };
@@ -1902,18 +1901,4 @@ kms_webrtc_session_class_init (KmsWebrtcSessionClass * klass)
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
       G_STRUCT_OFFSET (KmsWebrtcSessionClass, destroy_data_channel),
       NULL, NULL, g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
-
-  /**
-   * KmsWebrtcSession::data-pads-remove:
-   * @webrtcsession: the object which received the signal
-   * @stream_id: the id of the DataChannel
-   *
-   * Emited before data pads are removed.
-   */
-  kms_webrtc_session_signals[SIGNAL_DATA_PADS_REMOVE] =
-      g_signal_new ("data-pads-remove",
-      G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsWebrtcSessionClass, data_channel_closed),
-      NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 }
