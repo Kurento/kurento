@@ -83,7 +83,7 @@ public class DatachannelsB2BTest extends FunctionalTest {
     getPage(0).initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY, true);
     getPage(1).initWebRtc(webRtcEp2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY, true);
 
-    Thread.sleep(2000);
+    Thread.sleep(8000);
 
     for (int i = 0; i < TIMES; i++) {
       String messageSentBrower0 = "Data sent from the browser0. Message" + i;
