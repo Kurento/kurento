@@ -4,7 +4,7 @@ pullAndTag() {
 	echo "Pulling $KURENTO_REGISTRY_URI/$1"
 	docker pull $KURENTO_REGISTRY_URI/$1
 	echo "Tagging $KURENTO_REGISTRY_URI/$1 as $1"
-	docker tag $KURENTO_REGISTRY_URI/$1 $1
+	docker tag -f $KURENTO_REGISTRY_URI/$1 $1
 }
 
 # Internal (private) images
@@ -23,7 +23,7 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-brow
 
 # kurento-media-server development version with core dump & public modules
 docker pull $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest
-docker tag $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest kurento/kurento-media-server-dev:latest
+docker tag -f $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest kurento/kurento-media-server-dev:latest
 
 # coturn image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/coturn:1.1.0
@@ -47,7 +47,7 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 # Selenium images
 echo "Pulling images for selenium version $SELENIUM_VERSION"
 docker pull selenium/hub:$SELENIUM_VERSION
-for image in (node-chrome node-firefox node-chrome-beta node-chrome-dev node-firefox-beta)
+for image in node-chrome node-firefox node-chrome-beta node-chrome-dev node-firefox-beta
 do
 	pullAndTag kurento/$image:$SELENIUM_VERSION
 	pullAndTag kurento/$image-debug:$SELENIUM_VERSION
