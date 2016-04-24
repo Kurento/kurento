@@ -14,7 +14,8 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-brow
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 
 # kurento-media-server development version with core dump & public modules
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/kurento-media-server-dev:latest
+docker pull dockerhub.kurento.org:5000/kurento/kurento-media-server-dev:latest
+docker tag dockerhub.kurento.org:5000/kurento/kurento-media-server-dev:latest kurento/kurento-media-server-dev:latest
 
 # coturn image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/coturn:1.1.0
