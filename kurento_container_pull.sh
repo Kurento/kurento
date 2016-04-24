@@ -1,7 +1,15 @@
 #!/bin/bash
 
+pullAndTag() {
+	echo "Pulling $KURENTO_REGISTRY_URI/$1"
+	docker pull $KURENTO_REGISTRY_URI/$1
+	echo "Tagging $KURENTO_REGISTRY_URI/$1 as $1"
+	docker tag $KURENTO_REGISTRY_URI/$1 $1
+}
+
 # Internal (private) images
 [ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.47.1"
+[ -n "$KURENTO_REGISTRY_URI" ] || KURENTO_REGISTRY_URI="$KURENTO_REGISTRY_URI"
 
 # dev-integration images (for Java & JS)
 NODE_VERSIONS="0.12 4.x 5.x"
@@ -14,8 +22,8 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-brow
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 
 # kurento-media-server development version with core dump & public modules
-docker pull dockerhub.kurento.org:5000/kurento/kurento-media-server-dev:latest
-docker tag dockerhub.kurento.org:5000/kurento/kurento-media-server-dev:latest kurento/kurento-media-server-dev:latest
+docker pull $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest
+docker tag $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest kurento/kurento-media-server-dev:latest
 
 # coturn image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/coturn:1.1.0
@@ -30,8 +38,8 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.
 # dev-media-server images (for media server projects)
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-7
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-8
-docker pull dockerhub.kurento.org:5000/kurento/dev-media-server:wily-jdk-7
-docker pull dockerhub.kurento.org:5000/kurento/dev-media-server:wily-jdk-8
+docker pull $KURENTO_REGISTRY_URI/kurento/dev-media-server:wily-jdk-7
+docker pull $KURENTO_REGISTRY_URI/kurento/dev-media-server:wily-jdk-8
 
 # dev-chef image
 dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
@@ -39,23 +47,12 @@ dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
 # Selenium images
 echo "Pulling images for selenium version $SELENIUM_VERSION"
 docker pull selenium/hub:$SELENIUM_VERSION
-docker pull kurento/node-chrome:$SELENIUM_VERSION
-docker pull kurento/node-firefox:$SELENIUM_VERSION
-docker pull kurento/node-chrome-debug:$SELENIUM_VERSION
-docker pull kurento/node-firefox-debug:$SELENIUM_VERSION
-docker pull kurento/node-chrome-beta:$SELENIUM_VERSION
-docker pull kurento/node-chrome-beta-debug:$SELENIUM_VERSION
-docker pull kurento/node-chrome-dev:$SELENIUM_VERSION
-docker pull kurento/node-chrome-dev-debug:$SELENIUM_VERSION
-docker pull kurento/node-firefox-beta:$SELENIUM_VERSION
-docker pull kurento/node-firefox-beta-debug:$SELENIUM_VERSION
-
-# Selenium DNAT images
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-debug:$SELENIUM_VERSION-dnat
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-debug:$SELENIUM_VERSION-dnat
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-beta-debug:$SELENIUM_VERSION-dnat
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-chrome-dev-debug:$SELENIUM_VERSION-dnat
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/node-firefox-beta-debug:$SELENIUM_VERSION-dnat
+for image in (node-chrome node-firefox node-chrome-beta node-chrome-dev node-firefox-beta)
+do
+	pullAndTag kurento/$image:$SELENIUM_VERSION
+	pullAndTag kurento/$image-debug:$SELENIUM_VERSION
+	pullAndTag kurento/$image-debug:$SELENIUM_VERSION-dnat
+done
 
 # Image to record vnc sessions
 docker pull softsam/vncrecorder:latest
