@@ -46,6 +46,13 @@ commit=$(git rev-parse --short HEAD)
 echo "Extra tags: ${image_extra_tags[@]}"
 [ -n "$EXTRA_TAGS" ] || EXTRA_TAGS="${image_extra_tags[@]}"
 
+# If there's a generate.sh script, assume we need to dynamically generate the Dockerfile using it
+# This is the case of selenium images
+if [ -f generate.sh ]; then
+  echo "Generating Dockerfile..."
+  ./generate.sh $TAG
+fi
+
 # Build using a tag composed of the original tag and the short commit id
 for BUILD_ARG in $BUILD_ARGS
 do
