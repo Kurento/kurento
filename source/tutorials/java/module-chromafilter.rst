@@ -70,8 +70,8 @@ The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-chroma>`_.
 
 This example is a modified version of the
-:doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this
-demo uses a **Chroma** instead of **FaceOverlay** filter.
+:doc:`Magic Mirror <./tutorial-magicmirror>` tutorial. In this case, this demo
+uses a **Chroma** instead of **FaceOverlay** filter.
 
 In order to perform chroma detection, there must be a color calibration stage.
 To accomplish this step, at the beginning of the demo, a little square appears
@@ -86,9 +86,9 @@ in upper left of the video, as follows:
 In the first second of the demo, a calibration process is done, by detecting the
 color inside that square. When the calibration is finished, the square
 disappears and the chroma is substituted with the configured image. Take into
-account that this process requires good lighting condition. Otherwise the chroma
-substitution will not be perfect. This behavior can be seen in the upper right
-corner of the following screenshot:
+account that this process requires good lighting condition. Otherwise the
+chroma substitution will not be perfect. This behavior can be seen in the upper
+right corner of the following screenshot:
 
 .. figure:: ../../images/kurento-module-tutorial-chroma-screenshot-02.png
    :align:   center

@@ -16,8 +16,8 @@ reply affirmatively:
    sudo apt-get update
    sudo apt-get install kurento-media-server-6.0
 
-Now, Kurento Media Server has been installed and started. Use the following
-commands to start and stop it respectively:
+Now, Kurento Media Server has been installed. Use the following commands to
+start and stop it respectively:
 
 .. sourcecode:: console
 
