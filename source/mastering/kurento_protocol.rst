@@ -21,14 +21,14 @@ subsections shows how to use this format in :term:`JSON` messages.
 Request messages
 ----------------
 
-An *RPC call* is represented by sending a *Request message* to a server. The
-*Request message* has the following members:
+An *RPC call* is represented by sending a *request* message to a server. The
+*request* message has the following members:
 
 -  **jsonrpc**: a string specifying the version of the JSON-RPC protocol. It
    must be exactly "2.0".
 -  **id**: an unique identifier established by the client that contains a
    string or number. The server must reply with the same value in the
-   *Response message*. This member is used to correlate the context between
+   *response* message. This member is used to correlate the context between
    both messages.
 -  **method**: a string containing the name of the method to be invoked.
 -  **params**: a structured value that holds the parameter values to be used
@@ -53,14 +53,14 @@ The following JSON shows a sample requests::
 Successful Response messages
 ----------------------------
 
-When an *RPC call* is made the server replies with a *Response message*. In the
-case of a successful response, the *Response message* will contain the
+When an *RPC call* is made the server replies with a *response* message. In the
+case of a successful response, the *response* message will contain the
 following members:
 
 -  **jsonrpc**: a string specifying the version of the JSON-RPC protocol. It
    must be exactly "2.0".
 -  **id**: this member is mandatory and it must match the value of the *id*
-   member in the *Request message*.
+   member in the *request* message.
 -  **result**: its value is determined by the method invoked on the server.
    In case the connection is rejected, it's returned an message with a
    *rejected* attribute containing an message with a *code* and *message*
@@ -81,15 +81,15 @@ The following example shows a typical successful response::
 Error Response messages
 -----------------------
 
-When an *RPC call* is made the server replies with a *Response message*. In the
-case of an error response, the *Response message* will contain the following
+When an *RPC call* is made the server replies with a *response* message. In the
+case of an error response, the *response* message will contain the following
 members:
 
 -  **jsonrpc**: a string specifying the version of the JSON-RPC protocol. It
    must be exactly "2.0".
 -  **id**: this member is mandatory and it must match the value of the *id*
-   member in the *Request message*. If there was an error in detecting the *id*
-   in the *Request message* (e.g. Parse Error/Invalid Request), it equals to
+   member in the *request* message. If there was an error in detecting the *id*
+   in the *request* message (e.g. *Parse Error/Invalid Request*), it equals to
    null.
 -  **error**: an message describing the error through the following members:
 
@@ -125,9 +125,10 @@ Previous to issuing commands, the Kurento Client requires establishing a
 WebSocket connection with Kurento Media Server to the URL:
 ``ws://hostname:port/kurento``
 
-Once the WebSocket has been established, the Kurento Protocol offers five
-different types of request/response messages:
+Once the WebSocket has been established, the Kurento Protocol offers different
+types of request/response messages:
 
+ - **ping**: Keep-alive method between client and Kurento Media Server.
  - **create**: Instantiates a new media object, that is, a pipeline or media
    element.
  - **invoke**: Calls a method of an existing media object.
@@ -137,11 +138,44 @@ different types of request/response messages:
 
 The Kurento Protocol allows to Kurento Media Server send requests to clients:
 
- - **onEvent**: This request is sent from kurento Media server to clients
+ - **onEvent**: This request is sent from Kurento Media server to clients
    when an event occurs.
 
-Create messages
----------------
+Ping
+----
+
+In order to warranty the WebSocket connectivity between the client and the
+Kurento Media Server, a keep-alive method is implemented. This method is based
+on a ``ping`` method sent by the client, which must be replied with a ``pong``
+message from the server. If no response is obtained in a time interval, the
+client is aware that the connectivity with the media server has been lost.The
+parameter ``interval`` is the time out to receive the ``Pong`` message from the
+server, in milliseconds. By default this value is ``240000`` (i.e. 40 seconds).
+This is an example of ``ping`` request::
+
+   {
+       "id": 1,
+       "method": "ping",
+       "params": {
+           "interval": 240000
+       },
+       "jsonrpc": "2.0"
+   }
+
+The response to a ``ping`` request must contain a ``result`` object with a
+``value`` parameter with a fixed name: ``pong``. The following snippet shows
+the ``pong`` response to the previous ``ping`` request::
+
+   {
+       "id": 1,
+       "result": {
+           "value": "pong"
+       },
+       "jsonrpc": "2.0"
+   }
+
+Create
+------
 
 Create message requests the creation of an object of the Kurento API. The
 parameter ``type`` specifies the type of the object to be created. The
@@ -156,43 +190,41 @@ the client in each response. Only the first request from client to server is
 allowed to not include the ''sessionId'' (because at this point is unknown for
 the client).
 
-The following example shows a Request message requesting the creation of an
-object of the type ``PlayerEndpoint`` within the pipeline ``6829986`` and the
-parameter ``uri: http://host/app/video.mp4`` in the session
-``c93e5bf0-4fd0-4888-9411-765ff5d89b93``::
+The following example shows a request message requesting the creation of an
+object of the type ``WebRtcEndpoint`` within an existing Media Pipeline::
 
-    {
-      "jsonrpc": "2.0",
-      "id": 1,
-      "method": "create",
-      "params": {
-        "type": "PlayerEndPoint",
-        "constructorParams": {
-          "pipeline": "6829986",
-          "uri": "http://host/app/video.mp4"
-        },
-        "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 3,
+       "method": "create",
+       "params": {
+           "type": "WebRtcEndpoint",
+           "constructorParams": {
+               "mediaPipeline": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline"
+           },
+           "properties": {},
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-The ``Response`` message contains the ``id`` of the new object in the field
+The response message contains the ``id`` of the new object in the field
 ``value``. This message ``id`` has to be used in other requests of the protocol
 (as we will describe later). As stated before, the ``sessionId`` is also
 returned in each response.
 
 The following example shows a typical response to a create message::
 
-    {
-      "jsonrpc": "2.0",
-      "id": 1,
-      "result": {
-        "value": "442352747",
-        "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 3,
+       "result": {
+           "value": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/087b7777-aab5-4787-816f-f0de19e5b1d9_kurento.WebRtcEndpoint",
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-Invoke messages
----------------
+Invoke
+------
 
 Invoke message requests the invocation of an operation in the specified object.
 The parameter ``object`` indicates the ``id`` of the object in which the
@@ -200,69 +232,67 @@ operation will be invoked. The parameter ``operation`` carries the name of the
 operation to be executed. Finally, the parameter ``operationParams`` has the
 parameters needed to execute the operation.
 
-The following example shows a ``Request`` message requesting the invocation of
-the operation ``connect`` on the object ``442352747`` with parameter sink
-``6829986``. The ``sessionId`` is also included as is mandatory for all
-requests in the session (except the first one)::
+The following example shows a request message requesting the invocation of the
+operation ``connect`` on a ``PlayerEndpoint`` connected to a
+``WebRtcEndpoint``::
 
-    {
-      "jsonrpc": "2.0",
-      "id": 2,
-      "method": "invoke",
-      "params": {
-        "object": "442352747",
-        "operation": "connect",
-        "operationParams": {
-          "sink": "6829986"
-        },
-        "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 5,
+       "method": "invoke",
+       "params": {
+           "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
+           "operation": "connect",
+           "operationParams": {
+               "sink": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/087b7777-aab5-4787-816f-f0de19e5b1d9_kurento.WebRtcEndpoint"
+           },
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-The ``Response message`` contains the value returned while executing the
-operation invoked in the object or nothing if the operation doesn’t return any
-value.
+The response message contains the value returned while executing the operation
+invoked in the object or nothing if the operation doesn’t return any value.
 
 The following example shows a typical response while invoking the operation
 ``connect`` (that doesn’t return anything)::
 
-    {
-      "jsonrpc": "2.0",
-      "result": {
-        "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      },
-      "id": 2
-    }
+   {
+       "id": 5,
+       "result": {
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-Release messages
-----------------
+Release
+-------
 
 Release message requests the release of the specified object. The parameter
 ``object`` indicates the ``id`` of the object to be released::
 
-    {
-      "jsonrpc": "2.0",
-      "id": 3,
-      "method": "release",
-      "params": {
-        "object": "442352747",
-        "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 36,
+       "method": "release",
+       "params": {
+           "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline",
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-The ``Response`` message only contains the ``sessionID``. The following example
+The response message only contains the ``sessionId``. The following example
 shows the typical response of a release request::
 
-    {
-      "jsonrpc":"2.0",
-      "id":3,
-      "result": {
-        "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 36,
+       "result": {
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-Subscribe messages
-------------------
+Subscribe
+---------
 
 Subscribe message requests the subscription to a certain kind of events in the
 specified object. The parameter ``object`` indicates the ``id`` of the object
@@ -272,75 +302,74 @@ each time an event is fired in this object, a request with method ``onEvent``
 is sent from Kurento Media Server to the client. This kind of request is
 described few sections later.
 
-The following example shows a ``Request`` message requesting the subscription of
-the event type ``EndOfStream`` on the object ``311861480``. The ``sessionId``
-is also included::
+The following example shows a request message requesting the subscription of the
+event type ``EndOfStream`` on a ``PlayerEndpoint`` object::
 
-    {
-      "jsonrpc":"2.0",
-      "id":4,
-      "method":"subscribe",
-      "params":{
-        "object":"311861480",
-        "type":"EndOfStream",
-        "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 11,
+       "method": "subscribe",
+       "params": {
+           "type": "EndOfStream",
+           "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-The ``Response`` message contains the subscription identifier. This value can be
+The response message contains the subscription identifier. This value can be
 used later to remove this subscription.
 
 The following example shows the response of subscription request. The ``value``
 attribute contains the subscription id::
 
-    {
-      "jsonrpc":"2.0",
-      "id":4,
-      "result": {
-        "value":"353be312-b7f1-4768-9117-5c2f5a087429",
-        "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 11,
+       "result": {
+           "value": "052061c1-0d87-4fbd-9cc9-66b57c3e1280",
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-Unsubscribe messages
---------------------
+
+Unsubscribe
+-----------
 
 Unsubscribe message requests the cancellation of a previous event subscription.
 The parameter subscription contains the subscription ``id`` received from the
 server when the subscription was created.
 
-The following example shows a ``Request`` message requesting the cancellation of
-the subscription ``353be312-b7f1-4768-9117-5c2f5a087429`` for a given
-``object``::
+The following example shows a request message requesting the cancellation of the
+subscription ``353be312-b7f1-4768-9117-5c2f5a087429`` for a given ``object``::
 
-    {
-      "jsonrpc":"2.0",
-      "id":5,
-      "method":"unsubscribe",
-      "params": {
-        "object":"3e306e63-0760-4cdc-a3b3-d9e3789f7af6_kurento.MediaPipeline/cbff7437-8fc5-4324-84ce-26e0b0648dd1_kurento.WebRtcEndpoint",
-        "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
-        "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 38,
+       "method": "unsubscribe",
+       "params": {
+           "subscription": "052061c1-0d87-4fbd-9cc9-66b57c3e1280",
+           "object": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline/76dcb8d7-5655-445b-8cb7-cf5dc91643bc_kurento.PlayerEndpoint",
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-The ``Response`` message only contains the ``sessionID``. The following example
+The response message only contains the ``sessionId``. The following example
 shows the typical response of an unsubscription request::
 
-    {
-      "jsonrpc":"2.0",
-      "id":5,
-      "result": {
-        "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      }
-    }
+   {
+       "id": 38,
+       "result": {
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
 
-OnEvent Message
----------------
+OnEvent
+-------
 
 When a client is subscribed to a type of events in an object, the server sends
 an ``onEvent`` request each time an event of that type is fired in the object.
-This is possible because the Kurento Protocol is implemented with websockets
+This is possible because the Kurento Protocol is implemented with WebSockets
 and there is a full duplex channel between client and server. The request that
 server send to client has all the information about the event:
 
@@ -372,8 +401,8 @@ an event of type ``EndOfStream`` for a ``PlayerEndpoint`` object::
        }
     }
 
-Notice that this message has no ``id`` field due to the fact that no
-``Response`` is required.
+Notice that this message has no ``id`` field due to the fact that no response is
+required.
 
 Network issues
 ==============
@@ -384,7 +413,7 @@ garbage collector.
 A Media Element is collected when the client is disconnected longer than 4
 minutes. After that time, these media elements are disposed automatically.
 
-Therefore the websocket connection between client and KMS be active any time. In
+Therefore the WebSocket connection between client and KMS be active any time. In
 case of temporary network disconnection, KMS implements a mechanism to allow
 the client reconnection.
 
@@ -466,7 +495,8 @@ The steps are the following:
       "method":"create",
       "params":{
          "type":"MediaPipeline",
-         "constructorParams":{}
+         "constructorParams":{},
+         "properties":{}
       },
       "jsonrpc":"2.0"
     }
@@ -493,6 +523,7 @@ the media session::
          "constructorParams":{
             "mediaPipeline":"c4a84b47-1acd-4930-9f6d-008c10782dfe_MediaPipeline"
          },
+         "properties": {},
          "sessionId":"ba4be2a1-2b09-444e-a368-f81825a6168c"
       },
       "jsonrpc":"2.0"
