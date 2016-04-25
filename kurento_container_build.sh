@@ -92,12 +92,4 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
   done
 
   docker logout
-else
-  # Remove image and its tags
-  docker rmi $IMAGE_NAME:${TAG}-${commit}
-  docker rmi $IMAGE_NAME:${TAG}
-  for EXTRA_TAG in $EXTRA_TAGS
-  do
-    docker rmi $IMAGE_NAME:$EXTRA_TAG
-  done
 fi
