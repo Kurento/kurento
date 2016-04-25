@@ -22,16 +22,6 @@ following:
            "garbageCollectorPeriod": 240
        },
        "net" : {
-         // Uncomment just one of them
-         /*
-         "rabbitmq": {
-           "address" : "127.0.0.1",
-           "port" : 5672,
-           "username" : "guest",
-           "password" : "guest",
-           "vhost" : "/"
-         }
-         */
          "websocket": {
            "port": 8888,
            //"secure": {
