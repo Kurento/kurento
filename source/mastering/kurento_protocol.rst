@@ -185,14 +185,47 @@ information needed to create the object. Each message needs different
 ``constructorParams`` to create the object. These parameters are defined in
 :doc:`Kurento API section <kurento_API>`.
 
-Finally, a ``sessionId`` parameter is included with the identifier of the
-current session. The value of this parameter is sent by Kurento Media Server to
-the client in each response. Only the first requests from client to server are
-allowed to not include the ''sessionId'' (because at this point is unknown for
-the client).
+Media Elements have to be contained in a previously created Media Pipeline.
+Therefore, before creating Media Elements, a Media Pipeline must exist. The
+response of the creation of a Media Pipeline contains a parameter called
+``sessionId``, which must be included in the next create requests for Media
+Elements.
 
 The following example shows a request message requesting the creation of an
-object of the type ``WebRtcEndpoint`` within an existing Media Pipeline::
+object of the type ``MediaPipeline``::
+
+   {
+       "id": 2,
+       "method": "create",
+       "params": {
+           "type": "MediaPipeline",
+           "constructorParams": {},
+           "properties": {}
+       },
+       "jsonrpc": "2.0"
+   }
+
+The response to this request message is as follows. Notice that the parameter
+``value`` identifies the created Media Pipelines, and ``sessionId`` is the
+identifier of the current session::
+
+   {
+       "id": 2,
+       "result": {
+           "value": "6ba9067f-cdcf-4ea6-a6ee-d74519585acd_kurento.MediaPipeline",
+           "sessionId": "bd4d6227-0463-4d52-b1c3-c71f0be68466"
+       },
+       "jsonrpc": "2.0"
+   }
+
+The response message contains the identifier of the new object in the field
+value. As usual, the message ``id`` must match with the request message. The
+``sessionId`` is also returned in each response. The following example shows a
+request message requesting the creation of an object of the type
+``WebRtcEndpoint`` within an existing Media Pipeline (identified by the
+parameter ``mediaPipeline``). Notice that in this request, the ``sessionId`` is
+already present, while in the previous example it was not (since at that point
+was unknown for the client)::
 
    {
        "id": 3,
@@ -208,12 +241,11 @@ object of the type ``WebRtcEndpoint`` within an existing Media Pipeline::
        "jsonrpc": "2.0"
    }
 
-The response message contains the ``id`` of the new object in the field
-``value``. This message ``id`` has to be used in other requests of the protocol
-(as we will describe later). As stated before, the ``sessionId`` is also
-returned in each response.
-
-The following example shows a typical response to a create message::
+The following example shows a request message requesting the creation of an
+object of the type ``WebRtcEndpoint`` within an existing Media Pipeline
+(identified by the parameter ``mediaPipeline``). Notice that in this request,
+the ``sessionId`` is already present, while in the previous example it was not
+(since at that point was unknown for the client)::
 
    {
        "id": 3,
