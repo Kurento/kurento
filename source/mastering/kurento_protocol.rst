@@ -34,14 +34,15 @@ An *RPC call* is represented by sending a *request* message to a server. The
 -  **params**: a structured value that holds the parameter values to be used
    during the invocation of the method.
 
-The following JSON shows a sample requests::
+The following JSON shows a sample request for the creation of a `PlayerEndpoint`
+Media Element::
 
     {
       "jsonrpc": "2.0",
       "id": 1,
       "method": "create",
       "params": {
-        "type": "PlayerEndPoint",
+        "type": "PlayerEndpoint",
         "constructorParams": {
           "pipeline": "6829986",
           "uri": "http://host/app/video.mp4"
@@ -177,16 +178,16 @@ the ``pong`` response to the previous ``ping`` request::
 Create
 ------
 
-Create message requests the creation of an object of the Kurento API. The
-parameter ``type`` specifies the type of the object to be created. The
-parameter ``constructorParams`` contains all the information needed to create
-the object. Each message needs different ``constructorParams`` to create the
-object. These parameters are defined in
+Create message requests the creation of an object of the Kurento API (Media
+Pipelines and Media Elements). The parameter ``type`` specifies the type of the
+object to be created. The parameter ``constructorParams`` contains all the
+information needed to create the object. Each message needs different
+``constructorParams`` to create the object. These parameters are defined in
 :doc:`Kurento API section <kurento_API>`.
 
 Finally, a ``sessionId`` parameter is included with the identifier of the
 current session. The value of this parameter is sent by Kurento Media Server to
-the client in each response. Only the first request from client to server is
+the client in each response. Only the first requests from client to server are
 allowed to not include the ''sessionId'' (because at this point is unknown for
 the client).
 
