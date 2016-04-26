@@ -6,12 +6,8 @@ import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_CONTAINER_NAM
 import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_CONTAINER_NAME_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_HUB_IMAGE_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_CHROME_IMAGE_PROPERTY;
-import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT;
-import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.DOCKER_NODE_FIREFOX_IMAGE_PROPERTY;
 import static org.kurento.test.config.TestConfiguration.DOCKER_VNCRECORDER_CONTAINER_NAME_DEFAULT;
@@ -510,22 +506,12 @@ public class DockerBrowserManager {
     if (browserName.equals(DesiredCapabilities.chrome().getBrowserName())) {
 
       // Chrome
-      if (record) {
-        return getProperty(DOCKER_NODE_CHROME_DEBUG_IMAGE_PROPERTY,
-            DOCKER_NODE_CHROME_DEBUG_IMAGE_DEFAULT);
-      } else {
-        return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY, DOCKER_NODE_CHROME_IMAGE_DEFAULT);
-      }
+      return getProperty(DOCKER_NODE_CHROME_IMAGE_PROPERTY, DOCKER_NODE_CHROME_IMAGE_DEFAULT);
 
     } else if (browserName.equals(DesiredCapabilities.firefox().getBrowserName())) {
 
       // Firefox
-      if (record) {
-        return getProperty(DOCKER_NODE_FIREFOX_DEBUG_IMAGE_PROPERTY,
-            DOCKER_NODE_FIREFOX_DEBUG_IMAGE_DEFAULT);
-      } else {
-        return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY, DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
-      }
+      return getProperty(DOCKER_NODE_FIREFOX_IMAGE_PROPERTY, DOCKER_NODE_FIREFOX_IMAGE_DEFAULT);
 
     } else {
       throw new RuntimeException(
