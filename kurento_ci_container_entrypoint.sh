@@ -18,8 +18,13 @@ if [ -f "$GIT_KEY" ]; then
       StrictHostKeyChecking no
       User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkins)
       IdentityFile /root/.ssh/git_id_rsa
+      KexAlgorithms +diffie-hellman-group1-sha1
 EOF
 fi
+RUN mkdir -p /root/.ssh \
+  && echo "Host code.kurento.org" >> /root/.ssh/config \
+  && echo "  KexAlgorithms +diffie-hellman-group1-sha1" >> /root/.ssh/config
+
 
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
