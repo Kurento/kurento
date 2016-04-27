@@ -93,3 +93,6 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
 
   docker logout
 fi
+
+# Remove dangling images
+docker rmi $(sudo docker images -f "dangling=true" -q)
