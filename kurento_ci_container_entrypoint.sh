@@ -8,6 +8,9 @@ PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
 
 echo "Preparing environment..."
 
+DIST=$(lsb_release -c)
+DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
+
 # Configure SSH keys
 if [ -f "$GIT_KEY" ]; then
     mkdir -p /root/.ssh
@@ -19,14 +22,20 @@ if [ -f "$GIT_KEY" ]; then
       User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkins)
       IdentityFile /root/.ssh/git_id_rsa
 EOF
-    DIST=$(lsb_release -c)
-    DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
     if [ "$DIST" = "xenial" ]; then
       cat >> /root/.ssh/config<<-EOF
         KexAlgorithms +diffie-hellman-group1-sha1
 EOF
     fi
 fi
+
+if [ "$DIST" = "xenial" ]; then
+  apt-get install -y python-git python-yaml python-apt python-debian python-requests  sudo wget
+  wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
+  dpkg -i *deb
+  rm *deb
+fi
+
 RUN mkdir -p /root/.ssh \
   && echo "Host code.kurento.org" >> /root/.ssh/config \
   && echo "  KexAlgorithms +diffie-hellman-group1-sha1" >> /root/.ssh/config
