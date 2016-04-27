@@ -14,7 +14,7 @@ if [ -f "$GIT_KEY" ]; then
     cp $GIT_KEY /root/.ssh/git_id_rsa
     chmod 600 /root/.ssh/git_id_rsa
     export KEY=/root/.ssh/git_id_rsa
-    cat >> /root/.ssh/config <<-EOF
+    cat > /root/.ssh/config <<-EOF
       StrictHostKeyChecking no
       User $([ -n "$GERRIT_USER" ] && echo $GERRIT_USER || echo jenkins)
       IdentityFile /root/.ssh/git_id_rsa
