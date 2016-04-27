@@ -95,4 +95,4 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
 fi
 
 # Remove dangling images
-docker rmi $(sudo docker images -f "dangling=true" -q)
+docker rmi $(docker images -f "dangling=true" -q) || exit 0
