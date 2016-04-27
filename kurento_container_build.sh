@@ -50,7 +50,8 @@ echo "Extra tags: ${image_extra_tags[@]}"
 # This is the case of selenium images
 if [ -f generate.sh ]; then
   echo "Generating Dockerfile..."
-  ./generate.sh $TAG
+  [ -n "${image_parent_version}" ] || image_parent_version=$TAG
+  ./generate.sh ${image_parent_version}
 fi
 
 # Build using a tag composed of the original tag and the short commit id
