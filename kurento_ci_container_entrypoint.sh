@@ -30,6 +30,12 @@ EOF
 fi
 
 if [ "$DIST" = "xenial" ]; then
+  if [ -n "$UBUNTU_PRIV_S3_ACCESS_KEY_ID" ] && [ -n "$UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID" ]; then
+    echo "AccessKeyId = $UBUNTU_PRIV_S3_ACCESS_KEY_ID
+    SecretAccessKey = $UBUNTU_PRIV_S3_SECRET_ACCESS_KEY_ID
+    Token = ''" >/etc/apt/s3auth.conf
+  fi
+
   apt-get install -y python-git python-yaml python-apt python-debian python-requests  sudo wget
   wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
   dpkg -i *deb
