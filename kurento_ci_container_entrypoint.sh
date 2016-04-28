@@ -4,7 +4,7 @@ echo "##################### EXECUTE: kurento_ci_container_entrypoint ###########
 [ -n "$1" ] || { echo "No script to run specified. Need one to run after preparing the environment"; exit 1; }
 BUILD_COMMAND=$@
 
-PATH=$PATH:$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms
+PATH=$(realpath $(dirname "$0")):$(realpath $(dirname "$0"))/kms:$PATH
 
 echo "Preparing environment..."
 
@@ -36,7 +36,7 @@ if [ "$DIST" = "xenial" ]; then
     Token = ''" >/etc/apt/s3auth.conf
   fi
 
-  apt-get install -y python-git python-yaml python-apt python-debian python-requests  sudo wget
+  apt-get install -y kurento-adm-scripts wget
   wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
   dpkg -i *deb
   rm *deb
