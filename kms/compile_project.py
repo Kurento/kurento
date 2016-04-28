@@ -472,7 +472,9 @@ def generate_debian_package(args, config):
         exit(1)
 
     if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
-        os.system("sudo apt-get install -f")
+        if os.system(
+                "sudo apt-get install --allow-change-held-packages --allow-downgrades -f -y -q") != 0:
+            os.system("sudo apt-get install --force-yes -f -y -q")
         if os.system("sudo dpkg -i ../*" + new_version + "_*.deb") != 0:
             print("Packages are not installable")
             exit(1)
