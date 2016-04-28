@@ -33,12 +33,8 @@ import java.util.Collection;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.testing.SystemStabilityTests;
-import org.kurento.test.browser.WebRtcChannel;
-import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.config.VideoFormat;
 import org.kurento.test.functional.player.SimplePlayer;
 
 /**
@@ -83,36 +79,212 @@ public class PlayerMultiplePlayTest extends SimplePlayer {
   }
 
   @Test
-  public void testPlayerMultiplePlay() {
-    Protocol[] protocols = { HTTP, FILE };
-    VideoFormat[] videoFormats = { THIRDGP, AVI, MKV, MOV, MP4, OGV, WEBM };
-    WebRtcChannel[] webRtcChannels = { AUDIO_AND_VIDEO, AUDIO_ONLY, VIDEO_ONLY };
-    int numError = 0;
-    Throwable t1 = null;
-
-    for (Protocol protocol : protocols) {
-      for (VideoFormat videoFormat : videoFormats) {
-        for (WebRtcChannel webRtcChannel : webRtcChannels) {
-          do {
-            try {
-              testPlayerWithSmallFile(protocol, videoFormat, webRtcChannel);
-              getPage().reload();
-            } catch (Throwable t) {
-              getPage().reload();
-              numError++;
-              if (numError > 2) {
-                throw new KurentoException("2 Exceptions happens: " + t1.getClass().getName() + " "
-                    + t1.getMessage() + " and " + t.getClass().getName() + " " + t.getMessage());
-              } else {
-                t1 = t;
-              }
-              continue;
-            }
-            break;
-          } while (true);
-        }
-      }
-    }
+  public void testPlayerMultiplePlayAudioVideoHttp3gp() throws Exception {
+    testPlayerWithSmallFile(HTTP, THIRDGP, AUDIO_AND_VIDEO);
   }
 
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttp3gp() throws Exception {
+    testPlayerWithSmallFile(HTTP, THIRDGP, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttp3gp() throws Exception {
+    testPlayerWithSmallFile(HTTP, THIRDGP, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoHttpAvi() throws Exception {
+    testPlayerWithSmallFile(HTTP, AVI, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttpAvi() throws Exception {
+    testPlayerWithSmallFile(HTTP, AVI, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttpAvi() throws Exception {
+    testPlayerWithSmallFile(HTTP, AVI, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoHttpMkv() throws Exception {
+    testPlayerWithSmallFile(HTTP, MKV, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttpMkv() throws Exception {
+    testPlayerWithSmallFile(HTTP, MKV, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttpMkv() throws Exception {
+    testPlayerWithSmallFile(HTTP, MKV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoHttpMov() throws Exception {
+    testPlayerWithSmallFile(HTTP, MOV, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttpMov() throws Exception {
+    testPlayerWithSmallFile(HTTP, MOV, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttpMov() throws Exception {
+    testPlayerWithSmallFile(HTTP, MOV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoHttpMp4() throws Exception {
+    testPlayerWithSmallFile(HTTP, MP4, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttpMp4() throws Exception {
+    testPlayerWithSmallFile(HTTP, MP4, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttpMp4() throws Exception {
+    testPlayerWithSmallFile(HTTP, MP4, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoHttpOgv() throws Exception {
+    testPlayerWithSmallFile(HTTP, OGV, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttpOgv() throws Exception {
+    testPlayerWithSmallFile(HTTP, OGV, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttpOgv() throws Exception {
+    testPlayerWithSmallFile(HTTP, OGV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoHttpWebm() throws Exception {
+    testPlayerWithSmallFile(HTTP, WEBM, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyHttpWebm() throws Exception {
+    testPlayerWithSmallFile(HTTP, WEBM, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyHttpWebm() throws Exception {
+    testPlayerWithSmallFile(HTTP, WEBM, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFile3gp() throws Exception {
+    testPlayerWithSmallFile(FILE, THIRDGP, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFile3gp() throws Exception {
+    testPlayerWithSmallFile(FILE, THIRDGP, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFile3gp() throws Exception {
+    testPlayerWithSmallFile(FILE, THIRDGP, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFileAvi() throws Exception {
+    testPlayerWithSmallFile(FILE, AVI, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFileAvi() throws Exception {
+    testPlayerWithSmallFile(FILE, AVI, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFileAvi() throws Exception {
+    testPlayerWithSmallFile(FILE, AVI, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFileMkv() throws Exception {
+    testPlayerWithSmallFile(FILE, MKV, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFileMkv() throws Exception {
+    testPlayerWithSmallFile(FILE, MKV, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFileMkv() throws Exception {
+    testPlayerWithSmallFile(FILE, MKV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFileMov() throws Exception {
+    testPlayerWithSmallFile(FILE, MOV, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFileMov() throws Exception {
+    testPlayerWithSmallFile(FILE, MOV, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFileMov() throws Exception {
+    testPlayerWithSmallFile(FILE, MOV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFileMp4() throws Exception {
+    testPlayerWithSmallFile(FILE, MP4, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFileMp4() throws Exception {
+    testPlayerWithSmallFile(FILE, MP4, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFileMp4() throws Exception {
+    testPlayerWithSmallFile(FILE, MP4, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFileOgv() throws Exception {
+    testPlayerWithSmallFile(FILE, OGV, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFileOgv() throws Exception {
+    testPlayerWithSmallFile(FILE, OGV, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFileOgv() throws Exception {
+    testPlayerWithSmallFile(FILE, OGV, VIDEO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioVideoFileWebm() throws Exception {
+    testPlayerWithSmallFile(FILE, WEBM, AUDIO_AND_VIDEO);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayAudioOnlyFileWebm() throws Exception {
+    testPlayerWithSmallFile(FILE, WEBM, AUDIO_ONLY);
+  }
+
+  @Test
+  public void testPlayerMultiplePlayVideoOnlyFileWebm() throws Exception {
+    testPlayerWithSmallFile(FILE, WEBM, VIDEO_ONLY);
+  }
 }
