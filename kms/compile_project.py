@@ -341,8 +341,11 @@ def install_dependency(cache, dep):
 
         # Install selected dependency version
         print("Installing " + pkg_name + version)
-        os.system("sudo apt-get install --force-yes -y -q " + pkg_name +
-                  version)
+        if os.system(
+                "sudo apt-get install --allow-change-held-packages --allow-downgrades -f -y -q "
+                + pkg_name + version) != 0:
+            os.system("sudo apt-get install --force-yes -f -y -q " + pkg_name +
+                      version)
         cache = Cache()
         gc.collect()
         if check_deb_dependency_installed(cache, dep):
