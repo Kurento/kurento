@@ -36,12 +36,13 @@ if [ "$DIST" = "xenial" ]; then
     Token = ''" >/etc/apt/s3auth.conf
   fi
 
-  apt-get install -y kurento-adm-scripts wget
+  apt-get install -y wget
   wget http://archive.ubuntu.com/ubuntu/pool/main/libt/libtimedate-perl/libtimedate-perl_2.3000-2_all.deb
   dpkg -i *deb
   rm *deb
-
   wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add -
+  apt-get update
+  apt-get install -y --allow-change-held-packages kurento-adm-scripts
 fi
 
 RUN mkdir -p /root/.ssh \
