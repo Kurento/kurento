@@ -8,41 +8,39 @@ pullAndTag() {
 }
 
 # Internal (private) images
-[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.47.1"
+[ -n "$SELENIUM_VERSION" ] || SELENIUM_VERSION="2.53.0"
 [ -n "$KURENTO_REGISTRY_URI" ] || KURENTO_REGISTRY_URI="$KURENTO_REGISTRY_URI"
 
 # dev-integration images (for Java & JS)
 NODE_VERSIONS="0.12 4.x 5.x"
 for NODE_VERSION in $NODE_VERSIONS
 do
-	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-7-node-$NODE_VERSION
-	dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration:jdk-8-node-$NODE_VERSION
+	pullAndTag kurento/dev-integration:jdk-7-node-$NODE_VERSION
+	pullAndTag kurento/dev-integration:jdk-8-node-$NODE_VERSION
 done
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-0.12
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
+pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-0.12
+pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 
 # kurento-media-server development version with core dump & public modules
-docker pull $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest
-docker tag -f $KURENTO_REGISTRY_URI/kurento/kurento-media-server-dev:latest kurento/kurento-media-server-dev:latest
+pullAndTag kurento/kurento-media-server-dev:latest
 
 # coturn image
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/coturn:1.1.0
+pullAndTag kurento/coturn:1.1.0
 
 # svn-client to extract files from svn into a docker host
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/svn-client:1.0.0
+pullAndTag kurento/svn-client:1.0.0
 
 # dev-documentation images (for documentation projects)
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0-jdk-7
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-documentation:1.0.0-jdk-8
+kurento/dev-documentation:1.0.0-jdk-7
+kurento/dev-documentation:1.0.0-jdk-8
 
 # dev-media-server images (for media server projects)
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-7
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-media-server:trusty-jdk-8
-docker pull $KURENTO_REGISTRY_URI/kurento/dev-media-server:wily-jdk-7
-docker pull $KURENTO_REGISTRY_URI/kurento/dev-media-server:wily-jdk-8
+pullAndTag kurento/dev-media-server:trusty-jdk-7
+pullAndTag kurento/dev-media-server:trusty-jdk-8
+pullAndTag kurento/dev-media-server:wily-jdk-8
 
 # dev-chef image
-dogestry pull s3://kurento-docker/?region=eu-west-1 kurento/dev-chef:1.0.0
+pullAndTag kurento/dev-chef:1.0.0
 
 # Selenium images
 echo "Pulling images for selenium version $SELENIUM_VERSION"
