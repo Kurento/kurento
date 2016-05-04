@@ -73,6 +73,8 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   private boolean retryingIfTimeoutToConnect = false;
 
+  private boolean startSessionWhenConnected = false;
+
   public AbstractJsonRpcClientWebSocket(String url,
       JsonRpcWSConnectionListener connectionListener) {
 
@@ -566,6 +568,18 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     connectIfNecessary();
   }
 
+  public void connectWithSession() throws IOException {
+
+    this.startSessionWhenConnected = true;
+
+    this.closedByClient = false;
+
+    connectIfNecessary();
+
+    log.info("{} Connected to server with session {}", label, getSession().getSessionId());
+
+  }
+
   protected void internalConnectIfNecessary() throws IOException {
 
     if (!isNativeClientConnected()) {
@@ -630,6 +644,10 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       }
 
     } else {
+
+      if (startSessionWhenConnected) {
+        rsHelper.sendRequest(METHOD_CONNECT, String.class);
+      }
 
       handlerManager.afterConnectionEstablished(session);
       fireConnected();
