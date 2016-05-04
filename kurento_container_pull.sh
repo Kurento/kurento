@@ -1,5 +1,7 @@
 #!/bin/bash
 
+docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
+
 pullAndTag() {
 	echo "Pulling $KURENTO_REGISTRY_URI/$1"
 	docker pull $KURENTO_REGISTRY_URI/$1
@@ -73,5 +75,7 @@ if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
         docker rmi kurento/kurento-media-server-dev:$image || $status=$[$status || $?]
     done
 fi
+
+docker logout
 
 exit $status
