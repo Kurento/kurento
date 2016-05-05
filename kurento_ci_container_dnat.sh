@@ -19,7 +19,10 @@ echo "Starting..."
 echo "Selected ip: $ip"
 
 # Add Net namespaces
-ln -s /proc/$docker_pid/ns/net /var/run/netns/$docker_pid-cont
+[ ! -f /proc/$docker_pid/ns/net ] && echo "No such file /proc/$docker_pid/ns/net"
+ln -s /proc/$docker_pid/ns/net /var/run/netns/$docker_pid-cont || (echo "No link created"; exit 1)
+ls -la /var/run/netns/
+ip netns list
 ip netns add $docker_pid-bridge
 ip netns add $docker_pid-route
 
