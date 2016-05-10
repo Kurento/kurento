@@ -39,7 +39,7 @@ kurento/dev-documentation:1.0.0-jdk-8
 # dev-media-server images (for media server projects)
 pullAndTag kurento/dev-media-server:trusty-jdk-7
 pullAndTag kurento/dev-media-server:trusty-jdk-8
-pullAndTag kurento/dev-media-server:wily-jdk-8
+pullAndTag kurento/dev-media-server:xenial-jdk-8
 
 # dev-chef image
 pullAndTag kurento/dev-chef:1.0.0
