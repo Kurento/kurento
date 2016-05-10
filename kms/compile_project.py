@@ -11,15 +11,15 @@ import urlparse
 from datetime import datetime
 from time import strftime, time
 
+import git
 import requests
-import yaml
 from apt.cache import Cache
 from debian.changelog import Changelog
 from debian.deb822 import Deb822, PkgRelation
+from git import Repo
 
 import apt_pkg
-import git
-from git import Repo
+import yaml
 
 # sudo apt-get install curl python-git python-yaml python-apt python-debian python-requests git-review
 
@@ -418,7 +418,7 @@ def upload_package(args, config, dist, package, publish=False):
         request_http(publish_url, args.cert.name, args.id_rsa.name)
 
 
-def generate_debian_package(args, config):
+def install_deb_dependencies(cache):
     debfile = Deb822(
         open("debian/control"),
         fields=["Build-Depends", "Build-Depends-Indep"])
@@ -428,8 +428,6 @@ def generate_debian_package(args, config):
         rel_str = rel_str + "," + debfile.get("Build-Depends-Indep")
 
     relations = PkgRelation.parse_relations(rel_str)
-
-    cache = Cache()
 
     # Check if all required packages are installed
     for dep in relations:
@@ -441,6 +439,8 @@ def generate_debian_package(args, config):
                                                                             ]))
                 exit(1)
 
+
+def generate_debian_package(args, config):
     changelog = Changelog(open("debian/changelog"))
     old_changelog = Changelog(open("debian/changelog"))
 
@@ -502,7 +502,7 @@ def generate_debian_package(args, config):
 def check_dependency_installed(cache, dependency, debian_control_str):
     print("Check dependency installed: " + str(dependency))
 
-    ret_val = True
+    ret_val = False
 
     #f = open("debian/control")
     while True:
@@ -516,9 +516,7 @@ def check_dependency_installed(cache, dependency, debian_control_str):
             dep = dependency
             dep["name"] = pkg_name
 
-            if not check_deb_dependency_installed(cache, [dep]):
-                print("Package not installed " + debfile["Package"])
-                ret_val = ret_val and install_dependency(cache, [dep])
+            ret_val = ret_val or check_deb_dependency_installed(cache, [dep])
 
     return ret_val
 
@@ -536,6 +534,12 @@ def compile_project(args):
         exit(1)
 
     cache = Cache()
+
+    install_deb_dependencies(cache)
+
+    cache = Cache()
+    gc.collect()
+
     # Parse dependencies and check if corrects versions are found
     if config.has_key("dependencies"):
         # Parse dependencies config
