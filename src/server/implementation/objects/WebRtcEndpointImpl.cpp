@@ -37,6 +37,7 @@ namespace kurento
 
 static const uint DEFAULT_STUN_PORT = 3478;
 
+std::once_flag check_openh264;
 std::vector<std::string> supported_codecs = { "VP8", "opus", "PCMU" };
 
 static void
@@ -342,6 +343,8 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::string turnURL;
   std::string pemUri;
   std::string pemCertificate;
+
+  std::call_once (check_openh264, check_support_for_h264);
 
   if (useDataChannels) {
     g_object_set (element, "use-data-channels", TRUE, NULL);
@@ -822,8 +825,6 @@ WebRtcEndpointImpl::StaticConstructor::StaticConstructor()
 {
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
                            GST_DEFAULT_NAME);
-
-  check_support_for_h264 ();
 }
 
 } /* kurento */
