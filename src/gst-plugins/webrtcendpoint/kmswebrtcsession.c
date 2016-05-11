@@ -1327,35 +1327,6 @@ kms_webrtc_session_configure_connection (KmsWebrtcSession * self,
   return TRUE;
 }
 
-static void
-kms_webrtc_session_configure_connections (KmsWebrtcSession * self,
-    KmsSdpSession * sess, gboolean offerer)
-{
-  GSList *item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
-  GSList *remote_media_list =
-      kms_sdp_message_context_get_medias (sess->remote_sdp_ctx);
-
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *neg_mconf = item->data;
-    gint mid = kms_sdp_media_config_get_id (neg_mconf);
-    SdpMediaConfig *remote_mconf;
-
-    if (kms_sdp_media_config_is_inactive (neg_mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
-      continue;
-    }
-
-    remote_mconf = g_slist_nth_data (remote_media_list, mid);
-    if (remote_mconf == NULL) {
-      GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
-      continue;
-    }
-
-    kms_webrtc_session_configure_connection (self, sess, neg_mconf,
-        remote_mconf, offerer);
-  }
-}
-
 void
 kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
     gboolean offerer)
@@ -1382,9 +1353,6 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
         offerer, NULL);
   }
 
-  /* Configure specific webrtc connection such as SCTP if negotiated */
-  kms_webrtc_session_configure_connections (self, sdp_sess, offerer);
-
   ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
   pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
 
@@ -1409,6 +1377,11 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
       GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
       continue;
     }
+
+    /* Configure specific webrtc connection such as SCTP if negotiated */
+    kms_webrtc_session_configure_connection (self, sdp_sess, neg_mconf,
+        remote_mconf, offerer);
+
     gst_media_add_remote_candidates (self, remote_mconf, conn, ufrag, pwd);
   }
 
