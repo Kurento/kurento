@@ -49,12 +49,7 @@ last_release=$(git describe --abbrev=0 --tags || git rev-list --max-parents=0 HE
 
 export rc=$(git log ${last_release}..HEAD --oneline | wc -l)
 
-if [ $(dpkg -l | grep postpone | wc -l) -lt 1 ]
-then
-  DEBIAN_FRONTEND=noninteractive sudo apt-get install --force-yes -y postpone
-fi
-
-DEBIAN_FRONTEND=noninteractive sudo postpone -d -f apt-get install --force-yes -y lsb-release python-yaml python-simplejson  || exit 1
+DEBIAN_FRONTEND=noninteractive sudo apt-get install --force-yes -y lsb-release python-yaml python-simplejson  || exit 1
 
 DIST=$(lsb_release -c)
 DIST=$(echo ${DIST##*:} | tr -d ' ' | tr -d '\t')
