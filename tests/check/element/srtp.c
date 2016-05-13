@@ -99,7 +99,7 @@ GST_START_TEST (test_window_size)
   fail_unless (ret == GST_FLOW_OK);
 
   ret = gst_harness_push (h, generate_test_buffer (0));
-  fail_unless (ret == GST_FLOW_ERROR);
+  fail_unless (ret == GST_FLOW_OK);
 
   gst_harness_teardown (h);
   g_object_unref (srtpenc);
