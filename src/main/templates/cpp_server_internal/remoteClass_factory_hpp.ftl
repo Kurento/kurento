@@ -8,6 +8,7 @@ ${remoteClass.name}ImplFactory.hpp
 <#if remoteClass.extends??>
 #include "${remoteClass.extends.name}ImplFactory.hpp"
 </#if>
+#include <Factory.hpp>
 #include <MediaObjectImpl.hpp>
 #include <boost/property_tree/ptree.hpp>
 
