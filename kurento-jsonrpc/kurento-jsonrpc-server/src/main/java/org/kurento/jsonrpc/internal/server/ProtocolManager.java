@@ -57,6 +57,8 @@ import com.google.gson.reflect.TypeToken;
 
 public class ProtocolManager {
 
+  public static final String CLIENT_CLOSED_CLOSE_REASON = "Client sent close message";
+
   private static final String INTERVAL_PROPERTY = "interval";
 
   public interface ServerSessionFactory {
@@ -307,7 +309,7 @@ public class ProtocolManager {
     }
 
     if (session != null) {
-      this.closeSession(session, "Client sent close message");
+      this.closeSession(session, CLIENT_CLOSED_CLOSE_REASON);
     } else {
       log.warn(
           "No server session found for transportId {}. Could not close session associated to transport. "
