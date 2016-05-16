@@ -45,7 +45,7 @@ kms_webrtc_transport_src_connect_elements (KmsWebrtcTransportSrc * self)
 
   srtpdec = gst_bin_get_by_name (GST_BIN (self->dtlssrtpdec), SRTPDEC_NAME);
   if (srtpdec != NULL) {
-    g_object_set (srtpdec, "replay-window-size", SRTP_REPLAY_WINDOW_SIZE, NULL);
+    g_object_set (srtpdec, "replay-window-size", RTP_RTX_SIZE, NULL);
     g_object_unref (srtpdec);
   } else {
     GST_WARNING ("Cannot get srtpdec with name %s", SRTPDEC_NAME);

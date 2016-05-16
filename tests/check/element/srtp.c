@@ -27,6 +27,8 @@
 #define PCMU_BUF_SIZE (64000 * PCMU_BUF_MS / 1000)
 #define PCMU_RTP_TS_DURATION (PCMU_BUF_CLOCK_RATE * PCMU_BUF_MS / 1000)
 
+#define SRTP_REPLAY_WINDOW_SIZE G_MAXINT16      /* packets */
+
 /* based on rtpjitterbuffer.c */
 static GstCaps *
 generate_caps (void)
@@ -107,6 +109,36 @@ GST_START_TEST (test_window_size)
 
 GST_END_TEST;
 
+GST_START_TEST (test_allow_repeat_tx)
+{
+  GstElement *srtpenc = gst_element_factory_make ("srtpenc", NULL);
+  GstHarness *h;
+  GstFlowReturn ret;
+
+  g_object_set (srtpenc, "random-key", TRUE, "allow-repeat-tx", TRUE,
+      "replay-window-size", 64, NULL);
+  h = gst_harness_new_with_element (srtpenc, "rtp_sink_0", "rtp_src_0");
+
+  gst_harness_set_src_caps (h, generate_caps ());
+
+  ret = gst_harness_push (h, generate_test_buffer (0));
+  fail_unless (ret == GST_FLOW_OK);
+
+  ret = gst_harness_push (h, generate_test_buffer (1));
+  fail_unless (ret == GST_FLOW_OK);
+
+  ret = gst_harness_push (h, generate_test_buffer (65));
+  fail_unless (ret == GST_FLOW_OK);
+
+  ret = gst_harness_push (h, generate_test_buffer (1));
+  fail_unless (ret == GST_FLOW_OK);
+
+  gst_harness_teardown (h);
+  g_object_unref (srtpenc);
+}
+
+GST_END_TEST;
+
 static Suite *
 srtp_suite (void)
 {
@@ -115,6 +147,7 @@ srtp_suite (void)
 
   suite_add_tcase (s, tc_chain);
   tcase_add_test (tc_chain, test_window_size);
+  tcase_add_test (tc_chain, test_allow_repeat_tx);
 
   return s;
 }

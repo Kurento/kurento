@@ -55,7 +55,7 @@ kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink * self)
   srtpenc = gst_bin_get_by_name (GST_BIN (self->dtlssrtpenc), SRTPENC_NAME);
   if (srtpenc != NULL) {
     g_object_set (srtpenc, "allow-repeat-tx", TRUE, "replay-window-size",
-        SRTP_REPLAY_WINDOW_SIZE, NULL);
+        RTP_RTX_SIZE, NULL);
     g_object_unref (srtpenc);
   } else {
     GST_WARNING ("Cannot get srtpenc with name %s", SRTPENC_NAME);
