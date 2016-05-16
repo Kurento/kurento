@@ -356,7 +356,6 @@ public class WebPage {
   public boolean compareDataChannelMessage(String message) {
     boolean out;
     final long endTimeMillis = System.currentTimeMillis() + browser.getTimeout() * 1000;
-    boolean logWarn = true;
     while (true) {
       String messageReceived =
           (String) browser.executeScript("return kurentoTest.getDataChannelMessage()");
@@ -372,7 +371,6 @@ public class WebPage {
           log.trace("InterruptedException in guard condition ({})", e.getMessage());
         }
       }
-      logWarn = false;
     }
     return out;
   }
