@@ -457,7 +457,7 @@ public class KmsService extends TestService {
         getProperty(KMS_DOCKER_IMAGE_FORCE_PULLING_PROP, KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT);
 
     if (!dockerClient.existsImage(kmsImageName) || forcePulling) {
-      log.info("Pulling KMS image {} ... plase wait", kmsImageName);
+      log.info("Pulling KMS image {} ... please wait", kmsImageName);
       dockerClient.getClient().pullImageCmd(kmsImageName).exec(new PullImageResultCallback())
           .awaitSuccess();
       log.info("KMS image {} pulled", kmsImageName);
