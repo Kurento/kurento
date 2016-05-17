@@ -121,17 +121,22 @@ ${remoteClass.name}Impl::connect (const std::string &eventType, std::shared_ptr<
     std::weak_ptr<EventHandler> wh = handler;
 
     sigc::connection conn = signal${event.name}.connect ([ &, wh] (${event.name} event) {
-      JsonSerializer s (true);
-
-      s.Serialize ("data", event);
-      s.Serialize ("object", this);
-      s.JsonValue["type"] = "${event.name}";
-
       std::shared_ptr<EventHandler> lh = wh.lock();
+      if (!lh)
+        return;
 
-      if (lh) {
+      std::shared_ptr<${event.name}> ev_ref (new ${event.name}(event));
+      auto object = this->shared_from_this();
+
+      lh->sendEventAsync ([ev_ref, object, lh] {
+        JsonSerializer s (true);
+
+        s.Serialize ("data", ev_ref.get());
+        s.Serialize ("object", object.get());
+        s.JsonValue["type"] = "${event.name}";
+
         lh->sendEvent (s.JsonValue);
-      }
+      });
     });
     handler->setConnection (conn);
     return true;
