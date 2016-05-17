@@ -140,6 +140,7 @@
 		<docker-java.version>2.1.3</docker-java.version>
 		<jackson.version>2.6.3</jackson.version>
 		<assertj.version>3.3.0</assertj.version>
+		<version.ocr>1.11</version.ocr>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -674,6 +675,11 @@
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
 				<version>2.6.3</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.venkatramanm</groupId>
+				<artifactId>ocr</artifactId>
+				<version>${version.ocr}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

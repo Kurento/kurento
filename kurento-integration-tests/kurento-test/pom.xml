@@ -129,12 +129,17 @@
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 		</dependency>
-		
+
+		<!-- OCR -->
+		<dependency>
+			<groupId>com.github.venkatramanm</groupId>
+			<artifactId>ocr</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

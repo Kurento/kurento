@@ -20,18 +20,28 @@ import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT
 import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.Base64;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -43,11 +53,14 @@ import javax.net.ssl.X509TrustManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.browser.Browser;
 import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
+
+import com.venky.ocr.TextRecognizer;
 
 /**
  * Base for Kurento tests that use browsers.
@@ -60,6 +73,10 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
   public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
 
+  public static final int OCR_COLOR_THRESHOLD = 255;
+
+  public static final int OCR_TIME_THRESHOLD_MS = 100;
+
   private Map<String, W> pages = new ConcurrentHashMap<>();
 
   @Before
@@ -67,8 +84,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     if (testScenario != null && testScenario.getBrowserMap() != null
         && testScenario.getBrowserMap().size() > 0) {
       ExecutorService executor = Executors.newFixedThreadPool(testScenario.getBrowserMap().size());
-      final AbortableCountDownLatch latch =
-          new AbortableCountDownLatch(testScenario.getBrowserMap().size());
+      final AbortableCountDownLatch latch = new AbortableCountDownLatch(
+          testScenario.getBrowserMap().size());
       for (final String browserKey : testScenario.getBrowserMap().keySet()) {
 
         executor.execute(new Runnable() {
@@ -297,6 +314,74 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     } catch (InterruptedException e) {
       log.warn("InterruptedException waiting {} milliseconds", waitTime, e);
     }
+  }
+
+  public String ocr(String imgBase64) throws IOException {
+    // Base64 to BufferedImage
+    BufferedImage imgBuff = ImageIO.read(new ByteArrayInputStream(
+        Base64.getDecoder().decode(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
+
+    // Color image to pure black and white
+    for (int x = 0; x < imgBuff.getWidth(); x++) {
+      for (int y = 0; y < imgBuff.getHeight(); y++) {
+        Color color = new Color(imgBuff.getRGB(x, y));
+        int red = color.getRed();
+        int green = color.getBlue();
+        int blue = color.getGreen();
+        if (red + green + blue > OCR_COLOR_THRESHOLD) {
+          red = green = blue = 0;
+        } else {
+          red = green = blue = OCR_COLOR_THRESHOLD;
+        }
+        Color col = new Color(red, green, blue);
+        imgBuff.setRGB(x, y, col.getRGB());
+      }
+    }
+
+    // OCR recognition
+    TextRecognizer monospace = new TextRecognizer();
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    ImageIO.write(imgBuff, "png", os);
+    InputStream is = new ByteArrayInputStream(os.toByteArray());
+    StringBuffer out = monospace.recognize(is);
+
+    return out.toString().replaceAll("O", "0");
+  }
+
+  public String containSimilarDate(String key, Set<String> keySet) throws ParseException {
+    System.out.println("Search " + key);
+    for (String k : keySet) {
+      long diff = Math.abs(Long.parseLong(key) - Long.parseLong(k));
+      if (diff < OCR_TIME_THRESHOLD_MS) {
+        return k;
+      }
+    }
+    return null;
+  }
+
+  public void syncTimeForOcr(final W[] webpages, final String[] videoTagsId) throws InterruptedException {
+    int webpagesLength = webpages.length;
+    int videoTagsLength = videoTagsId.length;
+    if (webpagesLength != videoTagsLength) {
+      throw new KurentoException("The size of webpage arrays (" + webpagesLength
+          + "}) must be the same as videoTags (" + videoTagsLength + ")");
+    }
+
+    final ExecutorService service = Executors.newFixedThreadPool(webpagesLength);
+    final CountDownLatch latch = new CountDownLatch(webpagesLength);
+
+    for (int i = 0; i < webpagesLength; i++) {
+      final int j = i;
+      service.execute(new Runnable() {
+        @Override
+        public void run() {
+          webpages[j].syncTimeForOcr(videoTagsId[j]);
+          latch.countDown();
+        }
+      });
+    }
+    latch.await();
+    service.shutdown();
   }
 
 }

@@ -357,8 +357,8 @@ public class WebPage {
     boolean out;
     final long endTimeMillis = System.currentTimeMillis() + browser.getTimeout() * 1000;
     while (true) {
-      String messageReceived =
-          (String) browser.executeScript("return kurentoTest.getDataChannelMessage()");
+      String messageReceived = (String) browser
+          .executeScript("return kurentoTest.getDataChannelMessage()");
       out = (message.equals(messageReceived));
       if (out || System.currentTimeMillis() > endTimeMillis) {
         break;
@@ -373,6 +373,45 @@ public class WebPage {
       }
     }
     return out;
+  }
+
+  /*
+   * syncTimeForOcr
+   */
+  public void syncTimeForOcr(String videoTagId) {
+    browser.executeScript("kurentoTest.syncTimeForOcr('" + videoTagId + "');");
+
+    log.debug("Sync time in {} {}", browser.getId(), videoTagId);
+    WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), browser.getTimeout());
+    wait.until(new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver d) {
+        return (Boolean) ((JavascriptExecutor) d).executeScript("return kurentoTest.sync;");
+      }
+    });
+    log.debug("[Done] Sync time in {} {}", browser.getId(), videoTagId);
+  }
+
+  /*
+   * startOcr
+   */
+  public void startOcr() {
+    browser.executeScript("kurentoTest.startOcr();");
+  }
+
+  /*
+   * endOcr
+   */
+  public void endOcr() {
+    browser.executeScript("kurentoTest.endOcr();");
+  }
+
+  /*
+   * getOcr
+   */
+  @SuppressWarnings("unchecked")
+  public Map<String, String> getOcr() {
+    return (Map<String, String>) browser.executeScript("return kurentoTest.ocrImageMap;");
   }
 
 }

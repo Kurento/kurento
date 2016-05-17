@@ -40,6 +40,67 @@ function KurentoTest() {
 
 	// Initial time
 	this.initTime = new Date();
+
+	// OCR
+	this.sync = false;
+	this.ocrActive = false;
+	this.ocrImageMap = {};
+}
+
+KurentoTest.prototype.syncTimeForOcr = function(videoTagId) {
+	// Sync with clock system
+	var timeNow = new Date().getTime();
+	var nextMinute = new Date(timeNow + 60000);
+	nextMinute.setSeconds(0);
+	nextMinute.setMilliseconds(0);
+	var offsetMillis = nextMinute.getTime() - timeNow;
+	console.info("Time wait for next exact minute: " + offsetMillis + " ms");
+	var self = this;
+
+	setTimeout(function() {
+		console.info("Sync finished");
+		self.sync = true;
+		self.getVideoTime(videoTagId);
+		setInterval(function() {
+			self.getVideoTime(videoTagId);
+		}, 1000);
+	}, offsetMillis);
+}
+
+KurentoTest.prototype.startOcr = function() {
+	console.info("Starting OCR");
+	this.ocrActive = true;
+}
+
+KurentoTest.prototype.endOcr = function() {
+	console.info("Ending OCR");
+	this.ocrActive = false;
+}
+
+KurentoTest.prototype.getVideoTime = function(videoTagId) {
+	if (this.ocrActive) {
+		// Sample time
+		var now = new Date().getTime();
+
+		// Clock coordinates on Chrome user media synthetic video
+		var sourceX = 40;
+		var sourceY = 20;
+		var destWidth = 280;
+		var destHeight = 50;
+
+		var video = document.getElementById(videoTagId);
+		var canvas = document.getElementById("canvas");
+		var context = canvas.getContext("2d");
+
+		canvas.width = destWidth;
+		canvas.height = destHeight;
+		context.drawImage(video, sourceX, sourceY, destWidth, destHeight, 0, 0,
+				destWidth, destHeight);
+
+		var imgTimeBase64 = canvas.toDataURL("image/png").replace("image/png",
+				"image/octet-stream");
+		this.ocrImageMap[now] = imgTimeBase64;
+	}
 }
 
 KurentoTest.prototype.checkColor = function() {
@@ -161,20 +222,23 @@ KurentoTest.prototype.activateOutboundRtcStats = function(peerConnection) {
 	this.activateRtcStats(peerConnection, "getLocalStreams", "_outbound_");
 }
 
-
 KurentoTest.prototype.activateInboundRtcStats = function(peerConnection) {
 	this.activateRtcStats(peerConnection, "getRemoteStreams", "_inbound_");
 }
 
-KurentoTest.prototype.activateRtcStats = function(peerConnection, streamFunction, suffix) {
+KurentoTest.prototype.activateRtcStats = function(peerConnection,
+		streamFunction, suffix) {
 	var rate = this.rtcStatsRate;
 	if (arguments.length) {
 		rate = arguments[0];
 	}
-	kurentoTest.rtcStatsIntervalId[peerConnection + streamFunction + suffix] = setInterval(this.updateRtcStats, rate, eval(peerConnection), streamFunction, suffix);
+	kurentoTest.rtcStatsIntervalId[peerConnection + streamFunction + suffix] = setInterval(
+			this.updateRtcStats, rate, eval(peerConnection), streamFunction,
+			suffix);
 }
 
-KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction, suffix) {
+KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction,
+		suffix) {
 	eval("var remoteStream = peerConnection." + streamFunction + "()[0];");
 	var videoTrack = remoteStream.getVideoTracks()[0];
 	var audioTrack = remoteStream.getAudioTracks()[0];
@@ -191,20 +255,21 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction, 
 	}
 
 	updateStats(peerConnection, videoTrack, "video_peerconnection" + suffix);
-	updateStats(peerConnection, audioTrack, "audio_peerconnection"  + suffix);
+	updateStats(peerConnection, audioTrack, "audio_peerconnection" + suffix);
 }
 
 KurentoTest.prototype.stopOutboundRtcStats = function(peerConnection) {
 	this.clearRtcStatsInterval(peerConnection, "getLocalStreams", "_outbound_");
 }
 
-
 KurentoTest.prototype.stopInboundRtcStats = function(peerConnection) {
 	this.clearRtcStatsInterval(peerConnection, "getRemoteStreams", "_inbound_");
 }
 
-KurentoTest.prototype.clearRtcStatsInterval = function(peerConnection, streamFunction, suffix) {
-	clearInterval(kurentoTest.rtcStatsIntervalId[peerConnection + streamFunction + suffix]);
+KurentoTest.prototype.clearRtcStatsInterval = function(peerConnection,
+		streamFunction, suffix) {
+	clearInterval(kurentoTest.rtcStatsIntervalId[peerConnection
+			+ streamFunction + suffix]);
 	this.rtcStats = {};
 }
 
