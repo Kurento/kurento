@@ -84,6 +84,18 @@ public:
       <#lt></#list>
   }</#if>;
 
+  ${event.name} (const ${event.name} &copy)<#rt>
+    <#lt><#assign first = true><#rt>
+    <#lt><#if event.extends??> : ${event.extends.name} (copy)</#if> {
+      <#list event.properties as property><#rt>
+        <#lt>
+      this->${property.name} = copy.${property.name};
+        <#lt><#if property.optional><#rt>
+      this->_isSet${property.name} = copy._isSet${property.name};
+        </#if><#rt>
+      <#lt></#list>
+  };
+
   ${event.name} (const Json::Value &value);
 
   <#list event.properties as property>
