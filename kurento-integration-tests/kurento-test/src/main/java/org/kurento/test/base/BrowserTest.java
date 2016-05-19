@@ -359,7 +359,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return null;
   }
 
-  public void syncTimeForOcr(final W[] webpages, final String[] videoTagsId) throws InterruptedException {
+  public void syncTimeForOcr(final W[] webpages, final String[] videoTagsId,
+      final String[] peerConnectionsId) throws InterruptedException {
     int webpagesLength = webpages.length;
     int videoTagsLength = videoTagsId.length;
     if (webpagesLength != videoTagsLength) {
@@ -375,7 +376,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       service.execute(new Runnable() {
         @Override
         public void run() {
-          webpages[j].syncTimeForOcr(videoTagsId[j]);
+          webpages[j].syncTimeForOcr(videoTagsId[j], peerConnectionsId[j]);
           latch.countDown();
         }
       });

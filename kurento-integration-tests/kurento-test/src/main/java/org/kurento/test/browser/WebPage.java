@@ -378,8 +378,9 @@ public class WebPage {
   /*
    * syncTimeForOcr
    */
-  public void syncTimeForOcr(String videoTagId) {
-    browser.executeScript("kurentoTest.syncTimeForOcr('" + videoTagId + "');");
+  public void syncTimeForOcr(String videoTagId, String peerConnectionId) {
+    browser.executeScript(
+        "kurentoTest.syncTimeForOcr('" + videoTagId + "', '" + peerConnectionId + "');");
 
     log.debug("Sync time in {} {}", browser.getId(), videoTagId);
     WebDriverWait wait = new WebDriverWait(browser.getWebDriver(), browser.getTimeout());
@@ -412,6 +413,14 @@ public class WebPage {
   @SuppressWarnings("unchecked")
   public Map<String, String> getOcr() {
     return (Map<String, String>) browser.executeScript("return kurentoTest.ocrImageMap;");
+  }
+
+  /*
+   * getStatsList
+   */
+  @SuppressWarnings("unchecked")
+  public List<Map<String, String>> getStatsList() {
+    return (List<Map<String, String>>) browser.executeScript("return kurentoTest.rtcStatsList;");
   }
 
 }

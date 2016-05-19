@@ -35,6 +35,7 @@ function KurentoTest() {
 
 	// RTC statistics parameters
 	this.rtcStats = {};
+	this.rtcStatsList = [];
 	this.rtcStatsRate = 100; // milliseconds
 	this.rtcStatsIntervalId = {};
 
@@ -47,7 +48,7 @@ function KurentoTest() {
 	this.ocrImageMap = {};
 }
 
-KurentoTest.prototype.syncTimeForOcr = function(videoTagId) {
+KurentoTest.prototype.syncTimeForOcr = function(videoTagId, peerConnectionId) {
 	// Sync with clock system
 	var timeNow = new Date().getTime();
 	var nextMinute = new Date(timeNow + 60000);
@@ -61,8 +62,10 @@ KurentoTest.prototype.syncTimeForOcr = function(videoTagId) {
 		console.info("Sync finished");
 		self.sync = true;
 		self.getVideoTime(videoTagId);
+		self.getStats(peerConnectionId);
 		setInterval(function() {
 			self.getVideoTime(videoTagId);
+			self.getStats(peerConnectionId);
 		}, 1000);
 	}, offsetMillis);
 }
@@ -75,6 +78,32 @@ KurentoTest.prototype.startOcr = function() {
 KurentoTest.prototype.endOcr = function() {
 	console.info("Ending OCR");
 	this.ocrActive = false;
+}
+
+KurentoTest.prototype.getStats = function(peerConnectionId) {
+	if (this.ocrActive) {
+		var peerConnection = eval(peerConnectionId);
+		eval("var localStream = peerConnection.getLocalStreams()[0];");
+		eval("var remoteStream = peerConnection.getRemoteStreams()[0];");
+
+		var localVideoTrack = localStream ? localStream.getVideoTracks()[0]
+				: null;
+		var localAudioTrack = localStream ? localStream.getAudioTracks()[0]
+				: null;
+		var remoteVideoTrack = remoteStream ? remoteStream.getVideoTracks()[0]
+				: null;
+		var remoteAudioTrack = remoteStream ? remoteStream.getAudioTracks()[0]
+				: null;
+
+		if (localStream) {
+			this.updateStats(peerConnection, localAudioTrack, "localAudio-");
+			this.updateStats(peerConnection, localVideoTrack, "localVideo-");
+			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
+		} else if (remoteStream) {
+			this.updateStats(peerConnection, remoteAudioTrack, "remoteAudio-");
+			this.updateStats(peerConnection, remoteVideoTrack, "remoteVideo-");
+			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
+	}
 }
 
 KurentoTest.prototype.getVideoTime = function(videoTagId) {
@@ -243,19 +272,21 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction,
 	var videoTrack = remoteStream.getVideoTracks()[0];
 	var audioTrack = remoteStream.getAudioTracks()[0];
 
-	var updateStats = function(peerConnection, track, type) {
-		peerConnection.getStats(function(stats) {
-			var result = stats.result()[2];
-			if (result) {
-				result.names().forEach(function(name) {
-					kurentoTest.rtcStats[type + name] = result.stat(name);
-				});
-			}
-		}, track);
-	}
+	this.updateStats(peerConnection, videoTrack, "video_peerconnection"
+			+ suffix);
+	this.updateStats(peerConnection, audioTrack, "audio_peerconnection"
+			+ suffix);
+}
 
-	updateStats(peerConnection, videoTrack, "video_peerconnection" + suffix);
-	updateStats(peerConnection, audioTrack, "audio_peerconnection" + suffix);
+KurentoTest.prototype.updateStats = function(peerConnection, track, type) {
+	peerConnection.getStats(function(stats) {
+		var result = stats.result()[2];
+		if (result) {
+			result.names().forEach(function(name) {
+				kurentoTest.rtcStats[type + name] = result.stat(name);
+			});
+		}
+	}, track);
 }
 
 KurentoTest.prototype.stopOutboundRtcStats = function(peerConnection) {
