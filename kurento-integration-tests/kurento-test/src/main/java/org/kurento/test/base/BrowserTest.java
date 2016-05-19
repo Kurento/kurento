@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
@@ -32,9 +33,16 @@ import java.net.SocketException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -349,7 +357,6 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   }
 
   public String containSimilarDate(String key, Set<String> keySet) throws ParseException {
-    System.out.println("Search " + key);
     for (String k : keySet) {
       long diff = Math.abs(Long.parseLong(key) - Long.parseLong(k));
       if (diff < OCR_TIME_THRESHOLD_MS) {
@@ -383,6 +390,110 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     }
     latch.await();
     service.shutdown();
+  }
+
+  public void processOcrDataToCsv(String outputFile, Map<String, String> presenterOcr,
+      Map<String, String> viewerOcr, List<Map<String, String>> presenterStats,
+      List<Map<String, String>> viewerStats) throws ParseException, IOException {
+
+    Map<String, List<String>> result = new TreeMap<>();
+    final String latencyKey = "latencyMs";
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("H:mm:ss:S");
+
+    Iterator<String> iterator = presenterOcr.keySet().iterator();
+
+    int empty = 0;
+    for (int i = 0; i < presenterOcr.size(); i++) {
+      String key = iterator.next();
+      String matchKey = containSimilarDate(key, viewerOcr.keySet());
+      if (matchKey != null) {
+        Date presenterDater = simpleDateFormat.parse(ocr(presenterOcr.get(key)));
+        Date viewerDater = simpleDateFormat.parse(ocr(viewerOcr.get(matchKey)));
+        long latency = presenterDater.getTime() - viewerDater.getTime();
+        log.trace("[{}] Latency {}", i, latency);
+
+        // Latency
+        List<String> latencyList = null;
+        if (result.containsKey(latencyKey)) {
+          latencyList = result.get(latencyKey);
+        } else {
+          latencyList = new ArrayList<>();
+          result.put(latencyKey, latencyList);
+        }
+        latencyList.add(String.valueOf(latency));
+
+        // Stats
+        Map<String, String> allStats = new HashMap<>();
+        if (i < presenterStats.size()) {
+          allStats.putAll(presenterStats.get(i));
+        }
+        if (i < viewerStats.size()) {
+          allStats.putAll(viewerStats.get(i));
+        }
+
+        // When stats are empty it means no value should be stored in the final result table.
+        // Therefore an empty cell should appear in this data structure. To count this situation,
+        // the variable empty counts the occurrence of this issue
+        if (allStats.isEmpty()) {
+          empty++;
+        }
+
+        for (String keyStat : allStats.keySet()) {
+          List<String> statList = null;
+          if (result.containsKey(keyStat)) {
+            statList = result.get(keyStat);
+          } else {
+            statList = new ArrayList<>();
+            for (int z = 0; z < empty; z++) {
+              statList.add("");
+            }
+            result.put(keyStat, statList);
+          }
+          statList.add(allStats.get(keyStat));
+        }
+      }
+    }
+
+    log.trace("Final stats {} {}", result, result.size());
+
+    // Write CSV
+    FileWriter writer = new FileWriter(outputFile);
+    boolean first = true;
+    for (String key : result.keySet()) {
+      if (!first) {
+        writer.append(',');
+      }
+      writer.append(key);
+      first = false;
+    }
+    writer.append('\n');
+
+    int i = 0;
+    while (true) {
+      try {
+        first = true;
+        for (List<String> value : result.values()) {
+          if (!first) {
+            writer.append(',');
+          }
+          writer.append(value.get(i));
+          first = false;
+        }
+        writer.append('\n');
+        i++;
+      } catch (Exception e) {
+        e.printStackTrace();
+        break;
+      }
+    }
+    writer.flush();
+    writer.close();
+
+    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr.keySet());
+    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr.keySet());
+    log.trace("Presenter Stats {} : {}", presenterStats.size(), presenterStats);
+    log.trace("Viewer Stats {} : {}", viewerStats.size(), viewerStats);
   }
 
 }
