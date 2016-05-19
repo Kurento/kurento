@@ -103,6 +103,7 @@ KurentoTest.prototype.getStats = function(peerConnectionId) {
 			this.updateStats(peerConnection, remoteAudioTrack, "remoteAudio-");
 			this.updateStats(peerConnection, remoteVideoTrack, "remoteVideo-");
 			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
+		}
 	}
 }
 
