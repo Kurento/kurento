@@ -96,12 +96,12 @@ KurentoTest.prototype.getStats = function(peerConnectionId) {
 				: null;
 
 		if (localStream) {
-			this.updateStats(peerConnection, localAudioTrack, "localAudio-");
-			this.updateStats(peerConnection, localVideoTrack, "localVideo-");
+			kurentoTest.updateStats(peerConnection, localAudioTrack, "localAudio-");
+			kurentoTest.updateStats(peerConnection, localVideoTrack, "localVideo-");
 			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
 		} else if (remoteStream) {
-			this.updateStats(peerConnection, remoteAudioTrack, "remoteAudio-");
-			this.updateStats(peerConnection, remoteVideoTrack, "remoteVideo-");
+			kurentoTest.updateStats(peerConnection, remoteAudioTrack, "remoteAudio-");
+			kurentoTest.updateStats(peerConnection, remoteVideoTrack, "remoteVideo-");
 			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
 		}
 	}
@@ -273,9 +273,9 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction,
 	var videoTrack = remoteStream.getVideoTracks()[0];
 	var audioTrack = remoteStream.getAudioTracks()[0];
 
-	this.updateStats(peerConnection, videoTrack, "video_peerconnection"
+	kurentoTest.updateStats(peerConnection, videoTrack, "video_peerconnection"
 			+ suffix);
-	this.updateStats(peerConnection, audioTrack, "audio_peerconnection"
+	kurentoTest.updateStats(peerConnection, audioTrack, "audio_peerconnection"
 			+ suffix);
 }
 
