@@ -1,0 +1,30 @@
+ul.example-selector {
+    display:block;
+    list-style-type: none;
+    height: 15px;
+    margin: 0;
+    padding: 0;
+}
+ul.example-selector li {
+    display: block;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0 5px 0 0;
+    padding: 2px 3px;
+    float: left;
+    background-color: #999;
+    color: #fff;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -khtml-border-radius: 5px;
+}
+ul.example-selector li:hover {
+    background-color: #777;
+}
+ul.example-selector li.selected {
+    background-color: #555;
+}
+ul.example-selector li.selected:hover {
+    background-color: #333;
+}
