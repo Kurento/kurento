@@ -1,5 +1,3 @@
-import rom
-
 from docutils import nodes, utils
 from functools import wraps
 from sphinx.util.nodes import split_explicit_title
@@ -45,6 +43,5 @@ def wikipedia(word, has_title=False):
         return url, q
 
 def setup(app):
-    app.add_domain(rom.ROMDomain)
     app.add_role("wikipedia", gen_role(wikipedia, True))
 

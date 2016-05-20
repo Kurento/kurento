@@ -77,7 +77,7 @@ or :term:`kurento`.
 
     EOS
         Acronym of End Of Stream. In Kurento some elements will raise an
-        :rom:evnt:`EndOfStream` event when the media they are processing is
+        ``EndOfStream`` event when the media they are processing is
         finished.
 
     GStreamer
