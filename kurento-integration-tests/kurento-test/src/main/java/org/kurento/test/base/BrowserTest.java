@@ -35,7 +35,6 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,6 +57,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -327,7 +327,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public String ocr(String imgBase64) throws IOException {
     // Base64 to BufferedImage
     BufferedImage imgBuff = ImageIO.read(new ByteArrayInputStream(
-        Base64.getDecoder().decode(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
+        Base64.decodeBase64(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
 
     // Color image to pure black and white
     for (int x = 0; x < imgBuff.getWidth(); x++) {

@@ -88,7 +88,7 @@
 
 
 		<!-- External versions -->
-		<version.jetty>9.3.8.v20160314</version.jetty>
+		<version.jetty>9.3.0.M2</version.jetty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.3.1</version.apache.commons-fileupload>
@@ -138,7 +138,7 @@
 		<webdrivermanager.version>1.3.1</webdrivermanager.version>
 		<docker-java.version>2.1.3</docker-java.version>
 		<jackson.version>2.6.3</jackson.version>
-		<assertj.version>3.3.0</assertj.version>
+		<assertj.version>2.4.1</assertj.version>
 		<version.ocr>1.11</version.ocr>
 
 		<!-- **************** -->
@@ -204,6 +204,7 @@
 		<!-- maven-enforcer-plugin -->
 		<maven.min.version>3.0.3</maven.min.version>
 		<jdk.min.version>${maven.compiler.source}</jdk.min.version>
+		<jdk.max.version>${maven.compiler.source}</jdk.max.version>
 
 		<!-- maven-eclipse-plugin -->
 		<downloadSources>true</downloadSources>
@@ -1138,7 +1139,28 @@
 							</rules>
 						</configuration>
 					</execution>
+					<execution>
+						<id>enforce-bytecode-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<enforceBytecodeVersion>
+									<maxJdkVersion>${jdk.max.version}</maxJdkVersion>
+								</enforceBytecodeVersion>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
 				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>extra-enforcer-rules</artifactId>
+						<version>1.0-beta-4</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 
 			<!-- Set properties containing the scm revision and build timestamp -->
