@@ -475,11 +475,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       reqResEventExec.submit(new Runnable() {
         @Override
         public void run() {
-          try {
-            handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class), rs);
-          } catch (IOException e) {
-            log.warn("{} Exception processing request {}", label, message, e);
-          }
+          handlerManager.handleRequest(session, fromJsonRequest(message, JsonElement.class), rs);
         }
       });
 

@@ -53,7 +53,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
       // We send this notification to the JsonRpcHandler when the JsonRpc
       // session is established, not when websocket session is established
       log.info(
-          "{} Client connection stablished from session={} uri={} headers={} acceptedProtocol={} attributes={}",
+          "{} Client connection established from session={} uri={} headers={} acceptedProtocol={} attributes={}",
           label, session.getRemoteAddress(), session.getUri(), session.getHandshakeHeaders(),
           session.getAcceptedProtocol(), session.getAttributes());
 
@@ -68,8 +68,8 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
       org.springframework.web.socket.CloseStatus status) throws Exception {
 
     try {
-      ServerSession session = (ServerSession) protocolManager
-          .getSessionByTransportId(wsSession.getId());
+      ServerSession session = (ServerSession) protocolManager.getSessionByTransportId(wsSession
+          .getId());
 
       if (session != null) {
 
@@ -89,11 +89,10 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
           protocolManager.closeSessionIfTimeout(wsSession.getId(), status.getReason());
         }
       } else {
-        log.info(
-            "{} WebSocket session not associated to any jsonRpcSession "
-                + "with transportId {} closed for {} (code {}, reason '{}')",
-            label, wsSession.getId(), CloseStatusHelper.getCloseStatusType(status.getCode()),
-            status.getCode(), status.getReason());
+        log.info("{} WebSocket session not associated to any jsonRpcSession "
+            + "with transportId {} closed for {} (code {}, reason '{}')", label, wsSession.getId(),
+            CloseStatusHelper.getCloseStatusType(status.getCode()), status.getCode(),
+            status.getReason());
       }
 
     } catch (Throwable t) {

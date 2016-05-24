@@ -19,9 +19,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 
 import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.ThreadFactoryCreator;
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.AbstractSession;
@@ -40,11 +43,12 @@ public abstract class ServerSession extends AbstractSession {
   private JsonRpcRequestSenderHelper rsHelper;
   private String transportId;
   private ScheduledFuture<?> closeTimerTask;
+  private ExecutorService sessionExecutor;
 
   private volatile ConcurrentMap<String, Object> attributes;
 
-  private long reconnectionTimeoutInMillis = PropertiesManager
-      .getProperty(SESSION_RECONNECTION_TIME_PROP, SESSION_RECONNECTION_TIME_DEFAULT) * 1000;
+  private long reconnectionTimeoutInMillis = PropertiesManager.getProperty(
+      SESSION_RECONNECTION_TIME_PROP, SESSION_RECONNECTION_TIME_DEFAULT) * 1000;
   private boolean gracefullyClosed;
 
   public ServerSession(String sessionId, Object registerInfo, SessionsManager sessionsManager,
@@ -54,6 +58,9 @@ public abstract class ServerSession extends AbstractSession {
 
     this.transportId = transportId;
     this.sessionsManager = sessionsManager;
+
+    this.sessionExecutor = Executors.newSingleThreadExecutor(ThreadFactoryCreator
+        .create("SessionHandler-" + sessionId));
   }
 
   public abstract void handleResponse(Response<JsonElement> response);
@@ -69,6 +76,7 @@ public abstract class ServerSession extends AbstractSession {
   @Override
   public void close() throws IOException {
     this.sessionsManager.remove(this.getSessionId());
+    this.sessionExecutor.shutdownNow();
   }
 
   protected void setRsHelper(JsonRpcRequestSenderHelper rsHelper) {
@@ -96,8 +104,7 @@ public abstract class ServerSession extends AbstractSession {
   }
 
   @Override
-  public void sendRequest(String method, JsonObject params,
-      Continuation<JsonElement> continuation) {
+  public void sendRequest(String method, JsonObject params, Continuation<JsonElement> continuation) {
     rsHelper.sendRequest(method, params, continuation);
   }
 
@@ -178,4 +185,8 @@ public abstract class ServerSession extends AbstractSession {
   }
 
   public abstract void closeNativeSession(String reason);
+
+  public void processRequest(Runnable task) {
+    sessionExecutor.execute(task);
+  }
 }

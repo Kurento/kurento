@@ -87,8 +87,7 @@ public class JsonRpcHandlerManager {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public void handleRequest(Session session, Request<JsonElement> request, ResponseSender rs)
-      throws IOException {
+  public void handleRequest(Session session, Request<JsonElement> request, ResponseSender rs) {
 
     try {
 
@@ -127,7 +126,7 @@ public class JsonRpcHandlerManager {
       nonGenHandler.handleRequest(tx, nonGenRequest);
 
       if (!tx.isAsync() && request.getId() != null) {
-        
+
         log.debug("Request {} is processed asynchronously", request);
 
         boolean notResponded = tx.setRespondedIfNot();
@@ -141,10 +140,14 @@ public class JsonRpcHandlerManager {
     } catch (Exception e) {
 
       // TODO Maybe use the pattern handleUncaughtException
-      log.error("Exception while processing request", e);
+      log.error("Exception while processing request {}", request, e);
 
       ResponseError error = ResponseError.newFromException(e);
-      rs.sendResponse(new Response<>(request.getId(), error));
+      try {
+        rs.sendResponse(new Response<>(request.getId(), error));
+      } catch (IOException e1) {
+        log.error("Exception sending error to client", e1);
+      }
     }
   }
 

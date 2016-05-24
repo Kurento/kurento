@@ -114,8 +114,8 @@ public class JsonRpcClientHttp extends JsonRpcClient {
         Type collectionType = new TypeToken<List<Request<JsonElement>>>() {
         }.getType();
 
-        List<Request<JsonElement>> requestList =
-            JsonUtils.fromJson(requestsListJsonObject, collectionType);
+        List<Request<JsonElement>> requestList = JsonUtils.fromJson(requestsListJsonObject,
+            collectionType);
 
         processServerRequests(requestList);
 
@@ -129,11 +129,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
   private void processServerRequests(List<Request<JsonElement>> requestList) {
     for (Request<JsonElement> request : requestList) {
-      try {
-        handlerManager.handleRequest(session, request, rs);
-      } catch (IOException e) {
-        log.error("Exception while processing request from server to client", e);
-      }
+      handlerManager.handleRequest(session, request, rs);
     }
   }
 
@@ -145,8 +141,8 @@ public class JsonRpcClientHttp extends JsonRpcClient {
         .asString();
 
     if (resultJson == null || resultJson.trim().isEmpty()) {
-      return new Response<>(request.getId(),
-          new ResponseError(3, "The server send an empty response"));
+      return new Response<>(request.getId(), new ResponseError(3,
+          "The server send an empty response"));
     }
 
     Response<R> response = fromJsonResponse(resultJson, resultClass);
@@ -177,7 +173,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
     try {
 
       org.apache.http.client.fluent.Request.Post(url).bodyString("", ContentType.APPLICATION_JSON)
-          .execute();
+      .execute();
 
     } catch (ClientProtocolException e) {
       // Silence http connection exception. This indicate that server is
