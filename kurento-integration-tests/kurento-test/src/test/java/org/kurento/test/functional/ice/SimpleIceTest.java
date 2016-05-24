@@ -7,11 +7,14 @@ import static org.kurento.test.config.TestConfiguration.TEST_ICE_CANDIDATE_SELEN
 import static org.kurento.test.config.TestConfiguration.TEST_KMS_TRANSPORT;
 import static org.kurento.test.config.TestConfiguration.TEST_SELENIUM_TRANSPORT;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaFlowInStateChangeEvent;
@@ -98,6 +101,21 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     seleniumCandidateType = new ArrayList<Candidate>();
   }
 
+  protected void saveGstreamerDot(String prefix, MediaPipeline mp) {
+    if (mp != null) {
+      String gstreamerDot = mp.getGstreamerDot();
+      String pipelineName = mp.getName();
+      String gstreamerDotFile = getDefaultOutputFile(prefix + pipelineName);
+      try {
+        FileUtils.writeStringToFile(new File(gstreamerDotFile), gstreamerDot);
+      } catch (IOException e) {
+        log.error("Problem saving GstreamerDot with prefix: {} and pipeline: {} in path: {} ",
+            prefix, pipelineName, gstreamerDotFile);
+        e.printStackTrace();
+      }
+    }
+  }
+
   public void initTestSendRecv(WebRtcChannel webRtcChannel, WebRtcIpvMode webRtcIpvMode,
       WebRtcCandidateType webRtcCandidateType) throws InterruptedException {
 
@@ -151,9 +169,11 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         webRtcCandidateType);
 
     // Assertions
+    saveGstreamerDot("-before-waiting-player-event-", mp);
     Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(0)
         .waitForEvent("playing"));
 
+    saveGstreamerDot("-before-waiting-FlowingOut-event-", mp);
     Assert.assertTrue("Not received FLOWING OUT event in webRtcEp:" + webRtcChannel,
         eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
@@ -240,9 +260,11 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     playerEp.play();
 
     // Assertions
+    saveGstreamerDot("-before-waiting-player-event-", mp);
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage(0).waitForEvent("playing"));
 
+    saveGstreamerDot("-before-waiting-FlowingIn-event-", mp);
     Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
         + webRtcChannel, eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
@@ -355,9 +377,11 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         webRtcCandidateType);
 
     // Assertions
+    saveGstreamerDot("-before-waiting-player-event-", mp);
     Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(1)
         .waitForEvent("playing"));
 
+    saveGstreamerDot("-before-waiting-FlowingIn-event-", mp);
     Assert.assertTrue("Not received FLOWING IN event in webRtcEpRcvOnly: " + webRtcChannel,
         eosLatch.await(getPage(1).getTimeout(), TimeUnit.SECONDS));
 
