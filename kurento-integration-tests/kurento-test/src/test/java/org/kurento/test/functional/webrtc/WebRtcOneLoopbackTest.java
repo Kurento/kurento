@@ -16,10 +16,15 @@
 package org.kurento.test.functional.webrtc;
 
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.EventListener;
+import org.kurento.client.MediaFlowInStateChangeEvent;
+import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
@@ -28,9 +33,7 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * WebRTC in loopback.
- * </p>
- * Media Pipeline(s):
+ * WebRTC in loopback. </p> Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -76,20 +79,33 @@ public class WebRtcOneLoopbackTest extends FunctionalTest {
     WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
     webRtcEndpoint.connect(webRtcEndpoint);
 
+    final CountDownLatch flowingLatch = new CountDownLatch(1);
+    webRtcEndpoint
+    .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowInStateChangeEvent event) {
+        if (event.getState().equals(MediaFlowState.FLOWING)) {
+          flowingLatch.countDown();
+        }
+      }
+    });
+
     // Start WebRTC and wait for playing event
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
-    Assert.assertTrue("Not received media (timeout waiting playing event)",
-        getPage().waitForEvent("playing"));
 
-    // Guard time to play the video
-    waitSeconds(PLAYTIME);
+    Assert.assertTrue(
+        "Not received FLOWING IN event in webRtcEp: " + WebRtcChannel.AUDIO_AND_VIDEO,
+        flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
+    Assert.assertTrue("Not received media (timeout waiting playing event): "
+        + WebRtcChannel.AUDIO_AND_VIDEO, getPage().waitForEvent("playing"));
 
     // Assertions
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue(
-        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
-        getPage().compare(PLAYTIME, currentTime));
+    Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime
+        + " sec)", getPage().compare(PLAYTIME, currentTime));
     Assert.assertTrue("The color of the video should be green",
         getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 

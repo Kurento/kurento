@@ -86,6 +86,17 @@ public class SimplePlayer extends PlayerTest {
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
     playerEp.connect(webRtcEp);
 
+    final CountDownLatch flowingLatch = new CountDownLatch(1);
+    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowInStateChangeEvent event) {
+        if (event.getState().equals(MediaFlowState.FLOWING)) {
+          flowingLatch.countDown();
+        }
+      }
+    });
+
     final CountDownLatch eosLatch = new CountDownLatch(1);
     playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
       @Override
@@ -100,6 +111,9 @@ public class SimplePlayer extends PlayerTest {
     playerEp.play();
 
     // Assertions
+    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
+        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage().waitForEvent("playing"));
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {

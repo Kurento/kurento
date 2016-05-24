@@ -169,13 +169,13 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         webRtcCandidateType);
 
     // Assertions
-    saveGstreamerDot("-before-waiting-player-event-", mp);
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(0)
-        .waitForEvent("playing"));
-
     saveGstreamerDot("-before-waiting-FlowingOut-event-", mp);
     Assert.assertTrue("Not received FLOWING OUT event in webRtcEp:" + webRtcChannel,
         eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
+
+    saveGstreamerDot("-before-waiting-player-event-", mp);
+    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(0)
+        .waitForEvent("playing"));
 
     // For the moment, these assertions are not necessary
     // Assert.assertEquals("Local candidate type (KMS) is wrong. It waits "
@@ -260,13 +260,13 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     playerEp.play();
 
     // Assertions
-    saveGstreamerDot("-before-waiting-player-event-", mp);
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage(0).waitForEvent("playing"));
-
     saveGstreamerDot("-before-waiting-FlowingIn-event-", mp);
     Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
         + webRtcChannel, eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
+
+    saveGstreamerDot("-before-waiting-player-event-", mp);
+    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
+        + webRtcChannel, getPage(0).waitForEvent("playing"));
 
     // For the moment, these assertions are not necessary
     // Assert.assertEquals("Local candidate type (KMS) is wrong. It waits "
@@ -377,13 +377,13 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         webRtcCandidateType);
 
     // Assertions
-    saveGstreamerDot("-before-waiting-player-event-", mp);
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(1)
-        .waitForEvent("playing"));
-
     saveGstreamerDot("-before-waiting-FlowingIn-event-", mp);
     Assert.assertTrue("Not received FLOWING IN event in webRtcEpRcvOnly: " + webRtcChannel,
         eosLatch.await(getPage(1).getTimeout(), TimeUnit.SECONDS));
+
+    saveGstreamerDot("-before-waiting-player-event-", mp);
+    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(1)
+        .waitForEvent("playing"));
 
     // For the moment, these assertions are not necessary
     // Assert.assertEquals("Local candidate type (KMS) is wrong. It waits "
