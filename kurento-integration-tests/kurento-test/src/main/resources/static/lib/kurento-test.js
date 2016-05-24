@@ -96,12 +96,16 @@ KurentoTest.prototype.getStats = function(peerConnectionId) {
 				: null;
 
 		if (localStream) {
-			kurentoTest.updateStats(peerConnection, localAudioTrack, "localAudio-");
-			kurentoTest.updateStats(peerConnection, localVideoTrack, "localVideo-");
+			kurentoTest.updateStats(peerConnection, localAudioTrack,
+					"localAudio-");
+			kurentoTest.updateStats(peerConnection, localVideoTrack,
+					"localVideo-");
 			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
 		} else if (remoteStream) {
-			kurentoTest.updateStats(peerConnection, remoteAudioTrack, "remoteAudio-");
-			kurentoTest.updateStats(peerConnection, remoteVideoTrack, "remoteVideo-");
+			kurentoTest.updateStats(peerConnection, remoteAudioTrack,
+					"remoteAudio-");
+			kurentoTest.updateStats(peerConnection, remoteVideoTrack,
+					"remoteVideo-");
 			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
 		}
 	}
@@ -113,10 +117,10 @@ KurentoTest.prototype.getVideoTime = function(videoTagId) {
 		var now = new Date().getTime();
 
 		// Clock coordinates on Chrome user media synthetic video
-		var sourceX = 40;
-		var sourceY = 20;
-		var destWidth = 280;
-		var destHeight = 50;
+		var sourceX = 0;
+		var sourceY = 0;
+		var destWidth = 420;
+		var destHeight = 61;
 
 		var video = document.getElementById(videoTagId);
 		var canvas = document.getElementById("canvas");

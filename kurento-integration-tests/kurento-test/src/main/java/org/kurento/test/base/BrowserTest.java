@@ -353,7 +353,12 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     InputStream is = new ByteArrayInputStream(os.toByteArray());
     StringBuffer out = monospace.recognize(is);
 
-    return out.toString().replaceAll("O", "0");
+    String parsedOut = out.toString().replaceAll("O", "0").replaceAll("B", "8");
+    int iSpace = parsedOut.lastIndexOf(" ");
+    if (iSpace != -1) {
+      parsedOut = parsedOut.substring(0, iSpace);
+    }
+    return parsedOut;
   }
 
   public String containSimilarDate(String key, Set<String> keySet) throws ParseException {
@@ -396,6 +401,13 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       Map<String, String> viewerOcr, List<Map<String, String>> presenterStats,
       List<Map<String, String>> viewerStats) throws ParseException, IOException {
 
+    log.info("Processing OCR and stats data to CSV ({}) ... please wait", outputFile);
+
+    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr);
+    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr);
+    log.trace("Presenter Stats {} : {}", presenterStats.size(), presenterStats);
+    log.trace("Viewer Stats {} : {}", viewerStats.size(), viewerStats);
+
     Map<String, List<String>> result = new TreeMap<>();
     final String latencyKey = "latencyMs";
 
@@ -408,10 +420,19 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       String key = iterator.next();
       String matchKey = containSimilarDate(key, viewerOcr.keySet());
       if (matchKey != null) {
-        Date presenterDater = simpleDateFormat.parse(ocr(presenterOcr.get(key)));
-        Date viewerDater = simpleDateFormat.parse(ocr(viewerOcr.get(matchKey)));
-        long latency = presenterDater.getTime() - viewerDater.getTime();
-        log.trace("[{}] Latency {}", i, latency);
+        String presenterDateStr = ocr(presenterOcr.get(key));
+        String viewerDateStr = ocr(viewerOcr.get(matchKey));
+        long latency = -1;
+        try {
+          Date presenterDate = simpleDateFormat.parse(presenterDateStr);
+          Date viewerDate = simpleDateFormat.parse(viewerDateStr);
+          latency = presenterDate.getTime() - viewerDate.getTime();
+        } catch (ParseException e) {
+          log.warn("Unparseable date(s) (presenter: '{}' - viewer: '{}')", presenterDateStr,
+              viewerDateStr);
+        }
+        log.info("-----> [{}] Latency {} ms (presenter: '{}' - viewer: '{}')", i, latency,
+            presenterDateStr, viewerDateStr);
 
         // Latency
         List<String> latencyList = null;
@@ -483,17 +504,11 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         writer.append('\n');
         i++;
       } catch (Exception e) {
-        e.printStackTrace();
         break;
       }
     }
     writer.flush();
     writer.close();
-
-    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr.keySet());
-    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr.keySet());
-    log.trace("Presenter Stats {} : {}", presenterStats.size(), presenterStats);
-    log.trace("Viewer Stats {} : {}", viewerStats.size(), viewerStats);
   }
 
 }
