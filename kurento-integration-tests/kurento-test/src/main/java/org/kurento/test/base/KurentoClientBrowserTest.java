@@ -95,6 +95,12 @@ public class KurentoClientBrowserTest<W extends WebPage> extends BrowserTest<W> 
     return getDefaultOutputFile(".webm");
   }
 
+  public void addFakeClients(MediaPipeline mainPipeline, WebRtcEndpoint senderWebRtcEndpoint,
+      int numFakeClients, long timeBetweenClientMs) {
+    fakeKms.addFakeClients(numFakeClients, -1, mainPipeline, senderWebRtcEndpoint,
+        timeBetweenClientMs, null, null);
+  }
+
   public void addFakeClients(int numFakeClients, int bandwidht, MediaPipeline mainPipeline,
       WebRtcEndpoint senderWebRtcEndpoint) {
     fakeKms.addFakeClients(numFakeClients, bandwidht, mainPipeline, senderWebRtcEndpoint, 0, null,
