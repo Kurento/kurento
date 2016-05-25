@@ -22,6 +22,7 @@ do
 done
 pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-0.12
 pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
+pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-6.x
 
 # kurento-media-server development version with core dump & public modules
 pullAndTag kurento/kurento-media-server-dev:latest
