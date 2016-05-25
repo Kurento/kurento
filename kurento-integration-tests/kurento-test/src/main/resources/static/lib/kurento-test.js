@@ -119,7 +119,7 @@ KurentoTest.prototype.getVideoTime = function(videoTagId) {
 		// Clock coordinates on Chrome user media synthetic video
 		var sourceX = 0;
 		var sourceY = 0;
-		var destWidth = 420;
+		var destWidth = 440;
 		var destHeight = 61;
 
 		var video = document.getElementById(videoTagId);

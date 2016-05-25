@@ -137,8 +137,8 @@
 
 		<!-- OCR -->
 		<dependency>
-			<groupId>com.github.venkatramanm</groupId>
-			<artifactId>ocr</artifactId>
+			<groupId>org.bytedeco.javacpp-presets</groupId>
+			<artifactId>tesseract</artifactId>
 		</dependency>
 	</dependencies>
 

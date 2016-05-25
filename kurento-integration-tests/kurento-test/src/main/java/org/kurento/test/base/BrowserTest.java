@@ -15,6 +15,8 @@
 
 package org.kurento.test.base;
 
+import static org.bytedeco.javacpp.lept.pixDestroy;
+import static org.bytedeco.javacpp.lept.pixReadMem;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_DEFAULT;
 import static org.kurento.test.config.TestConfiguration.TEST_URL_TIMEOUT_PROPERTY;
@@ -25,12 +27,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -58,6 +60,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Base64;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.lept.PIX;
+import org.bytedeco.javacpp.tesseract.TessBaseAPI;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,8 +72,6 @@ import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
-
-import com.venky.ocr.TextRecognizer;
 
 /**
  * Base for Kurento tests that use browsers.
@@ -80,9 +83,7 @@ import com.venky.ocr.TextRecognizer;
 public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
   public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
-
-  public static final int OCR_COLOR_THRESHOLD = 255;
-
+  public static final int OCR_COLOR_THRESHOLD = 180;
   public static final int OCR_TIME_THRESHOLD_MS = 100;
 
   private Map<String, W> pages = new ConcurrentHashMap<>();
@@ -337,9 +338,9 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         int green = color.getBlue();
         int blue = color.getGreen();
         if (red + green + blue > OCR_COLOR_THRESHOLD) {
-          red = green = blue = 0;
+          red = green = blue = 0; // Black
         } else {
-          red = green = blue = OCR_COLOR_THRESHOLD;
+          red = green = blue = 255; // White
         }
         Color col = new Color(red, green, blue);
         imgBuff.setRGB(x, y, col.getRGB());
@@ -347,13 +348,31 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     }
 
     // OCR recognition
-    TextRecognizer monospace = new TextRecognizer();
-    ByteArrayOutputStream os = new ByteArrayOutputStream();
-    ImageIO.write(imgBuff, "png", os);
-    InputStream is = new ByteArrayInputStream(os.toByteArray());
-    StringBuffer out = monospace.recognize(is);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ImageIO.write(imgBuff, "png", baos);
+    byte[] imageBytes = baos.toByteArray();
 
-    String parsedOut = out.toString().replaceAll("O", "0").replaceAll("B", "8");
+    TessBaseAPI api = new TessBaseAPI();
+    api.Init(null, "eng");
+    ByteBuffer imgBB = ByteBuffer.wrap(imageBytes);
+
+    PIX image = pixReadMem(imgBB, imageBytes.length);
+    api.SetImage(image);
+
+    // Get OCR result
+    BytePointer outText = api.GetUTF8Text();
+
+    // Destroy used object and release memory
+    api.End();
+    api.close();
+    outText.deallocate();
+    pixDestroy(image);
+
+    // OCR corrections
+    String parsedOut = outText.getString().replaceAll("l", "1").replaceAll("Z", "2")
+        .replaceAll("O", "0").replaceAll("B", "8").replaceAll("S", "8").replaceAll("'", "");
+
+    // Remove last part (number of frames)
     int iSpace = parsedOut.lastIndexOf(" ");
     if (iSpace != -1) {
       parsedOut = parsedOut.substring(0, iSpace);
@@ -402,9 +421,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       List<Map<String, String>> viewerStats) throws ParseException, IOException {
 
     log.info("Processing OCR and stats data to CSV ({}) ... please wait", outputFile);
-
-    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr);
-    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr);
+    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr.keySet());
+    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr.keySet());
     log.trace("Presenter Stats {} : {}", presenterStats.size(), presenterStats);
     log.trace("Viewer Stats {} : {}", viewerStats.size(), viewerStats);
 
@@ -428,8 +446,10 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
           Date viewerDate = simpleDateFormat.parse(viewerDateStr);
           latency = presenterDate.getTime() - viewerDate.getTime();
         } catch (ParseException e) {
-          log.warn("Unparseable date(s) (presenter: '{}' - viewer: '{}')", presenterDateStr,
-              viewerDateStr);
+          log.warn(
+              "Unparseable date(s) (presenter: '{}' - viewer: '{}')" + "\nBase64 presenter: {}"
+                  + "\nBase64 viewer: {}",
+              presenterDateStr, viewerDateStr, presenterOcr.get(key), viewerOcr.get(matchKey));
         }
         log.info("-----> [{}] Latency {} ms (presenter: '{}' - viewer: '{}')", i, latency,
             presenterDateStr, viewerDateStr);

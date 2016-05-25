@@ -139,7 +139,7 @@
 		<docker-java.version>2.1.3</docker-java.version>
 		<jackson.version>2.6.3</jackson.version>
 		<assertj.version>2.4.1</assertj.version>
-		<version.ocr>1.11</version.ocr>
+		<version.ocr>3.04.01-1.2</version.ocr>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -677,8 +677,8 @@
 				<version>2.6.3</version>
 			</dependency>
 			<dependency>
-				<groupId>com.github.venkatramanm</groupId>
-				<artifactId>ocr</artifactId>
+				<groupId>org.bytedeco.javacpp-presets</groupId>
+				<artifactId>tesseract</artifactId>
 				<version>${version.ocr}</version>
 			</dependency>
 		</dependencies>
