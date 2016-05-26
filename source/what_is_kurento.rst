@@ -43,7 +43,7 @@ language, you can use the :term:`Kurento Protocol`, based on :term:`WebSocket`
 and :term:`JSON-RPC`.
 
 Kurento is open source, released under the terms of
-`LGPL version 2.1 <http://www.gnu.org/licenses/lgpl-2.1.html>`__ license. Its
+`Apache 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`__ license. Its
 source code is hosted on `GitHub <https://github.com/Kurento>`__.
 
 If you want to put your hands on quickly, the best way is

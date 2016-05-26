@@ -158,7 +158,7 @@ or :term:`kurento`.
         enabled applications. Kurento is the Esperanto term for the English word
         'stream'. We chose this name because we believe the Esperanto principles are
         inspiring for what the multimedia community needs: simplicity, openness and
-        universality. Kurento is open source, released under LGPL 2.1, and has several
+        universality. Kurento is open source, released under Apache 2.0, and has several
         components, providing solutions to most multimedia common services
         requirements. Those components include: :term:`Kurento Media Server`,
         :term:`Kurento API`, :term:`Kurento Protocol`, and :term:`Kurento Client`.
