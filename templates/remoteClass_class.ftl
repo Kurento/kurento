@@ -325,7 +325,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 ${remoteClass.name}.constructorParams = {
 <#list (remoteClass.constructor.params?sort_by("name"))![] as param>
   ${param.name}: {
-    type: '${param.type.name}'<#if param.type.isList() || !param.optional>,
+    type: '${param.type.type.qualifiedName}'<#if param.type.isList() || !param.optional>,
     <#if param.type.isList()>
     isArray: true<#if !param.optional>,</#if>
     </#if>
