@@ -610,6 +610,10 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
 
+  if (self->priv->stopping) {
+    return;
+  }
+
   kms_recorder_endpoint_change_state (self, KMS_URI_ENDPOINT_STATE_STOP);
 
   if (kms_base_media_muxer_get_state (self->priv->mux) >= GST_STATE_PAUSED) {
