@@ -1,4 +1,3 @@
-
 package org.kurento.client;
 
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
@@ -42,7 +41,7 @@ public class JsonRpcConnectionListenerKurento implements JsonRpcWSConnectionList
 
   @Override
   public void reconnecting() {
-
+    listener.disconnected();
   }
 
 }
