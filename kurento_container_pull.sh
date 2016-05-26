@@ -73,7 +73,7 @@ if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
     for image in $REMOVE_IMAGES
     do
     	echo "Removing image $image"
-        docker rmi kurento/kurento-media-server-dev:$image || $status=$[$status || $?]
+        docker rmi kurento/kurento-media-server-dev:$image || status=$[$status || $?]
     done
 fi
 
