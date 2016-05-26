@@ -5,7 +5,7 @@
   "homepage": "http://www.kurento.com",
   "main": "lib/index.js",
   "author": "Kurento <info@kurento.com> (http://kurento.org)",
-  "license": "LGPL",
+  "license": "ALv2",
   "repository": {
     "type": "git",
     "url": "Kurento/npmName-js"
