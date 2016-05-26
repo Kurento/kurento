@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -412,7 +413,8 @@ public class WebPage {
    */
   @SuppressWarnings("unchecked")
   public Map<String, String> getOcr() {
-    return (Map<String, String>) browser.executeScript("return kurentoTest.ocrImageMap;");
+    return new TreeMap<String, String>(
+        (Map<String, String>) browser.executeScript("return kurentoTest.ocrImageMap;"));
   }
 
   /*

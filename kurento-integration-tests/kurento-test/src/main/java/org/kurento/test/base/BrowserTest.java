@@ -36,14 +36,11 @@ import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -72,6 +69,9 @@ import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 /**
  * Base for Kurento tests that use browsers.
@@ -325,62 +325,68 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     }
   }
 
-  public String ocr(String imgBase64) throws IOException {
-    // Base64 to BufferedImage
-    BufferedImage imgBuff = ImageIO.read(new ByteArrayInputStream(
-        Base64.decodeBase64(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
+  public String ocr(String imgBase64) {
+    String parsedOut = null;
 
-    // Color image to pure black and white
-    for (int x = 0; x < imgBuff.getWidth(); x++) {
-      for (int y = 0; y < imgBuff.getHeight(); y++) {
-        Color color = new Color(imgBuff.getRGB(x, y));
-        int red = color.getRed();
-        int green = color.getBlue();
-        int blue = color.getGreen();
-        if (red + green + blue > OCR_COLOR_THRESHOLD) {
-          red = green = blue = 0; // Black
-        } else {
-          red = green = blue = 255; // White
+    try {
+      // Base64 to BufferedImage
+      BufferedImage imgBuff = ImageIO.read(new ByteArrayInputStream(
+          Base64.decodeBase64(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
+
+      // Color image to pure black and white
+      for (int x = 0; x < imgBuff.getWidth(); x++) {
+        for (int y = 0; y < imgBuff.getHeight(); y++) {
+          Color color = new Color(imgBuff.getRGB(x, y));
+          int red = color.getRed();
+          int green = color.getBlue();
+          int blue = color.getGreen();
+          if (red + green + blue > OCR_COLOR_THRESHOLD) {
+            red = green = blue = 0; // Black
+          } else {
+            red = green = blue = 255; // White
+          }
+          Color col = new Color(red, green, blue);
+          imgBuff.setRGB(x, y, col.getRGB());
         }
-        Color col = new Color(red, green, blue);
-        imgBuff.setRGB(x, y, col.getRGB());
       }
-    }
 
-    // OCR recognition
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ImageIO.write(imgBuff, "png", baos);
-    byte[] imageBytes = baos.toByteArray();
+      // OCR recognition
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ImageIO.write(imgBuff, "png", baos);
+      byte[] imageBytes = baos.toByteArray();
 
-    TessBaseAPI api = new TessBaseAPI();
-    api.Init(null, "eng");
-    ByteBuffer imgBB = ByteBuffer.wrap(imageBytes);
+      TessBaseAPI api = new TessBaseAPI();
+      api.Init(null, "eng");
+      ByteBuffer imgBB = ByteBuffer.wrap(imageBytes);
 
-    PIX image = pixReadMem(imgBB, imageBytes.length);
-    api.SetImage(image);
+      PIX image = pixReadMem(imgBB, imageBytes.length);
+      api.SetImage(image);
 
-    // Get OCR result
-    BytePointer outText = api.GetUTF8Text();
+      // Get OCR result
+      BytePointer outText = api.GetUTF8Text();
 
-    // Destroy used object and release memory
-    api.End();
-    api.close();
-    outText.deallocate();
-    pixDestroy(image);
+      // Destroy used object and release memory
+      api.End();
+      api.close();
+      outText.deallocate();
+      pixDestroy(image);
 
-    // OCR corrections
-    String parsedOut = outText.getString().replaceAll("l", "1").replaceAll("Z", "2")
-        .replaceAll("O", "0").replaceAll("B", "8").replaceAll("S", "8").replaceAll("'", "");
+      // OCR corrections
+      parsedOut = outText.getString().replaceAll("l", "1").replaceAll("Z", "2").replaceAll("O", "0")
+          .replaceAll("B", "8").replaceAll("S", "8").replaceAll("'", "");
 
-    // Remove last part (number of frames)
-    int iSpace = parsedOut.lastIndexOf(" ");
-    if (iSpace != -1) {
-      parsedOut = parsedOut.substring(0, iSpace);
+      // Remove last part (number of frames)
+      int iSpace = parsedOut.lastIndexOf(" ");
+      if (iSpace != -1) {
+        parsedOut = parsedOut.substring(0, iSpace);
+      }
+    } catch (IOException e) {
+      log.warn("IOException in OCR", e);
     }
     return parsedOut;
   }
 
-  public String containSimilarDate(String key, Set<String> keySet) throws ParseException {
+  public String containSimilarDate(String key, Set<String> keySet) {
     for (String k : keySet) {
       long diff = Math.abs(Long.parseLong(key) - Long.parseLong(k));
       if (diff < OCR_TIME_THRESHOLD_MS) {
@@ -416,119 +422,132 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     service.shutdown();
   }
 
-  public void processOcrDataToCsv(String outputFile, Map<String, String> presenterOcr,
-      Map<String, String> viewerOcr, List<Map<String, String>> presenterStats,
-      List<Map<String, String>> viewerStats) throws ParseException, IOException {
+  public void processOcrDataToCsv(String outputFile, final Map<String, String> presenterOcr,
+      final Map<String, String> viewerOcr, final List<Map<String, String>> presenterStats,
+      final List<Map<String, String>> viewerStats) throws InterruptedException, IOException {
 
-    log.info("Processing OCR and stats data to CSV ({}) ... please wait", outputFile);
-    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr.keySet());
-    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr.keySet());
+    log.info("Processing OCR and stats data to CSV ({})", outputFile);
+    log.trace("Presenter OCR {} : {}", presenterOcr.size(), presenterOcr);
+    log.trace("Viewer OCR {} : {}", viewerOcr.size(), viewerOcr);
     log.trace("Presenter Stats {} : {}", presenterStats.size(), presenterStats);
     log.trace("Viewer Stats {} : {}", viewerStats.size(), viewerStats);
 
-    Map<String, List<String>> result = new TreeMap<>();
+    final Table<Integer, Integer, String> resultTable = HashBasedTable.create();
     final String latencyKey = "latencyMs";
+    final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("H:mm:ss:S");
+    final int numRows = presenterOcr.size();
+    final ExecutorService executor = Executors.newFixedThreadPool(numRows);
+    final CountDownLatch latch = new CountDownLatch(numRows);
+    final Iterator<String> iterator = presenterOcr.keySet().iterator();
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("H:mm:ss:S");
+    // Process OCR
+    for (int i = 0; i < numRows; i++) {
+      final int j = i;
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            String key = iterator.next();
+            String matchKey = containSimilarDate(key, viewerOcr.keySet());
+            if (matchKey != null) {
+              String presenterDateStr = ocr(presenterOcr.get(key));
+              String viewerDateStr = ocr(viewerOcr.get(matchKey));
+              long latency = -1;
+              try {
+                Date presenterDate = simpleDateFormat.parse(presenterDateStr);
+                Date viewerDate = simpleDateFormat.parse(viewerDateStr);
+                latency = presenterDate.getTime() - viewerDate.getTime();
+              } catch (ParseException e) {
+                log.warn(
+                    "Unparseable date(s) (presenter: '{}' - viewer: '{}')"
+                        + "\nBase64 presenter: {}" + "\nBase64 viewer: {}",
+                    presenterDateStr, viewerDateStr, presenterOcr.get(key),
+                    viewerOcr.get(matchKey));
+              }
+              log.debug("-----> [{}] Latency {} ms (presenter: '{}' - viewer: '{}')", j, latency,
+                  presenterDateStr, viewerDateStr);
 
-    Iterator<String> iterator = presenterOcr.keySet().iterator();
+              // Debug trace for latencies over 1 second (or lower than -1)
+              if (latency > 1000 || latency < -1) {
+                log.warn(
+                    "Bad latency measurement: {} ms (presenter: '{}' - viewer: '{}')"
+                        + "\nBase64 presenter: {}" + "\nBase64 viewer: {}",
+                    latency, presenterDateStr, viewerDateStr, presenterOcr.get(key),
+                    viewerOcr.get(matchKey));
+              }
 
-    int empty = 0;
-    for (int i = 0; i < presenterOcr.size(); i++) {
-      String key = iterator.next();
-      String matchKey = containSimilarDate(key, viewerOcr.keySet());
-      if (matchKey != null) {
-        String presenterDateStr = ocr(presenterOcr.get(key));
-        String viewerDateStr = ocr(viewerOcr.get(matchKey));
-        long latency = -1;
-        try {
-          Date presenterDate = simpleDateFormat.parse(presenterDateStr);
-          Date viewerDate = simpleDateFormat.parse(viewerDateStr);
-          latency = presenterDate.getTime() - viewerDate.getTime();
-        } catch (ParseException e) {
-          log.warn(
-              "Unparseable date(s) (presenter: '{}' - viewer: '{}')" + "\nBase64 presenter: {}"
-                  + "\nBase64 viewer: {}",
-              presenterDateStr, viewerDateStr, presenterOcr.get(key), viewerOcr.get(matchKey));
-        }
-        log.info("-----> [{}] Latency {} ms (presenter: '{}' - viewer: '{}')", i, latency,
-            presenterDateStr, viewerDateStr);
-
-        // Latency
-        List<String> latencyList = null;
-        if (result.containsKey(latencyKey)) {
-          latencyList = result.get(latencyKey);
-        } else {
-          latencyList = new ArrayList<>();
-          result.put(latencyKey, latencyList);
-        }
-        latencyList.add(String.valueOf(latency));
-
-        // Stats
-        Map<String, String> allStats = new HashMap<>();
-        if (i < presenterStats.size()) {
-          allStats.putAll(presenterStats.get(i));
-        }
-        if (i < viewerStats.size()) {
-          allStats.putAll(viewerStats.get(i));
-        }
-
-        // When stats are empty it means no value should be stored in the final result table.
-        // Therefore an empty cell should appear in this data structure. To count this situation,
-        // the variable empty counts the occurrence of this issue
-        if (allStats.isEmpty()) {
-          empty++;
-        }
-
-        for (String keyStat : allStats.keySet()) {
-          List<String> statList = null;
-          if (result.containsKey(keyStat)) {
-            statList = result.get(keyStat);
-          } else {
-            statList = new ArrayList<>();
-            for (int z = 0; z < empty; z++) {
-              statList.add("");
+              if (!resultTable.row(0).containsValue(latencyKey)) {
+                resultTable.put(0, 0, latencyKey);
+              }
+              resultTable.put(j + 1, 0, String.valueOf(latency));
             }
-            result.put(keyStat, statList);
+          } finally {
+            latch.countDown();
           }
-          statList.add(allStats.get(keyStat));
         }
-      }
+      });
     }
 
-    log.trace("Final stats {} {}", result, result.size());
+    latch.await();
+    executor.shutdown();
+
+    // Process statistics
+    processStats(presenterStats, resultTable);
+    processStats(viewerStats, resultTable);
+
+    log.info("OCR + Stats results: {}", resultTable);
 
     // Write CSV
-    FileWriter writer = new FileWriter(outputFile);
-    boolean first = true;
-    for (String key : result.keySet()) {
-      if (!first) {
-        writer.append(',');
-      }
-      writer.append(key);
-      first = false;
-    }
-    writer.append('\n');
+    writeCSV(outputFile, resultTable);
+  }
 
-    int i = 0;
-    while (true) {
-      try {
-        first = true;
-        for (List<String> value : result.values()) {
-          if (!first) {
-            writer.append(',');
-          }
-          writer.append(value.get(i));
-          first = false;
+  public void processStats(List<Map<String, String>> stats,
+      Table<Integer, Integer, String> resultTable) {
+    for (int i = 0; i < stats.size(); i++) {
+      Map<String, String> entryStat = stats.get(i);
+      for (String key : entryStat.keySet()) {
+        if (!resultTable.row(0).containsValue(key)) {
+          int columnCount = resultTable.columnKeySet().size();
+          resultTable.put(0, columnCount, key);
+          resultTable.put(1 + i, columnCount, entryStat.get(key));
+        } else {
+          int columnIndex = getKeyOfValue(resultTable.row(0), key);
+          resultTable.put(1 + i, columnIndex, entryStat.get(key));
         }
-        writer.append('\n');
-        i++;
-      } catch (Exception e) {
-        break;
       }
+    }
+  }
+
+  public void writeCSV(String outputFile, Table<Integer, Integer, String> resultTable)
+      throws IOException {
+    FileWriter writer = new FileWriter(outputFile);
+    for (Integer row : resultTable.rowKeySet()) {
+      boolean first = true;
+      for (Integer column : resultTable.columnKeySet()) {
+        if (!first) {
+          writer.append(',');
+        }
+        String value = resultTable.get(row, column);
+        if (value != null) {
+          writer.append(value);
+        }
+        first = false;
+      }
+      writer.append('\n');
     }
     writer.flush();
     writer.close();
+  }
+
+  public Integer getKeyOfValue(Map<Integer, String> map, String value) {
+    Integer key = null;
+    for (Integer i : map.keySet()) {
+      if (map.get(i).equalsIgnoreCase(value)) {
+        key = i;
+        break;
+      }
+    }
+    return key;
   }
 
 }
