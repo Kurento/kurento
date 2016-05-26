@@ -39,7 +39,8 @@ class CallException
 
 public:
   CallException (int code, const std::string &message,
-                 const Json::Value &data = Json::Value::null) {
+                 const Json::Value &data = Json::Value::null)
+  {
     this->code = code;
     this->message = message;
     this->data = data;
@@ -65,15 +66,18 @@ public:
     }
   }
 
-  int getCode() {
+  int getCode()
+  {
     return code;
   }
 
-  std::string getMessage() {
+  std::string getMessage()
+  {
     return message;
   }
 
-  Json::Value getData() {
+  Json::Value getData()
+  {
     return data;
   }
 

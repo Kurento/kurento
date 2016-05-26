@@ -245,4 +245,3 @@ Handler::setPostProcess (std::function
 
 } /* JsonRpc */
 } /* kurento */
-
