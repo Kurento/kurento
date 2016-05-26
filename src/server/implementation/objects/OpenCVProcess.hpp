@@ -12,7 +12,8 @@ class OpenCVProcess
 public:
   virtual void process (cv::Mat &mat) = 0;
 protected:
-  std::shared_ptr<MediaObject> getSharedPtr() {
+  std::shared_ptr<MediaObject> getSharedPtr()
+  {
     try {
       return dynamic_cast <MediaObject *> (this)->shared_from_this();
     } catch (...) {
