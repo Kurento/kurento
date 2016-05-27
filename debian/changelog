@@ -1,3 +1,35 @@
+kurento-module-creator-4.0 (4.0.5) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom.xml.ftl: As s3-wagon as extension
+  * Add build configuration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * cpp_templates: Add method getHierarchy to know the parent classes
+  * cpp_templates: return const pointer to string to avoid copies
+  * cpp_templates: Add method to obtain the fully qualified name
+  * TypeHierarchy: Compare string correctly
+  * Install cmake find module for cmake 3.5 version
+  * RemoteClassRactoryTemplate: Include Factory.hpp
+  * cpp_interface/event_class: Add copy constructor to events
+  * cpp_server_internal/remoteClass_internal: Send events asynchronously
+
+  [ Raúl Benítez Mejías ]
+  * Add new getter for qualifiedName
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * Fix Readme templates for npm projects
+  * Prepare release 4.0.5
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 19:14:26 +0200
+
 kurento-module-creator-4.0 (4.0.4) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
