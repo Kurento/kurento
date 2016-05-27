@@ -136,8 +136,11 @@ void WebRtcEndpointImpl::onIceCandidate (gchar *sessId,
     std::shared_ptr <IceCandidate> cand ( new  IceCandidate
                                           (cand_str, mid_str, sdp_m_line_index) );
     OnIceCandidate event (shared_from_this(), OnIceCandidate::getName(), cand);
+    IceCandidateFound newEvent (shared_from_this(), IceCandidateFound::getName(),
+                                cand);
 
     signalOnIceCandidate (event);
+    signalIceCandidateFound (newEvent);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -146,8 +149,10 @@ void WebRtcEndpointImpl::onIceGatheringDone (gchar *sessId)
 {
   try {
     OnIceGatheringDone event (shared_from_this(), OnIceGatheringDone::getName() );
+    IceGatheringDone newEvent (shared_from_this(), IceGatheringDone::getName() );
 
     signalOnIceGatheringDone (event);
+    signalIceGatheringDone (newEvent);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -193,11 +198,16 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
     }
 
     IceComponentState *componentState_event = new IceComponentState (type);
+    IceComponentState *newComponentState_event = new IceComponentState (type);
     IceComponentState *componentState_property = new IceComponentState (type);
     OnIceComponentStateChanged event (shared_from_this(),
                                       OnIceComponentStateChanged::getName(),
                                       atoi (streamId), componentId,
                                       std::shared_ptr<IceComponentState> (componentState_event) );
+    IceComponentStateChange newEvent (shared_from_this(),
+                                      IceComponentStateChange::getName(),
+                                      atoi (streamId), componentId,
+                                      std::shared_ptr<IceComponentState> (newComponentState_event) );
 
     connectionState = std::make_shared< IceConnection> (streamId, componentId,
                       std::shared_ptr<IceComponentState> (componentState_property) );
@@ -210,6 +220,7 @@ void WebRtcEndpointImpl::onIceComponentStateChanged (gchar *sessId,
                                <std::string, std::shared_ptr <IceConnection>> (key, connectionState) );
 
     signalOnIceComponentStateChanged (event);
+    signalIceComponentStateChange (newEvent);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -259,7 +270,10 @@ WebRtcEndpointImpl::onDataChannelOpened (gchar *sessId, guint stream_id)
   try {
     OnDataChannelOpened event (shared_from_this(), OnDataChannelOpened::getName(),
                                stream_id);
+    DataChannelOpen newEvent (shared_from_this(), DataChannelOpen::getName(),
+                              stream_id);
     signalOnDataChannelOpened (event);
+    signalDataChannelOpen (newEvent);
   } catch (std::bad_weak_ptr &e) {
   }
 }
@@ -270,7 +284,10 @@ WebRtcEndpointImpl::onDataChannelClosed (gchar *sessId, guint stream_id)
   try {
     OnDataChannelClosed event (shared_from_this(), OnDataChannelClosed::getName(),
                                stream_id);
+    DataChannelClose newEvent (shared_from_this(), DataChannelClose::getName(),
+                               stream_id);
     signalOnDataChannelClosed (event);
+    signalDataChannelClose (newEvent);
   } catch (std::bad_weak_ptr &e) {
   }
 }

@@ -59,12 +59,17 @@ public:
                         std::shared_ptr<EventHandler> handler);
 
   sigc::signal<void, OnIceCandidate> signalOnIceCandidate;
+  sigc::signal<void, IceCandidateFound> signalIceCandidateFound;
   sigc::signal<void, OnIceGatheringDone> signalOnIceGatheringDone;
+  sigc::signal<void, IceGatheringDone> signalIceGatheringDone;
   sigc::signal<void, OnIceComponentStateChanged> signalOnIceComponentStateChanged;
+  sigc::signal<void, IceComponentStateChange> signalIceComponentStateChange;
   sigc::signal<void, NewCandidatePairSelected> signalNewCandidatePairSelected;
 
   sigc::signal<void, OnDataChannelOpened> signalOnDataChannelOpened;
+  sigc::signal<void, DataChannelOpen> signalDataChannelOpen;
   sigc::signal<void, OnDataChannelClosed> signalOnDataChannelClosed;
+  sigc::signal<void, DataChannelClose> signalDataChannelClose;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

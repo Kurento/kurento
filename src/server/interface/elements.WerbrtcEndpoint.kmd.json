@@ -271,10 +271,15 @@
       ],
       "events": [
         "OnIceCandidate",
+        "IceCandidateFound",
         "OnIceGatheringDone",
+        "IceGatheringDone",
         "OnIceComponentStateChanged",
+        "IceComponentStateChange",
         "OnDataChannelOpened",
+        "DataChannelOpen",
         "OnDataChannelClosed",
+        "DataChannelClose",
         "NewCandidatePairSelected"
       ]
     }
@@ -282,6 +287,18 @@
   "events": [
     {
       "name": "OnIceCandidate",
+      "extends": "Media",
+      "doc": "@deprecated\nNotifies a new local candidate. These candidates should be sent to the remote peer, to complete the ICE negotiation process.",
+      "properties": [
+        {
+          "name": "candidate",
+          "doc": "New local candidate",
+          "type": "IceCandidate"
+        }
+      ]
+    },
+    {
+      "name": "IceCandidateFound",
       "extends": "Media",
       "doc": "Notifies a new local candidate. These candidates should be sent to the remote peer, to complete the ICE negotiation process.",
       "properties": [
@@ -295,11 +312,39 @@
     {
       "name": "OnIceGatheringDone",
       "extends": "Media",
+      "doc": "@deprecated\nEvent fired when al ICE candidates have been gathered.",
+      "properties": []
+    },
+    {
+      "name": "IceGatheringDone",
+      "extends": "Media",
       "doc": "Event fired when al ICE candidates have been gathered.",
       "properties": []
     },
     {
       "name": "OnIceComponentStateChanged",
+      "extends": "Media",
+      "doc": "@deprecated\nEvent fired when and ICE component state changes. See :rom:cls:`IceComponentState` for a list of possible states.",
+      "properties": [
+        {
+          "name": "streamId",
+          "doc": "The ID of the stream",
+          "type": "int"
+        },
+        {
+          "name": "componentId",
+          "doc": "The ID of the component",
+          "type": "int"
+        },
+        {
+          "name": "state",
+          "doc": "The state of the component",
+          "type": "IceComponentState"
+        }
+      ]
+    },
+    {
+      "name": "IceComponentStateChange",
       "extends": "Media",
       "doc": "Event fired when and ICE component state changes. See :rom:cls:`IceComponentState` for a list of possible states.",
       "properties": [
@@ -322,6 +367,18 @@
     },
     {
       "name": "OnDataChannelOpened",
+      "doc": "@deprecated\nEvent fired when a new data channel is created.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "channelId",
+          "doc": "The channel identifier",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "DataChannelOpen",
       "doc": "Event fired when a new data channel is created.",
       "extends": "Media",
       "properties": [
@@ -334,6 +391,18 @@
     },
     {
       "name": "OnDataChannelClosed",
+      "doc": "@deprecated\nEvent fired when a data channel is closed.",
+      "extends": "Media",
+      "properties": [
+        {
+          "name": "channelId",
+          "doc": "The channel identifier",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "DataChannelClose",
       "doc": "Event fired when a data channel is closed.",
       "extends": "Media",
       "properties": [
