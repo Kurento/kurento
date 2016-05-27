@@ -9,7 +9,7 @@
   "moduleType": [
     "globals"
   ],
-  "license": "LGPL",
+  "license": "ALv2",
   "homepage": "http://www.kurento.org/",
   "private": true,
   "ignore": [
