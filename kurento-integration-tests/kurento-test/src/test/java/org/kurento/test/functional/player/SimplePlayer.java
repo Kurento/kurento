@@ -43,9 +43,9 @@ import org.kurento.test.config.VideoFormat;
 public class SimplePlayer extends PlayerTest {
 
   public void testPlayerWithRtsp(WebRtcChannel webRtcChannel) throws Exception {
-    testPlayer("rtsp://r6---sn-cg07luez.c.youtube.com/"
-        + "CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp", webRtcChannel, 0, 50,
-        50, Color.WHITE);
+    getPage().getBrowser().setTimeout(200);
+    testPlayer("rtsp://mm2.pcslab.com/mm/7m2000.mp4", webRtcChannel, 0, 50,
+        50, Color.BLACK);
   }
 
   public void testPlayerWithSmallFileVideoOnly(Protocol protocol, VideoFormat videoFormat,
