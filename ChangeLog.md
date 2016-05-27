@@ -1,3 +1,9 @@
+6.5.0
+=====
+
+  * Change license to Apache 2.0
+  * Update kurento dependencies to 6.5.0
+
 6.4.0
 =====
 
