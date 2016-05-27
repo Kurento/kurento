@@ -389,7 +389,10 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
             if (matchKey != null) {
               String presenterBase64 = presenter.get(key).get(LATENCY_KEY);
               String viewerBase64 = viewer.get(matchKey).get(LATENCY_KEY);
-              String latency = String.valueOf(processOcr(presenterBase64, viewerBase64));
+              String presenterDateStr = ocr(presenterBase64);
+              String viewerDateStr = ocr(viewerBase64);
+              String latency = String.valueOf(
+                  processOcr(presenterDateStr, viewerDateStr, presenterBase64, viewerBase64));
               synchronized (resultTable) {
                 if (!resultTable.row(0).containsValue(LATENCY_KEY)) {
                   resultTable.put(0, 0, LATENCY_KEY);
@@ -416,9 +419,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     writeCSV(outputFile, resultTable);
   }
 
-  public synchronized long processOcr(String presenterBase64, String viewerBase64) {
-    String presenterDateStr = ocr(presenterBase64);
-    String viewerDateStr = ocr(viewerBase64);
+  public synchronized long processOcr(String presenterDateStr, String viewerDateStr,
+      String presenterBase64, String viewerBase64) {
     long latency = -1;
     try {
       Date presenterDate = DATE_FORMAT.parse(presenterDateStr);
@@ -430,7 +432,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
               + "\nBase64 viewer: {}",
           presenterDateStr, viewerDateStr, presenterBase64, viewerBase64, e);
     }
-    log.debug("--> Latency {} ms (presenter: '{}' - viewer: '{}')", latency, presenterDateStr,
+    log.info("--> Latency {} ms (presenter: '{}' - viewer: '{}')", latency, presenterDateStr,
         viewerDateStr);
 
     // Debug trace for latencies over 1 second (or lower than -1)
