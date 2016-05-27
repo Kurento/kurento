@@ -1,3 +1,104 @@
+kms-elements-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * WebRctEndpointImpl: Add information about ice candidates pair selected
+  * WebRtcEndpointImpl: Add event and property to get the ICE pair candidates
+
+  [ Miguel París Díaz ]
+  * kmsiceniceagent: fix candidates memory leak
+
+  [ Jose Antonio Santos Cadenas ]
+  * recoderendpoint: Notify state change when it really occurs
+  * RecorderEndpoint: Use release method to stop recorder correctly
+  * RecorderEndpoint: Add signals for recorder state changes
+  * WebRtcEndpointImpl: Set default port to stun server when it has an invalid value
+
+  [ David Fernandez ]
+  * kmswebrtcsession: Generate fingerprint skipping the secret key
+  * WebRtcEndpoint: Add the possibility to configure the pem certificate
+
+  [ Santiago Carot-Nemesio ]
+  * kmsrecorderendpoint: Use common code for e2e stats calculation
+  * kmsrecorderendpoint: Remove unrequired stuff
+  * kmswebrtctransport: Latency notification callback should be locking
+  * rtpendpoint: Enable latency stats
+
+  [ Jose Antonio Santos Cadenas ]
+  * recorderendpoint.c: Remove states transition lock
+  * recorderendpoint.c: Reduce log severity
+  * RecorderEndpoint.kmd: Fix documentation of constructor parameters
+
+  [ Miguel París Díaz ]
+  * WebRtcEndpointImpol: remove unneded attrs and includes
+
+  [ Jose Antonio Santos Cadenas ]
+  * recorderendpoint: Do not propagate errors when internal pipeline fails
+  * recorderendpoint.c: Do no change states holding KMS_ELEMENT_LOCK
+  * recorderendpoint.c: Improve the use of stopping flag
+  * recorderendpoint.c: Use element_private data on pads
+  * RecordingEndpointImpl: Log state changes
+  * RecorderEndpointImpl: Add stopAndWait method
+
+  [ David Fernandez ]
+  * playerEndPoint: Add C++ test for EOS event
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ David Fernandez ]
+  * playerEndPoint: Add test for player where the next element doesn't accept Eos
+  * kmswebrctsession: Avoid segmentation fault if pem is not valid
+  * kmswebrtcsession: Use generate_fingerprint_from_pem from kmsutils
+  * kmswebrtcsession: Add kms_utils_ prefix to generate_fingerprint_from_pem
+
+  [ Miguel París Díaz ]
+  * recorderendpoint: set default value for profile
+  * webrtcendpoint: fix misprint in property name
+
+  [ Jose Antonio Santos Cadenas ]
+  * webrtctransport: Set pem certificate before connection-id
+  * RecorderEndpointImpl: Call parent release method in all cases
+  * .buid.yaml: Add dependency openwebrtc-gst-plugins
+
+  [ David Fernandez ]
+  * WebRtcEndpointImpl: Add property to get the ice connection state
+
+  [ Santiago Carot-Nemesio ]
+  * kmswebrtcsession: Remove unused signal
+
+  [ Jose Antonio Santos Cadenas ]
+  * CMake: Disable error date time
+  * WebRtcEndpoint: Avoid possible deadlock during initialization
+
+  [ Miguel París Díaz ]
+  * webrtcsession: avoid duplicate iteration
+
+  [ Ivan Gracia ]
+  * kmd: Improvements in endpoint headers
+
+  [ Jose Antonio Santos Cadenas ]
+  * srtp: Fix test due to changes in libsrtp
+
+  [ Miguel París Díaz ]
+  * webrtctransport: use RTP_RTX_SIZE as replay-window-size
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix style
+
+  [ David Fernandez ]
+  * WebRtcEndpoint: Add new events removing the on prefix
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change licente to Apache 2.0
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 17:34:55 +0200
+
 kms-elements-6.0 (6.4.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]

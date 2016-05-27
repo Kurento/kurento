@@ -1,3 +1,17 @@
+6.5.0
+=====
+
+  * Change license to Apache 2.0
+  * WebRctEndpoint: Add information about ice candidates pair selected
+  * WebRctEndpoint: Fix memory leaks on candidatesm management
+  * WebRctEndpoint: Fix fingerprint generation when certificate is buldled with the key
+  * WebRctEndpoint: Fix bugs when using a custom pem por dtls
+  * WebRctEndpoint: Improve events names deprecating old ones
+    (old ones are still valid, but its use is discouraged)
+  * RecorderEndpoint: Fix state management
+  * RecorderEndpoint: Add StopAndWait method
+  * Improve documentation
+
 6.4.0
 =====
 
