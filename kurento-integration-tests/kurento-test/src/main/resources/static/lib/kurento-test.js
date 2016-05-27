@@ -37,7 +37,6 @@ function KurentoTest() {
 
 	// RTC statistics parameters
 	this.rtcStats = {};
-	this.rtcStatsList = [];
 	this.rtcStatsRate = 100; // milliseconds
 	this.rtcStatsIntervalId = {};
 
@@ -46,28 +45,36 @@ function KurentoTest() {
 
 	// OCR
 	this.sync = false;
+	this.syncTime = null;
 	this.ocrActive = false;
-	this.ocrImageMap = {};
+	this.ocrMap = {};
 }
 
 KurentoTest.prototype.syncTimeForOcr = function(videoTagId, peerConnectionId) {
 	// Sync with clock system
 	var timeNow = new Date().getTime();
-	var nextMinute = new Date(timeNow + 60000);
-	nextMinute.setSeconds(0);
-	nextMinute.setMilliseconds(0);
-	var offsetMillis = nextMinute.getTime() - timeNow;
+	this.syncTime = new Date(timeNow + 60000);
+	this.syncTime.setSeconds(0);
+	this.syncTime.setMilliseconds(0);
+	var offsetMillis = this.syncTime.getTime() - timeNow;
 	console.info("Time wait for next exact minute: " + offsetMillis + " ms");
 	var self = this;
 
 	setTimeout(function() {
 		console.info("Sync finished");
 		self.sync = true;
-		self.getVideoTime(videoTagId);
-		self.getStats(peerConnectionId);
+		var time = new Date().getTime();
+		// Uncomment this line to relative time:
+		// var time = new Date().getTime() - self.syncTime.getTime();
+		self.getVideoTime(videoTagId, time);
+		self.getStats(peerConnectionId, time);
+
 		setInterval(function() {
-			self.getVideoTime(videoTagId);
-			self.getStats(peerConnectionId);
+			var time = new Date().getTime();
+			// Uncomment this line to relative time:
+			// var time = new Date().getTime() - self.syncTime.getTime();
+			self.getVideoTime(videoTagId, time);
+			self.getStats(peerConnectionId, time);
 		}, 1000);
 	}, offsetMillis);
 }
@@ -82,7 +89,7 @@ KurentoTest.prototype.endOcr = function() {
 	this.ocrActive = false;
 }
 
-KurentoTest.prototype.getStats = function(peerConnectionId) {
+KurentoTest.prototype.getStats = function(peerConnectionId, time) {
 	if (this.ocrActive) {
 		var peerConnection = eval(peerConnectionId);
 		eval("var localStream = peerConnection.getLocalStreams()[0];");
@@ -99,25 +106,29 @@ KurentoTest.prototype.getStats = function(peerConnectionId) {
 
 		if (localStream) {
 			kurentoTest.updateStats(peerConnection, localAudioTrack,
-					"localAudio-");
+					"localAudio");
 			kurentoTest.updateStats(peerConnection, localVideoTrack,
-					"localVideo-");
-			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
+					"localVideo");
 		} else if (remoteStream) {
 			kurentoTest.updateStats(peerConnection, remoteAudioTrack,
-					"remoteAudio-");
+					"remoteAudio");
 			kurentoTest.updateStats(peerConnection, remoteVideoTrack,
-					"remoteVideo-");
-			this.rtcStatsList.push(JSON.parse(JSON.stringify(this.rtcStats)));
+					"remoteVideo");
+		}
+
+		for ( var key in this.rtcStats) {
+			eval("this.ocrMap[time]." + key + " = \"" + this.rtcStats[key]
+					+ "\";");
 		}
 	}
 }
 
-KurentoTest.prototype.getVideoTime = function(videoTagId) {
-	if (this.ocrActive) {
-		// Sample time
-		var now = new Date().getTime();
+KurentoTest.prototype.capitalize = function(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
+KurentoTest.prototype.getVideoTime = function(videoTagId, time) {
+	if (this.ocrActive) {
 		// Clock coordinates on Chrome user media synthetic video
 		var sourceX = 0;
 		var sourceY = 0;
@@ -135,7 +146,9 @@ KurentoTest.prototype.getVideoTime = function(videoTagId) {
 
 		var imgTimeBase64 = canvas.toDataURL("image/png").replace("image/png",
 				"image/octet-stream");
-		this.ocrImageMap[now] = imgTimeBase64;
+		this.ocrMap[time] = {
+			latencyMs : imgTimeBase64
+		};
 	}
 }
 
@@ -286,12 +299,17 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction,
 }
 
 KurentoTest.prototype.updateStats = function(peerConnection, track, type) {
+	var self = this;
 	peerConnection.getStats(function(stats) {
 		var result = stats.result()[2];
 		if (result) {
-			result.names().forEach(function(name) {
-				kurentoTest.rtcStats[type + name] = result.stat(name);
-			});
+			result.names()
+					.forEach(
+							function(name) {
+								kurentoTest.rtcStats[type
+										+ self.capitalize(name)] = result
+										.stat(name);
+							});
 		}
 	}, track);
 }

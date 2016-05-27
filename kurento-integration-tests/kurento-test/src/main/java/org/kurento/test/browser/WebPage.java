@@ -411,20 +411,21 @@ public class WebPage {
   }
 
   /*
-   * getOcr
+   * getOcrMap
    */
   @SuppressWarnings("unchecked")
-  public Map<String, String> getOcr() {
-    return new TreeMap<String, String>(
-        (Map<String, String>) browser.executeScript("return kurentoTest.ocrImageMap;"));
-  }
+  public Map<String, Map<String, String>> getOcrMap() {
+    Map<String, Map<String, String>> ocrMap = (Map<String, Map<String, String>>) browser
+        .executeScript("return kurentoTest.ocrMap;");
 
-  /*
-   * getStatsList
-   */
-  @SuppressWarnings("unchecked")
-  public List<Map<String, String>> getStatsList() {
-    return (List<Map<String, String>>) browser.executeScript("return kurentoTest.rtcStatsList;");
+    // Transform data structure to serializable (because
+    // com.google.common.collect.Maps$TransformedEntriesMap is not)
+    Map<String, Map<String, String>> serializableMap = new TreeMap<String, Map<String, String>>();
+    for (String key : ocrMap.keySet()) {
+      serializableMap.put(key, new HashMap<String, String>(ocrMap.get(key)));
+    }
+
+    return serializableMap;
   }
 
 }
