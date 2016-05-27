@@ -3,7 +3,7 @@
   "version": "6.4.1-dev",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.org",
-  "license": "LGPL-2.1",
+  "license": "ALv2",
   "author": "Kurento <info@kurento.org> (http://kurento.org)",
   "contributors": [
     "Ivan Gracia <izanmail@gmail.com>",
