@@ -9,7 +9,7 @@ index.js
  * @module ${module.name}
  *
  * @copyright 2013-2015 Kurento (http://kurento.org/)
- * @license LGPL
+ * @license ALv2
  */
 
 Object.defineProperty(exports, 'name',    {value: '${module.name}'});

@@ -11,7 +11,7 @@ complexTypes/index.js
  * @module ${module.name}/complexTypes
  *
  * @copyright 2013-2015 Kurento (http://kurento.org/)
- * @license LGPL
+ * @license ALv2
  */
 
   <#if module.name == 'core'>

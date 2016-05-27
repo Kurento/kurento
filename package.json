@@ -3,7 +3,7 @@
   "version": "6.4.2-dev",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.org",
-  "license": "LGPL",
+  "license": "ALv2",
   "author": "Kurento <info@kurento.com> (http://kurento.org)",
   "contributors": [
     {

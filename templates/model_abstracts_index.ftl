@@ -16,7 +16,7 @@ abstracts/index.js
  * @module ${module.name}/abstracts
  *
  * @copyright 2013-2015 Kurento (http://kurento.org/)
- * @license LGPL
+ * @license ALv2
  */
 
   <#list remoteClasses_abstract as remoteClass_name>

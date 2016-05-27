@@ -1,6 +1,6 @@
 [![][KurentoImage]][website]
 
-Copyright © 2014 Kurento. Licensed under [LGPL License].
+Copyright © 2013-2016 [Kurento]. Licensed under [Apache 2.0 License].
 
 JavaScript Kurento Client - Tests
 =================================
@@ -156,5 +156,5 @@ Detect a bar code inside the video stream
 
 
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
-[LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
+[Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
 [website]: http://kurento.org
