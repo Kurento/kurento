@@ -576,7 +576,7 @@ QUnit.test('videoEnabled', function (assert) {
     done()
   }
 
-  const TIMEOUT = 50; // ms
+  const TIMEOUT = 500; // ms
 
   var video = document.getElementById('video')
   var canvas = document.getElementById('canvas')
