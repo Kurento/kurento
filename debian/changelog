@@ -1,3 +1,21 @@
+kms-jsonrpc-1.0 (1.1.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Add build configuration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix style
+  * Change license to Apache 2.0
+  * Prepare release 1.1.1
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 27 May 2016 17:18:36 +0200
+
 kms-jsonrpc-1.0 (1.1.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
