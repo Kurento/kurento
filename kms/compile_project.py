@@ -383,7 +383,7 @@ def get_debian_version(args, dist):
             version = version + "~" + now.strftime(
                 "%Y%m%d%H%M%S") + "." + rc + "." + current_commit + "." + dist
     else:
-        version = version + "." + now.strftime("%Y%m%d%H%M%S") + "." + dist
+        version = version + "." + now.strftime("%Y%m%d%H%M%S") + "." + current_commit + "."+ dist
 
     return version
 
