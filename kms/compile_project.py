@@ -378,12 +378,12 @@ def get_debian_version(args, dist):
 
     if int(rc) > 0:
         if args.simplify_dev_version:
-            version = version + "~0." + rc + "." + current_commit + "." + dist
+            version = version + "." + dist + "~0." + rc + "." + current_commit
         else:
-            version = version + "~" + now.strftime(
-                "%Y%m%d%H%M%S") + "." + rc + "." + current_commit + "." + dist
+            version = version + "." + dist + "~" + now.strftime(
+                "%Y%m%d%H%M%S") + "." + rc + "." + current_commit
     else:
-        version = version + "." + now.strftime("%Y%m%d%H%M%S") + "." + current_commit + "."+ dist
+        version = version + "."+ dist + "." + now.strftime("%Y%m%d%H%M%S") + "." + current_commit
 
     return version
 
