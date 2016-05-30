@@ -74,7 +74,7 @@ then
   sed -i "1 s/${debver}/${ver}${sep}$(date +"%Y%m%d%H%M%S").${rc}.g$(git rev-parse --short HEAD).${DIST}/g" debian/changelog
   export orig_ver=${ver}
 else
-  sed -i "1 s/${debver}/${ver}.${DIST}/g" debian/changelog
+  sed -i "1 s/${debver}/${ver}.$(date +"%Y%m%d%H%M%S").${DIST}/g" debian/changelog
   export orig_ver=${ver}
 fi
 
