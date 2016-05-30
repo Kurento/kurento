@@ -68,7 +68,8 @@ module.exports = function(grunt)
 
         options:
         {
-          bundleOptions: {
+          browserifyOptions: {
+            debug: true,
             standalone: 'RpcBuilder'
           }
         }
@@ -82,6 +83,10 @@ module.exports = function(grunt)
         options:
         {
           debug: true,
+          browserifyOptions: {
+            debug: true,
+            standalone: 'RpcBuilder'
+          },
           plugin: [
             ['minifyify',
              {
@@ -100,7 +105,8 @@ module.exports = function(grunt)
         options:
         {
           debug: true,
-          bundleOptions: {
+          browserifyOptions: {
+            debug: true,
             standalone: 'RpcBuilder'
           },
           plugin: [
