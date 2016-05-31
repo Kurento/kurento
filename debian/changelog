@@ -1,3 +1,20 @@
+kms-platedetector-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Jose Antonio Santos Cadenas ]
+  * Change license to Apache 2.0
+  * CMakeLists: Fix compilation problems on xenial
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 31 May 2016 11:17:43 +0200
+
 kms-platedetector-6.0 (6.4.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
