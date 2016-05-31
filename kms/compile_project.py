@@ -618,6 +618,9 @@ def compile_project(args):
                 compile_project(args)
                 os.chdir(workdir)
 
+    if os.system ("kurento_check_version.sh true") != 0:
+        print ("Error while checking the version")
+        exit (1)
     generate_debian_package(args, config)
 
 
