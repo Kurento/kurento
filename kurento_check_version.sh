@@ -14,6 +14,8 @@ else
   fi
 fi
 
+[ -n "$CHECK_SUBMODULES" ] || CHECK_SUBMODULES="yes"
+
 PATH=$PATH:$(realpath $(dirname "$0"))
 
 echo Create tag $CREATE_TAG
@@ -42,14 +44,16 @@ then
 fi
 
 # Check if all submodules are in a tag
-git submodule foreach "
-  if [ x = \"x\`git tag --contains HEAD | head -1\`\" ]; then
+if [[ ${CHECK_SUBMODULES} == yes ]]; then
+  git submodule foreach "
+    if [ x = \"x\`git tag --contains HEAD | head -1\`\" ]; then
+      exit 1
+    fi
+  "
+  if [ $? -eq 1 ]; then
+    echo "Not all the projects are in a tag"
     exit 1
   fi
-"
-if [ $? -eq 1 ]; then
-  echo "Not all the projects are in a tag"
-  exit 1
 fi
 
 if [ -s debian/changelog ]
