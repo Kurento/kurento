@@ -98,7 +98,7 @@
 		<version.apache.fluent-hc>4.5.1</version.apache.fluent-hc>
 		<version.apache.httpclient>4.5.1</version.apache.httpclient>
 		<version.apache.httpcore>4.4.4</version.apache.httpcore>
-		<version.apache.source.assembly.descriptor>1.0.4</version.apache.source.assembly.descriptor>
+		<version.apache.source.assembly.descriptor>1.0.6</version.apache.source.assembly.descriptor>
 		<version.cglib>3.2.0</version.cglib>
 		<version.cors-filter>2.5</version.cors-filter>
 		<version.exec.maven.plugin>1.4.0</version.exec.maven.plugin>
@@ -1252,6 +1252,7 @@
 							<dependency>
 								<groupId>org.apache.apache.resources</groupId>
 								<artifactId>apache-source-release-assembly-descriptor</artifactId>
+								<version>${version.apache.source.assembly.descriptor}</version>
 							</dependency>
 						</dependencies>
 						<executions>
