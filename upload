@@ -56,7 +56,7 @@ else
   else
     BODY+=$(echo ' --- Aptly publish:')
     # Delete scheduled updates before inserting new one
-    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update $DIST s3:$REPO:" | awk '{print $1}'); do
+    for task in $(tsp | egrep '(queued|running)' | grep "aptly publish update -force-overwrite=false $DIST s3:$REPO:" | awk '{print $1}'); do
       tsp -r $task
     done
     # This task can be removed any time by future uploads
