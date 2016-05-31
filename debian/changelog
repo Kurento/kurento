@@ -1,3 +1,24 @@
+kms-pointerdetector-6.0 (6.5.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Raúl Benítez Mejías ]
+  * Add badges into all README.md
+
+  [ Santiago Carot-Nemesio ]
+  * test_pointerdetector: Remove wrong dependancy
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add .build.yaml
+  * Change license to Apache 2.0
+  * CMakeLists: Fix compilation problems on xenial
+  * Prepare release 6.5.0
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 31 May 2016 09:25:38 +0200
+
 kms-pointerdetector-6.0 (6.4.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
