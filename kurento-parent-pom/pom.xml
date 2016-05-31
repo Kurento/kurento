@@ -98,6 +98,7 @@
 		<version.apache.fluent-hc>4.5.1</version.apache.fluent-hc>
 		<version.apache.httpclient>4.5.1</version.apache.httpclient>
 		<version.apache.httpcore>4.4.4</version.apache.httpcore>
+		<version.apache.source.assembly.descriptor>1.0.4</version.apache.source.assembly.descriptor>
 		<version.cglib>3.2.0</version.cglib>
 		<version.cors-filter>2.5</version.cors-filter>
 		<version.exec.maven.plugin>1.4.0</version.exec.maven.plugin>
@@ -195,8 +196,8 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 
-		<!-- Options to override the compiler arguments directly on the compiler
-			arument line to separate between what the IDE understands as the source level
+		<!-- Options to override the compiler arguments directly on the compiler 
+			arument line to separate between what the IDE understands as the source level 
 			and what the Maven compiler actually use. -->
 		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
 		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
@@ -502,6 +503,11 @@
 				<version>${version.apache.activemq}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.apache.resources</groupId>
+				<artifactId>apache-source-release-assembly-descriptor</artifactId>
+				<version>${version.apache.source.assembly.descriptor}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.scribe</groupId>
 				<artifactId>scribe</artifactId>
 				<version>${version.scribe}</version>
@@ -674,7 +680,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
-				<version>2.6.3</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bytedeco.javacpp-presets</groupId>
@@ -878,7 +884,7 @@
 								<Build-Timestamp>${build.datetime}</Build-Timestamp>
 							</manifestEntries>
 						</archive>
-						<additionalparam>-Xdoclint:none</additionalparam>
+						<additionalparam>${javadoc.opts}</additionalparam>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -1023,10 +1029,10 @@
 					<version>${version.war.plugin}</version>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
-					<!--This plugin's configuration is used to store Eclipse m2e settings
+					<!--This plugin's configuration is used to store Eclipse m2e settings 
 						only. It has no influence on the Maven build itself. -->
 
 					<groupId>org.eclipse.m2e</groupId>
@@ -1035,7 +1041,7 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<!-- Configure m2e to execute the manifest goal of the bundle plugin,
+								<!-- Configure m2e to execute the manifest goal of the bundle plugin, 
 									if present. -->
 								<pluginExecution>
 									<pluginExecutionFilter>
@@ -1103,7 +1109,7 @@
 
 		<plugins>
 
-			<!-- Check for the minimum version of Java and Maven. Runs during the
+			<!-- Check for the minimum version of Java and Maven. Runs during the 
 				validate phase. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -1228,16 +1234,16 @@
 
 	<profiles>
 
-		<!-- The profile kurento-release must be active when a project is released.
-			The configuration in this POM will automatically call this profile if using
-			the maven-release-plugin. If the maven-release-plugin is not used during
+		<!-- The profile kurento-release must be active when a project is released. 
+			The configuration in this POM will automatically call this profile if using 
+			the maven-release-plugin. If the maven-release-plugin is not used during 
 			the release, this profile must be manually activated. -->
 		<profile>
 			<id>kurento-release</id>
 			<build>
 				<plugins>
-					<!-- Create a source-release artifact that contains the fully buildable
-						project directory source structure. This should be released to the Maven
+					<!-- Create a source-release artifact that contains the fully buildable 
+						project directory source structure. This should be released to the Maven 
 						repository for each JBoss project release. -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -1246,7 +1252,6 @@
 							<dependency>
 								<groupId>org.apache.apache.resources</groupId>
 								<artifactId>apache-source-release-assembly-descriptor</artifactId>
-								<version>1.0.4</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1288,9 +1293,18 @@
 				</plugins>
 			</build>
 		</profile>
-
-		<!-- This profile can be activated to generate gpg signatures for all build
-			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase"
+		<!-- Profile to allow generating javadoc in both Java 7 & 8 environments -->
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<properties>
+				<javadoc.opts>-Xdoclint:none</javadoc.opts>
+			</properties>
+		</profile>
+		<!-- This profile can be activated to generate gpg signatures for all build 
+			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase" 
 			are available to the current build. -->
 		<profile>
 			<id>gpg-sign</id>
