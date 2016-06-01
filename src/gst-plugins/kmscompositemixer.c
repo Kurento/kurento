@@ -302,9 +302,9 @@ cb_latency (GstPad * pad, GstPadProbeInfo * info, gpointer data)
       LATENCY * GST_MSECOND);
 
   gst_query_set_latency (GST_PAD_PROBE_INFO_QUERY (info),
-      TRUE, LATENCY * GST_MSECOND, LATENCY * GST_MSECOND);
+      TRUE, 0, LATENCY * GST_MSECOND);
 
-  return GST_PAD_PROBE_OK;
+  return GST_PAD_PROBE_HANDLED;
 }
 
 static void
