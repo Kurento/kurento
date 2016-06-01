@@ -643,7 +643,8 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   if (self->priv->videomixer == NULL) {
     self->priv->videomixer = gst_element_factory_make ("compositor", NULL);
     g_object_set (G_OBJECT (self->priv->videomixer), "background",
-        1 /*black */ , "start-time-selection", 1 /*first */ , NULL);
+        1 /*black */ , "start-time-selection", 1 /*first */ ,
+        "latency", LATENCY * GST_MSECOND, NULL);
     self->priv->mixer_video_agnostic =
         gst_element_factory_make ("agnosticbin", NULL);
 
