@@ -210,7 +210,7 @@ function start(sessionId, ws, sdpOffer, callback) {
                     }
 
                     webRtcEndpoint.on('OnIceCandidate', function(event) {
-                        var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                        var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                         ws.send(JSON.stringify({
                             id : 'iceCandidate',
                             candidate : candidate
@@ -251,7 +251,7 @@ function createMediaElements(pipeline, ws, callback) {
             return callback(error);
         }
 
-        pipeline.create('PlateDetectorFilter', function(error, filter) {
+        pipeline.create('platedetector.PlateDetectorFilter', function(error, filter) {
             if (error) {
                 return callback(error);
             }
@@ -289,7 +289,7 @@ function stop(sessionId) {
 }
 
 function onIceCandidate(sessionId, _candidate) {
-    var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+    var candidate = kurento.getComplexType('IceCandidate')(_candidate);
 
     if (sessions[sessionId]) {
         console.info('Sending candidate');

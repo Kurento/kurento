@@ -135,7 +135,7 @@ CallMediaPipeline.prototype.createPipeline = function(callerId, calleeId, ws, ca
                 }
 
                 callerWebRtcEndpoint.on('OnIceCandidate', function(event) {
-                    var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                    var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                     userRegistry.getById(callerId).ws.send(JSON.stringify({
                         id : 'iceCandidate',
                         candidate : candidate
@@ -156,7 +156,7 @@ CallMediaPipeline.prototype.createPipeline = function(callerId, calleeId, ws, ca
                     }
 
                     calleeWebRtcEndpoint.on('OnIceCandidate', function(event) {
-                        var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                        var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                         userRegistry.getById(calleeId).ws.send(JSON.stringify({
                             id : 'iceCandidate',
                             candidate : candidate
@@ -439,7 +439,7 @@ function clearCandidatesQueue(sessionId) {
 }
 
 function onIceCandidate(sessionId, _candidate) {
-    var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+    var candidate = kurento.getComplexType('IceCandidate')(_candidate);
     var user = userRegistry.getById(sessionId);
 
     if (pipelines[user.id] && pipelines[user.id].webRtcEndpoint && pipelines[user.id].webRtcEndpoint[user.id]) {

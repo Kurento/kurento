@@ -200,7 +200,7 @@ function start(sessionId, ws, sdpOffer, callback) {
                     }
 
                     webRtcEndpoint.on('OnIceCandidate', function(event) {
-                        var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                        var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                         ws.send(JSON.stringify({
                             id : 'iceCandidate',
                             candidate : candidate
@@ -238,14 +238,14 @@ function createMediaElements(pipeline, ws, callback) {
         }
 
         var options = {
-            window: kurento.register.complexTypes.WindowParam({
+            window: kurento.getComplexType('chroma.WindowParam')({
                 topRightCornerX: 5,
                 topRightCornerY: 5,
                 width: 30,
                 height: 30
             })
         }
-        pipeline.create('ChromaFilter', options, function(error, filter) {
+        pipeline.create('chroma.ChromaFilter', options, function(error, filter) {
             if (error) {
                 return callback(error);
             }

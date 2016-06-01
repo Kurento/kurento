@@ -27,8 +27,8 @@ var fs    = require('fs');
 var https = require('https');
 kurento.register('kurento-module-pointerdetector');
 
-const PointerDetectorWindowMediaParam = kurento.register.complexTypes.PointerDetectorWindowMediaParam;
-const WindowParam = kurento.register.complexTypes.WindowParam;
+const PointerDetectorWindowMediaParam = kurento.getComplexType('pointerdetector.PointerDetectorWindowMediaParam');
+const WindowParam = kurento.getComplexType('pointerdetector.WindowParam');
 
 var argv = minimist(process.argv.slice(2), {
     default: {
@@ -223,7 +223,7 @@ function start(sessionId, ws, sdpOffer, callback) {
                     }
 
                     webRtcEndpoint.on('OnIceCandidate', function(event) {
-                        var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                        var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                         ws.send(JSON.stringify({
                             id : 'iceCandidate',
                             candidate : candidate
@@ -306,7 +306,7 @@ function createMediaElements(pipeline, ws, callback) {
             })
         };
 
-        pipeline.create('PointerDetectorFilter', options, function(error, filter) {
+        pipeline.create('pointerdetector.PointerDetectorFilter', options, function(error, filter) {
             if (error) {
                 return callback(error);
             }
@@ -354,7 +354,7 @@ function calibrate(sessionId) {
 }
 
 function onIceCandidate(sessionId, _candidate) {
-    var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+    var candidate = kurento.getComplexType('IceCandidate')(_candidate);
 
     if (sessions[sessionId]) {
         console.info('Sending candidate');
