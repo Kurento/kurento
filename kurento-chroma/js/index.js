@@ -56,7 +56,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
   webRtcPeer.on('icecandidate', function(candidate) {
     console.log("Local candidate:",candidate);
 
-    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+    candidate = kurentoClient.getComplexType('IceCandidate')(candidate);
 
     webRtcEp.addIceCandidate(candidate, onerror)
   });
@@ -76,7 +76,7 @@ window.addEventListener('load', function(event)
   console = new Console();
 
   kurentoClient.register('kurento-module-chroma')
-  const WindowParam = kurentoClient.register.complexTypes.WindowParam
+  const WindowParam = kurentoClient.getComplexType('chroma.WindowParam')
 
   var videoInput = document.getElementById('videoInput');
   var videoOutput = document.getElementById('videoOutput');
@@ -183,7 +183,7 @@ window.addEventListener('load', function(event)
             })
           }
 
-          pipeline.create('ChromaFilter', options, function(error, filter) {
+          pipeline.create('chroma.ChromaFilter', options, function(error, filter) {
             if (error) return onError(error);
 
             console.log("Got Filter");

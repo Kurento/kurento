@@ -44,7 +44,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
   webRtcPeer.on('icecandidate', function(candidate) {
     console.log("Local candidate:",candidate);
 
-    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+    candidate = kurentoClient.getComplexType('IceCandidate')(candidate);
 
     webRtcEp.addIceCandidate(candidate, onerror)
   });
@@ -64,8 +64,8 @@ window.addEventListener("load", function(event)
   console = new Console();
   kurentoClient.register('kurento-module-pointerdetector')
 
-  const PointerDetectorWindowMediaParam = kurentoClient.register.complexTypes.PointerDetectorWindowMediaParam
-  const WindowParam                     = kurentoClient.register.complexTypes.WindowParam
+  const PointerDetectorWindowMediaParam = kurentoClient.getComplexType('pointerdetector.PointerDetectorWindowMediaParam')
+  const WindowParam                     = kurentoClient.getComplexType('pointerdetector.WindowParam')
 
   var videoInput = document.getElementById('videoInput');
   var videoOutput = document.getElementById('videoOutput');
@@ -144,7 +144,7 @@ window.addEventListener("load", function(event)
             })
           };
 
-          pipeline.create('PointerDetectorFilter', options, function(error, _filter) {
+          pipeline.create('pointerdetector.PointerDetectorFilter', options, function(error, _filter) {
             if (error) return onError(error);
 
             filter = _filter;

@@ -40,7 +40,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
   webRtcPeer.on('icecandidate', function(candidate) {
     console.log("Local candidate:",candidate);
 
-    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+    candidate = kurentoClient.getComplexType('IceCandidate')(candidate);
 
     webRtcEp.addIceCandidate(candidate, onerror)
   });

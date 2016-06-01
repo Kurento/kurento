@@ -54,7 +54,7 @@ function setIceCandidateCallbacks(webRtcPeer, webRtcEp, onerror)
   webRtcPeer.on('icecandidate', function(candidate) {
     console.log("Local candidate:",candidate);
 
-    candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+    candidate = kurentoClient.getComplexType('IceCandidate')(candidate);
 
     webRtcEp.addIceCandidate(candidate, onerror)
   });
@@ -166,7 +166,7 @@ window.addEventListener("load", function(event)
             webRtcPeer.processAnswer(sdpAnswer);
           });
 
-          pipeline.create('PlateDetectorFilter', function(error, filter) {
+          pipeline.create('platedetector.PlateDetectorFilter', function(error, filter) {
             if (error) return onError(error);
 
             console.log("Got Filter");

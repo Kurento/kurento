@@ -44,7 +44,7 @@ var args = getopts(location.search,
     webRtcPeer.on('icecandidate', function(candidate) {
       console.log("Local candidate:",candidate);
 
-      candidate = kurentoClient.register.complexTypes.IceCandidate(candidate);
+      candidate = kurentoClient.getComplexType('IceCandidate')(candidate);
 
       webRtcEp.addIceCandidate(candidate, onerror)
     });
@@ -64,9 +64,9 @@ window.addEventListener("load", function(event)
   console = new Console();
 
   kurentoClient.register('kurento-module-crowddetector')
-  const RegionOfInterest       = kurentoClient.register.complexTypes.RegionOfInterest
-  const RegionOfInterestConfig = kurentoClient.register.complexTypes.RegionOfInterestConfig
-  const RelativePoint          = kurentoClient.register.complexTypes.RelativePoint
+  const RegionOfInterest       = kurentoClient.getComplexType('crowddetector.RegionOfInterest')
+  const RegionOfInterestConfig = kurentoClient.getComplexType('crowddetector.RegionOfInterestConfig')
+  const RelativePoint          = kurentoClient.getComplexType('crowddetector.RelativePoint')
 
   var videoInput = document.getElementById('videoInput');
   var videoOutput = document.getElementById('videoOutput');
@@ -168,7 +168,7 @@ window.addEventListener("load", function(event)
             ]
           }
 
-          pipeline.create('CrowdDetectorFilter', options, function(error, filter)
+          pipeline.create('crowddetector.CrowdDetectorFilter', options, function(error, filter)
           {
             if (error) return onError(error);
 
