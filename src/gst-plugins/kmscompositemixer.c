@@ -689,6 +689,9 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
       pad = gst_element_request_pad (self->priv->videomixer, sink_pad_template,
           NULL, NULL);
 
+      gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_QUERY_UPSTREAM,
+          (GstPadProbeCallback) cb_latency, NULL, NULL);
+
       gst_element_link_pads (capsfilter, NULL,
           self->priv->videomixer, GST_OBJECT_NAME (pad));
       g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, NULL);
