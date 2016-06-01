@@ -299,17 +299,12 @@ KurentoTest.prototype.updateRtcStats = function(peerConnection, streamFunction,
 }
 
 KurentoTest.prototype.updateStats = function(peerConnection, track, type) {
-	var self = this;
 	peerConnection.getStats(function(stats) {
 		var result = stats.result()[2];
 		if (result) {
-			result.names()
-					.forEach(
-							function(name) {
-								kurentoTest.rtcStats[type
-										+ self.capitalize(name)] = result
-										.stat(name);
-							});
+			result.names().forEach(function(name) {
+				kurentoTest.rtcStats[type + name] = result.stat(name);
+			});
 		}
 	}, track);
 }
