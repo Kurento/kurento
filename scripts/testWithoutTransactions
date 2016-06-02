@@ -37,7 +37,7 @@ fs.unlink(LINK_PATH, function(error)
       '-c', 'wock:node_modules/wock',
       '-c', 'test/_common.js',
       '-c', 'test/_proxy.js',
-      'test/','test/core','test/elements','test/filters', 'test/transactions',
+      'test/','test/core','test/elements','test/filters',
       '--prefix','kurento.'
     ]
     spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
@@ -46,4 +46,5 @@ fs.unlink(LINK_PATH, function(error)
       fs.unlink(LINK_PATH);
       if(code) process.exit(code)
     });
+  });
 })
