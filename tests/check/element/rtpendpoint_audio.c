@@ -30,9 +30,6 @@
 #define AUDIO_SINK "audio-sink"
 G_DEFINE_QUARK (AUDIO_SINK, audio_sink);
 
-#define VIDEO_SINK "video-sink"
-G_DEFINE_QUARK (VIDEO_SINK, video_sink);
-
 #define OFFERER_RECEIVES_AUDIO "offerer-receives-audio"
 G_DEFINE_QUARK (OFFERER_RECEIVES_AUDIO, offerer_receives_audio);
 
@@ -180,11 +177,11 @@ connect_sink_on_srcpad_added (GstElement * element, GstPad * pad,
   GstPad *sinkpad;
 
   if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_AUDIO_PREFIX)) {
-    GST_DEBUG_OBJECT (pad, "Connecting video stream");
+    GST_DEBUG_OBJECT (pad, "Connecting audio stream");
     sink = g_object_get_qdata (G_OBJECT (element), audio_sink_quark ());
   } else if (g_str_has_prefix (GST_PAD_NAME (pad), KMS_VIDEO_PREFIX)) {
-    GST_DEBUG_OBJECT (pad, "Connecting audio stream");
-    sink = g_object_get_qdata (G_OBJECT (element), video_sink_quark ());
+    GST_ERROR_OBJECT (pad, "Not connecting video stream, it is not expected");
+    return;
   } else {
     GST_TRACE_OBJECT (pad, "Not src pad type");
     return;
