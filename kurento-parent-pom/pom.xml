@@ -141,7 +141,6 @@
 		<jackson.version>2.6.3</jackson.version>
 		<assertj.version>2.4.1</assertj.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
-		<version.recordrtc>5.2.3</version.recordrtc>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -687,11 +686,6 @@
 				<groupId>org.bytedeco.javacpp-presets</groupId>
 				<artifactId>tesseract</artifactId>
 				<version>${version.ocr}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.webjars.bower</groupId>
-				<artifactId>recordrtc</artifactId>
-				<version>${version.recordrtc}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

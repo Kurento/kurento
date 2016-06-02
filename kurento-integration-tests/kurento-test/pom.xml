@@ -140,12 +140,6 @@
 			<groupId>org.bytedeco.javacpp-presets</groupId>
 			<artifactId>tesseract</artifactId>
 		</dependency>
-
-		<!-- WebJars -->
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>recordrtc</artifactId>
-		</dependency>
 	</dependencies>
 
 	<build>
