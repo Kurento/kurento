@@ -35,7 +35,9 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * WebRTC in loopback. </p> Media Pipeline(s):
+ * WebRTC in loopback.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -70,11 +72,11 @@ public class WebRtcOneLoopbackTest extends FunctionalTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
-    return TestScenario.localChromeAndFirefox();
+    return TestScenario.localChrome();
   }
 
   @Test
-  public void testWebRtcLoopback() throws InterruptedException {
+  public void testWebRtcLoopback() throws Exception {
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -83,31 +85,35 @@ public class WebRtcOneLoopbackTest extends FunctionalTest {
 
     final CountDownLatch flowingLatch = new CountDownLatch(1);
     webRtcEndpoint
-    .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+        .addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
 
-      @Override
-      public void onEvent(MediaFlowInStateChangeEvent event) {
-        if (event.getState().equals(MediaFlowState.FLOWING)) {
-          flowingLatch.countDown();
-        }
-      }
-    });
+          @Override
+          public void onEvent(MediaFlowInStateChangeEvent event) {
+            if (event.getState().equals(MediaFlowState.FLOWING)) {
+              flowingLatch.countDown();
+            }
+          }
+        });
 
     // Start WebRTC and wait for playing event
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
 
-    Assert.assertTrue(
-        "Not received FLOWING IN event in webRtcEp: " + WebRtcChannel.AUDIO_AND_VIDEO,
+    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + WebRtcChannel.AUDIO_AND_VIDEO,
         flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
-    Assert.assertTrue("Not received media (timeout waiting playing event): "
-        + WebRtcChannel.AUDIO_AND_VIDEO, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media (timeout waiting playing event): " + WebRtcChannel.AUDIO_AND_VIDEO,
+        getPage().waitForEvent("playing"));
+
+    // Guard time to play the video
+    waitSeconds(PLAYTIME);
 
     // Assertions
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue("Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime
-        + " sec)", getPage().compare(PLAYTIME, currentTime));
+    Assert.assertTrue(
+        "Error in play time (expected: " + PLAYTIME + " sec, real: " + currentTime + " sec)",
+        getPage().compare(PLAYTIME, currentTime));
     Assert.assertTrue("The color of the video should be green",
         getPage().similarColor(CHROME_VIDEOTEST_COLOR));
 
