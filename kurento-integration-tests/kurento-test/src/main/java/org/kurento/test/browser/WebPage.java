@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTag;
@@ -426,6 +427,62 @@ public class WebPage {
     }
 
     return serializableMap;
+  }
+
+  public void startRecording(String stream) {
+    browser.executeScript("kurentoTest.startRecording(" + stream + ");");
+  }
+
+  public void stopRecording() {
+    browser.executeScript("kurentoTest.stopRecording();");
+    getProperty("recordRTC");
+  }
+
+  public void saveRecordingToDisk() {
+    browser.executeScript("kurentoTest.saveRecordingToDisk();");
+  }
+
+  public void openRecordingInNewTab() {
+    browser.executeScript("kurentoTest.openRecordingInNewTab();");
+  }
+
+  public File getRecording() throws IOException {
+    File tmpFile = File.createTempFile(String.valueOf(System.nanoTime()), ".webm");
+    return getRecording(tmpFile.getAbsolutePath());
+  }
+
+  public File getRecording(String fileName) throws IOException {
+    browser.executeScript("kurentoTest.recordingToData();");
+    String recording = getProperty("recordingData").toString();
+
+    // Base64 to File
+    File outputFile = new File(fileName);
+    byte[] bytes = Base64.decodeBase64(recording.substring(recording.lastIndexOf(",") + 1));
+    FileUtils.writeByteArrayToFile(outputFile, bytes);
+
+    return outputFile;
+  }
+
+  private Object getProperty(String property) {
+    Object value = null;
+    final int pollTimeMs = 200;
+    for (int i = 0; i < 60; i++) {
+      value = browser.executeScript("return kurentoTest." + property + ";");
+      if (value != null) {
+        break;
+      } else {
+        try {
+          log.debug("{} not present still... waiting {} ms", property, pollTimeMs);
+          Thread.sleep(pollTimeMs);
+        } catch (InterruptedException e) {
+          log.warn("Exception wait polling whil getting {}", property, e);
+        }
+      }
+    }
+
+    String clazz = value != null ? value.getClass().getName() : "";
+    log.trace(">>> getProperty {} {} {}", property, value, clazz);
+    return value;
   }
 
 }

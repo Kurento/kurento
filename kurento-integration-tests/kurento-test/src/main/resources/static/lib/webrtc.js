@@ -111,9 +111,9 @@ function useDataChannels() {
 	peerConnection = new RTCPeerConnection(servers, configuration);
 	channel = peerConnection.createDataChannel("dataChannel", dataConstraints);
 
-    channel.onopen = onSendChannelStateChange;
-    channel.onclose = onSendChannelStateChange;
-    channel.onmessage = onMessage;
+	channel.onopen = onSendChannelStateChange;
+	channel.onclose = onSendChannelStateChange;
+	channel.onmessage = onMessage;
 }
 
 function onSendChannelStateChange() {
@@ -124,7 +124,7 @@ function onMessage(event) {
 	document.getElementById("datachannel-received").value = event["data"];
 }
 
-function sendDataByChannel(message){
+function sendDataByChannel(message) {
 	if (channel) {
 		channel.send(message);
 	}
@@ -205,7 +205,6 @@ function startRecvOnly() {
 		mediaConstraints : userMediaConstraints,
 		onicecandidate : onIceCandidate
 	}
-	
 
 	if (iceServers) {
 		options.configuration = {

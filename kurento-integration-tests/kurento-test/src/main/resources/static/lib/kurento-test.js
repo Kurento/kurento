@@ -48,6 +48,10 @@ function KurentoTest() {
 	this.syncTime = null;
 	this.ocrActive = false;
 	this.ocrMap = {};
+
+	// Recording
+	this.recordRTC = null;
+	this.recordingData;
 }
 
 KurentoTest.prototype.syncTimeForOcr = function(videoTagId, peerConnectionId) {
@@ -338,6 +342,161 @@ KurentoTest.prototype.setColorCoordinates = function(x, y) {
 
 KurentoTest.prototype.setColorCheckRate = function(colorCheckRate) {
 	this.colorCheckRate = colorCheckRate;
+};
+
+KurentoTest.prototype.startRecording = function(stream, recordingType,
+		mediaContainerFormat) {
+	// Defaults
+	var mimeType = 'video/webm';
+	if (mediaContainerFormat === 'mp4') {
+		mimeType = 'video/mp4';
+	}
+	var recordingMedia = 'record-audio-and-video';
+	if (recordingType) {
+		recordingMedia = recordingType;
+	}
+
+	if (recordingMedia === 'record-video') {
+		var options = {
+			type : 'video',
+			mimeType : isChrome ? null : mimeType,
+			disableLogs : false,
+			canvas : {
+				width : 320,
+				height : 240
+			},
+			frameInterval : 20
+		// minimum time between pushing frames to Whammy (in milliseconds)
+		}
+		this.recordRTC = RecordRTC(stream, options);
+		this.recordRTC.startRecording();
+	}
+
+	if (recordingMedia === 'record-audio') {
+		var options = {
+			type : 'audio',
+			mimeType : mimeType,
+			bufferSize : 0,
+			sampleRate : 44100,
+			leftChannel : false,
+			disableLogs : false,
+			recorderType : StereoAudioRecorder
+		};
+
+		this.recordRTC = RecordRTC(stream, options);
+		this.recordRTC.startRecording();
+	}
+
+	if (recordingMedia === 'record-audio-and-video') {
+		if (typeof MediaRecorder === 'undefined') { // Opera
+			this.recordRTC = [];
+			var audioOptions = {
+				type : 'audio',
+				bufferSize : 16384, // it fixes audio issues whilst
+				// recording 720p
+				sampleRate : 44100,
+				leftChannel : false,
+				disableLogs : false,
+				recorderType : StereoAudioRecorder
+			};
+			var videoOptions = {
+				type : 'video',
+				disableLogs : false,
+				canvas : {
+					width : 320,
+					height : 240
+				},
+				frameInterval : 20
+			// minimum time between pushing frames to Whammy (in
+			// milliseconds)
+			};
+
+			var audioRecorder = RecordRTC(stream, audioOptions);
+			var videoRecorder = RecordRTC(stream, videoOptions);
+
+			// to sync audio/video playbacks in browser!
+			videoRecorder.initRecorder(function() {
+				audioRecorder.initRecorder(function() {
+					audioRecorder.startRecording();
+					videoRecorder.startRecording();
+				});
+			});
+			this.recordRTC.push(audioRecorder, videoRecorder);
+			return;
+		}
+
+		var options = {
+			type : 'video',
+			mimeType : isChrome ? null : mimeType,
+			disableLogs : false,
+			// bitsPerSecond : 25 * 8 * 1025, // 25 kbits/s
+			getNativeBlob : false
+		// enable for longer recordings
+		}
+
+		this.recordRTC = RecordRTC(stream, options);
+		this.recordRTC.startRecording();
+	}
+};
+
+KurentoTest.prototype.stopRecording = function() {
+	if (!this.recordRTC) {
+		console.warn('No recording found.');
+	} else {
+		if (this.recordRTC.length) {
+			this.recordRTC[0].stopRecording(function(url) {
+				if (!this.recordRTC[1]) {
+					console.info("[0] Recorded track: " + url);
+					return;
+				}
+				this.recordRTC[1].stopRecording(function(url) {
+					console.info("[1] Recorded track: " + url);
+				});
+			});
+		} else {
+			this.recordRTC.stopRecording(function(url) {
+				console.info("Recorded track: " + url);
+			});
+		}
+	}
+};
+
+KurentoTest.prototype.saveRecordingToDisk = function() {
+	if (!this.recordRTC) {
+		console.warn('No recording found.');
+	} else {
+		var output = this.recordRTC.save();
+		console.info(output);
+	}
+};
+
+KurentoTest.prototype.openRecordingInNewTab = function() {
+	if (!this.recordRTC) {
+		console.warn('No recording found.');
+	} else {
+		window.open(this.recordRTC.toURL());
+	}
+};
+
+KurentoTest.prototype.recordingToData = function() {
+	var self = this;
+	if (!self.recordRTC) {
+		console.warn('No recording found.');
+	} else {
+		var blobUrl = self.recordRTC.toURL();
+		var xhr = new XMLHttpRequest;
+		xhr.responseType = 'blob';
+		xhr.onload = function() {
+			var recoveredBlob = xhr.response;
+			var reader = new FileReader;
+			reader.onload = function() {
+				self.recordingData = reader.result;
+			};
+			reader.readAsDataURL(recoveredBlob);
+		};
+		xhr.open('GET', blobUrl);
+		xhr.send();
+	}
 };
 
 /*
