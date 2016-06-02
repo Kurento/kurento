@@ -36,15 +36,31 @@
 #define COOKIE_NAME "HttpEPCookie"
 
 #define KEY_HTTP_EP_SERVER "kms-http-ep-server"
+G_DEFINE_QUARK (KEY_HTTP_EP_SERVER, key_http_ep_server)
+
 #define KEY_GOT_DATA_HANDLER_ID "kms-got-data-handler-id"
-#define KEY_FINISHED_HANDLER_ID "kms-finish-handler-id"
+G_DEFINE_QUARK (KEY_GOT_DATA_HANDLER_ID, key_got_data_handler_id)
+
+#define KEY_FINISHED_HANDLER_ID "kms-finished-handler-id"
+G_DEFINE_QUARK (KEY_FINISHED_HANDLER_ID, key_finished_handler_id)
+
 #define KEY_TIMEOUT_ID "kms-timeout-id"
-#define KEY_FINISHED "kms-finish"
+G_DEFINE_QUARK (KEY_TIMEOUT_ID, key_timeout_id)
+
+#define KEY_FINISHED "kms-finished"
+G_DEFINE_QUARK (KEY_FINISHED, key_finished)
+
 #define KEY_MESSAGE "kms-message"
+G_DEFINE_QUARK (KEY_MESSAGE, key_message)
+
 #define KEY_COOKIE "kms-cookie"
+G_DEFINE_QUARK (KEY_COOKIE, key_cookie)
 
 #define KEY_PARAM_POST_CONTROLLER "kms-post-controller"
+G_DEFINE_QUARK (KEY_PARAM_POST_CONTROLLER, key_param_post_controller)
+
 #define KEY_PARAM_TIMEOUT "kms-param-timeout"
+G_DEFINE_QUARK (KEY_PARAM_TIMEOUT, key_param_timeout)
 
 #define GST_CAT_DEFAULT kms_http_ep_server_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -190,7 +206,8 @@ kms_http_ep_server_remove_timeout (KmsHttpEPServer *self, GstElement *httpep)
   guint *timeout_id;
 
   /* Remove timeout if there is any */
-  timeout_id = (guint *) g_object_get_data (G_OBJECT (httpep), KEY_TIMEOUT_ID);
+  timeout_id = (guint *) g_object_get_qdata (G_OBJECT (httpep),
+               key_timeout_id_quark () );
 
   if (timeout_id == NULL) {
     return;
@@ -198,7 +215,8 @@ kms_http_ep_server_remove_timeout (KmsHttpEPServer *self, GstElement *httpep)
 
   GST_DEBUG ("Remove timeout %d", *timeout_id);
   kms_loop_remove (self->priv->loop, *timeout_id);
-  g_object_set_data_full (G_OBJECT (httpep), KEY_TIMEOUT_ID, NULL, NULL);
+  g_object_set_qdata_full (G_OBJECT (httpep), key_timeout_id_quark (), NULL,
+                           NULL);
 }
 
 static GstElement *
@@ -218,8 +236,8 @@ static gboolean
 emit_expiration_signal_cb (gpointer user_data)
 {
   SoupMessage *msg = (SoupMessage *) user_data;
-  KmsHttpEPServer *serv = (KmsHttpEPServer *) g_object_get_data (G_OBJECT (msg),
-                          KEY_HTTP_EP_SERVER);
+  KmsHttpEPServer *serv = (KmsHttpEPServer *) g_object_get_qdata (G_OBJECT (msg),
+                          key_http_ep_server_quark () );
   SoupURI *uri = soup_message_get_uri (msg);
   const char *path = soup_uri_get_path (uri);
   GstElement *httpep;
@@ -253,21 +271,22 @@ emit_expiration_signal (SoupMessage *msg, GstElement *httpep)
   /* Set a timeout if no more connection are done over this httpendpoint */
   /* and the cookie expires */
   now = soup_date_new_from_now (0);
-  timeout = (guint *) g_object_get_data (G_OBJECT (httpep), KEY_PARAM_TIMEOUT);
+  timeout = (guint *) g_object_get_qdata (G_OBJECT (httpep),
+                                          key_param_timeout_quark () );
 
   t_timeout = difftime (soup_date_to_time_t (now) + *timeout,
                         soup_date_to_time_t (now) );
 
-  serv = (KmsHttpEPServer *) g_object_get_data (G_OBJECT (msg),
-         KEY_HTTP_EP_SERVER);
+  serv = (KmsHttpEPServer *) g_object_get_qdata (G_OBJECT (msg),
+         key_http_ep_server_quark () );
   id = g_slice_new (guint);
   *id = kms_loop_timeout_add_full (serv->priv->loop,
                                    G_PRIORITY_DEFAULT, t_timeout * 1000,
                                    emit_expiration_signal_cb,
                                    g_object_ref (G_OBJECT (msg) ),
                                    g_object_unref);
-  g_object_set_data_full (G_OBJECT (httpep), KEY_TIMEOUT_ID, id,
-                          (GDestroyNotify) destroy_guint);
+  g_object_set_qdata_full (G_OBJECT (httpep), key_timeout_id_quark (), id,
+                           (GDestroyNotify) destroy_guint);
   soup_date_free (now);
 }
 
@@ -322,7 +341,7 @@ finished_post_cb (KmsHttpPost *post_obj, gpointer data)
                GST_ELEMENT_NAME (httpep), ret);
   }
 
-  param = g_object_steal_data (G_OBJECT (httpep), KEY_MESSAGE);
+  param = g_object_steal_qdata (G_OBJECT (httpep), key_message_quark () );
 
   if (SOUP_IS_MESSAGE (param) ) {
     emit_expiration_signal (SOUP_MESSAGE (param), httpep);
@@ -336,15 +355,15 @@ install_http_post_signals (GstElement *httpep)
   KmsHttpPost *post_obj;
   gulong *handlerid;
 
-  post_obj = (KmsHttpPost *) g_object_get_data (G_OBJECT (httpep),
-             KEY_PARAM_POST_CONTROLLER);
+  post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
+             key_param_post_controller_quark () );
 
   if (post_obj == NULL) {
     return;
   }
 
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_GOT_DATA_HANDLER_ID);
+  handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
+              key_got_data_handler_id_quark () );
 
   if (handlerid == NULL) {
     handlerid = g_slice_new (gulong);
@@ -352,12 +371,12 @@ install_http_post_signals (GstElement *httpep)
                                    G_CALLBACK (got_post_data_cb), httpep);
     GST_DEBUG ("Installing got-data signal with id %lu from %p ",
                *handlerid, (gpointer) httpep);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_GOT_DATA_HANDLER_ID,
-                            handlerid, (GDestroyNotify) destroy_ulong);
+    g_object_set_qdata_full (G_OBJECT (httpep), key_got_data_handler_id_quark (),
+                             handlerid, (GDestroyNotify) destroy_ulong);
   }
 
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_FINISHED_HANDLER_ID);
+  handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
+              key_finished_handler_id_quark () );
 
   if (handlerid == NULL) {
     handlerid = g_slice_new (gulong);
@@ -365,8 +384,8 @@ install_http_post_signals (GstElement *httpep)
                                    G_CALLBACK (finished_post_cb), httpep);
     GST_DEBUG ("Installing finished signal with id %lu from %p ",
                *handlerid, (gpointer) httpep);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_FINISHED_HANDLER_ID,
-                            handlerid, (GDestroyNotify) destroy_ulong);
+    g_object_set_qdata_full (G_OBJECT (httpep), key_finished_handler_id_quark (),
+                             handlerid, (GDestroyNotify) destroy_ulong);
   }
 }
 
@@ -376,33 +395,33 @@ uninstall_http_post_signals (GstElement *httpep)
   KmsHttpPost *post_obj;
   gulong *handlerid;
 
-  post_obj = (KmsHttpPost *) g_object_get_data (G_OBJECT (httpep),
-             KEY_PARAM_POST_CONTROLLER);
+  post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
+             key_param_post_controller_quark () );
 
   if (post_obj == NULL) {
     return;
   }
 
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_GOT_DATA_HANDLER_ID);
+  handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
+              key_got_data_handler_id_quark () );
 
   if (handlerid != NULL) {
     GST_DEBUG ("Disconnecting got-data signal with id %lu from %p ",
                *handlerid, (gpointer) httpep);
     g_signal_handler_disconnect (post_obj, *handlerid);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_GOT_DATA_HANDLER_ID, NULL,
-                            NULL);
+    g_object_set_qdata_full (G_OBJECT (httpep), key_got_data_handler_id_quark (),
+                             NULL, NULL);
   }
 
-  handlerid = (gulong *) g_object_get_data (G_OBJECT (httpep),
-              KEY_FINISHED_HANDLER_ID);
+  handlerid = (gulong *) g_object_get_qdata (G_OBJECT (httpep),
+              key_finished_handler_id_quark () );
 
   if (handlerid != NULL) {
     GST_DEBUG ("Disconnecting finished signal with id %lu from %p ",
                *handlerid, (gpointer) httpep);
     g_signal_handler_disconnect (post_obj, *handlerid);
-    g_object_set_data_full (G_OBJECT (httpep), KEY_FINISHED_HANDLER_ID, NULL,
-                            NULL);
+    g_object_set_qdata_full (G_OBJECT (httpep), key_finished_handler_id_quark (),
+                             NULL, NULL);
   }
 }
 
@@ -427,13 +446,13 @@ kms_http_ep_server_post_handler (KmsHttpEPServer *self, SoupMessage *msg,
 {
   KmsHttpPost *post_obj;
 
-  post_obj = (KmsHttpPost *) g_object_get_data (G_OBJECT (httpep),
-             KEY_PARAM_POST_CONTROLLER);
+  post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
+             key_param_post_controller_quark () );
 
   if (post_obj == NULL) {
     post_obj = kms_http_post_new ();
-    g_object_set_data_full (G_OBJECT (httpep), KEY_PARAM_POST_CONTROLLER,
-                            post_obj, g_object_unref);
+    g_object_set_qdata_full (G_OBJECT (httpep), key_param_post_controller_quark (),
+                             post_obj, g_object_unref);
   }
 
   install_http_post_signals (httpep);
@@ -456,7 +475,7 @@ kms_http_ep_server_clean_http_end_point (KmsHttpEPServer *self,
   kms_http_ep_server_remove_timeout (self, httpep);
 
   /* Cancel current transtacion */
-  g_object_set_data_full (G_OBJECT (httpep), KEY_MESSAGE, NULL, NULL);
+  g_object_set_qdata_full (G_OBJECT (httpep), key_message_quark (), NULL, NULL);
 }
 
 static void
@@ -584,8 +603,8 @@ kms_http_ep_server_stop_impl (KmsHttpEPServer *self,
 static void
 destroy_pending_message (SoupMessage *msg)
 {
-  KmsHttpEPServer *serv = KMS_HTTP_EP_SERVER (g_object_get_data (G_OBJECT (msg),
-                          KEY_HTTP_EP_SERVER) );
+  KmsHttpEPServer *serv = KMS_HTTP_EP_SERVER (g_object_get_qdata (G_OBJECT (msg),
+                          key_http_ep_server_quark () ) );
   GstElement *httpep = kms_http_ep_server_get_ep_from_msg (serv, msg);
 
   GST_DEBUG ("Destroy pending message %" GST_PTR_FORMAT, (gpointer) msg);
@@ -599,8 +618,8 @@ destroy_pending_message (SoupMessage *msg)
     }
 
     /* Do not call to finished callback */
-    handlerid = (gulong *) g_object_get_data (G_OBJECT (msg),
-                KEY_FINISHED_HANDLER_ID);
+    handlerid = (gulong *) g_object_get_qdata (G_OBJECT (msg),
+                key_finished_handler_id_quark () );
     g_signal_handler_disconnect (G_OBJECT (msg), *handlerid);
 
     soup_server_unpause_message (serv->priv->server, msg);
@@ -610,8 +629,8 @@ destroy_pending_message (SoupMessage *msg)
     KmsHttpPost *post_obj = NULL;
 
     if (httpep != NULL)
-      post_obj = (KmsHttpPost *) g_object_get_data (G_OBJECT (httpep),
-                 KEY_PARAM_POST_CONTROLLER);
+      post_obj = (KmsHttpPost *) g_object_get_qdata (G_OBJECT (httpep),
+                 key_param_post_controller_quark () );
 
     if (post_obj != NULL) {
       g_object_set (G_OBJECT (post_obj), "soup-message", NULL, NULL);
@@ -619,7 +638,8 @@ destroy_pending_message (SoupMessage *msg)
   }
 
   /* Force to remove http server reference */
-  g_object_set_data_full (G_OBJECT (msg), KEY_HTTP_EP_SERVER, NULL, NULL);
+  g_object_set_qdata_full (G_OBJECT (msg), key_http_ep_server_quark (), NULL,
+                           NULL);
 
   /* Remove internal msg reference */
   g_object_unref (G_OBJECT (msg) );
@@ -680,8 +700,8 @@ kms_http_ep_server_set_cookie (KmsHttpEPServer *self, GstElement *httpep,
   soup_message_headers_append (msg->response_headers, "Set-Cookie", header);
   g_free (header);
 
-  g_object_set_data_full (G_OBJECT (httpep), KEY_COOKIE, cookie,
-                          (GDestroyNotify) soup_cookie_free);
+  g_object_set_qdata_full (G_OBJECT (httpep), key_cookie_quark (), cookie,
+                           (GDestroyNotify) soup_cookie_free);
 }
 
 static gboolean
@@ -733,7 +753,8 @@ kms_http_ep_server_manage_cookie_session (KmsHttpEPServer *self,
 
   g_free (method);
 
-  cookie = (SoupCookie *) g_object_get_data (G_OBJECT (httpep), KEY_COOKIE);
+  cookie = (SoupCookie *) g_object_get_qdata (G_OBJECT (httpep),
+           key_cookie_quark () );
 
   if (cookie != NULL) {
     return kms_http_ep_server_check_cookie (cookie, msg);
@@ -781,13 +802,13 @@ got_headers_handler (SoupMessage *msg, gpointer data)
   kms_http_ep_server_remove_timeout (self, httpep);
 
   /* Bind message life cicle to this httpendpoint */
-  g_object_set_data_full (G_OBJECT (httpep), KEY_MESSAGE,
-                          g_object_ref (G_OBJECT (msg) ),
-                          (GDestroyNotify) destroy_pending_message);
+  g_object_set_qdata_full (G_OBJECT (httpep), key_message_quark (),
+                           g_object_ref (G_OBJECT (msg) ),
+                           (GDestroyNotify) destroy_pending_message);
 
   /* Common parameters used for both, get and post operations */
-  g_object_set_data_full (G_OBJECT (msg), KEY_HTTP_EP_SERVER,
-                          g_object_ref (self), g_object_unref);
+  g_object_set_qdata_full (G_OBJECT (msg), key_http_ep_server_quark (),
+                           g_object_ref (self), g_object_unref);
 
   if (msg->method == SOUP_METHOD_POST) {
     kms_http_ep_server_post_handler (self, msg, httpep);
@@ -945,14 +966,14 @@ kms_http_ep_server_start_impl (KmsHttpEPServer *self,
 }
 
 static void
-add_guint_param (GstElement *httpep, const gchar *name, guint val)
+add_guint_param (GstElement *httpep, GQuark quark, guint val)
 {
   guint *param;
 
   param = g_slice_new (guint);
   *param = val;
-  g_object_set_data_full (G_OBJECT (httpep), name, param,
-                          (GDestroyNotify) destroy_guint);
+  g_object_set_qdata_full (G_OBJECT (httpep), quark, param,
+                           (GDestroyNotify) destroy_guint);
 }
 
 static gboolean
@@ -979,7 +1000,7 @@ register_end_point_cb (struct tmp_register_data *tdata)
                  HTTPEPSERVER_UNEXPECTED_ERROR,
                  "Could not register httpendpoint");
   } else {
-    add_guint_param (tdata->endpoint, KEY_PARAM_TIMEOUT, tdata->timeout);
+    add_guint_param (tdata->endpoint, key_param_timeout_quark (), tdata->timeout);
   }
 
   if (tdata->function != NULL) {

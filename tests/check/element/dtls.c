@@ -30,8 +30,11 @@
 
 /* Temporaly disabled */
 #if 0
-#define CLIENT_RECEIVES "offerer_receives"
-#define SERVER_RECEIVES "answerer_receives"
+#define CLIENT_RECEIVES "client-receives"
+G_DEFINE_QUARK (CLIENT_RECEIVES, client_receives);
+
+#define SERVER_RECEIVES "server-receives"
+G_DEFINE_QUARK (SERVER_RECEIVES, server_receives);
 
 G_LOCK_DEFINE_STATIC (check_receive_lock);
 #endif /* Temporaly disabled */
@@ -130,12 +133,12 @@ fakesink_dtls_client_hand_off (GstElement * fakesink, GstBuffer * buf,
   GST_INFO_OBJECT (fakesink, "BUF received");
 
   G_LOCK (check_receive_lock);
-  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
-              SERVER_RECEIVES))) {
+  if (GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (pipeline),
+              server_receives_quark ()))) {
     g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop, loop);
   } else {
-    g_object_set_data (G_OBJECT (pipeline), CLIENT_RECEIVES,
+    g_object_set_qdata (G_OBJECT (pipeline), client_receives_quark (),
         GINT_TO_POINTER (TRUE));
   }
   G_UNLOCK (check_receive_lock);
@@ -152,12 +155,12 @@ fakesink_dtls_server_hand_off (GstElement * fakesink, GstBuffer * buf,
   GST_INFO_OBJECT (fakesink, "BUF received");
 
   G_LOCK (check_receive_lock);
-  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
-              CLIENT_RECEIVES))) {
+  if (GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (pipeline),
+              client_receives_quark ()))) {
     g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop, loop);
   } else {
-    g_object_set_data (G_OBJECT (pipeline), SERVER_RECEIVES,
+    g_object_set_qdata (G_OBJECT (pipeline), server_receives_quark (),
         GINT_TO_POINTER (TRUE));
   }
   G_UNLOCK (check_receive_lock);

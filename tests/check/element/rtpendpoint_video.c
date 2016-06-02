@@ -22,6 +22,12 @@
 
 #include <kmstestutils.h>
 
+#define OFFERER_RECEIVES_VIDEO "offerer-receives-video"
+G_DEFINE_QUARK (OFFERER_RECEIVES_VIDEO, offerer_receives_video);
+
+#define ANSWERER_RECEIVES_VIDEO "answerer-receives-video"
+G_DEFINE_QUARK (ANSWERER_RECEIVES_VIDEO, answerer_receives_video);
+
 static gboolean
 quit_main_loop_idle (gpointer data)
 {
@@ -187,9 +193,6 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_main_loop_unref (loop);
 }
 
-#define OFFERER_RECEIVES_VIDEO "offerer_receives_video"
-#define ANSWERER_RECEIVES_VIDEO "answerer_receives_video"
-
 G_LOCK_DEFINE_STATIC (check_receive_lock);
 
 static void
@@ -204,12 +207,12 @@ sendrecv_offerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
   pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
 
   G_LOCK (check_receive_lock);
-  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
-              ANSWERER_RECEIVES_VIDEO))) {
+  if (GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (pipeline),
+              answerer_receives_video_quark ()))) {
     g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop_idle, hod->loop);
   } else {
-    g_object_set_data (G_OBJECT (pipeline), OFFERER_RECEIVES_VIDEO,
+    g_object_set_qdata (G_OBJECT (pipeline), offerer_receives_video_quark (),
         GINT_TO_POINTER (TRUE));
   }
   G_UNLOCK (check_receive_lock);
@@ -229,12 +232,12 @@ sendrecv_answerer_fakesink_hand_off (GstElement * fakesink, GstBuffer * buf,
   pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
 
   G_LOCK (check_receive_lock);
-  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
-              OFFERER_RECEIVES_VIDEO))) {
+  if (GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (pipeline),
+              offerer_receives_video_quark ()))) {
     g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
     g_idle_add (quit_main_loop_idle, hod->loop);
   } else {
-    g_object_set_data (G_OBJECT (pipeline), ANSWERER_RECEIVES_VIDEO,
+    g_object_set_qdata (G_OBJECT (pipeline), answerer_receives_video_quark (),
         GINT_TO_POINTER (TRUE));
   }
   G_UNLOCK (check_receive_lock);

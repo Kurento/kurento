@@ -42,12 +42,15 @@
 
 #define PLUGIN_NAME "recorderendpoint"
 
-#define BASE_TIME_DATA "base_time_data"
 #define RECORDER_DEFAULT_SUFFIX "_default"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_NONE
 
-#define KMS_PAD_IDENTIFIER_KEY "kms-pad-identifier-key"
+#define BASE_TIME_KEY "base-time-key"
+G_DEFINE_QUARK (KMS_PAD_ID_KEY, base_time_key);
+
+#define KMS_PAD_ID_KEY "kms-pad-id-key"
+G_DEFINE_QUARK (KMS_PAD_ID_KEY, kms_pad_id_key);
 
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_endpoint_debug_category
@@ -299,7 +302,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 
   BASE_TIME_LOCK (self);
 
-  base_time = g_object_get_data (G_OBJECT (self), BASE_TIME_DATA);
+  base_time = g_object_get_qdata (G_OBJECT (self), base_time_key_quark ());
 
   if (base_time == NULL) {
     base_time = g_slice_new0 (BaseTimeType);
@@ -307,7 +310,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     base_time->dts = buffer->dts;
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
-    g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, base_time,
+    g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (), base_time,
         release_base_time_type);
   }
 
@@ -626,7 +629,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   // Reset base time data
   BASE_TIME_LOCK (self);
 
-  g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
+  g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (), NULL, NULL);
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
@@ -831,7 +834,7 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
     return;
   }
 
-  key = g_object_get_data (G_OBJECT (target), KMS_PAD_IDENTIFIER_KEY);
+  key = g_object_get_qdata (G_OBJECT (target), kms_pad_id_key_quark ());
 
   if (key == NULL) {
     GST_ERROR_OBJECT (pad, "No identifier assigned");
@@ -976,7 +979,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
   data = sink_pad_data_new (type, description, name, requested);
   data->sink_target = sinkpad;
   g_hash_table_insert (self->priv->sink_pad_data, g_strdup (name), data);
-  g_object_set_data_full (G_OBJECT (sinkpad), KMS_PAD_IDENTIFIER_KEY,
+  g_object_set_qdata_full (G_OBJECT (sinkpad), kms_pad_id_key_quark (),
       g_strdup (name), g_free);
 
   g_object_unref (sinkpad);
