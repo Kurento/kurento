@@ -20,14 +20,31 @@ fs.unlink(LINK_PATH, function(error)
     '-c', 'wock:node_modules/wock',
     '-c', 'test/_common.js',
     '-c', 'test/_proxy.js',
-    'test/','test/core','test/elements','test/filters', 'test/transactions'
+    'test/','test/core','test/elements','test/filters', 'test/transactions',
+    '--prefix',''
   ]
 
   spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
   .on('exit', function(code)
   {
-    fs.unlink(LINK_PATH);
+    if(code)
+      process.exit(code)
 
-    if(code) process.exit(code)
+    argv =
+    [
+      '-c', 'kurentoClient:'+kurentoClient,
+      '-c', 'node_modules/qunit-reporter-junit',
+      '-c', 'wock:node_modules/wock',
+      '-c', 'test/_common.js',
+      '-c', 'test/_proxy.js',
+      'test/','test/core','test/elements','test/filters', 'test/transactions',
+      '--prefix','kurento.'
+    ]
+    spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
+    .on('exit', function(code)
+    {
+      fs.unlink(LINK_PATH);
+      if(code) process.exit(code)
+    });
   });
 })

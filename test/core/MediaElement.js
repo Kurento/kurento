@@ -24,14 +24,17 @@ if (typeof QUnit == 'undefined') {
   require('./_common');
 };
 
-QUnit.module('MediaElement', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'MediaElement', lifecycle);
 
 QUnit.test('setVideoFormat', function (assert) {
   assert.expect(2);
 
   var done = assert.async();
 
-  this.pipeline.create('PassThrough', function (error, passThrough) {
+  this.pipeline.create(QUnit.config.prefix + 'PassThrough', function (error, passThrough) {
     if (error) return onerror(error)
 
     var caps = {

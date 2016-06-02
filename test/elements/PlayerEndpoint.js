@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('PlayerEndpoint', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'PlayerEndpoint', lifecycle);
 
 QUnit.asyncTest('Play, Pause & Stop', function () {
   var self = this;

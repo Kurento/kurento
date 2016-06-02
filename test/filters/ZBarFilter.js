@@ -47,21 +47,24 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('ZBarFilter', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'ZBarFilter', lifecycle);
 
 QUnit.asyncTest('Create pipeline and play video', function () {
   var self = this;
 
   QUnit.expect(4);
 
-  self.pipeline.create('PlayerEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
     uri: URL_BARCODES
   }, function (error, player) {
     if (error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    return self.pipeline.create('ZBarFilter', function (error, zbar) {
+    return self.pipeline.create(QUnit.config.prefix + 'ZBarFilter', function (error, zbar) {
       if (error) return onerror(error);
 
       QUnit.notEqual(zbar, undefined, 'zbar');
@@ -97,12 +100,12 @@ QUnit.asyncTest('Detect bar-code in a video', function () {
     _onerror(error);
   };
 
-  self.pipeline.create('PlayerEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
     uri: URL_BARCODES
   }, function (error, player) {
     if (error) return onerror(error);
 
-    return self.pipeline.create('ZBarFilter', function (error, zbar) {
+    return self.pipeline.create(QUnit.config.prefix + 'ZBarFilter', function (error, zbar) {
       if (error) return onerror(error);
 
       zbar.on('CodeFound', function (data) {

@@ -90,7 +90,8 @@ Timeout = function Timeout(id, delay, ontimeout) {
 const REPORTS_DIR = 'reports'
 
 function writeReport(ext, data) {
-  var path = REPORTS_DIR + '/' + require('../package.json').name + '.' + ext
+  var path = REPORTS_DIR + '/' + QUnit.config.prefix + require(
+    '../package.json').name + '.' + ext
 
   require('fs-extra').outputFile(path, data, function (error) {
     if (error) return console.trace(error);

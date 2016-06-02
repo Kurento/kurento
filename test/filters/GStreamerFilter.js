@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('GStreamerFilter', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'GStreamerFilter', lifecycle);
 
 QUnit.asyncTest('End of Stream', function () {
   var self = this;
@@ -62,14 +65,14 @@ QUnit.asyncTest('End of Stream', function () {
     _onerror(error);
   };
 
-  self.pipeline.create('PlayerEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
     uri: URL_SMALL
   }, function (error, player) {
     if (error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    return self.pipeline.create('GStreamerFilter', {
+    return self.pipeline.create(QUnit.config.prefix + 'GStreamerFilter', {
       command: 'videoflip method=horizontal-flip'
     },
     function (error, gStreamerFilter) {

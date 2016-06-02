@@ -47,14 +47,17 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('RecorderEndpoint', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'RecorderEndpoint', lifecycle);
 
 QUnit.asyncTest('Record, Pause & Stop', function () {
   var self = this;
 
   QUnit.expect(4);
 
-  self.pipeline.create('RecorderEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
       uri: URL_SMALL
     },
     function (error, recorder) {
@@ -90,7 +93,7 @@ QUnit.asyncTest('GetUrl', function () {
 
   QUnit.expect(1);
 
-  self.pipeline.create('RecorderEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
       uri: URL_SMALL
     },
     function (error, recorder) {

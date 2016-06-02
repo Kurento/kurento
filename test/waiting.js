@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('waiting', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'waiting', lifecycle);
 
 function getOnError(done) {
   return function onerror(error) {

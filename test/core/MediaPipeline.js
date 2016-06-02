@@ -46,7 +46,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('MediaPipeline', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'MediaPipeline', lifecycle);
 
 /**
  * Basic pipeline reading a video from a URL and stream it over HTTP
@@ -56,14 +59,14 @@ QUnit.asyncTest('Creation', function (assert) {
 
   assert.expect(3);
 
-  self.pipeline.create('PlayerEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
     uri: URL_SMALL
   }, function (error, player) {
     if (error) return onerror(error);
 
     assert.notEqual(player, undefined, 'player');
 
-    return self.pipeline.create('RecorderEndpoint', {
+    return self.pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
       uri: URL_SMALL
     }, function (error, recorder) {
       if (error) return onerror(error);
@@ -92,10 +95,10 @@ QUnit.asyncTest('Pseudo-syncronous API', function () {
 
   var pipeline = self.pipeline;
 
-  var player = pipeline.create('PlayerEndpoint', {
+  var player = pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
     uri: URL_SMALL
   });
-  var recorder = pipeline.create('RecorderEndpoint', {
+  var recorder = pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
     uri: URL_SMALL
   });
 

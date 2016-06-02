@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('reconnect', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'reconnect', lifecycle);
 
 function getOnError(done) {
   return function onerror(error) {
@@ -74,12 +77,12 @@ QUnit.test('Continue after network error', function (assert) {
 
   assert.notEqual(sessionId, undefined);
 
-  pipeline.create('PlayerEndpoint', {
+  pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
       uri: URL_SMALL
     }, function (error, player) {
       if (error) return onerror(error);
 
-      return pipeline.create('RecorderEndpoint', {
+      return pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
           uri: URL_SMALL
         },
         function (error, recorder) {

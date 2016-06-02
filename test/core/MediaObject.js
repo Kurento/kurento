@@ -24,7 +24,7 @@ if (typeof QUnit == 'undefined') {
   require('./_common');
 };
 
-QUnit.module('MediaObject', lifecycle);
+QUnit.module(QUnit.config.prefix + 'MediaObject', lifecycle);
 
 QUnit.test('setName', function (assert) {
   assert.expect(1);

@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('WebRtcEndpoint', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'WebRtcEndpoint', lifecycle);
 
 var offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n" +
   "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n" +
@@ -58,7 +61,7 @@ var offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n" +
 QUnit.asyncTest('Get local session descriptor', function () {
   QUnit.expect(4);
 
-  this.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
     QUnit.equal(error, undefined, 'WebRtcEndpoint');
 
     if (error) return onerror(error);
@@ -85,7 +88,7 @@ QUnit.asyncTest('Get local session descriptor', function () {
 QUnit.asyncTest('Get remote session descriptor', function () {
   QUnit.expect(4);
 
-  this.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
     QUnit.equal(error, undefined, 'WebRtcEndpoint');
 
     if (error) return onerror(error);
@@ -113,7 +116,7 @@ QUnit.asyncTest('Get remote session descriptor', function () {
 QUnit.asyncTest('Generate offer', function () {
   QUnit.expect(3);
 
-  this.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
     QUnit.equal(error, undefined, 'WebRtcEndpoint');
 
     if (error) return onerror(error);
@@ -134,7 +137,7 @@ QUnit.asyncTest('Generate offer', function () {
 QUnit.asyncTest('Process offer', function () {
   QUnit.expect(3);
 
-  this.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
     QUnit.equal(error, undefined, 'WebRtcEndpoint');
 
     if (error) return onerror(error);
@@ -157,7 +160,7 @@ QUnit.asyncTest('Process answer', function () {
 
   QUnit.expect(8);
 
-  self.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
+  self.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
     QUnit.equal(error, undefined, 'WebRtcEndpoint');
 
     if (error) return onerror(error);
@@ -169,7 +172,7 @@ QUnit.asyncTest('Process answer', function () {
 
       QUnit.notEqual(offer, undefined, 'Offer: ' + offer);
 
-      return self.pipeline.create('WebRtcEndpoint', function (error,
+      return self.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error,
         webRtcEndpoint2) {
         QUnit.equal(error, undefined, 'WebRtcEndpoint 2');
 
@@ -203,7 +206,7 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function () {
 
   QUnit.expect(5);
 
-  self.pipeline.create('PlayerEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
       uri: URL_BARCODES
     },
     function (error, player) {
@@ -211,7 +214,7 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function () {
 
       if (error) return onerror(error);
 
-      return self.pipeline.create('WebRtcEndpoint', function (error,
+      return self.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error,
         webRtcEndpoint) {
         QUnit.equal(error, undefined, 'WebRtcEndpoint');
 

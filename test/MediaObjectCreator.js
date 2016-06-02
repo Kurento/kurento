@@ -24,7 +24,7 @@ if (typeof QUnit == 'undefined') {
   require('./_common');
 };
 
-QUnit.module('MediaObjectCreator');
+QUnit.module(QUnit.config.prefix + 'MediaObjectCreator');
 
 QUnit.test('Get unknown constructor', function (assert) {
   QUnit.expect(1);

@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('HttpPostEndpoint', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'HttpPostEndpoint', lifecycle);
 
 QUnit.asyncTest('Method GetUrl', function () {
   var self = this;

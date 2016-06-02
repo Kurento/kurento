@@ -47,7 +47,10 @@ if (typeof QUnit == 'undefined') {
   require('./_proxy');
 };
 
-QUnit.module('FaceOverlayFilter', lifecycle);
+if (QUnit.config.prefix == undefined)
+  QUnit.config.prefix = '';
+
+QUnit.module(QUnit.config.prefix + 'FaceOverlayFilter', lifecycle);
 
 QUnit.asyncTest('Detect face in a video', function () {
   var self = this;
@@ -62,7 +65,7 @@ QUnit.asyncTest('Detect face in a video', function () {
     _onerror(error);
   };
 
-  self.pipeline.create('PlayerEndpoint', {
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
       uri: URL_POINTER_DETECTOR
     },
     function (error, player) {
@@ -70,7 +73,7 @@ QUnit.asyncTest('Detect face in a video', function () {
 
       QUnit.notEqual(player, undefined, 'player');
 
-      self.pipeline.create('FaceOverlayFilter', function (error, faceOverlay) {
+      self.pipeline.create(QUnit.config.prefix + 'FaceOverlayFilter', function (error, faceOverlay) {
         if (error) return onerror(error);
 
         QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
