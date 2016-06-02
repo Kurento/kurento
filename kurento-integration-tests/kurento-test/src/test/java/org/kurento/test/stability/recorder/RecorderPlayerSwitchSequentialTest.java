@@ -73,6 +73,7 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
+    setDeleteLogsIfSuccess(false);
     return TestScenario.empty();
   }
 

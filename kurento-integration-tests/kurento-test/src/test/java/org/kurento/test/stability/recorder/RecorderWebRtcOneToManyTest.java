@@ -91,6 +91,7 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
+    setDeleteLogsIfSuccess(false);
     numViewers = getProperty("recorder.stability.one2many.numviewers", NUM_VIEWERS);
     return TestScenario.localChromesAndFirefoxs(numViewers + 1);
   }

@@ -82,6 +82,7 @@ public class RecorderThreeWebRtcSimultaneous extends StabilityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
+    setDeleteLogsIfSuccess(false);
     return TestScenario.localChromes(NUM_BROWSERS);
   }
 

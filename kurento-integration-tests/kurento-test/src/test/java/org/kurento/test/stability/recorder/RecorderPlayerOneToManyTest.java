@@ -77,6 +77,7 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
+    setDeleteLogsIfSuccess(false);
     numViewers = getProperty("recorder.stability.player.one2many.numrecorders", NUM_RECORDERS);
     return TestScenario.empty();
   }
