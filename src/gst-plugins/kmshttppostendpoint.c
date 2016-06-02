@@ -36,9 +36,6 @@ G_DEFINE_QUARK (APPSINK_DATA, appsink_data);
 #define BASE_TIME_DATA "base-time-data"
 G_DEFINE_QUARK (BASE_TIME_DATA, base_time_data);
 
-#define CAPS_DATA "caps-data"
-G_DEFINE_QUARK (BASE_TIME_DATA, caps_data);
-
 #define POST_PIPELINE "post-pipeline"
 
 GST_DEBUG_CATEGORY_STATIC (kms_http_post_endpoint_debug_category);
@@ -191,7 +188,6 @@ set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer httpep)
 
   data = g_object_get_qdata (G_OBJECT (pad), appsrc_data_quark ());
   if (data != NULL) {
-    g_object_set_qdata (G_OBJECT (data), caps_data_quark (), caps);
     goto end;
   }
 
