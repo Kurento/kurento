@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 docker login -u "$KURENTO_REGISTRY_USER" -p "$KURENTO_REGISTRY_PASSWD" -e "$KURENTO_EMAIL" $KURENTO_REGISTRY_URI
 
