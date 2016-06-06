@@ -103,6 +103,12 @@ of the running example is shown in the following picture:
 
    *Plate detector demo in action*
 
+.. note::
+
+   Modules can have options. For configuring these options, you'll need to get the constructor for them.
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   an example in the code.
+
 The following snippet shows how the media pipeline is implemented in the Java
 server-side code of the demo. An important issue in this code is that a
 listener is added to the ``PlateDetectorFilter`` object
@@ -112,6 +118,10 @@ this event is printed in the console of the GUI.
 
 .. sourcecode:: javascript
 
+    ...
+    kurentoClient.register('kurento-module-platedetector')
+    ...
+    
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
@@ -138,7 +148,7 @@ this event is printed in the console of the GUI.
             webRtcPeer.processAnswer(sdpAnswer);
           });
 
-          pipeline.create('PlateDetectorFilter', function(error, filter) {
+          pipeline.create('platedetector.PlateDetectorFilter', function(error, filter) {
             if (error) return onError(error);
 
             console.log("Got Filter");

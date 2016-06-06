@@ -170,10 +170,23 @@ Then, each ROI should be configured. To do that, we have the following methods:
  * ``opticalFlowAngleOffset``: Counterclockwise offset of the angle. This
    parameters is useful to move the default axis for directions (0º=north,
    90º=east, 180º=south, 270º=west).
+   
+.. note::
+
+   Modules can have options. For configuring these options, you'll need to get the constructor for them.
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   an example in the code.
 
 All in all, the media pipeline of this demo is is implemented as follows:
 
 .. sourcecode:: javascript
+
+   ...
+   kurento.register('kurento-module-crowddetector');
+   const RegionOfInterest       = kurento.getComplexType('crowddetector.RegionOfInterest');
+   const RegionOfInterestConfig = kurento.getComplexType('crowddetector.RegionOfInterestConfig');
+   const RelativePoint          = kurento.getComplexType('crowddetector.RelativePoint');
+   ...
 
    function start(sessionId, ws, sdpOffer, callback) {
        if (!sessionId) {
@@ -222,7 +235,7 @@ All in all, the media pipeline of this demo is is implemented as follows:
                        });
 
                        webRtcEndpoint.on('OnIceCandidate', function(event) {
-                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                            ws.send(JSON.stringify({
                                id : 'iceCandidate',
                                candidate : candidate
@@ -286,7 +299,7 @@ All in all, the media pipeline of this demo is is implemented as follows:
                })
              ]
            }
-           pipeline.create('CrowdDetectorFilter', options, function(error, filter) {
+           pipeline.create('crowddetector.CrowdDetectorFilter', options, function(error, filter) {
                if (error) {
                    return callback(error);
                }

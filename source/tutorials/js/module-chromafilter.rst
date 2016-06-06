@@ -112,11 +112,22 @@ corner of the following screenshot:
    :alt:     Chroma filter in action
 
    *Chroma filter in action*
+   
+.. note::
+
+   Modules can have options. For configure these options, you need get the constructor to them.
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   an example in the code.
 
 The media pipeline of this demo is is implemented in the JavaScript logic as
 follows:
 
 .. sourcecode:: javascript
+
+    ...
+    kurentoClient.register('kurento-module-chroma')
+    const WindowParam = kurentoClient.getComplexType('chroma.WindowParam')
+    ...
 
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
@@ -154,7 +165,7 @@ follows:
             })
           }
 
-          pipeline.create('ChromaFilter', options, function(error, filter) {
+          pipeline.create('chroma.ChromaFilter', options, function(error, filter) {
             if (error) return onError(error);
 
             console.log("Got Filter");

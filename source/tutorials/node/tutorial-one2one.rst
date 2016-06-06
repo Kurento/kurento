@@ -423,7 +423,7 @@ media element by calling to the ``addIceCandidate`` method.
    [...]
 
    function onIceCandidate(sessionId, _candidate) {
-       var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+       var candidate = kurento.getComplexType('IceCandidate')(_candidate);
        var user = userRegistry.getById(sessionId);
    
        if (pipelines[user.id] && pipelines[user.id].webRtcEndpoint && pipelines[user.id].webRtcEndpoint[user.id]) {

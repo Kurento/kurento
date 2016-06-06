@@ -101,6 +101,12 @@ video, as follows:
 
    *Pointer calibration stage*
 
+.. note::
+
+   Modules can have options. For configuring these options, you'll need to get the constructor for them.
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   an example in the code.
+
 In that precise moment, a calibration operation should be carried out. This is
 done by clicking on the *Calibrate* blue button of the GUI.
 
@@ -112,6 +118,12 @@ windows. This is implemented in the JavaScript logic as follows:
 
 .. sourcecode:: javascript
 
+    ...
+    kurentoClient.register('kurento-module-pointerdetector')
+    const PointerDetectorWindowMediaParam = kurentoClient.getComplexType('pointerdetector.PointerDetectorWindowMediaParam')
+    const WindowParam                     = kurentoClient.getComplexType('pointerdetector.WindowParam')
+    ...
+    
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
@@ -148,7 +160,7 @@ windows. This is implemented in the JavaScript logic as follows:
             })
           };
 
-          pipeline.create('PointerDetectorFilter', options, function(error, _filter) {
+          pipeline.create('pointerdetector.PointerDetectorFilter', options, function(error, _filter) {
             if (error) return onError(error);
 
             filter = _filter;

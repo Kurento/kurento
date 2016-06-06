@@ -341,7 +341,7 @@ when the ``presenter`` and ``viewer`` message are received respectively:
                    }
 
                    webRtcEndpoint.on('OnIceCandidate', function(event) {
-                       var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                       var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                        ws.send(JSON.stringify({
                            id : 'iceCandidate',
                            candidate : candidate
@@ -404,7 +404,7 @@ when the ``presenter`` and ``viewer`` message are received respectively:
          }
 
          webRtcEndpoint.on('OnIceCandidate', function(event) {
-             var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+             var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
              ws.send(JSON.stringify({
                  id : 'iceCandidate',
                  candidate : candidate
@@ -457,7 +457,7 @@ media element by calling to the ``addIceCandidate`` method.
    [...]
 
    function onIceCandidate(sessionId, _candidate) {
-       var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
+       var candidate = kurento.getComplexType('IceCandidate')(_candidate);
 
        if (presenter && presenter.id === sessionId && presenter.webRtcEndpoint) {
            console.info('Sending presenter candidate');

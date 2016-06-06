@@ -104,6 +104,12 @@ video, as follows:
    :alt:     Pointer calibration stage
 
    *Pointer calibration stage*
+   
+.. note::
+
+   Modules can have options. For configuring these options, you'll need to get the constructor for them.
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   an example in the code.
 
 In that precise moment, a calibration operation should be carried out. This is
 done by clicking on the *Calibrate* blue button of the GUI.
@@ -115,6 +121,12 @@ the pointer enters (``WindowIn`` event) and exits (``WindowOut`` event) the
 windows. This is implemented in the JavaScript logic as follows:
 
 .. sourcecode:: javascript
+
+   ...
+   kurento.register('kurento-module-pointerdetector');
+   const PointerDetectorWindowMediaParam = kurento.getComplexType('pointerdetector.PointerDetectorWindowMediaParam');
+   const WindowParam                     = kurento.getComplexType('pointerdetector.WindowParam');
+   ...
 
    function start(sessionId, ws, sdpOffer, callback) {
        if (!sessionId) {
@@ -151,7 +163,7 @@ windows. This is implemented in the JavaScript logic as follows:
                        }
 
                        webRtcEndpoint.on('OnIceCandidate', function(event) {
-                           var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+                           var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
                            ws.send(JSON.stringify({
                                id : 'iceCandidate',
                                candidate : candidate
@@ -234,7 +246,7 @@ windows. This is implemented in the JavaScript logic as follows:
                })
            };
 
-           pipeline.create('PointerDetectorFilter', options, function(error, filter) {
+           pipeline.create('pointerdetector.PointerDetectorFilter', options, function(error, filter) {
                if (error) {
                    return callback(error);
                }

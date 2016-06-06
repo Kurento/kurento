@@ -167,10 +167,23 @@ Then, each ROI should be configured. To do that, we have the following methods:
    parameters is useful to move the default axis for directions (0º=north,
    90º=east, 180º=south, 270º=west).
 
+.. note::
+
+   Modules can have options. For configuring these options, you'll need to get the constructor for them.
+   In Javascript and Node, you have to use *kurentoClient.getComplexType('qualifiedName')* . There is 
+   an example in the code.
+
 All in all, the media pipeline of this demo is is implemented as follows:
 
 .. sourcecode:: javascript
 
+    ...
+    kurentoClient.register('kurento-module-crowddetector')
+    const RegionOfInterest       = kurentoClient.getComplexType('crowddetector.RegionOfInterest')
+    const RegionOfInterestConfig = kurentoClient.getComplexType('crowddetector.RegionOfInterestConfig')
+    const RelativePoint          = kurentoClient.getComplexType('crowddetector.RelativePoint')
+    ...
+  
     kurentoClient(args.ws_uri, function(error, client) {
       if (error) return onError(error);
 
@@ -229,7 +242,7 @@ All in all, the media pipeline of this demo is is implemented as follows:
             ]
           }
 
-          pipeline.create('CrowdDetectorFilter', options, function(error, filter)
+          pipeline.create('crowddetector.CrowdDetectorFilter', options, function(error, filter)
           {
             if (error) return onError(error);
 
