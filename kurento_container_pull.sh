@@ -70,9 +70,11 @@ if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
     status=0
     for image in $REMOVE_IMAGES
     do
-			IMG_NAME=$(docker images | grep kurento-media-server-dev | grep -P "\s$image\s" | awk '{print $1}')
-    	echo "Removing image $image"
-        docker rmi $IMG_NAME:$image || status=$[$status || $?]
+			for repo_name in $(docker images | grep kurento-media-server-dev | grep -P "\s$image\s" | awk '{print $1}')
+			do
+				echo "Removing image $image"
+				docker rmi $repo_name:$image || status=$[$status || $?]
+			done
     done
 fi
 
