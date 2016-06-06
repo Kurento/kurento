@@ -262,7 +262,7 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
     case KMS_RECORDING_PROFILE_MP4:
     case KMS_RECORDING_PROFILE_MP4_VIDEO_ONLY:
     case KMS_RECORDING_PROFILE_MP4_AUDIO_ONLY:{
-      GstElement *mux = gst_element_factory_make ("qtmux", NULL);
+      GstElement *mux = gst_element_factory_make ("mp4mux", NULL);
       GstElementFactory *file_sink_factory =
           gst_element_factory_find ("filesink");
       GstElementFactory *sink_factory =
