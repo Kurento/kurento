@@ -389,7 +389,8 @@ public class ParamsFlattener {
           }
 
           return unflattedComplexType(clazz, props, manager);
-
+        } else if (value instanceof List) {
+          return unflattenList(paramName, (List<?>) value, type, manager);
         } else {
           throw new ProtocolException(
               "A objectRef coded with a String or a Props is expected for param type '" + type
@@ -408,6 +409,8 @@ public class ParamsFlattener {
         Type typeArgs = paramType.getActualTypeArguments()[1];
         return unflattenMap(paramName, (Props) value, typeArgs, manager);
       }
+    } else if (type instanceof List) {
+      return unflattenList(paramName, (List<?>) value, type, manager);
     }
 
     throw new ProtocolException("Type '" + type + "' is not supported");
