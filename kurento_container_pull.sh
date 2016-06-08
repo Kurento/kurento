@@ -63,10 +63,10 @@ docker images > container_images.txt
 
 # Keep just KEEP_IMAGES last kms dev images
 KEEP_IMAGES=3
-NUM_IMAGES=$(docker images | grep kurento-media-server-dev | awk '{print $2}' | sort | wc -l)
+NUM_IMAGES=$(docker images | grep kurento-media-server-dev | awk '{print $2}' | sort | uniq | wc -l)
 if [ $NUM_IMAGES -gt $KEEP_IMAGES ]; then
 	NUM_REMOVE_IMAGES=$[$NUM_IMAGES-$KEEP_IMAGES]
-	REMOVE_IMAGES=$(docker images | grep kurento-media-server-dev | awk '{print $2}' | sort | head -$NUM_REMOVE_IMAGES)
+	REMOVE_IMAGES=$(docker images | grep kurento-media-server-dev | awk '{print $2}' | sort | uniq | head -$NUM_REMOVE_IMAGES)
     status=0
     for image in $REMOVE_IMAGES
     do
