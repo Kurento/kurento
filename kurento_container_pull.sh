@@ -26,7 +26,7 @@ pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 pullAndTag kurento/kurento-media-server-dev:latest
 
 # coturn image
-pullAndTag kurento/coturn:1.1.0
+pullAndTag kurento/coturn:latest
 
 # svn-client to extract files from svn into a docker host
 pullAndTag kurento/svn-client:1.0.0
