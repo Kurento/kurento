@@ -1,0 +1,113 @@
+#!/usr/bin/env node
+
+var spawn = require('child_process').spawnSync
+
+var kurentoClient = 'node_modules/kurento-client/lib'
+
+// ChromaFilter Module
+var argv =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/ChromaFilter.js',
+  '--prefix','',
+  '--module','chromaFilter'
+]
+
+var result = spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+var argvPrefix =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/ChromaFilter.js',
+  '--prefix','chroma.',
+  '--module','chromaFilter'
+]
+
+spawn('qunit-cli', argvPrefix.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+// CrowdDetector Module
+argv =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/CrowdDetector.js',
+  '--prefix','',
+  '--module','crowdDetector'
+]
+
+spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+argvPrefix =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/CrowdDetector.js',
+  '--prefix','crowddetector.',
+  '--module','crowdDetector'
+]
+
+spawn('qunit-cli', argvPrefix.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+// PointerDetector Module
+argv =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/PointerDetector.js',
+  '--prefix','',
+  '--module','pointerDetector'
+]
+
+spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+argvPrefix =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/PointerDetector.js',
+  '--prefix','pointerdetector.',
+  '--module','pointerDetector'
+]
+
+spawn('qunit-cli', argvPrefix.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+// PlateDetector Module
+argv =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/PlateDetector.js',
+  '--prefix','',
+  '--module','plateDetector'
+]
+
+spawn('qunit-cli', argv.concat(process.argv.slice(2)), {stdio: 'inherit'})
+
+argvPrefix =
+[
+  '-c', 'kurentoClient:'+kurentoClient,
+  '-c', 'node_modules/qunit-reporter-junit',
+  '-c', 'wock:node_modules/wock',
+  '-c', 'test/_common.js',
+  'test/PlateDetector.js',
+  '--prefix','platedetector.',
+  '--module','plateDetector'
+]
+
+spawn('qunit-cli', argvPrefix.concat(process.argv.slice(2)), {stdio: 'inherit'})

@@ -1,0 +1,47 @@
+{
+  "name": "kurento-module-tests-api",
+  "version": "6.5.1-dev",
+  "description": "Kurento Module Tests API",
+  "homepage": "http://www.kurento.org",
+  "license": "ALv2",
+  "author": "Kurento <info@kurento.com> (http://kurento.org)",
+  "contributors": [
+    {
+      "name": "Raul Benitez 'rbenitez'",
+      "email": "raulbenitezmejias@gmail.com"
+    }
+  ],
+  "scripts": {
+    "test": "scripts/test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Kurento/kurento-tutorial-node"
+  },
+  "bugs": {
+    "email": "kurento@googlegroups.com"
+  },
+  "keywords": [
+    "API",
+    "Kurento",
+    "WebRTC"
+  ],
+  "dependencies": {
+    "kurento-client": "Kurento/kurento-client-js",
+    "kurento-module-chroma": "Kurento/kurento-module-chroma-js",
+    "kurento-module-crowddetector": "Kurento/kurento-module-crowddetector-js",
+    "kurento-module-pointerdetector": "Kurento/kurento-module-pointerdetector-js",
+    "kurento-module-platedetector": "Kurento/kurento-module-platedetector-js"
+  },
+  "devDependencies": {
+    "fs-extra": "^0.20.1",
+    "node-static": "^0.7.6",
+    "qunit-cli": "KurentoForks/qunit-cli#0.2.1",
+    "qunit-reporter-junit": "KurentoForks/qunit-reporter-junit#1.0.3",
+    "qunit-reporter-lcov": "^1.0.2",
+    "qunitjs": "1.18.0",
+    "xml2js": "^0.4.9",
+    "wock": "^0.1.1",
+    "dockerode":"2.2.6"
+  }
+}
