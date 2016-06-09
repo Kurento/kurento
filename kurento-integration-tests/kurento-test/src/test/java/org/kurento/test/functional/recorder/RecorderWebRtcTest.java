@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
@@ -110,7 +109,6 @@ public class RecorderWebRtcTest extends BaseRecorder {
     doTest(WEBM_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_WEBM, null, EXTENSION_WEBM);
   }
 
-  @Ignore
   @Test
   public void testRecorderWebRtcVideoOnlyMp4() throws Exception {
     doTest(MP4_VIDEO_ONLY, EXPECTED_VIDEO_CODEC_MP4, null, EXTENSION_MP4);
