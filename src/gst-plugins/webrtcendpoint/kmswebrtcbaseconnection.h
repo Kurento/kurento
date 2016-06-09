@@ -51,6 +51,7 @@ struct _KmsWebRtcBaseConnection
   GRecMutex mutex;
 
   KmsIceBaseAgent *agent;
+  gboolean ice_gathering_started;
   gboolean ice_gathering_done;
   gchar* stream_id;
   gchar *name;
