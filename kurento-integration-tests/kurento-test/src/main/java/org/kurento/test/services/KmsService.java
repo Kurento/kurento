@@ -471,7 +471,7 @@ public class KmsService extends TestService {
       dockerClient.stopAndRemoveContainer(dockerContainerName);
     }
 
-    log.debug("Starting KMS container...");
+    log.debug("Starting KMS container...{}", dockerContainerName);
 
     // Check S3 properties
     String s3BucketName = getProperty(KMS_DOCKER_S3_BUCKET_NAME);
