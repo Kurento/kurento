@@ -34,6 +34,7 @@ import org.kurento.client.ErrorEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
+import org.kurento.client.PassThrough;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
@@ -42,10 +43,10 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a Recorder switching sources from PlayerEndpoint. </p> Media Pipeline(s):
+ * Test of a Recorder switching sources from PlayerEndpoint with a PassThrough. </p> Media
+ * Pipeline(s):
  * <ul>
- * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
- * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> WebRtcEndpoint & PassThrough; PassThrough -> RecorderEndpoint)</li>
  * </ul>
  * Browser(s):
  * <ul>
@@ -54,29 +55,23 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  * Test logic:
  * <ol>
- * <li>(KMS) Two media pipelines. First WebRtcEndpoint to RecorderEndpoint (recording) and then
- * PlayerEndpoint -> WebRtcEndpoint (play of the recording).</li>
+ * (KMS) One media pipeline. PassThrough to RecorderEndpoint (recording) and then PlayerEndpoint ->
+ * WebRtcEndpoint && PlayerEndpoint -> PassThrough (play of the recording).</li>
  * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
+ * <li>While recording the player will change format or size of the video</li>
  * </ol>
  * Main assertion(s):
  * <ul>
  * <li>Playing event should be received in remote video tag (in the recording)</li>
- * <li>The color of the received video should be as expected (in the recording)</li>
  * <li>EOS event should arrive to player (in the recording)</li>
  * <li>Play time in remote video should be as expected (in the recording)</li>
  * <li>Codecs should be as expected (in the recording)</li>
  * </ul>
- * Secondary assertion(s):
- * <ul>
- * <li>Playing event should be received in remote video tag (in the playing)</li>
- * <li>The color of the received video should be as expected (in the playing)</li>
- * <li>EOS event should arrive to player (in the playing)</li>
- * </ul>
  *
- * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @author Raul Benitez (rbenitez@gsyc.es)
+ * @since 6.5.1
  */
-public class RecorderSwitchPlayerTest extends BaseRecorder {
+public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
 
   private static final int PLAYTIME = 20; // seconds
   private String msgError = "";
@@ -87,56 +82,58 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
   }
 
   @Test
-  public void testRecorderSwitchSameFormatPlayerWebm() throws Exception {
+  public void testRecorderSwitchSameFormatPlayerWithPassThroughWebm() throws Exception {
     doTestSameFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
   }
 
   @Test
-  public void testRecorderSwitchSameFormatPlayerMp4() throws Exception {
+  public void testRecorderSwitchSameFormatPlayerWithPassThroughMp4() throws Exception {
     doTestSameFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
   @Test
-  public void testRecorderSwitchDifferentFormatPlayerWebm() throws Exception {
+  public void testRecorderSwitchDifferentFormatPlayerWithPassThroughWebm() throws Exception {
     doTestDifferentFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
   @Test
-  public void testRecorderSwitchDifferentFormatPlayerMp4() throws Exception {
+  public void testRecorderSwitchDifferentFormatPlayerWithPassThroughMp4() throws Exception {
     doTestDifferentFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
   @Test
-  public void testRecorderSwitchFrameRateDifferentPlayerWebm() throws Exception {
+  public void testRecorderSwitchFrameRateDifferentPlayerWithPassThroughWebm() throws Exception {
     doTestFrameRateDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
   @Ignore
-  public void testRecorderSwitchFrameRateDifferentPlayerMp4() throws Exception {
+  public void testRecorderSwitchFrameRateDifferentPlayerWithPassThroughMp4() throws Exception {
     doTestFrameRateDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
   @Test
-  public void testRecorderSwitchFrameSizeDifferentPlayerWebm() throws Exception {
+  public void testRecorderSwitchFrameSizeDifferentPlayerWithPassThroughWebm() throws Exception {
     doTestFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
   @Ignore
-  public void testRecorderSwitchFrameSizeDifferentPlayerMp4() throws Exception {
+  public void testRecorderSwitchFrameSizeDifferentPlayerWithPassThroughMp4() throws Exception {
     doTestFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
   @Test
-  public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWebm() throws Exception {
+  public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWithPassThroughWebm()
+      throws Exception {
     doTestFrameRateAndFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM,
         EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
   }
 
   @Ignore
-  public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerMp4() throws Exception {
+  public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWithPassThroughMp4()
+      throws Exception {
     doTestFrameRateAndFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
         EXTENSION_MP4);
   }
@@ -177,9 +174,9 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
   public void doTestFrameRateAndFrameSizeDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
     String[] mediaUrls =
-      { getPlayerUrl("/video/15sec/rgbHD.webm"), getPlayerUrl("/video/15sec/rgb.webm"),
-        getPlayerUrl("/video/15sec/rgbHD.webm") };
-    Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLACK };
+      { getPlayerUrl("/video/15sec/rgbHD.mov"), getPlayerUrl("/video/15sec/rgb.mov"),
+        getPlayerUrl("/video/15sec/rgbHD.mov") };
+    Color[] expectedColors = { Color.RED, Color.GREEN, Color.RED };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
         expectedColors);
@@ -201,7 +198,6 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
       String expectedAudioCodec, String extension, String[] mediaUrls, Color[] expectedColors)
           throws Exception {
 
-    // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     final CountDownLatch errorPipelinelatch = new CountDownLatch(1);
 
@@ -223,20 +219,25 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
-    final CountDownLatch recorderLatch = new CountDownLatch(1);
     String recordingFile = getRecordUrl(extension);
     RecorderEndpoint recorderEp =
         new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
         .build();
 
+    PassThrough passThrough = new PassThrough.Builder(mp).build();
+
+    passThrough.connect(recorderEp);
+
     // Test execution
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+
     boolean startRecord = false;
     for (int i = 0; i < numPlayers; i++) {
       players[i].connect(webRtcEp);
-      players[i].connect(recorderEp);
+      players[i].connect(passThrough);
       players[i].play();
 
       if (!startRecord) {
@@ -250,7 +251,6 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
       waitSeconds(PLAYTIME / numPlayers);
     }
 
-    // Release Media Pipeline #1
     saveGstreamerDot(mp);
     recorderEp.stop(new Continuation<Void>() {
 
@@ -279,5 +279,4 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
         expectedAudioCodec);
     success = true;
   }
-
 }

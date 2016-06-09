@@ -28,8 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
-import org.kurento.client.EndOfStreamEvent;
-import org.kurento.client.EventListener;
+import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
@@ -38,7 +37,6 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
-import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  * Test of a Recorder switching sources from WebRtc Endpoint </p> Media Pipeline(s):
@@ -135,58 +133,30 @@ public class RecorderSwitchPlayerWebRtcTest extends BaseRecorder {
 
     // Release Media Pipeline #1
     saveGstreamerDot(mp);
-    recorderEp.stop();
-    mp.release();
 
-    // Wait until file exists
-    waitForFileExists(recordingFile);
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
+    mp.release();
 
     // Reloading browser
     getPage(0).close();
 
-    // Media Pipeline #2
-    MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-    PlayerEndpoint playerEp2 = new PlayerEndpoint.Builder(mp2, recordingFile).build();
-    WebRtcEndpoint webRtcEp2 = new WebRtcEndpoint.Builder(mp2).build();
-    playerEp2.connect(webRtcEp2);
-
-    // Playing the recording
-    getPage(1).subscribeEvents("playing");
-    getPage(1).initWebRtc(webRtcEp2, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
-    final CountDownLatch eosLatch = new CountDownLatch(1);
-    playerEp2.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-      @Override
-      public void onEvent(EndOfStreamEvent event) {
-        eosLatch.countDown();
-      }
-    });
-    playerEp2.play();
-
-    // Assertions in recording
-    final String messageAppend = "[played file with media pipeline]";
-    final int playtime = PLAYTIME;
-
-    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
-        + messageAppend, getPage(1).waitForEvent("playing"));
-    for (Color color : EXPECTED_COLORS) {
-      Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
-          getPage(1).similarColor(color));
-    }
-    Assert.assertTrue("Not received EOS event in player",
-        eosLatch.await(getPage(1).getTimeout(), TimeUnit.SECONDS));
-
-    double currentTime = getPage(1).getCurrentTime();
-    Assert.assertTrue("Error in play time in the recorded video (expected: " + playtime
-        + " sec, real: " + currentTime + " sec) " + messageAppend,
-        getPage(1).compare(playtime, currentTime));
-
-    AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
-    AssertMedia.assertDuration(recordingFile, TimeUnit.SECONDS.toMillis(playtime),
-        TimeUnit.SECONDS.toMillis(getPage(1).getThresholdTime()));
-
-    // Release Media Pipeline #2
-    mp2.release();
-
+    checkRecordingFile(recordingFile, "browser1", EXPECTED_COLORS, PLAYTIME, expectedVideoCodec,
+        expectedAudioCodec);
     success = true;
   }
 }

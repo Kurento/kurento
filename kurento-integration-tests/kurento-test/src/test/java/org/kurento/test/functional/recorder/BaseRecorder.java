@@ -37,6 +37,7 @@ import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
+import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.mediainfo.AssertMedia;
 import org.kurento.test.utils.Shell;
@@ -93,11 +94,10 @@ public class BaseRecorder extends FunctionalTest {
     // Assertions
     String inRecording = recorderEp == null ? " in the recording" : "";
 
-    Assert.assertTrue("Not received media (timeout waiting playing event)" + inRecording,
-        getPage().waitForEvent("playing"));
-    Assert.assertTrue(
-        "Color at coordinates " + xColor + "," + yColor + " must be " + expectedColor + inRecording,
-        getPage().similarColorAt(expectedColor, xColor, yColor));
+    Assert.assertTrue("Not received media (timeout waiting playing event)" + inRecording, getPage()
+        .waitForEvent("playing"));
+    Assert.assertTrue("Color at coordinates " + xColor + "," + yColor + " must be " + expectedColor
+        + inRecording, getPage().similarColorAt(expectedColor, xColor, yColor));
     Assert.assertTrue("Not received EOS event in player" + inRecording,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
     if (recorderEp != null) {
@@ -192,6 +192,53 @@ public class BaseRecorder extends FunctionalTest {
 
       }
     } while (!exists);
+  }
+
+  protected void checkRecordingFile(String recordingFile, String browserName,
+      Color[] expectedColors, long playTime, String expectedVideoCodec, String expectedAudioCodec)
+          throws InterruptedException {
+
+    MediaPipeline mp = kurentoClient.createMediaPipeline();
+    PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, recordingFile).build();
+    WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
+    playerEp.connect(webRtcEp);
+
+    // Playing the recording
+    WebRtcTestPage checkPage = getPage(browserName);
+    checkPage.setThresholdTime(checkPage.getThresholdTime() * 2);
+    checkPage.subscribeEvents("playing");
+    checkPage.initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
+    final CountDownLatch eosLatch = new CountDownLatch(1);
+    playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        eosLatch.countDown();
+      }
+    });
+    playerEp.play();
+
+    // Assertions in recording
+    final String messageAppend = "[played file with media pipeline]";
+    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
+        + messageAppend, checkPage.waitForEvent("playing"));
+
+    for (Color color : expectedColors) {
+      Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
+          checkPage.similarColor(color));
+    }
+    Assert.assertTrue("Not received EOS event in player",
+        eosLatch.await(checkPage.getTimeout(), TimeUnit.SECONDS));
+
+    double currentTime = checkPage.getCurrentTime();
+    Assert.assertTrue("Error in play time in the recorded video (expected: " + playTime
+        + " sec, real: " + currentTime + " sec) " + messageAppend,
+        checkPage.compare(playTime, currentTime));
+
+    AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
+    AssertMedia.assertDuration(recordingFile, TimeUnit.SECONDS.toMillis(playTime),
+        TimeUnit.SECONDS.toMillis(checkPage.getThresholdTime()));
+
+    mp.release();
   }
 
 }
