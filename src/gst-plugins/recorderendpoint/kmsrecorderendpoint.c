@@ -747,21 +747,13 @@ set_appsink_caps (GstElement * appsink, const GstCaps * caps,
     goto end;
   }
 
-  if (!gst_structure_has_field (str, "framerate")) {
-    GST_DEBUG_OBJECT (appsink, "No framerate in caps %" GST_PTR_FORMAT,
-        sinkcaps);
-  } else {
-    GST_DEBUG_OBJECT (appsink, "Removing framerate from caps %" GST_PTR_FORMAT,
-        sinkcaps);
-    gst_structure_remove_field (str, "framerate");
-  }
-
   switch (profile) {
     case KMS_RECORDING_PROFILE_WEBM:
     case KMS_RECORDING_PROFILE_WEBM_VIDEO_ONLY:
       /* Allow renegotiation of width and height because webmmux supports it */
       gst_structure_remove_field (str, "width");
       gst_structure_remove_field (str, "height");
+      gst_structure_remove_field (str, "framerate");
       break;
     default:
       /* No to allow height and width renegotiation */
