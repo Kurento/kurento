@@ -37,7 +37,7 @@
 			<property name="ignorePattern"
 				value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
 		</module>
-		<module name="UnusedImports"/>
+		<module name="UnusedImports" />
 		<module name="AvoidStarImport" />
 		<module name="OneTopLevelClass" />
 		<module name="NoLineWrap" />
@@ -145,10 +145,11 @@
 		<module name="OverloadMethodsDeclarationOrder" />
 		<module name="VariableDeclarationUsageDistance" />
 		<module name="CustomImportOrder">
-            <property name="specialImportsRegExp" value="org"/>
-            <property name="thirdPartyPackageRegExp" value="com"/>
-            <property name="sortImportsInGroupAlphabetically" value="true"/>
-            <property name="customImportOrderRules" value="STATIC###STANDARD_JAVA_PACKAGE###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE"/>
+			<property name="specialImportsRegExp" value="org" />
+			<property name="thirdPartyPackageRegExp" value="com" />
+			<property name="sortImportsInGroupAlphabetically" value="true" />
+			<property name="customImportOrderRules"
+				value="STATIC###STANDARD_JAVA_PACKAGE###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE" />
 		</module>
 		<module name="MethodParamPad" />
 		<module name="OperatorWrap">
@@ -196,6 +197,9 @@
 		</module>
 		<module name="EmptyCatchBlock">
 			<property name="exceptionVariableName" value="expected" />
+		</module>
+		<module name="RegexpHeader">
+			<property name="headerFile" value="${checkstyle.header.file}" />
 		</module>
 		<module name="CommentsIndentation" />
 	</module>

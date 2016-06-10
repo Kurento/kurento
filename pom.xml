@@ -76,6 +76,9 @@
 		<version.pmd.plugin>3.5</version.pmd.plugin>
 		<version.checkstyle.plugin>2.17</version.checkstyle.plugin>
 		<version.findbugs.plugin>3.0.3</version.findbugs.plugin>
+		<version.s3.wagon>1.2.1</version.s3.wagon>
+		<version.qa.config>1.0.3-SNAPSHOT</version.qa.config>
+		<version.puppycrawl.checkstyle>6.13</version.puppycrawl.checkstyle>
 	</properties>
 
 	<build>
@@ -83,7 +86,7 @@
 			<extension>
 				<groupId>org.kuali.maven.wagons</groupId>
 				<artifactId>maven-s3-wagon</artifactId>
-				<version>1.2.1</version>
+				<version>${version.s3.wagon}</version>
 			</extension>
 		</extensions>
 	</build>
@@ -106,7 +109,12 @@
 							<dependency>
 								<groupId>com.puppycrawl.tools</groupId>
 								<artifactId>checkstyle</artifactId>
-								<version>6.13</version>
+								<version>${version.puppycrawl.checkstyle}</version>
+							</dependency>
+							<dependency>
+								<groupId>org.kurento</groupId>
+								<artifactId>kurento-qa-config</artifactId>
+								<version>${version.qa.config}</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -114,7 +122,8 @@
 								<id>validate</id>
 								<phase>validate</phase>
 								<configuration>
-									<configLocation>https://raw.githubusercontent.com/Kurento/kurento-qa-pom/master/src/main/resources/kurento_checks.xml</configLocation>
+									<configLocation>qa-config/kurento_checks.xml</configLocation>
+									<headerLocation>qa-config/headerFile</headerLocation>
 									<encoding>UTF-8</encoding>
 									<consoleOutput>true</consoleOutput>
 									<failsOnError>true</failsOnError>
@@ -137,4 +146,7 @@
 		</profile>
 	</profiles>
 
+	<modules>
+		<module>kurento-qa-config</module>
+	</modules>
 </project>

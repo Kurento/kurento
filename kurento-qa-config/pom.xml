@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.kurento</groupId>
+		<artifactId>kurento-qa-pom</artifactId>
+		<version>1.0.3-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>kurento-qa-config</artifactId>
+
+	<name>Kurento QA Config files</name>
+	<description>Quality Assurance pom for Kurento Java projects. Provides a profile for quality assurance, to be used during maven builds.</description>
+	<url>http://www.kurento.org/docs/${project.version}</url>
+
+	<issueManagement>
+		<system>Redmine</system>
+		<url>https://repository.kurento.org/redmine/</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
+	<scm>
+		<url>https://github.com/Kurento/kurento-qa-pom</url>
+		<connection>scm:git:git@github.com:Kurento/kurento-qa-pom.git</connection>
+		<developerConnection>scm:git:git@github.com:Kurento/kurento-qa-pom.git</developerConnection>
+		<tag>develop</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
+</project>
