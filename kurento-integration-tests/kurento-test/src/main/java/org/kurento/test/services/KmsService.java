@@ -82,6 +82,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ClientEndpointConfig;
@@ -221,7 +222,8 @@ public class KmsService extends TestService {
       log.info("Starting KMS dockerized");
       Docker dockerClient = Docker.getSingleton();
       if (dockerClient.isRunningInContainer()) {
-        setDockerContainerName(dockerClient.getContainerName() + getDockerContainerNameSuffix());
+        setDockerContainerName(dockerClient.getContainerName() + getDockerContainerNameSuffix()
+            + "-" + KurentoTest.getTestClassName() + "-" + +new Random().nextInt(3000));
       }
     } else {
       log.info("Starting KMS with URI: {}", wsUri);

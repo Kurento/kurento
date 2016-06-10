@@ -49,6 +49,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -115,7 +116,9 @@ public class DockerBrowserManager {
 
         String containerName = docker.getContainerName();
 
-        browserContainerName = containerName + "-" + browserContainerName;
+        browserContainerName =
+            containerName + "-" + browserContainerName + "-" + KurentoTest.getTestClassName() + "-"
+                + new Random().nextInt(1000);
         vncrecorderContainerName = containerName + "-" + vncrecorderContainerName;
       }
     }
@@ -420,7 +423,9 @@ public class DockerBrowserManager {
 
       String containerName = docker.getContainerName();
 
-      hubContainerName = containerName + "-" + hubContainerName;
+      hubContainerName =
+          containerName + "-" + hubContainerName + "-" + KurentoTest.getTestClassName() + "-"
+              + new Random().nextInt(5000);
     }
   }
 
