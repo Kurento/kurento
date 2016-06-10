@@ -36,7 +36,8 @@
   "dependencies": {
     "async": "~1.2.1",
     "error-tojson": "0.0.1",
-    "es6-promise": "^2.3.0",
+    "es6-promise": "^3.2.1",
+    "promise":"7.0.2",
     "extend": "^2.0.1",
     "inherits": "~2.0.1",
     "kurento-client-core": "Kurento/kurento-client-core-js#master",
