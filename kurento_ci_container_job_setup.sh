@@ -121,7 +121,7 @@ CONTAINER_TEST_FILES=/opt/test-files
 [ -d /var/lib/jenkins/test-files ] && mkdir -p /var/lib/jenkins/test-files
 docker run \
   --rm \
-	--name $BUILD_TAG-TEST-FILES \
+	--name $BUILD_TAG-TEST-FILES-$(date +"%s") \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -w $CONTAINER_TEST_FILES \
@@ -132,7 +132,7 @@ docker run \
 # Verify if Mongo container must be started
 if [ "$START_MONGO_CONTAINER" == 'true' ]; then
     MONGO_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-MONGO \
+      --name $BUILD_TAG-MONGO-$(date +"%s") \
       mongo:2.6.11) || exit
     # Guard time for mongo startup
     sleep 10
@@ -141,7 +141,7 @@ fi
 # Verify if Mongo container must be started
 if [ "$START_KMS_CONTAINER" == 'true' ]; then
     KMS_CONTAINER_ID=$(docker run -d \
-      --name $BUILD_TAG-KMS \
+      --name $BUILD_TAG-KMS-$(date +"%s") \
       kurento/kurento-media-server-dev:latest) || exit
     KMS_AUTOSTART=false
 fi
@@ -178,7 +178,7 @@ MAVEN_OPTIONS+=" -Dwdm.chromeDriverUrl=http://chromedriver.kurento.org/"
 
 # Create main container
 docker run \
-  --name $BUILD_TAG-JOB_SETUP \
+  --name $BUILD_TAG-JOB_SETUP-$(date +"%s") \
   --rm \
   -v /var/lib/jenkins/test-files:$CONTAINER_TEST_FILES \
   -v $KURENTO_SCRIPTS_HOME:$CONTAINER_ADM_SCRIPTS \
