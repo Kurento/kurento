@@ -79,6 +79,7 @@
 		<version.s3.wagon>1.2.1</version.s3.wagon>
 		<version.qa.config>1.0.3-SNAPSHOT</version.qa.config>
 		<version.puppycrawl.checkstyle>6.13</version.puppycrawl.checkstyle>
+		<version.eclipse.plugin>2.10</version.eclipse.plugin>
 	</properties>
 
 	<build>
@@ -89,6 +90,29 @@
 				<version>${version.s3.wagon}</version>
 			</extension>
 		</extensions>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>${version.eclipse.plugin}</version>
+				<configuration>
+					<useProjectReferences>false</useProjectReferences>
+					<additionalConfig>
+						<file>
+							<name>.settings/org.eclipse.jdt.ui.prefs</name>
+							<location>qa-config/eclipse/org.eclipse.jdt.ui.prefs</location>
+						</file>
+						<file>
+							<name>.settings/org.eclipse.jdt.core.prefs</name>
+							<location>qa-config/eclipse/org.eclipse.jdt.core.prefs</location>
+						</file>
+					</additionalConfig>
+					<workspaceActiveCodeStyleProfileName>Kurento Java Conventions</workspaceActiveCodeStyleProfileName>
+					<workspaceCodeStylesURL>qa-config/eclipse/formatter.xml</workspaceCodeStylesURL>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 	<profiles>
