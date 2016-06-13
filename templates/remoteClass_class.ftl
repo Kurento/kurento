@@ -167,12 +167,29 @@ inherits(${remoteClass.name}, ${extends_name});
 ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
       <@arguments/>
       <#if property.type.type.class.name == 'org.kurento.modulecreator.definition.RemoteClass'>
-  return disguise(this._invoke(transaction, '${getPropertyName}', function(error, result)
-  {
-    if (error) return callback(error);
+  if (usePromise) {
+    var self = this;
 
-    this.emit('_describe', result, callback);
-  }), this)
+    var promise = new Promise(function(resolve, reject) {
+
+      function callback2(error, values) {
+        resolve(values)
+      }
+
+     self._invoke(transaction, '${getPropertyName}', function(error, result) {
+        if (error) return callback(error);
+
+        self.emit('_describe', result, callback2);
+      })
+    });
+    return promise;
+  } else {
+    return disguise(this._invoke(transaction, '${getPropertyName}', function(error, result) {
+      if (error) return callback(error);
+
+      this.emit('_describe', result, callback);
+    }), this)
+  }
       <#else>
   return disguise(this._invoke(transaction, '${getPropertyName}', callback), this)
       </#if>

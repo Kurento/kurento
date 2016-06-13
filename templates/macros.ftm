@@ -121,6 +121,12 @@
     </#list>
   };
   <#else>
+  var usePromise = false;
+  
+  if (callback == undefined) {
+    usePromise = true;
+  }
+  
   if(!arguments.length) callback = undefined;
   </#if>
 
