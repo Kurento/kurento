@@ -32,8 +32,8 @@ pullAndTag kurento/coturn:latest
 pullAndTag kurento/svn-client:1.0.0
 
 # dev-documentation images (for documentation projects)
-kurento/dev-documentation:1.0.0-jdk-7
-kurento/dev-documentation:1.0.0-jdk-8
+pullAndTag kurento/dev-documentation:1.0.0-jdk-7
+pullAndTag kurento/dev-documentation:1.0.0-jdk-8
 
 # dev-media-server images (for media server projects)
 pullAndTag kurento/dev-media-server:trusty-jdk-7
