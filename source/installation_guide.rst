@@ -73,7 +73,7 @@ In order to setup a **STUN** server you should uncomment the following lines in
 the Kurento Media Server configuration file located on at
 ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
 
-.. sourcecode:: js
+.. sourcecode:: javascript
 
    stunServerAddress=<stun_ip_address>
    stunServerPort=<stun_port>
@@ -96,7 +96,7 @@ the Kurento Media Server configuration file located on at
 The parameter ``stunServerAddress`` should be an IP address (not domain name).
 There is plenty of public STUN servers available, for example:
 
-.. sourcecode:: js
+.. sourcecode:: javascript
 
    173.194.66.127:19302
    173.194.71.127:19302
@@ -127,23 +127,23 @@ In order to setup a **TURN** server you should uncomment the following lines in
 the Kurento Media Server configuration file located on at
 ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``:
 
-.. sourcecode:: js
+.. code-block:: javascript
 
-   turnURL=user:password@address:port
+   turnURL=user:password@address:port;
 
 As before, TURN address should be an IP address (not domain name). See some
 examples of TURN configuration below:
 
-.. sourcecode:: js
+.. code-block:: javascript
 
-   turnURL=kurento:kurento@193.147.51.36:3478
+   turnURL=kurento:kurento@193.147.51.36:3478;
 
 ... or using a free access `numb <http://numb.viagenie.ca/>`_ STUN/TURN server
 as follows:
 
-.. sourcecode:: js
+.. code-block:: javascript
 
-   turnURL=user:password@66.228.45.110:3478
+   turnURL=user:password@66.228.45.110:3478;
 
 An open source implementation of a TURN server is
 `coturn <https://code.google.com/p/coturn/>`_. In the :doc:`FAQ <./faq>`

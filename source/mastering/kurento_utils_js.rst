@@ -24,7 +24,7 @@ How to use it
   .. sourcecode:: bash
 
      npm install kurento-utils
-       
+
 
   .. code-block:: javascript
 
@@ -35,7 +35,7 @@ How to use it
   .. sourcecode:: bash
 
      bower install kurento-utils
-      
+
   Import the library in your *html* page
 
   .. code-block:: html
@@ -73,7 +73,7 @@ for the configuration.
 
     var videoInput = document.getElementById('videoInput');
     var videoOutput = document.getElementById('videoOutput');
-    
+
     var constraints = {
         audio: true,
         video: {
@@ -81,18 +81,18 @@ for the configuration.
           framerate: 15
         }
     };
-   
+
     var options = {
       localVideo: videoInput,
       remoteVideo: videoOutput,
       onicecandidate : onIceCandidate,
       mediaConstraints: constraints
     };
-   
-   
+
+
    var webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function(error) {
          if(error) return onError(error)
-   
+
          this.generateOffer(onOffer)
       });
 
@@ -168,6 +168,43 @@ Following the previous steps, we have:
 This should complete the negotiation process, and should leave us with a working
 bidirectional WebRTC media exchange between both peers.
 
+Using data channels
+===================
+
+A WebRTC data channel lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object allows to use the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`_. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a ``WebRtcPeer`` object in the browser, will have the same behaviour as the ``RTCDataChannel`` (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`_). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behaviour should be specified in the filter.
+
+The use of data channels in the ``WebRtcPeer`` object is indicated by passing the ``dataChannels`` flag in the options bag, along with the desired options.
+
+.. code-block:: javascript
+   :emphasize-lines: 4-12
+
+    var options = {
+        localVideo : videoInput,
+        remoteVideo : videoOutput,
+        dataChannels : true,
+        dataChannelConfig: {
+          id : getChannelName(),
+          onmessage : onMessage,
+          onopen : onOpen,
+          onclose : onClosed,
+          onbufferedamountlow : onbufferedamountlow,
+          onerror : onerror
+        },
+        onicecandidate : onIceCandidate
+    }
+
+    webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, onWebRtcPeerCreated);
+
+The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` object is created, and after the connection has been successfuly negotiated, users can send data through the data channel
+
+.. code-block:: javascript
+
+    webRtcPeer.send('your data stream here');
+
+The format of the data you are sending, is determined by your application, and the definition of the endpoints that you are using.
+
+The lifecycle of the underlying ``RTCDataChannel``, is tied to that of the ``webRtcPeer``: when the ``webRtcPeer.dispose()`` method is onvoked, the data channel will be closed and released too.
+
 
 Reference documentation
 =======================
@@ -183,22 +220,22 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
    * *recv*: receive only media.
    * *send*: send only media.
    * *sendRecv*: send and receive media.
-   
+
 * **options** : It is a group of parameters and they are optional. It is a
   json object.
 
-   * *localVideo*: Video tag in the application  for the local stream. 
-   * *remoteVideo*: Video tag in the application for the remote stream. 
+   * *localVideo*: Video tag in the application  for the local stream.
+   * *remoteVideo*: Video tag in the application for the remote stream.
    * *videoStream*:  Provides an already available video stream that will
      be used instead of using the media stream from the local webcam.
    * *audioStreams*:  Provides an already available audio stream that will
      be used instead of using the media stream from the local microphone.
-   * *mediaConstraints*: Defined the quality for the video and audio 
+   * *mediaConstraints*: Defined the quality for the video and audio
    * *connectionConstraints*: Defined the connection constraint according
      with browser like googIPv6, DtlsSrtpKeyAgreement, ...
    * *peerConnection*: Use a peerConnection which was created before
    * *sendSource*: Which source will be used
-   
+
       * *webcam*
       * *screen*
       * *window*
@@ -208,14 +245,23 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
      happens
    * *oncandidategatheringdone*: Method that will be invoked when all
      candidates have been harvested
+   * *dataChannels*: Flag for enabling the use of data channels. If *true*, then a data channel will be created in the *RTCPeerConnection* object.
+   * *dataChannelConfig*: It is a JSON object with the configuration passed to the DataChannel when created. It supports the following keys:
+      * *id*: Specifies the *id* of the data channel. If none specified, the same *id* of the *WebRtcPeer* object will be used.
+      * *options*: Options object passed to the data channel constructor.
+      * *onopen*: Function invoked in the *onopen* event of the data channel, fired when the channel is open.
+      * *onclose*: Function invoked in the *onclose* event of the data channel, fired when the data channel is closed.
+      * *onmessage*: Function invoked in the *onmessage* event of the data channel. This event is fired every time a message is received.
+      * *onbufferedamountlow*: Is the event handler called when the ``bufferedamountlow`` event is received. Such an event is sent when ``RTCDataChannel.bufferedAmount`` drops to less than or equal to the amount specified by the ``RTCDataChannel.bufferedAmountLowThreshold`` property.
+      * *onerror*: Callback function onviked when an error in the data channel is produced. If none is provided, an error trace message will be logged in the browser console.
    * *simulcast*: Indicates whether simulcast is going to be used. Value is
      *true|false*
-   * *configuration*: It is a json object where ICE Servers are defined
+   * *configuration*: It is a JSON object where ICE Servers are defined
      using
-     
+
       * `iceServers <https://w3c.github.io/webrtc-pc/#idl-def-RTCIceServer>`_:
         The format for this variable is like::
-         
+
                [{"urls":"turn:turn.example.org","username":"user","credential":"myPassword"}]
                [{"urls":"stun:stun1.example.net"},{"urls":"stun:stun2.example.net"}]
 
@@ -232,7 +278,7 @@ Also there are 3 specific methods for creating WebRtcPeer objects without using
      only.
    * **WebRtcPeerSendrecv(options, callback)**: Create a WebRtcPeer as send
      and receive.
-   
+
 MediaConstraints
 ----------------
 
@@ -358,7 +404,7 @@ screen or a window content it will throw an exception.
 Souce code
 ==========
 
-The code is at `github <https://github.com/kurento/kurento-utils-js>`_. 
+The code is at `github <https://github.com/kurento/kurento-utils-js>`_.
 
 Be sure to have `Node.js`:term: and `Bower`:term: installed in your system:
 
@@ -397,5 +443,3 @@ have it globally installed, you can run a local copy by executing:
 
    cd kurento-utils
    node_modules/.bin/grunt
-
- 

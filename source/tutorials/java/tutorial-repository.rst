@@ -8,7 +8,7 @@ recording capabilities by means of the
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -18,17 +18,9 @@ You need to have installed the Kurento Media Server before running this example.
 Read the :doc:`installation guide <../../installation_guide>` for further
 information.
 
-..
-   TODO: As soon as doc-kurento-repository is released, the following URL should be
-   changed to the stable version (not /en/latest)
+In addition, you also need the **kurento-repository-server**. This component is in charge of the storage and retrieval of the media. Please visit the `Kurento Repository Server installation guide <https://doc-kurento-repository.readthedocs.org/en/stable/repository_server.html>`_ for further details.
 
-In addition, you also need the **kurento-repository-server**. This component is
-in charge of the storage and retrieval of the media. Please visit the
-`Kurento Repository Server installation guide <http://doc-kurento-repository.readthedocs.org/en/latest/repository_server.html>`_
-for further details.
-
-To launch the application, you need to clone the GitHub project where this demo
-is hosted, and then run the main class:
+To launch the application, you need to clone the GitHub project where this demo is hosted, and then run the main class:
 
 .. sourcecode:: bash
 
@@ -90,7 +82,7 @@ process.
 .. note::
 
    You can use whatever Java server side technology you prefer to build web
-   applications with Kurento. For example, a pure Java EE application, SIP 
+   applications with Kurento. For example, a pure Java EE application, SIP
    Servlets, Play, Vert.x, etc. Here we chose Spring Boot for convenience.
 
 The main class of this demo is
@@ -111,38 +103,38 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @SpringBootApplication
    @EnableWebSocket
    public class HelloWorldRecApp implements WebSocketConfigurer {
-   
+
      protected static final String DEFAULT_REPOSITORY_SERVER_URI = "http://localhost:7676";
-   
+
      protected static final String REPOSITORY_SERVER_URI =
        System.getProperty("repository.uri", DEFAULT_REPOSITORY_SERVER_URI);
-   
+
      @Bean
      public HelloWorldRecHandler handler() {
        return new HelloWorldRecHandler();
      }
-   
+
      @Bean
      public KurentoClient kurentoClient() {
        return KurentoClient.create();
      }
-   
+
      @Override
      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
        registry.addHandler(handler(), "/repository");
      }
-   
+
      @Bean
      public RepositoryClient repositoryServiceProvider() {
        return REPOSITORY_SERVER_URI.startsWith("file://") ? null
          : RepositoryClientProvider.create(REPOSITORY_SERVER_URI);
      }
-   
+
      @Bean
      public UserRegistry registry() {
        return new UserRegistry();
      }
-   
+
      public static void main(String[] args) throws Exception {
        new SpringApplication(HelloWorldRecApp.class).run(args);
      }
@@ -169,38 +161,38 @@ the proper steps in each case.
 .. sourcecode:: java
 
    public class HelloWorldRecHandler extends TextWebSocketHandler {
-   
+
      // slightly larger timeout
      private static final int REPOSITORY_DISCONNECT_TIMEOUT = 5500;
-   
+
      private static final String RECORDING_EXT = ".webm";
-   
+
      private final Logger log = LoggerFactory.getLogger(HelloWorldRecHandler.class);
      private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-S");
      private static final Gson gson = new GsonBuilder().create();
-   
+
      @Autowired
      private UserRegistry registry;
-   
+
      @Autowired
      private KurentoClient kurento;
-   
+
      @Autowired
      private RepositoryClient repositoryClient;
-   
+
      @Override
      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
        JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
-   
+
        log.debug("Incoming message: {}", jsonMessage);
-   
+
        UserSession user = registry.getBySession(session);
        if (user != null) {
          log.debug("Incoming message from user '{}': {}", user.getId(), jsonMessage);
        } else {
          log.debug("Incoming message from new user: {}", jsonMessage);
        }
-   
+
        switch (jsonMessage.get("id").getAsString()) {
          case "start":
            start(session, jsonMessage);
@@ -216,7 +208,7 @@ the proper steps in each case.
            break;
          case "onIceCandidate": {
            JsonObject jsonCandidate = jsonMessage.get("candidate").getAsJsonObject();
-   
+
            if (user != null) {
              IceCandidate candidate = new IceCandidate(jsonCandidate.get("candidate").getAsString(),
                  jsonCandidate.get("sdpMid").getAsString(),
@@ -230,15 +222,15 @@ the proper steps in each case.
            break;
        }
      }
-   
+
      private void start(final WebSocketSession session, JsonObject jsonMessage) {
       ...
      }
-   
+
      private void play(UserSession user, final WebSocketSession session, JsonObject jsonMessage) {
        ...
      }
-     
+
      private void sendError(WebSocketSession session, String message) {
        ...
      }
@@ -277,7 +269,7 @@ client with the SDP answer.
          }
          log.info("Media will be recorded {}by KMS: id={} , url={}",
              (repositoryClient == null ? "locally" : ""), repoItem.getId(), repoItem.getUrl());
-   
+
          // 1. Media logic (webRtcEndpoint in loopback)
          MediaPipeline pipeline = kurento.createMediaPipeline();
          WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
@@ -285,18 +277,18 @@ client with the SDP answer.
          RecorderEndpoint recorder = new RecorderEndpoint.Builder(pipeline, repoItem.getUrl())
              .withMediaProfile(MediaProfileSpecType.WEBM).build();
          webRtcEndpoint.connect(recorder);
-   
+
          // 2. Store user session
          UserSession user = new UserSession(session);
          user.setMediaPipeline(pipeline);
          user.setWebRtcEndpoint(webRtcEndpoint);
          user.setRepoItem(repoItem);
          registry.register(user);
-   
+
          // 3. SDP negotiation
          String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
          String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-   
+
          // 4. Gather ICE candidates
          webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
            @Override
@@ -360,13 +352,13 @@ for gaps in the network communications).
          log.debug("Playing from {}: id={}, url={}",
              (repositoryClient == null ? "disk" : "repository"), itemPlayer.getId(),
              itemPlayer.getUrl());
-   
+
          // 1. Media logic
          final MediaPipeline pipeline = kurento.createMediaPipeline();
          WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
          PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, itemPlayer.getUrl()).build();
          player.connect(webRtcEndpoint);
-   
+
          // Player listeners
          player.addErrorListener(new EventListener<ErrorEvent>() {
            @Override
@@ -382,19 +374,19 @@ for gaps in the network communications).
              sendPlayEnd(session, pipeline);
            }
          });
-   
+
          // 2. Store user session
          user.setMediaPipeline(pipeline);
          user.setWebRtcEndpoint(webRtcEndpoint);
-   
+
          // 3. SDP negotiation
          String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
          String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-   
+
          JsonObject response = new JsonObject();
          response.addProperty("id", "playResponse");
          response.addProperty("sdpAnswer", sdpAnswer);
-   
+
          // 4. Gather ICE candidates
          webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
            @Override
@@ -457,11 +449,11 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
 .. sourcecode:: javascript
 
    var ws = new WebSocket('wss://' + location.host + '/repository');
-   
+
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'startResponse':
          startResponse(parsedMessage);
@@ -487,7 +479,7 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
       onError('Unrecognized message', parsedMessage);
       }
    }
-   
+
    function start() {
    console.log('Starting video call ...');
 
@@ -508,8 +500,8 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
                return console.error(error);
             webRtcPeer.generateOffer(onOffer);
          });
-   }  
-   
+   }
+
    function onOffer(error, offerSdp) {
       if (error)
          return console.error('Error generating the offer');
@@ -521,31 +513,31 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
       }
       sendMessage(message);
    }
-   
+
    function onError(error) {
       console.error(error);
    }
-   
+
    function onIceCandidate(candidate) {
       console.log('Local candidate' + JSON.stringify(candidate));
-   
+
       var message = {
             id : 'onIceCandidate',
             candidate : candidate
       };
       sendMessage(message);
    }
-   
+
    function startResponse(message) {
       setState(IN_CALL);
       console.log('SDP answer received from server. Processing ...');
-   
+
       webRtcPeer.processAnswer(message.sdpAnswer, function(error) {
          if (error)
             return console.error(error);
       });
    }
-   
+
    function stop() {
       var stopMessageId = (state == IN_CALL) ? 'stop' : 'stopPlay';
       console.log('Stopping video while in ' + state + '...');
@@ -553,7 +545,7 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
       if (webRtcPeer) {
          webRtcPeer.dispose();
          webRtcPeer = null;
-   
+
          var message = {
                id : stopMessageId
          }
@@ -561,16 +553,16 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
       }
       hideSpinner(videoInput, videoOutput);
    }
-   
+
    function play() {
       console.log("Starting to play recorded video...");
-   
+
       // Disable start button
       setState(DISABLED);
       showSpinner(videoOutput);
-   
+
       console.log('Creating WebRtcPeer and generating local sdp offer ...');
-   
+
       var options = {
          remoteVideo : videoOutput,
          onicecandidate : onIceCandidate
@@ -582,7 +574,7 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
                webRtcPeer.generateOffer(onPlayOffer);
             });
    }
-   
+
    function onPlayOffer(error, offerSdp) {
       if (error)
          return console.error('Error generating the offer');
@@ -593,7 +585,7 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
       }
       sendMessage(message);
    }
-   
+
    function playResponse(message) {
       setState(IN_PLAY);
       webRtcPeer.processAnswer(message.sdpAnswer, function(error) {
@@ -601,12 +593,12 @@ functions ``start`` the function ``WebRtcPeer.WebRtcPeerSendrecv`` of
             return console.error(error);
       });
    }
-   
+
    function playEnd() {
       setState(POST_CALL);
       hideSpinner(videoInput, videoOutput);
    }
-   
+
    function sendMessage(message) {
       var jsonMessage = JSON.stringify(message);
       console.log('Senging message: ' + jsonMessage);
@@ -625,19 +617,19 @@ need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
 client-side:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
-   <dependencies> 
+   <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
-      <dependency> 
+      </dependency>
+      <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
+      </dependency>
    </dependencies>
 
 .. note::
@@ -648,7 +640,7 @@ client-side:
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>

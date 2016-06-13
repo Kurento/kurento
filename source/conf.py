@@ -300,7 +300,7 @@ epub_copyright = u'2015, Kurento'
 
 graphviz_output_format = 'svg'
 
-todo_include_todos = 'dev'
+todo_include_todos = False
 
 # linkcheck, jboss forbids us
 linkcheck_ignore = [r'http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm']
