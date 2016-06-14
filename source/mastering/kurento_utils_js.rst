@@ -171,7 +171,7 @@ bidirectional WebRTC media exchange between both peers.
 Using data channels
 ===================
 
-A WebRTC data channel lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object allows to use the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`_. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a ``WebRtcPeer`` object in the browser, will have the same behaviour as the ``RTCDataChannel`` (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`_). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behaviour should be specified in the filter.
+WebRTC data channels lets you send text or binary data over an active WebRTC connection. The **WebRtcPeer** object can provide access to this functionality by using the `RTCDataChannel <https://developer.mozilla.org/en-US/docs/Games/Techniques/WebRTC_data_channels>`_ form the wrapped **RTCPeerConnection** object. This allows you to inject into and consume data from the pipeline. This data can be treated by each endpoint differently. For instance, a ``WebRtcPeer`` object in the browser, will have the same behavior as the ``RTCDataChannel`` (you can see a description `here <https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/WebRTC_basics#DataChannel>`_). Other endpoints could make use of this channel to send information: a filter that detects QR codes in a video stream, could send the detected code to the clients through a data channel. This special behavior should be specified in the filter.
 
 The use of data channels in the ``WebRtcPeer`` object is indicated by passing the ``dataChannels`` flag in the options bag, along with the desired options.
 
@@ -195,7 +195,7 @@ The use of data channels in the ``WebRtcPeer`` object is indicated by passing th
 
     webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, onWebRtcPeerCreated);
 
-The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` object is created, and after the connection has been successfuly negotiated, users can send data through the data channel
+The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` object is created, and after the connection has been successfully negotiated, users can send data through the data channel
 
 .. code-block:: javascript
 
@@ -203,7 +203,7 @@ The values in ``dataChannelConfig`` are all optional. Once the ``webRtcPeer`` ob
 
 The format of the data you are sending, is determined by your application, and the definition of the endpoints that you are using.
 
-The lifecycle of the underlying ``RTCDataChannel``, is tied to that of the ``webRtcPeer``: when the ``webRtcPeer.dispose()`` method is onvoked, the data channel will be closed and released too.
+The lifecycle of the underlying ``RTCDataChannel``, is tied to that of the ``webRtcPeer``: when the ``webRtcPeer.dispose()`` method is invoked, the data channel will be closed and released too.
 
 
 Reference documentation
@@ -224,15 +224,15 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
 * **options** : It is a group of parameters and they are optional. It is a
   json object.
 
-   * *localVideo*: Video tag in the application  for the local stream.
+   * *localVideo*: Video tag in the application for the local stream.
    * *remoteVideo*: Video tag in the application for the remote stream.
-   * *videoStream*:  Provides an already available video stream that will
+   * *videoStream*: Provides an already available video stream that will
      be used instead of using the media stream from the local webcam.
-   * *audioStreams*:  Provides an already available audio stream that will
+   * *audioStreams*: Provides an already available audio stream that will
      be used instead of using the media stream from the local microphone.
    * *mediaConstraints*: Defined the quality for the video and audio
    * *connectionConstraints*: Defined the connection constraint according
-     with browser like googIPv6, DtlsSrtpKeyAgreement, ...
+     with browser like googIPv6, DtlsSrtpKeyAgreement...
    * *peerConnection*: Use a peerConnection which was created before
    * *sendSource*: Which source will be used
 
@@ -247,6 +247,7 @@ The constructor for WebRtcPeer is WebRtcPeer(**mode, options, callback**) where:
      candidates have been harvested
    * *dataChannels*: Flag for enabling the use of data channels. If *true*, then a data channel will be created in the *RTCPeerConnection* object.
    * *dataChannelConfig*: It is a JSON object with the configuration passed to the DataChannel when created. It supports the following keys:
+
       * *id*: Specifies the *id* of the data channel. If none specified, the same *id* of the *WebRtcPeer* object will be used.
       * *options*: Options object passed to the data channel constructor.
       * *onopen*: Function invoked in the *onopen* event of the data channel, fired when the channel is open.
