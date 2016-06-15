@@ -117,7 +117,7 @@
 		<version.hamcrest-core>1.3</version.hamcrest-core>
 		<version.hamcrest-library>1.3</version.hamcrest-library>
 		<version.objenesis>1.3</version.objenesis>
-		<version.paranamer>2.7</version.paranamer>
+		<version.paranamer>2.8</version.paranamer>
 
 		<version.reflections>0.9.10</version.reflections>
 		<version.scribe>1.3.7</version.scribe>
