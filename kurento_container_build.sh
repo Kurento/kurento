@@ -59,7 +59,7 @@ for BUILD_ARG in $BUILD_ARGS
 do
   build_args+=("--build-arg $BUILD_ARG")
 done
-docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE_NAME:${TAG}-${commit} -f $DOCKERFILE $FOLDER
+docker build --no-cache --rm=true ${build_args[@]} -t $IMAGE_NAME:${TAG}-${commit} -f $DOCKERFILE $FOLDER || exit 1
 
 # Tag the resulting image using the original tag
 docker tag -f $IMAGE_NAME:${TAG}-${commit} $IMAGE_NAME:$TAG
