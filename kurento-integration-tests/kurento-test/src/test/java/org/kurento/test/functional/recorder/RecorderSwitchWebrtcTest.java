@@ -80,7 +80,7 @@ import org.kurento.test.config.TestScenario;
  */
 public class RecorderSwitchWebrtcTest extends BaseRecorder {
 
-  private static final int PLAYTIME = 20; // seconds
+  private static final int PLAYTIME = 30; // seconds
   private static final int N_PLAYER = 3;
   private static final Color[] EXPECTED_COLORS = { Color.RED, Color.GREEN, Color.BLUE };
 
@@ -95,15 +95,15 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     test.addBrowser(BROWSER1,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
         .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/red.y4m")
-            .build());
+        .build());
     test.addBrowser(
         BROWSER2,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-            .webPageType(WebPageType.WEBRTC)
+        .webPageType(WebPageType.WEBRTC)
         .video(getTestFilesDiskPath() + "/video/10sec/green.y4m").build());
     test.addBrowser(BROWSER3,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-            .webPageType(WebPageType.WEBRTC)
+        .webPageType(WebPageType.WEBRTC)
         .video(getTestFilesDiskPath() + "/video/10sec/blue.y4m").build());
     test.addBrowser(BROWSER4,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
@@ -140,6 +140,13 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     long startWebrtc = System.currentTimeMillis();
     getPage(BROWSER1).initWebRtc(webRtcEpRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
+    getPage(BROWSER2).subscribeLocalEvents("playing");
+    getPage(BROWSER2)
+    .initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+
+    getPage(BROWSER3).subscribeLocalEvents("playing");
+    getPage(BROWSER3).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+
     webRtcEpRed.connect(recorderEp);
     recorderEp.record();
 
@@ -148,11 +155,7 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     long webrtcRedConnectionTime = System.currentTimeMillis() - startWebrtc;
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    getPage(BROWSER1).close();
-    getPage(BROWSER2).subscribeLocalEvents("playing");
     startWebrtc = System.currentTimeMillis();
-    getPage(BROWSER2)
-    .initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     // green
     webRtcEpGreen.connect(recorderEp);
@@ -162,10 +165,7 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     long webrtcGreenConnectionTime = System.currentTimeMillis() - startWebrtc;
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
-    getPage(BROWSER2).close();
     startWebrtc = System.currentTimeMillis();
-    getPage(BROWSER3).subscribeLocalEvents("playing");
-    getPage(BROWSER3).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     // blue
     webRtcEpBlue.connect(recorderEp);
@@ -200,8 +200,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
 
     long playtime =
         PLAYTIME
-            + TimeUnit.MILLISECONDS.toSeconds(webrtcRedConnectionTime + webrtcGreenConnectionTime
-                + webrtcBlueConnectionTime);
+        + TimeUnit.MILLISECONDS.toSeconds(webrtcRedConnectionTime + webrtcGreenConnectionTime
+            + webrtcBlueConnectionTime);
 
     checkRecordingFile(recordingFile, BROWSER4, EXPECTED_COLORS, playtime, expectedVideoCodec,
         expectedAudioCodec);

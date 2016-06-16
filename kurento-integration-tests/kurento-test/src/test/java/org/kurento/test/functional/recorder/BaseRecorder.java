@@ -96,6 +96,11 @@ public class BaseRecorder extends FunctionalTest {
 
     Assert.assertTrue("Not received media (timeout waiting playing event)" + inRecording, getPage()
         .waitForEvent("playing"));
+
+    if (recorderEp == null) {
+      getPage().activateAudioDetection();
+    }
+
     Assert.assertTrue("Color at coordinates " + xColor + "," + yColor + " must be " + expectedColor
         + inRecording, getPage().similarColorAt(expectedColor, xColor, yColor));
     Assert.assertTrue("Not received EOS event in player" + inRecording,
@@ -118,6 +123,12 @@ public class BaseRecorder extends FunctionalTest {
       Assert.assertTrue("Error in play time in the recorded video (expected: " + playTime
           + " sec, real: " + currentTime + " sec) " + inRecording,
           getPage().compare(playTime, currentTime));
+
+      if (recorderEp == null) {
+        getPage().stopAudioDetection();
+        Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
+            .checkAudioDetection());
+      }
     }
   }
 
@@ -222,6 +233,8 @@ public class BaseRecorder extends FunctionalTest {
     Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
         + messageAppend, checkPage.waitForEvent("playing"));
 
+    checkPage.activateAudioDetection();
+
     for (Color color : expectedColors) {
       Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
           checkPage.similarColor(color));
@@ -233,6 +246,11 @@ public class BaseRecorder extends FunctionalTest {
     Assert.assertTrue("Error in play time in the recorded video (expected: " + playTime
         + " sec, real: " + currentTime + " sec) " + messageAppend,
         checkPage.compare(playTime, currentTime));
+
+    checkPage.stopAudioDetection();
+
+    Assert.assertTrue("Check audio. There were more than 2 seconds of silence",
+        checkPage.checkAudioDetection());
 
     AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
     AssertMedia.assertDuration(recordingFile, TimeUnit.SECONDS.toMillis(playTime),

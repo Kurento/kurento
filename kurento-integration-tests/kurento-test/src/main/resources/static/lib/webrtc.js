@@ -18,6 +18,8 @@
 var local;
 var video;
 var webRtcPeer;
+var audioDetection;
+var samples = [];
 var sdpOffer;
 var videoStream = null;
 var audioStream = null;
@@ -254,6 +256,39 @@ function processSdpAnswer(answer) {
 		if (error)
 			return console.error(error);
 	});
+}
+
+function activateAudioDetection() {
+	var pc = webRtcPeer.peerConnection;
+	var wrStream = pc.getRemoteStreams()[0];
+	audioDetection = kurentoUtils.WebRtcPeer.hark(wrStream);
+	audioDetection.on('speaking', function() {
+	})
+	audioDetection.on('volume_change', function(volume, threshold) {
+		if (volume == "-Infinity") {
+			volume = 0;
+		}
+		samples.push(volume);
+	})
+}
+
+function checkAudioDetection() {
+	var count = 0;
+	for (var s in samples) {
+		if (samples[s] < 0) {
+			if (count < 20)
+				count = 0;
+		} else {
+			count++;
+		}
+	}
+	return (count < 20);
+}
+
+function stopAudioDetection() {
+	if (audioDetection != undefined) {
+		audioDetection.stop();
+	}
 }
 
 function updateCurrentTime() {

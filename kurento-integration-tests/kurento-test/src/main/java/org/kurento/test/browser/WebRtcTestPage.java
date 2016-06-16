@@ -272,6 +272,20 @@ public class WebRtcTestPage extends WebPage {
     browser.executeScript("sendDataByChannel('" + message + "')");
   }
 
+  public boolean checkAudioDetection() {
+    boolean checkAudio = (boolean) browser.executeScript("return checkAudioDetection()");
+    log.debug("Checking Audio: {}", checkAudio);
+    return checkAudio;
+  }
+
+  public void activateAudioDetection() {
+    browser.executeScript("activateAudioDetection()");
+  }
+
+  public void stopAudioDetection() {
+    browser.executeScript("stopAudioDetection()");
+  }
+
   /*
    * compare
    */

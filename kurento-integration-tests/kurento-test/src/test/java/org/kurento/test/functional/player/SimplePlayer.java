@@ -118,6 +118,11 @@ public class SimplePlayer extends PlayerTest {
 
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage().waitForEvent("playing"));
+
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+      getPage().activateAudioDetection();
+    }
+
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       Assert.assertTrue("The color of the video should be " + expectedColor + ": " + mediaUrl + " "
           + webRtcChannel, getPage().similarColorAt(expectedColor, x, y));
@@ -128,6 +133,13 @@ public class SimplePlayer extends PlayerTest {
     if (playtime > 0) {
       Assert.assertTrue("Error in play time (expected: " + playtime + " sec, real: " + currentTime
           + " sec): " + mediaUrl + " " + webRtcChannel, getPage().compare(playtime, currentTime));
+    }
+
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+      getPage().stopAudioDetection();
+      getPage().checkAudioDetection();
+      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
+          .checkAudioDetection());
     }
 
     // Release Media Pipeline
@@ -175,14 +187,23 @@ public class SimplePlayer extends PlayerTest {
 
     playerEp.play();
 
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+      getPage().activateAudioDetection();
+    }
+
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       for (Color expectedColor : expectedColors) {
         Assert.assertTrue("After the pause and the play, the color of the video should be "
             + expectedColor, getPage().similarColor(expectedColor));
       }
     }
-    // TODO: Add new method for checking that audio did pause properly when kurento-utils has the
-    // feature.
+
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+      getPage().stopAudioDetection();
+      getPage().checkAudioDetection();
+      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
+          .checkAudioDetection());
+    }
 
     // Assertions
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
@@ -229,11 +250,17 @@ public class SimplePlayer extends PlayerTest {
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage().waitForEvent("playing"));
 
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+      getPage().activateAudioDetection();
+    }
+
     Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
         + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // TODO: Check with playerEp.getVideoInfo().getIsSeekable() if the video is seekable. If not,
     // assert with exception from KMS
+
+    // Assertions
 
     Thread.sleep(TimeUnit.SECONDS.toMillis(pauseTimeSeconds));
     for (Integer position : expectedPositionAndColor.keySet()) {
@@ -244,11 +271,14 @@ public class SimplePlayer extends PlayerTest {
             + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
             getPage().similarColor(expectedPositionAndColor.get(position)));
       }
-      // TODO: Add new method for checking that audio did pause properly when kurento-utils has the
-      // feature.
     }
 
-    // Assertions
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+      getPage().stopAudioDetection();
+
+      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
+          .checkAudioDetection());
+    }
 
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
