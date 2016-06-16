@@ -408,7 +408,6 @@ public class DockerBrowserManager {
   public DockerBrowserManager() {
     docker = Docker.getSingleton();
     record = getProperty(SELENIUM_RECORD_PROPERTY, SELENIUM_RECORD_DEFAULT);
-    calculateHubContainerName();
   }
 
   public void setDownloadLogsPath(Path path) {
@@ -427,6 +426,8 @@ public class DockerBrowserManager {
           containerName + "-" + hubContainerName + "-" + KurentoTest.getTestClassName() + "-"
               + new Random().nextInt(5000);
     }
+
+    log.debug("Hub container name: {}", hubContainerName);
   }
 
   public RemoteWebDriver createDockerDriver(String id, DesiredCapabilities capabilities)
@@ -485,6 +486,8 @@ public class DockerBrowserManager {
       synchronized (this) {
 
         log.debug("Creating hub...");
+
+        calculateHubContainerName();
 
         String hubImageId = getProperty(DOCKER_HUB_IMAGE_PROPERTY, DOCKER_HUB_IMAGE_DEFAULT);
 
