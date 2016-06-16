@@ -27,8 +27,10 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.ParameterizedType;
@@ -37,10 +39,15 @@ import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.security.cert.X509Certificate;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +66,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.lept.PIX;
 import org.bytedeco.javacpp.tesseract.TessBaseAPI;
@@ -71,6 +79,7 @@ import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
+import org.kurento.test.utils.Shell;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -89,6 +98,9 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public static final int OCR_COLOR_THRESHOLD = 180;
   public static final String LATENCY_KEY = "latencyMs";
   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("H:mm:ss:S");
+  public static final double FPS = 20;
+  public static final String PNG = ".png";
+  public static final String Y4M = ".y4m";
 
   private Map<String, W> pages = new ConcurrentHashMap<>();
 
@@ -522,13 +534,21 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   }
 
   public String ocr(String imgBase64) {
+    // Base64 to BufferedImage
+    BufferedImage imgBuff = null;
+    try {
+      imgBuff = ImageIO.read(new ByteArrayInputStream(
+          Base64.decodeBase64(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
+    } catch (IOException e) {
+      log.warn("IOException converting image to buffer", e);
+    }
+    return ocr(imgBuff);
+  }
+
+  public String ocr(BufferedImage imgBuff) {
     String parsedOut = null;
 
     try {
-      // Base64 to BufferedImage
-      BufferedImage imgBuff = ImageIO.read(new ByteArrayInputStream(
-          Base64.decodeBase64(imgBase64.substring(imgBase64.lastIndexOf(",") + 1))));
-
       // Color image to pure black and white
       for (int x = 0; x < imgBuff.getWidth(); x++) {
         for (int y = 0; y < imgBuff.getHeight(); y++) {
@@ -581,6 +601,105 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       log.warn("IOException in OCR", e);
     }
     return parsedOut;
+  }
+
+  public File convertToRaw(File inputFile, File tmpFolder, double fps) {
+    File y4m = new File(tmpFolder.toString() + File.separator + inputFile.getName() + Y4M);
+    String[] ffmpegCommand = { "ffmpeg", "-i", inputFile.toString(), "-f", "yuv4mpegpipe", "-r",
+        parseFps(fps), y4m.toString() };
+    log.info("Running command to convert to raw: {}", Arrays.toString(ffmpegCommand));
+    Shell.runAndWait(ffmpegCommand);
+    return y4m;
+  }
+
+  public void getVideoQuality(File inputFile1, File inputFile2, File tmpFolder, double fps,
+      String csvOutput) throws IOException {
+    String ssim = "qpsnr -a avg_ssim -o fpa=" + parseFps(fps) + " -r " + inputFile1.toString() + " "
+        + inputFile2.toString() + " > " + csvOutput.toString();
+    String psnr = "qpsnr -a avg_psnr -o fpa=" + parseFps(fps) + " -r " + inputFile1.toString() + " "
+        + inputFile2.toString() + " >> " + csvOutput;
+    log.info("Running command to get SSIM: {}", ssim);
+    Shell.runAndWait("sh", "-c", ssim);
+    log.info("Running command to get PSNR: {}", psnr);
+    Shell.runAndWait("sh", "-c", psnr);
+  }
+
+  public String parseFps(double fps) {
+    DecimalFormat df = new DecimalFormat("0");
+    return df.format(fps);
+  }
+
+  public File cutVideo(File inputFile, File tmpFolder, int cutFrame, double fps) {
+    double cutTime = cutFrame / fps;
+    DecimalFormat df = new DecimalFormat("0.00");
+    File cutVideoFile = new File(
+        tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
+    String[] command = { "ffmpeg", "-i", inputFile.toString(), "-ss", df.format(cutTime),
+        cutVideoFile.toString() };
+    log.info("Running command to cut video: {}", Arrays.toString(command));
+    Shell.runAndWait(command);
+    return cutVideoFile;
+  }
+
+  public int getCutFrame(final File inputFile1, final File inputFile2, File tmpFolder)
+      throws IOException {
+    // Filters to distinguish frames from file1 to file2
+    FilenameFilter fileNameFilter1 = new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.contains(inputFile1.getName()) && name.endsWith(PNG);
+      }
+    };
+    FilenameFilter fileNameFilter2 = new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.contains(inputFile2.getName()) && name.endsWith(PNG);
+      }
+    };
+
+    File[] ls1 = tmpFolder.listFiles(fileNameFilter1);
+    File[] ls2 = tmpFolder.listFiles(fileNameFilter2);
+    Arrays.sort(ls1);
+    Arrays.sort(ls2);
+
+    List<String> ocrList = new ArrayList<>();
+    int i = 0;
+    for (; i < Math.min(ls1.length, ls2.length); i++) {
+      String ocr1 = ocr((BufferedImage) ImageIO.read(ls1[i]));
+      String ocr2 = ocr((BufferedImage) ImageIO.read(ls2[i]));
+      ocrList.add(ocr2);
+      log.trace("---> Time comparsion to find cut frame: {} vs {}", ocr1, ocr2);
+      if (ocrList.contains(ocr1)) {
+        log.info("Found OCR match {} at position {}", ocr1, i);
+        break;
+      }
+    }
+    return i;
+  }
+
+  public void getFrames(File inputFile, File tmpFolder) {
+    String[] command = { "ffmpeg", "-i", inputFile.toString(),
+        tmpFolder.toString() + File.separator + inputFile.getName() + "-%03d" + PNG };
+    log.debug("Running command to get frames: {}", Arrays.toString(command));
+    Shell.runAndWait(command);
+  }
+
+  public void getQuality(File inputFile1, File inputFile2, String csvOutput) throws IOException {
+    File tmpFolder = Files.createTempDirectory("qpsnr-").toFile();
+    File raw1 = convertToRaw(inputFile1, tmpFolder, FPS);
+    File raw2 = convertToRaw(inputFile2, tmpFolder, FPS);
+
+    getFrames(raw1, tmpFolder);
+    getFrames(raw2, tmpFolder);
+
+    int cutFrame = getCutFrame(raw1, raw2, tmpFolder);
+    log.info("Cut frame: {}", cutFrame);
+    File cutVideo = cutVideo(raw1, tmpFolder, cutFrame, FPS);
+    log.info("Cut video: {}", cutVideo);
+
+    getVideoQuality(cutVideo, raw2, tmpFolder, FPS, csvOutput);
+
+    FileUtils.deleteDirectory(tmpFolder);
   }
 
 }
