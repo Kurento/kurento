@@ -286,6 +286,10 @@ public class WebRtcTestPage extends WebPage {
     browser.executeScript("stopAudioDetection()");
   }
 
+  public void initAudioDetection() {
+    browser.executeScript("initAudioDetection()");
+  }
+
   /*
    * compare
    */

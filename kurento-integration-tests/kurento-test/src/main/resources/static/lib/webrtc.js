@@ -291,6 +291,10 @@ function stopAudioDetection() {
 	}
 }
 
+function initAudioDetection() {
+	samples = [];
+}
+
 function updateCurrentTime() {
 	document.getElementById("currentTime").value = video.currentTime;
 }
