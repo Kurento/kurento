@@ -166,61 +166,60 @@ public class ProtocolManager {
         JsonElement.class);
 
     switch (request.getMethod()) {
-      case METHOD_CONNECT :
+    case METHOD_CONNECT:
 
-        log.debug("{} Req-> {}", label, request);
-        processReconnectMessage(factory, request, responseSender, transportId);
-        break;
-      case METHOD_PING :
-        log.trace("{} Req-> {}", label, request);
-        processPingMessage(factory, request, responseSender, transportId);
-        break;
+      log.debug("{} Req-> {} (transportId={})", label, request, transportId);
+      processReconnectMessage(factory, request, responseSender, transportId);
+      break;
+    case METHOD_PING:
+      log.trace("{} Req-> {} (transportId={})", label, request, transportId);
+      processPingMessage(factory, request, responseSender, transportId);
+      break;
 
-      case METHOD_CLOSE :
-        log.trace("{} Req-> {}", label, request);
-        processCloseMessage(factory, request, responseSender, transportId);
+    case METHOD_CLOSE:
+      log.trace("{} Req-> {} (transportId={})", label, request, transportId);
+      processCloseMessage(factory, request, responseSender, transportId);
 
-        break;
-      default :
+      break;
+    default:
 
-        final ServerSession session = getOrCreateSession(factory, transportId, request);
+      final ServerSession session = getOrCreateSession(factory, transportId, request);
 
-        log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]", label, request,
-            session.getSessionId(), transportId);
+      log.debug("{} Req-> {} [jsonRpcSessionId={}, transportId={}]", label, request,
+          session.getSessionId(), transportId);
 
-        // TODO, Take out this an put in Http specific handler. The main
-        // reason is to wait for request before responding to the client.
-        // And for no contaminate the ProtocolManager.
-        if (request.getMethod().equals(Request.POLL_METHOD_NAME)) {
+      // TODO, Take out this an put in Http specific handler. The main
+      // reason is to wait for request before responding to the client.
+      // And for no contaminate the ProtocolManager.
+      if (request.getMethod().equals(Request.POLL_METHOD_NAME)) {
 
-          Type collectionType = new TypeToken<List<Response<JsonElement>>>() {
-          }.getType();
+        Type collectionType = new TypeToken<List<Response<JsonElement>>>() {
+        }.getType();
 
-          List<Response<JsonElement>> responseList = JsonUtils.fromJson(request.getParams(),
-              collectionType);
+        List<Response<JsonElement>> responseList = JsonUtils.fromJson(request.getParams(),
+            collectionType);
 
-          for (Response<JsonElement> response : responseList) {
-            session.handleResponse(response);
-          }
-
-          // Wait for some time if there is a request from server to
-          // client
-
-          // TODO Allow send empty responses. Now you have to send at
-          // least an
-          // empty string
-          responseSender
-          .sendResponse(new Response<Object>(request.getId(), Collections.emptyList()));
-
-        } else {
-          session.processRequest(new Runnable() {
-            @Override
-            public void run() {
-              handlerManager.handleRequest(session, request, responseSender);
-            }
-          });
+        for (Response<JsonElement> response : responseList) {
+          session.handleResponse(response);
         }
-        break;
+
+        // Wait for some time if there is a request from server to
+        // client
+
+        // TODO Allow send empty responses. Now you have to send at
+        // least an
+        // empty string
+        responseSender.sendResponse(new Response<Object>(request.getId(), Collections.emptyList()));
+
+      } else {
+        session.processRequest(new Runnable() {
+          @Override
+          public void run() {
+            handlerManager.handleRequest(session, request, responseSender);
+          }
+        });
+      }
+      break;
     }
 
   }
@@ -251,7 +250,9 @@ public class ProtocolManager {
     }
 
     if (session == null) {
+
       session = createSession(factory, null);
+
       handlerManager.afterConnectionEstablished(session);
     } else {
       session.setNew(false);
@@ -319,10 +320,6 @@ public class ProtocolManager {
 
     if (session != null) {
       this.closeSession(session, CLIENT_CLOSED_CLOSE_REASON);
-    } else {
-      log.warn(
-          "No server session found for transportId {}. Could not close session associated to transport. "
-              + "Please make sure the session is closed", transportId);
     }
   }
 
@@ -352,19 +349,19 @@ public class ProtocolManager {
         // reconnect method has arrived
         cancelCloseTimer(session);
 
-        responseSender.sendResponse(new Response<>(sessionId, request.getId(),
-            RECONNECTION_SUCCESSFUL));
+        responseSender
+            .sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
 
       } else {
 
         session = createSessionAsOldIfKnowByHandler(factory, sessionId);
 
         if (session != null) {
-          responseSender.sendResponse(new Response<>(sessionId, request.getId(),
-              RECONNECTION_SUCCESSFUL));
+          responseSender
+              .sendResponse(new Response<>(sessionId, request.getId(), RECONNECTION_SUCCESSFUL));
         } else {
-          responseSender.sendResponse(new Response<>(request.getId(), new ResponseError(40007,
-              RECONNECTION_ERROR)));
+          responseSender.sendResponse(
+              new Response<>(request.getId(), new ResponseError(40007, RECONNECTION_ERROR)));
         }
       }
     }
@@ -412,8 +409,8 @@ public class ProtocolManager {
 
       try {
 
-        Date closeTime = new Date(System.currentTimeMillis()
-            + session.getReconnectionTimeoutInMillis());
+        Date closeTime = new Date(
+            System.currentTimeMillis() + session.getReconnectionTimeoutInMillis());
 
         log.info(label + "Configuring close timeout for session: {} transportId: {} at {}",
             session.getSessionId(), transportId, format.format(closeTime));

@@ -19,6 +19,8 @@ package org.kurento.jsonrpc.internal.server;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,15 +35,21 @@ public class SessionsManager {
 
   // TODO Review atomic management of two maps
 
+  private static Logger log = LoggerFactory.getLogger(SessionsManager.class);
+
   private final ConcurrentHashMap<String, ServerSession> sessions = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, ServerSession> sessionsByTransportId =
-      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, ServerSession> sessionsByTransportId = new ConcurrentHashMap<>();
 
   public void put(ServerSession session) {
+
     sessions.put(session.getSessionId(), session);
+
     String transportId = session.getTransportId();
+
     if (transportId != null) {
       sessionsByTransportId.put(transportId, session);
+    } else {
+      log.warn("Session {} has not transportId associated to it", session.getSessionId());
     }
   }
 
@@ -82,4 +90,11 @@ public class SessionsManager {
   public void remove(ServerSession session) {
     remove(session.getSessionId());
   }
+
+  @Override
+  public String toString() {
+    return "SessionsManager [sessions=" + sessions + ", sessionsByTransportId="
+        + sessionsByTransportId + "]";
+  }
+
 }

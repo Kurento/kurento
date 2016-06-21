@@ -217,4 +217,10 @@ public class ResponseError {
 
     return null;
   }
+
+  @Override
+  public String toString() {
+    return "ResponseError [code=" + code + ", message=" + message + ", data=" + data + ", type="
+        + type + "]";
+  }
 }
