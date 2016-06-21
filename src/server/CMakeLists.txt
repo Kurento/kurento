@@ -14,10 +14,12 @@ generate_code (
       ${KmsGstCommons_INCLUDE_DIRS}
       ${CMAKE_CURRENT_SOURCE_DIR}/implementation
       ${nice_INCLUDE_DIRS}
+      ${openssl_INCLUDE_DIRS}
   SERVER_IMPL_LIB_EXTRA_LIBRARIES
       kmshttpep
       kmswebrtcendpointlib
       ${nice_LIBRARIES}
       ${KmsGstCommons_LIBRARIES}
+      ${openssl_LIBRARIES}
   SERVER_STUB_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/implementation/objects
 )

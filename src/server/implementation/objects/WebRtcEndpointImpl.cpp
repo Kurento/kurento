@@ -39,6 +39,10 @@
 #include "webrtcendpoint/kmswebrtcdatachannelstate.h"
 #include <boost/algorithm/string.hpp>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <string>
+
 #define GST_CAT_DEFAULT kurento_web_rtc_endpoint_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoWebRtcEndpointImpl"
@@ -53,7 +57,8 @@ namespace kurento
 
 static const uint DEFAULT_STUN_PORT = 3478;
 
-std::once_flag check_openh264;
+std::once_flag check_openh264, certificates_flag;
+std::string defaultCertificateRSA;
 std::vector<std::string> supported_codecs = { "VP8", "opus", "PCMU" };
 
 static void
@@ -123,6 +128,120 @@ check_support_for_h264 ()
 
   supported_codecs.push_back ("H264");
   gst_object_unref (plugin);
+}
+
+std::string PrivateKeyToPEMString (EVP_PKEY *pkey_)
+{
+  BIO *temp_memory_bio = BIO_new (BIO_s_mem() );
+
+  if (!temp_memory_bio) {
+    GST_ERROR ("Failed to allocate temporary memory bio");
+    return "";
+  }
+
+  if (!PEM_write_bio_PrivateKey (
+        temp_memory_bio, pkey_, nullptr, nullptr, 0, nullptr, nullptr) ) {
+    GST_ERROR ("Failed to write private key");
+    BIO_free (temp_memory_bio);
+    return "";
+  }
+
+  BIO_write (temp_memory_bio, "\0", 1);
+  char *buffer;
+  BIO_get_mem_data (temp_memory_bio, &buffer);
+  std::string priv_key_str = buffer;
+  BIO_free (temp_memory_bio);
+  return priv_key_str;
+}
+
+static void
+generate_rsa_certificate ()
+{
+  int rc = 0;
+  unsigned long err = 0;
+  X509_NAME *name = NULL;
+  X509 *x509 = X509_new ();
+  RSA *rsa = RSA_generate_key (2048, RSA_F4, NULL, NULL);;
+  BIO *bio = BIO_new (BIO_s_mem () );
+  EVP_PKEY *private_key = EVP_PKEY_new ();
+  BUF_MEM *mem = NULL;
+  std::string pem;
+  std::string rsaKey;
+
+  if ( (bio == NULL) || (rsa == NULL) || (x509 == NULL)
+       || (private_key == NULL) ) {
+    goto end;
+  }
+
+  if (!EVP_PKEY_assign_RSA (private_key, rsa) ) {
+    goto end;
+  }
+
+  rsaKey = PrivateKeyToPEMString (private_key);
+  rsa = NULL;
+
+  X509_set_version (x509, 2);
+  ASN1_INTEGER_set (X509_get_serialNumber (x509), 0);
+  X509_gmtime_adj (X509_get_notBefore (x509), 0);
+  X509_gmtime_adj (X509_get_notAfter (x509), 31536000L);  /* A year */
+  X509_set_pubkey (x509, private_key);
+
+  name = X509_get_subject_name (x509);
+  X509_NAME_add_entry_by_txt (name, "C", MBSTRING_ASC, (unsigned char *) "SE",
+                              -1, -1, 0);
+  X509_NAME_add_entry_by_txt (name, "CN", MBSTRING_ASC,
+                              (unsigned char *) "Kurento", -1, -1, 0);
+  X509_set_issuer_name (x509, name);
+  name = NULL;
+
+  if (!X509_sign (x509, private_key, EVP_sha256 () ) ) {
+    GST_WARNING ("failed to sign certificate");
+    return;
+  }
+
+  rc = PEM_write_bio_X509 (bio, x509);
+  err = ERR_get_error();
+
+  if (rc != 1) {
+    GST_WARNING ("PEM_write_bio_X509 failed, error %ld", err);
+    goto end;
+  }
+
+  BIO_get_mem_ptr (bio, &mem);
+  err = ERR_get_error();
+
+  if (!mem || !mem->data || !mem->length) {
+    GST_WARNING ("BIO_get_mem_ptr failed, error %ld", err);
+    goto end;
+  }
+
+  pem = std::string (mem->data, mem->length);
+  defaultCertificateRSA = rsaKey + pem;
+
+end:
+
+  if (x509 != NULL) {
+    X509_free (x509);
+  }
+
+  if (bio != NULL) {
+    BIO_free_all (bio);
+  }
+
+  if (rsa != NULL) {
+    RSA_free (rsa);
+  }
+
+  if (private_key != NULL) {
+    EVP_PKEY_free (private_key);
+  }
+}
+
+
+static void
+generateDefaultCertificates ()
+{
+  generate_rsa_certificate ();
 }
 
 void WebRtcEndpointImpl::checkUri (std::string &uri)
@@ -364,6 +483,24 @@ void WebRtcEndpointImpl::postConstructor ()
                                (shared_from_this() ) );
 }
 
+std::string
+WebRtcEndpointImpl::getCerficateFromFile (std::string &path)
+{
+  std::ifstream inFile;
+  std::stringstream strStream;
+  std::string certificate;
+
+  //check if the uri is absolute or relative
+  checkUri (path);
+  GST_INFO ("pemCertificate in: %s\n", path.c_str() );
+
+  inFile.open (path);
+  strStream << inFile.rdbuf();
+  certificate = strStream.str();
+
+  return certificate;
+}
+
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
                                         mediaPipeline, bool useDataChannels) :
@@ -376,8 +513,11 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   std::string turnURL;
   std::string pemUri;
   std::string pemCertificate;
+  std::string pemUriRSA;
+  std::string pemCertificateRSA;
 
   std::call_once (check_openh264, check_support_for_h264);
+  std::call_once (certificates_flag, generateDefaultCertificates);
 
   if (useDataChannels) {
     g_object_set (element, "use-data-channels", TRUE, NULL);
@@ -424,25 +564,27 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   }
 
   try {
-    std::ifstream inFile;
-    std::stringstream strStream;
+    pemUriRSA = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificateRSA");
 
-    pemUri = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificate");
-
-    //check if the uri is absolute or relative
-    checkUri (pemUri);
-    GST_INFO ("pemCertificate in: %s\n", pemUri.c_str() );
-
-    inFile.open (pemUri);
-    strStream << inFile.rdbuf();
-    pemCertificate = strStream.str();
-    GST_INFO ("pemCertificate content: %s\n", pemCertificate.c_str() );
-
-    g_object_set ( G_OBJECT (element), "pem-certificate", pemCertificate.c_str(),
+    pemCertificateRSA = getCerficateFromFile (pemUriRSA);
+    g_object_set ( G_OBJECT (element), "pem-certificate", pemCertificateRSA.c_str(),
                    NULL);
 
   } catch (boost::property_tree::ptree_error &e) {
+    try {
+      pemUri = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificate");
 
+      GST_WARNING ("pemCertificate is deprecated. Please use pemCertificateRSA instead");
+      pemCertificate = getCerficateFromFile (pemUri);
+      g_object_set ( G_OBJECT (element), "pem-certificate", pemCertificate.c_str(),
+                     NULL);
+
+    } catch (boost::property_tree::ptree_error &e) {
+      GST_INFO ("Loading default pem certificate RSA");
+      g_object_set ( G_OBJECT (element), "pem-certificate",
+                     defaultCertificateRSA.c_str(),
+                     NULL);
+    }
   }
 }
 

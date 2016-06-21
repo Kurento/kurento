@@ -117,6 +117,7 @@ private:
   void onDataChannelOpened (gchar *sessId, guint stream_id);
   void onDataChannelClosed (gchar *sessId, guint stream_id);
   void checkUri (std::string &uri);
+  std::string getCerficateFromFile (std::string &path);
 
   std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
   std::map < std::string, std::shared_ptr<IceConnection>> iceConnectionState;
