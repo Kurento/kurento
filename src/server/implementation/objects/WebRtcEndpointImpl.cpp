@@ -58,7 +58,7 @@ namespace kurento
 static const uint DEFAULT_STUN_PORT = 3478;
 
 std::once_flag check_openh264, certificates_flag;
-std::string defaultCertificateRSA;
+std::string defaultCertificateRSA, defaultCertificateECDSA;
 std::vector<std::string> supported_codecs = { "VP8", "opus", "PCMU" };
 
 static void
@@ -128,6 +128,53 @@ check_support_for_h264 ()
 
   supported_codecs.push_back ("H264");
   gst_object_unref (plugin);
+}
+
+std::string ParametersToPEMString (EC_GROUP *ec_group)
+{
+  BIO *temp_memory_bio = BIO_new (BIO_s_mem() );
+
+  if (!temp_memory_bio) {
+    GST_ERROR ("Failed to allocate temporary memory bio");
+    return "";
+  }
+
+  if (!PEM_write_bio_ECPKParameters (temp_memory_bio, ec_group) ) {
+    GST_ERROR ("Failed to write key parameters");
+    BIO_free (temp_memory_bio);
+    return "";
+  }
+
+  BIO_write (temp_memory_bio, "\0", 1);
+  char *buffer;
+  BIO_get_mem_data (temp_memory_bio, &buffer);
+  std::string parameters_str = buffer;
+  BIO_free (temp_memory_bio);
+  return parameters_str;
+}
+
+std::string ECDSAKeyToPEMString (EC_KEY *pkey_)
+{
+  BIO *temp_memory_bio = BIO_new (BIO_s_mem() );
+
+  if (!temp_memory_bio) {
+    GST_ERROR ("Failed to allocate temporary memory bio");
+    return "";
+  }
+
+  if (!PEM_write_bio_ECPrivateKey (
+        temp_memory_bio, pkey_, nullptr, nullptr, 0, nullptr, nullptr) ) {
+    GST_ERROR ("Failed to write ECDSA key");
+    BIO_free (temp_memory_bio);
+    return "";
+  }
+
+  BIO_write (temp_memory_bio, "\0", 1);
+  char *buffer;
+  BIO_get_mem_data (temp_memory_bio, &buffer);
+  std::string priv_key_str = buffer;
+  BIO_free (temp_memory_bio);
+  return priv_key_str;
 }
 
 std::string PrivateKeyToPEMString (EVP_PKEY *pkey_)
@@ -237,11 +284,97 @@ end:
   }
 }
 
+static void
+generate_ecdsa_certificate ()
+{
+  EC_GROUP *group = EC_GROUP_new_by_curve_name (NID_X9_62_prime256v1);
+  EC_KEY *ec_key = EC_KEY_new ();
+  EC_KEY_set_group (ec_key, group);
+  EVP_PKEY *private_key = EVP_PKEY_new ();
+  X509_NAME *name = NULL;
+  X509 *x509 = X509_new ();
+  BIO *bio = BIO_new (BIO_s_mem () );
+  BUF_MEM *mem = NULL;
+  std::string pem, ecdsaParameters, ecdsaKey;
+  int rc = 0;
+  unsigned long err = 0;
+
+  if ( (bio == NULL) || (private_key == NULL) || (x509 == NULL) ||
+       !EC_KEY_generate_key (ec_key) ||
+       !EVP_PKEY_assign_EC_KEY (private_key, ec_key) ) {
+    goto end;
+  }
+
+  ecdsaParameters = ParametersToPEMString (group);
+  ecdsaKey = ECDSAKeyToPEMString (ec_key);
+  ec_key = NULL;
+
+  X509_set_version (x509, 2L);
+  ASN1_INTEGER_set (X509_get_serialNumber (x509), 0);
+  X509_gmtime_adj (X509_get_notBefore (x509), 0);
+  X509_gmtime_adj (X509_get_notAfter (x509), 31536000L);  /* A year */
+  X509_set_pubkey (x509, private_key);
+
+  name = X509_get_subject_name (x509);
+  X509_NAME_add_entry_by_txt (name, "C", MBSTRING_ASC, (unsigned char *) "SE",
+                              -1, -1, 0);
+  X509_NAME_add_entry_by_txt (name, "CN", MBSTRING_ASC,
+                              (unsigned char *) "Kurento", -1, -1, 0);
+  X509_set_issuer_name (x509, name);
+  name = NULL;
+
+  if (!X509_sign (x509, private_key, EVP_sha256 () ) ) {
+    GST_WARNING ("failed to sign certificate");
+    return;
+  }
+
+  rc = PEM_write_bio_X509 (bio, x509);
+  err = ERR_get_error();
+
+  if (rc != 1) {
+    GST_WARNING ("PEM_write_bio_X509 failed, error %ld", err);
+    goto end;
+  }
+
+  BIO_get_mem_ptr (bio, &mem);
+  err = ERR_get_error();
+
+  if (!mem || !mem->data || !mem->length) {
+    GST_WARNING ("BIO_get_mem_ptr failed, error %ld", err);
+    goto end;
+  }
+
+  pem = std::string (mem->data, mem->length);
+  defaultCertificateECDSA = ecdsaParameters + ecdsaKey + pem;
+
+end:
+
+  if (x509 != NULL) {
+    X509_free (x509);
+  }
+
+  if (bio != NULL) {
+    BIO_free_all (bio);
+  }
+
+  if (ec_key != NULL) {
+    EC_KEY_free (ec_key);
+  }
+
+  if (private_key != NULL) {
+    EVP_PKEY_free (private_key);
+  }
+
+  if (group != NULL) {
+    EC_GROUP_free (group);
+  }
+}
 
 static void
 generateDefaultCertificates ()
 {
   generate_rsa_certificate ();
+  generate_ecdsa_certificate ();
 }
 
 void WebRtcEndpointImpl::checkUri (std::string &uri)
