@@ -281,10 +281,10 @@ kms_webrtc_connection_new (KmsIceBaseAgent * agent, GMainContext * context,
   }
 
   priv->rtp_tr =
-      kms_webrtc_transport_create (agent, base_conn->stream_id,
+      kms_webrtc_transport_new (agent, base_conn->stream_id,
       NICE_COMPONENT_TYPE_RTP, pem_certificate);
   priv->rtcp_tr =
-      kms_webrtc_transport_create (agent, base_conn->stream_id,
+      kms_webrtc_transport_new (agent, base_conn->stream_id,
       NICE_COMPONENT_TYPE_RTCP, pem_certificate);
 
   if (priv->rtp_tr == NULL || priv->rtcp_tr == NULL) {
@@ -309,8 +309,8 @@ kms_webrtc_connection_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  kms_webrtc_transport_destroy (priv->rtp_tr);
-  kms_webrtc_transport_destroy (priv->rtcp_tr);
+  g_clear_object (&priv->rtp_tr);
+  g_clear_object (&priv->rtcp_tr);
 
   g_mutex_clear (&self->priv->mutex);
 

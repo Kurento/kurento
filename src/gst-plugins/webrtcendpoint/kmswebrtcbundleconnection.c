@@ -285,7 +285,7 @@ kms_webrtc_bundle_connection_new (KmsIceBaseAgent * agent,
   }
 
   priv->tr =
-      kms_webrtc_transport_create (agent, base_conn->stream_id,
+      kms_webrtc_transport_new (agent, base_conn->stream_id,
       NICE_COMPONENT_TYPE_RTP, pem_cerficate);
 
   if (priv->tr == NULL) {
@@ -308,7 +308,7 @@ kms_webrtc_bundle_connection_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  kms_webrtc_transport_destroy (priv->tr);
+  g_clear_object (&priv->tr);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_bundle_connection_parent_class)->finalize (object);
