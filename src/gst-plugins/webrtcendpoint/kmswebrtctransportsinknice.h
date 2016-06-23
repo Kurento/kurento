@@ -19,7 +19,7 @@
 #define __KMS_WEBRTC_TRANSPORT_SINK_NICE_H__
 
 #include <gst/gst.h>
-#include <kmswebrtctransportsink.h>
+#include "kmswebrtctransportsink.h"
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */

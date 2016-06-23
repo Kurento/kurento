@@ -101,6 +101,8 @@ set(KMS_WEBRTC_HEADERS
   kmswebrtcsctpconnection.h
   kmswebrtctransportsrc.h
   kmswebrtctransportsink.h
+  kmswebrtctransportsrcnice.h
+  kmswebrtctransportsinknice.h
   kmswebrtctransport.h
   kmswebrtcsession.h
   kmswebrtcendpoint.h
