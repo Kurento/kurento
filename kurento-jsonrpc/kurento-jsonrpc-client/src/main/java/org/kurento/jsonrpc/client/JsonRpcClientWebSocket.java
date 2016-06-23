@@ -18,11 +18,13 @@ package org.kurento.jsonrpc.client;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -110,13 +112,32 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
     }
 
-    WebSocketClientSocket socket = new WebSocketClientSocket();
-    ClientUpgradeRequest request = new ClientUpgradeRequest();
+    int numRetries = 0;
+    int maxRetries = 5;
+    while (true) {
 
-    jettyWsSession = jettyClient.connect(socket, new URI(url), request).get(this.connectionTimeout,
-        TimeUnit.MILLISECONDS);
+      try {
 
-    jettyWsSession.setIdleTimeout(this.idleTimeout);
+        jettyWsSession = jettyClient
+            .connect(new WebSocketClientSocket(), new URI(url), new ClientUpgradeRequest())
+            .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
+
+        jettyWsSession.setIdleTimeout(this.idleTimeout);
+
+        return;
+
+      } catch (ExecutionException e) {
+        if (e.getCause() instanceof UpgradeException && numRetries < maxRetries) {
+          log.warn(
+              "Upgrade exception when trying to connect to {}. Try {} of {}. Retrying in 200ms ",
+              url, numRetries + 1, maxRetries);
+          Thread.sleep(200);
+          numRetries++;
+        } else {
+          throw e;
+        }
+      }
+    }
 
   }
 
