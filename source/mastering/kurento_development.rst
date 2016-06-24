@@ -44,11 +44,7 @@ be useful to try brand new features.
 Kurento Media Server
 ====================
 
-The development builds of Kurento Media Server are .deb packages hosted in
-http://ubuntu.kurento.org. You can find current development version at
-http://ubuntu.kurento.org/pool/main/k/kurento-media-server-6.0/.
-
-To install packages from unstable repository you need to execute::
+To install packages from development (unstable) repository you need to execute::
 
     echo "deb http://ubuntu.kurento.org trusty-dev kms6" | sudo tee /etc/apt/sources.list.d/kurento-dev.list
     wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
@@ -59,13 +55,28 @@ To install packages from unstable repository you need to execute::
 As you can imagine, it is not possible to have installed at the same time latest
 stable version and latest development version of Kurento Media Server.
 
-Older versions can be manually downloaded from
-http://ubuntu.kurento.org/pool/main/k/. Notice dependencies will be downgraded
-as required by the old package. For example::
+In order to install older versions of Kurento Media Server, you need to
+configure the proper repository (``trusty`` or ``xenial``) in your apt sources::
 
-    sudo dpkg -i kurento-media-server-dbg_5.1.4~20150528151643.2.g75f094f.trusty_amd64.deb
-    sudo apt-get -f install
+    deb http://ubuntu.kurento.org/[VERSION_TAG] trusty kms6
+    deb http://ubuntu.kurento.org/[VERSION_TAG] xenial kms6
 
+... where ``[VERSION_TAG]`` is the version of Kurento Media Server to be
+installed (for instance, ``6.4.0``). After that you should install KMS as
+usual::
+
+    sudo apt-get update
+    sudo apt-get install kurento-media-server-6.0
+
+Notice that an old version of KMS cannot live in the same machine that a
+stable/unstable release. Therefore, if you have KMS previously installed and
+you want to downgrade to a former release, first your need to purge your
+previous installation::
+
+    sudo apt-get remove kurento-media-server-6.0
+    sudo apt-get purge kurento-media-server-6.0
+    sudo apt-get autoremove
+    sudo apt-get dist-upgrade
 
 Kurento Java Client
 ===================
