@@ -38,7 +38,9 @@ enum
   PROP_CONNECTED,
   PROP_IS_CLIENT,
   PROP_MIN_PORT,
-  PROP_MAX_PORT
+  PROP_MAX_PORT,
+  PROP_TRANSPORT,
+  PROP_RTCP_TRANSPORT
 };
 
 struct _KmsWebRtcConnectionPrivate
@@ -221,6 +223,12 @@ kms_webrtc_connection_get_property (GObject * object,
     case PROP_MAX_PORT:
       g_value_set_uint (value, self->parent.max_port);
       break;
+    case PROP_TRANSPORT:
+      g_value_set_object (value, self->priv->rtp_tr);
+      break;
+    case PROP_RTCP_TRANSPORT:
+      g_value_set_object (value, self->priv->rtcp_tr);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -352,6 +360,18 @@ kms_webrtc_connection_class_init (KmsWebRtcConnectionClass * klass)
   g_object_class_override_property (gobject_class, PROP_IS_CLIENT, "is-client");
   g_object_class_override_property (gobject_class, PROP_MAX_PORT, "max-port");
   g_object_class_override_property (gobject_class, PROP_MIN_PORT, "min-port");
+
+  g_object_class_install_property (gobject_class, PROP_TRANSPORT,
+      g_param_spec_object ("transport", "Transport",
+          "The transport used to send and receive RTP packets.",
+          KMS_TYPE_WEBRTC_TRANSPORT,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_RTCP_TRANSPORT,
+      g_param_spec_object ("rtcp-transport", "RTCP Transport",
+          "The transport used to send and receive RTCP packets.",
+          KMS_TYPE_WEBRTC_TRANSPORT,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 }
 
 static void
