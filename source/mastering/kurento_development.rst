@@ -84,7 +84,7 @@ configuration repository to the repositories section to file
       <repository>
           <id>kurento-snapshots</id>
           <name>Kurento Snapshot Repository</name>
-          <url>http://maven.kurento.org/archiva/repository/snapshots/</url>
+          <url>http://maven.kurento.org/snapshots/</url>
           <releases>
               <enabled>false</enabled>
           </releases>
@@ -97,7 +97,7 @@ configuration repository to the repositories section to file
       <pluginRepository>
          <id>kurento-snapshots</id>
          <name>Kurento Snapshot Repository</name>
-         <url>http://maven.kurento.org/archiva/repository/snapshots/</url>
+         <url>http://maven.kurento.org/snapshots/</url>
          <releases>
             <enabled>false</enabled>
          </releases>
