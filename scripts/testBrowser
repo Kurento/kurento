@@ -103,8 +103,8 @@ tasks(['jsdoc', 'coverage'], {}, function()
     request.addListener('end', listener).resume()
   }).listen(PORT);
 
-//  runTest('chrome').then(server.close.bind(server))
-  runTest('firefox').then(function()
+  runTest('chrome').then(function() //server.close.bind(server))
+//  runTest('firefox').then(function()
   {
     server.close()
 
