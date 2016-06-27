@@ -121,6 +121,27 @@ kms_ice_nice_agent_gathering_done (NiceAgent * agent, guint stream_id,
   g_free (ret);
 }
 
+static IceState
+kms_ice_nice_agent_nice_to_ice_state (NiceComponentState state)
+{
+  switch (state) {
+    case NICE_COMPONENT_STATE_DISCONNECTED:
+      return ICE_STATE_DISCONNECTED;
+    case NICE_COMPONENT_STATE_GATHERING:
+      return ICE_STATE_GATHERING;
+    case NICE_COMPONENT_STATE_CONNECTING:
+      return ICE_STATE_CONNECTING;
+    case NICE_COMPONENT_STATE_CONNECTED:
+      return ICE_STATE_CONNECTED;
+    case NICE_COMPONENT_STATE_READY:
+      return ICE_STATE_READY;
+    case NICE_COMPONENT_STATE_FAILED:
+      return ICE_STATE_FAILED;
+    default:
+      return ICE_STATE_FAILED;
+  }
+}
+
 static void
 kms_ice_nice_agent_component_state_change (NiceAgent * agent, guint stream_id,
     guint component_id, NiceComponentState state, KmsIceNiceAgent * self)
@@ -134,30 +155,7 @@ kms_ice_nice_agent_component_state_change (NiceAgent * agent, guint stream_id,
   g_snprintf (buff, 32, "%d", stream_id);
 
   ret = g_strdup (buff);
-
-  switch (state) {
-    case NICE_COMPONENT_STATE_DISCONNECTED:
-      state_ = ICE_STATE_DISCONNECTED;
-      break;
-    case NICE_COMPONENT_STATE_GATHERING:
-      state_ = ICE_STATE_GATHERING;
-      break;
-    case NICE_COMPONENT_STATE_CONNECTING:
-      state_ = ICE_STATE_CONNECTING;
-      break;
-    case NICE_COMPONENT_STATE_CONNECTED:
-      state_ = ICE_STATE_CONNECTED;
-      break;
-    case NICE_COMPONENT_STATE_READY:
-      state_ = ICE_STATE_READY;
-      break;
-    case NICE_COMPONENT_STATE_FAILED:
-      state_ = ICE_STATE_FAILED;
-      break;
-    default:
-      state_ = ICE_STATE_FAILED;
-      break;
-  }
+  state_ = kms_ice_nice_agent_nice_to_ice_state (state);
 
   GST_DEBUG_OBJECT (self,
       "stream_id: %d, component_id: %d, state: %s",
@@ -464,6 +462,20 @@ kms_ice_nice_agent_get_local_candidates (KmsIceBaseAgent * self,
   return ret;
 }
 
+static IceState
+kms_ice_nice_agent_get_component_state (KmsIceBaseAgent * self,
+    const char *stream_id, guint component_id)
+{
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
+  guint id = atoi (stream_id);
+  NiceComponentState state;
+
+  state = nice_agent_get_component_state (nice_agent->priv->agent, id,
+      component_id);
+
+  return kms_ice_nice_agent_nice_to_ice_state (state);
+}
+
 static void
 kms_ice_nice_agent_run_agent (KmsIceBaseAgent * self)
 {
@@ -502,6 +514,7 @@ kms_ice_nice_agent_class_init (KmsIceNiceAgentClass * klass)
   base_class->get_default_local_candidate =
       kms_ice_nice_agent_get_default_local_candidate;
   base_class->get_local_candidates = kms_ice_nice_agent_get_local_candidates;
+  base_class->get_component_state = kms_ice_nice_agent_get_component_state;
   base_class->remove_stream = kms_ice_nice_agent_remove_stream;
 
   g_type_class_add_private (klass, sizeof (KmsIceNiceAgentPrivate));

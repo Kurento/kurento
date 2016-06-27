@@ -243,6 +243,23 @@ kms_ice_base_agent_get_local_candidates_default (KmsIceBaseAgent * self,
   return NULL;
 }
 
+static IceState
+kms_ice_base_agent_get_component_state_default (KmsIceBaseAgent * self,
+    const char *stream_id, guint component_id)
+{
+  KmsIceBaseAgentClass *klass =
+      KMS_ICE_BASE_AGENT_CLASS (G_OBJECT_GET_CLASS (self));
+
+  if (klass->get_component_state ==
+      kms_ice_base_agent_get_component_state_default) {
+    GST_WARNING_OBJECT (self,
+        "%s does not reimplement 'get_component_state'",
+        G_OBJECT_CLASS_NAME (klass));
+  }
+
+  return ICE_STATE_DISCONNECTED;
+}
+
 static void
 kms_ice_base_agent_run_agent_default (KmsIceBaseAgent * self)
 {
@@ -364,6 +381,16 @@ kms_ice_base_agent_get_local_candidates (KmsIceBaseAgent * self,
   return klass->get_local_candidates (self, stream_id, component_id);
 }
 
+IceState
+kms_ice_base_agent_get_component_state (KmsIceBaseAgent * self,
+    const char *stream_id, guint component_id)
+{
+  KmsIceBaseAgentClass *klass =
+      KMS_ICE_BASE_AGENT_CLASS (G_OBJECT_GET_CLASS (self));
+
+  return klass->get_component_state (self, stream_id, component_id);
+}
+
 void
 kms_ice_base_agent_run_agent (KmsIceBaseAgent * self)
 {
@@ -398,6 +425,7 @@ kms_ice_base_agent_class_init (KmsIceBaseAgentClass * klass)
   klass->get_default_local_candidate =
       kms_ice_base_agent_get_default_local_candidate_default;
   klass->get_local_candidates = kms_ice_base_agent_get_local_candidates_default;
+  klass->get_component_state = kms_ice_base_agent_get_component_state_default;
   klass->run_agent = kms_ice_base_agent_run_agent_default;
 
   /**
