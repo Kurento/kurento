@@ -33,6 +33,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 @Category(JsonRpcConnectorTests.class)
 public class JsonRpcConnectorBaseTest {
 
+  protected static final int MAX_WS_CONNECTIONS = 50;
   protected static ConfigurableApplicationContext server;
 
   @BeforeClass
@@ -40,6 +41,7 @@ public class JsonRpcConnectorBaseTest {
 
     if (server == null || !server.isActive()) {
 
+      System.setProperty("websocket.maxSessions", Integer.toString(MAX_WS_CONNECTIONS));
       System.setProperty("java.security.egd", "file:/dev/./urandom");
 
       Properties properties = new Properties();

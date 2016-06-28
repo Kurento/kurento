@@ -18,7 +18,9 @@
 package org.kurento.jsonrpc.internal.ws;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.kurento.commons.PropertiesManager;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.server.ProtocolManager;
 import org.kurento.jsonrpc.internal.server.ProtocolManager.ServerSessionFactory;
@@ -32,6 +34,16 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
+
+  public class MaxNumberWsConnectionsReachedException extends Exception {
+
+    private static final long serialVersionUID = -6621614523181088993L;
+  }
+
+  private static final long MAX_WS_CONNECTIONS = PropertiesManager
+      .getProperty("websocket.maxSessions", Long.MAX_VALUE);
+
+  private static final AtomicLong numConnections = new AtomicLong();
 
   private static final Logger log = LoggerFactory.getLogger(JsonRpcWebSocketHandler.class);
 
@@ -52,6 +64,14 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
     try {
+      incNumConnectionsIfAllowed();
+    } catch (MaxNumberWsConnectionsReachedException e) {
+      log.warn("Closed a WS connection because MAX_WS_CONNECTIONS={} limit reached",
+          MAX_WS_CONNECTIONS);
+      session.close();
+    }
+
+    try {
       // We send this notification to the JsonRpcHandler when the JsonRpc
       // session is established, not when websocket session is established
       log.info(
@@ -65,13 +85,39 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
     }
   }
 
+  private void incNumConnectionsIfAllowed() throws MaxNumberWsConnectionsReachedException {
+
+    while (true) {
+
+      long curNumConn = numConnections.get();
+      if (curNumConn >= MAX_WS_CONNECTIONS) {
+        throw new MaxNumberWsConnectionsReachedException();
+      }
+
+      // Try updating the value, but only if it's equal to the
+      // one we've just seen. If it is different, we have to check again if now
+      // there are room for a new client.
+      boolean setSuccessful = numConnections.compareAndSet(curNumConn, curNumConn + 1);
+
+      if (setSuccessful) {
+        // We have incremented numConnections. Exiting.
+        break;
+      }
+
+      // Another thread updated the numConnections between our get and
+      // compareAndSet calls. It is possible that we check again
+    }
+  }
+
   @Override
   public void afterConnectionClosed(WebSocketSession wsSession,
       org.springframework.web.socket.CloseStatus status) throws Exception {
 
+    numConnections.decrementAndGet();
+
     try {
-      ServerSession session = (ServerSession) protocolManager.getSessionByTransportId(wsSession
-          .getId());
+      ServerSession session = (ServerSession) protocolManager
+          .getSessionByTransportId(wsSession.getId());
 
       if (session != null) {
 
@@ -91,10 +137,11 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
           protocolManager.closeSessionIfTimeout(wsSession.getId(), status.getReason());
         }
       } else {
-        log.info("{} WebSocket session not associated to any jsonRpcSession "
-            + "with transportId {} closed for {} (code {}, reason '{}')", label, wsSession.getId(),
-            CloseStatusHelper.getCloseStatusType(status.getCode()), status.getCode(),
-            status.getReason());
+        log.info(
+            "{} WebSocket session not associated to any jsonRpcSession "
+                + "with transportId {} closed for {} (code {}, reason '{}')",
+            label, wsSession.getId(), CloseStatusHelper.getCloseStatusType(status.getCode()),
+            status.getCode(), status.getReason());
       }
 
     } catch (Throwable t) {

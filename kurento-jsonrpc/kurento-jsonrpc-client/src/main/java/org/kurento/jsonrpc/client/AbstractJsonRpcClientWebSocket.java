@@ -508,7 +508,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   protected void handleReconnectDisconnection(final int statusCode, final String closeReason) {
 
     if (!isClosedByUser()) {
-      
+
       log.debug("{}JsonRpcWsClient disconnected from {} because {}.", label, url, closeReason);
 
       reconnect(closeReason);
@@ -554,18 +554,15 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
           if (!tryReconnectingForever) {
 
-            log.warn(
-                "{} Exception trying to reconnect to server {}.",
-                label, url, e);
+            log.warn("{} Exception trying to reconnect to server {}.", label, url, e);
 
             notifyUserClientClosed(closeReason, true);
 
           } else {
-            
-            log.warn(
-                "{} Exception trying to reconnect to server {}. Retrying in {} millis",
-                label, url, RECONNECT_DELAY_TIME_MILLIS, e);
-            
+
+            log.warn("{} Exception trying to reconnect to server {}. Retrying in {} millis", label,
+                url, RECONNECT_DELAY_TIME_MILLIS, e);
+
             reconnect(closeReason, RECONNECT_DELAY_TIME_MILLIS);
           }
         }
