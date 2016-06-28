@@ -20,6 +20,7 @@ package org.kurento.test.browser;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +30,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.LatencyException;
 import org.kurento.test.latency.VideoTag;
 import org.kurento.test.monitor.PeerConnectionStats;
 import org.kurento.test.monitor.SystemMonitorManager;
+import org.kurento.test.utils.Ffmpeg;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -52,6 +56,9 @@ import org.slf4j.LoggerFactory;
 public class WebPage {
 
   public static Logger log = LoggerFactory.getLogger(WebPage.class);
+
+  private Map<String, CountDownLatch> countDownLatchEvents = new HashMap<>();
+  private List<Thread> callbackThreads = new ArrayList<>();
 
   public Browser browser;
 
@@ -483,6 +490,128 @@ public class WebPage {
     String clazz = value != null ? value.getClass().getName() : "";
     log.trace(">>> getProperty {} {} {}", property, value, clazz);
     return value;
+  }
+
+  public void subscribeEvent(final String videoTag, final String eventType) {
+    subscribeEventsToVideoTag("document.getElementById('" + videoTag + "')", eventType);
+  }
+
+  /*
+   * subscribeEventsToVideoTag
+   */
+  protected void subscribeEventsToVideoTag(final String videoTag, final String eventType) {
+    CountDownLatch latch = new CountDownLatch(1);
+
+    final String browserName = browser.getId();
+    log.info("Subscribe event '{}' in browser '{}'", eventType, browserName);
+
+    countDownLatchEvents.put(browserName + eventType, latch);
+    addEventListener(videoTag, eventType, new BrowserEventListener() {
+      @Override
+      public void onEvent(String event) {
+        consoleLog(ConsoleLogLevel.INFO, "Event in " + videoTag + " tag: " + event);
+        countDownLatchEvents.get(browserName + eventType).countDown();
+      }
+    });
+  }
+
+  /*
+   * waitForEvent
+   */
+  public boolean waitForEvent(final String eventType) throws InterruptedException {
+
+    String browserName = browser.getId();
+    log.info("Waiting for event '{}' in browser '{}'", eventType, browserName);
+
+    if (!countDownLatchEvents.containsKey(browserName + eventType)) {
+      log.error("We cannot wait for an event without previous subscription");
+      return false;
+    }
+
+    boolean result = countDownLatchEvents.get(browserName + eventType).await(browser.getTimeout(),
+        TimeUnit.SECONDS);
+
+    // Record local audio when playing event reaches the browser
+    if (eventType.equalsIgnoreCase("playing") && browser.getRecordAudio() > 0) {
+      if (browser.isRemote()) {
+        Ffmpeg.recordRemote(GridHandler.getInstance().getNode(browser.getId()),
+            browser.getRecordAudio(), browser.getAudioSampleRate(), browser.getAudioChannel());
+      } else {
+        Ffmpeg.record(browser.getRecordAudio(), browser.getAudioSampleRate(),
+            browser.getAudioChannel());
+      }
+    }
+
+    countDownLatchEvents.remove(browserName + eventType);
+    return result;
+  }
+
+  /*
+   * addEventListener
+   */
+  @SuppressWarnings("deprecation")
+  public void addEventListener(final String videoTag, final String eventType,
+      final BrowserEventListener eventListener) {
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        browser.executeScript(
+            videoTag + ".addEventListener('" + eventType + "', kurentoTest.videoEvent, false);");
+        try {
+          new WebDriverWait(browser.getWebDriver(), browser.getTimeout())
+              .until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver d) {
+                  Object videoEventValue = ((JavascriptExecutor) d)
+                      .executeScript("return kurentoTest.videoEventValue;");
+                  return videoEventValue != null
+                      && videoEventValue.toString().equalsIgnoreCase(eventType);
+                }
+              });
+          eventListener.onEvent(eventType);
+        } catch (Throwable t) {
+          log.error("~~~ Exception in addEventListener {}", t.getMessage());
+          t.printStackTrace();
+          this.interrupt();
+          this.stop();
+        }
+      }
+    };
+    callbackThreads.add(t);
+    t.setDaemon(true);
+    t.start();
+  }
+
+  /*
+   * consoleLog
+   */
+  public void consoleLog(ConsoleLogLevel level, String message) {
+    message = message.replaceAll("'", "\"");
+    browser.executeScript("console." + level.toString() + "('" + message + "');");
+  }
+
+  @After
+  @SuppressWarnings("deprecation")
+  public void teardownKurentoServices() throws Exception {
+    for (Thread t : callbackThreads) {
+      t.stop();
+    }
+  }
+
+  /*
+   * stopWebRtc
+   */
+  public void stopWebRtc() {
+    browser.executeScript("stop();");
+    browser.executeScript("var kurentoTest = new KurentoTest();");
+    countDownLatchEvents.clear();
+  }
+
+  /*
+   * close
+   */
+  public void close() {
+    browser.close();
   }
 
 }

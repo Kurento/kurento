@@ -18,15 +18,12 @@
 package org.kurento.test.browser;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
-import org.junit.After;
 import org.kurento.client.EventListener;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.MediaStateChangedEvent;
@@ -35,14 +32,9 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.test.base.KurentoTest;
-import org.kurento.test.grid.GridHandler;
 import org.kurento.test.latency.VideoTagType;
-import org.kurento.test.utils.Ffmpeg;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -67,17 +59,6 @@ public class WebRtcTestPage extends WebPage {
 
   protected static final String LOCAL_VIDEO = "local";
   protected static final String REMOTE_VIDEO = "video";
-
-  private List<Thread> callbackThreads = new ArrayList<>();
-  private Map<String, CountDownLatch> countDownLatchEvents = new HashMap<>();
-
-  @After
-  @SuppressWarnings("deprecation")
-  public void teardownKurentoServices() throws Exception {
-    for (Thread t : callbackThreads) {
-      t.stop();
-    }
-  }
 
   public WebRtcTestPage() {
   }
@@ -121,110 +102,17 @@ public class WebRtcTestPage extends WebPage {
   }
 
   /*
-   * close
-   */
-  public void close() {
-    browser.close();
-  }
-
-  /*
    * subscribeEvents
    */
   public void subscribeEvents(String eventType) {
-    subscribeEventsToVideoTag("video", eventType);
+    subscribeEventsToVideoTag(REMOTE_VIDEO, eventType);
   }
 
   /*
    * subscribeLocalEvents
    */
   public void subscribeLocalEvents(String eventType) {
-    subscribeEventsToVideoTag("local", eventType);
-  }
-
-  /*
-   * subscribeEventsToVideoTag
-   */
-  public void subscribeEventsToVideoTag(final String videoTag, final String eventType) {
-    CountDownLatch latch = new CountDownLatch(1);
-
-    final String browserName = browser.getId();
-    log.info("Subscribe event '{}' in video tag '{}' in browser '{}'", eventType, videoTag,
-        browserName);
-
-    countDownLatchEvents.put(browserName + eventType, latch);
-    addEventListener(videoTag, eventType, new BrowserEventListener() {
-      @Override
-      public void onEvent(String event) {
-        consoleLog(ConsoleLogLevel.INFO, "Event in " + videoTag + " tag: " + event);
-        countDownLatchEvents.get(browserName + eventType).countDown();
-      }
-    });
-  }
-
-  /*
-   * waitForEvent
-   */
-  public boolean waitForEvent(final String eventType) throws InterruptedException {
-
-    String browserName = browser.getId();
-    log.info("Waiting for event '{}' in browser '{}'", eventType, browserName);
-
-    if (!countDownLatchEvents.containsKey(browserName + eventType)) {
-      log.error("We cannot wait for an event without previous subscription");
-      return false;
-    }
-
-    boolean result =
-        countDownLatchEvents.get(browserName + eventType).await(browser.getTimeout(),
-            TimeUnit.SECONDS);
-
-    // Record local audio when playing event reaches the browser
-    if (eventType.equalsIgnoreCase("playing") && browser.getRecordAudio() > 0) {
-      if (browser.isRemote()) {
-        Ffmpeg.recordRemote(GridHandler.getInstance().getNode(browser.getId()),
-            browser.getRecordAudio(), browser.getAudioSampleRate(), browser.getAudioChannel());
-      } else {
-        Ffmpeg.record(browser.getRecordAudio(), browser.getAudioSampleRate(),
-            browser.getAudioChannel());
-      }
-    }
-
-    countDownLatchEvents.remove(browserName + eventType);
-    return result;
-  }
-
-  /*
-   * addEventListener
-   */
-  @SuppressWarnings("deprecation")
-  public void addEventListener(final String videoTag, final String eventType,
-      final BrowserEventListener eventListener) {
-    Thread t = new Thread() {
-      @Override
-      public void run() {
-        browser.executeScript(videoTag + ".addEventListener('" + eventType
-            + "', videoEvent, false);");
-        try {
-          new WebDriverWait(browser.getWebDriver(), browser.getTimeout())
-          .until(new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(WebDriver d) {
-              return d.findElement(By.id("status")).getAttribute("value")
-                  .equalsIgnoreCase(eventType);
-            }
-          });
-          eventListener.onEvent(eventType);
-        } catch (Throwable t) {
-          log.error("~~~ Exception in addEventListener {}", t.getMessage());
-          t.printStackTrace();
-          this.interrupt();
-          this.stop();
-        }
-      }
-    };
-    callbackThreads.add(t);
-    t.setDaemon(true);
-    t.start();
+    subscribeEventsToVideoTag(LOCAL_VIDEO, eventType);
   }
 
   /*
@@ -242,21 +130,12 @@ public class WebRtcTestPage extends WebPage {
   }
 
   /*
-   * consoleLog
-   */
-  public void consoleLog(ConsoleLogLevel level, String message) {
-    log.info(message);
-    browser.executeScript("console." + level.toString() + "('" + message + "');");
-  }
-
-  /*
    * getCurrentTime
    */
   public double getCurrentTime() {
     log.debug("getCurrentTime() called");
-    double currentTime =
-        Double.parseDouble(browser.getWebDriver().findElement(By.id("currentTime"))
-            .getAttribute("value"));
+    double currentTime = Double.parseDouble(
+        browser.getWebDriver().findElement(By.id("currentTime")).getAttribute("value"));
     log.debug("getCurrentTime() result: {}", currentTime);
     return currentTime;
   }
@@ -314,20 +193,20 @@ public class WebRtcTestPage extends WebPage {
     }
 
     switch (webRtcIpvMode) {
-      case IPV4:
-        if (!hasCandidateIpv6) {
-          filtered = false;
-        }
-        break;
-      case IPV6:
-        if (hasCandidateIpv6) {
-          filtered = false;
-        }
-        break;
-      case BOTH:
-      default:
+    case IPV4:
+      if (!hasCandidateIpv6) {
         filtered = false;
-        break;
+      }
+      break;
+    case IPV6:
+      if (hasCandidateIpv6) {
+        filtered = false;
+      }
+      break;
+    case BOTH:
+    default:
+      filtered = false;
+      break;
     }
     return filtered;
   }
@@ -347,30 +226,30 @@ public class WebRtcTestPage extends WebPage {
     if (WebRtcCandidateType.HOST.toString().equals(candidateType)) {
       internalAddress = candidate.split(" ")[4];
       switch (webRtcIpvMode) {
-        case IPV4:
-          if (!webRtcCandidateType.toString().equals(candidateType)) {
-            internalAddresses = internalAddress.split("\\.");
-            for (int i = 0; i < internalAddresses.length - 1; i++) {
-              newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
-            }
-            newInternalAddress = newInternalAddress.concat("254");
-          } else {
-            newInternalAddress = internalAddress;
+      case IPV4:
+        if (!webRtcCandidateType.toString().equals(candidateType)) {
+          internalAddresses = internalAddress.split("\\.");
+          for (int i = 0; i < internalAddresses.length - 1; i++) {
+            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
           }
-          return candidate.replace(internalAddress, newInternalAddress);
-        case IPV6:
-          if (!webRtcCandidateType.toString().equals(candidateType)) {
-            internalAddresses = internalAddress.split(":");
-            for (int i = 0; i < internalAddresses.length - 1; i++) {
-              newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
-            }
-            newInternalAddress = newInternalAddress.concat("2000");
-          } else {
-            newInternalAddress = internalAddress;
+          newInternalAddress = newInternalAddress.concat("254");
+        } else {
+          newInternalAddress = internalAddress;
+        }
+        return candidate.replace(internalAddress, newInternalAddress);
+      case IPV6:
+        if (!webRtcCandidateType.toString().equals(candidateType)) {
+          internalAddresses = internalAddress.split(":");
+          for (int i = 0; i < internalAddresses.length - 1; i++) {
+            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
           }
-          return candidate.replace(internalAddress, newInternalAddress);
-        default:
-          break;
+          newInternalAddress = newInternalAddress.concat("2000");
+        } else {
+          newInternalAddress = internalAddress;
+        }
+        return candidate.replace(internalAddress, newInternalAddress);
+      default:
+        break;
       }
 
     } else if (WebRtcCandidateType.SRFLX.toString().equals(candidateType)
@@ -378,45 +257,45 @@ public class WebRtcTestPage extends WebPage {
       publicAddress = candidate.split(" ")[4];
       internalAddress = candidate.split(" ")[9];
       switch (webRtcIpvMode) {
-        case IPV4:
-          internalAddresses = internalAddress.split("\\.");
+      case IPV4:
+        internalAddresses = internalAddress.split("\\.");
 
-          for (int i = 0; i < internalAddresses.length - 1; i++) {
-            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
-          }
-          newInternalAddress = newInternalAddress.concat("254");
+        for (int i = 0; i < internalAddresses.length - 1; i++) {
+          newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
+        }
+        newInternalAddress = newInternalAddress.concat("254");
 
-          if (!webRtcCandidateType.toString().equals(candidateType)) {
-            publicAddresses = publicAddress.split("\\.");
-            for (int i = 0; i < publicAddresses.length - 1; i++) {
-              newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ".");
-            }
-            newPublicAddress = newPublicAddress.concat("254");
-          } else {
-            newPublicAddress = publicAddress;
+        if (!webRtcCandidateType.toString().equals(candidateType)) {
+          publicAddresses = publicAddress.split("\\.");
+          for (int i = 0; i < publicAddresses.length - 1; i++) {
+            newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ".");
           }
-          return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
-              newPublicAddress);
-        case IPV6:
-          internalAddresses = internalAddress.split(":");
-          for (int i = 0; i < internalAddresses.length - 1; i++) {
-            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
-          }
-          newInternalAddress = newInternalAddress.concat("2000");
+          newPublicAddress = newPublicAddress.concat("254");
+        } else {
+          newPublicAddress = publicAddress;
+        }
+        return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
+            newPublicAddress);
+      case IPV6:
+        internalAddresses = internalAddress.split(":");
+        for (int i = 0; i < internalAddresses.length - 1; i++) {
+          newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
+        }
+        newInternalAddress = newInternalAddress.concat("2000");
 
-          if (!webRtcCandidateType.toString().equals(candidateType)) {
-            publicAddresses = publicAddress.split(":");
-            for (int i = 0; i < publicAddresses.length - 1; i++) {
-              newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ":");
-            }
-            newPublicAddress = newPublicAddress.concat("2000");
-          } else {
-            newPublicAddress = publicAddress;
+        if (!webRtcCandidateType.toString().equals(candidateType)) {
+          publicAddresses = publicAddress.split(":");
+          for (int i = 0; i < publicAddresses.length - 1; i++) {
+            newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ":");
           }
-          return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
-              newPublicAddress);
-        default:
-          break;
+          newPublicAddress = newPublicAddress.concat("2000");
+        } else {
+          newPublicAddress = publicAddress;
+        }
+        return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
+            newPublicAddress);
+      default:
+        break;
       }
     }
 
@@ -429,7 +308,7 @@ public class WebRtcTestPage extends WebPage {
   public void initWebRtc(final WebRtcEndpoint webRtcEndpoint, final WebRtcChannel channel,
       final WebRtcMode mode, final WebRtcIpvMode webRtcIpvMode,
       final WebRtcCandidateType webRtcCandidateType, boolean useDataChannels)
-          throws InterruptedException {
+      throws InterruptedException {
 
     webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
       @Override
@@ -513,7 +392,7 @@ public class WebRtcTestPage extends WebPage {
   @SuppressWarnings({ "unchecked", "deprecation" })
   protected void initWebRtc(final WebRtcConfigurer webRtcConfigurer, final WebRtcChannel channel,
       final WebRtcMode mode, final WebRtcCandidateType candidateType, boolean useDataChannels)
-          throws InterruptedException {
+      throws InterruptedException {
     // ICE candidates
     Thread t1 = new Thread() {
       @Override
@@ -522,14 +401,15 @@ public class WebRtcTestPage extends WebPage {
         int numCandidate = 0;
         while (true) {
           try {
-            ArrayList<Object> iceCandidates =
-                (ArrayList<Object>) browser.executeScript("return iceCandidates;");
+            ArrayList<Object> iceCandidates = (ArrayList<Object>) browser
+                .executeScript("return iceCandidates;");
 
             for (int i = numCandidate; i < iceCandidates.size(); i++) {
               JsonObject jsonCandidate = (JsonObject) parser.parse(iceCandidates.get(i).toString());
-              IceCandidate candidate =
-                  new IceCandidate(jsonCandidate.get("candidate").getAsString(), jsonCandidate.get(
-                      "sdpMid").getAsString(), jsonCandidate.get("sdpMLineIndex").getAsInt());
+              IceCandidate candidate = new IceCandidate(
+                  jsonCandidate.get("candidate").getAsString(),
+                  jsonCandidate.get("sdpMid").getAsString(),
+                  jsonCandidate.get("sdpMLineIndex").getAsInt());
               // log.debug("Adding candidate {}: {}", i, jsonCandidate);
               webRtcConfigurer.addIceCandidate(candidate);
               numCandidate++;
@@ -607,8 +487,8 @@ public class WebRtcTestPage extends WebPage {
       t1.stop();
       t2.interrupt();
       t2.stop();
-      throw new KurentoException("ICE negotiation not finished in " + browser.getTimeout()
-          + " seconds");
+      throw new KurentoException(
+          "ICE negotiation not finished in " + browser.getTimeout() + " seconds");
     }
   }
 
@@ -620,20 +500,11 @@ public class WebRtcTestPage extends WebPage {
   /*
    * reload
    */
-  public void reload() {
+  public void reload() throws IOException {
     browser.reload();
     browser.injectKurentoTestJs();
     browser.executeScriptAndWaitOutput("return kurentoTest;");
     setBrowser(browser);
-  }
-
-  /*
-   * stopWebRtc
-   */
-  public void stopWebRtc() {
-    browser.executeScript("stop();");
-    browser.executeScript("var kurentoTest = new KurentoTest();");
-    countDownLatchEvents.clear();
   }
 
   /*

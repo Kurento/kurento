@@ -150,8 +150,8 @@ public class Browser implements Closeable {
     this.scope = builder.scope;
     this.video = builder.video;
     this.audio = builder.audio;
-    this.serverPort =
-        getProperty(TEST_PORT_PROPERTY, getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort));
+    this.serverPort = getProperty(TEST_PORT_PROPERTY,
+        getProperty(TEST_PUBLIC_PORT_PROPERTY, builder.serverPort));
     this.webPageType = builder.webPageType;
     this.browserType = builder.browserType;
     this.usePhysicalCam = builder.usePhysicalCam;
@@ -235,8 +235,8 @@ public class Browser implements Closeable {
     if (url == null) {
       if (protocol == Protocol.FILE) {
         String webPage = webPagePath != null ? webPagePath : webPageType.toString();
-        File webPageFile =
-            new File(this.getClass().getClassLoader().getResource("static" + webPage).getFile());
+        File webPageFile = new File(
+            this.getClass().getClassLoader().getResource("static" + webPage).getFile());
         try {
           url = new URI(protocol.toString() + webPageFile.getAbsolutePath());
         } catch (URISyntaxException e) {
@@ -412,8 +412,8 @@ public class Browser implements Closeable {
     WebDriver driver = null;
 
     int numDriverTries = 0;
-    final int maxDriverError =
-        getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY, SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
+    final int maxDriverError = getProperty(SELENIUM_MAX_DRIVER_ERROR_PROPERTY,
+        SELENIUM_MAX_DRIVER_ERROR_DEFAULT);
     final String errMessage = "Exception creating webdriver for chrome";
     do {
       try {
@@ -510,8 +510,8 @@ public class Browser implements Closeable {
     }
 
     int idleTimeout = getProperty(SAUCELAB_IDLE_TIMEOUT_PROPERTY, SAUCELAB_IDLE_TIMEOUT_DEFAULT);
-    int commandTimeout =
-        getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY, SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
+    int commandTimeout = getProperty(SAUCELAB_COMMAND_TIMEOUT_PROPERTY,
+        SAUCELAB_COMMAND_TIMEOUT_DEFAULT);
     int maxDuration = getProperty(SAUCELAB_MAX_DURATION_PROPERTY, SAUCELAB_MAX_DURATION_DEFAULT);
     capabilities.setCapability("idleTimeout", idleTimeout);
     capabilities.setCapability("commandTimeout", commandTimeout);
@@ -563,8 +563,8 @@ public class Browser implements Closeable {
           gridNode = new GridNode(node, browserType, browserPerInstance, login, passwd, pem);
           GridHandler.getInstance().addNode(id, gridNode);
         } else {
-          gridNode =
-              GridHandler.getInstance().getRandomNodeFromList(id, browserType, browserPerInstance);
+          gridNode = GridHandler.getInstance().getRandomNodeFromList(id, browserType,
+              browserPerInstance);
         }
 
         // Start Hub (just the first time will be effective)
@@ -595,8 +595,8 @@ public class Browser implements Closeable {
 
       // At this moment we are able to use the argument for remote video
       if (video != null && browserType == BrowserType.CHROME) {
-        ChromeOptions options =
-            (ChromeOptions) capabilities.getCapability(ChromeOptions.CAPABILITY);
+        ChromeOptions options = (ChromeOptions) capabilities
+            .getCapability(ChromeOptions.CAPABILITY);
         options.addArguments("--use-file-for-fake-video-capture="
             + GridHandler.getInstance().getFirstNode(id).getRemoteVideo(video));
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
@@ -630,8 +630,8 @@ public class Browser implements Closeable {
     };
     t.start();
 
-    int timeout =
-        getProperty(SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY, SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT);
+    int timeout = getProperty(SELENIUM_REMOTEWEBDRIVER_TIME_PROPERTY,
+        SELENIUM_REMOTEWEBDRIVER_TIME_DEFAULT);
     String nodeMsg = gridNode != null ? " (" + gridNode.getHost() + ")" : "";
 
     for (int i = 0; i < timeout; i++) {
@@ -644,8 +644,8 @@ public class Browser implements Closeable {
       waitSeconds(1);
     }
 
-    String exceptionMessage =
-        "Remote webdriver of " + id + nodeMsg + " not created in " + timeout + "seconds";
+    String exceptionMessage = "Remote webdriver of " + id + nodeMsg + " not created in " + timeout
+        + "seconds";
     log.error(">>>>>>>>>> " + exceptionMessage);
     throw new RuntimeException(exceptionMessage);
   }
@@ -666,19 +666,25 @@ public class Browser implements Closeable {
     }
   }
 
-  public void injectKurentoTestJs() {
+  public void injectKurentoTestJs() throws IOException {
     if (this.getBrowserType() != BrowserType.IEXPLORER) {
+      File pageFile = new File(
+          this.getClass().getClassLoader().getResource("static/lib/kurento-test.min.js").getFile());
+      String kurentoTestJsContent = new String(Files.readAllBytes(pageFile.toPath()));
+
       String kurentoTestJs = "var kurentoScript=window.document.createElement('script');";
-      String kurentoTestJsPath = "./lib/kurento-test.js";
-      if (this.getProtocol() == Protocol.FILE) {
-        File pageFile = new File(
-            this.getClass().getClassLoader().getResource("static/lib/kurento-test.js").getFile());
-        kurentoTestJsPath = this.getProtocol().toString() + pageFile.getAbsolutePath();
-      }
-      kurentoTestJs += "kurentoScript.src='" + kurentoTestJsPath + "';";
+      kurentoTestJs += "kurentoScript.type='text/javascript';";
+      kurentoTestJs += "kurentoScript.text='" + kurentoTestJsContent + "';";
       kurentoTestJs += "window.document.head.appendChild(kurentoScript);";
       kurentoTestJs += "return true;";
       this.executeScript(kurentoTestJs);
+
+      String recordingJs = "var recScript=window.document.createElement('script');";
+      recordingJs += "recScript.type='text/javascript';";
+      recordingJs += "recScript.src='https://cdn.webrtc-experiment.com/RecordRTC.js';";
+      recordingJs += "window.document.head.appendChild(recScript);";
+      recordingJs += "return true;";
+      this.executeScript(recordingJs);
     }
   }
 
@@ -927,10 +933,10 @@ public class Browser implements Closeable {
         getProperty(TEST_PUBLIC_PORT_PROPERTY, WebServerService.getAppHttpsPort()));
     private BrowserScope scope = BrowserScope.LOCAL;
     private BrowserType browserType = BrowserType.CHROME;
-    private Protocol protocol =
-        Protocol.valueOf(getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT).toUpperCase());
-    private WebPageType webPageType =
-        WebPageType.value2WebPageType(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
+    private Protocol protocol = Protocol
+        .valueOf(getProperty(TEST_PROTOCOL_PROPERTY, TEST_PROTOCOL_DEFAULT).toUpperCase());
+    private WebPageType webPageType = WebPageType
+        .value2WebPageType(getProperty(TEST_PATH_PROPERTY, TEST_PATH_DEFAULT));
     private boolean usePhysicalCam = false;
     private boolean enableScreenCapture = false;
     private int recordAudio = 0; // seconds

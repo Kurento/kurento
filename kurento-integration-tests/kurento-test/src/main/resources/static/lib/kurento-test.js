@@ -52,6 +52,9 @@ function KurentoTest() {
 	// Recording
 	this.recordRTC = null;
 	this.recordingData;
+
+	// Video tag event
+	this.videoEventValue = null;
 }
 
 KurentoTest.prototype.syncTimeForOcr = function(videoTagId, peerConnectionId) {
@@ -121,8 +124,7 @@ KurentoTest.prototype.getStats = function(peerConnectionId, time) {
 		}
 
 		for ( var key in this.rtcStats) {
-			eval("this.ocrMap[time]." + key + " = \"" + this.rtcStats[key]
-					+ "\";");
+			this.ocrMap[time][key] = this.rtcStats[key];
 		}
 	}
 }
@@ -140,7 +142,7 @@ KurentoTest.prototype.getVideoTime = function(videoTagId, time) {
 		var destHeight = 61;
 
 		var video = document.getElementById(videoTagId);
-		var canvas = document.getElementById("canvas");
+		var canvas = document.createElement("canvas");
 		var context = canvas.getContext("2d");
 
 		canvas.width = destWidth;
@@ -347,18 +349,18 @@ KurentoTest.prototype.setColorCheckRate = function(colorCheckRate) {
 KurentoTest.prototype.startRecording = function(stream, recordingType,
 		mediaContainerFormat) {
 	// Defaults
-	var mimeType = 'video/webm';
-	if (mediaContainerFormat === 'mp4') {
-		mimeType = 'video/mp4';
+	var mimeType = "video/webm";
+	if (mediaContainerFormat === "mp4") {
+		mimeType = "video/mp4";
 	}
-	var recordingMedia = 'record-audio-and-video';
+	var recordingMedia = "record-audio-and-video";
 	if (recordingType) {
 		recordingMedia = recordingType;
 	}
 
-	if (recordingMedia === 'record-video') {
+	if (recordingMedia === "record-video") {
 		var options = {
-			type : 'video',
+			type : "video",
 			mimeType : isChrome ? null : mimeType,
 			disableLogs : false,
 			canvas : {
@@ -372,9 +374,9 @@ KurentoTest.prototype.startRecording = function(stream, recordingType,
 		this.recordRTC.startRecording();
 	}
 
-	if (recordingMedia === 'record-audio') {
+	if (recordingMedia === "record-audio") {
 		var options = {
-			type : 'audio',
+			type : "audio",
 			mimeType : mimeType,
 			bufferSize : 0,
 			sampleRate : 44100,
@@ -387,11 +389,11 @@ KurentoTest.prototype.startRecording = function(stream, recordingType,
 		this.recordRTC.startRecording();
 	}
 
-	if (recordingMedia === 'record-audio-and-video') {
-		if (typeof MediaRecorder === 'undefined') { // Opera
+	if (recordingMedia === "record-audio-and-video") {
+		if (typeof MediaRecorder === "undefined") { // Opera
 			this.recordRTC = [];
 			var audioOptions = {
-				type : 'audio',
+				type : "audio",
 				bufferSize : 16384, // it fixes audio issues whilst
 				// recording 720p
 				sampleRate : 44100,
@@ -400,7 +402,7 @@ KurentoTest.prototype.startRecording = function(stream, recordingType,
 				recorderType : StereoAudioRecorder
 			};
 			var videoOptions = {
-				type : 'video',
+				type : "video",
 				disableLogs : false,
 				canvas : {
 					width : 320,
@@ -426,7 +428,7 @@ KurentoTest.prototype.startRecording = function(stream, recordingType,
 		}
 
 		var options = {
-			type : 'video',
+			type : "video",
 			mimeType : isChrome ? null : mimeType,
 			disableLogs : false,
 			// bitsPerSecond : 25 * 8 * 1025, // 25 kbits/s
@@ -441,7 +443,7 @@ KurentoTest.prototype.startRecording = function(stream, recordingType,
 
 KurentoTest.prototype.stopRecording = function() {
 	if (!this.recordRTC) {
-		console.warn('No recording found.');
+		console.warn("No recording found.");
 	} else {
 		if (this.recordRTC.length) {
 			this.recordRTC[0].stopRecording(function(url) {
@@ -463,7 +465,7 @@ KurentoTest.prototype.stopRecording = function() {
 
 KurentoTest.prototype.saveRecordingToDisk = function() {
 	if (!this.recordRTC) {
-		console.warn('No recording found.');
+		console.warn("No recording found.");
 	} else {
 		var output = this.recordRTC.save();
 		console.info(output);
@@ -472,7 +474,7 @@ KurentoTest.prototype.saveRecordingToDisk = function() {
 
 KurentoTest.prototype.openRecordingInNewTab = function() {
 	if (!this.recordRTC) {
-		console.warn('No recording found.');
+		console.warn("No recording found.");
 	} else {
 		window.open(this.recordRTC.toURL());
 	}
@@ -481,11 +483,11 @@ KurentoTest.prototype.openRecordingInNewTab = function() {
 KurentoTest.prototype.recordingToData = function() {
 	var self = this;
 	if (!self.recordRTC) {
-		console.warn('No recording found.');
+		console.warn("No recording found.");
 	} else {
 		var blobUrl = self.recordRTC.toURL();
 		var xhr = new XMLHttpRequest;
-		xhr.responseType = 'blob';
+		xhr.responseType = "blob";
 		xhr.onload = function() {
 			var recoveredBlob = xhr.response;
 			var reader = new FileReader;
@@ -494,8 +496,22 @@ KurentoTest.prototype.recordingToData = function() {
 			};
 			reader.readAsDataURL(recoveredBlob);
 		};
-		xhr.open('GET', blobUrl);
+		xhr.open("GET", blobUrl);
 		xhr.send();
+	}
+};
+
+KurentoTest.prototype.videoEvent = function(e) {
+	if (!e) {
+		e = window.event;
+	}
+	kurentoTest.videoEventValue = e.type;
+	console.info("videoEvent " + kurentoTest.videoEventValue);
+
+	// Log if field status present
+	var status = document.getElementById("status");
+	if (status) {
+		status.value = e.type;
 	}
 };
 

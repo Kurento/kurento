@@ -299,22 +299,9 @@ function updateCurrentTime() {
 	document.getElementById("currentTime").value = video.currentTime;
 }
 
-function log(text) {
-	document.getElementById("status").value = text;
-}
 
 function addEventListener(type, callback) {
 	video.addEventListener(type, callback, false);
-}
-
-function videoEvent(e) {
-	if (!e) {
-		e = window.event;
-	}
-	if (e.type == "playing") {
-		audioTest.play();
-	}
-	log(e.type);
 }
 
 function addTestName(testName) {
