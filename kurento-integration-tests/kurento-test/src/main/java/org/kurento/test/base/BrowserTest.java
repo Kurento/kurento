@@ -141,7 +141,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     }
   }
 
-  private void initBrowser(String browserKey, Browser browser) throws IOException {
+  private void initBrowser(String browserKey, Browser browser) {
     browser.setId(browserKey);
     browser.setName(getTestMethodName());
     browser.init();
@@ -165,7 +165,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return testScenario;
   }
 
-  public void addBrowser(String browserKey, Browser browser) throws IOException {
+  public void addBrowser(String browserKey, Browser browser) {
     testScenario.getBrowserMap().put(browserKey, browser);
     initBrowser(browserKey, browser);
   }
