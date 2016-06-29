@@ -112,7 +112,7 @@ public class ServerManagerTest extends KurentoClientTest {
 
     List<MediaPipeline> mediaPipelines = serverManager.getPipelines();
 
-    for (MediaObject o : mediaPipelines.get(0).getChilds()) {
+    for (MediaObject o : mediaPipelines.get(0).getChildren()) {
       if (o.getId().indexOf("WebRtcEndpoint") >= 0) {
         WebRtcEndpoint webRtc = (WebRtcEndpoint) o;
 

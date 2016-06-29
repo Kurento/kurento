@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kurento.client.EventListener;
+import org.kurento.client.IceCandidateFoundEvent;
 import org.kurento.client.MediaPipeline;
-import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.monitor.SystemMonitorManager;
@@ -61,8 +61,8 @@ public class FakeKmsService extends KmsService {
     this.kmsWsUriExportProp = FAKE_KMS_WS_URI_PROP_EXPORT;
     this.kmsScopeProp = FAKE_KMS_SCOPE_PROP;
     this.kmsScopeDefault = FAKE_KMS_SCOPE_DEFAULT;
-    
-    //KMS_WS_URI_PROP has priority if there's no value for FAKE_KMS_WS_URI_PROP
+
+    // KMS_WS_URI_PROP has priority if there's no value for FAKE_KMS_WS_URI_PROP
     String uri = getProperty(FAKE_KMS_WS_URI_PROP);
     if (uri == null) {
       if (getProperty(KMS_WS_URI_PROP) != null) {
@@ -115,16 +115,19 @@ public class FakeKmsService extends KmsService {
               fakeBrowser.setMaxVideoRecvBandwidth(bandwidht);
             }
 
-            fakeOutputWebRtc.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+            fakeOutputWebRtc
+            .addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
+
               @Override
-              public void onEvent(OnIceCandidateEvent event) {
+              public void onEvent(IceCandidateFoundEvent event) {
                 fakeBrowser.addIceCandidate(event.getCandidate());
               }
             });
 
-            fakeBrowser.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+            fakeBrowser.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
+
               @Override
-              public void onEvent(OnIceCandidateEvent event) {
+              public void onEvent(IceCandidateFoundEvent event) {
                 fakeOutputWebRtc.addIceCandidate(event.getCandidate());
               }
             });

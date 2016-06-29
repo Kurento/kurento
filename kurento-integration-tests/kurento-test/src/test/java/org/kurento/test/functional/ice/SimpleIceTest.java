@@ -33,12 +33,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.kurento.client.EventListener;
+import org.kurento.client.IceComponentStateChangeEvent;
 import org.kurento.client.MediaFlowInStateChangeEvent;
 import org.kurento.client.MediaFlowOutStateChangeEvent;
 import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.NewCandidatePairSelectedEvent;
-import org.kurento.client.OnIceComponentStateChangedEvent;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.browser.WebRtcCandidateType;
@@ -145,10 +145,10 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEndpoint
-        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
 
           @Override
-          public void onEvent(OnIceComponentStateChangedEvent event) {
+          public void onEvent(IceComponentStateChangeEvent event) {
             log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
                 event.getState(), event.getSource(), event.getType(), event.getStreamId());
           }
@@ -235,15 +235,14 @@ public class SimpleIceTest extends FunctionalPlayerTest {
 
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
-    webRtcEp
-        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+    webRtcEp.addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
 
-          @Override
-          public void onEvent(OnIceComponentStateChangedEvent event) {
-            log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
-                event.getState(), event.getSource(), event.getType(), event.getStreamId());
-          }
-        });
+      @Override
+      public void onEvent(IceComponentStateChangeEvent event) {
+        log.info("OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
+            event.getState(), event.getSource(), event.getType(), event.getStreamId());
+      }
+    });
 
     webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
 
@@ -327,10 +326,10 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     final CountDownLatch eosLatch = new CountDownLatch(1);
 
     webRtcEpSendOnly
-        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
 
           @Override
-          public void onEvent(OnIceComponentStateChangedEvent event) {
+          public void onEvent(IceComponentStateChangeEvent event) {
             log.info(
                 "webRtcEpSendOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
                 event.getState(), event.getSource(), event.getType(), event.getStreamId());
@@ -350,10 +349,10 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         });
 
     webRtcEpRcvOnly
-        .addOnIceComponentStateChangedListener(new EventListener<OnIceComponentStateChangedEvent>() {
+        .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
 
           @Override
-          public void onEvent(OnIceComponentStateChangedEvent event) {
+          public void onEvent(IceComponentStateChangeEvent event) {
             log.info(
                 "webRtcEpRcvOnly: OnIceComponentStateChanged State: {} Source: {} Type: {} StreamId: {}",
                 event.getState(), event.getSource(), event.getType(), event.getStreamId());

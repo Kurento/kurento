@@ -29,8 +29,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.kurento.client.EventListener;
 import org.kurento.client.IceCandidate;
+import org.kurento.client.IceCandidateFoundEvent;
 import org.kurento.client.MediaStateChangedEvent;
-import org.kurento.client.OnIceCandidateEvent;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonUtils;
@@ -431,9 +431,10 @@ public class WebRtcTestPage extends WebPage {
       final WebRtcCandidateType webRtcCandidateType, boolean useDataChannels)
           throws InterruptedException {
 
-    webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
+    webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
+
       @Override
-      public void onEvent(OnIceCandidateEvent event) {
+      public void onEvent(IceCandidateFoundEvent event) {
         JsonObject candidate = JsonUtils.toJsonObject(event.getCandidate());
 
         if (!filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
