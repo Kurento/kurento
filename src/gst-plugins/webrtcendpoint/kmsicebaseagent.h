@@ -133,6 +133,8 @@ struct _KmsIceBaseAgentClass
                                      const char* stream_id,
                                      guint component_id);
 
+  gboolean (*get_controlling_mode) (KmsIceBaseAgent * self);
+
   void (*run_agent) (KmsIceBaseAgent * self);
 };
 
@@ -182,6 +184,8 @@ GSList* kms_ice_base_agent_get_local_candidates (KmsIceBaseAgent * self,
 IceState kms_ice_base_agent_get_component_state (KmsIceBaseAgent * self,
                                    const char* stream_id,
                                    guint component_id);
+
+gboolean kms_ice_base_agent_get_controlling_mode (KmsIceBaseAgent * self);
 
 void kms_ice_base_agent_run_agent (KmsIceBaseAgent * self);
 

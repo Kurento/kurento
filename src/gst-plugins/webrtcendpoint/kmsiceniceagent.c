@@ -476,6 +476,17 @@ kms_ice_nice_agent_get_component_state (KmsIceBaseAgent * self,
   return kms_ice_nice_agent_nice_to_ice_state (state);
 }
 
+static gboolean
+kms_ice_nice_agent_get_controlling_mode (KmsIceBaseAgent * self)
+{
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
+  gboolean controller;
+
+  g_object_get (nice_agent->priv->agent, "controlling-mode", &controller, NULL);
+
+  return controller;
+}
+
 static void
 kms_ice_nice_agent_run_agent (KmsIceBaseAgent * self)
 {
@@ -515,6 +526,7 @@ kms_ice_nice_agent_class_init (KmsIceNiceAgentClass * klass)
       kms_ice_nice_agent_get_default_local_candidate;
   base_class->get_local_candidates = kms_ice_nice_agent_get_local_candidates;
   base_class->get_component_state = kms_ice_nice_agent_get_component_state;
+  base_class->get_controlling_mode = kms_ice_nice_agent_get_controlling_mode;
   base_class->remove_stream = kms_ice_nice_agent_remove_stream;
 
   g_type_class_add_private (klass, sizeof (KmsIceNiceAgentPrivate));
