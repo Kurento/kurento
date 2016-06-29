@@ -25,8 +25,10 @@ import org.junit.Test;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.client.Handler;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
+import org.kurento.jsonrpc.client.ReconnectedHandler;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.kurento.jsonrpc.test.util.EventWaiter;
@@ -37,7 +39,7 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
   private static final Logger log = LoggerFactory.getLogger(ReconnectionTest.class);
 
-  public static class Handler extends DefaultJsonRpcHandler<String> {
+  public static class ServerHandler extends DefaultJsonRpcHandler<String> {
 
     @Override
     public void handleRequest(final Transaction transaction, Request<String> request)
@@ -96,6 +98,9 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
     final EventWaiter reconnecting = new EventWaiter("reconnecting");
     final EventWaiter reconnected = new EventWaiter("reconnected");
 
+    final EventWaiter reconnectingHandler = new EventWaiter("reconnectingHandler");
+    final EventWaiter reconnectedHandler = new EventWaiter("reconnectedHandler");
+
     JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
       @Override
       public void reconnecting() {
@@ -111,6 +116,20 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
     try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
         "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
+      client.onReconnecting(new Handler() {
+        @Override
+        public void run() {
+          reconnectingHandler.eventReceived();
+        }
+      });
+
+      client.onReconnected(new ReconnectedHandler() {
+        @Override
+        public void run(boolean sameServer) {
+          reconnectedHandler.eventReceived();
+        }
+      });
+
       assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("new");
       assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
       assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
@@ -121,7 +140,10 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
       Thread.sleep(100);
 
       reconnecting.waitFor(3000);
+      reconnectingHandler.waitFor(3000);
+
       reconnected.waitFor(3000);
+      reconnectedHandler.waitFor(3000);
 
       assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
       assertThat(client.sendRequest("sessiontest", String.class)).isEqualTo("old");
@@ -187,6 +209,56 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
       log.info("--------> Client reconnected event received");
 
+    }
+  }
+
+  @Test
+  public void givenJsonRpcClientAndServer_whenServerIsDown_thenClientKeepsReconnectingUntilMaxTime()
+      throws Exception {
+
+    final EventWaiter reconnecting = new EventWaiter("reconnecting");
+    final EventWaiter disconnected = new EventWaiter("disconnected");
+
+    JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
+      @Override
+      public void reconnecting() {
+        reconnecting.eventReceived();
+      }
+
+      @Override
+      public void disconnected() {
+        disconnected.eventReceived();
+      }
+    };
+
+    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
+        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+
+      client.setTryReconnectingMaxTime(7000);
+      client.enableHeartbeat(2000);
+
+      Thread.sleep(1000);
+
+      client.connect();
+
+      log.info("--------> Client connected to server");
+
+      server.close();
+
+      log.info("--------> Server closed");
+
+      reconnecting.waitFor(3000);
+
+      log.info("--------> Event reconnecting received in client");
+
+      assertThat(disconnected.isEventRecived()).isFalse();
+
+      Thread.sleep(7000);
+
+      disconnected.waitFor(20000);
+
+    } finally {
+      startServer();
     }
   }
 

@@ -24,22 +24,20 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.client.Handler;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.kurento.jsonrpc.test.util.EventWaiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
-
-  private static final Logger log = LoggerFactory.getLogger(ConnectionListenerTest.class);
 
   @Test
   public void givenPortWithoutServer_whenClientTryToConnect_thenAnExceptionIsThrownAndConnectionFailedEventIsFired()
       throws IOException, InterruptedException {
 
     final EventWaiter connectionFailed = new EventWaiter("connectionFailed");
+    final EventWaiter connectionFailedHandler = new EventWaiter("connectionFailedHandler");
 
     JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
       @Override
@@ -51,6 +49,13 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
         "ws://localhost:65000/reconnection", listener)) {
 
+      client.onConnectionFailed(new Handler() {
+        @Override
+        public void run() {
+          connectionFailedHandler.eventReceived();
+        }
+      });
+
       client.sendRequest("sessiontest", String.class);
 
       fail("KurentoException informing connection exception should be thrown");
@@ -60,6 +65,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     }
 
     connectionFailed.waitFor(20000);
+    connectionFailedHandler.waitFor(20000);
   }
 
   @Test
@@ -67,6 +73,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       throws IOException, InterruptedException {
 
     final EventWaiter connected = new EventWaiter("connected");
+    final EventWaiter connectedHandler = new EventWaiter("connectedHandler");
 
     JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
       @Override
@@ -78,9 +85,19 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
         "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
+      client.onConnected(new Handler() {
+
+        @Override
+        public void run() {
+          connectedHandler.eventReceived();
+        }
+
+      });
+
       client.sendRequest("sessiontest", String.class);
 
       connected.waitFor(20000);
+      connectedHandler.waitFor(20000);
     }
   }
 
@@ -89,6 +106,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       throws IOException, InterruptedException {
 
     final EventWaiter disconnected = new EventWaiter("disconnected");
+    final EventWaiter disconnectedHandler = new EventWaiter("disconnectedHandler");
 
     JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
       @Override
@@ -100,11 +118,18 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
         "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
+      client.onDisconnected(new Handler() {
+        @Override
+        public void run() {
+          disconnectedHandler.eventReceived();
+        }
+      });
+
       client.sendRequest("sessiontest", String.class);
       client.close();
 
       disconnected.waitFor(20000);
-
+      disconnectedHandler.waitFor(20000);
     }
   }
 
@@ -113,6 +138,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       throws Exception {
 
     final EventWaiter disconnected = new EventWaiter("disconnected");
+    final EventWaiter disconnectedHandler = new EventWaiter("disconnectedHandler");
 
     JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
       @Override
@@ -124,11 +150,19 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
         "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
+      client.onDisconnected(new Handler() {
+        @Override
+        public void run() {
+          disconnectedHandler.eventReceived();
+        }
+      });
+
       client.sendRequest("sessiontest", String.class);
 
       stopServer();
 
       disconnected.waitFor(20000);
+      disconnectedHandler.waitFor(20000);
 
     } finally {
       startServer();
@@ -140,6 +174,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       throws IOException, InterruptedException {
 
     final EventWaiter disconnected = new EventWaiter("disconnected");
+    final EventWaiter disconnectedHandler = new EventWaiter("disconnectedHandler");
     final EventWaiter closedByClientWhenDisconnected = new EventWaiter(
         "closedByClientWhenDisconnected");
 
@@ -159,12 +194,20 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
         "ws://localhost:" + getPort() + "/reconnection", listener)) {
 
+      client.onDisconnected(new Handler() {
+        @Override
+        public void run() {
+          disconnectedHandler.eventReceived();
+        }
+      });
+
       clientForListener[0] = client;
 
       client.sendRequest("sessiontest", String.class);
       client.close();
 
       disconnected.waitFor(20000);
+      disconnectedHandler.waitFor(20000);
       closedByClientWhenDisconnected.waitFor(20000);
     }
   }

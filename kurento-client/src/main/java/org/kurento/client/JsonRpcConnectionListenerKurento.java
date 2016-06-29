@@ -18,7 +18,7 @@ package org.kurento.client;
 
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
 
-public class JsonRpcConnectionListenerKurento implements JsonRpcWSConnectionListener {
+class JsonRpcConnectionListenerKurento implements JsonRpcWSConnectionListener {
 
   private KurentoConnectionListener listener;
 

@@ -76,6 +76,11 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private ResponseSender rs;
 
   private JsonRpcWSConnectionListener connectionListener;
+  private Handler connectedHandler;
+  private Handler connectionFailedHandler;
+  private Handler disconnectedHandler;
+  private Handler reconnectingHandler;
+  private ReconnectedHandler reconnectedHandler;
 
   private volatile boolean reconnecting;
 
@@ -86,10 +91,13 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private boolean concurrentServerRequest = true;
 
   private boolean tryReconnectingForever = false;
+  private long tryReconnectingMaxTime = 0;
 
   private boolean retryingIfTimeoutToConnect = false;
 
   private boolean startSessionWhenConnected = false;
+
+  private long maxTimeReconnecting = 0;
 
   public AbstractJsonRpcClientWebSocket(String url,
       JsonRpcWSConnectionListener connectionListener) {
@@ -174,77 +182,134 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   }
 
   private void fireEvent(Runnable r) {
-    if (connectionListener != null) {
-      createExecServiceIfNecessary();
-      reqResEventExec.submit(r);
-    }
+    createExecServiceIfNecessary();
+    reqResEventExec.submit(r);
   }
 
   protected void fireReconnectedNewServer() {
-    fireEvent(new Runnable() {
-      @Override
-      public void run() {
-        connectionListener.reconnected(false);
-      }
-    });
+    if (connectionListener != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionListener.reconnected(false);
+        }
+      });
+    }
+
+    if (reconnectedHandler != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          reconnectedHandler.run(false);
+        }
+      });
+    }
   }
 
   protected void fireReconnectedSameServer() {
-    fireEvent(new Runnable() {
-      @Override
-      public void run() {
-        connectionListener.reconnected(true);
-      }
-    });
+    if (connectionListener != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionListener.reconnected(true);
+        }
+      });
+    }
 
+    if (reconnectedHandler != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          reconnectedHandler.run(true);
+        }
+      });
+    }
   }
 
   protected void fireConnectionFailed() {
-    fireEvent(new Runnable() {
-      @Override
-      public void run() {
-        connectionListener.connectionFailed();
-      }
-    });
+    if (connectionListener != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionListener.connectionFailed();
+        }
+      });
+    }
 
+    if (connectionFailedHandler != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionFailedHandler.run();
+        }
+      });
+    }
   }
 
   protected void fireConnected() {
-    fireEvent(new Runnable() {
-      @Override
-      public void run() {
-        connectionListener.connected();
-      }
-    });
+    if (connectionListener != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionListener.connected();
+        }
+      });
+    }
+    if (connectedHandler != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectedHandler.run();
+        }
+      });
+    }
   }
 
   protected void fireReconnecting() {
-    fireEvent(new Runnable() {
-      @Override
-      public void run() {
-        connectionListener.reconnecting();
-      }
-    });
+    if (connectionListener != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionListener.reconnecting();
+        }
+      });
+    }
+    if (reconnectingHandler != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          reconnectingHandler.run();
+        }
+      });
+    }
   }
 
   protected void fireDisconnected() {
-    fireEvent(new Runnable() {
-      @Override
-      public void run() {
-        connectionListener.disconnected();
-      }
-    });
+    if (connectionListener != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          connectionListener.disconnected();
+        }
+      });
+    }
+    if (disconnectedHandler != null) {
+      fireEvent(new Runnable() {
+        @Override
+        public void run() {
+          disconnectedHandler.run();
+        }
+      });
+    }
   }
 
-  protected void createExecServiceIfNecessary() {
+  protected synchronized void createExecServiceIfNecessary() {
 
     if (reqResEventExec == null || disconnectExec == null || reqResEventExec.isShutdown()
         || reqResEventExec.isTerminated() || disconnectExec.isShutdown()
         || disconnectExec.isTerminated()) {
 
-      lock.tryLockTimeout("createExecServiceIfNecessary");
-
-      try {
+      synchronized (this) {
 
         if (reqResEventExec == null || reqResEventExec.isShutdown()
             || reqResEventExec.isTerminated()) {
@@ -257,8 +322,6 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
           disconnectExec = Executors.newScheduledThreadPool(1,
               ThreadFactoryCreator.create("AbstractJsonRpcClientWebSocket-disconnectExec"));
         }
-      } finally {
-        lock.unlock();
       }
     }
   }
@@ -412,7 +475,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   protected synchronized void closeClient(String reason) {
 
     if (!reconnecting) {
-      notifyUserClientClosed(reason, false);
+      notifyDisconnection(reason, false);
     }
 
     closeNativeClient();
@@ -429,7 +492,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
     if (disconnectExec != null) {
       try {
-        disconnectExec.shutdown();
+        disconnectExec.shutdownNow();
       } catch (Exception e) {
         log.debug("{} Could not properly shut down disconnect executor service. Reason: {}", label,
             e.getMessage());
@@ -442,7 +505,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     }
   }
 
-  private void notifyUserClientClosed(String reason, boolean connectedBefore) {
+  private void notifyDisconnection(String reason, boolean connectedBefore) {
     if (isClosedByUser() || connectedBefore) {
       fireDisconnected();
     } else {
@@ -524,14 +587,17 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   }
 
   private void reconnect(final String closeReason) {
-    reconnect(closeReason, 0);
+    reconnect(closeReason, 0, true);
   }
 
-  private void reconnect(final String closeReason, final long delayMillis) {
+  private void reconnect(final String closeReason, final long delayMillis,
+      boolean fireReconnecting) {
 
     reconnecting = true;
 
-    fireReconnecting();
+    if (fireReconnecting) {
+      fireReconnecting();
+    }
 
     if (heartbeating) {
       disableHeartbeat();
@@ -544,7 +610,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       public void run() {
         try {
 
-          log.debug("{}JsonRpcWsClient reconnecting to {}. ", label, url);
+          log.info("{}JsonRpcWsClient reconnecting to {}. ", label, url);
 
           connectIfNecessary();
 
@@ -552,18 +618,26 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
         } catch (Exception e) {
 
-          if (!tryReconnectingForever) {
+          log.info("TryReconnectingForever={}", tryReconnectingForever);
+          log.info("TryReconnectingMaxTime={}", tryReconnectingMaxTime);
+          log.info("maxTimeReconnecting={}", maxTimeReconnecting);
+          log.info("currentTime={}", System.currentTimeMillis());
+          log.info("Parar de reconectar={}", System.currentTimeMillis() > maxTimeReconnecting);
 
-            log.warn("{} Exception trying to reconnect to server {}.", label, url, e);
+          if (!tryReconnectingForever && (tryReconnectingMaxTime == 0
+              || System.currentTimeMillis() > maxTimeReconnecting)) {
 
-            notifyUserClientClosed(closeReason, true);
+            log.warn("{} Exception trying to reconnect to server {}. Notifying disconnection",
+                label, url, e);
+
+            notifyDisconnection(closeReason, true);
 
           } else {
 
             log.warn("{} Exception trying to reconnect to server {}. Retrying in {} millis", label,
                 url, RECONNECT_DELAY_TIME_MILLIS, e);
 
-            reconnect(closeReason, RECONNECT_DELAY_TIME_MILLIS);
+            reconnect(closeReason, RECONNECT_DELAY_TIME_MILLIS, false);
           }
         }
       }
@@ -599,6 +673,10 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   protected void internalConnectIfNecessary() throws IOException {
 
     if (!isNativeClientConnected()) {
+
+      if (!reconnecting) {
+        updateMaxTimeReconnecting();
+      }
 
       if (isClosedByUser()) {
         throw new JsonRpcClientClosedException(
@@ -639,6 +717,17 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       }
 
       updateSession();
+    }
+  }
+
+  private void updateMaxTimeReconnecting() {
+
+    if (tryReconnectingForever) {
+      maxTimeReconnecting = Long.MAX_VALUE;
+    } else if (tryReconnectingMaxTime <= 0) {
+      maxTimeReconnecting = 0;
+    } else {
+      maxTimeReconnecting = System.currentTimeMillis() + tryReconnectingMaxTime;
     }
   }
 
@@ -748,6 +837,31 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       throw new TimeoutRuntimeException(
           label + " Timeout trying to connect to websocket server " + url, e);
     }
+  }
+
+  public void onConnected(Handler connectedHandler) {
+    this.connectedHandler = connectedHandler;
+  }
+
+  public void onConnectionFailed(Handler connectionFailedHandler) {
+    this.connectionFailedHandler = connectionFailedHandler;
+  }
+
+  public void onDisconnected(Handler disconnectedHandler) {
+    this.disconnectedHandler = disconnectedHandler;
+  }
+
+  public void onReconnecting(Handler reconnectingHandler) {
+    this.reconnectingHandler = reconnectingHandler;
+  }
+
+  public void onReconnected(ReconnectedHandler reconnectedHandler) {
+    this.reconnectedHandler = reconnectedHandler;
+  }
+
+  public void setTryReconnectingMaxTime(long tryReconnectingMaxTime) {
+    this.tryReconnectingForever = false;
+    this.tryReconnectingMaxTime = tryReconnectingMaxTime;
   }
 
   protected abstract void sendTextMessage(String jsonMessage) throws IOException;

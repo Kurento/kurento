@@ -72,7 +72,7 @@ public class BootTestApplication implements JsonRpcConfigurer {
 
     registry.addHandler(new CloseSessionTest.Handler(), "/close_session_handler");
 
-    registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
+    registry.addHandler(new ReconnectionTest.ServerHandler(), "/reconnection");
 
     registry.addHandler(new ReconnectionFromServerTest.Handler(), "/reconnection2");
 
