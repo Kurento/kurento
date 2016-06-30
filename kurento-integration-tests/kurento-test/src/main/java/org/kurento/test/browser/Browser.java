@@ -880,13 +880,17 @@ public class Browser implements Closeable {
   }
 
   public URL getUrl() {
-    String ip = this.getHost();
-    int port = this.getServerPort();
-    String protocol = this.getProtocol().toString();
-    String path = this.getWebPageType().toString();
     URL url = null;
     try {
-      url = new URL(protocol, ip, port, path);
+      if (this.url != null) {
+        url = this.url.toURL();
+      } else {
+        String ip = this.getHost();
+        int port = this.getServerPort();
+        String protocol = this.getProtocol().toString();
+        String path = this.getWebPageType().toString();
+        url = new URL(protocol, ip, port, path);
+      }
     } catch (MalformedURLException e) {
       log.error("Malformed URL", e);
       throw new RuntimeException(e);
@@ -1117,6 +1121,7 @@ public class Browser implements Closeable {
     public Builder url(String url) {
       try {
         this.url = new URI(url);
+
       } catch (URISyntaxException e) {
         throw new KurentoException("Could not parse URI " + url);
       }
