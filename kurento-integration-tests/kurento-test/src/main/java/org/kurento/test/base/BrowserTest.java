@@ -662,15 +662,24 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     Arrays.sort(ls1);
     Arrays.sort(ls2);
 
-    List<String> ocrList = new ArrayList<>();
+    List<String> ocrList1 = new ArrayList<>();
+    List<String> ocrList2 = new ArrayList<>();
     int i = 0;
     for (; i < Math.min(ls1.length, ls2.length); i++) {
-      String ocr1 = ocr((BufferedImage) ImageIO.read(ls1[i]));
-      String ocr2 = ocr((BufferedImage) ImageIO.read(ls2[i]));
-      ocrList.add(ocr2);
+      String ocr1 = this.ocr((BufferedImage) ImageIO.read(ls1[i]));
+      String ocr2 = this.ocr((BufferedImage) ImageIO.read(ls2[i]));
+      ocrList1.add(ocr1);
+      ocrList2.add(ocr2);
+
       log.trace("---> Time comparsion to find cut frame: {} vs {}", ocr1, ocr2);
-      if (ocrList.contains(ocr1)) {
+      if (ocrList2.contains(ocr1)) {
         log.info("Found OCR match {} at position {}", ocr1, i);
+        // TODO Hack here: if the first video should be cut (presenter), the result is negative.
+        // Otherwise the result is positive (cut the second video, i.e. the viewer)
+        i *= -1;
+        break;
+      } else if (ocrList1.contains(ocr2)) {
+        log.info("Found OCR match {} at position {}", ocr2, i);
         break;
       }
     }
@@ -694,10 +703,10 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
     int cutFrame = getCutFrame(raw1, raw2, tmpFolder);
     log.info("Cut frame: {}", cutFrame);
-    File cutVideo = cutVideo(raw1, tmpFolder, cutFrame, FPS);
-    log.info("Cut video: {}", cutVideo);
 
-    getVideoQuality(cutVideo, raw2, tmpFolder, FPS, csvOutput);
+    File finalFile1 = cutFrame < 1 ? cutVideo(raw1, tmpFolder, Math.abs(cutFrame), FPS) : raw1;
+    File finalFile2 = cutFrame < 1 ? raw2 : cutVideo(raw2, tmpFolder, Math.abs(cutFrame), FPS);
+    getVideoQuality(finalFile1, finalFile2, tmpFolder, FPS, csvOutput);
 
     FileUtils.deleteDirectory(tmpFolder);
   }
