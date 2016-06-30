@@ -186,3 +186,19 @@ target_link_libraries(test_srtp
                       ${gstreamer-rtp-1.5_LIBRARIES}
                       ${gstreamer-check-1.5_LIBRARIES}
                       ${KmsGstCommons_LIBRARIES})
+
+add_test_program (test_ice_candidates ice_candidates.c)
+add_dependencies(test_ice_candidates ${LIBRARY_NAME}plugins)
+target_include_directories(test_ice_candidates PRIVATE
+                           ${KmsGstCommons_INCLUDE_DIRS}
+                           ${gstreamer-1.5_INCLUDE_DIRS}
+                           ${gstreamer-check-1.5_INCLUDE_DIRS}
+                           ${nice_INCLUDE_DIRS}
+                           "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/gst-plugins")
+target_link_libraries(test_ice_candidates
+                      kmswebrtcendpointlib
+                      ${gstreamer-1.5_LIBRARIES}
+                      ${gstreamer-sdp-1.5_LIBRARIES}
+                      ${gstreamer-check-1.5_LIBRARIES}
+                      ${nice_LIBRARIES}
+                      ${KmsGstCommons_LIBRARIES})

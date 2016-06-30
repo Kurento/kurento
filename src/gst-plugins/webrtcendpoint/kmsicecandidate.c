@@ -38,6 +38,14 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
 #define DEFAULT_SDP_MID    NULL
 #define DEFAULT_SDP_M_LINE_INDEX    0
 
+#define CANDIDATE_EXPR "^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)" \
+  " (?<transport>(udp|UDP|tcp|TCP)) (?<priority>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)" \
+  " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))" \
+  "( raddr (?<raddr>[0-9.:a-zA-Z]+))?" \
+  "( rport (?<rport>[0-9]+))?" \
+  "( tcptype (?<tcptype>(active|passive|so)))?" \
+  "( generation [0-9]+)?$"
+
 enum
 {
   PROP_0,
@@ -53,9 +61,116 @@ struct _KmsIceCandidatePrivate
   gchar *candidate;
   gchar *sdp_mid;
   guint8 sdp_m_line_index;
+  gchar *foundation;
+  guint priority;
+  gchar *ip;
+  KmsIceProtocol protocol;
+  guint port;
+  KmsIceCandidateType type;
+  KmsIceTcpCandidateType tcp_type;
+  gchar *related_addr;          /* optional NULL if not provided */
+  gint related_port;            /* optional, -1 if not provided */
 
   gchar *stream_id;
 };
+
+static gboolean
+kms_ice_candidate_update_values (KmsIceCandidate * self)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  gchar *tmp = NULL;
+  gboolean ret = FALSE;
+
+  regex = g_regex_new (CANDIDATE_EXPR, 0, 0, NULL);
+  g_regex_match (regex, self->priv->candidate, 0, &match_info);
+
+  if (!g_match_info_matches (match_info)) {
+    GST_WARNING_OBJECT (self, "Cannot parse from '%s'", self->priv->candidate);
+    goto end;
+  }
+
+  g_free (self->priv->foundation);
+  g_free (self->priv->ip);
+  g_free (self->priv->related_addr);
+
+  self->priv->ip = g_match_info_fetch_named (match_info, "addr");
+
+  tmp = g_match_info_fetch_named (match_info, "port");
+  self->priv->port = atoi (tmp);
+  g_free (tmp);
+
+  self->priv->foundation = g_match_info_fetch_named (match_info, "foundation");
+
+  tmp = g_match_info_fetch_named (match_info, "priority");
+  self->priv->priority = atoi (tmp);
+  g_free (tmp);
+
+  tmp = g_match_info_fetch_named (match_info, "transport");
+  if (g_strcmp0 (tmp, "TCP") == 0 || g_strcmp0 (tmp, "tcp") == 0) {
+    self->priv->protocol = KMS_ICE_PROTOCOL_TCP;
+  } else if (g_strcmp0 (tmp, "UDP") == 0 || g_strcmp0 (tmp, "udp") == 0) {
+    self->priv->protocol = KMS_ICE_PROTOCOL_UDP;
+  } else {
+    GST_ERROR_OBJECT (self, "Unsupported protocol %s", tmp);
+    goto end;
+  }
+
+  g_free (tmp);
+
+  tmp = g_match_info_fetch_named (match_info, "type");
+  if (g_strcmp0 (tmp, "host") == 0) {
+    self->priv->type = KMS_ICE_CANDIDATE_TYPE_HOST;
+  } else if (g_strcmp0 (tmp, "srflx") == 0) {
+    self->priv->type = KMS_ICE_CANDIDATE_TYPE_SRFLX;
+  } else if (g_strcmp0 (tmp, "prflx") == 0) {
+    self->priv->type = KMS_ICE_CANDIDATE_TYPE_PRFLX;
+  } else if (g_strcmp0 (tmp, "relay") == 0) {
+    self->priv->type = KMS_ICE_CANDIDATE_TYPE_RELAY;
+  } else {
+    GST_ERROR_OBJECT (self, "Unsupported ice candidate type %s", tmp);
+    goto end;
+  }
+
+  g_free (tmp);
+
+  tmp = g_match_info_fetch_named (match_info, "tcptype");
+  if (g_strcmp0 (tmp, "active") == 0) {
+    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE;
+  } else if (g_strcmp0 (tmp, "passive") == 0) {
+    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_PASSIVE;
+  } else if (g_strcmp0 (tmp, "so") == 0) {
+    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_SO;
+  } else {
+    self->priv->tcp_type = KMS_ICE_TCP_CANDIDATE_TYPE_NONE;
+  }
+  g_free (tmp);
+
+  tmp = g_match_info_fetch_named (match_info, "raddr");
+  if (tmp != NULL && g_strcmp0 (tmp, "") != 0) {
+    self->priv->related_addr = tmp;
+  } else {
+    self->priv->related_addr = NULL;
+    g_free (tmp);
+  }
+
+  tmp = g_match_info_fetch_named (match_info, "rport");
+  if (tmp != NULL && g_strcmp0 (tmp, "") != 0) {
+    self->priv->related_port = atoi (tmp);
+  } else {
+    self->priv->related_port = -1;
+  }
+
+  ret = TRUE;
+
+end:
+  g_free (tmp);
+
+  g_match_info_free (match_info);
+  g_regex_unref (regex);
+
+  return ret;
+}
 
 static void
 kms_ice_candidate_set_property (GObject * gobject, guint property_id,
@@ -69,6 +184,7 @@ kms_ice_candidate_set_property (GObject * gobject, guint property_id,
 
       g_free (self->priv->candidate);
       self->priv->candidate = g_strdup (str);
+      kms_ice_candidate_update_values (self);
       break;
     }
     case PROP_SDP_MID:{
@@ -113,6 +229,9 @@ kms_ice_candidate_finalize (GObject * gobject)
   g_free (self->priv->candidate);
   g_free (self->priv->sdp_mid);
   g_free (self->priv->stream_id);
+  g_free (self->priv->foundation);
+  g_free (self->priv->ip);
+  g_free (self->priv->related_addr);
 
   G_OBJECT_CLASS (kms_ice_candidate_parent_class)->finalize (gobject);
 }
@@ -161,7 +280,9 @@ KmsIceCandidate *
 kms_ice_candidate_new (const gchar * candidate,
     const gchar * sdp_mid, guint8 sdp_m_line_index, const gchar * stream_id)
 {
-  KmsIceCandidate *cand = g_object_new (KMS_TYPE_ICE_CANDIDATE, "candidate",
+  KmsIceCandidate *cand;
+
+  cand = g_object_new (KMS_TYPE_ICE_CANDIDATE, "candidate",
       candidate, "sdp-mid", sdp_mid, "sdp-m-line-index", sdp_m_line_index,
       NULL);
 
@@ -197,62 +318,13 @@ kms_ice_candidate_get_stream_id (KmsIceCandidate * self)
 gchar *
 kms_ice_candidate_get_address (KmsIceCandidate * self)
 {
-  GRegex *regex;
-  GMatchInfo *match_info;
-  gchar *addr;
-
-  regex = g_regex_new ("^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)"
-      " (?<transport>(udp|UDP|tcp|TCP)) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
-      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
-      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?$",
-      0, 0, NULL);
-  g_regex_match (regex, self->priv->candidate, 0, &match_info);
-
-  if (!g_match_info_matches (match_info)) {
-    GST_WARNING ("Cannot get address from '%s'", self->priv->candidate);
-    addr = NULL;
-    goto end;
-  }
-
-  addr = g_match_info_fetch_named (match_info, "addr");
-
-end:
-  g_match_info_free (match_info);
-  g_regex_unref (regex);
-
-  return addr;
+  return g_strdup (self->priv->ip);
 }
 
 const guint
 kms_ice_candidate_get_port (KmsIceCandidate * self)
 {
-  GRegex *regex;
-  GMatchInfo *match_info;
-  gchar *port_str;
-  guint port = 0;
-
-  regex = g_regex_new ("^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)"
-      " (?<transport>(udp|UDP|tcp|TCP)) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
-      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
-      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( tcptype (active|passive|so))?( generation [0-9]+)?$",
-      0, 0, NULL);
-  g_regex_match (regex, self->priv->candidate, 0, &match_info);
-
-  if (!g_match_info_matches (match_info)) {
-    GST_WARNING ("Cannot get port from '%s'", self->priv->candidate);
-    port_str = NULL;
-    goto end;
-  }
-
-  port_str = g_match_info_fetch_named (match_info, "port");
-  port = atoi (port_str);
-  g_free (port_str);
-
-end:
-  g_match_info_free (match_info);
-  g_regex_unref (regex);
-
-  return port;
+  return self->priv->port;
 }
 
 int
@@ -269,9 +341,49 @@ kms_ice_candidate_get_ip_version (KmsIceCandidate * self)
 gchar *
 kms_ice_candidate_get_sdp_line (KmsIceCandidate * self)
 {
-  const gchar *cand = kms_ice_candidate_get_candidate (self);
+  return g_strdup_printf ("a=%s", self->priv->candidate);
+}
 
-  return g_strdup_printf ("a=%s", cand);
+gchar *
+kms_ice_candidate_get_foundation (KmsIceCandidate * self)
+{
+  return g_strdup (self->priv->foundation);
+}
+
+guint
+kms_ice_candidate_get_priority (KmsIceCandidate * self)
+{
+  return self->priv->priority;
+}
+
+KmsIceProtocol
+kms_ice_candidate_get_protocol (KmsIceCandidate * self)
+{
+  return self->priv->protocol;
+}
+
+KmsIceCandidateType
+kms_ice_candidate_get_candidate_type (KmsIceCandidate * self)
+{
+  return self->priv->type;
+}
+
+KmsIceTcpCandidateType
+kms_ice_candidate_get_candidate_tcp_type (KmsIceCandidate * self)
+{
+  return self->priv->tcp_type;
+}
+
+gchar *
+kms_ice_candidate_get_related_address (KmsIceCandidate * self)
+{
+  return g_strdup (self->priv->related_addr);
+}
+
+gint
+kms_ice_candidate_get_related_port (KmsIceCandidate * self)
+{
+  return self->priv->related_port;
 }
 
 /* Utils end */

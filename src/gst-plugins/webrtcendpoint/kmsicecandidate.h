@@ -50,11 +50,34 @@ struct _KmsIceCandidateClass
   GObjectClass parent_class;
 };
 
+typedef enum
+{
+  KMS_ICE_PROTOCOL_UDP,
+  KMS_ICE_PROTOCOL_TCP
+} KmsIceProtocol;
+
+typedef enum
+{
+  KMS_ICE_CANDIDATE_TYPE_HOST,
+  KMS_ICE_CANDIDATE_TYPE_SRFLX,
+  KMS_ICE_CANDIDATE_TYPE_PRFLX,
+  KMS_ICE_CANDIDATE_TYPE_RELAY
+} KmsIceCandidateType;
+
+typedef enum
+{
+  KMS_ICE_TCP_CANDIDATE_TYPE_NONE,
+  KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE,
+  KMS_ICE_TCP_CANDIDATE_TYPE_PASSIVE,
+  KMS_ICE_TCP_CANDIDATE_TYPE_SO
+} KmsIceTcpCandidateType;
+
 GType kms_ice_candidate_get_type (void);
 
 KmsIceCandidate *kms_ice_candidate_new (const gchar * candidate,
     const gchar * sdp_mid, guint8 sdp_m_line_index, const gchar *stream_id);
 
+/* TODO: Use GObject getters instead */
 const gchar * kms_ice_candidate_get_candidate (KmsIceCandidate * self);
 const gchar * kms_ice_candidate_get_sdp_mid (KmsIceCandidate * self);
 gchar * kms_ice_candidate_get_address (KmsIceCandidate * self);
@@ -63,6 +86,13 @@ int kms_ice_candidate_get_ip_version (KmsIceCandidate * self);
 guint8 kms_ice_candidate_get_sdp_m_line_index (KmsIceCandidate * self);
 const gchar * kms_ice_candidate_get_stream_id (KmsIceCandidate * self);
 gchar * kms_ice_candidate_get_sdp_line (KmsIceCandidate * self);
+gchar * kms_ice_candidate_get_foundation (KmsIceCandidate * self);
+guint kms_ice_candidate_get_priority (KmsIceCandidate * self);
+KmsIceProtocol kms_ice_candidate_get_protocol (KmsIceCandidate * self);
+KmsIceCandidateType kms_ice_candidate_get_candidate_type (KmsIceCandidate * self);
+KmsIceTcpCandidateType kms_ice_candidate_get_candidate_tcp_type (KmsIceCandidate * self);
+gchar * kms_ice_candidate_get_related_address (KmsIceCandidate * self);
+gint kms_ice_candidate_get_related_port (KmsIceCandidate * self);
 
 G_END_DECLS
 #endif /* __KMS_ICE_ICE_CANDIDATE_H__ */
