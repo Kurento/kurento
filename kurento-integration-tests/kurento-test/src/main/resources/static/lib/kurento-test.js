@@ -15,6 +15,16 @@
  *
  */
 
+/*
+ * IMPORTANT NOTE
+ *
+ * The JavaScript file which is actually injected in the application under test
+ * by the Kurento Test Infrastructure is kurento-test-min.js. Therefore, any
+ * change in this file should be also in kurento-test-min.js. In other words,
+ * if you are planning to introduce new changes on this file, please minify the
+ * result and update kurento-test-min.js.
+ *
+ */
 function KurentoTest() {
 	// Required for compatibility in color gathering
 	window.requestAnimationFrame = window.requestAnimationFrame
