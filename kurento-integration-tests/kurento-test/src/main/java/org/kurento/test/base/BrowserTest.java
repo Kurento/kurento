@@ -318,7 +318,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       }
 
       if (responseCode != HttpURLConnection.HTTP_OK) {
-        Assert.fail("URL " + url + " not reachable. Response code=" + responseCode);
+        log.warn("URL " + url + " not reachable. Response code=" + responseCode);
       }
     } catch (Exception e) {
       e.printStackTrace();
