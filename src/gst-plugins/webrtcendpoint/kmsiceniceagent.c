@@ -461,6 +461,35 @@ kms_ice_nice_agent_get_local_candidates (KmsIceBaseAgent * self,
   return ret;
 }
 
+static GSList *
+kms_ice_nice_agent_get_remote_candidates (KmsIceBaseAgent * self,
+    const char *stream_id, guint component_id)
+{
+  KmsIceNiceAgent *nice_agent = KMS_ICE_NICE_AGENT (self);
+  GSList *ret = NULL;
+  guint id = atoi (stream_id);
+  GSList *candidates;
+  GSList *walk;
+
+  candidates =
+      nice_agent_get_remote_candidates (nice_agent->priv->agent, id,
+      component_id);
+
+  for (walk = candidates; walk; walk = walk->next) {
+    NiceCandidate *nice_cand = walk->data;
+    KmsIceCandidate *candidate =
+        kms_ice_nice_agent_create_candidate_from_nice (nice_agent->priv->agent,
+        nice_cand,
+        stream_id);
+
+    ret = g_slist_append (ret, candidate);
+  }
+
+  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
+
+  return ret;
+}
+
 static IceState
 kms_ice_nice_agent_get_component_state (KmsIceBaseAgent * self,
     const char *stream_id, guint component_id)
@@ -524,6 +553,7 @@ kms_ice_nice_agent_class_init (KmsIceNiceAgentClass * klass)
   base_class->get_default_local_candidate =
       kms_ice_nice_agent_get_default_local_candidate;
   base_class->get_local_candidates = kms_ice_nice_agent_get_local_candidates;
+  base_class->get_remote_candidates = kms_ice_nice_agent_get_remote_candidates;
   base_class->get_component_state = kms_ice_nice_agent_get_component_state;
   base_class->get_controlling_mode = kms_ice_nice_agent_get_controlling_mode;
   base_class->remove_stream = kms_ice_nice_agent_remove_stream;

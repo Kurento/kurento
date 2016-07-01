@@ -129,6 +129,10 @@ struct _KmsIceBaseAgentClass
                                    const char* stream_id,
                                    guint component_id);
 
+  GSList* (*get_remote_candidates) (KmsIceBaseAgent * self,
+                                   const char* stream_id,
+                                   guint component_id);
+
   IceState (*get_component_state) (KmsIceBaseAgent * self,
                                      const char* stream_id,
                                      guint component_id);
@@ -178,6 +182,10 @@ KmsIceCandidate* kms_ice_base_agent_get_default_local_candidate (KmsIceBaseAgent
                                                                 guint component_id);
 
 GSList* kms_ice_base_agent_get_local_candidates (KmsIceBaseAgent * self,
+                                                          const char* stream_id,
+                                                          guint component_id);
+
+GSList* kms_ice_base_agent_get_remote_candidates (KmsIceBaseAgent * self,
                                                           const char* stream_id,
                                                           guint component_id);
 
