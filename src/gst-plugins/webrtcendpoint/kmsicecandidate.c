@@ -201,7 +201,7 @@ kms_ice_candidate_set_property (GObject * gobject, guint property_id,
 }
 
 static void
-kms_bse_rtp_endpoint_get_property (GObject * gobject, guint property_id,
+kms_ice_candidate_get_property (GObject * gobject, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
   KmsIceCandidate *self = KMS_ICE_CANDIDATE (gobject);
@@ -243,7 +243,7 @@ kms_ice_candidate_class_init (KmsIceCandidateClass * klass)
 
   gobject_class->finalize = kms_ice_candidate_finalize;
   gobject_class->set_property = kms_ice_candidate_set_property;
-  gobject_class->get_property = kms_bse_rtp_endpoint_get_property;
+  gobject_class->get_property = kms_ice_candidate_get_property;
 
   g_object_class_install_property (gobject_class, PROP_CANDIDATE,
       g_param_spec_string ("candidate",
