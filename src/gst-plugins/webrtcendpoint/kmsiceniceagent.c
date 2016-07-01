@@ -381,8 +381,7 @@ kms_ice_nice_agent_add_ice_candidate (KmsIceBaseAgent * self,
       kms_ice_candidate_get_candidate (candidate));
 
   candidate_str =
-      g_strdup_printf ("a=" SDP_CANDIDATE_ATTR ":%s",
-      kms_ice_candidate_get_candidate (candidate));
+      g_strdup_printf ("a=%s", kms_ice_candidate_get_candidate (candidate));
   nice_cand =
       nice_agent_parse_remote_candidate_sdp (nice_agent->priv->agent, id,
       candidate_str);
