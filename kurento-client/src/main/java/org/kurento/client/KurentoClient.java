@@ -68,6 +68,10 @@ public class KurentoClient {
 
   public static synchronized String getKmsUrl(String id, Properties properties) {
 
+    if (properties == null) {
+      properties = new Properties();
+    }
+
     if (kmsUrlLoader == null) {
 
       Path configFile = Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento",
@@ -147,7 +151,7 @@ public class KurentoClient {
       final ReconnectedHandler reconnectedHandler, Long tryReconnectingMaxTime) {
 
     String clientId = null;
-    if (kmsWsUri != null) {
+    if (kmsWsUri == null) {
       clientId = UUID.randomUUID().toString();
       kmsWsUri = getKmsUrl(clientId, properties);
     }
