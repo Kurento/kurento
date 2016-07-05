@@ -38,13 +38,25 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
 #define DEFAULT_SDP_MID    NULL
 #define DEFAULT_SDP_M_LINE_INDEX    0
 
-#define CANDIDATE_EXPR "^candidate:(?<foundation>[0-9]+) (?<cid>[0-9]+)" \
-  " (?<transport>(udp|UDP|tcp|TCP)) (?<priority>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)" \
+#define BYTE_STRING_ATTR_EXPR "([\\x01-\\x09]|[\\x0B-\\x0C]|[\\x0E-\\xFF])+"    /* any byte except NUL, CR, or LF (rfc4566) */
+#define ALPHA_ATTR_EXPR "[\\x41-\\x5A]|[\\x61-\\x7A]"   /* A-Z | a-z (rfc5234) */
+#define DIGIT_ATTR_EXPR "[\\x30-\\x59]" /* 0 - 9 (rfc5234) */
+
+#define ICE_CHAR_ATTR_EXPR ALPHA_ATTR_EXPR "|" DIGIT_ATTR_EXPR "|\\x2B|\\x2f"   /* rfc5245 */
+
+#define EXTENSION_ATTR_EXP "( tcptype (?<tcptype>(active|passive|so)))?" \
+  "( " BYTE_STRING_ATTR_EXPR " " BYTE_STRING_ATTR_EXPR ")*$"
+
+#define CANDIDATE_EXPR "^candidate:" \
+  "(?<foundation>(" ICE_CHAR_ATTR_EXPR  "){1,32})" \
+  " (?<cid>(" DIGIT_ATTR_EXPR "){1,5})" \
+  " (?<transport>(udp|UDP|tcp|TCP))" \
+  " (?<priority>(" DIGIT_ATTR_EXPR "){1,10})" \
+  " (?<addr>[0-9.:a-zA-Z]+)" \
   " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))" \
   "( raddr (?<raddr>[0-9.:a-zA-Z]+))?" \
   "( rport (?<rport>[0-9]+))?" \
-  "( tcptype (?<tcptype>(active|passive|so)))?" \
-  "( generation [0-9]+)?$"
+  EXTENSION_ATTR_EXP
 
 enum
 {

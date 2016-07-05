@@ -91,8 +91,13 @@ GST_START_TEST (test_expr)
       "candidate:5 1 UDP 2013266431 192.168.1.183 55079 typ relay raddr 127.0.0.1 tcptype active";
   gchar *c6 =
       "candidate:6 1 UDP 2013266431 192.168.1.183 55079 typ relay rport 9999 tcptype active";
+  gchar *c7 =
+      "candidate:842163049 1 udp 1677729535 193.147.51.8 59803 typ srflx raddr 172.17.0.9 rport 59803 generation 0 ufrag B+z2Krpxf2R3uR0S";
+  gchar *c8 =
+      "candidate:qwert+/456 1 TCP 935331583 fe80::a00:27ff:fee0:4ebf 38878 typ prflx tcptype active";
 
-  KmsIceCandidate *cand1, *cand2, *cand3, *cand4, *cand5, *cand6;
+  KmsIceCandidate *cand1, *cand2, *cand3, *cand4, *cand5, *cand6, *cand7,
+      *cand8;
 
   cand1 = kms_ice_candidate_new (c1, "test", 1, "8");
   check_candidate (cand1, "test", "192.168.1.183", 38907, 4, "8", "1",
@@ -124,12 +129,25 @@ GST_START_TEST (test_expr)
       2013266431, KMS_ICE_PROTOCOL_UDP, KMS_ICE_CANDIDATE_TYPE_RELAY,
       KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE, NULL, 9999);
 
+  cand7 = kms_ice_candidate_new (c7, "test", 1, "8");
+  check_candidate (cand7, "test", "193.147.51.8", 59803, 4, "8", "842163049",
+      1677729535, KMS_ICE_PROTOCOL_UDP, KMS_ICE_CANDIDATE_TYPE_SRFLX,
+      KMS_ICE_TCP_CANDIDATE_TYPE_NONE, "172.17.0.9", 59803);
+
+  cand8 = kms_ice_candidate_new (c8, "test", 1, "8");
+  check_candidate (cand8, "test", "fe80::a00:27ff:fee0:4ebf", 38878, 6, "8",
+      "qwert+/456", 935331583, KMS_ICE_PROTOCOL_TCP,
+      KMS_ICE_CANDIDATE_TYPE_PRFLX, KMS_ICE_TCP_CANDIDATE_TYPE_ACTIVE, NULL,
+      -1);
+
   g_object_unref (cand1);
   g_object_unref (cand2);
   g_object_unref (cand3);
   g_object_unref (cand4);
   g_object_unref (cand5);
   g_object_unref (cand6);
+  g_object_unref (cand7);
+  g_object_unref (cand8);
 }
 
 GST_END_TEST;
