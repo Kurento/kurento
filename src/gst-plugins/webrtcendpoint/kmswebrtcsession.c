@@ -853,6 +853,7 @@ gst_media_add_remote_candidates (KmsWebrtcSession * self,
   len = gst_sdp_media_attributes_len (media);
   for (i = 0; i < len; i++) {
     const GstSDPAttribute *attr;
+    gchar *candidate_str;
     KmsIceCandidate *candidate;
     gint idx = kms_sdp_media_config_get_id (mconf);
     const gchar *mid = kms_sdp_media_config_get_mid (mconf);
@@ -862,7 +863,9 @@ gst_media_add_remote_candidates (KmsWebrtcSession * self,
       continue;
     }
 
-    candidate = kms_ice_candidate_new (attr->value, mid, idx, NULL);
+    candidate_str = g_strdup_printf ("%s:%s", SDP_CANDIDATE_ATTR, attr->value);
+    candidate = kms_ice_candidate_new (candidate_str, mid, idx, NULL);
+    g_free (candidate_str);
     kms_webrtc_session_add_ice_candidate (self, candidate);
     g_object_unref (candidate);
   }
