@@ -38,7 +38,7 @@ G_DEFINE_TYPE (KmsIceCandidate, kms_ice_candidate, G_TYPE_OBJECT);
 #define DEFAULT_SDP_MID    NULL
 #define DEFAULT_SDP_M_LINE_INDEX    0
 
-#define CANDIDATE_EXPR "^(candidate:)?(?<foundation>[0-9]+) (?<cid>[0-9]+)" \
+#define CANDIDATE_EXPR "^candidate:(?<foundation>[0-9]+) (?<cid>[0-9]+)" \
   " (?<transport>(udp|UDP|tcp|TCP)) (?<priority>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)" \
   " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))" \
   "( raddr (?<raddr>[0-9.:a-zA-Z]+))?" \
