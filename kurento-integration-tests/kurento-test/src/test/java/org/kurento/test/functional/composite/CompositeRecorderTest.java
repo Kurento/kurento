@@ -19,11 +19,14 @@ package org.kurento.test.functional.composite;
 
 import java.awt.Color;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Composite;
+import org.kurento.client.Continuation;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
@@ -85,7 +88,7 @@ public class CompositeRecorderTest extends BaseRecorder {
 
     PlayerEndpoint playerRed =
         new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/30sec/red.webm")
-            .build();
+    .build();
     PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
         "http://" + getTestFilesHttpPath() + "/video/30sec/green.webm").build();
     PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
@@ -120,12 +123,29 @@ public class CompositeRecorderTest extends BaseRecorder {
 
     Thread.sleep(RECORDTIME * 1000);
 
-    recorderEp.stop();
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     playerRed.stop();
     playerGreen.stop();
     playerBlue.stop();
     playerWhite.stop();
+
+    mp.release();
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();

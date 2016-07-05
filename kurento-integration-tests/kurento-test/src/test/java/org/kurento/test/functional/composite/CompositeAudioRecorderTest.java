@@ -19,10 +19,14 @@ package org.kurento.test.functional.composite;
 
 import java.awt.Color;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Composite;
+import org.kurento.client.Continuation;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaType;
@@ -36,9 +40,7 @@ import org.kurento.test.functional.recorder.BaseRecorder;
 /**
  * Four synthetic videos are played by four PlayerEndpoint and mixed by a Composite. Only audio is
  * connected for three players. The resulting video is recording using a RecorderEndpoint. The
- * recorded video is played using a PlayerEndpoint.
- * </p>
- * Media Pipeline(s):
+ * recorded video is played using a PlayerEndpoint. </p> Media Pipeline(s):
  * <ul>
  * <li>4xPlayerEndpoint -> Composite -> RecorderEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -85,11 +87,13 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
 
     PlayerEndpoint playerRed =
         new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/30sec/red.webm")
-            .build();
-    PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/30sec/green.webm").build();
-    PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/30sec/blue.webm").build();
+    .build();
+    PlayerEndpoint playerGreen =
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/green.webm").build();
+    PlayerEndpoint playerBlue =
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/blue.webm").build();
 
     Composite composite = new Composite.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(composite).build();
@@ -100,8 +104,9 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
     playerGreen.connect(hubPort2, MediaType.AUDIO);
     playerBlue.connect(hubPort3, MediaType.AUDIO);
 
-    PlayerEndpoint playerWhite = new PlayerEndpoint.Builder(mp,
-        "http://" + getTestFilesHttpPath() + "/video/30sec/white.webm").build();
+    PlayerEndpoint playerWhite =
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
+            + "/video/30sec/white.webm").build();
     HubPort hubPort4 = new HubPort.Builder(composite).build();
     playerWhite.connect(hubPort4, MediaType.AUDIO);
 
@@ -120,12 +125,29 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
 
     Thread.sleep(RECORDTIME * 1000);
 
-    recorderEp.stop();
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     playerRed.stop();
     playerGreen.stop();
     playerBlue.stop();
     playerWhite.stop();
+
+    mp.release();
 
     // Media Pipeline #2
     MediaPipeline mp2 = kurentoClient.createMediaPipeline();

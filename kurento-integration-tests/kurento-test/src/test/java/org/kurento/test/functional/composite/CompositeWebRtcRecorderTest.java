@@ -20,10 +20,14 @@ package org.kurento.test.functional.composite;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Composite;
+import org.kurento.client.Continuation;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaType;
@@ -69,7 +73,7 @@ import org.kurento.test.functional.recorder.BaseRecorder;
  * <ul>
  * <li>Playing event should be received in remote video tag</li>
  * </ul>
- * 
+ *
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 6.1.1
  */
@@ -92,18 +96,18 @@ public class CompositeWebRtcRecorderTest extends BaseRecorder {
         .webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL).build());
     test.addBrowser(BROWSER2,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/red.y4m").build());
+        .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/red.y4m").build());
     test.addBrowser(BROWSER3,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/green.y4m")
-            .build());
+        .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/green.y4m")
+        .build());
     test.addBrowser(BROWSER4,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/blue.y4m").build());
+        .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/blue.y4m").build());
     test.addBrowser(BROWSER5,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/white.y4m")
-            .build());
+        .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/white.y4m")
+        .build());
     return Arrays.asList(new Object[][] { { test } });
   }
 
@@ -149,7 +153,23 @@ public class CompositeWebRtcRecorderTest extends BaseRecorder {
 
     Thread.sleep(PLAYTIME * 1000);
 
-    recorderEp.stop();
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage(BROWSER1).getTimeout(), TimeUnit.SECONDS));
+
     mp.release();
 
     // Media Pipeline #2
