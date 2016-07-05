@@ -31,9 +31,12 @@ import org.kurento.client.MediaFlowState;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.commons.testing.SystemStabilityTests;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
+import org.kurento.test.config.Protocol;
+import org.kurento.test.utils.Shell;
 
 /**
  * Stability tests.
@@ -43,6 +46,8 @@ import org.kurento.test.browser.WebRtcMode;
  */
 @Category(SystemStabilityTests.class)
 public class StabilityTest extends RepositoryMongoTest {
+
+  private static final int WAIT_POLL_TIME = 200; // milliseconds
 
   public final long DEFAULT_TEST_DURATION = 300000; // ms
 
@@ -144,4 +149,71 @@ public class StabilityTest extends RepositoryMongoTest {
     playerEp.release();
     mp.release();
   }
+
+  protected void waitForFileExists(String recordingFile) {
+    boolean exists = false;
+    String pathToMedia_[] = recordingFile.split("://");
+
+    String protocol = "";
+    String path = "";
+
+    if (pathToMedia_.length > 1) {
+      protocol = pathToMedia_[0];
+      path = pathToMedia_[1];
+    } else {
+      String recordDefaultPath = KurentoTest.getRecordDefaultPath();
+
+      if (recordDefaultPath != null) {
+        String defaultPathToMedia_[] = recordDefaultPath.split("://");
+        protocol = defaultPathToMedia_[0];
+        String pathStart = defaultPathToMedia_[1];
+
+        path = pathStart + pathToMedia_[0];
+      }
+    }
+
+    log.debug("Waiting for the file to be saved: {}", recordingFile);
+
+    long timeoutMs = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(WAIT_POLL_TIME);
+    do {
+
+      if (Protocol.FILE.toString().equals(protocol)) {
+        String output = Shell.runAndWaitString("ls " + path);
+        if (!output.contains("No such file or directory")) {
+          exists = true;
+        }
+      } else if (Protocol.HTTP.toString().equals(protocol)
+          || Protocol.HTTPS.toString().equals(protocol)) {
+        exists = true;
+      } else if (Protocol.S3.toString().equals(protocol)) {
+        recordingFile = protocol + "://" + path;
+        String output = Shell.runAndWaitString("aws s3 ls " + recordingFile);
+        if (!output.equals("")) {
+          exists = true;
+        }
+      } else if (Protocol.MONGODB.toString().equals(protocol)) {
+        // TODO
+      }
+
+      if (!exists) {
+
+        // Check timeout
+        if (System.currentTimeMillis() > timeoutMs) {
+          throw new KurentoException("Timeout of " + WAIT_POLL_TIME + " seconds waiting for file: "
+              + recordingFile);
+        }
+
+        try {
+          // Wait WAIT_HUB_POLL_TIME ms
+          log.debug("File {} does not exist ... waiting {} ms", recordingFile, WAIT_POLL_TIME);
+          Thread.sleep(WAIT_POLL_TIME);
+
+        } catch (InterruptedException e) {
+          log.error("Exception waiting for recording file");
+        }
+
+      }
+    } while (!exists);
+  }
+
 }
