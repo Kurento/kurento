@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.MediaFlowInStateChangeEvent;
@@ -94,10 +95,20 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
     final int playTimeSeconds = 3;
     final int numRepeat = 200;
     final CountDownLatch flowingLatch = new CountDownLatch(1);
+    final CountDownLatch eosLatch = new CountDownLatch(1);
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
+
+    playerEp.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+      @Override
+      public void onEvent(EndOfStreamEvent event) {
+        log.debug("Received EndOfStream Event");
+        eosLatch.countDown();
+      }
+    });
+
     FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
     playerEp.connect(filter);
@@ -144,6 +155,10 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
       filter = new FaceOverlayFilter.Builder(mp).build();
       playerEp.connect(filter);
       filter.connect(webRtcEp);
+      if (eosLatch.getCount() == 0) {
+        playerEp.play();
+        Thread.sleep(1000);
+      }
     }
 
     // Release Media Pipeline
