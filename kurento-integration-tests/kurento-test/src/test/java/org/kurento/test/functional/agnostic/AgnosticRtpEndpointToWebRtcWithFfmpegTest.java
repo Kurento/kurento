@@ -37,6 +37,9 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.utils.Shell;
 
+import org.kurento.client.SDES;
+import org.kurento.client.CryptoSuite;
+
 /**
  * Test agnostic. </p> Media Pipeline(s):
  * <ul>
@@ -83,7 +86,9 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
 
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
-    RtpEndpoint rtpEp = new RtpEndpoint.Builder(mp).build();
+    SDES sdes = new SDES();
+    sdes.setCrypto(CryptoSuite.AES_128_CM_HMAC_SHA1_80);
+    RtpEndpoint rtpEp = new RtpEndpoint.Builder(mp).withCrypto(sdes).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
     rtpEp.connect(webRtcEp);
@@ -93,7 +98,7 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
 
     String sdp =
         "v=0\r\n" + "o=- 0 0 IN IP4 0.0.0.0\r\n" + "s=-\r\n" + "t=0 0\r\n"
-            + "m=video 1 RTP/AVP 96\r\n" + "c=IN IP4 0.0.0.0\r\n" + "a=rtpmap:96 H264/90000\r\n"
+            + "m=video 1 RTP/SAVP 96\r\n" + "c=IN IP4 0.0.0.0\r\n" + "a=rtpmap:96 H264/90000\r\n"
             + "a=fmtp:96 packetization-mode=1\r\n"
             + "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW";
 
