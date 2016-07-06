@@ -9,8 +9,8 @@ Build-Depends: debhelper (>= 8.0.0),
  libboost-filesystem-dev,
  libboost-test-dev,
  libsoup2.4-dev,
- libnice-dev (>= 0.1.13.1),
- gstreamer1.5-nice (>= 0.1.13.1),
+ libnice-dev (>= 0.1.13.1~0),
+ gstreamer1.5-nice (>= 0.1.13.1~0),
  uuid-dev,
  valgrind,
  openwebrtc-gst-plugins-dev,
@@ -25,7 +25,7 @@ Architecture: any
 Depends:
   ${shlibs:Depends},
   ${misc:Depends},
-  gstreamer1.5-nice (>= 0.1.13.1),
+  gstreamer1.5-nice (>= 0.1.13.1~0),
   openwebrtc-gst-plugins,
   libssl (>= 1.0.2d),
   kms-core-6.0 (>= 6.5.0)
@@ -37,7 +37,7 @@ Description: Kurento elements module
 Package: kms-elements-6.0-dev
 Architecture: any
 Depends: kms-elements-6.0 (= ${binary:Version}),
-  libnice-dev (>= 0.1.13.1),
+  libnice-dev (>= 0.1.13.1~0),
   kms-core-6.0-dev
 Breaks:
   kms-elements-dev
