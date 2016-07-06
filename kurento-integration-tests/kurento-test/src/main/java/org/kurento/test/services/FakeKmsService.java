@@ -50,6 +50,8 @@ import org.kurento.test.utils.WebRtcConnector;
 public class FakeKmsService extends KmsService {
 
   protected List<WebRtcEndpoint> fakeWebRtcList = new ArrayList<>();
+  protected List<WebRtcEndpoint> fakeBrowserList = new ArrayList<>();
+  protected List<MediaPipeline> fakeMediaPipelineList = new ArrayList<>();
 
   public FakeKmsService() {
     this.kmsLoginProp = FAKE_KMS_LOGIN_PROP;
@@ -146,6 +148,8 @@ public class FakeKmsService extends KmsService {
             }
 
             fakeWebRtcList.add(fakeOutputWebRtc);
+            fakeBrowserList.add(fakeBrowser);
+            fakeMediaPipelineList.add(fakePipeline);
           }
         }.start();
 
@@ -156,6 +160,39 @@ public class FakeKmsService extends KmsService {
         waitMs(timeBetweenClientMs);
       }
     }
+  }
+
+  public void releaseAllFakeClients(long timeBetweenClientMs, WebRtcEndpoint inputWebRtc,
+      SystemMonitorManager monitor) {
+    for (WebRtcEndpoint fakeWebRtc : fakeWebRtcList) {
+      fakeWebRtc.release();
+      monitor.decrementNumClients();
+
+      waitMs(timeBetweenClientMs);
+    }
+    for (WebRtcEndpoint fakeBrowser : fakeBrowserList) {
+      fakeBrowser.release();
+      waitMs(timeBetweenClientMs);
+    }
+    fakeWebRtcList = new ArrayList<>();
+    fakeBrowserList = new ArrayList<>();
+  }
+
+  public void releaseAllFakePipelines(long timeBetweenClientMs, SystemMonitorManager monitor) {
+    for (WebRtcEndpoint fakeWebRtc : fakeWebRtcList) {
+      monitor.decrementNumClients();
+      waitMs(timeBetweenClientMs);
+    }
+    for (WebRtcEndpoint fakeBrowser : fakeBrowserList) {
+      fakeBrowser.release();
+      waitMs(timeBetweenClientMs);
+    }
+    for (MediaPipeline fakeMediaPipeline : fakeMediaPipelineList) {
+      fakeMediaPipeline.release();
+    }
+    fakeWebRtcList = new ArrayList<>();
+    fakeBrowserList = new ArrayList<>();
+    fakeMediaPipelineList = new ArrayList<MediaPipeline>();
   }
 
   public void removeAllFakeClients(long timeBetweenClientMs, WebRtcEndpoint inputWebRtc,
