@@ -71,6 +71,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
   g_mutex_unlock (&KMS_RECORDER_ENDPOINT(obj)->priv->base_time_lock)    \
 )
 
+#define SRCS_LOCK(obj) (                                           \
+  g_mutex_lock (&KMS_RECORDER_ENDPOINT(obj)->priv->srcs_mutex)     \
+)
+
+#define SRCS_UNLOCK(obj) (                                         \
+  g_mutex_unlock (&KMS_RECORDER_ENDPOINT(obj)->priv->srcs_mutex)   \
+)
+
 static void link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data);
 static void unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data);
 
@@ -114,6 +122,7 @@ struct _KmsRecorderEndpointPrivate
 
   GSList *sink_probes;
   GHashTable *srcs;
+  GMutex srcs_mutex;
 
   KmsRecorderStats stats;
 
@@ -407,21 +416,25 @@ send_eos_cb (gchar * id, GstElement * appsrc, gpointer user_data)
   send_eos (appsrc);
 }
 
+/*
+ * It should be always called with the element lock hold.
+ */
 static void
 kms_recorder_endpoint_send_eos_to_appsrcs (KmsRecorderEndpoint * self)
 {
+  KMS_ELEMENT_UNLOCK (self);
+  SRCS_LOCK (self);
   if (g_hash_table_size (self->priv->srcs) == 0) {
-    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
     kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_NULL);
-    KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
-    return;
+    goto end;
   }
 
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
   kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_PLAYING);
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
-
   g_hash_table_foreach (self->priv->srcs, (GHFunc) send_eos_cb, NULL);
+
+end:
+  SRCS_UNLOCK (self);
+  KMS_ELEMENT_LOCK (self);
 }
 
 static void
@@ -476,6 +489,7 @@ kms_recorder_endpoint_finalize (GObject * object)
   g_slist_free_full (self->priv->sink_probes,
       (GDestroyNotify) kms_stats_probe_destroy);
   g_hash_table_unref (self->priv->srcs);
+  g_mutex_clear (&self->priv->srcs_mutex);
 
   g_hash_table_unref (self->priv->sink_pad_data);
   g_slist_free_full (self->priv->pending_pads, g_free);
@@ -875,7 +889,9 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   gst_pad_set_element_private (pad, g_object_ref (appsrc));
 
+  SRCS_LOCK (self);
   g_hash_table_insert (self->priv->srcs, id, g_object_ref (appsrc));
+  SRCS_UNLOCK (self);
 
   if (sinkdata->sink_probe != 0UL) {
     gst_pad_remove_probe (target, sinkdata->sink_probe);
@@ -899,6 +915,16 @@ end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
   g_clear_object (&target);
+}
+
+static void
+kms_recorder_release_pending_pad (gchar * id, KmsRecorderEndpoint * self)
+{
+  if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
+    SRCS_LOCK (self);
+    g_hash_table_remove (self->priv->srcs, id);
+    SRCS_UNLOCK (self);
+  }
 }
 
 static void
@@ -928,9 +954,7 @@ unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
     goto end;
   }
 
-  if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
-    g_hash_table_remove (self->priv->srcs, id);
-  }
+  kms_recorder_release_pending_pad (id, self);
 
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
@@ -1027,14 +1051,6 @@ kms_recorder_endpoint_update_media_stats (KmsRecorderEndpoint * self)
   if (self->priv->stats.enabled) {
     g_slist_foreach (self->priv->sink_probes,
         (GFunc) kms_recorder_endpoint_enable_media_stats, self);
-  }
-}
-
-static void
-kms_recorder_release_pending_pad (gchar * id, KmsRecorderEndpoint * self)
-{
-  if (kms_base_media_muxer_remove_src (self->priv->mux, id)) {
-    g_hash_table_remove (self->priv->srcs, id);
   }
 }
 
@@ -1393,20 +1409,20 @@ kms_recorder_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
 
     id = gst_pad_get_name (pad);
 
-    KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+    SRCS_LOCK (self);
 
     appsrc = g_hash_table_lookup (self->priv->srcs, id);
     g_free (id);
 
     if (appsrc == NULL) {
-      KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+      SRCS_UNLOCK (self);
       GST_DEBUG_OBJECT (self, "No appsrc attached to pad %" GST_PTR_FORMAT,
           pad);
       goto end;
     }
     srcpad = gst_element_get_static_pad (appsrc, "src");
 
-    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+    SRCS_UNLOCK (self);
 
     ret = gst_pad_peer_query_accept_caps (srcpad, accept);
     gst_object_unref (srcpad);
@@ -1785,6 +1801,7 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
   self->priv = KMS_RECORDER_ENDPOINT_GET_PRIVATE (self);
 
   g_mutex_init (&self->priv->base_time_lock);
+  g_mutex_init (&self->priv->srcs_mutex);
 
   self->priv->srcs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
       g_object_unref);
