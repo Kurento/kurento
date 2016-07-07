@@ -32,8 +32,12 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
+
+  private static Logger log = LoggerFactory.getLogger(AbstractJsonRpcClientWebSocket.class);
 
   private static final int MAX_PACKET_SIZE = 1000000;
 
@@ -149,8 +153,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
         jettyClient.stop();
         jettyClient.destroy();
       } catch (Exception e) {
-        log.debug("{} Could not properly close websocket client. Reason: {}", label,
-            e.getMessage());
+        log.warn("{} Could not properly close websocket client.", label, e);
       }
       jettyClient = null;
     }

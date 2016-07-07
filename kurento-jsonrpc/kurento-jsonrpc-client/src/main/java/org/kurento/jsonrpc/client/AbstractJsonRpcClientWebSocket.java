@@ -60,7 +60,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   private static final int CONNECTION_LOCK_TIMEOUT = 25000;
 
-  public static Logger log = LoggerFactory.getLogger(AbstractJsonRpcClientWebSocket.class);
+  private static Logger log = LoggerFactory.getLogger(AbstractJsonRpcClientWebSocket.class);
 
   protected static final long RECONNECT_DELAY_TIME_MILLIS = 5000;
 
@@ -98,6 +98,8 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private boolean startSessionWhenConnected = false;
 
   private long maxTimeReconnecting = 0;
+
+  private Object executorsLock = new Object();
 
   public AbstractJsonRpcClientWebSocket(String url,
       JsonRpcWSConnectionListener connectionListener) {
@@ -303,13 +305,13 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     }
   }
 
-  protected synchronized void createExecServiceIfNecessary() {
+  protected void createExecServiceIfNecessary() {
 
     if (reqResEventExec == null || disconnectExec == null || reqResEventExec.isShutdown()
         || reqResEventExec.isTerminated() || disconnectExec.isShutdown()
         || disconnectExec.isTerminated()) {
 
-      synchronized (this) {
+      synchronized (executorsLock) {
 
         if (reqResEventExec == null || reqResEventExec.isShutdown()
             || reqResEventExec.isTerminated()) {
