@@ -6,7 +6,7 @@ pullAndTag() {
 	echo "Pulling $KURENTO_REGISTRY_URI/$1"
 	docker pull $KURENTO_REGISTRY_URI/$1
 	echo "Tagging $KURENTO_REGISTRY_URI/$1 as $1"
-	docker tag -f $KURENTO_REGISTRY_URI/$1 $1
+	docker tag $KURENTO_REGISTRY_URI/$1 $1
 }
 
 # Internal (private) images
