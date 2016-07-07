@@ -451,8 +451,6 @@ kms_recorder_endpoint_dispose (GObject * object)
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
-  g_mutex_clear (&self->priv->base_time_lock);
-
   /* clean up as possible.  may be called multiple times */
 
   G_OBJECT_CLASS (kms_recorder_endpoint_parent_class)->dispose (object);
@@ -482,6 +480,8 @@ kms_recorder_endpoint_finalize (GObject * object)
   g_hash_table_unref (self->priv->sink_pad_data);
   g_slist_free_full (self->priv->pending_pads, g_free);
   g_hash_table_unref (self->priv->stats.avg_e2e);
+
+  g_mutex_clear (&self->priv->base_time_lock);
 
   GST_DEBUG_OBJECT (self, "finalized");
 
