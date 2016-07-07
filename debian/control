@@ -27,7 +27,7 @@ Depends:
   ${misc:Depends},
   gstreamer1.5-nice (>= 0.1.13.1~0),
   openwebrtc-gst-plugins,
-  libssl (>= 1.0.2d),
+  libssl1.0.0 (>= 1.0.2d),
   kms-core-6.0 (>= 6.5.0)
 Breaks:
   kms-elements
