@@ -590,7 +590,9 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       // OCR corrections
       parsedOut = outText.getString().replaceAll("l", "1").replaceAll("Z", "2").replaceAll("O", "0")
           .replaceAll("B", "8").replaceAll("G", "6").replaceAll("S", "8").replaceAll("'", "")
-          .replaceAll("‘", "").replaceAll(".", ":");
+          .replaceAll("‘", "").replaceAll("\\.", ":").replaceAll("E", "8").replaceAll("o", "0")
+          .replaceAll("ﬂ", "0");
+      parsedOut = parsedOut.substring(0, 7) + ":" + parsedOut.substring(8, parsedOut.length());
 
       // Remove last part (number of frames)
       int iSpace = parsedOut.lastIndexOf(" ");
