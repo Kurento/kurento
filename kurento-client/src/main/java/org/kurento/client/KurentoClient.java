@@ -56,6 +56,9 @@ public class KurentoClient {
   private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
       10000);
 
+  private long connectionTimeout = PropertiesManager.getProperty("kurento.client.connectionTimeout",
+      5000);
+
   private String id;
 
   private ServerManager serverManager;
@@ -226,6 +229,7 @@ public class KurentoClient {
     this.client = client;
     this.manager = new RomManager(new RomClientJsonRpcClient(client));
     client.setRequestTimeout(requesTimeout);
+    client.setConnectionTimeout(connectionTimeout);
     if (client instanceof JsonRpcClientWebSocket) {
       ((JsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
     }

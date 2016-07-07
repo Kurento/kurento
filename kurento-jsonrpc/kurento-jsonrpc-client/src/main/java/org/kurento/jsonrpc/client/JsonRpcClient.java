@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.ThreadFactoryCreator;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonRpcHandler;
@@ -80,7 +81,8 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
   protected Object registerInfo;
   protected ClientSession session;
   protected String label = "";
-  protected int connectionTimeout = 5000;
+  protected long connectionTimeout = PropertiesManager
+      .getProperty("jsonRpcClientWebSocket.connectionTimeout", 5000);
   protected int idleTimeout = 300000;
   protected int heartbeatInterval = 0;
   private static final int DEFAULT_HEARTBEAT_INTERVAL = 5000;
@@ -178,7 +180,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
    *
    * @return the timeout in milliseconds
    */
-  public int getConnectionTimeoutValue() {
+  public long getConnectionTimeout() {
     return this.connectionTimeout;
   }
 
@@ -190,7 +192,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
    * @param connectionTimeout
    *          the timeout in milliseconds
    */
-  public void setConnectionTimeoutValue(int connectionTimeout) {
+  public void setConnectionTimeout(long connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
 
