@@ -48,7 +48,7 @@ kms_webrtc_transport_sink_connect_elements (KmsWebrtcTransportSink * self)
 
   funnel = gst_bin_get_by_name (GST_BIN (self->dtlssrtpenc), FUNNEL_NAME);
   if (funnel != NULL) {
-    g_object_set (funnel, "forward-sticky-events", FALSE, NULL);
+    g_object_set (funnel, "forward-sticky-events-mode", 0 /* never */ , NULL);
     g_object_unref (funnel);
   } else {
     GST_WARNING ("Cannot get funnel with name %s", FUNNEL_NAME);
