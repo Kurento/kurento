@@ -54,7 +54,7 @@ QUnit.module(QUnit.config.prefix + 'MediaPipeline', lifecycle);
 /**
  * Basic pipeline reading a video from a URL and stream it over HTTP
  */
-QUnit.asyncTest('Creation', function (assert) {
+QUnit.asyncTest('Creation with Callback', function (assert) {
   var self = this;
 
   assert.expect(3);
@@ -86,9 +86,40 @@ QUnit.asyncTest('Creation', function (assert) {
 });
 
 /**
+ * Basic pipeline reading a video from a URL and stream it over HTTP
+ */
+QUnit.asyncTest('Creation with Promise', function (assert) {
+  var self = this;
+
+  assert.expect(2);
+
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
+    uri: URL_SMALL
+  }).then(function(player) {
+    assert.notEqual(player, undefined, 'player');
+
+    return self.pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
+      uri: URL_SMALL
+    }).then(function (recorder) {
+      assert.notEqual(recorder, undefined, 'recorder');
+
+      return player.connect(recorder).then(function () {
+        QUnit.start();
+      });
+    }, function(error) {
+      if (error) return onerror(error)
+    });
+  }, function(error) {
+      if (error) return onerror(error)
+    })
+  .catch(onerror)
+
+});
+
+/**
  * Basic pipeline using a pseudo-syncronous API
  */
-QUnit.asyncTest('Pseudo-syncronous API', function () {
+QUnit.asyncTest('Pseudo-syncronous API with Callback', function () {
   var self = this;
 
   QUnit.expect(0);
@@ -109,6 +140,5 @@ QUnit.asyncTest('Pseudo-syncronous API', function () {
 
     QUnit.start();
   });
-
   
 });

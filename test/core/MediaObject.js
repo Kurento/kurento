@@ -26,7 +26,7 @@ if (typeof QUnit == 'undefined') {
 
 QUnit.module(QUnit.config.prefix + 'MediaObject', lifecycle);
 
-QUnit.test('setName', function (assert) {
+QUnit.test('setName with Callback', function (assert) {
   assert.expect(1);
 
   var done = assert.async();
@@ -47,3 +47,26 @@ QUnit.test('setName', function (assert) {
   })
   .catch(onerror)
 });
+
+QUnit.test('setName with Promise', function (assert) {
+  assert.expect(1);
+
+  var done = assert.async();
+
+  const NAME = 'MediaObjectRandomName'
+
+  var pipeline = this.pipeline
+
+  pipeline.setName(NAME).then(function () {
+    return pipeline.getName().then(function(name) {
+      assert.equal(name, NAME)
+      done();
+    }, function(error) {
+      if (error) return onerror(error)
+    })
+  },function(error) {
+      if (error) return onerror(error)
+    })
+  .catch(onerror)
+});
+

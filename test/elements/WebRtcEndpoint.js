@@ -58,7 +58,7 @@ var offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n" +
   "a=rtpmap:97 MP4V-ES/90000\r\n" + "a=rtpmap:98 H263-1998/90000\r\n" +
   "a=recvonly\r\n" + "b=AS:384\r\n";
 
-QUnit.asyncTest('Get local session descriptor', function () {
+QUnit.asyncTest('Get local session descriptor with Callback', function () {
   QUnit.expect(4);
 
   this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
@@ -85,7 +85,28 @@ QUnit.asyncTest('Get local session descriptor', function () {
   .catch(onerror)
 });
 
-QUnit.asyncTest('Get remote session descriptor', function () {
+QUnit.asyncTest('Get local session descriptor with Promise', function () {
+  QUnit.expect(2);
+
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint) {
+    QUnit.notEqual(webRtcEndpoint, undefined, 'WebRtcEndpoint');
+    
+    return webRtcEndpoint.generateOffer().then(function () {
+      return webRtcEndpoint.getLocalSessionDescriptor().then(function (sdp) {
+        QUnit.notEqual(sdp, undefined, 'SDP: ' + sdp);
+
+        QUnit.start();
+      }, function(error) {
+          if (error) return onerror(error)
+      });
+    }, function(error) {
+          if (error) return onerror(error)
+      });
+  })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('Get remote session descriptor with Callback', function () {
   QUnit.expect(4);
 
   this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
@@ -113,7 +134,28 @@ QUnit.asyncTest('Get remote session descriptor', function () {
   .catch(onerror)
 });
 
-QUnit.asyncTest('Generate offer', function () {
+QUnit.asyncTest('Get remote session descriptor with Promise', function () {
+  QUnit.expect(2);
+
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint) {
+    QUnit.notEqual(webRtcEndpoint, undefined, 'WebRtcEndpoint');
+
+    return webRtcEndpoint.processOffer(offer).then(function () {
+      return webRtcEndpoint.getRemoteSessionDescriptor().then(function (sdp) {
+        QUnit.notEqual(sdp, undefined, 'SDP: ' + sdp);
+
+        QUnit.start();
+      }, function(error) {
+          if (error) return onerror(error)
+      });
+    }, function(error) {
+          if (error) return onerror(error)
+      });
+  })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('Generate offer with Callback', function () {
   QUnit.expect(3);
 
   this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
@@ -134,7 +176,26 @@ QUnit.asyncTest('Generate offer', function () {
   .catch(onerror)
 });
 
-QUnit.asyncTest('Process offer', function () {
+QUnit.asyncTest('Generate offer with Promise', function () {
+  QUnit.expect(2);
+
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint) {
+    QUnit.notEqual(webRtcEndpoint, undefined, 'WebRtcEndpoint');
+
+    return webRtcEndpoint.generateOffer().then(function (offer) {
+      QUnit.notEqual(offer, undefined, 'Offer: ' + offer);
+
+      QUnit.start();
+    }, function(error) {
+          if (error) return onerror(error)
+      });
+  }, function(error) {
+          if (error) return onerror(error)
+      })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('Process offer with Callback', function () {
   QUnit.expect(3);
 
   this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint', function (error, webRtcEndpoint) {
@@ -155,7 +216,25 @@ QUnit.asyncTest('Process offer', function () {
   .catch(onerror)
 });
 
-QUnit.asyncTest('Process answer', function () {
+QUnit.asyncTest('Process offer with Promise', function () {
+  QUnit.expect(2);
+
+  this.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint) {
+    QUnit.notEqual(webRtcEndpoint, undefined, 'WebRtcEndpoint');
+    return webRtcEndpoint.processOffer(offer).then(function (answer) {
+      QUnit.notEqual(answer, undefined, 'Answer: ' + answer);
+
+      QUnit.start();
+    }, function(error) {
+          if (error) return onerror(error)
+      });
+  }, function(error) {
+          if (error) return onerror(error)
+      })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('Process answer with Callback', function () {
   var self = this;
 
   QUnit.expect(8);
@@ -201,7 +280,46 @@ QUnit.asyncTest('Process answer', function () {
   .catch(onerror)
 });
 
-QUnit.asyncTest('RtpEndpoint simulating Android SDP', function () {
+QUnit.asyncTest('Process answer with Promise', function () {
+  var self = this;
+
+  QUnit.expect(5);
+
+  self.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint) {
+    QUnit.notEqual(webRtcEndpoint, undefined, 'WebRtcEndpoint');
+
+    return webRtcEndpoint.generateOffer().then(function (offer) {
+      QUnit.notEqual(offer, undefined, 'Offer: ' + offer);
+
+      return self.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint2) {
+        QUnit.notEqual(webRtcEndpoint2, undefined, 'WebRtcEndpoint 2');
+
+        return webRtcEndpoint2.processOffer(offer).then(function (answer) {
+          QUnit.notEqual(answer, undefined, 'Answer: ' + answer);
+
+          return webRtcEndpoint.processAnswer(answer).then(function (sdp) {
+            QUnit.notEqual(sdp, undefined, 'SDP: ' + sdp);
+
+            QUnit.start();
+          }, function(error) {
+          if (error) return onerror(error)
+          });
+        }, function(error) {
+          if (error) return onerror(error)
+        });
+      }, function(error) {
+          if (error) return onerror(error)
+      });
+    }, function(error) {
+          if (error) return onerror(error)
+      });
+  }, function(error) {
+          if (error) return onerror(error)
+    })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('RtpEndpoint simulating Android SDP with Callback', function () {
   var self = this;
 
   QUnit.expect(5);
@@ -241,5 +359,38 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function () {
         });
       });
     })
+    .catch(onerror)
+});
+
+QUnit.asyncTest('RtpEndpoint simulating Android SDP with Promise', function () {
+  var self = this;
+
+  QUnit.expect(2);
+
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
+      uri: URL_BARCODES
+    }).then(function (player) {
+      QUnit.notEqual(player, undefined, 'PlayerEndpoint');
+
+      return self.pipeline.create(QUnit.config.prefix + 'WebRtcEndpoint').then(function (webRtcEndpoint) {
+        QUnit.notEqual(webRtcEndpoint, undefined, 'WebRtcEndpoint');
+
+        return player.connect(webRtcEndpoint, 'VIDEO').then(function () {
+          return webRtcEndpoint.processOffer(offer).then(function () {
+            return player.play().then(function () {
+              setTimeout(QUnit.start.bind(QUnit), 2 * 1000);
+            })
+          }, function(error) {
+            if (error) return onerror(error)
+          });
+        }, function(error) {
+            if (error) return onerror(error)
+          });
+      }, function(error) {
+          if (error) return onerror(error)
+        });
+    }, function(error) {
+         if (error) return onerror(error)
+      })
     .catch(onerror)
 });

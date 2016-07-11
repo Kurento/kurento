@@ -17,7 +17,7 @@ const package_name = require('../package.json').name
 
 const PORT = 8080
 const REPORTS_DIR='reports'
-const TIMEOUT=60
+const TIMEOUT=120
 
 
 function onerror(error)

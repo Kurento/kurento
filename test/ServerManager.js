@@ -52,7 +52,7 @@ if (QUnit.config.prefix == undefined)
 
 QUnit.module(QUnit.config.prefix + 'ServerManager', lifecycle);
 
-QUnit.asyncTest('Server manager with callback', function (assert) {
+QUnit.asyncTest('Server manager getInfo with callback', function (assert) {
   var self = this;
 
   assert.expect(1);
@@ -72,14 +72,27 @@ QUnit.asyncTest('Server manager with callback', function (assert) {
     .catch(onerror)
 });
 
+QUnit.asyncTest('Server manager getInfo with promise', function (assert) {
+  var self = this;
+
+  assert.expect(1);
+
+  self.kurento.getServerManager().then(function (server) {
+      server.getInfo().then(function (info) {
+        assert.notEqual(info, undefined, 'Info: ' + info);
+
+        QUnit.start();
+      });
+    })
+    .catch(onerror)
+});
+
 QUnit.asyncTest('Server manager getPipelines with promise', function (assert) {
   var self = this;
 
   assert.expect(1);
 
-  self.kurento.getServerManager(function (error, server) {
-      if (error) return onerror(error);
-
+  self.kurento.getServerManager().then(function (server) {
       server.getPipelines().then(function (pipelines) {
         assert.notEqual(pipelines, undefined, 'Pipelines: ' +
           pipelines);

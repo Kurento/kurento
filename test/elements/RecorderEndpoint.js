@@ -52,7 +52,7 @@ if (QUnit.config.prefix == undefined)
 
 QUnit.module(QUnit.config.prefix + 'RecorderEndpoint', lifecycle);
 
-QUnit.asyncTest('Record, Pause & Stop', function () {
+QUnit.asyncTest('Record, Pause & Stop with Callback', function () {
   var self = this;
 
   QUnit.expect(4);
@@ -88,7 +88,36 @@ QUnit.asyncTest('Record, Pause & Stop', function () {
     .catch(onerror)
 });
 
-QUnit.asyncTest('GetUrl', function () {
+QUnit.asyncTest('Record, Pause & Stop with Promise', function () {
+  var self = this;
+
+  QUnit.expect(1);
+
+  self.pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
+      uri: URL_SMALL
+    }).then(function (recorder) {
+
+      QUnit.notEqual(recorder, undefined, 'recorder');
+
+      return recorder.record().then(function () {
+        return recorder.pause().then(function () {
+          return recorder.stop().then(function () {
+
+            QUnit.start();
+          }, function(error) {
+              if (error) return onerror(error)
+            });
+        }, function(error) {
+            if (error) return onerror(error)
+         });
+      }, function(error) {
+          if (error) return onerror(error)
+        });
+    })
+    .catch(onerror)
+});
+
+QUnit.asyncTest('GetUrl with Callback', function () {
   var self = this;
 
   QUnit.expect(1);
@@ -107,5 +136,28 @@ QUnit.asyncTest('GetUrl', function () {
         QUnit.start();
       });
     })
+    .catch(onerror)
+});
+
+QUnit.asyncTest('GetUrl with Promise', function () {
+  var self = this;
+
+  QUnit.expect(2);
+
+  self.pipeline.create(QUnit.config.prefix + 'RecorderEndpoint', {
+      uri: URL_SMALL
+    }).then(function (recorder) {
+      QUnit.notEqual(recorder, undefined, 'recorder');
+
+      return recorder.getUri().then(function (uri) {
+        QUnit.equal(uri, URL_SMALL, 'URI: ' + uri);
+
+        QUnit.start();
+      }), function(error) {
+          if (error) return onerror(error)
+        };
+    }, function(error) {
+          if (error) return onerror(error)
+        })
     .catch(onerror)
 });

@@ -52,7 +52,7 @@ if (QUnit.config.prefix == undefined)
 
 QUnit.module(QUnit.config.prefix + 'Composite', lifecycle);
 
-QUnit.asyncTest('create', function () {
+QUnit.asyncTest('create with Callback', function () {
   QUnit.expect(4);
 
   this.pipeline.create('Composite', function (error, composite) {
@@ -72,5 +72,24 @@ QUnit.asyncTest('create', function () {
       QUnit.start();
     });
   })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('create with Promise', function () {
+  QUnit.expect(2);
+
+  this.pipeline.create('Composite').then(function (composite) {
+    QUnit.notEqual(composite, undefined, 'composite');
+
+    return composite.createHubPort().then(function (hubPort) {
+      QUnit.notEqual(hubPort, undefined, 'hubPort');
+
+      QUnit.start();
+    }, function(error) {
+         if (error) return onerror(error)
+      });
+  }, function(error) {
+      if (error) return onerror(error)
+    })
   .catch(onerror)
 });

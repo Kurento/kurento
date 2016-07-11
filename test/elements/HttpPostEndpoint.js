@@ -52,7 +52,7 @@ if (QUnit.config.prefix == undefined)
 
 QUnit.module(QUnit.config.prefix + 'HttpPostEndpoint', lifecycle);
 
-QUnit.asyncTest('Method GetUrl', function () {
+QUnit.asyncTest('Method GetUrl with Callback', function () {
   var self = this;
 
   QUnit.expect(2);
@@ -70,6 +70,27 @@ QUnit.asyncTest('Method GetUrl', function () {
       QUnit.start();
     })
   })
+  .catch(onerror)
+});
+
+QUnit.asyncTest('Method GetUrl with Promise', function () {
+  var self = this;
+
+  QUnit.expect(2);
+
+  self.pipeline.create('HttpPostEndpoint').then(function (httpPost) {
+    QUnit.notEqual(httpPost, undefined, 'httpPost');
+
+    return httpPost.getUrl().then(function (url) {
+      QUnit.notEqual(url, undefined, 'URL: ' + url);
+
+      QUnit.start();
+    }, function(error) {
+        if (error) return onerror(error)
+      })
+  }, function(error) {
+      if (error) return onerror(error)
+    })
   .catch(onerror)
 });
 

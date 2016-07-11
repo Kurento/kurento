@@ -52,7 +52,7 @@ if (QUnit.config.prefix == undefined)
 
 QUnit.module(QUnit.config.prefix + 'FaceOverlayFilter', lifecycle);
 
-QUnit.asyncTest('Detect face in a video', function () {
+QUnit.asyncTest('Detect face in a video with Callback', function () {
   var self = this;
 
   QUnit.expect(5);
@@ -102,5 +102,49 @@ QUnit.asyncTest('Detect face in a video', function () {
         QUnit.start();
       });
     })
+    .catch(onerror)
+});
+
+QUnit.asyncTest('Detect face in a video with Promise', function () {
+  var self = this;
+
+  QUnit.expect(3);
+
+  var timeout = new Timeout('"FaceOverlayFilter:Detect face in a video"',
+    20 * 1000, onerror);
+
+  function onerror(error) {
+    timeout.stop();
+    _onerror(error);
+  };
+
+  self.pipeline.create(QUnit.config.prefix + 'PlayerEndpoint', {
+      uri: URL_POINTER_DETECTOR
+    }).then(function (player) {
+      QUnit.notEqual(player, undefined, 'player');
+
+      self.pipeline.create(QUnit.config.prefix + 'FaceOverlayFilter').then(function (faceOverlay) {
+        QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
+
+        return player.connect(faceOverlay).then(function () {
+          return player.play().then(function () {
+            timeout.start();
+          });
+        });
+      }, function(error) {
+          if (error) return onerror(error)
+        })
+      .catch(onerror)
+
+      player.on('EndOfStream', function (data) {
+        QUnit.ok(true, 'EndOfStream');
+
+        timeout.stop();
+
+        QUnit.start();
+      });
+    }, function(error) {
+        if (error) return onerror(error)
+      })
     .catch(onerror)
 });
