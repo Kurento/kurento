@@ -20,6 +20,7 @@ do
 	pullAndTag kurento/dev-integration:jdk-7-node-$NODE_VERSION
 	pullAndTag kurento/dev-integration:jdk-8-node-$NODE_VERSION
 done
+pullAndTag kurento/dev-integration:jdk-8-node-6.x
 pullAndTag kurento/dev-integration-browser:$SELENIUM_VERSION-node-4.x
 
 # kurento-media-server development version with core dump & public modules
