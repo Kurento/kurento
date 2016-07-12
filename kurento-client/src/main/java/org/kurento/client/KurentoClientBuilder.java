@@ -4,12 +4,15 @@ public class KurentoClientBuilder {
 
   private Properties properties;
   private String kmsWsUri;
+
   private Handler connectedHandler;
   private Handler connectionFailedHandler;
   private Handler disconnectedHandler;
   private ReconnectedHandler reconnectedHandler;
   private Handler reconnectingHandler;
+
   private Long tryReconnectingMaxTime;
+  private Long connectionTimeout;
 
   public KurentoClientBuilder() {
   }
@@ -54,9 +57,15 @@ public class KurentoClientBuilder {
     return this;
   }
 
+  public KurentoClientBuilder setConnectionTimeout(Long connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
+    return this;
+  }
+
   public KurentoClient connect() {
     return KurentoClient.create(kmsWsUri, properties, connectedHandler, connectionFailedHandler,
-        reconnectingHandler, disconnectedHandler, reconnectedHandler, tryReconnectingMaxTime);
+        reconnectingHandler, disconnectedHandler, reconnectedHandler, tryReconnectingMaxTime,
+        connectionTimeout);
   }
 
 }

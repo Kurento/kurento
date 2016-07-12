@@ -151,7 +151,8 @@ public class KurentoClient {
   protected static KurentoClient create(String kmsWsUri, Properties properties,
       final Handler connectedHandler, final Handler connectionFailedHandler,
       final Handler reconnectingHandler, final Handler disconnectedHandler,
-      final ReconnectedHandler reconnectedHandler, Long tryReconnectingMaxTime) {
+      final ReconnectedHandler reconnectedHandler, Long tryReconnectingMaxTime,
+      Long connectionTimeout) {
 
     String clientId = null;
     if (kmsWsUri == null) {
@@ -164,6 +165,10 @@ public class KurentoClient {
     log.info("Connecting to KMS in {}", kmsWsUri);
 
     JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(kmsWsUri);
+
+    if (connectionTimeout != null) {
+      client.setConnectionTimeout(connectionTimeout);
+    }
 
     if (connectedHandler != null) {
       client.onConnected(new org.kurento.jsonrpc.client.Handler() {
