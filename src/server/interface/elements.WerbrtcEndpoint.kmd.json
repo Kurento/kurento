@@ -99,9 +99,6 @@
             <li>
               setMin/MaxVideoSendBandwidth: sets Min/Max bitrate limits  for video sent to remote peer
             </li>
-            <li>
-              setMin/MaxAudioSendBandwidth: sets Min/Max bitrate limits for audio sent to remote peer.
-            </li>
           </ul>
         </li>
       </ul>
