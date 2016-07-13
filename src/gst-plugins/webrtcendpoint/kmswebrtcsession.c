@@ -1384,12 +1384,14 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
     gboolean offerer)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *remote_sdp_ctx;
+  SdpMessageContext *remote_sdp_ctx, *neg_sdp_ctx;
   const GstSDPMessage *sdp;
-  const GSList *item =
-      kms_sdp_message_context_get_medias (sdp_sess->neg_sdp_ctx);
+  const GSList *item;
   GSList *remote_media_list;
   const gchar *ufrag, *pwd;
+
+  neg_sdp_ctx = kms_sdp_message_context_new_from_sdp (sdp_sess->neg_sdp, NULL);
+  item = kms_sdp_message_context_get_medias (neg_sdp_ctx);
 
   remote_sdp_ctx =
       kms_sdp_message_context_new_from_sdp (sdp_sess->remote_sdp, NULL);
@@ -1451,6 +1453,7 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
   }
   sdp_sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
   kms_sdp_message_context_unref (remote_sdp_ctx);
+  kms_sdp_message_context_unref (neg_sdp_ctx);
 }
 
 /* Start Transport end */

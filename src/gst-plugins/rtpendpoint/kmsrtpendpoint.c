@@ -900,6 +900,7 @@ kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
     base_sdp_endpoint, KmsSdpSession * sess)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
+  SdpMessageContext *neg_sdp_ctx;
   const GSList *item;
 
   /* Chain up */
@@ -910,7 +911,8 @@ kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
     return;
   }
 
-  item = kms_sdp_message_context_get_medias (sess->neg_sdp_ctx);
+  neg_sdp_ctx = kms_sdp_message_context_new_from_sdp (sess->neg_sdp, NULL);
+  item = kms_sdp_message_context_get_medias (neg_sdp_ctx);
 
   for (; item != NULL; item = g_slist_next (item)) {
     SdpMediaConfig *mconf = item->data;
@@ -924,6 +926,8 @@ kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
       continue;
     }
   }
+
+  kms_sdp_message_context_unref (neg_sdp_ctx);
 }
 
 static void
