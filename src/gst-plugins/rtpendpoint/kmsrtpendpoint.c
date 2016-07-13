@@ -764,11 +764,16 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     base_sdp_endpoint, KmsSdpSession * sess, gboolean offerer)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (sess->remote_sdp_ctx);
-  const GSList *item =
-      kms_sdp_message_context_get_medias (sess->remote_sdp_ctx);
-  const GstSDPConnection *msg_conn = gst_sdp_message_get_connection (sdp);
+  SdpMessageContext *remote_sdp_ctx;
+  const GstSDPMessage *sdp;
+  const GSList *item;
+  const GstSDPConnection *msg_conn;
+
+  remote_sdp_ctx =
+      kms_sdp_message_context_new_from_sdp (sess->remote_sdp, NULL);
+  sdp = kms_sdp_message_context_get_sdp_message (remote_sdp_ctx);
+  item = kms_sdp_message_context_get_medias (remote_sdp_ctx);
+  msg_conn = gst_sdp_message_get_connection (sdp);
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->start_transport_send
@@ -811,6 +816,12 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
         media_con->address, port, port + 1);
     /* TODO: get rtcp port from attr if it exists */
   }
+
+  if (sess->remote_sdp != NULL) {
+    gst_sdp_message_free (sess->remote_sdp);
+  }
+  sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
+  kms_sdp_message_context_unref (remote_sdp_ctx);
 }
 
 static void

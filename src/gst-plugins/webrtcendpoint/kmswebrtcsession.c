@@ -297,15 +297,17 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
     self, KmsIceCandidate * candidate, guint8 index)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *remote_sdp_ctx = sdp_sess->remote_sdp_ctx;
+  SdpMessageContext *remote_sdp_ctx;
   GSList *medias;
   SdpMediaConfig *mconf;
 
-  if (remote_sdp_ctx == NULL) {
+  if (sdp_sess->remote_sdp == NULL) {
     GST_INFO_OBJECT (self, "Cannot update remote SDP until it is set.");
     return;
   }
 
+  remote_sdp_ctx =
+      kms_sdp_message_context_new_from_sdp (sdp_sess->remote_sdp, NULL);
   medias = kms_sdp_message_context_get_medias (remote_sdp_ctx);
   mconf = g_slist_nth_data (medias, index);
   if (mconf == NULL) {
@@ -316,6 +318,13 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
 
     sdp_media_add_ice_candidate (media, self->agent, candidate);
   }
+
+  if (sdp_sess->remote_sdp != NULL) {
+    gst_sdp_message_free (sdp_sess->remote_sdp);
+  }
+  sdp_sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
+
+  kms_sdp_message_context_unref (remote_sdp_ctx);
 }
 
 gboolean
@@ -323,15 +332,27 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
     KmsIceCandidate * candidate)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
+  SdpMessageContext *local_sdp_ctx;
   guint8 index;
   GSList *medias;
   SdpMediaConfig *mconf;
   gboolean ret;
 
-  if (local_sdp_ctx == NULL || !self->gather_started) {
+  if (sdp_sess->local_sdp == NULL) {
+    return TRUE;
+  }
+
+  local_sdp_ctx =
+      kms_sdp_message_context_new_from_sdp (sdp_sess->local_sdp, NULL);
+
+  if (local_sdp_ctx == NULL) {
+    return TRUE;
+  }
+
+  if (!self->gather_started) {
     GST_INFO_OBJECT (self,
         "Cannot add candidate until local SDP is generated and gathering candidates starts.");
+    kms_sdp_message_context_unref (local_sdp_ctx);
     return TRUE;                /* We do not know if the candidate is valid until it is set */
   }
 
@@ -365,6 +386,12 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
       ret = TRUE;
     }
   }
+
+  if (sdp_sess->local_sdp != NULL) {
+    gst_sdp_message_free (sdp_sess->local_sdp);
+  }
+  sdp_sess->local_sdp = kms_sdp_message_context_pack (local_sdp_ctx, NULL);
+  kms_sdp_message_context_unref (local_sdp_ctx);
 
   return ret;
 }
@@ -416,9 +443,13 @@ kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
     KmsIceCandidate * cand)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
-  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
+  SdpMessageContext *local_sdp_ctx;
+  const GSList *item;
   GList *list = NULL, *iterator = NULL;
+
+  local_sdp_ctx =
+      kms_sdp_message_context_new_from_sdp (sdp_sess->local_sdp, NULL);
+  item = kms_sdp_message_context_get_medias (local_sdp_ctx);
 
   KMS_SDP_SESSION_LOCK (self);
 
@@ -450,7 +481,12 @@ kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
         KMS_ICE_CANDIDATE (iterator->data));
   }
 
+  if (sdp_sess->local_sdp != NULL) {
+    gst_sdp_message_free (sdp_sess->local_sdp);
+  }
+  sdp_sess->local_sdp = kms_sdp_message_context_pack (local_sdp_ctx, NULL);
   g_list_free_full (list, g_object_unref);
+  kms_sdp_message_context_unref (local_sdp_ctx);
 }
 
 static void
@@ -554,12 +590,17 @@ static gboolean
 kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx = sdp_sess->local_sdp_ctx;
-  const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (local_sdp_ctx);
-  const GSList *item = kms_sdp_message_context_get_medias (local_sdp_ctx);
+  SdpMessageContext *local_sdp_ctx;
+  const GstSDPMessage *sdp;
+  const GSList *item;
   gboolean use_ipv6;
   GstSDPConnection *conn;
+  gboolean ret = TRUE;
+
+  local_sdp_ctx =
+      kms_sdp_message_context_new_from_sdp (sdp_sess->local_sdp, NULL);
+  sdp = kms_sdp_message_context_get_sdp_message (local_sdp_ctx);
+  item = kms_sdp_message_context_get_medias (local_sdp_ctx);
 
   conn = (GstSDPConnection *) gst_sdp_message_get_connection (sdp);
   gst_sdp_connection_clear (conn);
@@ -576,11 +617,18 @@ kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
     }
 
     if (!kms_webrtc_session_sdp_media_add_default_info (self, mconf, use_ipv6)) {
-      return FALSE;
+      ret = FALSE;
+      break;
     }
   }
 
-  return TRUE;
+  if (sdp_sess->local_sdp != NULL) {
+    gst_sdp_message_free (sdp_sess->local_sdp);
+  }
+  sdp_sess->local_sdp = kms_sdp_message_context_pack (local_sdp_ctx, NULL);
+  kms_sdp_message_context_unref (local_sdp_ctx);
+
+  return ret;
 }
 
 static void
@@ -1336,13 +1384,17 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
     gboolean offerer)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  const GstSDPMessage *sdp =
-      kms_sdp_message_context_get_sdp_message (sdp_sess->remote_sdp_ctx);
+  SdpMessageContext *remote_sdp_ctx;
+  const GstSDPMessage *sdp;
   const GSList *item =
       kms_sdp_message_context_get_medias (sdp_sess->neg_sdp_ctx);
-  GSList *remote_media_list =
-      kms_sdp_message_context_get_medias (sdp_sess->remote_sdp_ctx);
+  GSList *remote_media_list;
   const gchar *ufrag, *pwd;
+
+  remote_sdp_ctx =
+      kms_sdp_message_context_new_from_sdp (sdp_sess->remote_sdp, NULL);
+  sdp = kms_sdp_message_context_get_sdp_message (remote_sdp_ctx);
+  remote_media_list = kms_sdp_message_context_get_medias (remote_sdp_ctx);
 
   /*  [rfc5245#section-5.2]
    *  The agent that generated the offer which
@@ -1393,6 +1445,12 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
 
   g_slist_foreach (self->remote_candidates,
       kms_webrtc_session_remote_sdp_add_stored_ice_candidates, self);
+
+  if (sdp_sess->remote_sdp != NULL) {
+    gst_sdp_message_free (sdp_sess->remote_sdp);
+  }
+  sdp_sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
+  kms_sdp_message_context_unref (remote_sdp_ctx);
 }
 
 /* Start Transport end */
