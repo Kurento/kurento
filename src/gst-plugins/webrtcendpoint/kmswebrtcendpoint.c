@@ -363,7 +363,8 @@ kms_webrtc_endpoint_create_media_handler (KmsBaseSdpEndpoint * base_sdp,
 
 static gboolean
 kms_webrtc_endpoint_configure_media (KmsBaseSdpEndpoint *
-    base_sdp_endpoint, KmsSdpSession * sess, SdpMediaConfig * mconf)
+    base_sdp_endpoint, KmsSdpSession * sess, KmsSdpMediaHandler * handler,
+    GstSDPMedia * media)
 {
   KmsWebrtcSession *webrtc_sess = KMS_WEBRTC_SESSION (sess);
   gboolean ret;
@@ -371,16 +372,16 @@ kms_webrtc_endpoint_configure_media (KmsBaseSdpEndpoint *
   /* Chain up */
   ret = KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_webrtc_endpoint_parent_class)->configure_media (base_sdp_endpoint,
-      sess, mconf);
+      sess, handler, media);
   if (ret == FALSE) {
     return FALSE;
   }
 
-  if (!kms_webrtc_session_set_ice_credentials (webrtc_sess, mconf)) {
+  if (!kms_webrtc_session_set_ice_credentials (webrtc_sess, handler, media)) {
     return FALSE;
   }
 
-  return kms_webrtc_session_set_crypto_info (webrtc_sess, mconf);
+  return kms_webrtc_session_set_crypto_info (webrtc_sess, handler, media);
 }
 
 /* Configure media SDP end */

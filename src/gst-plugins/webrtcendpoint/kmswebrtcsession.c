@@ -192,12 +192,12 @@ kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 
 KmsWebRtcBaseConnection *
 kms_webrtc_session_get_connection (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler)
 {
   KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (self);
   KmsIRtpConnection *conn;
 
-  conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
+  conn = kms_base_rtp_session_get_connection (base_rtp_sess, handler);
   if (conn == NULL) {
     return NULL;
   }
@@ -207,11 +207,10 @@ kms_webrtc_session_get_connection (KmsWebrtcSession * self,
 
 static KmsIRtpConnection *
 kms_webrtc_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
-    SdpMediaConfig * mconf, const gchar * name, guint16 min_port,
+    const GstSDPMedia * media, const gchar * name, guint16 min_port,
     guint16 max_port)
 {
   KmsWebrtcSession *self = KMS_WEBRTC_SESSION (base_rtp_sess);
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   KmsWebRtcBaseConnection *conn;
 
   self->min_port = min_port;
@@ -266,11 +265,11 @@ kms_webrtc_session_create_bundle_connection (KmsBaseRtpSession *
 
 gchar *
 kms_webrtc_session_get_stream_id (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler)
 {
   KmsWebRtcBaseConnection *conn;
 
-  conn = kms_webrtc_session_get_connection (self, mconf);
+  conn = kms_webrtc_session_get_connection (self, handler);
   if (conn == NULL) {
     return NULL;
   }
@@ -297,34 +296,27 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
     self, KmsIceCandidate * candidate, guint8 index)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *remote_sdp_ctx;
-  GSList *medias;
-  SdpMediaConfig *mconf;
+  const GstSDPMedia *media;
 
   if (sdp_sess->remote_sdp == NULL) {
     GST_INFO_OBJECT (self, "Cannot update remote SDP until it is set.");
     return;
   }
 
-  remote_sdp_ctx =
-      kms_sdp_message_context_new_from_sdp (sdp_sess->remote_sdp, NULL);
-  medias = kms_sdp_message_context_get_medias (remote_sdp_ctx);
-  mconf = g_slist_nth_data (medias, index);
-  if (mconf == NULL) {
+  if (gst_sdp_message_medias_len (sdp_sess->remote_sdp) < index) {
+    GST_ERROR_OBJECT (self, "Index of candidate exceeds the number of medias");
+    return;
+  }
+
+  media = gst_sdp_message_get_media (sdp_sess->remote_sdp, index);
+
+  if (media == NULL) {
     GST_WARNING_OBJECT (self,
         "Media not found in remote SDP for index %u", index);
   } else {
-    GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-
-    sdp_media_add_ice_candidate (media, self->agent, candidate);
+    /* TODO: Candidates should be added using extensions */
+    sdp_media_add_ice_candidate ((GstSDPMedia *) media, self->agent, candidate);
   }
-
-  if (sdp_sess->remote_sdp != NULL) {
-    gst_sdp_message_free (sdp_sess->remote_sdp);
-  }
-  sdp_sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
-
-  kms_sdp_message_context_unref (remote_sdp_ctx);
 }
 
 gboolean
@@ -332,46 +324,56 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
     KmsIceCandidate * candidate)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx;
   guint8 index;
-  GSList *medias;
-  SdpMediaConfig *mconf;
-  gboolean ret;
+  const GstSDPMedia *media;
+  guint len;
 
   if (sdp_sess->local_sdp == NULL) {
-    return TRUE;
-  }
-
-  local_sdp_ctx =
-      kms_sdp_message_context_new_from_sdp (sdp_sess->local_sdp, NULL);
-
-  if (local_sdp_ctx == NULL) {
+    GST_INFO_OBJECT (self,
+        "Cannot add remote candidate until local SDP is generated");
     return TRUE;
   }
 
   if (!self->gather_started) {
     GST_INFO_OBJECT (self,
-        "Cannot add candidate until local SDP is generated and gathering candidates starts.");
-    kms_sdp_message_context_unref (local_sdp_ctx);
+        "Cannot add remote candidate until gathering candidates starts.");
     return TRUE;                /* We do not know if the candidate is valid until it is set */
   }
 
-  medias = kms_sdp_message_context_get_medias (local_sdp_ctx);
+  len = gst_sdp_message_medias_len (sdp_sess->local_sdp);
   index = kms_ice_candidate_get_sdp_m_line_index (candidate);
-  mconf = g_slist_nth_data (medias, index);
-  if (mconf == NULL) {
+
+  if (index > len) {
+    GST_ERROR_OBJECT (self, "Candidate index out of media length");
+    return FALSE;
+  }
+
+  media = gst_sdp_message_get_media (sdp_sess->local_sdp, index);
+
+  if (media == NULL) {
     GST_WARNING_OBJECT (self,
         "Media not found in local SDP for index %u", index);
     return FALSE;
-  } else if (kms_sdp_media_config_is_inactive (mconf)) {
+  } else if (sdp_utils_media_is_inactive (media)) {
     GST_DEBUG_OBJECT (self, "Media inactive for index %u", index);
     return TRUE;
   } else {
+    KmsSdpMediaHandler *handler;
     gchar *stream_id;
 
-    stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+    handler = kms_sdp_agent_get_handler_by_index (KMS_SDP_SESSION (self)->agent,
+        index);
+
+    if (handler == NULL) {
+      GST_ERROR_OBJECT (self, "No handler for media at index %u", index);
+      return FALSE;
+    }
+
+    stream_id = kms_webrtc_session_get_stream_id (self, handler);
+    g_object_unref (handler);
 
     if (stream_id == NULL) {
+      GST_ERROR_OBJECT (self, "No stream id for media %u", index);
       return FALSE;
     }
 
@@ -379,24 +381,17 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
             stream_id)) {
       GST_WARNING_OBJECT (self, "Cannot add candidate: '%s'in stream_id: %s.",
           kms_ice_candidate_get_candidate (candidate), stream_id);
-      ret = FALSE;
     } else {
       GST_TRACE_OBJECT (self, "Candidate added: '%s' in stream_id: %s.",
           kms_ice_candidate_get_candidate (candidate), stream_id);
-      ret = TRUE;
+      return TRUE;
     }
   }
 
-  if (sdp_sess->local_sdp != NULL) {
-    gst_sdp_message_free (sdp_sess->local_sdp);
-  }
-  sdp_sess->local_sdp = kms_sdp_message_context_pack (local_sdp_ctx, NULL);
-  kms_sdp_message_context_unref (local_sdp_ctx);
-
-  return ret;
+  return FALSE;
 }
 
-void
+static void
 kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self)
 {
   guint i;
@@ -413,13 +408,13 @@ kms_webrtc_session_add_stored_ice_candidates (KmsWebrtcSession * self)
 
 static const gchar *
 kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf, KmsIceCandidate * cand)
+    KmsSdpMediaHandler * handler, const GstSDPMedia * media,
+    KmsIceCandidate * cand)
 {
   char *media_stream_id;
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   const gchar *mid;
 
-  media_stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+  media_stream_id = kms_webrtc_session_get_stream_id (self, handler);
   if (media_stream_id == NULL) {
     return NULL;
   }
@@ -428,9 +423,10 @@ kms_webrtc_session_sdp_media_add_ice_candidate (KmsWebrtcSession * self,
     return NULL;
   }
 
-  sdp_media_add_ice_candidate (media, self->agent, cand);
+  /* FIXME: Information about ice candidates should be done using extensions */
+  sdp_media_add_ice_candidate ((GstSDPMedia *) media, self->agent, cand);
 
-  mid = kms_sdp_media_config_get_mid (mconf);
+  mid = gst_sdp_media_get_attribute_val ((GstSDPMedia *) media, "mid");
   if (mid == NULL) {
     return "";
   }
@@ -443,31 +439,40 @@ kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
     KmsIceCandidate * cand)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx;
-  const GSList *item;
   GList *list = NULL, *iterator = NULL;
+  guint index, len;
 
-  local_sdp_ctx =
-      kms_sdp_message_context_new_from_sdp (sdp_sess->local_sdp, NULL);
-  item = kms_sdp_message_context_get_medias (local_sdp_ctx);
+  len = gst_sdp_message_medias_len (sdp_sess->local_sdp);
 
   KMS_SDP_SESSION_LOCK (self);
 
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
-    gint idx = kms_sdp_media_config_get_id (mconf);
+  for (index = 0; index < len; index++) {
+    const GstSDPMedia *media =
+        gst_sdp_message_get_media (sdp_sess->local_sdp, index);
+    KmsSdpMediaHandler *handler;
     const gchar *mid;
 
-    if (kms_sdp_media_config_is_inactive (mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", idx);
+    if (sdp_utils_media_is_inactive (media)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", index);
       continue;
     }
 
-    mid = kms_webrtc_session_sdp_media_add_ice_candidate (self, mconf, cand);
+    handler = kms_sdp_agent_get_handler_by_index (KMS_SDP_SESSION (self)->agent,
+        index);
+
+    if (handler == NULL) {
+      GST_ERROR_OBJECT (self, "Media (id=%d) has not handler", index);
+      continue;
+    }
+
+    mid = kms_webrtc_session_sdp_media_add_ice_candidate (self, handler, media,
+        cand);
+    g_object_unref (handler);
+
     if (mid != NULL) {
       KmsIceCandidate *candidate =
           kms_ice_candidate_new (kms_ice_candidate_get_candidate (cand), mid,
-          idx, NULL);
+          index, kms_ice_candidate_get_stream_id (cand));
 
       list = g_list_append (list, candidate);
     }
@@ -481,12 +486,7 @@ kms_webrtc_session_sdp_msg_add_ice_candidate (KmsWebrtcSession * self,
         KMS_ICE_CANDIDATE (iterator->data));
   }
 
-  if (sdp_sess->local_sdp != NULL) {
-    gst_sdp_message_free (sdp_sess->local_sdp);
-  }
-  sdp_sess->local_sdp = kms_sdp_message_context_pack (local_sdp_ctx, NULL);
   g_list_free_full (list, g_object_unref);
-  kms_sdp_message_context_unref (local_sdp_ctx);
 }
 
 static void
@@ -498,9 +498,8 @@ kms_webrtc_session_new_candidate (KmsIceBaseAgent * agent,
 
 static gboolean
 kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf, gboolean use_ipv6)
+    KmsSdpMediaHandler * handler, GstSDPMedia * media, gboolean use_ipv6)
 {
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   KmsIceBaseAgent *agent = self->agent;
   char *stream_id;
   KmsIceCandidate *rtp_default_candidate, *rtcp_default_candidate;
@@ -512,18 +511,21 @@ kms_webrtc_session_sdp_media_add_default_info (KmsWebrtcSession * self,
   guint conn_len, c;
   gchar *str;
   guint attr_len, i;
+  gint hid;
 
-  stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+  stream_id = kms_webrtc_session_get_stream_id (self, handler);
   if (stream_id == NULL) {
     return FALSE;
   }
 
+  g_object_get (handler, "id", &hid, NULL);
   rtp_default_candidate =
       kms_ice_base_agent_get_default_local_candidate (agent, stream_id,
       NICE_COMPONENT_TYPE_RTP);
 
-  if (kms_sdp_media_config_is_rtcp_mux (mconf) ||
-      kms_sdp_media_config_get_group (mconf) != NULL) {
+  if (gst_sdp_media_get_attribute_val (media, "rtcp-mux") != NULL ||
+      kms_sdp_agent_get_handler_group_id (KMS_SDP_SESSION (self)->agent,
+          hid) >= 0) {
     rtcp_default_candidate =
         kms_ice_base_agent_get_default_local_candidate (agent, stream_id,
         NICE_COMPONENT_TYPE_RTP);
@@ -590,43 +592,40 @@ static gboolean
 kms_webrtc_session_local_sdp_add_default_info (KmsWebrtcSession * self)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *local_sdp_ctx;
-  const GstSDPMessage *sdp;
-  const GSList *item;
   gboolean use_ipv6;
   GstSDPConnection *conn;
   gboolean ret = TRUE;
+  guint index, len;
 
-  local_sdp_ctx =
-      kms_sdp_message_context_new_from_sdp (sdp_sess->local_sdp, NULL);
-  sdp = kms_sdp_message_context_get_sdp_message (local_sdp_ctx);
-  item = kms_sdp_message_context_get_medias (local_sdp_ctx);
-
-  conn = (GstSDPConnection *) gst_sdp_message_get_connection (sdp);
+  conn =
+      (GstSDPConnection *) gst_sdp_message_get_connection (sdp_sess->local_sdp);
   gst_sdp_connection_clear (conn);
   use_ipv6 = kms_sdp_session_get_use_ipv6 (sdp_sess);
 
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
+  len = gst_sdp_message_medias_len (sdp_sess->local_sdp);
 
-    if (kms_sdp_media_config_is_inactive (mconf)) {
-      gint mid = kms_sdp_media_config_get_id (mconf);
+  for (index = 0; index < len && ret; index++) {
+    const GstSDPMedia *media =
+        gst_sdp_message_get_media (sdp_sess->local_sdp, index);
+    KmsSdpMediaHandler *handler;
 
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
+    if (sdp_utils_media_is_inactive (media)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", index);
       continue;
     }
 
-    if (!kms_webrtc_session_sdp_media_add_default_info (self, mconf, use_ipv6)) {
-      ret = FALSE;
-      break;
-    }
-  }
+    handler = kms_sdp_agent_get_handler_by_index (KMS_SDP_SESSION (self)->agent,
+        index);
 
-  if (sdp_sess->local_sdp != NULL) {
-    gst_sdp_message_free (sdp_sess->local_sdp);
+    if (handler == NULL) {
+      GST_ERROR_OBJECT (self, "Media (id=%d) has not handler", index);
+      continue;
+    }
+
+    ret = kms_webrtc_session_sdp_media_add_default_info (self, handler,
+        (GstSDPMedia *) media, use_ipv6);
+    g_object_unref (handler);
   }
-  sdp_sess->local_sdp = kms_sdp_message_context_pack (local_sdp_ctx, NULL);
-  kms_sdp_message_context_unref (local_sdp_ctx);
 
   return ret;
 }
@@ -768,13 +767,12 @@ kms_webrtc_session_add_ice_candidate (KmsWebrtcSession * self,
 
 gboolean
 kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler, GstSDPMedia * media)
 {
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   KmsWebRtcBaseConnection *conn;
   gchar *ufrag, *pwd;
 
-  conn = kms_webrtc_session_get_connection (self, mconf);
+  conn = kms_webrtc_session_get_connection (self, handler);
   if (conn == NULL) {
     return FALSE;
   }
@@ -791,14 +789,13 @@ kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self,
 
 gboolean
 kms_webrtc_session_set_ice_candidates (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler, GstSDPMedia * media)
 {
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   char *stream_id;
   GSList *candidates;
   GSList *walk;
 
-  stream_id = kms_webrtc_session_get_stream_id (self, mconf);
+  stream_id = kms_webrtc_session_get_stream_id (self, handler);
   if (stream_id == NULL) {
     return FALSE;
   }
@@ -824,12 +821,12 @@ kms_webrtc_session_set_ice_candidates (KmsWebrtcSession * self,
 
 static gchar *
 kms_webrtc_session_generate_fingerprint_sdp_attr (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler)
 {
   gchar *fp, *ret;
 
   KmsWebRtcBaseConnection *conn =
-      kms_webrtc_session_get_connection (self, mconf);
+      kms_webrtc_session_get_connection (self, handler);
   gchar *pem = kms_webrtc_base_connection_get_certificate_pem (conn);
 
   fp = kms_utils_generate_fingerprint_from_pem (pem);
@@ -850,17 +847,18 @@ kms_webrtc_session_generate_fingerprint_sdp_attr (KmsWebrtcSession * self,
 
 gboolean
 kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler, GstSDPMedia * media)
 {
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   gchar *fingerprint;
 
   /* Crypto info */
-  fingerprint = kms_webrtc_session_generate_fingerprint_sdp_attr (self, mconf);
+  fingerprint = kms_webrtc_session_generate_fingerprint_sdp_attr (self,
+      handler);
   if (fingerprint == NULL) {
     return FALSE;
   }
 
+  /* TODO: Fingerprint should be added using extensions */
   gst_sdp_media_add_attribute (media, "fingerprint", fingerprint);
   g_free (fingerprint);
 
@@ -871,13 +869,12 @@ kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self,
 
 static void
 gst_media_add_remote_candidates (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf, KmsWebRtcBaseConnection * conn,
+    guint index, const GstSDPMedia * media, KmsWebRtcBaseConnection * conn,
     const gchar * msg_ufrag, const gchar * msg_pwd)
 {
-  const GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   KmsIceBaseAgent *agent = conn->agent;
   gchar *stream_id = conn->stream_id;
-  const gchar *ufrag, *pwd;
+  const gchar *ufrag, *pwd, *mid;
   guint len, i;
 
   ufrag = gst_sdp_media_get_attribute_val (media, SDP_ICE_UFRAG_ATTR);
@@ -897,13 +894,17 @@ gst_media_add_remote_candidates (KmsWebrtcSession * self,
     GST_DEBUG ("Set remote media credentials OK (%s, %s).", ufrag, pwd);
   }
 
+  mid = gst_sdp_media_get_attribute_val (media, "mid");
+  if (mid == NULL) {
+    GST_ERROR_OBJECT (self, "No mid attribute got for media %u", index);
+    return;
+  }
+
   len = gst_sdp_media_attributes_len (media);
   for (i = 0; i < len; i++) {
     const GstSDPAttribute *attr;
     gchar *candidate_str;
     KmsIceCandidate *candidate;
-    gint idx = kms_sdp_media_config_get_id (mconf);
-    const gchar *mid = kms_sdp_media_config_get_mid (mconf);
 
     attr = gst_sdp_media_get_attribute (media, i);
     if (g_strcmp0 (SDP_CANDIDATE_ATTR, attr->key) != 0) {
@@ -911,7 +912,7 @@ gst_media_add_remote_candidates (KmsWebrtcSession * self,
     }
 
     candidate_str = g_strdup_printf ("%s:%s", SDP_CANDIDATE_ATTR, attr->value);
-    candidate = kms_ice_candidate_new (candidate_str, mid, idx, NULL);
+    candidate = kms_ice_candidate_new (candidate_str, mid, index, stream_id);
     g_free (candidate_str);
     kms_webrtc_session_add_ice_candidate (self, candidate);
     g_object_unref (candidate);
@@ -1146,7 +1147,7 @@ kms_webrtc_session_data_channel_closed_cb (KmsWebRtcDataSessionBin * session,
 }
 
 static gboolean
-configure_data_session (KmsWebrtcSession * self, GstSDPMedia * media)
+configure_data_session (KmsWebrtcSession * self, const GstSDPMedia * media)
 {
   const gchar *sctpmap_attr = NULL;
   gint port = -1;
@@ -1206,7 +1207,7 @@ kms_webrtc_session_link_pads (GstPad * src, GstPad * sink)
 
 static void
 kms_webrtc_session_connect_data_session (KmsWebrtcSession * self,
-    GstSDPMedia * media, KmsIRtpConnection * conn)
+    const GstSDPMedia * media, KmsIRtpConnection * conn)
 {
   GstPad *srcpad = NULL, *sinkpad = NULL, *tmppad;
 
@@ -1245,7 +1246,7 @@ error:
 
 static void
 kms_webrtc_session_add_data_session (KmsWebrtcSession * self,
-    GstSDPMedia * media, KmsIRtpConnection * conn)
+    const GstSDPMedia * media, KmsIRtpConnection * conn)
 {
   KMS_SDP_SESSION_LOCK (self);
 
@@ -1281,7 +1282,7 @@ kms_webrtc_session_add_data_session_cb (KmsIRtpConnection * conn,
 
 static void
 kms_webrtc_session_support_sctp_stream (KmsWebrtcSession * self,
-    SdpMediaConfig * mconf, KmsIRtpConnection * conn)
+    const GstSDPMedia * neg_media, KmsIRtpConnection * conn)
 {
   gboolean connected = FALSE;
   ConnectSCTPData *data;
@@ -1296,7 +1297,7 @@ kms_webrtc_session_support_sctp_stream (KmsWebrtcSession * self,
         GST_ELEMENT (kms_webrtc_data_session_bin_new (is_client));
   }
 
-  gst_sdp_media_copy (kms_sdp_media_config_get_sdp_media (mconf), &media);
+  gst_sdp_media_copy (neg_media, &media);
   data = connect_sctp_data_new (self, media, conn);
 
   handler_id = g_signal_connect_data (conn, "connected",
@@ -1310,8 +1311,7 @@ kms_webrtc_session_support_sctp_stream (KmsWebrtcSession * self,
     if (handler_id) {
       g_signal_handler_disconnect (conn, handler_id);
     }
-    kms_webrtc_session_add_data_session (self,
-        kms_sdp_media_config_get_sdp_media (mconf), conn);
+    kms_webrtc_session_add_data_session (self, neg_media, conn);
   } else {
     GST_DEBUG_OBJECT (self, "SCTP: waiting for DTLS layer to be established");
   }
@@ -1321,13 +1321,11 @@ kms_webrtc_session_support_sctp_stream (KmsWebrtcSession * self,
 
 static gboolean
 kms_webrtc_session_add_connection (KmsWebrtcSession * self,
-    KmsSdpSession * sess, SdpMediaConfig * mconf, gboolean offerer)
+    KmsSdpSession * sess, KmsIRtpConnection * conn,
+    const GstSDPMedia * neg_media, gboolean offerer)
 {
-  KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (sess);
   gboolean connected;
-  KmsIRtpConnection *conn;
 
-  conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
   if (conn == NULL) {
     GST_ERROR_OBJECT (self, "No connection created");
     return FALSE;
@@ -1339,28 +1337,25 @@ kms_webrtc_session_add_connection (KmsWebrtcSession * self,
   } else {
     gboolean active;
 
-    active =
-        sdp_utils_media_is_active (kms_sdp_media_config_get_sdp_media (mconf),
-        offerer);
+    active = sdp_utils_media_is_active (neg_media, offerer);
 
     kms_i_rtp_connection_add (conn, GST_BIN (self), active);
     kms_i_rtp_connection_sink_sync_state_with_parent (conn);
     kms_i_rtp_connection_src_sync_state_with_parent (conn);
   }
 
-  kms_webrtc_session_support_sctp_stream (self, mconf, conn);
+  kms_webrtc_session_support_sctp_stream (self, neg_media, conn);
 
   return TRUE;
 }
 
 static gboolean
 kms_webrtc_session_configure_connection (KmsWebrtcSession * self,
-    KmsSdpSession * sess, SdpMediaConfig * neg_mconf,
-    SdpMediaConfig * remote_mconf, gboolean offerer)
+    KmsSdpSession * sess, KmsIRtpConnection * conn,
+    const GstSDPMedia * neg_media, const GstSDPMedia * remote_media,
+    gboolean offerer)
 {
-  GstSDPMedia *neg_media = kms_sdp_media_config_get_sdp_media (neg_mconf);
   const gchar *neg_proto_str = gst_sdp_media_get_proto (neg_media);
-  GstSDPMedia *remote_media = kms_sdp_media_config_get_sdp_media (remote_mconf);
   const gchar *remote_proto_str = gst_sdp_media_get_proto (remote_media);
 
   if (g_strcmp0 (neg_proto_str, remote_proto_str) != 0) {
@@ -1374,7 +1369,7 @@ kms_webrtc_session_configure_connection (KmsWebrtcSession * self,
     return FALSE;
   }
 
-  kms_webrtc_session_add_connection (self, sess, neg_mconf, offerer);
+  kms_webrtc_session_add_connection (self, sess, conn, neg_media, offerer);
 
   return TRUE;
 }
@@ -1384,19 +1379,8 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
     gboolean offerer)
 {
   KmsSdpSession *sdp_sess = KMS_SDP_SESSION (self);
-  SdpMessageContext *remote_sdp_ctx, *neg_sdp_ctx;
-  const GstSDPMessage *sdp;
-  const GSList *item;
-  GSList *remote_media_list;
   const gchar *ufrag, *pwd;
-
-  neg_sdp_ctx = kms_sdp_message_context_new_from_sdp (sdp_sess->neg_sdp, NULL);
-  item = kms_sdp_message_context_get_medias (neg_sdp_ctx);
-
-  remote_sdp_ctx =
-      kms_sdp_message_context_new_from_sdp (sdp_sess->remote_sdp, NULL);
-  sdp = kms_sdp_message_context_get_sdp_message (remote_sdp_ctx);
-  remote_media_list = kms_sdp_message_context_get_medias (remote_sdp_ctx);
+  guint index, len;
 
   /*  [rfc5245#section-5.2]
    *  The agent that generated the offer which
@@ -1411,49 +1395,59 @@ kms_webrtc_session_start_transport_send (KmsWebrtcSession * self,
         offerer, NULL);
   }
 
-  ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
-  pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
+  ufrag =
+      gst_sdp_message_get_attribute_val (sdp_sess->remote_sdp,
+      SDP_ICE_UFRAG_ATTR);
+  pwd =
+      gst_sdp_message_get_attribute_val (sdp_sess->remote_sdp,
+      SDP_ICE_PWD_ATTR);
 
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *neg_mconf = item->data;
-    gint mid = kms_sdp_media_config_get_id (neg_mconf);
-    SdpMediaConfig *remote_mconf;
+  len = gst_sdp_message_medias_len (sdp_sess->neg_sdp);
+
+  if (len != gst_sdp_message_medias_len (sdp_sess->remote_sdp)) {
+    GST_ERROR_OBJECT (self,
+        "Negotiated SDP and remote SDP do not have the same number of medias");
+    g_assert_not_reached ();
+  }
+
+  for (index = 0; index < len; index++) {
+    const GstSDPMedia *neg_media =
+        gst_sdp_message_get_media (sdp_sess->neg_sdp, index);
+    const GstSDPMedia *rem_media =
+        gst_sdp_message_get_media (sdp_sess->remote_sdp, index);
     KmsWebRtcBaseConnection *conn;
+    KmsSdpMediaHandler *handler;
 
-    if (kms_sdp_media_config_is_inactive (neg_mconf)) {
-      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", mid);
+    if (sdp_utils_media_is_inactive (neg_media)) {
+      GST_DEBUG_OBJECT (self, "Media (id=%d) inactive", index);
       continue;
     }
 
-    conn = kms_webrtc_session_get_connection (self, neg_mconf);
+    handler = kms_sdp_agent_get_handler_by_index (KMS_SDP_SESSION (self)->agent,
+        index);
+
+    if (handler == NULL) {
+      GST_ERROR_OBJECT (self, "No handler for media at index %u", index);
+      continue;
+    }
+
+    conn = kms_webrtc_session_get_connection (self, handler);
+    g_object_unref (handler);
+
     if (conn == NULL) {
       continue;
     }
 
-    remote_mconf = g_slist_nth_data (remote_media_list, mid);
-    if (remote_mconf == NULL) {
-      GST_WARNING_OBJECT (self, "Media (id=%d) is not in the remote SDP", mid);
-      continue;
-    }
+    kms_webrtc_session_configure_connection (self, sdp_sess,
+        KMS_I_RTP_CONNECTION (conn), neg_media, rem_media, offerer);
 
-    /* Configure specific webrtc connection such as SCTP if negotiated */
-    kms_webrtc_session_configure_connection (self, sdp_sess, neg_mconf,
-        remote_mconf, offerer);
-
-    gst_media_add_remote_candidates (self, remote_mconf, conn, ufrag, pwd);
+    gst_media_add_remote_candidates (self, index, rem_media, conn, ufrag, pwd);
   }
 
   kms_webrtc_session_add_stored_ice_candidates (self);
 
   g_slist_foreach (self->remote_candidates,
       kms_webrtc_session_remote_sdp_add_stored_ice_candidates, self);
-
-  if (sdp_sess->remote_sdp != NULL) {
-    gst_sdp_message_free (sdp_sess->remote_sdp);
-  }
-  sdp_sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
-  kms_sdp_message_context_unref (remote_sdp_ctx);
-  kms_sdp_message_context_unref (neg_sdp_ctx);
 }
 
 /* Start Transport end */
