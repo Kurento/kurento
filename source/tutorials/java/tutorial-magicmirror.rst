@@ -41,7 +41,7 @@ Firefox).
 
    .. sourcecode:: bash
 
-      mvn compile exec:java -Dkms.ws.url=ws://kms_host:kms_port/kurento
+      mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
 
 
 Understanding this example
