@@ -13,6 +13,12 @@ How do I...
 ...install Kurento Media Server in an Amazon EC2 instance?
 ----------------------------------------------------------
 
+   If you are installing Kurento in a NAT environment (i.e. in any cloud
+   provider), you'll need to provide a STUN server configuration in
+   ``/etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini``. Apart from that,
+   you will have to open all UDP ports in your security group, as STUN will use
+   any port available from the whole 0-65535 range.
+
    Though for most situations it's enough to configure a STUN server in the KMS
    configuration files, you might need to install a :term:`TURN` server, for example
    `coturn <https://code.google.com/p/coturn/>`__. Here are some instructions
@@ -56,15 +62,19 @@ How do I...
 
       - 3478 TCP & UDP
 
-      - 49152 - 65535 UDP: As per `RFC 5766 <http://tools.ietf.org/html/rfc5766>`__, these are the ports that the
+      - 49152 - 65535 UDP: As per :rfc:`5766`, these are the ports that the
         TURN server will use to exchange media. These ports can be changed
         using the ``--max-port`` and ``--min-port`` options from the turnserver.
-        
 
-   6. The last thing to do, is to start the coturn server and the media
+.. note:: While the RFC specifies the ports used by TURN, if you are using STUN you will need to open all UDP ports, as those ports are not constrained.
+
+   6. The last thing to do, is to start the ``coturn`` server and the media
    server::
 
       sudo service coturn start && sudo service kurento-media-server-6.0 restart
+
+.. note::
+  Please do make sure you check your installation using `this test application <https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/>`__
 
 ...know how many Media Pipelines do I need for my Application?
 --------------------------------------------------------------
