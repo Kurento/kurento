@@ -3,12 +3,12 @@ Java Module - Crowd Detector Filter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a `WebRTC`:term: video communication in mirror
-(*loopback*) with a crowd detector filter. This filter detects clusters of people 
+(*loopback*) with a crowd detector filter. This filter detects clusters of people
 in video streams.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -41,7 +41,7 @@ Firefox).
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
+   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute
    the following command
 
    .. sourcecode:: bash
@@ -76,8 +76,8 @@ demo uses a **CrowdDetector** instead of **FaceOverlay** filter.
 
 To setup a ``CrowdDetectorFilter``, first we need to define one or more
 *regions of interest* (ROIs). A ROI determines the zone within the video stream,
-which are going to be monitored and analised by the filter. To define a ROI, 
-we need to configure at least three points. These points are defined in relative 
+which are going to be monitored and analised by the filter. To define a ROI,
+we need to configure at least three points. These points are defined in relative
 terms (0 to 1) to the video width and height.
 
 ``CrowdDetectorFilter`` performs two actions in the defined ROIs. On one
@@ -290,32 +290,60 @@ Dependencies
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
 part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-crowddetector/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
 is where Kurento dependencies are declared. As the following snippet shows, we
-need three dependencies: the Kurento Client Java dependency (*kurento-client*),
-the JavaScript Kurento utility library (*kurento-utils*) for the client-side,
-and the crowd detector module (*crowddetector*):
+need two dependencies: the Kurento Client Java dependency (*kurento-client*)
+and the JavaScript Kurento utility library (*kurento-utils*) for the
+client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
-   <dependencies> 
+   <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
-      <dependency> 
+      </dependency>
+      <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
       <dependency>
-         <groupId>org.kurento.module</groupId>
-         <artifactId>crowddetector</artifactId>
-         <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency>
+  			<groupId>org.webjars</groupId>
+  			<artifactId>webjars-locator</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>bootstrap</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>demo-console</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>adapter.js</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>jquery</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>ekko-lightbox</artifactId>
+  		</dependency>
    </dependencies>
 
 .. note::
 
-   We are in active development. You can find the latest versions at `Maven Central <http://search.maven.org/>`_.
+   We are in active development. You can find the latest version of
+   Kurento Java Client at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
+
+Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
+include the following properties in your pom:
+
+.. sourcecode:: xml
+
+   <maven.compiler.target>1.7</maven.compiler.target>
+   <maven.compiler.source>1.7</maven.compiler.source>

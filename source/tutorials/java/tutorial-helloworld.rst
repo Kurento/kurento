@@ -11,7 +11,7 @@ this tutorial.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -38,7 +38,7 @@ capable browser (Chrome, Firefox).
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
+   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute
    the following command
 
    .. sourcecode:: bash
@@ -57,7 +57,7 @@ framework like Java EE, Spring, Play, Vert.x, Swing and JavaFX.
 This *hello world* demo is one of the simplest web applications you can create
 with Kurento. The following picture shows a screenshot of this demo running:
 
-.. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
+.. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png
    :align:   center
    :alt:     Kurento Hello World Screenshot: WebRTC in loopback
 
@@ -122,7 +122,7 @@ process.
 .. note::
 
    You can use whatever Java server side technology you prefer to build web
-   applications with Kurento. For example, a pure Java EE application, SIP 
+   applications with Kurento. For example, a pure Java EE application, SIP
    Servlets, Play, Vert.x, etc. Here we chose Spring Boot for convenience.
 
 In the following, figure you can see a class diagram of the server side code:
@@ -171,7 +171,7 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @EnableWebSocket
    @SpringBootApplication
    public class HelloWorldApp implements WebSocketConfigurer {
-   
+
       final static String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
 
       @Bean
@@ -478,25 +478,49 @@ Dependencies
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
 part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
-   <dependencies> 
+   <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
-      <dependency> 
+      </dependency>
+      <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
+      </dependency>
+      <dependency>
+  			<groupId>org.webjars</groupId>
+  			<artifactId>webjars-locator</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>bootstrap</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>demo-console</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>adapter.js</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>jquery</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>ekko-lightbox</artifactId>
+  		</dependency>
    </dependencies>
 
 .. note::
@@ -507,32 +531,7 @@ client-side:
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, and *adapter.js*) are
-handled with :term:`Bower`. These dependencies are defined in the file
-`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/bower.json>`_.
-The command ``bower install`` is automatically called from Maven. Thus, Bower
-should be present in your system. It can be installed in an Ubuntu machine as
-follows:
-
-.. sourcecode:: bash
-
-   curl -sL https://deb.nodesource.com/setup | sudo bash -
-   sudo apt-get install -y nodejs
-   sudo npm install -g bower
-
-.. note::
-
-   *kurento-utils-js* can be resolved as a Java dependency, but is also available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/bower.json>`_:
-
-   .. sourcecode:: js
-
-      "dependencies": {
-         "kurento-utils": "|UTILS_JS_VERSION|"
-      }

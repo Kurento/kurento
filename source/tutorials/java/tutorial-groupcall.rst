@@ -7,7 +7,7 @@ them using `WebRTC`:term: technology, creating a multiconference.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -34,7 +34,7 @@ WebRTC capable browser (Chrome, Firefox).
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
+   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute
    the following command
 
    .. sourcecode:: bash
@@ -45,17 +45,17 @@ WebRTC capable browser (Chrome, Firefox).
 Understanding this example
 ==========================
 
-This tutorial shows how to work with the concept of rooms. Each room will create its 
+This tutorial shows how to work with the concept of rooms. Each room will create its
 own pipeline, being isolated from the other rooms. Clients connecting to a certain room, will
 only be able to exchange media with clients in the same room.
 
 Each client will send its own media, and in turn will receive the media from
-all the other participants. This means that there will be a total of n*n 
+all the other participants. This means that there will be a total of n*n
 webrtc endpoints in each room, where n is the number of clients.
 
 When a new client enters the room, a new webrtc will be created and negotiated
 receive the media on the server. On the other hand, all participant will be
-informed that a new user has connected. Then, all participants will request the 
+informed that a new user has connected. Then, all participants will request the
 server to receive the new participant's media.
 
 The newcomer, in turn, gets a list of all connected participants, and requests
@@ -92,7 +92,7 @@ web server in the application and thus simplify the development process.
 .. note::
 
    You can use whatever Java server side technology you prefer to build web
-   applications with Kurento. For example, a pure Java EE application, SIP 
+   applications with Kurento. For example, a pure Java EE application, SIP
    Servlets, Play, Vert.x, etc. Here we chose Spring Boot for convenience.
 
 
@@ -114,39 +114,39 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @EnableWebSocket
    @SpringBootApplication
    public class GroupCallApp implements WebSocketConfigurer {
-   
+
      private static final String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
-   
+
      @Bean
      public UserRegistry registry() {
        return new UserRegistry();
      }
-   
+
      @Bean
      public RoomManager roomManager() {
        return new RoomManager();
      }
-   
+
      @Bean
      public CallHandler groupCallHandler() {
        return new CallHandler();
      }
-   
+
      @Bean
      public KurentoClient kurentoClient() {
        return KurentoClient.create(System.getProperty("kms.url", DEFAULT_KMS_WS_URI));
      }
-   
+
      public static void main(String[] args) throws Exception {
        SpringApplication.run(GroupCallApp.class, args);
      }
-   
+
      @Override
      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
        registry.addHandler(groupCallHandler(), "/groupcall");
      }
    }
-   
+
 This web application follows a *Single Page Application* architecture
 (`SPA`:term:), and uses a `WebSocket`:term: to communicate client with
 application server by means of requests and responses. Specifically, the main
@@ -168,29 +168,29 @@ clause, taking the proper steps in each case.
 .. sourcecode:: java
 
    public class CallHandler extends TextWebSocketHandler {
-   
+
      private static final Logger log = LoggerFactory.getLogger(CallHandler.class);
-   
+
      private static final Gson gson = new GsonBuilder().create();
-   
+
      @Autowired
      private RoomManager roomManager;
-   
+
      @Autowired
      private UserRegistry registry;
-   
+
      @Override
      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
        final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
-   
+
        final UserSession user = registry.getBySession(session);
-   
+
        if (user != null) {
          log.debug("Incoming message from user '{}': {}", user.getName(), jsonMessage);
        } else {
          log.debug("Incoming message from new user: {}", jsonMessage);
        }
-   
+
        switch (jsonMessage.get("id").getAsString()) {
          case "joinRoom":
            joinRoom(jsonMessage, session);
@@ -206,7 +206,7 @@ clause, taking the proper steps in each case.
            break;
          case "onIceCandidate":
            JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
-   
+
            if (user != null) {
              IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
                  candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
@@ -217,16 +217,16 @@ clause, taking the proper steps in each case.
            break;
        }
      }
-   
+
      @Override
      public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
          ...
      }
-   
+
      private void joinRoom(JsonObject params, WebSocketSession session) throws IOException {
          ...
      }
-   
+
      private void leaveRoom(UserSession user) throws IOException {
          ...
      }
@@ -243,7 +243,7 @@ removes the ``userSession`` from ``registry`` and throws out the user from the r
       UserSession user = registry.removeBySession(session);
       roomManager.getRoom(user.getRoomName()).leave(user);
    }
-           
+
 In the ``joinRoom`` method, the server checks if there are a registered room with
 the name specified, add the user into this room and registries the user.
 
@@ -253,12 +253,12 @@ the name specified, add the user into this room and registries the user.
       final String roomName = params.get("room").getAsString();
       final String name = params.get("name").getAsString();
       log.info("PARTICIPANT {}: trying to join room {}", name, roomName);
-      
+
       Room room = roomManager.getRoom(roomName);
       final UserSession user = room.join(name, session);
       registry.register(user);
    }
-  
+
 
 The ``leaveRoom`` method finish the video call from one user.
 
@@ -292,7 +292,7 @@ In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/groupcall``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are three incoming messages to client: ``existingParticipants``,
-``newParticipantArrived``, ``participantLeft``, ``receiveVideoAnswer`` and ``iceCandidate``. Convenient actions 
+``newParticipantArrived``, ``participantLeft``, ``receiveVideoAnswer`` and ``iceCandidate``. Convenient actions
 are taken to implement each step in the communication. For example, in functions ``start`` the function
 ``WebRtcPeer.WebRtcPeerSendrecv`` of *kurento-utils.js* is used to start a
 WebRTC communication.
@@ -302,15 +302,15 @@ WebRTC communication.
    var ws = new WebSocket('wss://' + location.host + '/groupcall');
    var participants = {};
    var name;
-   
+
    window.onbeforeunload = function() {
       ws.close();
    };
-   
+
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'existingParticipants':
          onExistingParticipants(parsedMessage);
@@ -336,15 +336,15 @@ WebRTC communication.
          console.error('Unrecognized message', parsedMessage);
       }
    }
-   
+
    function register() {
       name = document.getElementById('name').value;
       var room = document.getElementById('roomName').value;
-   
+
       document.getElementById('room-header').innerText = 'ROOM ' + room;
       document.getElementById('join').style.display = 'none';
       document.getElementById('room').style.display = 'block';
-   
+
       var message = {
          id : 'joinRoom',
          name : name,
@@ -352,17 +352,17 @@ WebRTC communication.
       }
       sendMessage(message);
    }
-   
+
    function onNewParticipant(request) {
       receiveVideo(request.name);
    }
-   
+
    function receiveVideoResponse(result) {
       participants[result.name].rtcPeer.processAnswer (result.sdpAnswer, function (error) {
          if (error) return console.error (error);
       });
    }
-   
+
    function callResponse(message) {
       if (message.response != 'accepted') {
          console.info('Call not accepted by peer. Closing call');
@@ -373,7 +373,7 @@ WebRTC communication.
          });
       }
    }
-   
+
    function onExistingParticipants(msg) {
       var constraints = {
          audio : true,
@@ -389,7 +389,7 @@ WebRTC communication.
       var participant = new Participant(name);
       participants[name] = participant;
       var video = participant.getVideoElement();
-   
+
       var options = {
             localVideo: video,
             mediaConstraints: constraints,
@@ -402,35 +402,35 @@ WebRTC communication.
            }
            this.generateOffer (participant.offerToReceiveVideo.bind(participant));
       });
-   
+
       msg.data.forEach(receiveVideo);
    }
-   
+
    function leaveRoom() {
       sendMessage({
          id : 'leaveRoom'
       });
-   
+
       for ( var key in participants) {
          participants[key].dispose();
       }
-   
+
       document.getElementById('join').style.display = 'block';
       document.getElementById('room').style.display = 'none';
-   
+
       ws.close();
    }
-   
+
    function receiveVideo(sender) {
       var participant = new Participant(sender);
       participants[sender] = participant;
       var video = participant.getVideoElement();
-   
+
       var options = {
          remoteVideo: video,
          onicecandidate: participant.onIceCandidate.bind(participant)
        }
-   
+
       participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
             function (error) {
               if(error) {
@@ -439,14 +439,14 @@ WebRTC communication.
               this.generateOffer (participant.offerToReceiveVideo.bind(participant));
       });;
    }
-   
+
    function onParticipantLeft(request) {
       console.log('Participant ' + request.name + ' left');
       var participant = participants[request.name];
       participant.dispose();
       delete participants[request.name];
    }
-   
+
    function sendMessage(message) {
       var jsonMessage = JSON.stringify(message);
       console.log('Senging message: ' + jsonMessage);
@@ -459,25 +459,49 @@ Dependencies
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
 part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
-   <dependencies> 
+   <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
-      <dependency> 
+      </dependency>
+      <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
+      </dependency>
+      <dependency>
+  			<groupId>org.webjars</groupId>
+  			<artifactId>webjars-locator</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>bootstrap</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>demo-console</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>adapter.js</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>jquery</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>ekko-lightbox</artifactId>
+  		</dependency>
    </dependencies>
 
 .. note::
@@ -488,32 +512,7 @@ client-side:
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, and *adapter.js*) are
-handled with :term:`Bower`. These dependencies are defined in the file
-`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/bower.json>`_.
-The command ``bower install`` is automatically called from Maven. Thus, Bower
-should be present in your system. It can be installed in an Ubuntu machine as
-follows:
-
-.. sourcecode:: bash
-
-   curl -sL https://deb.nodesource.com/setup | sudo bash -
-   sudo apt-get install -y nodejs
-   sudo npm install -g bower
-
-.. note::
-
-   *kurento-utils-js* can be resolved as a Java dependency, but is also available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-world/bower.json>`__:
-
-   .. sourcecode:: js
-
-      "dependencies": {
-         "kurento-utils": "|UTILS_JS_VERSION|"
-      }

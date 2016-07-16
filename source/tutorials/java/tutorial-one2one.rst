@@ -7,7 +7,7 @@ technology. In other words, this application provides a simple video softphone.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -35,7 +35,7 @@ Firefox).
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
+   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute
    the following command
 
    .. sourcecode:: bash
@@ -112,11 +112,11 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
-.. note:: 
+.. note::
 
    You can use whatever Java server side technology you prefer to build web
    applications with Kurento. For example, a pure Java EE application, SIP
@@ -139,7 +139,7 @@ In the following figure you can see a class diagram of the server side code:
    node [
         fontname = "Bitstream Vera Sans" fontsize = 8 shape = "record"
         style=filled fillcolor = "#E7F2FA"
-        
+
    ]
 
    edge [
@@ -329,7 +329,7 @@ acceptance message is sent to it.
       response.addProperty("response", responseMsg);
       caller.sendMessage(response);
    }
-           
+
 In the ``call`` method, the server checks if there is a registered user with
 the name specified in ``to`` message attribute, and sends an ``incomingCall``
 message. If there is no user with that name, a ``callResponse``
@@ -516,7 +516,7 @@ moment). The methods used to generate SDP are
          calleer.sendMessage(response);
       }
    }
-           
+
 The media logic in this demo is implemented in the class
 `CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/CallMediaPipeline.java>`_.
 As you can see, the media pipeline of this demo is quite simple: two
@@ -526,17 +526,17 @@ WebRtcEndpoints need to be connected twice, one for each media direction.
 .. sourcecode:: java
 
    public class CallMediaPipeline {
-   
+
       private MediaPipeline pipeline;
       private WebRtcEndpoint callerWebRtcEP;
       private WebRtcEndpoint calleeWebRtcEP;
-   
+
       public CallMediaPipeline(KurentoClient kurento) {
          try {
             this.pipeline = kurento.createMediaPipeline();
             this.callerWebRtcEP = new WebRtcEndpoint.Builder(pipeline).build();
             this.calleeWebRtcEP = new WebRtcEndpoint.Builder(pipeline).build();
-   
+
             this.callerWebRtcEP.connect(this.calleeWebRtcEP);
             this.calleeWebRtcEP.connect(this.callerWebRtcEP);
          } catch (Throwable t) {
@@ -545,29 +545,29 @@ WebRtcEndpoints need to be connected twice, one for each media direction.
             }
          }
       }
-   
+
       public String generateSdpAnswerForCaller(String sdpOffer) {
          return callerWebRtcEP.processOffer(sdpOffer);
       }
-   
+
       public String generateSdpAnswerForCallee(String sdpOffer) {
          return calleeWebRtcEP.processOffer(sdpOffer);
       }
-   
+
       public void release() {
          if (pipeline != null) {
             pipeline.release();
          }
       }
-   
+
       public WebRtcEndpoint getCallerWebRtcEP() {
          return callerWebRtcEP;
       }
-   
+
       public WebRtcEndpoint getCalleeWebRtcEP() {
          return calleeWebRtcEP;
       }
-   
+
    }
 
 In this class we can see the implementation of methods
@@ -607,7 +607,7 @@ of *kurento-utils.js* is used to start a WebRTC communication.
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'resgisterResponse':
          resgisterResponse(parsedMessage);
@@ -647,12 +647,12 @@ of *kurento-utils.js* is used to start a WebRTC communication.
          };
          return sendMessage(response);
       }
-   
+
       setCallState(PROCESSING_CALL);
       if (confirm('User ' + message.from
             + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-   
+
          from = message.from;
          var options = {
                   localVideo: videoInput,
@@ -667,7 +667,7 @@ of *kurento-utils.js* is used to start a WebRTC communication.
               }
               webRtcPeer.generateOffer (onOfferIncomingCall);
             });
-   
+
       } else {
          var response = {
             id : 'incomingCallResponse',
@@ -687,7 +687,7 @@ of *kurento-utils.js* is used to start a WebRTC communication.
       }
       setCallState(PROCESSING_CALL);
       showSpinner(videoInput, videoOutput);
-   
+
       var options = {
                localVideo: videoInput,
                remoteVideo: videoOutput,
@@ -709,13 +709,13 @@ Dependencies
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
 part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
    <dependencies>
       <dependency>
@@ -728,6 +728,34 @@ client-side:
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
+      <dependency>
+  			<groupId>org.webjars</groupId>
+  			<artifactId>webjars-locator</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>bootstrap</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>demo-console</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>draggabilly</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>adapter.js</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>jquery</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>ekko-lightbox</artifactId>
+  		</dependency>
    </dependencies>
 
 .. note::
@@ -742,29 +770,3 @@ include the following properties in your pom:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, *adapter.js*, and
-*draggabilly*) are handled with :term:`Bower`. These dependencies are defined in
-the file
-`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/bower.json>`_.
-The command ``bower install`` is automatically called from Maven. Thus, Bower
-should be present in your system. It can be installed in an Ubuntu machine as
-follows:
-
-.. sourcecode:: bash
-
-   curl -sL https://deb.nodesource.com/setup | sudo bash -
-   sudo apt-get install -y nodejs
-   sudo npm install -g bower
-
-.. note::
-
-   *kurento-utils-js* can be resolved as a Java dependency, but is also available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/bower.json>`_:
-
-   .. sourcecode:: js
-
-      "dependencies": {
-         "kurento-utils": "|UTILS_JS_VERSION|"
-      }

@@ -2,13 +2,13 @@
 Java - Send DataChannel
 %%%%%%%%%%%%%%%%%%%%%%%
 
-This tutorial connects a player with a QR code detection 
-filter and sends output to WebRTC. Code detection events are sent to 
+This tutorial connects a player with a QR code detection
+filter and sends output to WebRTC. Code detection events are sent to
 browser using WebRTC datachannels.
 
 .. note::
 
-   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_ 
+   This tutorial has been configured to use https. Follow the `instructions <../../mastering/securing-kurento-applications.html#configure-java-applications-to-use-https>`_
    to secure your application.
 
 For the impatient: running this example
@@ -35,21 +35,21 @@ WebRTC capable browser (Chrome, Firefox).
 
    These instructions work only if Kurento Media Server is up and running in the same machine
    as the tutorial. However, it is possible to connect to a remote KMS in other machine, simply adding
-   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute 
+   the flag ``kms.url`` to the JVM executing the demo. As we'll be using maven, you should execute
    the following command
 
    .. sourcecode:: bash
 
       mvn compile exec:java -Dkms.url=ws://kms_host:kms_port/kurento
-      
+
 .. note::
 
-   This demo needs the kms-datachannelexample module installed in the media server. That module is 
+   This demo needs the kms-datachannelexample module installed in the media server. That module is
    available in the Kurento repositories, so it is possible to install it with:
 
-   
+
    .. sourcecode:: bash
-   
+
       sudo apt-get install kms-datachannelexample
 
 
@@ -58,8 +58,8 @@ Understanding this example
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
 by one **PlayerEndpoint**, one **KmsSendData** and one **WebRtcEndpoint**.
-The **PlayerEnpdoint** plays a video and it detects QR codes into the images. The info about detected codes 
-is sent through data channels (**KmsSendData**) from the Kurento media server to the browser (**WebRtcEndpoint**). 
+The **PlayerEnpdoint** plays a video and it detects QR codes into the images. The info about detected codes
+is sent through data channels (**KmsSendData**) from the Kurento media server to the browser (**WebRtcEndpoint**).
 The browser shows the info in a text form.
 
 This is a web application, and therefore it follows a client-server
@@ -83,14 +83,14 @@ Application Server Logic
 ========================
 
 This demo has been developed using **Java** in the server-side, based on the
-`Spring Boot`:term: framework, which embeds a Tomcat web server within the 
-generated maven artifact, and thus simplifies the development and deployment 
+`Spring Boot`:term: framework, which embeds a Tomcat web server within the
+generated maven artifact, and thus simplifies the development and deployment
 process.
 
 .. note::
 
    You can use whatever Java server side technology you prefer to build web
-   applications with Kurento. For example, a pure Java EE application, SIP 
+   applications with Kurento. For example, a pure Java EE application, SIP
    Servlets, Play, Vert.x, etc. Here we chose Spring Boot for convenience.
 
 ..
@@ -131,25 +131,25 @@ with Kurento Media Server and controlling its multimedia capabilities.
    @EnableWebSocket
    @SpringBootApplication
    public class SendDataChannelApp implements WebSocketConfigurer {
-   
+
      private static final String DEFAULT_KMS_WS_URI = "ws://localhost:8888/kurento";
      static final String DEFAULT_APP_SERVER_URL = "https://localhost:8443";
-   
+
      @Bean
      public SendDataChannelHandler handler() {
        return new SendDataChannelHandler();
      }
-   
+
      @Bean
      public KurentoClient kurentoClient() {
        return KurentoClient.create(System.getProperty("kms.url", DEFAULT_KMS_WS_URI));
      }
-   
+
      @Override
      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
        registry.addHandler(handler(), "/senddatachannel");
      }
-   
+
      public static void main(String[] args) throws Exception {
        new SpringApplication(SendDataChannelApp.class).run(args);
      }
@@ -179,18 +179,18 @@ treated in the *switch* clause, taking the proper steps in each case.
 
      private final Logger log = LoggerFactory.getLogger(SendDataChannelHandler.class);
      private static final Gson gson = new GsonBuilder().create();
-   
+
      private final ConcurrentHashMap<String, UserSession> users = new ConcurrentHashMap<>();
-   
+
      @Autowired
      private KurentoClient kurento;
-   
+
      @Override
      public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
        JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
-   
+
        log.debug("Incoming message: {}", jsonMessage);
-   
+
        switch (jsonMessage.get("id").getAsString()) {
          case "start":
            start(session, jsonMessage);
@@ -204,7 +204,7 @@ treated in the *switch* clause, taking the proper steps in each case.
          }
          case "onIceCandidate": {
            JsonObject jsonCandidate = jsonMessage.get("candidate").getAsJsonObject();
-   
+
            UserSession user = users.get(session.getId());
            if (user != null) {
              IceCandidate candidate = new IceCandidate(jsonCandidate.get("candidate").getAsString(),
@@ -219,16 +219,16 @@ treated in the *switch* clause, taking the proper steps in each case.
            break;
        }
      }
-   
+
      private void start(final WebSocketSession session, JsonObject jsonMessage) {
        ...
      }
-   
+
      private void sendError(WebSocketSession session, String message) {
        ...
      }
    }
-   
+
 In the following snippet, we can see the ``start`` method. It handles the ICE
 candidates gathering, creates a Media Pipeline, creates the Media Elements
 (``WebRtcEndpoint``, ``KmsSendData`` and ``PlayerEndpoint``) and make the connections among
@@ -250,7 +250,7 @@ answer.
              "http://files.kurento.org/video/filter/barcodes.webm").build();
          user.setPlayer(player);
          users.put(session.getId(), user);
-   
+
          // ICE candidates
          webRtcEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
            @Override
@@ -267,28 +267,28 @@ answer.
              }
            }
          });
-   
+
          // Media logic
          KmsSendData kmsSendData = new KmsSendData.Builder(pipeline).build();
-   
+
          player.connect(kmsSendData);
          kmsSendData.connect(webRtcEndpoint);
-   
+
          // SDP negotiation (offer and answer)
          String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
          String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-   
+
          JsonObject response = new JsonObject();
          response.addProperty("id", "startResponse");
          response.addProperty("sdpAnswer", sdpAnswer);
-   
+
          synchronized (session) {
            session.sendMessage(new TextMessage(response.toString()));
          }
-   
+
          webRtcEndpoint.gatherCandidates();
          player.play();
-   
+
        } catch (Throwable t) {
          sendError(session, t.getMessage());
        }
@@ -338,11 +338,11 @@ WebRTC communication.
 .. sourcecode:: javascript
 
    var ws = new WebSocket('wss://' + location.host + '/senddatachannel');
-   
+
    ws.onmessage = function(message) {
       var parsedMessage = JSON.parse(message.data);
       console.info('Received message: ' + message.data);
-   
+
       switch (parsedMessage.id) {
       case 'startResponse':
          startResponse(parsedMessage);
@@ -368,33 +368,33 @@ WebRTC communication.
          onError('Unrecognized message', parsedMessage);
       }
    }
-   
+
    function start() {
       console.log("Starting video call ...")
       // Disable start button
       setState(I_AM_STARTING);
       showSpinner(videoOutput);
-   
+
       var servers = null;
        var configuration = null;
        var peerConnection = new RTCPeerConnection(servers, configuration);
-   
+
        console.log("Creating channel");
        var dataConstraints = null;
-   
+
        channel = peerConnection.createDataChannel(getChannelName (), dataConstraints);
-      
+
        channel.onmessage = onMessage;
-   
+
        var dataChannelReceive = document.getElementById('dataChannelReceive');
-   
+
        function onMessage (event) {
          console.log("Received data " + event["data"]);
          dataChannelReceive.value = event["data"];
        }
-       
+
          console.log("Creating WebRtcPeer and generating local sdp offer ...");
-   
+
       var options = {
          peerConnection: peerConnection,
          remoteVideo : videoOutput,
@@ -408,9 +408,9 @@ WebRTC communication.
                webRtcPeer.generateOffer(onOffer);
             });
    }
-   
+
    function closeChannels(){
-   
+
       if(channel){
         channel.close();
         $('#dataChannelSend').disabled = true;
@@ -418,7 +418,7 @@ WebRTC communication.
         channel = null;
       }
    }
-   
+
    function onOffer(error, offerSdp) {
       if (error)
          return console.error("Error generating the offer");
@@ -429,40 +429,40 @@ WebRTC communication.
       }
       sendMessage(message);
    }
-   
+
    function onError(error) {
       console.error(error);
    }
-   
+
    function onIceCandidate(candidate) {
       console.log("Local candidate" + JSON.stringify(candidate));
-   
+
       var message = {
          id : 'onIceCandidate',
          candidate : candidate
       };
       sendMessage(message);
    }
-   
+
    function startResponse(message) {
       setState(I_CAN_STOP);
       console.log("SDP answer received from server. Processing ...");
-   
+
       webRtcPeer.processAnswer(message.sdpAnswer, function(error) {
          if (error)
             return console.error(error);
       });
    }
-   
+
    function stop() {
       console.log("Stopping video call ...");
       setState(I_CAN_START);
       if (webRtcPeer) {
           closeChannels();
-          
+
          webRtcPeer.dispose();
          webRtcPeer = null;
-   
+
          var message = {
             id : 'stop'
          }
@@ -470,7 +470,7 @@ WebRTC communication.
       }
       hideSpinner(videoOutput);
    }
-   
+
    function sendMessage(message) {
       var jsonMessage = JSON.stringify(message);
       console.log('Senging message: ' + jsonMessage);
@@ -483,25 +483,49 @@ Dependencies
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
 part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
-   <dependencies> 
+   <dependencies>
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
-      <dependency> 
+      </dependency>
+      <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
-      </dependency> 
+      </dependency>
+      <dependency>
+  			<groupId>org.webjars</groupId>
+  			<artifactId>webjars-locator</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>bootstrap</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>demo-console</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>adapter.js</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>jquery</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>ekko-lightbox</artifactId>
+  		</dependency>
    </dependencies>
 
 .. note::
@@ -512,32 +536,7 @@ client-side:
 Kurento Java Client has a minimum requirement of **Java 7**. Hence, you need to
 include the following properties in your pom:
 
-.. sourcecode:: xml 
+.. sourcecode:: xml
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, and *adapter.js*) are
-handled with :term:`Bower`. These dependencies are defined in the file
-`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/bower.json>`_.
-The command ``bower install`` is automatically called from Maven. Thus, Bower
-should be present in your system. It can be installed in an Ubuntu machine as
-follows:
-
-.. sourcecode:: bash
-
-   curl -sL https://deb.nodesource.com/setup | sudo bash -
-   sudo apt-get install -y nodejs
-   sudo npm install -g bower
-
-... note::
-
-   *kurento-utils-js* can be resolved as a Java dependency, but is also available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-send-data-channel/bower.json>`_:
-
-   .. sourcecode:: js
-
-      "dependencies": {
-         "kurento-utils": "|UTILS_JS_VERSION|"
-      }

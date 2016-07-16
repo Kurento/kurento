@@ -156,7 +156,7 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol, there are seven different kinds of incoming messages to
-the *Server* : ``start``, ``stop``, ``pause``, ``resume``, 
+the *Server* : ``start``, ``stop``, ``pause``, ``resume``,
 ``doSeek``, ``getPosition`` and ``onIceCandidates``. These messages are
 treated in the *switch* clause, taking the proper steps in each case.
 
@@ -331,7 +331,7 @@ retrieved and sent back to the client in a ``videoInfo`` message.
 
 
 
-The ``pause`` method retrieves the *user* associated to the current session, and invokes 
+The ``pause`` method retrieves the *user* associated to the current session, and invokes
 the *pause* method on the ``PlayerEndpoint``.
 
 .. sourcecode:: java
@@ -388,7 +388,7 @@ back to the client if the seek fails.
     }
   }
 
-The ``getPosition`` calls the method getPosition of the ``PlayerEndpoint`` 
+The ``getPosition`` calls the method getPosition of the ``PlayerEndpoint``
 of the current *user*. A ``position`` message is sent
 back to the client with the actual position of the video.
 
@@ -408,7 +408,7 @@ back to the client with the actual position of the video.
   }
 
 The ``stop`` method is quite simple: it searches the *user* by *sessionId* and
-stops the ``PlayerEndpoint``. Finally, it releases the media elements and removes 
+stops the ``PlayerEndpoint``. Finally, it releases the media elements and removes
 the user from the list of active users.
 
 .. sourcecode:: java
@@ -664,11 +664,11 @@ Dependencies
 
 This Java Spring application is implemented using `Maven`:term:. The relevant
 part of the
-`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-player/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-show-data-channel/pom.xml>`_
 is where Kurento dependencies are declared. As the following snippet shows, we
 need two dependencies: the Kurento Client Java dependency (*kurento-client*)
 and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+client-side. Other client libraries are managed with `webjars <http://www.webjars.org/>`_:
 
 .. sourcecode:: xml
 
@@ -683,6 +683,30 @@ client-side:
          <artifactId>kurento-utils-js</artifactId>
          <version>|CLIENT_JAVA_VERSION|</version>
       </dependency>
+      <dependency>
+  			<groupId>org.webjars</groupId>
+  			<artifactId>webjars-locator</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>bootstrap</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>demo-console</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>adapter.js</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>jquery</artifactId>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.webjars.bower</groupId>
+  			<artifactId>ekko-lightbox</artifactId>
+  		</dependency>
    </dependencies>
 
 .. note::
@@ -697,28 +721,3 @@ include the following properties in your pom:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-Browser dependencies (i.e. *bootstrap*, *ekko-lightbox*, and *adapter.js*) are
-handled with :term:`Bower`. These dependencies are defined in the file
-`bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-player/bower.json>`_.
-The command ``bower install`` is automatically called from Maven. Thus, Bower
-should be present in your system. It can be installed in an Ubuntu machine as
-follows:
-
-.. sourcecode:: bash
-
-   curl -sL https://deb.nodesource.com/setup | sudo bash -
-   sudo apt-get install -y nodejs
-   sudo npm install -g bower
-
-.. note::
-
-   *kurento-utils-js* can be resolved as a Java dependency, but is also available on Bower. To use this
-   library from Bower, add this dependency to the file
-   `bower.json <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-player/bower.json>`_:
-
-   .. sourcecode:: js
-
-      "dependencies": {
-         "kurento-utils": "|UTILS_JS_VERSION|"
-      }
