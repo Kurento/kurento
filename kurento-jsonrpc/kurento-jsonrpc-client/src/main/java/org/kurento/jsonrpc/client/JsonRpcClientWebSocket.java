@@ -17,7 +17,6 @@
 package org.kurento.jsonrpc.client;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -88,7 +87,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
     if (jettyWsSession == null) {
       throw new IllegalStateException(
-          label + " JsonRpcClient is disconnected from WebSocket server at '" + this.url + "'");
+          label + " JsonRpcClient is disconnected from WebSocket server at '" + this.uri + "'");
     }
 
     synchronized (jettyWsSession) {
@@ -96,10 +95,12 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
     }
   }
 
+  @Override
   protected boolean isNativeClientConnected() {
     return jettyWsSession != null && jettyWsSession.isOpen();
   }
 
+  @Override
   protected void connectNativeClient() throws TimeoutException, Exception {
 
     if (jettyClient == null || jettyClient.isStopped() || jettyClient.isStopping()) {
@@ -122,9 +123,9 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
       try {
 
-        jettyWsSession = jettyClient
-            .connect(new WebSocketClientSocket(), new URI(url), new ClientUpgradeRequest())
-            .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
+        jettyWsSession =
+            jettyClient.connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
+                .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
 
         jettyWsSession.setIdleTimeout(this.idleTimeout);
 
@@ -134,7 +135,7 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
         if (e.getCause() instanceof UpgradeException && numRetries < maxRetries) {
           log.warn(
               "Upgrade exception when trying to connect to {}. Try {} of {}. Retrying in 200ms ",
-              url, numRetries + 1, maxRetries);
+              uri, numRetries + 1, maxRetries);
           Thread.sleep(200);
           numRetries++;
         } else {

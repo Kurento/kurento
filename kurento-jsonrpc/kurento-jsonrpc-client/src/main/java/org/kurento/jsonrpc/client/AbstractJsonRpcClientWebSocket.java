@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 package org.kurento.jsonrpc.client;
 
 import static org.kurento.jsonrpc.JsonUtils.fromJson;
@@ -23,6 +24,8 @@ import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_CONNECT;
 import static org.kurento.jsonrpc.internal.JsonRpcConstants.METHOD_PING;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,12 +67,13 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   protected static final long RECONNECT_DELAY_TIME_MILLIS = 5000;
 
-  private long requestTimeout = PropertiesManager.getProperty("jsonRpcClientWebSocket.timeout",
-      60000);
+  private long requestTimeout =
+      PropertiesManager.getProperty("jsonRpcClientWebSocket.timeout", 60000);
 
   private volatile ExecutorService reqResEventExec;
   private volatile ScheduledExecutorService disconnectExec;
 
+  protected URI uri;
   protected String url;
 
   private final PendingRequests pendingRequests = new PendingRequests();
@@ -90,14 +94,14 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   private boolean concurrentServerRequest = true;
 
-  private boolean tryReconnectingForever = false;
-  private long tryReconnectingMaxTime = 0;
+  private boolean tryReconnectingForever;
+  private long tryReconnectingMaxTime;
 
-  private boolean retryingIfTimeoutToConnect = false;
+  private boolean retryingIfTimeoutToConnect;
 
-  private boolean startSessionWhenConnected = false;
+  private boolean startSessionWhenConnected;
 
-  private long maxTimeReconnecting = 0;
+  private long maxTimeReconnecting;
 
   private Object executorsLock = new Object();
 
@@ -105,7 +109,18 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       JsonRpcWSConnectionListener connectionListener) {
 
     this.lock = new TimeoutReentrantLock(CONNECTION_LOCK_TIMEOUT, "Server " + url);
-    this.url = url;
+    this.url = url; // This has been kept for backwards compatibility
+    try {
+      this.uri = new URI(url);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("The URL received as argument is not a valid URL", e);
+    }
+    final String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
+
+    if (!"ws".equalsIgnoreCase(scheme) && !"wss".equalsIgnoreCase(scheme)) {
+      throw new IllegalArgumentException("Only WS(S) is supported.");
+    }
+
     this.connectionListener = connectionListener;
 
     rsHelper = new JsonRpcRequestSenderHelper() {
@@ -142,9 +157,9 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   /**
    * Configures if this client should send a close message to server when close() method is invoked.
    * This close message is used to inform the server that client explicitly closed the connection.
-   * 
+   *
    * By default sendCloseMessage is false.
-   * 
+   *
    * @param sendCloseMessage
    */
   public void setSendCloseMessage(boolean sendCloseMessage) {
@@ -170,9 +185,9 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
    * In the current implementation (using Jetty as websocket client), this means that handler is
    * executed sequentially. That is problematic if a synchronous request in sent to server in a
    * handler because a deadlock is produced.
-   * 
+   *
    * By default, concurrentServerRequest is true.
-   * 
+   *
    * @param concurrentServerRequest
    */
   public void setConcurrentServerRequest(boolean concurrentServerRequest) {
@@ -424,8 +439,8 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
             try {
 
-              Response<JsonElement> response = MessageUtils.convertResponse(responseJson,
-                  resultClass);
+              Response<JsonElement> response =
+                  MessageUtils.convertResponse(responseJson, resultClass);
 
               if (response.getSessionId() != null) {
                 session.setSessionId(response.getSessionId());
@@ -574,7 +589,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
     if (!isClosedByUser()) {
 
-      log.debug("{}JsonRpcWsClient disconnected from {} because {}.", label, url, closeReason);
+      log.debug("{}JsonRpcWsClient disconnected from {} because {}.", label, uri, closeReason);
 
       reconnect(closeReason);
 
@@ -612,7 +627,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       public void run() {
         try {
 
-          log.info("{}JsonRpcWsClient reconnecting to {}. ", label, url);
+          log.info("{}JsonRpcWsClient reconnecting to {}. ", label, uri);
 
           connectIfNecessary();
 
@@ -630,14 +645,14 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
               || System.currentTimeMillis() > maxTimeReconnecting)) {
 
             log.warn("{} Exception trying to reconnect to server {}. Notifying disconnection",
-                label, url, e);
+                label, uri, e);
 
             notifyDisconnection(closeReason, true);
 
           } else {
 
             log.warn("{} Exception trying to reconnect to server {}. Retrying in {} millis", label,
-                url, RECONNECT_DELAY_TIME_MILLIS, e);
+                uri, RECONNECT_DELAY_TIME_MILLIS, e);
 
             reconnect(closeReason, RECONNECT_DELAY_TIME_MILLIS, false);
           }
@@ -686,7 +701,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
                 + "When a client is closed, it can't be reused. It is necessary to create another one");
       }
 
-      log.debug("{} Connecting webSocket client to server {}", label, url);
+      log.debug("{} Connecting webSocket client to server {}", label, uri);
 
       try {
 
@@ -699,7 +714,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
         if (e instanceof TimeoutException) {
 
           exceptionMessage = label + " Timeout of " + this.connectionTimeout
-              + "ms when waiting to connect to Websocket server " + url;
+              + "ms when waiting to connect to Websocket server " + uri;
 
           if (retryingIfTimeoutToConnect) {
 
@@ -709,7 +724,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
           }
 
         } else {
-          exceptionMessage = label + " Exception connecting to WebSocket server " + url;
+          exceptionMessage = label + " Exception connecting to WebSocket server " + uri;
         }
 
         this.closeClient("Closed by exception: " + exceptionMessage);
@@ -769,7 +784,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     try {
       rsHelper.sendRequest(METHOD_CONNECT, String.class);
 
-      log.info("{} Reconnected to the same session in server {}", label, url);
+      log.info("{} Reconnected to the same session in server {}", label, uri);
 
       return true;
 
@@ -785,7 +800,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
           rsHelper.setSessionId(null);
           rsHelper.sendRequest(METHOD_CONNECT, String.class);
 
-          log.info("{} Reconnected to a new session in server {}", label, url);
+          log.info("{} Reconnected to a new session in server {}", label, uri);
 
           return false;
 
@@ -837,7 +852,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       this.closeClient("Closed by exception: " + e.getMessage());
 
       throw new TimeoutRuntimeException(
-          label + " Timeout trying to connect to websocket server " + url, e);
+          label + " Timeout trying to connect to websocket server " + uri, e);
     }
   }
 
