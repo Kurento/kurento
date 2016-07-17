@@ -74,7 +74,6 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private volatile ScheduledExecutorService disconnectExec;
 
   protected URI uri;
-  protected String url;
 
   private final PendingRequests pendingRequests = new PendingRequests();
   private ResponseSender rs;
@@ -109,7 +108,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       JsonRpcWSConnectionListener connectionListener) {
 
     this.lock = new TimeoutReentrantLock(CONNECTION_LOCK_TIMEOUT, "Server " + url);
-    this.url = url; // This has been kept for backwards compatibility
+
     try {
       this.uri = new URI(url);
     } catch (URISyntaxException e) {
