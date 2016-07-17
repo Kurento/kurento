@@ -95,7 +95,8 @@
 		<webjars.adapter.js.version>0.2.9</webjars.adapter.js.version>
 		<webjars.jquery.version>1.12.3</webjars.jquery.version>
 		<webjars.ekko-lightbox.version>4.0.2</webjars.ekko-lightbox.version>
-		
+		<webjars.event-emitter.version>4.3.0</webjars.event-emitter.version>
+
 		<version.jetty>9.3.0.M2</version.jetty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
@@ -365,7 +366,7 @@
 				<artifactId>kms-api-filters</artifactId>
 				<version>${version.kms-api-filters}</version>
 			</dependency>
-			
+
 			<!-- Webjars -->
 			<dependency>
 				<groupId>org.webjars</groupId>
@@ -401,6 +402,11 @@
 				<groupId>org.webjars.bower</groupId>
 				<artifactId>ekko-lightbox</artifactId>
 				<version>${webjars.ekko-lightbox.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.webjars.bower</groupId>
+				<artifactId>EventEmitter.js</artifactId>
+				<version>${webjars.event-emitter.version}</version>
 			</dependency>
 			<!-- Other dependencies -->
 			<dependency>
