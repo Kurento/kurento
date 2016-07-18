@@ -41,7 +41,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
   }
 
   private static final long MAX_WS_CONNECTIONS = PropertiesManager
-      .getProperty("websocket.maxSessions", Long.MAX_VALUE);
+      .getProperty("ws.maxSessions", Long.MAX_VALUE);
 
   private static final AtomicLong numConnections = new AtomicLong();
 

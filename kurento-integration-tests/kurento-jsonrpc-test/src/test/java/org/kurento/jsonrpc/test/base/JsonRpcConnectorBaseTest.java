@@ -41,7 +41,7 @@ public class JsonRpcConnectorBaseTest {
 
     if (server == null || !server.isActive()) {
 
-      System.setProperty("websocket.maxSessions", Integer.toString(MAX_WS_CONNECTIONS));
+      System.setProperty("ws.maxSessions", Integer.toString(MAX_WS_CONNECTIONS));
       System.setProperty("java.security.egd", "file:/dev/./urandom");
 
       Properties properties = new Properties();
