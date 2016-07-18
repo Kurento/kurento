@@ -196,6 +196,10 @@ docker run \
   $([ -f "$KMS_KEY" ] && echo "-v $KMS_KEY:$CONTAINER_KMS_KEY") \
   -e "ASSEMBLY_FILE=$ASSEMBLY_FILE" \
   -e "BASE_NAME=$BASE_NAME" \
+  $([ "${BUILD_ID}x" != "x" ] && echo "-e BUILD_ID=$BUILD_ID") \
+  $([ "${BUILD_TAG}x" != "x" ] && echo "-e BUILD_TAG=$BUILD_TAG") \
+  $([ "${BUILD_URL}x" != "x" ] && echo "-e BUILD_URL=$BUILD_URL") \
+  $([ "${CLUSTER_REFSPEC}x" != "x" ] && echo "-e CLUSTER_REFSPEC=$CLUSTER_REFSPEC") \
   -e "CREATE_TAG=$CREATE_TAG" \
   -e "CUSTOM_PRE_COMMAND=$CUSTOM_PRE_COMMAND" \
   -e "EXTRA_PACKAGES=$EXTRA_PACKAGES" \
@@ -214,6 +218,9 @@ docker run \
   -e "GNUPG_KEY_ID=$GNUPG_KEY_ID" \
   -e "HTTP_CERT=$CONTAINER_HTTP_CERT" \
   -e "HTTP_KEY=$CONTAINER_HTTP_KEY" \
+  $([ "${JENKINS_URL}x" != "x" ] && echo "-e JENKINS_URL=$JENKINS_URL") \
+  $([ "${JOB_NAME}x" != "x" ] && echo "-e JOB_NAME=$JOB_NAME") \
+  $([ "${JOB_URL}x" != "x" ] && echo "-e JOB_URL=$JOB_URL") \
   -e "KURENTO_GIT_REPOSITORY_SERVER=$KURENTO_GIT_REPOSITORY_SERVER" \
   -e "KURENTO_PROJECT=$KURENTO_PROJECT" \
   -e "KURENTO_PUBLIC_PROJECT=$KURENTO_PUBLIC_PROJECT" \
