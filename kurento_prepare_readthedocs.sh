@@ -20,6 +20,8 @@ PATH=$PATH:$(realpath $(dirname "$0"))
 
 echo "Building $GERRIT_REFNAME of $KURENTO_PROJECT"
 
+git config --global http.postBuffer 2M
+
 # Build
 if [ -n $GERRIT_REFSPEC ] ; then
   kurento_clone_repo.sh $KURENTO_PROJECT $GERRIT_REFSPEC || { echo "Couldn't clone $KURENTO_PROJECT repository"; exit 1; }
