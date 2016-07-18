@@ -348,6 +348,7 @@ generate_ecdsa_certificate ()
   }
 
   group = EC_GROUP_new_by_curve_name (NID_X9_62_prime256v1);
+  EC_GROUP_set_asn1_flag (group, OPENSSL_EC_NAMED_CURVE);
 
   if (ec_key == NULL) {
     GST_ERROR ("EC group not created");
