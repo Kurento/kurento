@@ -45,11 +45,6 @@ if [ "$DIST" = "xenial" ]; then
   apt-get install -y --allow-change-held-packages kurento-adm-scripts
 fi
 
-RUN mkdir -p /root/.ssh \
-  && echo "Host code.kurento.org" >> /root/.ssh/config \
-  && echo "  KexAlgorithms +diffie-hellman-group1-sha1" >> /root/.ssh/config
-
-
 # Configure Kurento gnupg
 if [ -f "$GNUPG_KEY" ]; then
   gpg --import $GNUPG_KEY
