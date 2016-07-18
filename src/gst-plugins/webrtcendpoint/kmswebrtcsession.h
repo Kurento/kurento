@@ -116,7 +116,7 @@ KmsWebrtcSession * kms_webrtc_session_new (KmsBaseSdpEndpoint * ep, guint id,
 					   KmsIRtpSessionManager * manager,
                                            GMainContext * context);
 
-KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, KmsSdpMediaHandler *handler);
+KmsWebRtcBaseConnection * kms_webrtc_session_get_connection (KmsWebrtcSession * self, KmsSdpMediaHandler * handler);
 gboolean kms_webrtc_session_set_ice_credentials (KmsWebrtcSession * self, KmsSdpMediaHandler *handler, GstSDPMedia *media);
 gboolean kms_webrtc_session_set_ice_candidates (KmsWebrtcSession * self, KmsSdpMediaHandler * handler, GstSDPMedia *media);
 gboolean kms_webrtc_session_set_crypto_info (KmsWebrtcSession * self, KmsSdpMediaHandler * handler, GstSDPMedia *media);

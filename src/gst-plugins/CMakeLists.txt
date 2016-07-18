@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 include(GLibHelpers)
 
 add_subdirectory(rtcpdemux)
-#add_subdirectory(rtpendpoint)
+add_subdirectory(rtpendpoint)
 add_subdirectory(webrtcendpoint)
 add_subdirectory(recorderendpoint)
 

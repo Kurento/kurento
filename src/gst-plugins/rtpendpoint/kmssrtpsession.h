@@ -64,7 +64,7 @@ GType kms_srtp_session_get_type (void);
 
 KmsSrtpSession *kms_srtp_session_new (KmsBaseSdpEndpoint * ep, guint id, KmsIRtpSessionManager * manager, gboolean use_ipv6);
 
-KmsRtpBaseConnection * kms_srtp_session_get_connection (KmsSrtpSession * self, SdpMediaConfig * mconf);
+KmsRtpBaseConnection * kms_srtp_session_get_connection (KmsSrtpSession * self, KmsSdpMediaHandler * handler);
 
 G_END_DECLS
 #endif /* __KMS_SRTP_SESSION_H__ */

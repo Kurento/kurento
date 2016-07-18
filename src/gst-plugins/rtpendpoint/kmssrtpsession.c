@@ -47,12 +47,13 @@ kms_srtp_session_new (KmsBaseSdpEndpoint * ep, guint id,
 /* Connection management begin */
 
 KmsRtpBaseConnection *
-kms_srtp_session_get_connection (KmsSrtpSession * self, SdpMediaConfig * mconf)
+kms_srtp_session_get_connection (KmsSrtpSession * self,
+    KmsSdpMediaHandler * handler)
 {
   KmsBaseRtpSession *base_rtp_sess = KMS_BASE_RTP_SESSION (self);
   KmsIRtpConnection *conn;
 
-  conn = kms_base_rtp_session_get_connection (base_rtp_sess, mconf);
+  conn = kms_base_rtp_session_get_connection (base_rtp_sess, handler);
   if (conn == NULL) {
     return NULL;
   }
@@ -62,7 +63,7 @@ kms_srtp_session_get_connection (KmsSrtpSession * self, SdpMediaConfig * mconf)
 
 static KmsIRtpConnection *
 kms_srtp_session_create_connection (KmsBaseRtpSession * base_rtp_sess,
-    SdpMediaConfig * mconf, const gchar * name, guint16 min_port,
+    const GstSDPMedia * media, const gchar * name, guint16 min_port,
     guint16 max_port)
 {
   KmsSrtpConnection *conn = kms_srtp_connection_new (min_port, max_port,

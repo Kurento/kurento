@@ -279,16 +279,14 @@ conn_soft_limit_cb (KmsSrtpConnection * conn, gpointer user_data)
 
 static KmsRtpBaseConnection *
 kms_rtp_endpoint_get_connection (KmsRtpEndpoint * self, KmsSdpSession * sess,
-    SdpMediaConfig * mconf)
+    KmsSdpMediaHandler * handler, const GstSDPMedia * media)
 {
   if (self->priv->use_sdes) {
     KmsRtpBaseConnection *conn;
-    GstSDPMedia *media;
     SdesExtData *data;
 
-    conn = kms_srtp_session_get_connection (KMS_SRTP_SESSION (sess), mconf);
+    conn = kms_srtp_session_get_connection (KMS_SRTP_SESSION (sess), handler);
 
-    media = kms_sdp_media_config_get_sdp_media (mconf);
     data = sdes_ext_data_new (self, gst_sdp_media_get_media (media));
 
     g_signal_connect_data (conn, "key-soft-limit",
@@ -296,7 +294,7 @@ kms_rtp_endpoint_get_connection (KmsRtpEndpoint * self, KmsSdpSession * sess,
         (GClosureNotify) kms_ref_struct_unref, 0);
     return conn;
   } else {
-    return kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), mconf);
+    return kms_rtp_session_get_connection (KMS_RTP_SESSION (sess), handler);
   }
 }
 
@@ -705,10 +703,9 @@ end:
 /* Configure media SDP begin */
 static gboolean
 kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
-    KmsSdpSession * sess, SdpMediaConfig * mconf)
+    KmsSdpSession * sess, KmsSdpMediaHandler * handler, GstSDPMedia * media)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
   guint conn_len, c;
   guint attr_len, a;
   KmsRtpBaseConnection *conn;
@@ -717,7 +714,7 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
   /* Chain up */
   ret = KMS_BASE_SDP_ENDPOINT_CLASS
       (kms_rtp_endpoint_parent_class)->configure_media (base_sdp_endpoint, sess,
-      mconf);
+      handler, media);
   if (ret == FALSE) {
     media->port = 0;
     GST_WARNING_OBJECT (base_sdp_endpoint,
@@ -731,7 +728,7 @@ kms_rtp_endpoint_configure_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
   }
 
   conn = kms_rtp_endpoint_get_connection (KMS_RTP_ENDPOINT (base_sdp_endpoint),
-      sess, mconf);
+      sess, handler, media);
 
   if (conn == NULL) {
     return TRUE;
@@ -764,25 +761,21 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     base_sdp_endpoint, KmsSdpSession * sess, gboolean offerer)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  SdpMessageContext *remote_sdp_ctx;
-  const GstSDPMessage *sdp;
-  const GSList *item;
   const GstSDPConnection *msg_conn;
-
-  remote_sdp_ctx =
-      kms_sdp_message_context_new_from_sdp (sess->remote_sdp, NULL);
-  sdp = kms_sdp_message_context_get_sdp_message (remote_sdp_ctx);
-  item = kms_sdp_message_context_get_medias (remote_sdp_ctx);
-  msg_conn = gst_sdp_message_get_connection (sdp);
+  guint index, len;
 
   /* Chain up */
   KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->start_transport_send
       (base_sdp_endpoint, sess, offerer);
 
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
-    GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
+  msg_conn = gst_sdp_message_get_connection (sess->remote_sdp);
+  len = gst_sdp_message_medias_len (sess->remote_sdp);
+
+  for (index = 0; index < len; index++) {
+    const GstSDPMedia *media =
+        gst_sdp_message_get_media (sess->remote_sdp, index);
     const GstSDPConnection *media_con;
+    KmsSdpMediaHandler *handler;
     KmsRtpBaseConnection *conn;
     guint port;
 
@@ -805,7 +798,16 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
       continue;
     }
 
-    conn = kms_rtp_endpoint_get_connection (self, sess, mconf);
+    handler = kms_sdp_agent_get_handler_by_index (KMS_SDP_SESSION (sess)->agent,
+        index);
+
+    if (handler == NULL) {
+      GST_ERROR_OBJECT (self, "No handler for media at index %u", index);
+      continue;
+    }
+
+    conn = kms_rtp_endpoint_get_connection (self, sess, handler, media);
+    g_object_unref (handler);
 
     if (conn == NULL) {
       continue;
@@ -816,12 +818,6 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
         media_con->address, port, port + 1);
     /* TODO: get rtcp port from attr if it exists */
   }
-
-  if (sess->remote_sdp != NULL) {
-    gst_sdp_message_free (sess->remote_sdp);
-  }
-  sess->remote_sdp = kms_sdp_message_context_pack (remote_sdp_ctx, NULL);
-  kms_sdp_message_context_unref (remote_sdp_ctx);
 }
 
 static void
