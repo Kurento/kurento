@@ -151,6 +151,7 @@ std::string ParametersToPEMString (EC_GROUP *ec_group)
   BIO_get_mem_data (temp_memory_bio, &buffer);
   std::string parameters_str = buffer;
   BIO_free (temp_memory_bio);
+
   return parameters_str;
 }
 
@@ -175,6 +176,7 @@ std::string ECDSAKeyToPEMString (EC_KEY *pkey_)
   BIO_get_mem_data (temp_memory_bio, &buffer);
   std::string priv_key_str = buffer;
   BIO_free (temp_memory_bio);
+
   return priv_key_str;
 }
 
@@ -199,116 +201,27 @@ std::string PrivateKeyToPEMString (EVP_PKEY *pkey_)
   BIO_get_mem_data (temp_memory_bio, &buffer);
   std::string priv_key_str = buffer;
   BIO_free (temp_memory_bio);
+
   return priv_key_str;
 }
 
-static void
-generate_rsa_certificate ()
+static gchar *
+generate_certificate (EVP_PKEY *private_key)
 {
+  X509 *x509 = NULL;
+  BIO *bio = NULL;
+  X509_NAME *name = NULL;
   int rc = 0;
   unsigned long err = 0;
-  X509_NAME *name = NULL;
-  X509 *x509 = X509_new ();
-  RSA *rsa = RSA_generate_key (2048, RSA_F4, NULL, NULL);;
-  BIO *bio = BIO_new (BIO_s_mem () );
-  EVP_PKEY *private_key = EVP_PKEY_new ();
   BUF_MEM *mem = NULL;
-  std::string pem;
-  std::string rsaKey;
+  gchar *pem = NULL;
 
-  if ( (bio == NULL) || (rsa == NULL) || (x509 == NULL)
-       || (private_key == NULL) ) {
+  x509 = X509_new ();
+
+  if (x509 == NULL) {
+    GST_ERROR ("X509 not created");
     goto end;
   }
-
-  if (!EVP_PKEY_assign_RSA (private_key, rsa) ) {
-    goto end;
-  }
-
-  rsaKey = PrivateKeyToPEMString (private_key);
-  rsa = NULL;
-
-  X509_set_version (x509, 2);
-  ASN1_INTEGER_set (X509_get_serialNumber (x509), 0);
-  X509_gmtime_adj (X509_get_notBefore (x509), 0);
-  X509_gmtime_adj (X509_get_notAfter (x509), 31536000L);  /* A year */
-  X509_set_pubkey (x509, private_key);
-
-  name = X509_get_subject_name (x509);
-  X509_NAME_add_entry_by_txt (name, "C", MBSTRING_ASC, (unsigned char *) "SE",
-                              -1, -1, 0);
-  X509_NAME_add_entry_by_txt (name, "CN", MBSTRING_ASC,
-                              (unsigned char *) "Kurento", -1, -1, 0);
-  X509_set_issuer_name (x509, name);
-  name = NULL;
-
-  if (!X509_sign (x509, private_key, EVP_sha256 () ) ) {
-    GST_WARNING ("failed to sign certificate");
-    return;
-  }
-
-  rc = PEM_write_bio_X509 (bio, x509);
-  err = ERR_get_error();
-
-  if (rc != 1) {
-    GST_WARNING ("PEM_write_bio_X509 failed, error %ld", err);
-    goto end;
-  }
-
-  BIO_get_mem_ptr (bio, &mem);
-  err = ERR_get_error();
-
-  if (!mem || !mem->data || !mem->length) {
-    GST_WARNING ("BIO_get_mem_ptr failed, error %ld", err);
-    goto end;
-  }
-
-  pem = std::string (mem->data, mem->length);
-  defaultCertificateRSA = rsaKey + pem;
-
-end:
-
-  if (x509 != NULL) {
-    X509_free (x509);
-  }
-
-  if (bio != NULL) {
-    BIO_free_all (bio);
-  }
-
-  if (rsa != NULL) {
-    RSA_free (rsa);
-  }
-
-  if (private_key != NULL) {
-    EVP_PKEY_free (private_key);
-  }
-}
-
-static void
-generate_ecdsa_certificate ()
-{
-  EC_GROUP *group = EC_GROUP_new_by_curve_name (NID_X9_62_prime256v1);
-  EC_KEY *ec_key = EC_KEY_new ();
-  EC_KEY_set_group (ec_key, group);
-  EVP_PKEY *private_key = EVP_PKEY_new ();
-  X509_NAME *name = NULL;
-  X509 *x509 = X509_new ();
-  BIO *bio = BIO_new (BIO_s_mem () );
-  BUF_MEM *mem = NULL;
-  std::string pem, ecdsaParameters, ecdsaKey;
-  int rc = 0;
-  unsigned long err = 0;
-
-  if ( (bio == NULL) || (private_key == NULL) || (x509 == NULL) ||
-       !EC_KEY_generate_key (ec_key) ||
-       !EVP_PKEY_assign_EC_KEY (private_key, ec_key) ) {
-    goto end;
-  }
-
-  ecdsaParameters = ParametersToPEMString (group);
-  ecdsaKey = ECDSAKeyToPEMString (ec_key);
-  ec_key = NULL;
 
   X509_set_version (x509, 2L);
   ASN1_INTEGER_set (X509_get_serialNumber (x509), 0);
@@ -325,28 +238,34 @@ generate_ecdsa_certificate ()
   name = NULL;
 
   if (!X509_sign (x509, private_key, EVP_sha256 () ) ) {
-    GST_WARNING ("failed to sign certificate");
-    return;
+    GST_ERROR ("Failed to sign certificate");
+    goto end;
+  }
+
+  bio = BIO_new (BIO_s_mem () );
+
+  if (bio == NULL) {
+    GST_ERROR ("BIO not created");
+    goto end;
   }
 
   rc = PEM_write_bio_X509 (bio, x509);
-  err = ERR_get_error();
 
   if (rc != 1) {
-    GST_WARNING ("PEM_write_bio_X509 failed, error %ld", err);
+    err = ERR_get_error();
+    GST_ERROR ("PEM_write_bio_X509 failed, error %ld", err);
     goto end;
   }
 
   BIO_get_mem_ptr (bio, &mem);
-  err = ERR_get_error();
 
   if (!mem || !mem->data || !mem->length) {
-    GST_WARNING ("BIO_get_mem_ptr failed, error %ld", err);
+    err = ERR_get_error();
+    GST_ERROR ("BIO_get_mem_ptr failed, error %ld", err);
     goto end;
   }
 
-  pem = std::string (mem->data, mem->length);
-  defaultCertificateECDSA = ecdsaParameters + ecdsaKey + pem;
+  pem = g_strndup (mem->data, mem->length);
 
 end:
 
@@ -357,6 +276,121 @@ end:
   if (bio != NULL) {
     BIO_free_all (bio);
   }
+
+  return pem;
+}
+
+static void
+generate_rsa_certificate ()
+{
+  RSA *rsa = NULL;
+  EVP_PKEY *private_key = NULL;
+  gchar *pem;
+  std::string rsaKey;
+
+  rsa = RSA_generate_key (2048, RSA_F4, NULL, NULL);
+
+  if (rsa == NULL) {
+    GST_ERROR ("RSA not created");
+    goto end;
+  }
+
+  private_key = EVP_PKEY_new ();
+
+  if (private_key == NULL) {
+    GST_ERROR ("Private key not created");
+    goto end;
+  }
+
+  if (EVP_PKEY_assign_RSA (private_key, rsa) == 0) {
+    GST_ERROR ("Private key not assigned");
+    goto end;
+  }
+
+  rsa = NULL;
+
+  pem = generate_certificate (private_key);
+
+  if (pem == NULL) {
+    GST_WARNING ("Certificate not generated");
+    goto end;
+  }
+
+  rsaKey = PrivateKeyToPEMString (private_key);
+  defaultCertificateRSA = rsaKey + std::string (pem);
+  g_free (pem);
+
+end:
+
+  if (rsa != NULL) {
+    RSA_free (rsa);
+  }
+
+  if (private_key != NULL) {
+    EVP_PKEY_free (private_key);
+  }
+}
+
+static void
+generate_ecdsa_certificate ()
+{
+  EC_KEY *ec_key = NULL;
+  EC_GROUP *group = NULL;
+  EVP_PKEY *private_key = NULL;
+  gchar *pem;
+  std::string ecdsaParameters, ecdsaKey;
+
+  ec_key = EC_KEY_new ();
+
+  if (ec_key == NULL) {
+    GST_ERROR ("EC key not created");
+    goto end;
+  }
+
+  group = EC_GROUP_new_by_curve_name (NID_X9_62_prime256v1);
+
+  if (ec_key == NULL) {
+    GST_ERROR ("EC group not created");
+    goto end;
+  }
+
+  if (EC_KEY_set_group (ec_key, group) == 0) {
+    GST_ERROR ("Group not set to key");
+    goto end;
+  }
+
+  if (EC_KEY_generate_key (ec_key) == 0) {
+    GST_ERROR ("EC key not generated");
+    goto end;
+  }
+
+  private_key = EVP_PKEY_new ();
+
+  if (private_key == NULL) {
+    GST_ERROR ("Private key not created");
+    goto end;
+  }
+
+  if (EVP_PKEY_assign_EC_KEY (private_key, ec_key) == 0) {
+    GST_ERROR ("Private key not assigned");
+    goto end;
+  }
+
+  pem = generate_certificate (private_key);
+
+  if (pem == NULL) {
+    GST_WARNING ("Certificate not generated");
+    goto end;
+  }
+
+  ecdsaKey = ECDSAKeyToPEMString (ec_key);
+  ec_key = NULL;
+  ecdsaParameters = ParametersToPEMString (group);
+
+  defaultCertificateECDSA = ecdsaParameters + ecdsaKey + std::string (pem);
+  g_free (pem);
+
+end:
 
   if (ec_key != NULL) {
     EC_KEY_free (ec_key);
