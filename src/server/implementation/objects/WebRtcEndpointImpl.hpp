@@ -28,6 +28,7 @@ namespace kurento
 
 class MediaPipeline;
 class WebRtcEndpointImpl;
+class CertificateKeyType;
 
 void Serialize (std::shared_ptr<WebRtcEndpointImpl> &object,
                 JsonSerializer &serializer);
@@ -40,7 +41,8 @@ public:
 
   WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                       std::shared_ptr<MediaPipeline> mediaPipeline,
-                      bool useDataChannels);
+                      bool useDataChannels,
+                      std::shared_ptr<CertificateKeyType> certificateKeyType);
 
   virtual ~WebRtcEndpointImpl ();
 
@@ -118,6 +120,7 @@ private:
   void onDataChannelClosed (gchar *sessId, guint stream_id);
   void checkUri (std::string &uri);
   std::string getCerficateFromFile (std::string &path);
+  void generateDefaultCertificates ();
 
   std::map < std::string, std::shared_ptr<IceCandidatePair >> candidatePairs;
   std::map < std::string, std::shared_ptr<IceConnection>> iceConnectionState;

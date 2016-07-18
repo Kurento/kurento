@@ -180,6 +180,13 @@
               "type": "boolean",
               "optional": true,
               "defaultValue": false
+            },
+            {
+              "name": "certificateKeyType",
+              "doc": "Define the type of the certificate used in dtls",
+              "type": "CertificateKeyType",
+              "optional": true,
+              "defaultValue": "RSA"
             }
           ]
         },
@@ -503,6 +510,15 @@
           "doc": "The state of the component",
           "type": "IceComponentState"
         }
+      ]
+    },
+    {
+      "name": "CertificateKeyType",
+      "typeFormat": "ENUM",
+      "doc": ".",
+      "values": [
+        "RSA",
+        "ECDSA"
       ]
     }
   ]

@@ -24,6 +24,7 @@
 #include <IceCandidate.hpp>
 #include "IceCandidatePair.hpp"
 #include "IceConnection.hpp"
+#include "CertificateKeyType.hpp"
 #include <webrtcendpoint/kmsicecandidate.h>
 #include <IceComponentState.hpp>
 #include <SignalHandler.hpp>
@@ -370,11 +371,38 @@ end:
   }
 }
 
-static void
-generateDefaultCertificates ()
+void
+WebRtcEndpointImpl::generateDefaultCertificates ()
 {
-  generate_rsa_certificate ();
-  generate_ecdsa_certificate ();
+  std::string pemUri;
+  std::string pemUriRSA;
+  std::string pemUriECDSA;
+
+  defaultCertificateECDSA = "";
+  defaultCertificateRSA = "";
+
+  try {
+    pemUriRSA = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificateRSA");
+    defaultCertificateRSA = getCerficateFromFile (pemUriRSA);
+  } catch (boost::property_tree::ptree_error &e) {
+    try {
+      pemUri = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificate");
+      GST_WARNING ("pemCertificate is deprecated. Please use pemCertificateRSA instead");
+      defaultCertificateRSA = getCerficateFromFile (pemUri);
+    } catch (boost::property_tree::ptree_error &e) {
+      GST_INFO ("Unable to load the RSA certificate from file. Using the default certificate.");
+      generate_rsa_certificate ();
+    }
+  }
+
+  try {
+    pemUriECDSA = getConfigValue
+                  <std::string, WebRtcEndpoint> ("pemCertificateECDSA");
+    defaultCertificateECDSA = getCerficateFromFile (pemUriECDSA);
+  } catch (boost::property_tree::ptree_error &e) {
+    GST_INFO ("Unable to load the ECDSA certificate from file. Using the default certificate.");
+    generate_ecdsa_certificate ();
+  }
 }
 
 void WebRtcEndpointImpl::checkUri (std::string &uri)
@@ -636,7 +664,8 @@ WebRtcEndpointImpl::getCerficateFromFile (std::string &path)
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
                                         std::shared_ptr<MediaPipeline>
-                                        mediaPipeline, bool useDataChannels) :
+                                        mediaPipeline, bool useDataChannels,
+                                        std::shared_ptr<CertificateKeyType> certificateKeyType) :
   BaseRtpEndpointImpl (conf,
                        std::dynamic_pointer_cast<MediaObjectImpl>
                        (mediaPipeline), FACTORY_NAME)
@@ -644,13 +673,10 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   uint stunPort;
   std::string stunAddress;
   std::string turnURL;
-  std::string pemUri;
-  std::string pemCertificate;
-  std::string pemUriRSA;
-  std::string pemCertificateRSA;
 
   std::call_once (check_openh264, check_support_for_h264);
-  std::call_once (certificates_flag, generateDefaultCertificates);
+  std::call_once (certificates_flag,
+                  std::bind (&WebRtcEndpointImpl::generateDefaultCertificates, this) );
 
   if (useDataChannels) {
     g_object_set (element, "use-data-channels", TRUE, NULL);
@@ -696,28 +722,29 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   }
 
-  try {
-    pemUriRSA = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificateRSA");
-
-    pemCertificateRSA = getCerficateFromFile (pemUriRSA);
-    g_object_set ( G_OBJECT (element), "pem-certificate", pemCertificateRSA.c_str(),
-                   NULL);
-
-  } catch (boost::property_tree::ptree_error &e) {
-    try {
-      pemUri = getConfigValue <std::string, WebRtcEndpoint> ("pemCertificate");
-
-      GST_WARNING ("pemCertificate is deprecated. Please use pemCertificateRSA instead");
-      pemCertificate = getCerficateFromFile (pemUri);
-      g_object_set ( G_OBJECT (element), "pem-certificate", pemCertificate.c_str(),
-                     NULL);
-
-    } catch (boost::property_tree::ptree_error &e) {
-      GST_INFO ("Loading default pem certificate RSA");
+  switch (certificateKeyType->getValue () ) {
+  case CertificateKeyType::RSA: {
+    if (defaultCertificateRSA != "") {
       g_object_set ( G_OBJECT (element), "pem-certificate",
                      defaultCertificateRSA.c_str(),
                      NULL);
     }
+
+    break;
+  }
+
+  case CertificateKeyType::ECDSA: {
+    if (defaultCertificateECDSA != "") {
+      g_object_set ( G_OBJECT (element), "pem-certificate",
+                     defaultCertificateECDSA.c_str(),
+                     NULL);
+    }
+
+    break;
+  }
+
+  default:
+    GST_ERROR ("Certificate key not supported");
   }
 }
 
@@ -1122,9 +1149,11 @@ WebRtcEndpointImpl::fillStatsReport (std::map
 MediaObjectImpl *
 WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
     &conf, std::shared_ptr<MediaPipeline>
-    mediaPipeline, bool useDataChannels) const
+    mediaPipeline, bool useDataChannels,
+    std::shared_ptr<CertificateKeyType> certificateKeyType) const
 {
-  return new WebRtcEndpointImpl (conf, mediaPipeline, useDataChannels);
+  return new WebRtcEndpointImpl (conf, mediaPipeline, useDataChannels,
+                                 certificateKeyType);
 }
 
 WebRtcEndpointImpl::StaticConstructor WebRtcEndpointImpl::staticConstructor;
