@@ -374,7 +374,8 @@ connect_sink_async (GstElement * webrtcendpoint, GstElement * src,
 static void
 test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
     gchar * codec, gboolean bundle,
-    gboolean check_request_local_key_frame, gboolean gather_asap)
+    gboolean check_request_local_key_frame, gboolean gather_asap,
+    const gchar * pem)
 {
   GArray *codecs_array;
   gchar *codecs[] = { codec, NULL };
@@ -397,6 +398,11 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
 
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  if (pem != NULL) {
+    g_object_set (sender, "pem-certificate", pem, NULL);
+    g_object_set (receiver, "pem-certificate", pem, NULL);
+  }
 
   codecs_array = create_codecs_array (codecs);
   g_object_set (sender, "num-video-medias", 1, "video-codecs",
@@ -1749,13 +1755,91 @@ static GstStaticCaps vp8_expected_caps = GST_STATIC_CAPS ("video/x-vp8");
 GST_START_TEST (test_vp8_sendonly_recvonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
-      FALSE);
+      FALSE, NULL);
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
-      FALSE);
+      FALSE, NULL);
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, TRUE,
-      FALSE);
+      FALSE, NULL);
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
-      TRUE);
+      TRUE, NULL);
+}
+
+GST_END_TEST;
+
+const gchar *rsa_pem = "-----BEGIN PRIVATE KEY-----\r\n"
+    "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCb+LTrbVIUWgpo\r\n"
+    "2P1xIONodNWBZrjKoSiuDFgmwHvRtbsHu3/wVHBw8aCgMfSAkx5fr/qE3V2u9Ufc\r\n"
+    "OF2Sm2+n6FpSl4n3Y0Pj06GkoZ3G2Q68Pce53jOpud1TJbFT9cPl4zUnz+36fczB\r\n"
+    "US9nNsHHEvkPXu1NbNWsf2/cRB3nSUlENz0lJYMDnNQwmE1IALFvxccY3cCUUsku\r\n"
+    "3hUJiK9SSSHvGOT41xW55IpfjL03HEyU+eBzo+KqCgZ7GPtaYdbMtg6AOIktRIiK\r\n"
+    "NjoMU5Kmv5XY/wdOZFX42pSit3SyBZXIdlJ2/cilRzHdTpX0+FJaQOsE0cmADqUu\r\n"
+    "Z9xQVxYVAgMBAAECggEAeTfDtC0UW4jXCkGKR3/d/XK/9H/XInQ533rsj8GM+aEZ\r\n"
+    "qJrKhge6E61WvunUMpEkTA3Cz7wTcURkAv0zjBuNnZtxhzsLGN9nBguWVxLcQoyz\r\n"
+    "bQ0+ym+tCz3Oiy6CMNSS2XnJ+BUbyVA38A6ensLpu0Q9mPqXx1LMhfHNCA1QiE0w\r\n"
+    "KtmgLaCH55x7fhWJXCkQmsD2Ir8JrS6y3UYQ9fEoFT/qxPyIt77f6cYvsd2zdtWv\r\n"
+    "LvsKG8YeLtbJAgmO0dSDuTKOEIjvjfOio3geVGNXcAa12i7aSsaHElk8OEmTTTDI\r\n"
+    "s8KkqHtuK+/vzj09dvPtT/VFF6NwY+Chjw1aOwGLSQKBgQDKOuPv8zJt3uIiYnoD\r\n"
+    "uSFdReK4daGa/lLrmQ0eEUsRT8hcMV/oZ4nxPh8iNAPVwxtsXGyZ7XTguXrG+Zxq\r\n"
+    "me+9y0A5Nzy+iNMDhQltJP5tnaIVy/GoS2SmPYqz4QcgU//77YZgnKsm3B6vIjJa\r\n"
+    "cs8P0gmiU/1ps/5HwJxZjil33wKBgQDFcSfmotKJLPM2cP/XiYhSqrAy0SrvbvmQ\r\n"
+    "Bbupsr0wnAAfu+/SrbYCUA2x8//Qs8dtZBjTNgQYR+26zWDG2xuHuOwKfG0CYzVk\r\n"
+    "8CHDmlBpM/Jv5H993SXlTj5sp+LA6tplprq0v+9sXINk5R+SP4SaZi+t3zKk0bK2\r\n"
+    "EiymJo0AiwKBgGX5cizx7lD23gLGs44jEU7uSZgIQPheHEQPBk1OHRNarsbGYv1X\r\n"
+    "EHjkgWCG6BQncTGgHWc1FQWood+pyJT8kKac0gLH9sqBRh51PD6cM+vkW/Ivx+i8\r\n"
+    "M8GcMM/pveUwVlmb+XHILonG33YigU+Yqw7oM9F2FsfxalyWJIEILaLzAoGAQWGV\r\n"
+    "OvSUD0TJTS/iKLesYuOO8WT+eMcg8SZU3H8J0zz1dYzAf91yNhXYUyNfhPbjhT/u\r\n"
+    "UJLEjF3VRVSZRYBs/2anE1ncpzu/BKvYInPJSO0gzRi3dzByShq85TI7DnM22w55\r\n"
+    "KT2dxR5ljFWrPLy35oEMLOGKXbXrHguqqWJ+sr0CgYAihBSmBp5KUtR+3ywB4XVF\r\n"
+    "V56MRokU2vrvYO071L5VGfw2aQgj71Mnyqou82RhEpSfO6INsbh++KkcXvgamyK9\r\n"
+    "ecXXDlHpfaQqW9uKDMSrSjIS/stw1vPuaQ5aUYt+zSPkEZtQitDo3mtoYd75gznz\r\n"
+    "oCwhRa+5PS9/8qiujp3WXw==\r\n"
+    "-----END PRIVATE KEY-----\r\n"
+    "-----BEGIN CERTIFICATE-----\r\n"
+    "MIICtzCCAZ+gAwIBAgIBADANBgkqhkiG9w0BAQsFADAfMQswCQYDVQQGEwJTRTEQ\r\n"
+    "MA4GA1UEAwwHS3VyZW50bzAeFw0xNjA2MzAxMDUxMzhaFw0xNzA2MzAxMDUxMzha\r\n"
+    "MB8xCzAJBgNVBAYTAlNFMRAwDgYDVQQDDAdLdXJlbnRvMIIBIjANBgkqhkiG9w0B\r\n"
+    "AQEFAAOCAQ8AMIIBCgKCAQEAm/i0621SFFoKaNj9cSDjaHTVgWa4yqEorgxYJsB7\r\n"
+    "0bW7B7t/8FRwcPGgoDH0gJMeX6/6hN1drvVH3Dhdkptvp+haUpeJ92ND49OhpKGd\r\n"
+    "xtkOvD3Hud4zqbndUyWxU/XD5eM1J8/t+n3MwVEvZzbBxxL5D17tTWzVrH9v3EQd\r\n"
+    "50lJRDc9JSWDA5zUMJhNSACxb8XHGN3AlFLJLt4VCYivUkkh7xjk+NcVueSKX4y9\r\n"
+    "NxxMlPngc6PiqgoGexj7WmHWzLYOgDiJLUSIijY6DFOSpr+V2P8HTmRV+NqUord0\r\n"
+    "sgWVyHZSdv3IpUcx3U6V9PhSWkDrBNHJgA6lLmfcUFcWFQIDAQABMA0GCSqGSIb3\r\n"
+    "DQEBCwUAA4IBAQCNE5tE/ohbaWOTossq2PmYypJjitHUoHfheR9dT5vYm2Izla+z\r\n"
+    "AHZVODp9r/25EG3VjKXshL0rSV3ERC5P0wqGBaKCDRJ4pycfA4Fz93byH4r8/6xL\r\n"
+    "EcRsG6F8vsMht1yTjq1zFCNN+OeWJtQmXCKKFKLY4+lMsnGyJJGXlW1yJe7D9x9Q\r\n"
+    "32DO9KIiRiju+ATHMtrwPwTMgg5Gqd+HmVKhTwcb5RbGwP/xCcK44NLGBdxD8eNi\r\n"
+    "bqedNYytvSmEQGEuwlwtA0fNAetr5x7Qegfl4vTWTKogna1xm7SSYqNeOYJZYauV\r\n"
+    "1E1yY33Cjjz/BFBW6lqcl6ryeqzTwg/GXXGW\r\n" "-----END CERTIFICATE-----";
+
+GST_START_TEST (test_vp8_sendonly_recvonly_rsa)
+{
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
+      FALSE, rsa_pem);
+}
+
+GST_END_TEST;
+
+const gchar *ecdsa_pem = "-----BEGIN EC PARAMETERS-----\r\n"
+    "BggqhkjOPQMBBw==\r\n"
+    "-----END EC PARAMETERS-----\r\n"
+    "-----BEGIN EC PRIVATE KEY-----\r\n"
+    "MHcCAQEEIMIn2bIr1dCmHepxf8r/NINPMR2rj1v43jPxS3a+HTvIoAoGCCqGSM49\r\n"
+    "AwEHoUQDQgAECXHjHX4dtJbSo+9f713PN4rxfcb37XW1G2pDepeI78Fl5oPAKPBI\r\n"
+    "Ws4tJWkrPB1pRX0FKpsZyl79i6w3AS/s+Q==\r\n"
+    "-----END EC PRIVATE KEY-----\r\n"
+    "-----BEGIN CERTIFICATE-----\r\n"
+    "MIIBKzCB0aADAgECAgEAMAoGCCqGSM49BAMCMB8xCzAJBgNVBAYTAlNFMRAwDgYD\r\n"
+    "VQQDDAdLdXJlbnRvMB4XDTE2MDcxODExMDEyM1oXDTE3MDcxODExMDEyM1owHzEL\r\n"
+    "MAkGA1UEBhMCU0UxEDAOBgNVBAMMB0t1cmVudG8wWTATBgcqhkjOPQIBBggqhkjO\r\n"
+    "PQMBBwNCAAQJceMdfh20ltKj71/vXc83ivF9xvftdbUbakN6l4jvwWXmg8Ao8Eha\r\n"
+    "zi0laSs8HWlFfQUqmxnKXv2LrDcBL+z5MAoGCCqGSM49BAMCA0kAMEYCIQC+mC/s\r\n"
+    "6oZzJ6SPfJfJXi5PrOdDDQxhR/aKoxzDbY2SRQIhAL78PAvG56DmpXU2cLTaDlIp\r\n"
+    "zjhIHfiZIzPxTHr129TE\r\n" "-----END CERTIFICATE-----";
+
+GST_START_TEST (test_vp8_sendonly_recvonly_ecdsa)
+{
+  test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
+      FALSE, ecdsa_pem);
 }
 
 GST_END_TEST
@@ -1770,9 +1854,9 @@ GST_END_TEST
 GST_START_TEST (test_vp8_sendrecv_but_sendonly)
 {
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", TRUE, FALSE,
-      FALSE);
+      FALSE, NULL);
   test_video_sendonly ("vp8enc", vp8_expected_caps, "VP8/90000", FALSE, FALSE,
-      FALSE);
+      FALSE, NULL);
 }
 
 GST_END_TEST
@@ -2190,6 +2274,8 @@ webrtcendpoint_test_suite (void)
   tcase_add_test (tc_chain, test_pcmu_sendrecv);
   tcase_add_test (tc_chain, test_vp8_sendrecv_but_sendonly);
   tcase_add_test (tc_chain, test_vp8_sendonly_recvonly);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_rsa);
+  tcase_add_test (tc_chain, test_vp8_sendonly_recvonly_ecdsa);
   tcase_add_test (tc_chain, test_vp8_sendrecv);
   tcase_add_test (tc_chain, test_offerer_pcmu_vp8_answerer_vp8_sendrecv);
 
