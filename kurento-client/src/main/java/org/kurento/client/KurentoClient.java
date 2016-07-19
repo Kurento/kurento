@@ -305,6 +305,10 @@ public class KurentoClient {
 
   @PreDestroy
   public void destroy() {
+    if (isClosed()) {
+      log.debug("{} KurentoClient already closed", label);
+      return;
+    }
     log.info("Closing KurentoClient");
     manager.destroy();
     if (kmsUrlLoader != null) {
