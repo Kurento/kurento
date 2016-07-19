@@ -714,4 +714,21 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     FileUtils.deleteDirectory(tmpFolder);
   }
 
+  public void waitForFilesInFolder(String folder, final String ext, int expectedFilesNumber) {
+    File dir = new File(folder);
+    File[] files = null;
+    do {
+      if (files != null) {
+        waitMilliSeconds(500); // polling
+      }
+      files = dir.listFiles(new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+          return name.toLowerCase().endsWith(ext);
+        }
+      });
+      log.info("Number of files with extension {} in {} = {} (expected {})", ext, folder,
+          files.length, expectedFilesNumber);
+    } while (files.length != expectedFilesNumber);
+  }
+
 }
