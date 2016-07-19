@@ -23,7 +23,7 @@ cat > clean.sh <<EOF
 #!/bin/bash -x
 for CONTAINER in \$(docker ps -a |grep $BUILD_TAG | awk '{print \$1}') ; do
    docker stop \$CONTAINER
-   docker rm -v \$CONTAINER
+   docker rm -v -f \$CONTAINER
 done
 EOF
 chmod 755 ./clean.sh
