@@ -70,8 +70,8 @@ public class Retry implements TestRule {
         Throwable caughtThrowable = null;
         for (; currentRetry <= retryCount; currentRetry++) {
           try {
-            testReport.appendHeader(description.getMethodName() + " - Execution "
-                + (exceptions.size() + 1) + "/" + getRetryCount());
+            testReport.appendHeader(description.getClassName() + "." + description.getMethodName()
+                + " - Execution " + (exceptions.size() + 1) + "/" + getRetryCount());
             base.evaluate();
             testReport.flushExtraInfoHtml();
             testReport.appendSuccess("Test ok");
