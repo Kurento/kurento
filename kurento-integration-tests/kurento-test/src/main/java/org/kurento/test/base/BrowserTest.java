@@ -595,6 +595,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
           .replaceAll("ﬂ", "0").replaceAll("ﬁ", "6").replaceAll("§", "5").replaceAll("I", "1")
           .replaceAll("T", "7");
       parsedOut = parsedOut.substring(0, 7) + ":" + parsedOut.substring(8, parsedOut.length());
+      parsedOut = parsedOut.replaceAll("::", ":");
 
       // Remove last part (number of frames)
       int iSpace = parsedOut.lastIndexOf(" ");
