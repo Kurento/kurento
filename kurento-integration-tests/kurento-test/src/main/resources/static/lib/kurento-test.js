@@ -495,19 +495,12 @@ KurentoTest.prototype.recordingToData = function() {
 	if (!self.recordRTC) {
 		console.warn("No recording found.");
 	} else {
-		var blobUrl = self.recordRTC.toURL();
-		var xhr = new XMLHttpRequest;
-		xhr.responseType = "blob";
-		xhr.onload = function() {
-			var recoveredBlob = xhr.response;
-			var reader = new FileReader;
-			reader.onload = function() {
-				self.recordingData = reader.result;
-			};
-			reader.readAsDataURL(recoveredBlob);
-		};
-		xhr.open("GET", blobUrl);
-		xhr.send();
+		var blob = self.recordRTC.getBlob();
+		var reader = new window.FileReader();
+		reader.readAsDataURL(blob);
+		reader.onloadend = function() {
+			self.recordingData = reader.result;
+		}
 	}
 };
 
