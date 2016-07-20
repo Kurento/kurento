@@ -29,8 +29,9 @@ import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.client.AbstractJsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
+import org.kurento.jsonrpc.client.JsonRpcClientNettyWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +55,11 @@ public class KurentoClient {
 
   protected RomManager manager;
 
-  private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
-      10000);
+  private long requesTimeout =
+      PropertiesManager.getProperty("kurento.client.requestTimeout", 10000);
 
-  private long connectionTimeout = PropertiesManager.getProperty("kurento.client.connectionTimeout",
-      5000);
+  private long connectionTimeout =
+      PropertiesManager.getProperty("kurento.client.connectionTimeout", 5000);
 
   private String id;
 
@@ -78,8 +79,8 @@ public class KurentoClient {
 
     if (kmsUrlLoader == null) {
 
-      Path configFile = Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento",
-          "config.properties");
+      Path configFile =
+          Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento", "config.properties");
 
       kmsUrlLoader = new KmsUrlLoader(configFile);
     }
@@ -117,12 +118,12 @@ public class KurentoClient {
 
   public static KurentoClient create(String websocketUrl, Properties properties) {
     log.info("Connecting to kms in {}", websocketUrl);
-    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
+    JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(websocketUrl);
     configureJsonRpcClient(client);
     return new KurentoClient(client);
   }
 
-  protected static void configureJsonRpcClient(JsonRpcClientWebSocket client) {
+  protected static void configureJsonRpcClient(AbstractJsonRpcClientWebSocket client) {
     client.enableHeartbeat(KEEPALIVE_TIME);
     client.setTryReconnectingForever(true);
     updateLabel(client, null);
@@ -143,7 +144,7 @@ public class KurentoClient {
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener,
       Properties properties) {
     log.info("Connecting to KMS in {}", websocketUrl);
-    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
+    JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(websocketUrl,
         JsonRpcConnectionListenerKurento.create(listener));
     configureJsonRpcClient(client);
     return new KurentoClient(client);
@@ -165,7 +166,7 @@ public class KurentoClient {
 
     log.info("Connecting to KMS in {}", kmsWsUri);
 
-    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(kmsWsUri);
+    JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(kmsWsUri);
 
     if (connectionTimeout != null) {
       client.setConnectionTimeout(connectionTimeout.intValue());
@@ -236,8 +237,8 @@ public class KurentoClient {
     this.manager = new RomManager(new RomClientJsonRpcClient(client));
     client.setRequestTimeout(requesTimeout);
     client.setConnectionTimeout((int) connectionTimeout);
-    if (client instanceof JsonRpcClientWebSocket) {
-      ((JsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
+    if (client instanceof AbstractJsonRpcClientWebSocket) {
+      ((AbstractJsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
     }
     try {
       long start = System.currentTimeMillis();

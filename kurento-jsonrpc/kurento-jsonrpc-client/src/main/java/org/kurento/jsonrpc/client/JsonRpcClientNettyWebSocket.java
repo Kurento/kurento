@@ -142,6 +142,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
   public JsonRpcClientNettyWebSocket(String url, JsonRpcWSConnectionListener connectionListener,
       SslContextFactory sslContextFactory) {
     super(url, connectionListener);
+    log.info("Creating JsonRPC NETTY Websocket client");
   }
 
   @Override
