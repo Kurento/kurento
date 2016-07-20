@@ -335,7 +335,7 @@ public class Browser implements Closeable {
       // spinner) in WebRTC. Or it is needed to combine with
       // use-file-for-fake-video-capture to use a file faking the
       // cam
-      options.addArguments("--use-fake-device-for-media-stream");
+      options.addArguments("--use-fake-device-for-media-stream=fps=30");
 
       if (video != null && (isLocal() || isDocker())) {
 

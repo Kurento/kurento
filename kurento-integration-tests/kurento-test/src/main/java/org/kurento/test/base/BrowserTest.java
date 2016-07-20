@@ -98,7 +98,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public static final int OCR_COLOR_THRESHOLD = 180;
   public static final String LATENCY_KEY = "latencyMs";
   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("H:mm:ss:S");
-  public static final double FPS = 20;
+  public static final double FPS = 30;
   public static final String PNG = ".png";
   public static final String Y4M = ".y4m";
 
