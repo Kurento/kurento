@@ -98,6 +98,7 @@
 		<webjars.event-emitter.version>4.3.0</webjars.event-emitter.version>
 
 		<version.jetty>9.3.0.M2</version.jetty>
+		<varsion.netty>4.1.3.Final</varsion.netty>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.3.1</version.apache.commons-fileupload>
@@ -407,6 +408,23 @@
 				<groupId>org.webjars.bower</groupId>
 				<artifactId>EventEmitter.js</artifactId>
 				<version>${webjars.event-emitter.version}</version>
+			</dependency>
+
+			<!-- Netty -->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-handler</artifactId>
+				<version>${varsion.netty}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport</artifactId>
+				<version>${varsion.netty}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-handler-proxy</artifactId>
+				<version>${varsion.netty}</version>
 			</dependency>
 			<!-- Other dependencies -->
 			<dependency>

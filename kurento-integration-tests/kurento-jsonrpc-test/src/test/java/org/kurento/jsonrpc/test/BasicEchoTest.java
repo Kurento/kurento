@@ -41,7 +41,6 @@ public class BasicEchoTest extends JsonRpcConnectorBaseTest {
     log.info("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/jsonrpc");
-
     Params params = new Params();
     params.param1 = "Value1";
     params.param2 = "Value2";

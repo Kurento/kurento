@@ -29,6 +29,7 @@ import org.kurento.jsonrpc.internal.server.SessionsManager;
 import org.kurento.jsonrpc.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -40,8 +41,8 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
     private static final long serialVersionUID = -6621614523181088993L;
   }
 
-  private static final long MAX_WS_CONNECTIONS = PropertiesManager
-      .getProperty("ws.maxSessions", Long.MAX_VALUE);
+  private static final long MAX_WS_CONNECTIONS =
+      PropertiesManager.getProperty("ws.maxSessions", Long.MAX_VALUE);
 
   private static final AtomicLong numConnections = new AtomicLong();
 
@@ -110,14 +111,14 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
   }
 
   @Override
-  public void afterConnectionClosed(WebSocketSession wsSession,
-      org.springframework.web.socket.CloseStatus status) throws Exception {
+  public void afterConnectionClosed(WebSocketSession wsSession, CloseStatus status)
+      throws Exception {
 
     numConnections.decrementAndGet();
 
     try {
-      ServerSession session = (ServerSession) protocolManager
-          .getSessionByTransportId(wsSession.getId());
+      ServerSession session =
+          (ServerSession) protocolManager.getSessionByTransportId(wsSession.getId());
 
       if (session != null) {
 

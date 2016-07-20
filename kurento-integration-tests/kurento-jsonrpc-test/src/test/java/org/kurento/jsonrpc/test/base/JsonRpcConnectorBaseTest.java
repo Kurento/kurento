@@ -25,6 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.JsonRpcConnectorTests;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientHttp;
+import org.kurento.jsonrpc.client.JsonRpcClientNettyWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
 import org.springframework.boot.SpringApplication;
@@ -91,6 +92,9 @@ public class JsonRpcConnectorBaseTest {
     JsonRpcClient client;
     if ("ws".equals(clientType)) {
       client = new JsonRpcClientWebSocket("ws://localhost:" + getPort() + servicePath, listener);
+    } else if ("netty".equals(clientType)) {
+      client =
+          new JsonRpcClientNettyWebSocket("ws://localhost:" + getPort() + servicePath, listener);
     } else if ("http".equals(clientType)) {
       client = new JsonRpcClientHttp("http://localhost:" + getPort() + servicePath);
     } else {
