@@ -442,7 +442,7 @@ KurentoTest.prototype.startRecording = function(stream, recordingType,
 			mimeType : isChrome ? null : mimeType,
 			disableLogs : false,
 			// bitsPerSecond : 25 * 8 * 1025, // 25 kbits/s
-			getNativeBlob : false
+			getNativeBlob : true
 		// enable for longer recordings
 		}
 
