@@ -50,9 +50,14 @@ docker pull selenium/hub:$SELENIUM_VERSION
 for image in node-chrome node-firefox node-chrome-beta node-chrome-dev node-firefox-beta
 do
 	pullAndTag kurento/$image:$SELENIUM_VERSION
+	pullAndTag kurento/$image:latest
 	pullAndTag kurento/$image-debug:$SELENIUM_VERSION
+	pullAndTag kurento/$image-debug:latest
 	pullAndTag kurento/$image-debug:$SELENIUM_VERSION-dnat
+	pullAndTag kurento/$image-debug:latest-dnat
 done
+
+
 
 # Image to record vnc sessions
 docker pull softsam/vncrecorder:latest
