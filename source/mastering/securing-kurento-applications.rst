@@ -11,8 +11,7 @@ for further information about this issue.
 
 .. note::
 
-      Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS)
-      if you are using websockets to control your application server.
+      Keep in mind that serving your application through HTTPS, forces you to use WebSockets Secure (WSS) if you are using websockets to control your application server.
 
 Securing client applications
 ============================
@@ -42,13 +41,14 @@ Configure Java applications to use HTTPS
 
          .. sourcecode:: bash
 
-            server.port: 8443 server.ssl.key-store: keystore.jks
+            server.port: 8443
+            server.ssl.key-store: keystore.jks
             server.ssl.key-store-password: yourPassword
-            server.ssl.keyStoreType: JKS server.ssl.keyAlias: yourKeyAlias
+            server.ssl.keyStoreType: JKS
+            server.ssl.keyAlias: yourKeyAlias
 
-      * You can also specify the location of the properties file. Just
-        issue the flag `-Dspring.config.location=<path-to-properties>` when
-        launching your Spring-Boot based app.
+      * You can also specify the location of the properties file. When
+      launching your Spring-Boot based app, issue the flag ``-Dspring.config.location=<path-to-properties>`` .
 
 * Start application
 
