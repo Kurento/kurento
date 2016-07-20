@@ -81,8 +81,8 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
   protected Object registerInfo;
   protected ClientSession session;
   protected String label = "";
-  protected long connectionTimeout = PropertiesManager
-      .getProperty("jsonRpcClientWebSocket.connectionTimeout", 5000);
+  protected int connectionTimeout =
+      PropertiesManager.getProperty("jsonRpcClientWebSocket.connectionTimeout", 5000);
   protected int idleTimeout = 300000;
   protected int heartbeatInterval = 0;
   private static final int DEFAULT_HEARTBEAT_INTERVAL = 5000;
@@ -192,7 +192,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
    * @param connectionTimeout
    *          the timeout in milliseconds
    */
-  public void setConnectionTimeout(long connectionTimeout) {
+  public void setConnectionTimeout(int connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
 

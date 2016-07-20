@@ -53,11 +53,11 @@ public class KurentoClient {
 
   protected RomManager manager;
 
-  private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
-      10000);
+  private long requesTimeout =
+      PropertiesManager.getProperty("kurento.client.requestTimeout", 10000);
 
-  private long connectionTimeout = PropertiesManager.getProperty("kurento.client.connectionTimeout",
-      5000);
+  private long connectionTimeout =
+      PropertiesManager.getProperty("kurento.client.connectionTimeout", 5000);
 
   private String id;
 
@@ -77,8 +77,8 @@ public class KurentoClient {
 
     if (kmsUrlLoader == null) {
 
-      Path configFile = Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento",
-          "config.properties");
+      Path configFile =
+          Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento", "config.properties");
 
       kmsUrlLoader = new KmsUrlLoader(configFile);
     }
@@ -142,8 +142,8 @@ public class KurentoClient {
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener,
       Properties properties) {
     log.info("Connecting to KMS in {}", websocketUrl);
-    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
-        JsonRpcConnectionListenerKurento.create(listener));
+    JsonRpcClientWebSocket client =
+        new JsonRpcClientWebSocket(websocketUrl, JsonRpcConnectionListenerKurento.create(listener));
     configureJsonRpcClient(client);
     return new KurentoClient(client);
   }
@@ -167,7 +167,7 @@ public class KurentoClient {
     JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(kmsWsUri);
 
     if (connectionTimeout != null) {
-      client.setConnectionTimeout(connectionTimeout);
+      client.setConnectionTimeout(connectionTimeout.intValue());
     }
 
     if (connectedHandler != null) {
@@ -234,7 +234,7 @@ public class KurentoClient {
     this.client = client;
     this.manager = new RomManager(new RomClientJsonRpcClient(client));
     client.setRequestTimeout(requesTimeout);
-    client.setConnectionTimeout(connectionTimeout);
+    client.setConnectionTimeout((int) connectionTimeout);
     if (client instanceof JsonRpcClientWebSocket) {
       ((JsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
     }
