@@ -892,41 +892,6 @@ kms_rtp_endpoint_get_property (GObject * object, guint prop_id,
 }
 
 static void
-kms_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
-    base_sdp_endpoint, KmsSdpSession * sess)
-{
-  KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (base_sdp_endpoint);
-  SdpMessageContext *neg_sdp_ctx;
-  const GSList *item;
-
-  /* Chain up */
-  KMS_BASE_SDP_ENDPOINT_CLASS (parent_class)->connect_input_elements
-      (base_sdp_endpoint, sess);
-
-  if (!self->priv->use_sdes) {
-    return;
-  }
-
-  neg_sdp_ctx = kms_sdp_message_context_new_from_sdp (sess->neg_sdp, NULL);
-  item = kms_sdp_message_context_get_medias (neg_sdp_ctx);
-
-  for (; item != NULL; item = g_slist_next (item)) {
-    SdpMediaConfig *mconf = item->data;
-    GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
-    const gchar *media_str = gst_sdp_media_get_media (media);
-
-    if (gst_sdp_media_get_port (media) == 0) {
-      /* Media not supported */
-      GST_DEBUG_OBJECT (base_sdp_endpoint, "Media not supported: %s",
-          media_str);
-      continue;
-    }
-  }
-
-  kms_sdp_message_context_unref (neg_sdp_ctx);
-}
-
-static void
 kms_rtp_endpoint_finalize (GObject * object)
 {
   KmsRtpEndpoint *self = KMS_RTP_ENDPOINT (object);
@@ -965,8 +930,6 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
       kms_rtp_endpoint_create_session_internal;
   base_sdp_endpoint_class->start_transport_send =
       kms_rtp_endpoint_start_transport_send;
-  base_sdp_endpoint_class->connect_input_elements =
-      kms_rtp_endpoint_connect_input_elements;
 
   /* Media handler management */
   base_sdp_endpoint_class->create_media_handler =
