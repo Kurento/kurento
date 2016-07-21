@@ -105,6 +105,9 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
     if (jettyClient == null || jettyClient.isStopped() || jettyClient.isStopping()) {
 
+      log.debug("Connecting JettyWS client with connectionTimeout={} millis",
+          this.connectionTimeout);
+
       jettyClient = new WebSocketClient(sslContextFactory);
       jettyClient.setConnectTimeout(this.connectionTimeout);
       WebSocketPolicy policy = jettyClient.getPolicy();
@@ -123,9 +126,9 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
       try {
 
-        jettyWsSession =
-            jettyClient.connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
-                .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
+        jettyWsSession = jettyClient
+            .connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
+            .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
 
         jettyWsSession.setIdleTimeout(this.idleTimeout);
 
