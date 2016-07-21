@@ -190,6 +190,21 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           new JsonRpcWebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri,
               WebSocketVersion.V13, null, true, new DefaultHttpHeaders(), MAX_PACKET_SIZE));
 
+      final String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
+      final String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
+      final int port;
+      if (uri.getPort() == -1) {
+        if ("ws".equalsIgnoreCase(scheme)) {
+          port = 80;
+        } else if ("wss".equalsIgnoreCase(scheme)) {
+          port = 443;
+        } else {
+          port = -1;
+        }
+      } else {
+        port = uri.getPort();
+      }
+
       Bootstrap b = new Bootstrap();
       b.group(group).channel(NioSocketChannel.class)
           .handler(new ChannelInitializer<SocketChannel>() {
@@ -198,7 +213,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
               ChannelPipeline p = ch.pipeline();
               p.addLast("idleStateHandler", new IdleStateHandler(0, 0, idleTimeout / 1000));
               if (sslCtx != null) {
-                p.addLast(sslCtx.newHandler(ch.alloc(), uri.getHost(), uri.getPort()));
+                p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
               }
               p.addLast(new HttpClientCodec(), new HttpObjectAggregator(8192),
                   WebSocketClientCompressionHandler.INSTANCE, handler);
@@ -209,7 +224,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       final int maxRetries = 5;
       while (channel == null || !channel.isOpen()) {
         try {
-          channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
+          channel = b.connect(host, port).sync().channel();
           handler.handshakeFuture().sync();
         } catch (InterruptedException e) {
           // This should never happen
