@@ -17,7 +17,6 @@
 
 package org.kurento.client;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -49,15 +48,17 @@ public class KurentoClient {
 
   private static final int KEEPALIVE_TIME = 4 * 60 * 1000;
 
+  private static final long WARN_CONNECTION_TIME = 5000;
+
   private static Logger log = LoggerFactory.getLogger(KurentoClient.class);
 
   protected RomManager manager;
 
-  private long requesTimeout =
-      PropertiesManager.getProperty("kurento.client.requestTimeout", 10000);
+  private long requesTimeout = PropertiesManager.getProperty("kurento.client.requestTimeout",
+      10000);
 
-  private long connectionTimeout =
-      PropertiesManager.getProperty("kurento.client.connectionTimeout", 5000);
+  private long connectionTimeout = PropertiesManager.getProperty("kurento.client.connectionTimeout",
+      5000);
 
   private String id;
 
@@ -77,8 +78,8 @@ public class KurentoClient {
 
     if (kmsUrlLoader == null) {
 
-      Path configFile =
-          Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento", "config.properties");
+      Path configFile = Paths.get(StandardSystemProperty.USER_HOME.value(), ".kurento",
+          "config.properties");
 
       kmsUrlLoader = new KmsUrlLoader(configFile);
     }
@@ -142,8 +143,8 @@ public class KurentoClient {
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener,
       Properties properties) {
     log.info("Connecting to KMS in {}", websocketUrl);
-    JsonRpcClientWebSocket client =
-        new JsonRpcClientWebSocket(websocketUrl, JsonRpcConnectionListenerKurento.create(listener));
+    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
+        JsonRpcConnectionListenerKurento.create(listener));
     configureJsonRpcClient(client);
     return new KurentoClient(client);
   }
@@ -239,8 +240,15 @@ public class KurentoClient {
       ((JsonRpcClientWebSocket) client).enableHeartbeat(KEEPALIVE_TIME);
     }
     try {
+      long start = System.currentTimeMillis();
       client.connect();
-    } catch (IOException e) {
+      long duration = System.currentTimeMillis() - start;
+
+      if (duration > WARN_CONNECTION_TIME) {
+        log.warn("Connected to KMS in {} millis (> {} millis)", duration, WARN_CONNECTION_TIME);
+      }
+
+    } catch (Exception e) {
       throw new KurentoException("Exception connecting to KMS", e);
     }
   }
