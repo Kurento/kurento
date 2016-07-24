@@ -593,8 +593,10 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
           .replaceAll("B", "8").replaceAll("G", "6").replaceAll("S", "8").replaceAll("'", "")
           .replaceAll("‘", "").replaceAll("\\.", ":").replaceAll("E", "8").replaceAll("o", "0")
           .replaceAll("ﬂ", "0").replaceAll("ﬁ", "6").replaceAll("§", "5").replaceAll("I", "1")
-          .replaceAll("T", "7");
-      parsedOut = parsedOut.substring(0, 7) + ":" + parsedOut.substring(8, parsedOut.length());
+          .replaceAll("T", "7").replaceAll("’", "").replaceAll("U", "0").replaceAll("D", "0");
+      if (parsedOut.length() > 7) {
+        parsedOut = parsedOut.substring(0, 7) + ":" + parsedOut.substring(8, parsedOut.length());
+      }
       parsedOut = parsedOut.replaceAll("::", ":");
 
       // Remove last part (number of frames)
