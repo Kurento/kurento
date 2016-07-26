@@ -70,6 +70,9 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
   private long requestTimeout =
       PropertiesManager.getProperty("jsonRpcClientWebSocket.timeout", 60000);
 
+  protected static final int maxPacketSize =
+      PropertiesManager.getProperty("jsonRpcClientWebSocket.packetSize", 1000000);
+
   private volatile ExecutorService reqResEventExec;
   private volatile ScheduledExecutorService disconnectExec;
 

@@ -124,8 +124,6 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
 
   private static final Logger log = LoggerFactory.getLogger(JsonRpcClientNettyWebSocket.class);
 
-  private static final int MAX_PACKET_SIZE = 1000000;
-
   protected volatile Channel channel;
   protected volatile EventLoopGroup group;
 
@@ -188,7 +186,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       // HttpResponseDecoder to WebSocketHttpResponseDecoder in the pipeline.
       final JsonRpcWebSocketClientHandler handler =
           new JsonRpcWebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri,
-              WebSocketVersion.V13, null, true, new DefaultHttpHeaders(), MAX_PACKET_SIZE));
+              WebSocketVersion.V13, null, true, new DefaultHttpHeaders(), maxPacketSize));
 
       final String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
       final String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();

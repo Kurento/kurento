@@ -38,8 +38,6 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
   private static Logger log = LoggerFactory.getLogger(AbstractJsonRpcClientWebSocket.class);
 
-  private static final int MAX_PACKET_SIZE = 1000000;
-
   @WebSocket
   public class WebSocketClientSocket {
 
@@ -111,10 +109,10 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
       jettyClient = new WebSocketClient(sslContextFactory);
       jettyClient.setConnectTimeout(this.connectionTimeout);
       WebSocketPolicy policy = jettyClient.getPolicy();
-      policy.setMaxBinaryMessageBufferSize(MAX_PACKET_SIZE);
-      policy.setMaxTextMessageBufferSize(MAX_PACKET_SIZE);
-      policy.setMaxBinaryMessageSize(MAX_PACKET_SIZE);
-      policy.setMaxTextMessageSize(MAX_PACKET_SIZE);
+      policy.setMaxBinaryMessageBufferSize(maxPacketSize);
+      policy.setMaxTextMessageBufferSize(maxPacketSize);
+      policy.setMaxBinaryMessageSize(maxPacketSize);
+      policy.setMaxTextMessageSize(maxPacketSize);
 
       jettyClient.start();
 
