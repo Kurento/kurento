@@ -28,17 +28,18 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Continuation;
+import org.kurento.client.CryptoSuite;
+import org.kurento.client.EventListener;
+import org.kurento.client.MediaFlowInStateChangeEvent;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.RtpEndpoint;
+import org.kurento.client.SDES;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.FunctionalTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.utils.Shell;
-
-import org.kurento.client.SDES;
-import org.kurento.client.CryptoSuite;
 
 /**
  * Test agnostic. </p> Media Pipeline(s):
@@ -91,6 +92,16 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
     RtpEndpoint rtpEp = new RtpEndpoint.Builder(mp).withCrypto(sdes).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
+    final CountDownLatch flowingInLatch = new CountDownLatch(1);
+
+    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowInStateChangeEvent event) {
+        flowingInLatch.countDown();
+      }
+    });
+
     rtpEp.connect(webRtcEp);
 
     getPage().subscribeEvents("playing");
@@ -134,7 +145,10 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
     log.debug("Uri: {}:{}", kmsIp, port);
     log.debug("Ffmpeg cmd: {}", ffmpegCmd);
 
-    Shell.runAndWaitString(ffmpegCmd);
+    Shell.run(ffmpegCmd.split(" "));
+
+    Assert.assertTrue("Not received FLOWING IN event in webRtcEp:",
+        flowingInLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
