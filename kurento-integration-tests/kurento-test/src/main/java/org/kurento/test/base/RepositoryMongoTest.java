@@ -68,7 +68,7 @@ public class RepositoryMongoTest extends KurentoClientBrowserTest<WebRtcTestPage
 
     @Bean
     public RepositoryApiConfiguration repositoryApiConfiguration() throws UnknownHostException {
-      log.info("Repository for playing test");
+      log.debug("Repository for playing test");
       RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 
       config.setWebappPublicUrl("http://" + InetAddress.getLocalHost().getHostAddress() + ":"

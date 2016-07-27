@@ -117,7 +117,7 @@ public class KurentoClient {
   }
 
   public static KurentoClient create(String websocketUrl, Properties properties) {
-    log.info("Connecting to kms in {}", websocketUrl);
+    log.debug("Connecting to kms in {}", websocketUrl);
     JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(websocketUrl);
     configureJsonRpcClient(client);
     return new KurentoClient(client);
@@ -143,7 +143,7 @@ public class KurentoClient {
 
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener,
       Properties properties) {
-    log.info("Connecting to KMS in {}", websocketUrl);
+    log.debug("Connecting to KMS in {}", websocketUrl);
     JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(websocketUrl,
         JsonRpcConnectionListenerKurento.create(listener));
     configureJsonRpcClient(client);
@@ -164,7 +164,7 @@ public class KurentoClient {
 
     KurentoClient kurentoClient = null;
 
-    log.info("Connecting to KMS in {}", kmsWsUri);
+    log.debug("Connecting to KMS in {}", kmsWsUri);
 
     JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(kmsWsUri);
 
@@ -318,7 +318,7 @@ public class KurentoClient {
       log.debug("{} KurentoClient already closed", label);
       return;
     }
-    log.info("Closing KurentoClient");
+    log.debug("Closing KurentoClient");
     manager.destroy();
     if (kmsUrlLoader != null) {
       kmsUrlLoader.clientDestroyed(id);

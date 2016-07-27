@@ -54,7 +54,7 @@ public class GenericMessageTest {
 
     String requestJson = JsonUtils.toJsonRequest(request);
 
-    log.info(requestJson);
+    log.debug(requestJson);
 
     Request<Params> newRequest = JsonUtils.fromJsonRequest(requestJson, Params.class);
 
@@ -76,7 +76,7 @@ public class GenericMessageTest {
 
     String requestJson = JsonUtils.toJsonResponse(request);
 
-    log.info(requestJson);
+    log.debug(requestJson);
 
     Response<Data> newRequest = JsonUtils.fromJsonResponse(requestJson, Data.class);
 

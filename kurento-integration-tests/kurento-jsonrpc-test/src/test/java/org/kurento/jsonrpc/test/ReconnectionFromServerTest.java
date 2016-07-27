@@ -54,7 +54,7 @@ public class ReconnectionFromServerTest extends JsonRpcConnectorBaseTest {
     public void handleRequest(final Transaction transaction, Request<String> request)
         throws Exception {
 
-      log.info("Receive request in server: " + request);
+      log.debug("Receive request in server: " + request);
 
       if (session == null) {
         session = transaction.getSession();
@@ -66,16 +66,16 @@ public class ReconnectionFromServerTest extends JsonRpcConnectorBaseTest {
         transaction.sendResponse("old");
       }
 
-      log.info("Response sent from server");
+      log.debug("Response sent from server");
 
       executor.schedule(new Runnable() {
         @Override
         public void run() {
           try {
-            log.info("Request send from server");
+            log.debug("Request send from server");
             JsonElement result = session.sendRequest("hello");
-            log.info("Response received in server");
-            log.info("Result: " + result);
+            log.debug("Response received in server");
+            log.debug("Result: " + result);
             s.release();
           } catch (IOException e) {
             e.printStackTrace();
@@ -101,9 +101,9 @@ public class ReconnectionFromServerTest extends JsonRpcConnectorBaseTest {
       public void handleRequest(Transaction transaction, Request<JsonElement> request)
           throws Exception {
 
-        log.info("Receive request in client: " + request);
+        log.debug("Receive request in client: " + request);
         transaction.sendResponse("world");
-        log.info("Response sent from client");
+        log.debug("Response sent from client");
       }
     });
 
@@ -115,7 +115,7 @@ public class ReconnectionFromServerTest extends JsonRpcConnectorBaseTest {
 
     waitForServer();
 
-    log.info("SessionId: " + client.getSession().getSessionId());
+    log.debug("SessionId: " + client.getSession().getSessionId());
 
     JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
 
@@ -127,7 +127,7 @@ public class ReconnectionFromServerTest extends JsonRpcConnectorBaseTest {
 
     waitForServer();
 
-    log.info("Acquired");
+    log.debug("Acquired");
 
     client.close();
 

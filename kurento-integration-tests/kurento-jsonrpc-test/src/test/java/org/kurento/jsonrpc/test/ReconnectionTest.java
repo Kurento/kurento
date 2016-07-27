@@ -180,15 +180,15 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
       client.connect();
 
-      log.info("--------> Client connected to server");
+      log.debug("--------> Client connected to server");
 
       server.close();
 
-      log.info("--------> Server closed");
+      log.debug("--------> Server closed");
 
       reconnecting.waitFor(3000);
 
-      log.info("--------> Event reconnecting received in client");
+      log.debug("--------> Event reconnecting received in client");
 
       assertThat(reconnected.isEventRecived()).isFalse();
 
@@ -197,17 +197,17 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
       assertThat(reconnected.isEventRecived()).isFalse();
 
-      log.info("--------> Starting new server after 20s");
+      log.debug("--------> Starting new server after 20s");
 
       startServer();
 
-      log.info("--------> New server started");
+      log.debug("--------> New server started");
 
-      log.info("--------> Waiting 10s to client reconnection");
+      log.debug("--------> Waiting 10s to client reconnection");
 
       reconnected.waitFor(10000);
 
-      log.info("--------> Client reconnected event received");
+      log.debug("--------> Client reconnected event received");
 
     }
   }
@@ -241,15 +241,15 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
       client.connect();
 
-      log.info("--------> Client connected to server");
+      log.debug("--------> Client connected to server");
 
       server.close();
 
-      log.info("--------> Server closed");
+      log.debug("--------> Server closed");
 
       reconnecting.waitFor(3000);
 
-      log.info("--------> Event reconnecting received in client");
+      log.debug("--------> Event reconnecting received in client");
 
       assertThat(disconnected.isEventRecived()).isFalse();
 
@@ -332,15 +332,15 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
       client.connect();
 
-      log.info("--------> Client connected to server");
+      log.debug("--------> Client connected to server");
 
       server.close();
 
-      log.info("--------> Server closed");
+      log.debug("--------> Server closed");
 
       reconnecting.waitFor(3000);
 
-      log.info("--------> Event reconnecting received in client");
+      log.debug("--------> Event reconnecting received in client");
 
       assertThat(reconnected.isEventRecived()).isFalse();
 
@@ -349,23 +349,23 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
       assertThat(reconnected.isEventRecived()).isFalse();
 
-      log.info("--------> Starting new server after 20s");
+      log.debug("--------> Starting new server after 20s");
 
       client.close();
 
       disconnected.waitFor(20000);
 
-      log.info("--------> Client is disconnected");
+      log.debug("--------> Client is disconnected");
 
       startServer();
 
-      log.info("--------> New server started");
+      log.debug("--------> New server started");
 
       Thread.sleep(10000);
 
       assertThat(reconnected.isEventRecived()).isFalse();
 
-      log.info("--------> Client is not reconnected after 10s after closing it");
+      log.debug("--------> Client is not reconnected after 10s after closing it");
 
     }
   }

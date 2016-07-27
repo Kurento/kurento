@@ -49,7 +49,7 @@ public class PingWatchdogManager {
     private Runnable closeSessionTask = new Runnable() {
       @Override
       public void run() {
-        log.info("Closing session with sessionId={} and transportId={} for not receiving ping in {}"
+        log.debug("Closing session with sessionId={} and transportId={} for not receiving ping in {}"
             + " millis", sessionId, transportId, pingInterval * NUM_NO_PINGS_TO_CLOSE);
         closer.closeSession(transportId);
       }
@@ -70,7 +70,7 @@ public class PingWatchdogManager {
           pingInterval = interval;
         }
 
-        log.info(
+        log.debug(
             "Setting ping interval to {}" + " millis in session with transportId={}. "
                 + "Connection is closed if a ping is not received in {}x{}={} millis",
             pingInterval, this.transportId, pingInterval, NUM_NO_PINGS_TO_CLOSE,
@@ -98,7 +98,7 @@ public class PingWatchdogManager {
 
       if (pingWachdog) {
         if (pingInterval != -1) {
-          log.info("Setting new transportId={} for sessionId={}. "
+          log.debug("Setting new transportId={} for sessionId={}. "
               + "Restarting timer to consider disconnected client if pings are not received in {}"
               + " millis", transportId, sessionId, NUM_NO_PINGS_TO_CLOSE * pingInterval);
           activateSessionCloser();
@@ -141,7 +141,7 @@ public class PingWatchdogManager {
   private synchronized PingWatchdogSession getOrCreatePingSession(String transportId) {
     PingWatchdogSession session = sessions.get(transportId);
     if (session == null) {
-      log.info("Created PingWatchdogSession for transportId {}", transportId);
+      log.debug("Created PingWatchdogSession for transportId {}", transportId);
       session = new PingWatchdogSession(transportId);
       sessions.put(transportId, session);
     }
@@ -153,7 +153,7 @@ public class PingWatchdogManager {
   }
 
   public void removeSession(ServerSession session) {
-    log.info("Removed PingWatchdogSession for transportId {}", session.getTransportId());
+    log.debug("Removed PingWatchdogSession for transportId {}", session.getTransportId());
     PingWatchdogSession pingSession = sessions.remove(session.getTransportId());
     if (pingSession != null) {
       pingSession.disablePingWatchdog();
@@ -163,7 +163,7 @@ public class PingWatchdogManager {
   public synchronized void updateTransportId(String transportId, String oldTransportId) {
     PingWatchdogSession session = sessions.remove(oldTransportId);
     if (session != null) {
-      log.info("Updated with new transportId {} the session with old transportId {}", transportId,
+      log.debug("Updated with new transportId {} the session with old transportId {}", transportId,
           oldTransportId);
       session.setTransportId(transportId);
       sessions.put(transportId, session);
@@ -178,7 +178,7 @@ public class PingWatchdogManager {
   public void disablePingWatchdogForSession(String transportId) {
     PingWatchdogSession session = sessions.get(transportId);
     if (session != null) {
-      log.info("Disabling PingWatchdog for session with transportId {}", transportId);
+      log.debug("Disabling PingWatchdog for session with transportId {}", transportId);
       session.disablePingWatchdog();
     } else {
       if (pingWachdog) {

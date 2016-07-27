@@ -38,9 +38,9 @@ public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
     @Override
     public void handleRequest(Transaction transaction, Request<Integer> request) throws Exception {
 
-      log.info("Request id:" + request.getId());
-      log.info("Request method:" + request.getMethod());
-      log.info("Request params:" + request.getParams());
+      log.debug("Request id:" + request.getId());
+      log.debug("Request method:" + request.getMethod());
+      log.debug("Request params:" + request.getParams());
 
       transaction.sendResponse(request.getParams());
 
@@ -83,7 +83,7 @@ public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/BidirectionalMultiTest");
 
@@ -93,7 +93,7 @@ public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
       public void handleRequest(Transaction transaction, Request<Integer> request)
           throws Exception {
 
-        log.info("Reverse request: " + request);
+        log.debug("Reverse request: " + request);
         transaction.sendResponse(request.getParams() + 1);
       }
     });
@@ -104,7 +104,7 @@ public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
 
     client.close();
 
-    log.info("Client finished");
+    log.debug("Client finished");
   }
 
 }

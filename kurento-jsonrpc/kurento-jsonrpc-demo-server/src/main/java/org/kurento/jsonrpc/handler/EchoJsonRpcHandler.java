@@ -31,9 +31,9 @@ public class EchoJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
   @Override
   public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
 
-    log.info("Request id:" + request.getId());
-    log.info("Request method:" + request.getMethod());
-    log.info("Request params:" + request.getParams());
+    log.debug("Request id:" + request.getId());
+    log.debug("Request method:" + request.getMethod());
+    log.debug("Request params:" + request.getParams());
 
     transaction.sendResponse(request.getParams());
 

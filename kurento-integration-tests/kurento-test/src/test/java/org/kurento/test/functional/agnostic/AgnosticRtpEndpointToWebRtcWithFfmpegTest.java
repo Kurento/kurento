@@ -125,7 +125,7 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
 
       @Override
       public void onError(Throwable cause) throws Exception {
-        log.info("Error:{}", cause.getMessage());
+        log.debug("Error:{}", cause.getMessage());
       }
     });
 

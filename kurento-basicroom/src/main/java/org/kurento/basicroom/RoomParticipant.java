@@ -102,7 +102,7 @@ public class RoomParticipant implements Closeable {
 
   public void receiveVideoFrom(RoomParticipant sender, String sdpOffer) {
 
-    log.info("USER {}: Request to receive video from {} in room {}", this.name, sender.getName(),
+    log.debug("USER {}: Request to receive video from {} in room {}", this.name, sender.getName(),
         this.room.getName());
 
     log.trace("USER {}: SdpOffer for {} is {}", this.name, sender.getName(), sdpOffer);

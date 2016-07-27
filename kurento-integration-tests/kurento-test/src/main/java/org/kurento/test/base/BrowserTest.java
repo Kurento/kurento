@@ -378,7 +378,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public void processDataToCsv(String outputFile, final Map<String, Map<String, String>> presenter,
       final Map<String, Map<String, String>> viewer) throws InterruptedException, IOException {
 
-    log.info("Processing OCR and stats to CSV ({})", outputFile);
+    log.debug("Processing OCR and stats to CSV ({})", outputFile);
     log.trace("Presenter {} : {}", presenter.size(), presenter.keySet());
     log.trace("Viewer {} : {}", viewer.size(), viewer.keySet());
 
@@ -426,7 +426,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     processStats(presenter, resultTable);
     processStats(viewer, resultTable);
 
-    log.info("OCR + Stats results: {}", resultTable);
+    log.debug("OCR + Stats results: {}", resultTable);
 
     // Write CSV
     writeCSV(outputFile, resultTable);
@@ -445,7 +445,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
               + "\nBase64 viewer: {}",
           presenterDateStr, viewerDateStr, presenterBase64, viewerBase64, e);
     }
-    log.info("--> Latency {} ms (presenter: '{}' - viewer: '{}')", latency, presenterDateStr,
+    log.debug("--> Latency {} ms (presenter: '{}' - viewer: '{}')", latency, presenterDateStr,
         viewerDateStr);
 
     // Debug trace for latencies over 1 second (or lower than -1)
@@ -614,7 +614,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     File y4m = new File(tmpFolder.toString() + File.separator + inputFile.getName() + Y4M);
     String[] ffmpegCommand = { "ffmpeg", "-i", inputFile.toString(), "-f", "yuv4mpegpipe", "-r",
         parseFps(fps), y4m.toString() };
-    log.info("Running command to convert to raw: {}", Arrays.toString(ffmpegCommand));
+    log.debug("Running command to convert to raw: {}", Arrays.toString(ffmpegCommand));
     Shell.runAndWait(ffmpegCommand);
     return y4m;
   }
@@ -625,9 +625,9 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         + inputFile2.toString() + " > " + csvOutput.toString();
     String psnr = "qpsnr -a avg_psnr -o fpa=" + parseFps(fps) + " -r " + inputFile1.toString() + " "
         + inputFile2.toString() + " >> " + csvOutput;
-    log.info("Running command to get SSIM: {}", ssim);
+    log.debug("Running command to get SSIM: {}", ssim);
     Shell.runAndWait("sh", "-c", ssim);
-    log.info("Running command to get PSNR: {}", psnr);
+    log.debug("Running command to get PSNR: {}", psnr);
     Shell.runAndWait("sh", "-c", psnr);
   }
 
@@ -643,7 +643,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
     String[] command = { "ffmpeg", "-i", inputFile.toString(), "-ss", df.format(cutTime),
         cutVideoFile.toString() };
-    log.info("Running command to cut video: {}", Arrays.toString(command));
+    log.debug("Running command to cut video: {}", Arrays.toString(command));
     Shell.runAndWait(command);
     return cutVideoFile;
   }
@@ -680,13 +680,13 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
       log.trace("---> Time comparsion to find cut frame: {} vs {}", ocr1, ocr2);
       if (ocrList2.contains(ocr1)) {
-        log.info("Found OCR match {} at position {}", ocr1, i);
+        log.debug("Found OCR match {} at position {}", ocr1, i);
         // TODO Hack here: if the first video should be cut (presenter), the result is negative.
         // Otherwise the result is positive (cut the second video, i.e. the viewer)
         i *= -1;
         break;
       } else if (ocrList1.contains(ocr2)) {
-        log.info("Found OCR match {} at position {}", ocr2, i);
+        log.debug("Found OCR match {} at position {}", ocr2, i);
         break;
       }
     }
@@ -709,7 +709,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     getFrames(raw2, tmpFolder);
 
     int cutFrame = getCutFrame(raw1, raw2, tmpFolder);
-    log.info("Cut frame: {}", cutFrame);
+    log.debug("Cut frame: {}", cutFrame);
 
     File finalFile1 = cutFrame < 1 ? cutVideo(raw1, tmpFolder, Math.abs(cutFrame), FPS) : raw1;
     File finalFile2 = cutFrame < 1 ? raw2 : cutVideo(raw2, tmpFolder, Math.abs(cutFrame), FPS);
@@ -730,7 +730,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
           return name.toLowerCase().endsWith(ext);
         }
       });
-      log.info("Number of files with extension {} in {} = {} (expected {})", ext, folder,
+      log.debug("Number of files with extension {} in {} = {} (expected {})", ext, folder,
           files.length, expectedFilesNumber);
     } while (files.length != expectedFilesNumber);
   }

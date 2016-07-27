@@ -56,7 +56,7 @@ public class WebSocketRomTest extends AbstractRomTest {
   protected JsonRpcClient createJsonRpcClient() {
 
     String uri = "ws://localhost:" + getPort() + "/handler";
-    log.info("Creating client in URI: " + uri);
+    log.debug("Creating client in URI: " + uri);
     return new JsonRpcClientWebSocket(uri);
   }
 
@@ -71,7 +71,7 @@ public class WebSocketRomTest extends AbstractRomTest {
     SpringApplication application = new SpringApplication(BootTestApplication.class);
     application.setDefaultProperties(properties);
 
-    log.info("Creating server in port: " + port);
+    log.debug("Creating server in port: " + port);
 
     context = application.run();
   }

@@ -62,7 +62,7 @@ public class CheckNodes {
           } else {
             nodesOk.add(node);
           }
-          log.info("{} {}", node, xvfb);
+          log.debug("{} {}", node, xvfb);
         } catch (Exception e) {
           log.error("Exception in node {} : {}", node, e.getClass());
           nodesWithException.add(node);
@@ -75,10 +75,10 @@ public class CheckNodes {
       }
     }
 
-    log.info("Nodes Ok: {} {}", nodesOk.size(), nodesOk);
-    log.info("Nodes without Xvfb: {} {}", nodesWithoutXvfb.size(), nodesWithoutXvfb);
-    log.info("Nodes with exception: {} {}", nodesWithException.size(), nodesWithException);
-    log.info("Nodes down: {} {}", nodesDown.size(), nodesDown);
+    log.debug("Nodes Ok: {} {}", nodesOk.size(), nodesOk);
+    log.debug("Nodes without Xvfb: {} {}", nodesWithoutXvfb.size(), nodesWithoutXvfb);
+    log.debug("Nodes with exception: {} {}", nodesWithException.size(), nodesWithException);
+    log.debug("Nodes down: {} {}", nodesDown.size(), nodesDown);
   }
 
   public static void main(String[] args) throws IOException {

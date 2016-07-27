@@ -264,7 +264,7 @@ public class Docker implements Closeable {
             Paths.get(workspaceHost)
                 .resolve(Paths.get(workspace).relativize(Paths.get(configFilePath))).toString();
 
-        log.info("Config file volume {}", hostConfigFilePath);
+        log.debug("Config file volume {}", hostConfigFilePath);
 
         Volume configVol = new Volume("/opt/selenium/config.json");
 
@@ -299,9 +299,9 @@ public class Docker implements Closeable {
 
   public void pullImageIfNecessary(String imageId, boolean force) {
     if (force || !existsImage(imageId)) {
-      log.info("Pulling Docker image {} ... please be patient until the process finishes", imageId);
+      log.debug("Pulling Docker image {} ... please be patient until the process finishes", imageId);
       getClient().pullImageCmd(imageId).exec(new PullImageResultCallback()).awaitSuccess();
-      log.info("Image {} downloaded", imageId);
+      log.debug("Image {} downloaded", imageId);
 
     } else {
       log.debug("Image {} already exists", imageId);
@@ -378,7 +378,7 @@ public class Docker implements Closeable {
         try {
           count++;
           getClient().removeContainerCmd(containerName).withRemoveVolumes(true).exec();
-          log.info("*** Only for debuggin: After Docker.removeContainer({}). Times: {}",
+          log.debug("*** Only for debuggin: After Docker.removeContainer({}). Times: {}",
               containerName, count);
           removed = true;
         } catch (Throwable e) {
@@ -387,7 +387,7 @@ public class Docker implements Closeable {
                 containerName, e.getMessage());
           }
           try {
-            log.info("Waiting for removing {}. Times: {}", containerName, count);
+            log.debug("Waiting for removing {}. Times: {}", containerName, count);
             Thread.sleep(WAIT_CONTAINER_POLL_TIMEOUT);
           } catch (InterruptedException e1) {
             // Nothing todo
@@ -590,7 +590,7 @@ public class Docker implements Closeable {
 
       String line = null;
       while ((line = br.readLine()) != null) {
-        log.info(line);
+        log.debug(line);
         if (line.contains("docker")) {
           return line.substring(line.lastIndexOf('/') + 1, line.length());
         }
@@ -687,7 +687,7 @@ public class Docker implements Closeable {
       output = Shell.runAndWaitString("ping -c 1 " + ipAddress);
     } while (!output.contains("Destination Host Unreachable"));
 
-    log.info("Ip address generated: {}", ipAddress);
+    log.debug("Ip address generated: {}", ipAddress);
     return ipAddress;
   }
 

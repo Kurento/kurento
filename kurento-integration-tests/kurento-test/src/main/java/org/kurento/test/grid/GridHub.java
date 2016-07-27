@@ -51,7 +51,7 @@ public class GridHub {
     config.setTimeout(getTimeout());
 
     hub = new Hub(config);
-    log.info("Starting hub on {}:{}", this.bindIp, this.port);
+    log.debug("Starting hub on {}:{}", this.bindIp, this.port);
     hub.start();
   }
 

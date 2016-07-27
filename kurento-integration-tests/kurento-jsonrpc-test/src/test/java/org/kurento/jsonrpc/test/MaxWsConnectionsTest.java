@@ -74,7 +74,7 @@ public class MaxWsConnectionsTest extends JsonRpcConnectorBaseTest {
 
       clients.add(session);
 
-      log.info("WebSocket client {} connected", clients.size());
+      log.debug("WebSocket client {} connected", clients.size());
 
       Thread.sleep(100);
 
@@ -83,7 +83,7 @@ public class MaxWsConnectionsTest extends JsonRpcConnectorBaseTest {
           fail("WebSocket num " + clients.size() + " disconnected. MAX_WS_CONNECTION="
               + MAX_WS_CONNECTIONS);
         } else {
-          log.info("WebSocket client {} disconnected from server", clients.size());
+          log.debug("WebSocket client {} disconnected from server", clients.size());
           break;
         }
       } else {

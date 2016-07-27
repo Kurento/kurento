@@ -44,13 +44,13 @@ public class ConnectionListenerTest extends KurentoClientTest {
 
     String kmsUrl = kms.getWsUri();
 
-    log.info("Connecting to KMS in " + kmsUrl);
+    log.debug("Connecting to KMS in " + kmsUrl);
 
     KurentoClient kurentoClient = KurentoClient.create(kmsUrl, new KurentoConnectionListener() {
 
       @Override
       public void disconnected() {
-        log.info("disconnected from KMS");
+        log.debug("disconnected from KMS");
         disconnectedLatch.countDown();
       }
 
@@ -98,7 +98,7 @@ public class ConnectionListenerTest extends KurentoClientTest {
 
     String kmsUrl = kms.getWsUri();
 
-    log.info("Connecting to KMS in " + kmsUrl);
+    log.debug("Connecting to KMS in " + kmsUrl);
 
     KurentoClient kurentoClient = KurentoClient.create(kmsUrl);
 

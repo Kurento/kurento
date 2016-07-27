@@ -208,7 +208,7 @@ public class RomClientJsonRpcClient implements RomClient {
 
   @Override
   public void destroy() {
-    log.info("Destroying RomClientJsonRpc");
+    log.debug("Destroying RomClientJsonRpc");
     try {
       client.close();
     } catch (IOException e) {

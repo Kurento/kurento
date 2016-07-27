@@ -73,7 +73,7 @@ public class BrowserCreationTest {
 
       for (int j = 0; j < NUM_BROWSERS; j++) {
 
-        log.info("Created browser {}-{}", i, j);
+        log.debug("Created browser {}-{}", i, j);
 
         Browser browser = new Browser.Builder().scope(BrowserScope.DOCKER).build();
 
@@ -128,15 +128,15 @@ public class BrowserCreationTest {
 
       long creationTime = System.currentTimeMillis() - startTime;
 
-      log.info("----------------------------------------------------------------");
+      log.debug("----------------------------------------------------------------");
 
-      log.info("All {} browsers started in {} millis", numBrowsers, creationTime);
+      log.debug("All {} browsers started in {} millis", numBrowsers, creationTime);
 
-      log.info("----------------------------------------------------------------");
+      log.debug("----------------------------------------------------------------");
 
     } finally {
 
-      log.info("***************************************************************");
+      log.debug("***************************************************************");
 
       startTime = System.currentTimeMillis();
 
@@ -159,11 +159,11 @@ public class BrowserCreationTest {
 
       long destructionTime = System.currentTimeMillis() - startTime;
 
-      log.info("----------------------------------------------------------------");
+      log.debug("----------------------------------------------------------------");
 
-      log.info("All {} browsers stopped in {} millis", numBrowsers, destructionTime);
+      log.debug("All {} browsers stopped in {} millis", numBrowsers, destructionTime);
 
-      log.info("----------------------------------------------------------------");
+      log.debug("----------------------------------------------------------------");
     }
   }
 
@@ -172,7 +172,7 @@ public class BrowserCreationTest {
     KurentoTest.setTestClassName(this.getClass().getSimpleName());
     KurentoTest.setTestMethodName(testName);
 
-    log.info("Tests dir {}", KurentoTest.getTestDir());
+    log.debug("Tests dir {}", KurentoTest.getTestDir());
 
     Path testFolder = Paths.get(KurentoTest.getTestDir(), "BrowserCreationTest");
 

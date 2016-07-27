@@ -199,7 +199,7 @@ public class SshConnection {
   }
 
   public String execAndWaitCommand(String... command) {
-    log.info("execAndWaitCommand: {} ", Arrays.toString(command));
+    log.debug("execAndWaitCommand: {} ", Arrays.toString(command));
 
     CmdLine cmdLine = new CmdLine();
     for (String c : command) {

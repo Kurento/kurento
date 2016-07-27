@@ -281,7 +281,7 @@ public class KurentoTest {
   }
 
   public static void addLogFile(File logFile) {
-    log.info("Adding log file: {}", logFile);
+    log.debug("Adding log file: {}", logFile);
     if (logFiles == null) {
       logFiles = new ArrayList<>();
     }
@@ -290,7 +290,7 @@ public class KurentoTest {
 
   public static List<File> getServerLogFiles() {
     int countFiles = logFiles != null ? logFiles.size() : 0;
-    log.info("Logs files {}", countFiles);
+    log.debug("Logs files {}", countFiles);
     return logFiles;
   }
 
@@ -319,9 +319,9 @@ public class KurentoTest {
   }
 
   public static void logMessage(String message) {
-    log.info(SEPARATOR);
-    log.info(message);
-    log.info(SEPARATOR);
+    log.debug(SEPARATOR);
+    log.debug(message);
+    log.debug(SEPARATOR);
   }
 
   public static int getTestSeekRepetitions() {

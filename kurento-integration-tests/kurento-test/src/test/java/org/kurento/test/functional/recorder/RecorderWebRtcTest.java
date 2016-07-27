@@ -145,7 +145,7 @@ public class RecorderWebRtcTest extends BaseRecorder {
       webRtcChannel = AUDIO_ONLY;
     }
 
-    log.info("Using webRtcChannel {}", webRtcChannel);
+    log.debug("Using webRtcChannel {}", webRtcChannel);
 
     // Test execution #1. WewbRTC in loopback while it is recorded
     getPage().subscribeEvents("playing");

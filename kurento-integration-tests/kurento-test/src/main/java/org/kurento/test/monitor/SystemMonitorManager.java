@@ -139,7 +139,7 @@ public class SystemMonitorManager {
 
     String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2, wsUri.lastIndexOf(":"));
 
-    log.info("Monitoring remote KMS at {}", remoteKmsStr);
+    log.debug("Monitoring remote KMS at {}", remoteKmsStr);
 
     copyMonitor(kmsLogin, kmsPasswd, kmsPem, remoteKmsStr);
 

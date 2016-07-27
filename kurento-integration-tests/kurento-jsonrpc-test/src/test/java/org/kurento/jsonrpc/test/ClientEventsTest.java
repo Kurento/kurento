@@ -41,7 +41,7 @@ public class ClientEventsTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/jsonrpcreverse");
 
@@ -55,14 +55,14 @@ public class ClientEventsTest extends JsonRpcConnectorBaseTest {
       @Override
       public void afterConnectionEstablished(Session session) throws Exception {
 
-        log.info("Connection established with sessionId: " + session.getSessionId());
+        log.debug("Connection established with sessionId: " + session.getSessionId());
         afterConnectionEstablishedLatch.countDown();
       }
 
       @Override
       public void handleRequest(Transaction transaction, Request<String> request) throws Exception {
 
-        log.info("Reverse request: " + request);
+        log.debug("Reverse request: " + request);
 
         transaction.sendResponse(request.getParams());
         inverseRequestParams[0] = request.getParams();
@@ -73,7 +73,7 @@ public class ClientEventsTest extends JsonRpcConnectorBaseTest {
       @Override
       public void afterConnectionClosed(Session session, String status) throws Exception {
 
-        log.info("Connection closed: " + status);
+        log.debug("Connection closed: " + status);
         afterConnectionClosedLatch.countDown();
       }
     });
@@ -83,7 +83,7 @@ public class ClientEventsTest extends JsonRpcConnectorBaseTest {
     Assert.assertTrue("The method 'afterConnectionEstablished' is not invoked",
         afterConnectionEstablishedLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-    log.info("Response:" + result);
+    log.debug("Response:" + result);
 
     Assert.assertEquals("params", result);
 
@@ -99,7 +99,7 @@ public class ClientEventsTest extends JsonRpcConnectorBaseTest {
     Assert.assertTrue("The method 'afterConnectionClosed' is not invoked",
         afterConnectionClosedLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-    log.info("Client finished");
+    log.debug("Client finished");
 
   }
 

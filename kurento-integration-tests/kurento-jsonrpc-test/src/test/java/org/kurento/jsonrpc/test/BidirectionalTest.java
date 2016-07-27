@@ -40,9 +40,9 @@ public class BidirectionalTest extends JsonRpcConnectorBaseTest {
     @Override
     public void handleRequest(Transaction transaction, Request<Object> request) throws Exception {
 
-      log.info("Request id:" + request.getId());
-      log.info("Request method:" + request.getMethod());
-      log.info("Request params:" + request.getParams());
+      log.debug("Request id:" + request.getId());
+      log.debug("Request method:" + request.getMethod());
+      log.debug("Request params:" + request.getParams());
 
       transaction.sendResponse(request.getParams());
 
@@ -88,7 +88,7 @@ public class BidirectionalTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/jsonrpcreverse");
 
@@ -100,7 +100,7 @@ public class BidirectionalTest extends JsonRpcConnectorBaseTest {
       @Override
       public void handleRequest(Transaction transaction, Request<Params> request) throws Exception {
 
-        log.info("Reverse request: " + request);
+        log.debug("Reverse request: " + request);
 
         transaction.sendResponse(request.getParams());
         inverseRequestParams[0] = request.getParams();
@@ -115,7 +115,7 @@ public class BidirectionalTest extends JsonRpcConnectorBaseTest {
 
     Params result = client.sendRequest("echo", params, Params.class);
 
-    log.info("Response:" + result);
+    log.debug("Response:" + result);
 
     Assert.assertEquals(params.param1, result.param1);
     Assert.assertEquals(params.param2, result.param2);
@@ -129,7 +129,7 @@ public class BidirectionalTest extends JsonRpcConnectorBaseTest {
 
     client.close();
 
-    log.info("Client finished");
+    log.debug("Client finished");
 
   }
 

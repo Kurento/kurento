@@ -147,7 +147,7 @@ public class RepositoryService {
     RepositoryItem item = findRepositoryItemById(itemId);
     Map<String, String> oldMetadata = item.getMetadata();
     item.setMetadata(metadata);
-    log.info("Current metadata: {} - updated metadata: {}", oldMetadata, item.getMetadata());
+    log.debug("Current metadata: {} - updated metadata: {}", oldMetadata, item.getMetadata());
   }
 
   /**

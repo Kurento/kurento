@@ -65,9 +65,9 @@ public class BaseRepositoryTest {
   @AfterClass
   public static void stop() {
 
-    log.info("Stopping RepositoryServer...");
+    log.debug("Stopping RepositoryServer...");
     repositoryServer.close();
-    log.info("RepositoryServer stopped");
+    log.debug("RepositoryServer stopped");
   }
 
   @Before
@@ -154,7 +154,7 @@ public class BaseRepositoryTest {
 
     ResponseEntity<String> entity = postWithRetries(uploadURL, client, fileBytes.toByteArray());
 
-    log.info("Upload response");
+    log.debug("Upload response");
 
     assertEquals("Returned response: " + entity.getBody(), HttpStatus.OK, entity.getStatusCode());
   }

@@ -64,7 +64,7 @@ public class RepositoryClientProvider {
     RepositoryClientProvider provider = new RepositoryClientProvider();
     RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(repoRestUrl).build();
     provider.restService = restAdapter.create(RepositoryClient.class);
-    log.info("Rest client service created for {}", repoRestUrl);
+    log.debug("Rest client service created for {}", repoRestUrl);
     return provider;
   }
 

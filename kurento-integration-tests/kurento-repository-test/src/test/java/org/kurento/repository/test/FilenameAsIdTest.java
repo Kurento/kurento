@@ -63,7 +63,7 @@ public class FilenameAsIdTest extends BaseRepositoryTest {
       assertNotNull(files);
       assertEquals(1, files.size());
     } else {
-      log.info("Repository is not MongoDB");
+      log.debug("Repository is not MongoDB");
     }
 
   }

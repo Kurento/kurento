@@ -175,7 +175,7 @@ public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends Stab
 
             // Guard time to stop recording
             Thread.sleep(5000);
-            log.info(".....Next...");
+            log.debug(".....Next...");
             pipeline.release();
           } catch (Throwable e) {
             log.error("Exception in receiver ", e);

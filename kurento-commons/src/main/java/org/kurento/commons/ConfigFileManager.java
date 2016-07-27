@@ -65,7 +65,7 @@ public class ConfigFileManager {
               property, configFilePath, configFileName);
           configFile = ConfigFileFinder.searchConfigFileInDefaultPlaces(configFileName);
         } else {
-          log.info("Property {} points to a valid location. Will use the config from {}", property,
+          log.debug("Property {} points to a valid location. Will use the config from {}", property,
               configFilePath);
         }
 

@@ -67,13 +67,13 @@ public class RangeGetTest extends BaseRepositoryTest {
     RestTemplate httpClient = getRestTemplate();
 
     acceptRanges(url, httpClient);
-    log.info("Accept ranges test passed");
+    log.debug("Accept ranges test passed");
 
     long fileLength = rangeFrom0(url, httpClient);
-    log.info("Range from 0 test passed");
+    log.debug("Range from 0 test passed");
 
     randomRange(url, httpClient, fileLength);
-    log.info("Random range test passed");
+    log.debug("Random range test passed");
   }
 
   private void randomRange(String url, RestTemplate httpClient, long fileLength) {
@@ -94,7 +94,7 @@ public class RangeGetTest extends BaseRepositoryTest {
     ResponseEntity<byte[]> response =
         httpClient.exchange(url, HttpMethod.GET, requestEntity, byte[].class);
 
-    log.info("Response: " + response);
+    log.debug("Response: " + response);
 
     assertEquals("The server doesn't respond with http status code 206 to a request with ranges",
         response.getStatusCode(), HttpStatus.PARTIAL_CONTENT);
@@ -121,7 +121,7 @@ public class RangeGetTest extends BaseRepositoryTest {
     ResponseEntity<byte[]> response =
         httpClient.exchange(url, HttpMethod.GET, requestEntity, byte[].class);
 
-    log.info("Response: " + response);
+    log.debug("Response: " + response);
 
     assertEquals("The server doesn't respond with http status code 206 to a request with ranges",
         HttpStatus.PARTIAL_CONTENT, response.getStatusCode());
@@ -141,7 +141,7 @@ public class RangeGetTest extends BaseRepositoryTest {
     ResponseEntity<byte[]> response =
         httpClient.exchange(url, HttpMethod.GET, requestEntity, byte[].class);
 
-    log.info("Response: " + response);
+    log.debug("Response: " + response);
 
     assertTrue("The server doesn't accept ranges",
         response.getHeaders().containsKey("Accept-ranges"));

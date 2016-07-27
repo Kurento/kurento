@@ -136,7 +136,7 @@ public class StabilityTest extends RepositoryMongoTest {
 
     Integer executionsExpected = (numSeeks * expectedPositionAndColor.size()) + numSeeks - 1;
 
-    log.info("The times executed. Expected  {}. Total {}.", executionsExpected, executions);
+    log.debug("The times executed. Expected  {}. Total {}.", executionsExpected, executions);
     Assert.assertTrue("The times executed is wrong. Minimun should be 1. Total: " + executions,
         (executions > 1));
 

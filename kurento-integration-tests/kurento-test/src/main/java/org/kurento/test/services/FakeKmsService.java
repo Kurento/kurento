@@ -96,12 +96,12 @@ public class FakeKmsService extends KmsService {
       throw new KurentoException("Fake kurentoClient for is not defined.");
 
     } else {
-      log.info("* * * Adding {} fake clients * * *", numFakeClients);
+      log.debug("* * * Adding {} fake clients * * *", numFakeClients);
       final MediaPipeline fakePipeline = kurentoClient.createMediaPipeline();
 
       for (int i = 0; i < numFakeClients; i++) {
 
-        log.info("* * * Adding fake client {} * * *", i);
+        log.debug("* * * Adding fake client {} * * *", i);
 
         new Thread() {
           @Override

@@ -70,7 +70,7 @@ public class RepositoryApplicationContextConfiguration {
   public Repository repository() {
     RepositoryApiConfiguration repositoryApiConfiguration = repositoryApiConfiguration();
     RepoType rtype = repositoryApiConfiguration.getRepositoryType();
-    log.info("Repository type: {}", rtype);
+    log.debug("Repository type: {}", rtype);
     if (rtype.isFilesystem()) {
       return new FileSystemRepository();
     } else if (rtype.isMongoDB()) {
@@ -115,7 +115,7 @@ public class RepositoryApplicationContextConfiguration {
       sb.append("\n\t").append("urlConn : ").append(url);
     }
 
-    log.info("Repository config: {}", sb.toString());
+    log.debug("Repository config: {}", sb.toString());
     return config;
   }
 }

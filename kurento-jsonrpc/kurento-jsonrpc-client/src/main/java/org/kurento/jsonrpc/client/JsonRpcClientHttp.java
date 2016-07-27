@@ -111,7 +111,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
         JsonElement requestsListJsonObject = this.sendRequest(Request.POLL_METHOD_NAME,
             rs.getResponseListToSend(), JsonElement.class);
 
-        log.info("Response from pool: {}", requestsListJsonObject);
+        log.debug("Response from pool: {}", requestsListJsonObject);
 
         Type collectionType = new TypeToken<List<Request<JsonElement>>>() {
         }.getType();
@@ -157,7 +157,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
   @Override
   public void close() {
     if (this.longPoolingThread != null) {
-      log.info("Interrupted!!!");
+      log.debug("Interrupted!!!");
       this.longPoolingThread.interrupt();
     }
     handlerManager.afterConnectionClosed(session, "Client closed connection");

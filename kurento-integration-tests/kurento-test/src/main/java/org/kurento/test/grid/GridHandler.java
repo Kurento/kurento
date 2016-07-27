@@ -173,21 +173,21 @@ public class GridHandler {
   }
 
   public synchronized void stopGrid() {
-    log.info("Stopping Selenium Grid");
+    log.debug("Stopping Selenium Grid");
     try {
       // Stop Hub
       if (hub != null) {
-        log.info("Stopping Hub");
+        log.debug("Stopping Hub");
         hub.stop();
         hubStarted = false;
       }
 
       // Stop Nodes
       if (nodes != null) {
-        log.info("Number of nodes: {}", nodes.size());
+        log.debug("Number of nodes: {}", nodes.size());
 
         for (GridNode node : nodes.values()) {
-          log.info("Stopping Node {}", node.getHost());
+          log.debug("Stopping Node {}", node.getHost());
           stopNode(node);
         }
       }
@@ -236,7 +236,7 @@ public class GridHandler {
   public void startNode(GridNode node) {
     try {
       countDownLatch = new CountDownLatch(1);
-      log.info("Launching node {}", node.getHost());
+      log.debug("Launching node {}", node.getHost());
       node.startSsh();
 
       final String chromeDriverSource = System.getProperty("webdriver.chrome.driver");
@@ -356,7 +356,7 @@ public class GridHandler {
   }
 
   private void waitForNode(String node, String port) {
-    log.info("Waiting for node {} to be ready...", node);
+    log.debug("Waiting for node {} to be ready...", node);
     int responseStatusCode = 0;
     HttpClient client = HttpClientBuilder.create().build();
     HttpGet httpGet =
@@ -381,7 +381,7 @@ public class GridHandler {
     } while (responseStatusCode != HttpStatus.SC_OK);
 
     if (responseStatusCode == HttpStatus.SC_OK) {
-      log.info("Node {} ready (responseStatus {})", node, responseStatusCode);
+      log.debug("Node {} ready (responseStatus {})", node, responseStatusCode);
       countDownLatch.countDown();
     }
   }
@@ -444,25 +444,25 @@ public class GridHandler {
   public synchronized GridNode getRandomNodeFromList(String browserKey, BrowserType browserType,
       int browserPerInstance) {
 
-    log.info("getRandomNodeFromList for browser {}", browserKey);
+    log.debug("getRandomNodeFromList for browser {}", browserKey);
 
     GridNode node = browserPerInstance > 1 ? existsNode(browserKey) : null;
     if (node == null) {
       try {
 
         String nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
-        log.info("######## Creating node {} in host {}", browserKey, nodeCandidate);
+        log.debug("######## Creating node {} in host {}", browserKey, nodeCandidate);
         node = new GridNode(nodeCandidate, browserType, browserPerInstance);
         addNode(browserKey, node);
         nodeList.remove(nodeCandidate);
-        log.info(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
+        log.debug(">>>> Using node {} for browser '{}'", node.getHost(), browserKey);
 
       } catch (IllegalArgumentException e) {
         throw new RuntimeException("No valid available node(s) to perform Selenim Grid test");
       }
 
     } else {
-      log.info(">>>> Re-using node {} for browser '{}'", node.getHost(), browserKey);
+      log.debug(">>>> Re-using node {} for browser '{}'", node.getHost(), browserKey);
       node.setStarted(true);
     }
     return node;
@@ -521,7 +521,7 @@ public class GridHandler {
   }
 
   public synchronized void addNode(String browserKey, GridNode node) {
-    log.info("Adding node {} ({}) to map", browserKey, node.getHost());
+    log.debug("Adding node {} ({}) to map", browserKey, node.getHost());
     nodes.put(browserKey, node);
   }
 

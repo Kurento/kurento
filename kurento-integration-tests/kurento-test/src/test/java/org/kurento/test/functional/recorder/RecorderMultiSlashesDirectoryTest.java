@@ -92,7 +92,7 @@ public class RecorderMultiSlashesDirectoryTest extends BaseRecorder {
 
     String recordingFileWithMultiSlashes = recordingFile.replace(File.separator, multiSlashses);
 
-    log.info("The path with multi slash is {} ", recordingFileWithMultiSlashes);
+    log.debug("The path with multi slash is {} ", recordingFileWithMultiSlashes);
 
     RecorderEndpoint recorderEp =
         new RecorderEndpoint.Builder(mp, recordingFileWithMultiSlashes).withMediaProfile(

@@ -65,7 +65,7 @@ public class PendingRequests {
   }
 
   public void closeAllPendingRequests() {
-    log.info("Sending error to all pending requests");
+    log.debug("Sending error to all pending requests");
     for (SettableFuture<Response<JsonElement>> responseFuture : pendingRequests.values()) {
       responseFuture.set(new Response<JsonElement>(
           new ResponseError(0, "Connection with server have been closed")));

@@ -318,7 +318,7 @@ public class WebRtcTestPage extends WebPage {
 
         if (!filterCandidate(candidate.get("candidate").getAsString(), webRtcIpvMode,
             webRtcCandidateType)) {
-          log.info("OnIceCandadite -> Adding candidate: {} IpvMode: {} CandidateType: {}",
+          log.debug("OnIceCandadite -> Adding candidate: {} IpvMode: {} CandidateType: {}",
               candidate.get("candidate").getAsString(), webRtcIpvMode, webRtcCandidateType);
           addIceCandidate(candidate);
         }
@@ -328,7 +328,7 @@ public class WebRtcTestPage extends WebPage {
     webRtcEndpoint.addMediaStateChangedListener(new EventListener<MediaStateChangedEvent>() {
       @Override
       public void onEvent(MediaStateChangedEvent event) {
-        log.info("MediaStateChangedEvent from {} to {} on {} at {}", event.getOldState(),
+        log.debug("MediaStateChangedEvent from {} to {} on {} at {}", event.getOldState(),
             event.getNewState(), webRtcEndpoint.getId(), event.getTimestamp());
       }
     });
@@ -338,7 +338,7 @@ public class WebRtcTestPage extends WebPage {
       public void addIceCandidate(IceCandidate candidate) {
 
         if (!filterCandidate(candidate.getCandidate(), webRtcIpvMode, webRtcCandidateType)) {
-          log.info("webRtcConfigurer -> Adding candidate: {} IpvMode: {} CandidateType: {}",
+          log.debug("webRtcConfigurer -> Adding candidate: {} IpvMode: {} CandidateType: {}",
               candidate.getCandidate(), webRtcIpvMode, webRtcCandidateType);
           webRtcEndpoint.addIceCandidate(candidate);
         }
@@ -420,7 +420,7 @@ public class WebRtcTestPage extends WebPage {
             Thread.sleep(300);
 
           } catch (Throwable e) {
-            log.info("Exiting gather candidates thread");
+            log.debug("Exiting gather candidates thread");
             break;
           }
         }
@@ -446,7 +446,7 @@ public class WebRtcTestPage extends WebPage {
 
     // Setting IceServer (if necessary)
     String iceServerJsFunction = candidateType.getJsFunction();
-    log.info("Setting IceServer: {}", iceServerJsFunction);
+    log.debug("Setting IceServer: {}", iceServerJsFunction);
     if (iceServerJsFunction != null) {
       browser.executeScript(iceServerJsFunction);
     }
@@ -468,9 +468,9 @@ public class WebRtcTestPage extends WebPage {
         // Wait to valid sdpOffer
         String sdpOffer = (String) browser.executeScriptAndWaitOutput("return sdpOffer;");
 
-        log.info("SDP offer: {}", sdpOffer);
+        log.debug("SDP offer: {}", sdpOffer);
         String sdpAnswer = webRtcConfigurer.processOffer(sdpOffer);
-        log.info("SDP answer: {}", sdpAnswer);
+        log.debug("SDP answer: {}", sdpAnswer);
 
         // Encoding in Base64 to avoid parsing errors in JavaScript
         sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));

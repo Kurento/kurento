@@ -60,7 +60,7 @@ public class Room implements Closeable {
   public Room(String roomName, KurentoClient kurento) {
     this.name = roomName;
     this.kurento = kurento;
-    log.info("ROOM {} has been created", roomName);
+    log.debug("ROOM {} has been created", roomName);
   }
 
   public String getName() {
@@ -72,11 +72,11 @@ public class Room implements Closeable {
     checkClosed();
 
     if (pipeline == null) {
-      log.info("ROOM {}: Creating MediaPipeline", userName);
+      log.debug("ROOM {}: Creating MediaPipeline", userName);
       pipeline = kurento.createMediaPipeline();
     }
 
-    log.info("ROOM {}: adding participant {}", userName, userName);
+    log.debug("ROOM {}: adding participant {}", userName, userName);
     final RoomParticipant participant = new RoomParticipant(userName, this, session, this.pipeline);
 
     sendParticipantNames(participant);

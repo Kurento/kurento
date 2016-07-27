@@ -65,7 +65,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
   // ServerHttpResponse response, WebSocketHandler wsHandler,
   // Map<String, Object> attributes) throws Exception {
   //
-  // log.info(
+  // log.debug(
   // "Websocket request before handshake. Request: headers={} uri={}
   // Attributes:{},",
   // request.getHeaders(), request.getURI(), attributes);
@@ -78,7 +78,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
   // ServerHttpResponse response, WebSocketHandler wsHandler,
   // Exception exception) {
   //
-  // log.info(
+  // log.debug(
   // "Websocket request after handshake. Request: headers={} uri={}
   // Exception:{},",
   // request.getHeaders(), request.getURI(), exception);

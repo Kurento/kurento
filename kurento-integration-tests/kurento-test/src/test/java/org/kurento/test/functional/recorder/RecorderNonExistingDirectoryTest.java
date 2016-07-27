@@ -88,7 +88,7 @@ public class RecorderNonExistingDirectoryTest extends BaseRecorder {
         recordingFile.replace(getSimpleTestName(), new Date().getTime() + File.separator
             + getSimpleTestName());
 
-    log.info("The path non existing is {} ", recordingFile);
+    log.debug("The path non existing is {} ", recordingFile);
 
     RecorderEndpoint recorderEp =
         new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)

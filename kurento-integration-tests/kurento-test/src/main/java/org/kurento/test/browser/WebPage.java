@@ -219,7 +219,7 @@ public class WebPage {
   private void stopPeerConnectionStats(String jsFunction, String peerConnectionId) {
 
     try {
-      log.info("kurentoTest." + jsFunction + "('" + peerConnectionId + "');");
+      log.debug("kurentoTest." + jsFunction + "('" + peerConnectionId + "');");
       browser.executeScript("kurentoTest." + jsFunction + "('" + peerConnectionId + "');");
 
     } catch (WebDriverException we) {
@@ -503,7 +503,7 @@ public class WebPage {
     CountDownLatch latch = new CountDownLatch(1);
 
     final String browserName = browser.getId();
-    log.info("Subscribe event '{}' in browser '{}'", eventType, browserName);
+    log.debug("Subscribe event '{}' in browser '{}'", eventType, browserName);
 
     countDownLatchEvents.put(browserName + eventType, latch);
     addEventListener(videoTag, eventType, new BrowserEventListener() {
@@ -521,7 +521,7 @@ public class WebPage {
   public boolean waitForEvent(final String eventType) throws InterruptedException {
 
     String browserName = browser.getId();
-    log.info("Waiting for event '{}' in browser '{}'", eventType, browserName);
+    log.debug("Waiting for event '{}' in browser '{}'", eventType, browserName);
 
     if (!countDownLatchEvents.containsKey(browserName + eventType)) {
       log.error("We cannot wait for an event without previous subscription");

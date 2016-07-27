@@ -47,14 +47,14 @@ public class ServerEventsTest extends JsonRpcConnectorBaseTest {
 
       session.setReconnectionTimeout(500);
 
-      log.info("Connection established with sessionId: " + session.getSessionId());
+      log.debug("Connection established with sessionId: " + session.getSessionId());
       afterConnectionEstablishedLatch.countDown();
     }
 
     @Override
     public void handleRequest(Transaction transaction, Request<String> request) throws Exception {
 
-      log.info("Request: " + request);
+      log.debug("Request: " + request);
       transaction.sendResponse(request.getParams());
       requestLatch.countDown();
     }
@@ -62,7 +62,7 @@ public class ServerEventsTest extends JsonRpcConnectorBaseTest {
     @Override
     public void afterConnectionClosed(Session session, String status) throws Exception {
 
-      log.info("Connection closed: " + status);
+      log.debug("Connection closed: " + status);
       afterConnectionClosedLatch.countDown();
     }
   }
@@ -74,7 +74,7 @@ public class ServerEventsTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/serverevents");
 
@@ -83,7 +83,7 @@ public class ServerEventsTest extends JsonRpcConnectorBaseTest {
     Assert.assertTrue("The method 'afterConnectionEstablished' is not invoked",
         afterConnectionEstablishedLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-    log.info("Response:" + result);
+    log.debug("Response:" + result);
 
     Assert.assertEquals("params", result);
 
@@ -95,7 +95,7 @@ public class ServerEventsTest extends JsonRpcConnectorBaseTest {
     Assert.assertTrue("The method 'afterConnectionClosed' is not invoked",
         afterConnectionClosedLatch.await(TIMEOUT, TimeUnit.MILLISECONDS));
 
-    log.info("Client finished");
+    log.debug("Client finished");
 
   }
 

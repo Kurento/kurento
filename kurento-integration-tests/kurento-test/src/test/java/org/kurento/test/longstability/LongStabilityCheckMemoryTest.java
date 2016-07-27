@@ -124,7 +124,7 @@ public class LongStabilityCheckMemoryTest extends StabilityTest {
 
     try {
       while (!isTimeToFinishTest()) {
-        log.info("Memory init: {} Mb", initMemory);
+        log.debug("Memory init: {} Mb", initMemory);
         // Media Pipeline
         mp = kurentoClient.createMediaPipeline();
         webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -143,7 +143,7 @@ public class LongStabilityCheckMemoryTest extends StabilityTest {
         mp.release();
         Thread.sleep(10000);
 
-        log.info("Iteration: {}. KMS has {} pipelines", i, serverManager.getPipelines().size());
+        log.debug("Iteration: {}. KMS has {} pipelines", i, serverManager.getPipelines().size());
         endMemory = (long) (serverManager.getUsedMemory() * CONSTANT_MB);
         diffMemory = Math.abs(endMemory - initMemory);
         increaseMemory = (diffMemory - increaseMemory) + increaseMemory;
@@ -152,9 +152,9 @@ public class LongStabilityCheckMemoryTest extends StabilityTest {
         }
         percentageMemory = ((increaseMemory - firstIncreaseMemory) * 100) / firstIncreaseMemory;
 
-        log.info("Iteration {}. End Memory: {} Mb", i, endMemory);
-        log.info("Iteration {}. Diff Memory: {} Mb", i, diffMemory);
-        log.info("Iteration {}. Increase Memory: {} Mb. % Increase: {} %", i, increaseMemory,
+        log.debug("Iteration {}. End Memory: {} Mb", i, endMemory);
+        log.debug("Iteration {}. Diff Memory: {} Mb", i, diffMemory);
+        log.debug("Iteration {}. Increase Memory: {} Mb. % Increase: {} %", i, increaseMemory,
             percentageMemory);
 
         date = new Date();

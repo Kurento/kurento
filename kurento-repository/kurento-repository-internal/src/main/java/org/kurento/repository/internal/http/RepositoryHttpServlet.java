@@ -384,10 +384,10 @@ public class RepositoryHttpServlet extends HttpServlet {
 
           try {
 
-            log.info("Start to receive bytes (estimated " + req.getContentLength() + " bytes)");
+            log.debug("Start to receive bytes (estimated " + req.getContentLength() + " bytes)");
             int bytes = IOUtils.copy(requestInputStream, repoItemOutputStream);
             resp.setStatus(SC_OK);
-            log.info("Bytes received: " + bytes);
+            log.debug("Bytes received: " + bytes);
 
           } catch (Exception e) {
 
@@ -407,7 +407,7 @@ public class RepositoryHttpServlet extends HttpServlet {
   private void uploadMultipart(HttpServletRequest req, HttpServletResponse resp,
       OutputStream repoItemOutputStrem) throws IOException {
 
-    log.info("Multipart detected");
+    log.debug("Multipart detected");
 
     ServletFileUpload upload = new ServletFileUpload();
 
@@ -421,17 +421,17 @@ public class RepositoryHttpServlet extends HttpServlet {
         try (InputStream stream = item.openStream()) {
           if (item.isFormField()) {
             // TODO What to do with this?
-            log.info("Form field {} with value {} detected.", name, Streams.asString(stream));
+            log.debug("Form field {} with value {} detected.", name, Streams.asString(stream));
           } else {
 
             // TODO Must we support multiple files uploading?
-            log.info("File field {} with file name detected.", name, item.getName());
+            log.debug("File field {} with file name detected.", name, item.getName());
 
-            log.info("Start to receive bytes (estimated bytes)",
+            log.debug("Start to receive bytes (estimated bytes)",
                 Integer.toString(req.getContentLength()));
             int bytes = IOUtils.copy(stream, repoItemOutputStrem);
             resp.setStatus(SC_OK);
-            log.info("Bytes received: {}", Integer.toString(bytes));
+            log.debug("Bytes received: {}", Integer.toString(bytes));
           }
         }
       }
@@ -442,8 +442,8 @@ public class RepositoryHttpServlet extends HttpServlet {
   }
 
   private void logRequest(HttpServletRequest req) {
-    log.info("Request received " + req.getRequestURL());
-    log.info("  Method: " + req.getMethod());
+    log.debug("Request received " + req.getRequestURL());
+    log.debug("  Method: " + req.getMethod());
 
     Enumeration<String> headerNames = req.getHeaderNames();
     while (headerNames.hasMoreElements()) {
@@ -454,7 +454,7 @@ public class RepositoryHttpServlet extends HttpServlet {
       while (values.hasMoreElements()) {
         valueList.add(values.nextElement());
       }
-      log.info("  Header {}: {}", headerName, valueList);
+      log.debug("  Header {}: {}", headerName, valueList);
     }
   }
 
@@ -463,7 +463,7 @@ public class RepositoryHttpServlet extends HttpServlet {
     Collection<String> headerNames = resp.getHeaderNames();
     for (String headerName : headerNames) {
       Collection<String> values = resp.getHeaders(headerName);
-      log.info("  Header {}: {}", headerName, values);
+      log.debug("  Header {}: {}", headerName, values);
     }
   }
 

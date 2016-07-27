@@ -55,7 +55,7 @@ public class KillAllProcesses {
           if (SshConnection.ping(node)) {
             SshConnection remoteHost = null;
             try {
-              log.info("Openning connection to node {}", node);
+              log.debug("Openning connection to node {}", node);
               remoteHost = new SshConnection(node);
               remoteHost.start();
               remoteHost.execCommand("kill", "-9", "-1");
@@ -63,7 +63,7 @@ public class KillAllProcesses {
               e.printStackTrace();
             } finally {
               if (remoteHost != null) {
-                log.info("Closing connection to node {}", node);
+                log.debug("Closing connection to node {}", node);
                 remoteHost.stop();
               }
             }

@@ -104,16 +104,16 @@ public class WebRtcStabilityRtpH264Test extends StabilityTest {
 
     // RTP session (rtpEndpoint1 --> rtpEndpoint2)
     String sdpOffer = rtpEndpoint1.generateOffer();
-    log.info("SDP offer in rtpEndpoint1\n{}", sdpOffer);
+    log.debug("SDP offer in rtpEndpoint1\n{}", sdpOffer);
 
     // SDP mangling
     sdpOffer = SdpUtils.mangleSdp(sdpOffer, REMOVE_CODECS);
-    log.info("SDP offer in rtpEndpoint1 after mangling\n{}", sdpOffer);
+    log.debug("SDP offer in rtpEndpoint1 after mangling\n{}", sdpOffer);
 
     String sdpAnswer1 = rtpEndpoint2.processOffer(sdpOffer);
-    log.info("SDP answer in rtpEndpoint2\n{}", sdpAnswer1);
+    log.debug("SDP answer in rtpEndpoint2\n{}", sdpAnswer1);
     String sdpAnswer2 = rtpEndpoint1.processAnswer(sdpAnswer1);
-    log.info("SDP answer in rtpEndpoint1\n{}", sdpAnswer2);
+    log.debug("SDP answer in rtpEndpoint1\n{}", sdpAnswer2);
 
     // Latency controller
     LatencyController cs = new LatencyController();

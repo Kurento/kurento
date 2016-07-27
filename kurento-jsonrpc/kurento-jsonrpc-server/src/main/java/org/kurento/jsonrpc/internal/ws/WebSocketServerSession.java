@@ -104,7 +104,7 @@ public class WebSocketServerSession extends ServerSession {
 
   private <P, R> Response<R> sendRequestWebSocket(Request<P> request, Class<R> resultClass) {
 
-    log.info("Req-> {}", request.toString());
+    log.debug("Req-> {}", request.toString());
 
     Future<Response<JsonElement>> responseFuture = null;
 
@@ -129,7 +129,7 @@ public class WebSocketServerSession extends ServerSession {
     try {
       responseJsonObject = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
-      log.info("<-Res {}", responseJsonObject.toString());
+      log.debug("<-Res {}", responseJsonObject.toString());
 
     } catch (InterruptedException e) {
       // TODO What to do in this case?

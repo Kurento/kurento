@@ -219,14 +219,14 @@ public class KmsService extends TestService {
     }
 
     if (isKmsDocker) {
-      log.info("Starting KMS dockerized");
+      log.debug("Starting KMS dockerized");
       Docker dockerClient = Docker.getSingleton();
       if (dockerClient.isRunningInContainer()) {
         setDockerContainerName(dockerClient.getContainerName() + getDockerContainerNameSuffix()
             + "-" + KurentoTest.getTestClassName() + "-" + +new Random().nextInt(3000));
       }
     } else {
-      log.info("Starting KMS with URI: {}", wsUri);
+      log.debug("Starting KMS with URI: {}", wsUri);
 
       try {
         workspace = Files.createTempDirectory("kurento-test");
@@ -237,7 +237,7 @@ public class KmsService extends TestService {
 
       if (isKmsRemote) {
         String remoteKmsStr = wsUri.substring(wsUri.indexOf("//") + 2, wsUri.lastIndexOf(":"));
-        log.info("Using remote KMS at {}", remoteKmsStr);
+        log.debug("Using remote KMS at {}", remoteKmsStr);
         remoteKmsSshConnection = new SshConnection(remoteKmsStr, kmsLogin, kmsPasswd, kmsPem);
         if (kmsPem != null) {
           remoteKmsSshConnection.setPem(kmsPem);
@@ -283,7 +283,7 @@ public class KmsService extends TestService {
     if (isKmsDocker) {
       try {
         Docker.getSingleton().removeContainer(dockerContainerName);
-        log.info("*** Only for debugging: Docker.getSingleton().removeContainer({})",
+        log.debug("*** Only for debugging: Docker.getSingleton().removeContainer({})",
             dockerContainerName);
       } catch (Throwable name) {
         log.error(
@@ -292,7 +292,7 @@ public class KmsService extends TestService {
       }
     }
 
-    log.info("+++ Only for debugging: After removeContainer {}", dockerContainerName);
+    log.debug("+++ Only for debugging: After removeContainer {}", dockerContainerName);
 
     // Delete temporal folder and content
     if (!isKmsDocker) {
@@ -302,7 +302,7 @@ public class KmsService extends TestService {
         log.warn("Exception deleting temporal folder {}", workspace, e);
       }
     }
-    log.info("+++ Only for debugging: End of KmsService.stop() for: {}", dockerContainerName);
+    log.debug("+++ Only for debugging: End of KmsService.stop() for: {}", dockerContainerName);
   }
 
   @Override
@@ -385,14 +385,14 @@ public class KmsService extends TestService {
     String kmsLogPath = getKmsLogPath();
     if (isKmsRemote) {
       remoteKmsSshConnection.runAndWaitCommand("sh", "-c", kmsLogPath + "kurento.sh > /dev/null");
-      log.info("Remote KMS started in URI {}", wsUri);
+      log.debug("Remote KMS started in URI {}", wsUri);
 
     } else if (isKmsDocker) {
       startDockerizedKms();
 
     } else {
       Shell.run("sh", "-c", kmsLogPath + "kurento.sh");
-      log.info("Local KMS started in URI {}", wsUri);
+      log.debug("Local KMS started in URI {}", wsUri);
     }
 
     isKmsStarted = true;
@@ -461,10 +461,10 @@ public class KmsService extends TestService {
         getProperty(KMS_DOCKER_IMAGE_FORCE_PULLING_PROP, KMS_DOCKER_IMAGE_FORCE_PULLING_DEFAULT);
 
     if (!dockerClient.existsImage(kmsImageName) || forcePulling) {
-      log.info("Pulling KMS image {} ... please wait", kmsImageName);
+      log.debug("Pulling KMS image {} ... please wait", kmsImageName);
       dockerClient.getClient().pullImageCmd(kmsImageName).exec(new PullImageResultCallback())
           .awaitSuccess();
-      log.info("KMS image {} pulled", kmsImageName);
+      log.debug("KMS image {} pulled", kmsImageName);
     }
 
     if (dockerClient.existsContainer(dockerContainerName)) {
@@ -505,7 +505,7 @@ public class KmsService extends TestService {
         && SRFLX.toString().toUpperCase().equals(seleniumCandidateType)) {
       // Use Turn for KMS
       String kmsTurnIp = getProperty(TEST_ICE_SERVER_URL_PROPERTY);
-      log.info("Turn Server {}", kmsTurnIp);
+      log.debug("Turn Server {}", kmsTurnIp);
       createContainerCmd =
           dockerClient
               .getClient()
@@ -532,7 +532,7 @@ public class KmsService extends TestService {
         kmsStunPort = "";
       }
 
-      log.info("Stun Server {}:{}", kmsStunIp, kmsStunPort);
+      log.debug("Stun Server {}:{}", kmsStunIp, kmsStunPort);
 
       createContainerCmd =
           dockerClient
@@ -585,7 +585,7 @@ public class KmsService extends TestService {
 
     setWsUri("ws://" + kmsAddress + ":8888/kurento");
 
-    log.info("Dockerized KMS started in URI {}", wsUri);
+    log.debug("Dockerized KMS started in URI {}", wsUri);
   }
 
   public String getKmsLogPath() {
@@ -820,7 +820,7 @@ public class KmsService extends TestService {
   private String getKurentoGenerateRtpPtsStats() {
     String path =
         getProperty(KMS_GENERATE_RTP_PTS_STATS_PROPERTY, KurentoTest.getDefaultOutputTestPath());
-    log.info("{} = {}", KMS_GENERATE_RTP_PTS_STATS_PROPERTY, path);
+    log.debug("{} = {}", KMS_GENERATE_RTP_PTS_STATS_PROPERTY, path);
     return path;
   }
 

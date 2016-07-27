@@ -61,26 +61,26 @@ public class OneRecordingServerTest {
 
     String publicWebappURL = OneRecordingServer.getPublicWebappUrl();
 
-    log.info("Start uploading content");
+    log.debug("Start uploading content");
 
     File fileToUpload = new File("test-files/logo.png");
 
     uploadFileWithCURL(publicWebappURL + "repository_servlet/video-upload", fileToUpload);
 
-    log.info("Waiting 10 seconds to auto-termination...");
+    log.debug("Waiting 10 seconds to auto-termination...");
     Thread.sleep(10 * 1000);
 
     File downloadedFile = new File("test-files/sampleDownload.txt");
 
-    log.info("Start downloading file");
+    log.debug("Start downloading file");
     downloadFromURL(publicWebappURL + "repository_servlet/video-download", downloadedFile);
 
     boolean equalFiles = TestUtils.equalFiles(fileToUpload, downloadedFile);
 
     if (equalFiles) {
-      log.info("The uploadad and downloaded files are equal");
+      log.debug("The uploadad and downloaded files are equal");
     } else {
-      log.info("The uploadad and downloaded files are different");
+      log.debug("The uploadad and downloaded files are different");
     }
 
     assertTrue("The uploadad and downloaded files are different", equalFiles);
@@ -92,7 +92,7 @@ public class OneRecordingServerTest {
       downloadedFile.createNewFile();
     }
 
-    log.info(urlToDownload);
+    log.debug(urlToDownload);
 
     RestTemplate client = new RestTemplate();
     ResponseEntity<byte[]> response = client.getForEntity(urlToDownload, byte[].class);
@@ -107,7 +107,7 @@ public class OneRecordingServerTest {
   protected void uploadFileWithCURL(String uploadURL, File fileToUpload)
       throws FileNotFoundException, IOException {
 
-    log.info("Start uploading file with curl");
+    log.debug("Start uploading file with curl");
     long startTime = System.currentTimeMillis();
 
     ProcessBuilder builder = new ProcessBuilder("curl", "-i", "-F",
@@ -121,7 +121,7 @@ public class OneRecordingServerTest {
     }
 
     long duration = System.currentTimeMillis() - startTime;
-    log.info("Finished uploading content in " + (double) duration / 1000 + " seconds.");
+    log.debug("Finished uploading content in " + (double) duration / 1000 + " seconds.");
   }
 
   protected void uploadFileWithPOST(String uploadURL, File fileToUpload)

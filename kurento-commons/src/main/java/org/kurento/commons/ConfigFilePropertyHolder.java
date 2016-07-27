@@ -70,7 +70,7 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
       cfph = (ConfigFilePropertyHolder) ph;
       if (cfph.loadedPaths != null) {
         if (cfph.loadedPaths.contains(configFilePath)) {
-          log.info("Trying to load again config file {}. Ignoring it.",
+          log.debug("Trying to load again config file {}. Ignoring it.",
               configFilePath.toAbsolutePath());
           return;
         }

@@ -185,7 +185,7 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
           first = false;
           continue;
         }
-        log.info(">>> Latency adquired: {} ms", latency);
+        log.debug(">>> Latency adquired: {} ms", latency);
 
       } catch (LatencyException le) {
         latencyRegistry.setLatencyException(le);
@@ -282,7 +282,7 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
         String parsedLocaltime = formater.format(lastLocalColorChangeTimeAbsolute);
         String parsedRemotetime = formater.format(lastRemoteColorChangeTimeAbsolute);
 
-        log.info(
+        log.debug(
             "latencyMilis={} -- lastLocalColor={} -- lastRemoteColor={} -- "
                 + "lastLocalColorChangeTime={} -- lastRemoteColorChangeTime={} -- "
                 + "lastLocalColorChangeTimeAbsolute={} -- lastRemoteColorChangeTimeAbsolute={}",
@@ -291,7 +291,7 @@ public class LatencyController implements ChangeColorEventListener<ChangeColorEv
             parsedLocaltime, parsedRemotetime);
 
         if (similarColor(lastLocalColor, lastRemoteColor)) {
-          log.info("--> Latency adquired ({} ms)", latencyMilis);
+          log.debug("--> Latency adquired ({} ms)", latencyMilis);
 
           if (monitor != null) {
             monitor.addCurrentLatency(latencyMilis);

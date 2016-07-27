@@ -223,7 +223,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
     try {
 
-      log.info("Event class '" + eventClass.getSimpleName() + " Data: " + data);
+      log.debug("Event class '" + eventClass.getSimpleName() + " Data: " + data);
 
       Constructor<?> constructor = eventClass.getConstructors()[0];
 

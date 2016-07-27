@@ -52,7 +52,7 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/pingpong", new JsonRpcWSConnectionAdapter() {
 
@@ -74,13 +74,13 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 
     String result = client.sendRequest("echo", "Params", String.class);
 
-    log.info("Response:" + result);
+    log.debug("Response:" + result);
 
     Assert.assertEquals(result, "OK");
 
     Thread.sleep(20000);
 
-    log.info("----------------- Disabling heartbeat in client ----------------");
+    log.debug("----------------- Disabling heartbeat in client ----------------");
 
     client.disableHeartbeat();
 
@@ -88,12 +88,12 @@ public class PingPongTest extends JsonRpcConnectorBaseTest {
 
     Thread.sleep(30000);
 
-    log.info("----------------- Enabling heartbeat in client ----------------");
+    log.debug("----------------- Enabling heartbeat in client ----------------");
     client.enableHeartbeat();
 
     Thread.sleep(30000);
 
-    log.info("Client finished");
+    log.debug("Client finished");
 
   }
 

@@ -68,7 +68,7 @@ public abstract class UrlServiceLoader<P> {
         String kmsUrl = properties.getProperty(urlProperty);
 
         if (kmsUrl != null) {
-          log.info("Using static url from property {}={} configured in config file {}", urlProperty,
+          log.debug("Using static url from property {}={} configured in config file {}", urlProperty,
               kmsUrl, configFile.toAbsolutePath());
           return kmsUrl;
         }
@@ -81,13 +81,13 @@ public abstract class UrlServiceLoader<P> {
 
           return defaultUrl;
         } else {
-          log.info("Using UrlServiceProvider={} configured in config file {}",
+          log.debug("Using UrlServiceProvider={} configured in config file {}",
               serviceProviderClassName, configFile.toAbsolutePath());
           return null;
         }
 
       } else {
-        log.info(
+        log.debug(
             "Config file is null (usually this means that config file doesn't exist). Using default url {}",
             defaultUrl);
         return defaultUrl;

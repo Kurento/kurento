@@ -412,7 +412,7 @@ public class ProtocolManager {
         Date closeTime = new Date(
             System.currentTimeMillis() + session.getReconnectionTimeoutInMillis());
 
-        log.info(label + "Configuring close timeout for session: {} transportId: {} at {}",
+        log.debug(label + "Configuring close timeout for session: {} transportId: {} at {}",
             session.getSessionId(), transportId, format.format(closeTime));
 
         ScheduledFuture<?> lastStartedTimerFuture = taskScheduler.schedule(new Runnable() {
@@ -434,7 +434,7 @@ public class ProtocolManager {
   }
 
   public void closeSession(ServerSession session, String reason) {
-    log.info("{} Removing session {} with transportId {} in ProtocolManager", label,
+    log.debug("{} Removing session {} with transportId {} in ProtocolManager", label,
         session.getSessionId(), session.getTransportId());
     try {
       session.close();

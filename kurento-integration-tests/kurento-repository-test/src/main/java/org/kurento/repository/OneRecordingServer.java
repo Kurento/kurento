@@ -63,17 +63,17 @@ public class OneRecordingServer {
 
   private void prepareToDownloadVideo(RepositoryItem repositoryItem) throws InterruptedException {
     RepositoryHttpPlayer player = repositoryItem.createRepositoryHttpPlayer("video-download");
-    log.info("The video can be downloaded with GET from the URL: " + player.getURL());
+    log.debug("The video can be downloaded with GET from the URL: " + player.getURL());
 
     player.setAutoTerminationTimeout(30 * 60 * 1000);
-    log.info("Player will be terminated 30 min after last download of content (http GET)");
+    log.debug("Player will be terminated 30 min after last download of content (http GET)");
 
     final CountDownLatch terminatedLatch = new CountDownLatch(1);
 
     player.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
       @Override
       public void onEvent(HttpSessionStartedEvent event) {
-        log.info("Downloading started");
+        log.debug("Downloading started");
       }
     });
 
@@ -81,7 +81,7 @@ public class OneRecordingServer {
         new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
           @Override
           public void onEvent(HttpSessionTerminatedEvent event) {
-            log.info("Downloading terminated");
+            log.debug("Downloading terminated");
             terminatedLatch.countDown();
           }
         });
@@ -98,12 +98,12 @@ public class OneRecordingServer {
 
     RepositoryHttpRecorder recorder = repositoryItem.createRepositoryHttpRecorder("video-upload");
 
-    log.info("The video must be uploaded with PUT or POST to the URL: " + recorder.getURL());
+    log.debug("The video must be uploaded with PUT or POST to the URL: " + recorder.getURL());
 
     readyToUploadWatch.countDown();
 
     recorder.setAutoTerminationTimeout(5 * 1000);
-    log.info(
+    log.debug(
         "Recorder will be terminated 5 seconds after last upload of content (http PUT or POST)");
 
     final CountDownLatch terminatedLatch = new CountDownLatch(1);
@@ -111,7 +111,7 @@ public class OneRecordingServer {
     recorder.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
       @Override
       public void onEvent(HttpSessionStartedEvent event) {
-        log.info("Uploading started");
+        log.debug("Uploading started");
       }
     });
 
@@ -119,7 +119,7 @@ public class OneRecordingServer {
         new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
           @Override
           public void onEvent(HttpSessionTerminatedEvent event) {
-            log.info("Uploading terminated");
+            log.debug("Uploading terminated");
             terminatedLatch.countDown();
           }
         });
@@ -146,7 +146,7 @@ public class OneRecordingServer {
     String web = server.context.getBean(RepositoryApiConfiguration.class).getWebappPublicUrl();
     // String web = "http://localhost:8080/";
 
-    log.info("web: " + web);
+    log.debug("web: " + web);
     return web;
   }
 

@@ -38,7 +38,7 @@ public class TimeoutTests extends BaseRepositoryTest {
 
     String id = uploadFile(new File("test-files/sample.txt"));
 
-    log.info("File uploaded");
+    log.debug("File uploaded");
 
     RepositoryHttpPlayer player =
         getRepository().findRepositoryItemById(id).createRepositoryHttpPlayer();
@@ -49,19 +49,19 @@ public class TimeoutTests extends BaseRepositoryTest {
 
     assertEquals(HttpStatus.OK,
         template.getForEntity(player.getURL(), byte[].class).getStatusCode());
-    log.info("Request 1 Passed");
+    log.debug("Request 1 Passed");
 
     Thread.sleep(300);
 
     assertEquals(HttpStatus.OK,
         template.getForEntity(player.getURL(), byte[].class).getStatusCode());
-    log.info("Request 2 Passed");
+    log.debug("Request 2 Passed");
 
     Thread.sleep(1500);
 
     assertEquals(HttpStatus.NOT_FOUND,
         template.getForEntity(player.getURL(), byte[].class).getStatusCode());
-    log.info("Request 3 Passed");
+    log.debug("Request 3 Passed");
 
   }
 

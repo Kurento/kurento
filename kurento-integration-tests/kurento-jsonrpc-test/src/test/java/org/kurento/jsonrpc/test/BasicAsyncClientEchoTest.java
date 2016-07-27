@@ -44,7 +44,7 @@ public class BasicAsyncClientEchoTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException, InterruptedException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/jsonrpc");
 
@@ -58,7 +58,7 @@ public class BasicAsyncClientEchoTest extends JsonRpcConnectorBaseTest {
 
       @Override
       public void onSuccess(JsonElement result) {
-        log.info("Response:" + result);
+        log.debug("Response:" + result);
 
         Assert.assertEquals(params.get("param1").getAsString(), "Value1");
         Assert.assertEquals(params.get("param2").getAsString(), "Value2");
@@ -74,7 +74,7 @@ public class BasicAsyncClientEchoTest extends JsonRpcConnectorBaseTest {
 
     client.close();
 
-    log.info("Client finished");
+    log.debug("Client finished");
   }
 
 }

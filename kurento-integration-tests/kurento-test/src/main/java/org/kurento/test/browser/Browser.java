@@ -185,7 +185,7 @@ public class Browser implements Closeable {
 
   public void init() {
 
-    log.info("Starting browser {}", getId());
+    log.debug("Starting browser {}", getId());
 
     Class<? extends WebDriver> driverClass = browserType.getDriverClass();
 
@@ -227,7 +227,7 @@ public class Browser implements Closeable {
 
       driver.get(url.toString());
 
-      log.info("Browser {} initialized", getId());
+      log.debug("Browser {} initialized", getId());
 
     } catch (MalformedURLException e) {
       log.error("MalformedURLException in Browser.init", e);
@@ -533,7 +533,7 @@ public class Browser implements Closeable {
     jobId = ((RemoteWebDriver) driver).getSessionId().toString();
     log.debug("%%%%%%%%%%%%% Saucelabs URL job for {} ({} {} in {}) %%%%%%%%%%%%%", id, browserType,
         browserVersion, platform);
-    log.info("https://saucelabs.com/tests/{}", jobId);
+    log.debug("https://saucelabs.com/tests/{}", jobId);
   }
 
   public void createRemoteDriver(final DesiredCapabilities capabilities)

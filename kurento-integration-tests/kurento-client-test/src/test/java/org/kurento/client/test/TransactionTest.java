@@ -340,7 +340,7 @@ public class TransactionTest extends KurentoClientTest {
     try {
       player.release();
     } catch (TransactionRollbackException e) {
-      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+      log.debug("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
           + "'");
       assertThat(e.isUserRollback(), is(true));
     }
@@ -348,7 +348,7 @@ public class TransactionTest extends KurentoClientTest {
     try {
       uri.get();
     } catch (TransactionRollbackException e) {
-      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+      log.debug("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
           + "'");
       assertThat(e.isUserRollback(), is(true));
     }
@@ -374,7 +374,7 @@ public class TransactionTest extends KurentoClientTest {
     try {
       player.play();
     } catch (KurentoServerException e) {
-      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+      log.debug("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
           + "'");
       assertThat(e.getCode(), is(40101));
       assertThat(e.getServerMessage(), containsString(" not found"));
@@ -389,7 +389,7 @@ public class TransactionTest extends KurentoClientTest {
       tx.commit();
       fail("Exception 'TransactionExecutionException' should be thrown");
     } catch (TransactionExecutionException e) {
-      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+      log.debug("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
           + "'");
       assertThat(e.getCode(), is(40101));
       assertThat(e.getServerMessage(), containsString(" not found"));
@@ -399,7 +399,7 @@ public class TransactionTest extends KurentoClientTest {
       filter.connect(player);
       fail("Exception 'TransactionExecutionException' should be thrown");
     } catch (TransactionRollbackException e) {
-      log.info("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
+      log.debug("Captured exception of class " + e.getClass() + " with message '" + e.getMessage()
           + "'");
 
       KurentoServerException kse = e.getKurentoServerException();

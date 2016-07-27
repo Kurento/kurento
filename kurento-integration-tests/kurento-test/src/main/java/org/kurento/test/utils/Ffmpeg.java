@@ -86,7 +86,7 @@ public class Ffmpeg {
       Shell.runAndWait(pesq, "+" + sampleRate, origWav, RECORDED_WAV);
       List<String> lines = FileUtils.readLines(new File(PESQ_RESULTS), "utf-8");
       pesqmos = Float.parseFloat(lines.get(1).split("\t")[2].trim());
-      log.info("PESQMOS " + pesqmos);
+      log.debug("PESQMOS " + pesqmos);
 
       Shell.runAndWait("rm", PESQ_RESULTS);
 

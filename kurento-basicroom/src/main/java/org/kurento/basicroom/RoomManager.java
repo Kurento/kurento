@@ -86,7 +86,7 @@ public class RoomManager {
   public void removeRoom(Room room) {
     this.rooms.remove(room.getName());
     room.close();
-    log.info("Room {} removed and closed", room.getName());
+    log.debug("Room {} removed and closed", room.getName());
   }
 
 }

@@ -46,7 +46,7 @@ public class KurentoClientKmsConnectionTest extends KurentoClientTest {
 
       @Override
       public void disconnected() {
-        log.info("Disconnected");
+        log.debug("Disconnected");
       }
 
       @Override

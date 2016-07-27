@@ -84,7 +84,7 @@ public class RepositoryRestTest {
     if (testWithFS) {
       System.setProperty(RepositoryApplicationContextConfiguration.KEY_REPO_TYPE,
           RepositoryApiConfiguration.RepoType.FILESYSTEM.getTypeValue());
-      log.info("Filesystem has been forced as repo storage type");
+      log.debug("Filesystem has been forced as repo storage type");
     }
     app = KurentoRepositoryServerApp.start();
   }
@@ -99,13 +99,13 @@ public class RepositoryRestTest {
     String serviceUrl = "http://" + RepositoryApplicationContextConfiguration.SERVER_HOSTNAME + ":"
         + RepositoryApplicationContextConfiguration.SERVER_PORT;
     restService = RepositoryClientProvider.create(serviceUrl);
-    log.info("Rest service created for {}", serviceUrl);
+    log.debug("Rest service created for {}", serviceUrl);
 
     repository = (Repository) app.getBean("repository");
     if (repository instanceof MongoRepository) {
       MongoRepository mrepo = (MongoRepository) repository;
       mrepo.getGridFS().getDB().dropDatabase();
-      log.info("Cleaned up the Mongo repository");
+      log.debug("Cleaned up the Mongo repository");
     } else {
       String filesFolder = getProperty(RepositoryApplicationContextConfiguration.KEY_FS_FOLDER,
           RepositoryApiConfiguration.DEFAULT_FILESYSTEM_LOC);
@@ -117,7 +117,7 @@ public class RepositoryRestTest {
           }
         }
       }
-      log.info("Cleaned up the disk repository: {}", fsFolder);
+      log.debug("Cleaned up the disk repository: {}", fsFolder);
     }
     File tmpFolder = new File("test-files/tmp");
     tmpFolder.delete();
@@ -129,7 +129,7 @@ public class RepositoryRestTest {
     Map<String, String> metadata = new HashMap<String, String>();
     metadata.put("restKey", "restValue");
     RepositoryItemRecorder itemRec = restService.createRepositoryItem(metadata);
-    log.info("Obtained item store: {}", itemRec);
+    log.debug("Obtained item store: {}", itemRec);
 
     File fileToUpload = new File("test-files/logo.png");
     uploadFileWithCURL(itemRec.getUrl(), fileToUpload);
@@ -141,15 +141,15 @@ public class RepositoryRestTest {
 
     String playUrl = itemPlay.getUrl();
     File downloadedFile = new File("test-files/tmp/sampleDownload.txt");
-    log.info("Start downloading file from {} to {}", playUrl, downloadedFile.getPath());
+    log.debug("Start downloading file from {} to {}", playUrl, downloadedFile.getPath());
     downloadFromURL(playUrl, downloadedFile);
 
     boolean equalFiles = TestUtils.equalFiles(fileToUpload, downloadedFile);
 
     if (equalFiles) {
-      log.info("The uploadad and downloaded files are equal");
+      log.debug("The uploadad and downloaded files are equal");
     } else {
-      log.info("The uploadad and downloaded files are different");
+      log.debug("The uploadad and downloaded files are different");
     }
 
     assertTrue("The uploadad and downloaded files are different", equalFiles);
@@ -202,7 +202,7 @@ public class RepositoryRestTest {
   protected void uploadFileWithCURL(String uploadURL, File fileToUpload)
       throws FileNotFoundException, IOException {
 
-    log.info("Start uploading file with curl");
+    log.debug("Start uploading file with curl");
     long startTime = System.currentTimeMillis();
 
     ProcessBuilder builder = new ProcessBuilder("curl", "-i", "-F",
@@ -216,7 +216,7 @@ public class RepositoryRestTest {
     }
 
     long duration = System.currentTimeMillis() - startTime;
-    log.info("Finished uploading content in " + (double) duration / 1000 + " seconds.");
+    log.debug("Finished uploading content in " + (double) duration / 1000 + " seconds.");
   }
 
   protected void downloadFromURL(String urlToDownload, File downloadedFile) throws IOException {
@@ -225,7 +225,7 @@ public class RepositoryRestTest {
       downloadedFile.createNewFile();
     }
 
-    log.info(urlToDownload);
+    log.debug(urlToDownload);
 
     RestTemplate client = new RestTemplate();
     ResponseEntity<byte[]> response = client.getForEntity(urlToDownload, byte[].class);

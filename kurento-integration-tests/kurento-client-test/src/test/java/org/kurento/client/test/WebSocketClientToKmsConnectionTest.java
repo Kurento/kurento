@@ -63,7 +63,7 @@ public class WebSocketClientToKmsConnectionTest extends KurentoClientTest {
 
       String kmsUrl = kms.getWsUri();
 
-      log.info("Connecting to KMS in " + kmsUrl);
+      log.debug("Connecting to KMS in " + kmsUrl);
 
       WebSocketClient client = new WebSocketClient();
       WebSocketHandler socket = new WebSocketHandler();
@@ -88,7 +88,7 @@ public class WebSocketClientToKmsConnectionTest extends KurentoClientTest {
 
     String kmsUrl = kms.getWsUri();
 
-    log.info("Connecting to KMS in " + kmsUrl);
+    log.debug("Connecting to KMS in " + kmsUrl);
 
     WebSocketClient client = new WebSocketClient();
     WebSocketHandler socket = new WebSocketHandler();

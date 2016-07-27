@@ -99,7 +99,7 @@ public class RangePutTest extends BaseRepositoryTest {
 
         sentBytes += readBytes;
 
-        log.info(numRequest + ": " + response.toString());
+        log.debug(numRequest + ": " + response.toString());
 
         assertEquals("Returned response: " + response.getBody(), HttpStatus.OK,
             response.getStatusCode());
@@ -110,7 +110,7 @@ public class RangePutTest extends BaseRepositoryTest {
 
           response = putContent(url, Arrays.copyOf(info, readBytes), sentBytes - readBytes);
 
-          log.info(numRequest + ": " + response.toString());
+          log.debug(numRequest + ": " + response.toString());
 
           assertEquals("Returned response: " + response.getBody(), HttpStatus.OK,
               response.getStatusCode());
@@ -128,7 +128,7 @@ public class RangePutTest extends BaseRepositoryTest {
 
           sentBytes += newReadBytes;
 
-          log.info(numRequest + ": " + response.toString());
+          log.debug(numRequest + ": " + response.toString());
 
           assertEquals("Returned response: " + response.getBody(), HttpStatus.OK,
               response.getStatusCode());
@@ -139,7 +139,7 @@ public class RangePutTest extends BaseRepositoryTest {
 
           response = putContent(url, Arrays.copyOf(info, readBytes), sentBytes + 75000);
 
-          log.info(numRequest + ": " + response.toString());
+          log.debug(numRequest + ": " + response.toString());
 
           assertEquals("Returned response: " + response.getBody(), HttpStatus.NOT_IMPLEMENTED,
               response.getStatusCode());
@@ -175,7 +175,7 @@ public class RangePutTest extends BaseRepositoryTest {
     ResponseEntity<String> response =
         httpClient.exchange(url, HttpMethod.PUT, requestEntity, String.class);
 
-    log.info(
+    log.debug(
         "Put " + info.length + " bytes from " + firstByte + " to " + (firstByte + info.length));
 
     return response;

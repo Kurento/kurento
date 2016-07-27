@@ -474,7 +474,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     super.close();
 
     String sessionId = this.session != null ? this.session.getSessionId() : "";
-    log.info("{} Explicit close of JsonRpcClientWebsocket with sessionId={}", label, sessionId);
+    log.debug("{} Explicit close of JsonRpcClientWebsocket with sessionId={}", label, sessionId);
 
     if (sendCloseMessage) {
       try {
@@ -629,7 +629,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
       public void run() {
         try {
 
-          log.info("{}JsonRpcWsClient reconnecting to {}. ", label, uri);
+          log.debug("{}JsonRpcWsClient reconnecting to {}. ", label, uri);
 
           connectIfNecessary();
 
@@ -637,11 +637,11 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
         } catch (Exception e) {
 
-          log.info("TryReconnectingForever={}", tryReconnectingForever);
-          log.info("TryReconnectingMaxTime={}", tryReconnectingMaxTime);
-          log.info("maxTimeReconnecting={}", maxTimeReconnecting);
-          log.info("currentTime={}", System.currentTimeMillis());
-          log.info("Parar de reconectar={}", System.currentTimeMillis() > maxTimeReconnecting);
+          log.debug("TryReconnectingForever={}", tryReconnectingForever);
+          log.debug("TryReconnectingMaxTime={}", tryReconnectingMaxTime);
+          log.debug("maxTimeReconnecting={}", maxTimeReconnecting);
+          log.debug("currentTime={}", System.currentTimeMillis());
+          log.debug("Parar de reconectar={}", System.currentTimeMillis() > maxTimeReconnecting);
 
           if (!tryReconnectingForever && (tryReconnectingMaxTime == 0
               || System.currentTimeMillis() > maxTimeReconnecting)) {
@@ -666,7 +666,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
   @Override
   protected void closeWithReconnection() {
-    log.info("{} Closing websocket session to force reconnection", label);
+    log.debug("{} Closing websocket session to force reconnection", label);
     closeNativeClient();
     handleReconnectDisconnection(999, "ping timeout");
   }
@@ -685,7 +685,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
 
     connectIfNecessary();
 
-    log.info("{} Connected to server with session {}", label, getSession().getSessionId());
+    log.debug("{} Connected to server with session {}", label, getSession().getSessionId());
 
   }
 
@@ -786,7 +786,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
     try {
       rsHelper.sendRequest(METHOD_CONNECT, String.class);
 
-      log.info("{} Reconnected to the same session in server {}", label, uri);
+      log.debug("{} Reconnected to the same session in server {}", label, uri);
 
       return true;
 
@@ -802,7 +802,7 @@ public abstract class AbstractJsonRpcClientWebSocket extends JsonRpcClient {
           rsHelper.setSessionId(null);
           rsHelper.sendRequest(METHOD_CONNECT, String.class);
 
-          log.info("{} Reconnected to a new session in server {}", label, uri);
+          log.debug("{} Reconnected to a new session in server {}", label, uri);
 
           return false;
 

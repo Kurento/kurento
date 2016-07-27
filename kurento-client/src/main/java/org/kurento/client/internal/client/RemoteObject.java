@@ -328,7 +328,7 @@ public class RemoteObject {
     Collection<RemoteObjectEventListener> typeListeners;
     synchronized (this.listeners) {
       typeListeners = new ArrayList<>(this.listeners.get(type));
-      log.info("Listeners found in object {}:{} for event {}: {}", super.hashCode(),
+      log.debug("Listeners found in object {}:{} for event {}: {}", super.hashCode(),
           this.getObjectRef(), type, typeListeners);
     }
 

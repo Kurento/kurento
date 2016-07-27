@@ -56,13 +56,13 @@ public class ErrorEventsTest extends BaseRepositoryTest {
     recorder.addSessionErrorListener(new RepositoryHttpEventListener<HttpSessionErrorEvent>() {
       @Override
       public void onEvent(HttpSessionErrorEvent event) {
-        log.info("Error event sent");
-        log.info("Exception:" + event.getCause());
+        log.debug("Error event sent");
+        log.debug("Exception:" + event.getCause());
         errorLatch.countDown();
       }
     });
 
-    log.info(
+    log.debug(
         "Start writing to URL " + recorder.getURL() + " the item with id '" + item.getId() + "'");
 
     new Thread() {

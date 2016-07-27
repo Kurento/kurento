@@ -128,7 +128,7 @@ public class RoomHandler extends TextWebSocketHandler {
 
     updateThreadName(userName);
 
-    log.info("PARTICIPANT {}: trying to join room {}", userName, roomName);
+    log.debug("PARTICIPANT {}: trying to join room {}", userName, roomName);
 
     final Room room = roomManager.getRoom(roomName);
 

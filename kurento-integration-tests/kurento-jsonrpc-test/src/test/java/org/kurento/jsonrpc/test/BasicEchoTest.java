@@ -38,7 +38,7 @@ public class BasicEchoTest extends JsonRpcConnectorBaseTest {
   @Test
   public void test() throws IOException {
 
-    log.info("Client started");
+    log.debug("Client started");
 
     JsonRpcClient client = createJsonRpcClient("/jsonrpc");
     Params params = new Params();
@@ -47,14 +47,14 @@ public class BasicEchoTest extends JsonRpcConnectorBaseTest {
 
     Params result = client.sendRequest("echo", params, Params.class);
 
-    log.info("Response:" + result);
+    log.debug("Response:" + result);
 
     Assert.assertEquals(params.param1, result.param1);
     Assert.assertEquals(params.param2, result.param2);
 
     client.close();
 
-    log.info("Client finished");
+    log.debug("Client finished");
 
   }
 

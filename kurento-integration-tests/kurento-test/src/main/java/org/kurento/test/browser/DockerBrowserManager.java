@@ -134,7 +134,7 @@ public class DockerBrowserManager {
               curl(hubUrl + "/grid/api/proxy?id=http://" + browserContainerIp + ":5555");
 
           if (result.get("success").getAsBoolean()) {
-            log.info("Capabilities of container {}: {}", browserContainerName,
+            log.debug("Capabilities of container {}: {}", browserContainerName,
                 result.get("request").getAsJsonObject().get("capabilities"));
             return;
           } else {

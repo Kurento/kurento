@@ -52,7 +52,7 @@ public class SdpUtils {
     }
 
     String sdpMangled2 = "";
-    log.info("indexList " + indexList);
+    log.debug("indexList " + indexList);
     for (String line : sdpMangled1.split(SDP_DELIMITER)) {
       for (String index : indexList) {
         line = line.replaceAll(index, "");

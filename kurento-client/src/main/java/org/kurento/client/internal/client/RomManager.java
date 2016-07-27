@@ -145,7 +145,7 @@ public class RomManager implements ObjectRefsManager {
   }
 
   public void destroy() {
-    log.info("Closing RomManager");
+    log.debug("Closing RomManager");
     this.client.destroy();
   }
 

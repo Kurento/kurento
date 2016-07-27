@@ -54,7 +54,7 @@ public class SessionIdMessageTest {
         "{\"id\":1,\"method\":\"method\",\"params\":{\"param1\":\"Value1\",\"sessionId\":\"xxxxxxx\"},\"jsonrpc\":\"2.0\"}",
         requestJson);
 
-    log.info(requestJson);
+    log.debug(requestJson);
 
     Request<Params> newRequest = JsonUtils.fromJsonRequest(requestJson, Params.class);
 
@@ -74,7 +74,7 @@ public class SessionIdMessageTest {
         "{\"id\":1,\"method\":\"method\",\"jsonrpc\":\"2.0\",\"params\":{\"sessionId\":\"xxxxxxx\"}}",
         requestJson);
 
-    log.info(requestJson);
+    log.debug(requestJson);
 
     Request<Void> newRequest = JsonUtils.fromJsonRequest(requestJson, Void.class);
 
@@ -96,7 +96,7 @@ public class SessionIdMessageTest {
     JsonObject result = (JsonObject) parser.parse(responseJson);
     Assert.assertEquals(expected, result);
 
-    log.info(responseJson);
+    log.debug(responseJson);
 
     Response<Void> newResponse = JsonUtils.fromJsonResponse(responseJson, Void.class);
 
@@ -119,7 +119,7 @@ public class SessionIdMessageTest {
         "{\"id\":1,\"result\":{\"data1\":\"Value1\",\"sessionId\":\"xxxxxxx\"},\"jsonrpc\":\"2.0\"}",
         responseJson);
 
-    log.info(responseJson);
+    log.debug(responseJson);
 
     Response<Data> newResponse = JsonUtils.fromJsonResponse(responseJson, Data.class);
 

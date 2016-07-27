@@ -75,7 +75,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
     try {
       // We send this notification to the JsonRpcHandler when the JsonRpc
       // session is established, not when websocket session is established
-      log.info(
+      log.debug(
           "{} Client connection established from session={} uri={} headers={} acceptedProtocol={} attributes={}",
           label, session.getRemoteAddress(), session.getUri(), session.getHandshakeHeaders(),
           session.getAcceptedProtocol(), session.getAttributes());
@@ -124,12 +124,12 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
         if (session.isGracefullyClosed()) {
 
-          log.info("{} WebSocket session {} with transportId {} closed gracefully", label,
+          log.debug("{} WebSocket session {} with transportId {} closed gracefully", label,
               session.getSessionId(), wsSession.getId());
 
         } else {
 
-          log.info(
+          log.debug(
               "{} WebSocket session {} with transportId {} closed for {} (code {}, reason '{}')",
               label, session.getSessionId(), wsSession.getId(),
               CloseStatusHelper.getCloseStatusType(status.getCode()), status.getCode(),
@@ -138,7 +138,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
           protocolManager.closeSessionIfTimeout(wsSession.getId(), status.getReason());
         }
       } else {
-        log.info(
+        log.debug(
             "{} WebSocket session not associated to any jsonRpcSession "
                 + "with transportId {} closed for {} (code {}, reason '{}')",
             label, wsSession.getId(), CloseStatusHelper.getCloseStatusType(status.getCode()),
