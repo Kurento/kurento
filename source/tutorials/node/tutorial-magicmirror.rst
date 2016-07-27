@@ -56,7 +56,7 @@ WebRTC capable browser (Chrome, Firefox).
 
    .. sourcecode:: bash
 
-      npm start -- --ws_uri=ws://kms_host:kms_host:kms_port/kurento
+      npm start -- --ws_uri=ws://kms_host:kms_port/kurento
 
    In this case you need to use npm version 2. To update it you can use this command:
 
