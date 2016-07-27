@@ -127,7 +127,7 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
     String ffmpegCmd =
         "ffmpeg -re -i "
             + mediaPath
-            + " -an -vcodec libx264 -preset ultrafast -tune zerolatency -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW srtp://"
+            + " -an -vcodec libx264 -profile:v baseline -level 3.0 -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW srtp://"
             + kmsIp + ":" + port;
 
     log.debug("Media Path: {}", mediaPath);
