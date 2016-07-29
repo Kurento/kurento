@@ -984,8 +984,8 @@ kms_webrtc_data_channel_bin_new (guint id, gboolean ordered,
           max_retransmits, "label", label, "protocol", protocol, NULL));
 
   caps = kms_webrtc_data_channel_bin_create_caps (obj);
-
   g_object_set (obj->priv->appsrc, "caps", caps, NULL);
+  gst_caps_unref (caps);
 
   return obj;
 }
