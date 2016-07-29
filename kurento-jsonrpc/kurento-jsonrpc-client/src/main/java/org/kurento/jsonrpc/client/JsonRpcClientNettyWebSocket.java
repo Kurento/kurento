@@ -40,6 +40,7 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
@@ -56,6 +57,8 @@ import io.netty.util.CharsetUtil;
 public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket {
 
   public class JsonRpcWebSocketClientHandler extends AbstractJsonRpcWebSocketClientHandler {
+
+    private StringBuilder partialText = new StringBuilder();
 
     public JsonRpcWebSocketClientHandler(WebSocketClientHandshaker handshaker) {
       super(handshaker);
@@ -104,9 +107,20 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       WebSocketFrame frame = (WebSocketFrame) msg;
       if (frame instanceof TextWebSocketFrame) {
         TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-        receivedTextMessage(textFrame.text());
+        if (textFrame.isFinalFragment()) {
+          receivedTextMessage(textFrame.text());
+        } else {
+          partialText.append(textFrame.text());
+        }
+      } else if (frame instanceof ContinuationWebSocketFrame) {
+        ContinuationWebSocketFrame continuationFrame = (ContinuationWebSocketFrame) frame;
+        partialText.append(continuationFrame.text());
+        if (continuationFrame.isFinalFragment()) {
+          receivedTextMessage(partialText.toString());
+          partialText.setLength(0);
+        }
       } else {
-        log.debug("Received frame of type {}. Will be ignored", frame.getClass().getSimpleName());
+        log.warn("Received frame of type {}. Will be ignored", frame.getClass().getSimpleName());
       }
 
     }
