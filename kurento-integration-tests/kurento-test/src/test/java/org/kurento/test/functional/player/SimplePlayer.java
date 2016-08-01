@@ -162,10 +162,24 @@ public class SimplePlayer extends PlayerTest {
       }
     });
 
+    final CountDownLatch flowingLatch = new CountDownLatch(1);
+    webRtcEp.addMediaFlowInStateChangeListener(new EventListener<MediaFlowInStateChangeEvent>() {
+
+      @Override
+      public void onEvent(MediaFlowInStateChangeEvent event) {
+        if (event.getState().equals(MediaFlowState.FLOWING)) {
+          flowingLatch.countDown();
+        }
+      }
+    });
+
     // Test execution
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEp.play();
+
+    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
+        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
         + webRtcChannel, getPage().waitForEvent("playing"));
