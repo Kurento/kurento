@@ -31,9 +31,12 @@
 #define AUDIO_APPSRC "audio_appsrc"
 #define VIDEO_APPSRC "video_appsrc"
 #define URIDECODEBIN "uridecodebin"
+#define RTSPSRC "rtspsrc"
 
 #define APPSRC_DATA "appsrc_data"
 #define APPSINK_DATA "appsink_data"
+
+#define NETWORK_CACHE_DEFAULT 2000
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_player_endpoint_debug_category
@@ -63,6 +66,7 @@ struct _KmsPlayerEndpointPrivate
   KmsLoop *loop;
   gboolean use_encoded_media;
   GMutex base_time_lock;
+  gint network_cache;
 
   KmsPlayerStats stats;
 };
@@ -73,6 +77,7 @@ enum
   PROP_USE_ENCODED_MEDIA,
   PROP_VIDEO_DATA,
   PROP_POSITION,
+  PROP_NETWORK_CACHE,
   N_PROPERTIES
 };
 
@@ -120,6 +125,9 @@ kms_player_endpoint_set_property (GObject * object, guint property_id,
       }
       break;
     }
+    case PROP_NETWORK_CACHE:
+      playerendpoint->priv->network_cache = g_value_get_int (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -187,6 +195,9 @@ kms_player_endpoint_get_property (GObject * object, guint property_id,
       g_value_set_int64 (value, position);
       break;
     }
+    case PROP_NETWORK_CACHE:
+      g_value_set_int (value, playerendpoint->priv->network_cache);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -886,6 +897,12 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
           "Playing position in the file as miliseconds",
           0, G_MAXINT64, 0, G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
 
+  g_object_class_install_property (gobject_class, PROP_NETWORK_CACHE,
+      g_param_spec_int ("network-cache", "Network cache",
+          "When using rtsp sources, the amount of ms to buffer",
+          0, G_MAXINT, NETWORK_CACHE_DEFAULT,
+          G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
+
   kms_player_endpoint_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
       G_TYPE_FROM_CLASS (klass),
@@ -1051,6 +1068,18 @@ source_setup_cb (GstElement * uridecodebin, GstElement * source,
 }
 
 static void
+element_added (GstBin * bin, GstElement * element, gpointer data)
+{
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
+
+  if (g_strcmp0 (gst_plugin_feature_get_name (GST_PLUGIN_FEATURE
+              (gst_element_get_factory (element))), RTSPSRC) == 0) {
+    g_object_set (G_OBJECT (element), "latency", self->priv->network_cache,
+        NULL);
+  }
+}
+
+static void
 kms_player_endpoint_init (KmsPlayerEndpoint * self)
 {
   GstBus *bus;
@@ -1063,6 +1092,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->pipeline = gst_pipeline_new ("pipeline");
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
+  self->priv->network_cache = NETWORK_CACHE_DEFAULT;
 
   self->priv->stats.probes = kms_list_new_full (g_direct_equal, g_object_unref,
       (GDestroyNotify) kms_stats_probe_destroy);
@@ -1074,6 +1104,8 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
       G_CALLBACK (pad_removed), self);
   g_signal_connect (self->priv->uridecodebin, "source-setup",
       G_CALLBACK (source_setup_cb), self);
+  g_signal_connect (self->priv->uridecodebin, "element-added",
+      G_CALLBACK (element_added), self);
 
   g_object_set (self->priv->uridecodebin, "download", TRUE, NULL);
 

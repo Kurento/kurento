@@ -73,6 +73,13 @@
               "type": "boolean",
               "optional": true,
               "defaultValue": false
+            },
+            {
+              "name": "networkCache",
+              "doc": "When using rtsp sources. Amount of ms to buffer",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 2000
             }
           ]
         },
