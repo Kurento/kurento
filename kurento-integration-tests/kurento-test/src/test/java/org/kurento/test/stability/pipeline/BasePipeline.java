@@ -87,4 +87,29 @@ public class BasePipeline extends StabilityTest {
     }
   }
 
+  /**
+   * Auxiliary class that allows waiting that all objects are connected or disconnected in the
+   * stress tests. Also allow creating different latch with different values
+   *
+   * @author rbenitez
+   *
+   */
+  class ConnectionStateLatch {
+    private CountDownLatch stateConnectedLatch;
+    private CountDownLatch stateDisconnectedLatch;
+
+    public ConnectionStateLatch(int count) {
+      stateConnectedLatch = new CountDownLatch(count);
+      stateDisconnectedLatch = new CountDownLatch(count);
+    }
+
+    public CountDownLatch getStateConnectedLatch() {
+      return stateConnectedLatch;
+    }
+
+    public CountDownLatch getStateDisconnectedLatch() {
+      return stateDisconnectedLatch;
+    }
+  }
+
 }
