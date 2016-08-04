@@ -621,14 +621,10 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
   public void getVideoQuality(File inputFile1, File inputFile2, File tmpFolder, double fps,
       String csvOutput) throws IOException {
-    String ssim = "qpsnr -a avg_ssim -o fpa=" + parseFps(fps) + " -r " + inputFile1.toString() + " "
-        + inputFile2.toString() + " > " + csvOutput.toString();
-    String psnr = "qpsnr -a avg_psnr -o fpa=" + parseFps(fps) + " -r " + inputFile1.toString() + " "
-        + inputFile2.toString() + " >> " + csvOutput;
+    String ssim = "qpsnr -a avg_ssim -o fpa=" + parseFps(fps) + " -r "
+        + inputFile1.getAbsolutePath() + " " + inputFile2.getAbsolutePath() + " > " + csvOutput;
     log.debug("Running command to get SSIM: {}", ssim);
     Shell.runAndWait("sh", "-c", ssim);
-    log.debug("Running command to get PSNR: {}", psnr);
-    Shell.runAndWait("sh", "-c", psnr);
   }
 
   public String parseFps(double fps) {
@@ -641,8 +637,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     DecimalFormat df = new DecimalFormat("0.00");
     File cutVideoFile = new File(
         tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
-    String[] command = { "ffmpeg", "-i", inputFile.toString(), "-ss", df.format(cutTime),
-        cutVideoFile.toString() };
+    String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(), "-ss", df.format(cutTime),
+        cutVideoFile.getAbsolutePath() };
     log.debug("Running command to cut video: {}", Arrays.toString(command));
     Shell.runAndWait(command);
     return cutVideoFile;
@@ -693,11 +689,18 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return i;
   }
 
-  public void getFrames(File inputFile, File tmpFolder) {
-    String[] command = { "ffmpeg", "-i", inputFile.toString(),
-        tmpFolder.toString() + File.separator + inputFile.getName() + "-%03d" + PNG };
-    log.debug("Running command to get frames: {}", Arrays.toString(command));
-    Shell.runAndWait(command);
+  public void getFrames(final File inputFile, final File tmpFolder) {
+    Thread t = new Thread() {
+      public void run() {
+        String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(),
+            tmpFolder.toString() + File.separator + inputFile.getName() + "-%03d" + PNG };
+        log.debug("Running command to get frames: {}", Arrays.toString(command));
+        Shell.runAndWait(command);
+      }
+    };
+    t.start();
+    waitMilliSeconds(500);
+    t.interrupt();
   }
 
   public void getQuality(File inputFile1, File inputFile2, String csvOutput) throws IOException {
