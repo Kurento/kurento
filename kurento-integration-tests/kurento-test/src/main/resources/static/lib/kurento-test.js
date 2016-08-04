@@ -318,6 +318,7 @@ KurentoTest.prototype.updateStats = function(peerConnection, track, type) {
 	peerConnection.getStats(function(stats) {
 		var result = stats.result()[2];
 		if (result) {
+			kurentoTest.rtcStats[type + "timestamp"] = result.timestamp.getTime();
 			result.names().forEach(function(name) {
 				kurentoTest.rtcStats[type + name] = result.stat(name);
 			});
