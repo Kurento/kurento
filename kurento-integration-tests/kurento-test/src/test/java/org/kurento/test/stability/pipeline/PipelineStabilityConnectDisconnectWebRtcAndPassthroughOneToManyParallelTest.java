@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.ElementConnectedEvent;
 import org.kurento.client.ElementDisconnectedEvent;
@@ -96,6 +95,7 @@ import org.kurento.test.config.TestScenario;
  * @since 6.5.1
  */
 
+@Ignore
 public class PipelineStabilityConnectDisconnectWebRtcAndPassthroughOneToManyParallelTest extends
 BasePipeline {
   private int INCREASE_EXPONENTIAL = 2;
@@ -109,7 +109,7 @@ BasePipeline {
     return TestScenario.localChromesAndFirefoxs(M);
   }
 
-  @Test
+  @Ignore
   public void testConnectDisconnectWebRtcAndPassthroughOneToManyParallelOnePipelineDestroyPipeline()
       throws Exception {
     // Stabilize the memory on the KMS
