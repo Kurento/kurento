@@ -37,11 +37,13 @@ import org.kurento.client.PassThrough;
  * Stability test for Pipelines and PassThrough. Connect/Disconnect elements like one to many where
  * there is a one PassThrough like root <br/>
  *
- * _______________________________ PassThrough <br/>
- * ______________________________ / <br/>
- * Pipeline -> PassThroughRoot --> .... <br/>
- * ______________________________ \ <br/>
- * _______________________________ PassThrough <br/>
+ * <pre>
+ *                                  PassThrough
+ *                                /
+ * Pipeline -> PassThroughRoot --> ....
+ *                                \
+ *                                  PassThrough
+ * </pre>
  *
  * Test logic: <br/>
  * <ul>

@@ -46,11 +46,13 @@ import org.kurento.test.config.TestScenario;
  * Stability test for Pipeline, WebRtcEndpoints and PassThroughs. Connect/Disconnect elements like
  * one to many with a WebRTC like root and it is sending media<br/>
  *
- * _______________________________ PassThrough <br/>
- * ______________________________ / <br/>
- * Pipeline -> WebRtcEndpointRoot --> .... <br/>
- * ______________________________ \ <br/>
- * _______________________________ PassThrough <br/>
+ * <pre>
+ *                                 PassThrough
+ *                               /
+ * Pipeline -> WebRtcEndpointRoot --> ....
+ *                               \
+ *                                 PassThrough
+ * </pre>
  *
  * Browser(s): <br>
  * · Chrome <br>

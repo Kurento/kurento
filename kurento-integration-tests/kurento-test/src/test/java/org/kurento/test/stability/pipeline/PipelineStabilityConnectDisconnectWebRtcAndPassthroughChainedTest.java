@@ -46,7 +46,9 @@ import org.kurento.test.config.TestScenario;
  * Stability test for Pipelines, WebRTCEndpoints and PassThroughs. Connect/Disconnect several
  * Passthroughs to one WebRTC like a chain where the WebRTC is the first element.<br/>
  *
- * Pipeline -> WebRTCEndpoint -> PassThrough -> PassThrough -> ... -> PassThrough <br/>
+ * <pre>
+ * Pipeline -> WebRTCEndpoint -> PassThrough -> PassThrough -> ... -> PassThrough
+ * </pre>
  *
  * Browser(s): <br>
  * · Chrome <br>

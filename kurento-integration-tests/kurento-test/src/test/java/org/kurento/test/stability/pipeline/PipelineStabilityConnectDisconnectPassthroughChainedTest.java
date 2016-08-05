@@ -37,7 +37,9 @@ import org.kurento.client.PassThrough;
  * Stability test for Pipelines and PassThrough. Connect/Disconnect several Passthroughs like a
  * chain <br/>
  *
- * Pipeline -> PassThrough -> PassThrough -> ... -> PassThrough <br/>
+ * <pre>
+ * Pipeline -> PassThrough -> PassThrough -> ... -> PassThrough
+ * </pre>
  *
  * Test logic: <br/>
  * <ul>

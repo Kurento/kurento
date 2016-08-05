@@ -47,11 +47,13 @@ import org.kurento.test.config.TestScenario;
  * one to many with a WebRTC like root and it is sending media, but the initialization of the WebRTC
  * is executed while the PassThroughs are connected to WebRTC<br/>
  *
- * _______________________________ PassThrough <br/>
- * ______________________________ / <br/>
- * Pipeline -> WebRTCEndpointRoot --> .... <br/>
- * ______________________________ \ <br/>
- * _______________________________ PassThrough <br/>
+ * <pre>
+ *                                  PassThrough
+ *                                /
+ * Pipeline -> WebRTCEndpointRoot --> ....
+ *                                \
+ *                                  PassThrough
+ * </pre>
  *
  * Browser(s): <br>
  * · Chrome <br>
