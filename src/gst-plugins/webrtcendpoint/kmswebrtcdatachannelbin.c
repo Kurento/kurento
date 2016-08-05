@@ -177,8 +177,6 @@ static const gchar *const str_state[] = {
 static const gchar *
 state2str (KmsWebRtcDataChannelState state)
 {
-  g_return_val_if_fail (state >= 0 && state < G_N_ELEMENTS (str_state), NULL);
-
   return str_state[state];
 }
 
@@ -470,7 +468,8 @@ kms_webrtc_data_channel_bin_request_open (KmsWebRtcDataChannelBin * self)
       break;
     default:
       KMS_WEBRTC_DATA_CHANNEL_BIN_UNLOCK (self);
-      GST_ERROR_OBJECT (self, "Unsupported channel type (%hhx)", channel_type);
+      GST_ERROR_OBJECT (self, "Unsupported channel type (%hhx)",
+          (u_char) channel_type);
       return;
   }
 
@@ -1169,7 +1168,8 @@ kms_webrtc_data_channel_bin_push_buffer (KmsWebRtcDataChannelBin * self,
   } else if (self->priv->max_packet_life_time != -1) {
     pr = GST_SCTP_SEND_META_PARTIAL_RELIABILITY_TTL;
     pr_param = self->priv->max_packet_life_time;
-  } else if (self->priv->max_packet_retransmits != -1) {
+  } else {                      /* if (self->priv->max_packet_retransmits != -1) */
+
     pr = GST_SCTP_SEND_META_PARTIAL_RELIABILITY_RTX;
     pr_param = self->priv->max_packet_retransmits;
   }

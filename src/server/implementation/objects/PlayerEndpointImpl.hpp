@@ -43,27 +43,28 @@ public:
 
   virtual ~PlayerEndpointImpl ();
 
-  void play ();
+  void play () override;
 
-  virtual std::shared_ptr<VideoInfo> getVideoInfo ();
+  virtual std::shared_ptr<VideoInfo> getVideoInfo () override;
 
-  virtual int64_t getPosition();
-  virtual void setPosition (int64_t position);
+  virtual int64_t getPosition() override;
+  virtual void setPosition (int64_t position) override;
 
   /* Next methods are automatically implemented by code generator */
+  using UriEndpointImpl::connect;
   virtual bool connect (const std::string &eventType,
-                        std::shared_ptr<EventHandler> handler);
+                        std::shared_ptr<EventHandler> handler) override;
 
   sigc::signal<void, EndOfStream> signalEndOfStream;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
-                       Json::Value &response);
+                       Json::Value &response) override;
 
-  virtual void Serialize (JsonSerializer &serializer);
+  virtual void Serialize (JsonSerializer &serializer) override;
 
 protected:
-  virtual void postConstructor ();
+  virtual void postConstructor () override;
 
 private:
 

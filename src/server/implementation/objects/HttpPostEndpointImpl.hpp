@@ -44,19 +44,20 @@ public:
   virtual ~HttpPostEndpointImpl ();
 
   /* Next methods are automatically implemented by code generator */
+  using HttpEndpointImpl::connect;
   virtual bool connect (const std::string &eventType,
-                        std::shared_ptr<EventHandler> handler);
+                        std::shared_ptr<EventHandler> handler) override;
 
   sigc::signal<void, EndOfStream> signalEndOfStream;
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
-                       Json::Value &response);
+                       Json::Value &response) override;
 
-  virtual void Serialize (JsonSerializer &serializer);
+  virtual void Serialize (JsonSerializer &serializer) override;
 
 protected:
-  virtual void postConstructor ();
+  virtual void postConstructor () override;
 
 private:
   void eosLambda ();

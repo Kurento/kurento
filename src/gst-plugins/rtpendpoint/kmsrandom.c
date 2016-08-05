@@ -37,7 +37,8 @@ sys_call_gen_random_key (guint size)
 {
   guint8 *buff;
   gchar *key;
-  guint ret, tries, l;
+  long int ret;
+  guint tries, l;
 
   buff = g_malloc0 (size);
   tries = l = 0;

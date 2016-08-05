@@ -310,7 +310,7 @@ kms_webrtc_session_remote_sdp_add_ice_candidate (KmsWebrtcSession *
   mconf = g_slist_nth_data (medias, index);
   if (mconf == NULL) {
     GST_WARNING_OBJECT (self,
-        "Media not found in remote SDP for index %" G_GUINT16_FORMAT, index);
+        "Media not found in remote SDP for index %u", index);
   } else {
     GstSDPMedia *media = kms_sdp_media_config_get_sdp_media (mconf);
 
@@ -340,11 +340,10 @@ kms_webrtc_session_set_remote_ice_candidate (KmsWebrtcSession * self,
   mconf = g_slist_nth_data (medias, index);
   if (mconf == NULL) {
     GST_WARNING_OBJECT (self,
-        "Media not found in local SDP for index %" G_GUINT16_FORMAT, index);
+        "Media not found in local SDP for index %u", index);
     return FALSE;
   } else if (kms_sdp_media_config_is_inactive (mconf)) {
-    GST_DEBUG_OBJECT (self, "Media inactive for index %" G_GUINT16_FORMAT,
-        index);
+    GST_DEBUG_OBJECT (self, "Media inactive for index %u", index);
     return TRUE;
   } else {
     gchar *stream_id;
@@ -1106,7 +1105,7 @@ configure_data_session (KmsWebrtcSession * self, GstSDPMedia * media)
   guint i, len;
 
   len = gst_sdp_media_formats_len (media);
-  if (len < 0) {
+  if (len <= 0) {
     GST_WARNING_OBJECT (self, "No SCTP format");
     return FALSE;
   }

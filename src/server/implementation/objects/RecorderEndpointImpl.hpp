@@ -44,12 +44,13 @@ public:
 
   virtual ~RecorderEndpointImpl ();
 
-  void record ();
-  virtual void stopAndWait ();
+  void record () override;
+  virtual void stopAndWait () override;
 
   /* Next methods are automatically implemented by code generator */
+  using UriEndpointImpl::connect;
   virtual bool connect (const std::string &eventType,
-                        std::shared_ptr<EventHandler> handler);
+                        std::shared_ptr<EventHandler> handler) override;
 
   sigc::signal<void, Recording> signalRecording;
   sigc::signal<void, Paused> signalPaused;
@@ -57,17 +58,18 @@ public:
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
-                       Json::Value &response);
+                       Json::Value &response) override;
 
-  virtual void Serialize (JsonSerializer &serializer);
+  virtual void Serialize (JsonSerializer &serializer) override;
 
 protected:
   virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
-                                &report, const GstStructure *stats, double timestamp);
+                                &report, const GstStructure *stats,
+                                double timestamp) override;
 
-  virtual void postConstructor ();
+  virtual void postConstructor () override;
 
-  virtual void release ();
+  virtual void release () override;
 private:
   static bool support_ksr;
   gulong handlerOnStateChanged = 0;

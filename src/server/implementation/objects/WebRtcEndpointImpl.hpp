@@ -46,35 +46,37 @@ public:
 
   virtual ~WebRtcEndpointImpl ();
 
-  std::string getStunServerAddress ();
-  void setStunServerAddress (const std::string &stunServerAddress);
-  int getStunServerPort ();
-  void setStunServerPort (int stunServerPort);
+  std::string getStunServerAddress () override;
+  void setStunServerAddress (const std::string &stunServerAddress) override;
+  int getStunServerPort () override;
+  void setStunServerPort (int stunServerPort) override;
 
-  std::string getTurnUrl ();
-  void setTurnUrl (const std::string &turnUrl);
+  std::string getTurnUrl () override;
+  void setTurnUrl (const std::string &turnUrl) override;
 
-  std::vector<std::shared_ptr<IceCandidatePair>> getICECandidatePairs ();
+  std::vector<std::shared_ptr<IceCandidatePair>> getICECandidatePairs () override;
 
-  std::vector<std::shared_ptr<IceConnection>> getIceConnectionState ();
+  std::vector<std::shared_ptr<IceConnection>> getIceConnectionState () override;
 
-  void gatherCandidates ();
-  void addIceCandidate (std::shared_ptr<IceCandidate> candidate);
+  void gatherCandidates () override;
+  void addIceCandidate (std::shared_ptr<IceCandidate> candidate) override;
 
-  void createDataChannel ();
-  void createDataChannel (const std::string &label);
-  void createDataChannel (const std::string &label, bool ordered);
+  void createDataChannel () override;
+  void createDataChannel (const std::string &label) override;
+  void createDataChannel (const std::string &label, bool ordered) override;
   void createDataChannel (const std::string &label, bool ordered,
-                          int maxPacketLifeTime);
+                          int maxPacketLifeTime) override;
   void createDataChannel (const std::string &label, bool ordered,
-                          int maxPacketLifeTime, int maxRetransmits);
+                          int maxPacketLifeTime, int maxRetransmits) override;
   void createDataChannel (const std::string &label, bool ordered,
-                          int maxPacketLifeTime, int maxRetransmits, const std::string &protocol);
-  void closeDataChannel (int channelId);
+                          int maxPacketLifeTime, int maxRetransmits,
+                          const std::string &protocol) override;
+  void closeDataChannel (int channelId) override;
 
   /* Next methods are automatically implemented by code generator */
+  using BaseRtpEndpointImpl::connect;
   virtual bool connect (const std::string &eventType,
-                        std::shared_ptr<EventHandler> handler);
+                        std::shared_ptr<EventHandler> handler) override;
 
   sigc::signal<void, OnIceCandidate> signalOnIceCandidate;
   sigc::signal<void, IceCandidateFound> signalIceCandidateFound;
@@ -91,14 +93,15 @@ public:
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
-                       Json::Value &response);
+                       Json::Value &response) override;
 
-  virtual void Serialize (JsonSerializer &serializer);
+  virtual void Serialize (JsonSerializer &serializer) override;
 
 protected:
-  virtual void postConstructor ();
+  virtual void postConstructor () override;
   virtual void fillStatsReport (std::map <std::string, std::shared_ptr<Stats>>
-                                &report, const GstStructure *stats, double timestamp);
+                                &report, const GstStructure *stats,
+                                double timestamp) override;
 
 private:
 

@@ -575,7 +575,7 @@ void WebRtcEndpointImpl::newSelectedPairFull (gchar *sessId,
                   componentId,
                   kms_ice_candidate_get_candidate (localCandidate),
                   kms_ice_candidate_get_candidate (remoteCandidate) );
-  key = streamId + '_' + componentId;
+  key = std::string (streamId) + "_" + std::to_string (componentId);
 
   it = candidatePairs.find (key);
 
