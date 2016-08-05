@@ -209,6 +209,8 @@ public class BaseRecorder extends FunctionalTest {
       Color[] expectedColors, long playTime, String expectedVideoCodec, String expectedAudioCodec)
           throws InterruptedException {
 
+    waitForFileExists(recordingFile);
+
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, recordingFile).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
