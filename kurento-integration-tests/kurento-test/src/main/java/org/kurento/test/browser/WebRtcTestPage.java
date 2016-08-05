@@ -33,6 +33,7 @@ import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.test.base.KurentoTest;
 import org.kurento.test.latency.VideoTagType;
+import org.kurento.test.monitor.PeerConnectionStats;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriverException;
 
@@ -167,6 +168,16 @@ public class WebRtcTestPage extends WebPage {
 
   public void initAudioDetection() {
     browser.executeScript("initAudioDetection()");
+  }
+
+  public int getPeerConnAudioPacketsRecv(PeerConnectionStats stats) {
+    String val = (String) stats.getStats().get("audio_peerconnection_inbound_packetsReceived");
+    return Integer.parseInt(val);
+  }
+
+  public long getPeerConnAudioInboundTimestamp(PeerConnectionStats stats) {
+    Long val = (Long) stats.getStats().get("audio_peerconnection_inbound_timestamp");
+    return val;
   }
 
   /*

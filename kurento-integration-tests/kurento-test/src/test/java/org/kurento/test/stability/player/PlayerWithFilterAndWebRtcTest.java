@@ -19,6 +19,7 @@ package org.kurento.test.stability.player;
 
 import java.awt.Color;
 import java.util.Collection;
+import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +38,7 @@ import org.kurento.test.base.StabilityTest;
 import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.utils.CheckAudioTimerTask;
 
 /**
  * Test player stability. </p> Media Pipeline(s):
@@ -50,8 +52,8 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  * Test logic:
  * <ol>
- * <li>(KMS) During the playback of a stream from a PlayerEndpoint to a FaceOverlayFilter and
- * this to a WebRtcEndpoint, the FaceOverlayFilter is destroyed and created many times. After creating
+ * <li>(KMS) During the playback of a stream from a PlayerEndpoint to a FaceOverlayFilter and this
+ * to a WebRtcEndpoint, the FaceOverlayFilter is destroyed and created many times. After creating
  * FaceOverlayFilter, PlayerEndpoint is connected to FaceOverlayFilter and this is connected to
  * WebRtcEndpoint</li>
  * <li>(Browser) WebRtcPeer in rcv-only receives media</li>
@@ -92,6 +94,9 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
 
   private void doTest(String mediaUrl, Color expectedColor) throws Exception {
     // Test data
+    Timer gettingStats = new Timer();
+    final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
+
     final int playTimeSeconds = 3;
     final int numRepeat = 200;
     final CountDownLatch flowingLatch = new CountDownLatch(1);
@@ -137,8 +142,9 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
 
-    getPage().activateAudioDetection();
+    getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
 
+    gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
     for (int i = 0; i < numRepeat; i++) {
       playerEp.setPosition(0);
       Assert.assertTrue("The color of the video should be " + expectedColor, getPage()
@@ -146,10 +152,8 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
 
       Thread.sleep(TimeUnit.SECONDS.toMillis(playTimeSeconds));
 
-      getPage().stopAudioDetection();
-      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
-          .checkAudioDetection());
-      getPage().initAudioDetection();
+      Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
+          errorContinuityAudiolatch.getCount() == 1);
 
       filter.release();
       filter = new FaceOverlayFilter.Builder(mp).build();
@@ -160,6 +164,8 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
         Thread.sleep(1000);
       }
     }
+
+    gettingStats.cancel();
 
     // Release Media Pipeline
     mp.release();

@@ -20,6 +20,7 @@ package org.kurento.test.functional.recorder;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +41,7 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.mediainfo.AssertMedia;
+import org.kurento.test.utils.CheckAudioTimerTask;
 import org.kurento.test.utils.Shell;
 
 /**
@@ -76,6 +78,9 @@ public class BaseRecorder extends FunctionalTest {
       String recordingFile, Color expectedColor, int xColor, int yColor, int playTime)
           throws InterruptedException {
 
+    Timer gettingStats = new Timer();
+    final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
+
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
     playerEp.play();
@@ -98,7 +103,11 @@ public class BaseRecorder extends FunctionalTest {
         .waitForEvent("playing"));
 
     if (recorderEp == null) {
-      getPage().activateAudioDetection();
+      // Checking continuity of the audio
+      getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
+
+      gettingStats
+      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
     }
 
     Assert.assertTrue("Color at coordinates " + xColor + "," + yColor + " must be " + expectedColor
@@ -119,16 +128,18 @@ public class BaseRecorder extends FunctionalTest {
           TimeUnit.SECONDS.toMillis(getPage().getThresholdTime()));
 
     } else {
+      gettingStats.cancel();
+      getPage().stopPeerConnectionInboundStats("webRtcPeer.peerConnection");
       double currentTime = getPage().getCurrentTime();
       Assert.assertTrue("Error in play time in the recorded video (expected: " + playTime
           + " sec, real: " + currentTime + " sec) " + inRecording,
           getPage().compare(playTime, currentTime));
 
       if (recorderEp == null) {
-        getPage().stopAudioDetection();
-        Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
-            .checkAudioDetection());
+        Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
+            errorContinuityAudiolatch.getCount() == 1);
       }
+
     }
   }
 
@@ -209,6 +220,10 @@ public class BaseRecorder extends FunctionalTest {
       Color[] expectedColors, long playTime, String expectedVideoCodec, String expectedAudioCodec)
           throws InterruptedException {
 
+    // Checking continuity of the audio
+    Timer gettingStats = new Timer();
+    final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
+
     waitForFileExists(recordingFile);
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -235,7 +250,10 @@ public class BaseRecorder extends FunctionalTest {
     Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
         + messageAppend, checkPage.waitForEvent("playing"));
 
-    checkPage.activateAudioDetection();
+
+    checkPage.activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
+
+    gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, checkPage), 100, 200);
 
     for (Color color : expectedColors) {
       Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
@@ -244,15 +262,15 @@ public class BaseRecorder extends FunctionalTest {
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(checkPage.getTimeout(), TimeUnit.SECONDS));
 
+    gettingStats.cancel();
+
     double currentTime = checkPage.getCurrentTime();
     Assert.assertTrue("Error in play time in the recorded video (expected: " + playTime
         + " sec, real: " + currentTime + " sec) " + messageAppend,
         checkPage.compare(playTime, currentTime));
 
-    checkPage.stopAudioDetection();
-
-    Assert.assertTrue("Check audio. There were more than 2 seconds of silence",
-        checkPage.checkAudioDetection());
+    Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
+        errorContinuityAudiolatch.getCount() == 1);
 
     AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
     AssertMedia.assertDuration(recordingFile, TimeUnit.SECONDS.toMillis(playTime),

@@ -19,6 +19,7 @@ package org.kurento.test.functional.player;
 
 import java.awt.Color;
 import java.util.Map;
+import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +36,7 @@ import org.kurento.test.browser.WebRtcChannel;
 import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.Protocol;
 import org.kurento.test.config.VideoFormat;
+import org.kurento.test.utils.CheckAudioTimerTask;
 
 /**
  * Base for player tests.
@@ -46,8 +48,7 @@ public class SimplePlayer extends PlayerTest {
 
   public void testPlayerWithRtsp(WebRtcChannel webRtcChannel) throws Exception {
     getPage().getBrowser().setTimeout(200);
-    testPlayer("rtsp://mm2.pcslab.com/mm/7m2000.mp4", webRtcChannel, 0, 50,
-        50, Color.BLACK);
+    testPlayer("rtsp://mm2.pcslab.com/mm/7m2000.mp4", webRtcChannel, 0, 50, 50, Color.BLACK);
   }
 
   public void testPlayerWithSmallFileVideoOnly(Protocol protocol, VideoFormat videoFormat,
@@ -82,6 +83,10 @@ public class SimplePlayer extends PlayerTest {
 
   public void testPlayer(String mediaUrl, WebRtcChannel webRtcChannel, int playtime, int x, int y,
       Color expectedColor) throws InterruptedException {
+
+    Timer gettingStats = new Timer();
+    final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
+
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
@@ -120,7 +125,11 @@ public class SimplePlayer extends PlayerTest {
         + webRtcChannel, getPage().waitForEvent("playing"));
 
     if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
-      getPage().activateAudioDetection();
+      // Checking continuity of the audio
+      getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
+
+      gettingStats
+      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
     }
 
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
@@ -129,6 +138,8 @@ public class SimplePlayer extends PlayerTest {
     }
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+    gettingStats.cancel();
+
     double currentTime = getPage().getCurrentTime();
     if (playtime > 0) {
       Assert.assertTrue("Error in play time (expected: " + playtime + " sec, real: " + currentTime
@@ -136,10 +147,8 @@ public class SimplePlayer extends PlayerTest {
     }
 
     if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
-      getPage().stopAudioDetection();
-      getPage().checkAudioDetection();
-      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
-          .checkAudioDetection());
+      Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
+          errorContinuityAudiolatch.getCount() == 1);
     }
 
     // Release Media Pipeline
@@ -149,6 +158,10 @@ public class SimplePlayer extends PlayerTest {
 
   public void testPlayerPause(String mediaUrl, WebRtcChannel webRtcChannel, int pauseTimeSeconds,
       Color[] expectedColors) throws Exception {
+
+    Timer gettingStats = new Timer();
+    final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
+
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
@@ -202,7 +215,11 @@ public class SimplePlayer extends PlayerTest {
     playerEp.play();
 
     if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
-      getPage().activateAudioDetection();
+      // Checking continuity of the audio
+      getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
+
+      gettingStats
+      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
     }
 
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
@@ -213,15 +230,15 @@ public class SimplePlayer extends PlayerTest {
     }
 
     if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
-      getPage().stopAudioDetection();
-      getPage().checkAudioDetection();
-      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
-          .checkAudioDetection());
+      Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
+          errorContinuityAudiolatch.getCount() == 1);
     }
 
     // Assertions
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
+    gettingStats.cancel();
 
     // Release Media Pipeline
     playerEp.release();
@@ -230,6 +247,10 @@ public class SimplePlayer extends PlayerTest {
 
   public void testPlayerSeek(String mediaUrl, WebRtcChannel webRtcChannel, int pauseTimeSeconds,
       Map<Integer, Color> expectedPositionAndColor) throws Exception {
+
+    Timer gettingStats = new Timer();
+    final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
+
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
@@ -265,7 +286,11 @@ public class SimplePlayer extends PlayerTest {
         + webRtcChannel, getPage().waitForEvent("playing"));
 
     if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
-      getPage().activateAudioDetection();
+      // Checking continuity of the audio
+      getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
+
+      gettingStats
+      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
     }
 
     Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
@@ -288,14 +313,14 @@ public class SimplePlayer extends PlayerTest {
     }
 
     if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
-      getPage().stopAudioDetection();
-
-      Assert.assertTrue("Check audio. There were more than 2 seconds of silence", getPage()
-          .checkAudioDetection());
+      Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
+          errorContinuityAudiolatch.getCount() == 1);
     }
 
     Assert.assertTrue("Not received EOS event in player: " + mediaUrl + " " + webRtcChannel,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
+    gettingStats.cancel();
 
     // Release Media Pipeline
     playerEp.release();
