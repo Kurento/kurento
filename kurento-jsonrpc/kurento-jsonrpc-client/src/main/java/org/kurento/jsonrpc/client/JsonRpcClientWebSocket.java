@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
-  private static Logger log = LoggerFactory.getLogger(AbstractJsonRpcClientWebSocket.class);
+  private static Logger log = LoggerFactory.getLogger(JsonRpcClientWebSocket.class);
 
   @WebSocket
   public class WebSocketClientSocket {
@@ -124,9 +124,9 @@ public class JsonRpcClientWebSocket extends AbstractJsonRpcClientWebSocket {
 
       try {
 
-        jettyWsSession = jettyClient
-            .connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
-            .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
+        jettyWsSession =
+            jettyClient.connect(new WebSocketClientSocket(), uri, new ClientUpgradeRequest())
+                .get(this.connectionTimeout, TimeUnit.MILLISECONDS);
 
         jettyWsSession.setIdleTimeout(this.idleTimeout);
 

@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -40,6 +42,7 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
@@ -71,19 +74,21 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+      log.debug("{} channel active", label);
       handshaker.handshake(ctx.channel());
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-      log.debug("Netty wesocket channel inactive");
+      log.debug("{} channel inactive", label);
       handleReconnectDisconnection(0, "Unknown reason");
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
       if (evt instanceof IdleStateEvent) {
-        ctx.close();
+        log.debug("{} Idle state event received", label);
+        handleReconnectDisconnection(0, "Idle event received");
       }
     }
 
@@ -92,7 +97,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       Channel ch = ctx.channel();
       if (!handshaker.isHandshakeComplete()) {
         handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-        log.debug("WebSocket Client connected!");
+        log.debug("{} WebSocket Client connected!", label);
         handshakeFuture.setSuccess();
         return;
       }
@@ -119,27 +124,37 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           receivedTextMessage(partialText.toString());
           partialText.setLength(0);
         }
+      } else if (frame instanceof CloseWebSocketFrame) {
+        CloseWebSocketFrame closeFrame = (CloseWebSocketFrame) frame;
+        log.info("{} Received close frame from server. Will close client! Reason: {}", label,
+            closeFrame.reasonText());
       } else {
-        log.warn("Received frame of type {}. Will be ignored", frame.getClass().getSimpleName());
+        log.warn("{} Received frame of type {}. Will be ignored", label,
+            frame.getClass().getSimpleName());
       }
 
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-      log.warn("Exception caught in Netty websocket handler", cause);
+      log.warn("{} Exception caught in Netty websocket handler", label, cause);
       if (!handshakeFuture.isDone()) {
         handshakeFuture.setFailure(cause);
       }
-      ctx.close();
+      try {
+        close();
+      } catch (IOException e) {
+        log.warn("{} Exception closing Netty websocket client", label);
+      }
     }
 
   }
 
   private static final Logger log = LoggerFactory.getLogger(JsonRpcClientNettyWebSocket.class);
 
-  protected volatile Channel channel;
-  protected volatile EventLoopGroup group;
+  private volatile Channel channel;
+  private volatile EventLoopGroup group;
+  private volatile JsonRpcWebSocketClientHandler handler;
 
   public JsonRpcClientNettyWebSocket(String url) {
     this(url, null, new SslContextFactory());
@@ -156,7 +171,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
   public JsonRpcClientNettyWebSocket(String url, JsonRpcWSConnectionListener connectionListener,
       SslContextFactory sslContextFactory) {
     super(url, connectionListener);
-    log.debug("Creating JsonRPC NETTY Websocket client");
+    log.debug("{} Creating JsonRPC NETTY Websocket client", label);
   }
 
   @Override
@@ -189,19 +204,12 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
         sslCtx = ssl ? SslContextBuilder.forClient()
             .trustManager(InsecureTrustManagerFactory.INSTANCE).build() : null;
       } catch (SSLException e) {
-        log.error("Could not create SSL Context", e);
+        log.error("{} Could not create SSL Context", label, e);
         throw new IllegalArgumentException(
             "Could not create SSL context. See logs for more details", e);
       }
 
       group = new NioEventLoopGroup();
-
-      // Connect with V13 (RFC 6455 aka HyBi-17). You can change it to V08 or V00.
-      // If you change it to V00, ping is not supported and remember to change
-      // HttpResponseDecoder to WebSocketHttpResponseDecoder in the pipeline.
-      final JsonRpcWebSocketClientHandler handler =
-          new JsonRpcWebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(uri,
-              WebSocketVersion.V13, null, true, new DefaultHttpHeaders(), maxPacketSize));
 
       final String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
       final String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
@@ -223,6 +231,11 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           .handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
+              log.info("{} Inititating new Netty channel. Will create new handler too!", label);
+              handler = new JsonRpcWebSocketClientHandler(
+                  WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null,
+                      true, new DefaultHttpHeaders(), maxPacketSize));
+
               ChannelPipeline p = ch.pipeline();
               p.addLast("idleStateHandler", new IdleStateHandler(0, 0, idleTimeout / 1000));
               if (sslCtx != null) {
@@ -241,12 +254,12 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
           handler.handshakeFuture().sync();
         } catch (InterruptedException e) {
           // This should never happen
-          log.warn("ERROR connecting WS Netty client, opening channel", e);
+          log.warn("{} ERROR connecting WS Netty client, opening channel", label, e);
         } catch (Exception e) {
           if (e.getCause() instanceof UpgradeException && numRetries < maxRetries) {
             log.warn(
-                "Upgrade exception when trying to connect to {}. Try {} of {}. Retrying in 200ms ",
-                uri, numRetries + 1, maxRetries);
+                "{} Upgrade exception when trying to connect to {}. Try {} of {}. Retrying in 200ms ",
+                label, uri, numRetries + 1, maxRetries);
             Thread.sleep(200);
             numRetries++;
           } else {
@@ -255,6 +268,15 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
         }
 
       }
+
+      ChannelFuture closeFuture = channel.closeFuture();
+
+      closeFuture.addListener(new ChannelFutureListener() {
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+          log.debug("{} Operation complete in channel future listener", label);
+        }
+      });
 
     }
 
@@ -281,6 +303,7 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       log.warn("{} Trying to close a JsonRpcClientNettyWebSocket with group == null", label);
     }
     group = null;
+    handler = null;
   }
 
 }
