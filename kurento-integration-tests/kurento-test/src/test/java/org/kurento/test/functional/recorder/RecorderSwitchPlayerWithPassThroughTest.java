@@ -173,8 +173,8 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
   public void doTestFrameRateAndFrameSizeDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
     String[] mediaUrls =
-      { getPlayerUrl("/video/15sec/rgbHD.mov"), getPlayerUrl("/video/15sec/rgb.mov"),
-        getPlayerUrl("/video/15sec/rgbHD.mov") };
+      { getPlayerUrl("/video/15sec/rgb640x360.mov"), getPlayerUrl("/video/15sec/rgb.mov"),
+        getPlayerUrl("/video/15sec/rgb640x360.mov") };
     Color[] expectedColors = { Color.RED, Color.GREEN, Color.RED };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -184,8 +184,8 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
   public void doTestFrameSizeDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
     String[] mediaUrls =
-      { getPlayerUrl("/video/format/chrome.mp4"), getPlayerUrl("/video/format/small.mp4"),
-        getPlayerUrl("/video/format/chrome.mp4") };
+        { getPlayerUrl("/video/format/chrome640x360.mp4"), getPlayerUrl("/video/format/small.mp4"),
+            getPlayerUrl("/video/format/chrome640x360.mp4") };
     Color[] expectedColors =
       { new Color(150, 50, 50), new Color(80, 40, 40), new Color(150, 50, 50) };
 
