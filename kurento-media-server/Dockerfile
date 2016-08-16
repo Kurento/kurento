@@ -7,7 +7,8 @@ MAINTAINER Patxi Gortázar <patxi.gortazar@gmail.com>
 
 RUN apt-get update && apt-get install -y wget
 
-RUN	echo "deb http://ubuntu.kurento.org trusty kms6" | tee /etc/apt/sources.list.d/kurento.list \
+ENV KURENTO_MEDIA_SERVER_VERSION=6.5.0
+RUN	echo "deb http://ubuntuci.kurento.org/$KURENTO_MEDIA_SERVER_VERSION trusty kms6" | tee /etc/apt/sources.list.d/kurento.list \
 	&& wget -O - http://ubuntu.kurento.org/kurento.gpg.key | apt-key add - \
 	&& apt-get update \
 	&& apt-get -y install kurento-media-server-6.0 \
