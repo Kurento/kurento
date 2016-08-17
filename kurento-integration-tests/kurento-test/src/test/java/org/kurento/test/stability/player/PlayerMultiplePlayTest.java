@@ -40,8 +40,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.functional.player.SimplePlayer;
 
 /**
- * Test of stability for a PlayerEndpoint (play many times different videos). </p> Media
- * Pipeline(s):
+ * Test of stability for a PlayerEndpoint (play many times different videos).
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>

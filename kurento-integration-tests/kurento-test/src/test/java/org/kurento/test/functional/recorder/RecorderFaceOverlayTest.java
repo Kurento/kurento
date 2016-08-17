@@ -35,7 +35,9 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a Recorder, using the stream source from a PlayerEndpoint with FaceOverlayFilter through
- * an WebRtcEndpoint. </p> Media Pipeline(s):
+ * an WebRtcEndpoint.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -106,9 +108,8 @@ public class RecorderFaceOverlayTest extends BaseRecorder {
         -1.2F, 1.6F, 1.6F);
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     playerEp.connect(filter);
     filter.connect(webRtcEp1);
     filter.connect(recorderEp);

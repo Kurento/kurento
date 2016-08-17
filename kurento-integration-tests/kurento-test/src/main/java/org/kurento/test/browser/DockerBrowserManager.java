@@ -116,9 +116,8 @@ public class DockerBrowserManager {
 
         String containerName = docker.getContainerName();
 
-        browserContainerName =
-            containerName + "-" + browserContainerName + "-" + KurentoTest.getTestClassName() + "-"
-                + new Random().nextInt(1000);
+        browserContainerName = containerName + "-" + browserContainerName + "-"
+            + KurentoTest.getTestClassName() + "-" + new Random().nextInt(1000);
         vncrecorderContainerName = containerName + "-" + vncrecorderContainerName;
       }
     }
@@ -422,9 +421,8 @@ public class DockerBrowserManager {
 
       String containerName = docker.getContainerName();
 
-      hubContainerName =
-          containerName + "-" + hubContainerName + "-" + KurentoTest.getTestClassName() + "-"
-              + new Random().nextInt(5000);
+      hubContainerName = containerName + "-" + hubContainerName + "-"
+          + KurentoTest.getTestClassName() + "-" + new Random().nextInt(5000);
     }
 
     log.debug("Hub container name: {}", hubContainerName);

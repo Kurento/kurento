@@ -1,10 +1,10 @@
 {
-	"executions" : [
+	"executions": [
 		{
-			"browser" : {
-				"scope" : "local",
-				"browser" : "chrome",
-				"path" : "/webrtc.html"
+			"browser": {
+				"scope": "local",
+				"browser": "chrome",
+				"path": "/webrtc.html"
 			}
 		}
 	]

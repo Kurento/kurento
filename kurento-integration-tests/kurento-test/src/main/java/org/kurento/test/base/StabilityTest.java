@@ -63,7 +63,7 @@ public class StabilityTest extends RepositoryMongoTest {
 
   public void testPlayerMultipleSeek(String mediaUrl, WebRtcChannel webRtcChannel,
       int pauseTimeSeconds, int numSeeks, Map<Integer, Color> expectedPositionAndColor)
-          throws Exception {
+      throws Exception {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp, mediaUrl).build();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
@@ -95,11 +95,13 @@ public class StabilityTest extends RepositoryMongoTest {
     getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEp.play();
 
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
+        getPage().waitForEvent("playing"));
 
-    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
-        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+    Assert.assertTrue(
+        "Not received FLOWING IN event in webRtcEp: " + mediaUrl + " " + webRtcChannel,
+        flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // TODO: Check with playerEP.getVideoInfo().getIsSeekable() if the video is seekable. If not,
     // assert with exception from KMS
@@ -199,8 +201,8 @@ public class StabilityTest extends RepositoryMongoTest {
 
         // Check timeout
         if (System.currentTimeMillis() > timeoutMs) {
-          throw new KurentoException("Timeout of " + WAIT_POLL_TIME + " seconds waiting for file: "
-              + recordingFile);
+          throw new KurentoException(
+              "Timeout of " + WAIT_POLL_TIME + " seconds waiting for file: " + recordingFile);
         }
 
         try {

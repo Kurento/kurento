@@ -39,7 +39,9 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a Recorder switching sources from WebRtc Endpoint </p> Media Pipeline(s):
+ * Test of a Recorder switching sources from WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -108,16 +110,15 @@ public class RecorderSwitchPlayerWebRtcTest extends BaseRecorder {
     playerRed.play();
 
     // red
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(0)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(0).waitForEvent("playing"));
 
     PlayerEndpoint playerGreen =
         new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/10sec/green.webm")).build();
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     playerGreen.play();
     recorderEp.record();

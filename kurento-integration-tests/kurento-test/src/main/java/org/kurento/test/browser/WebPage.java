@@ -368,8 +368,8 @@ public class WebPage {
     boolean out;
     final long endTimeMillis = System.currentTimeMillis() + browser.getTimeout() * 1000;
     while (true) {
-      String messageReceived = (String) browser
-          .executeScript("return kurentoTest.getDataChannelMessage()");
+      String messageReceived =
+          (String) browser.executeScript("return kurentoTest.getDataChannelMessage()");
       out = (message.equals(messageReceived));
       if (out || System.currentTimeMillis() > endTimeMillis) {
         break;
@@ -423,8 +423,8 @@ public class WebPage {
    */
   @SuppressWarnings("unchecked")
   public Map<String, Map<String, String>> getOcrMap() {
-    Map<String, Map<String, String>> ocrMap = (Map<String, Map<String, String>>) browser
-        .executeScript("return kurentoTest.ocrMap;");
+    Map<String, Map<String, String>> ocrMap =
+        (Map<String, Map<String, String>>) browser.executeScript("return kurentoTest.ocrMap;");
 
     // Transform data structure to serializable (because
     // com.google.common.collect.Maps$TransformedEntriesMap is not)
@@ -562,8 +562,8 @@ public class WebPage {
               .until(new ExpectedCondition<Boolean>() {
                 @Override
                 public Boolean apply(WebDriver d) {
-                  Object videoEventValue = ((JavascriptExecutor) d)
-                      .executeScript("return kurentoTest.videoEventValue;");
+                  Object videoEventValue =
+                      ((JavascriptExecutor) d).executeScript("return kurentoTest.videoEventValue;");
                   return videoEventValue != null
                       && videoEventValue.toString().equalsIgnoreCase(eventType);
                 }

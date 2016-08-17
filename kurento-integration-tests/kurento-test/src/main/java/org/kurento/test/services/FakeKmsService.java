@@ -118,13 +118,13 @@ public class FakeKmsService extends KmsService {
             }
 
             fakeOutputWebRtc
-            .addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
+                .addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
-              @Override
-              public void onEvent(IceCandidateFoundEvent event) {
-                fakeBrowser.addIceCandidate(event.getCandidate());
-              }
-            });
+                  @Override
+                  public void onEvent(IceCandidateFoundEvent event) {
+                    fakeBrowser.addIceCandidate(event.getCandidate());
+                  }
+                });
 
             fakeBrowser.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 

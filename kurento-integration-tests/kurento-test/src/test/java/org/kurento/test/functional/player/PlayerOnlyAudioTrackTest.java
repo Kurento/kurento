@@ -33,7 +33,9 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (MP3, WAV ... all with ONLY AUDIO)
- * connected to a WebRtc Endpoint </p> Media Pipeline(s):
+ * connected to a WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>

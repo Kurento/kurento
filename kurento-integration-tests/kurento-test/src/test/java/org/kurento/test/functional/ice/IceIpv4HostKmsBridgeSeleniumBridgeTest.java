@@ -74,7 +74,8 @@ public class IceIpv4HostKmsBridgeSeleniumBridgeTest extends SimpleIceTest {
   }
 
   @Test
-  public void testIceIpv4HostKmsBridgeSeleniumBridgeSendRcvAudioVideo() throws InterruptedException {
+  public void testIceIpv4HostKmsBridgeSeleniumBridgeSendRcvAudioVideo()
+      throws InterruptedException {
     initTestSendRecv(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }
 
@@ -95,17 +96,20 @@ public class IceIpv4HostKmsBridgeSeleniumBridgeTest extends SimpleIceTest {
   }
 
   @Test
-  public void testIceIpv4HostKmsBridgeSeleniumBridgeSendOnlyAudioOnly() throws InterruptedException {
+  public void testIceIpv4HostKmsBridgeSeleniumBridgeSendOnlyAudioOnly()
+      throws InterruptedException {
     initTestSendOnly(WebRtcChannel.AUDIO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceIpv4HostKmsBridgeSeleniumBridgeSendOnlyVideoOnly() throws InterruptedException {
+  public void testIceIpv4HostKmsBridgeSeleniumBridgeSendOnlyVideoOnly()
+      throws InterruptedException {
     initTestSendOnly(WebRtcChannel.VIDEO_ONLY, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST);
   }
 
   @Test
-  public void testIceIpv4HostKmsBridgeSeleniumBridgeRcvOnlyAudioVideo() throws InterruptedException {
+  public void testIceIpv4HostKmsBridgeSeleniumBridgeRcvOnlyAudioVideo()
+      throws InterruptedException {
     initTestRcvOnly(WebRtcChannel.AUDIO_AND_VIDEO, WebRtcIpvMode.IPV4, WebRtcCandidateType.HOST,
         "/video/15sec/rgb.webm");
   }

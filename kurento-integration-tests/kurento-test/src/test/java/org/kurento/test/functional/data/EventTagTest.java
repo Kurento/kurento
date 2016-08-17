@@ -49,8 +49,8 @@ public class EventTagTest extends FunctionalTest {
     final CountDownLatch eventReceived = new CountDownLatch(TAG_SIZE);
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/10sec/red.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/10sec/red.webm")
+            .build();
 
     player.addTag("test_1", "value_1");
     player.addTag("test_2", "value_2");
@@ -95,8 +95,8 @@ public class EventTagTest extends FunctionalTest {
     final CountDownLatch eventReceived = new CountDownLatch(1);
 
     PlayerEndpoint player =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/10sec/red.webm").build();
+        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/10sec/red.webm")
+            .build();
 
     player.addTag("test_1", "value_1");
     player.addTag("test_2", "value_2");

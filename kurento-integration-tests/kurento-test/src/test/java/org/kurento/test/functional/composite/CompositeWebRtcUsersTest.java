@@ -40,7 +40,9 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Four synthetic videos are played by four WebRtcEndpoint and mixed by a Composite. The resulting
- * video is played in an WebRtcEndpoint </p> Media Pipeline(s):
+ * video is played in an WebRtcEndpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>4xWebRtcEndpoint -> Composite -> WebRtcEndpoint</li>
  * </ul>
@@ -60,7 +62,7 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  * Secondary assertion(s):
  * <ul>
- * Endpoint </li>Playing event should be received in remote video tag</li>
+ * Endpoint</li>Playing event should be received in remote video tag</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -81,9 +83,8 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
   public static Collection<Object[]> data() {
     // Test: 5 local Chrome's
     TestScenario test = new TestScenario();
-    test.addBrowser(BROWSER1,
-        new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).build());
+    test.addBrowser(BROWSER1, new Browser.Builder().browserType(BrowserType.CHROME)
+        .webPageType(WebPageType.WEBRTC).scope(BrowserScope.LOCAL).build());
     test.addBrowser(BROWSER2,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
             .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/red.y4m")
@@ -126,23 +127,23 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
 
     // Test execution
     getPage(BROWSER2).initWebRtc(webRtcEpRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER3)
-        .initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER3).initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO,
+        WebRtcMode.SEND_ONLY);
     getPage(BROWSER4).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
-    getPage(BROWSER5)
-        .initWebRtc(webRtcEpWhite, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER5).initWebRtc(webRtcEpWhite, WebRtcChannel.AUDIO_AND_VIDEO,
+        WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER1).subscribeEvents("playing");
     getPage(BROWSER1).initWebRtc(webRtcEpComposite, WebRtcChannel.AUDIO_AND_VIDEO,
         WebRtcMode.RCV_ONLY);
 
     // Assertions
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(BROWSER1)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER1).waitForEvent("playing"));
     Assert.assertTrue("Left part of the video must be red",
         getPage(BROWSER1).similarColorAt(Color.RED, 0, 200));
-    Assert.assertTrue("Upper right part of the video must be green", getPage(BROWSER1)
-        .similarColorAt(Color.GREEN, 450, 300));
+    Assert.assertTrue("Upper right part of the video must be green",
+        getPage(BROWSER1).similarColorAt(Color.GREEN, 450, 300));
 
     hubPort2.release();
     Thread.sleep(3000);
@@ -170,29 +171,26 @@ public class CompositeWebRtcUsersTest extends FunctionalTest {
     webRtcEpWhite.connect(hubPort4);
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME));
 
-    Assert.assertTrue(
-        "The red color must be in some position",
+    Assert.assertTrue("The red color must be in some position",
         (getPage(BROWSER1).similarColorAt(Color.RED, 0, 0)
             || getPage(BROWSER1).similarColorAt(Color.RED, 450, 0)
-            || getPage(BROWSER1).similarColorAt(Color.RED, 0, 450) || getPage(BROWSER1)
-            .similarColorAt(Color.RED, 450, 450)));
+            || getPage(BROWSER1).similarColorAt(Color.RED, 0, 450)
+            || getPage(BROWSER1).similarColorAt(Color.RED, 450, 450)));
     Assert.assertTrue("The blue color must be in some position",
         (getPage(BROWSER1).similarColorAt(Color.BLUE, 450, 450)
             || getPage(BROWSER1).similarColorAt(Color.BLUE, 0, 450)
-            || getPage(BROWSER1).similarColorAt(Color.BLUE, 450, 0) || getPage(BROWSER1)
-            .similarColorAt(Color.BLUE, 0, 0)));
-    Assert.assertTrue(
-        "The green color must be in some position",
+            || getPage(BROWSER1).similarColorAt(Color.BLUE, 450, 0)
+            || getPage(BROWSER1).similarColorAt(Color.BLUE, 0, 0)));
+    Assert.assertTrue("The green color must be in some position",
         (getPage(BROWSER1).similarColorAt(Color.GREEN, 450, 0)
             || getPage(BROWSER1).similarColorAt(Color.GREEN, 0, 450)
-            || getPage(BROWSER1).similarColorAt(Color.GREEN, 0, 0) || getPage(BROWSER1)
-            .similarColorAt(Color.GREEN, 450, 450)));
-    Assert.assertTrue(
-        "The white color must be in some position",
+            || getPage(BROWSER1).similarColorAt(Color.GREEN, 0, 0)
+            || getPage(BROWSER1).similarColorAt(Color.GREEN, 450, 450)));
+    Assert.assertTrue("The white color must be in some position",
         (getPage(BROWSER1).similarColorAt(Color.WHITE, 0, 450)
             || getPage(BROWSER1).similarColorAt(Color.WHITE, 450, 0)
-            || getPage(BROWSER1).similarColorAt(Color.WHITE, 0, 0) || getPage(BROWSER1)
-            .similarColorAt(Color.WHITE, 450, 450)));
+            || getPage(BROWSER1).similarColorAt(Color.WHITE, 0, 0)
+            || getPage(BROWSER1).similarColorAt(Color.WHITE, 450, 450)));
 
     // Release Media Pipeline
     mp.release();

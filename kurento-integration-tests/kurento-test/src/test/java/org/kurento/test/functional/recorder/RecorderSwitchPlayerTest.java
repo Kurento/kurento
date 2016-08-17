@@ -41,7 +41,9 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a Recorder switching sources from PlayerEndpoint. </p> Media Pipeline(s):
+ * Test of a Recorder switching sources from PlayerEndpoint.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -114,7 +116,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   @Test
   public void testRecorderSwitchFrameRateDifferentPlayerMp4() throws Exception {
-    doTestFrameRateDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+    doTestFrameRateDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
+        EXTENSION_MP4);
   }
 
   @Test
@@ -125,13 +128,14 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   @Test
   public void testRecorderSwitchFrameSizeDifferentPlayerMp4() throws Exception {
-    doTestFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
+    doTestFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
+        EXTENSION_MP4);
   }
 
   @Test
   public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWebm() throws Exception {
-    doTestFrameRateAndFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM,
-        EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
+    doTestFrameRateAndFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
+        EXTENSION_WEBM);
   }
 
   @Test
@@ -142,9 +146,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestSameFormats(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls =
-      { getPlayerUrl("/video/10sec/red.webm"), getPlayerUrl("/video/10sec/green.webm"),
-        getPlayerUrl("/video/10sec/red.webm") };
+    String[] mediaUrls = { getPlayerUrl("/video/10sec/red.webm"),
+        getPlayerUrl("/video/10sec/green.webm"), getPlayerUrl("/video/10sec/red.webm") };
     Color[] expectedColors = { Color.RED, Color.GREEN, Color.RED };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -153,9 +156,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestDifferentFormats(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls =
-      { getPlayerUrl("/video/10sec/ball.mkv"), getPlayerUrl("/video/10sec/white.webm"),
-        getPlayerUrl("/video/10sec/ball.mkv") };
+    String[] mediaUrls = { getPlayerUrl("/video/10sec/ball.mkv"),
+        getPlayerUrl("/video/10sec/white.webm"), getPlayerUrl("/video/10sec/ball.mkv") };
     Color[] expectedColors = { Color.BLACK, Color.WHITE, Color.BLACK };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -164,9 +166,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestFrameRateDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls =
-      { getPlayerUrl("/video/10sec/ball25fps.webm"), getPlayerUrl("/video/10sec/blue.webm"),
-        getPlayerUrl("/video/10sec/ball25fps.webm") };
+    String[] mediaUrls = { getPlayerUrl("/video/10sec/ball25fps.webm"),
+        getPlayerUrl("/video/10sec/blue.webm"), getPlayerUrl("/video/10sec/ball25fps.webm") };
     Color[] expectedColors = { Color.BLACK, Color.BLUE, Color.BLACK };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -175,9 +176,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestFrameRateAndFrameSizeDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls =
-      { getPlayerUrl("/video/15sec/rgb640x360.webm"), getPlayerUrl("/video/15sec/rgb.webm"),
-        getPlayerUrl("/video/15sec/rgb640x360.webm") };
+    String[] mediaUrls = { getPlayerUrl("/video/15sec/rgb640x360.webm"),
+        getPlayerUrl("/video/15sec/rgb.webm"), getPlayerUrl("/video/15sec/rgb640x360.webm") };
     Color[] expectedColors = { Color.RED, Color.GREEN, Color.RED };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
@@ -186,11 +186,10 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestFrameSizeDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls =
-      { getPlayerUrl("/video/format/chrome640x360.mp4"), getPlayerUrl("/video/format/small.mp4"),
-        getPlayerUrl("/video/format/chrome640x360.mp4") };
+    String[] mediaUrls = { getPlayerUrl("/video/format/chrome640x360.mp4"),
+        getPlayerUrl("/video/format/small.mp4"), getPlayerUrl("/video/format/chrome640x360.mp4") };
     Color[] expectedColors =
-      { new Color(150, 50, 50), new Color(80, 40, 40), new Color(150, 50, 50) };
+        { new Color(150, 50, 50), new Color(80, 40, 40), new Color(150, 50, 50) };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
         expectedColors);
@@ -198,7 +197,7 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension, String[] mediaUrls, Color[] expectedColors)
-          throws Exception {
+      throws Exception {
 
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -224,9 +223,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
     final CountDownLatch recorderLatch = new CountDownLatch(1);
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     // Test execution
     getPage().subscribeEvents("playing");
@@ -240,8 +238,8 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
       if (!startRecord) {
 
-        Assert.assertTrue("Not received media (timeout waiting playing event)", getPage()
-            .waitForEvent("playing"));
+        Assert.assertTrue("Not received media (timeout waiting playing event)",
+            getPage().waitForEvent("playing"));
         recorderEp.record();
         startRecord = true;
       }

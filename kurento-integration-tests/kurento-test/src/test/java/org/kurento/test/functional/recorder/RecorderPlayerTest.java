@@ -38,7 +38,8 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a Recorder, using the stream source from a PlayerEndpoint through an WebRtc Endpoint </p>
+ * Test of a Recorder, using the stream source from a PlayerEndpoint through an WebRtc Endpoint
+ * </p>
  * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
@@ -104,9 +105,8 @@ public class RecorderPlayerTest extends BaseRecorder {
 
     String recordingFile = getRecordUrl(extension);
 
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     playerEp.connect(webRtcEp1);
 
     playerEp.connect(recorderEp);

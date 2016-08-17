@@ -196,13 +196,13 @@ public class PipelineStabilityConnectDisconnectPassthroughOneToManyTest extends 
         });
 
         passThroughRoot
-        .addElementDisconnectedListener(new EventListener<ElementDisconnectedEvent>() {
+            .addElementDisconnectedListener(new EventListener<ElementDisconnectedEvent>() {
 
-          @Override
-          public void onEvent(ElementDisconnectedEvent event) {
-            connectionStateLatch.getStateDisconnectedLatch().countDown();
-          }
-        });
+              @Override
+              public void onEvent(ElementDisconnectedEvent event) {
+                connectionStateLatch.getStateDisconnectedLatch().countDown();
+              }
+            });
 
         for (int k = 0; k < passthroughToCreate; k++) {
           PassThrough passThrough = new PassThrough.Builder(mp).build();
@@ -230,20 +230,23 @@ public class PipelineStabilityConnectDisconnectPassthroughOneToManyTest extends 
       }
 
       // Wait to all objects are created
-      Assert.assertTrue("The Objects are not created properly. Expected: " + objectsToCreate
-          + ". No received " + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
-          + " ObjectCreated event(s)",
+      Assert.assertTrue(
+          "The Objects are not created properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
+              + " ObjectCreated event(s)",
           objectsLatch.getObjectsCreatedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Wait to all object are connected
-      Assert.assertTrue("The Objects are not connected properly. Expected: " + numConnectionEvents
-          + ". No received "
-          + (numConnectionEvents - connectionStateLatch.getStateConnectedLatch().getCount())
-          + " Objects connected event(s)",
+      Assert.assertTrue(
+          "The Objects are not connected properly. Expected: " + numConnectionEvents
+              + ". No received "
+              + (numConnectionEvents - connectionStateLatch.getStateConnectedLatch().getCount())
+              + " Objects connected event(s)",
           connectionStateLatch.getStateConnectedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Disconnect elements
-      for (Entry<PassThrough, ArrayList<PassThrough>> element : passThroughRootChildren.entrySet()) {
+      for (Entry<PassThrough, ArrayList<PassThrough>> element : passThroughRootChildren
+          .entrySet()) {
         PassThrough passThroughRoot = element.getKey();
         for (PassThrough passThrough : element.getValue()) {
           passThroughRoot.disconnect(passThrough);
@@ -251,11 +254,14 @@ public class PipelineStabilityConnectDisconnectPassthroughOneToManyTest extends 
       }
 
       // Wait to all object are disconnected
-      Assert.assertTrue("The Objects are not disconnected properly. Expected: "
-          + numConnectionEvents + ". No received "
-          + (numConnectionEvents - connectionStateLatch.getStateDisconnectedLatch().getCount())
-          + " Objects disconnected event(s)", connectionStateLatch.getStateDisconnectedLatch()
-          .await(TIMEOUT, TimeUnit.SECONDS));
+      Assert
+          .assertTrue(
+              "The Objects are not disconnected properly. Expected: " + numConnectionEvents
+                  + ". No received "
+                  + (numConnectionEvents
+                      - connectionStateLatch.getStateDisconnectedLatch().getCount())
+                  + " Objects disconnected event(s)",
+              connectionStateLatch.getStateDisconnectedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       if (destroyEachPassThrough) {
         // Release all webRtcEndpoints
@@ -269,17 +275,18 @@ public class PipelineStabilityConnectDisconnectPassthroughOneToManyTest extends 
         pipeline.release();
       }
 
-      Assert.assertTrue("The Objects are not destroyed properly. Expected: " + objectsToCreate
-          + ". No received "
-          + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
-          + " ObjectDestroyed event(s)",
+      Assert.assertTrue(
+          "The Objects are not destroyed properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
+              + " ObjectDestroyed event(s)",
           objectsLatch.getObjectsDestroyedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Verify the memory
       double percentageMemory = getMemoryIncrease();
       if (checkMemory) {
-        Assert.assertTrue("The memory increases more than 0%. The percentage memory was "
-            + percentageMemory, percentageMemory >= 0.0 && percentageMemory <= 10.0);
+        Assert.assertTrue(
+            "The memory increases more than 0%. The percentage memory was " + percentageMemory,
+            percentageMemory >= 0.0 && percentageMemory <= 10.0);
       }
     }
 

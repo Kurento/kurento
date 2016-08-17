@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 package org.kurento.test.functional.alphablending;
 
 import java.awt.Color;
@@ -67,12 +68,10 @@ public class AlphaBlendingPlayerTest extends FunctionalTest {
     PlayerEndpoint playerRed =
         new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/30sec/red.webm")
             .build();
-    PlayerEndpoint playerGreen =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/green.webm").build();
-    PlayerEndpoint playerBlue =
-        new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath()
-            + "/video/30sec/blue.webm").build();
+    PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/30sec/green.webm").build();
+    PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
+        "http://" + getTestFilesHttpPath() + "/video/30sec/blue.webm").build();
 
     AlphaBlending alphaBlending = new AlphaBlending.Builder(mp).build();
     HubPort hubPort1 = new HubPort.Builder(alphaBlending).build();

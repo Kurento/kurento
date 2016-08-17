@@ -38,7 +38,9 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a Recorder, using the stream source from a PlayerEndpoint through an WebRtcEndpoint. The
- * pipeline will be destroyed after half the duration of the original video. </p> Media Pipeline(s):
+ * pipeline will be destroyed after half the duration of the original video.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -103,9 +105,8 @@ public class RecorderPipelineDestroyTest extends BaseRecorder {
 
     String recordingFile = getRecordUrl(extension);
 
-    final RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    final RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     playerEp.connect(webRtcEp1);
 
     playerEp.connect(recorderEp);

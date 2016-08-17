@@ -34,7 +34,9 @@ import org.kurento.test.config.Protocol;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a the seek feature for a Player Endpoint </p> Media Pipeline(s):
+ * Test of a the seek feature for a Player Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>

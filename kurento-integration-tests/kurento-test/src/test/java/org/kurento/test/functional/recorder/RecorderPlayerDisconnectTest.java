@@ -41,7 +41,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Test of a Recorder switching sources from WebRtc Endpoint </p> Media Pipeline(s):
+ * Test of a Recorder switching sources from WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> RecorderEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -104,9 +106,8 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
         new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/10sec/green.webm")).build();
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     playerGreen.play();
     recorderEp.record();
@@ -153,8 +154,9 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
     final String messageAppend = "[played file with media pipeline]";
     final int playtime = PLAYTIME;
 
-    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
-        + messageAppend, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media in the recording (timeout waiting playing event) " + messageAppend,
+        getPage().waitForEvent("playing"));
     for (Color color : EXPECTED_COLORS) {
       Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
           getPage().similarColor(color));

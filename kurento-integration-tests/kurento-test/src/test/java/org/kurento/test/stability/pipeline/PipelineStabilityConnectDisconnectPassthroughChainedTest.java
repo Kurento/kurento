@@ -50,7 +50,8 @@ import org.kurento.client.PassThrough;
  * Test procedure: <br/>
  * <ol>
  * <li>Create M pipelines, it will be a constant value</li>
- * <li>Create N passThrough in each pipeline and connect the elements of each pipeline like a chain</li>
+ * <li>Create N passThrough in each pipeline and connect the elements of each pipeline like a
+ * chain</li>
  * <li>Disconnect N passThrough</li>
  * <li>Release all passThrough. Depends of the test, this point will be executed or not. See doTest
  * method</li>
@@ -214,20 +215,23 @@ public class PipelineStabilityConnectDisconnectPassthroughChainedTest extends Ba
       }
 
       // Wait to all objects are created
-      Assert.assertTrue("The Objects are not created properly. Expected: " + objectsToCreate
-          + ". No received " + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
-          + " ObjectCreated event(s)",
+      Assert.assertTrue(
+          "The Objects are not created properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
+              + " ObjectCreated event(s)",
           objectsLatch.getObjectsCreatedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Wait to all object are connected
-      Assert.assertTrue("The Objects are not connected properly. Expected: " + numConnectionEvents
-          + ". No received "
-          + (numConnectionEvents - connectionStateLatch.getStateConnectedLatch().getCount())
-          + " Objects connected event(s)",
+      Assert.assertTrue(
+          "The Objects are not connected properly. Expected: " + numConnectionEvents
+              + ". No received "
+              + (numConnectionEvents - connectionStateLatch.getStateConnectedLatch().getCount())
+              + " Objects connected event(s)",
           connectionStateLatch.getStateConnectedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Disconnect
-      for (Entry<MediaPipeline, ArrayList<PassThrough>> element : mediaPipelineChildren.entrySet()) {
+      for (Entry<MediaPipeline, ArrayList<PassThrough>> element : mediaPipelineChildren
+          .entrySet()) {
         ArrayList<PassThrough> eachPassThroughChildren = element.getValue();
         if (eachPassThroughChildren.size() > 0) {
           for (int k = 1; k < eachPassThroughChildren.size(); k++) {
@@ -239,11 +243,14 @@ public class PipelineStabilityConnectDisconnectPassthroughChainedTest extends Ba
       }
 
       // Wait to all object are disconnected
-      Assert.assertTrue("The Objects are not disconnected properly. Expected: "
-          + numConnectionEvents + ". No received "
-          + (numConnectionEvents - connectionStateLatch.getStateDisconnectedLatch().getCount())
-          + " Objects disconnected event(s)", connectionStateLatch.getStateDisconnectedLatch()
-          .await(TIMEOUT, TimeUnit.SECONDS));
+      Assert
+          .assertTrue(
+              "The Objects are not disconnected properly. Expected: " + numConnectionEvents
+                  + ". No received "
+                  + (numConnectionEvents
+                      - connectionStateLatch.getStateDisconnectedLatch().getCount())
+                  + " Objects disconnected event(s)",
+              connectionStateLatch.getStateDisconnectedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       if (destroyEachPassThrough) {
         // Release all webRtcEndpoints
@@ -257,17 +264,18 @@ public class PipelineStabilityConnectDisconnectPassthroughChainedTest extends Ba
         pipeline.release();
       }
 
-      Assert.assertTrue("The Objects are not destroyed properly. Expected: " + objectsToCreate
-          + ". No received "
-          + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
-          + " ObjectDestroyed event(s)",
+      Assert.assertTrue(
+          "The Objects are not destroyed properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
+              + " ObjectDestroyed event(s)",
           objectsLatch.getObjectsDestroyedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Verify the memory
       double percentageMemory = getMemoryIncrease();
       if (checkMemory) {
-        Assert.assertTrue("The memory increases more than 0%. The percentage memory was "
-            + percentageMemory, percentageMemory >= 0.0 && percentageMemory <= 10.0);
+        Assert.assertTrue(
+            "The memory increases more than 0%. The percentage memory was " + percentageMemory,
+            percentageMemory >= 0.0 && percentageMemory <= 10.0);
       }
     }
 

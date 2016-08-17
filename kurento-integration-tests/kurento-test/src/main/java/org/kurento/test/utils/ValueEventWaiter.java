@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+
 package org.kurento.test.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;

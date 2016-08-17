@@ -17,7 +17,6 @@
 
 package org.kurento.test.docker;
 
-
 /**
  * Type of transport protocol
  *

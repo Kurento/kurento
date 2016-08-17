@@ -42,8 +42,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's. </p> Media
- * Pipeline(s):
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) with two WebRTC's.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint x 2 -> RecorderEndpoint</li>
  * </ul>
@@ -108,9 +109,8 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
 
     // Start record
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-            .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     recorderEp.record();
 
     // Switch webrtcs

@@ -68,7 +68,8 @@ import org.kurento.test.config.TestScenario;
  * <ol>
  * <li>Create M pipelines, it will be a constant value</li>
  * <li>Create one webRTCEndPoint root in each pipeline and configure to send audio/video</li>
- * <li>Create N passThroughs in each pipeline and connect to webRTCEndPoint root like one to many</li>
+ * <li>Create N passThroughs in each pipeline and connect to webRTCEndPoint root like one to
+ * many</li>
  * <li>Disconnect N passThroughs from each webRTCEndPoint root</li>
  * <li>Release all passThroughs and webRTCEndPoints. Depends of the test, this point will be
  * executed or not. See doTest method</li>
@@ -95,8 +96,8 @@ import org.kurento.test.config.TestScenario;
  */
 
 @Ignore
-public class PipelineStabilityConnectDisconnectWebRtcAndPassthroughOneToManyTest extends
-BasePipeline {
+public class PipelineStabilityConnectDisconnectWebRtcAndPassthroughOneToManyTest
+    extends BasePipeline {
   private int INCREASE_EXPONENTIAL = 2;
   private int ITERATIONS = 7;
   private static int M = 2;
@@ -212,15 +213,15 @@ BasePipeline {
 
         final CountDownLatch flowingLatch = new CountDownLatch(1);
         webRtcRoot
-        .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
+            .addMediaFlowOutStateChangeListener(new EventListener<MediaFlowOutStateChangeEvent>() {
 
-          @Override
-          public void onEvent(MediaFlowOutStateChangeEvent event) {
-            if (event.getState().equals(MediaFlowState.FLOWING)) {
-              flowingLatch.countDown();
-            }
-          }
-        });
+              @Override
+              public void onEvent(MediaFlowOutStateChangeEvent event) {
+                if (event.getState().equals(MediaFlowState.FLOWING)) {
+                  flowingLatch.countDown();
+                }
+              }
+            });
 
         webRtcRoot.addElementConnectedListener(new EventListener<ElementConnectedEvent>() {
 
@@ -245,16 +246,18 @@ BasePipeline {
       }
 
       // Wait to all objects are created
-      Assert.assertTrue("The Objects are not created properly. Expected: " + objectsToCreate
-          + ". No received " + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
-          + " ObjectCreated event(s)",
+      Assert.assertTrue(
+          "The Objects are not created properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
+              + " ObjectCreated event(s)",
           objectsLatch.getObjectsCreatedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Wait to all object are connected
-      Assert.assertTrue("The Objects are not connected properly. Expected: " + numConnectionEvents
-          + ". No received "
-          + (numConnectionEvents - connectionStateLatch.getStateConnectedLatch().getCount())
-          + " Objects connected event(s)",
+      Assert.assertTrue(
+          "The Objects are not connected properly. Expected: " + numConnectionEvents
+              + ". No received "
+              + (numConnectionEvents - connectionStateLatch.getStateConnectedLatch().getCount())
+              + " Objects connected event(s)",
           connectionStateLatch.getStateConnectedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Disconnect
@@ -273,11 +276,14 @@ BasePipeline {
       }
 
       // Wait to all object are disconnected
-      Assert.assertTrue("The Objects are not disconnected properly. Expected: "
-          + numConnectionEvents + ". No received "
-          + (numConnectionEvents - connectionStateLatch.getStateDisconnectedLatch().getCount())
-          + " Objects disconnected event(s)", connectionStateLatch.getStateDisconnectedLatch()
-          .await(TIMEOUT, TimeUnit.SECONDS));
+      Assert
+          .assertTrue(
+              "The Objects are not disconnected properly. Expected: " + numConnectionEvents
+                  + ". No received "
+                  + (numConnectionEvents
+                      - connectionStateLatch.getStateDisconnectedLatch().getCount())
+                  + " Objects disconnected event(s)",
+              connectionStateLatch.getStateDisconnectedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       if (destroyEachElement) {
         // Release all passThroughs
@@ -285,7 +291,8 @@ BasePipeline {
           passThrough.release();
         }
         // Release all webRTCs
-        for (Entry<WebRtcEndpoint, ArrayList<PassThrough>> element : webRtcRootChildren.entrySet()) {
+        for (Entry<WebRtcEndpoint, ArrayList<PassThrough>> element : webRtcRootChildren
+            .entrySet()) {
           WebRtcEndpoint webRtcRoot = element.getKey();
           webRtcRoot.release();
         }
@@ -296,17 +303,18 @@ BasePipeline {
         pipeline.release();
       }
 
-      Assert.assertTrue("The Objects are not destroyed properly. Expected: " + objectsToCreate
-          + ". No received "
-          + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
-          + " ObjectDestroyed event(s)",
+      Assert.assertTrue(
+          "The Objects are not destroyed properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
+              + " ObjectDestroyed event(s)",
           objectsLatch.getObjectsDestroyedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Verify the memory
       double percentageMemory = getMemoryIncrease();
       if (checkMemory) {
-        Assert.assertTrue("The memory increases more than 0%. The percentage memory was "
-            + percentageMemory, percentageMemory >= 0.0 && percentageMemory <= 10.0);
+        Assert.assertTrue(
+            "The memory increases more than 0%. The percentage memory was " + percentageMemory,
+            percentageMemory >= 0.0 && percentageMemory <= 10.0);
       }
 
     }

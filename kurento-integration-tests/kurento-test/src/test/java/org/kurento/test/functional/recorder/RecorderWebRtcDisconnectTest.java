@@ -46,7 +46,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Test of a Recorder switching sources from WebRtc Endpoint </p> Media Pipeline(s):
+ * Test of a Recorder switching sources from WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> RecorderEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
@@ -96,9 +98,8 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
             .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/red.y4m")
             .build());
-    test.addBrowser(BROWSER2,
-        new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-        .webPageType(WebPageType.WEBRTC).build());
+    test.addBrowser(BROWSER2, new Browser.Builder().browserType(BrowserType.CHROME)
+        .scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC).build());
     return Arrays.asList(new Object[][] { { test } });
   }
 
@@ -119,17 +120,16 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     // Test execution
     getPage(BROWSER1).subscribeLocalEvents("playing");
     getPage(BROWSER1).initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     // red
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(BROWSER1)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER1).waitForEvent("playing"));
     recorderEp.record();
     for (int i = 0; i < NUM_SWAPS; i++) {
       if (i % 2 == 0) {
@@ -174,8 +174,9 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
     final String messageAppend = "[played file with media pipeline]";
     final int playtime = PLAYTIME;
 
-    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
-        + messageAppend, getPage(BROWSER2).waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media in the recording (timeout waiting playing event) " + messageAppend,
+        getPage(BROWSER2).waitForEvent("playing"));
     for (Color color : EXPECTED_COLORS) {
       Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
           getPage(BROWSER2).similarColor(color));
@@ -184,8 +185,9 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
         eosLatch.await(getPage(BROWSER2).getTimeout(), TimeUnit.SECONDS));
 
     double currentTime = getPage(BROWSER2).getCurrentTime();
-    Assert.assertTrue("Error in play time in the recorded video (expected: " + playtime
-        + " sec, real: " + currentTime + " sec) " + messageAppend,
+    Assert.assertTrue(
+        "Error in play time in the recorded video (expected: " + playtime + " sec, real: "
+            + currentTime + " sec) " + messageAppend,
         getPage(BROWSER2).compare(playtime, currentTime));
 
     AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);

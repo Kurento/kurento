@@ -30,7 +30,9 @@ import org.kurento.test.browser.WebRtcMode;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test Datachannel Back2Back Browser - WebRTC - WebRTC - Browser </ul> Browser(s):
+ * Test Datachannel Back2Back Browser - WebRTC - WebRTC - Browser
+ * </ul>
+ * Browser(s):
  * <ul>
  * ·CHROME CHROME <br>
  * ·CHROME FIREFOX <br>
@@ -94,11 +96,11 @@ public class DatachannelsB2BTest extends FunctionalTest {
       getPage(0).sendDataByDataChannel(messageSentBrower0);
       getPage(1).sendDataByDataChannel(messageSentBrower1);
 
-      Assert.assertTrue("The message should be: " + messageSentBrower1, getPage(0)
-          .compareDataChannelMessage(messageSentBrower1));
+      Assert.assertTrue("The message should be: " + messageSentBrower1,
+          getPage(0).compareDataChannelMessage(messageSentBrower1));
 
-      Assert.assertTrue("The message should be: " + messageSentBrower0, getPage(1)
-          .compareDataChannelMessage(messageSentBrower0));
+      Assert.assertTrue("The message should be: " + messageSentBrower0,
+          getPage(1).compareDataChannelMessage(messageSentBrower0));
     }
 
     // Release Media Pipeline

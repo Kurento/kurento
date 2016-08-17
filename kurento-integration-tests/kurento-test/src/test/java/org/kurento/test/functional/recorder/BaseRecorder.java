@@ -76,7 +76,7 @@ public class BaseRecorder extends FunctionalTest {
   protected void launchBrowser(MediaPipeline mp, WebRtcEndpoint webRtcEp, PlayerEndpoint playerEp,
       RecorderEndpoint recorderEp, String expectedVideoCodec, String expectedAudioCodec,
       String recordingFile, Color expectedColor, int xColor, int yColor, int playTime)
-          throws InterruptedException {
+      throws InterruptedException {
 
     Timer gettingStats = new Timer();
     final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
@@ -99,19 +99,20 @@ public class BaseRecorder extends FunctionalTest {
     // Assertions
     String inRecording = recorderEp == null ? " in the recording" : "";
 
-    Assert.assertTrue("Not received media (timeout waiting playing event)" + inRecording, getPage()
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)" + inRecording,
+        getPage().waitForEvent("playing"));
 
     if (recorderEp == null) {
       // Checking continuity of the audio
       getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
 
-      gettingStats
-      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
+      gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100,
+          200);
     }
 
-    Assert.assertTrue("Color at coordinates " + xColor + "," + yColor + " must be " + expectedColor
-        + inRecording, getPage().similarColorAt(expectedColor, xColor, yColor));
+    Assert.assertTrue(
+        "Color at coordinates " + xColor + "," + yColor + " must be " + expectedColor + inRecording,
+        getPage().similarColorAt(expectedColor, xColor, yColor));
     Assert.assertTrue("Not received EOS event in player" + inRecording,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
     if (recorderEp != null) {
@@ -199,8 +200,8 @@ public class BaseRecorder extends FunctionalTest {
 
         // Check timeout
         if (System.currentTimeMillis() > timeoutMs) {
-          throw new KurentoException("Timeout of " + WAIT_POLL_TIME + " seconds waiting for file: "
-              + recordingFile);
+          throw new KurentoException(
+              "Timeout of " + WAIT_POLL_TIME + " seconds waiting for file: " + recordingFile);
         }
 
         try {
@@ -218,7 +219,7 @@ public class BaseRecorder extends FunctionalTest {
 
   protected void checkRecordingFile(String recordingFile, String browserName,
       Color[] expectedColors, long playTime, String expectedVideoCodec, String expectedAudioCodec)
-          throws InterruptedException {
+      throws InterruptedException {
 
     // Checking continuity of the audio
     Timer gettingStats = new Timer();
@@ -247,9 +248,9 @@ public class BaseRecorder extends FunctionalTest {
 
     // Assertions in recording
     final String messageAppend = "[played file with media pipeline]";
-    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
-        + messageAppend, checkPage.waitForEvent("playing"));
-
+    Assert.assertTrue(
+        "Not received media in the recording (timeout waiting playing event) " + messageAppend,
+        checkPage.waitForEvent("playing"));
 
     checkPage.activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
 

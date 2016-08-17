@@ -114,13 +114,16 @@ public class PlayerFaceOverlayTest extends FunctionalTest {
     // Assertions
     Assert.assertTrue("Not received media (timeout waiting playing event)",
         getPage().waitForEvent("playing"));
-    Assert.assertTrue("Color at coordinates " + xExpectedColor + "," + yExpectedColor + " must be "
-        + expectedColor, getPage().similarColorAt(expectedColor, xExpectedColor, yExpectedColor));
+    Assert.assertTrue(
+        "Color at coordinates " + xExpectedColor + "," + yExpectedColor + " must be "
+            + expectedColor,
+        getPage().similarColorAt(expectedColor, xExpectedColor, yExpectedColor));
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
     double currentTime = getPage().getCurrentTime();
-    Assert.assertTrue("Error in play time (expected: " + playTimeSeconds + " sec, real: "
-        + currentTime + " sec)", getPage().compare(playTimeSeconds, currentTime));
+    Assert.assertTrue(
+        "Error in play time (expected: " + playTimeSeconds + " sec, real: " + currentTime + " sec)",
+        getPage().compare(playTimeSeconds, currentTime));
 
     // Release Media Pipeline
     mp.release();

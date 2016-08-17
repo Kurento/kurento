@@ -43,7 +43,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Player one to many recorders. </p> Media Pipeline(s):
+ * Stability test for Recorder. Player one to many recorders.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> N RecorderEndpoint</li>
  * </ul>
@@ -117,9 +119,8 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
           try {
             // N recorders
             recordingFile[i] = getRecordUrl("-recorder" + i + extension);
-            recorder[i] =
-                new RecorderEndpoint.Builder(pipeline, recordingFile[i]).withMediaProfile(
-                    mediaProfileSpecType).build();
+            recorder[i] = new RecorderEndpoint.Builder(pipeline, recordingFile[i])
+                .withMediaProfile(mediaProfileSpecType).build();
             playerEp.connect(recorder[i]);
 
             // Start record

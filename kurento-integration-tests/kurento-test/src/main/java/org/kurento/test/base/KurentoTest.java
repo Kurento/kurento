@@ -99,8 +99,8 @@ public class KurentoTest {
     return TestScenario.empty();
   }
 
-  protected static int numRetries = getProperty(TEST_NUMRETRIES_PROPERTY,
-      TEST_NUM_NUMRETRIES_DEFAULT);
+  protected static int numRetries =
+      getProperty(TEST_NUMRETRIES_PROPERTY, TEST_NUM_NUMRETRIES_DEFAULT);
   protected static String testDir = getProperty(TEST_PROJECT_PATH_PROP, TEST_PROJECT_PATH_DEFAULT);
   protected static boolean printLogs = getProperty(TEST_PRINT_LOG_PROP, TEST_PRINT_LOG_DEFAULT);
 

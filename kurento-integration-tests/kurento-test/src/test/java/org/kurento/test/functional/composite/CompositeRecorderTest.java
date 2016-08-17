@@ -88,7 +88,7 @@ public class CompositeRecorderTest extends BaseRecorder {
 
     PlayerEndpoint playerRed =
         new PlayerEndpoint.Builder(mp, "http://" + getTestFilesHttpPath() + "/video/30sec/red.webm")
-    .build();
+            .build();
     PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
         "http://" + getTestFilesHttpPath() + "/video/30sec/green.webm").build();
     PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,

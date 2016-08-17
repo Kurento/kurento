@@ -47,8 +47,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Create three connections WebRTC and record it. </p> Media
- * Pipeline(s):
+ * Stability test for Recorder. Create three connections WebRTC and record it.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> RecorderEndpoint</li>
  * </ul>
@@ -133,16 +134,15 @@ public class RecorderThreeWebRtcSimultaneous extends StabilityTest {
             webRtcSender[i] = new WebRtcEndpoint.Builder(pipeline).build();
             // N recorders
             recordingFile[i] = getRecordUrl("-receiver" + i + extension);
-            recorder[i] =
-                new RecorderEndpoint.Builder(pipeline, recordingFile[i]).withMediaProfile(
-                    mediaProfileSpecType).build();
+            recorder[i] = new RecorderEndpoint.Builder(pipeline, recordingFile[i])
+                .withMediaProfile(mediaProfileSpecType).build();
 
             // WebRTC receiver negotiation
             getPage(i).subscribeLocalEvents("playing");
             getPage(i).initWebRtc(webRtcSender[i], WebRtcChannel.AUDIO_AND_VIDEO,
                 WebRtcMode.SEND_ONLY);
-            Assert.assertTrue("Not received media in sender" + i, getPage(i)
-                .waitForEvent("playing"));
+            Assert.assertTrue("Not received media in sender" + i,
+                getPage(i).waitForEvent("playing"));
 
             webRtcSender[i].connect(recorder[i]);
 

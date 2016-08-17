@@ -39,11 +39,11 @@ import org.kurento.test.mediainfo.AssertMedia;
 /**
  * Test of a recorder, using the stream source from a WebRtcEndpoint. Tests recording with audio and
  * video. The path for recording will have several slashes in the path, at the beginning, in the
- * middle of and at the end. Also the path will have a directory that won't exist.</p> Media
- * Pipeline(s):
+ * middle of and at the end. Also the path will have a directory that won't exist.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li>
- * </li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li></li>
  * </ul>
  * Browser(s):
  * <ul>
@@ -56,7 +56,8 @@ import org.kurento.test.mediainfo.AssertMedia;
  * PlayerEndpoint -> WebRtcEndpoint (play of the recording).</li>
  * <li>(Browser) First a WebRtcPeer in send-only sends media. Second, other WebRtcPeer in rcv-only
  * receives media</li>
- * </ul> Main assertion(s):
+ * </ul>
+ * Main assertion(s):
  * <ul>
  * <li>Codecs should be as expected (in the recording)</li>
  * </ul>
@@ -86,17 +87,15 @@ public class RecorderMultiSlashesDirectoryTest extends BaseRecorder {
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
-    String recordingFile =
-        getRecordUrl(extension).replace(getSimpleTestName(),
-            new Date().getTime() + File.separator + getSimpleTestName());
+    String recordingFile = getRecordUrl(extension).replace(getSimpleTestName(),
+        new Date().getTime() + File.separator + getSimpleTestName());
 
     String recordingFileWithMultiSlashes = recordingFile.replace(File.separator, multiSlashses);
 
     log.debug("The path with multi slash is {} ", recordingFileWithMultiSlashes);
 
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFileWithMultiSlashes).withMediaProfile(
-            mediaProfileSpecType).build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFileWithMultiSlashes)
+        .withMediaProfile(mediaProfileSpecType).build();
     webRtcEp.connect(webRtcEp);
     webRtcEp.connect(recorderEp);
 

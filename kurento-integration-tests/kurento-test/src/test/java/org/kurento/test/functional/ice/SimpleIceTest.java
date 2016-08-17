@@ -98,15 +98,15 @@ public class SimpleIceTest extends FunctionalPlayerTest {
     remoteCandidate.add(rCandidate);
 
     if (getProperty(TEST_ICE_CANDIDATE_KMS_TYPE) != null) {
-      kmsCandidateType.add(new Candidate(WebRtcCandidateType.find(getProperty(
-          TEST_ICE_CANDIDATE_KMS_TYPE).toLowerCase()), TransportMode
-          .find(getProperty(TEST_KMS_TRANSPORT))));
+      kmsCandidateType.add(new Candidate(
+          WebRtcCandidateType.find(getProperty(TEST_ICE_CANDIDATE_KMS_TYPE).toLowerCase()),
+          TransportMode.find(getProperty(TEST_KMS_TRANSPORT))));
     }
 
     if (getProperty(TEST_ICE_CANDIDATE_SELENIUM_TYPE) != null) {
-      seleniumCandidateType.add(new Candidate(WebRtcCandidateType.find(getProperty(
-          TEST_ICE_CANDIDATE_SELENIUM_TYPE).toLowerCase()), TransportMode
-          .find(getProperty(TEST_SELENIUM_TRANSPORT))));
+      seleniumCandidateType.add(new Candidate(
+          WebRtcCandidateType.find(getProperty(TEST_ICE_CANDIDATE_SELENIUM_TYPE).toLowerCase()),
+          TransportMode.find(getProperty(TEST_SELENIUM_TRANSPORT))));
     }
   }
 
@@ -172,8 +172,9 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "SendRecv -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(), event.getCandidatePair()
-                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getLocalCandidate(),
+                event.getCandidatePair().getRemoteCandidate());
 
             addCandidates(event);
           }
@@ -190,8 +191,8 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
     saveGstreamerDot("-before-waiting-player-event-", mp);
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(0)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(0).waitForEvent("playing"));
 
     // For the moment, these assertions are not necessary
     // Assert.assertEquals("Local candidate type (KMS) is wrong. It waits "
@@ -261,8 +262,9 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "RecvOnly -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(), event.getCandidatePair()
-                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getLocalCandidate(),
+                event.getCandidatePair().getRemoteCandidate());
 
             addCandidates(event);
           }
@@ -276,12 +278,14 @@ public class SimpleIceTest extends FunctionalPlayerTest {
 
     // Assertions
     saveGstreamerDot("-before-waiting-FlowingIn-event-", mp);
-    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
-        + webRtcChannel, eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
+    Assert.assertTrue(
+        "Not received FLOWING IN event in webRtcEp: " + mediaUrl + " " + webRtcChannel,
+        eosLatch.await(getPage(0).getTimeout(), TimeUnit.SECONDS));
 
     saveGstreamerDot("-before-waiting-player-event-", mp);
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage(0).waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
+        getPage(0).waitForEvent("playing"));
 
     // For the moment, these assertions are not necessary
     // Assert.assertEquals("Local candidate type (KMS) is wrong. It waits "
@@ -343,8 +347,9 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "SendOnly (webRtcEpSendOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(), event.getCandidatePair()
-                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getLocalCandidate(),
+                event.getCandidatePair().getRemoteCandidate());
           }
         });
 
@@ -377,8 +382,9 @@ public class SimpleIceTest extends FunctionalPlayerTest {
           public void onEvent(NewCandidatePairSelectedEvent event) {
             log.debug(
                 "SendOnly (webRtcEpRcvOnly) -> New Candidate Pair Selected: \nStream: {} \nLocal: {} \nRemote: {}",
-                event.getCandidatePair().getStreamID(), event.getCandidatePair()
-                    .getLocalCandidate(), event.getCandidatePair().getRemoteCandidate());
+                event.getCandidatePair().getStreamID(),
+                event.getCandidatePair().getLocalCandidate(),
+                event.getCandidatePair().getRemoteCandidate());
 
             addCandidates(event);
           }
@@ -397,8 +403,8 @@ public class SimpleIceTest extends FunctionalPlayerTest {
         eosLatch.await(getPage(1).getTimeout(), TimeUnit.SECONDS));
 
     saveGstreamerDot("-before-waiting-player-event-", mp);
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(1)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(1).waitForEvent("playing"));
 
     // For the moment, these assertions are not necessary
     // Assert.assertEquals("Local candidate type (KMS) is wrong. It waits "

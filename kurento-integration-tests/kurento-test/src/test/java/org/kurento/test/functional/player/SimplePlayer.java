@@ -118,18 +118,21 @@ public class SimplePlayer extends PlayerTest {
     playerEp.play();
 
     // Assertions
-    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
-        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+    Assert.assertTrue(
+        "Not received FLOWING IN event in webRtcEp: " + mediaUrl + " " + webRtcChannel,
+        flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
+        getPage().waitForEvent("playing"));
 
-    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY
+        || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
       // Checking continuity of the audio
       getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
 
-      gettingStats
-      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
+      gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100,
+          200);
     }
 
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
@@ -146,7 +149,8 @@ public class SimplePlayer extends PlayerTest {
           + " sec): " + mediaUrl + " " + webRtcChannel, getPage().compare(playtime, currentTime));
     }
 
-    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY
+        || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
       Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
           errorContinuityAudiolatch.getCount() == 1);
     }
@@ -191,11 +195,13 @@ public class SimplePlayer extends PlayerTest {
     getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEp.play();
 
-    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
-        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+    Assert.assertTrue(
+        "Not received FLOWING IN event in webRtcEp: " + mediaUrl + " " + webRtcChannel,
+        flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
+        getPage().waitForEvent("playing"));
 
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       // Assert initial color, pause stream and wait x seconds
@@ -214,22 +220,25 @@ public class SimplePlayer extends PlayerTest {
 
     playerEp.play();
 
-    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY
+        || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
       // Checking continuity of the audio
       getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
 
-      gettingStats
-      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
+      gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100,
+          200);
     }
 
     if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
       for (Color expectedColor : expectedColors) {
-        Assert.assertTrue("After the pause and the play, the color of the video should be "
-            + expectedColor, getPage().similarColor(expectedColor));
+        Assert.assertTrue(
+            "After the pause and the play, the color of the video should be " + expectedColor,
+            getPage().similarColor(expectedColor));
       }
     }
 
-    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY
+        || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
       Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
           errorContinuityAudiolatch.getCount() == 1);
     }
@@ -282,19 +291,22 @@ public class SimplePlayer extends PlayerTest {
     getPage().initWebRtc(webRtcEp, webRtcChannel, WebRtcMode.RCV_ONLY);
     playerEp.play();
 
-    Assert.assertTrue("Not received media (timeout waiting playing event): " + mediaUrl + " "
-        + webRtcChannel, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media (timeout waiting playing event): " + mediaUrl + " " + webRtcChannel,
+        getPage().waitForEvent("playing"));
 
-    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY
+        || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
       // Checking continuity of the audio
       getPage().activatePeerConnectionInboundStats("webRtcPeer.peerConnection");
 
-      gettingStats
-      .schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
+      gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100,
+          200);
     }
 
-    Assert.assertTrue("Not received FLOWING IN event in webRtcEp: " + mediaUrl + " "
-        + webRtcChannel, flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+    Assert.assertTrue(
+        "Not received FLOWING IN event in webRtcEp: " + mediaUrl + " " + webRtcChannel,
+        flowingLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // TODO: Check with playerEp.getVideoInfo().getIsSeekable() if the video is seekable. If not,
     // assert with exception from KMS
@@ -306,13 +318,15 @@ public class SimplePlayer extends PlayerTest {
       log.debug("Try to set position in {}", position);
       playerEp.setPosition(position);
       if (webRtcChannel != WebRtcChannel.AUDIO_ONLY) {
-        Assert.assertTrue("After set position to " + position
-            + "ms, the color of the video should be " + expectedPositionAndColor.get(position),
+        Assert.assertTrue(
+            "After set position to " + position + "ms, the color of the video should be "
+                + expectedPositionAndColor.get(position),
             getPage().similarColor(expectedPositionAndColor.get(position)));
       }
     }
 
-    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
+    if (webRtcChannel == WebRtcChannel.AUDIO_ONLY
+        || webRtcChannel == WebRtcChannel.AUDIO_AND_VIDEO) {
       Assert.assertTrue("Check audio. There were more than 2 seconds without receiving packets",
           errorContinuityAudiolatch.getCount() == 1);
     }

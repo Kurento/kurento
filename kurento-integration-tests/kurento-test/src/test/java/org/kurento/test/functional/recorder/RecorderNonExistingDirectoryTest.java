@@ -38,10 +38,11 @@ import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  * Test of a recorder, using the stream source from a WebRtcEndpoint. Tests recording with audio and
- * video. The path for recording won't exist and the KMS should create it</p> Media Pipeline(s):
+ * video. The path for recording won't exist and the KMS should create it
+ * </p>
+ * Media Pipeline(s):
  * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li>
- * </li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li></li>
  * </ul>
  * Browser(s):
  * <ul>
@@ -54,7 +55,8 @@ import org.kurento.test.mediainfo.AssertMedia;
  * PlayerEndpoint -> WebRtcEndpoint (play of the recording).</li>
  * <li>(Browser) First a WebRtcPeer in send-only sends media. Second, other WebRtcPeer in rcv-only
  * receives media</li>
- * </ul> Main assertion(s):
+ * </ul>
+ * Main assertion(s):
  * <ul>
  * <li>Codecs should be as expected (in the recording)</li>
  * </ul>
@@ -84,15 +86,13 @@ public class RecorderNonExistingDirectoryTest extends BaseRecorder {
 
     String recordingFile = getRecordUrl(extension);
 
-    recordingFile =
-        recordingFile.replace(getSimpleTestName(), new Date().getTime() + File.separator
-            + getSimpleTestName());
+    recordingFile = recordingFile.replace(getSimpleTestName(),
+        new Date().getTime() + File.separator + getSimpleTestName());
 
     log.debug("The path non existing is {} ", recordingFile);
 
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     webRtcEp.connect(webRtcEp);
     webRtcEp.connect(recorderEp);
 

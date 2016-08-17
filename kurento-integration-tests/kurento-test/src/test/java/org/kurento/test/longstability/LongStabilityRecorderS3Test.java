@@ -43,7 +43,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Record for 8 hours. </p> Media Pipeline(s):
+ * Stability test for Recorder. Record for 8 hours.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> RecorderEndpoint</li>
  * </ul>
@@ -113,9 +115,8 @@ public class LongStabilityRecorderS3Test extends StabilityTest {
 
     // Recorder
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorder =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorder = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     webRtcSender.connect(recorder);
 
     // Start recorder

@@ -204,20 +204,20 @@ public class WebRtcTestPage extends WebPage {
     }
 
     switch (webRtcIpvMode) {
-    case IPV4:
-      if (!hasCandidateIpv6) {
+      case IPV4:
+        if (!hasCandidateIpv6) {
+          filtered = false;
+        }
+        break;
+      case IPV6:
+        if (hasCandidateIpv6) {
+          filtered = false;
+        }
+        break;
+      case BOTH:
+      default:
         filtered = false;
-      }
-      break;
-    case IPV6:
-      if (hasCandidateIpv6) {
-        filtered = false;
-      }
-      break;
-    case BOTH:
-    default:
-      filtered = false;
-      break;
+        break;
     }
     return filtered;
   }
@@ -237,30 +237,30 @@ public class WebRtcTestPage extends WebPage {
     if (WebRtcCandidateType.HOST.toString().equals(candidateType)) {
       internalAddress = candidate.split(" ")[4];
       switch (webRtcIpvMode) {
-      case IPV4:
-        if (!webRtcCandidateType.toString().equals(candidateType)) {
-          internalAddresses = internalAddress.split("\\.");
-          for (int i = 0; i < internalAddresses.length - 1; i++) {
-            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
+        case IPV4:
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            internalAddresses = internalAddress.split("\\.");
+            for (int i = 0; i < internalAddresses.length - 1; i++) {
+              newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
+            }
+            newInternalAddress = newInternalAddress.concat("254");
+          } else {
+            newInternalAddress = internalAddress;
           }
-          newInternalAddress = newInternalAddress.concat("254");
-        } else {
-          newInternalAddress = internalAddress;
-        }
-        return candidate.replace(internalAddress, newInternalAddress);
-      case IPV6:
-        if (!webRtcCandidateType.toString().equals(candidateType)) {
-          internalAddresses = internalAddress.split(":");
-          for (int i = 0; i < internalAddresses.length - 1; i++) {
-            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
+          return candidate.replace(internalAddress, newInternalAddress);
+        case IPV6:
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            internalAddresses = internalAddress.split(":");
+            for (int i = 0; i < internalAddresses.length - 1; i++) {
+              newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
+            }
+            newInternalAddress = newInternalAddress.concat("2000");
+          } else {
+            newInternalAddress = internalAddress;
           }
-          newInternalAddress = newInternalAddress.concat("2000");
-        } else {
-          newInternalAddress = internalAddress;
-        }
-        return candidate.replace(internalAddress, newInternalAddress);
-      default:
-        break;
+          return candidate.replace(internalAddress, newInternalAddress);
+        default:
+          break;
       }
 
     } else if (WebRtcCandidateType.SRFLX.toString().equals(candidateType)
@@ -268,45 +268,45 @@ public class WebRtcTestPage extends WebPage {
       publicAddress = candidate.split(" ")[4];
       internalAddress = candidate.split(" ")[9];
       switch (webRtcIpvMode) {
-      case IPV4:
-        internalAddresses = internalAddress.split("\\.");
+        case IPV4:
+          internalAddresses = internalAddress.split("\\.");
 
-        for (int i = 0; i < internalAddresses.length - 1; i++) {
-          newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
-        }
-        newInternalAddress = newInternalAddress.concat("254");
-
-        if (!webRtcCandidateType.toString().equals(candidateType)) {
-          publicAddresses = publicAddress.split("\\.");
-          for (int i = 0; i < publicAddresses.length - 1; i++) {
-            newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ".");
+          for (int i = 0; i < internalAddresses.length - 1; i++) {
+            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ".");
           }
-          newPublicAddress = newPublicAddress.concat("254");
-        } else {
-          newPublicAddress = publicAddress;
-        }
-        return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
-            newPublicAddress);
-      case IPV6:
-        internalAddresses = internalAddress.split(":");
-        for (int i = 0; i < internalAddresses.length - 1; i++) {
-          newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
-        }
-        newInternalAddress = newInternalAddress.concat("2000");
+          newInternalAddress = newInternalAddress.concat("254");
 
-        if (!webRtcCandidateType.toString().equals(candidateType)) {
-          publicAddresses = publicAddress.split(":");
-          for (int i = 0; i < publicAddresses.length - 1; i++) {
-            newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ":");
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            publicAddresses = publicAddress.split("\\.");
+            for (int i = 0; i < publicAddresses.length - 1; i++) {
+              newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ".");
+            }
+            newPublicAddress = newPublicAddress.concat("254");
+          } else {
+            newPublicAddress = publicAddress;
           }
-          newPublicAddress = newPublicAddress.concat("2000");
-        } else {
-          newPublicAddress = publicAddress;
-        }
-        return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
-            newPublicAddress);
-      default:
-        break;
+          return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
+              newPublicAddress);
+        case IPV6:
+          internalAddresses = internalAddress.split(":");
+          for (int i = 0; i < internalAddresses.length - 1; i++) {
+            newInternalAddress = newInternalAddress.concat(internalAddresses[i] + ":");
+          }
+          newInternalAddress = newInternalAddress.concat("2000");
+
+          if (!webRtcCandidateType.toString().equals(candidateType)) {
+            publicAddresses = publicAddress.split(":");
+            for (int i = 0; i < publicAddresses.length - 1; i++) {
+              newPublicAddress = newPublicAddress.concat(publicAddresses[i] + ":");
+            }
+            newPublicAddress = newPublicAddress.concat("2000");
+          } else {
+            newPublicAddress = publicAddress;
+          }
+          return candidate.replace(internalAddress, newInternalAddress).replace(publicAddress,
+              newPublicAddress);
+        default:
+          break;
       }
     }
 
@@ -413,15 +413,15 @@ public class WebRtcTestPage extends WebPage {
         int numCandidate = 0;
         while (true) {
           try {
-            ArrayList<Object> iceCandidates = (ArrayList<Object>) browser
-                .executeScript("return iceCandidates;");
+            ArrayList<Object> iceCandidates =
+                (ArrayList<Object>) browser.executeScript("return iceCandidates;");
 
             for (int i = numCandidate; i < iceCandidates.size(); i++) {
               JsonObject jsonCandidate = (JsonObject) parser.parse(iceCandidates.get(i).toString());
-              IceCandidate candidate = new IceCandidate(
-                  jsonCandidate.get("candidate").getAsString(),
-                  jsonCandidate.get("sdpMid").getAsString(),
-                  jsonCandidate.get("sdpMLineIndex").getAsInt());
+              IceCandidate candidate =
+                  new IceCandidate(jsonCandidate.get("candidate").getAsString(),
+                      jsonCandidate.get("sdpMid").getAsString(),
+                      jsonCandidate.get("sdpMLineIndex").getAsInt());
               // log.debug("Adding candidate {}: {}", i, jsonCandidate);
               webRtcConfigurer.addIceCandidate(candidate);
               numCandidate++;

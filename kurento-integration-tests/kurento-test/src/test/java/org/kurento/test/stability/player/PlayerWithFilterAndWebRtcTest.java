@@ -41,7 +41,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.utils.CheckAudioTimerTask;
 
 /**
- * Test player stability. </p> Media Pipeline(s):
+ * Test player stability.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> FaceOverlayFilter -> WebRtcEndpoint</li>
  * </ul>
@@ -147,8 +149,8 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
     gettingStats.schedule(new CheckAudioTimerTask(errorContinuityAudiolatch, getPage()), 100, 200);
     for (int i = 0; i < numRepeat; i++) {
       playerEp.setPosition(0);
-      Assert.assertTrue("The color of the video should be " + expectedColor, getPage()
-          .similarColor(expectedColor));
+      Assert.assertTrue("The color of the video should be " + expectedColor,
+          getPage().similarColor(expectedColor));
 
       Thread.sleep(TimeUnit.SECONDS.toMillis(playTimeSeconds));
 

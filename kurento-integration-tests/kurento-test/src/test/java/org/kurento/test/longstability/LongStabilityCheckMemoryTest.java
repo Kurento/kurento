@@ -44,9 +44,10 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.monitor.SystemMonitorManager;
 
-
 /**
- * Memory stability test for KMS. </p> Media Pipeline(s):
+ * Memory stability test for KMS.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpointSender -> WebRtcEndpoint (loopback)</li>
  * <li>60 fakes WebRtcEndpoints connect to WebRtcEndpointSender</li>
@@ -159,15 +160,16 @@ public class LongStabilityCheckMemoryTest extends StabilityTest {
 
         date = new Date();
 
-        writer.println(date.toString() + " Iteration " + i + ". KMS has "
-            + serverManager.getPipelines().size()
-            + " pipelines. Init Memory: " + initMemory + " Mb. End Memory: "
-            + endMemory + " Mb. Diff Memory: " + diffMemory + " Mb. Increase Memory: "
-            + increaseMemory + " Mb. % Increase: " + percentageMemory + "%");
+        writer.println(
+            date.toString() + " Iteration " + i + ". KMS has " + serverManager.getPipelines().size()
+                + " pipelines. Init Memory: " + initMemory + " Mb. End Memory: " + endMemory
+                + " Mb. Diff Memory: " + diffMemory + " Mb. Increase Memory: " + increaseMemory
+                + " Mb. % Increase: " + percentageMemory + "%");
         i++;
 
-        Assert.assertTrue("The memory increases more than 50%. The percentage memory was "
-            + percentageMemory, percentageMemory < 50.0);
+        Assert.assertTrue(
+            "The memory increases more than 50%. The percentage memory was " + percentageMemory,
+            percentageMemory < 50.0);
         mp = null;
         webRtcEndpoint = null;
       }

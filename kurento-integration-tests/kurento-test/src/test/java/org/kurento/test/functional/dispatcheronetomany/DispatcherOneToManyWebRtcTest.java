@@ -72,10 +72,12 @@ public class DispatcherOneToManyWebRtcTest extends FunctionalTest {
             .build());
     test.addBrowser(BROWSER2,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/blue.y4m").build());
+            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/blue.y4m")
+            .build());
     test.addBrowser(BROWSER3,
         new Browser.Builder().browserType(BrowserType.CHROME).webPageType(WebPageType.WEBRTC)
-            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/red.y4m").build());
+            .scope(BrowserScope.LOCAL).video(getTestFilesDiskPath() + "/video/10sec/red.y4m")
+            .build());
 
     return Arrays.asList(new Object[][] { { test } });
   }

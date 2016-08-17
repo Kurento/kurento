@@ -109,8 +109,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     if (testScenario != null && testScenario.getBrowserMap() != null
         && testScenario.getBrowserMap().size() > 0) {
       ExecutorService executor = Executors.newFixedThreadPool(testScenario.getBrowserMap().size());
-      final AbortableCountDownLatch latch = new AbortableCountDownLatch(
-          testScenario.getBrowserMap().size());
+      final AbortableCountDownLatch latch =
+          new AbortableCountDownLatch(testScenario.getBrowserMap().size());
       for (final String browserKey : testScenario.getBrowserMap().keySet()) {
 
         executor.execute(new Runnable() {
@@ -635,8 +635,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public File cutVideo(File inputFile, File tmpFolder, int cutFrame, double fps) {
     double cutTime = cutFrame / fps;
     DecimalFormat df = new DecimalFormat("0.00");
-    File cutVideoFile = new File(
-        tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
+    File cutVideoFile =
+        new File(tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
     String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(), "-ss", df.format(cutTime),
         cutVideoFile.getAbsolutePath() };
     log.debug("Running command to cut video: {}", Arrays.toString(command));

@@ -38,7 +38,9 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV, MOV, MP4, MKV, AVI,
- * 3GP ... all with ONLY VIDEO) connected to a WebRtc Endpoint </p> Media Pipeline(s):
+ * 3GP ... all with ONLY VIDEO) connected to a WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -60,7 +62,8 @@ import org.kurento.test.config.TestScenario;
  * </ul>
  * <li>EOS event should arrive to player</li>
  * <li>Play time in remote video should be as expected</li>
- * </ul> Secondary assertion(s):
+ * </ul>
+ * Secondary assertion(s):
  * <ul>
  * <li>--</li>
  * </ul>

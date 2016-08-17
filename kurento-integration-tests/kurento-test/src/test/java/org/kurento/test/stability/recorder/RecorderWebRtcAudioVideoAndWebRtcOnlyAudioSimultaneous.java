@@ -45,8 +45,9 @@ import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  * Stability test for Recorder. Create two pipelines, and each of them have 2 connections WebRTC and
- * record it. One of them, only records the Audio and the another records Audio and Video </p> Media
- * Pipeline(s):
+ * record it. One of them, only records the Audio and the another records Audio and Video
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>Pipeline 1: WebRtcEndpoint -> WebRtcEndpoint -> RecorderEndpoint</li>
  * <li>Pipeline 2: WebRtcEndpoint -> WebRtcEndpoint -> RecorderEndpoint</li>
@@ -116,17 +117,15 @@ public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends Stab
 
             String recordingFile0 = getRecordUrl("-receiver" + i + "-" + 0 + extension);
             String recordingFile1 = getRecordUrl("-receiver" + i + "-" + 1 + extension);
-            RecorderEndpoint recorder0 =
-                new RecorderEndpoint.Builder(pipeline, recordingFile0).withMediaProfile(
-                    mediaProfileSpecType).build();
-            RecorderEndpoint recorder1 =
-                new RecorderEndpoint.Builder(pipeline, recordingFile1).withMediaProfile(
-                    MediaProfileSpecType.WEBM_AUDIO_ONLY).build();
+            RecorderEndpoint recorder0 = new RecorderEndpoint.Builder(pipeline, recordingFile0)
+                .withMediaProfile(mediaProfileSpecType).build();
+            RecorderEndpoint recorder1 = new RecorderEndpoint.Builder(pipeline, recordingFile1)
+                .withMediaProfile(MediaProfileSpecType.WEBM_AUDIO_ONLY).build();
 
             getPage(i).subscribeLocalEvents("playing");
 
-            getPage(i)
-            .initWebRtc(webRtcSender0, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_RCV);
+            getPage(i).initWebRtc(webRtcSender0, WebRtcChannel.AUDIO_AND_VIDEO,
+                WebRtcMode.SEND_RCV);
 
             getPage(i + 1).subscribeLocalEvents("playing");
 
@@ -143,8 +142,8 @@ public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends Stab
             getPage(i + 3).initWebRtc(webRtcSender3, WebRtcChannel.AUDIO_AND_VIDEO,
                 WebRtcMode.SEND_RCV);
 
-            Assert.assertTrue("Not received media in sender" + 0, getPage(i)
-                .waitForEvent("playing"));
+            Assert.assertTrue("Not received media in sender" + 0,
+                getPage(i).waitForEvent("playing"));
 
             Assert.assertTrue("Not received media in sender" + 1,
                 getPage(i + 1).waitForEvent("playing"));
@@ -186,7 +185,6 @@ public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends Stab
         }
       });
     }
-
 
     // Wait to finish all recorders
     latch.await(RECORD_MS * 2, TimeUnit.SECONDS);

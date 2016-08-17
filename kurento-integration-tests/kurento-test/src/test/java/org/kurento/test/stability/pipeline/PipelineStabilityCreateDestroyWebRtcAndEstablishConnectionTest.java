@@ -36,7 +36,8 @@ import org.kurento.client.ObjectDestroyedEvent;
 import org.kurento.client.WebRtcEndpoint;
 
 /**
- * Stability test for Pipelines and WebRtcEndpoints. Connect by pairs and establish the connection <br/>
+ * Stability test for Pipelines and WebRtcEndpoints. Connect by pairs and establish the connection
+ * <br/>
  *
  *
  * <pre>
@@ -175,24 +176,24 @@ public class PipelineStabilityCreateDestroyWebRtcAndEstablishConnectionTest exte
           final WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
           webRtcEndpoints.add(webRtcEp);
 
-          webRtcEp
-          .addIceComponentStateChangeListener(new EventListener<IceComponentStateChangeEvent>() {
-            private boolean executed = false;
+          webRtcEp.addIceComponentStateChangeListener(
+              new EventListener<IceComponentStateChangeEvent>() {
+                private boolean executed = false;
 
-            @Override
-            public void onEvent(IceComponentStateChangeEvent event) {
-              // Only executes once when the state is CONNECTED
-              if (!executed) {
-                if (event.getState().equals(IceComponentState.CONNECTED)) {
-                  if (!webRtcEndpointsConnected.contains(event.getSource())) {
-                    connectedLatch.countDown();
+                @Override
+                public void onEvent(IceComponentStateChangeEvent event) {
+                  // Only executes once when the state is CONNECTED
+                  if (!executed) {
+                    if (event.getState().equals(IceComponentState.CONNECTED)) {
+                      if (!webRtcEndpointsConnected.contains(event.getSource())) {
+                        connectedLatch.countDown();
+                      }
+                      webRtcEndpointsConnected.add((WebRtcEndpoint) event.getSource());
+                      executed = true;
+                    }
                   }
-                  webRtcEndpointsConnected.add((WebRtcEndpoint) event.getSource());
-                  executed = true;
                 }
-              }
-            }
-          });
+              });
         }
 
         for (int k = 0; k < webRtcEndpoints.size(); k = k + 2) {
@@ -228,18 +229,21 @@ public class PipelineStabilityCreateDestroyWebRtcAndEstablishConnectionTest exte
       }
 
       // Wait to all objects are created
-      Assert.assertTrue("The Objects are not created properly. Expected: " + objectsToCreate
-          + ". No received " + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
-          + " ObjectCreated event(s)",
+      Assert.assertTrue(
+          "The Objects are not created properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsCreatedLatch().getCount())
+              + " ObjectCreated event(s)",
           objectsLatch.getObjectsCreatedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Wait to all connected events are received
-      Assert.assertTrue("All connections are wrong. Expected: " + webRtcEndpointToCreate
-          + ". No received " + (webRtcEndpointToCreate - connectedLatch.getCount())
-          + " CONNECTED event(s)", connectedLatch.await(TIMEOUT, TimeUnit.SECONDS));
+      Assert.assertTrue(
+          "All connections are wrong. Expected: " + webRtcEndpointToCreate + ". No received "
+              + (webRtcEndpointToCreate - connectedLatch.getCount()) + " CONNECTED event(s)",
+          connectedLatch.await(TIMEOUT, TimeUnit.SECONDS));
 
-      Assert.assertTrue((webRtcEndpointToCreate - webRtcEndpointsConnected.size())
-          + " webRtcEndpoint(s) weren't connected",
+      Assert.assertTrue(
+          (webRtcEndpointToCreate - webRtcEndpointsConnected.size())
+              + " webRtcEndpoint(s) weren't connected",
           webRtcEndpointsConnected.size() == webRtcEndpointToCreate);
 
       if (destroyEachWebRtc) {
@@ -254,17 +258,18 @@ public class PipelineStabilityCreateDestroyWebRtcAndEstablishConnectionTest exte
         pipeline.release();
       }
 
-      Assert.assertTrue("The Objects are not destroyed properly. Expected: " + objectsToCreate
-          + ". No received "
-          + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
-          + " ObjectDestroyed event(s)",
+      Assert.assertTrue(
+          "The Objects are not destroyed properly. Expected: " + objectsToCreate + ". No received "
+              + (objectsToCreate - objectsLatch.getObjectsDestroyedLatch().getCount())
+              + " ObjectDestroyed event(s)",
           objectsLatch.getObjectsDestroyedLatch().await(TIMEOUT, TimeUnit.SECONDS));
 
       // Verify the memory
       double percentageMemory = getMemoryIncrease();
       if (checkMemory) {
-        Assert.assertTrue("The memory increases more than 0%. The percentage memory was "
-            + percentageMemory, percentageMemory >= 0.0 && percentageMemory <= 10.0);
+        Assert.assertTrue(
+            "The memory increases more than 0%. The percentage memory was " + percentageMemory,
+            percentageMemory >= 0.0 && percentageMemory <= 10.0);
       }
     }
 

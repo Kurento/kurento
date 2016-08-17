@@ -43,7 +43,9 @@ import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
 
 /**
- * Test of a Recorder switching sources from WebRtc Endpoint </p> Media Pipeline(s):
+ * Test of a Recorder switching sources from WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li> ·PlayerEndpoint -> WebRtcEndpoint
  * </li>
@@ -93,20 +95,18 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     TestScenario test = new TestScenario();
     test.addBrowser(BROWSER1,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-        .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/red.y4m")
-        .build());
-    test.addBrowser(
-        BROWSER2,
+            .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/red.y4m")
+            .build());
+    test.addBrowser(BROWSER2,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-        .webPageType(WebPageType.WEBRTC)
-        .video(getTestFilesDiskPath() + "/video/10sec/green.y4m").build());
+            .webPageType(WebPageType.WEBRTC)
+            .video(getTestFilesDiskPath() + "/video/10sec/green.y4m").build());
     test.addBrowser(BROWSER3,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-        .webPageType(WebPageType.WEBRTC)
-        .video(getTestFilesDiskPath() + "/video/10sec/blue.y4m").build());
-    test.addBrowser(BROWSER4,
-        new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-        .webPageType(WebPageType.WEBRTC).build());
+            .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/blue.y4m")
+            .build());
+    test.addBrowser(BROWSER4, new Browser.Builder().browserType(BrowserType.CHROME)
+        .scope(BrowserScope.LOCAL).webPageType(WebPageType.WEBRTC).build());
     return Arrays.asList(new Object[][] { { test } });
   }
 
@@ -129,9 +129,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     WebRtcEndpoint webRtcEpBlue = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-        .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     // Test execution
     getPage(BROWSER1).subscribeLocalEvents("playing");
@@ -139,8 +138,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     getPage(BROWSER1).initWebRtc(webRtcEpRed, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER2).subscribeLocalEvents("playing");
-    getPage(BROWSER2)
-    .initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
+    getPage(BROWSER2).initWebRtc(webRtcEpGreen, WebRtcChannel.AUDIO_AND_VIDEO,
+        WebRtcMode.SEND_ONLY);
 
     getPage(BROWSER3).subscribeLocalEvents("playing");
     getPage(BROWSER3).initWebRtc(webRtcEpBlue, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.SEND_ONLY);
@@ -148,8 +147,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     webRtcEpRed.connect(recorderEp);
     recorderEp.record();
 
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(BROWSER1)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER1).waitForEvent("playing"));
     long webrtcRedConnectionTime = System.currentTimeMillis() - startWebrtc;
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
@@ -158,8 +157,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     // green
     webRtcEpGreen.connect(recorderEp);
 
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(BROWSER2)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER2).waitForEvent("playing"));
     long webrtcGreenConnectionTime = System.currentTimeMillis() - startWebrtc;
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
@@ -168,8 +167,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     // blue
     webRtcEpBlue.connect(recorderEp);
 
-    Assert.assertTrue("Not received media (timeout waiting playing event)", getPage(BROWSER3)
-        .waitForEvent("playing"));
+    Assert.assertTrue("Not received media (timeout waiting playing event)",
+        getPage(BROWSER3).waitForEvent("playing"));
     long webrtcBlueConnectionTime = System.currentTimeMillis() - startWebrtc;
     Thread.sleep(TimeUnit.SECONDS.toMillis(PLAYTIME) / N_PLAYER);
 
@@ -196,10 +195,8 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     // Reloading browser
     getPage(BROWSER3).close();
 
-    long playtime =
-        PLAYTIME
-        + TimeUnit.MILLISECONDS.toSeconds(webrtcRedConnectionTime + webrtcGreenConnectionTime
-            + webrtcBlueConnectionTime);
+    long playtime = PLAYTIME + TimeUnit.MILLISECONDS
+        .toSeconds(webrtcRedConnectionTime + webrtcGreenConnectionTime + webrtcBlueConnectionTime);
 
     checkRecordingFile(recordingFile, BROWSER4, EXPECTED_COLORS, playtime, expectedVideoCodec,
         expectedAudioCodec);

@@ -73,8 +73,8 @@ public class AlphaBlendingWebRtcTest extends FunctionalTest {
             .build());
     test.addBrowser(BROWSER2,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
-            .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/green.y4m")
-            .build());
+            .webPageType(WebPageType.WEBRTC)
+            .video(getTestFilesDiskPath() + "/video/10sec/green.y4m").build());
     test.addBrowser(BROWSER3,
         new Browser.Builder().browserType(BrowserType.CHROME).scope(BrowserScope.LOCAL)
             .webPageType(WebPageType.WEBRTC).video(getTestFilesDiskPath() + "/video/10sec/blue.y4m")

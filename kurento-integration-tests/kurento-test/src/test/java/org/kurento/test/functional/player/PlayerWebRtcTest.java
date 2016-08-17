@@ -40,7 +40,9 @@ import org.kurento.test.config.TestScenario;
 
 /**
  * Test of a PlayerEndpoint with different types of media sources (WEBM, OGV, MOV, MP4, MKV, AVI,
- * 3GP ... all with video and audio) connected to a WebRtc Endpoint </p> Media Pipeline(s):
+ * 3GP ... all with video and audio) connected to a WebRtc Endpoint
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>

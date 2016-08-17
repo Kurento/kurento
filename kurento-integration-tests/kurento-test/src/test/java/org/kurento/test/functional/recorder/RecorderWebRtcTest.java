@@ -50,7 +50,9 @@ import com.google.common.base.Strings;
 
 /**
  * Test of a recorder, using the stream source from a WebRtcEndpoint. Tests recording with audio and
- * video, only audio or only video. </p> Media Pipeline(s):
+ * video, only audio or only video.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li> ·PlayerEndpoint -> WebRtcEndpoint
  * </li>
@@ -66,7 +68,8 @@ import com.google.common.base.Strings;
  * PlayerEndpoint -> WebRtcEndpoint (play of the recording).</li>
  * <li>(Browser) First a WebRtcPeer in send-only sends media. Second, other WebRtcPeer in rcv-only
  * receives media</li>
- * </ul> Main assertion(s):
+ * </ul>
+ * Main assertion(s):
  * <ul>
  * <li>Playing event should be received in remote video tag (in the recording)</li>
  * <li>The color of the received video should be as expected (in the recording)</li>
@@ -132,9 +135,8 @@ public class RecorderWebRtcTest extends BaseRecorder {
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-            .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
     webRtcEp.connect(webRtcEp);
     webRtcEp.connect(recorderEp);
 
@@ -193,8 +195,9 @@ public class RecorderWebRtcTest extends BaseRecorder {
     final String messageAppend = "[played file with media pipeline]";
     final int playtime = PLAYTIME;
 
-    Assert.assertTrue("Not received media in the recording (timeout waiting playing event) "
-        + messageAppend, getPage().waitForEvent("playing"));
+    Assert.assertTrue(
+        "Not received media in the recording (timeout waiting playing event) " + messageAppend,
+        getPage().waitForEvent("playing"));
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(getPage().getTimeout(), SECONDS));
 

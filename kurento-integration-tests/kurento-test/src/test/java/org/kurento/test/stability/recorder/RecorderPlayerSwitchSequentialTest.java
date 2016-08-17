@@ -39,8 +39,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players. </p> Media
- * Pipeline(s):
+ * Stability test for Recorder. Switch 100 times (each 1/2 second) between two players.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>PlayerEndpoint x 2 -> RecorderEndpoint</li>
  * </ul>
@@ -100,9 +101,8 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
         new PlayerEndpoint.Builder(mp, getPlayerUrl("/video/60sec/smpte.webm")).build();
 
     String recordingFile = getRecordUrl(extension);
-    RecorderEndpoint recorderEp =
-        new RecorderEndpoint.Builder(mp, recordingFile).withMediaProfile(mediaProfileSpecType)
-            .build();
+    RecorderEndpoint recorderEp = new RecorderEndpoint.Builder(mp, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     // Start play and record
     playerEp1.play();

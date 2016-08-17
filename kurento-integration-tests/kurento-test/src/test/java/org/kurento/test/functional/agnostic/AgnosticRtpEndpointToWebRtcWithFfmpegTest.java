@@ -42,7 +42,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.utils.Shell;
 
 /**
- * Test agnostic. </p> Media Pipeline(s):
+ * Test agnostic.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>RtpEndpoint -> WebRtcEndpoint</li>
  * </ul>
@@ -107,11 +109,10 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
     getPage().subscribeEvents("playing");
     getPage().initWebRtc(webRtcEp, WebRtcChannel.AUDIO_AND_VIDEO, WebRtcMode.RCV_ONLY);
 
-    String sdp =
-        "v=0\r\n" + "o=- 0 0 IN IP4 0.0.0.0\r\n" + "s=-\r\n" + "t=0 0\r\n"
-            + "m=video 1 RTP/SAVP 96\r\n" + "c=IN IP4 0.0.0.0\r\n" + "a=rtpmap:96 H264/90000\r\n"
-            + "a=fmtp:96 packetization-mode=1\r\n"
-            + "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW";
+    String sdp = "v=0\r\n" + "o=- 0 0 IN IP4 0.0.0.0\r\n" + "s=-\r\n" + "t=0 0\r\n"
+        + "m=video 1 RTP/SAVP 96\r\n" + "c=IN IP4 0.0.0.0\r\n" + "a=rtpmap:96 H264/90000\r\n"
+        + "a=fmtp:96 packetization-mode=1\r\n"
+        + "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW";
 
     rtpEp.processOffer(sdp, new Continuation<String>() {
 
@@ -135,11 +136,9 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
     String kmsIp = kmsUriParse[1].split(":")[0];
 
     String mediaPath = FILE + "://" + getTestFilesDiskPath() + "/video/30sec/rgb.mp4";
-    String ffmpegCmd =
-        "ffmpeg -re -i "
-            + mediaPath
-            + " -an -vcodec libx264 -profile:v baseline -level 3.0 -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW srtp://"
-            + kmsIp + ":" + port;
+    String ffmpegCmd = "ffmpeg -re -i " + mediaPath
+        + " -an -vcodec libx264 -profile:v baseline -level 3.0 -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ZDJ4Ump3N0xtRTg0V0k4OWJNaXpKRFl3ejZ0QVJW srtp://"
+        + kmsIp + ":" + port;
 
     log.debug("Media Path: {}", mediaPath);
     log.debug("Uri: {}:{}", kmsIp, port);
@@ -155,8 +154,8 @@ public class AgnosticRtpEndpointToWebRtcWithFfmpegTest extends FunctionalTest {
 
     Color[] expectedColors = { Color.RED, Color.GREEN, Color.BLUE };
     for (Color expectedColor : expectedColors) {
-      Assert.assertTrue("The color of the video should be " + expectedColor, getPage()
-          .similarColor(expectedColor));
+      Assert.assertTrue("The color of the video should be " + expectedColor,
+          getPage().similarColor(expectedColor));
     }
 
     mp.release();

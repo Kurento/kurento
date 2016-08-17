@@ -47,7 +47,9 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. WebRTC one to many with recorders. </p> Media Pipeline(s):
+ * Stability test for Recorder. WebRTC one to many with recorders.
+ * </p>
+ * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> N x (WebRtcEndpoint -> RecorderEndpoint)</li>
  * </ul>
@@ -70,7 +72,8 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>--</li>
  * </ul>
  * <strong>Description</strong>: Stability test for Recorder. WebRTC one to many with recorders.
- * </p> <strong>Pipeline</strong>:
+ * </p>
+ * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> N WebRtcEndpoint X RecorderEndpoint</li>
  * </ul>
@@ -134,9 +137,8 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
           // N Receiver WebRTC and Recorder
           webRtcReceiver[i - 1] = new WebRtcEndpoint.Builder(pipeline).build();
           recordingFile[i - 1] = getRecordUrl("-receiver" + i + extension);
-          recorder[i - 1] =
-              new RecorderEndpoint.Builder(pipeline, recordingFile[i - 1]).withMediaProfile(
-                  mediaProfileSpecType).build();
+          recorder[i - 1] = new RecorderEndpoint.Builder(pipeline, recordingFile[i - 1])
+              .withMediaProfile(mediaProfileSpecType).build();
 
           webRtcSender.connect(webRtcReceiver[i - 1]);
           webRtcSender.connect(recorder[i - 1]);

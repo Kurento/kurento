@@ -93,8 +93,8 @@ public class PlayerMultiplePauseTest extends StabilityTest {
 
     for (int i = 0; i < numPauses; i++) {
       // Assert color
-      Assert.assertTrue("The color of the video should be " + expectedColor, getPage()
-          .similarColor(expectedColor));
+      Assert.assertTrue("The color of the video should be " + expectedColor,
+          getPage().similarColor(expectedColor));
 
       // Pause and wait
       playerEp.pause();

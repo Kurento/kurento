@@ -37,12 +37,10 @@ public class AssertMedia {
   public static void assertCodecs(String pathToMedia, String expectedVideoCodec,
       String expectedAudioCodec) {
     MediaInfo info = getInfoByPath(pathToMedia);
-    String videoFormat =
-        info.get(MediaInfo.StreamKind.Video, 0, "Format", MediaInfo.InfoKind.Text,
-            MediaInfo.InfoKind.Name);
-    String audioFormat =
-        info.get(MediaInfo.StreamKind.Audio, 0, "Format", MediaInfo.InfoKind.Text,
-            MediaInfo.InfoKind.Name);
+    String videoFormat = info.get(MediaInfo.StreamKind.Video, 0, "Format", MediaInfo.InfoKind.Text,
+        MediaInfo.InfoKind.Name);
+    String audioFormat = info.get(MediaInfo.StreamKind.Audio, 0, "Format", MediaInfo.InfoKind.Text,
+        MediaInfo.InfoKind.Name);
     info.close();
 
     if (expectedVideoCodec != null) {
@@ -62,9 +60,8 @@ public class AssertMedia {
   public static void assertAudioDuration(String pathToMedia, double expectedDurationMs,
       double thresholdMs) {
     MediaInfo info = getInfoByPath(pathToMedia);
-    String audioDuration =
-        info.get(MediaInfo.StreamKind.Audio, 0, "Duration", MediaInfo.InfoKind.Text,
-            MediaInfo.InfoKind.Name);
+    String audioDuration = info.get(MediaInfo.StreamKind.Audio, 0, "Duration",
+        MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
     info.close();
 
     Assert.assertFalse("Audio duration is empty or null in " + pathToMedia,
@@ -80,9 +77,8 @@ public class AssertMedia {
   public static void assertGeneralDuration(String pathToMedia, double expectedDurationMs,
       double thresholdMs) {
     MediaInfo info = getInfoByPath(pathToMedia);
-    String generalDuration =
-        info.get(MediaInfo.StreamKind.General, 0, "Duration", MediaInfo.InfoKind.Text,
-            MediaInfo.InfoKind.Name);
+    String generalDuration = info.get(MediaInfo.StreamKind.General, 0, "Duration",
+        MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
     info.close();
 
     Assert.assertFalse("General duration is empty or null in " + pathToMedia,
@@ -126,14 +122,13 @@ public class AssertMedia {
       pathToMedia = protocol + "://" + path;
       String pathDownload =
           KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator + path;
-      String pathOut =
-          KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator
+      String pathOut = KurentoTest.getDefaultOutputFolder().getAbsolutePath() + File.separator
           + path.replace("/test", "/ffmpeg");
       // Download file from S3
       Shell.runAndWaitString("aws s3 cp " + pathToMedia + " " + pathDownload);
       // Use ffmpeg for adding duration
-      Shell.runAndWaitString("ffmpeg -y -i " + pathDownload + " -c:a copy -c:v copy -map 0 "
-          + pathOut);
+      Shell.runAndWaitString(
+          "ffmpeg -y -i " + pathDownload + " -c:a copy -c:v copy -map 0 " + pathOut);
       info.open(new File(pathOut));
       return info;
     } else if (Protocol.MONGODB.toString().equals(protocol)) {

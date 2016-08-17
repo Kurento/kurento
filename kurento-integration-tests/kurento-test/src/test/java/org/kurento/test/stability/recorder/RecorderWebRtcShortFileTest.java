@@ -44,7 +44,8 @@ import org.kurento.test.config.TestScenario;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * Stability test for Recorder. Record one file each (2 seconds) from the same WebRtcEndpoint </p>
+ * Stability test for Recorder. Record one file each (2 seconds) from the same WebRtcEndpoint
+ * </p>
  * Media Pipeline(s):
  * <ul>
  * <li>WebRtcEndpoint -> N RecorderEndpoint</li>
@@ -103,9 +104,8 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
     MediaPipeline pipeline = kurentoClient.createMediaPipeline();
     final WebRtcEndpoint webRtcSender = new WebRtcEndpoint.Builder(pipeline).build();
     final String recordingFile = getRecordUrl(extension);
-    final RecorderEndpoint recorder =
-        new RecorderEndpoint.Builder(pipeline, recordingFile)
-    .withMediaProfile(mediaProfileSpecType).build();
+    final RecorderEndpoint recorder = new RecorderEndpoint.Builder(pipeline, recordingFile)
+        .withMediaProfile(mediaProfileSpecType).build();
 
     // WebRTC sender negotiation
     getPage().subscribeLocalEvents("playing");
@@ -129,8 +129,8 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
     Thread.sleep(4000);
 
     AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
-    AssertMedia.assertDuration(recordingFile, testDurationMillis / 2, (testDurationMillis / 2)
-        + THRESHOLD_MS);
+    AssertMedia.assertDuration(recordingFile, testDurationMillis / 2,
+        (testDurationMillis / 2) + THRESHOLD_MS);
 
     // Release Media Pipeline
     if (pipeline != null) {
