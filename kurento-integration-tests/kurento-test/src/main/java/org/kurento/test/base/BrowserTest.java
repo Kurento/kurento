@@ -79,7 +79,11 @@ import org.kurento.test.browser.WebPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.TestScenario;
 import org.kurento.test.internal.AbortableCountDownLatch;
+import org.kurento.test.lifecycle.FailedTest;
 import org.kurento.test.utils.Shell;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -102,7 +106,9 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public static final String PNG = ".png";
   public static final String Y4M = ".y4m";
 
-  private Map<String, W> pages = new ConcurrentHashMap<>();
+  private static Map<String, LogEntries> browserLogs = new ConcurrentHashMap<>();
+
+  private final Map<String, W> pages = new ConcurrentHashMap<>();
 
   @Before
   public void setupBrowserTest() throws InterruptedException {
@@ -152,11 +158,32 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public void teardownBrowserTest() {
     if (testScenario != null) {
       for (Browser browser : testScenario.getBrowserMap().values()) {
+        browserLogs.put(browser.getId(),
+            browser.getWebDriver().manage().logs().get(LogType.BROWSER));
+
         try {
           browser.close();
         } catch (Exception e) {
           log.warn("Exception closing browser {}", browser.getId(), e);
         }
+      }
+    }
+  }
+
+  @FailedTest
+  public static void storeBrowsersLogs() {
+    List<String> lines = new ArrayList<>();
+    for (String browserKey : browserLogs.keySet()) {
+      for (LogEntry logEntry : browserLogs.get(browserKey)) {
+        lines.add(logEntry.toString());
+      }
+
+      File file = new File(getDefaultOutputTestPath() + browserKey + ".log");
+
+      try {
+        FileUtils.writeLines(file, lines);
+      } catch (IOException e) {
+        log.error("Error while writing browser log to a file", e);
       }
     }
   }
@@ -669,8 +696,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     List<String> ocrList2 = new ArrayList<>();
     int i = 0;
     for (; i < Math.min(ls1.length, ls2.length); i++) {
-      String ocr1 = this.ocr((BufferedImage) ImageIO.read(ls1[i]));
-      String ocr2 = this.ocr((BufferedImage) ImageIO.read(ls2[i]));
+      String ocr1 = this.ocr(ImageIO.read(ls1[i]));
+      String ocr2 = this.ocr(ImageIO.read(ls2[i]));
       ocrList1.add(ocr1);
       ocrList2.add(ocr2);
 
@@ -691,6 +718,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
   public void getFrames(final File inputFile, final File tmpFolder) {
     Thread t = new Thread() {
+      @Override
       public void run() {
         String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(),
             tmpFolder.toString() + File.separator + inputFile.getName() + "-%03d" + PNG };
@@ -729,6 +757,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         waitMilliSeconds(500); // polling
       }
       files = dir.listFiles(new FilenameFilter() {
+        @Override
         public boolean accept(File dir, String name) {
           return name.toLowerCase().endsWith(ext);
         }
