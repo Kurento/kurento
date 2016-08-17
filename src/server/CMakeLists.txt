@@ -6,8 +6,20 @@ include (CodeGenerator)
 
 add_subdirectory(implementation/HttpServer)
 
+set (KMS_ELEMENTS_IMPL_SOURCES
+  implementation/CertificateManager.cpp
+)
+
+set (KMS_ELEMENTS_IMPL_HEADERS
+  implementation/CertificateManager.hpp
+)
+
 generate_code (
   MODELS ${CMAKE_CURRENT_SOURCE_DIR}/interface
+  SERVER_IMPL_LIB_EXTRA_SOURCES
+      ${KMS_ELEMENTS_IMPL_SOURCES}
+  SERVER_IMPL_LIB_EXTRA_HEADERS
+      ${KMS_ELEMENTS_IMPL_HEADERS}
   SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/../gst-plugins/webrtcendpoint
       ${CMAKE_CURRENT_SOURCE_DIR}/../gst-plugins
