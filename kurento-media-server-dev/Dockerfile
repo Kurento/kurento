@@ -5,7 +5,7 @@
 FROM      ubuntu:14.04
 MAINTAINER Kurento <admin@kurento.org>
 
-RUN	echo "deb http://ubuntuci.kurento.org trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento.list \
+RUN	echo "deb http://ubuntu.kurento.org trusty-dev kms6" | tee /etc/apt/sources.list.d/kurento.list \
 	&& apt-key adv --keyserver keyserver.ubuntu.com --recv 2F819BC0 \
 	&& apt-get update \
 	&& apt-get -y dist-upgrade \

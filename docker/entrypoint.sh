@@ -1,12 +1,14 @@
-#!/bin/bash
+#!/bin/bash -x
 set -e
 
-if [ ! -z "$COTURN_PORT_3478_TCP_ADDR" ]; then
-  if [ ! -z "$COTURN_PORT_3478_TCP_PORT" ]; then
-    # Generate WebRtcEndpoint configuration
-    echo "stunServerAddress=$COTURN_PORT_3478_TCP_ADDR" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-    echo "stunServerPort=$COTURN_PORT_3478_TCP_PORT" >> /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-  fi
+if [ -n "$KMS_TURN_URL" ]; then
+  echo "turnURL=$KMS_TURN_URL" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
+fi
+
+if [ -n "$KMS_STUN_IP" -a -n "$KMS_STUN_PORT" ]; then
+  # Generate WebRtcEndpoint configuration
+  echo "stunServerAddress=$KMS_STUN_IP" > /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
+  echo "stunServerPort=$KMS_STUN_PORT" >> /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
 fi
 
 # Remove ipv6 local loop until ipv6 is supported
