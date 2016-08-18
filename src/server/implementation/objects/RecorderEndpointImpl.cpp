@@ -132,7 +132,7 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
 
 void RecorderEndpointImpl::postConstructor()
 {
-  MediaElementImpl::postConstructor();
+  UriEndpointImpl::postConstructor();
 
   handlerOnStateChanged = register_signal_handler (G_OBJECT (element),
                           "state-changed",
