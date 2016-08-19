@@ -112,6 +112,12 @@ RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
     GST_INFO ("Set MP4 AUDIO ONLY profile");
     break;
 
+  case MediaProfileSpecType::JPEG_VIDEO_ONLY:
+    g_object_set ( G_OBJECT (element), "profile",
+                   KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY, NULL);
+    GST_INFO ("Set JPEG profile");
+    break;
+
   case MediaProfileSpecType::KURENTO_SPLIT_RECORDER:
     if (!RecorderEndpointImpl::support_ksr) {
       throw KurentoException (MEDIA_OBJECT_ILLEGAL_PARAM_ERROR,

@@ -276,9 +276,28 @@ kms_av_muxer_create_muxer (KmsAVMuxer * self)
       g_object_unref (file_sink_factory);
       return mux;
     }
+    case KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY:
+      return gst_element_factory_make ("jifmux", NULL);
     default:
       GST_ERROR_OBJECT (self, "No valid recording profile set");
       return NULL;
+  }
+}
+
+static const gchar *
+kms_av_muxer_get_sink_pad_name (KmsRecordingProfile profile,
+    KmsElementPadType type)
+{
+  if (type == KMS_ELEMENT_PAD_TYPE_VIDEO) {
+    if (profile == KMS_RECORDING_PROFILE_JPEG_VIDEO_ONLY) {
+      return "sink";
+    } else {
+      return "video_%u";
+    }
+  } else if (type == KMS_ELEMENT_PAD_TYPE_AUDIO) {
+    return "audio_%u";
+  } else {
+    return NULL;
   }
 }
 
@@ -311,8 +330,17 @@ kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
 
   if (kms_recording_profile_supports_type (KMS_BASE_MEDIA_MUXER_GET_PROFILE
           (self), KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+    const gchar *pad_name =
+        kms_av_muxer_get_sink_pad_name (KMS_BASE_MEDIA_MUXER_GET_PROFILE (self),
+        KMS_ELEMENT_PAD_TYPE_VIDEO);
+
+    if (pad_name == NULL) {
+      GST_ERROR_OBJECT (self, "Unsupported pad for recording");
+      return;
+    }
+
     if (!gst_element_link_pads (self->priv->videosrc, "src", self->priv->mux,
-            "video_%u")) {
+            pad_name)) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
           self->priv->videosrc, self->priv->mux);
@@ -321,8 +349,17 @@ kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
 
   if (kms_recording_profile_supports_type (KMS_BASE_MEDIA_MUXER_GET_PROFILE
           (self), KMS_ELEMENT_PAD_TYPE_AUDIO)) {
+    const gchar *pad_name =
+        kms_av_muxer_get_sink_pad_name (KMS_BASE_MEDIA_MUXER_GET_PROFILE (self),
+        KMS_ELEMENT_PAD_TYPE_AUDIO);
+
+    if (pad_name == NULL) {
+      GST_ERROR_OBJECT (self, "Unsupported pad for recording");
+      return;
+    }
+
     if (!gst_element_link_pads (self->priv->audiosrc, "src", self->priv->mux,
-            "audio_%u")) {
+            pad_name)) {
       GST_ERROR_OBJECT (self,
           "Could not link elements: %" GST_PTR_FORMAT ", %" GST_PTR_FORMAT,
           self->priv->audiosrc, self->priv->mux);
