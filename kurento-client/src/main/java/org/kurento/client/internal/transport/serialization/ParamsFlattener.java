@@ -391,6 +391,8 @@ public class ParamsFlattener {
           return unflattedComplexType(clazz, props, manager);
         } else if (value instanceof List) {
           return unflattenList(paramName, (List<?>) value, type, manager);
+        } else if (value == null) {
+          return null;
         } else {
           throw new ProtocolException(
               "A objectRef coded with a String or a Props is expected for param type '" + type
