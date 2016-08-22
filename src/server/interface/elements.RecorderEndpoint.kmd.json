@@ -129,13 +129,13 @@
     {
       "name": "Paused",
       "extends": "Media",
-      "doc": "Fired when the recorder goes to pause state",
+      "doc": "@deprecated</br>Fired when the recorder goes to pause state",
       "properties": []
     },
     {
       "name": "Stopped",
       "extends": "Media",
-      "doc": "Fired when the recorder has been stopped and all the media has been written to storage.",
+      "doc": "@deprecated</br>Fired when the recorder has been stopped and all the media has been written to storage.",
       "properties": []
     }
   ]

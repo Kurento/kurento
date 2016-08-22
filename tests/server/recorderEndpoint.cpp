@@ -137,20 +137,33 @@ recorder_state_changes ()
   std::atomic<int> recording_changes (0);
   std::atomic<int> pause_changes (0);
   std::atomic<int> stop_changes (0);
+  std::atomic<int> start_changes (0);
 
   std::shared_ptr <RecorderEndpointImpl> recorder = createRecorderEndpoint ();
   std::shared_ptr <MediaElementImpl> src = createTestSrc();
 
+  recorder->signalUriEndpointStateChanged.connect ([&] (UriEndpointStateChanged
+  event) {
+    std::cout << "Recorder state: " << event.getState()->getString()
+              << std::endl;
+
+    switch (event.getState()->getValue() ) {
+    case UriEndpointState::STOP:
+      stop_changes++;
+      break;
+
+    case UriEndpointState::PAUSE:
+      pause_changes++;
+      break;
+
+    case UriEndpointState::START:
+      start_changes++;
+      break;
+    }
+  });
+
   recorder->signalRecording.connect ([&] (Recording event) {
     recording_changes++;
-  });
-
-  recorder->signalPaused.connect ([&] (Paused event) {
-    pause_changes++;
-  });
-
-  recorder->signalStopped.connect ([&] (Stopped event) {
-    stop_changes++;
   });
 
   src->connect (recorder);
@@ -207,6 +220,7 @@ recorder_state_changes ()
   BOOST_REQUIRE (codecs.find ("opus") != std::string::npos);
 
   std::cout << "recording_changes: " << recording_changes << std::endl;
+  std::cout << "start_changes: " << start_changes << std::endl;
   std::cout << "stop_changes: " << stop_changes << std::endl;
   std::cout << "pause_changes: " << pause_changes << std::endl;
 
@@ -217,6 +231,8 @@ recorder_state_changes ()
   BOOST_CHECK_LE (recording_changes, 6);
   BOOST_CHECK_LE (stop_changes, 5);
   BOOST_CHECK_LE (pause_changes, 7);
+
+  BOOST_CHECK_EQUAL (recording_changes, start_changes);
 
   uri = uri.substr (sizeof ("file://") - 1);
 
