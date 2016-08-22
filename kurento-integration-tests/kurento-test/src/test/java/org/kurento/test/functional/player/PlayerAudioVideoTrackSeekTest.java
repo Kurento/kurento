@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -72,7 +73,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
   }
 
   private void initTest(Protocol protocol, String nameMedia) throws Exception {
-    final Map<Integer, Color> expectedPositionAndColor = new LinkedHashMap<Integer, Color>();
+    final Map<Integer, Color> expectedPositionAndColor = new LinkedHashMap<>();
     expectedPositionAndColor.put(2000, Color.RED);
     expectedPositionAndColor.put(20000, Color.BLUE);
     expectedPositionAndColor.put(10000, Color.GREEN);
@@ -106,7 +107,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Test
+  @Ignore
   public void testPlayerAudioVideoSeekHttpWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/30sec/rgb.webm";

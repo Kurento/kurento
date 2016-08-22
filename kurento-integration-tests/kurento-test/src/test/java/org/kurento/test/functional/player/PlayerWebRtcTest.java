@@ -34,6 +34,7 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.config.TestScenario;
@@ -346,7 +347,7 @@ public class PlayerWebRtcTest extends FunctionalPlayerTest {
     testPlayerWithSmallFile(S3, MKV, VIDEO_ONLY);
   }
 
-  @Test
+  @Ignore
   public void testPlayerWebRtcAudioOnlyS3Mkv() throws Exception {
     testPlayerWithSmallFile(S3, MKV, AUDIO_ONLY);
   }

@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Continuation;
@@ -81,12 +82,12 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
     return TestScenario.localChromeAndFirefox();
   }
 
-  @Test
+  @Ignore
   public void testRecorderSwitchSameFormatPlayerWithPassThroughWebm() throws Exception {
     doTestSameFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
   }
 
-  @Test
+  @Ignore
   public void testRecorderSwitchSameFormatPlayerWithPassThroughMp4() throws Exception {
     doTestSameFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
@@ -102,7 +103,7 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
     doTestDifferentFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
-  @Test
+  @Ignore
   public void testRecorderSwitchFrameRateDifferentPlayerWithPassThroughWebm() throws Exception {
     doTestFrameRateDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
@@ -133,7 +134,7 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
         EXTENSION_WEBM);
   }
 
-  @Test
+  @Ignore
   public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWithPassThroughMp4()
       throws Exception {
     doTestFrameRateAndFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,

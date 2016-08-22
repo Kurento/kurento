@@ -129,7 +129,7 @@ public class RecorderSwitchWebRtcWebRtcAndPlayerTest extends BaseRecorder {
         getPlayerUrl("/video/15sec/rgb640x360.webm"));
   }
 
-  @Test
+  @Ignore
   public void testRecorderSwitchWebRtcPlayerMp4() throws Exception {
     doTestWithPlayer(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM,
         getPlayerUrl("/video/15sec/rgb.mp4"));
