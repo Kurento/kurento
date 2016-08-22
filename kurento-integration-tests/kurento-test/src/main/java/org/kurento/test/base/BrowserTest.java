@@ -158,9 +158,12 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public void teardownBrowserTest() {
     if (testScenario != null) {
       for (Browser browser : testScenario.getBrowserMap().values()) {
-        browserLogs.put(browser.getId(),
-            browser.getWebDriver().manage().logs().get(LogType.BROWSER));
-
+        try {
+          browserLogs.put(browser.getId(),
+              browser.getWebDriver().manage().logs().get(LogType.BROWSER));
+        } catch (Exception e) {
+          log.warn("Exception getting logs {}", browser.getId(), e);
+        }
         try {
           browser.close();
         } catch (Exception e) {
