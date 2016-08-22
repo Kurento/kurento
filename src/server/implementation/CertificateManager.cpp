@@ -299,6 +299,46 @@ CertificateManager::generateECDSACertificate ()
   return certificateECDSA;
 }
 
+bool
+CertificateManager::isCertificateValid (std::string certificate)
+{
+  std::shared_ptr <BIO> bio;
+  std::shared_ptr <X509> x509;
+  std::shared_ptr <EVP_PKEY> private_key;
+
+  bio = std::shared_ptr<BIO>
+        (BIO_new_mem_buf ( (gpointer) certificate.c_str (), -1),
+  [] (BIO * obj) {
+    BIO_free_all (obj);
+  });
+
+  if (!bio) {
+    return false;
+  }
+
+  x509 = std::shared_ptr<X509> (PEM_read_bio_X509 (bio.get(), NULL, NULL, NULL),
+  [] (X509 * obj) {
+    X509_free (obj);
+  });
+
+  if (!x509) {
+    return false;
+  }
+
+  (void) BIO_reset (bio.get() );
+  private_key = std::shared_ptr<EVP_PKEY> (PEM_read_bio_PrivateKey (bio.get(),
+                NULL, NULL, NULL),
+  [] (EVP_PKEY * obj) {
+    EVP_PKEY_free (obj);
+  });
+
+  if (!private_key) {
+    return false;
+  }
+
+  return true;
+}
+
 CertificateManager::StaticConstructor CertificateManager::staticConstructor;
 
 CertificateManager::StaticConstructor::StaticConstructor()

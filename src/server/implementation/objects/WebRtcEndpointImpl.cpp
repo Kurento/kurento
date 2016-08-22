@@ -417,6 +417,11 @@ WebRtcEndpointImpl::getCerficateFromFile (std::string &path)
   strStream << inFile.rdbuf();
   certificate = strStream.str();
 
+  if (!CertificateManager::isCertificateValid (certificate) ) {
+    GST_ERROR ("Certificate in file %s is not valid", path.c_str () );
+    return "";
+  }
+
   return certificate;
 }
 

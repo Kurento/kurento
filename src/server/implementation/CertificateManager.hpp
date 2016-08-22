@@ -28,6 +28,7 @@ class CertificateManager
 public:
   static std::string generateRSACertificate ();
   static std::string generateECDSACertificate ();
+  static bool isCertificateValid (std::string certificate);
 
 private:
   class StaticConstructor
