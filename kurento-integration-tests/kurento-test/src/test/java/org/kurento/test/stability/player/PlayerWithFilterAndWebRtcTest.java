@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.EndOfStreamEvent;
@@ -80,7 +81,7 @@ public class PlayerWithFilterAndWebRtcTest extends StabilityTest {
     return TestScenario.localChromeAndFirefox();
   }
 
-  @Test
+  @Ignore
   public void testPlayerWithFilterAndWebRtcHD() throws Exception {
     String mediaUrl = "http://" + getTestFilesHttpPath() + "/video/15sec/rgbHD.webm";
     Color expectedColor = Color.RED;

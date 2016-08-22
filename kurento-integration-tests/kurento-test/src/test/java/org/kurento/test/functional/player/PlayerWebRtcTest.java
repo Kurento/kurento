@@ -407,7 +407,7 @@ public class PlayerWebRtcTest extends FunctionalPlayerTest {
     testPlayerWithSmallFile(S3, WEBM, VIDEO_ONLY);
   }
 
-  @Test
+  @Ignore
   public void testPlayerWebRtcAudioOnlyS3Webm() throws Exception {
     testPlayerWithSmallFile(S3, WEBM, AUDIO_ONLY);
   }
