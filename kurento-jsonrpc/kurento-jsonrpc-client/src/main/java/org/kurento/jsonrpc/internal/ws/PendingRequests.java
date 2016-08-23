@@ -44,7 +44,7 @@ public class PendingRequests {
 
     if (responseFuture == null) {
       // TODO It is necessary to do something else? Who is watching this?
-      log.error("Received response with an id not registered as pending request");
+      log.warn("Received response {} with an id not registered as pending request. Maybe the request timed out", response);
     } else {
       responseFuture.set(response);
     }
