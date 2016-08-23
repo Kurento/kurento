@@ -24,8 +24,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.client.AbstractJsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.Handler;
-import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionAdapter;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.kurento.jsonrpc.test.util.EventWaiter;
@@ -46,8 +46,11 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       }
     };
 
-    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-        "ws://localhost:65000/reconnection", listener)) {
+    String backupPort = getPort();
+    System.setProperty("http.port", "65000");
+
+    try (AbstractJsonRpcClientWebSocket client =
+        createJsonRpcClientWebSocket("/reconnection", listener)) {
 
       client.onConnectionFailed(new Handler() {
         @Override
@@ -56,12 +59,16 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
         }
       });
 
-      client.sendRequest("sessiontest", String.class);
+      client.sendRequest(
+          "givenPortWithoutServer_whenClientTryToConnect_thenAnExceptionIsThrownAndConnectionFailedEventIsFired",
+          String.class);
 
       fail("KurentoException informing connection exception should be thrown");
 
     } catch (KurentoException e) {
       assertThat(e.getMessage()).contains("Exception connecting to");
+    } finally {
+      System.setProperty("http.port", backupPort);
     }
 
     connectionFailed.waitFor(20000);
@@ -82,8 +89,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       }
     };
 
-    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+    try (AbstractJsonRpcClientWebSocket client =
+        createJsonRpcClientWebSocket("/reconnection", listener)) {
 
       client.onConnected(new Handler() {
 
@@ -94,7 +101,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
       });
 
-      client.sendRequest("sessiontest", String.class);
+      client.sendRequest("givenServer_whenClientIsConnected_thenConnectedEventIsFired",
+          String.class);
 
       connected.waitFor(20000);
       connectedHandler.waitFor(20000);
@@ -115,8 +123,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       }
     };
 
-    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+    try (AbstractJsonRpcClientWebSocket client =
+        createJsonRpcClientWebSocket("/reconnection", listener)) {
 
       client.onDisconnected(new Handler() {
         @Override
@@ -125,7 +133,9 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
         }
       });
 
-      client.sendRequest("sessiontest", String.class);
+      client.sendRequest(
+          "givenConnectedClient_whenClientIsClosedByUser_thenDisconnectedEventIsFired",
+          String.class);
       client.close();
 
       disconnected.waitFor(20000);
@@ -147,8 +157,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       }
     };
 
-    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+    try (AbstractJsonRpcClientWebSocket client =
+        createJsonRpcClientWebSocket("/reconnection", listener)) {
 
       client.onDisconnected(new Handler() {
         @Override
@@ -157,7 +167,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
         }
       });
 
-      client.sendRequest("sessiontest", String.class);
+      client.sendRequest("givenConnectedClient_whenServerIsClosed_thenDisconnectedEventIsFired",
+          String.class);
 
       stopServer();
 
@@ -178,7 +189,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
     final EventWaiter closedByClientWhenDisconnected = new EventWaiter(
         "closedByClientWhenDisconnected");
 
-    final JsonRpcClientWebSocket[] clientForListener = new JsonRpcClientWebSocket[1];
+    final AbstractJsonRpcClientWebSocket[] clientForListener =
+        new AbstractJsonRpcClientWebSocket[1];
 
     JsonRpcWSConnectionAdapter listener = new JsonRpcWSConnectionAdapter() {
 
@@ -191,8 +203,8 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
       }
     };
 
-    try (JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(
-        "ws://localhost:" + getPort() + "/reconnection", listener)) {
+    try (AbstractJsonRpcClientWebSocket client =
+        createJsonRpcClientWebSocket("/reconnection", listener)) {
 
       client.onDisconnected(new Handler() {
         @Override
@@ -203,7 +215,9 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
       clientForListener[0] = client;
 
-      client.sendRequest("sessiontest", String.class);
+      client.sendRequest(
+          "givenConnectedClient_whenClientIsClosedByUser_thenIsClosedByUserMethodIsTrueWhenDisconnectedEventIsReceived",
+          String.class);
       client.close();
 
       disconnected.waitFor(20000);

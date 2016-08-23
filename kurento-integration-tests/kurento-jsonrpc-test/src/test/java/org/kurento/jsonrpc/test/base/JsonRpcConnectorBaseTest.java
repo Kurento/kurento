@@ -23,16 +23,20 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.JsonRpcConnectorTests;
+import org.kurento.jsonrpc.client.AbstractJsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientHttp;
 import org.kurento.jsonrpc.client.JsonRpcClientNettyWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @Category(JsonRpcConnectorTests.class)
 public class JsonRpcConnectorBaseTest {
+  private static final Logger log = LoggerFactory.getLogger(JsonRpcConnectorBaseTest.class);
 
   protected static final int MAX_WS_CONNECTIONS = 50;
   protected static ConfigurableApplicationContext server;
@@ -52,7 +56,7 @@ public class JsonRpcConnectorBaseTest {
 
       application.setDefaultProperties(properties);
 
-      System.out.println("Properties: " + properties);
+      log.debug("Properties: {}", properties);
 
       server = application.run();
 
@@ -100,6 +104,32 @@ public class JsonRpcConnectorBaseTest {
     } else {
       throw new RuntimeException(
           "Unrecognized property value jsonrpcconnector-client-type=" + clientType);
+    }
+
+    return client;
+  }
+
+  protected AbstractJsonRpcClientWebSocket createJsonRpcClientWebSocket(String servicePath,
+      JsonRpcWSConnectionListener listener) {
+
+    String clientType = System.getProperty("jsonrpcconnector-client-type");
+
+    if (clientType == null) {
+      clientType = "ws";
+    }
+
+    String url = "ws://localhost:" + getPort() + servicePath;
+
+    log.debug("Creating JsonRpcClient type={}, url={}", clientType, url);
+    AbstractJsonRpcClientWebSocket client;
+    if ("ws".equals(clientType)) {
+      client = new JsonRpcClientWebSocket(url, listener);
+    } else if ("netty".equals(clientType)) {
+      client =
+          new JsonRpcClientNettyWebSocket(url, listener);
+    } else {
+      throw new RuntimeException("Unrecognized property value jsonrpcconnector-client-type="
+          + clientType + ", has to be ws or netty");
     }
 
     return client;
