@@ -901,7 +901,7 @@ kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
       g_param_spec_int ("network-cache", "Network cache",
           "When using rtsp sources, the amount of ms to buffer",
           0, G_MAXINT, NETWORK_CACHE_DEFAULT,
-          G_PARAM_READABLE | GST_PARAM_MUTABLE_READY));
+          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
   kms_player_endpoint_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
