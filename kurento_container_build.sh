@@ -96,4 +96,6 @@ if [ "$PUSH_IMAGES" = "yes" ]; then
 fi
 
 # Remove dangling images
-docker rmi $(docker images -f "dangling=true" -q) || exit 0
+if [ $(docker images -f "dangling=true" -q | wc-l) -ne 0 ]; then
+  docker rmi $(docker images -f "dangling=true" -q) || exit 0
+fi
