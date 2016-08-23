@@ -258,7 +258,7 @@ public class BaseRecorder extends FunctionalTest {
 
     for (Color color : expectedColors) {
       Assert.assertTrue("The color of the recorded video should be " + color + " " + messageAppend,
-          checkPage.similarColor(color));
+          checkPage.similarColorAt(color, 50, 50));
     }
     Assert.assertTrue("Not received EOS event in player",
         eosLatch.await(checkPage.getTimeout(), TimeUnit.SECONDS));

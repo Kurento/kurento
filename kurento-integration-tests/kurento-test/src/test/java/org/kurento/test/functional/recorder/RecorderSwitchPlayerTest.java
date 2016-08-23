@@ -187,10 +187,11 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTestFrameSizeDifferent(MediaProfileSpecType mediaProfileSpecType,
       String expectedVideoCodec, String expectedAudioCodec, String extension) throws Exception {
-    String[] mediaUrls = { getPlayerUrl("/video/format/chrome640x360.mp4"),
-        getPlayerUrl("/video/format/small.mp4"), getPlayerUrl("/video/format/chrome640x360.mp4") };
+    String[] mediaUrls = { getPlayerUrl("/video/format/sintel.webm"),
+        getPlayerUrl("/video/format/chrome640x360.mp4"),
+        getPlayerUrl("/video/format/sintel.webm") };
     Color[] expectedColors =
-        { new Color(150, 50, 50), new Color(80, 40, 40), new Color(150, 50, 50) };
+      { Color.BLACK, new Color(150, 50, 50), Color.BLACK };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
         expectedColors);
