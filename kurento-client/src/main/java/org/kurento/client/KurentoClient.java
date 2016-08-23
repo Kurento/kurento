@@ -31,7 +31,7 @@ import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.AbstractJsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.jsonrpc.client.JsonRpcClientNettyWebSocket;
+import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +118,7 @@ public class KurentoClient {
 
   public static KurentoClient create(String websocketUrl, Properties properties) {
     log.debug("Connecting to kms in {}", websocketUrl);
-    JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(websocketUrl);
+    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl);
     configureJsonRpcClient(client);
     return new KurentoClient(client);
   }
@@ -144,7 +144,7 @@ public class KurentoClient {
   public static KurentoClient create(String websocketUrl, KurentoConnectionListener listener,
       Properties properties) {
     log.debug("Connecting to KMS in {}", websocketUrl);
-    JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(websocketUrl,
+    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(websocketUrl,
         JsonRpcConnectionListenerKurento.create(listener));
     configureJsonRpcClient(client);
     return new KurentoClient(client);
@@ -166,7 +166,7 @@ public class KurentoClient {
 
     log.debug("Connecting to KMS in {}", kmsWsUri);
 
-    JsonRpcClientNettyWebSocket client = new JsonRpcClientNettyWebSocket(kmsWsUri);
+    JsonRpcClientWebSocket client = new JsonRpcClientWebSocket(kmsWsUri);
 
     if (connectionTimeout != null) {
       client.setConnectionTimeout(connectionTimeout.intValue());
@@ -304,7 +304,7 @@ public class KurentoClient {
   public void createMediaPipeline(Properties properties, final Continuation<MediaPipeline> cont)
       throws KurentoException {
     new AbstractBuilder<MediaPipeline>(MediaPipeline.class, manager).withProperties(properties)
-        .buildAsync(cont);
+    .buildAsync(cont);
   }
 
   public MediaPipeline createMediaPipeline(Transaction tx, Properties properties) {
