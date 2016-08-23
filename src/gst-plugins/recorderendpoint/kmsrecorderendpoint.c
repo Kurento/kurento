@@ -1706,7 +1706,9 @@ create_error_data (KmsRecorderEndpoint * self, GstMessage * message)
 
   data = g_slice_new (ErrorData);
   data->self = g_object_ref (self);
-  data->message = gst_message_ref (message);
+  data->message = gst_message_new_custom (GST_MESSAGE_TYPE (message),
+      (GST_OBJECT (self)),
+      gst_structure_copy (gst_message_get_structure (message)));
 
   return data;
 }
