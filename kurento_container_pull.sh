@@ -46,7 +46,9 @@ pullAndTag kurento/dev-chef:1.0.0
 
 # Selenium images
 echo "Pulling images for selenium version $SELENIUM_VERSION"
-docker pull selenium/hub:$SELENIUM_VERSION
+pullAndTag selenium/base:$SELENIUM_VERSION
+pullAndTag selenium/node-base:$SELENIUM_VERSION
+pullAndTag selenium/hub:$SELENIUM_VERSION
 for image in node-chrome node-firefox node-chrome-beta node-chrome-dev node-firefox-beta
 do
 	pullAndTag kurento/$image:$SELENIUM_VERSION
