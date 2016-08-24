@@ -421,6 +421,7 @@ public class KmsService extends TestService {
 
       for (int i = 0; i < retries; i++) {
         try {
+          log.debug("({}) Wait for KMS: {}. Container: {}", i, wsUri, container);
           Session wsSession = container.connectToServer(new WebSocketClient(),
               ClientEndpointConfig.Builder.create().build(), new URI(wsUri));
           wsSession.close();
@@ -431,6 +432,7 @@ public class KmsService extends TestService {
           return;
         } catch (DeploymentException | IOException | URISyntaxException e) {
           try {
+            log.warn("Exception while waiting for KMS: {}. {}", wsUri, e.getMessage());
             Thread.sleep(waitTime);
           } catch (InterruptedException e1) {
             e1.printStackTrace();
