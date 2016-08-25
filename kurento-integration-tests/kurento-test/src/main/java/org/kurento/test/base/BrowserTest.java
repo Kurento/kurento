@@ -159,8 +159,14 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     if (testScenario != null) {
       for (Browser browser : testScenario.getBrowserMap().values()) {
         try {
-          browserLogs.put(browser.getId(),
-              browser.getWebDriver().manage().logs().get(LogType.BROWSER));
+          if (browser.getWebDriver() != null) {
+            browserLogs.put(browser.getId(),
+                browser.getWebDriver().manage().logs().get(LogType.BROWSER));
+          } else {
+            log.warn("It was not possible to recover logs for {} "
+                + " since browser is no longer available (maybe "
+                + " it has been closed manually or crashed)", browser.getId());
+          }
         } catch (Exception e) {
           log.warn("Exception getting logs {}", browser.getId(), e);
         }
