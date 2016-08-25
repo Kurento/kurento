@@ -368,8 +368,8 @@ public class WebPage {
     boolean out;
     final long endTimeMillis = System.currentTimeMillis() + browser.getTimeout() * 1000;
     while (true) {
-      String messageReceived =
-          (String) browser.executeScript("return kurentoTest.getDataChannelMessage()");
+      String messageReceived = (String) browser
+          .executeScript("return kurentoTest.getDataChannelMessage()");
       out = (message.equals(messageReceived));
       if (out || System.currentTimeMillis() > endTimeMillis) {
         break;
@@ -422,15 +422,15 @@ public class WebPage {
    * getOcrMap
    */
   @SuppressWarnings("unchecked")
-  public Map<String, Map<String, String>> getOcrMap() {
-    Map<String, Map<String, String>> ocrMap =
-        (Map<String, Map<String, String>>) browser.executeScript("return kurentoTest.ocrMap;");
+  public Map<String, Map<String, Object>> getOcrMap() {
+    Map<String, Map<String, String>> ocrMap = (Map<String, Map<String, String>>) browser
+        .executeScript("return kurentoTest.ocrMap;");
 
     // Transform data structure to serializable (because
     // com.google.common.collect.Maps$TransformedEntriesMap is not)
-    Map<String, Map<String, String>> serializableMap = new TreeMap<String, Map<String, String>>();
+    Map<String, Map<String, Object>> serializableMap = new TreeMap<String, Map<String, Object>>();
     for (String key : ocrMap.keySet()) {
-      serializableMap.put(key, new HashMap<String, String>(ocrMap.get(key)));
+      serializableMap.put(key, new HashMap<String, Object>(ocrMap.get(key)));
     }
 
     return serializableMap;
@@ -562,8 +562,8 @@ public class WebPage {
               .until(new ExpectedCondition<Boolean>() {
                 @Override
                 public Boolean apply(WebDriver d) {
-                  Object videoEventValue =
-                      ((JavascriptExecutor) d).executeScript("return kurentoTest.videoEventValue;");
+                  Object videoEventValue = ((JavascriptExecutor) d)
+                      .executeScript("return kurentoTest.videoEventValue;");
                   return videoEventValue != null
                       && videoEventValue.toString().equalsIgnoreCase(eventType);
                 }

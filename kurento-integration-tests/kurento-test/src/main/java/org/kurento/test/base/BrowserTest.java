@@ -115,8 +115,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     if (testScenario != null && testScenario.getBrowserMap() != null
         && testScenario.getBrowserMap().size() > 0) {
       ExecutorService executor = Executors.newFixedThreadPool(testScenario.getBrowserMap().size());
-      final AbortableCountDownLatch latch =
-          new AbortableCountDownLatch(testScenario.getBrowserMap().size());
+      final AbortableCountDownLatch latch = new AbortableCountDownLatch(
+          testScenario.getBrowserMap().size());
       for (final String browserKey : testScenario.getBrowserMap().keySet()) {
 
         executor.execute(new Runnable() {
@@ -405,8 +405,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     fos.close();
   }
 
-  public void processDataToCsv(String outputFile, final Map<String, Map<String, String>> presenter,
-      final Map<String, Map<String, String>> viewer) throws InterruptedException, IOException {
+  public void processDataToCsv(String outputFile, final Map<String, Map<String, Object>> presenter,
+      final Map<String, Map<String, Object>> viewer) throws InterruptedException, IOException {
 
     log.debug("Processing OCR and stats to CSV ({})", outputFile);
     log.trace("Presenter {} : {}", presenter.size(), presenter.keySet());
@@ -430,8 +430,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
           try {
             String matchKey = containSimilarDate(key, viewer.keySet());
             if (matchKey != null) {
-              String presenterBase64 = presenter.get(key).get(LATENCY_KEY);
-              String viewerBase64 = viewer.get(matchKey).get(LATENCY_KEY);
+              String presenterBase64 = presenter.get(key).get(LATENCY_KEY).toString();
+              String viewerBase64 = viewer.get(matchKey).get(LATENCY_KEY).toString();
               String presenterDateStr = ocr(presenterBase64);
               String viewerDateStr = ocr(viewerBase64);
               String latency = String.valueOf(
@@ -488,12 +488,12 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return latency;
   }
 
-  public void processStats(Map<String, Map<String, String>> stats,
+  public void processStats(Map<String, Map<String, Object>> stats,
       Table<Integer, Integer, String> resultTable) {
     Iterator<String> iterator = stats.keySet().iterator();
     for (int i = 0; i < stats.size(); i++) {
       String mapKey = iterator.next();
-      Map<String, String> entryStat = stats.get(mapKey);
+      Map<String, Object> entryStat = stats.get(mapKey);
       for (String key : entryStat.keySet()) {
         if (key.equalsIgnoreCase(LATENCY_KEY)) {
           continue;
@@ -501,13 +501,13 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
         if (!resultTable.row(0).containsValue(key)) {
           int columnCount = resultTable.columnKeySet().size();
           resultTable.put(0, columnCount, key);
-          resultTable.put(1 + i, columnCount, entryStat.get(key));
+          resultTable.put(1 + i, columnCount, entryStat.get(key).toString());
           log.trace("Inserting new header for stat: {} on column {}", key, columnCount);
           log.trace("Inserting first value for stat: {} on row {} column {}", entryStat.get(key),
               (1 + i), columnCount);
         } else {
           int columnIndex = getKeyOfValue(resultTable.row(0), key);
-          resultTable.put(1 + i, columnIndex, entryStat.get(key));
+          resultTable.put(1 + i, columnIndex, entryStat.get(key).toString());
           log.trace("Inserting value for stat: {} on row {} column {}", entryStat.get(key), (1 + i),
               columnIndex);
         }
@@ -665,8 +665,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public File cutVideo(File inputFile, File tmpFolder, int cutFrame, double fps) {
     double cutTime = cutFrame / fps;
     DecimalFormat df = new DecimalFormat("0.00");
-    File cutVideoFile =
-        new File(tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
+    File cutVideoFile = new File(
+        tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
     String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(), "-ss", df.format(cutTime),
         cutVideoFile.getAbsolutePath() };
     log.debug("Running command to cut video: {}", Arrays.toString(command));
