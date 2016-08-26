@@ -32,7 +32,6 @@ import static org.kurento.test.config.VideoFormat.WEBM;
 
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
@@ -142,7 +141,7 @@ public class PlayerMultiplePlayTest extends SimplePlayer {
     testPlayerWithSmallFile(HTTP, MOV, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultiplePlayAudioVideoHttpMp4() throws Exception {
     testPlayerWithSmallFile(HTTP, MP4, AUDIO_AND_VIDEO);
   }
@@ -172,7 +171,7 @@ public class PlayerMultiplePlayTest extends SimplePlayer {
     testPlayerWithSmallFile(HTTP, OGV, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultiplePlayAudioVideoHttpWebm() throws Exception {
     testPlayerWithSmallFile(HTTP, WEBM, AUDIO_AND_VIDEO);
   }
@@ -262,7 +261,7 @@ public class PlayerMultiplePlayTest extends SimplePlayer {
     testPlayerWithSmallFile(FILE, MP4, VIDEO_ONLY);
   }
 
-  @Ignore
+  @Test
   public void testPlayerMultiplePlayAudioVideoFileOgv() throws Exception {
     testPlayerWithSmallFile(FILE, OGV, AUDIO_AND_VIDEO);
   }

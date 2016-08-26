@@ -26,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Continuation;
@@ -82,12 +81,12 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
     return TestScenario.localChromeAndFirefox();
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchSameFormatPlayerWithPassThroughWebm() throws Exception {
     doTestSameFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchSameFormatPlayerWithPassThroughMp4() throws Exception {
     doTestSameFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
@@ -98,18 +97,18 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchDifferentFormatPlayerWithPassThroughMp4() throws Exception {
     doTestDifferentFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateDifferentPlayerWithPassThroughWebm() throws Exception {
     doTestFrameRateDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateDifferentPlayerWithPassThroughMp4() throws Exception {
     doTestFrameRateDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
         EXTENSION_MP4);
@@ -121,20 +120,20 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameSizeDifferentPlayerWithPassThroughMp4() throws Exception {
     doTestFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
         EXTENSION_MP4);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWithPassThroughWebm()
       throws Exception {
     doTestFrameRateAndFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWithPassThroughMp4()
       throws Exception {
     doTestFrameRateAndFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
@@ -187,7 +186,7 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
         getPlayerUrl("/video/format/chrome640x360.mp4"),
         getPlayerUrl("/video/format/sintel.webm") };
     Color[] expectedColors =
-        { Color.BLACK, new Color(150, 50, 50), Color.BLACK };
+      { Color.BLACK, new Color(150, 50, 50), Color.BLACK };
 
     doTest(mediaProfileSpecType, expectedVideoCodec, expectedAudioCodec, extension, mediaUrls,
         expectedColors);
@@ -195,7 +194,7 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
 
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension, String[] mediaUrls, Color[] expectedColors)
-      throws Exception {
+          throws Exception {
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     final CountDownLatch errorPipelinelatch = new CountDownLatch(1);

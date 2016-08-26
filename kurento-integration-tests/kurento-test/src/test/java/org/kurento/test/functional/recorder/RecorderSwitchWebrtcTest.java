@@ -27,7 +27,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Continuation;
@@ -80,7 +79,6 @@ import org.kurento.test.config.TestScenario;
  * @author Ivan Gracia (igracia@kurento.org)
  * @since 6.1.1
  */
-@Ignore
 public class RecorderSwitchWebrtcTest extends BaseRecorder {
 
   private static final int PLAYTIME = 30; // seconds
@@ -112,12 +110,12 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     return Arrays.asList(new Object[][] { { test } });
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchWebRtcWebm() throws Exception {
     doTest(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM, EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchWebRtcMp4() throws Exception {
     doTest(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }

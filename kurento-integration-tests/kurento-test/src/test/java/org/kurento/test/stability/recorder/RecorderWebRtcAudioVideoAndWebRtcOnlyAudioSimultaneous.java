@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
@@ -74,7 +74,6 @@ import org.kurento.test.mediainfo.AssertMedia;
  * @author Raul Benitez (rbenitez@gsyc.es)
  * @since 6.5.1
  */
-@Ignore
 public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends StabilityTest {
 
   private static final int RECORD_MS = 1 * 60 * 1000; // ms
@@ -87,7 +86,7 @@ public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends Stab
     return TestScenario.localChromes(NUM_BROWSERS);
   }
 
-  @Ignore
+  @Test
   public void testRecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneousWebm() throws Exception {
     long testDurationMillis =
         PropertiesManager.getProperty(TEST_DURATION_PROPERTY, DEFAULT_TEST_DURATION);

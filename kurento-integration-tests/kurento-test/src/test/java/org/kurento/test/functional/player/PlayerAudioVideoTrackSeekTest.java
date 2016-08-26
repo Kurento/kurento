@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.test.browser.WebRtcChannel;
@@ -107,7 +106,7 @@ public class PlayerAudioVideoTrackSeekTest extends FunctionalPlayerTest {
     initTest(HTTP, mediaUrl);
   }
 
-  @Ignore
+  @Test
   public void testPlayerAudioVideoSeekHttpWebm() throws Exception {
     // Test data
     final String mediaUrl = "/video/30sec/rgb.webm";

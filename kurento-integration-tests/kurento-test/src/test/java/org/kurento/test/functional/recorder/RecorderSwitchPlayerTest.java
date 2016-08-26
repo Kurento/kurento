@@ -26,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 import org.kurento.client.Continuation;
@@ -98,48 +97,48 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
     doTestSameFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchDifferentFormatPlayerWebm() throws Exception {
     doTestDifferentFormats(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchDifferentFormatPlayerMp4() throws Exception {
     doTestDifferentFormats(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4, EXTENSION_MP4);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateDifferentPlayerWebm() throws Exception {
     doTestFrameRateDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateDifferentPlayerMp4() throws Exception {
     doTestFrameRateDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
         EXTENSION_MP4);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameSizeDifferentPlayerWebm() throws Exception {
     doTestFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameSizeDifferentPlayerMp4() throws Exception {
     doTestFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
         EXTENSION_MP4);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerWebm() throws Exception {
     doTestFrameRateAndFrameSizeDifferent(WEBM, EXPECTED_VIDEO_CODEC_WEBM, EXPECTED_AUDIO_CODEC_WEBM,
         EXTENSION_WEBM);
   }
 
-  @Ignore
+  @Test
   public void testRecorderSwitchFrameRateFrameSizeDifferentPlayerMp4() throws Exception {
     doTestFrameRateAndFrameSizeDifferent(MP4, EXPECTED_VIDEO_CODEC_MP4, EXPECTED_AUDIO_CODEC_MP4,
         EXTENSION_MP4);
@@ -199,7 +198,7 @@ public class RecorderSwitchPlayerTest extends BaseRecorder {
 
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension, String[] mediaUrls, Color[] expectedColors)
-      throws Exception {
+          throws Exception {
 
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
