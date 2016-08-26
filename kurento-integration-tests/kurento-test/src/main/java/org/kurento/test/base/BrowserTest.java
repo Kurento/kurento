@@ -39,7 +39,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -84,6 +83,8 @@ import org.kurento.test.utils.Shell;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -97,12 +98,14 @@ import com.google.common.collect.Table;
  */
 public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
+  public static Logger log = LoggerFactory.getLogger(BrowserTest.class);
   public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
   public static final int OCR_TIME_THRESHOLD_MS = 300;
   public static final int OCR_COLOR_THRESHOLD = 180;
   public static final String LATENCY_KEY = "latencyMs";
   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("H:mm:ss:S");
   public static final double FPS = 30;
+  public static final int BLOCKSIZE = 1;
   public static final String PNG = ".png";
   public static final String Y4M = ".y4m";
 
@@ -164,8 +167,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
                 browser.getWebDriver().manage().logs().get(LogType.BROWSER));
           } else {
             log.warn("It was not possible to recover logs for {} "
-                + " since browser is no longer available (maybe "
-                + " it has been closed manually or crashed)", browser.getId());
+                + "since browser is no longer available (maybe "
+                + "it has been closed manually or crashed)", browser.getId());
           }
         } catch (Exception e) {
           log.warn("Exception getting logs {}", browser.getId(), e);
@@ -655,9 +658,9 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return y4m;
   }
 
-  public void getVideoQuality(File inputFile1, File inputFile2, File tmpFolder, double fps,
+  public void getVideoQuality(File inputFile1, File inputFile2, double fps, int blocksize,
       String csvOutput) throws IOException {
-    String ssim = "qpsnr -a avg_ssim -o fpa=" + parseFps(fps) + " -r "
+    String ssim = "qpsnr -a avg_ssim -o blocksize=" + blocksize + ":fpa=" + parseFps(fps) + " -r "
         + inputFile1.getAbsolutePath() + " " + inputFile2.getAbsolutePath() + " > " + csvOutput;
     log.debug("Running command to get SSIM: {}", ssim);
     Shell.runAndWait("sh", "-c", ssim);
@@ -678,6 +681,28 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     log.debug("Running command to cut video: {}", Arrays.toString(command));
     Shell.runAndWait(command);
     return cutVideoFile;
+  }
+
+  public File cutAndTranscodeVideo(File inputFile, File tmpFolder, int cutFrame, double fps) {
+    double cutTime = cutFrame / fps;
+    DecimalFormat df = new DecimalFormat("0.00");
+    File cutVideoFile = new File(
+        tmpFolder.toString() + File.separator + "cut-" + inputFile.getName());
+    String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(), "-ss", df.format(cutTime),
+        "-acodec", "copy", "-codec:v", "libvpx", cutVideoFile.getAbsolutePath() };
+    log.debug("Running command to cut video: {}", Arrays.toString(command));
+    Shell.runAndWait(command);
+    return cutVideoFile;
+  }
+
+  public File transcodeVideo(File inputFile, File tmpFolder, double fps) {
+    File transVideoFile = new File(
+        tmpFolder.toString() + File.separator + "trans-" + inputFile.getName());
+    String[] command = { "ffmpeg", "-i", inputFile.getAbsolutePath(), "-acodec", "copy", "-codec:v",
+        "libvpx", transVideoFile.getAbsolutePath() };
+    log.debug("Running command to transcode video: {}", Arrays.toString(command));
+    Shell.runAndWait(command);
+    return transVideoFile;
   }
 
   public int getCutFrame(final File inputFile1, final File inputFile2, File tmpFolder)
@@ -741,21 +766,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   }
 
   public void getQuality(File inputFile1, File inputFile2, String csvOutput) throws IOException {
-    File tmpFolder = Files.createTempDirectory("qpsnr-").toFile();
-    File raw1 = convertToRaw(inputFile1, tmpFolder, FPS);
-    File raw2 = convertToRaw(inputFile2, tmpFolder, FPS);
-
-    getFrames(raw1, tmpFolder);
-    getFrames(raw2, tmpFolder);
-
-    int cutFrame = getCutFrame(raw1, raw2, tmpFolder);
-    log.debug("Cut frame: {}", cutFrame);
-
-    File finalFile1 = cutFrame < 1 ? cutVideo(raw1, tmpFolder, Math.abs(cutFrame), FPS) : raw1;
-    File finalFile2 = cutFrame < 1 ? raw2 : cutVideo(raw2, tmpFolder, Math.abs(cutFrame), FPS);
-    getVideoQuality(finalFile1, finalFile2, tmpFolder, FPS, csvOutput);
-
-    FileUtils.deleteDirectory(tmpFolder);
+    getVideoQuality(inputFile1, inputFile2, FPS, BLOCKSIZE, csvOutput);
   }
 
   public void waitForFilesInFolder(String folder, final String ext, int expectedFilesNumber) {
