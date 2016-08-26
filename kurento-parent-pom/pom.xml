@@ -146,11 +146,12 @@
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<overthere.version>2.4.8</overthere.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
-		<webdrivermanager.version>1.4.4</webdrivermanager.version>
+		<webdrivermanager.version>1.4.8</webdrivermanager.version>
 		<docker-java.version>2.1.3</docker-java.version>
 		<jackson.version>2.6.3</jackson.version>
 		<assertj.version>2.4.1</assertj.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
+		<super-csv.version>2.4.0</super-csv.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -754,6 +755,11 @@
 				<groupId>org.bytedeco.javacpp-presets</groupId>
 				<artifactId>tesseract</artifactId>
 				<version>${version.ocr}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.supercsv</groupId>
+				<artifactId>super-csv</artifactId>
+				<version>${super-csv.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

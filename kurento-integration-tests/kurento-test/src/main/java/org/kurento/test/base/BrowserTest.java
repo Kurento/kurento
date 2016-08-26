@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -85,6 +86,9 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.supercsv.io.CsvListReader;
+import org.supercsv.io.CsvListWriter;
+import org.supercsv.prefs.CsvPreference;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -106,6 +110,8 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("H:mm:ss:S");
   public static final double FPS = 30;
   public static final int BLOCKSIZE = 1;
+  public static final String SSIM_KEY = "avg_ssim";
+  public static final String PSNR_KEY = "avg_psnr";
   public static final String PNG = ".png";
   public static final String Y4M = ".y4m";
 
@@ -658,10 +664,11 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return y4m;
   }
 
-  public void getVideoQuality(File inputFile1, File inputFile2, double fps, int blocksize,
-      String csvOutput) throws IOException {
-    String ssim = "qpsnr -a avg_ssim -o blocksize=" + blocksize + ":fpa=" + parseFps(fps) + " -r "
-        + inputFile1.getAbsolutePath() + " " + inputFile2.getAbsolutePath() + " > " + csvOutput;
+  public void getVideoQuality(File inputFile1, File inputFile2, String videoAlgorithm, double fps,
+      int blocksize, String csvOutput) throws IOException {
+    String ssim = "qpsnr -a " + videoAlgorithm + " -o blocksize=" + blocksize + ":fpa="
+        + parseFps(fps) + " -r " + inputFile1.getAbsolutePath() + " " + inputFile2.getAbsolutePath()
+        + " > " + csvOutput;
     log.debug("Running command to get SSIM: {}", ssim);
     Shell.runAndWait("sh", "-c", ssim);
   }
@@ -765,8 +772,12 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     t.interrupt();
   }
 
-  public void getQuality(File inputFile1, File inputFile2, String csvOutput) throws IOException {
-    getVideoQuality(inputFile1, inputFile2, FPS, BLOCKSIZE, csvOutput);
+  public void getSsim(File inputFile1, File inputFile2, String csvOutput) throws IOException {
+    getVideoQuality(inputFile1, inputFile2, SSIM_KEY, FPS, BLOCKSIZE, csvOutput);
+  }
+
+  public void getPsnr(File inputFile1, File inputFile2, String csvOutput) throws IOException {
+    getVideoQuality(inputFile1, inputFile2, PSNR_KEY, FPS, BLOCKSIZE, csvOutput);
   }
 
   public void waitForFilesInFolder(String folder, final String ext, int expectedFilesNumber) {
@@ -785,6 +796,39 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       log.debug("Number of files with extension {} in {} = {} (expected {})", ext, folder,
           files.length, expectedFilesNumber);
     } while (files.length != expectedFilesNumber);
+  }
+
+  public void mergeCsvs(String input1, String input2, String output, int index1, int index2,
+      String header, boolean deleteInputs) throws IOException {
+    CsvListReader csvInput1 = new CsvListReader(new FileReader(input1),
+        CsvPreference.STANDARD_PREFERENCE);
+    CsvListReader csvInput2 = new CsvListReader(new FileReader(input2),
+        CsvPreference.STANDARD_PREFERENCE);
+    CsvListWriter csvOutput = new CsvListWriter(new FileWriter(output),
+        CsvPreference.STANDARD_PREFERENCE);
+
+    List<String> columns1, columns2;
+    while ((columns1 = csvInput1.read()) != null) {
+      columns2 = csvInput2.read();
+      if (columns2 != null) {
+        if (header != null) {
+          columns1.add(index1, header);
+          header = null;
+        } else {
+          columns1.add(index1, columns2.get(index2));
+        }
+      }
+      csvOutput.write(columns1);
+    }
+    csvInput1.close();
+    csvInput2.close();
+    csvOutput.close();
+
+    if (deleteInputs) {
+      new File(input1).delete();
+      new File(input2).delete();
+    }
+
   }
 
 }
