@@ -12,11 +12,11 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.tutorial.chroma.test;
 
 import java.util.Collection;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,10 +93,4 @@ public class ChromaIT extends BrowserTest<WebPage> {
     }
   }
 
-  @After
-  public void end() {
-    if (driver != null) {
-      driver.close();
-    }
-  }
 }

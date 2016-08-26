@@ -17,7 +17,6 @@ package org.kurento.tutorial.helloworld.test;
 
 import java.util.Collection;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,15 +88,9 @@ public class HelloWorldIT extends BrowserTest<WebPage> {
       }
     }
     if (i == TEST_TIMEOUT) {
-      Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT
-          + " seconds");
+      Assert.fail(
+          "Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
     }
   }
 
-  @After
-  public void end() {
-    if (driver != null) {
-      driver.close();
-    }
-  }
 }

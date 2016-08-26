@@ -12,11 +12,11 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.tutorial.crowddetector.test;
 
 import java.util.Collection;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 public class CrowdDetectorIT extends BrowserTest<WebPage> {
 
   public static @Service(1) KmsService kms = new KmsService();
-  public static @Service(2) WebServerService webServer = new WebServerService(
-      CrowdDetectorApp.class);
+  public static @Service(2) WebServerService webServer =
+      new WebServerService(CrowdDetectorApp.class);
 
   protected WebDriver driver;
   protected static final Logger log = LoggerFactory.getLogger(CrowdDetectorIT.class);
@@ -114,10 +114,4 @@ public class CrowdDetectorIT extends BrowserTest<WebPage> {
     }
   }
 
-  @After
-  public void end() {
-    if (driver != null) {
-      driver.close();
-    }
-  }
 }

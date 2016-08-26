@@ -12,11 +12,11 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.tutorial.one2onecall.test;
 
 import java.util.Collection;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,8 +108,8 @@ public class One2OneCallIT extends BrowserTest<WebPage> {
       }
     }
     if (i == TEST_TIMEOUT) {
-      Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT
-          + " seconds");
+      Assert.fail(
+          "Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
     }
   }
 
@@ -124,17 +124,9 @@ public class One2OneCallIT extends BrowserTest<WebPage> {
       }
     }
     if (i == TEST_TIMEOUT) {
-      throw new RuntimeException("Timeout (" + TEST_TIMEOUT + " seconds) waiting for incoming call");
+      throw new RuntimeException(
+          "Timeout (" + TEST_TIMEOUT + " seconds) waiting for incoming call");
     }
   }
 
-  @After
-  public void end() {
-    if (caller != null) {
-      caller.close();
-    }
-    if (callee != null) {
-      callee.close();
-    }
-  }
 }

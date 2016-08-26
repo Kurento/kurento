@@ -12,11 +12,11 @@
  * Lesser General Public License for more details.
  *
  */
+
 package org.kurento.tutorial.platedetector.test;
 
 import java.util.Collection;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +43,8 @@ import org.openqa.selenium.WebElement;
 public class PlateDetectorIT extends BrowserTest<WebPage> {
 
   public static @Service(1) KmsService kms = new KmsService();
-  public static @Service(2) WebServerService webServer = new WebServerService(
-      PlateDetectorApp.class);
+  public static @Service(2) WebServerService webServer =
+      new WebServerService(PlateDetectorApp.class);
 
   protected WebDriver driver;
 
@@ -95,10 +95,4 @@ public class PlateDetectorIT extends BrowserTest<WebPage> {
     }
   }
 
-  @After
-  public void end() {
-    if (driver != null) {
-      driver.close();
-    }
-  }
 }

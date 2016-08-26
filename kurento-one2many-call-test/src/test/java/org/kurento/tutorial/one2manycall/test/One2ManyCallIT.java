@@ -11,13 +11,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
+
 package org.kurento.tutorial.one2manycall.test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,20 +109,9 @@ public class One2ManyCallIT extends BrowserTest<WebPage> {
 
     }
     if (i == TEST_TIMEOUT) {
-      Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT
-          + " seconds");
+      Assert.fail(
+          "Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
     }
   }
 
-  @After
-  public void end() {
-    for (WebDriver viewer : viewers) {
-      if (viewer != null) {
-        viewer.close();
-      }
-    }
-    if (master != null) {
-      master.close();
-    }
-  }
 }
