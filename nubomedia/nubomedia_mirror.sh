@@ -12,7 +12,7 @@ do
     echo "$reponame not found locally: cloning as mirror"
     git clone --mirror https://github.com/$repoorg/$reponame
     pushd $reponame.git
-    git remote set-url --push origin ssh://jenkinskurento@github.com/nubomedia/$reponame
+    git remote set-url --push origin git@github.com:nubomedia/$reponame
     popd
   fi
 
