@@ -163,7 +163,7 @@ KurentoTest.prototype.getVideoTime = function(videoTagId, time) {
 		var imgTimeBase64 = canvas.toDataURL("image/png").replace("image/png",
 				"image/octet-stream");
 		this.ocrMap[time] = {
-			latencyMs : imgTimeBase64
+			E2ELatencyMs : imgTimeBase64
 		};
 	}
 }
@@ -318,7 +318,8 @@ KurentoTest.prototype.updateStats = function(peerConnection, track, type) {
 	peerConnection.getStats(function(stats) {
 		var result = stats.result()[2];
 		if (result) {
-			kurentoTest.rtcStats[type + "timestamp"] = result.timestamp.getTime();
+			kurentoTest.rtcStats[type + "timestamp"] = result.timestamp
+					.getTime();
 			result.names().forEach(function(name) {
 				kurentoTest.rtcStats[type + name] = result.stat(name);
 			});

@@ -106,7 +106,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
   public static final Color CHROME_VIDEOTEST_COLOR = new Color(0, 135, 0);
   public static final int OCR_TIME_THRESHOLD_MS = 300;
   public static final int OCR_COLOR_THRESHOLD = 180;
-  public static final String LATENCY_KEY = "latencyMs";
+  public static final String LATENCY_KEY = "E2ELatencyMs";
   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("H:mm:ss:S");
   public static final double FPS = 30;
   public static final int BLOCKSIZE = 1;
