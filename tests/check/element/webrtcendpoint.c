@@ -408,7 +408,7 @@ test_video_sendonly (const gchar * video_enc_name, GstStaticCaps expected_caps,
   g_object_set (sender, "num-video-medias", 1, "video-codecs",
       g_array_ref (codecs_array), "bundle", bundle, NULL);
   g_object_set (receiver, "num-video-medias", 1, "video-codecs",
-      g_array_ref (codecs_array), "bundle", bundle, NULL);
+      g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
   /* Session creation */
@@ -580,7 +580,7 @@ test_video_sendrecv (const gchar * video_enc_name,
   g_object_set (offerer, "num-video-medias", 1, "video-codecs",
       g_array_ref (codecs_array), "bundle", bundle, "rtcp-mux", rtcp_mux, NULL);
   g_object_set (answerer, "num-video-medias", 1, "video-codecs",
-      g_array_ref (codecs_array), "bundle", bundle, NULL);
+      g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
   /* Session creation */
@@ -729,7 +729,7 @@ test_audio_sendrecv (const gchar * audio_enc_name,
   g_object_set (offerer, "num-audio-medias", 1, "audio-codecs",
       g_array_ref (codecs_array), "bundle", bundle, NULL);
   g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
-      g_array_ref (codecs_array), "bundle", bundle, NULL);
+      g_array_ref (codecs_array), NULL);
   g_array_unref (codecs_array);
 
   /* Session creation */
@@ -940,7 +940,7 @@ test_audio_video_sendonly_recvonly (const gchar * audio_enc_name,
       g_array_ref (video_codecs_array), "bundle", bundle, NULL);
   g_object_set (receiver, "num-audio-medias", 1, "audio-codecs",
       g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
-      g_array_ref (video_codecs_array), "bundle", bundle, NULL);
+      g_array_ref (video_codecs_array), NULL);
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
@@ -1135,7 +1135,7 @@ test_audio_video_sendrecv (const gchar * audio_enc_name,
       g_array_ref (video_codecs_array), "bundle", bundle, NULL);
   g_object_set (answerer, "num-audio-medias", 1, "audio-codecs",
       g_array_ref (audio_codecs_array), "num-video-medias", 1, "video-codecs",
-      g_array_ref (video_codecs_array), "bundle", bundle, NULL);
+      g_array_ref (video_codecs_array), NULL);
   g_array_unref (audio_codecs_array);
   g_array_unref (video_codecs_array);
 
@@ -1639,8 +1639,7 @@ test_data_channels (gboolean bundle)
 
   g_object_set (sender, "bundle", bundle, "num-audio-medias", 0,
       "num-video-medias", 0, NULL);
-  g_object_set (receiver, "num-audio-medias", 0, "num-video-medias", 0,
-      "bundle", bundle, NULL);
+  g_object_set (receiver, "num-audio-medias", 0, "num-video-medias", 0, NULL);
 
   g_signal_connect (sender, "pad-added", G_CALLBACK (webrtc_sender_pad_added),
       pipeline);
