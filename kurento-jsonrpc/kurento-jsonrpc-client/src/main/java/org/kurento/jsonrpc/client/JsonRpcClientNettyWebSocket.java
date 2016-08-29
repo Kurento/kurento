@@ -274,7 +274,8 @@ public class JsonRpcClientNettyWebSocket extends AbstractJsonRpcClientWebSocket 
       closeFuture.addListener(new ChannelFutureListener() {
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
-          log.debug("{} Operation complete in channel future listener", label);
+          log.info("{} channel closed", label);
+          handleReconnectDisconnection(1001, "Channel closed");
         }
       });
 
