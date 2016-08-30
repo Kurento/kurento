@@ -294,11 +294,13 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   buffer = gst_buffer_make_writable (buffer);
 
   if (GST_BUFFER_PTS_IS_VALID (buffer))
-    buffer->pts =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->pts);
+    GST_BUFFER_PTS (buffer) =
+        gst_segment_to_running_time (segment, GST_FORMAT_TIME,
+        GST_BUFFER_PTS (buffer));
   if (GST_BUFFER_DTS_IS_VALID (buffer))
-    buffer->dts =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->dts);
+    GST_BUFFER_DTS (buffer) =
+        gst_segment_to_running_time (segment, GST_FORMAT_TIME,
+        GST_BUFFER_DTS (buffer));
 
   BASE_TIME_LOCK (self);
 
@@ -306,8 +308,8 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 
   if (base_time == NULL) {
     base_time = g_slice_new0 (BaseTimeType);
-    base_time->pts = buffer->pts;
-    base_time->dts = buffer->dts;
+    base_time->pts = GST_BUFFER_PTS (buffer);
+    base_time->dts = GST_BUFFER_DTS (buffer);
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
     g_object_set_qdata_full (G_OBJECT (self), base_time_key_quark (), base_time,
@@ -316,19 +318,19 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 
   if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
       && GST_BUFFER_PTS_IS_VALID (buffer)) {
-    base_time->pts = buffer->pts;
+    base_time->pts = GST_BUFFER_PTS (buffer);
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
-    base_time->dts = buffer->dts;
+    base_time->dts = GST_BUFFER_DTS (buffer);
   }
 
   if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
     if (GST_BUFFER_PTS_IS_VALID (buffer)) {
       offset = base_time->pts + self->priv->paused_time;
-      if (buffer->pts > offset) {
-        buffer->pts -= offset;
+      if (GST_BUFFER_PTS (buffer) > offset) {
+        GST_BUFFER_PTS (buffer) -= offset;
       } else {
-        buffer->pts = 0;
+        GST_BUFFER_PTS (buffer) = 0;
       }
     }
   }
@@ -336,10 +338,10 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   if (GST_CLOCK_TIME_IS_VALID (base_time->dts)) {
     if (GST_BUFFER_DTS_IS_VALID (buffer)) {
       offset = base_time->dts + self->priv->paused_time;
-      if (buffer->dts > offset) {
-        buffer->dts -= offset;
+      if (GST_BUFFER_DTS (buffer) > offset) {
+        GST_BUFFER_DTS (buffer) -= offset;
       } else {
-        buffer->dts = 0;
+        GST_BUFFER_DTS (buffer) = 0;
       }
     }
   }

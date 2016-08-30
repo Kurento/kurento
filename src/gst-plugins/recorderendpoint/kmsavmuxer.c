@@ -150,8 +150,8 @@ kms_av_muxer_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
 {
   if (G_UNLIKELY (!GST_BUFFER_PTS_IS_VALID ((*buffer)))) {
     return TRUE;
-  } else if (G_LIKELY (*lastPts <= (*buffer)->pts)) {
-    *lastPts = (*buffer)->pts;
+  } else if (G_LIKELY (*lastPts <= GST_BUFFER_PTS (*buffer))) {
+    *lastPts = GST_BUFFER_PTS (*buffer);
 
     return TRUE;
   } else {
