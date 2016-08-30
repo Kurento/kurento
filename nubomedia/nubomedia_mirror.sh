@@ -1,6 +1,9 @@
 #!/bin/bash
 
-REPOSITORIES=$(cat nubomedia-repositories-fork)
+FOLDER=$(dirname $0)
+REPOSITORIES=$(cat $FOLDER/nubomedia-repositories-fork)
+echo $REPOSITORIES
+exit 1
 for repo in $REPOSITORIES
 do
   echo "Syncing $repo ..."
