@@ -155,8 +155,9 @@ kms_av_muxer_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
 
     return TRUE;
   } else {
-    GST_WARNING ("Buffer pts %" G_GUINT64_FORMAT " is older than last pts %"
-        G_GUINT64_FORMAT, GST_BUFFER_PTS (*buffer), *lastPts);
+    GST_WARNING ("Buffer pts %" GST_TIME_FORMAT " is older than last pts %"
+        GST_TIME_FORMAT, GST_TIME_ARGS (GST_BUFFER_PTS (*buffer)),
+        GST_TIME_ARGS (*lastPts));
 
     return FALSE;
   }
