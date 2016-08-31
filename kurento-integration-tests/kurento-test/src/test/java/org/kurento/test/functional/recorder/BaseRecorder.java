@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.kurento.client.Continuation;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
@@ -76,7 +77,7 @@ public class BaseRecorder extends FunctionalTest {
   protected void launchBrowser(MediaPipeline mp, WebRtcEndpoint webRtcEp, PlayerEndpoint playerEp,
       RecorderEndpoint recorderEp, String expectedVideoCodec, String expectedAudioCodec,
       String recordingFile, Color expectedColor, int xColor, int yColor, int playTime)
-      throws InterruptedException {
+          throws InterruptedException {
 
     Timer gettingStats = new Timer();
     final CountDownLatch errorContinuityAudiolatch = new CountDownLatch(1);
@@ -115,11 +116,27 @@ public class BaseRecorder extends FunctionalTest {
         getPage().similarColorAt(expectedColor, xColor, yColor));
     Assert.assertTrue("Not received EOS event in player" + inRecording,
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
     if (recorderEp != null) {
 
       saveGstreamerDot(mp);
 
-      recorderEp.stop();
+      recorderEp.stop(new Continuation<Void>() {
+
+        @Override
+        public void onSuccess(Void result) throws Exception {
+          recorderLatch.countDown();
+        }
+
+        @Override
+        public void onError(Throwable cause) throws Exception {
+          recorderLatch.countDown();
+        }
+      });
+
+      Assert.assertTrue("Not stop properly",
+          recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
       // Wait until file exists
       waitForFileExists(recordingFile);
@@ -219,7 +236,7 @@ public class BaseRecorder extends FunctionalTest {
 
   protected void checkRecordingFile(String recordingFile, String browserName,
       Color[] expectedColors, long playTime, String expectedVideoCodec, String expectedAudioCodec)
-      throws InterruptedException {
+          throws InterruptedException {
 
     // Checking continuity of the audio
     Timer gettingStats = new Timer();

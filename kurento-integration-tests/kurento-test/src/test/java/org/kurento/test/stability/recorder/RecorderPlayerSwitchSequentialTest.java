@@ -27,9 +27,13 @@ import static org.kurento.test.functional.recorder.BaseRecorder.EXTENSION_MP4;
 import static org.kurento.test.functional.recorder.BaseRecorder.EXTENSION_WEBM;
 
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PlayerEndpoint;
@@ -91,6 +95,8 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension) throws Exception {
 
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+
     MediaPipeline mp = null;
 
     // Media Pipeline
@@ -123,7 +129,21 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
     // Stop play and record
     playerEp1.stop();
     playerEp2.stop();
-    recorderEp.stop();
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Guard time to stop recording
     Thread.sleep(4000);

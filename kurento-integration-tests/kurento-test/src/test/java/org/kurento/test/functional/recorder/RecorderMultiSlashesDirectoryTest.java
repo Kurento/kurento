@@ -24,10 +24,13 @@ import static org.kurento.test.browser.WebRtcChannel.AUDIO_AND_VIDEO;
 import java.io.File;
 import java.util.Collection;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.RecorderEndpoint;
@@ -83,6 +86,7 @@ public class RecorderMultiSlashesDirectoryTest extends BaseRecorder {
       String expectedAudioCodec, String extension) throws Exception {
 
     String multiSlashses = File.separator + File.separator + File.separator;
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
 
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     WebRtcEndpoint webRtcEp = new WebRtcEndpoint.Builder(mp).build();
@@ -109,7 +113,21 @@ public class RecorderMultiSlashesDirectoryTest extends BaseRecorder {
 
     Thread.sleep(SECONDS.toMillis(PLAYTIME));
 
-    recorderEp.stop();
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Wait until file exists
     waitForFileExists(recordingFile);

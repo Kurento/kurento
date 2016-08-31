@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Continuation;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
@@ -100,6 +101,8 @@ public class RecorderStopTest extends BaseRecorder {
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension) throws Exception {
 
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp =
@@ -131,12 +134,26 @@ public class RecorderStopTest extends BaseRecorder {
 
       @Override
       public void run() {
-        recorderEp.stop();
+        recorderEp.stop(new Continuation<Void>() {
+
+          @Override
+          public void onSuccess(Void result) throws Exception {
+            recorderLatch.countDown();
+          }
+
+          @Override
+          public void onError(Throwable cause) throws Exception {
+            recorderLatch.countDown();
+          }
+        });
       }
     }, PLAYTIME / 2, TimeUnit.SECONDS);
 
     // Wait for EOS
     Assert.assertTrue("No EOS event", eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline #1
     mp.release();

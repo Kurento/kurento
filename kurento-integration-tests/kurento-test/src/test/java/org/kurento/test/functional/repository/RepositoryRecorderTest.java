@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Continuation;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
@@ -83,6 +84,9 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
 
   @Test
   public void testRepositoryRecorder() throws Exception {
+
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+
     // Media Pipeline
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerEp = new PlayerEndpoint.Builder(mp,
@@ -112,7 +116,22 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline #1
-    recorderEp.stop();
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
     mp.release();
     Thread.sleep(500);
   }

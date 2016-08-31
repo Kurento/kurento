@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Continuation;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
@@ -100,6 +101,9 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
 
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension) throws Exception {
+
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+
     // Media Pipeline #1
     MediaPipeline mp = kurentoClient.createMediaPipeline();
     PlayerEndpoint playerGreen =
@@ -123,7 +127,23 @@ public class RecorderPlayerDisconnectTest extends BaseRecorder {
 
     // Release Media Pipeline #1
     saveGstreamerDot(mp);
-    recorderEp.stop();
+
+    recorderEp.stop(new Continuation<Void>() {
+
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
+
     mp.release();
 
     // Wait until file exists

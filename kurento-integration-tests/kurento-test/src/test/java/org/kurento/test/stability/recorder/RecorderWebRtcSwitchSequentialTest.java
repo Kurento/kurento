@@ -27,10 +27,13 @@ import static org.kurento.test.functional.recorder.BaseRecorder.EXTENSION_MP4;
 import static org.kurento.test.functional.recorder.BaseRecorder.EXTENSION_WEBM;
 
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
+import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.RecorderEndpoint;
@@ -94,6 +97,8 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
   public void doTest(MediaProfileSpecType mediaProfileSpecType, String expectedVideoCodec,
       String expectedAudioCodec, String extension) throws Exception {
 
+    final CountDownLatch recorderLatch = new CountDownLatch(1);
+
     MediaPipeline mp = null;
 
     // Media Pipeline
@@ -125,14 +130,25 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
     }
 
     // Stop record
-    recorderEp.stop();
+    recorderEp.stop(new Continuation<Void>() {
 
-    // Guard time to stop recording
-    Thread.sleep(4000);
+      @Override
+      public void onSuccess(Void result) throws Exception {
+        recorderLatch.countDown();
+      }
+
+      @Override
+      public void onError(Throwable cause) throws Exception {
+        recorderLatch.countDown();
+      }
+    });
 
     // Assessment
     Assert.assertTrue("Not received media in browser 1", getPage(0).waitForEvent("playing"));
     Assert.assertTrue("Not received media in browser 2", getPage(1).waitForEvent("playing"));
+
+    Assert.assertTrue("Not stop properly",
+        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
     AssertMedia.assertCodecs(recordingFile, expectedVideoCodec, expectedAudioCodec);
