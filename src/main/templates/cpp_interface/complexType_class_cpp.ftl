@@ -72,6 +72,19 @@ void ${complexType.name}::Serialize (JsonSerializer &s)
         throw KurentoException (MARSHALL_ERROR,
                                 "'${property.name}' property should be a ${jsonData.getTypeDescription()}");
       }
+    <#if property.defaultValue?? >
+    } else {
+      Json::Reader reader;
+      std::string defaultValue = "${escapeString (property.defaultValue)}";
+      reader.parse (defaultValue, s.JsonValue["${property.name}"]);
+      if (s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+        __isSet${property.name?cap_first} = true;
+        s.SerializeNVP (${property.name});
+      } else {
+        throw KurentoException (MARSHALL_ERROR,
+                               "Default value of '${property.name}' property should be a ${jsonData.getTypeDescription()}");
+      }
+    </#if>
     }
 
     <#else>
