@@ -151,7 +151,6 @@
 		<jackson.version>2.6.3</jackson.version>
 		<assertj.version>2.4.1</assertj.version>
 		<version.ocr>3.04.01-1.2</version.ocr>
-		<super-csv.version>2.4.0</super-csv.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -755,11 +754,6 @@
 				<groupId>org.bytedeco.javacpp-presets</groupId>
 				<artifactId>tesseract</artifactId>
 				<version>${version.ocr}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.sf.supercsv</groupId>
-				<artifactId>super-csv</artifactId>
-				<version>${super-csv.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
