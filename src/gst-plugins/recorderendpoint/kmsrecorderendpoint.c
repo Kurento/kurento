@@ -277,6 +277,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   GstBuffer *buffer;
   BaseTimeType *base_time;
   GstClockTime offset;
+  GstCaps *caps;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -359,6 +360,14 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 
   if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
     GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
+
+  caps = gst_app_src_get_caps (appsrc);
+
+  if (caps == NULL) {
+    GST_ERROR_OBJECT (appsrc, "Trying to push buffer without setting caps");
+  } else {
+    gst_caps_unref (caps);
+  }
 
   ret = gst_app_src_push_buffer (appsrc, buffer);
 
