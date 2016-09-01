@@ -75,6 +75,7 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
   private static final int SWITCH_TIMES = 100;
   private static final int SWITCH_RATE_MS = 500; // ms
   private static final int THRESHOLD_MS = 5000; // ms
+  private static final int TIMEOUT = 30;
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
@@ -143,10 +144,7 @@ public class RecorderPlayerSwitchSequentialTest extends StabilityTest {
     });
 
     Assert.assertTrue("Not stop properly",
-        recorderLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
-
-    // Guard time to stop recording
-    Thread.sleep(4000);
+        recorderLatch.await(TIMEOUT, TimeUnit.SECONDS));
 
     // Assessments
     long expectedTimeMs = SWITCH_TIMES * SWITCH_RATE_MS;
