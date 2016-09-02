@@ -416,7 +416,7 @@ public class KmsService extends TestService {
     if (wsUri != null) {
       WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 
-      final int retries = 300;
+      final int retries = 600;
       final int waitTime = 100;
 
       for (int i = 0; i < retries; i++) {
