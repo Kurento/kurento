@@ -51,11 +51,11 @@ GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
 )
 
 #define BASE_TIME_LOCK(obj) (                                           \
-  g_mutex_lock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_lock)        \
+  g_mutex_lock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_mutex)       \
 )
 
 #define BASE_TIME_UNLOCK(obj) (                                         \
-  g_mutex_unlock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_lock)      \
+  g_mutex_unlock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_mutex)     \
 )
 
 typedef void (*KmsActionFunc) (gpointer user_data);
@@ -74,9 +74,9 @@ struct _KmsPlayerEndpointPrivate
   GstElement *uridecodebin;
   KmsLoop *loop;
   gboolean use_encoded_media;
-  GMutex base_time_lock;
   gint network_cache;
 
+  GMutex base_time_mutex;
   KmsPlayerStats stats;
 };
 
@@ -295,7 +295,7 @@ kms_player_endpoint_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  g_mutex_clear (&self->priv->base_time_lock);
+  g_mutex_clear (&self->priv->base_time_mutex);
   g_clear_object (&self->priv->stats.src);
   kms_list_unref (self->priv->stats.probes);
 
@@ -1139,7 +1139,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
 
   self->priv = KMS_PLAYER_ENDPOINT_GET_PRIVATE (self);
 
-  g_mutex_init (&self->priv->base_time_lock);
+  g_mutex_init (&self->priv->base_time_mutex);
 
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("pipeline");
