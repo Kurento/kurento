@@ -366,7 +366,6 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   if (caps == NULL) {
     GST_ERROR_OBJECT (appsrc, "Trying to push buffer without setting caps");
   } else {
-    GST_DEBUG_OBJECT (appsrc, "Caps set, buffer ok");
     gst_caps_unref (caps);
   }
 
