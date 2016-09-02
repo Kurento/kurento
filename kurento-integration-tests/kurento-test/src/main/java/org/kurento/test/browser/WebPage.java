@@ -445,8 +445,23 @@ public class WebPage {
     getProperty("recordRTC");
   }
 
-  public void saveRecordingToDisk() {
-    browser.executeScript("kurentoTest.saveRecordingToDisk();");
+  public File saveRecordingToDisk(String fileName) {
+    browser.executeScript("kurentoTest.saveRecordingToDisk('" + fileName + "');");
+    String downloads = System.getProperty("user.home") + File.separator + "Downloads"
+        + File.separator;
+    File output = new File(downloads + fileName);
+    do {
+      if (!output.exists()) {
+        try {
+          Thread.sleep(500); // polling
+        } catch (InterruptedException e) {
+          log.warn("Exception waiting for file {}", output, e);
+        }
+      } else {
+        break;
+      }
+    } while (true);
+    return output;
   }
 
   public void openRecordingInNewTab() {

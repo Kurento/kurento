@@ -475,11 +475,11 @@ KurentoTest.prototype.stopRecording = function() {
 	}
 };
 
-KurentoTest.prototype.saveRecordingToDisk = function() {
+KurentoTest.prototype.saveRecordingToDisk = function(fileName) {
 	if (!this.recordRTC) {
 		console.warn("No recording found.");
 	} else {
-		var output = this.recordRTC.save();
+		var output = this.recordRTC.save(fileName);
 		console.info(output);
 	}
 };
