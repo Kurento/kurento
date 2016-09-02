@@ -153,6 +153,7 @@ public class KurentoRunNotifier extends RunNotifier {
       @Override
       protected void notifyListener(RunListener each) throws Exception {
         each.testFinished(description);
+        exception = null;
       }
     }.run();
   }
