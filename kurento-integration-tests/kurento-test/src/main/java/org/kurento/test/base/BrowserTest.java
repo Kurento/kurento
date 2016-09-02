@@ -44,6 +44,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -86,7 +87,9 @@ import org.openqa.selenium.logging.LogType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 
 /**
@@ -416,10 +419,11 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     fos.close();
   }
 
-  public void processDataToCsv(String outputFile, final Map<String, Map<String, Object>> presenter,
+  public Table<Integer, Integer, String> processOcrAndStats(
+      final Map<String, Map<String, Object>> presenter,
       final Map<String, Map<String, Object>> viewer) throws InterruptedException, IOException {
 
-    log.debug("Processing OCR and stats to CSV ({})", outputFile);
+    log.debug("Processing OCR and stats");
     log.trace("Presenter {} : {}", presenter.size(), presenter.keySet());
     log.trace("Viewer {} : {}", viewer.size(), viewer.keySet());
 
@@ -469,8 +473,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
     log.debug("OCR + Stats results: {}", resultTable);
 
-    // Write CSV
-    writeCSV(outputFile, resultTable);
+    return resultTable;
   }
 
   public synchronized long processOcr(String presenterDateStr, String viewerDateStr,
@@ -660,13 +663,26 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     return y4m;
   }
 
-  public void getVideoQuality(File inputFile1, File inputFile2, String videoAlgorithm, double fps,
-      int blocksize, String csvOutput) throws IOException {
-    String ssim = "qpsnr -a " + videoAlgorithm + " -o blocksize=" + blocksize + ":fpa="
-        + parseFps(fps) + " -r " + inputFile1.getAbsolutePath() + " " + inputFile2.getAbsolutePath()
-        + " > " + csvOutput;
-    log.debug("Running command to get SSIM: {}", ssim);
-    Shell.runAndWait("sh", "-c", ssim);
+  public Multimap<String, Object> getVideoQuality(File inputFile1, File inputFile2,
+      String videoAlgorithm, double fps, int blocksize) throws IOException {
+    String qpsnrCommand = "qpsnr -a " + videoAlgorithm + " -o blocksize=" + blocksize + ":fpa="
+        + parseFps(fps) + " -r " + inputFile1.getAbsolutePath() + " "
+        + inputFile2.getAbsolutePath();
+    log.debug("Running qpsnr to calcule video quality ({}): {}", videoAlgorithm, qpsnrCommand);
+
+    String outputShell[] = Shell.runAndWait("sh", "-c", qpsnrCommand).split("\\r?\\n");
+    Multimap<String, Object> outputMap = ArrayListMultimap.create();
+    boolean insertValues = false;
+    for (String s : outputShell) {
+      if (s.startsWith("Sample,")) {
+        insertValues = true;
+        continue;
+      }
+      if (insertValues) {
+        outputMap.put(videoAlgorithm, s.split(",")[1]);
+      }
+    }
+    return outputMap;
   }
 
   public String parseFps(double fps) {
@@ -768,12 +784,12 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
     t.interrupt();
   }
 
-  public void getSsim(File inputFile1, File inputFile2, String csvOutput) throws IOException {
-    getVideoQuality(inputFile1, inputFile2, SSIM_KEY, FPS, BLOCKSIZE, csvOutput);
+  public Multimap<String, Object> getSsim(File inputFile1, File inputFile2) throws IOException {
+    return getVideoQuality(inputFile1, inputFile2, SSIM_KEY, FPS, BLOCKSIZE);
   }
 
-  public void getPsnr(File inputFile1, File inputFile2, String csvOutput) throws IOException {
-    getVideoQuality(inputFile1, inputFile2, PSNR_KEY, FPS, BLOCKSIZE, csvOutput);
+  public Multimap<String, Object> getPsnr(File inputFile1, File inputFile2) throws IOException {
+    return getVideoQuality(inputFile1, inputFile2, PSNR_KEY, FPS, BLOCKSIZE);
   }
 
   public void waitForFilesInFolder(String folder, final String ext, int expectedFilesNumber) {
@@ -792,6 +808,32 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       log.debug("Number of files with extension {} in {} = {} (expected {})", ext, folder,
           files.length, expectedFilesNumber);
     } while (files.length != expectedFilesNumber);
+  }
+
+  public void addColumnsToTable(Table<Integer, Integer, String> table,
+      Multimap<String, Object> column, int columnKey) {
+    for (String key : column.keySet()) {
+      shiftTable(table, columnKey);
+      table.put(0, columnKey, key);
+      Collection<Object> content = column.get(key);
+      Iterator<Object> iterator = content.iterator();
+      log.debug("Adding columun {} ({} elements) to table in position {}", key, content.size(),
+          columnKey);
+      for (int i = 0; i < content.size(); i++) {
+        table.put(i + 1, columnKey, iterator.next().toString());
+      }
+      columnKey++;
+    }
+  }
+
+  private void shiftTable(Table<Integer, Integer, String> table, int columnKey) {
+    for (int i = table.columnKeySet().size() - 1; i >= columnKey; i--) {
+      Map<Integer, String> column = table.column(i);
+      for (int j : column.keySet()) {
+        table.put(j, i + 1, column.get(j));
+      }
+    }
+    table.column(columnKey).clear();
   }
 
 }
