@@ -145,113 +145,6 @@ kms_av_muxer_init (KmsAVMuxer * self)
   self->priv->lastAudioPts = G_GUINT64_CONSTANT (0);
 }
 
-static gboolean
-kms_av_muxer_check_pts (GstBuffer ** buffer, GstClockTime * lastPts)
-{
-  if (G_UNLIKELY (!GST_BUFFER_PTS_IS_VALID ((*buffer)))) {
-    return TRUE;
-  } else if (G_LIKELY (*lastPts <= GST_BUFFER_PTS (*buffer))) {
-    *lastPts = GST_BUFFER_PTS (*buffer);
-
-    return TRUE;
-  } else {
-    GST_WARNING ("Buffer pts %" GST_TIME_FORMAT " is older than last pts %"
-        GST_TIME_FORMAT, GST_TIME_ARGS (GST_BUFFER_PTS (*buffer)),
-        GST_TIME_ARGS (*lastPts));
-
-    return FALSE;
-  }
-}
-
-static gboolean
-kms_av_muxer_injector (KmsAVMuxer * self, GstElement * elem,
-    GstBuffer ** buffer)
-{
-  GstClockTime *lastPts = NULL;
-
-  if (elem == self->priv->videosrc) {
-    lastPts = &self->priv->lastVideoPts;
-  } else if (elem == self->priv->audiosrc) {
-    lastPts = &self->priv->lastAudioPts;
-  }
-
-  if (G_LIKELY (lastPts)) {
-    gboolean ret;
-
-    KMS_BASE_MEDIA_MUXER_LOCK (self);
-    ret = kms_av_muxer_check_pts (buffer, lastPts);
-    KMS_BASE_MEDIA_MUXER_UNLOCK (self);
-
-    return ret;
-  }
-
-  return FALSE;
-}
-
-static gboolean
-kms_av_muxer_injector_probe_it (GstBuffer ** buffer, guint idx,
-    gpointer user_data)
-{
-  BufferListItData *data = user_data;
-
-  return kms_av_muxer_injector (data->self, data->elem, buffer);
-}
-
-static GstPadProbeReturn
-kms_av_muxer_injector_probe (GstPad * pad, GstPadProbeInfo * info,
-    gpointer self)
-{
-  GstElement *elem;
-  GstPadProbeReturn ret = GST_PAD_PROBE_OK;
-
-  if (info->type & GST_PAD_PROBE_TYPE_BLOCK) {
-    return GST_PAD_PROBE_PASS;
-  }
-
-  elem = gst_pad_get_parent_element (pad);
-
-  g_return_val_if_fail (elem != NULL, GST_PAD_PROBE_OK);
-
-  if (info->type & GST_PAD_PROBE_TYPE_BUFFER_LIST) {
-    GstBufferList *list = GST_PAD_PROBE_INFO_BUFFER_LIST (info);
-    BufferListItData itData;
-
-    itData.self = self;
-    itData.elem = elem;
-
-    if (G_UNLIKELY (!gst_buffer_list_foreach (list,
-                kms_av_muxer_injector_probe_it, &itData))) {
-      ret = GST_PAD_PROBE_DROP;
-    }
-  } else if (info->type & GST_PAD_PROBE_TYPE_BUFFER) {
-    GstBuffer **buffer = (GstBuffer **) & info->data;
-
-    if (G_UNLIKELY (!kms_av_muxer_injector (self, elem, buffer))) {
-      ret = GST_PAD_PROBE_DROP;
-    }
-  }
-
-  g_object_unref (elem);
-
-  return ret;
-}
-
-static void
-kms_av_muxer_add_injector_probe (KmsAVMuxer * self, GstElement * appsrc)
-{
-  GstPad *src;
-
-  src = gst_element_get_static_pad (appsrc, "src");
-
-  g_return_if_fail (src != NULL);
-
-  gst_pad_add_probe (src,
-      GST_PAD_PROBE_TYPE_BUFFER | GST_PAD_PROBE_TYPE_BUFFER_LIST,
-      kms_av_muxer_injector_probe, self, NULL);
-
-  g_object_unref (src);
-}
-
 static GstElement *
 kms_av_muxer_create_muxer (KmsAVMuxer * self)
 {
@@ -314,9 +207,6 @@ kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
 
   g_object_set (self->priv->videosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
   g_object_set (self->priv->audiosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
-
-  kms_av_muxer_add_injector_probe (self, self->priv->videosrc);
-  kms_av_muxer_add_injector_probe (self, self->priv->audiosrc);
 
   self->priv->mux = kms_av_muxer_create_muxer (self);
 
