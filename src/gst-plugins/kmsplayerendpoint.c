@@ -101,10 +101,6 @@ enum
 
 static guint kms_player_endpoint_signals[LAST_SIGNAL] = { 0 };
 
-/* pad templates */
-
-/* class initialization */
-
 G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndpoint, kms_player_endpoint,
     KMS_TYPE_URI_ENDPOINT,
     GST_DEBUG_CATEGORY_INIT (kms_player_endpoint_debug_category, PLUGIN_NAME,
