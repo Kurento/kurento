@@ -52,6 +52,9 @@ G_DEFINE_QUARK (KMS_PAD_ID_KEY, base_time_key);
 #define KMS_PAD_ID_KEY "kms-pad-id-key"
 G_DEFINE_QUARK (KMS_PAD_ID_KEY, kms_pad_id_key);
 
+#define KMS_APPSRC_ID_KEY "kms-appsrc-id-key"
+G_DEFINE_QUARK (KMS_APPSRC_ID_KEY, kms_appsrc_id_key);
+
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_endpoint_debug_category
 
@@ -79,8 +82,9 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
   g_mutex_unlock (&KMS_RECORDER_ENDPOINT(obj)->priv->srcs_mutex)   \
 )
 
-static void link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data);
-static void unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data);
+static GstPadLinkReturn link_sinkpad_cb (GstPad * pad, GstObject * appsink,
+    GstPad * peer);
+static void unlink_sinkpad_cb (GstPad * pad, GstObject * parent);
 
 enum
 {
@@ -139,12 +143,6 @@ typedef struct _MarkBufferProbeData
   StreamE2EAvgStat *stat;
 } MarkBufferProbeData;
 
-typedef struct _DataEvtProbe
-{
-  GstElement *appsrc;
-  KmsRecordingProfile profile;
-} DataEvtProbe;
-
 static KmsSinkPadData *
 sink_pad_data_new (KmsElementPadType type, const gchar * description,
     const gchar * name, gboolean requested)
@@ -167,26 +165,6 @@ sink_pad_data_destroy (KmsSinkPadData * data)
   g_free (data->description);
 
   g_slice_free (KmsSinkPadData, data);
-}
-
-static void
-data_evt_probe_destroy (DataEvtProbe * data)
-{
-  g_clear_object (&data->appsrc);
-  g_slice_free (DataEvtProbe, data);
-}
-
-static DataEvtProbe *
-data_evt_probe_new (GstElement * appsrc, KmsRecordingProfile profile)
-{
-  DataEvtProbe *data;
-
-  data = g_slice_new0 (DataEvtProbe);
-
-  data->appsrc = g_object_ref (appsrc);
-  data->profile = profile;
-
-  return data;
 }
 
 static MarkBufferProbeData *
@@ -270,7 +248,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 {
   KmsRecorderEndpoint *self =
       KMS_RECORDER_ENDPOINT (GST_OBJECT_PARENT (appsink));
-  GstAppSrc *appsrc = GST_APP_SRC (user_data);
+  GstAppSrc *appsrc;
   GstFlowReturn ret;
   GstSample *sample;
   GstSegment *segment;
@@ -278,6 +256,13 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   BaseTimeType *base_time;
   GstClockTime offset;
   GstCaps *caps;
+
+  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+
+  if (appsrc == NULL) {
+    GST_ERROR_OBJECT (appsink, "No appsrc attached");
+    return GST_FLOW_NOT_LINKED;
+  }
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -390,9 +375,15 @@ end:
 static void
 recv_eos (GstAppSink * appsink, gpointer user_data)
 {
-  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstElement *appsrc;
 
-  send_eos (appsrc);
+  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+
+  if (appsrc == NULL) {
+    GST_ERROR_OBJECT (appsink, "No appsrc attached");
+  } else {
+    send_eos (appsrc);
+  }
 }
 
 static void
@@ -514,8 +505,8 @@ kms_recorder_endpoint_finalize (GObject * object)
 static void
 connect_pad_signals_cb (GstPad * pad, gpointer data)
 {
-  g_signal_connect (pad, "linked", G_CALLBACK (link_sinkpad_cb), data);
-  g_signal_connect (pad, "unlinked", G_CALLBACK (unlink_sinkpad_cb), data);
+  gst_pad_set_link_function_full (pad, link_sinkpad_cb, data, NULL);
+  gst_pad_set_unlink_function_full (pad, unlink_sinkpad_cb, data, NULL);
 }
 
 static void
@@ -795,10 +786,9 @@ static GstPadProbeReturn
 configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
     gpointer user_data)
 {
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
   GstEvent *event = gst_pad_probe_info_get_event (info);
-  DataEvtProbe *data = user_data;
-  GstElement *appsrc = data->appsrc;
-  GstElement *appsink;
+  GstElement *appsrc, *appsink;
   GstCaps *caps;
 
   if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
@@ -806,7 +796,7 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
 
   gst_event_parse_caps (event, &caps);
 
-  GST_DEBUG_OBJECT (appsrc, "Processing caps event %" GST_PTR_FORMAT, caps);
+  GST_DEBUG_OBJECT (pad, "Processing caps event %" GST_PTR_FORMAT, caps);
 
   if (gst_caps_get_size (caps) == 0) {
     GST_ERROR_OBJECT (pad, "Invalid event %" GST_PTR_FORMAT, event);
@@ -818,27 +808,31 @@ configure_pipeline_capabilities (GstPad * pad, GstPadProbeInfo * info,
     GST_WARNING_OBJECT (pad, "Not fixed caps in event %" GST_PTR_FORMAT, event);
   }
 
-  set_appsrc_caps (appsrc, caps);
-
   appsink = gst_pad_get_parent_element (pad);
+  GST_DEBUG_OBJECT (appsink, "Setting caps: %" GST_PTR_FORMAT, caps);
 
-  if (appsink) {
-    set_appsink_caps (appsink, caps, data->profile);
-    g_object_unref (appsink);
+  set_appsink_caps (appsink, caps, self->priv->profile);
+
+  appsrc = g_object_get_qdata (G_OBJECT (appsink), kms_appsrc_id_key_quark ());
+
+  if (appsrc != NULL) {
+    set_appsrc_caps (appsrc, caps);
+  } else {
+    GST_ERROR_OBJECT (pad, "No appsrc attached");
   }
+
+  g_object_unref (appsink);
 
   return GST_PAD_PROBE_OK;
 }
 
-static void
-link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
+static GstPadLinkReturn
+link_sinkpad_cb (GstPad * pad, GstObject * parent, GstPad * peer)
 {
-  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (pad->linkdata);
+  GstPadLinkReturn ret = GST_PAD_LINK_REFUSED;
   KmsSinkPadData *sinkdata;
-  GstAppSinkCallbacks callbacks;
   GstElement *appsink, *appsrc;
-  KmsRecordingProfile profile;
-  DataEvtProbe *data;
   KmsMediaType type;
   GstPad *target;
   gchar *id, *key;
@@ -846,7 +840,7 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
   if (target == NULL) {
     GST_ERROR_OBJECT (pad, "No target pad set");
-    return;
+    return GST_PAD_LINK_REFUSED;
   }
 
   key = g_object_get_qdata (G_OBJECT (target), kms_pad_id_key_quark ());
@@ -854,7 +848,7 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   if (key == NULL) {
     GST_ERROR_OBJECT (pad, "No identifier assigned");
     g_object_unref (&target);
-    return;
+    return GST_PAD_LINK_REFUSED;
   }
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
@@ -879,8 +873,6 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
       goto end;
   }
 
-  profile = self->priv->profile;
-
   GST_DEBUG_OBJECT (pad, "linked to %" GST_PTR_FORMAT, peer);
 
   id = gst_pad_get_name (pad);
@@ -889,11 +881,8 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   if (appsrc == NULL) {
     GST_ERROR_OBJECT (self, "Can not get appsrc for pad %" GST_PTR_FORMAT, pad);
-    KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-    g_object_unref (target);
     g_free (id);
-
-    return;
+    goto end;
   }
 
   gst_pad_set_element_private (pad, g_object_ref (appsrc));
@@ -906,24 +895,18 @@ link_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
     gst_pad_remove_probe (target, sinkdata->sink_probe);
   }
 
-  callbacks.eos = recv_eos;
-  callbacks.new_preroll = NULL;
-  callbacks.new_sample = recv_sample;
-
   appsink = gst_pad_get_parent_element (target);
-  gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc, NULL);
+  g_object_set_qdata_full (G_OBJECT (appsink), kms_appsrc_id_key_quark (),
+      appsrc, NULL);
   g_object_unref (appsink);
 
-  data = data_evt_probe_new (appsrc, profile);
-  sinkdata->sink_probe =
-      gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      configure_pipeline_capabilities, data,
-      (GDestroyNotify) data_evt_probe_destroy);
+  ret = GST_PAD_LINK_OK;
 
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
   g_clear_object (&target);
+
+  return ret;
 }
 
 static void
@@ -937,24 +920,22 @@ kms_recorder_release_pending_pad (gchar * id, KmsRecorderEndpoint * self)
 }
 
 static void
-unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
+unlink_sinkpad_cb (GstPad * pad, GstObject * parent)
 {
-  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (user_data);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (pad->unlinkdata);
   gchar *id = NULL;
   GstElement *appsrc;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
-  id = gst_pad_get_name (pad);
+  id = GST_PAD_NAME (pad);
 
-  GST_OBJECT_LOCK (pad);
   appsrc = gst_pad_get_element_private (pad);
   gst_pad_set_element_private (pad, NULL);
 
   if (appsrc) {
     g_object_unref (appsrc);
   }
-  GST_OBJECT_UNLOCK (pad);
 
   if (self->priv->stopping) {
     GST_DEBUG_OBJECT (self, "Stop operation is pending");
@@ -967,8 +948,6 @@ unlink_sinkpad_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
-  g_free (id);
 }
 
 static void
@@ -976,6 +955,7 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
     KmsElementPadType type, const gchar * description, const gchar * name,
     gboolean requested)
 {
+  GstAppSinkCallbacks callbacks;
   KmsSinkPadData *data;
   GstElement *appsink;
   GstPad *sinkpad;
@@ -999,15 +979,24 @@ kms_recorder_endpoint_add_appsink (KmsRecorderEndpoint * self,
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
 
-  gst_element_sync_state_with_parent (appsink);
-
   data = sink_pad_data_new (type, description, name, requested);
   data->sink_target = sinkpad;
   g_hash_table_insert (self->priv->sink_pad_data, g_strdup (name), data);
   g_object_set_qdata_full (G_OBJECT (sinkpad), kms_pad_id_key_quark (),
       g_strdup (name), g_free);
 
+  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      configure_pipeline_capabilities, self, NULL);
+
   g_object_unref (sinkpad);
+
+  callbacks.eos = recv_eos;
+  callbacks.new_preroll = NULL;
+  callbacks.new_sample = recv_sample;
+
+  gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, NULL, NULL);
+
+  gst_element_sync_state_with_parent (appsink);
 }
 
 static void
