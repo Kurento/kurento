@@ -33,9 +33,14 @@
 #define URIDECODEBIN "uridecodebin"
 #define RTSPSRC "rtspsrc"
 
-#define APPSRC_DATA "appsrc_data"
-#define APPSINK_DATA "appsink_data"
-#define PTS_DATA "pts_data"
+#define APPSRC_KEY "appsrc-key"
+G_DEFINE_QUARK (APPSRC_KEY, appsrc);
+
+#define APPSINK_KEY "appsink-key"
+G_DEFINE_QUARK (APPSINK_KEY, appsink);
+
+#define PTS_KEY "pts-key"
+G_DEFINE_QUARK (PTS_KEY, pts);
 
 #define NETWORK_CACHE_DEFAULT 2000
 #define IS_PREROLL TRUE
@@ -445,7 +450,8 @@ process_sample (GstElement * appsink, GstElement * appsrc, GstSample * sample,
   buffer = gst_buffer_make_writable (buffer);
   pts_orig = GST_BUFFER_PTS (buffer);
 
-  pts_data = (KmsPtsData *) g_object_get_data (G_OBJECT (appsink), PTS_DATA);
+  pts_data =
+      (KmsPtsData *) g_object_get_qdata (G_OBJECT (appsink), pts_quark ());
 
   if (is_preroll) {
     GST_DEBUG_OBJECT (appsink, "Preroll: reset base time");
@@ -800,11 +806,11 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
     g_signal_connect (appsink, "new-preroll", G_CALLBACK (new_preroll_cb),
         appsrc);
 
-    g_object_set_data_full (G_OBJECT (appsink), PTS_DATA, kms_pts_data_new (),
-        kms_pts_data_destroy);
+    g_object_set_qdata_full (G_OBJECT (appsink), pts_quark (),
+        kms_pts_data_new (), kms_pts_data_destroy);
 
-    g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
-    g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
+    g_object_set_qdata (G_OBJECT (pad), appsink_quark (), appsink);
+    g_object_set_qdata (G_OBJECT (pad), appsrc_quark (), appsrc);
   } else {
     GST_WARNING_OBJECT (self, "No supported pad: %" GST_PTR_FORMAT
         ". Connecting it to a fakesink", pad);
@@ -858,8 +864,8 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 
   kms_player_end_point_remove_stat_probe (self, pad);
 
-  appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
-  appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
+  appsink = g_object_steal_qdata (G_OBJECT (pad), appsink_quark ());
+  appsrc = g_object_steal_qdata (G_OBJECT (pad), appsrc_quark ());
 
   if (appsink != NULL) {
     kms_remove_element_from_bin (GST_BIN (self->priv->pipeline), appsink);
