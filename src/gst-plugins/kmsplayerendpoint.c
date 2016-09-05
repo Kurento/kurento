@@ -970,13 +970,9 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
   if (ret == GST_STATE_CHANGE_SUCCESS) {
     gint64 position = -1;
 
-    gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
-
     gst_element_query_position (self->priv->pipeline,
         GST_FORMAT_TIME, &position);
-
     kms_player_endpoint_set_position (self, position);
-
     kms_player_endpoint_mark_reset_base_time_and_set_state (self,
         GST_STATE_PAUSED);
   }
