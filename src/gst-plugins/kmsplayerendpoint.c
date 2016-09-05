@@ -35,9 +35,10 @@
 
 #define APPSRC_DATA "appsrc_data"
 #define APPSINK_DATA "appsink_data"
-#define BASE_TIME_DATA "base_time_data"
+#define PTS_DATA "pts_data"
 
 #define NETWORK_CACHE_DEFAULT 2000
+#define IS_PREROLL TRUE
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
 #define GST_CAT_DEFAULT kms_player_endpoint_debug_category
@@ -77,6 +78,10 @@ struct _KmsPlayerEndpointPrivate
   gint network_cache;
 
   GMutex base_time_mutex;
+  gboolean reset;
+  GstClockTime base_time;
+  GstClockTime base_time_preroll;
+
   KmsPlayerStats stats;
 };
 
@@ -105,6 +110,45 @@ G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndpoint, kms_player_endpoint,
     KMS_TYPE_URI_ENDPOINT,
     GST_DEBUG_CATEGORY_INIT (kms_player_endpoint_debug_category, PLUGIN_NAME,
         0, "debug category for playerendpoint element"));
+
+typedef struct _KmsPtsData
+{
+  GstClockTime base_time;
+  GstClockTime offset_time;
+
+  GstClockTime base_time_preroll;
+
+  GstClockTime last_pts;
+  GstClockTime last_pts_orig;
+} KmsPtsData;
+
+static void
+kms_pts_data_destroy (gpointer data)
+{
+  g_slice_free (KmsPtsData, data);
+}
+
+static KmsPtsData *
+kms_pts_data_new ()
+{
+  KmsPtsData *data;
+
+  data = g_slice_new0 (KmsPtsData);
+
+  data->base_time = GST_CLOCK_TIME_NONE;
+  data->offset_time = GST_CLOCK_TIME_NONE;
+  data->last_pts = GST_CLOCK_TIME_NONE;
+  data->last_pts_orig = GST_CLOCK_TIME_NONE;
+
+  return data;
+}
+
+static void
+kms_pts_data_reset (KmsPtsData * data)
+{
+  data->base_time = GST_CLOCK_TIME_NONE;
+  data->last_pts_orig = GST_CLOCK_TIME_NONE;
+}
 
 static void
 kms_player_endpoint_set_caps (KmsPlayerEndpoint * self)
@@ -298,16 +342,85 @@ kms_player_endpoint_finalize (GObject * object)
   G_OBJECT_CLASS (kms_player_endpoint_parent_class)->finalize (object);
 }
 
-static GstFlowReturn
-new_preroll_cb (GstElement * appsink, gpointer user_data)
+static GstClockTime
+kms_player_endpoint_generate_base_time (KmsPlayerEndpoint * self)
 {
-  GstElement *appsrc = GST_ELEMENT (user_data);
-  GstFlowReturn ret;
-  GstSample *sample;
-  GstBuffer *buffer;
-  GstPad *src, *sink;
+  GstClock *clock;
+  GstClockTime base_time;
 
-  g_signal_emit_by_name (appsink, "pull-preroll", &sample);
+  clock = gst_element_get_clock (GST_ELEMENT (self));
+  base_time =
+      gst_clock_get_time (clock) -
+      gst_element_get_base_time (GST_ELEMENT (self));
+  g_object_unref (clock);
+
+  return base_time;
+}
+
+static GstClockTime
+kms_player_endpoint_get_or_generate_base_time (KmsPlayerEndpoint * self,
+    GstClockTime * base_time_in, gboolean is_preroll)
+{
+  GstClockTime base_time;
+
+  BASE_TIME_LOCK (self);
+
+  if (*base_time_in != GST_CLOCK_TIME_NONE) {
+    base_time = *base_time_in;
+  } else {
+    base_time = kms_player_endpoint_generate_base_time (self);
+    *base_time_in = base_time;
+
+    GST_DEBUG_OBJECT (self,
+        "Setting base time to: %" GST_TIME_FORMAT ", is preroll: %d",
+        GST_TIME_ARGS (base_time), is_preroll);
+  }
+
+  BASE_TIME_UNLOCK (self);
+
+  return base_time;
+}
+
+static void
+kms_player_endpoint_reset_base_time (KmsPlayerEndpoint * self)
+{
+  BASE_TIME_LOCK (self);
+  if (self->priv->reset) {
+    self->priv->base_time_preroll = GST_CLOCK_TIME_NONE;
+    self->priv->base_time = GST_CLOCK_TIME_NONE;
+    self->priv->reset = FALSE;
+  }
+  BASE_TIME_UNLOCK (self);
+}
+
+static void
+kms_player_endpoint_mark_reset_base_time (KmsPlayerEndpoint * self)
+{
+  BASE_TIME_LOCK (self);
+  self->priv->reset = TRUE;
+  BASE_TIME_UNLOCK (self);
+}
+
+static GstStateChangeReturn
+kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
+    self, GstState state)
+{
+  kms_player_endpoint_mark_reset_base_time (self);
+
+  return gst_element_set_state (self->priv->pipeline, state);
+}
+
+static GstFlowReturn
+process_sample (GstElement * appsink, GstElement * appsrc, GstSample * sample,
+    gboolean is_preroll)
+{
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (GST_ELEMENT_PARENT (appsrc));
+  KmsPtsData *pts_data;
+  GstBuffer *buffer = NULL;
+  GstPad *src, *sink;
+  GstClockTime pts_orig, base_time, offset_time;
+  GstFlowReturn ret = GST_FLOW_OK;
+  gint64 diff;
 
   if (sample == NULL) {
     GST_ERROR_OBJECT (appsink, "Cannot get sample");
@@ -315,27 +428,107 @@ new_preroll_cb (GstElement * appsink, gpointer user_data)
   }
 
   buffer = gst_sample_get_buffer (sample);
-
   if (buffer == NULL) {
-    ret = GST_FLOW_OK;
     goto end;
   }
 
+  if (!GST_BUFFER_PTS_IS_VALID (buffer) && !GST_BUFFER_DTS_IS_VALID (buffer)) {
+    GST_ERROR_OBJECT (appsink, "PTS and DTS are not valid.");
+    return GST_FLOW_OK;
+  } else if (!GST_BUFFER_PTS_IS_VALID (buffer)) {
+    GST_BUFFER_PTS (buffer) = GST_BUFFER_DTS (buffer);
+  } else if (!GST_BUFFER_DTS_IS_VALID (buffer)) {
+    GST_BUFFER_DTS (buffer) = GST_BUFFER_PTS (buffer);
+  }
+
   gst_buffer_ref (buffer);
-
   buffer = gst_buffer_make_writable (buffer);
+  pts_orig = GST_BUFFER_PTS (buffer);
 
-  buffer->pts = GST_CLOCK_TIME_NONE;
-  buffer->dts = GST_CLOCK_TIME_NONE;
+  pts_data = (KmsPtsData *) g_object_get_data (G_OBJECT (appsink), PTS_DATA);
+
+  if (is_preroll) {
+    GST_DEBUG_OBJECT (appsink, "Preroll: reset base time");
+
+    kms_player_endpoint_reset_base_time (self);
+    kms_pts_data_reset (pts_data);
+    base_time =
+        kms_player_endpoint_get_or_generate_base_time (self,
+        &self->priv->base_time_preroll, IS_PREROLL);
+    if (pts_data->last_pts != GST_CLOCK_TIME_NONE) {
+      /* Ensure that base_time is always greater than the last_pts
+       * to avoid setting the same or less PTS for different buffers */
+      base_time = MAX (base_time, pts_data->last_pts + GST_MSECOND);
+    }
+
+    offset_time = GST_BUFFER_PTS (buffer);
+  } else {
+    base_time = pts_data->base_time;
+    offset_time = pts_data->offset_time;
+
+    if (base_time == GST_CLOCK_TIME_NONE) {
+      base_time =
+          kms_player_endpoint_get_or_generate_base_time (self,
+          &self->priv->base_time, !IS_PREROLL);
+      if (pts_data->last_pts != GST_CLOCK_TIME_NONE) {
+        /* Ensure that base_time is always greater than the last_pts
+         * to avoid setting the same or less PTS for different buffers */
+        base_time = MAX (base_time, pts_data->last_pts + GST_MSECOND);
+      }
+
+      pts_data->base_time = base_time;
+      pts_data->offset_time = offset_time = GST_BUFFER_PTS (buffer);
+    }
+  }
+
+  if (pts_data->last_pts_orig != GST_CLOCK_TIME_NONE) {
+    if (pts_orig < pts_data->last_pts_orig) {
+      GST_ERROR_OBJECT (appsink,
+          "Non incremental original PTS (last original PTS: %"
+          GST_TIME_FORMAT ", original PTS: %" GST_TIME_FORMAT
+          ", is preroll: %d). Not pushing",
+          GST_TIME_ARGS (pts_data->last_pts_orig), GST_TIME_ARGS (pts_orig),
+          is_preroll);
+      goto end;
+    } else if (pts_orig == pts_data->last_pts_orig) {
+      GST_DEBUG_OBJECT (appsink,
+          "Original PTS equals than last PTS (original PTS: %" GST_TIME_FORMAT
+          ", is preroll: %d). It seems to be already pushed.",
+          GST_TIME_ARGS (pts_orig), is_preroll);
+      goto end;
+    }
+  }
+
+  diff = base_time - offset_time;
+  GST_BUFFER_DTS (buffer) += diff;
+  GST_BUFFER_PTS (buffer) += diff;
 
   // HACK: Change duration 1 to -1 to avoid segmentation fault
   //problems in seeks with some formats
-  if (buffer->duration == 1) {
-    buffer->duration = GST_CLOCK_TIME_NONE;
+  if (GST_BUFFER_DURATION (buffer) == 1) {
+    GST_BUFFER_DURATION (buffer) = GST_CLOCK_TIME_NONE;
   }
+
+  GST_LOG_OBJECT (appsink,
+      "Is preroll: %d, buffer: %" GST_PTR_FORMAT ", original pts %"
+      GST_TIME_FORMAT, is_preroll, buffer, GST_TIME_ARGS (pts_orig));
+
+  if (pts_data->last_pts != GST_CLOCK_TIME_NONE &&
+      GST_BUFFER_PTS (buffer) <= pts_data->last_pts) {
+    GST_ERROR_OBJECT (appsink,
+        "Non incremental PTS assignment (last PTS: %"
+        GST_TIME_FORMAT ", PTS: %" GST_TIME_FORMAT
+        ", is preroll: %d). Not pushing", GST_TIME_ARGS (pts_data->last_pts),
+        GST_TIME_ARGS (GST_BUFFER_PTS (buffer)), is_preroll);
+    goto end;
+  }
+
+  pts_data->last_pts = GST_BUFFER_PTS (buffer);
+  pts_data->last_pts_orig = pts_orig;
 
   src = gst_element_get_static_pad (appsrc, "src");
   sink = gst_pad_get_peer (src);
+  g_object_unref (src);
 
   if (sink != NULL) {
     if (GST_OBJECT_FLAG_IS_SET (sink, GST_PAD_FLAG_EOS)) {
@@ -346,129 +539,43 @@ new_preroll_cb (GstElement * appsink, gpointer user_data)
     g_object_unref (sink);
   }
 
-  g_object_unref (src);
-
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
-
-  gst_buffer_unref (buffer);
-
   if (ret != GST_FLOW_OK) {
-    /* something wrong */
-    GST_ERROR ("Could not send buffer to appsrc %s. Cause: %s",
+    GST_ERROR_OBJECT (appsink,
+        "Could not send buffer to appsrc %s. Cause: %s",
         GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
   }
 
 end:
-  if (sample != NULL)
+  if (buffer != NULL) {
+    gst_buffer_unref (buffer);
+  }
+
+  if (sample != NULL) {
     gst_sample_unref (sample);
+  }
 
   return ret;
 }
 
-static void
-release_gst_clock (gpointer data)
+static GstFlowReturn
+new_preroll_cb (GstElement * appsink, gpointer user_data)
 {
-  g_slice_free (GstClockTime, data);
+  GstSample *sample;
+
+  g_signal_emit_by_name (appsink, "pull-preroll", &sample);
+
+  return process_sample (appsink, GST_ELEMENT (user_data), sample, IS_PREROLL);
 }
 
 static GstFlowReturn
 new_sample_cb (GstElement * appsink, gpointer user_data)
 {
-  GstElement *appsrc = GST_ELEMENT (user_data);
-  GstFlowReturn ret;
   GstSample *sample;
-  GstSegment *segment;
-  GstBuffer *buffer;
-  GstClockTime *base_time;
-  GstPad *src, *sink;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
-  if (sample == NULL) {
-    GST_ERROR_OBJECT (appsink, "Cannot get sample");
-    return GST_FLOW_OK;
-  }
-
-  buffer = gst_sample_get_buffer (sample);
-  segment = gst_sample_get_segment (sample);
-
-  if (buffer == NULL) {
-    ret = GST_FLOW_OK;
-    goto end;
-  }
-
-  gst_buffer_ref (buffer);
-
-  buffer = gst_buffer_make_writable (buffer);
-
-  if (GST_BUFFER_PTS_IS_VALID (buffer))
-    buffer->pts =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->pts);
-  if (GST_BUFFER_DTS_IS_VALID (buffer))
-    buffer->dts =
-        gst_segment_to_running_time (segment, GST_FORMAT_TIME, buffer->dts);
-
-  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsrc));
-
-  base_time =
-      g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
-
-  if (base_time == NULL) {
-    GstClock *clock;
-
-    clock = gst_element_get_clock (appsrc);
-    base_time = g_slice_new0 (GstClockTime);
-
-    g_object_set_data_full (G_OBJECT (GST_OBJECT_PARENT (appsrc)),
-        BASE_TIME_DATA, base_time, release_gst_clock);
-    *base_time =
-        gst_clock_get_time (clock) - gst_element_get_base_time (appsrc);
-
-    g_object_unref (clock);
-    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
-  }
-
-  if (GST_BUFFER_DTS_IS_VALID (buffer)) {
-    buffer->dts += *base_time;
-  }
-
-  if (GST_BUFFER_PTS_IS_VALID (buffer)) {
-    buffer->pts += *base_time;
-  } else {
-    buffer->pts = buffer->dts;
-  }
-
-  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsrc));
-
-  src = gst_element_get_static_pad (appsrc, "src");
-  sink = gst_pad_get_peer (src);
-
-  if (sink != NULL) {
-    if (GST_OBJECT_FLAG_IS_SET (sink, GST_PAD_FLAG_EOS)) {
-      GST_INFO_OBJECT (sink, "Sending flush events");
-      gst_pad_send_event (sink, gst_event_new_flush_start ());
-      gst_pad_send_event (sink, gst_event_new_flush_stop (FALSE));
-    }
-    g_object_unref (sink);
-  }
-
-  g_object_unref (src);
-
-  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
-
-  gst_buffer_unref (buffer);
-
-  if (ret != GST_FLOW_OK) {
-    /* something wrong */
-    GST_ERROR ("Could not send buffer to appsrc %s. Cause: %s",
-        GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
-  }
-
-end:
-  if (sample != NULL)
-    gst_sample_unref (sample);
-
-  return ret;
+  return process_sample (appsink, GST_ELEMENT (user_data), sample, !IS_PREROLL);
 }
 
 static void
@@ -693,6 +800,9 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
     g_signal_connect (appsink, "new-preroll", G_CALLBACK (new_preroll_cb),
         appsrc);
 
+    g_object_set_data_full (G_OBJECT (appsink), PTS_DATA, kms_pts_data_new (),
+        kms_pts_data_destroy);
+
     g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
     g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   } else {
@@ -768,10 +878,7 @@ kms_player_endpoint_stopped (KmsUriEndpoint * obj)
   GST_DEBUG_OBJECT (self, "Pipeline stopped");
 
   /* Set internal pipeline to NULL */
-  gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-  BASE_TIME_LOCK (self);
-  g_object_set_data (G_OBJECT (self), BASE_TIME_DATA, NULL);
-  BASE_TIME_UNLOCK (self);
+  kms_player_endpoint_mark_reset_base_time_and_set_state (self, GST_STATE_NULL);
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       KMS_URI_ENDPOINT_STATE_STOP);
@@ -822,6 +929,8 @@ kms_player_endpoint_set_position (KmsPlayerEndpoint * self, gint64 position)
       /* start */ GST_SEEK_TYPE_SET, position,
       /* stop */ GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE);
 
+  kms_player_endpoint_mark_reset_base_time (self);
+
   if (!gst_element_send_event (self->priv->pipeline, seek)) {
     GST_WARNING_OBJECT (self, "Seek failed");
     return FALSE;
@@ -839,7 +948,9 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
   GST_DEBUG_OBJECT (self, "Pipeline paused");
 
   /* Set internal pipeline to paused */
-  ret = gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+  ret =
+      kms_player_endpoint_mark_reset_base_time_and_set_state (self,
+      GST_STATE_PAUSED);
 
   // HACK: Get the return and perform a seek if the return is success
   //in order to get async state changes. That hack only should be necessary
@@ -855,7 +966,8 @@ kms_player_endpoint_paused (KmsUriEndpoint * obj)
 
     kms_player_endpoint_set_position (self, position);
 
-    gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+    kms_player_endpoint_mark_reset_base_time_and_set_state (self,
+        GST_STATE_PAUSED);
   }
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
@@ -1136,6 +1248,8 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv = KMS_PLAYER_ENDPOINT_GET_PRIVATE (self);
 
   g_mutex_init (&self->priv->base_time_mutex);
+  self->priv->base_time = GST_CLOCK_TIME_NONE;
+  self->priv->base_time_preroll = GST_CLOCK_TIME_NONE;
 
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("pipeline");
