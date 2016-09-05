@@ -432,6 +432,11 @@ process_sample (GstElement * appsink, GstElement * appsrc, GstSample * sample,
     return GST_FLOW_OK;
   }
 
+  if (gst_sample_get_buffer_list (sample) != NULL) {
+    GST_ERROR_OBJECT (appsink, "BufferList not supported");
+    g_warning ("BufferList not supported");
+  }
+
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
     goto end;
