@@ -270,6 +270,11 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
+    if (gst_sample_get_buffer_list (sample) != NULL) {
+      GST_ERROR_OBJECT (appsink,
+          "Discarding buffer list at the recorder endpoint");
+      g_warning ("Discarding buffer list at the recorder endpoint");
+    }
     ret = GST_FLOW_OK;
     goto end;
   }
