@@ -50,6 +50,7 @@ import org.kurento.test.browser.WebRtcTestPage;
 import org.kurento.test.config.BrowserConfig;
 import org.kurento.test.config.BrowserScope;
 import org.kurento.test.config.TestScenario;
+import org.kurento.test.monitor.SystemMonitorManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,24 +63,26 @@ import com.google.common.collect.Multimap;
  * @author Boni Garcia (boni.garcia@urjc.es)
  * @since 6.5.1
  */
-public class BenchmarkAgnostic extends KurentoClientBrowserTest<WebRtcTestPage> {
+public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPage> {
 
-  private final Logger log = LoggerFactory.getLogger(BenchmarkAgnostic.class);
+  private final Logger log = LoggerFactory.getLogger(AgnosticBenchmarkTest.class);
 
   private static final String PASSTHROUGH_NUMBER_PROP = "passtrough.number";
-  private static final int PASSTHROUGH_NUMBER_DEFAULT = 10;
+  private static final int PASSTHROUGH_NUMBER_DEFAULT = 2;
   private static final String SESSION_TIME_PROP = "sesion.time";
-  private static final int SESSION_TIME_DEFAULT = 30; // seconds
-  private static final String GATHER_LATENCY_RATE_PROP = "latency.rate";
-  private static final int GATHER_LATENCY_RATE_DEFAULT = 100; // milliseconds
+  private static final int SESSION_TIME_DEFAULT = 10; // seconds
+  private static final String SAMPLING_RATE_PROP = "sampling.rate";
+  private static final int SAMPLING_RATE_DEFAULT = 100; // milliseconds
   private static final String OUTPUT_FOLDER_PROP = "output.folder";
   private static final String OUTPUT_FOLDER_DEFAULT = ".";
 
   private int passTroughNumber = getProperty(PASSTHROUGH_NUMBER_PROP, PASSTHROUGH_NUMBER_DEFAULT);
   private int sessionTime = getProperty(SESSION_TIME_PROP, SESSION_TIME_DEFAULT);
-  private int latencyRate = getProperty(GATHER_LATENCY_RATE_PROP, GATHER_LATENCY_RATE_DEFAULT);
-  private List<MediaElement> passTroughList = new ArrayList<>(passTroughNumber);
+  private int samplingRate = getProperty(SAMPLING_RATE_PROP, SAMPLING_RATE_DEFAULT);
   private String outputFolder = getProperty(OUTPUT_FOLDER_PROP, OUTPUT_FOLDER_DEFAULT);
+
+  private List<MediaElement> passTroughList = new ArrayList<>(passTroughNumber);
+  private SystemMonitorManager monitor;
 
   @Parameters(name = "{index}: {0}")
   public static Collection<Object[]> data() {
@@ -134,6 +137,11 @@ public class BenchmarkAgnostic extends KurentoClientBrowserTest<WebRtcTestPage> 
         WebRtcMode.RCV_ONLY);
     getViewer().waitForEvent("playing");
 
+    // KMS Monitor (CPU, memory, etc)
+    monitor = new SystemMonitorManager();
+    monitor.setSamplingTime(samplingRate);
+    monitor.startMonitoring();
+
     // Thread for gathering latencies
     final Multimap<String, Object> latencies = ArrayListMultimap.create();
     final ExecutorService executor = Executors.newFixedThreadPool(passTroughList.size());
@@ -159,7 +167,7 @@ public class BenchmarkAgnostic extends KurentoClientBrowserTest<WebRtcTestPage> 
               }
             });
           }
-          waitMilliSeconds(latencyRate);
+          waitMilliSeconds(samplingRate);
         }
       }
     });
@@ -168,13 +176,18 @@ public class BenchmarkAgnostic extends KurentoClientBrowserTest<WebRtcTestPage> 
     // Wait session time
     waitSeconds(sessionTime);
 
+    // Stop monitor
+    String csvPreffix = outputFolder + this.getClass().getSimpleName() + "-" + new Date().getTime();
+    monitor.stop();
+    monitor.writeResults(csvPreffix + "-monitor.csv");
+    monitor.destroy();
+
     // Release media pipeline and latency thread/executor
     mediaPipeline.release();
     executor.shutdown();
     latencyThread.interrupt();
 
-    writeCSV(outputFolder + this.getClass().getSimpleName() + "-" + new Date().getTime() + ".csv",
-        latencies, true);
+    writeCSV(csvPreffix + "-latency.csv", latencies, true);
   }
 
   private double getInputLatency(MediaElement mediaElement) {
