@@ -59,6 +59,7 @@
 				<module>kurento-repository-test</module>
 				<module>kurento-test</module>
 				<module>kurento-sanity-test</module>
+				<module>kurento-benchmark</module>
 			</modules>
 		</profile>
 		<profile>
@@ -72,6 +73,7 @@
 				<module>kurento-repository-test</module>
 				<module>kurento-test</module>
 				<module>kurento-sanity-test</module>
+				<module>kurento-benchmark</module>
 			</modules>
 			<build>
 				<plugins>
