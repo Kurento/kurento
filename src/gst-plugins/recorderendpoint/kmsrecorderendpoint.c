@@ -46,8 +46,8 @@
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_NONE
 
-#define BASE_TIME_KEY "base-time-key"
-G_DEFINE_QUARK (KMS_PAD_ID_KEY, base_time_key);
+#define KMS_BASE_TIME_KEY "base-time-key"
+G_DEFINE_QUARK (KMS_BASE_TIME_KEY, base_time_key);
 
 #define KMS_PAD_ID_KEY "kms-pad-id-key"
 G_DEFINE_QUARK (KMS_PAD_ID_KEY, kms_pad_id_key);
