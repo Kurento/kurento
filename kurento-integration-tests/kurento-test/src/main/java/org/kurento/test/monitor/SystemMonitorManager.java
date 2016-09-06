@@ -42,6 +42,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -70,10 +72,11 @@ public class SystemMonitorManager {
   private KmsMonitor monitor;
   private SshConnection remoteKms;
   private int monitorPort;
-  private long samplingTime =
-      getProperty(DEFAULT_MONITOR_RATE_PROPERTY, DEFAULT_MONITOR_RATE_DEFAULT);
+  private long samplingTime = getProperty(DEFAULT_MONITOR_RATE_PROPERTY,
+      DEFAULT_MONITOR_RATE_DEFAULT);
 
   private Thread thread;
+  private ExecutorService executor;
   private int numClients = 0;
   private double currentLatency = 0;
   private int latencyHints = 0;
@@ -194,12 +197,19 @@ public class SystemMonitorManager {
   public void startMonitoring() {
 
     final long startTime = new Date().getTime();
+    executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
     thread = new Thread() {
       @Override
       public void run() {
         try {
           while (true) {
-            registerSample(startTime);
+            executor.execute(new Runnable() {
+              @Override
+              public void run() {
+                registerSample(startTime);
+              }
+            });
+
             Thread.sleep(samplingTime);
           }
         } catch (InterruptedException | KurentoException re) {
@@ -214,7 +224,7 @@ public class SystemMonitorManager {
   }
 
   private void registerSample(final long start) {
-
+    long time = new Date().getTime() - start;
     MonitorSample sample = new MonitorSample();
 
     // KMS info
@@ -240,12 +250,12 @@ public class SystemMonitorManager {
     sample.setNumClients(numClients);
 
     // Save entry in map
-    long time = new Date().getTime() - start;
     registrer.addSample(time, sample);
   }
 
   @SuppressWarnings("deprecation")
   public void stop() {
+    executor.shutdown();
     thread.interrupt();
     try {
       thread.join(3000);

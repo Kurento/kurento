@@ -29,10 +29,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class MonitorSampleRegistrer {
 
-  private Map<Long, MonitorSample> samples = new TreeMap<>();
+  private Map<Long, MonitorSample> samples = new ConcurrentSkipListMap<>();
 
   private boolean showLantency = false;
 
