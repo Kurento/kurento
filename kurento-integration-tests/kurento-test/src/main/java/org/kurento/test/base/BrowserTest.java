@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -546,6 +547,49 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
       }
       writer.append('\n');
     }
+    writer.flush();
+    writer.close();
+  }
+
+  public void writeCSV(String outputFile, Multimap<String, Object> multimap, boolean orderKeys)
+      throws IOException {
+    FileWriter writer = new FileWriter(outputFile);
+
+    // Header
+    boolean first = true;
+    Set<String> keySet = orderKeys ? new TreeSet<String>(multimap.keySet()) : multimap.keySet();
+    for (String key : keySet) {
+      if (!first) {
+        writer.append(',');
+      }
+      writer.append(key);
+      first = false;
+    }
+    writer.append('\n');
+
+    // Values
+    int i = 0;
+    boolean moreValues;
+    do {
+      moreValues = false;
+      first = true;
+      for (String key : keySet) {
+        Object[] array = multimap.get(key).toArray();
+        moreValues = i < array.length;
+        if (moreValues) {
+          if (!first) {
+            writer.append(',');
+          }
+          writer.append(array[i].toString());
+        }
+        first = false;
+      }
+      i++;
+      if (moreValues) {
+        writer.append('\n');
+      }
+    } while (moreValues);
+
     writer.flush();
     writer.close();
   }
