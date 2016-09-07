@@ -264,9 +264,10 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     return GST_FLOW_NOT_LINKED;
   }
 
-  g_signal_emit_by_name (appsink, "pull-sample", &sample);
-  if (sample == NULL)
+  sample = gst_app_sink_pull_sample (appsink);
+  if (sample == NULL) {
     return GST_FLOW_OK;
+  }
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {

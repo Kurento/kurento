@@ -27,6 +27,9 @@
 #include <commons/kmsloop.h>
 #include <kms-elements-marshal.h>
 
+#include <gst/app/gstappsrc.h>
+#include <gst/app/gstappsink.h>
+
 #define PLUGIN_NAME "playerendpoint"
 #define AUDIO_APPSRC "audio_appsrc"
 #define VIDEO_APPSRC "video_appsrc"
@@ -416,7 +419,7 @@ kms_player_endpoint_mark_reset_base_time_and_set_state (KmsPlayerEndpoint *
 }
 
 static GstFlowReturn
-process_sample (GstElement * appsink, GstElement * appsrc, GstSample * sample,
+process_sample (GstAppSink * appsink, GstAppSrc * appsrc, GstSample * sample,
     gboolean is_preroll)
 {
   KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (GST_ELEMENT_PARENT (appsrc));
@@ -537,7 +540,7 @@ process_sample (GstElement * appsink, GstElement * appsrc, GstSample * sample,
   pts_data->last_pts = GST_BUFFER_PTS (buffer);
   pts_data->last_pts_orig = pts_orig;
 
-  src = gst_element_get_static_pad (appsrc, "src");
+  src = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
   sink = gst_pad_get_peer (src);
   g_object_unref (src);
 
@@ -550,7 +553,8 @@ process_sample (GstElement * appsink, GstElement * appsrc, GstSample * sample,
     g_object_unref (sink);
   }
 
-  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
+  ret = gst_app_src_push_buffer (appsrc, buffer);
+  buffer = NULL;
   if (ret != GST_FLOW_OK) {
     GST_ERROR_OBJECT (appsink,
         "Could not send buffer to appsrc %s. Cause: %s",
@@ -570,38 +574,37 @@ end:
 }
 
 static GstFlowReturn
-new_preroll_cb (GstElement * appsink, gpointer user_data)
+new_preroll_cb (GstAppSink * appsink, gpointer user_data)
 {
   GstSample *sample;
 
-  g_signal_emit_by_name (appsink, "pull-preroll", &sample);
+  sample = gst_app_sink_pull_preroll (appsink);
 
-  return process_sample (appsink, GST_ELEMENT (user_data), sample, IS_PREROLL);
+  return process_sample (appsink, GST_APP_SRC (user_data), sample, IS_PREROLL);
 }
 
 static GstFlowReturn
-new_sample_cb (GstElement * appsink, gpointer user_data)
+new_sample_cb (GstAppSink * appsink, gpointer user_data)
 {
   GstSample *sample;
 
-  g_signal_emit_by_name (appsink, "pull-sample", &sample);
+  sample = gst_app_sink_pull_sample (appsink);
 
-  return process_sample (appsink, GST_ELEMENT (user_data), sample, !IS_PREROLL);
+  return process_sample (appsink, GST_APP_SRC (user_data), sample, !IS_PREROLL);
 }
 
 static void
-eos_cb (GstElement * appsink, gpointer user_data)
+eos_cb (GstAppSink * appsink, gpointer user_data)
 {
-  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstAppSrc *appsrc = GST_APP_SRC (user_data);
   GstFlowReturn ret;
   GstPad *pad;
 
   GST_DEBUG_OBJECT (appsrc, "Sending eos event to main pipeline");
 
-  g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
+  ret = gst_app_src_end_of_stream (appsrc);
 
-  pad = gst_element_get_static_pad (appsrc, "src");
-
+  pad = gst_element_get_static_pad (GST_ELEMENT (appsrc), "src");
   if (pad != NULL) {
     gst_pad_send_event (pad, gst_event_new_flush_start ());
     gst_pad_send_event (pad, gst_event_new_flush_stop (0));
@@ -643,7 +646,8 @@ kms_player_end_point_add_appsrc (KmsPlayerEndpoint * self,
   appsrc = gst_element_factory_make ("appsrc", NULL);
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
+      "emit-signals", FALSE, NULL);
 
   srcpad = gst_element_get_static_pad (appsrc, "src");
   gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_QUERY_UPSTREAM,
@@ -797,19 +801,20 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   agnosticbin = kms_player_end_point_get_agnostic_for_pad (self, pad);
 
   if (agnosticbin != NULL) {
+    GstAppSinkCallbacks callbacks;
+
     /* Create appsink */
     appsink = gst_element_factory_make ("appsink", NULL);
     appsrc = kms_player_end_point_add_appsrc (self, agnosticbin, appsink);
 
-    g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", TRUE,
+    g_object_set (appsink, "enable-last-sample", FALSE, "emit-signals", FALSE,
         "qos", FALSE, "max-buffers", 1, NULL);
 
-    /* Connect new-sample signal to callback */
-    g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb),
-        appsrc);
-    g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
-    g_signal_connect (appsink, "new-preroll", G_CALLBACK (new_preroll_cb),
-        appsrc);
+    callbacks.eos = eos_cb;
+    callbacks.new_preroll = new_preroll_cb;
+    callbacks.new_sample = new_sample_cb;
+    gst_app_sink_set_callbacks (GST_APP_SINK (appsink), &callbacks, appsrc,
+        NULL);
 
     g_object_set_qdata_full (G_OBJECT (appsink), pts_quark (),
         kms_pts_data_new (), kms_pts_data_destroy);
