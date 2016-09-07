@@ -130,7 +130,7 @@ public class RecorderWebRtcShortFileTest extends StabilityTest {
     }
 
     // Stop record
-    recorder.stop(new Continuation<Void>() {
+    recorder.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

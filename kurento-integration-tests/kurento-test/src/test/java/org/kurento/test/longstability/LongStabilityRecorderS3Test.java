@@ -127,7 +127,7 @@ public class LongStabilityRecorderS3Test extends StabilityTest {
 
     // Stop recorder
     final CountDownLatch recorderLatch = new CountDownLatch(1);
-    recorder.stop(new Continuation<Void>() {
+    recorder.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

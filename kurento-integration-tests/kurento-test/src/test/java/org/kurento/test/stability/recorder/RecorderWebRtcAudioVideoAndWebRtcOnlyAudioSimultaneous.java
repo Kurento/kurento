@@ -170,8 +170,8 @@ public class RecorderWebRtcAudioVideoAndWebRtcOnlyAudioSimultaneous extends Stab
             Thread.sleep(RECORD_MS);
 
             // Stop record
-            recorder0.stop();
-            recorder1.stop();
+            recorder0.stopAndWait();
+            recorder1.stopAndWait();
 
             // Guard time to stop recording
             Thread.sleep(5000);

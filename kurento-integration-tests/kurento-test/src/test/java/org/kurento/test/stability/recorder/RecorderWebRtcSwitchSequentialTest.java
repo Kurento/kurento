@@ -130,7 +130,7 @@ public class RecorderWebRtcSwitchSequentialTest extends StabilityTest {
     }
 
     // Stop record
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

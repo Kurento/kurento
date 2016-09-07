@@ -111,7 +111,7 @@ public class RecorderNonExistingDirectoryTest extends BaseRecorder {
 
     Thread.sleep(SECONDS.toMillis(PLAYTIME));
 
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

@@ -118,7 +118,7 @@ public class RecorderWebRtcLongFileTest extends StabilityTest {
     Thread.sleep(RECORD_MS);
 
     // Stop recorder
-    recorder.stop();
+    recorder.stopAndWait();
 
     // Guard time to stop recording
     Thread.sleep(4000);

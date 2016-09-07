@@ -148,7 +148,7 @@ public class RecorderWebRtcDisconnectTest extends BaseRecorder {
     // Release Media Pipeline #1
     saveGstreamerDot(mp);
 
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

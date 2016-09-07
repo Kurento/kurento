@@ -158,7 +158,7 @@ public class RecorderWebRtcOneToManyTest extends StabilityTest {
             Thread.sleep(PLAYTIME_MS);
 
             // Stop record
-            recorder[i - 1].stop();
+            recorder[i - 1].stopAndWait();
 
             // Guard time to stop recording
             Thread.sleep(4000);

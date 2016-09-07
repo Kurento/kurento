@@ -130,7 +130,7 @@ public class RecorderPlayerOneToManyTest extends StabilityTest {
             Thread.sleep(PLAYTIME_MS);
 
             // Stop record
-            recorder[i].stop();
+            recorder[i].stopAndWait();
 
             // Guard time to stop recording
             Thread.sleep(4000);

@@ -134,7 +134,7 @@ public class RecorderStopTest extends BaseRecorder {
 
       @Override
       public void run() {
-        recorderEp.stop(new Continuation<Void>() {
+        recorderEp.stopAndWait(new Continuation<Void>() {
 
           @Override
           public void onSuccess(Void result) throws Exception {

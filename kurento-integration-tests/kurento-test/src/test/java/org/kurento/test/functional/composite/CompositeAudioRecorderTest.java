@@ -125,7 +125,7 @@ public class CompositeAudioRecorderTest extends BaseRecorder {
     Thread.sleep(RECORDTIME * 1000);
 
     final CountDownLatch recorderLatch = new CountDownLatch(1);
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

@@ -153,7 +153,7 @@ public class RecorderThreeWebRtcSimultaneous extends StabilityTest {
             Thread.sleep(RECORD_MS);
 
             // Stop record
-            recorder[i].stop();
+            recorder[i].stopAndWait();
 
             // Guard time to stop recording
             Thread.sleep(4000);

@@ -177,7 +177,7 @@ public class RecorderSwitchWebrtcTest extends BaseRecorder {
     // Release Media Pipeline #1
     saveGstreamerDot(mp);
     final CountDownLatch recorderLatch = new CountDownLatch(1);
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

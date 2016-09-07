@@ -250,7 +250,7 @@ public class RecorderSwitchPlayerWithPassThroughTest extends BaseRecorder {
     }
 
     saveGstreamerDot(mp);
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {

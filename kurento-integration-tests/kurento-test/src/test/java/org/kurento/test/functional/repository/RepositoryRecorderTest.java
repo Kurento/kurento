@@ -116,7 +116,7 @@ public class RepositoryRecorderTest extends RepositoryFunctionalTest {
         eosLatch.await(getPage().getTimeout(), TimeUnit.SECONDS));
 
     // Release Media Pipeline #1
-    recorderEp.stop(new Continuation<Void>() {
+    recorderEp.stopAndWait(new Continuation<Void>() {
 
       @Override
       public void onSuccess(Void result) throws Exception {
