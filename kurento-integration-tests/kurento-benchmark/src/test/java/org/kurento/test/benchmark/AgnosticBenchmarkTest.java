@@ -23,11 +23,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * Benchmark test aimed to characterize the agnostic component in KMS.
@@ -70,7 +71,7 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
   private static final String PASSTHROUGH_NUMBER_PROP = "passtrough.number";
   private static final int PASSTHROUGH_NUMBER_DEFAULT = 2;
   private static final String SESSION_TIME_PROP = "sesion.time";
-  private static final int SESSION_TIME_DEFAULT = 10; // seconds
+  private static final int SESSION_TIME_DEFAULT = 30; // seconds
   private static final String SAMPLING_RATE_PROP = "sampling.rate";
   private static final int SAMPLING_RATE_DEFAULT = 100; // milliseconds
   private static final String OUTPUT_FOLDER_PROP = "output.folder";
@@ -143,8 +144,10 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     monitor.startMonitoring();
 
     // Thread for gathering latencies
-    final Multimap<String, Object> latencies = ArrayListMultimap.create();
-    final ExecutorService executor = Executors.newFixedThreadPool(passTroughList.size());
+    final Multimap<String, Object> latencies =
+        Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, Object>create());
+
+    final ExecutorService executor = Executors.newFixedThreadPool(10 * passTroughList.size());
     Thread latencyThread = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -176,16 +179,20 @@ public class AgnosticBenchmarkTest extends KurentoClientBrowserTest<WebRtcTestPa
     // Wait session time
     waitSeconds(sessionTime);
 
+    // Release latency thread/executor
+    executor.shutdown();
+    executor.awaitTermination(3 * getPresenter().getTimeout(), TimeUnit.SECONDS);
+    latencyThread.interrupt();
+
     // Stop monitor
-    String csvPreffix = outputFolder + this.getClass().getSimpleName() + "-" + new Date().getTime();
+    String csvPreffix = outputFolder + this.getClass().getSimpleName() + "-" + passTroughNumber
+        + "passTrough" + "-" + sessionTime + "seconds";
     monitor.stop();
     monitor.writeResults(csvPreffix + "-monitor.csv");
     monitor.destroy();
 
-    // Release media pipeline and latency thread/executor
+    // Release media pipeline
     mediaPipeline.release();
-    executor.shutdown();
-    latencyThread.interrupt();
 
     writeCSV(csvPreffix + "-latency.csv", latencies, true);
   }
