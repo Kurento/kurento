@@ -48,8 +48,10 @@ public class CheckAudioTimerTask extends TimerTask {
     diffTimestamp = currentTimestamp - lastTimestamp;
     count++;
 
-    log.debug("Total audio packets received:{} in {} ms",
-        (currentPacketsReceived - lastPacketsReceived), diffTimestamp);
+    if (lastTimestamp != 0) {
+      log.debug("Total audio packets received:{} in {} ms",
+          (currentPacketsReceived - lastPacketsReceived), diffTimestamp);
+    }
 
     if (((currentPacketsReceived - lastPacketsReceived) == 0) && (lastTimestamp != 0)) {
       // Packets that must be received in (currentTimestamp - lastTimestamp)
