@@ -430,7 +430,7 @@ public abstract class BrowserTest<W extends WebPage> extends KurentoTest {
 
     final Table<Integer, Integer, String> resultTable = HashBasedTable.create();
     final int numRows = presenter.size();
-    final int threadPoolSize = Runtime.getRuntime().availableProcessors() - 1;
+    final int threadPoolSize = Runtime.getRuntime().availableProcessors();
     final ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
     final CountDownLatch latch = new CountDownLatch(numRows);
     final Iterator<String> iteratorPresenter = presenter.keySet().iterator();
