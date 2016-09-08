@@ -37,6 +37,7 @@ std::string mediaPipelineId;
 ModuleManager moduleManager;
 
 #define EXPECTED_LEN 0.2
+static const int TIMEOUT = 5; /* seconds */
 
 struct GF {
   GF();
@@ -131,6 +132,48 @@ releaseTestSrc (std::shared_ptr<MediaElementImpl> &ep)
   MediaSet::getMediaSet ()->release (id);
 }
 
+std::condition_variable cv;
+std::mutex mtx;
+std::atomic<bool> transited (false);
+
+static void
+set_state (std::shared_ptr <RecorderEndpointImpl> recorder,
+           std::shared_ptr<UriEndpointState> next)
+{
+  std::shared_ptr<UriEndpointState> current = recorder->getState ();
+  std::unique_lock<std::mutex> lck (mtx);
+
+  BOOST_TEST_MESSAGE ("Setting recorder to state: " << next->getString() );
+
+  if (current->getValue () == next->getValue () ) {
+    BOOST_TEST_MESSAGE ("Recorder is already in state: " <<  current->getString() );
+    return;
+  }
+
+  switch (next->getValue() ) {
+  case UriEndpointState::STOP:
+    recorder->stop();
+    break;
+
+  case UriEndpointState::PAUSE:
+    recorder->pause();
+    break;
+
+  case UriEndpointState::START:
+    recorder->record();
+    break;
+  }
+
+  /* Lets wait for asynchronous change of state */
+  if (!cv.wait_for (lck, std::chrono::seconds (TIMEOUT), [] () {
+  return transited.load();
+  }) ) {
+    BOOST_ERROR ("Timeout changing to state " << next->getString() );
+  }
+
+  transited.store (false);
+}
+
 static void
 recorder_state_changes ()
 {
@@ -142,10 +185,17 @@ recorder_state_changes ()
   std::shared_ptr <RecorderEndpointImpl> recorder = createRecorderEndpoint ();
   std::shared_ptr <MediaElementImpl> src = createTestSrc();
 
+  std::shared_ptr<UriEndpointState> start (new UriEndpointState (
+        UriEndpointState::START) );
+  std::shared_ptr<UriEndpointState> stop (new UriEndpointState (
+      UriEndpointState::STOP) );
+  std::shared_ptr<UriEndpointState> pause (new UriEndpointState (
+        UriEndpointState::PAUSE) );
+
   recorder->signalUriEndpointStateChanged.connect ([&] (UriEndpointStateChanged
   event) {
-    std::cout << "Recorder state: " << event.getState()->getString()
-              << std::endl;
+    BOOST_TEST_MESSAGE ("Recorder transited to state: " <<
+                        event.getState()->getString() );
 
     switch (event.getState()->getValue() ) {
     case UriEndpointState::STOP:
@@ -160,6 +210,9 @@ recorder_state_changes ()
       start_changes++;
       break;
     }
+
+    transited.store (true);
+    cv.notify_one();
   });
 
   recorder->signalRecording.connect ([&] (Recording event) {
@@ -167,33 +220,40 @@ recorder_state_changes ()
   });
 
   src->connect (recorder);
-  recorder->pause();
-  recorder->stop();
-  recorder->stop();
-  recorder->pause();
-  recorder->record();
-  recorder->pause();
-  recorder->record();
-  recorder->stop();
-  recorder->pause();
-  recorder->record();
-  recorder->pause();
+
+  set_state (recorder, pause);
+  set_state (recorder, stop);
+  set_state (recorder, stop); /* No transition done */
+  set_state (recorder, pause);
+  set_state (recorder, start);
+  set_state (recorder, pause);
+  set_state (recorder, start);
+  set_state (recorder, pause);
+  set_state (recorder, stop);
+  set_state (recorder, pause);
+  set_state (recorder, start);
+  set_state (recorder, pause);
+
   recorder->stopAndWait();
 
-  recorder->record();
-  recorder->pause();
-  recorder->record();
-  recorder->record();
-  // Wait for record event
+  transited.store (false);
+  set_state (recorder, start);
+  set_state (recorder, pause);
+  set_state (recorder, start);
+  set_state (recorder, start); /* No transition done */
+
+  set_state (recorder, pause);
+  set_state (recorder, start);
+  set_state (recorder, start); /* No transition done */
+
   g_usleep (100000);
 
-  recorder->pause();
-  g_usleep (100000);
-  recorder->record();
-  recorder->record();
+  set_state (recorder, pause);
+  set_state (recorder, start);
+  set_state (recorder, start); /* No transition done */
 
-  // Wait for record event
   g_usleep (100000);
+
   recorder->stopAndWait();
 
   releaseTestSrc (src);
@@ -224,13 +284,9 @@ recorder_state_changes ()
   std::cout << "stop_changes: " << stop_changes << std::endl;
   std::cout << "pause_changes: " << pause_changes << std::endl;
 
-  BOOST_CHECK_GE (recording_changes, 2);
-  BOOST_CHECK_GE (stop_changes, 1);
-  BOOST_CHECK_GE (pause_changes, 2);
-
-  BOOST_CHECK_LE (recording_changes, 6);
-  BOOST_CHECK_LE (stop_changes, 5);
-  BOOST_CHECK_LE (pause_changes, 7);
+  BOOST_CHECK_EQUAL (recording_changes, 7);
+  BOOST_CHECK_EQUAL (stop_changes, 4);
+  BOOST_CHECK_EQUAL (pause_changes, 9);
 
   BOOST_CHECK_EQUAL (recording_changes, start_changes);
 
