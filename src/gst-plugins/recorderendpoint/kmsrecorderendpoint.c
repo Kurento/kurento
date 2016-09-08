@@ -135,6 +135,7 @@ struct _KmsRecorderEndpointPrivate
   GSList *pending_pads;
 
   GHashTable *sink_pad_data;    /* <name, KmsSinkPadData> */
+  gboolean generate_pads;
 };
 
 typedef struct _MarkBufferProbeData
@@ -248,6 +249,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 {
   KmsRecorderEndpoint *self =
       KMS_RECORDER_ENDPOINT (GST_OBJECT_PARENT (appsink));
+  KmsUriEndpointState state;
   GstAppSrc *appsrc;
   GstFlowReturn ret;
   GstSample *sample;
@@ -283,10 +285,11 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   segment = gst_sample_get_segment (sample);
 
   KMS_ELEMENT_LOCK (self);
+  g_object_get (self, "state", &state, NULL);
+
   if (self->priv->moving_to_state != KMS_URI_ENDPOINT_STATE_START) {
-    GST_WARNING ("Dropping buffer received in invalid state %" GST_PTR_FORMAT,
+    GST_LOG_OBJECT (appsink, "Not recording, dropping buffer %" GST_PTR_FORMAT,
         buffer);
-    // TODO: Add a flag to discard buffers until keyframe
     ret = GST_FLOW_OK;
     goto end;
   }
@@ -591,6 +594,7 @@ kms_recorder_generate_pads (KmsRecorderEndpoint * self)
 {
   g_hash_table_foreach (self->priv->sink_pad_data, (GHFunc) connect_sink_func,
       self);
+  self->priv->generate_pads = FALSE;
 }
 
 static void
@@ -606,6 +610,7 @@ kms_recorder_endpoint_remove_pads (KmsRecorderEndpoint * self)
 {
   g_hash_table_foreach (self->priv->sink_pad_data, (GHFunc) remove_sink_func,
       self);
+  self->priv->generate_pads = TRUE;
 }
 
 static void
@@ -667,11 +672,27 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 }
 
 static void
+drop_until_key_frame_cb (GstPad * pad, gpointer data)
+{
+  kms_utils_drop_until_keyframe (pad, TRUE);
+}
+
+static void
 kms_recorder_endpoint_started (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
+  KmsUriEndpointState prev_state;
+  gboolean was_paused;
+
+  g_object_get (self, "state", &prev_state, NULL);
+  was_paused = prev_state == KMS_URI_ENDPOINT_STATE_PAUSE;
 
   kms_recorder_endpoint_create_parent_directories (self);
+
+  if (was_paused) {
+    kms_element_for_each_sink_pad (GST_ELEMENT (self),
+        drop_until_key_frame_cb, NULL);
+  }
 
   kms_recorder_endpoint_change_state (self, KMS_URI_ENDPOINT_STATE_START);
 
@@ -691,7 +712,14 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
 
   BASE_TIME_UNLOCK (self);
 
-  kms_recorder_generate_pads (self);
+  if (self->priv->generate_pads) {
+    kms_recorder_generate_pads (self);
+  }
+
+  if (was_paused) {
+    /* Not async change of state required so we are playing */
+    kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_START);
+  }
 }
 
 static void
@@ -702,15 +730,6 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 
   kms_recorder_endpoint_change_state (self, KMS_URI_ENDPOINT_STATE_PAUSE);
 
-  kms_recorder_endpoint_remove_pads (self);
-
-  KMS_ELEMENT_UNLOCK (self);
-
-  /* Set internal pipeline to GST_STATE_PAUSED */
-  kms_base_media_muxer_set_state (self->priv->mux, GST_STATE_PAUSED);
-
-  KMS_ELEMENT_LOCK (self);
-
   clk = kms_base_media_muxer_get_clock (self->priv->mux);
 
   if (clk) {
@@ -718,6 +737,7 @@ kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
   }
 
   kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_PAUSE);
+
 }
 
 static void
@@ -1807,6 +1827,8 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
   GError *err = NULL;
 
   self->priv = KMS_RECORDER_ENDPOINT_GET_PRIVATE (self);
+
+  self->priv->generate_pads = TRUE;
 
   g_mutex_init (&self->priv->base_time_lock);
   g_mutex_init (&self->priv->srcs_mutex);
