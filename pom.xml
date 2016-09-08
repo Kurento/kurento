@@ -23,6 +23,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<wagon-ssh.version>2.0</wagon-ssh.version>
+		<version.wagon.s3.plugin>1.2.1</version.wagon.s3.plugin>
 	</properties>
 	<licenses>
 		<license>
@@ -47,6 +48,16 @@
 									<groupId>org.apache.maven.wagon</groupId>
 									<artifactId>wagon-ssh</artifactId>
 									<version>${wagon-ssh.version}</version>
+								</extension>
+								<extension>
+									<groupId>org.apache.maven.wagon</groupId>
+									<artifactId>wagon-ssh</artifactId>
+									<version>${version.wagon.ssh.plugin}</version>
+								</extension>
+								<extension>
+									<groupId>org.kuali.maven.wagons</groupId>
+									<artifactId>maven-s3-wagon</artifactId>
+									<version>${version.wagon.s3.plugin}</version>
 								</extension>
 							</extensions>
 						</configuration>
