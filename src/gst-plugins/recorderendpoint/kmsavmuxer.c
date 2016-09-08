@@ -205,8 +205,10 @@ kms_av_muxer_prepare_pipeline (KmsAVMuxer * self)
       KMS_BASE_MEDIA_MUXER_GET_CLASS (self)->create_sink (KMS_BASE_MEDIA_MUXER
       (self), KMS_BASE_MEDIA_MUXER_GET_URI (self));
 
-  g_object_set (self->priv->videosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
-  g_object_set (self->priv->audiosrc, "format", 3 /* GST_FORMAT_TIME */ , NULL);
+  g_object_set (self->priv->videosrc, "block", TRUE, "format", GST_FORMAT_TIME,
+      NULL);
+  g_object_set (self->priv->audiosrc, "block", TRUE, "format", GST_FORMAT_TIME,
+      NULL);
 
   self->priv->mux = kms_av_muxer_create_muxer (self);
 
