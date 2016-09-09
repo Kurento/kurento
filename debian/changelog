@@ -1,3 +1,22 @@
+kurento-module-creator-4.0 (4.0.6) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * cpp_interface/complexType_class_cpp: Add default value for optional fields
+
+  [ Jose Antonio Santos Cadenas ]
+  * pom.xml: Add extensions to upload to s3
+  * pom.xml: Move extensions to build
+  * pom.xml: Remove ssh extensions
+  * Use s3 wagon only for release, use ssh wagon otherwise
+  * Prepare release 4.0.6
+
+  [ Jose Antonio Santos ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 09 Sep 2016 14:28:19 +0200
+
 kurento-module-creator-4.0 (4.0.5) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
